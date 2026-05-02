@@ -5,9 +5,14 @@ import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import {
+  buildNextProviderVideoCopyState,
   buildSafeProviderMediaLog,
+  getProviderVideoCopyState,
+  isProviderVideoCopyRetryDue,
   PROVIDER_VIDEO_COPY_FAILURE_MESSAGE,
+  PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
   shouldFailVideoJobOnProviderCopyMiss,
+  shouldRetryProviderVideoCopy,
 } from '@/server/provider-output-policy';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
@@ -56,6 +61,8 @@ type AppJobRow = {
   has_audio: boolean | null;
   render_ids: unknown;
   hero_render_id: string | null;
+  created_at: string;
+  settings_snapshot: unknown;
 };
 
 const COMPLETED_STATUSES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS']);
@@ -645,7 +652,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const identifiers = extractIdentifiersFromPayload(payload);
 
   let jobRows = await query<AppJobRow>(
-    `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
+    `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -654,7 +661,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.jobId) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
+      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -664,7 +671,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.localKey) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
+      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
        FROM app_jobs
        WHERE local_key = $1
        ORDER BY updated_at DESC
@@ -684,7 +691,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     );
     if (logRows.length) {
       jobRows = await query<AppJobRow>(
-        `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
+        `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
          FROM app_jobs
          WHERE job_id = $1
          LIMIT 1`,
@@ -808,6 +815,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
   const hasImageMedia = isImageEngine && imageUrls.length > 0;
   let providerVideoCopyFailed = false;
+  let providerVideoCopyDeferred = false;
+  let providerVideoCopyStateJson: string | null = null;
 
   if (
     nextStatus === 'completed' &&
@@ -825,6 +834,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
         aspectRatio: job.aspect_ratio,
         existingThumbUrl: job.thumb_url,
         currentJobStatus: job.status,
+        settingsSnapshot: job.settings_snapshot,
       });
       if (fallback.normalizedResult) {
         finalPayload = fallback.normalizedResult;
@@ -835,7 +845,11 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       if (!nextThumbUrl && fallback.thumbUrl) {
         nextThumbUrl = normalizeMediaUrl(fallback.thumbUrl) ?? fallback.thumbUrl;
       }
-      if (fallback.copyFailed) {
+      if (fallback.copyDeferred) {
+        providerVideoCopyDeferred = true;
+        nextStatus = 'processing';
+        nextProgress = 90;
+      } else if (fallback.copyFailed) {
         providerVideoCopyFailed = true;
       }
     } catch (error) {
@@ -856,6 +870,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (nextMessage && /^video_[A-Za-z0-9_-]+$/i.test(nextMessage)) {
     nextMessage = null;
+  }
+  if (providerVideoCopyDeferred && !nextMessage) {
+    nextMessage = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
   }
 
   const rawVideoSource = nextVideoUrl ?? media.videoUrl ?? job.video_url;
@@ -884,28 +901,37 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   let finalVideoUrl = nextVideoUrl ?? job.video_url;
   if (finalVideoUrl && !isImageEngine && nextStatus === 'completed') {
     const sourceBeforeCopy = finalVideoUrl;
-    const fastStartVideo = await ensureFastStartVideo({
-      jobId: job.job_id,
-      userId: job.user_id ?? undefined,
-      videoUrl: finalVideoUrl,
-    });
-    if (fastStartVideo) {
-      finalVideoUrl = fastStartVideo;
-      nextVideoUrl = fastStartVideo;
-    } else if (job.status === 'completed') {
-      finalVideoUrl = job.video_url;
-      nextVideoUrl = job.video_url;
-    } else if (
+    const strictCopyRequired =
       shouldFailVideoJobOnProviderCopyMiss({
         provider: 'fal',
         sourceUrl: sourceBeforeCopy,
         copiedUrl: null,
         currentJobStatus: job.status,
-      })
-    ) {
-      providerVideoCopyFailed = true;
+      });
+    if (strictCopyRequired && !isProviderVideoCopyRetryDue(getProviderVideoCopyState(job.settings_snapshot))) {
+      providerVideoCopyDeferred = true;
       finalVideoUrl = null;
       nextVideoUrl = null;
+      nextStatus = 'processing';
+      nextProgress = 90;
+      nextMessage = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
+    } else {
+      const fastStartVideo = await ensureFastStartVideo({
+        jobId: job.job_id,
+        userId: job.user_id ?? undefined,
+        videoUrl: finalVideoUrl,
+      });
+      if (fastStartVideo) {
+        finalVideoUrl = fastStartVideo;
+        nextVideoUrl = fastStartVideo;
+      } else if (job.status === 'completed') {
+        finalVideoUrl = job.video_url;
+        nextVideoUrl = job.video_url;
+      } else if (strictCopyRequired) {
+        providerVideoCopyFailed = true;
+        finalVideoUrl = null;
+        nextVideoUrl = null;
+      }
     }
   }
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
@@ -920,6 +946,21 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextStatus = 'completed';
     nextProgress = 100;
     nextMessage = null;
+  }
+
+  if (providerVideoCopyFailed && job.status !== 'completed') {
+    const nextCopyState = buildNextProviderVideoCopyState(job.settings_snapshot, {
+      providerStatus: typeof payload.status === 'string' ? payload.status : nextStatus,
+      reason: 'provider_video_copy_failed',
+    });
+    providerVideoCopyStateJson = JSON.stringify(nextCopyState);
+    if (shouldRetryProviderVideoCopy({ state: nextCopyState, createdAt: String(job.created_at) })) {
+      providerVideoCopyDeferred = true;
+      providerVideoCopyFailed = false;
+      nextStatus = 'processing';
+      nextProgress = 90;
+      nextMessage = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
+    }
   }
 
   let forcedNoMediaFailure = false;
@@ -1043,6 +1084,10 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          aspect_ratio = COALESCE($14, aspect_ratio),
          render_ids = CASE WHEN $15::jsonb IS NOT NULL THEN $15::jsonb ELSE render_ids END,
          hero_render_id = CASE WHEN $16::text IS NOT NULL THEN $16::text ELSE hero_render_id END,
+         settings_snapshot = CASE
+           WHEN $17::jsonb IS NOT NULL THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $17::jsonb, true)
+           ELSE settings_snapshot
+         END,
          updated_at = NOW()
      WHERE job_id = $1`,
     [
@@ -1062,6 +1107,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       detectedAspectRatio,
       renderIdsJson,
       heroRenderId,
+      providerVideoCopyStateJson,
     ]
   );
 
@@ -1085,6 +1131,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     video: buildSafeProviderMediaLog(finalVideoUrl),
     thumb: buildSafeProviderMediaLog(finalThumbUrl),
     providerVideoCopyFailed,
+    providerVideoCopyDeferred,
     imageCount: hasImageMedia ? imageUrls.length : 0,
     message: normalizedMessage ?? null,
     falStatus: payload.status ?? null,

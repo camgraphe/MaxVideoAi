@@ -6,7 +6,14 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
-import { shouldFailVideoJobOnProviderCopyMiss } from '@/server/provider-output-policy';
+import {
+  buildNextProviderVideoCopyState,
+  getProviderVideoCopyState,
+  isProviderVideoCopyRetryDue,
+  PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
+  shouldFailVideoJobOnProviderCopyMiss,
+  shouldRetryProviderVideoCopy,
+} from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -323,24 +330,36 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         let progress = job.progress;
         let videoUrl = normalizedVideoUrl;
         let thumbUrl = normalizedThumbUrl ?? null;
+        let message = job.message ?? null;
+        let providerVideoCopyStateJson: string | null = null;
         if (vUrl) {
           const normalizedProviderVideoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
-          const copiedVideoUrl = await ensureFastStartVideo({
-            jobId,
-            userId: job.user_id ?? undefined,
-            videoUrl: normalizedProviderVideoUrl,
+          const strictCopyRequired = shouldFailVideoJobOnProviderCopyMiss({
+            provider: job.provider ?? 'fal',
+            sourceUrl: normalizedProviderVideoUrl,
+            copiedUrl: null,
+            currentJobStatus: job.status,
           });
-          if (
-            !shouldFailVideoJobOnProviderCopyMiss({
-              provider: job.provider ?? 'fal',
-              sourceUrl: normalizedProviderVideoUrl,
-              copiedUrl: copiedVideoUrl,
-              currentJobStatus: job.status,
-            })
-          ) {
+          const shouldAttemptProviderCopy =
+            !strictCopyRequired || isProviderVideoCopyRetryDue(getProviderVideoCopyState(job.settings_snapshot));
+          const copiedVideoUrl = shouldAttemptProviderCopy
+            ? await ensureFastStartVideo({
+                jobId,
+                userId: job.user_id ?? undefined,
+                videoUrl: normalizedProviderVideoUrl,
+              })
+            : null;
+          const providerCopyMissing = shouldFailVideoJobOnProviderCopyMiss({
+            provider: job.provider ?? 'fal',
+            sourceUrl: normalizedProviderVideoUrl,
+            copiedUrl: copiedVideoUrl,
+            currentJobStatus: job.status,
+          });
+          if (!providerCopyMissing) {
             status = 'completed';
             progress = 100;
             videoUrl = copiedVideoUrl ?? normalizedProviderVideoUrl;
+            message = null;
             if (/^https?:\/\//i.test(vUrl) && isPlaceholderThumbnail(thumbUrl)) {
               const generatedThumb = await ensureJobThumbnail({
                 jobId,
@@ -357,6 +376,23 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
             if (!thumbUrl) {
               thumbUrl = normalizedThumbUrl ?? null;
             }
+          } else if (!shouldAttemptProviderCopy) {
+            status = 'processing';
+            progress = 90;
+            message = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
+            videoUrl = normalizedVideoUrl;
+          } else {
+            const nextCopyState = buildNextProviderVideoCopyState(job.settings_snapshot, {
+              providerStatus: st ?? 'completed',
+              reason: 'provider_video_copy_failed',
+            });
+            providerVideoCopyStateJson = JSON.stringify(nextCopyState);
+            if (shouldRetryProviderVideoCopy({ state: nextCopyState, createdAt: String(job.created_at) })) {
+              status = 'processing';
+              progress = 90;
+              message = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
+              videoUrl = normalizedVideoUrl;
+            }
           }
         } else if (st && FAL_FAILED_STATES.has(st.toUpperCase())) {
           status = 'failed';
@@ -366,8 +402,19 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         }
         if (status !== job.status || progress !== job.progress || videoUrl !== normalizedVideoUrl || thumbUrl !== normalizedThumbUrl) {
           await query(
-            `UPDATE app_jobs SET status = $1, progress = $2, video_url = $3, thumb_url = $4, preview_frame = $5 WHERE job_id = $6`,
-            [status, progress, videoUrl ?? null, thumbUrl ?? null, thumbUrl ?? null, jobId]
+            `UPDATE app_jobs
+                SET status = $1,
+                    progress = $2,
+                    video_url = $3,
+                    thumb_url = $4,
+                    preview_frame = $5,
+                    message = $7,
+                    settings_snapshot = CASE
+                      WHEN $8::jsonb IS NOT NULL THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $8::jsonb, true)
+                      ELSE settings_snapshot
+                    END
+              WHERE job_id = $6`,
+            [status, progress, videoUrl ?? null, thumbUrl ?? null, thumbUrl ?? null, jobId, message, providerVideoCopyStateJson]
           );
           return json({
             ok: true,
@@ -397,7 +444,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
             renderThumbUrls: parsedRenderThumbUrls,
             heroRenderId: job.hero_render_id ?? undefined,
             localKey: job.local_key ?? undefined,
-            message: job.message ?? undefined,
+            message: message ?? undefined,
             etaSeconds: job.eta_seconds ?? undefined,
             etaLabel: job.eta_label ?? undefined,
           });

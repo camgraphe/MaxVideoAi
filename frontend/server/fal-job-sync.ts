@@ -1,7 +1,11 @@
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
-import { shouldFailVideoJobOnProviderCopyMiss } from '@/server/provider-output-policy';
+import {
+  getProviderVideoCopyState,
+  isProviderVideoCopyRetryDue,
+  shouldFailVideoJobOnProviderCopyMiss,
+} from '@/server/provider-output-policy';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 
@@ -13,6 +17,7 @@ type FetchOptions = {
   aspectRatio?: string | null;
   existingThumbUrl?: string | null;
   currentJobStatus?: string | null;
+  settingsSnapshot?: unknown;
 };
 
 type FetchResult = {
@@ -20,6 +25,7 @@ type FetchResult = {
   videoUrl: string | null;
   thumbUrl: string | null;
   copyFailed?: boolean;
+  copyDeferred?: boolean;
 };
 
 function cloneResult<T>(input: T): T {
@@ -91,6 +97,15 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
 
   if (videoUrl) {
     videoUrl = normalizeMediaUrl(videoUrl) ?? videoUrl;
+    const strictCopyRequired = shouldFailVideoJobOnProviderCopyMiss({
+      provider: 'fal',
+      sourceUrl: videoUrl,
+      copiedUrl: null,
+      currentJobStatus: options.currentJobStatus,
+    });
+    if (strictCopyRequired && !isProviderVideoCopyRetryDue(getProviderVideoCopyState(options.settingsSnapshot))) {
+      return { normalizedResult: normalized, videoUrl: null, thumbUrl: null, copyFailed: true, copyDeferred: true };
+    }
     const fastStartVideo = await ensureFastStartVideo({
       jobId: options.jobId,
       userId: options.userId ?? undefined,
@@ -107,14 +122,7 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
         ((normalized.data as Record<string, unknown>).video as Record<string, unknown>).url = fastStartVideo;
       }
       normalized.video_url = fastStartVideo;
-    } else if (
-      shouldFailVideoJobOnProviderCopyMiss({
-        provider: 'fal',
-        sourceUrl: videoUrl,
-        copiedUrl: null,
-        currentJobStatus: options.currentJobStatus,
-      })
-    ) {
+    } else if (strictCopyRequired) {
       return { normalizedResult: normalized, videoUrl: null, thumbUrl: null, copyFailed: true };
     }
   }

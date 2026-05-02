@@ -16,9 +16,12 @@ import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
 import {
+  buildNextProviderVideoCopyState,
   buildSafeProviderMediaLog,
   PROVIDER_VIDEO_COPY_FAILURE_MESSAGE,
+  PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
   shouldFailVideoJobOnProviderCopyMiss,
+  shouldRetryProviderVideoCopy,
 } from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
@@ -2223,7 +2226,7 @@ async function rollbackPendingPayment(params: {
     typeof body.negativePrompt === 'string' && body.negativePrompt.trim().length ? body.negativePrompt.trim() : null;
   const membershipTier =
     typeof body.membershipTier === 'string' && body.membershipTier.trim().length ? body.membershipTier.trim() : null;
-  const settingsSnapshotJson = JSON.stringify({
+  const settingsSnapshot = {
     schemaVersion: 1,
     surface: 'video',
     engineId: engine.id,
@@ -2267,7 +2270,8 @@ async function rollbackPendingPayment(params: {
     meta: {
       memberTier: membershipTier,
     },
-  });
+  };
+  let settingsSnapshotJson = JSON.stringify(settingsSnapshot);
 
   let lastProviderJobId: string | null = null;
   const persistProviderJobId = async (requestId: string) => {
@@ -2863,7 +2867,7 @@ async function rollbackPendingPayment(params: {
   let video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   let videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
-  let status = generationResult.status ?? (video ? 'completed' : 'queued');
+  let status: string = generationResult.status ?? (video ? 'completed' : 'queued');
   let progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
   const providerJobId = generationResult.providerJobId ?? batchId ?? null;
 
@@ -2944,17 +2948,33 @@ async function rollbackPendingPayment(params: {
         copiedUrl: null,
       })
     ) {
+      const nextCopyState = buildNextProviderVideoCopyState(settingsSnapshot, {
+        providerStatus: status,
+        reason: 'provider_video_copy_failed',
+      });
+      const canRetryCopy =
+        Boolean(providerJobId) &&
+        shouldRetryProviderVideoCopy({ state: nextCopyState, createdAt: new Date().toISOString() });
       console.warn('[api/generate] provider video copy failed', {
         jobId,
         providerJobId,
         provider: providerMode,
         video: buildSafeProviderMediaLog(sourceVideoUrl),
+        retryDeferred: canRetryCopy,
       });
       video = null;
       videoAsset = null;
-      status = 'failed';
-      progress = 0;
-      message = PROVIDER_VIDEO_COPY_FAILURE_MESSAGE;
+      (settingsSnapshot as Record<string, unknown>).providerVideoCopy = nextCopyState;
+      settingsSnapshotJson = JSON.stringify(settingsSnapshot);
+      if (canRetryCopy) {
+        status = 'processing';
+        progress = 90;
+        message = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
+      } else {
+        status = 'failed';
+        progress = 0;
+        message = PROVIDER_VIDEO_COPY_FAILURE_MESSAGE;
+      }
     }
   }
 
@@ -2999,6 +3019,7 @@ async function rollbackPendingPayment(params: {
            visibility = $19,
            indexable = $20,
            message = $21,
+           settings_snapshot = $22::jsonb,
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
@@ -3024,6 +3045,7 @@ async function rollbackPendingPayment(params: {
         visibility,
         indexable,
         message,
+        settingsSnapshotJson,
       ]
     );
   } catch (error) {

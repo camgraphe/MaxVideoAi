@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 
 import {
   buildSafeProviderMediaLog,
+  buildNextProviderVideoCopyState,
+  getProviderVideoCopyState,
+  isProviderVideoCopyRetryDue,
+  PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
+  resolveProviderVideoCopyMaxAttempts,
   shouldFailVideoJobOnProviderCopyMiss,
+  shouldRetryProviderVideoCopy,
 } from '../../server/provider-output-policy';
 
 const previousRequireCopy = process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL;
@@ -98,6 +104,95 @@ try {
     host: 'v3.fal.media',
     managedStorage: false,
   });
+
+  assert.equal(PROVIDER_VIDEO_COPY_RETRY_MESSAGE.length > 0, true);
+  assert.equal(resolveProviderVideoCopyMaxAttempts('3'), 3);
+  assert.equal(resolveProviderVideoCopyMaxAttempts('0'), 6);
+  assert.deepEqual(getProviderVideoCopyState({}), {
+    attempts: 0,
+    firstFailedAt: null,
+    lastFailedAt: null,
+    lastProviderStatus: null,
+    lastReason: null,
+    nextRetryAt: null,
+  });
+  assert.deepEqual(
+    buildNextProviderVideoCopyState(
+      {
+        providerVideoCopy: {
+          attempts: 1,
+          firstFailedAt: '2026-05-02T18:10:00.000Z',
+        },
+      },
+      {
+        nowIso: '2026-05-02T18:12:00.000Z',
+        providerStatus: 'completed',
+        reason: 'provider_video_copy_failed',
+      }
+    ),
+    {
+      attempts: 2,
+      firstFailedAt: '2026-05-02T18:10:00.000Z',
+      lastFailedAt: '2026-05-02T18:12:00.000Z',
+      lastProviderStatus: 'completed',
+      lastReason: 'provider_video_copy_failed',
+      nextRetryAt: '2026-05-02T18:17:00.000Z',
+    }
+  );
+  assert.equal(
+    isProviderVideoCopyRetryDue(
+      {
+        nextRetryAt: '2026-05-02T18:17:00.000Z',
+      },
+      Date.parse('2026-05-02T18:16:59.000Z')
+    ),
+    false
+  );
+  assert.equal(
+    isProviderVideoCopyRetryDue(
+      {
+        nextRetryAt: '2026-05-02T18:17:00.000Z',
+      },
+      Date.parse('2026-05-02T18:17:00.000Z')
+    ),
+    true
+  );
+  assert.equal(
+    shouldRetryProviderVideoCopy({
+      state: { attempts: 2 },
+      createdAt: '2026-05-02T18:00:00.000Z',
+      nowMs: Date.parse('2026-05-02T18:12:00.000Z'),
+      maxAttempts: 3,
+    }),
+    true
+  );
+  assert.equal(
+    shouldRetryProviderVideoCopy({
+      state: { attempts: 3 },
+      createdAt: '2026-05-02T18:00:00.000Z',
+      nowMs: Date.parse('2026-05-02T18:12:00.000Z'),
+      maxAttempts: 3,
+    }),
+    false
+  );
+  assert.equal(
+    shouldRetryProviderVideoCopy({
+      state: { attempts: 1 },
+      createdAt: '2026-05-02T18:00:00.000Z',
+      nowMs: Date.parse('2026-05-02T20:59:00.000Z'),
+      maxAttempts: 6,
+    }),
+    true
+  );
+  assert.equal(
+    shouldRetryProviderVideoCopy({
+      state: { attempts: 1 },
+      createdAt: '2026-05-02T18:00:00.000Z',
+      nowMs: Date.parse('2026-05-02T21:01:00.000Z'),
+      maxAttempts: 6,
+    }),
+    false
+  );
 } finally {
   if (previousRequireCopy === undefined) {
     delete process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL;

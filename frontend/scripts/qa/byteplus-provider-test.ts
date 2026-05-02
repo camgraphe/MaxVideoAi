@@ -14,6 +14,7 @@ import {
   getBytePlusAccounting,
   getBytePlusStorageCopyState,
   getBytePlusUnitPriceUsdPer1kTokens,
+  isBytePlusStorageCopyRetryDue,
   resolveBytePlusStorageCopyMaxAttempts,
   shouldRetryBytePlusStorageCopy,
 } from '../../server/byteplus-poll';
@@ -518,6 +519,7 @@ assert.deepEqual(getBytePlusStorageCopyState({}), {
   lastFailedAt: null,
   lastProviderStatus: null,
   lastReason: null,
+  nextRetryAt: null,
 });
 assert.deepEqual(
   buildNextBytePlusStorageCopyState(
@@ -539,7 +541,26 @@ assert.deepEqual(
     lastFailedAt: '2026-05-02T18:12:00.000Z',
     lastProviderStatus: 'succeeded',
     lastReason: 'provider_video_copy_failed',
+    nextRetryAt: '2026-05-02T18:17:00.000Z',
   }
+);
+assert.equal(
+  isBytePlusStorageCopyRetryDue(
+    {
+      nextRetryAt: '2026-05-02T18:17:00.000Z',
+    },
+    Date.parse('2026-05-02T18:16:59.000Z')
+  ),
+  false
+);
+assert.equal(
+  isBytePlusStorageCopyRetryDue(
+    {
+      nextRetryAt: '2026-05-02T18:17:00.000Z',
+    },
+    Date.parse('2026-05-02T18:17:00.000Z')
+  ),
+  true
 );
 assert.equal(
   shouldRetryBytePlusStorageCopy({
@@ -562,10 +583,18 @@ assert.equal(
 assert.equal(
   shouldRetryBytePlusStorageCopy({
     state: { attempts: 1 },
-    createdAt: '2026-05-01T18:00:00.000Z',
-    nowMs: Date.parse('2026-05-02T18:30:00.000Z'),
+    createdAt: '2026-05-02T18:00:00.000Z',
+    nowMs: Date.parse('2026-05-02T20:59:00.000Z'),
     maxAttempts: 6,
-    copyWindowMs: 23 * 60 * 60_000,
+  }),
+  true
+);
+assert.equal(
+  shouldRetryBytePlusStorageCopy({
+    state: { attempts: 1 },
+    createdAt: '2026-05-02T18:00:00.000Z',
+    nowMs: Date.parse('2026-05-02T21:01:00.000Z'),
+    maxAttempts: 6,
   }),
   false
 );
