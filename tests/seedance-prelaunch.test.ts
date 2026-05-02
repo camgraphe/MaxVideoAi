@@ -42,7 +42,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.engine.modes.includes('ref2v'), true);
   assert.equal(seedance.modes.some((mode) => mode.mode === 'ref2v'), true);
   assert.equal(fast.modes.some((mode) => mode.mode === 'ref2v'), true);
-  assert.deepEqual(seedance.engine.resolutions, ['480p', '720p']);
+  assert.deepEqual(seedance.engine.resolutions, ['480p', '720p', '1080p']);
   assert.deepEqual(fast.engine.resolutions, ['480p', '720p']);
   assert.deepEqual(seedance.engine.aspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
   assert.deepEqual(fast.engine.aspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
@@ -58,9 +58,9 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.ok(seedanceRef2v);
   assert.ok(fastRef2v);
   assert.deepEqual(seedanceI2v.ui.duration, { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' });
-  assert.deepEqual(seedanceI2v.ui.resolution, ['480p', '720p']);
+  assert.deepEqual(seedanceI2v.ui.resolution, ['480p', '720p', '1080p']);
   assert.deepEqual(seedanceI2v.ui.aspectRatio, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
-  assert.deepEqual(seedanceRef2v.ui.resolution, ['480p', '720p']);
+  assert.deepEqual(seedanceRef2v.ui.resolution, ['480p', '720p', '1080p']);
   assert.deepEqual(fastRef2v.ui.resolution, ['480p', '720p']);
 
   const seedanceFields = [...(seedance.engine.inputSchema?.required ?? []), ...(seedance.engine.inputSchema?.optional ?? [])];
@@ -157,15 +157,45 @@ test('Seedance benchmark specs stay aligned with the live Fal-facing product sur
   assert.ok(standard);
   assert.ok(fast);
 
-  [standard, fast].forEach((entry) => {
-    assert.equal(entry?.keySpecs?.videoToVideo, 'Not supported');
-    assert.equal(entry?.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
-    assert.equal(entry?.keySpecs?.maxResolution, '720p');
-    assert.equal(entry?.keySpecs?.maxDuration, '15s');
-    assert.deepEqual(entry?.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
-    assert.deepEqual(entry?.keySpecs?.outputFormats, ['MP4']);
-    assert.equal(entry?.keySpecs?.pricePerSecond ?? null, null);
-    assert.equal(entry?.keySpecs?.releaseDate ?? null, null);
+  assert.equal(standard.keySpecs?.videoToVideo, 'Not supported');
+  assert.equal(standard.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
+  assert.equal(standard.keySpecs?.maxResolution, '1080p');
+  assert.equal(standard.keySpecs?.maxDuration, '15s');
+  assert.deepEqual(standard.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(standard.keySpecs?.outputFormats, ['MP4']);
+  assert.equal(standard.keySpecs?.pricePerSecond ?? null, null);
+  assert.equal(standard.keySpecs?.releaseDate ?? null, null);
+
+  assert.equal(fast.keySpecs?.videoToVideo, 'Not supported');
+  assert.equal(fast.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
+  assert.equal(fast.keySpecs?.maxResolution, '720p');
+  assert.equal(fast.keySpecs?.maxDuration, '15s');
+  assert.deepEqual(fast.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(fast.keySpecs?.outputFormats, ['MP4']);
+  assert.equal(fast.keySpecs?.pricePerSecond ?? null, null);
+  assert.equal(fast.keySpecs?.releaseDate ?? null, null);
+});
+
+test('Seedance 2 marketing copy distinguishes standard 1080p from Fast 720p', () => {
+  const locales = ['en', 'fr', 'es'] as const;
+
+  locales.forEach((locale) => {
+    const standardPath = path.join(process.cwd(), `content/models/${locale}/seedance-2-0.json`);
+    const fastPath = path.join(process.cwd(), `content/models/${locale}/seedance-2-0-fast.json`);
+    const standard = JSON.parse(fs.readFileSync(standardPath, 'utf8')) as {
+      hero?: { badge?: string };
+      custom?: { specSections?: Array<{ items?: string[] }> };
+    };
+    const fast = JSON.parse(fs.readFileSync(fastPath, 'utf8')) as {
+      hero?: { badge?: string };
+      custom?: { specSections?: Array<{ items?: string[] }> };
+    };
+
+    const standardCopy = JSON.stringify([standard.hero?.badge, standard.custom?.specSections]);
+    const fastCopy = JSON.stringify([fast.hero?.badge, fast.custom?.specSections]);
+
+    assert.match(standardCopy, /1080p/i, `${locale} standard Seedance copy should mention 1080p`);
+    assert.doesNotMatch(fastCopy, /1080p/i, `${locale} fast Seedance copy should stay capped at 720p`);
   });
 });
 

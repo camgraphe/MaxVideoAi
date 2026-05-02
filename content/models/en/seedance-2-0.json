@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedance 2.0 — current Seedance model for multi-shot video and native audio",
     "intro": "Seedance 2.0 is the current Seedance AI video model for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences. Use this page to review pricing, key capabilities, best use cases, and when this Seedance video workflow is a better fit than Fast or older Seedance versions.",
-    "badge": "3 workflows · 480p/720p · Auto or 4-15s · Native audio · 9 image / 3 video / 3 audio refs",
+    "badge": "3 workflows · 480p/720p/1080p · Auto or 4-15s · Native audio · 9 image / 3 video / 3 audio refs",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -203,7 +203,7 @@
         "title": "Output style and structure",
         "intro": "Fal highlights cinematic control, native audio, realistic physics, multi-shot cuts, and up to 15 seconds per generation.",
         "items": [
-          "480p or 720p",
+          "480p, 720p or 1080p",
           "Auto or 4-15s per generation",
           "Aspect ratios: auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16",
           "Image-to-video supports an optional end frame",

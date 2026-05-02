@@ -54,7 +54,7 @@ test('GPT Image 2 pricing definition exposes high-quality image size tiers', () 
   assert.equal(definition?.resolutionMultipliers['3840x2160'], 41 / 15);
 });
 
-test('Seedance 2 pricing definition exposes token-priced 480p and 720p tiers to the estimator', () => {
+test('Seedance 2 pricing definition exposes token-priced 480p, 720p, and 1080p tiers to the estimator', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-0')?.engine;
   assert.ok(engine);
 
@@ -63,7 +63,9 @@ test('Seedance 2 pricing definition exposes token-priced 480p and 720p tiers to 
   assert.ok(typeof definition?.baseUnitPriceCents === 'number' && definition.baseUnitPriceCents > 0);
   assert.ok(typeof definition?.resolutionMultipliers['480p'] === 'number');
   assert.ok(typeof definition?.resolutionMultipliers['720p'] === 'number');
+  assert.ok(typeof definition?.resolutionMultipliers['1080p'] === 'number');
   assert.ok((definition?.resolutionMultipliers['720p'] ?? 0) > (definition?.resolutionMultipliers['480p'] ?? 0));
+  assert.ok((definition?.resolutionMultipliers['1080p'] ?? 0) > (definition?.resolutionMultipliers['720p'] ?? 0));
 });
 
 test('Kling 3 pricing definitions match current fal vendor rates', () => {

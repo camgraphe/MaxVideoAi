@@ -641,7 +641,7 @@
         "firstLastFrame": "Supported (start + end image in i2v)",
         "referenceImageStyle": "Supported (multi reference stills)",
         "referenceVideo": "Supported",
-        "maxResolution": "720p",
+        "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
           "Auto",

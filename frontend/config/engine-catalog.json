@@ -5942,7 +5942,8 @@
       "maxDurationSec": 15,
       "resolutions": [
         "480p",
-        "720p"
+        "720p",
+        "1080p"
       ],
       "aspectRatios": [
         "auto",
@@ -6046,7 +6047,8 @@
             "label": "Resolution",
             "values": [
               "480p",
-              "720p"
+              "720p",
+              "1080p"
             ],
             "default": "720p"
           },
@@ -6176,6 +6178,36 @@
                 "width": 720,
                 "height": 1280
               }
+            },
+            "1080p": {
+              "auto": {
+                "width": 1920,
+                "height": 1080
+              },
+              "21:9": {
+                "width": 2520,
+                "height": 1080
+              },
+              "16:9": {
+                "width": 1920,
+                "height": 1080
+              },
+              "4:3": {
+                "width": 1440,
+                "height": 1080
+              },
+              "1:1": {
+                "width": 1080,
+                "height": 1080
+              },
+              "3:4": {
+                "width": 1080,
+                "height": 1440
+              },
+              "9:16": {
+                "width": 1080,
+                "height": 1920
+              }
             }
           },
           "rounding": "ceil_cent"
@@ -6223,7 +6255,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "auto",
@@ -6235,7 +6268,7 @@
             "9:16"
           ],
           "audioToggle": true,
-          "notes": "4-15s or auto, 480p/720p, native audio on or off, with the wider Seedance 2 camera ratio set."
+          "notes": "4-15s or auto, 480p/720p/1080p, native audio on or off, with the wider Seedance 2 camera ratio set."
         }
       },
       {
@@ -6265,7 +6298,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "auto",
@@ -6284,7 +6318,7 @@
           ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p, with audio on or off."
+          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p/1080p, with audio on or off."
         }
       },
       {
@@ -6314,7 +6348,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "auto",
@@ -6680,6 +6715,36 @@
               "9:16": {
                 "width": 720,
                 "height": 1280
+              }
+            },
+            "1080p": {
+              "auto": {
+                "width": 1920,
+                "height": 1080
+              },
+              "21:9": {
+                "width": 2520,
+                "height": 1080
+              },
+              "16:9": {
+                "width": 1920,
+                "height": 1080
+              },
+              "4:3": {
+                "width": 1440,
+                "height": 1080
+              },
+              "1:1": {
+                "width": 1080,
+                "height": 1080
+              },
+              "3:4": {
+                "width": 1080,
+                "height": 1440
+              },
+              "9:16": {
+                "width": 1080,
+                "height": 1920
               }
             }
           },

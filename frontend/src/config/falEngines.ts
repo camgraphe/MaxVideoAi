@@ -2503,7 +2503,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2v', 'i2v', 'ref2v'],
   maxDurationSec: 15,
-  resolutions: ['480p', '720p'],
+  resolutions: ['480p', '720p', '1080p'],
   aspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
   fps: [24],
   audio: true,
@@ -2566,7 +2566,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'resolution',
         type: 'enum',
         label: 'Resolution',
-        values: ['480p', '720p'],
+        values: ['480p', '720p', '1080p'],
         default: '720p',
       },
       {
@@ -6180,10 +6180,10 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['t2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p'],
+          resolution: ['480p', '720p', '1080p'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           audioToggle: true,
-          notes: '4-15s or auto, 480p/720p, native audio on or off, with the wider Seedance 2 camera ratio set.',
+          notes: '4-15s or auto, 480p/720p/1080p, native audio on or off, with the wider Seedance 2 camera ratio set.',
         },
       },
       {
@@ -6192,12 +6192,12 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['i2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p'],
+          resolution: ['480p', '720p', '1080p'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 30,
           audioToggle: true,
-          notes: 'Start image plus optional end image, 4-15s or auto, 480p/720p, with audio on or off.',
+          notes: 'Start image plus optional end image, 4-15s or auto, 480p/720p/1080p, with audio on or off.',
         },
       },
       {
@@ -6206,7 +6206,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['ref2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p'],
+          resolution: ['480p', '720p', '1080p'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 30,
@@ -6219,12 +6219,12 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Seedance 2.0 — ByteDance AI Video with Native Audio and References',
       description:
-        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, director-level camera control, 480p/720p output, and text, image, and reference workflows.',
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, director-level camera control, 480p/720p/1080p output, and text, image, and reference workflows.',
       canonicalPath: '/models/seedance-2-0',
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p output, auto or 4-15 second durations, multimodal references, and native audio generation.',
+      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p/1080p output, auto or 4-15 second durations, multimodal references, and native audio generation.',
     media: {
       videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
       imagePath: '/hero/seedance-2-0.jpg',
