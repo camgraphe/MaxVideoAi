@@ -2022,7 +2022,11 @@ useEffect(() => {
               preserveStoredDraft: preserveStoredDraftRef.current,
             });
           }
-          if (!preserveStoredDraftRef.current) {
+          const shouldPersistRequestedEngine =
+            !storedFormRaw ||
+            storedFormRaw.engineId !== nextForm.engineId ||
+            storedFormRaw.mode !== nextForm.mode;
+          if (!preserveStoredDraftRef.current || shouldPersistRequestedEngine) {
             queueMicrotask(() => {
               try {
                 writeStorage(STORAGE_KEYS.form, JSON.stringify(nextForm));
@@ -4891,22 +4895,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       return coerceFormState(pinnedEngine, nextMode, normalizedPrevious);
     });
   }, [authChecked, hydratedForScope, storageScope, selectedEngine, engines]);
-
-  useEffect(() => {
-    if (!requestedEngineToken) return;
-    if (!selectedEngine) return;
-    if (!authChecked) return;
-    if (hydratedForScope !== storageScope) return;
-    if (!matchesEngineToken(selectedEngine, requestedEngineToken)) return;
-    if (!searchString.includes('engine=') && !(requestedMode && searchString.includes('mode='))) return;
-    const params = new URLSearchParams(searchString);
-    params.delete('engine');
-    if (requestedMode) {
-      params.delete('mode');
-    }
-    const next = params.toString();
-    router.replace(next ? `/app?${next}` : '/app');
-  }, [requestedEngineToken, requestedMode, selectedEngine, searchString, router, authChecked, hydratedForScope, storageScope]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {

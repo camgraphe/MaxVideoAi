@@ -17,6 +17,7 @@ import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
 import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
 import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
@@ -465,14 +466,9 @@ export function GalleryRail({
         setSnackbar({ message: copy.snackbar.noMedia, duration: 2400 });
         return;
       }
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        void navigator.clipboard
-          .writeText(candidateUrl)
-          .then(() => setSnackbar({ message: copy.snackbar.copied, duration: 2000 }))
-          .catch(() => setSnackbar({ message: copy.snackbar.copyFailed, duration: 2400 }));
-      } else {
-        setSnackbar({ message: copy.snackbar.copyFailed, duration: 2400 });
-      }
+      void copyTextToClipboard(candidateUrl).then((copied) => {
+        setSnackbar({ message: copied ? copy.snackbar.copied : copy.snackbar.copyFailed, duration: copied ? 2000 : 2400 });
+      });
     },
     [copy.snackbar.copied, copy.snackbar.copyFailed, copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
   );

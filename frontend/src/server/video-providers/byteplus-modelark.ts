@@ -2,17 +2,26 @@ import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
 
 export const BYTEPLUS_MODELARK_PROVIDER = 'byteplus_modelark';
+export const PUBLIC_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast';
 export const BYTEPLUS_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast-byteplus';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
 
+type BytePlusContentItem =
+  | { type: 'text'; text: string }
+  | {
+      type: 'image_url';
+      image_url: { url: string };
+      role: 'reference_image';
+    };
+
 export type BytePlusSeedanceFastPayload = {
   model: string;
-  content: Array<{ type: 'text'; text: string }>;
+  content: BytePlusContentItem[];
   resolution: '720p';
   ratio: '16:9';
   duration: number;
-  generate_audio: false;
+  generate_audio: boolean;
   watermark: false;
 };
 
@@ -40,12 +49,42 @@ function envFlagEnabled(value: string | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
 }
 
+function splitCsvEnv(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export function isBytePlusModelArkEnabled(): boolean {
   return envFlagEnabled(ENV.BYTEPLUS_ARK_ENABLED);
 }
 
 export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined): boolean {
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
+}
+
+export function isPublicSeedanceFastEngine(engineId: string | null | undefined): boolean {
+  return engineId === PUBLIC_SEEDANCE_FAST_ENGINE_ID;
+}
+
+export function seedanceFastProviderOverride(): 'fal' | 'byteplus_modelark' {
+  return ENV.SEEDANCE_FAST_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER
+    ? BYTEPLUS_MODELARK_PROVIDER
+    : 'fal';
+}
+
+export function shouldRoutePublicSeedanceFastToBytePlus(engineId: string | null | undefined): boolean {
+  return isPublicSeedanceFastEngine(engineId) && seedanceFastProviderOverride() === BYTEPLUS_MODELARK_PROVIDER;
+}
+
+export function seedanceFastBytePlusAdminOnly(): boolean {
+  return envFlagEnabled(ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY ?? 'true');
+}
+
+export function isSeedanceFastBytePlusModeAllowed(mode: string | null | undefined): boolean {
+  const allowedModes = splitCsvEnv(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
+  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase()) : false;
 }
 
 export function getBytePlusArkConfig() {
@@ -61,11 +100,28 @@ export function buildBytePlusSeedanceFastPayload(params: {
   modelId: string;
   prompt: string;
   durationSec: number;
+  mode?: 't2v' | 'i2v';
+  imageUrl?: string | null;
+  endImageUrl?: string | null;
+  generateAudio?: boolean;
 }): BytePlusSeedanceFastPayload {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
+  const mode = params.mode ?? 't2v';
+  const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
+  const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
   if (!prompt) {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance Fast.', { code: 'PROMPT_REQUIRED' });
+  }
+  if (mode !== 't2v' && mode !== 'i2v') {
+    throw new BytePlusModelArkError('BytePlus Seedance Fast V1b supports only T2V and I2V.', {
+      code: 'BYTEPLUS_MODE_UNSUPPORTED',
+    });
+  }
+  if (mode === 'i2v' && !imageUrl) {
+    throw new BytePlusModelArkError('Image URL is required for BytePlus Seedance Fast image-to-video.', {
+      code: 'IMAGE_URL_REQUIRED',
+    });
   }
   if (!Number.isFinite(duration) || duration < 5 || duration > 15) {
     throw new BytePlusModelArkError('BytePlus Seedance Fast V1a duration must be between 5 and 15 seconds.', {
@@ -78,13 +134,35 @@ export function buildBytePlusSeedanceFastPayload(params: {
     });
   }
 
+  const text =
+    mode === 'i2v' && endImageUrl
+      ? `Use Image 1 as the opening frame and Image 2 as the final frame. ${prompt}`
+      : mode === 'i2v'
+        ? `Use Image 1 as the opening frame. ${prompt}`
+        : prompt;
+  const content: BytePlusContentItem[] = [{ type: 'text', text }];
+  if (mode === 'i2v') {
+    content.push({
+      type: 'image_url',
+      image_url: { url: imageUrl },
+      role: 'reference_image',
+    });
+    if (endImageUrl) {
+      content.push({
+        type: 'image_url',
+        image_url: { url: endImageUrl },
+        role: 'reference_image',
+      });
+    }
+  }
+
   return {
     model: params.modelId.trim(),
-    content: [{ type: 'text', text: prompt }],
+    content,
     resolution: '720p',
     ratio: '16:9',
     duration,
-    generate_audio: false,
+    generate_audio: params.generateAudio === true,
     watermark: false,
   };
 }
@@ -183,6 +261,19 @@ export function scrubBytePlusError(error: unknown): string {
     .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [redacted]')
     .replace(/ark-[A-Za-z0-9._~+/=-]+/gi, '[redacted-api-key]')
     .replace(/([?&](?:X-Amz-Signature|Signature|Expires|X-Amz-Credential)=)[^&\s]+/gi, '$1[redacted]');
+}
+
+export function getBytePlusUserSafeErrorMessage(providerMessage: string): string {
+  const normalized = providerMessage.toLowerCase();
+  if (
+    normalized.includes('real person') ||
+    normalized.includes('private information') ||
+    normalized.includes('sensitive') ||
+    normalized.includes('policy')
+  ) {
+    return 'BytePlus rejected one of the input images. Try an image without identifiable people or private content.';
+  }
+  return 'BytePlus could not start this render. Please retry later.';
 }
 
 async function parseJsonResponse(response: Response): Promise<BytePlusTaskResponse> {

@@ -65,6 +65,9 @@ export const ENV = {
     'dreamina-seedance-2-0-fast-260128'
   ),
   BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
+  SEEDANCE_FAST_PROVIDER: getOptionalEnv('SEEDANCE_FAST_PROVIDER', 'fal'),
+  SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY', 'true'),
+  SEEDANCE_FAST_BYTEPLUS_MODES: getOptionalEnv('SEEDANCE_FAST_BYTEPLUS_MODES', 't2v'),
   RESULT_PROVIDER:
     getOptionalEnv('NEXT_PUBLIC_RESULT_PROVIDER') ??
     getOptionalEnv('RESULT_PROVIDER'),

@@ -48,8 +48,12 @@ import {
   BytePlusModelArkError,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
+  getBytePlusUserSafeErrorMessage,
+  isSeedanceFastBytePlusModeAllowed,
   isBytePlusModelArkEnabled,
   isBytePlusSeedanceFastEngine,
+  seedanceFastBytePlusAdminOnly,
+  shouldRoutePublicSeedanceFastToBytePlus,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 
@@ -536,7 +540,8 @@ export async function POST(req: NextRequest) {
   }
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
-  const isBytePlusV1a = isBytePlusSeedanceFastEngine(engine.id);
+  const isBytePlusV1a =
+    isBytePlusSeedanceFastEngine(engine.id) || shouldRoutePublicSeedanceFastToBytePlus(engine.id);
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
@@ -553,7 +558,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
-  if (isBytePlusV1a) {
+  if (isBytePlusV1a && seedanceFastBytePlusAdminOnly()) {
     try {
       await requireAdmin(req);
     } catch (error) {
@@ -576,8 +581,8 @@ export async function POST(req: NextRequest) {
       : engine.modes[0] ?? 't2v';
   metricState.mode = mode;
 
-  if (isBytePlusV1a && mode !== 't2v') {
-    return NextResponse.json({ ok: false, error: 'BytePlus V1a only supports text-to-video.' }, { status: 400 });
+  if (isBytePlusV1a && !isSeedanceFastBytePlusModeAllowed(mode)) {
+    return NextResponse.json({ ok: false, error: 'BytePlus V1b only supports the configured Seedance Fast modes.' }, { status: 400 });
   }
 
   const prompt = String(body.prompt || '');
@@ -813,7 +818,7 @@ export async function POST(req: NextRequest) {
     pricingResolution = '720p';
     effectiveResolution = '720p';
     aspectRatio = '16:9';
-    audioEnabled = false;
+    audioEnabled = audioEnabled ?? true;
   }
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
@@ -1052,6 +1057,7 @@ type ProvisionalVideoJobInsert = {
   prompt: string;
   thumbUrl: string;
   aspectRatio: string | null;
+  hasAudio: boolean;
   canUpscale: boolean;
   previewFrame: string;
   batchId: string | null;
@@ -1179,7 +1185,7 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
       params.prompt,
       params.thumbUrl,
       params.aspectRatio,
-      false,
+      params.hasAudio,
       params.canUpscale,
       params.previewFrame,
       params.batchId,
@@ -2273,6 +2279,7 @@ async function rollbackPendingPayment(params: {
         prompt,
         thumbUrl: placeholderThumb,
         aspectRatio,
+        hasAudio: audioEnabled === true,
         canUpscale: Boolean(engine.upscale4k),
         previewFrame: placeholderThumb,
         batchId,
@@ -2353,6 +2360,10 @@ async function rollbackPendingPayment(params: {
         modelId: config.seedanceFastModelId,
         prompt,
         durationSec,
+        mode: mode === 'i2v' ? 'i2v' : 't2v',
+        imageUrl: mode === 'i2v' ? initialImageUrl : null,
+        endImageUrl: mode === 'i2v' ? endImageUrl : null,
+        generateAudio: audioEnabled !== false,
       });
       const providerTask = await getBytePlusModelArkClient().createSeedanceFastTask(payload);
       const providerJobId = providerTask.providerJobId;
@@ -2381,7 +2392,16 @@ async function rollbackPendingPayment(params: {
         meta: {
           providerJobId,
           provider: BYTEPLUS_MODELARK_PROVIDER,
-          inputSummary: { promptLength: prompt.length, durationSec, resolution: '720p', aspectRatio: '16:9' },
+          inputSummary: {
+            mode,
+            promptLength: prompt.length,
+            durationSec,
+            resolution: '720p',
+            aspectRatio: '16:9',
+            generateAudio: audioEnabled !== false,
+            hasImage: Boolean(mode === 'i2v' && initialImageUrl),
+            hasEndImage: Boolean(mode === 'i2v' && endImageUrl),
+          },
         },
       });
       return NextResponse.json({
@@ -2408,7 +2428,7 @@ async function rollbackPendingPayment(params: {
       const providerMessage = scrubBytePlusError(error);
       const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
       const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
-      const failureMessage = 'BytePlus could not start this render. Please retry later.';
+      const failureMessage = getBytePlusUserSafeErrorMessage(providerMessage);
       console.warn('[byteplus] task submission failed', {
         jobId,
         engineId: engine.id,

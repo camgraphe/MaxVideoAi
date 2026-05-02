@@ -20,8 +20,10 @@ type BytePlusPendingJob = {
   duration_sec: number;
   thumb_url: string | null;
   aspect_ratio: string | null;
+  has_audio: boolean | null;
   final_price_cents: number | null;
   pricing_snapshot: unknown;
+  settings_snapshot: unknown;
   currency: string | null;
   payment_status: string | null;
   updated_at: string;
@@ -36,6 +38,28 @@ const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_p
 
 function expected720pTokens(durationSec: number): number {
   return (1280 * 720 * Math.max(1, Math.round(durationSec)) * 24) / 1024;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_snapshot' | 'has_audio'>) {
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  const refs = isRecord(settings.refs) ? settings.refs : {};
+  const mode = settings.inputMode === 'i2v' ? 'i2v' : 't2v';
+  const hasStartImage = mode === 'i2v' && typeof refs.imageUrl === 'string' && refs.imageUrl.trim().length > 0;
+  const hasEndImage = mode === 'i2v' && typeof refs.endImageUrl === 'string' && refs.endImageUrl.trim().length > 0;
+  const inputType = hasEndImage ? 'first_last_frame' : hasStartImage ? 'image_input' : 'text_input';
+
+  return {
+    mode,
+    inputType,
+    hasStartImage,
+    hasEndImage,
+    generateAudio: job.has_audio === true,
+    byteplusBillingInputType: 'no_video_input',
+  };
 }
 
 async function recordPollEvent(
@@ -149,7 +173,7 @@ export async function runBytePlusPoll() {
 
   const rows = await query<BytePlusPendingJob>(
     `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
-            aspect_ratio, final_price_cents, pricing_snapshot, currency, payment_status, updated_at, created_at
+            aspect_ratio, has_audio, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, updated_at, created_at
        FROM app_jobs
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
@@ -250,12 +274,17 @@ export async function runBytePlusPoll() {
 
       const totalTokens = task.usage?.totalTokens ?? expected720pTokens(job.duration_sec);
       const providerCostUsd = Number(((totalTokens * BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS) / 1000).toFixed(6));
+      const accounting = getBytePlusAccounting(job);
       const costBreakdown = {
         provider: BYTEPLUS_MODELARK_PROVIDER,
         provider_cost_source: 'byteplus_usage_tokens',
         model: config.seedanceFastModelId,
-        mode: 't2v',
-        input_type: 'no_video_input',
+        mode: accounting.mode,
+        input_type: accounting.inputType,
+        byteplus_billing_input_type: accounting.byteplusBillingInputType,
+        generate_audio: accounting.generateAudio,
+        has_start_image: accounting.hasStartImage,
+        has_end_image: accounting.hasEndImage,
         resolution: '720p',
         aspect_ratio: '16:9',
         duration_sec: job.duration_sec,

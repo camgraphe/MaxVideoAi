@@ -394,11 +394,12 @@ type JobRow = {
       indexable: boolean | null;
       status: string | null;
       progress: number | null;
+      provider: string | null;
       provider_job_id: string | null;
     };
 
     let rows = await query<JobRow>(
-    `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+    `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
       FROM app_jobs
       ${where}
       ORDER BY created_at DESC, id DESC
@@ -430,7 +431,7 @@ type JobRow = {
       }
       if (expiredIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
              FROM app_jobs
             WHERE job_id = ANY($1::text[])`,
           [expiredIds]
@@ -454,6 +455,7 @@ type JobRow = {
             return false;
           }
           if (!row.provider_job_id) return false;
+          if ((row.provider ?? 'fal') !== 'fal') return false;
           const status = (row.status ?? '').toLowerCase();
           if (status === 'failed' || status === 'cancelled' || status === 'canceled' || status === 'error') return false;
           const missingVideo = !row.video_url;
@@ -636,7 +638,7 @@ type JobRow = {
 
       if (refreshedIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
              FROM app_jobs
              WHERE job_id = ANY($1::text[])`,
           [refreshedIds]

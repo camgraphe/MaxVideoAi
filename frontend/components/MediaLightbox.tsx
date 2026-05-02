@@ -23,6 +23,7 @@ import {
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import type { JobSurface } from '@/types/billing';
 
@@ -224,11 +225,11 @@ export function MediaLightbox({
   const handleCopyLink = useCallback(
     async (entryId: string, url?: string | null) => {
       if (!url) return;
-      try {
-        await navigator.clipboard.writeText(url);
+      const copied = await copyTextToClipboard(url);
+      if (copied) {
         setCopiedId(entryId);
         window.setTimeout(() => setCopiedId((current) => (current === entryId ? null : current)), 1800);
-      } catch {
+      } else {
         setCopiedId((current) => (current === entryId ? null : current));
       }
     },
