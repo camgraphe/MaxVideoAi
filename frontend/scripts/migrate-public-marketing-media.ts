@@ -122,7 +122,7 @@ async function uploadExternal(url: string): Promise<string | null> {
     userId: 'marketing',
     prefix: 'marketing',
     fileName: sanitizeFileName(url, extension),
-    cacheControl: 'public, max-age=5184000, immutable',
+    cacheControl: 'public, max-age=31536000, immutable',
   });
   return upload.url;
 }
