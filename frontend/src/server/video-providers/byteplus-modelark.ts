@@ -13,6 +13,7 @@ export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v'];
 export const BYTEPLUS_SEEDANCE_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
 export const BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS: Resolution[] = ['480p', '720p'];
 export const BYTEPLUS_SEEDANCE_ASPECT_RATIOS: AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
+export const BYTEPLUS_SEEDANCE_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
 
 type BytePlusContentItem =
   | { type: 'text'; text: string }
@@ -112,6 +113,15 @@ function filterInputFieldsForModes(
           ...field,
           values: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
           default: '16:9',
+        };
+      }
+      if (field.id === 'duration' && field.type === 'enum') {
+        return {
+          ...field,
+          values: BYTEPLUS_SEEDANCE_DURATION_OPTIONS.map(String),
+          default: '5',
+          min: 5,
+          max: 15,
         };
       }
       return field;
@@ -221,6 +231,7 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   resolution: resolutions,
                   resolutionLocked: false,
                   aspectRatio: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+                  duration: { options: [...BYTEPLUS_SEEDANCE_DURATION_OPTIONS], default: 5 },
                   audioToggle: true,
                 }
               : caps,
@@ -232,6 +243,7 @@ export function applyBytePlusSeedanceRuntimeOptions(
     ...engine,
     provider: 'BytePlus ModelArk',
     modes: allowedModes,
+    maxDurationSec: 15,
     resolutions,
     aspectRatios: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
     fps: [24],

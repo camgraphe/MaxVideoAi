@@ -187,6 +187,7 @@ const baseSeedanceEngine = {
   inputSchema: {
     required: [{ id: 'prompt', type: 'text', label: 'Prompt' }],
     optional: [
+      { id: 'duration', type: 'enum', label: 'Duration', values: ['auto', '4', '5', '6'], default: 'auto' },
       { id: 'resolution', type: 'enum', label: 'Resolution', values: ['480p', '720p'], default: '720p' },
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', values: ['auto', '16:9'], default: 'auto' },
       { id: 'image_urls', type: 'image', label: 'Reference images', modes: ['ref2v'], maxCount: 9 },
@@ -227,9 +228,21 @@ assert.deepEqual(bytePlusStandardEngine.modes, ['t2v', 'i2v', 'ref2v']);
 assert.deepEqual(bytePlusStandardEngine.resolutions, ['480p', '720p', '1080p']);
 assert.deepEqual(bytePlusStandardEngine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
 assert.deepEqual(bytePlusStandardEngine.modeCaps?.ref2v?.resolution, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.t2v?.duration, {
+  options: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  default: 5,
+});
 assert.deepEqual(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values,
   ['480p', '720p', '1080p']
+);
+assert.deepEqual(
+  bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'duration')?.values,
+  ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15']
+);
+assert.equal(
+  bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'duration')?.default,
+  '5'
 );
 assert.equal(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'aspect_ratio')?.default,
