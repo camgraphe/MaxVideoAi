@@ -3,25 +3,18 @@
 import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
+import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
-import { hasStoredSupabaseSession } from '@/lib/supabase-session-presence';
-
-type MarketingSession = {
-  access_token?: string | null;
-  user?: {
-    id?: string | null;
-    email?: string | null;
-  } | null;
-};
 
 export function MarketingNav() {
   const pathname = usePathname();
@@ -81,10 +74,6 @@ export function MarketingNav() {
 
   useEffect(() => {
     let mounted = true;
-    let authSubscription: { subscription?: { unsubscribe?: () => void } } | null = null;
-    let idleId: number | null = null;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
     const fetchAccountState = async (token?: string | null) => {
       if (!token) {
         setIsAdmin(false);
@@ -102,11 +91,6 @@ export function MarketingNav() {
       }
     };
 
-    const signOutSupabase = async () => {
-      const { supabase } = await import('@/lib/supabaseClient');
-      await supabase.auth.signOut();
-    };
-
     const markLoggedOut = () => {
       clearLastKnownAccount();
       writeLastKnownUserId(null);
@@ -115,7 +99,7 @@ export function MarketingNav() {
       setAccountMenuOpen(false);
     };
 
-    const applySession = (session: MarketingSession | null) => {
+    const applySession = (session: Session | null) => {
       if (!mounted) return null;
       const userId = session?.user?.id ?? null;
       if (userId) {
@@ -128,63 +112,37 @@ export function MarketingNav() {
     const logoutIntentActive = consumeLogoutIntent();
     if (logoutIntentActive) {
       markLoggedOut();
-      void signOutSupabase().catch(() => undefined);
+      void supabase.auth.signOut().catch(() => undefined);
     }
 
-    if (!logoutIntentActive && !hasStoredSupabaseSession()) {
-      return () => {
-        mounted = false;
-      };
-    }
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (logoutIntentActive) return;
+        const session = data.session ?? null;
+        applySession(session);
+        if (!mounted) return;
+        void fetchAccountState(session?.access_token);
+      })
+      .catch(() => {
+        if (mounted) {
+          setEmail(null);
+        }
+      });
 
-    const loadAuthState = () => {
-      void import('@/lib/supabaseClient')
-        .then(({ supabase }) =>
-          supabase.auth
-            .getSession()
-            .then(async ({ data }) => {
-              if (logoutIntentActive) return;
-              const session = data.session ?? null;
-              applySession(session);
-              if (!mounted) return;
-              void fetchAccountState(session?.access_token);
-            })
-            .then(() => {
-              const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
-                const eventType = event as string;
-                if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-                  markLoggedOut();
-                  return;
-                }
-                if (logoutIntentActive) return;
-                applySession(session ?? null);
-                void fetchAccountState(session?.access_token);
-              });
-              authSubscription = subscription;
-            })
-        )
-        .catch(() => {
-          if (mounted) {
-            setEmail(null);
-          }
-        });
-    };
-
-    if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(loadAuthState, { timeout: 2500 });
-    } else {
-      timeoutId = setTimeout(loadAuthState, 1200);
-    }
-
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const eventType = event as string;
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+        markLoggedOut();
+        return;
+      }
+      if (logoutIntentActive) return;
+      applySession(session ?? null);
+      void fetchAccountState(session?.access_token);
+    });
     return () => {
       mounted = false;
-      if (idleId != null && 'cancelIdleCallback' in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId != null) {
-        clearTimeout(timeoutId);
-      }
-      authSubscription?.subscription?.unsubscribe?.();
+      subscription.subscription.unsubscribe();
     };
   }, []);
 
@@ -199,9 +157,7 @@ export function MarketingNav() {
     setEmail(null);
     clearLastKnownAccount();
     writeLastKnownUserId(null);
-    void import('@/lib/supabaseClient')
-      .then(({ supabase }) => supabase.auth.signOut())
-      .catch(() => undefined);
+    void supabase.auth.signOut().catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([payload], { type: 'application/json' });
