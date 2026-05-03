@@ -36,7 +36,7 @@ import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { TextLink } from '@/components/ui/TextLink';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
-import { PriceEstimator } from '@/components/marketing/PriceEstimator';
+import { LazyPriceEstimator } from '@/components/marketing/LazyPriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -605,7 +605,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         <div className="stack-gap-lg">
         <section id="estimator" className="scroll-mt-28">
           <div className="mx-auto max-w-5xl">
-            <PriceEstimator
+            <LazyPriceEstimator
               pricingRules={pricingRulesLite}
               enginePricingOverrides={enginePricingOverrides}
               defaultEngineId="veo-3-1-lite"
