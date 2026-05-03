@@ -8,7 +8,6 @@ import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -16,13 +15,18 @@ import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 
-export function MarketingNav() {
+type MarketingNavProps = {
+  initialEmail?: string | null;
+  initialIsAdmin?: boolean;
+};
+
+export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: MarketingNavProps) {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const isHomePage = /^\/(?:fr|es)?\/?$/.test(pathname ?? '');
   const { locale, t } = useI18n();
-  const [email, setEmail] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [email, setEmail] = useState<string | null>(initialEmail);
+  const [isAdmin, setIsAdmin] = useState(Boolean(initialIsAdmin));
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
@@ -112,39 +116,46 @@ export function MarketingNav() {
     const logoutIntentActive = consumeLogoutIntent();
     if (logoutIntentActive) {
       markLoggedOut();
-      void supabase.auth.signOut().catch(() => undefined);
     }
 
-    supabase.auth
-      .getSession()
-      .then(async ({ data }) => {
-        if (logoutIntentActive) return;
+    let unsubscribeAuth: (() => void) | null = null;
+
+    void import('@/lib/supabaseClient')
+      .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
+      .then(async ({ supabase, data }) => {
+        if (logoutIntentActive) {
+          await supabase.auth.signOut().catch(() => undefined);
+          return;
+        }
         const session = data.session ?? null;
         applySession(session);
         if (!mounted) return;
         void fetchAccountState(session?.access_token);
+
+        const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+          const eventType = event as string;
+          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+            markLoggedOut();
+            return;
+          }
+          if (logoutIntentActive) return;
+          applySession(session ?? null);
+          void fetchAccountState(session?.access_token);
+        });
+        unsubscribeAuth = () => subscription.subscription.unsubscribe();
       })
       .catch(() => {
         if (mounted) {
-          setEmail(null);
+          setEmail(initialEmail);
+          setIsAdmin(Boolean(initialIsAdmin));
         }
       });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const eventType = event as string;
-      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-        markLoggedOut();
-        return;
-      }
-      if (logoutIntentActive) return;
-      applySession(session ?? null);
-      void fetchAccountState(session?.access_token);
-    });
     return () => {
       mounted = false;
-      subscription.subscription.unsubscribe();
+      unsubscribeAuth?.();
     };
-  }, []);
+  }, [initialEmail, initialIsAdmin]);
 
   const signOut = ({ closeAccountMenu, closeMobileMenu }: { closeAccountMenu?: boolean; closeMobileMenu?: boolean } = {}) => {
     if (closeAccountMenu) {
@@ -157,7 +168,9 @@ export function MarketingNav() {
     setEmail(null);
     clearLastKnownAccount();
     writeLastKnownUserId(null);
-    void supabase.auth.signOut().catch(() => undefined);
+    void import('@/lib/supabaseClient')
+      .then(({ supabase }) => supabase.auth.signOut())
+      .catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([payload], { type: 'application/json' });
