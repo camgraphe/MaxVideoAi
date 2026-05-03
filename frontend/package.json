@@ -14,6 +14,7 @@
     "media:guard": "node ../scripts/public-media-origin-guard.mjs",
     "precommit": "npm run seo:check",
     "thumbs:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-thumbnails.ts",
+    "previews:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-video-previews.ts",
     "thumbs:image-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-image-thumbnails.ts",
     "i18n:messages": "tsx scripts/translate-messages.ts",
     "i18n:check": "tsx scripts/validate-keys.ts",

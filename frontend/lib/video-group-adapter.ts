@@ -34,6 +34,7 @@ function resolveLayout(group: GroupSummary): VideoGroupLayout {
 
 function toVideoItem(member: GroupMemberSummary): VideoItem {
   const videoUrl = normalizeMediaUrl(member.videoUrl) ?? undefined;
+  const previewUrl = normalizeMediaUrl(member.previewVideoUrl) ?? undefined;
   const audioUrl = normalizeMediaUrl(member.audioUrl) ?? undefined;
   const thumb = normalizeMediaUrl(member.thumbUrl) ?? undefined;
   const { aspect, original } = normalizeAspect(member.aspectRatio);
@@ -97,6 +98,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   return {
     id: member.id,
     url: videoUrl ?? thumb ?? '',
+    previewUrl,
     audioUrl,
     aspect,
     thumb,
@@ -118,11 +120,12 @@ export function adaptGroupSummary(
 ): VideoGroup {
   const layout = overrides?.layout ?? resolveLayout(group);
   let items = overrides?.items ?? group.members.slice(0, 4).map(toVideoItem);
-  const previewMap = new Map<string, { videoUrl?: string | null; thumbUrl?: string | null }>();
+  const previewMap = new Map<string, { videoUrl?: string | null; previewVideoUrl?: string | null; thumbUrl?: string | null }>();
   group.previews.forEach((preview) => {
     if (!preview || typeof preview.id !== 'string') return;
     previewMap.set(preview.id, {
       videoUrl: normalizeMediaUrl(preview.videoUrl ?? undefined) ?? undefined,
+      previewVideoUrl: normalizeMediaUrl(preview.previewVideoUrl ?? undefined) ?? undefined,
       thumbUrl: normalizeMediaUrl(preview.thumbUrl ?? undefined) ?? undefined,
     });
   });
@@ -139,6 +142,7 @@ export function adaptGroupSummary(
     return {
       ...item,
       url: preview.videoUrl ?? item.url,
+      previewUrl: preview.previewVideoUrl ?? item.previewUrl,
       thumb: preview.thumbUrl ?? item.thumb,
       meta: Object.keys(meta).length ? meta : item.meta,
     };

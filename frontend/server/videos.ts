@@ -17,6 +17,7 @@ type VideoRow = {
   prompt: string;
   thumb_url: string;
   video_url: string | null;
+  preview_video_url: string | null;
   aspect_ratio: string | null;
   has_audio: boolean | null;
   can_upscale: boolean | null;
@@ -42,6 +43,7 @@ export type GalleryVideo = {
   promptExcerpt: string;
   thumbUrl?: string;
   videoUrl?: string;
+  previewVideoUrl?: string;
   aspectRatio?: string;
   createdAt: string;
   visibility: 'public' | 'private';
@@ -72,6 +74,7 @@ function mapRow(row: VideoRow): GalleryVideo {
     promptExcerpt: formatPromptExcerpt(row.prompt),
     thumbUrl: normalizeMediaUrl(row.thumb_url) ?? undefined,
     videoUrl: row.video_url ? normalizeMediaUrl(row.video_url) ?? undefined : undefined,
+    previewVideoUrl: row.preview_video_url ? normalizeMediaUrl(row.preview_video_url) ?? undefined : undefined,
     aspectRatio: row.aspect_ratio ?? undefined,
     createdAt: row.created_at,
     visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
@@ -90,6 +93,7 @@ export type GalleryTab = 'starter' | 'latest' | 'trending';
 
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+         to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, pricing_snapshot
   FROM app_jobs
@@ -97,6 +101,7 @@ const BASE_SELECT = `
 
 const BASE_SELECT_WITH_SETTINGS = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+         to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, settings_snapshot
   FROM app_jobs
@@ -241,7 +246,7 @@ async function listPlaylistVideosWithOptions({
   const rows = await query<VideoRow & { order_index: number }>(
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
-             aj.video_url, aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
+             aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index
       FROM playlists p
       JOIN playlist_items pi ON pi.playlist_id = p.id

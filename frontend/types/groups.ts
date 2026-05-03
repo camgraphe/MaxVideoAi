@@ -17,6 +17,7 @@ export interface GroupMemberSummary {
   currency?: string | null;
   thumbUrl?: string | null;
   videoUrl?: string | null;
+  previewVideoUrl?: string | null;
   audioUrl?: string | null;
   aspectRatio?: string | null;
   prompt?: string | null;
@@ -44,6 +45,7 @@ export interface GroupSummary {
     id: string;
     thumbUrl?: string | null;
     videoUrl?: string | null;
+    previewVideoUrl?: string | null;
     aspectRatio?: string | null;
     source?: string | null;
   }>;

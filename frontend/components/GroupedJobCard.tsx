@@ -65,7 +65,9 @@ function GroupPreviewMedia({
   shouldPlay: boolean;
   shouldWarm: boolean;
 }) {
-  const hasVideo = Boolean(preview?.videoUrl);
+  const displayVideoUrl = preview?.previewVideoUrl ?? preview?.videoUrl ?? null;
+  const hasOptimizedPreview = Boolean(preview?.previewVideoUrl);
+  const hasVideo = Boolean(displayVideoUrl);
   const hasAudioOnly = Boolean(audioUrl) && !hasVideo;
   const thumbSrc = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -76,7 +78,7 @@ function GroupPreviewMedia({
     if (!hasVideo) return;
     videoReadyRef.current = false;
     setVideoReady(false);
-  }, [hasVideo, preview?.videoUrl]);
+  }, [hasVideo, displayVideoUrl]);
 
   const markVideoReady = useCallback(() => {
     if (videoReadyRef.current) return;
@@ -115,6 +117,7 @@ function GroupPreviewMedia({
       element.pause();
       if (
         shouldWarm &&
+        hasOptimizedPreview &&
         (element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
           (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA))
       ) {
@@ -122,7 +125,7 @@ function GroupPreviewMedia({
         element.load();
       }
     }
-  }, [hasVideo, playPreviewVideo, preview?.videoUrl, shouldPlay, shouldWarm]);
+  }, [hasVideo, hasOptimizedPreview, playPreviewVideo, displayVideoUrl, shouldPlay, shouldWarm]);
 
   const handleCanPlay = () => {
     markVideoReady();
@@ -138,7 +141,7 @@ function GroupPreviewMedia({
     }
   };
 
-  if (hasVideo && preview?.videoUrl) {
+  if (hasVideo && displayVideoUrl) {
     const poster = thumbSrc ?? undefined;
     return (
       <div className="relative h-full w-full">
@@ -154,7 +157,7 @@ function GroupPreviewMedia({
         ) : null}
         <video
           ref={videoRef}
-          src={preview.videoUrl}
+          src={displayVideoUrl}
           poster={poster}
           className={clsx(
             'absolute inset-0 h-full w-full pointer-events-none object-contain transition-opacity duration-150 ease-out',
@@ -164,7 +167,7 @@ function GroupPreviewMedia({
           playsInline
           autoPlay={shouldPlay}
           loop
-          preload={shouldPlay || shouldWarm ? 'auto' : 'none'}
+          preload={shouldPlay || (shouldWarm && hasOptimizedPreview) ? 'auto' : 'none'}
           onLoadedData={handleLoadedData}
           onCanPlay={handleCanPlay}
         />
@@ -382,7 +385,7 @@ export function GroupedJobCard({
               const memberStatus = member?.status ?? 'completed';
               const memberAudioUrl = member?.audioUrl ?? member?.job?.audioUrl ?? null;
               const previewThumb = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
-              const previewHasMedia = Boolean(preview?.videoUrl || previewThumb || memberAudioUrl);
+              const previewHasMedia = Boolean(preview?.previewVideoUrl || preview?.videoUrl || previewThumb || memberAudioUrl);
               const isCompleted =
                 memberStatus === 'completed' ||
                 (previewHasMedia && memberStatus !== 'pending' && memberStatus !== 'failed');
@@ -400,7 +403,7 @@ export function GroupedJobCard({
                       <GroupPreviewMedia
                         preview={preview}
                         audioUrl={memberAudioUrl}
-                        audioLabel={preview?.videoUrl ? null : 'Audio'}
+                        audioLabel={preview?.previewVideoUrl || preview?.videoUrl ? null : 'Audio'}
                         shouldPlay={hovered}
                         shouldWarm={isPreviewWarm || hovered}
                       />

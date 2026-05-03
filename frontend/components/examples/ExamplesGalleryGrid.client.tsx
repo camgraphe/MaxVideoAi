@@ -27,6 +27,7 @@ export type ExampleGalleryVideo = {
   optimizedPosterUrl?: string | null;
   rawPosterUrl?: string | null;
   videoUrl?: string | null;
+  previewVideoUrl?: string | null;
   recreateHref?: string | null;
   modelHref?: string | null;
   sourceIndex?: number;
@@ -288,7 +289,8 @@ function ExampleCard({
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
-  const shouldLoadVideo = enableInlineVideo && inView && Boolean(video.videoUrl);
+  const inlineVideoUrl = video.previewVideoUrl ?? video.videoUrl ?? null;
+  const shouldLoadVideo = enableInlineVideo && inView && Boolean(inlineVideoUrl);
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
   const tallCardEnabled = enableTallCardLayout && isPortrait;
@@ -368,7 +370,7 @@ function ExampleCard({
         <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
           <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
             <div className="absolute inset-0">
-              {shouldLoadVideo && video.videoUrl ? (
+              {shouldLoadVideo && inlineVideoUrl ? (
                 <video
                   ref={videoRef}
                   muted
@@ -379,7 +381,7 @@ function ExampleCard({
                   aria-label={altText}
                   className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
                 >
-                  <source src={video.videoUrl} type="video/mp4" />
+                  <source src={inlineVideoUrl} type="video/mp4" />
                 </video>
               ) : posterSrc ? (
                 <Image

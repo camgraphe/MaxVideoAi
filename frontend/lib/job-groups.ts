@@ -40,6 +40,7 @@ function buildMember(job: Job): GroupMemberSummary {
       : null;
   const thumbUrl = resolvePreferredMediaUrl(job.thumbUrl, firstRenderThumbUrl, firstRenderUrl);
   const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
+  const previewVideoUrl = normalizeMediaUrl(job.previewVideoUrl) ?? null;
   const audioUrl = normalizeMediaUrl(job.audioUrl) ?? null;
   const aspectRatio = job.aspectRatio ?? null;
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
@@ -76,6 +77,7 @@ function buildMember(job: Job): GroupMemberSummary {
     currency,
     thumbUrl,
     videoUrl,
+    previewVideoUrl,
     audioUrl,
     aspectRatio,
     prompt: job.prompt,
@@ -122,6 +124,7 @@ function buildSingleGroup(job: Job): GroupSummary {
   const member = buildMember(job);
   const thumb = member.thumbUrl ?? null;
   const video = member.videoUrl ?? null;
+  const previewVideo = member.previewVideoUrl ?? null;
   const aspect = member.aspectRatio ?? job.aspectRatio ?? null;
   const priceCents = typeof member.priceCents === 'number' ? member.priceCents : null;
   const currency = member.currency ?? null;
@@ -153,6 +156,7 @@ function buildSingleGroup(job: Job): GroupSummary {
         id: member.id,
         thumbUrl: thumb,
         videoUrl: video,
+        previewVideoUrl: previewVideo,
         aspectRatio: aspect,
       },
     ],
@@ -270,11 +274,13 @@ export function groupJobsIntoSummaries(
     const previews = members.slice(0, count).map((member) => {
       const thumb = member.thumbUrl ?? null;
       const video = member.videoUrl ?? null;
+      const previewVideo = member.previewVideoUrl ?? null;
       const aspect = member.aspectRatio ?? member.job?.aspectRatio ?? null;
       return {
         id: member.id,
         thumbUrl: thumb,
         videoUrl: video,
+        previewVideoUrl: previewVideo,
         aspectRatio: aspect,
       };
     });

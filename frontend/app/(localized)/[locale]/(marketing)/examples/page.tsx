@@ -950,6 +950,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
       rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
       videoUrl: video.videoUrl ?? null,
+      previewVideoUrl: video.previewVideoUrl ?? null,
       modelHref,
       sourceIndex: index,
     };

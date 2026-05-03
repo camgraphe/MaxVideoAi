@@ -26,6 +26,7 @@ export function normalizeGroupSummary(group: GroupSummary): GroupSummary {
   const previews = members.slice(0, displayCount).map((member) => {
     const preview = previewLookup.get(member.id);
     const videoUrl = preview?.videoUrl ?? member.videoUrl ?? null;
+    const previewVideoUrl = preview?.previewVideoUrl ?? member.previewVideoUrl ?? null;
     const thumbUrl = preview?.thumbUrl ?? member.thumbUrl ?? null;
     const aspectRatio = preview?.aspectRatio ?? member.aspectRatio ?? null;
     const source = preview?.source ?? member.source ?? null;
@@ -33,6 +34,7 @@ export function normalizeGroupSummary(group: GroupSummary): GroupSummary {
     return {
       id: member.id,
       videoUrl,
+      previewVideoUrl,
       thumbUrl,
       aspectRatio,
       source,

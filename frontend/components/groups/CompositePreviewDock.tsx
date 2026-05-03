@@ -84,6 +84,10 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
+function getInlinePreviewUrl(item: VideoItem): string {
+  return item.previewUrl || item.url;
+}
+
 function resolveAspectHint(item: VideoItem): string | null {
   const original =
     item.meta && typeof item.meta === 'object' && 'originalAspectRatio' in item.meta
@@ -621,6 +625,7 @@ export function CompositePreviewDock({
                     return 'completed';
                   })();
                   const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
+                  const inlinePreviewUrl = Boolean(item.previewUrl) || shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
                   const showReadyThumb = Boolean(item.thumb);
                   const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
@@ -663,7 +668,7 @@ export function CompositePreviewDock({
                             <video
                               ref={registerVideo(itemKey)}
                               data-preview-video={shouldPlayVideo ? 'active' : 'idle'}
-                              src={item.url}
+                              src={inlinePreviewUrl}
                               poster={item.thumb}
                               className={clsx(
                                 'relative z-0 h-full w-full',
@@ -673,7 +678,7 @@ export function CompositePreviewDock({
                               muted={isMuted}
                               playsInline
                               autoPlay={shouldPlayVideo}
-                              preload={shouldPlayVideo ? 'auto' : 'metadata'}
+                              preload={shouldPlayVideo || item.previewUrl ? 'auto' : 'none'}
                               loop={isLooping}
                               onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
                               onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}

@@ -122,6 +122,7 @@ type JobStatusResult = {
   status: 'pending' | 'completed' | 'failed';
   progress: number;
   videoUrl: string | null;
+  previewVideoUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl: string | null;
   aspectRatio?: string | null;
@@ -430,6 +431,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                     ? progressFromDetail
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
+                previewVideoUrl: detail.previewVideoUrl ?? job.previewVideoUrl,
                 audioUrl: detail.audioUrl ?? job.audioUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
@@ -885,6 +887,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     status: normalizedStatus,
     progress,
     videoUrl: payload.videoUrl ?? null,
+    previewVideoUrl: payload.previewVideoUrl ?? null,
     audioUrl: payload.audioUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
     aspectRatio: payload.aspectRatio ?? null,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
@@ -21,6 +22,7 @@ type BytePlusPendingJob = {
   status: string;
   duration_sec: number;
   thumb_url: string | null;
+  preview_video_url: string | null;
   aspect_ratio: string | null;
   has_audio: boolean | null;
   final_price_cents: number | null;
@@ -344,6 +346,7 @@ export async function runBytePlusPoll() {
 
   const rows = await query<BytePlusPendingJob>(
     `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
+            to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
             aspect_ratio, has_audio, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, updated_at, created_at
        FROM app_jobs
       WHERE provider = $1
@@ -513,6 +516,12 @@ export async function runBytePlusPoll() {
         await recordPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
+      await generateAndPersistJobPreviewVideo({
+        jobId: job.job_id,
+        userId: job.user_id,
+        videoUrl: copiedVideoUrl,
+        existingPreviewVideoUrl: job.preview_video_url,
+      });
       await recordPollEvent(job, 'poll:completed', {
         totalTokens,
         completionTokens: task.usage?.completionTokens ?? null,

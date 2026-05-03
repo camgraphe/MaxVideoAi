@@ -5,6 +5,7 @@ export type VideoAspect = '16:9' | '1:1' | '9:16';
 export interface VideoItem {
   id: string;
   url: string;
+  previewUrl?: string;
   audioUrl?: string;
   aspect: VideoAspect;
   thumb?: string;

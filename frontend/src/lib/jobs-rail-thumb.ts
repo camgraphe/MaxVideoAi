@@ -48,6 +48,9 @@ export function resolveJobsRailThumb(group: GroupSummary): string {
 
 export function resolveJobsRailVideo(group: GroupSummary): string | null {
   const candidates: Array<string | null | undefined> = [
+    group.previews.find((preview) => preview?.previewVideoUrl)?.previewVideoUrl,
+    group.hero.previewVideoUrl,
+    group.hero.job?.previewVideoUrl,
     group.previews.find((preview) => preview?.videoUrl)?.videoUrl,
     group.hero.videoUrl,
     group.hero.job?.videoUrl,

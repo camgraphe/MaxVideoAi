@@ -11,6 +11,7 @@ export interface Job {
   prompt: string;
   thumbUrl?: string | null;
   videoUrl?: string;
+  previewVideoUrl?: string | null;
   audioUrl?: string | null;
   readyVideoUrl?: string | null;
   createdAt: string;

@@ -9,6 +9,7 @@ export type SharedVideoPreview = {
   promptExcerpt?: string;
   thumbUrl?: string;
   videoUrl?: string;
+  previewVideoUrl?: string;
   aspectRatio?: string;
   createdAt: string;
 };
@@ -20,6 +21,7 @@ export type SelectedVideoPreview = {
   iterationCount?: number;
   id?: string;
   videoUrl?: string;
+  previewVideoUrl?: string;
   aspectRatio?: string;
   thumbUrl?: string;
   progress?: number;
@@ -49,6 +51,7 @@ export function mapSharedVideoToGroup(video: SharedVideoPreview, provider: Resul
   const item: VideoItem = {
     id: video.id,
     url,
+    previewUrl: video.previewVideoUrl,
     aspect,
     thumb: video.thumbUrl ?? undefined,
     jobId: video.id,
@@ -88,6 +91,7 @@ export function mapSelectedPreviewToGroup(
   const item: VideoItem = {
     id: itemId,
     url,
+    previewUrl: preview.previewVideoUrl,
     aspect: toVideoAspect(preview.aspectRatio),
     thumb: preview.thumbUrl ?? undefined,
     jobId: preview.id ?? itemId,

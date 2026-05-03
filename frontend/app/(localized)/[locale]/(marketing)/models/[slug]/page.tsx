@@ -2882,6 +2882,7 @@ type FeaturedMedia = {
   id: string | null;
   prompt: string | null;
   videoUrl: string | null;
+  previewVideoUrl?: string | null;
   posterUrl: string | null;
   durationSec?: number | null;
   hasAudio?: boolean;
@@ -3275,6 +3276,7 @@ function toGalleryCard(
     optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
     rawPosterUrl: video.thumbUrl ?? null,
     videoUrl: video.videoUrl ?? null,
+    previewVideoUrl: video.previewVideoUrl ?? null,
     recreateHref: `/app?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
   };
 }
@@ -3287,6 +3289,7 @@ function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPrompt = 
     id: entry.id,
     prompt,
     videoUrl: entry.videoUrl ?? null,
+    previewVideoUrl: entry.previewVideoUrl ?? null,
     posterUrl: entry.optimizedPosterUrl ?? entry.rawPosterUrl ?? null,
     durationSec: entry.durationSec,
     hasAudio: entry.hasAudio,
@@ -4809,7 +4812,7 @@ function MediaPreview({
             {media.videoUrl ? (
               <ModelHeroMedia
                 posterSrc={posterSrc}
-                videoSrc={media.videoUrl}
+                videoSrc={media.previewVideoUrl ?? media.videoUrl}
                 alt={resolvedAltText}
                 sizes="(max-width: 768px) 100vw, 720px"
                 autoPlayDelayMs={autoPlayDelayMs}

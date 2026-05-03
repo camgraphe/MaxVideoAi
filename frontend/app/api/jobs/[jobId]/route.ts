@@ -45,6 +45,7 @@ type DbJobRow = {
   surface: string | null;
   billing_product_key: string | null;
   video_url: string | null;
+  preview_video_url: string | null;
   audio_url: string | null;
   thumb_url: string | null;
   engine_id: string;
@@ -73,7 +74,7 @@ type DbJobRow = {
   aspect_ratio: string | null;
 };
 
-const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, provider, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, provider, surface, billing_product_key, video_url, preview_video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`;
@@ -251,6 +252,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
+  let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
   let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
   let normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
   let parsedRenders = parseStoredImageRenders(job.render_ids);
@@ -292,6 +294,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
             if (refreshedRows[0]) {
               job = refreshedRows[0];
               normalizedVideoUrl = normalizeMediaUrl(job.video_url);
+              normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
               normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
               normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
               parsedRenders = parseStoredImageRenders(job.render_ids);
@@ -425,6 +428,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
             status,
             progress,
             videoUrl: videoUrl ?? undefined,
+            previewVideoUrl: normalizedPreviewVideoUrl ?? undefined,
             audioUrl: normalizedAudioUrl ?? undefined,
             thumbUrl: thumbUrl ?? undefined,
             aspectRatio: job.aspect_ratio ?? undefined,
@@ -495,6 +499,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     status: job.status,
     progress: job.progress,
     videoUrl: responseVideoUrl ?? undefined,
+    previewVideoUrl: normalizedPreviewVideoUrl ?? undefined,
     audioUrl: normalizedAudioUrl ?? undefined,
     thumbUrl: normalizedThumbUrl ?? undefined,
     aspectRatio: job.aspect_ratio ?? undefined,

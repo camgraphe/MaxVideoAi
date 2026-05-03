@@ -99,6 +99,7 @@ export function mergeImageProgressGroup(
       id: member.id,
       thumbUrl: member.thumbUrl ?? fallbackPreview?.thumbUrl ?? null,
       videoUrl: member.videoUrl ?? fallbackPreview?.videoUrl ?? null,
+      previewVideoUrl: member.previewVideoUrl ?? fallbackPreview?.previewVideoUrl ?? null,
       aspectRatio: member.aspectRatio ?? fallbackPreview?.aspectRatio ?? null,
       source: fallbackPreview?.source ?? member.source ?? null,
     };

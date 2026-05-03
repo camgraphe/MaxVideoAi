@@ -23,6 +23,7 @@ export interface QuadPreviewTile {
   iterationIndex: number;
   iterationCount: number;
   videoUrl?: string;
+  previewVideoUrl?: string;
   thumbUrl?: string;
   aspectRatio: string;
   progress: number;
@@ -293,7 +294,7 @@ export function QuadPreviewPanel({
                         <video
                           data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                           data-quad-fallback
-                          src={preview.videoUrl}
+                          src={preview.previewVideoUrl ?? preview.videoUrl}
                           className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                           autoPlay={shouldPlayPreview}
                           muted
@@ -431,7 +432,7 @@ export function QuadPreviewPanel({
                         data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                         data-quad-tile-fallback
                         key={tile.videoUrl}
-                        src={tile.videoUrl}
+                        src={tile.previewVideoUrl ?? tile.videoUrl}
                         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                         muted
                         playsInline

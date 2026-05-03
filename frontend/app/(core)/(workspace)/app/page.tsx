@@ -1221,6 +1221,7 @@ type LocalRender = {
   message: string;
   status: 'pending' | 'completed' | 'failed';
   videoUrl?: string;
+  previewVideoUrl?: string;
   readyVideoUrl?: string;
   thumbUrl?: string;
   hasAudio?: boolean;
@@ -1269,6 +1270,7 @@ type PersistedRender = {
   message: string;
   status: 'pending' | 'completed' | 'failed';
   videoUrl?: string | null;
+  previewVideoUrl?: string | null;
   readyVideoUrl?: string | null;
   thumbUrl?: string | null;
   hasAudio?: boolean;
@@ -1345,6 +1347,8 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     message: typeof entry.message === 'string' && entry.message.length ? entry.message : '',
     status,
     videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
+    previewVideoUrl:
+      typeof entry.previewVideoUrl === 'string' && entry.previewVideoUrl.length ? entry.previewVideoUrl : undefined,
     readyVideoUrl:
       typeof entry.readyVideoUrl === 'string' && entry.readyVideoUrl.length ? entry.readyVideoUrl : undefined,
     thumbUrl: typeof entry.thumbUrl === 'string' && entry.thumbUrl.length ? entry.thumbUrl : undefined,
@@ -1421,6 +1425,7 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
       message: render.message,
       status: render.status,
       videoUrl: render.videoUrl,
+      previewVideoUrl: render.previewVideoUrl,
       readyVideoUrl: render.readyVideoUrl,
       thumbUrl: render.thumbUrl,
       hasAudio: render.hasAudio,
@@ -1803,6 +1808,7 @@ useEffect(() => {
         message,
       status: normalizedStatus,
       videoUrl: job.videoUrl ?? undefined,
+      previewVideoUrl: job.previewVideoUrl ?? undefined,
       readyVideoUrl: job.videoUrl ?? undefined,
       thumbUrl,
       hasAudio: typeof job.hasAudio === 'boolean' ? job.hasAudio : undefined,
@@ -2171,6 +2177,7 @@ useEffect(() => {
                       progress: status.progress ?? item.progress,
                       readyVideoUrl: status.videoUrl ?? item.readyVideoUrl,
                       videoUrl: status.videoUrl ?? item.videoUrl ?? item.readyVideoUrl,
+                      previewVideoUrl: status.previewVideoUrl ?? item.previewVideoUrl,
                       thumbUrl: status.thumbUrl ?? item.thumbUrl,
                       aspectRatio: status.aspectRatio ?? item.aspectRatio,
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? item.priceCents,
@@ -2191,6 +2198,7 @@ useEffect(() => {
                     status: status.status ?? cur.status,
                     progress: status.progress ?? cur.progress,
                     videoUrl: status.videoUrl ?? cur.videoUrl,
+                    previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
                     thumbUrl: status.thumbUrl ?? cur.thumbUrl,
                     aspectRatio: status.aspectRatio ?? cur.aspectRatio,
                     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
@@ -2720,6 +2728,7 @@ useEffect(() => {
     (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
       const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
       const videoUrl = gatingActive ? undefined : render.videoUrl ?? render.readyVideoUrl;
+      const previewVideoUrl = gatingActive ? undefined : render.previewVideoUrl;
       const progress = gatingActive
         ? Math.min(Math.max(render.progress ?? 5, 95), 95)
         : videoUrl
@@ -2742,6 +2751,7 @@ useEffect(() => {
         iterationIndex: render.iterationIndex,
         iterationCount: group.iterationCount,
         videoUrl,
+        previewVideoUrl,
         thumbUrl: render.thumbUrl,
         aspectRatio: render.aspectRatio,
         progress,
@@ -6143,6 +6153,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   heroRenderId: resolvedHeroRenderId,
                   readyVideoUrl: resolvedVideoUrl ?? render.readyVideoUrl,
                   videoUrl: gatingActive ? render.videoUrl : resolvedVideoUrl ?? render.videoUrl,
+                  previewVideoUrl: render.previewVideoUrl,
                   };
                 })()
               : render
@@ -6165,6 +6176,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 etaSeconds: resolvedEtaSeconds,
                 etaLabel: resolvedEtaLabel,
                 videoUrl: gatingActive ? cur.videoUrl : resolvedVideoUrl ?? cur.videoUrl,
+                previewVideoUrl: cur.previewVideoUrl,
                 status: gatingActive ? 'pending' : resolvedStatus,
               }
             : cur
@@ -6250,6 +6262,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       progress: status.progress ?? r.progress,
                       readyVideoUrl: status.videoUrl ?? r.readyVideoUrl,
                       videoUrl: status.videoUrl ?? r.videoUrl ?? r.readyVideoUrl,
+                      previewVideoUrl: status.previewVideoUrl ?? r.previewVideoUrl,
                       thumbUrl: status.thumbUrl ?? r.thumbUrl,
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
                       currency: status.currency ?? status.pricing?.currency ?? r.currency,
@@ -6270,6 +6283,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     localKey,
                     progress: status.progress ?? cur.progress,
                     videoUrl: status.videoUrl ?? target?.readyVideoUrl ?? cur.videoUrl,
+                    previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
                     thumbUrl: status.thumbUrl ?? cur.thumbUrl,
                     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
                     currency: status.currency ?? status.pricing?.currency ?? cur.currency,
@@ -6648,6 +6662,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         iterationIndex: member.iterationIndex ?? 0,
         iterationCount: member.iterationCount ?? group.count,
         videoUrl: member.videoUrl ?? undefined,
+        previewVideoUrl: member.previewVideoUrl ?? undefined,
         thumbUrl: member.thumbUrl ?? undefined,
         aspectRatio: member.aspectRatio ?? '16:9',
         progress: typeof member.progress === 'number' ? member.progress : member.status === 'completed' ? 100 : 0,

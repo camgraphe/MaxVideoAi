@@ -161,6 +161,7 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
     rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio ?? null),
     videoUrl: video.videoUrl ?? null,
+    previewVideoUrl: video.previewVideoUrl ?? null,
     modelHref,
   };
 }
