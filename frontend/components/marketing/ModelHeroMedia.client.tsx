@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
+import { isCrawlerUserAgent } from '@/lib/crawler-user-agent';
+
 type ModelHeroMediaProps = {
   posterSrc: string | null;
   videoSrc?: string | null;
@@ -20,6 +22,7 @@ type ModelHeroMediaProps = {
 
 function shouldDisableAutoPlay(): boolean {
   if (typeof window === 'undefined') return true;
+  if (isCrawlerUserAgent(navigator.userAgent)) return true;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return true;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   return Boolean(connection?.saveData);
