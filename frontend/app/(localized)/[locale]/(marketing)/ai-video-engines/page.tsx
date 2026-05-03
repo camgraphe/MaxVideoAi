@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -693,9 +694,10 @@ export default async function AiVideoEnginesPage() {
   return (
     <div className="bg-bg">
       <section className="relative overflow-hidden border-b border-hairline bg-bg px-4 py-14 sm:px-8 sm:py-20">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[url('/assets/compare/compare-hero-reference-light.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/compare/compare-hero-reference-dark.webp')] dark:opacity-70"
+        <MarketingHeroImage
+          src="/assets/compare/compare-hero-reference-light.webp"
+          darkSrc="/assets/compare/compare-hero-reference-dark.webp"
+          className="opacity-55 dark:opacity-70"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.58)_34%,rgba(247,249,253,0.14)_70%,rgba(247,249,253,0.02)_100%)] dark:bg-[radial-gradient(circle_at_50%_24%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
 

@@ -4,6 +4,7 @@ import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
+import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 
 const DETAIL_IMAGE_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/7a859184-b718-4481-ae01-35efe66f4c9a.webp';
@@ -34,12 +35,15 @@ function SectionIntro({
 
 function HeroVisual({ imageAlt }: { imageAlt: string }) {
   return (
-    <div
-      role="img"
-      aria-label={imageAlt}
-      className="aspect-[16/10] overflow-hidden rounded-[28px] bg-[url('/assets/tools/upscale-hero-app-light.webp')] bg-cover bg-top shadow-[0_42px_120px_rgba(15,23,42,0.18)] dark:bg-[url('/assets/tools/upscale-hero-app-dark.webp')] dark:shadow-[0_42px_120px_rgba(0,0,0,0.42)]"
-    >
-      <div className="h-full w-full bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.00)_58%,rgba(255,255,255,0.10))] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.02),rgba(3,7,18,0.00)_58%,rgba(3,7,18,0.12))]" />
+    <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] shadow-[0_42px_120px_rgba(15,23,42,0.18)] dark:shadow-[0_42px_120px_rgba(0,0,0,0.42)]">
+      <MarketingHeroImage
+        src="/assets/tools/upscale-hero-app-light.webp"
+        darkSrc="/assets/tools/upscale-hero-app-dark.webp"
+        alt={imageAlt}
+        imageClassName="object-cover object-top"
+        sizes="(max-width: 1024px) 100vw, 560px"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.00)_58%,rgba(255,255,255,0.10))] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.02),rgba(3,7,18,0.00)_58%,rgba(3,7,18,0.12))]" />
     </div>
   );
 }

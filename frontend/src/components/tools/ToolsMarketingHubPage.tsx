@@ -4,6 +4,7 @@ import { ArrowRight, Camera, ImagePlus, Maximize2, Sparkles } from 'lucide-react
 import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
+import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 
 const IMAGE_CARD_BACKGROUND_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
@@ -71,9 +72,10 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
   return (
     <div className="bg-bg">
       <section className="relative min-h-[520px] overflow-hidden border-b border-hairline bg-bg">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[url('/assets/tools/tools-hero-reference.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/tools/tools-hero-reference-dark.webp')] dark:opacity-70"
+        <MarketingHeroImage
+          src="/assets/tools/tools-hero-reference.webp"
+          darkSrc="/assets/tools/tools-hero-reference-dark.webp"
+          className="opacity-55 dark:opacity-70"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.76)_32%,rgba(247,249,253,0.34)_64%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />

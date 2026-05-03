@@ -37,6 +37,7 @@ import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { TextLink } from '@/components/ui/TextLink';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { LazyPriceEstimator } from '@/components/marketing/LazyPriceEstimator';
+import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -551,9 +552,10 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   return (
     <main className="bg-bg">
       <header className="relative min-h-[520px] overflow-hidden border-b border-hairline bg-bg">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[url('/assets/pricing/pricing-hero-reference.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/pricing/pricing-hero-reference-dark.webp')] dark:opacity-70"
+        <MarketingHeroImage
+          src="/assets/pricing/pricing-hero-reference.webp"
+          darkSrc="/assets/pricing/pricing-hero-reference-dark.webp"
+          className="opacity-55 dark:opacity-70"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.93)_0%,rgba(255,255,255,0.76)_34%,rgba(247,249,253,0.36)_68%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg to-transparent" />
