@@ -22,6 +22,7 @@ import {
 } from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
+import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
 
 function resolveLocalizedHref(href: LocalizedLinkHref): string {
   if (typeof href === 'string') {
@@ -295,7 +296,7 @@ export function HeaderBar() {
     let isActive = true;
     const fetchNotice = async () => {
       try {
-        const response = await fetch('/api/service-notice', { cache: 'no-store' });
+        const response = await fetch('/api/service-notice');
         if (!response.ok) {
           throw new Error('Failed to fetch notice');
         }
@@ -315,7 +316,7 @@ export function HeaderBar() {
       }
     };
     fetchNotice();
-    const interval = window.setInterval(fetchNotice, 60_000);
+    const interval = window.setInterval(fetchNotice, SERVICE_NOTICE_POLLING_INTERVAL_MS);
     return () => {
       isActive = false;
       window.clearInterval(interval);
