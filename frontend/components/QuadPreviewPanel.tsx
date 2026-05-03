@@ -294,7 +294,7 @@ export function QuadPreviewPanel({
                         <video
                           data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                           data-quad-fallback
-                          src={preview.previewVideoUrl ?? preview.videoUrl}
+                          src={preview.videoUrl}
                           className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                           autoPlay={shouldPlayPreview}
                           muted
@@ -432,7 +432,7 @@ export function QuadPreviewPanel({
                         data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                         data-quad-tile-fallback
                         key={tile.videoUrl}
-                        src={tile.previewVideoUrl ?? tile.videoUrl}
+                        src={tile.videoUrl}
                         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                         muted
                         playsInline

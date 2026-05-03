@@ -59,6 +59,7 @@ export function mapVisitorVideoToJob(video: GalleryVideo): Job {
     prompt: video.prompt,
     thumbUrl: video.thumbUrl ?? undefined,
     videoUrl: video.videoUrl ?? undefined,
+    previewVideoUrl: video.previewVideoUrl ?? undefined,
     createdAt: video.createdAt,
     engineId: video.engineId,
     aspectRatio: video.aspectRatio,

@@ -85,7 +85,7 @@ function isVideo(item: VideoItem): boolean {
 }
 
 function getInlinePreviewUrl(item: VideoItem): string {
-  return item.previewUrl || item.url;
+  return item.url;
 }
 
 function resolveAspectHint(item: VideoItem): string | null {

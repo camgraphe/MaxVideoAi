@@ -4812,7 +4812,7 @@ function MediaPreview({
             {media.videoUrl ? (
               <ModelHeroMedia
                 posterSrc={posterSrc}
-                videoSrc={media.previewVideoUrl ?? media.videoUrl}
+                videoSrc={media.videoUrl}
                 alt={resolvedAltText}
                 sizes="(max-width: 768px) 100vw, 720px"
                 autoPlayDelayMs={autoPlayDelayMs}

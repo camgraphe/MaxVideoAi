@@ -753,7 +753,7 @@ type JobRow = {
           prompt: video.prompt,
           thumbUrl: video.thumbUrl ?? undefined,
           videoUrl: video.videoUrl ?? undefined,
-          previewVideoUrl: undefined,
+          previewVideoUrl: video.previewVideoUrl ?? undefined,
           audioUrl: undefined,
           createdAt: video.createdAt,
           engineId: video.engineId,
