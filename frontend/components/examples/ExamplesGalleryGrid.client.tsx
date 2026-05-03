@@ -392,6 +392,7 @@ function ExampleCard({
                   decoding="async"
                   sizes={posterSizes}
                   quality={52}
+                  priority={isFirst}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-placeholder text-[11px] font-semibold uppercase tracking-micro text-text-muted">

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { isCrawlerUserAgent } from '@/lib/crawler-user-agent';
@@ -44,10 +45,7 @@ export function ExamplesHeroVideo({
     () =>
       poster
         ? {
-            backgroundImage: `url(${poster})`,
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: posterFit,
+            objectFit: posterFit,
           }
         : undefined,
     [poster, posterFit]
@@ -128,7 +126,12 @@ export function ExamplesHeroVideo({
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface-on-media-dark-5">
       {poster && showPosterOverlay ? (
-        <div
+        <Image
+          src={poster}
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 920px"
           aria-hidden="true"
           className={`${className ?? ''} pointer-events-none absolute inset-0 z-10 transition-opacity duration-300`}
           style={posterStyle}
