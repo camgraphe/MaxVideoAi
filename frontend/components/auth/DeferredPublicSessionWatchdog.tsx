@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+import { hasStoredSupabaseSession } from '@/lib/supabase-session-presence';
+
 const PublicSessionWatchdog = dynamic(
   () => import('@/components/auth/PublicSessionWatchdog').then((mod) => mod.PublicSessionWatchdog),
   { ssr: false }
@@ -13,6 +15,7 @@ export function DeferredPublicSessionWatchdog() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!hasStoredSupabaseSession()) return;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let idleId: number | null = null;
 
