@@ -23,6 +23,7 @@ type ModelHeroMediaProps = {
 function shouldDisableAutoPlay(): boolean {
   if (typeof window === 'undefined') return true;
   if (isCrawlerUserAgent(navigator.userAgent)) return true;
+  if (window.matchMedia?.('(max-width: 767px)')?.matches) return true;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return true;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   return Boolean(connection?.saveData);
