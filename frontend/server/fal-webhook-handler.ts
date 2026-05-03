@@ -4,6 +4,7 @@ import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catal
 import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import {
   buildNextProviderVideoCopyState,
@@ -56,6 +57,7 @@ type AppJobRow = {
   progress: number;
   video_url: string | null;
   preview_video_url: string | null;
+  keyframe_urls: unknown;
   thumb_url: string | null;
   aspect_ratio: string | null;
   preview_frame: string | null;
@@ -619,7 +621,7 @@ async function createProvisionalJobFromWebhook(params: {
            status = EXCLUDED.status,
            progress = EXCLUDED.progress,
            updated_at = NOW()
-     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id`,
+     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id`,
     [
       jobId,
       null,
@@ -654,7 +656,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const identifiers = extractIdentifiersFromPayload(payload);
 
   let jobRows = await query<AppJobRow>(
-    `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
+    `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -663,7 +665,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.jobId) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
+      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -673,7 +675,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.localKey) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
+      `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
        FROM app_jobs
        WHERE local_key = $1
        ORDER BY updated_at DESC
@@ -693,7 +695,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     );
     if (logRows.length) {
       jobRows = await query<AppJobRow>(
-        `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
+        `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
          FROM app_jobs
          WHERE job_id = $1
          LIMIT 1`,
@@ -1114,12 +1116,21 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   );
 
   if (nextStatus === 'completed' && finalVideoUrl && !isImageEngine) {
-    await generateAndPersistJobPreviewVideo({
-      jobId: job.job_id,
-      userId: job.user_id ?? undefined,
-      videoUrl: finalVideoUrl,
-      existingPreviewVideoUrl: job.preview_video_url,
-    });
+    await Promise.allSettled([
+      generateAndPersistJobPreviewVideo({
+        jobId: job.job_id,
+        userId: job.user_id ?? undefined,
+        videoUrl: finalVideoUrl,
+        existingPreviewVideoUrl: job.preview_video_url,
+      }),
+      generateAndPersistJobKeyframes({
+        jobId: job.job_id,
+        userId: job.user_id ?? undefined,
+        videoUrl: finalVideoUrl,
+        durationSec: job.duration_sec,
+        existingKeyframeUrls: job.keyframe_urls,
+      }),
+    ]);
   }
 
   if (nextStatus === 'failed' && shouldAutoRefundFailure) {

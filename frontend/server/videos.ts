@@ -6,6 +6,7 @@ import { getExampleFamilyEngineAliases } from '@/lib/model-families';
 import { getIndexablePlaylistSlugs } from '@/server/indexing';
 import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs, getStarterPlaylistSlug } from '@/server/playlists';
+import { normalizeJobKeyframeUrls, type JobKeyframeUrls } from '@/server/video-keyframes';
 import type { PricingSnapshot } from '@/types/engines';
 
 type VideoRow = {
@@ -18,6 +19,7 @@ type VideoRow = {
   thumb_url: string;
   video_url: string | null;
   preview_video_url: string | null;
+  keyframe_urls: unknown;
   aspect_ratio: string | null;
   has_audio: boolean | null;
   can_upscale: boolean | null;
@@ -44,6 +46,7 @@ export type GalleryVideo = {
   thumbUrl?: string;
   videoUrl?: string;
   previewVideoUrl?: string;
+  keyframeUrls?: JobKeyframeUrls | null;
   aspectRatio?: string;
   createdAt: string;
   visibility: 'public' | 'private';
@@ -75,6 +78,7 @@ function mapRow(row: VideoRow): GalleryVideo {
     thumbUrl: normalizeMediaUrl(row.thumb_url) ?? undefined,
     videoUrl: row.video_url ? normalizeMediaUrl(row.video_url) ?? undefined : undefined,
     previewVideoUrl: row.preview_video_url ? normalizeMediaUrl(row.preview_video_url) ?? undefined : undefined,
+    keyframeUrls: normalizeJobKeyframeUrls(row.keyframe_urls),
     aspectRatio: row.aspect_ratio ?? undefined,
     createdAt: row.created_at,
     visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
@@ -94,6 +98,7 @@ export type GalleryTab = 'starter' | 'latest' | 'trending';
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
+         to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, pricing_snapshot
   FROM app_jobs
@@ -102,6 +107,7 @@ const BASE_SELECT = `
 const BASE_SELECT_WITH_SETTINGS = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
+         to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, settings_snapshot
   FROM app_jobs
@@ -246,7 +252,8 @@ async function listPlaylistVideosWithOptions({
   const rows = await query<VideoRow & { order_index: number }>(
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
-             aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
+             aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
+             aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index
       FROM playlists p
       JOIN playlist_items pi ON pi.playlist_id = p.id

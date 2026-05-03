@@ -25,6 +25,7 @@ import {
 } from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
@@ -3116,6 +3117,15 @@ async function rollbackPendingPayment(params: {
     );
   } catch (error) {
     console.warn('[queue-log] failed to insert entry', error);
+  }
+
+  if (status === 'completed' && video) {
+    await generateAndPersistJobKeyframes({
+      jobId,
+      userId,
+      videoUrl: video,
+      durationSec,
+    });
   }
 
   if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {

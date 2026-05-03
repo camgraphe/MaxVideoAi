@@ -1,0 +1,2 @@
+ALTER TABLE app_jobs
+  ADD COLUMN IF NOT EXISTS keyframe_urls JSONB;

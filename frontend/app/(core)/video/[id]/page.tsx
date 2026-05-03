@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { ButtonLink } from '@/components/ui/Button';
+import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import { WatchVideoPlayer } from '@/components/watch/WatchVideoPlayer';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
@@ -399,11 +400,6 @@ export default async function VideoPage(props: PageProps) {
     { key: 'audio', label: audioLabel, Icon: Volume2 },
     { key: 'cost', label: costLabel, Icon: Tag },
   ].filter((chip): chip is { key: string; label: string; Icon: LucideIcon } => Boolean(chip.label));
-  const keyFrames = [
-    { label: 'Opening frame', position: 'object-left' },
-    { label: 'Motion beat', position: 'object-center' },
-    { label: 'Final shot', position: 'object-right' },
-  ];
   const fullPromptId = `video-full-prompt-${video.id}`;
 
   return (
@@ -561,24 +557,13 @@ export default async function VideoPage(props: PageProps) {
               <h2 className="text-lg font-semibold text-text-primary">Key frames</h2>
               <ArrowRight className="h-4 w-4 text-text-muted" aria-hidden />
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {keyFrames.map((frame) => (
-                <figure key={frame.label} className="overflow-hidden rounded-input border border-hairline bg-surface-2">
-                  <div className="relative aspect-video bg-surface-on-media-dark-5">
-                    <Image
-                      src={thumbnailUrl}
-                      alt={`${signals.title} - ${frame.label}`}
-                      fill
-                      className={`object-cover ${
-                        frame.position === 'object-left' ? 'object-left' : frame.position === 'object-right' ? 'object-right' : 'object-center'
-                      }`}
-                      sizes="(min-width: 1280px) 250px, (min-width: 640px) 30vw, 100vw"
-                    />
-                  </div>
-                  <figcaption className="px-3 py-2 text-center text-xs text-text-secondary">{frame.label}</figcaption>
-                </figure>
-              ))}
-            </div>
+            <WatchKeyFrames
+              videoUrl={videoUrl}
+              posterUrl={thumbnailUrl}
+              title={signals.title}
+              durationSec={signals.durationSec ?? video.durationSec}
+              keyframeUrls={video.keyframeUrls}
+            />
           </WatchCard>
 
           {related.length ? (
