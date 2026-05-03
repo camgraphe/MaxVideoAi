@@ -1157,7 +1157,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   return (
     <>
       {engineFilterOptions.length ? (
-        <div className="sticky top-16 z-30 -mt-px border-b border-hairline bg-surface">
+        <div className="sticky top-16 z-[35] -mt-px border-b border-hairline bg-surface">
           <div className="container-page max-w-6xl">
             <nav
               aria-label={browseByModelLabel}
