@@ -233,11 +233,11 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'LTX 2.3 Prompt Examples, Settings & Outputs | MaxVideoAI',
+    metaTitle: 'LTX Examples, Prompts, Settings & Outputs | MaxVideoAI',
     metaDescription:
       'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, settings, outputs, and image-to-video patterns, then review supported LTX 2 workflows on MaxVideoAI.',
-    heroTitle: 'LTX 2.3 prompt examples, settings and outputs',
-    subtitle: 'Prompt examples, settings, outputs, and image-to-video AI patterns for current LTX 2.3 workflows.',
+    heroTitle: 'LTX examples, prompts, settings and outputs',
+    subtitle: 'Examples for current LTX 2.3 Pro and LTX 2.3 Fast workflows, plus supported older LTX setups.',
     intro:
       'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, reusable settings, and output patterns, then review supported LTX 2 and LTX 2 Fast setups for older workflows, historical prompt baselines, and migration context. Use this page to study prompt structure, image-to-video AI patterns, and model-specific settings before opening the matching LTX model page.',
     summary:
@@ -520,11 +520,11 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'Exemples de prompts, réglages et sorties LTX 2.3 | MaxVideoAI',
+    metaTitle: 'Exemples LTX, prompts, réglages et sorties | MaxVideoAI',
     metaDescription:
       'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des schemas image-vers-vidéo, puis consultez les flux LTX 2 encore pris en charge sur MaxVideoAI.',
-    heroTitle: 'Exemples de prompts, réglages et sorties LTX 2.3',
-    subtitle: 'Exemples de prompts, réglages, sorties et schemas image-vers-vidéo IA pour les flux LTX 2.3 actuels.',
+    heroTitle: 'Exemples LTX, prompts, réglages et sorties',
+    subtitle: 'Exemples pour les flux LTX 2.3 Pro et LTX 2.3 Fast actuels, avec les anciens flux LTX encore pris en charge.',
     intro:
       'Parcourez les exemples de prompts, les réglages réutilisables et les schemas de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme configurations encore prises en charge pour des flux plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les schemas image-vers-vidéo IA et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
     summary:
@@ -807,11 +807,11 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'Ejemplos de prompts, ajustes y salidas de LTX 2.3 | MaxVideoAI',
+    metaTitle: 'Ejemplos de LTX, prompts, ajustes y salidas | MaxVideoAI',
     metaDescription:
       'Consulta ejemplos de prompts de LTX 2.3 Pro y LTX 2.3 Fast, ajustes, salidas y patrones de imagen a video, y luego revisa los workflows LTX 2 aún compatibles en MaxVideoAI.',
-    heroTitle: 'Ejemplos de prompts, ajustes y salidas de LTX 2.3',
-    subtitle: 'Ejemplos de prompts, ajustes, salidas y patrones de imagen a video con IA para los workflows actuales de LTX 2.3.',
+    heroTitle: 'Ejemplos de LTX, prompts, ajustes y salidas',
+    subtitle: 'Ejemplos para los workflows actuales de LTX 2.3 Pro y LTX 2.3 Fast, más setups LTX anteriores aún compatibles.',
     intro:
       'Consulta los ejemplos de prompts, ajustes reutilizables y patrones de salida de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups aún compatibles para workflows anteriores, bases históricas de prompts y contexto de migración. Usa esta página para estudiar la estructura de prompts, los patrones de imagen a video con IA y los ajustes específicos de cada modelo antes de abrir la página LTX correspondiente.',
     summary:

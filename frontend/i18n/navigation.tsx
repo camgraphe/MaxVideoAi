@@ -96,9 +96,10 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
   const normalizedRest = { ...rest, href: normalizedHref };
 
   if (shouldBypassLocalization(normalizedRest.href)) {
+    const { locale: _locale, ...nextLinkRest } = normalizedRest;
     return (
       <NextLink
-        {...(normalizedRest as unknown as NextLinkProps)}
+        {...(nextLinkRest as unknown as NextLinkProps)}
         className={className}
         rel={resolvedRel}
         hrefLang={normalizedHrefLang}
