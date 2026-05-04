@@ -182,10 +182,10 @@ The application expects the following environment variables (scoped per Vercel e
 | Variable | Scope | Purpose |
 | --- | --- | --- |
 | `FAL_KEY` / `FAL_API_KEY` | Server | Fal.ai API key injected into the edge proxy. Prefer `FAL_KEY` on Vercel. |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL used by the browser. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase anon key (RLS must stay enabled). |
+| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase Auth project URL used by the browser. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase Auth anon key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server (optional) | Service role key for backend operations. |
-| `DATABASE_URL` | Server | Neon Postgres connection string for API routes. |
+| `DATABASE_URL` | Server | Neon Postgres connection string for application tables and API routes. |
 | `LEGAL_MIN_AGE` | Server | Minimum age (integer) required during signup consent. Defaults to 15 if unset. |
 | `NEXT_PUBLIC_LEGAL_MIN_AGE` | Public | Mirrors `LEGAL_MIN_AGE` so the UI can display the current requirement. |
 | `LEGAL_RECONSENT_MODE` | Server | `soft` (default) or `hard`, controls re-consent enforcement. |
@@ -214,18 +214,26 @@ Additional read-only endpoints help verify deployment wiring (Preview/Production
 
 Preview/Production health endpoints require `HEALTHCHECK_TOKEN` via `Authorization: Bearer ...` or `x-healthcheck-token`. Local development can remain open when the token is unset.
 
+### Data Ownership
+
+MaxVideoAI intentionally separates identity, relational data, and media storage:
+
+- Supabase is Auth only. Keep auth templates/config under [`supabase`](supabase), and do not use `supabase db push` for app tables.
+- Neon is the application Postgres database. Tables such as `app_jobs`, `job_outputs`, `media_assets`, `user_assets`, billing, admin, and workspace data live there.
+- Amazon S3 stores media bytes: uploads, generated images/videos/audio, thumbnails, previews, keyframes, and exports.
+
+See [`docs/data-platform.md`](docs/data-platform.md) for the detailed ownership rule.
+
 ### Neon Migrations
 
 Neon (the primary application database) is managed via simple SQL migrations stored in [`neon/migrations`](neon/migrations).  
-Run them in order against the pooled connection string (`DATABASE_URL`, includes `-pooler` and `sslmode=require`), for example:
+Run them in order against the pooled connection string (`DATABASE_URL`, includes `-pooler` and `sslmode=require`):
 
 ```bash
-for file in neon/migrations/*.sql; do
-  psql "$DATABASE_URL" -f "$file"
-done
+pnpm db:migrate:neon
 ```
 
-The scripts are idempotent and will seed the current legal document versions required by the consent system.
+The scripts are idempotent and will seed the current legal document versions required by the consent system. Do not put application database migrations in `supabase/migrations`.
 
 ### Fal Fixtures Utility
 
