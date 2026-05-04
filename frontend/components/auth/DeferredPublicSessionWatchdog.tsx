@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+import { readLastKnownUserId } from '@/lib/last-known';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 const PublicSessionWatchdog = dynamic(
   () => import('@/components/auth/PublicSessionWatchdog').then((mod) => mod.PublicSessionWatchdog),
@@ -13,6 +15,7 @@ export function DeferredPublicSessionWatchdog() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) return;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let idleId: number | null = null;
 

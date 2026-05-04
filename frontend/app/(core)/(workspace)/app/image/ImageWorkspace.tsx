@@ -7,7 +7,6 @@ import useSWR from 'swr';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import deepmerge from 'deepmerge';
 import { Plus } from 'lucide-react';
 import type {
   ChangeEvent,
@@ -24,7 +23,6 @@ import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import type { AssetLibraryBrowserProps, AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
-import { supabase } from '@/lib/supabaseClient';
 import { translateError } from '@/lib/error-messages';
 import type {
   CharacterReferenceSelection,
@@ -72,6 +70,8 @@ import {
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
 import { authFetch } from '@/lib/authFetch';
+import { readLastKnownUserId } from '@/lib/last-known';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import { normalizeJobSurface } from '@/lib/job-surface-normalize';
 import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
@@ -86,6 +86,13 @@ const GroupViewerModal = dynamic(
   () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
   { ssr: false }
 );
+
+let supabaseClientPromise: Promise<typeof import('@/lib/supabaseClient')['supabase']> | null = null;
+
+function getSupabaseClient(): Promise<typeof import('@/lib/supabaseClient')['supabase']> {
+  supabaseClientPromise ??= import('@/lib/supabaseClient').then((mod) => mod.supabase);
+  return supabaseClientPromise;
+}
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -417,6 +424,26 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     close: 'Maybe later',
   },
 };
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function mergeCopy<T>(defaults: T, overrides?: Partial<T> | null): T {
+  if (!isPlainRecord(defaults) || !isPlainRecord(overrides)) return defaults;
+  const next: Record<string, unknown> = { ...defaults };
+  Object.entries(overrides).forEach(([key, overrideValue]) => {
+    const defaultValue = next[key];
+    if (isPlainRecord(defaultValue) && isPlainRecord(overrideValue)) {
+      next[key] = mergeCopy(defaultValue, overrideValue);
+      return;
+    }
+    if (overrideValue !== undefined) {
+      next[key] = overrideValue;
+    }
+  });
+  return next as T;
+}
 
 function formatTemplate(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce((result, [key, value]) => {
@@ -928,7 +955,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const searchParams = useSearchParams();
   const rawCopy = t('workspace.image', DEFAULT_COPY);
   const resolvedCopy = useMemo<ImageWorkspaceCopy>(() => {
-    return deepmerge<ImageWorkspaceCopy>(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
+    return mergeCopy(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
   }, [rawCopy]);
   const loginRedirectTarget = useMemo(() => {
     const params = searchParams?.toString() ?? '';
@@ -2341,6 +2368,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     async (event?: FormEvent<HTMLFormElement> | null) => {
       event?.preventDefault();
       if (!selectedEngine) return;
+      if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+        setAuthModalOpen(true);
+        return;
+      }
+      const supabase = await getSupabaseClient();
       const { data } = await supabase.auth.getSession();
       if (!data.session?.access_token) {
         setAuthModalOpen(true);
