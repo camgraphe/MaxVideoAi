@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
+import { ChevronDown, Maximize2, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
@@ -25,7 +26,8 @@ export type GroupedJobAction =
   | 'branch'
   | 'compare'
   | 'remove'
-  | 'save-image';
+  | 'save-image'
+  | 'save-to-library';
 
 const GROUPED_JOB_THUMB_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px';
 
@@ -52,18 +54,20 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
   return <Image src={src} alt={alt} fill className={baseClass} sizes={GROUPED_JOB_THUMB_SIZES} />;
 }
 
-function GroupPreviewMedia({
+export function GroupPreviewMedia({
   preview,
   audioUrl,
   audioLabel,
   shouldPlay,
   shouldWarm,
+  fit = 'contain',
 }: {
   preview: GroupSummary['previews'][number] | undefined;
   audioUrl?: string | null;
   audioLabel?: string | null;
   shouldPlay: boolean;
   shouldWarm: boolean;
+  fit?: 'contain' | 'cover';
 }) {
   const displayVideoUrl = preview?.previewVideoUrl ?? preview?.videoUrl ?? null;
   const hasOptimizedPreview = Boolean(preview?.previewVideoUrl);
@@ -144,14 +148,15 @@ function GroupPreviewMedia({
   if (hasVideo && displayVideoUrl) {
     const poster = thumbSrc ?? undefined;
     return (
-      <div className="relative h-full w-full">
+      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
         {thumbSrc ? (
           <ThumbImage
             src={thumbSrc}
             alt=""
             className={clsx(
-              'absolute inset-0 object-contain transition-opacity duration-150 ease-out',
-              shouldPlay ? 'opacity-0' : 'opacity-100'
+              'absolute inset-0 transition-opacity duration-150 ease-out',
+              fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain',
+              shouldPlay && videoReady ? 'opacity-0' : 'opacity-100'
             )}
           />
         ) : null}
@@ -160,7 +165,8 @@ function GroupPreviewMedia({
           src={displayVideoUrl}
           poster={poster}
           className={clsx(
-            'absolute inset-0 h-full w-full pointer-events-none object-contain transition-opacity duration-150 ease-out',
+            'absolute inset-0 h-full w-full pointer-events-none transition-opacity duration-150 ease-out',
+            fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain',
             videoReady ? 'opacity-100' : 'opacity-0'
           )}
           muted
@@ -185,7 +191,15 @@ function GroupPreviewMedia({
     );
   }
   if (thumbSrc) {
-    return <ThumbImage src={thumbSrc} alt="" className="object-contain" />;
+    return (
+      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
+        <ThumbImage
+          src={thumbSrc}
+          alt=""
+          className={fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain'}
+        />
+      </div>
+    );
   }
   return null;
 }
@@ -206,8 +220,11 @@ export interface GroupedJobCardProps {
   imageCtaLabel?: string;
   imageLibraryLabel?: string;
   imageLibrarySavingLabel?: string;
+  showLibraryCta?: boolean;
   recreateHref?: string;
   recreateLabel?: string;
+  openLabel?: string;
+  actionMenuLabel?: string;
   eagerPreview?: boolean;
   warmOnVisible?: boolean;
 }
@@ -228,8 +245,11 @@ export function GroupedJobCard({
   imageCtaLabel = 'Generate images',
   imageLibraryLabel = 'Add to Library',
   imageLibrarySavingLabel = 'Saving…',
+  showLibraryCta = false,
   recreateHref,
   recreateLabel = 'Generate same settings',
+  openLabel = 'Open group',
+  actionMenuLabel = 'Actions',
   eagerPreview = false,
   warmOnVisible = false,
 }: GroupedJobCardProps) {
@@ -299,6 +319,7 @@ export function GroupedJobCard({
   const showAdvancedMenuActions = menuVariant === 'full';
   const showGalleryActions = menuVariant === 'gallery';
   const showGalleryImageActions = menuVariant === 'gallery-image';
+  const showCompactMenuButton = menuVariant === 'compact';
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
@@ -350,9 +371,10 @@ export function GroupedJobCard({
       )}
     >
       <figure
-        className="relative cursor-pointer overflow-hidden rounded-t-card"
+        className="group relative cursor-pointer overflow-hidden rounded-t-card"
         role="button"
         tabIndex={0}
+        aria-label={openLabel}
         onClick={() => onOpen?.(group)}
         onPointerEnter={() => {
           setIsPreviewWarm(true);
@@ -439,6 +461,12 @@ export function GroupedJobCard({
             {splitLabel}
           </div>
         ) : null}
+        {onOpen ? (
+          <div className="pointer-events-none absolute bottom-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-surface-on-media-dark-75 px-2.5 py-1 text-[11px] font-semibold text-on-inverse shadow-md backdrop-blur transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus:opacity-100">
+            <Maximize2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{openLabel}</span>
+          </div>
+        ) : null}
         {showMenu && (
           <button
             ref={menuButtonRef}
@@ -447,16 +475,29 @@ export function GroupedJobCard({
               event.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/85 text-black/80 shadow-md backdrop-blur hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className={clsx(
+              'absolute right-3 top-3 flex h-8 items-center justify-center rounded-full border border-white/70 bg-white/85 text-black/80 shadow-md backdrop-blur hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+              showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : 'w-8'
+            )}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
-            aria-label="Group actions"
+            aria-label={actionMenuLabel}
           >
-            <span className="inline-flex items-center justify-center gap-0.5 translate-y-[1px]" aria-hidden="true">
-              <span className="h-1 w-1 rounded-full bg-black/60" />
-              <span className="h-1 w-1 rounded-full bg-black/60" />
-              <span className="h-1 w-1 rounded-full bg-black/60" />
-            </span>
+            {showCompactMenuButton ? (
+              <>
+                <span>{actionMenuLabel}</span>
+                <ChevronDown
+                  className={clsx('h-3.5 w-3.5 transition-transform', menuOpen ? 'rotate-180' : 'rotate-0')}
+                  aria-hidden="true"
+                />
+              </>
+            ) : (
+              <span className="inline-flex translate-y-[1px] items-center justify-center gap-0.5" aria-hidden="true">
+                <span className="h-1 w-1 rounded-full bg-black/60" />
+                <span className="h-1 w-1 rounded-full bg-black/60" />
+                <span className="h-1 w-1 rounded-full bg-black/60" />
+              </span>
+            )}
           </button>
         )}
       </figure>
@@ -469,16 +510,21 @@ export function GroupedJobCard({
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            {isImageGroup && (
+            {(isImageGroup || showLibraryCta) && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (showLibraryCta) {
+                    handleAction('save-to-library');
+                    return;
+                  }
                   handleAction('save-image');
                 }}
                 disabled={savingToLibrary}
+                title={savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
                 className={clsx(
                   'min-h-0 h-auto rounded-pill px-2.5 py-1 text-[11px] font-semibold',
                   savingToLibrary
@@ -486,7 +532,10 @@ export function GroupedJobCard({
                     : 'border-brand bg-surface text-brand hover:bg-surface-2 hover:text-brand'
                 )}
               >
-                {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className={showLibraryCta ? 'hidden xl:inline' : undefined}>
+                  {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
+                </span>
               </Button>
             )}
             {isCurated ? (
@@ -600,7 +649,7 @@ export function GroupedJobCard({
                 onClick={() => handleAction('open')}
                 className="w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
-                <span>Open group</span>
+                <span>{openLabel}</span>
                 <span className="text-[11px] text-text-muted">↵</span>
               </Button>
               {recreateHref ? (

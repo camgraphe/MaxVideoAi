@@ -946,8 +946,10 @@ export async function saveAssetToLibrary(payload: {
   jobId?: string | null;
   label?: string | null;
   source?: string | null;
-  kind?: 'image' | 'video';
+  kind?: 'image' | 'video' | 'audio';
   sourceOutputId?: string | null;
+  thumbUrl?: string | null;
+  previewUrl?: string | null;
 }) {
   const response = await authFetch('/api/media-library/ensure', {
     method: 'POST',
@@ -960,6 +962,8 @@ export async function saveAssetToLibrary(payload: {
       source: payload.source ?? null,
       kind: payload.kind ?? 'image',
       sourceOutputId: payload.sourceOutputId ?? null,
+      thumbUrl: payload.thumbUrl ?? null,
+      previewUrl: payload.previewUrl ?? null,
     }),
   });
   const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;
@@ -978,7 +982,11 @@ export async function saveImageToLibrary(payload: {
   label?: string | null;
   source?: string | null;
 }) {
-  return saveAssetToLibrary({ ...payload, kind: 'image' });
+  return saveAssetToLibrary({
+    ...payload,
+    kind: 'image',
+    source: payload.source ?? (payload.jobId ? 'generated' : null),
+  });
 }
 
 export async function hideJob(jobId: string): Promise<void> {

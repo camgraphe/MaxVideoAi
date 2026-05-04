@@ -2,8 +2,10 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { AudioWaveform, Film } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
 export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
@@ -11,6 +13,8 @@ export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'ch
 export type AssetBrowserAsset = {
   id: string;
   url: string;
+  thumbUrl?: string | null;
+  previewUrl?: string | null;
   kind: 'image' | 'video' | 'audio';
   width?: number | null;
   height?: number | null;
@@ -19,6 +23,10 @@ export type AssetBrowserAsset = {
   source?: string | null;
   createdAt?: string;
   canDelete?: boolean;
+  jobId?: string | null;
+  sourceOutputId?: string | null;
+  isSaved?: boolean;
+  savedAssetId?: string | null;
 };
 
 export type AssetBrowserToolLink = {
@@ -27,7 +35,7 @@ export type AssetBrowserToolLink = {
 };
 
 export interface AssetLibraryBrowserProps {
-  assetType: 'image' | 'video';
+  assetType: 'image' | 'video' | 'audio';
   layout?: 'modal' | 'page';
   title: string;
   subtitle?: string;
@@ -42,6 +50,8 @@ export interface AssetLibraryBrowserProps {
   sourceLabels: Partial<Record<AssetLibrarySource, string>>;
   onSourceChange: (source: AssetLibrarySource) => void;
   headerActions?: ReactNode;
+  headerLeadingActions?: ReactNode;
+  titleActions?: ReactNode;
   searchPlaceholder: string;
   sourcesTitle: string;
   emptyLabel: string;
@@ -49,8 +59,14 @@ export interface AssetLibraryBrowserProps {
   toolsTitle?: string;
   toolsDescription?: string;
   toolLinks?: AssetBrowserToolLink[];
+  getAssetHref?: (asset: AssetBrowserAsset) => string | null;
+  getAssetHrefLabel?: (asset: AssetBrowserAsset) => string;
   renderAssetActions: (asset: AssetBrowserAsset) => ReactNode;
   renderAssetMeta?: (asset: AssetBrowserAsset) => ReactNode;
+  hasMore?: boolean;
+  loadMoreLabel?: string;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
   className?: string;
 }
 
@@ -95,6 +111,8 @@ export function AssetLibraryBrowser({
   sourceLabels,
   onSourceChange,
   headerActions,
+  headerLeadingActions,
+  titleActions,
   searchPlaceholder,
   sourcesTitle,
   emptyLabel,
@@ -102,11 +120,18 @@ export function AssetLibraryBrowser({
   toolsTitle,
   toolsDescription,
   toolLinks,
+  getAssetHref,
+  getAssetHrefLabel,
   renderAssetActions,
   renderAssetMeta,
+  hasMore,
+  loadMoreLabel = 'Load more',
+  onLoadMore,
+  isLoadingMore,
   className,
 }: AssetLibraryBrowserProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activePreviewId, setActivePreviewId] = useState<string | null>(null);
   const isPageLayout = layout === 'page';
 
   const filteredAssets = useMemo(() => {
@@ -124,6 +149,7 @@ export function AssetLibraryBrowser({
 
   useEffect(() => {
     setSearchQuery('');
+    setActivePreviewId(null);
   }, [assetType, source, title]);
 
   const hasToolLinks = assetType === 'image' && Array.isArray(toolLinks) && toolLinks.length > 0;
@@ -171,16 +197,32 @@ export function AssetLibraryBrowser({
             : 'border-b border-border/70 bg-surface-glass-90 px-4 py-4 pr-16 lg:px-6 lg:py-5 lg:pr-20'
         )}
       >
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h2 className="text-base font-semibold text-text-primary lg:text-lg">{title}</h2>
-            {countLabel ? <span className="text-xs text-text-secondary">{countLabel}</span> : null}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h2 className="text-base font-semibold text-text-primary lg:text-lg">{title}</h2>
+                {countLabel ? <span className="text-xs text-text-secondary">{countLabel}</span> : null}
+              </div>
+              {subtitle ? <p className="mt-1 hidden text-sm text-text-secondary lg:block">{subtitle}</p> : null}
+            </div>
           </div>
-          {subtitle ? <p className="mt-1 hidden text-sm text-text-secondary lg:block">{subtitle}</p> : null}
+          {titleActions ? (
+            <div className="-mx-1 flex shrink-0 items-center gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:justify-end lg:overflow-visible lg:px-0 lg:pb-0">
+              {titleActions}
+            </div>
+          ) : null}
         </div>
-        {headerActions ? (
-          <div className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:justify-end lg:overflow-visible lg:px-0 lg:pb-0">
-            {headerActions}
+        {headerLeadingActions || headerActions ? (
+          <div className="-mx-1 flex flex-col gap-2 overflow-x-auto px-1 pb-1 sm:flex-row sm:items-center sm:justify-between lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0">
+            {headerLeadingActions ? (
+              <div className="flex shrink-0 items-center gap-2">{headerLeadingActions}</div>
+            ) : (
+              <span aria-hidden />
+            )}
+            {headerActions ? (
+              <div className="flex items-center gap-2 sm:justify-end">{headerActions}</div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -307,36 +349,117 @@ export function AssetLibraryBrowser({
                 {searchQuery.trim().length ? emptySearchLabel : emptyLabel}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 md:gap-3 xl:grid-cols-3">
-                {filteredAssets.map((asset) => {
-                  const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
-                  const sizeLabel = formatSize(asset.size);
-                  return (
-                    <div key={asset.id} className="overflow-hidden rounded-card border border-border/70 bg-surface shadow-card transition hover:border-text-primary/60">
-                      <div className="relative bg-placeholder" style={{ aspectRatio: '16 / 9' }}>
-                        {asset.kind === 'video' ? (
-                          <video src={asset.url} controls preload="metadata" className="h-full w-full bg-black object-cover" />
-                        ) : (
-                          <Image
-                            src={asset.url}
-                            alt=""
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
-                          />
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2 border-t border-border/70 bg-surface-glass-90 px-2 py-2 text-[10px] text-text-secondary md:px-3 md:text-[12px] lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          {dimensions ? <span>{dimensions}</span> : null}
-                          {sizeLabel ? <span>{sizeLabel}</span> : null}
-                          {renderAssetMeta ? renderAssetMeta(asset) : null}
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-2 md:gap-3 xl:grid-cols-3">
+                  {filteredAssets.map((asset) => {
+                    const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
+                    const sizeLabel = formatSize(asset.size);
+                    const assetHref = getAssetHref?.(asset) ?? null;
+                    const assetHrefLabel = getAssetHrefLabel?.(asset) ?? 'Open asset source';
+                    return (
+                      <div
+                        key={asset.id}
+                        className="overflow-hidden rounded-card border border-border/70 bg-surface shadow-card transition hover:border-text-primary/60"
+                        onMouseEnter={() => {
+                          if (asset.kind === 'video' && asset.previewUrl) setActivePreviewId(asset.id);
+                        }}
+                        onMouseLeave={() => {
+                          if (asset.kind === 'video' && asset.previewUrl) setActivePreviewId((current) => (current === asset.id ? null : current));
+                        }}
+                        onFocusCapture={() => {
+                          if (asset.kind === 'video' && asset.previewUrl) setActivePreviewId(asset.id);
+                        }}
+                        onBlurCapture={() => {
+                          if (asset.kind === 'video' && asset.previewUrl) setActivePreviewId((current) => (current === asset.id ? null : current));
+                        }}
+                      >
+                        <div className="relative bg-placeholder" style={{ aspectRatio: '16 / 9' }}>
+                          {asset.kind === 'video' ? (
+                            <>
+                              {asset.thumbUrl ? (
+                                <Image
+                                  src={asset.thumbUrl}
+                                  alt=""
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-surface-2 text-text-secondary">
+                                  <Film className="h-8 w-8" aria-hidden />
+                                </div>
+                              )}
+                              {asset.previewUrl ? (
+                                <video
+                                  src={activePreviewId === asset.id ? asset.previewUrl : undefined}
+                                  poster={asset.thumbUrl ?? undefined}
+                                  muted
+                                  loop
+                                  playsInline
+                                  autoPlay
+                                  preload="none"
+                                  className={clsx(
+                                    'absolute inset-0 h-full w-full bg-surface-2 object-cover transition-opacity duration-150',
+                                    activePreviewId === asset.id ? 'opacity-100' : 'opacity-0'
+                                  )}
+                                />
+                              ) : null}
+                            </>
+                          ) : asset.kind === 'audio' ? (
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-surface-2 px-4 text-text-secondary">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-brand shadow-card">
+                                <AudioWaveform className="h-6 w-6" aria-hidden />
+                              </div>
+                              <audio src={asset.url} controls preload="none" className="w-full max-w-[260px]" />
+                            </div>
+                          ) : (
+                            <Image
+                              src={asset.thumbUrl ?? asset.url}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
+                            />
+                          )}
+                          {assetHref ? (
+                            <Link
+                              href={assetHref}
+                              prefetch={false}
+                              aria-label={assetHrefLabel}
+                              title={assetHrefLabel}
+                              data-library-card-media-link
+                              className="absolute inset-0 z-10 rounded-t-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                            >
+                              <span className="sr-only">{assetHrefLabel}</span>
+                            </Link>
+                          ) : null}
                         </div>
-                        <div className="flex w-full items-center gap-1.5 md:gap-2 lg:w-auto">{renderAssetActions(asset)}</div>
+                        <div className="flex flex-col gap-2 border-t border-border/70 bg-surface-glass-90 px-2 py-2 text-[10px] text-text-secondary md:px-3 md:text-[12px] lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                          <div className="flex min-w-0 flex-col gap-0.5">
+                            {dimensions ? <span>{dimensions}</span> : null}
+                            {sizeLabel ? <span>{sizeLabel}</span> : null}
+                            {renderAssetMeta ? renderAssetMeta(asset) : null}
+                          </div>
+                          <div className="flex w-full items-center gap-1.5 md:gap-2 lg:w-auto">{renderAssetActions(asset)}</div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                {hasMore && searchQuery.trim().length === 0 && onLoadMore ? (
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoadingMore}
+                      onClick={onLoadMore}
+                      className="rounded-full border-border bg-surface px-4 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {loadMoreLabel}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>

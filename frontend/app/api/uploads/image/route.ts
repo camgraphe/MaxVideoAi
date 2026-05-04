@@ -6,6 +6,7 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { ensureReusableAsset } from '@/server/media-library';
+import { createUploadImageThumbnail } from '@/server/upload-thumbnails';
 
 export const runtime = 'nodejs';
 
@@ -145,13 +146,24 @@ export async function POST(req: NextRequest) {
     width: number | null;
     height: number | null;
     size_bytes: string | number | null;
+    thumb_url: string | null;
   }>(
-    `SELECT asset_id, url, mime_type, width, height, size_bytes
-     FROM user_assets
-     WHERE user_id = $1
-       AND source = 'upload'
-       AND metadata->>'contentSha256' = $2
-     ORDER BY created_at DESC
+    `SELECT ua.asset_id,
+            ua.url,
+            ua.mime_type,
+            ua.width,
+            ua.height,
+            ua.size_bytes,
+            COALESCE(ma.thumb_url, ua.metadata->>'thumbUrl') AS thumb_url
+     FROM user_assets ua
+     LEFT JOIN media_assets ma
+       ON ma.user_id = ua.user_id
+      AND ma.url = ua.url
+      AND ma.deleted_at IS NULL
+     WHERE ua.user_id = $1
+       AND ua.source = 'upload'
+       AND ua.metadata->>'contentSha256' = $2
+     ORDER BY ua.created_at DESC
      LIMIT 1`,
     [userId, contentSha256]
   );
@@ -168,6 +180,7 @@ export async function POST(req: NextRequest) {
         size: typeof asset.size_bytes === 'string' ? Number(asset.size_bytes) : asset.size_bytes,
         mime: asset.mime_type,
         name: blob.name,
+        thumbUrl: asset.thumb_url,
       },
     });
   }
@@ -187,6 +200,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const imageThumbUrl = await createUploadImageThumbnail({
+      data: uploadBuffer,
+      userId,
+      fileName: uploadFileName,
+    });
+
     const assetId = await recordUserAsset({
       userId: userId ?? null,
       url: uploadResult.url,
@@ -200,6 +219,7 @@ export async function POST(req: NextRequest) {
         originalMime: declaredMime,
         normalizedFromMime,
         contentSha256,
+        thumbUrl: imageThumbUrl,
       },
     });
 
@@ -212,6 +232,7 @@ export async function POST(req: NextRequest) {
       width: uploadResult.width,
       height: uploadResult.height,
       sizeBytes: uploadResult.size,
+      thumbUrl: imageThumbUrl,
     }).catch((error) => {
       console.warn('[upload] failed to mirror image into media_assets', error);
     });
@@ -226,6 +247,7 @@ export async function POST(req: NextRequest) {
         size: uploadResult.size,
         mime: uploadResult.mime,
         name: blob.name,
+        thumbUrl: imageThumbUrl,
       },
     });
   } catch (error) {

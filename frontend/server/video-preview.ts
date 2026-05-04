@@ -210,5 +210,39 @@ export async function generateAndPersistJobPreviewVideo(options: EnsureJobPrevie
     });
   });
 
+  await query(
+    `UPDATE job_outputs
+        SET preview_url = $2,
+            metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('previewUrl', $2::text),
+            updated_at = NOW()
+      WHERE job_id = $1
+        AND kind = 'video'
+        AND status <> 'deleted'
+        AND (preview_url IS NULL OR preview_url = '')`,
+    [options.jobId, previewUrl]
+  ).catch((error) => {
+    console.warn('[video-preview] failed to persist output preview', {
+      jobId: options.jobId,
+      error: error instanceof Error ? error.message : error,
+    });
+  });
+
+  await query(
+    `UPDATE media_assets
+        SET preview_url = $2,
+            metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('previewUrl', $2::text),
+            updated_at = NOW()
+      WHERE source_job_id = $1
+        AND kind = 'video'
+        AND deleted_at IS NULL
+        AND (preview_url IS NULL OR preview_url = '')`,
+    [options.jobId, previewUrl]
+  ).catch((error) => {
+    console.warn('[video-preview] failed to persist asset preview', {
+      jobId: options.jobId,
+      error: error instanceof Error ? error.message : error,
+    });
+  });
+
   return previewUrl;
 }

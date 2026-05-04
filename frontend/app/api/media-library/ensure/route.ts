@@ -22,16 +22,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const sourceJobId =
+      typeof payload?.jobId === 'string'
+        ? payload.jobId
+        : typeof payload?.sourceJobId === 'string'
+          ? payload.sourceJobId
+          : null;
     const asset = await ensureReusableAsset({
       userId,
       url,
       kind: normalizeKind(payload?.kind),
-      source: payload?.source,
-      sourceJobId: typeof payload?.jobId === 'string' ? payload.jobId : typeof payload?.sourceJobId === 'string' ? payload.sourceJobId : null,
+      source: payload?.source ?? (sourceJobId ? 'generated' : undefined),
+      sourceJobId,
       sourceOutputId: typeof payload?.sourceOutputId === 'string' ? payload.sourceOutputId : null,
       label: typeof payload?.label === 'string' ? payload.label : typeof payload?.name === 'string' ? payload.name : null,
       mimeType: typeof payload?.mime === 'string' ? payload.mime : null,
       thumbUrl: typeof payload?.thumbUrl === 'string' ? payload.thumbUrl : null,
+      previewUrl: typeof payload?.previewUrl === 'string' ? payload.previewUrl : null,
       width: typeof payload?.width === 'number' ? payload.width : null,
       height: typeof payload?.height === 'number' ? payload.height : null,
       sizeBytes: typeof payload?.size === 'number' ? payload.size : null,
@@ -42,6 +49,8 @@ export async function POST(req: NextRequest) {
       asset: {
         id: asset.id,
         url: asset.url,
+        thumbUrl: asset.thumbUrl,
+        previewUrl: asset.previewUrl,
         width: asset.width,
         height: asset.height,
         mime: asset.mimeType,

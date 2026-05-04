@@ -792,6 +792,7 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
         url TEXT NOT NULL,
         storage_url TEXT,
         thumb_url TEXT,
+        preview_url TEXT,
         mime_type TEXT,
         width INTEGER,
         height INTEGER,
@@ -802,6 +803,11 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    `);
+
+    await query(`
+      ALTER TABLE job_outputs
+      ADD COLUMN IF NOT EXISTS preview_url TEXT;
     `);
 
     await query(`
@@ -831,6 +837,7 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
         kind TEXT NOT NULL CHECK (kind IN ('image','video','audio')),
         url TEXT NOT NULL,
         thumb_url TEXT,
+        preview_url TEXT,
         mime_type TEXT,
         width INTEGER,
         height INTEGER,
@@ -844,6 +851,11 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         deleted_at TIMESTAMPTZ
       );
+    `);
+
+    await query(`
+      ALTER TABLE media_assets
+      ADD COLUMN IF NOT EXISTS preview_url TEXT;
     `);
 
     await query(`

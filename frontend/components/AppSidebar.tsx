@@ -41,7 +41,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
-  { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
+  { id: 'jobs', label: 'History', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
 ];

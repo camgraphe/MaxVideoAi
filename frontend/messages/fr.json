@@ -3037,7 +3037,7 @@
         "generate-audio": "Générer de l’audio",
         "tools": "Outils",
         "library": "Bibliothèque",
-        "jobs": "Jobs",
+        "jobs": "Historique",
         "billing": "Facturation",
         "settings": "Paramètres"
       },
@@ -3366,18 +3366,18 @@
       }
     },
     "jobs": {
-      "title": "Jobs",
+      "title": "Historique",
       "sections": {
-        "video": "Jobs vidéo",
-        "audio": "Jobs audio",
-        "image": "Jobs image",
-        "character": "Jobs personnage",
-        "angle": "Jobs angle",
-        "videoEmpty": "Aucun job vidéo pour le moment.",
-        "audioEmpty": "Aucun job audio pour le moment.",
-        "imageEmpty": "Aucun job image pour le moment.",
-        "characterEmpty": "Aucun job personnage pour le moment.",
-        "angleEmpty": "Aucun job angle pour le moment."
+        "video": "Historique vidéo",
+        "audio": "Historique audio",
+        "image": "Historique image",
+        "character": "Historique personnage",
+        "angle": "Historique angle",
+        "videoEmpty": "Aucun rendu vidéo pour le moment.",
+        "audioEmpty": "Aucun rendu audio pour le moment.",
+        "imageEmpty": "Aucun rendu image pour le moment.",
+        "characterEmpty": "Aucun rendu personnage pour le moment.",
+        "angleEmpty": "Aucun rendu angle pour le moment."
       },
       "teams": {
         "title": "Équipes",
@@ -3388,7 +3388,7 @@
         "email": "support@maxvideoai.com"
       },
       "curated": "Des rendus exemples sélectionnés par l’équipe MaxVideo apparaissent ici jusqu’à ce que vous génériez vos propres clips.",
-      "error": "Impossible de charger les jobs.",
+      "error": "Impossible de charger l’historique.",
       "retry": "Réessayer",
       "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir votre historique.",
       "loadMore": "Charger plus",
@@ -3396,6 +3396,11 @@
       "actions": {
         "addToLibrary": "Ajouter à la bibliothèque",
         "removeFromLibrary": "Retirer de la bibliothèque",
+        "recreate": "Générer avec les mêmes réglages",
+        "openDetails": "Voir détails",
+        "actions": "Actions",
+        "expandSection": "Afficher",
+        "collapseSection": "Masquer",
         "saving": "Enregistrement…",
         "removing": "Suppression…"
       }
@@ -3434,14 +3439,15 @@
       },
       "recent": {
         "title": "Rendus récents",
-        "viewAll": "Ouvrir la bibliothèque",
-        "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir la bibliothèque.",
+        "viewAll": "Ouvrir l’historique",
+        "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir l’historique.",
         "tabs": {
           "all": "Tous",
           "video": "Vidéo",
           "image": "Image",
           "character": "Character",
           "angle": "Angle",
+          "upscale": "Upscale",
           "audio": "Audio"
         }
       },
@@ -3771,28 +3777,68 @@
     "library": {
       "hero": {
         "title": "Bibliothèque",
-        "subtitle": "Importez, organisez et réutilisez vos références visuelles.",
+        "subtitle": "Les médias enregistrés que vous pouvez réutiliser dans vos générations.",
         "ctas": {
           "image": "Générer une image",
           "video": "Générer une vidéo"
         }
       },
+      "views": {
+        "saved": "Assets enregistrés",
+        "review": "Parcourir les rendus récents"
+      },
+      "media": {
+        "images": "Images",
+        "videos": "Vidéos",
+        "audio": "Audio"
+      },
+      "browser": {
+        "searchPlaceholder": "Rechercher des assets…",
+        "sourcesTitle": "Bibliothèque enregistrée",
+        "toolsTitle": "Créer ou transformer",
+        "toolsDescription": "Ouvrez un autre espace pour préparer une meilleure source avant de l’importer ici.",
+        "emptySearch": "Aucun asset ne correspond à cette recherche.",
+        "import": "Importer",
+        "importing": "Import…",
+        "importFailed": "Import impossible. Réessayez.",
+        "refresh": "Actualiser"
+      },
       "tabs": {
-        "all": "Toutes",
-        "upload": "Images chargées",
-        "generated": "Images générées"
+        "all": "Toutes les images",
+        "upload": "Images importées",
+        "generated": "Rendus enregistrés",
+        "recent": "Rendus récents",
+        "character": "Assets personnage",
+        "angle": "Assets angle",
+        "upscale": "Assets upscale"
+      },
+      "review": {
+        "subtitle": "Sélectionnez les rendus récents à enregistrer comme assets réutilisables.",
+        "sourcesTitle": "Historique",
+        "helper": "Sélectionnez les rendus récents que vous voulez conserver dans la Bibliothèque pour les réutiliser.",
+        "empty": "Aucun rendu récent pour le moment. Générez d’abord un média, puis enregistrez les outputs utiles.",
+        "loadError": "Impossible de charger les rendus récents.",
+        "saveButton": "Enregistrer",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "saveError": "Impossible d’enregistrer ce rendu dans la Bibliothèque.",
+        "openRender": "Ouvrir le rendu"
       },
       "assets": {
         "title": "Ressources de la bibliothèque",
         "countLabel": "{count}",
-        "loadError": "Impossible de charger les ressources importées.",
-        "empty": "Aucune ressource importée pour l’instant. Ajoutez des références depuis le générateur ou en les déposant ici.",
-        "emptyUploads": "Aucune image chargée pour l’instant. Ajoutez des références depuis le générateur ou en les déposant ici.",
-        "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Générez une image puis enregistrez-la dans votre bibliothèque.",
-        "deleteError": "Suppression impossible pour cette image.",
+        "loadError": "Impossible de charger les assets enregistrés.",
+        "empty": "Votre Bibliothèque est vide. Importez un média ou parcourez les rendus récents pour enregistrer des assets réutilisables.",
+        "emptyUploads": "Aucun média importé pour le moment. Importez un fichier depuis votre appareil pour le voir ici.",
+        "emptyGenerated": "Aucun rendu enregistré pour le moment. Parcourez les rendus récents et enregistrez les outputs utiles.",
+        "emptyCharacter": "Aucun asset personnage enregistré. Générez-en un dans Character Builder pour le voir ici.",
+        "emptyAngle": "Aucun asset angle enregistré. Générez-en un dans l’outil Angle pour le voir ici.",
+        "emptyUpscale": "Aucun asset upscale enregistré. Enregistrez un résultat upscale pour le voir ici.",
+        "deleteError": "Suppression impossible pour cet asset.",
         "deleteButton": "Supprimer",
         "downloadButton": "Télécharger",
-        "useSettingsButton": "Utiliser les réglages",
+        "openAssetButton": "Ouvrir l’asset",
+        "useSettingsButton": "Ouvrir la source",
         "deleting": "Suppression…",
         "assetFallback": "Ressource"
       }

@@ -280,6 +280,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         audio_url: job.audio_url,
         thumb_url: job.thumb_url,
         preview_frame: job.preview_frame,
+        preview_video_url: job.preview_video_url,
         render_ids: job.render_ids,
         duration_sec: job.duration_sec,
         status: job.status,
@@ -291,6 +292,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         jobId: job.job_id,
         videoUrl: normalizedVideoUrl,
         audioUrl: normalizedAudioUrl,
+        previewVideoUrl: normalizedPreviewVideoUrl,
         thumbUrl: normalizedThumbUrl,
         renderIds: parsedRenderIds ?? null,
         renderThumbUrls: parsedRenderThumbUrls ?? null,
@@ -299,6 +301,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     );
     normalizedVideoUrl = enriched.videoUrl ?? null;
     normalizedAudioUrl = enriched.audioUrl ?? null;
+    normalizedPreviewVideoUrl = enriched.previewVideoUrl ?? null;
     normalizedThumbUrl = enriched.thumbUrl ?? null;
     parsedRenderIds = enriched.renderIds ?? parsedRenderIds;
     parsedRenderThumbUrls = enriched.renderThumbUrls ?? parsedRenderThumbUrls;

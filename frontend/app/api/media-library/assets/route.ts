@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
       id: asset.id,
       url: asset.url,
       thumbUrl: asset.thumbUrl,
+      previewUrl: asset.previewUrl,
       mime: asset.mimeType,
       width: asset.width,
       height: asset.height,

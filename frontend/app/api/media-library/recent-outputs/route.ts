@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       jobId: output.jobId,
       url: output.url,
       thumbUrl: output.thumbUrl,
+      previewUrl: output.previewUrl,
       mime: output.mimeType,
       width: output.width,
       height: output.height,
@@ -37,6 +38,8 @@ export async function GET(req: NextRequest) {
       position: output.position,
       status: output.status,
       createdAt: output.createdAt,
+      isSaved: Boolean(output.isSaved),
+      savedAssetId: output.savedAssetId ?? null,
     })),
   });
 }

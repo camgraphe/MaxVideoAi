@@ -758,6 +758,7 @@ type JobRow = {
                 audio_url: row.audio_url,
                 thumb_url: row.thumb_url,
                 preview_frame: row.preview_frame,
+                preview_video_url: row.preview_video_url,
                 render_ids: row.render_ids,
                 duration_sec: row.duration_sec,
                 status: row.status,

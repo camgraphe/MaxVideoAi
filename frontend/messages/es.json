@@ -3027,7 +3027,7 @@
         "generate": "Generar video",
         "generate-image": "Generar imagen",
         "generate-audio": "Generar audio",
-        "jobs": "Jobs",
+        "jobs": "Historial",
         "tools": "Herramientas",
         "library": "Biblioteca",
         "billing": "Facturación",
@@ -3358,18 +3358,18 @@
       }
     },
     "jobs": {
-      "title": "Trabajos",
+      "title": "Historial",
       "sections": {
-        "video": "Jobs de video",
-        "image": "Jobs de imagen",
-        "audio": "Jobs de audio",
-        "character": "Jobs de personaje",
-        "angle": "Jobs de ángulo",
-        "videoEmpty": "Todavía no hay jobs de video.",
-        "imageEmpty": "Todavía no hay jobs de imagen.",
-        "audioEmpty": "Todavía no hay jobs de audio.",
-        "characterEmpty": "Todavía no hay jobs de personaje.",
-        "angleEmpty": "Todavía no hay jobs de ángulo."
+        "video": "Historial de video",
+        "image": "Historial de imagen",
+        "audio": "Historial de audio",
+        "character": "Historial de personaje",
+        "angle": "Historial de ángulo",
+        "videoEmpty": "Todavía no hay renders de video.",
+        "imageEmpty": "Todavía no hay renders de imagen.",
+        "audioEmpty": "Todavía no hay renders de audio.",
+        "characterEmpty": "Todavía no hay renders de personaje.",
+        "angleEmpty": "Todavía no hay renders de ángulo."
       },
       "teams": {
         "title": "Equipos",
@@ -3380,7 +3380,7 @@
         "email": "support@maxvideoai.com"
       },
       "curated": "Los renders iniciales seleccionados por el equipo MaxVideo aparecen aquí hasta que generes tus propios clips.",
-      "error": "No se pudieron cargar los trabajos.",
+      "error": "No se pudo cargar el historial.",
       "retry": "Reintentar",
       "empty": "Todavía no hay renders. Inicia una generación para llenar tu historial.",
       "loadMore": "Cargar más",
@@ -3388,6 +3388,11 @@
       "actions": {
         "addToLibrary": "Agregar a la biblioteca",
         "removeFromLibrary": "Quitar de la biblioteca",
+        "recreate": "Generar con la misma configuración",
+        "openDetails": "Ver detalles",
+        "actions": "Acciones",
+        "expandSection": "Mostrar",
+        "collapseSection": "Ocultar",
         "saving": "Guardando…",
         "removing": "Quitando…"
       }
@@ -3426,14 +3431,15 @@
       },
       "recent": {
         "title": "Renders recientes",
-        "viewAll": "Abrir biblioteca",
-        "empty": "Aún no hay renders. Inicia una generación para llenar tu biblioteca.",
+        "viewAll": "Abrir historial",
+        "empty": "Aún no hay renders. Inicia una generación para llenar tu historial.",
         "tabs": {
           "all": "Todos",
           "video": "Video",
           "image": "Imagen",
           "character": "Character",
           "angle": "Ángulo",
+          "upscale": "Upscale",
           "audio": "Audio"
         }
       },
@@ -3763,28 +3769,68 @@
     "library": {
       "hero": {
         "title": "Biblioteca",
-        "subtitle": "Importa, organiza y reutiliza tus recursos de referencia.",
+        "subtitle": "Medios guardados que puedes reutilizar en tus generaciones.",
         "ctas": {
           "image": "Generar imagen",
           "video": "Generar video"
         }
       },
+      "views": {
+        "saved": "Recursos guardados",
+        "review": "Revisar renders recientes"
+      },
+      "media": {
+        "images": "Imágenes",
+        "videos": "Videos",
+        "audio": "Audio"
+      },
+      "browser": {
+        "searchPlaceholder": "Buscar recursos…",
+        "sourcesTitle": "Biblioteca guardada",
+        "toolsTitle": "Crear o transformar",
+        "toolsDescription": "Abre otro espacio para preparar una mejor fuente antes de importarla aquí.",
+        "emptySearch": "Ningún recurso coincide con esta búsqueda.",
+        "import": "Importar",
+        "importing": "Importando…",
+        "importFailed": "No se pudo importar. Intenta de nuevo.",
+        "refresh": "Actualizar"
+      },
       "tabs": {
-        "all": "Todas",
+        "all": "Todas las imágenes",
         "upload": "Imágenes subidas",
-        "generated": "Imágenes generadas"
+        "generated": "Renders guardados",
+        "recent": "Renders recientes",
+        "character": "Recursos de personaje",
+        "angle": "Recursos de ángulo",
+        "upscale": "Recursos upscale"
+      },
+      "review": {
+        "subtitle": "Elige renders recientes para guardarlos como recursos reutilizables.",
+        "sourcesTitle": "Historial",
+        "helper": "Elige los renders recientes que quieres conservar en la Biblioteca para reutilizarlos.",
+        "empty": "Aún no hay renders recientes. Genera algo primero y guarda los outputs que quieras reutilizar.",
+        "loadError": "No se pudieron cargar los renders recientes.",
+        "saveButton": "Guardar",
+        "saving": "Guardando…",
+        "saved": "Guardado",
+        "saveError": "No se pudo guardar este render en la Biblioteca.",
+        "openRender": "Abrir render"
       },
       "assets": {
         "title": "Recursos de la biblioteca",
         "countLabel": "{count}",
-        "loadError": "No se pudieron cargar los recursos importados.",
-        "empty": "Aún no tienes recursos importados. Súbelos desde el compositor o arrástralos aquí.",
-        "emptyUploads": "Aún no hay imágenes subidas. Súbelas desde el compositor o arrástralas aquí.",
-        "emptyGenerated": "Aún no hay imágenes generadas guardadas. Genera una imagen y guárdala en tu biblioteca.",
-        "deleteError": "No se pudo eliminar esta imagen.",
+        "loadError": "No se pudieron cargar los recursos guardados.",
+        "empty": "Tu Biblioteca está vacía. Importa medios o revisa renders recientes para guardar recursos reutilizables.",
+        "emptyUploads": "Aún no hay medios subidos. Importa medios desde tu dispositivo para verlos aquí.",
+        "emptyGenerated": "Aún no hay renders guardados. Revisa renders recientes y guarda los outputs que quieras reutilizar.",
+        "emptyCharacter": "Aún no hay recursos de personaje guardados. Genera uno en Character Builder para verlo aquí.",
+        "emptyAngle": "Aún no hay recursos de ángulo guardados. Genera uno en la herramienta Angle para verlo aquí.",
+        "emptyUpscale": "Aún no hay recursos upscale guardados. Guarda un resultado upscale para verlo aquí.",
+        "deleteError": "No se pudo eliminar este recurso.",
         "deleteButton": "Eliminar",
         "downloadButton": "Descargar",
-        "useSettingsButton": "Usar ajustes",
+        "openAssetButton": "Abrir recurso",
+        "useSettingsButton": "Abrir fuente",
         "deleting": "Eliminando…",
         "assetFallback": "Recurso"
       }

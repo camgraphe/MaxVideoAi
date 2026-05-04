@@ -3002,7 +3002,7 @@
         "generate-audio": "Generate Audio",
         "tools": "Tools",
         "library": "Library",
-        "jobs": "Jobs",
+        "jobs": "History",
         "billing": "Billing",
         "settings": "Settings"
       },
@@ -3441,18 +3441,18 @@
       }
     },
     "jobs": {
-      "title": "Jobs",
+      "title": "History",
       "sections": {
-        "video": "Video jobs",
-        "audio": "Audio jobs",
-        "image": "Image jobs",
-        "character": "Character jobs",
-        "angle": "Angle jobs",
-        "videoEmpty": "No video jobs yet.",
-        "audioEmpty": "No audio jobs yet.",
-        "imageEmpty": "No image jobs yet.",
-        "characterEmpty": "No character jobs yet.",
-        "angleEmpty": "No angle jobs yet."
+        "video": "Video history",
+        "audio": "Audio history",
+        "image": "Image history",
+        "character": "Character history",
+        "angle": "Angle history",
+        "videoEmpty": "No video renders yet.",
+        "audioEmpty": "No audio renders yet.",
+        "imageEmpty": "No image renders yet.",
+        "characterEmpty": "No character renders yet.",
+        "angleEmpty": "No angle renders yet."
       },
       "teams": {
         "title": "Teams",
@@ -3463,7 +3463,7 @@
         "email": "support@maxvideoai.com"
       },
       "curated": "Starter renders curated by the MaxVideo team appear here until you generate your own clips.",
-      "error": "Failed to load jobs.",
+      "error": "Failed to load history.",
       "retry": "Retry",
       "empty": "No renders yet. Start a generation to populate your history.",
       "loadMore": "Load more",
@@ -3471,6 +3471,11 @@
       "actions": {
         "addToLibrary": "Add to Library",
         "removeFromLibrary": "Remove from Library",
+        "recreate": "Generate same settings",
+        "openDetails": "View details",
+        "actions": "Actions",
+        "expandSection": "Show",
+        "collapseSection": "Hide",
         "saving": "Saving…",
         "removing": "Removing…"
       }
@@ -3509,14 +3514,15 @@
       },
       "recent": {
         "title": "Recent renders",
-        "viewAll": "Open Library",
-        "empty": "No renders yet. Start a generation to populate your library.",
+        "viewAll": "Open History",
+        "empty": "No renders yet. Start a generation to populate your history.",
         "tabs": {
           "all": "All",
           "video": "Video",
           "image": "Image",
           "character": "Character",
           "angle": "Angle",
+          "upscale": "Upscale",
           "audio": "Audio"
         }
       },
@@ -3736,28 +3742,68 @@
     "library": {
       "hero": {
         "title": "Library",
-        "subtitle": "Import, organize, and reuse reference assets.",
+        "subtitle": "Saved media you can reuse across generations.",
         "ctas": {
           "image": "Generate image",
           "video": "Generate video"
         }
       },
+      "views": {
+        "saved": "Saved assets",
+        "review": "Review recent renders"
+      },
+      "media": {
+        "images": "Images",
+        "videos": "Videos",
+        "audio": "Audio"
+      },
+      "browser": {
+        "searchPlaceholder": "Search assets…",
+        "sourcesTitle": "Saved Library",
+        "toolsTitle": "Create or transform",
+        "toolsDescription": "Open another workspace to prepare a better source before importing it here.",
+        "emptySearch": "No assets match this search.",
+        "import": "Import",
+        "importing": "Importing…",
+        "importFailed": "Import failed. Please try again.",
+        "refresh": "Refresh"
+      },
       "tabs": {
         "all": "All images",
         "upload": "Uploaded images",
-        "generated": "Generated images"
+        "generated": "Saved renders",
+        "recent": "Recent renders",
+        "character": "Character assets",
+        "angle": "Angle assets",
+        "upscale": "Upscale assets"
+      },
+      "review": {
+        "subtitle": "Choose recent renders to save as reusable Library assets.",
+        "sourcesTitle": "History",
+        "helper": "Choose recent renders to save as reusable Library assets.",
+        "empty": "No recent renders yet. Generate something first, then save the outputs you want to reuse.",
+        "loadError": "Unable to load recent renders.",
+        "saveButton": "Save to Library",
+        "saving": "Saving…",
+        "saved": "Saved",
+        "saveError": "Unable to save this render to Library.",
+        "openRender": "Open render"
       },
       "assets": {
         "title": "Library assets",
         "countLabel": "{count}",
-        "loadError": "Unable to load imported assets.",
-        "empty": "No imported assets yet. Upload references from the composer or drop files here.",
-        "emptyUploads": "No uploaded images yet. Upload references from the composer or drop files here.",
-        "emptyGenerated": "No generated images saved yet. Generate an image and save it to your library.",
-        "deleteError": "Unable to delete this image.",
+        "loadError": "Unable to load saved assets.",
+        "empty": "Your Library is empty. Import media or review recent renders to save reusable assets.",
+        "emptyUploads": "No uploaded media yet. Import media from your device to see it here.",
+        "emptyGenerated": "No saved renders yet. Review recent renders and save the outputs you want to reuse.",
+        "emptyCharacter": "No character assets saved yet. Generate one in Character Builder to see it here.",
+        "emptyAngle": "No angle assets saved yet. Generate one in the Angle tool to see it here.",
+        "emptyUpscale": "No upscale assets saved yet. Save an upscale result to see it here.",
+        "deleteError": "Unable to delete this asset.",
         "deleteButton": "Delete",
         "downloadButton": "Download",
-        "useSettingsButton": "Use settings",
+        "openAssetButton": "Open asset",
+        "useSettingsButton": "Open source",
         "deleting": "Deleting…",
         "assetFallback": "Asset"
       }

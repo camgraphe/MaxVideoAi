@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
+import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 
 export const runtime = 'nodejs';
 
@@ -79,6 +80,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const videoThumbUrl = await createUploadVideoThumbnail({
+      data: buffer,
+      userId,
+      fileName: blob.name,
+    });
+
     const assetId = await recordUserAsset({
       userId: userId ?? null,
       url: uploadResult.url,
@@ -87,7 +94,7 @@ export async function POST(req: NextRequest) {
       height: null,
       size: buffer.length,
       source: 'upload',
-      metadata: { originalName: blob.name, kind: 'video' },
+      metadata: { originalName: blob.name, kind: 'video', thumbUrl: videoThumbUrl },
     });
 
     await ensureReusableAsset({
@@ -97,6 +104,7 @@ export async function POST(req: NextRequest) {
       source: 'upload',
       mimeType: mime,
       sizeBytes: buffer.length,
+      thumbUrl: videoThumbUrl,
     }).catch((error) => {
       console.warn('[upload] failed to mirror video into media_assets', error);
     });
@@ -111,6 +119,7 @@ export async function POST(req: NextRequest) {
         size: buffer.length,
         mime,
         name: blob.name,
+        thumbUrl: videoThumbUrl,
       },
     });
   } catch (error) {

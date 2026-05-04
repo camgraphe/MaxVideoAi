@@ -17,6 +17,7 @@
     "previews:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-video-previews.ts",
     "keyframes:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-video-keyframes.ts",
     "thumbs:image-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-image-thumbnails.ts",
+    "thumbs:uploads-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-upload-thumbnails.ts",
     "i18n:messages": "tsx scripts/translate-messages.ts",
     "i18n:check": "tsx scripts/validate-keys.ts",
     "i18n:blog": "tsx scripts/translate-blog.ts",

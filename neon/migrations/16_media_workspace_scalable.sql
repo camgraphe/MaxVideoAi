@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS job_outputs (
   url TEXT NOT NULL,
   storage_url TEXT,
   thumb_url TEXT,
+  preview_url TEXT,
   mime_type TEXT,
   width INTEGER,
   height INTEGER,
@@ -17,6 +18,9 @@ CREATE TABLE IF NOT EXISTS job_outputs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE job_outputs
+  ADD COLUMN IF NOT EXISTS preview_url TEXT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS job_outputs_job_kind_position_idx
   ON job_outputs (job_id, kind, position);
@@ -35,6 +39,7 @@ CREATE TABLE IF NOT EXISTS media_assets (
   kind TEXT NOT NULL CHECK (kind IN ('image','video','audio')),
   url TEXT NOT NULL,
   thumb_url TEXT,
+  preview_url TEXT,
   mime_type TEXT,
   width INTEGER,
   height INTEGER,
@@ -48,6 +53,9 @@ CREATE TABLE IF NOT EXISTS media_assets (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
+
+ALTER TABLE media_assets
+  ADD COLUMN IF NOT EXISTS preview_url TEXT;
 
 CREATE INDEX IF NOT EXISTS media_assets_user_created_idx
   ON media_assets (user_id, created_at DESC)
@@ -78,6 +86,7 @@ INSERT INTO job_outputs (
   kind,
   url,
   thumb_url,
+  preview_url,
   mime_type,
   duration_sec,
   position,
@@ -93,6 +102,7 @@ SELECT
   'video',
   app_jobs.video_url,
   COALESCE(NULLIF(app_jobs.thumb_url, ''), app_jobs.preview_frame),
+  to_jsonb(app_jobs)->>'preview_video_url',
   'video/mp4',
   app_jobs.duration_sec,
   0,
@@ -142,6 +152,7 @@ INSERT INTO job_outputs (
   kind,
   url,
   thumb_url,
+  preview_url,
   mime_type,
   width,
   height,
@@ -164,6 +175,7 @@ SELECT
     WHEN jsonb_typeof(render_entry.value) = 'object' THEN COALESCE(render_entry.value->>'thumb_url', render_entry.value->>'thumbUrl', render_entry.value->>'url')
     ELSE trim(both '"' from render_entry.value::text)
   END,
+  NULL,
   CASE
     WHEN jsonb_typeof(render_entry.value) = 'object' THEN render_entry.value->>'mime_type'
     ELSE 'image/png'
@@ -206,6 +218,7 @@ INSERT INTO media_assets (
   kind,
   url,
   thumb_url,
+  preview_url,
   mime_type,
   width,
   height,
@@ -227,6 +240,7 @@ SELECT
   END,
   user_assets.url,
   user_assets.metadata->>'thumbUrl',
+  user_assets.metadata->>'previewUrl',
   user_assets.mime_type,
   user_assets.width,
   user_assets.height,
@@ -242,4 +256,4 @@ SELECT
   user_assets.created_at,
   user_assets.created_at
 FROM user_assets
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT DO NOTHING;

@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
       asset: {
         id: asset.id,
         url: asset.url,
+        thumbUrl: asset.thumbUrl,
+        previewUrl: asset.previewUrl,
         width: asset.width,
         height: asset.height,
         mime: asset.mimeType,

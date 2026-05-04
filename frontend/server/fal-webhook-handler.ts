@@ -1124,6 +1124,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     audio_url: null,
     thumb_url: shouldClearThumb ? null : finalThumbUrl ?? job.thumb_url,
     preview_frame: shouldClearThumb ? null : finalPreviewFrame ?? job.preview_frame,
+    preview_video_url: job.preview_video_url,
     render_ids: renderIdsJson ? JSON.parse(renderIdsJson) : job.render_ids,
     duration_sec: job.duration_sec,
     status: nextStatus,

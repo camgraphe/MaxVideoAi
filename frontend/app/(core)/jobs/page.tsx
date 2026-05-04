@@ -1,9 +1,10 @@
 'use client';
 
+import { ChevronDown, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
+import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveAssetToLibrary } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import type { GroupSummary } from '@/types/groups';
 import type { EngineCaps } from '@/types/engines';
@@ -11,6 +12,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -28,20 +30,20 @@ import type { JobSurface } from '@/types/billing';
 import { deriveJobSurface } from '@/lib/job-surface';
 
 const DEFAULT_JOBS_COPY = {
-  title: 'Jobs',
+  title: 'History',
   sections: {
-    video: 'Video jobs',
-    audio: 'Audio jobs',
-    image: 'Image jobs',
-    character: 'Character jobs',
-    angle: 'Angle jobs',
-    upscale: 'Upscale jobs',
-    videoEmpty: 'No video jobs yet.',
-    audioEmpty: 'No audio jobs yet.',
-    imageEmpty: 'No image jobs yet.',
-    characterEmpty: 'No character jobs yet.',
-    angleEmpty: 'No angle jobs yet.',
-    upscaleEmpty: 'No upscale jobs yet.',
+    video: 'Video history',
+    audio: 'Audio history',
+    image: 'Image history',
+    character: 'Character history',
+    angle: 'Angle history',
+    upscale: 'Upscale history',
+    videoEmpty: 'No video renders yet.',
+    audioEmpty: 'No audio renders yet.',
+    imageEmpty: 'No image renders yet.',
+    characterEmpty: 'No character renders yet.',
+    angleEmpty: 'No angle renders yet.',
+    upscaleEmpty: 'No upscale renders yet.',
   },
   teams: {
     title: 'Teams',
@@ -52,7 +54,7 @@ const DEFAULT_JOBS_COPY = {
     email: 'support@maxvideoai.com',
   },
   curated: 'Starter renders curated by the MaxVideo team appear here until you generate your own clips.',
-  error: 'Failed to load jobs.',
+  error: 'Failed to load history.',
   retry: 'Retry',
   empty: 'No renders yet. Start a generation to populate your history.',
   loadMore: 'Load more',
@@ -61,10 +63,23 @@ const DEFAULT_JOBS_COPY = {
     addToLibrary: 'Add to Library',
     saving: 'Saving…',
     recreate: 'Generate same settings',
+    openDetails: 'View details',
+    actions: 'Actions',
+    expandSection: 'Show',
+    collapseSection: 'Hide',
   },
 } as const;
 
 type JobsCopy = typeof DEFAULT_JOBS_COPY;
+type LibrarySaveKind = 'image' | 'video' | 'audio';
+type LibrarySavePayload = {
+  url: string;
+  kind: LibrarySaveKind;
+  jobId?: string | null;
+  label?: string | null;
+  thumbUrl?: string | null;
+  previewUrl?: string | null;
+};
 
 function resolveClientJobSurface(job: Job): JobSurface {
   return deriveJobSurface({
@@ -88,6 +103,74 @@ function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forceImageG
     return `/app/tools/upscale?job=${encodeURIComponent(jobId)}`;
   }
   return `/app?job=${encodeURIComponent(jobId)}`;
+}
+
+function firstHttpUrl(values: Array<string | null | undefined>): string | null {
+  return values.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value)) ?? null;
+}
+
+function resolveGroupLibrarySavePayload(group: GroupSummary): LibrarySavePayload | null {
+  const job = group.hero.job;
+  const members = group.members;
+  const firstPreview = group.previews[0];
+  const jobRenderUrl = firstHttpUrl(job?.renderIds ?? []);
+  const videoUrl = firstHttpUrl([group.hero.videoUrl, firstPreview?.videoUrl, ...members.map((member) => member.videoUrl)]);
+  const audioUrl = firstHttpUrl([group.hero.audioUrl, ...members.map((member) => member.audioUrl)]);
+  const thumbUrl = firstHttpUrl([group.hero.thumbUrl, firstPreview?.thumbUrl, job?.thumbUrl]);
+  const previewUrl = firstHttpUrl([group.hero.previewVideoUrl, firstPreview?.previewVideoUrl, job?.previewVideoUrl]);
+  const imageUrl = firstHttpUrl([jobRenderUrl, ...members.map((member) => member.thumbUrl), thumbUrl]);
+  const jobId = job?.jobId ?? group.hero.jobId ?? group.id;
+  const label = job?.prompt ?? group.hero.prompt ?? undefined;
+
+  if (videoUrl) {
+    return { url: videoUrl, kind: 'video', jobId, label, thumbUrl, previewUrl };
+  }
+  if (audioUrl) {
+    return { url: audioUrl, kind: 'audio', jobId, label, thumbUrl, previewUrl: null };
+  }
+  if (imageUrl) {
+    return { url: imageUrl, kind: 'image', jobId, label, thumbUrl, previewUrl: null };
+  }
+  return null;
+}
+
+function resolveEntryLibrarySavePayload(entry: MediaLightboxEntry): LibrarySavePayload | null {
+  const videoUrl = firstHttpUrl([entry.videoUrl]);
+  const audioUrl = firstHttpUrl([entry.audioUrl]);
+  const imageUrl = firstHttpUrl([entry.imageUrl, entry.thumbUrl]);
+  const label = entry.prompt ?? entry.label ?? undefined;
+
+  if (videoUrl) {
+    return {
+      url: videoUrl,
+      kind: 'video',
+      jobId: entry.jobId,
+      label,
+      thumbUrl: entry.thumbUrl ?? null,
+      previewUrl: entry.previewUrl ?? null,
+    };
+  }
+  if (audioUrl) {
+    return {
+      url: audioUrl,
+      kind: 'audio',
+      jobId: entry.jobId,
+      label,
+      thumbUrl: entry.thumbUrl ?? null,
+      previewUrl: null,
+    };
+  }
+  if (imageUrl) {
+    return {
+      url: imageUrl,
+      kind: 'image',
+      jobId: entry.jobId,
+      label,
+      thumbUrl: entry.thumbUrl ?? imageUrl,
+      previewUrl: null,
+    };
+  }
+  return null;
 }
 
 export default function JobsPage() {
@@ -369,15 +452,11 @@ export default function JobsPage() {
     [summaryMap]
   );
 
-  const handleSaveImageGroup = useCallback(
+  const handleSaveGroupToLibrary = useCallback(
     async (group: GroupSummary) => {
-      const job = group.hero.job;
-      const renderIds =
-        job?.renderIds?.filter((url): url is string => typeof url === 'string' && url.length > 0) ?? [];
-      const previewThumb = group.previews.find((preview) => preview.thumbUrl)?.thumbUrl;
-      const imageUrl = renderIds[0] ?? previewThumb ?? job?.thumbUrl ?? group.hero.thumbUrl ?? null;
-      if (!imageUrl) {
-        console.warn('No image available to save for group', group.id);
+      const payload = resolveGroupLibrarySavePayload(group);
+      if (!payload) {
+        console.warn('No media available to save for group', group.id);
         return;
       }
       setSavingImageGroupIds((prev) => {
@@ -386,13 +465,17 @@ export default function JobsPage() {
         return next;
       });
       try {
-        await saveImageToLibrary({
-          url: imageUrl,
-          jobId: job?.jobId ?? group.id,
-          label: job?.prompt ?? undefined,
+        await saveAssetToLibrary({
+          url: payload.url,
+          kind: payload.kind,
+          jobId: payload.jobId ?? group.id,
+          label: payload.label ?? undefined,
+          source: 'generated',
+          thumbUrl: payload.thumbUrl ?? null,
+          previewUrl: payload.previewUrl ?? null,
         });
       } catch (error) {
-        console.error('Failed to save image to library', error);
+        console.error('Failed to save media to library', error);
       } finally {
         setSavingImageGroupIds((prev) => {
           const next = new Set(prev);
@@ -404,21 +487,37 @@ export default function JobsPage() {
     []
   );
 
+  const handleSaveLightboxEntryToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
+    const payload = resolveEntryLibrarySavePayload(entry);
+    if (!payload) {
+      throw new Error('No media available to save.');
+    }
+    await saveAssetToLibrary({
+      url: payload.url,
+      kind: payload.kind,
+      jobId: payload.jobId ?? entry.jobId ?? entry.id,
+      label: payload.label ?? undefined,
+      source: 'generated',
+      thumbUrl: payload.thumbUrl ?? null,
+      previewUrl: payload.previewUrl ?? null,
+    });
+  }, []);
+
   const handleGroupAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction) => {
       if (action === 'remove') {
         void handleRemoveGroup(group);
         return;
       }
-      if (action === 'save-image') {
-        void handleSaveImageGroup(group);
+      if (action === 'save-image' || action === 'save-to-library') {
+        void handleSaveGroupToLibrary(group);
         return;
       }
       if (action === 'open' || action === 'continue' || action === 'refine' || action === 'branch' || action === 'compare') {
         setActiveGroupId(group.id);
       }
     },
-    [handleRemoveGroup, handleSaveImageGroup]
+    [handleRemoveGroup, handleSaveGroupToLibrary]
   );
 
   const handleGroupOpen = useCallback((group: GroupSummary) => {
@@ -501,8 +600,11 @@ export default function JobsPage() {
                 savingToLibrary={savingImageGroupIds.has(group.id)}
                 imageLibraryLabel={copy.actions.addToLibrary}
                 imageLibrarySavingLabel={copy.actions.saving}
+                showLibraryCta
                 recreateHref={recreateHref}
                 recreateLabel={copy.actions.recreate}
+                openLabel={copy.actions.openDetails}
+                actionMenuLabel={copy.actions.actions}
                 menuVariant="compact"
               />
             );
@@ -514,6 +616,8 @@ export default function JobsPage() {
     [
       allowRemove,
       copy.actions.addToLibrary,
+      copy.actions.actions,
+      copy.actions.openDetails,
       copy.actions.recreate,
       copy.actions.saving,
       engineLookup.byId,
@@ -542,10 +646,14 @@ export default function JobsPage() {
         <CollapsedGroupRail
           groups={groups}
           onOpen={handleGroupOpen}
+          onSaveToLibrary={handleSaveGroupToLibrary}
+          savingIds={savingImageGroupIds}
+          addLabel={copy.actions.addToLibrary}
+          savingLabel={copy.actions.saving}
         />
       );
     },
-    [handleGroupOpen]
+    [copy.actions.addToLibrary, copy.actions.saving, handleGroupOpen, handleSaveGroupToLibrary, savingImageGroupIds]
   );
 
   const sections = [
@@ -659,19 +767,29 @@ export default function JobsPage() {
 
           {sections.map((section, index) => (
             <section key={section.key} className={index < sections.length - 1 ? 'mb-8' : undefined}>
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleSection(section.key)}
-                  aria-label={collapsedSections[section.key] ? `Expand ${section.key} jobs` : `Collapse ${section.key} jobs`}
-                  className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
+                  aria-label={`${collapsedSections[section.key] ? copy.actions.expandSection : copy.actions.collapseSection} ${section.title}`}
+                  className="w-full justify-between gap-3 rounded-card border border-border bg-surface px-3 py-2 text-sm font-semibold text-text-primary shadow-card hover:bg-surface-glass-80"
                 >
-                  <span className="text-2xl leading-none text-text-primary">{collapsedSections[section.key] ? '▸' : '▾'}</span>
-                  <span>{section.title}</span>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 text-text-secondary transition-transform ${collapsedSections[section.key] ? '-rotate-90' : 'rotate-0'}`}
+                      aria-hidden="true"
+                    />
+                    <span className="truncate text-left">{section.title}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-xs text-text-secondary">
+                    <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5">{section.groups.length}</span>
+                    <span className="hidden font-semibold sm:inline">
+                      {collapsedSections[section.key] ? copy.actions.expandSection : copy.actions.collapseSection}
+                    </span>
+                  </span>
                 </Button>
-                <span className="text-xs text-text-secondary">{section.groups.length}</span>
               </div>
               {section.error ? (
                 renderGroupGrid(section.groups, section.empty, section.key, {
@@ -718,6 +836,7 @@ export default function JobsPage() {
           group={viewerGroup}
           onClose={() => setActiveGroupId(null)}
           onRefreshJob={handleRefreshJob}
+          onSaveToLibrary={handleSaveLightboxEntryToLibrary}
         />
       ) : null}
     </div>
@@ -811,9 +930,17 @@ function CollapsedGroupRailSkeleton() {
 function CollapsedGroupRail({
   groups,
   onOpen,
+  onSaveToLibrary,
+  savingIds,
+  addLabel,
+  savingLabel,
 }: {
   groups: GroupSummary[];
   onOpen: (group: GroupSummary) => void;
+  onSaveToLibrary: (group: GroupSummary) => void;
+  savingIds: Set<string>;
+  addLabel: string;
+  savingLabel: string;
 }) {
   const items = groups.slice(0, 12);
   return (
@@ -823,35 +950,50 @@ function CollapsedGroupRail({
         const fallbackThumb = resolveJobsRailPlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
         const video = resolveJobsRailVideo(group);
         const audio = resolveJobsRailAudio(group);
+        const isSaving = savingIds.has(group.id);
         return (
-          <button
+          <div
             key={group.id}
-            type="button"
-            onClick={() => onOpen(group)}
             className="group relative block h-auto min-h-0 shrink-0 overflow-hidden rounded-card border border-border bg-surface p-0 shadow-card transition hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
-            aria-label="Open render"
           >
-            <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
-              {video ? (
-                <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
-              ) : audio ? (
-                <AudioWaveformThumb
-                  seed={audio}
-                  thumbSrc={thumb !== fallbackThumb ? thumb : null}
-                  label={null}
-                  active={false}
-                />
-              ) : (
-                <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
-              )}
-              {group.count > 1 ? (
-                <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-on-inverse">
-                  ×{group.count}
-                </div>
-              ) : null}
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() => onOpen(group)}
+              className="block w-full"
+              aria-label="Open render"
+            >
+              <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
+                {video ? (
+                  <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
+                ) : audio ? (
+                  <AudioWaveformThumb
+                    seed={audio}
+                    thumbSrc={thumb !== fallbackThumb ? thumb : null}
+                    label={null}
+                    active={false}
+                  />
+                ) : (
+                  <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
+                )}
+                {group.count > 1 ? (
+                  <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-on-inverse">
+                    ×{group.count}
+                  </div>
+                ) : null}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSaveToLibrary(group)}
+              disabled={isSaving}
+              title={isSaving ? savingLabel : addLabel}
+              aria-label={isSaving ? savingLabel : addLabel}
+              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/90 text-black/80 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-70"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         );
       })}
     </div>

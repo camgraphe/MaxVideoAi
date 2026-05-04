@@ -33,6 +33,8 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { GroupPreviewMedia } from '@/components/GroupedJobCard';
+import { getAspectRatioNumber } from '@/lib/aspect';
 import {
   readLastKnownUserId,
   writeLastKnownMember,
@@ -49,10 +51,10 @@ const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend', 'a2v', 'r
 const IMAGE_MODE_OPTIONS: Mode[] = ['t2i', 'i2i'];
 const IN_PROGRESS_POLL_MS = 5000;
 const IN_PROGRESS_LIMIT = 8;
+const DASHBOARD_RECENT_PAGE_SIZE = 12;
 const RECENT_SAMPLE_LIMIT = 20;
 const TEMPLATE_LIMIT = 6;
 const DASHBOARD_ROW_THUMB_SIZES = '(max-width: 640px) calc(100vw - 48px), 112px';
-const DASHBOARD_CARD_THUMB_SIZES = '(max-width: 640px) calc(100vw - 48px), (max-width: 1280px) 50vw, 360px';
 const DASHBOARD_TOOL_THUMB_SIZES = '104px';
 
 const MediaLightbox = dynamic(
@@ -99,8 +101,8 @@ const DEFAULT_DASHBOARD_COPY = {
   },
   recent: {
     title: 'Recent renders',
-    viewAll: 'Open Library',
-    empty: 'No renders yet. Start a generation to populate your library.',
+    viewAll: 'Open History',
+    empty: 'No renders yet. Start a generation to populate your history.',
     tabs: {
       all: 'All',
       video: 'Video',
@@ -185,7 +187,8 @@ const DEFAULT_DASHBOARD_COPY = {
 type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
 type RecentTypeTab = 'all' | JobSurface;
 
-const RECENT_TYPE_TABS: readonly RecentTypeTab[] = ['all', 'video', 'image', 'character', 'angle', 'audio'];
+const RECENT_TYPE_TABS: readonly RecentTypeTab[] = ['all', 'video', 'image', 'character', 'angle', 'upscale', 'audio'];
+const DASHBOARD_PREVIEW_RATIO = 16 / 9;
 const TOOL_CHARACTER_PREVIEW_URL = '/assets/tools/character-builder-workspace.png';
 const TOOL_ANGLE_PREVIEW_URL = '/assets/tools/angle-workspace.png';
 
@@ -245,16 +248,23 @@ export default function DashboardPage() {
   const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
   const router = useRouter();
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const [recentTab, setRecentTab] = useState<RecentTypeTab>('all');
   const { data: enginesData, error: enginesError } = useEngines('video', { includeAverages: false });
   const { data: imageEnginesData } = useEngines('image');
   const {
     data: jobsPages,
-    isLoading,
-    setSize,
-    isValidating,
     mutate: mutateJobs,
     stableJobs,
-  } = useInfiniteJobs(25, { type: 'video' });
+  } = useInfiniteJobs(25, { type: 'all' });
+  const recentFeedOptions = recentTab === 'all' ? { type: 'all' as const } : { surface: recentTab };
+  const {
+    data: recentJobsPages,
+    isLoading: recentIsLoading,
+    setSize: setRecentSize,
+    isValidating: recentIsValidating,
+    mutate: mutateRecentJobs,
+    stableJobs: stableRecentJobs,
+  } = useInfiniteJobs(DASHBOARD_RECENT_PAGE_SIZE, recentFeedOptions);
   const { stableJobs: stableImageJobs } = useInfiniteJobs(1, { type: 'image' });
 
   const [selectedEngineId, setSelectedEngineId] = useState<string | null>(null);
@@ -269,7 +279,6 @@ export default function DashboardPage() {
   const [, setTemplates] = useState<TemplateEntry[]>([]);
   const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
   const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(null);
-  const [recentTab, setRecentTab] = useState<RecentTypeTab>('all');
   const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
 
   const availableEngines = useMemo(() => {
@@ -301,14 +310,21 @@ export default function DashboardPage() {
     if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
     return jobsPages?.flatMap((page) => page.jobs) ?? [];
   }, [jobsPages, stableJobs]);
+  const recentJobs = useMemo(() => {
+    if (Array.isArray(stableRecentJobs) && stableRecentJobs.length) return stableRecentJobs;
+    return recentJobsPages?.flatMap((page) => page.jobs) ?? [];
+  }, [recentJobsPages, stableRecentJobs]);
 
-  const latestRealJob = useMemo(() => jobs.find((job) => !job.curated && job.engineId), [jobs]);
+  const latestRealJob = useMemo(
+    () => jobs.find((job) => !job.curated && job.engineId && resolveDashboardJobSurface(job) === 'video'),
+    [jobs]
+  );
   const imageJobs = useMemo(() => {
     if (Array.isArray(stableImageJobs) && stableImageJobs.length) return stableImageJobs;
     return [];
   }, [stableImageJobs]);
   const latestImageJob = useMemo(() => imageJobs.find((job) => !job.curated && job.engineId), [imageJobs]);
-  const lastJobsPage = jobsPages && jobsPages.length ? jobsPages[jobsPages.length - 1] : null;
+  const lastRecentJobsPage = recentJobsPages && recentJobsPages.length ? recentJobsPages[recentJobsPages.length - 1] : null;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -484,10 +500,11 @@ export default function DashboardPage() {
     if (typeof window === 'undefined') return;
     const handleHidden = () => {
       void mutateJobs();
+      void mutateRecentJobs();
     };
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
-  }, [mutateJobs]);
+  }, [mutateJobs, mutateRecentJobs]);
 
   const pendingJobs = useMemo(() => {
     return jobs
@@ -500,9 +517,10 @@ export default function DashboardPage() {
     if (pendingJobs.length === 0) return;
     const interval = window.setInterval(() => {
       void mutateJobs();
+      void mutateRecentJobs();
     }, IN_PROGRESS_POLL_MS);
     return () => window.clearInterval(interval);
-  }, [mutateJobs, pendingJobs.length]);
+  }, [mutateJobs, mutateRecentJobs, pendingJobs.length]);
 
   const selectedEngine = useMemo(() => {
     if (!selectedEngineId) return availableEngines[0] ?? enginesData?.engines?.[0] ?? null;
@@ -533,11 +551,11 @@ export default function DashboardPage() {
   }, [selectedImageEngine, selectedImageMode]);
 
   const groupedJobs = useMemo(() => {
-    const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
+    const { groups } = groupJobsIntoSummaries(recentJobs, { includeSinglesAsGroups: true });
     return [...groups]
       .filter((group) => group.members.length > 0)
       .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  }, [jobs]);
+  }, [recentJobs]);
 
   const normalizedGroups = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
 
@@ -553,7 +571,7 @@ export default function DashboardPage() {
 
   const displayRecentGroups = recentGroups;
 
-  const isInitialLoading = isLoading && jobs.length === 0 && normalizedGroups.length === 0;
+  const isInitialLoading = recentIsLoading && recentJobs.length === 0 && normalizedGroups.length === 0;
 
   const formatCurrency = useCallback((amount: number, currencyCode?: string) => {
     const safeCurrency = currencyCode ?? 'USD';
@@ -809,11 +827,11 @@ export default function DashboardPage() {
                 copy={copy}
                 groups={displayRecentGroups}
                 isLoading={isInitialLoading}
-                isValidating={isValidating}
-                hasMore={Boolean(lastJobsPage?.nextCursor)}
+                isValidating={recentIsValidating}
+                hasMore={Boolean(lastRecentJobsPage?.nextCursor)}
                 onOpenGroup={(group) => setLightbox({ kind: 'group', group })}
                 onSaveTemplate={handleSaveTemplate}
-                onLoadMore={() => setSize((size) => size + 1)}
+                onLoadMore={() => setRecentSize((size) => size + 1)}
                 tab={recentTab}
                 onTabChange={setRecentTab}
               />
@@ -1579,22 +1597,11 @@ function RecentGrid({
             const jobId = group.hero.jobId ?? group.hero.id;
             return (
               <div key={group.id} className="flex flex-col gap-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onOpenGroup(group)}
-                  className="relative min-h-0 h-auto w-full aspect-[1.9/1] overflow-hidden rounded-card border border-hairline bg-[#05070d] p-0"
-                >
-                  {group.hero.thumbUrl ? (
-                    <Image src={group.hero.thumbUrl} alt="" fill className="object-contain" sizes={DASHBOARD_CARD_THUMB_SIZES} />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
-                  )}
-                  <div className="absolute left-3 top-3 rounded-pill bg-surface-on-media-dark-60 px-2 py-1 text-[11px] font-semibold text-on-inverse">
-                    {group.hero.engineLabel}
-                  </div>
-                </Button>
+                <DashboardRecentPreviewCard
+                  group={group}
+                  noPreviewLabel={copy.actions.noPreview}
+                  onOpen={() => onOpenGroup(group)}
+                />
                   <div className="flex flex-wrap gap-2">
                     {group.hero.videoUrl ? (
                       <ButtonLink
@@ -1653,6 +1660,103 @@ function RecentGrid({
       ) : null}
     </section>
   );
+}
+
+function DashboardRecentPreviewCard({
+  group,
+  noPreviewLabel,
+  onOpen,
+}: {
+  group: GroupSummary;
+  noPreviewLabel: string;
+  onOpen: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [isPreviewWarm, setIsPreviewWarm] = useState(false);
+  const previewCount = Math.max(1, Math.min(4, group.count));
+  const previews = group.previews.length >= 4 ? group.previews.slice(0, 4) : group.previews;
+  const previewGridClass =
+    previewCount === 1
+      ? 'grid-cols-1'
+      : previewCount === 3
+        ? 'grid-cols-3'
+        : 'grid-cols-2';
+  const hasAnyPreview = previews.some((preview) => preview?.previewVideoUrl || preview?.videoUrl || preview?.thumbUrl);
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="ghost"
+      onClick={onOpen}
+      onPointerEnter={() => {
+        setIsPreviewWarm(true);
+        setHovered(true);
+      }}
+      onPointerLeave={() => setHovered(false)}
+      onFocus={() => {
+        setIsPreviewWarm(true);
+        setHovered(true);
+      }}
+      onBlur={() => setHovered(false)}
+      className="group relative min-h-0 h-auto w-full overflow-hidden rounded-card border border-transparent bg-transparent p-0 shadow-none hover:bg-transparent"
+    >
+      <div className="relative w-full overflow-hidden rounded-[inherit]" style={{ aspectRatio: '16 / 9' }}>
+        <div
+          className={clsx(
+            'absolute inset-0 grid overflow-hidden rounded-[inherit] bg-surface',
+            previewGridClass,
+            previewCount === 1 ? 'p-0' : 'gap-1 p-1'
+          )}
+        >
+          {Array.from({ length: previewCount }).map((_, index) => {
+            const preview = previews[index];
+            const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
+            const memberAudioUrl = member?.audioUrl ?? member?.job?.audioUrl ?? null;
+            const shouldFillPreview = shouldFillDashboardPreview(
+              preview?.aspectRatio ?? member?.aspectRatio ?? member?.job?.aspectRatio ?? group.hero.aspectRatio
+            );
+            return (
+              <div
+                key={preview?.id ? `${preview.id}-${index}` : `dashboard-preview-${group.id}-${index}`}
+                className={clsx(
+                  'relative flex items-center justify-center overflow-hidden',
+                  shouldFillPreview ? 'bg-surface' : 'bg-[#05070d]',
+                  previewCount === 1 ? 'rounded-[inherit]' : 'rounded-card'
+                )}
+              >
+                {preview ? (
+                  <GroupPreviewMedia
+                    preview={preview}
+                    audioUrl={memberAudioUrl}
+                    audioLabel={preview.previewVideoUrl || preview.videoUrl ? null : 'Audio'}
+                    shouldPlay={hovered}
+                    shouldWarm={isPreviewWarm || hovered}
+                    fit={shouldFillPreview ? 'cover' : 'contain'}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+          {!hasAnyPreview ? (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-text-muted">
+              {noPreviewLabel}
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="pointer-events-none absolute inset-0 z-[1] rounded-[inherit] bg-black/0 transition-colors duration-150 group-hover:bg-black/10 group-focus-visible:bg-black/10" />
+      <div className="absolute left-3 top-3 z-[2] max-w-[calc(100%-1.5rem)] truncate rounded-pill bg-surface-on-media-dark-60 px-2 py-1 text-[11px] font-semibold text-on-inverse">
+        {group.hero.engineLabel}
+      </div>
+    </Button>
+  );
+}
+
+function shouldFillDashboardPreview(aspectRatio?: string | null): boolean {
+  if (!aspectRatio) return true;
+  const ratio = getAspectRatioNumber(aspectRatio, DASHBOARD_PREVIEW_RATIO);
+  return Math.abs(ratio - DASHBOARD_PREVIEW_RATIO) < 0.04;
 }
 
 function InsightsPanel({

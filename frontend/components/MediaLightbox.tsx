@@ -31,6 +31,7 @@ export interface MediaLightboxEntry {
   id: string;
   label: string;
   videoUrl?: string | null;
+  previewUrl?: string | null;
   audioUrl?: string | null;
   imageUrl?: string | null;
   thumbUrl?: string | null;

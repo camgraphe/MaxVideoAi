@@ -56,6 +56,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
         label,
         jobId,
         videoUrl: video,
+        previewUrl: item.previewUrl,
         audioUrl: audio,
         imageUrl: !video && !audio ? item.url : undefined,
         thumbUrl: thumb,
