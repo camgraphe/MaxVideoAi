@@ -94,7 +94,6 @@ const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
 const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
   () => import('@/components/groups/CompositePreviewDock').then((mod) => mod.CompositePreviewDock),
   {
-    ssr: false,
     loading: () => <CompositePreviewDockSkeleton />,
   }
 );
