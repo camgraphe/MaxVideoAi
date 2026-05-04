@@ -185,6 +185,71 @@ function GalleryRailSkeleton() {
   );
 }
 
+function ComposerBootSkeleton() {
+  return (
+    <section className="rounded-card border border-border bg-surface-glass-80 p-4 shadow-card" aria-hidden>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="h-4 w-36 rounded-full bg-skeleton" />
+        <div className="h-8 w-28 rounded-full bg-skeleton" />
+      </div>
+      <div className="min-h-[156px] rounded-card border border-hairline bg-surface-2 p-4">
+        <div className="h-4 w-3/4 rounded-full bg-skeleton" />
+        <div className="mt-3 h-4 w-5/6 rounded-full bg-skeleton" />
+        <div className="mt-3 h-4 w-2/3 rounded-full bg-skeleton" />
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2">
+          <div className="h-9 w-24 rounded-input bg-skeleton" />
+          <div className="h-9 w-24 rounded-input bg-skeleton" />
+        </div>
+        <div className="h-11 w-36 rounded-input bg-skeleton" />
+      </div>
+    </section>
+  );
+}
+
+function WorkspaceBootShell({
+  isDesktopLayout,
+  message,
+}: {
+  isDesktopLayout: boolean;
+  message?: string;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col bg-bg">
+      <HeaderBar />
+      <div className={clsx('flex flex-1', isDesktopLayout ? 'flex-row' : 'flex-col')}>
+        <div className="flex min-w-0 flex-1">
+          <AppSidebar />
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
+              {message ? (
+                <div className="rounded-card border border-border bg-surface-glass-70 px-4 py-2 text-sm text-text-secondary">
+                  {message}
+                </div>
+              ) : null}
+              <div className="stack-gap-lg">
+                <CompositePreviewDockSkeleton />
+                <ComposerBootSkeleton />
+              </div>
+            </main>
+          </div>
+        </div>
+        {isDesktopLayout ? (
+          <div className="flex w-[320px] justify-end py-4 pl-2 pr-0">
+            <GalleryRailSkeleton />
+          </div>
+        ) : null}
+      </div>
+      {!isDesktopLayout ? (
+        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
+          <GalleryRailSkeleton />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
   switch (render.aspectRatio) {
@@ -5130,7 +5195,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const primaryField = inputSchemaSummary.assetFields.find((entry) => entry.role === 'primary')?.field;
     return primaryField?.label ?? 'Reference image';
   }, [inputSchemaSummary.assetFields]);
-  const guestUploadLockedReason = !authLoading && !user?.id ? workspaceCopy.authGate.uploadLocked : null;
+  const guestUploadLockedReason = !authChecked || (!authLoading && !user?.id) ? workspaceCopy.authGate.uploadLocked : null;
   const composerAssetFields = useMemo(() => {
     return inputSchemaSummary.assetFields.map((entry) => {
       const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
@@ -5264,7 +5329,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]);
 
   const startRender = useCallback(async () => {
-    if (!form || !selectedEngine || !authChecked) return;
+    if (!form || !selectedEngine) return;
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token ?? null;
     if (!token) {
@@ -6231,7 +6296,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     inputSchemaSummary,
     extraInputFields,
     inputAssets,
-    authChecked,
     setActiveGroupId,
     uiLocale,
     workflowCopy,
@@ -6681,20 +6745,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       : singlePrice;
   const currency = preflight?.currency ?? 'USD';
 
-  if (!authChecked) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
-        Checking session…
-      </main>
-    );
-  }
-
   if (isLoading && engines.length === 0) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
-        Loading engines…
-      </main>
-    );
+    return <WorkspaceBootShell isDesktopLayout={isDesktopLayout} message="Loading workspace…" />;
   }
 
   if (enginesError && engines.length === 0) {
@@ -6706,6 +6758,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }
 
   if (!selectedEngine || !form) {
+    if (engines.length > 0) {
+      return <WorkspaceBootShell isDesktopLayout={isDesktopLayout} message="Preparing workspace…" />;
+    }
+
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
         {workspaceCopy.errors.noEngines}
