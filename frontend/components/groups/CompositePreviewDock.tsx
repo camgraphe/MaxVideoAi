@@ -656,34 +656,36 @@ export function CompositePreviewDock({
                                 src={item.thumb as string}
                                 alt=""
                                 fill
-                                priority={shouldPlayVideo}
+                                priority={itemKey === activeVideoKey}
                                 sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
                                 className={clsx(
                                   'pointer-events-none z-10 transition-opacity duration-150',
                                   mediaFitClass,
                                   shouldZoom ? 'transition-transform' : null,
-                                  isVideoReady || shouldPlayVideo ? 'opacity-0' : 'opacity-100'
+                                  shouldPlayVideo && isVideoReady ? 'opacity-0' : 'opacity-100'
                                 )}
                               />
                             ) : null}
-                            <video
-                              ref={registerVideo(itemKey)}
-                              data-preview-video={shouldPlayVideo ? 'active' : 'idle'}
-                              src={inlinePreviewUrl}
-                              poster={item.thumb}
-                              className={clsx(
-                                'relative z-0 h-full w-full',
-                                mediaFitClass,
-                                shouldZoom ? 'transition-transform duration-150' : null
-                              )}
-                              muted={isMuted}
-                              playsInline
-                              autoPlay={shouldPlayVideo}
-                              preload={shouldPlayVideo ? 'auto' : 'none'}
-                              loop={isLooping}
-                              onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
-                              onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
-                            />
+                            {shouldPlayVideo ? (
+                              <video
+                                ref={registerVideo(itemKey)}
+                                data-preview-video="active"
+                                src={inlinePreviewUrl}
+                                poster={item.thumb}
+                                className={clsx(
+                                  'relative z-0 h-full w-full',
+                                  mediaFitClass,
+                                  shouldZoom ? 'transition-transform duration-150' : null
+                                )}
+                                muted={isMuted}
+                                playsInline
+                                autoPlay
+                                preload="auto"
+                                loop={isLooping}
+                                onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
+                                onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
+                              />
+                            ) : null}
                           </>
                         ) : item.thumb ? (
                           <Image
