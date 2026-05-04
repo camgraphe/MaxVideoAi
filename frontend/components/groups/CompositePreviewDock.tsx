@@ -49,6 +49,7 @@ export interface CompositePreviewDockProps {
   onCopyPrompt?: () => void;
   engineSettings?: ReactNode;
   showTitle?: boolean;
+  autoPlayRequestId?: number;
   guidedNavigation?: {
     currentIndex: number;
     total: number;
@@ -107,6 +108,7 @@ export function CompositePreviewDock({
   onCopyPrompt,
   engineSettings,
   showTitle = true,
+  autoPlayRequestId = 0,
   guidedNavigation = null,
 }: CompositePreviewDockProps) {
   const { t } = useI18n();
@@ -130,6 +132,7 @@ export function CompositePreviewDock({
     isPlaying: false,
   });
   const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
+  const lastAutoPlayRequestRef = useRef(0);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const controls = {
@@ -153,6 +156,12 @@ export function CompositePreviewDock({
     setReadyItems({});
     setIsPlaying(false);
   }, [group?.id]);
+
+  useEffect(() => {
+    if (!autoPlayRequestId || lastAutoPlayRequestRef.current === autoPlayRequestId) return;
+    lastAutoPlayRequestRef.current = autoPlayRequestId;
+    setIsPlaying(true);
+  }, [autoPlayRequestId]);
 
   const markReady = useCallback((itemKey: string) => {
     if (readyItemsRef.current[itemKey]) return;

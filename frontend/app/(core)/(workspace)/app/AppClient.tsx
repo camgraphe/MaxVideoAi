@@ -1632,6 +1632,7 @@ useEffect(() => {
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPayload | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
+  const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
   const [galleryRetentionTick, setGalleryRetentionTick] = useState(0);
@@ -6535,7 +6536,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
 
   const handleGalleryGroupAction = useCallback(
-    (group: GroupSummary, action: GroupedJobAction) => {
+    (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => {
       setActiveGroupId(group.id);
       if (action === 'remove') {
         return;
@@ -6557,6 +6558,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
         const tile = buildQuadTileFromRender(heroRender, renderGroup);
         if (action === 'open') {
+          if (options?.autoPlayPreview) {
+            setPreviewAutoPlayRequestId((current) => current + 1);
+          }
           handleQuadTileAction('open', tile);
           setCompositeOverride(null);
           setCompositeOverrideSummary(null);
@@ -6623,6 +6627,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       const heroJobId = hero.jobId ?? tile.id;
 
       if (action === 'open') {
+        if (options?.autoPlayPreview) {
+          setPreviewAutoPlayRequestId((current) => current + 1);
+        }
         const targetBatchId = tile.batchId ?? group.batchId ?? null;
         if (tile.iterationCount > 1) {
           setViewMode('quad');
@@ -6684,6 +6691,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setViewMode,
       setActiveBatchId,
       setSelectedPreview,
+      setPreviewAutoPlayRequestId,
       provider,
       setCompositeOverride,
       setCompositeOverrideSummary,
@@ -6730,7 +6738,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     (index: number) => {
       const target = guidedSampleGroups[index];
       if (!target) return;
-      handleGalleryGroupAction(target, 'open');
+      handleGalleryGroupAction(target, 'open', { autoPlayPreview: true });
     },
     [guidedSampleGroups, handleGalleryGroupAction]
   );
@@ -6751,14 +6759,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const openGroupViaGallery = useCallback(
     (group: GroupSummary) => {
       setActiveGroupId(group.id);
-      handleGalleryGroupAction(group, 'open');
+      handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
     },
     [handleGalleryGroupAction, setActiveGroupId]
   );
   const handleActiveGroupOpen = useCallback(
     (group: GroupSummary) => {
       setActiveGroupId(group.id);
-      handleGalleryGroupAction(group, 'open');
+      handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
     },
     [handleGalleryGroupAction, setActiveGroupId]
   );
@@ -6766,7 +6774,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     (group: GroupSummary, action: GroupedJobAction) => {
       if (action === 'remove') return;
       setActiveGroupId(group.id);
-      handleGalleryGroupAction(group, action);
+      handleGalleryGroupAction(group, action, { autoPlayPreview: action === 'open' });
     },
     [handleGalleryGroupAction, setActiveGroupId]
   );
@@ -6872,6 +6880,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               <CompositePreviewDock
                 group={displayCompositeGroup}
                 isLoading={isGenerationLoading && !displayCompositeGroup}
+                autoPlayRequestId={previewAutoPlayRequestId}
                 copyPrompt={sharedVideoSettings ? null : sharedPrompt}
                 onCopyPrompt={sharedVideoSettings ? undefined : sharedPrompt ? handleCopySharedPrompt : undefined}
                 showTitle={false}
