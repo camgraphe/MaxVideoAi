@@ -111,7 +111,7 @@ export function CompositePreviewDock({
 }: CompositePreviewDockProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.preview', DEFAULT_PREVIEW_COPY) as PreviewCopy;
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
   const [readyItems, setReadyItems] = useState<Record<string, boolean>>({});
@@ -127,7 +127,7 @@ export function CompositePreviewDock({
     activeVideoKey: null,
     isLooping: true,
     isMuted: true,
-    isPlaying: true,
+    isPlaying: false,
   });
   const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -151,6 +151,7 @@ export function CompositePreviewDock({
     videoRefs.current.clear();
     videoRefCallbacksRef.current.clear();
     setReadyItems({});
+    setIsPlaying(false);
   }, [group?.id]);
 
   const markReady = useCallback((itemKey: string) => {
@@ -625,7 +626,7 @@ export function CompositePreviewDock({
                     return 'completed';
                   })();
                   const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
-                  const inlinePreviewUrl = Boolean(item.previewUrl) || shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
+                  const inlinePreviewUrl = shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
                   const showReadyThumb = Boolean(item.thumb);
                   const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
@@ -678,7 +679,7 @@ export function CompositePreviewDock({
                               muted={isMuted}
                               playsInline
                               autoPlay={shouldPlayVideo}
-                              preload={shouldPlayVideo || item.previewUrl ? 'auto' : 'none'}
+                              preload={shouldPlayVideo ? 'auto' : 'none'}
                               loop={isLooping}
                               onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
                               onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
