@@ -29,6 +29,7 @@ import {
 } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
 import {
   formatSupportedImageFormatsLabel,
   getSupportedImageFormats,
@@ -1621,6 +1622,40 @@ export async function executeImageGeneration({
         hero,
       ]
     );
+
+    await upsertLegacyJobOutputs({
+      job_id: jobId,
+      user_id: userId,
+      surface: jobSurface,
+      video_url: null,
+      audio_url: null,
+      thumb_url: heroThumb ?? PLACEHOLDER_THUMB,
+      preview_frame: heroThumb ?? PLACEHOLDER_THUMB,
+      render_ids: storedRenderEntries,
+      duration_sec: 1,
+      status: 'completed',
+    }).catch((outputError) => {
+      console.warn('[images] failed to persist job outputs', { jobId }, outputError);
+    });
+
+    if (jobSurface === 'character') {
+      await Promise.allSettled(
+        normalizedImagesWithThumbs.map((image, index) =>
+          ensureReusableAsset({
+            userId,
+            url: image.url,
+            kind: 'image',
+            source: 'character',
+            sourceJobId: jobId,
+            sourceOutputId: `${jobId}:image:${index}`,
+            mimeType: image.mimeType ?? 'image/png',
+            width: image.width ?? null,
+            height: image.height ?? null,
+            thumbUrl: image.thumbUrl ?? null,
+          })
+        )
+      );
+    }
 
     try {
       await query(

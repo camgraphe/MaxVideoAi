@@ -170,6 +170,13 @@ export async function fetchGscDashboardData(options?: {
     if (cached) {
       return withCacheAge(cached.data, cached.createdAt);
     }
+    return buildEmptyDashboard({
+      range,
+      windows,
+      configured: true,
+      siteUrl: config.siteUrl,
+      error: 'No cached GSC snapshot is available. Use force refresh to fetch fresh Search Console data.',
+    });
   }
 
   try {

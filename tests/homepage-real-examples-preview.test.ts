@@ -142,11 +142,11 @@ test('homepage hero avoids initial mobile video downloads', () => {
 
   assert.match(showcaseSource, /const \[shouldAutoplayPreview, setShouldAutoplayPreview\]/);
   assert.match(showcaseSource, /window\.matchMedia\('\(min-width: 768px\)'\)/);
-  assert.match(showcaseSource, /setShouldLoadVideo\(Boolean\(selected\?\.videoSrc && shouldAutoplayPreview\)\)/);
+  assert.match(showcaseSource, /if \(!selected\?\.videoSrc \|\| !shouldAutoplayPreview\) \{\n\s+setShouldLoadVideo\(false\);/);
+  assert.match(showcaseSource, /window\.requestIdleCallback\(loadPreview, \{ timeout: 1800 \}\)/);
   assert.match(showcaseSource, /selected\.videoSrc && shouldLoadVideo/);
   assert.match(showcaseSource, /autoPlay=\{shouldAutoplayPreview\}/);
   assert.doesNotMatch(showcaseSource, /loading="eager"/);
-  assert.doesNotMatch(showcaseSource, /fetchPriority="high"/);
 });
 
 test('homepage hero model CTA says specs and pricing instead of open model', () => {

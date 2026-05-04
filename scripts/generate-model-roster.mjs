@@ -99,19 +99,24 @@ function computeRosterEntry(entry) {
   };
 }
 
-function ensureNoShrink(currentRoster, generatedRoster) {
+function hasPublishedModelPage(entry) {
+  return entry?.surfaces?.modelPage?.indexable !== false || entry?.surfaces?.modelPage?.includeInSitemap !== false;
+}
+
+function ensureNoShrink(currentRoster, generatedRoster, allowedRemovedSlugs = new Set()) {
   const currentSlugs = currentRoster.map((entry) => entry?.modelSlug).filter((slug) => typeof slug === 'string');
   const generatedSlugs = generatedRoster.map((entry) => entry.modelSlug);
   const generatedSet = new Set(generatedSlugs);
   const missingSlugs = currentSlugs.filter((slug) => !generatedSet.has(slug));
+  const blockedMissingSlugs = missingSlugs.filter((slug) => !allowedRemovedSlugs.has(slug));
 
-  if (generatedRoster.length < currentRoster.length) {
+  if (generatedRoster.length < currentRoster.length && blockedMissingSlugs.length > 0) {
     throw new Error(
       `Generated roster would shrink from ${currentRoster.length} to ${generatedRoster.length}. Aborting to prevent page removals.`
     );
   }
-  if (missingSlugs.length > 0) {
-    throw new Error(`Generated roster is missing existing slugs: ${missingSlugs.join(', ')}`);
+  if (blockedMissingSlugs.length > 0) {
+    throw new Error(`Generated roster is missing existing slugs: ${blockedMissingSlugs.join(', ')}`);
   }
 }
 
@@ -196,7 +201,14 @@ async function main() {
     throw new Error('frontend/config/model-roster.json must be an array when present.');
   }
 
-  const roster = catalog
+  const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
+  const publicSlugs = new Set(publicCatalog.map((entry) => entry.modelSlug).filter((slug) => typeof slug === 'string'));
+  const allowedRemovedSlugs = new Set(
+    currentRoster
+      .map((entry) => entry?.modelSlug)
+      .filter((slug) => typeof slug === 'string' && !publicSlugs.has(slug))
+  );
+  const roster = publicCatalog
     .map((entry) => computeRosterEntry(entry))
     .sort((a, b) => {
       if (a.brandId === b.brandId) {
@@ -205,7 +217,7 @@ async function main() {
       return a.brandId.localeCompare(b.brandId, 'en');
     });
 
-  ensureNoShrink(currentRoster, roster);
+  ensureNoShrink(currentRoster, roster, allowedRemovedSlugs);
   const currentJson = JSON.stringify(currentRoster, null, 2);
   const generatedJson = JSON.stringify(roster, null, 2);
   const hasChanges = currentJson !== generatedJson;

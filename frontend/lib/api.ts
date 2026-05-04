@@ -947,8 +947,9 @@ export async function saveAssetToLibrary(payload: {
   label?: string | null;
   source?: string | null;
   kind?: 'image' | 'video';
+  sourceOutputId?: string | null;
 }) {
-  const response = await authFetch('/api/user-assets', {
+  const response = await authFetch('/api/media-library/ensure', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -958,6 +959,7 @@ export async function saveAssetToLibrary(payload: {
       label: payload.label ?? null,
       source: payload.source ?? null,
       kind: payload.kind ?? 'image',
+      sourceOutputId: payload.sourceOutputId ?? null,
     }),
   });
   const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;
@@ -980,6 +982,15 @@ export async function saveImageToLibrary(payload: {
 }
 
 export async function hideJob(jobId: string): Promise<void> {
+  const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hidden: true }),
+  });
+  const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.error ?? `Failed to hide job (${response.status})`);
+  }
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('jobs:hidden', { detail: { jobId } }));
   }

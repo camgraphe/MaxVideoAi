@@ -14,6 +14,7 @@ import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } fro
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { listVisitorImageLikeJobs, listVisitorStarterJobs } from '@/server/visitor-workspace';
 import { deriveJobSurface, isImageLikeSurface, normalizeJobSurface } from '@/lib/job-surface';
+import { applyOutputsToJobPayload, listJobOutputsByJobIds, upsertLegacyJobOutputs } from '@/server/media-library';
 
 export const dynamic = 'force-dynamic';
 
@@ -357,6 +358,7 @@ export async function GET(req: NextRequest) {
 type JobRow = {
       id: number;
       job_id: string;
+      user_id: string | null;
       updated_at: string;
       surface: string | null;
       billing_product_key: string | null;
@@ -400,7 +402,7 @@ type JobRow = {
     };
 
     let rows = await query<JobRow>(
-    `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
+    `SELECT id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
       FROM app_jobs
       ${where}
       ORDER BY created_at DESC, id DESC
@@ -432,7 +434,7 @@ type JobRow = {
       }
       if (expiredIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
+          `SELECT id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
              FROM app_jobs
             WHERE job_id = ANY($1::text[])`,
           [expiredIds]
@@ -639,7 +641,7 @@ type JobRow = {
 
       if (refreshedIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
+          `SELECT id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id
              FROM app_jobs
              WHERE job_id = ANY($1::text[])`,
           [refreshedIds]
@@ -739,6 +741,38 @@ type JobRow = {
         indexable: r.indexable ?? true,
       };
     });
+
+    if (mapped.length) {
+      try {
+        const jobIds = mapped.map((job) => job.jobId);
+        let outputMap = await listJobOutputsByJobIds(jobIds);
+        const missingOutputRows = items.filter((row) => !outputMap.has(row.job_id));
+        if (missingOutputRows.length) {
+          await Promise.all(
+            missingOutputRows.map((row) =>
+              upsertLegacyJobOutputs({
+                job_id: row.job_id,
+                user_id: row.user_id,
+                surface: row.surface,
+                video_url: row.video_url,
+                audio_url: row.audio_url,
+                thumb_url: row.thumb_url,
+                preview_frame: row.preview_frame,
+                render_ids: row.render_ids,
+                duration_sec: row.duration_sec,
+                status: row.status,
+              }).catch((error) => {
+                console.warn('[api/jobs] failed to backfill media outputs', row.job_id, error);
+              })
+            )
+          );
+          outputMap = await listJobOutputsByJobIds(jobIds);
+        }
+        mapped = mapped.map((job) => applyOutputsToJobPayload(job, outputMap.get(job.jobId)));
+      } catch (error) {
+        console.warn('[api/jobs] media output enrichment failed', error);
+      }
+    }
 
     if (!mapped.length && shouldUseStarterFallback(feedType, cursor)) {
       const starterVideos = await listStarterPlaylistVideos(limit);
