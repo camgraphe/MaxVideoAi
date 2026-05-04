@@ -3,13 +3,13 @@
   "versionLabel": "3.1 Lite",
   "seo": {
     "title": "Veo 3.1 Lite | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez Veo 3.1 Lite sur MaxVideoAI pour des brouillons audio-ready à moindre coût, les specs live et les tarifs avant de faire remonter les sorties retenues vers Veo 3.1.",
+    "description": "Utilisez Veo 3.1 Lite sur MaxVideoAI pour des tests audio-ready à moindre coût, les specs live et les tarifs avant de faire remonter les sorties retenues vers Veo 3.1.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg"
   },
-  "overview": "Veo 3.1 Lite est la variante Google Veo 3.1 actuelle la moins chere pour des brouillons texte-to-video et image-to-video courts, des checks de timing et des tests de prompt avec audio natif inclus et tarifs a la seconde.",
+  "overview": "Veo 3.1 Lite est la variante Google Veo 3.1 actuelle la moins chere pour des tests texte-to-video et image-to-video courts, des checks de timing et des tests de prompt avec audio natif inclus et tarifs a la seconde.",
   "hero": {
-    "title": "Veo 3.1 Lite — variante Veo actuelle pour des brouillons audio-ready à moindre coût",
-    "intro": "Utilisez Google Veo 3.1 Lite comme workflow video IA Veo 3 a moindre cout pour des brouillons texte-to-video et image-to-video courts avec audio natif toujours actif, puis faites remonter les runs gagnants vers Veo 3.1 Fast ou Veo 3.1.",
+    "title": "Veo 3.1 Lite — variante Veo actuelle pour des tests audio-ready à moindre coût",
+    "intro": "Utilisez Google Veo 3.1 Lite comme workflow video IA Veo 3 a moindre cout pour des tests texte-to-video et image-to-video courts avec audio natif toujours actif, puis faites remonter les runs gagnants vers Veo 3.1 Fast ou Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texte, image de départ & dernière image",
     "ctaPrimary": {
       "label": "Essayer Veo 3.1 Lite",
@@ -50,7 +50,7 @@
         "icon": "ads"
       },
       {
-        "title": "Brouillons sociaux & loops",
+        "title": "Tests sociaux & loops",
         "icon": "smartphone"
       },
       {
@@ -138,7 +138,7 @@
   "faqs": [
     {
       "q": "Veo 3.1 Lite convient-il pour tester des prompts image-to-video ?",
-      "a": "Oui. Veo 3.1 Lite convient bien a des tests image-to-video moins chers, a des drafts courts audio-ready et a des checks de prompt rapides avant de faire remonter les gagnants vers des tiers Veo plus eleves."
+      "a": "Oui. Veo 3.1 Lite convient bien a des tests image-to-video moins chers, a des tests courts audio-ready et a des checks de prompt rapides avant de faire remonter les gagnants vers des tiers Veo plus eleves."
     },
     {
       "q": "Quand utiliser Veo 3.1 Lite plutôt que Veo 3.1 ?",
@@ -158,11 +158,11 @@
     },
     {
       "q": "Puis‑je lancer Veo 3.1 Lite depuis l’Europe ou l’Amérique latine ?",
-      "a": "Oui. Même wallet/workspace MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
+      "a": "Oui. Même wallet/studio MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
     }
   ],
   "custom": {
-    "heroDesc1": "Veo 3.1 Lite apporte le moteur cinématique de DeepMind à un prix plus bas et un turnaround plus rapide, parfait pour les tests rapides, les fins guidées et les loops sociaux.",
+    "heroDesc1": "Veo 3.1 Lite apporte le modèle cinématique de DeepMind à un prix plus bas et un turnaround plus rapide, parfait pour les tests rapides, les fins guidées et les loops sociaux.",
     "heroDesc2": "Partez d’un brief texte court ou d’une image de départ, ajoutez une dernière image uniquement si vous devez piloter la fin, puis choisissez 4/6/8 secondes, 16:9 ou 9:16, et générez assez vite pour A/B tester plusieurs idées en une session.",
     "heroSupportLine": "Idéal pour explorer rapidement hooks, fins guidées et rythme avant de régénérer les gagnants dans Veo 3.1.",
     "whyTitle": "Pourquoi Veo 3.1 Lite est puissant",
@@ -183,7 +183,7 @@
         "icon": "ads"
       },
       {
-        "title": "Brouillons sociaux & loops",
+        "title": "Tests sociaux & loops",
         "icon": "smartphone"
       },
       {
@@ -204,7 +204,7 @@
     "whatIntro2": "Vous gardez les presets de cadrage et de ton, mais les runs sont optimisés pour le coût et le turnaround.",
     "whatFlowTitle": "Flux MaxVideoAI :",
     "whatFlowSteps": [
-      "1. Choisissez Veo 3.1 Lite comme moteur.",
+      "1. Choisissez Veo 3.1 Lite comme modèle.",
       "2. Partez du texte ou ajoutez une image de départ.",
       "3. Ajoutez une dernière image uniquement quand vous devez piloter la fin.",
       "4. Réglez durée, orientation et résolution.",
@@ -230,7 +230,7 @@
         "items": [
           "Réutilisez le langage de plan pour les finals.",
           "Passez sur Veo 3.1 Fast ou Veo 3.1 quand vous avez besoin de plus de contrôle.",
-          "Utilisez Lite pour les brouillons sociaux et loops.",
+          "Utilisez Lite pour les tests sociaux et loops.",
           "Sauvegardez des templates pour scaler les campagnes."
         ]
       }
@@ -311,7 +311,7 @@
       },
       {
         "q": "Puis‑je lancer Veo 3.1 Lite depuis l’Europe / LATAM ?",
-        "a": "Oui. Même wallet/workspace MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
+        "a": "Oui. Même wallet/studio MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
@@ -364,7 +364,7 @@
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Prompt storyboard (shot list courte)",
-        "description": "Gardez‑le minimal pour des brouillons plus propres et rapides.",
+        "description": "Gardez‑le minimal pour des tests plus propres et rapides.",
         "copy": "Shot list (même sujet + même décor)\nDurée : [4/6/8s]\n\nShot 1 (0–2s):\n[Cadrage + action + mouvement caméra]\n\nShot 2 (2–6/8s):\n[Cadrage + action + mouvement caméra]\n\nLook + mood :\n[Lumière + palette]\n\nSon (optionnel) :\n[Ambiance + 1 cue]"
       }
     ],

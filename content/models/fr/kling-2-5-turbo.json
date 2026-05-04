@@ -3,13 +3,13 @@
   "versionLabel": "2.5 Turbo",
   "seo": {
     "title": "Kling 2.5 Turbo | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez Kling 2.5 Turbo sur MaxVideoAI pour des drafts vidéo IA silencieux rapides, puis passez à Kling 3 Standard ou Kling 3 Pro pour le workflow Kling actuel.",
+    "description": "Utilisez Kling 2.5 Turbo sur MaxVideoAI pour des tests vidéo IA silencieux rapides, puis passez à Kling 3 Standard ou Kling 3 Pro pour le workflow Kling actuel.",
     "image": "/hero/kling-25.jpg"
   },
-  "overview": "Kling 2.5 Turbo reste disponible comme ancien modèle Kling encore pris en charge pour des drafts silencieux 1080p rapides, des clips courts orientés caméra et du look-dev à moindre coût.",
+  "overview": "Kling 2.5 Turbo reste disponible comme ancien modèle Kling encore pris en charge pour des tests silencieux 1080p rapides, des clips courts orientés caméra et du look-dev à moindre coût.",
   "hero": {
-    "title": "Kling 2.5 Turbo — ancien modèle Kling encore pris en charge pour des drafts silencieux rapides",
-    "intro": "Kling 2.5 Turbo reste disponible pour des drafts silencieux 1080p rapides et du look-dev à moindre coût, tandis que Kling 3 Standard et Kling 3 Pro sont désormais les options Kling actuelles pour les workflows multi-plans et l’audio natif.",
+    "title": "Kling 2.5 Turbo — ancien modèle Kling encore pris en charge pour des tests silencieux rapides",
+    "intro": "Kling 2.5 Turbo reste disponible pour des tests silencieux 1080p rapides et du look-dev à moindre coût, tandis que Kling 3 Standard et Kling 3 Pro sont désormais les options Kling actuelles pour les workflows multi-plans et l’audio natif.",
     "badge": "1080p · 5–10 s · Entrée texte ou image · Sortie silencieuse",
     "ctaPrimary": {
       "label": "Générer avec Kling 2.5 Turbo",
@@ -134,7 +134,7 @@
   "faqs": [
     {
       "q": "Kling 2.5 Turbo sort‑il de l’audio ?",
-      "a": "Non. C’est vidéo‑seule et silencieuse; ajoutez le son en post ou via des moteurs audio."
+      "a": "Non. C’est vidéo‑seule et silencieuse; ajoutez le son en post ou via des modèles audio."
     },
     {
       "q": "Quelles durées et formats sont supportés ?",
@@ -149,7 +149,7 @@
       "a": "Affiché par 5 s/10 s dans l’app. Pro ~ 0,35 $ / 0,70 $ ; Standard moins cher. Vérifiez le chip avant rendu."
     },
     {
-      "q": "Quand dois‑je utiliser un autre moteur ?",
+      "q": "Quand dois‑je utiliser un autre modèle ?",
       "a": "Utilisez Sora/Veo/Wan pour l’audio natif ou des mini‑stories multi‑beats; Pika pour des animations stylisées ou pixel."
     }
   ],
@@ -194,7 +194,7 @@
     ],
     "whatTitle": "Ce qu’est vraiment Kling 2.5 Turbo dans MaxVideoAI",
     "whatIntro1": "Kling 2.5 Turbo est un modèle vidéo short‑form haute performance pour motion ciné, bonne adhérence au prompt et style cohérent.",
-    "whatIntro2": "Dans MaxVideoAI c’est un moteur multitier que vous changez à chaque rendu.",
+    "whatIntro2": "Dans MaxVideoAI c’est un modèle multitier que vous changez à chaque rendu.",
     "whatFlowTitle": "Flux MaxVideoAI",
     "whatFlowSteps": [
       "1. Choisissez Kling 2.5 Turbo.",
@@ -229,7 +229,7 @@
         ]
       }
     ],
-    "specValueProp": "Kling 2.5 Turbo est un moteur 1080p silencieux pour des beats courts ciné avec motion et physique solides.",
+    "specValueProp": "Kling 2.5 Turbo est un modèle 1080p silencieux pour des beats courts ciné avec motion et physique solides.",
     "galleryTitle": "Galerie d’exemples : Kling 2.5 Turbo",
     "galleryIntro": "Rendus réels de la route Kling actuelle dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Kling 2.5 Turbo →",
@@ -292,7 +292,7 @@
     "faqs": [
       {
         "q": "Kling 2.5 Turbo sort‑il de l’audio ?",
-        "a": "Non. C’est vidéo‑seule et silencieuse; ajoutez le son en post ou via des moteurs audio."
+        "a": "Non. C’est vidéo‑seule et silencieuse; ajoutez le son en post ou via des modèles audio."
       },
       {
         "q": "Quelles durées et formats sont supportés ?",
@@ -307,14 +307,14 @@
         "a": "Affiché par 5 s/10 s dans l’app. Pro ~ 0,35 $/0,70 $; Standard moins cher. Utilisez le chip de prix avant rendu."
       },
       {
-        "q": "Quand choisir un autre moteur ?",
+        "q": "Quand choisir un autre modèle ?",
         "a": "Utilisez Sora/Veo/Wan pour l’audio natif; Pika pour des looks stylisés/pixel; Sora/Veo pour des mini‑stories audio multi‑beats."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et sorties sur le catalogue MaxVideoAI.",
-    "finalPara1": "Kling 2.5 Turbo dans MaxVideoAI est votre moteur 1080p silencieux et ciné pour des beats courts et percutants.",
-    "finalPara2": "Utilisez‑le quand la caméra et la motion portent l’histoire, puis ajoutez l’audio en post ou via des moteurs audio.",
+    "finalPara1": "Kling 2.5 Turbo dans MaxVideoAI est votre modèle 1080p silencieux et ciné pour des beats courts et percutants.",
+    "finalPara2": "Utilisez‑le quand la caméra et la motion portent l’histoire, puis ajoutez l’audio en post ou via des modèles audio.",
     "finalButton": "Ouvrir Generate",
     "promptingTitle": "Comment écrire un excellent prompt Kling 2.5 Turbo",
     "promptingIntro": "Kling Turbo réagit mieux à des prompts courts et concrets avec un seul mouvement caméra.",

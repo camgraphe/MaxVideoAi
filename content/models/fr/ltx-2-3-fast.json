@@ -8,7 +8,7 @@
   },
   "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide avant de faire monter les sorties retenues vers LTX 2.3 Pro.",
   "hero": {
-    "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des drafts plus longs, les tests et l’itération",
+    "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des tests plus longs, les tests et l’itération",
     "intro": "Utilisez LTX 2.3 Fast pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide quand vous voulez tester des idées, comparer le comportement des prompts ou explorer des clips plus longs avant de faire monter les sorties retenues vers LTX 2.3 Pro. Cette page couvre la tarification du modèle, sa durée max, ses meilleurs cas d’usage et la façon dont il se compare à LTX 2.3 Pro dans les workflows LTX actuels.",
     "badge": "T2V + I2V | 6-20 s | 1080p à 4K",
     "ctaPrimary": {
@@ -134,7 +134,7 @@
     },
     {
       "title": "Beat draft plus long",
-      "prompt": "Une visite de bureau en 16:9 pour le teaser d’un explain interne, un seul mouvement caméra fluide dans un workspace lumineux, motion réaliste, ambiance légère, 14 secondes en 1080p."
+      "prompt": "Une visite de bureau en 16:9 pour le teaser d’un explain interne, un seul mouvement caméra fluide dans un studio lumineux, motion réaliste, ambiance légère, 14 secondes en 1080p."
     }
   ],
   "faqs": [
@@ -161,8 +161,8 @@
   ],
   "custom": {
     "heroDesc1": "LTX 2.3 Fast est la version orientée génération de la nouvelle famille LTX 2.3. Il conserve la large surface texte / image, l’audio natif et le support image de départ / image de fin, mais retire les workflows d’édition réservés à LTX 2.3 Pro.",
-    "heroDesc2": "Cela en fait un meilleur choix pour l'idéation rapide, les variantes sociales par ratio et les tests d'accroches quand vous voulez un peu plus de longueur de clip que sur la plupart des moteurs fast.",
-    "heroSupportLine": "Commencez par les exemples, utilisez Fast pour les tests et les drafts plus longs, puis faites monter les sorties retenues vers LTX 2.3 Pro quand le workflow demande plus de contrôle.",
+    "heroDesc2": "Cela en fait un meilleur choix pour l'idéation rapide, les variantes sociales par ratio et les tests d'accroches quand vous voulez un peu plus de longueur de clip que sur la plupart des modèles fast.",
+    "heroSupportLine": "Commencez par les exemples, utilisez Fast pour les tests et les tests plus longs, puis faites monter les sorties retenues vers LTX 2.3 Pro quand le workflow demande plus de contrôle.",
     "heroSpecChips": [
       {
         "label": "Texte→Vidéo",
@@ -192,9 +192,9 @@
     "whyTitle": "Tarification, durée max et prochaines étapes",
     "heroHighlights": [
       "Tarification et durée max||Utilisez Fast pour tester à moindre coût sur des clips de 6 à 20 secondes, avec la contrainte actuelle 1080p à 25 fps au-dessus de 10 secondes.",
-      "Fast vs Pro||Choisissez Fast pour les tests, les drafts plus longs et l’itération rapide, puis passez sur Pro quand le workflow a besoin de plus de contrôle.",
+      "Fast vs Pro||Choisissez Fast pour les tests, les tests plus longs et l’itération rapide, puis passez sur Pro quand le workflow a besoin de plus de contrôle.",
       "Commencer par les exemples||Ouvrez d’abord la page d’exemples LTX si vous voulez des patterns de prompts, des réglages et des bases image-vers-vidéo avant de générer.",
-      "Meilleurs cas d’usage||Fast convient bien aux tests de prompts, aux variantes verticales, aux drafts plus longs et à l’exploration motion à moindre coût."
+      "Meilleurs cas d’usage||Fast convient bien aux tests de prompts, aux variantes verticales, aux tests plus longs et à l’exploration motion à moindre coût."
     ],
     "specTitle": "Vraies specs - LTX 2.3 Fast dans MaxVideoAI",
     "specNote": "Les specs reflètent le routing Fast public exposé aujourd’hui.",
@@ -225,7 +225,7 @@
     "whatIntro2": "La page évite volontairement les modes d’édition de la version standard pour que les options restent cohérentes avec le routing Fast public.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Choisissez LTX 2.3 Fast comme moteur.",
+      "Choisissez LTX 2.3 Fast comme modèle.",
       "Utilisez uniquement du texte pour Texte vers vidéo ou ajoutez une image de départ pour Image vers vidéo.",
       "Ajoutez une image de fin optionnelle si vous voulez contrôler la dernière frame de la transition.",
       "Choisissez durée, ratio, résolution et fps, en gardant en tête la contrainte >10 s.",
@@ -291,13 +291,13 @@
       "Utilisez Fast quand le besoin se limite à la génération et que la simplicité compte plus que les contrôles d’édition."
     ],
     "comparisonCta": "Comparer LTX 2.3 Fast vs Pro ->",
-    "relatedTitle": "Explorer d’autres moteurs",
+    "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez LTX 2.3 Fast avec LTX 2.3, Veo Fast et les anciens paliers LTX fast tout en gardant la même structure de page.",
     "finalPara1": "Prêt pour un workflow LTX plus léger ? Ouvrez LTX 2.3 Fast dans Generate.",
     "finalPara2": "Utilisez Fast pour la vitesse, puis envoyez le prompt gagnant vers LTX 2.3 Pro si le projet demande des outils d’édition plus poussés.",
     "finalButton": "Ouvrir LTX 2.3 Fast dans Generate ->",
     "promptingTitle": "Comment écrire un excellent prompt LTX 2.3 Fast",
-    "promptingIntro": "LTX 2.3 Fast est un moteur orienté génération. Gardez donc le prompt court, visuel et direct.",
+    "promptingIntro": "LTX 2.3 Fast est un modèle orienté génération. Gardez donc le prompt court, visuel et direct.",
     "promptingTip": "Astuce : l’UI gère déjà durée, ratio, résolution, fps et la contrainte de routing longue durée. Concentrez le prompt sur un sujet, un mouvement et une humeur.",
     "promptingGlobalPrinciples": [
       "Un sujet, une action et un mouvement valent mieux qu’un prompt fourre-tout.",
@@ -310,7 +310,7 @@
       "Les transitions début / fin sont plus fiables quand les deux frames restent visuellement proches."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = chemin le plus rapide vers des drafts utilisables.",
+      "quick": "Quick = chemin le plus rapide vers des tests utilisables.",
       "structured": "Structured = meilleur choix quand plusieurs personnes doivent réutiliser la même logique de prompt.",
       "pro": "Image flow = à utiliser quand la still doit rester reconnaissable.",
       "storyboard": "Storyboard = utile pour des séquences sociales simples à plusieurs beats."

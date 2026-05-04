@@ -6,7 +6,7 @@
     "description": "Generez des stills avec Nano Banana 2 dans MaxVideoAI. Sorties 0.5K a 4K, ratios larges et extremes, jusqu'a 14 references en edit, et grounding web optionnel.",
     "image": "https://media.maxvideoai.com/marketing/marketing/2e71a814-3eed-4965-8beb-bd22d1c243e4.png"
   },
-  "overview": "Nano Banana 2 est la branche la plus souple de la famille Nano Banana pour l'image fixe : brouillons 0.5K moins chers, finals de 1K a 4K, ratios plus varies, sets d'edition plus grands, et grounding web optionnel quand il faut des references plus actuelles.",
+  "overview": "Nano Banana 2 est la branche la plus souple de la famille Nano Banana pour l'image fixe : tests 0.5K moins chers, finals de 1K a 4K, ratios plus varies, sets d'edition plus grands, et grounding web optionnel quand il faut des references plus actuelles.",
   "hero": {
     "title": "Nano Banana 2 - text-to-image et edition guidee",
     "intro": "Generation de stills flexible pour concepts documentes, layouts larges et edits multi-reference.",
@@ -94,7 +94,7 @@
     },
     {
       "q": "Combien d'images de reference en mode Edit ?",
-      "a": "Jusqu'a 14 references dans le workspace image de MaxVideoAI pour Nano Banana 2."
+      "a": "Jusqu'a 14 references dans le studio image de MaxVideoAI pour Nano Banana 2."
     }
   ],
   "pricingNotes": "0,08 $ par image en 1K. 0.5K coute 0,04 $, 2K 0,12 $, 4K 0,16 $, et la web search optionnelle ajoute 0,015 $ par requete.",

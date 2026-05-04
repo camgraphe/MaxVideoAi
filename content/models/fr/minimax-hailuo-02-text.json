@@ -2,14 +2,14 @@
   "marketingName": "MiniMax Hailuo 02",
   "versionLabel": "02",
   "seo": {
-    "title": "Hailuo 02 (512p/768p) — brouillons texte → vidéo (6–10s)",
-    "description": "Créez des brouillons Hailuo 02 à faible coût en 512p/768p depuis texte (ou images). Vidéos silencieuses 6–10s pour storyboards et tests de mouvement, puis upgrade vers Veo/Kling/Wan/Sora dans MaxVideoAI.",
+    "title": "Hailuo 02 (512p/768p) — tests texte → vidéo (6–10s)",
+    "description": "Créez des tests Hailuo 02 à faible coût en 512p/768p depuis texte (ou images). Vidéos silencieuses 6–10s pour storyboards et tests de mouvement, puis upgrade vers Veo/Kling/Wan/Sora dans MaxVideoAI.",
     "image": "/hero/minimax-video01.jpg"
   },
-  "overview": "MiniMax Hailuo 02 dans MaxVideoAI : clips courts et économiques, orientés physique, en 512p/768p sur 6 ou 10 s. Entrée texte ou image, frame finale optionnelle, sortie silencieuse et pricing wallet pour des drafts rapides et des loops.",
+  "overview": "MiniMax Hailuo 02 dans MaxVideoAI : clips courts et économiques, orientés physique, en 512p/768p sur 6 ou 10 s. Entrée texte ou image, frame finale optionnelle, sortie silencieuse et pricing wallet pour des tests rapides et des loops.",
   "hero": {
-    "title": "MiniMax Hailuo 02 – Brouillons vidéo IA économiques avec forte physique",
-    "intro": "Brouillons silencieux 6–10s en 512p/768p — tests de mouvement, essais caméra et itération rapide.",
+    "title": "MiniMax Hailuo 02 – Tests vidéo IA économiques avec forte physique",
+    "intro": "Tests silencieux 6–10s en 512p/768p — tests de mouvement, essais caméra et itération rapide.",
     "badge": "512p/768p · 6–10 s · Entrée texte ou image · Sortie silencieuse",
     "ctaPrimary": {
       "label": "Essayer MiniMax Hailuo 02",
@@ -26,7 +26,7 @@
     "title": "Meilleurs cas d’usage",
     "items": [
       {
-        "title": "Brouillons de motion",
+        "title": "Tests de motion",
         "icon": "zap"
       },
       {
@@ -100,7 +100,7 @@
       "1–3 phrases ; des prompts trop longs peuvent créer des artefacts",
       "Un sujet/environnement/effet principal par clip pour la clarté",
       "Uploadez une référence + frame finale pour verrouiller la compo et l’atterrissage",
-      "512p pour les drafts les plus rapides/moins chers ; 768p pour des sorties prêtes social",
+      "512p pour les tests les plus rapides/moins chers ; 768p pour des sorties prêtes social",
       "Ajoutez l’audio en post ou combinez avec Wan/Sora/Veo"
     ]
   },
@@ -120,7 +120,7 @@
   ],
   "faqs": [
     {
-      "q": "Pourquoi MiniMax plutôt qu’un moteur premium ?",
+      "q": "Pourquoi MiniMax plutôt qu’un modèle premium ?",
       "a": "Bonne physique/motion à coût par seconde plus bas ; idéal pour volumes, explainers et tests sans brûler le budget."
     },
     {
@@ -133,28 +133,28 @@
     },
     {
       "q": "Supporte‑t‑il l’audio ?",
-      "a": "Non. Hailuo 02 sort en silencieux ; ajoutez le son en post ou via un moteur audio."
+      "a": "Non. Hailuo 02 sort en silencieux ; ajoutez le son en post ou via un modèle audio."
     },
     {
       "q": "Et si j’ai besoin de 1080p ?",
-      "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un moteur plus haute résolution (Veo, Kling, Wan, Sora 2 Pro)."
+      "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un modèle plus haute résolution (Veo, Kling, Wan, Sora 2 Pro)."
     }
   ],
   "custom": {
-    "heroDesc1": "Générez des drafts rapides orientés physique en 512p/768p depuis texte ou image, avec frame finale optionnelle pour verrouiller l’atterrissage.",
+    "heroDesc1": "Générez des tests rapides orientés physique en 512p/768p depuis texte ou image, avec frame finale optionnelle pour verrouiller l’atterrissage.",
     "heroDesc2": "Choisissez 6 ou 10 secondes, 16:9/9:16/1:1, et obtenez des clips silencieux prêts pour storyboards, loops et tests de motion.",
-    "heroSupportLine": "Parfait quand vous voulez explorer mouvement et transitions à bas coût avant de reconstruire les gagnants dans des moteurs premium.",
+    "heroSupportLine": "Parfait quand vous voulez explorer mouvement et transitions à bas coût avant de reconstruire les gagnants dans des modèles premium.",
     "whyTitle": "Pourquoi MiniMax Hailuo 02 est puissant",
     "heroHighlights": [
       "Cues de physique extrêmes||Vent, tissu, particules et inertie lisent très bien pour des tests rapides.",
       "Contrôle end‑frame||Ajoutez une frame finale cible pour guider l’atterrissage du plan.",
       "Pensé pour le volume||Idéal quand vous avez besoin de nombreuses variantes sans exploser le budget.",
-      "Drafts silencieux||Faciles à sonoriser en post (ou à combiner avec un moteur audio pour les finals)."
+      "Tests silencieux||Faciles à sonoriser en post (ou à combiner avec un modèle audio pour les finals)."
     ],
     "bestUseCasesTitle": "Meilleurs cas d’usage",
     "bestUseCases": [
       {
-        "title": "Brouillons de motion",
+        "title": "Tests de motion",
         "icon": "zap"
       },
       {
@@ -180,7 +180,7 @@
     ],
     "whatTitle": "Ce qu’est vraiment MiniMax Hailuo 02 dans MaxVideoAI",
     "whatIntro1": "Le modèle phare MiniMax pour séquences courtes avec forte physique et bonne adhérence au prompt.",
-    "whatIntro2": "Dans MaxVideoAI, il est câblé comme moteur de brouillon rapide et silencieux en 512p/768p.",
+    "whatIntro2": "Dans MaxVideoAI, il est câblé comme modèle de brouillon rapide et silencieux en 512p/768p.",
     "whatFlowTitle": "Flux MaxVideoAI",
     "whatFlowSteps": [
       "1. Choisissez MiniMax Hailuo 02.",
@@ -194,7 +194,7 @@
     "specNote": "Specs telles qu’utilisées aujourd’hui dans MaxVideoAI.",
     "specSections": [
       {
-        "title": "Drafts orientés physique",
+        "title": "Tests orientés physique",
         "intro": "Très bon sur le mouvement physique (vent, tissu, particules). Idéal pour tests de motion et transitions.",
         "items": [
           "Indiquez la direction du vent/force.",
@@ -210,11 +210,11 @@
           "Spécifiez ce qui doit rester préservé.",
           "Décrivez clairement la pose finale.",
           "Servez‑vous‑en comme pont entre deux plans.",
-          "Associez avec un moteur premium pour les finals."
+          "Associez avec un modèle premium pour les finals."
         ]
       }
     ],
-    "specValueProp": "MiniMax Hailuo 02 est un moteur draft rapide et orienté physique pour des tests de motion silencieux à bas coût.",
+    "specValueProp": "MiniMax Hailuo 02 est un modèle draft rapide et orienté physique pour des tests de motion silencieux à bas coût.",
     "galleryTitle": "Galerie d’exemples MiniMax Hailuo 02",
     "galleryIntro": "Voyez des runs texte et image rendus avec la même configuration que vous avez.",
     "galleryAllCta": "Voir tous les exemples MiniMax Hailuo 02 →",
@@ -245,7 +245,7 @@
       "Utilisez des mouvements caméra entre crochets ([pan], [tilt], [push in]) et un seul move par clip.",
       "Gardez des scènes simples pour une motion lisible (un sujet hero, une action claire).",
       "Utilisez First/Last frame pour un atterrissage propre (match cuts, transformations, transitions start→end).",
-      "Générez plusieurs variantes rapidement; choisissez la meilleure motion, puis reconstruisez les finals dans un moteur plus fidèle."
+      "Générez plusieurs variantes rapidement; choisissez la meilleure motion, puis reconstruisez les finals dans un modèle plus fidèle."
     ],
     "boundaries": [
       "Résolutions draft (512p / 768p), pas de 1080p final.",
@@ -275,7 +275,7 @@
     "faqTitle": "FAQ – MiniMax Hailuo 02 dans MaxVideoAI",
     "faqs": [
       {
-        "q": "Pourquoi choisir MiniMax plutôt que des moteurs premium ?",
+        "q": "Pourquoi choisir MiniMax plutôt que des modèles premium ?",
         "a": "Bonne motion/physique à coût plus bas ; idéal pour tests volumineux et expérimentations."
       },
       {
@@ -288,16 +288,16 @@
       },
       {
         "q": "Supporte‑t‑il l’audio ?",
-        "a": "Non. Les sorties sont silencieuses ; ajoutez le son en post ou via un moteur audio."
+        "a": "Non. Les sorties sont silencieuses ; ajoutez le son en post ou via un modèle audio."
       },
       {
         "q": "Et si j’ai besoin de 1080p ?",
-        "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un moteur plus haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
+        "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un modèle plus haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur MaxVideoAI.",
-    "finalPara1": "MiniMax Hailuo 02 est votre moteur rapide et orienté physique pour tester motion et transitions à bas coût.",
+    "finalPara1": "MiniMax Hailuo 02 est votre modèle rapide et orienté physique pour tester motion et transitions à bas coût.",
     "finalPara2": "Utilisez‑le pour explorer, puis passez les gagnants sur des modèles plus premium pour l’audio et la haute résolution.",
     "finalButton": "Ouvrir Generate",
     "promptingTitle": "Comment écrire un excellent prompt Hailuo 02",
@@ -308,7 +308,7 @@
       "Utilisez des cues de caméra/motion entre crochets.",
       "Utilisez une end frame (optionnelle) pour verrouiller la transition."
     ],
-    "tipsIntro": "Hailuo 02 est un moteur draft orienté physique : utilisez‑le pour tests de motion, transitions et atterrissages propres.",
+    "tipsIntro": "Hailuo 02 est un modèle draft orienté physique : utilisez‑le pour tests de motion, transitions et atterrissages propres.",
     "promptingEngineWhy": [
       "Le prompt optimizer peut étendre des prompts courts.",
       "Les crochets caméra aident à guider le mouvement.",

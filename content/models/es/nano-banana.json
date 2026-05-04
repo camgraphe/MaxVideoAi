@@ -31,7 +31,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Mejores casos de uso",
+    "title": "Mejor para",
     "items": [
       {
         "title": "Concepting rápido y exploración de mood",
@@ -166,7 +166,7 @@
       "Creatividad multi‑imagen||Mezcla referencias para mantenerte más cerca de tu intención.",
       "Gran “draft layer” para producción||Genera boards y luego pasa los ganadores a motores de video premium."
     ],
-    "bestUseCasesTitle": "Mejores casos de uso",
+    "bestUseCasesTitle": "Mejor para",
     "bestUseCases": [
       {
         "title": "Concepting rápido y exploración de mood",
@@ -269,7 +269,7 @@
         "label": "Pro",
         "title": "Prompt Pro (brief de estudio ultra‑específico)",
         "description": "Úsalo cuando necesitas un look muy específico o resultados repetibles en un set.",
-        "copy": "Brief:\n[Objetivo + caso de uso de salida.]\n\nSujeto + materiales:\n[Detalles + texturas + restricciones.]\n\nLayout:\n[Grid + spacing + punto focal + espacio negativo.]\n\nIluminación + grade:\n[Luz clave + contraste + anclajes de paleta.]\n\nTipografía (opcional):\n[Vibe de fuente + jerarquía + copy exacto + ubicación.]\nMantén el copy corto. Evita párrafos.\n\nEdits (si hace falta):\nChange list:\n- [A]\n- [B]\nKeep list:\n- encuadre, iluminación, identidad, fondo, paleta de color"
+        "copy": "Brief:\n[Objetivo + objetivo de salida.]\n\nSujeto + materiales:\n[Detalles + texturas + restricciones.]\n\nLayout:\n[Grid + spacing + punto focal + espacio negativo.]\n\nIluminación + grade:\n[Luz clave + contraste + anclajes de paleta.]\n\nTipografía (opcional):\n[Vibe de fuente + jerarquía + copy exacto + ubicación.]\nMantén el copy corto. Evita párrafos.\n\nEdits (si hace falta):\nChange list:\n- [A]\n- [B]\nKeep list:\n- encuadre, iluminación, identidad, fondo, paleta de color"
       }
     ],
     "promptingGuideLabel": "Más información"

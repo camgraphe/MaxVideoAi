@@ -14,8 +14,8 @@ const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
     description: 'Live status for engines, queue health, and incidents.',
   },
   fr: {
-    title: 'Statut des moteurs — MaxVideoAI',
-    description: 'Statut en direct des moteurs, santé des files d’attente et incidents récents.',
+    title: 'Statut des modèles — MaxVideoAI',
+    description: 'Statut en direct des modèles, santé des files d’attente et incidents récents.',
   },
   es: {
     title: 'Estado de motores — MaxVideoAI',

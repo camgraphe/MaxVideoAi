@@ -67,7 +67,7 @@
         "icon": "repeat2"
       },
       {
-        "title": "Pré‑viz pour montage (drafts sonores ou silencieux pour le post)",
+        "title": "Pré‑viz pour montage (tests sonores ou silencieux pour le post)",
         "icon": "scissors"
       }
     ]
@@ -151,7 +151,7 @@
     },
     {
       "q": "Kling 3 Standard est-il un bon modele Kling AI pour tester l image-vers-video ?",
-      "a": "Oui. Kling 3 Standard est un bon point de depart a moindre cout pour des tests image-vers-video repetables, des drafts et des comparaisons de prompt avant de faire monter les directions gagnantes vers Kling 3 Pro."
+      "a": "Oui. Kling 3 Standard est un bon point de depart a moindre cout pour des tests image-vers-video repetables, des tests et des comparaisons de prompt avant de faire monter les directions gagnantes vers Kling 3 Pro."
     },
     {
       "q": "Quelle différence avec Pro ?",
@@ -163,7 +163,7 @@
     "heroHighlights": [
       "Génération multi‑plans structurée||Découpez un clip en plusieurs prompts et beats temporels pour un contrôle type storyboard",
       "Kling Elements réutilisables pour la cohérence||Définissez personnages/props une fois, puis référencez‑les comme @Element1 / @Element2 pour réduire la dérive entre plans",
-      "Audio natif quand vous le voulez||Générez dialogue + ambience + SFX dans le même rendu, ou coupez l’audio pour des drafts silencieux",
+      "Audio natif quand vous le voulez||Générez dialogue + ambience + SFX dans le même rendu, ou coupez l’audio pour des tests silencieux",
       "Contrôle de l’image de fin pour des finitions propres||Utilisez une image de fin optionnelle pour mieux atterrir les transitions, match cuts et reveals produit"
     ],
     "specTitle": "Specs réelles — Kling 3 Standard dans MaxVideoAI",

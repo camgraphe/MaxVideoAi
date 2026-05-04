@@ -64,7 +64,7 @@
   "technicalOverview": [
     {
       "label": "Détails",
-      "body": "Seedance 1.5 Pro est un modèle audio‑vidéo court‑format avec des contrôles solides : camera_fixed pour des plans verrouillés, seed pour des itérations répétables, et image de fin optionnelle pour des atterrissages I2V plus propres. Utilisez‑le quand vous voulez un motion plus stable, des variantes cohérentes et des drafts audio‑ready en 4–12 s."
+      "body": "Seedance 1.5 Pro est un modèle audio‑vidéo court‑format avec des contrôles solides : camera_fixed pour des plans verrouillés, seed pour des itérations répétables, et image de fin optionnelle pour des atterrissages I2V plus propres. Utilisez‑le quand vous voulez un motion plus stable, des variantes cohérentes et des tests audio‑ready en 4–12 s."
     },
     {
       "label": "Durée",
@@ -152,7 +152,7 @@
       "Stabilité camera‑fixed||Verrouillez la caméra pour un motion plus stable et des résultats plus propres en scènes urbaines/produit",
       "Seed control pour la répétabilité||Réutilisez un seed pour itérer sans dérive — idéal pour variantes de campagne et A/B hooks",
       "Contrôle image de départ + image de fin (I2V)||Ajoutez une image de fin optionnelle pour guider l’atterrissage (transitions, match cuts, finitions propres)",
-      "Audio natif dans le même rendu||Générez dialogue, ambience et SFX en une passe — ou coupez l’audio pour des drafts silencieux et la post"
+      "Audio natif dans le même rendu||Générez dialogue, ambience et SFX en une passe — ou coupez l’audio pour des tests silencieux et la post"
     ],
     "specTitle": "Specs réelles — Seedance 1.5 Pro dans MaxVideoAI",
     "specNote": "Les specs reflètent le routage Fal en production.",

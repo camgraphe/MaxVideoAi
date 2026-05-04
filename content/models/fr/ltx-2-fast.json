@@ -3,13 +3,13 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez le modèle LTX 2 Fast encore pris en charge sur MaxVideoAI pour des drafts audio rapides, puis passez à LTX 2.3 Fast pour le workflow fast LTX actuel.",
+    "description": "Utilisez le modèle LTX 2 Fast encore pris en charge sur MaxVideoAI pour des tests audio rapides, puis passez à LTX 2.3 Fast pour le workflow fast LTX actuel.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2 Fast reste disponible sur MaxVideoAI comme modèle LTX fast plus ancien encore pris en charge pour des drafts audio rapides et des workflows fast hérités.",
+  "overview": "LTX 2 Fast reste disponible sur MaxVideoAI comme modèle LTX fast plus ancien encore pris en charge pour des tests audio rapides et des workflows fast hérités.",
   "hero": {
-    "title": "LTX 2 Fast — modèle LTX plus ancien encore pris en charge pour des drafts audio rapides",
-    "intro": "LTX 2 Fast reste disponible pour des drafts audio rapides et des workflows fast plus anciens, tandis que LTX 2.3 Fast est désormais l’option fast LTX actuelle principale.",
+    "title": "LTX 2 Fast — modèle LTX plus ancien encore pris en charge pour des tests audio rapides",
+    "intro": "LTX 2 Fast reste disponible pour des tests audio rapides et des workflows fast plus anciens, tandis que LTX 2.3 Fast est désormais l’option fast LTX actuelle principale.",
     "badge": "1080p/1440p/4K · 6–20 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
       "label": "Générer avec LTX 2 Fast",
@@ -42,7 +42,7 @@
         "icon": "zap"
       },
       {
-        "title": "Brouillons pub & tests de variantes",
+        "title": "Tests pub & tests de variantes",
         "icon": "ads"
       },
       {
@@ -112,7 +112,7 @@
       "Pour 12–20 s, restez en 1080p/25 fps (contrainte Fal).",
       "Utilisez 50 fps pour un mouvement plus net sur 6–10 s.",
       "Gardez une action claire ; utilisez seeds/prompts négatifs pour affiner.",
-      "Audio activé par défaut — désactivez‑le pour des drafts muets moins chers."
+      "Audio activé par défaut — désactivez‑le pour des tests muets moins chers."
     ]
   },
   "prompts": [
@@ -150,13 +150,13 @@
   ],
   "custom": {
     "whyTitle": "Pourquoi LTX 2 Fast dans MaxVideoAI",
-    "heroDesc1": "Créez des clips de 6–20 secondes avec audio natif, 1080p–4K et 25/50 fps dans une seule carte. LTX 2 Fast est le tier “instant” de la famille LTX‑2 : parfait pour des coupes sociales rapides, des brouillons, des storyboards et des mood pieces quand vous voulez du 4K sans attendre.",
+    "heroDesc1": "Créez des clips de 6–20 secondes avec audio natif, 1080p–4K et 25/50 fps dans une seule carte. LTX 2 Fast est le tier “instant” de la famille LTX‑2 : parfait pour des coupes sociales rapides, des tests, des storyboards et des mood pieces quand vous voulez du 4K sans attendre.",
     "heroDesc2": "Au‑delà de 10 secondes, nous verrouillons automatiquement en 1080p/25 fps pour respecter le routage Fal et garder des délais fiables.",
     "heroSupportLine": "À utiliser pour les hooks, le pacing et l’exploration d’ambiance, puis régénérer les gagnants en premium.",
     "heroHighlights": [
       "Conçu pour l’itération rapide||Faites beaucoup de variantes sans sur‑optimiser le premier rendu.",
-      "Plus d’espace par clip||Meilleur pour le pacing, la montée et les beats “mini‑scène” que les moteurs ultra‑courts.",
-      "Brouillons prêts pour le son||Parfait pour caler dialogue/ambiance/SFX en temp (ou coupez l’audio et finissez en post).",
+      "Plus d’espace par clip||Meilleur pour le pacing, la montée et les beats “mini‑scène” que les modèles ultra‑courts.",
+      "Tests prêts pour le son||Parfait pour caler dialogue/ambiance/SFX en temp (ou coupez l’audio et finissez en post).",
       "Upgrade simple||Gardez la même structure de prompt et relancez les gagnants en LTX‑2 Pro."
     ],
     "specTitle": "Specs réelles — LTX 2 Fast dans MaxVideoAI",
@@ -178,7 +178,7 @@
         "items": [
           "Réutilisez le langage de plan pour les finals.",
           "Remplacez par de meilleures références ensuite.",
-          "Parfait pour brouillons sociaux et loops.",
+          "Parfait pour tests sociaux et loops.",
           "Sauvegardez vos templates de prompts."
         ]
       }
@@ -252,7 +252,7 @@
     "comparisonPoints": [
       "Utilisez Fast pour des clips sociaux rapides; passez en LTX‑2 Pro pour un polish premium",
       "Pour des formats multi‑AR, combinez avec Wan ou Veo; Fast est 16:9 seulement",
-      "Pour des drafts muets, coupez l’audio pour réduire le coût"
+      "Pour des tests muets, coupez l’audio pour réduire le coût"
     ],
     "comparisonCta": "Comparer LTX 2 Fast vs Pro →",
     "relatedTitle": "Versions LTX 2.3 plus récentes",

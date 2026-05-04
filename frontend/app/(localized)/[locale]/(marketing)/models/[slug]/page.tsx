@@ -286,7 +286,7 @@ const PREP_LINK_VISUALS = {
     },
     alt: {
       en: 'Generate Image workspace example',
-      fr: 'Exemple du workspace Generate Image',
+      fr: 'Exemple du studio Generate Image',
       es: 'Ejemplo del espacio Generate Image',
     },
   },
@@ -418,7 +418,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
       fr: {
         title: 'Utilisez Veo 3.1 Fast quand vous voulez :',
         items: [
-          'Tests de concepts rapides et drafts en volume',
+          'Tests de concepts rapides et tests en volume',
           'Variantes A/B moins chères et boucles social',
           'Itération rapide avant de passer les meilleurs en version supérieure',
         ],
@@ -536,7 +536,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         items: [
           'Clips silencieux rapides avec forte motion',
           'Boucles B-roll budget pour le montage',
-          'Look-dev rapide et drafts',
+          'Look-dev rapide et tests',
         ],
       },
       es: {
@@ -769,7 +769,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
       fr: {
         title: 'Utilisez Seedance 2.0 Fast quand vous voulez :',
         items: [
-          'Des drafts rapides avant les finals client',
+          'Des tests rapides avant les finals client',
           'Du shot planning, des checks de pacing et des tests A/B motion',
           'Un tier Seedance plus léger pour explorer tôt',
         ],
@@ -827,7 +827,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
       fr: {
         title: 'Utilisez LTX 2 Fast quand vous voulez :',
         items: [
-          'Brouillons en volume et vitesse d’itération',
+          'Tests en volume et vitesse d’itération',
           'Tests de concepts rapides et vérification du pacing',
           'Rough cuts avant les finals',
         ],
@@ -885,7 +885,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
       fr: {
         title: 'Utilisez Nano Banana quand vous voulez :',
         items: [
-          'Drafts rapides et edits rapides',
+          'Tests rapides et edits rapides',
           'Concepting rapide et exploration',
           'Tests de mise en page légers',
         ],
@@ -1003,7 +1003,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
       fr: {
         title: 'Utilisez Hailuo 02 quand vous voulez :',
         items: [
-          'Drafts motion axés physique',
+          'Tests motion axés physique',
           'Itération visuelle rapide à petit budget',
           'Animatics storyboard rapides',
         ],
@@ -1030,7 +1030,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         title: 'Utilisez LTX 2 Fast quand vous avez besoin :',
         items: [
           'Plus de durée par clip pour le pacing',
-          'Drafts plus proches de l’intention caméra',
+          'Tests plus proches de l’intention caméra',
           'Chemin simple vers LTX 2.3 Pro',
         ],
       },
@@ -1340,7 +1340,7 @@ const HERO_AUTOPLAY_DELAY_MS = 1800;
 const GENERIC_TRUST_LINE = 'Pay-as-you-go · Price shown before you generate';
 const HERO_LIMITS_LINES: Record<AppLocale, string> = {
   en: 'Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine.',
-  fr: 'Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le moteur.',
+  fr: 'Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le modèle.',
   es: 'Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor.',
 };
 const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
@@ -1581,7 +1581,7 @@ const COMPARE_COPY_BY_LOCALE: Record<
       supportsAudio
         ? 'prix par seconde, résolution, audio, vitesse et style de mouvement'
         : 'prix par seconde, résolution, vitesse et style de mouvement',
-    introSuffix: ' — pour choisir rapidement le bon moteur.',
+    introSuffix: ' — pour choisir rapidement le bon modèle.',
     subline: 'Chaque page inclut des rendus réels et des cas d’usage concrets.',
     ctaCompare: (model, other) => `Comparer ${model} vs ${other} →`,
     ctaExplore: (other) => `Voir ${other} →`,
@@ -1599,7 +1599,7 @@ const COMPARE_COPY_BY_LOCALE: Record<
         ? 'precio por segundo, resolución, audio, velocidad y estilo de movimiento'
         : 'precio por segundo, resolución, velocidad y estilo de movimiento',
     introSuffix: ' — para elegir el motor adecuado rápidamente.',
-    subline: 'Cada página incluye renders reales y casos de uso prácticos.',
+    subline: 'Cada página incluye renders reales y objetivos prácticos.',
     ctaCompare: (model, other) => `Comparar ${model} vs ${other} →`,
     ctaExplore: (other) => `Ver ${other} →`,
     cardDescription: (model, other, supportsAudio) =>

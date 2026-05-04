@@ -119,8 +119,8 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
   },
   fr: {
     title: 'Exemples de coûts',
-    subtitle: 'Runs réalistes pour planifier. Les prix évoluent avec les moteurs.',
-    labels: { engine: 'Moteur', duration: 'Durée', resolution: 'Résolution', audio: 'Audio' },
+    subtitle: 'Runs réalistes pour planifier. Les prix évoluent avec les modèles.',
+    labels: { engine: 'Modèle', duration: 'Durée', resolution: 'Résolution', audio: 'Audio' },
     cards: [
       {
         title: 'Clip social (vertical)',
@@ -215,8 +215,8 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
     points: [
       'La durée évolue linéairement (4 s / 8 s / 12 s).',
       'Sur les routes à tokens comme Seedance 2, la résolution et le ratio changent le nombre de pixels et donc le coût.',
-      'L’audio peut ajouter une prime sur certains moteurs ; d’autres, comme Seedance 2, gardent le même prix avec ou sans audio.',
-      'Le niveau du moteur (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
+      'L’audio peut ajouter une prime sur certains modèles ; d’autres, comme Seedance 2, gardent le même prix avec ou sans audio.',
+      'Le niveau du modèle (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
       'Generate affiche quand même le devis final avant validation.',
     ],
   },
@@ -527,7 +527,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         : 'Want to see real-time prices before you generate?';
   const openGeneratorLabel =
     content.calculator?.cta ??
-    (locale === 'fr' ? 'Ouvrir le workspace' : locale === 'es' ? 'Abrir workspace' : 'Open workspace');
+    (locale === 'fr' ? 'Ouvrir le studio' : locale === 'es' ? 'Abrir workspace' : 'Open workspace');
   const previewTitle = content.calculator?.title ?? 'Preview prices in the app';
   const previewDescription =
     content.calculator?.description ??

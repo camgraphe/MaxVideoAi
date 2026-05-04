@@ -2,14 +2,14 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 | Modelo de video IA, precio, audio nativo y casos de uso | MaxVideoAI",
-    "description": "Usa Seedance 2.0 en MaxVideoAI para video multi-shot, audio nativo, el precio actual, capacidades clave y los mejores casos de uso del workflow Seedance actual."
+    "title": "Seedance 2.0 | Modelo de video IA, precio, audio nativo y objetivos | MaxVideoAI",
+    "description": "Usa Seedance 2.0 en MaxVideoAI para video multi-shot, audio nativo, el precio actual, capacidades clave y los mejores objetivos del workflow Seedance actual."
   },
   "overview": "Seedance 2.0 es el modelo de video IA de Seedance actual en MaxVideoAI para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
   "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
   "hero": {
     "title": "Seedance 2.0 — modelo Seedance actual para video multi-shot y audio nativo",
-    "intro": "Seedance 2.0 es el modelo de video IA de Seedance actual para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar el precio, las capacidades clave, los mejores casos de uso y cuándo este workflow de video de Seedance encaja mejor que Fast o que versiones Seedance anteriores.",
+    "intro": "Seedance 2.0 es el modelo de video IA de Seedance actual para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar el precio, las capacidades clave, los mejores objetivos y cuándo este workflow de video de Seedance encaja mejor que Fast o que versiones Seedance anteriores.",
     "badge": "3 workflows · 480p/720p/1080p · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
@@ -47,7 +47,7 @@
     "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
-    "title": "Mejores casos de uso de Seedance 2.0",
+    "title": "Mejor para Seedance 2.0",
     "items": [
       {
         "title": "Secuencias de acción con colisiones, escombros e interacciones más creíbles",

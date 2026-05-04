@@ -124,16 +124,16 @@
       }
     ],
     "whatTitle": "Ce que Sora 2 est réellement dans MaxVideoAI",
-    "whatIntro1": "Sur le papier, Sora 2 est le moteur texte→vidéo court d’OpenAI. En pratique, son comportement dépend de l’intégration.",
-    "whatIntro2": "Dans MaxVideoAI, Sora 2 est exposé comme un moteur clair et prêt pour la prod :",
+    "whatIntro1": "Sur le papier, Sora 2 est le modèle texte→vidéo court d’OpenAI. En pratique, son comportement dépend de l’intégration.",
+    "whatIntro2": "Dans MaxVideoAI, Sora 2 est exposé comme un modèle clair et prêt pour la prod :",
     "whatFlowTitle": "MaxVideoAI le présente dans un flux simple :",
     "whatFlowSteps": [
-      "1. Choisir Sora 2 comme moteur.",
+      "1. Choisir Sora 2 comme modèle.",
       "2. Sélectionner Texte → Vidéo ou Image → Vidéo.",
       "3. Régler la durée et le format.",
       "4. Coller un prompt structuré.",
       "5. Voir le prix final avant génération.",
-      "6. Comparer aux autres moteurs dans la même interface."
+      "6. Comparer aux autres modèles dans la même interface."
     ],
     "specTitle": "Specs réelles — OpenAI Sora 2",
     "specNote": "Les limites qui structurent vos rendus.",
@@ -164,7 +164,7 @@
     "galleryAllCta": "Voir tous les exemples Sora 2 →",
     "recreateLabel": "Recréer ce plan →",
     "imageTitle": "Workflow Image→Vidéo avec Sora 2 (+ Nano Banana)",
-    "imageIntro": "Un avantage de Sora dans MaxVideoAI est de l’associer à un moteur image comme Nano Banana.",
+    "imageIntro": "Un avantage de Sora dans MaxVideoAI est de l’associer à un modèle image comme Nano Banana.",
     "imageFlow": [
       "Générez une image de référence dans Nano Banana qui correspond au style de votre marque ou à l’idée.",
       "Envoyez cette image dans Sora 2 en Image → Vidéo.",
@@ -219,7 +219,7 @@
     ],
     "comparisonCta": "Commencer avec Sora 2, passer à Sora 2 Pro quand vous voulez plus de résolution →",
     "relatedTitle": "Explorer d’autres modèles",
-    "relatedSubtitle": "Comparez prix, latence et options de sortie sur les autres moteurs.",
+    "relatedSubtitle": "Comparez prix, latence et options de sortie sur les autres modèles.",
     "relatedItems": [
       {
         "brand": "bytedance",

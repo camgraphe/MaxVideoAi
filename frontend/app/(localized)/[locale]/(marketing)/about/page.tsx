@@ -15,7 +15,7 @@ const ABOUT_META: Record<AppLocale, { title: string; description: string }> = {
   fr: {
     title: 'À propos — MaxVideoAI',
     description:
-      'Hub vidéo IA indépendant : précision, sobriété et transparence pour router le bon moteur à chaque plan.',
+      'Hub vidéo IA indépendant : précision, sobriété et transparence pour router le bon modèle à chaque plan.',
   },
   es: {
     title: 'Acerca de — MaxVideoAI',

@@ -131,7 +131,7 @@
       "Ajouter audio ou voice IDs"
     ]
   },
-  "promptingTip": "Astuce : traitez Kling 3 Pro comme un moteur storyboard. Choisissez shot_type consciemment, réutilisez les ancres @Element, gardez une action par plan et des répliques très courtes quand l'audio est actif.",
+  "promptingTip": "Astuce : traitez Kling 3 Pro comme un modèle storyboard. Choisissez shot_type consciemment, réutilisez les ancres @Element, gardez une action par plan et des répliques très courtes quand l'audio est actif.",
   "tips": {
     "title": "Conseils & limites",
     "items": [

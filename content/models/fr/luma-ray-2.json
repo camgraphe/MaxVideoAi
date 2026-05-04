@@ -151,7 +151,7 @@
     },
     {
       "q": "Quand choisir Ray 2 plutot que Ray 2 Flash ?",
-      "a": "Choisissez Ray 2 quand vous voulez le tier Luma premium pour des finals plus solides, alors que Ray 2 Flash sert mieux les drafts rapides et les iterations moins couteuses."
+      "a": "Choisissez Ray 2 quand vous voulez le tier Luma premium pour des finals plus solides, alors que Ray 2 Flash sert mieux les tests rapides et les iterations moins couteuses."
     }
   ],
   "custom": {
@@ -199,7 +199,7 @@
     ],
     "whatTitle": "Comment Luma Ray 2 fonctionne dans MaxVideoAI",
     "whatIntro1": "Choisissez Luma Ray 2, restez sur Generate Video pour les workflows texte et image, ou passez sur Modify / Reframe quand vous travaillez a partir d'une video source importee.",
-    "whatIntro2": "Cela garde la famille simple au niveau modele tout en exposant les vrais workflows Fal la ou ils doivent etre: dans la page modele et le workspace.",
+    "whatIntro2": "Cela garde la famille simple au niveau modele tout en exposant les vrais workflows Fal la ou ils doivent etre: dans la page modele et le studio.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choisissez Luma Ray 2 comme engine.",

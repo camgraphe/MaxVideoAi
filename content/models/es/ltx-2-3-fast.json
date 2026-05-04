@@ -9,7 +9,7 @@
   "overview": "LTX 2.3 Fast es el modelo LTX fast actual en MaxVideoAI para generación de video más económica, loops de borrador más largos e iteración más rápida antes de mover salidas seleccionadas a LTX 2.3 Pro.",
   "hero": {
     "title": "LTX 2.3 Fast — modelo LTX fast actual para borradores más largos, pruebas e iteración",
-    "intro": "Usa LTX 2.3 Fast para generación de video más económica, loops de borrador más largos e iteración más rápida cuando quieras probar ideas, comparar el comportamiento de prompts o explorar clips más largos antes de mover las salidas seleccionadas a LTX 2.3 Pro. Esta página cubre el precio del modelo, su duración máxima, sus mejores casos de uso y cómo se compara con LTX 2.3 Pro en los workflows actuales de LTX.",
+    "intro": "Usa LTX 2.3 Fast para generación de video más económica, loops de borrador más largos e iteración más rápida cuando quieras probar ideas, comparar el comportamiento de prompts o explorar clips más largos antes de mover las salidas seleccionadas a LTX 2.3 Pro. Esta página cubre el precio del modelo, su duración máxima, sus mejores objetivos y cómo se compara con LTX 2.3 Pro en los workflows actuales de LTX.",
     "badge": "T2V + I2V | 6-20 s | 1080p a 4K",
     "ctaPrimary": {
       "label": "Generar con LTX 2.3 Fast",
@@ -35,7 +35,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Mejores casos de uso de Fast",
+    "title": "Mejor para Fast",
     "items": [
       {
         "title": "Pruebas rápidas de concepto y hook",
@@ -194,7 +194,7 @@
       "Precio y duración máxima||Usa Fast para probar a menor coste en clips de 6 a 20 segundos, con la limitación actual de 1080p a 25 fps por encima de 10 segundos.",
       "Fast vs Pro||Elige Fast para pruebas, borradores más largos e iteración rápida, y pasa a Pro cuando el workflow necesite más control.",
       "Empieza con ejemplos||Abre primero la página de ejemplos de LTX si quieres patrones reutilizables de prompts, ajustes y bases de imagen a video antes de generar.",
-      "Mejores casos de uso||Fast encaja bien en pruebas de prompts, variantes verticales, borradores largos y exploración de motion a menor coste."
+      "Mejor para||Fast encaja bien en pruebas de prompts, variantes verticales, borradores largos y exploración de motion a menor coste."
     ],
     "specTitle": "Specs reales - LTX 2.3 Fast en MaxVideoAI",
     "specNote": "Las specs reflejan el routing Fast público expuesto hoy.",

@@ -3,13 +3,13 @@
   "versionLabel": "2.0 Fast",
   "seo": {
     "title": "Seedance 2.0 Fast | Modèle vidéo IA rapide, specs et prix | MaxVideoAI",
-    "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des brouillons plus rapides, des itérations multimodales et des specs/prix visibles avant génération."
+    "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des tests plus rapides, des itérations multimodales et des specs/prix visibles avant génération."
   },
-  "overview": "Seedance 2.0 Fast est le modèle vidéo IA Seedance rapide actuel pour des brouillons plus courts, du shot planning et des boucles de comparaison avant rendu final.",
+  "overview": "Seedance 2.0 Fast est le modèle vidéo IA Seedance rapide actuel pour des tests plus courts, du shot planning et des boucles de comparaison avant rendu final.",
   "pricingNotes": "Seedance 2 Fast suit la formule tokens de Fal. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
-    "title": "Seedance 2.0 Fast — modèle Seedance rapide actuel pour les drafts et l'itération",
-    "intro": "Utilisez Seedance 2.0 Fast comme le modèle vidéo IA Seedance le plus rapide pour des drafts plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
+    "title": "Seedance 2.0 Fast — modèle Seedance rapide actuel pour les tests et l'itération",
+    "intro": "Utilisez Seedance 2.0 Fast comme le modèle vidéo IA Seedance le plus rapide pour des tests plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
     "badge": "Tier rapide · 3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0 Fast",
@@ -136,7 +136,7 @@
   "faqs": [
     {
       "q": "Qu'est-ce que Seedance 2.0 Fast ?",
-      "a": "Seedance 2.0 Fast est l’option vidéo IA Seedance la plus rapide dans la famille Seedance 2, pensée pour produire des brouillons plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
+      "a": "Seedance 2.0 Fast est l’option vidéo IA Seedance la plus rapide dans la famille Seedance 2, pensée pour produire des tests plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
     },
     {
       "q": "Seedance 2.0 Fast conserve-t-il text-to-video, image-to-video et reference-to-video ?",

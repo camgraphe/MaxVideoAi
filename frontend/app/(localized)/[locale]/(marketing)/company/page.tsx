@@ -57,7 +57,7 @@ const COMPANY_COPY: Record<
       { href: '/docs', label: 'Docs', description: 'Références onboarding, remboursements et brand safety.' },
       { href: '/workflows', label: 'Flux de travail', description: 'Comment les flux de production MaxVideoAI sont structurés.' },
       { href: '/status', label: 'Statut', description: 'État du service en direct et historique des incidents.' },
-      { href: '/changelog', label: 'Changelog', description: 'Dernières mises à jour produit, moteurs et files.' },
+      { href: '/changelog', label: 'Changelog', description: 'Dernières mises à jour produit, modèles et files.' },
       { href: '/legal', label: 'Centre juridique', description: 'Politiques, notifications et ressources conformité.' },
     ],
   },

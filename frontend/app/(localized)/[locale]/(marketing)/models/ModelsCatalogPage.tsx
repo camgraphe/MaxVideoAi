@@ -226,7 +226,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       nextStepLinks: [
         { label: 'Parcourir les modèles vidéo', href: '/models/video' },
         { label: "Parcourir les modèles d'image", href: '/models/image' },
-        { label: 'Comparer les moteurs vidéo', href: '/ai-video-engines' },
+        { label: 'Comparer les modèles vidéo', href: '/ai-video-engines' },
       ],
     },
     video: {
@@ -234,7 +234,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       metaDescription:
         'Comparez les modèles vidéo IA par entrées supportées, durée max, résolution et prix avant rendu.',
       heroTitle: 'Modèles vidéo IA (specs, limites et prix)',
-      heroSubhead: 'Passez en revue les contraintes vidéo, comparez les workflows et retenez le bon moteur avant rendu.',
+      heroSubhead: 'Passez en revue les contraintes vidéo, comparez les workflows et retenez le bon modèle avant rendu.',
       heroBullets: [
         "Vérifiez texte→vidéo, image→vidéo, extension et édition selon le modèle.",
         'Utilisez le comparatif vidéo uniquement une fois la shortlist clarifiée.',
@@ -246,16 +246,16 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       reliabilityTitle: 'Contrôles qui comptent pour la vidéo',
       reliabilitySubtitle: 'Validez le fit du workflow, les contraintes de sortie et les signaux de prix avant rendu.',
       ctaTitle: 'Lancez une génération vidéo en quelques secondes',
-      ctaSubtitle: 'Choisissez un modèle vidéo ci-dessus, puis générez ou comparez vos moteurs shortlistés.',
+      ctaSubtitle: 'Choisissez un modèle vidéo ci-dessus, puis générez ou comparez vos modèles shortlistés.',
       ctaPills: ['Tarifs vidéo', 'Limites runtime', 'Références de prompt'],
       ctaMicrocopy: 'Specs vidéo • Tarifs live • Références de sorties réelles',
-      ctaPrimaryLabel: 'Ouvrir le workspace vidéo',
+      ctaPrimaryLabel: 'Ouvrir le studio vidéo',
       ctaPrimaryHref: '/app',
       ctaSecondaryLabel: 'Ouvrir le comparatif vidéo',
       ctaSecondaryHref: '/ai-video-engines',
       nextStepsTitle: 'Étapes suivantes',
       nextStepLinks: [
-        { label: 'Choisir un moteur par use case', href: '/ai-video-engines' },
+        { label: 'Choisir un modèle par use case', href: '/ai-video-engines' },
         { label: 'Comparer Kling 3 Pro vs Veo 3.1', href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } } },
         { label: 'Voir le profil Veo 3.1 Fast', href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } } },
       ],
@@ -278,7 +278,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       reliabilityTitle: "Contrôles qui comptent pour l'image",
       reliabilitySubtitle: "Validez limites de références, contrôles de sortie et prix avant de lancer vos runs image.",
       ctaTitle: 'Lancez une génération image en quelques secondes',
-      ctaSubtitle: "Choisissez un modèle image ci-dessus, puis ouvrez l’Image Lab pour générer des brouillons, des versions finales ou des retouches.",
+      ctaSubtitle: "Choisissez un modèle image ci-dessus, puis ouvrez l’Image Lab pour générer des tests, des versions finales ou des retouches.",
       ctaPills: ['Prix par image', 'Limites de références', 'Options de résolution'],
       ctaMicrocopy: "Specs image • Tarifs live • Workflows guidés par références",
       ctaPrimaryLabel: "Ouvrir l'Image Lab",
@@ -287,7 +287,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       ctaSecondaryHref: '/models',
       nextStepsTitle: 'Étapes suivantes',
       nextStepLinks: [
-        { label: "Ouvrir le workspace image", href: '/app/image' },
+        { label: "Ouvrir le studio image", href: '/app/image' },
         { label: 'Voir le profil Nano Banana 2', href: { pathname: '/models/[slug]', params: { slug: 'nano-banana-2' } } },
         { label: 'Voir le profil Nano Banana Pro', href: { pathname: '/models/[slug]', params: { slug: 'nano-banana-pro' } } },
       ],
@@ -352,7 +352,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       ctaSecondaryHref: '/ai-video-engines',
       nextStepsTitle: 'Siguientes pasos',
       nextStepLinks: [
-        { label: 'Elegir motor por caso de uso', href: '/ai-video-engines' },
+        { label: 'Elegir modelo ideal', href: '/ai-video-engines' },
         { label: 'Comparar Kling 3 Pro vs Veo 3.1', href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } } },
         { label: 'Ver perfil de Veo 3.1 Fast', href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } } },
       ],
@@ -701,7 +701,7 @@ const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string,
     'seedance-2-0':
       'Idéal pour des vidéos multi-plans premium, avec audio natif, synchronisation labiale précise et mouvement réaliste.',
     'seedance-2-0-fast':
-      'Idéal pour tester vite : drafts Seedance, planification de plans et itérations, avec audio natif, lip-sync précis et génération rapide et stable.',
+      'Idéal pour tester vite : tests Seedance, planification de plans et itérations, avec audio natif, lip-sync précis et génération rapide et stable.',
     'kling-3-standard':
       'Idéal pour créer des séquences cinématiques multi-plans, avec contrôle vocal et un rendu fidèle à vos instructions.',
     'kling-3-pro':
@@ -721,11 +721,11 @@ const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string,
     'seedance-1-5-pro':
       'Idéal pour des mouvements cinématiques avec verrouillage caméra, avec audio natif, lip-sync précis et des tarifs compétitifs, en texte-vers-vidéo comme en image-vers-vidéo.',
     'veo-3-1-lite':
-      'Idéal pour des drafts Veo économiques, avec image de départ et contrôle début/fin, excellente rapidité et stabilité.',
+      'Idéal pour des tests Veo économiques, avec image de départ et contrôle début/fin, excellente rapidité et stabilité.',
     'luma-ray-2':
       'Idéal pour des générations cinématiques à partir d’une vidéo source, avec modification et recadrage, offrant une forte contrôlabilité et une haute qualité visuelle.',
     'luma-ray-2-flash':
-      'Idéal pour des drafts cinématiques rapides à partir d’une vidéo source, avec modification et recadrage, rapides, stables et économiques.',
+      'Idéal pour des tests cinématiques rapides à partir d’une vidéo source, avec modification et recadrage, rapides, stables et économiques.',
     'pika-text-to-video':
       'Idéal pour des clips social stylisés, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
     'wan-2-6':
@@ -1387,7 +1387,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Prix par image' : activeLocale === 'es' ? 'Precio por imagen' : 'Per-image pricing',
               description:
                 activeLocale === 'fr'
-                  ? 'Comparez brouillons, finals et coûts annexes comme le grounding web.'
+                  ? 'Comparez tests, finals et coûts annexes comme le grounding web.'
                   : activeLocale === 'es'
                     ? 'Compara drafts, finales y costes extra como grounding web.'
                     : 'Compare draft, final, and add-on costs such as web grounding.',
@@ -1411,7 +1411,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Modèles vidéo' : activeLocale === 'es' ? 'Modelos de video' : 'Video models',
               description:
                 activeLocale === 'fr'
-                  ? 'Passez aux moteurs vidéo pour le rendu, le comparateur et les workflows de mouvement.'
+                  ? 'Passez aux modèles vidéo pour le rendu, le comparateur et les workflows de mouvement.'
                   : activeLocale === 'es'
                     ? 'Pasa a motores de video para renderizar, comparar y piloter tus flujos de movimiento.'
                     : 'Jump to the video hub for rendering, compare pages, and motion workflows.',
@@ -1444,7 +1444,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Prix par workflow' : activeLocale === 'es' ? 'Precio por workflow' : 'Pricing by workflow',
               description:
                 activeLocale === 'fr'
-                  ? 'Séparez les moteurs facturés à la seconde des modèles facturés à l’image.'
+                  ? 'Séparez les modèles facturés à la seconde des modèles facturés à l’image.'
                   : activeLocale === 'es'
                     ? 'Separa motores cobrados por segundo de modelos cobrados por imagen.'
                     : 'Separate per-second video engines from per-image still models.',

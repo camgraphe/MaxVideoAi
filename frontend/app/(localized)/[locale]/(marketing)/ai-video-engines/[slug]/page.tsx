@@ -197,13 +197,13 @@ function stripAudioReferencesForSilentPair(template: string, pairHasNativeAudio:
 const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
   fr: {
     'Ads and B-roll': 'Publicités et plans B-roll',
-    'Budget Veo drafts': 'Brouillons Veo à petit budget',
+    'Budget Veo drafts': 'Tests Veo à petit budget',
     'Cinematic dialogue': 'Dialogue cinématographique',
     'Cinematic motion with camera lock': 'Mouvement cinématographique avec caméra verrouillée',
     'Cinematic shots': 'Plans cinématographiques',
-    'Fast Seedance drafts, reference tests, and shot planning':
-      'Brouillons Seedance rapides, tests de références et préparation des plans',
-    'Fast cinematic drafts with modify and reframe': 'Brouillons cinématographiques rapides avec modify et reframe',
+    'Fast Seedance tests, reference tests, and shot planning':
+      'Tests Seedance rapides, tests de références et préparation des plans',
+    'Fast cinematic drafts with modify and reframe': 'Tests cinématographiques rapides avec modify et reframe',
     'Fast iterations': 'Itérations rapides',
     'Flagship multi-shot video with native audio and references':
       'Vidéo multi-plans premium avec audio natif et références',
@@ -224,7 +224,7 @@ const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
     'Cinematic dialogue': 'Diálogo cinematográfico',
     'Cinematic motion with camera lock': 'Movimiento cinematográfico con cámara bloqueada',
     'Cinematic shots': 'Planos cinematográficos',
-    'Fast Seedance drafts, reference tests, and shot planning':
+    'Fast Seedance tests, reference tests, and shot planning':
       'Borradores rápidos de Seedance, pruebas de referencias y planificación de planos',
     'Fast cinematic drafts with modify and reframe': 'Borradores cinematográficos rápidos con modify y reframe',
     'Fast iterations': 'Iteraciones rápidas',
@@ -725,7 +725,7 @@ function getPrelaunchCompareNotice(locale: AppLocale) {
   if (locale === 'fr') {
     return {
       title: 'Comparaison pré-lancement',
-      body: 'Un moteur de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles; les prix et sorties finales sont confirmés au lancement.',
+      body: 'Un modèle de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles; les prix et sorties finales sont confirmés au lancement.',
     };
   }
   if (locale === 'es') {
@@ -1105,7 +1105,7 @@ function formatCapabilityValue(value: string) {
 
 function getFallbackCapabilityDifference(locale: AppLocale) {
   if (locale === 'fr') {
-    return 'Modes clés : les deux moteurs couvrent les mêmes routes principales; la vraie différence se joue sur la résolution, le coût et le niveau de finition.';
+    return 'Modes clés : les deux modèles couvrent les mêmes routes principales; la vraie différence se joue sur la résolution, le coût et le niveau de finition.';
   }
   if (locale === 'es') {
     return 'Modos clave: ambos motores cubren las mismas rutas principales; la diferencia real está en la resolución, el costo y el nivel de acabado.';
@@ -1402,7 +1402,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'How is Seedance 2.0 different from Seedance 2.0 Fast?',
             answer:
-              'Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper drafts, timing checks, and early iteration.',
+              'Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper tests, timing checks, and early iteration.',
           },
           {
             question: 'Is Seedance 2.0 better for polished Seedance video output?',
@@ -1440,7 +1440,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
     },
     'veo-3-1-fast-vs-veo-3-1-lite': {
       heroIntro:
-        'Compare Veo 3.1 Fast and Veo 3.1 Lite to choose the right current Veo 3 AI workflow for cheaper text-to-video drafts, image-to-video tests, native-audio behavior, and faster iteration.',
+        'Compare Veo 3.1 Fast and Veo 3.1 Lite to choose the right current Veo 3 AI workflow for cheaper text-to-video tests, image-to-video tests, native-audio behavior, and faster iteration.',
       faq: {
         title: 'FAQ',
         subtitle:
@@ -1454,7 +1454,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Is Veo 3.1 Lite or Veo 3.1 Fast better for text-to-video drafts?',
             answer:
-              'Veo 3.1 Lite is better when you want the lowest-cost audio-ready drafts. Veo 3.1 Fast is better when you want more output flexibility, optional audio, and a cleaner bridge into the main Veo 3.1 workflow.',
+              'Veo 3.1 Lite is better when you want the lowest-cost audio-ready tests. Veo 3.1 Fast is better when you want more output flexibility, optional audio, and a cleaner bridge into the main Veo 3.1 workflow.',
           },
           {
             question: 'When should I choose Veo 3.1 Fast instead of Veo 3.1 Lite?',
@@ -1475,7 +1475,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Which current Kling AI model is better for image-to-video and prompt testing?',
             answer:
-              'Kling 3 Standard is better for lower-cost prompt testing and repeatable image-to-video drafts, while Kling 3 Pro is better when you need tighter scene control and higher-priority final outputs.',
+              'Kling 3 Standard is better for lower-cost prompt testing and repeatable image-to-video tests, while Kling 3 Pro is better when you need tighter scene control and higher-priority final outputs.',
           },
           {
             question: 'Do Kling 3 Pro and Kling 3 Standard both support Kling Elements?',
@@ -1600,12 +1600,12 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Quel modele video IA Seedance faut-il utiliser pour le travail de draft ?',
             answer:
-              'Utilisez Seedance 2.0 Fast pour des drafts moins couteux, des tests plus rapides et des comparaisons de workflow. Utilisez Seedance 2.0 quand vous voulez une sortie multi-shot plus aboutie, l audio natif et un workflow plus pret pour la production.',
+              'Utilisez Seedance 2.0 Fast pour des tests moins couteux, des tests plus rapides et des comparaisons de workflow. Utilisez Seedance 2.0 quand vous voulez une sortie multi-shot plus aboutie, l audio natif et un workflow plus pret pour la production.',
           },
           {
             question: 'Quelle difference entre Seedance 2.0 et Seedance 2.0 Fast ?',
             answer:
-              'Seedance 2.0 est le choix actuel le plus solide pour un rendu multi-shot soigne, l audio natif et des sorties a references plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux drafts moins couteux, aux checks de timing et a l iteration initiale.',
+              'Seedance 2.0 est le choix actuel le plus solide pour un rendu multi-shot soigne, l audio natif et des sorties a references plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux tests moins couteux, aux checks de timing et a l iteration initiale.',
           },
           {
             question: 'Seedance 2.0 est-il meilleur pour une sortie video Seedance soignee ?',
@@ -1617,16 +1617,16 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
     },
     'veo-3-1-vs-veo-3-1-fast': {
       heroIntro:
-        'Comparez Veo 3.1 et Veo 3.1 Fast pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de texte-to-video soigne, d image-to-video, de drafts plus rapides et de controle sur l audio natif.',
+        'Comparez Veo 3.1 et Veo 3.1 Fast pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de texte-to-video soigne, d image-to-video, de tests plus rapides et de controle sur l audio natif.',
       faq: {
         title: 'FAQ',
         subtitle:
           'Reponses courtes pour choisir le bon workflow Veo actuel.',
         items: [
           {
-            question: 'Comment utiliser Veo 3 pour le texte-to-video et les drafts ?',
+            question: 'Comment utiliser Veo 3 pour le texte-to-video et les tests ?',
             answer:
-              'Utilisez Veo 3.1 Fast pour des drafts moins chers, la comparaison de prompts texte-to-video et une iteration plus rapide. Utilisez Veo 3.1 quand vous voulez une sortie finale plus solide, un meilleur controle guide par references et des resultats image-to-video plus soignes.',
+              'Utilisez Veo 3.1 Fast pour des tests moins chers, la comparaison de prompts texte-to-video et une iteration plus rapide. Utilisez Veo 3.1 quand vous voulez une sortie finale plus solide, un meilleur controle guide par references et des resultats image-to-video plus soignes.',
           },
           {
             question: 'Peut-on utiliser Veo 3.1 et Veo 3.1 Fast pour l image-to-video ?',
@@ -1643,7 +1643,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
     },
     'veo-3-1-fast-vs-veo-3-1-lite': {
       heroIntro:
-        'Comparez Veo 3.1 Fast et Veo 3.1 Lite pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de drafts texte-to-video moins chers, de tests image-to-video, de comportement audio et d iteration plus rapide.',
+        'Comparez Veo 3.1 Fast et Veo 3.1 Lite pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de tests texte-to-video moins chers, de tests image-to-video, de comportement audio et d iteration plus rapide.',
       faq: {
         title: 'FAQ',
         subtitle:
@@ -1655,9 +1655,9 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
               'Les deux peuvent convenir, mais Veo 3.1 Lite est plus adapte aux tests image-to-video audio-ready les moins chers, tandis que Veo 3.1 Fast est plus adapte quand vous voulez plus de flexibilite et une montee plus fluide vers Veo 3.1.',
           },
           {
-            question: 'Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des drafts texte-to-video ?',
+            question: 'Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des tests texte-to-video ?',
             answer:
-              'Veo 3.1 Lite convient mieux quand vous voulez les drafts audio-ready les moins chers. Veo 3.1 Fast convient mieux quand vous voulez plus de flexibilite, un audio optionnel et un pont plus propre vers le workflow principal Veo 3.1.',
+              'Veo 3.1 Lite convient mieux quand vous voulez les tests audio-ready les moins chers. Veo 3.1 Fast convient mieux quand vous voulez plus de flexibilite, un audio optionnel et un pont plus propre vers le workflow principal Veo 3.1.',
           },
           {
             question: 'Quand faut-il choisir Veo 3.1 Fast plutot que Veo 3.1 Lite ?',
@@ -1678,7 +1678,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Quel modele Kling IA actuel convient le mieux a l image-vers-video et aux tests de prompt ?',
             answer:
-              'Kling 3 Standard convient mieux a des tests de prompt moins couteux et a des drafts image-vers-video repetables, tandis que Kling 3 Pro convient mieux quand vous avez besoin d un controle de scene plus serre et de sorties finales plus prioritaires.',
+              'Kling 3 Standard convient mieux a des tests de prompt moins couteux et a des tests image-vers-video repetables, tandis que Kling 3 Pro convient mieux quand vous avez besoin d un controle de scene plus serre et de sorties finales plus prioritaires.',
           },
           {
             question: 'Kling 3 Pro et Kling 3 Standard supportent-ils tous les deux les Kling Elements ?',
@@ -1697,12 +1697,12 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
   es: {
     'seedance-1-5-pro-vs-seedance-2-0': {
       meta: {
-        title: 'Seedance 1.5 Pro vs Seedance 2.0 | Que cambio, cuando actualizar y mejores casos de uso | MaxVideoAI',
+        title: 'Seedance 1.5 Pro vs Seedance 2.0 | Que cambio, cuando actualizar y mejores objetivos | MaxVideoAI',
         description:
           'Compara Seedance 1.5 Pro y Seedance 2.0 en MaxVideoAI para ver que cambia en audio, continuidad multi-shot, referencias, precio y cuando conviene actualizar.',
       },
       heroIntro:
-        'Compara Seedance 1.5 Pro y Seedance 2.0 para ver que cambio entre el workflow Seedance Pro anterior y el modelo de video IA de Seedance actual en audio nativo, continuidad multi-shot y workflows con referencias. Usa esta pagina para entender rapido los trade-offs antes de abrir el modelo Seedance actual, la pagina de ejemplos de video IA de Seedance o el workflow de video de Seedance que mejor encaja con tu caso de uso.',
+        'Compara Seedance 1.5 Pro y Seedance 2.0 para ver que cambio entre el workflow Seedance Pro anterior y el modelo de video IA de Seedance actual en audio nativo, continuidad multi-shot y workflows con referencias. Usa esta pagina para entender rapido los trade-offs antes de abrir el modelo Seedance actual, la pagina de ejemplos de video IA de Seedance o el workflow de video de Seedance que mejor encaja con tu objetivo.',
       topCards: [
         {
           title: 'Que cambio',
@@ -1720,7 +1720,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
             'Actualiza cuando necesites mejor continuidad entre tomas, workflows de audio nativo mas ricos o un modelo actual mas flexible para trabajo creativo de mayor valor.',
         },
         {
-          title: 'Mejores casos de uso',
+          title: 'Mejor para',
           body:
             'Usa esta pagina para decidir entre un workflow Seedance anterior pero aun compatible para clips cortos y controlados, y el workflow actual de Seedance 2.0 para anuncios multi-shot, lanzamientos y secuencias mas ambiciosas guiadas por referencias.',
         },
@@ -2147,7 +2147,7 @@ export default async function CompareDetailPage(
         ? 'Abre el generador con este modelo.'
         : 'Opens the generator with this model.';
   const localizedPromptNote = activeLocale === 'fr'
-    ? 'Les prompts source restent en anglais pour conserver le meme test entre moteurs.'
+    ? 'Les prompts source restent en anglais pour conserver le meme test entre modèles.'
     : activeLocale === 'es'
       ? 'Los prompts originales se mantienen en ingles para conservar la misma prueba entre motores.'
       : 'Source prompts stay in English to keep the same test across engines.';
@@ -2422,7 +2422,7 @@ export default async function CompareDetailPage(
   const kling3Native4kFaqCopy = pairHasKling3Native4k
     ? activeLocale === 'fr'
       ? {
-          a1: '{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare la livraison 4K native, le coût d’itération, les caractéristiques clés et les données ci-dessus.',
+          a1: '{left} et {right} sont des modèles de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare la livraison 4K native, le coût d’itération, les caractéristiques clés et les données ci-dessus.',
           a2: 'Cela dépend du flux de production. Utilisez la grille de scores et les caractéristiques pour décider si le plan a besoin d’une livraison 4K native ou d’une route d’itération moins coûteuse, puis ouvrez chaque profil pour les détails complets.',
           q10: 'Pourquoi les résultats peuvent-ils différer entre ces routes ?',
           a10: 'Même avec des instructions proches, les modèles interprètent différemment les contraintes et les réglages. Pour Kling 3 4K, comparez d’abord les caractéristiques et l’échelle de coût, puis rendez seulement les plans finalisés en 4K native.',

@@ -18,7 +18,7 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
   const router = useRouter();
   const locale = useLocale();
   const searchPlaceholder =
-    locale === 'fr' ? 'Rechercher un moteur...' : locale === 'es' ? 'Buscar motor...' : 'Search engine...';
+    locale === 'fr' ? 'Rechercher un modèle...' : locale === 'es' ? 'Buscar motor...' : 'Search engine...';
   const noResultsLabel = locale === 'fr' ? 'Aucun résultat' : locale === 'es' ? 'Sin resultados' : 'No results';
   const brandBySlug = useMemo(() => {
     const catalog = engineCatalog as Array<{ modelSlug: string; brandId?: string | null; marketingName?: string }>;

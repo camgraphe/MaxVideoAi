@@ -100,7 +100,7 @@
       "Misez sur les looks stylisés (anime, comic, pixel, toon, 3D stylisée)",
       "Gardez les clips courts et énergiques pour les feeds et overlays",
       "Utilisez seeds et prompts négatifs pour affiner le mouvement et nettoyer les artefacts",
-      "Sortie silencieuse : ajoutez votre musique/VO en post ou utilisez un moteur audio",
+      "Sortie silencieuse : ajoutez votre musique/VO en post ou utilisez un modèle audio",
       "Un sujet, un environnement, un effet principal par clip pour la clarté"
     ]
   },
@@ -121,7 +121,7 @@
   "faqs": [
     {
       "q": "Pika 2.2 génère‑t‑il de l’audio ?",
-      "a": "Non. Pika 2.2 dans MaxVideoAI sort toujours des clips silencieux. Ajoutez le son en post ou utilisez un moteur audio si besoin."
+      "a": "Non. Pika 2.2 dans MaxVideoAI sort toujours des clips silencieux. Ajoutez le son en post ou utilisez un modèle audio si besoin."
     },
     {
       "q": "Quelle durée choisir : 5 ou 10 secondes ?",
@@ -136,7 +136,7 @@
       "a": "Réutilisez un seed pour garder des itérations liées; utilisez des prompts négatifs pour bloquer texte/logos/personnages en trop/watermarks."
     },
     {
-      "q": "Quand utiliser un autre moteur ?",
+      "q": "Quand utiliser un autre modèle ?",
       "a": "Pour du photoréalisme ou de l’audio natif, utilisez Sora 2 ou Veo 3.1; pour des clips courts avec son, Wan 2.5."
     }
   ],
@@ -180,10 +180,10 @@
     ],
     "whatTitle": "Ce que Pika 2.2 est réellement dans MaxVideoAI",
     "whatIntro1": "Pika 2.2 est un modèle vidéo court, stylisé et pensé pour l’animation social‑first.",
-    "whatIntro2": "Dans MaxVideoAI, il est câblé comme moteur silencieux avec contrôle strict de durée, résolution et format.",
+    "whatIntro2": "Dans MaxVideoAI, il est câblé comme modèle silencieux avec contrôle strict de durée, résolution et format.",
     "whatFlowTitle": "Flux in‑app",
     "whatFlowSteps": [
-      "1. Choisissez Pika 2.2 comme moteur.",
+      "1. Choisissez Pika 2.2 comme modèle.",
       "2. Sélectionnez Texte → Vidéo ou Image → Vidéo.",
       "3. Réglez la durée (5/10 s), le format et la résolution (720p ou 1080p).",
       "4. (Optionnel) Fixez un seed et ajoutez un prompt négatif.",
@@ -214,7 +214,7 @@
         ]
       }
     ],
-    "specValueProp": "Pika 2.2 est le moteur stylisé et silencieux de clips courts : rapide à itérer avec seeds et prompts négatifs, parfait pour les feeds sociaux et les inserts motion.",
+    "specValueProp": "Pika 2.2 est le modèle stylisé et silencieux de clips courts : rapide à itérer avec seeds et prompts négatifs, parfait pour les feeds sociaux et les inserts motion.",
     "galleryTitle": "Galerie d’exemples Pika 2.2",
     "galleryIntro": "Clips curés générés avec les mêmes réglages que dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Pika 2.2 →",
@@ -253,7 +253,7 @@
     "boundaries": [
       "Format court uniquement (5–10 s dans cette config).",
       "Sortie silencieuse — ajoutez le son en post si nécessaire.",
-      "Meilleur pour motion stylisé et inserts; utilisez d’autres moteurs pour photoréalisme + audio natif.",
+      "Meilleur pour motion stylisé et inserts; utilisez d’autres modèles pour photoréalisme + audio natif.",
       "Petit texte à l’écran peu fiable — ajoutez le copy critique en post."
     ],
     "safetyTitle": "Sécurité & personnes / ressemblance",
@@ -269,7 +269,7 @@
     "comparisonTitle": "Pika 2.2 vs MiniMax Hailuo 02 — aperçu rapide",
     "comparisonPoints": [
       "Pika 2.2 : clips courts, stylisés et silencieux en 720p/1080p pour looks animés, loops et inserts.",
-      "MiniMax Hailuo 02 : brouillons silencieux budget avec bonne physique en 512p/768p sur des beats 6–10 s.",
+      "MiniMax Hailuo 02 : tests silencieux budget avec bonne physique en 512p/768p sur des beats 6–10 s.",
       "Sora 2 / Wan 2.5 / Veo 3.1 : à choisir quand vous avez besoin d’audio natif ou de plus de réalisme."
     ],
     "comparisonCta": "Comparer Pika 2.2 vs MiniMax Hailuo 02 →",
@@ -277,7 +277,7 @@
     "faqs": [
       {
         "q": "Pika 2.2 génère‑t‑il de l’audio ?",
-        "a": "Non. Clips silencieux; ajoutez votre bande‑son ou utilisez un moteur audio."
+        "a": "Non. Clips silencieux; ajoutez votre bande‑son ou utilisez un modèle audio."
       },
       {
         "q": "Quelle durée choisir ?",
@@ -292,7 +292,7 @@
         "a": "Les seeds gardent les itérations liées; les prompts négatifs bloquent texte/logos/personnages en trop/watermarks."
       },
       {
-        "q": "Quand changer de moteur ?",
+        "q": "Quand changer de modèle ?",
         "a": "Utilisez Sora/Veo pour photoréalisme ou audio; Wan 2.5 pour des clips courts avec son; Sora 2 Pro/Veo 3.1 pour des hero shots premium."
       }
     ],

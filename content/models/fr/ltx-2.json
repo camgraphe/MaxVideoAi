@@ -136,19 +136,19 @@
     },
     {
       "q": "Quels formats sont supportés ?",
-      "a": "16:9 dans cette configuration. Utilisez Wan ou d’autres moteurs pour des besoins multi‑formats."
+      "a": "16:9 dans cette configuration. Utilisez Wan ou d’autres modèles pour des besoins multi‑formats."
     }
   ],
   "custom": {
     "heroSupportLine": "Idéal pour des spots produit premium, des brand stories et des cutdowns client‑ready quand vous voulez la finition la plus propre.",
     "whyTitle": "Pourquoi LTX 2 est puissant",
-    "heroDesc1": "Rendus 6–10 secondes haute fidélité avec audio natif, jusqu’à 4K/50 fps, pour histoires premium et hero shots. LTX‑2 Pro est le tier le plus qualitatif de la famille LTX‑2, conçu pour les campagnes finales plutôt que les drafts.",
+    "heroDesc1": "Rendus 6–10 secondes haute fidélité avec audio natif, jusqu’à 4K/50 fps, pour histoires premium et hero shots. LTX‑2 Pro est le tier le plus qualitatif de la famille LTX‑2, conçu pour les campagnes finales plutôt que les tests.",
     "heroDesc2": "Utilisez Pro quand vous voulez le détail le plus propre, un motion stable et un sound design nuancé. Coupez l’audio si vous voulez sonoriser entièrement en post.",
     "heroHighlights": [
       "Synchro audio‑visuel en une passe||Dialogue, ambiance et SFX tombent avec l’action.",
       "Finition premium||Détail plus propre et motion plus fluide pour des livrables finals.",
       "Direction fiable avec prompts clairs||Beats simples + langage caméra se traduisent bien.",
-      "Pensé pour la prod||Gardez le son pour les drafts, ou coupez et finissez en post."
+      "Pensé pour la prod||Gardez le son pour les tests, ou coupez et finissez en post."
     ],
     "specTitle": "Specs réelles — LTX 2 dans MaxVideoAI",
     "specNote": "Les specs reflètent le routage Fal en production.",
@@ -165,7 +165,7 @@
       },
       {
         "title": "Workflow audio",
-        "intro": "Audio et visuels se génèrent ensemble, ce qui aide le pacing et l’émotion. Gardez le son pour les drafts ou finissez en post.",
+        "intro": "Audio et visuels se génèrent ensemble, ce qui aide le pacing et l’émotion. Gardez le son pour les tests ou finissez en post.",
         "items": [
           "Ajoutez un ou deux cues sonores pour ancrer le timing.",
           "Gardez le dialogue court et clair.",

@@ -27,7 +27,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Mejores casos de uso",
+    "title": "Mejor para",
     "items": [
       {
         "title": "Texto legible en anuncios, posters e infografias",
@@ -49,7 +49,7 @@
   },
   "promptStructure": {
     "title": "Mini-guia de prompt",
-    "quote": "Escena, sujeto, detalles importantes, caso de uso, restricciones, y para edits: cambia esto conservando aquello.",
+    "quote": "Escena, sujeto, detalles importantes, objetivo, restricciones, y para edits: cambia esto conservando aquello.",
     "description": "GPT Image 2 responde bien a prompts estructurados. Separa escena, sujeto, composicion, texto exacto y restricciones de edit. Para imagenes con mucho texto, indica el copy exacto y donde debe aparecer.",
     "steps": [
       "Escena y entorno",

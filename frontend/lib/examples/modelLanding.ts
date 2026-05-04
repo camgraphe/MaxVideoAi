@@ -76,7 +76,7 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     intro:
       'Browse Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite examples, prompts, reusable settings, and image-to-video patterns, then open the model pages for specs, limits, and pricing. Use this page to study prompt structure, text-to-video AI patterns, and model-specific image-to-video settings before opening the matching Veo model page.',
     summary:
-      'Veo 3.1 leads this page for examples, prompts, settings, and image-to-video patterns, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready drafts.',
+      'Veo 3.1 leads this page for examples, prompts, settings, and image-to-video patterns, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready tests.',
     promptPatterns:
       'Veo 3.1 examples usually improve when prompts specify shot objective first, then movement, lighting, and any image-to-video reference constraints.',
     strengthsLimits:
@@ -175,12 +175,12 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'How long can Kling AI videos be?',
         answer:
-          'Kling 3 Pro and Kling 3 Standard support 3 to 15 second renders at 1080p. Kling 2.6 Pro is better suited to shorter 5 to 10 second audio-ready clips, and Kling 2.5 Turbo is mainly for fast 5 or 10 second silent drafts.',
+          'Kling 3 Pro and Kling 3 Standard support 3 to 15 second renders at 1080p. Kling 2.6 Pro is better suited to shorter 5 to 10 second audio-ready clips, and Kling 2.5 Turbo is mainly for fast 5 or 10 second silent tests.',
       },
       {
         question: 'How long does Kling AI take to make a video?',
         answer:
-          'Render time depends on the Kling model, clip length, settings, and queue load. Shorter draft runs on Kling 3 Standard or Kling 2.5 Turbo are usually the fastest way to test prompts, while longer multi-shot or audio-on renders generally take more time than short silent drafts.',
+          'Render time depends on the Kling model, clip length, settings, and queue load. Shorter draft runs on Kling 3 Standard or Kling 2.5 Turbo are usually the fastest way to test prompts, while longer multi-shot or audio-on renders generally take more time than short silent tests.',
       },
       {
         question: 'Which Kling AI model should I use for prompts and examples?',
@@ -302,7 +302,7 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   hailuo: {
-    subtitle: 'Hailuo examples for budget-friendly drafts, motion tests, and reference-based iteration.',
+    subtitle: 'Hailuo examples for budget-friendly tests, motion tests, and reference-based iteration.',
     intro:
       'This Hailuo examples page focuses on draft quality, motion validation, and practical prompt iteration. It is useful when you want low-cost exploration before rebuilding winners in premium engines. The guidance remains specific to Hailuo behavior to prevent hub-level duplication.',
     promptPatterns:
@@ -332,7 +332,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   sora: {
     subtitle: 'Exemples Sora pensés pour un rendu cinématique, des prompts réutilisables et des réglages directement exploitables.',
     intro:
-      'Cette page rassemble des exemples Sora réellement exploitables en production, avec prompts, durées et formats observés sur des rendus concrets. L’objectif est de vous aider à reproduire des résultats cohérents sans mélanger les logiques propres aux autres moteurs.',
+      'Cette page rassemble des exemples Sora réellement exploitables en production, avec prompts, durées et formats observés sur des rendus concrets. L’objectif est de vous aider à reproduire des résultats cohérents sans mélanger les logiques propres aux autres modèles.',
     promptPatterns:
       'Commencez par l’intention du plan, puis précisez la caméra, le mouvement et la lumière. Les prompts courts, structurés et bien hiérarchisés restent les plus fiables.',
     strengthsLimits:
@@ -345,7 +345,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
         answer: 'Des prompts structurés, avec sujet, caméra et mouvement clairement séparés.',
       },
       {
-        question: 'Peut-on cloner ces exemples Sora dans le workspace ?',
+        question: 'Peut-on cloner ces exemples Sora dans le studio ?',
         answer: 'Oui. Les exemples sont conçus pour être réutilisés puis ajustés rapidement.',
       },
       {
@@ -363,13 +363,13 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     intro:
       'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts, des reglages reutilisables et des schemas image-vers-video, puis ouvrez les pages modele pour les caracteristiques, limites et tarifs. Utilisez cette page pour etudier la structure des prompts, les schemas texte-vers-video IA et les reglages image-vers-video propres a chaque modele avant d ouvrir la page Veo correspondante.',
     summary:
-      'Veo 3.1 mene cette page pour les exemples, prompts, reglages et schemas image-vers-video, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons prets pour l audio moins couteux.',
+      'Veo 3.1 mene cette page pour les exemples, prompts, reglages et schemas image-vers-video, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des tests prets pour l audio moins couteux.',
     promptPatterns:
       'Decrivez d abord l objectif du plan, puis la camera, l ambiance et les contraintes de reference utiles pour l image-vers-video. Les exemples Veo 3.1 sont plus lisibles quand la structure du prompt reste stable.',
     strengthsLimits:
       'Veo offre generalement un bon niveau de controle sur le cadrage et le mouvement sur des rendus texte-vers-video et image-vers-video courts. Les capacites varient selon le mode actif et le type d entree.',
     pricingNotes:
-      'Comparez les coûts avec des presets identiques en durée et résolution pour isoler la vraie différence entre moteurs.',
+      'Comparez les coûts avec des presets identiques en durée et résolution pour isoler la vraie différence entre modèles.',
     faq: [
       {
         question: 'Comment utiliser Veo 3 pour l image-vers-video ?',
@@ -379,7 +379,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modele Veo 3 utiliser pour tester des prompts ?',
         answer:
-          'Commencez par Veo 3.1 Fast ou Veo 3.1 Lite si vous voulez des brouillons moins chers et des tests de prompt plus rapides, puis passez a Veo 3.1 pour une sortie cinematique plus aboutie et un meilleur controle guide par references.',
+          'Commencez par Veo 3.1 Fast ou Veo 3.1 Lite si vous voulez des tests moins chers et des tests de prompt plus rapides, puis passez a Veo 3.1 pour une sortie cinematique plus aboutie et un meilleur controle guide par references.',
       },
       {
         question: 'Ces exemples Veo 3.1 peuvent-ils servir de base pour des prompts texte-vers-video IA ?',
@@ -408,7 +408,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       },
       {
         question: 'Quelle difference saute le plus aux yeux entre Ray 2 et Ray 2 Flash dans les exemples ?',
-        answer: 'Ray 2 reste le niveau premium pour les rendus finaux, tandis que Ray 2 Flash reste le niveau rapide pour les brouillons. Les flux sont alignes, mais leur role en production est different.',
+        answer: 'Ray 2 reste le niveau premium pour les rendus finaux, tandis que Ray 2 Flash reste le niveau rapide pour les tests. Les flux sont alignes, mais leur role en production est different.',
       },
       {
         question: 'Peut-on comparer ici les usages modify et reframe ?',
@@ -449,7 +449,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     subtitle:
       'Exemples vidéo IA Kling, prompts, réglages, schemas image-vers-video et repères de modèle pour les flux Kling actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des schemas image-vers-video pour Kling 3 Pro, Kling 3 Standard et les rendus finaux Kling 3 4K natifs, puis explorez les configurations Kling plus anciennes encore prises en charge pour des flux antérieurs, des clips courts prêts pour l’audio et des brouillons rapides. Utilisez cette page pour comparer des prompts Kling AI, des schemas de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
+      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des schemas image-vers-video pour Kling 3 Pro, Kling 3 Standard et les rendus finaux Kling 3 4K natifs, puis explorez les configurations Kling plus anciennes encore prises en charge pour des flux antérieurs, des clips courts prêts pour l’audio et des tests rapides. Utilisez cette page pour comparer des prompts Kling AI, des schemas de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
     summary:
       'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling du quotidien, tandis que Kling 3 4K sert de route de livraison native 4K pour les rendus finaux validés. Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme configurations Kling plus anciennes encore prises en charge.',
     promptPatterns:
@@ -462,7 +462,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quelle durée peuvent atteindre les vidéos Kling AI ?',
         answer:
-          'Kling 3 Pro et Kling 3 Standard prennent en charge des rendus de 3 à 15 secondes en 1080p. Kling 2.6 Pro convient mieux à des clips courts prêts pour l’audio de 5 à 10 secondes, et Kling 2.5 Turbo sert surtout à des brouillons silencieux rapides de 5 ou 10 secondes.',
+          'Kling 3 Pro et Kling 3 Standard prennent en charge des rendus de 3 à 15 secondes en 1080p. Kling 2.6 Pro convient mieux à des clips courts prêts pour l’audio de 5 à 10 secondes, et Kling 2.5 Turbo sert surtout à des tests silencieux rapides de 5 ou 10 secondes.',
       },
       {
         question: 'Combien de temps Kling AI met-il pour générer une vidéo ?',
@@ -472,7 +472,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle Kling AI utiliser pour les prompts et les exemples ?',
         answer:
-          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des brouillons répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro pour un meilleur contrôle de scène, puis utilisez Kling 3 4K uniquement pour les rendus finaux natifs 4K validés.',
+          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des tests répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro pour un meilleur contrôle de scène, puis utilisez Kling 3 4K uniquement pour les rendus finaux natifs 4K validés.',
       },
       {
         question: 'Comment utiliser Kling AI pour des tests de prompt en image-vers-video ?',
@@ -510,7 +510,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle vidéo IA Seedance faut-il utiliser pour les exemples et les tests de prompt ?',
         answer:
-          'Commencez par Seedance 2.0 Fast si vous voulez des brouillons moins coûteux et des tests de prompt plus rapides, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
+          'Commencez par Seedance 2.0 Fast si vous voulez des tests moins coûteux et des tests de prompt plus rapides, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
       },
       {
         question: 'Quels réglages influencent le plus le prix sur les flux vidéo Seedance ?',
@@ -559,7 +559,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle LTX utiliser : LTX 2.3 Pro ou LTX 2.3 Fast ?',
         answer:
-          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des flux avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des brouillons plus longs.',
+          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des flux avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des tests plus longs.',
       },
     ],
   },
@@ -589,18 +589,18 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   hailuo: {
-    subtitle: 'Exemples Hailuo pensés pour des brouillons économiques, des tests de mouvement et une itération progressive.',
+    subtitle: 'Exemples Hailuo pensés pour des tests économiques, des tests de mouvement et une itération progressive.',
     intro:
-      'Cette page Hailuo est pensée pour une phase d’exploration à faible coût avant passage sur des moteurs premium. Elle sert à valider rapidement des idées de mouvement et de composition sans immobiliser trop de budget.',
+      'Cette page Hailuo est pensée pour une phase d’exploration à faible coût avant passage sur des modèles premium. Elle sert à valider rapidement des idées de mouvement et de composition sans immobiliser trop de budget.',
     promptPatterns:
       'Privilégiez des prompts courts centrés sur l’action et l’intention caméra.',
     strengthsLimits:
       'Hailuo est utile pour des passes conceptuelles et des tests de mouvement. Pour des scènes complexes, avancez par étapes courtes afin de garder le contrôle.',
     pricingNotes:
-      'Utilisez Hailuo comme base de brouillon, puis montez en qualité ou redirigez les variantes gagnantes vers un moteur premium.',
+      'Utilisez Hailuo comme base de test, puis montez en qualité ou redirigez les variantes gagnantes vers un modèle premium.',
     faq: [
       {
-        question: 'Pourquoi utiliser Hailuo avant un moteur premium ?',
+        question: 'Pourquoi utiliser Hailuo avant un modèle premium ?',
         answer: 'Pour valider des directions visuelles avec un coût initial plus bas.',
       },
       {
@@ -695,7 +695,7 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       },
       {
         question: '¿Cuál es la diferencia mas clara entre Ray 2 y Ray 2 Flash en ejemplos?',
-        answer: 'Ray 2 sigue siendo el tier premium para finales, mientras que Ray 2 Flash sigue siendo el tier rapido para drafts. Los workflows estan alineados, pero su papel en produccion es distinto.',
+        answer: 'Ray 2 sigue siendo el tier premium para finales, mientras que Ray 2 Flash sigue siendo el tier rapido para tests. Los workflows estan alineados, pero su papel en produccion es distinto.',
       },
       {
         question: '¿Puedo comparar aquí casos de modify y reframe?',
@@ -937,7 +937,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
     items: [
       {
         question: 'Puis-je cloner ces exemples directement ?',
-        answer: 'Oui. Ouvrez un exemple et réutilisez son prompt et ses réglages dans votre workspace.',
+        answer: 'Oui. Ouvrez un exemple et réutilisez son prompt et ses réglages dans votre studio.',
       },
       {
         question: 'Les exemples couvrent-ils les flux texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA ?',
@@ -953,10 +953,10 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: 'Où comparer les caractéristiques et limites des modèles ?',
-        answer: 'Utilisez les pages modèles pour les caractéristiques et limites, et la page moteurs pour choisir selon le cas d’usage.',
+        answer: 'Utilisez les pages modèles pour les caractéristiques et limites, et la page comparatif pour choisir selon l’usage.',
       },
       {
-        question: 'Comment choisir le bon moteur pour ce plan ?',
+        question: 'Comment choisir le bon modèle pour ce plan ?',
         answer: 'Partir du niveau qualité/coût vu en exemples puis valider via un test court au format cible.',
       },
     ],
@@ -982,7 +982,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: '¿Dónde comparo specs y límites por modelo?',
-        answer: 'Usa las páginas de modelos para ver características y límites, y la página de motores para decidir según el caso de uso.',
+        answer: 'Usa las páginas de modelos para ver características y límites, y la página comparativa para decidir según el objetivo.',
       },
       {
         question: '¿Cómo elijo el motor correcto para esta toma?',

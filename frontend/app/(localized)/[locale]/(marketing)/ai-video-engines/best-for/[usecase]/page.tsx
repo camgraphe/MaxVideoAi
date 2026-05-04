@@ -152,7 +152,7 @@ const DETAIL_COPY: Record<
   fr: {
     eyebrow: 'Meilleur pour',
     shortlist: 'Shortlist recommandée',
-    shortlistDescription: 'Les cards reprennent le style des pages modèles, avec les moteurs les plus adaptés en premier.',
+    shortlistDescription: 'Les cards reprennent le style des pages modèles, avec les modèles les plus adaptés en premier.',
     ranked: 'Sélection classée',
     rank: 'Rang',
     topPick: 'Premier choix',
@@ -167,9 +167,9 @@ const DETAIL_COPY: Record<
     compareShortlistCta: 'Comparer la shortlist',
     examplesCta: 'Voir les exemples cinéma',
     alsoAvailable: 'Aussi disponible',
-    chooseTitle: 'Quand choisir chaque moteur ?',
+    chooseTitle: 'Quand choisir chaque modèle ?',
     examplesTitle: 'Exemples à vérifier d’abord',
-    examplesDescription: 'Prévisualisez le rendu avant de choisir un moteur.',
+    examplesDescription: 'Prévisualisez le rendu avant de choisir un modèle.',
     whyTitle: 'Pourquoi ces modèles sont classés ici',
     mistakesTitle: 'Erreurs à éviter',
     fullAnalysis: 'Lire l’analyse complète',
@@ -191,12 +191,12 @@ const DETAIL_COPY: Record<
   es: {
     eyebrow: 'Mejor para',
     shortlist: 'Shortlist recomendada',
-    shortlistDescription: 'Las cards reutilizan el lenguaje visual de las páginas de modelos, con los motores más adecuados primero.',
+    shortlistDescription: 'Las cards reutilizan el lenguaje visual de las páginas de modelos, con los modelos ideales primero.',
     ranked: 'Selección ordenada',
     rank: 'Puesto',
     topPick: 'Primera opción',
     provider: 'Proveedor',
-    fit: 'Mejor uso',
+    fit: 'Ideal para',
     evidence: 'Por qué encaja',
     topReason: 'Recomendación principal para esta intención de búsqueda, según los criterios anteriores.',
     shortlistReason: 'Opción fuerte de la shortlist cuando este criterio pesa en el video final.',
@@ -206,13 +206,13 @@ const DETAIL_COPY: Record<
     compareShortlistCta: 'Comparar la shortlist',
     examplesCta: 'Ver ejemplos cinematográficos',
     alsoAvailable: 'También disponible',
-    chooseTitle: '¿Cuándo elegir cada motor?',
+    chooseTitle: '¿Cuándo elegir cada modelo?',
     examplesTitle: 'Ejemplos para revisar primero',
-    examplesDescription: 'Previsualiza la dirección del resultado antes de elegir un motor.',
+    examplesDescription: 'Previsualiza la dirección del resultado antes de elegir un modelo.',
     whyTitle: 'Por qué estos modelos están aquí',
     mistakesTitle: 'Evita estos errores',
     fullAnalysis: 'Leer el análisis completo',
-    relatedGuides: 'Guías Best-for relacionadas',
+    relatedGuides: 'Guías Mejor para relacionadas',
     allGuides: 'Ver todas las guías',
     score: 'Puntuación',
     overall: 'Mejor opción',
@@ -220,7 +220,7 @@ const DETAIL_COPY: Record<
     compareShortlist: 'Comparar la shortlist',
     compareDescription: 'Páginas lado a lado útiles para validar compromisos antes de elegir modelo.',
     contentComing: 'Contenido próximamente.',
-    backToHub: 'Volver al hub Best-for',
+    backToHub: 'Volver al espacio Mejor para',
     backToTop: 'Volver arriba',
     criteria: 'Criterios de decisión',
     quickLinks: 'Enlaces rápidos',
@@ -373,11 +373,11 @@ const USECASE_MISTAKE_FALLBACKS: Record<AppLocale, string[]> = {
     'Choisir un modèle sans matcher le cas d’usage.',
     'Ignorer les références, style frames ou limites d’input.',
     'Complexifier le prompt dès la première passe.',
-    'Sauter les drafts et aller directement sur du premium.',
+    'Sauter les tests et aller directement sur du premium.',
     'Ne pas vérifier le coût avant génération.',
   ],
   es: [
-    'Elegir un modelo sin ajustar el caso de uso.',
+    'Elegir un modelo sin ajustar el objetivo creativo.',
     'Ignorar referencias, style frames o límites de entrada.',
     'Complicar demasiado el primer prompt.',
     'Saltar los borradores e ir directo a premium.',
@@ -923,7 +923,7 @@ function buildUsecaseMistakes(locale: AppLocale, usecaseSlug: string, criteria: 
 
   if (locale === 'fr') {
     return [
-      `Choisir un moteur pour ${label} sans vérifier ${primary.toLowerCase()}.`,
+      `Choisir un modèle pour ${label} sans vérifier ${primary.toLowerCase()}.`,
       `Multiplier les références alors que ${secondary.toLowerCase()} doit rester prioritaire.`,
       `Passer directement au modèle premium avant d’avoir validé ${tertiary.toLowerCase()}.`,
       'Oublier de contrôler le coût avant de générer.',
@@ -937,7 +937,7 @@ function buildUsecaseMistakes(locale: AppLocale, usecaseSlug: string, criteria: 
       `Añadir demasiadas referencias cuando ${secondary.toLowerCase()} debería ser la prioridad.`,
       `Pasar directo al modelo premium antes de validar ${tertiary.toLowerCase()}.`,
       'Olvidar revisar el coste antes de generar.',
-      'Comparar solo fichas de modelos sin abrir ejemplos reales de este caso de uso.',
+      'Comparar solo fichas de modelos sin abrir ejemplos reales para este objetivo.',
     ];
   }
 
@@ -1325,7 +1325,7 @@ function buildPickReason(locale: AppLocale, usecaseSlug: string, criterion: stri
     },
   };
   const prefix = prefixes[locale]?.[Math.min(rank - 1, 2)] ?? prefixes.en[Math.min(rank - 1, 2)];
-  const suffix = suffixes[usecaseSlug]?.[locale] ?? suffixes[usecaseSlug]?.en ?? (locale === 'fr' ? 'ce cas d’usage' : locale === 'es' ? 'este caso de uso' : 'this use case');
+  const suffix = suffixes[usecaseSlug]?.[locale] ?? suffixes[usecaseSlug]?.en ?? (locale === 'fr' ? 'ce cas d’usage' : locale === 'es' ? 'este objetivo' : 'this use case');
   const connector = locale === 'en' ? 'for' : locale === 'es' ? 'en' : 'sur';
   return `${prefix} ${criterion.toLowerCase()} ${connector} ${suffix}.`;
 }
@@ -1424,7 +1424,7 @@ function getTopPicksTitle(locale: AppLocale, slug: string) {
     },
     'fast-drafts': {
       en: 'Top picks for fast drafts',
-      fr: 'Meilleurs choix pour brouillons rapides',
+      fr: 'Meilleurs choix pour tests rapides',
       es: 'Mejores opciones para borradores rápidos',
     },
     'stylized-anime': {
@@ -1588,7 +1588,7 @@ function getUsecaseLabel(locale: AppLocale, slug: string) {
     'ugc-ads': { en: 'UGC videos', fr: 'les vidéos UGC', es: 'videos UGC' },
     'product-videos': { en: 'product videos', fr: 'les vidéos produit', es: 'videos de producto' },
     'lipsync-dialogue': { en: 'lip sync and dialogue', fr: 'la synchronisation labiale et le dialogue', es: 'sincronización labial y diálogo' },
-    'fast-drafts': { en: 'fast drafts', fr: 'les brouillons rapides', es: 'borradores rápidos' },
+    'fast-drafts': { en: 'fast drafts', fr: 'les tests rapides', es: 'borradores rápidos' },
     'stylized-anime': { en: 'anime and stylized video', fr: 'la vidéo anime et stylisée', es: 'anime y video estilizado' },
     'image-to-video': { en: 'image-to-video', fr: "l'image vers vidéo", es: 'imagen a video' },
   };

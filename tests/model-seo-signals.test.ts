@@ -19,6 +19,6 @@ test('model hero chips expose max duration and max resolution as compact crawlab
 test('model hero includes a short model limits line near the top of the page', () => {
   assert.match(modelPageSource, /const heroLimitsLine = isVideoEngine \? resolveHeroLimitsLine\(locale\) : null/);
   assert.match(modelPageSource, /Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine\./);
-  assert.match(modelPageSource, /Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le moteur\./);
+  assert.match(modelPageSource, /Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le modèle\./);
   assert.match(modelPageSource, /Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor\./);
 });

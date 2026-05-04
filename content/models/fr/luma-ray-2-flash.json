@@ -3,12 +3,12 @@
   "versionLabel": "Ray 2 Flash",
   "seo": {
     "title": "Luma Ray 2 Flash Specs, Prix et workflows draft rapides | MaxVideoAI",
-    "description": "Utilisez Luma Ray 2 Flash dans MaxVideoAI pour des drafts plus rapides et moins chers, des tests image-to-video, des passes modify sur video source et des reframes sociaux. Flash garde la meme surface workflow Luma tout en privilegiant la vitesse d iteration de 540p a 1080p.",
+    "description": "Utilisez Luma Ray 2 Flash dans MaxVideoAI pour des tests plus rapides et moins chers, des tests image-to-video, des passes modify sur video source et des reframes sociaux. Flash garde la meme surface workflow Luma tout en privilegiant la vitesse d iteration de 540p a 1080p.",
     "image": "/hero/luma-ray2-flash.jpg"
   },
   "overview": "Luma Ray 2 Flash est le tier de draft rapide et de throughput de la famille Luma dans MaxVideoAI. Comme Ray 2, la page expose maintenant toute la surface publique Fal sur une seule page modele: text-to-video, image-to-video, modify et reframe.",
   "hero": {
-    "title": "Luma Ray 2 Flash - drafts rapides, modify et reframe",
+    "title": "Luma Ray 2 Flash - tests rapides, modify et reframe",
     "intro": "Choisissez Ray 2 Flash quand vous voulez la meme couverture workflow Luma que Ray 2, mais avec un tier plus rapide et moins cher pour valider une direction, explorer une video source et produire des reframes de livraison avant de monter sur le tier premium.",
     "badge": "T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
@@ -38,7 +38,7 @@
         "icon": "storyboard"
       },
       {
-        "title": "Drafts ads court format",
+        "title": "Tests ads court format",
         "icon": "ads"
       },
       {
@@ -138,7 +138,7 @@
   "faqs": [
     {
       "q": "Quelle est maintenant la difference entre Ray 2 et Ray 2 Flash ?",
-      "a": "La surface workflow est alignee volontairement. Les deux modeles exposent generate, modify et reframe, mais Ray 2 reste le tier premium et Flash est optimise pour les drafts rapides et l'iteration moins couteuse."
+      "a": "La surface workflow est alignee volontairement. Les deux modeles exposent generate, modify et reframe, mais Ray 2 reste le tier premium et Flash est optimise pour les tests rapides et l'iteration moins couteuse."
     },
     {
       "q": "Flash supporte-t-il toujours Modify et Reframe ?",
@@ -182,7 +182,7 @@
           "Utilisez Text-to-Video pour explorer vite plusieurs concepts.",
           "Utilisez Image-to-Video quand la premiere frame doit rester proche d'un still approuve.",
           "Ajoutez une end image seulement si vous voulez guider davantage la fin du mouvement.",
-          "Utilisez loop pour les drafts d'ambiance, de teaser ou de produit."
+          "Utilisez loop pour les tests d'ambiance, de teaser ou de produit."
         ]
       },
       {
@@ -197,8 +197,8 @@
       }
     ],
     "whatTitle": "Comment Luma Ray 2 Flash fonctionne dans MaxVideoAI",
-    "whatIntro1": "Choisissez Luma Ray 2 Flash, restez sur Generate Video pour les drafts texte ou image, ou passez sur Modify / Reframe quand vous travaillez a partir d'un clip source.",
-    "whatIntro2": "La famille reste ainsi facile a comprendre tout en exposant les vrais workflows la ou ils comptent: dans la page modele et le workspace.",
+    "whatIntro1": "Choisissez Luma Ray 2 Flash, restez sur Generate Video pour les tests texte ou image, ou passez sur Modify / Reframe quand vous travaillez a partir d'un clip source.",
+    "whatIntro2": "La famille reste ainsi facile a comprendre tout en exposant les vrais workflows la ou ils comptent: dans la page modele et le studio.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choisissez Luma Ray 2 Flash comme engine.",

@@ -164,7 +164,7 @@
     },
     {
       "q": "Quelle est la différence entre Seedance 2.0 et Seedance 2.0 Fast ?",
-      "a": "Seedance 2.0 est le meilleur choix actuel pour un travail multi-plans de qualité finale, l’audio natif et les sorties à références plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux drafts moins coûteux et aux comparaisons de routes plus rapides."
+      "a": "Seedance 2.0 est le meilleur choix actuel pour un travail multi-plans de qualité finale, l’audio natif et les sorties à références plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux tests moins coûteux et aux comparaisons de routes plus rapides."
     },
     {
       "q": "Quand faut-il utiliser Seedance 2.0 plutôt que Seedance 1.5 Pro ?",
@@ -180,10 +180,10 @@
     "heroHighlights": [
       "Tarification et route actuelle||Utilisez Seedance 2.0 quand vous voulez le chemin Seedance actuel et le prix final visible avant génération.",
       "Audio natif||Dialogue, ambiance, musique et effets sonores peuvent rester dans le même flux de génération au lieu d’être traités à part.",
-      "Seedance 2.0 vs Seedance 2.0 Fast||Choisissez Seedance 2.0 pour un travail multi-plans plus fort en qualité finale, et Fast quand le besoin principal est l’itération de drafts et la comparaison de routes.",
+      "Seedance 2.0 vs Seedance 2.0 Fast||Choisissez Seedance 2.0 pour un travail multi-plans plus fort en qualité finale, et Fast quand le besoin principal est l’itération de tests et la comparaison de routes.",
       "Commencer par les exemples vidéo IA Seedance||Ouvrez d’abord la page d’exemples si vous voulez voir des patterns de sortie, des bases de prompts et des réglages avant de lancer une vraie production."
     ],
-    "heroSupportLine": "Commencez par les exemples vidéo IA Seedance, utilisez Seedance 2.0 pour le workflow multi-plans principal avec audio natif, puis comparez-le à Fast quand vous avez besoin de drafts plus rapides.",
+    "heroSupportLine": "Commencez par les exemples vidéo IA Seedance, utilisez Seedance 2.0 pour le workflow multi-plans principal avec audio natif, puis comparez-le à Fast quand vous avez besoin de tests plus rapides.",
     "heroTrustLine": "Paiement à l'usage sur MaxVideoAI · Prix final affiché avant génération",
     "specTitle": "Spécifications",
     "specNote": "Points sourcés officiellement ; le prix final et les détails de route se vérifient dans Generate.",
@@ -302,7 +302,7 @@
       {
         "brand": "google-veo",
         "title": "Google Veo 3.1",
-        "description": "Comparez Seedance 2.0 à Veo 3.1 quand vous voulez un autre moteur premium avec audio natif pour la publicité, les lancements et les animations produit.",
+        "description": "Comparez Seedance 2.0 à Veo 3.1 quand vous voulez un autre modèle premium avec audio natif pour la publicité, les lancements et les animations produit.",
         "modelSlug": "veo-3-1",
         "ctaLabel": "Comparer Seedance 2.0 vs Veo 3.1 ->"
       },

@@ -94,7 +94,7 @@ const WORKFLOW_FALLBACKS: Record<
   fr: {
     hero: {
       title: 'Flux de travail',
-      subtitle: 'Votre workflow vidéo IA reproductible : choisissez un moteur, réglez le plan, prévisualisez le prix et générez des variantes réutilisables.',
+      subtitle: 'Votre workflow vidéo IA reproductible : choisissez un modèle, réglez le plan, prévisualisez le prix et générez des variantes réutilisables.',
       primaryCta: 'Générer maintenant',
       secondaryCta: 'Voir des exemples',
       tertiaryCta: 'Comparer les modèles',
@@ -102,7 +102,7 @@ const WORKFLOW_FALLBACKS: Record<
     how: {
       title: 'Comment ça marche (en direct)',
       steps: [
-        { title: 'Choisir moteur et mode', description: 'Texte vers vidéo, image vers vidéo, plus références quand prises en charge.' },
+        { title: 'Choisir modèle et mode', description: 'Texte vers vidéo, image vers vidéo, plus références quand prises en charge.' },
         { title: 'Régler les paramètres du plan', description: 'Durée, format, résolution, itérations et audio quand disponible.' },
         { title: 'Écrire le prompt + ajouter des références', description: 'Ajoutez un prompt et des assets de référence optionnels.' },
         { title: 'Générer + revoir les variantes', description: 'Aperçu en grille, copier les prompts et télécharger par clip.' },
@@ -127,16 +127,16 @@ const WORKFLOW_FALLBACKS: Record<
     faq: {
       title: 'FAQ (en direct)',
       items: [
-        { question: 'Comment fonctionne "prix avant génération" ?', answer: "Le badge de prix se met à jour quand vous changez de moteur, durée et résolution. Vous n'êtes facturé qu'en cas de succès." },
+        { question: 'Comment fonctionne "prix avant génération" ?', answer: "Le badge de prix se met à jour quand vous changez de modèle, durée et résolution. Vous n'êtes facturé qu'en cas de succès." },
         { question: 'Que signifient les itérations ?', answer: 'Les itérations génèrent 1-4 variantes en une seule exécution avec les mêmes réglages.' },
-        { question: 'Pourquoi les options de durée/résolution/format varient selon le moteur ?', answer: "Chaque moteur expose ses propres limites, donc l'interface n'affiche que ce qu'il supporte." },
-        { question: "Quand l'audio est-il disponible ?", answer: "L'audio apparaît seulement sur les moteurs qui le supportent, avec un interrupteur quand disponible." },
+        { question: 'Pourquoi les options de durée/résolution/format varient selon le modèle ?', answer: "Chaque modèle expose ses propres limites, donc l'interface n'affiche que ce qu'il supporte." },
+        { question: "Quand l'audio est-il disponible ?", answer: "L'audio apparaît seulement sur les modèles qui le supportent, avec un interrupteur quand disponible." },
         { question: 'Où trouver mes exécutions passées ?', answer: 'Ouvrez /jobs pour votre historique et /examples pour des prompts réutilisables.' },
       ],
     },
     cta: {
       title: 'Commencer à générer en quelques secondes',
-      subtitle: 'Choisissez un moteur, réglez votre plan, prévisualisez le prix, générez des variantes.',
+      subtitle: 'Choisissez un modèle, réglez votre plan, prévisualisez le prix, générez des variantes.',
       primaryCta: 'Générer maintenant',
       secondaryCta: 'Voir des exemples',
     },

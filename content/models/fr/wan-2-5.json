@@ -137,8 +137,8 @@
       "a": "Oui. Uploadez un still (portrait, produit, concept art) et focalisez le prompt sur mouvement, caméra et audio."
     },
     {
-      "q": "Comment Wan 2.5 est‑il tarifé par rapport aux autres moteurs ?",
-      "a": "À la seconde par résolution (0,05/0,10/0,15 $/s). C’est un milieu de gamme : moins cher que les moteurs premium long‑form, plus capable que les moteurs silencieux très low‑cost."
+      "q": "Comment Wan 2.5 est‑il tarifé par rapport aux autres modèles ?",
+      "a": "À la seconde par résolution (0,05/0,10/0,15 $/s). C’est un milieu de gamme : moins cher que les modèles premium long‑form, plus capable que les modèles silencieux très low‑cost."
     }
   ],
   "custom": {
@@ -181,7 +181,7 @@
     ],
     "whatTitle": "Ce qu’est vraiment Wan 2.5 dans MaxVideoAI",
     "whatIntro1": "Wan 2.5 est un modèle texte‑et‑image→vidéo conçu pour des clips cinématiques courts avec audio natif.",
-    "whatIntro2": "Dans MaxVideoAI, c’est un moteur audio‑ready et flexible avec un pricing par résolution.",
+    "whatIntro2": "Dans MaxVideoAI, c’est un modèle audio‑ready et flexible avec un pricing par résolution.",
     "whatFlowTitle": "Flux in‑app",
     "whatFlowSteps": [
       "1. Choisissez Wan 2.5.",
@@ -216,7 +216,7 @@
         ]
       }
     ],
-    "specValueProp": "Wan 2.5 est le moteur court audio‑ready pour des beats 5–10 s où image et son doivent tomber ensemble.",
+    "specValueProp": "Wan 2.5 est le modèle court audio‑ready pour des beats 5–10 s où image et son doivent tomber ensemble.",
     "galleryTitle": "Galerie d’exemples Wan 2.5",
     "galleryIntro": "Clips générés avec la configuration exacte disponible dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Wan 2.5 →",
@@ -293,13 +293,13 @@
         "a": "Oui. Uploadez un still et focalisez le prompt sur mouvement, caméra et audio."
       },
       {
-        "q": "Comment Wan 2.5 est‑il tarifé par rapport aux autres moteurs ?",
-        "a": "À la seconde par résolution (0,05/0,10/0,15 $/s) ; milieu de gamme entre premium long‑form et moteurs silencieux très low‑cost."
+        "q": "Comment Wan 2.5 est‑il tarifé par rapport aux autres modèles ?",
+        "a": "À la seconde par résolution (0,05/0,10/0,15 $/s) ; milieu de gamme entre premium long‑form et modèles silencieux très low‑cost."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur le catalogue MaxVideoAI.",
-    "finalPara1": "Wan 2.5 dans MaxVideoAI est votre moteur court audio‑ready pour des beats de 5–10 s.",
+    "finalPara1": "Wan 2.5 dans MaxVideoAI est votre modèle court audio‑ready pour des beats de 5–10 s.",
     "finalPara2": "Utilisez l’audio natif ou uploadez une piste, itérez à bas coût, puis finalisez en HD quand image et son doivent tomber ensemble.",
     "finalButton": "Ouvrir Generate",
     "promptingTitle": "Comment écrire un excellent prompt Wan 2.5",

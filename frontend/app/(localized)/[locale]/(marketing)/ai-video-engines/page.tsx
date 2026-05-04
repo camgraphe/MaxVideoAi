@@ -227,15 +227,15 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
   },
   fr: {
     hero: {
-      eyebrow: 'Comparer les moteurs',
-      title: 'Comparatifs de moteurs vidéo IA',
+      eyebrow: 'Comparer les modèles',
+      title: 'Comparatifs de modèles vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant de générer. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
+        'Choisissez deux modèles et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant de générer. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le modèle le plus adapté à votre plan.',
       compareNow: {
-        left: 'Moteur A',
-        right: 'Moteur B',
-        compare: 'Comparer les moteurs',
-        searchPlaceholder: 'Rechercher un moteur...',
+        left: 'Modèle A',
+        right: 'Modèle B',
+        compare: 'Comparer les modèles',
+        searchPlaceholder: 'Rechercher un modèle...',
         noResults: 'Aucun résultat',
         strengthsLabel: 'Points forts',
         strengthsFallback: 'Usage général vidéo',
@@ -248,18 +248,18 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     },
     sections: {
       popularTitle: 'Comparatifs populaires',
-      popularIntro: 'Une sélection équilibrée des duels les plus demandés entre familles de moteurs.',
+      popularIntro: 'Une sélection équilibrée des duels les plus demandés entre familles de modèles.',
       useCasesTitle: 'Comparer par cas d’usage',
       useCasesIntro: 'Choisissez un objectif, puis ouvrez un comparatif recommandé.',
-      enginesTitle: 'Choisir un moteur à comparer',
+      enginesTitle: 'Choisir un modèle à comparer',
       enginesIntro: 'Spécifications orientées comparaison uniquement. Le détail éditorial reste sur les pages modèles.',
-      enginesToggle: 'Afficher le catalogue moteurs ({count})',
+      enginesToggle: 'Afficher le catalogue modèles ({count})',
       enginesToggleHintClosed: 'Cliquer pour déplier',
       enginesToggleHintOpen: 'Cliquer pour replier',
       allComparisonsTitle: 'Tous les comparatifs',
       allComparisonsIntro:
         'Parcourez d’abord les comparatifs prioritaires, puis cherchez dans le catalogue canonique complet. Besoin de conformité? Consultez nos notes dédiées.',
-      faqTitle: 'FAQ comparatif des moteurs vidéo IA',
+      faqTitle: 'FAQ comparatif des modèles vidéo IA',
       complianceLabel: 'Voir les notes de conformité',
       quickStartLabel: 'Accès rapide',
       prelaunchSpotlightLabel: 'Focus pré-lancement',
@@ -345,7 +345,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
         model: 'Page modèle',
         compare: 'Comparer avec',
       },
-      empty: 'Aucun moteur ne correspond à ces filtres.',
+      empty: 'Aucun modèle ne correspond à ces filtres.',
     },
     listLabels: {
       searchPlaceholder: 'Rechercher un comparatif...',
@@ -354,9 +354,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     },
     faq: [
       {
-        question: 'Comment comparer deux moteurs rapidement ?',
+        question: 'Comment comparer deux modèles rapidement ?',
         answer:
-          'Utilisez le module Comparer en haut de page, choisissez Moteur A et Moteur B, puis cliquez sur Comparer pour ouvrir la page canonique. Utilisez le même prompt (ou un prompt texte simple) sur les deux modèles IA pour comparer la régularité du mouvement et la fidélité au prompt avant de générer.',
+          'Utilisez le module Comparer en haut de page, choisissez Modèle A et Modèle B, puis cliquez sur Comparer pour ouvrir la page canonique. Utilisez le même prompt (ou un prompt texte simple) sur les deux modèles IA pour comparer la régularité du mouvement et la fidélité au prompt avant de générer.',
       },
       {
         question: 'Pourquoi les points forts changent selon les comparatifs ?',
@@ -364,12 +364,12 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
           'Chaque modèle fait des compromis différents sur vitesse, fidélité au prompt, réalisme du mouvement, durée et audio. Ces compromis expliquent pourquoi comparer le modèle vidéo IA avant de générer des vidéos fait gagner du temps et du budget.',
       },
       {
-        question: 'Peut-on comparer des moteurs texte-vers-vidéo et image-vers-vidéo ?',
+        question: 'Peut-on comparer des modèles texte-vers-vidéo et image-vers-vidéo ?',
         answer:
-          'Oui. L’espace inclut des duels mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
+          'Oui. L’espace inclut des duels mixtes pour comparer des modèles orientés prompt texte, image, ou hybrides. Vous pouvez aussi inclure les modèles vidéo-vers-vidéo quand ils sont disponibles.',
       },
       {
-        question: 'Comment trancher entre deux moteurs proches ?',
+        question: 'Comment trancher entre deux modèles proches ?',
         answer:
           'Commencez par les puces de cas d’usage, puis validez avec un test côte à côte. En cas d’égalité, lancez le même prompt texte simple (ou la même image de référence) et priorisez la fidélité au prompt, la régularité du mouvement et la vitesse de livraison selon votre format.',
       },
@@ -399,7 +399,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     sections: {
       popularTitle: 'Comparativas populares',
       popularIntro: 'Selección balanceada de matchups solicitados entre las principales familias de motores.',
-      useCasesTitle: 'Comparar por caso de uso',
+      useCasesTitle: 'Comparar por objetivo',
       useCasesIntro: 'Elige un objetivo y abre una comparativa recomendada.',
       enginesTitle: 'Elegir motores para comparar',
       enginesIntro: 'Solo especificaciones útiles para comparar. El detalle completo queda en cada página de modelo.',
@@ -521,7 +521,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: '¿Cómo elegir entre dos motores muy parecidos?',
         answer:
-          'Empieza con los chips de caso de uso y valida con una prueba lado a lado. Si hay empate, ejecuta el mismo prompt de texto simple (o la misma imagen de referencia) y prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega para tu formato final.',
+          'Empieza con los chips de objetivo y valida con una prueba lado a lado. Si hay empate, ejecuta el mismo prompt de texto simple (o la misma imagen de referencia) y prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega para tu formato final.',
       },
     ],
   },
@@ -610,8 +610,8 @@ export default async function AiVideoEnginesPage() {
       },
       es: {
         title: '¿Necesitas una recomendación en lugar de un duelo?',
-        body: 'Abre las guías Best-for para elegir por caso de uso: cine, referencias, anuncios, UGC, 4K y secuencias multi-shot.',
-        label: 'Ver guías Best-for',
+        body: 'Abre las guías Mejor para y elige por objetivo: cine, referencias, anuncios, UGC, 4K y secuencias multi-shot.',
+        label: 'Ver guías Mejor para',
       },
     }[locale] ?? {
       title: 'Need a recommendation instead of a matchup?',

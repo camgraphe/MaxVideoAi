@@ -23,7 +23,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Mejores casos de uso",
+    "title": "Mejor para",
     "items": [
       {
         "title": "Borradores de motion",
@@ -151,7 +151,7 @@
       "Pensado para volumen||Ideal cuando necesitas muchas variantes sin quemar presupuesto.",
       "Borradores silenciosos||Fáciles de sonorizar en post (o combinar con un motor con audio para finales)."
     ],
-    "bestUseCasesTitle": "Mejores casos de uso",
+    "bestUseCasesTitle": "Mejor para",
     "bestUseCases": [
       {
         "title": "Borradores de motion",

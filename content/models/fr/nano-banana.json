@@ -80,7 +80,7 @@
   ],
   "promptStructure": {
     "title": "Mini‑guide de prompt",
-    "quote": "Plan ciné de [sujet] dans [décor], [lumière/grade], [lentille], keyframe pour [moteur vidéo].",
+    "quote": "Plan ciné de [sujet] dans [décor], [lumière/grade], [lentille], keyframe pour [modèle vidéo].",
     "description": "Gardez des prompts descriptifs et ancrés. Mentionnez sujet, décor, lentille, lumière et l’usage du frame.",
     "steps": [
       "Sujet & décor (produit, personne, pièce)",
@@ -120,7 +120,7 @@
   "faqs": [
     {
       "q": "Nano Banana est‑il pour images ou vidéo ?",
-      "a": "Images. Utilisez‑le pour références photoréalistes, thumbnails et keyframes avant de passer aux moteurs vidéo."
+      "a": "Images. Utilisez‑le pour références photoréalistes, thumbnails et keyframes avant de passer aux modèles vidéo."
     },
     {
       "q": "Combien d’images par run ?",
@@ -131,7 +131,7 @@
       "a": "Non. Uploadez une ou plusieurs images et décrivez l’edit en langage naturel (quoi changer, quoi garder)."
     }
   ],
-  "pricingNotes": "Les tarifs live s’actualisent dans le workspace. Vérifiez le chip avant rendu.",
+  "pricingNotes": "Les tarifs live s’actualisent dans le studio. Vérifiez le chip avant rendu.",
   "custom": {
     "heroEyebrow": "Google — Gemini 2.5 Flash Image (Nano Banana)",
     "heroSupportLine": "Idéal pour un concepting rapide, des visuels de campagne légers et des boards de référence propres avant vidéo.",
@@ -154,17 +154,17 @@
         "label": "Cohérence personnage"
       },
       {
-        "label": "Drafts faible latence"
+        "label": "Tests faible latence"
       }
     ],
     "whyTitle": "Pourquoi Nano Banana est puissant",
     "heroDesc1": "Générez des stills photoréalistes et des edits pour verrouiller style, lumière et cadrage avant d’animer dans Sora, Veo ou Kling.",
-    "heroDesc2": "Text‑to‑image et image‑to‑image partagent le même wallet et le même lab que vos moteurs vidéo, avec 1–8 outputs par run.",
+    "heroDesc2": "Text‑to‑image et image‑to‑image partagent le même wallet et le même lab que vos modèles vidéo, avec 1–8 outputs par run.",
     "heroHighlights": [
       "Workflow vitesse‑first||Conçu pour itérer vite quand vous avez besoin de beaucoup d’options.",
       "Edits sans tooling lourd||Décrivez le changement en clair; gardez le reste cohérent.",
       "Créativité multi‑image||Blendez des références pour rester proche de votre intention.",
-      "Excellente “draft layer” pour la prod||Générez des boards, puis passez les gagnants sur des moteurs vidéo premium."
+      "Excellente “draft layer” pour la prod||Générez des boards, puis passez les gagnants sur des modèles vidéo premium."
     ],
     "bestUseCasesTitle": "Meilleurs cas d’usage",
     "bestUseCases": [

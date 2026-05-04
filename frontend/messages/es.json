@@ -135,8 +135,8 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Comparar motores de video con IA por caso de uso | MaxVideoAI",
-      "description": "Compara motores de video con IA lado a lado. Filtra por texto a video, imagen a video, video a video, audio, duración, resolución y precio para elegir el motor adecuado antes de generar."
+      "title": "Comparar modelos de video con IA | MaxVideoAI",
+      "description": "Compara modelos de video con IA lado a lado. Filtra por texto a video, imagen a video, video a video, audio, duración, resolución y precio para elegir el modelo adecuado antes de generar."
     },
     "hero": {
       "title": "Ejecuta generadores de video IA en Europa — Sora 2, Veo 3, Pika y más",
@@ -561,13 +561,13 @@
         ]
       },
       "shotTypes": {
-        "title": "Encuentra el motor correcto por caso de uso.",
-        "subtitle": "Explora algunas decisiones creativas de alto impacto o abre el hub Best-For completo para cada workflow.",
-        "eyebrow": "Best for X",
-        "cta": "Ver todas las guías best-for",
-        "hubCtaTitle": "Ver todas las guías best-for",
-        "hubCtaBody": "Explora todos los casos de uso y encuentra el motor correcto para cada trabajo.",
-        "guideLabel": "Guía best-for",
+        "title": "Mejor para cada objetivo creativo.",
+        "subtitle": "Explora algunas decisiones creativas de alto impacto o abre el espacio Mejor para completo para cada workflow.",
+        "eyebrow": "Mejor para",
+        "cta": "Ver todas las guías Mejor para",
+        "hubCtaTitle": "Ver todas las guías Mejor para",
+        "hubCtaBody": "Explora todos los objetivos creativos y encuentra el modelo correcto para cada proyecto.",
+        "guideLabel": "Guía Mejor para",
         "topPicksLabel": "Top picks",
         "cards": [
           {
@@ -1458,7 +1458,7 @@
         ],
         "seeAllLabel": "Ver todas las comparativas de motores de video con IA",
         "imageAlt": "Captura de una comparativa de MaxVideoAI con dos motores de video con IA lado a lado.",
-        "carouselIntro": "Compara modelos de video con IA por capacidades, límites y casos de uso, o",
+        "carouselIntro": "Compara modelos de video con IA por capacidades, límites y objetivos creativos, o",
         "carouselLinkLabel": "ver todas las comparativas de motores de video con IA"
       },
       "faq": {
@@ -1734,7 +1734,7 @@
       "title": "Cómo funciona (en vivo)",
       "steps": [
         {
-          "title": "Elegir motor y modo",
+          "title": "Elegir modelo y modo",
           "description": "Texto a video, imagen a video y referencias cuando se admiten."
         },
         {
@@ -3230,7 +3230,7 @@
       },
       "engineSelect": {
         "avgDuration": "Prom. {value}",
-        "choose": "Elegir motor",
+        "choose": "Elegir modelo",
         "variant": "Variante",
         "browse": "Explorar motores...",
         "inputMode": "Modo de entrada",
@@ -4606,7 +4606,7 @@
       "slugOverrides": {
         "kling-2-6-pro-vs-ltx-2": {
           "title": "Kling 2.6 Pro vs LTX 2 — Velocidad o calidad | MaxVideoAI",
-          "description": "Prueba lado a lado con prompts idénticos: calidad, velocidad, precios, modos y scorecard de 11 puntos. Elige el ganador según el caso de uso."
+          "description": "Prueba lado a lado con prompts idénticos: calidad, velocidad, precios, modos y scorecard de 11 puntos. Elige el ganador según el objetivo creativo."
         },
         "ltx-2-fast-vs-wan-2-6": {
           "title": "LTX 2 Fast vs WAN 2.6 — Calidad, velocidad y costo | MaxVideoAI",
@@ -4686,7 +4686,7 @@
         },
         "ltx-2-vs-seedance-2-0": {
           "title": "LTX 2 vs Seedance 2 — Puntuaciones y precios | MaxVideoAI",
-          "description": "Compara LTX 2 vs Seedance 2.0 con los mismos prompts: calidad, velocidad, modos, precios y scorecard de 11 puntos para elegir según el caso de uso."
+          "description": "Compara LTX 2 vs Seedance 2.0 con los mismos prompts: calidad, velocidad, modos, precios y scorecard de 11 puntos para elegir según el objetivo creativo."
         },
         "kling-3-standard-vs-veo-3-1": {
           "title": "Kling 3 Std vs Veo 3.1 — Puntuaciones y precios | MaxVideoAI",

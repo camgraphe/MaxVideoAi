@@ -126,7 +126,7 @@
       },
       "blog": {
         "items": {
-          "compare-ai-video-engines": "Comparatifs de moteurs vidéo IA",
+          "compare-ai-video-engines": "Comparatifs de modèles vidéo IA",
           "sora-2-sequenced-prompts": "Prompts séquencés Sora 2",
           "veo-3-updates": "Mises à jour Veo 3"
         }
@@ -135,13 +135,13 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Comparatifs de moteurs vidéo IA par cas d’usage | MaxVideoAI",
-      "description": "Comparez les moteurs vidéo IA côte à côte. Filtrez par texte-vers-vidéo, image-vers-vidéo, vidéo-vers-vidéo, audio, durée, résolution et prix pour choisir le bon moteur avant de générer."
+      "title": "Comparatifs de modèles vidéo IA par usage | MaxVideoAI",
+      "description": "Comparez les modèles vidéo IA côte à côte. Filtrez par texte-vers-vidéo, image-vers-vidéo, vidéo-vers-vidéo, audio, durée, résolution et prix pour choisir le bon modèle avant de générer."
     },
     "hero": {
       "title": "Déployer des générateurs vidéo IA en Europe — Sora 2, Veo 3, Pika & autres",
-      "intro": "MaxVideoAI garde les moteurs texte‑vers‑vidéo conformes, monitorés et prêts pour la production des équipes européennes. Utilisez ce hub pour comprendre la disponibilité, comparer les compromis créatifs et lancer vos projets avec les bons garde‑fous dès le premier jour.",
-      "secondary": "Vous hésitez sur le moteur à choisir ? Lisez notre {{article:comparatif détaillé}}."
+      "intro": "MaxVideoAI garde les modèles texte-vers-vidéo conformes, monitorés et prêts pour la production des équipes européennes. Utilisez cet espace pour comprendre la disponibilité, comparer les compromis créatifs et lancer vos projets avec les bons garde-fous dès le premier jour.",
+      "secondary": "Vous hésitez sur le modèle à choisir ? Lisez notre {{article:comparatif détaillé}}."
     },
     "sections": [
       {
@@ -158,12 +158,12 @@
       },
       {
         "title": "Comment MaxVideoAI orchestre Fal.ai",
-        "body": "Fal.ai alimente l’ossature multi‑moteurs de MaxVideoAI, ce qui nous permet d’absorber les pics tout en offrant une interface cohérente. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre moteur comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des guides automatisés pour remonter les priorités ou changer de région lors des pics."
+        "body": "Fal.ai alimente l’ossature multi‑modèles de MaxVideoAI, ce qui nous permet d’absorber les pics tout en offrant une interface cohérente. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre modèle comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des guides automatisés pour remonter les priorités ou changer de région lors des pics."
       }
     ],
     "comparison": {
       "title": "Comparer les principaux générateurs vidéo",
-      "intro": "Fidélité maximale ou boucles économiques : MaxVideoAI garde chaque moteur prêt pour la production.",
+      "intro": "Fidélité maximale ou tests économiques : MaxVideoAI garde chaque modèle prêt pour la production.",
       "cards": [
         {
           "label": "Sora 2",
@@ -206,11 +206,11 @@
       },
       {
         "question": "Puis‑je suivre les mises à jour modèles sans relire toute la doc ?",
-        "answer": "Oui. Le workspace met en avant latence, limites et politiques en temps réel pour indiquer quand relancer ou basculer sur un autre moteur."
+        "answer": "Oui. Le studio met en avant latence, limites et politiques en temps réel pour indiquer quand relancer ou basculer sur un autre modèle."
       }
     ],
     "cta": {
-      "body": "Vous cherchez des recettes de prompts séquencées ? Consultez les derniers guides sur le {{blog:blog MaxVideoAI}} pour des pas-à-pas de narration et des nouvelles des moteurs."
+      "body": "Vous cherchez des recettes de prompts séquencées ? Consultez les derniers guides sur le {{blog:blog MaxVideoAI}} pour des pas-à-pas de narration et des nouvelles des modèles."
     }
   },
   "footer": {
@@ -220,7 +220,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Centre indépendant pour la vidéo IA professionnelle — prix affiché avant génération, restez sur les derniers moteurs, un espace de travail pour chaque plan. Fonctionne avec Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus. Les marques appartiennent à leurs propriétaires.",
+    "brandNote": "Centre indépendant pour la vidéo IA professionnelle — prix affiché avant génération, restez sur les derniers modèles, un espace pour chaque plan. Fonctionne avec Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus. Les marques appartiennent à leurs propriétaires.",
     "languageLabel": "Langue",
     "languages": [
       {
@@ -238,7 +238,7 @@
     ],
     "sections": {
       "engines": {
-        "title": "Moteurs vidéo IA",
+        "title": "Modèles vidéo IA",
         "items": {
           "ltx23fast": "LTX 2.3 Fast",
           "seedance2_0": "Seedance 2.0",
@@ -283,7 +283,7 @@
           "bestFor": "Meilleurs modèles par usage",
           "cinematic-realism": "Réalisme cinématographique",
           "image-to-video": "Image vers vidéo",
-          "fast-drafts": "Brouillons rapides",
+          "fast-drafts": "Tests rapides",
           "ads": "Publicités produit"
         }
       },
@@ -328,17 +328,17 @@
   "home": {
     "redesign": {
       "hero": {
-        "eyebrow": "Workspace vidéo IA multi-moteurs, sans abonnement",
+        "eyebrow": "Studio vidéo IA multi-modèles, sans abonnement",
         "badgeChips": [
-          "Générateur vidéo IA multi-moteurs",
+          "Générateur vidéo IA multi-modèles",
           "Prix avant de générer",
           "À l’usage · sans abonnement"
         ],
         "title": "Arrêtez de deviner quel modèle vidéo IA utiliser.",
-        "subtitle": "Comparez Seedance, Kling, Veo, LTX et plus, prévisualisez de vrais résultats, voyez le coût avant de générer, puis choisissez le bon moteur vidéo IA pour chaque plan.",
+        "subtitle": "Comparez Seedance, Kling, Veo, LTX et d’autres modèles, prévisualisez de vrais résultats, voyez le prix avant génération, puis choisissez le bon modèle vidéo IA pour chaque plan.",
         "primaryCta": "Générer",
         "secondaryCta": "Voir les exemples",
-        "examplesCta": "Comparer les moteurs",
+        "examplesCta": "Comparer les modèles",
         "trustBadges": [
           "Le prix avant de générer",
           "Payez uniquement les générations réussies",
@@ -347,20 +347,20 @@
         ],
         "valueCards": [
           {
-            "title": "Comparer les moteurs",
+            "title": "Comparer les modèles",
             "body": "Modèles, exemples et comparatifs avant de dépenser vos crédits."
           },
           {
-            "title": "Devis live",
+            "title": "Prix en direct",
             "body": "Voyez le coût avant de générer."
           },
           {
-            "title": "Exemples par moteur",
-            "body": "Parcourez de vraies sorties par famille de modèles."
+            "title": "Exemples par modèle",
+            "body": "Explorez des sorties réelles par famille de modèles."
           },
           {
             "title": "Sans abonnement",
-            "body": "Rechargez au besoin. Les générations échouées sont remboursées."
+            "body": "Rechargez au besoin. En cas d’échec, votre solde est recrédité automatiquement."
           }
         ],
         "mockup": {
@@ -371,10 +371,10 @@
             "Pub cinématique",
             "Plan produit",
             "Scène personnage",
-            "Brouillon rapide",
+            "Test rapide",
             "Mouvement caméra"
           ],
-          "engineLabel": "2. Comparer les moteurs recommandés",
+          "engineLabel": "2. Comparer les modèles recommandés",
           "engineRecommendations": [
             {
               "engineId": "seedance-2-0",
@@ -518,9 +518,9 @@
             "Reçu enregistré",
             "Historique mis à jour"
           ],
-          "generateCta": "Générer avec ce moteur",
+          "generateCta": "Générer avec ce modèle",
           "refundNote": "Crédits rendus si la génération échoue",
-          "playLabel": "Lire l’aperçu du moteur",
+          "playLabel": "Lire l’aperçu du modèle",
           "pauseLabel": "Mettre l’aperçu en pause"
         }
       },
@@ -528,7 +528,7 @@
         "items": [
           {
             "id": "engines",
-            "label": "Moteurs IA"
+            "label": "Modèles IA"
           },
           {
             "id": "providers",
@@ -561,49 +561,49 @@
         ]
       },
       "shotTypes": {
-        "title": "Trouvez le bon moteur selon l’usage.",
-        "subtitle": "Explorez quelques décisions créatives à fort impact, ou ouvrez le hub Best-For complet pour tous les workflows.",
-        "eyebrow": "Best for X",
-        "cta": "Voir tous les guides best-for",
-        "hubCtaTitle": "Voir tous les guides best-for",
-        "hubCtaBody": "Parcourez tous les cas d’usage et trouvez le bon moteur pour chaque job.",
-        "guideLabel": "Guide best-for",
+        "title": "Le bon modèle pour chaque usage.",
+        "subtitle": "Explorez quelques choix créatifs à fort impact, ou ouvrez l’espace Meilleur pour complet pour tous les workflows.",
+        "eyebrow": "Meilleur pour",
+        "cta": "Voir tous les guides Meilleur pour",
+        "hubCtaTitle": "Voir tous les guides Meilleur pour",
+        "hubCtaBody": "Parcourez tous les cas d’usage et trouvez le bon modèle pour chaque projet.",
+        "guideLabel": "Guide Meilleur pour",
         "topPicksLabel": "Top picks",
         "cards": [
           {
             "slug": "cinematic-realism",
             "title": "Réalisme cinématographique",
-            "body": "Comparez les moteurs pour lumière, mouvement caméra et direction visuelle premium.",
+            "body": "Comparez lumière, mouvement caméra et direction artistique par modèle.",
             "cta": "Ouvrir le guide cinéma"
           },
           {
             "slug": "image-to-video",
             "title": "Image-vers-vidéo",
-            "body": "Animez une image, un style frame ou un plan produit avec un mouvement contrôlé.",
+            "body": "Ajoutez du mouvement à une image, une frame stylisée ou un plan produit.",
             "cta": "Ouvrir le guide image-vers-vidéo"
           },
           {
             "slug": "fast-drafts",
-            "title": "Drafts rapides",
-            "body": "Trouvez des routes plus rapides et économiques pour tester prompts et concepts.",
-            "cta": "Ouvrir le guide drafts"
+            "title": "Tests rapides",
+            "body": "Testez vos prompts et vos variantes plus vite, à moindre coût.",
+            "cta": "Ouvrir le guide tests"
           },
           {
             "slug": "ads",
             "title": "Publicités produit",
-            "body": "Shortlistez les moteurs pour pubs produit, variantes paid social et assets de campagne.",
-            "cta": "Ouvrir le guide ads"
+            "body": "Présélectionnez les modèles pour pubs produit, paid social et assets de campagne.",
+            "cta": "Ouvrir le guide pubs"
           }
         ]
       },
       "examples": {
-        "title": "Prévisualisez de vrais résultats avant de choisir un moteur.",
-        "subtitle": "Comparez de vrais rendus Seedance, Kling, LTX, Veo, Wan et Happy Horse, puis consultez les spécifications, limites, prix et prompts avant de générer.",
+        "title": "Explorez de vrais résultats avant de choisir votre modèle.",
+        "subtitle": "Comparez de vrais rendus Seedance, Kling, LTX, Veo, Wan et Happy Horse. Consultez les specs, limites, prix et prompts avant de générer.",
         "eyebrow": "Exemples réels",
         "cta": "Parcourir tous les exemples",
-        "modelsCta": "Voir toutes les spécifications",
-        "compareLink": "Comparer les moteurs",
-        "providerLabel": "Moteurs pris en charge :",
+        "modelsCta": "Voir toutes les specs",
+        "compareLink": "Comparer les modèles",
+        "providerLabel": "Modèles pris en charge :",
         "viewPrompt": "Cloner les réglages",
         "fallbackCards": [
           {
@@ -647,11 +647,11 @@
             "mode": "Texte vers vidéo",
             "duration": "10 s",
             "price": "0,52 $",
-            "useCase": "Brouillons rapides",
+            "useCase": "Tests rapides",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
-            "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de brouillons.",
+            "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de tests.",
             "examplesSlug": "ltx"
           },
           {
@@ -679,11 +679,11 @@
             "mode": "Texte/image vers vidéo",
             "duration": "5 s",
             "price": "0,65 $",
-            "useCase": "Workflows vidéo structurés",
+            "useCase": "Workflows vidéo guidés",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/wan-26.jpg",
-            "imageAlt": "Exemple vidéo IA Wan 2.6 pour workflows vidéo structurés.",
+            "imageAlt": "Exemple vidéo IA Wan 2.6 pour workflows vidéo guidés.",
             "examplesSlug": "wan"
           },
           {
@@ -695,25 +695,25 @@
             "mode": "Texte/image/référence vers vidéo",
             "duration": "10 s",
             "price": "1,82 $",
-            "useCase": "Workflows audio natifs",
+            "useCase": "Audio natif intégré",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
-            "imageAlt": "Exemple vidéo IA Happy Horse 1.0 pour workflows audio natifs avec références.",
+            "imageAlt": "Exemple vidéo IA Happy Horse 1.0 pour audio natif intégré avec références.",
             "examplesSlug": "happy-horse"
           }
         ]
       },
       "comparisons": {
         "title": "Validez le bon modèle avant de dépenser vos crédits.",
-        "subtitle": "Les moteurs diffèrent sur le mouvement, le réalisme, l’adhérence au prompt, l’audio, la vitesse, la résolution et le coût. Comparez-les côte à côte avant de choisir.",
+        "subtitle": "Chaque modèle a ses forces : mouvement, réalisme, prompt, audio, vitesse, résolution ou coût. Comparez-les côte à côte avant de choisir.",
         "cta": "Comparer les modèles",
         "cards": [
           {
             "id": "seedance-upgrade",
             "slug": "seedance-1-5-pro-vs-seedance-2-0",
             "title": "Seedance 1.5 Pro vs Seedance 2.0",
-            "body": "Voyez quand passer au workflow Seedance récent pour audio, références et multi-plans.",
+            "body": "Voyez quand passer à Seedance pour l’audio natif.",
             "badges": [
               "upgrade",
               "audio",
@@ -724,18 +724,18 @@
             "id": "ltx-legacy-fast",
             "slug": "ltx-2-vs-ltx-2-3-fast",
             "title": "LTX 2 vs LTX 2.3 Fast",
-            "body": "Comparez l’ancien comportement LTX à la route rapide actuelle pour itérer à moindre coût.",
+            "body": "Voyez ce qui change entre l’ancien LTX et la version rapide actuelle.",
             "badges": [
               "vitesse",
               "prix",
-              "drafts"
+              "tests"
             ]
           },
           {
             "id": "ltx-seedance",
             "slug": "ltx-2-3-fast-vs-seedance-2-0",
             "title": "LTX 2.3 Fast vs Seedance 2.0",
-            "body": "Choisissez entre brouillons économiques et sortie Seedance plus polie avant de dépenser.",
+            "body": "Choisissez entre tests économiques et rendu Seedance.",
             "badges": [
               "valeur",
               "qualité",
@@ -757,7 +757,7 @@
             "id": "kling-ltx",
             "slug": "kling-3-pro-vs-ltx-2-3-pro",
             "title": "Kling 3 Pro vs LTX 2.3 Pro",
-            "body": "Choisissez la meilleure route pour mouvement caméra, qualité de production et coût.",
+            "body": "Choisissez le bon modèle pour mouvement et qualité.",
             "badges": [
               "motion",
               "réalisme",
@@ -794,7 +794,7 @@
           },
           {
             "title": "Prix en direct",
-            "body": "Connaissez le coût avant de générer"
+            "body": "Voyez le coût avant de générer"
           },
           {
             "title": "Mis à jour souvent",
@@ -846,8 +846,8 @@
         ]
       },
       "workflow": {
-        "title": "Construisez la référence avant de l’animer.",
-        "subtitle": "Générez une image source, verrouillez la continuité personnage, ajustez l’angle, puis passez en vidéo avec le bon moteur.",
+        "title": "Préparez la référence avant de l’animer.",
+        "subtitle": "Générez une image source, verrouillez la continuité du personnage, ajustez l’angle, puis passez en vidéo avec le bon modèle.",
         "steps": [
           {
             "title": "Générer ou importer une image source",
@@ -865,7 +865,7 @@
           },
           {
             "title": "Choisir l’angle et la composition",
-            "body": "Trouvez le bon point de vue avant d’engager des crédits en animation.",
+            "body": "Trouvez le bon point de vue avant de dépenser des crédits en animation.",
             "toolLabel": "Outil Angle",
             "href": {
               "pathname": "/tools/angle"
@@ -873,16 +873,16 @@
           },
           {
             "title": "Générer la vidéo finale",
-            "body": "Passez en texte-vers-vidéo, image-vers-vidéo ou vidéo-vers-vidéo avec le meilleur moteur.",
-            "toolLabel": "Ouvrir l’espace",
+            "body": "Passez en texte-vers-vidéo, image-vers-vidéo ou vidéo-vers-vidéo avec le meilleur modèle.",
+            "toolLabel": "Ouvrir le studio",
             "href": "/app"
           }
         ]
       },
       "toolbox": {
-        "title": "Préparez, comparez et générez dans un seul workspace.",
-        "subtitle": "Créez des images sources, construisez des personnages cohérents, ajustez les angles, comparez les moteurs et générez des vidéos sans changer d’outil.",
-        "primaryCta": "Ouvrir le workspace",
+        "title": "Préparez, comparez et générez dans un seul espace.",
+        "subtitle": "Créez vos images sources, construisez des personnages cohérents, ajustez les angles, comparez les modèles et générez vos vidéos sans changer d’outil.",
+        "primaryCta": "Ouvrir le studio",
         "secondaryCta": "Voir tous les outils",
         "cards": [
           {
@@ -949,7 +949,7 @@
           },
           {
             "id": "compare-engines",
-            "title": "Comparer les moteurs",
+            "title": "Comparer les modèles",
             "body": "Choisissez le bon modèle avant de générer.",
             "shortBody": "Choisissez avant de générer.",
             "href": {
@@ -960,16 +960,16 @@
         ]
       },
       "pricingTrust": {
-        "title": "Connaissez le coût avant de générer.",
-        "subtitle": "MaxVideoAI affiche le prix avant chaque génération vidéo, pour garder le contrôle de vos crédits.",
+        "title": "Voyez le coût avant de générer.",
+        "subtitle": "MaxVideoAI affiche le prix avant chaque génération vidéo, pour garder vos crédits sous contrôle.",
         "cta": "Voir les tarifs",
-        "supportingText": "MaxVideoAI est un générateur vidéo IA multi-moteurs au paiement à l’usage pour Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus.",
+        "supportingText": "MaxVideoAI est un générateur vidéo IA multi-modèles au paiement à l’usage pour Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus.",
         "modelsLink": "Modèles",
         "examplesLink": "Exemples",
-        "compareLink": "Comparer les moteurs",
+        "compareLink": "Comparer les modèles",
         "cards": [
           {
-            "title": "Devis live",
+            "title": "Devis en direct",
             "body": "Voyez le prix avant chaque génération."
           },
           {
@@ -978,16 +978,16 @@
           },
           {
             "title": "Remboursements automatiques",
-            "body": "Les générations échouées recréditent votre solde automatiquement."
+            "body": "En cas d’échec, votre solde est recrédité automatiquement."
           },
           {
             "title": "Reçus",
-            "body": "Suivez moteur, réglages, durée et coût pour chaque génération."
+            "body": "Suivez modèle, réglages, durée et coût pour chaque génération."
           }
         ]
       },
       "providers": {
-        "title": "Moteurs et fournisseurs pris en charge",
+        "title": "Modèles et fournisseurs pris en charge",
         "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma et Sora sont accessibles depuis un seul catalogue de modèles.",
         "cta": "Voir tous les modèles",
         "items": [
@@ -1055,15 +1055,15 @@
         "items": [
           {
             "question": "Quel est le meilleur générateur vidéo IA aujourd’hui ?",
-            "answer": "Le meilleur générateur vidéo IA dépend du plan. Seedance est fort pour le mouvement cinématique et les workflows guidés par référence, Kling est utile pour les mouvements caméra, Veo est solide pour le réalisme poli, LTX convient aux brouillons rapides, et Wan ou Pika peuvent servir certains styles ou tests budget. MaxVideoAI vous aide à comparer les moteurs avant de générer."
+            "answer": "Le meilleur générateur vidéo IA dépend du plan. Seedance excelle dans le mouvement cinématique et les workflows guidés par référence. Kling est utile pour les mouvements caméra, Veo pour un réalisme soigné, LTX pour les tests rapides, tandis que Wan ou Pika peuvent convenir à certains styles ou budgets. MaxVideoAI vous aide à comparer les modèles avant de générer."
           },
           {
             "question": "Comment créer des vidéos générées par IA ?",
-            "answer": "Commencez avec un prompt texte, une image ou un clip existant. Choisissez ensuite le moteur qui correspond au plan, vérifiez le prix et lancez un test court. Sur MaxVideoAI, vous pouvez prévisualiser des exemples réels, comparer les moteurs vidéo IA et voir le coût avant de dépenser des crédits."
+            "answer": "Commencez avec un prompt texte, une image ou un clip existant. Choisissez ensuite le modèle adapté au plan, vérifiez le prix et lancez un test court. Sur MaxVideoAI, vous pouvez prévisualiser des exemples réels, comparer les modèles vidéo IA et voir le coût avant de dépenser vos crédits."
           },
           {
             "question": "Puis-je générer des vidéos IA à partir d’une image ?",
-            "answer": "Oui. L’image-vers-vidéo IA transforme une image fixe, une photo produit, une frame de personnage ou une image de référence en clip animé. C’est souvent la meilleure option pour garder la composition, le personnage, le produit ou le style visuel sous contrôle."
+            "answer": "Oui. L’image-vers-vidéo IA transforme une image fixe, une photo produit, une frame personnage ou une image de référence en clip animé. C’est souvent la meilleure option pour garder le contrôle sur la composition, le personnage, le produit ou le style visuel."
           },
           {
             "question": "Quelle différence entre le texte-vers-vidéo et l’image-vers-vidéo IA ?",
@@ -1071,11 +1071,11 @@
           },
           {
             "question": "Où trouver des exemples de prompts vidéo IA ?",
-            "answer": "Pour des exemples de prompts vidéo IA, utilisez le hub d’exemples afin de parcourir de vraies sorties vidéo IA avec prompts, moteurs, formats, durée et prix. Vous pouvez comparer Seedance, Kling, LTX, Veo, Wan, Happy Horse et plus avant de construire votre propre génération."
+            "answer": "Pour des exemples de prompts vidéo IA, explorez l’espace d’exemples : vrais rendus, prompts, modèles, formats, durées et prix. Comparez Seedance, Kling, LTX, Veo, Wan, Happy Horse et d’autres modèles avant de créer votre propre génération."
           },
           {
             "question": "Combien coûte la génération vidéo IA ?",
-            "answer": "Le coût de génération vidéo IA dépend du moteur, de la durée, de la résolution, du mode et de la prise en charge audio. MaxVideoAI affiche le prix estimé avant chaque génération, pour comparer les options avant de dépenser des crédits."
+            "answer": "Le coût d’une génération vidéo IA dépend du modèle, de la durée, de la résolution, du mode et de la prise en charge audio. MaxVideoAI affiche le prix estimé avant chaque génération, pour comparer les options avant de dépenser vos crédits."
           },
           {
             "question": "Existe-t-il un générateur vidéo IA au paiement à l’usage ?",
@@ -1083,7 +1083,7 @@
           },
           {
             "question": "Quelles limites vérifier avant de choisir un modèle vidéo IA ?",
-            "answer": "Avant de choisir un modèle vidéo IA, vérifiez les limites du modèle : durée, résolution, ratio, audio, prise en charge texte-vers-vidéo ou image-vers-vidéo, images de référence et prix. Certains modèles sont meilleurs pour les brouillons courts, d’autres pour le réalisme cinématique, le mouvement caméra ou les sorties commerciales polies."
+            "answer": "Avant de choisir un modèle vidéo IA, vérifiez les limites du modèle : durée, résolution, ratio, audio, prise en charge texte-vers-vidéo ou image-vers-vidéo, images de référence et prix. Certains modèles sont meilleurs pour les tests courts, d’autres pour le réalisme cinématique, le mouvement caméra ou les sorties commerciales polies."
           }
         ]
       },
@@ -1103,14 +1103,14 @@
     "badges": [
       "Tarifs à l’usage",
       "Prix affiché avant de générer",
-      "Moteurs mis à jour en continu"
+      "Modèles mis à jour en continu"
     ],
     "hero": {
-      "title": "Le bon moteur pour chaque plan.",
+      "title": "Le bon modèle pour chaque plan.",
       "subtitle": "Des vidéos IA pro en quelques clics. Prix transparent dès le départ, zéro surprise, tout sur une seule plateforme.",
       "primaryCta": "Générer",
       "secondaryCta": "Voir des exemples",
-      "workspaceCta": "Ouvrir l’espace de travail"
+      "workspaceCta": "Ouvrir le studio"
     },
     "worksWith": {
       "label": "Fonctionne avec",
@@ -1128,7 +1128,7 @@
       ],
       "caption": "Les marques appartiennent à leurs propriétaires.",
       "availabilityNotice": "La disponibilité peut varier selon le fournisseur ; les pastilles de prix se rafraîchissent automatiquement.",
-      "moreLabel": "et d'autres moteurs"
+      "moreLabel": "et d'autres modèles"
     },
     "heroScreenshot": {
       "title": "Tout au même endroit",
@@ -1140,7 +1140,7 @@
         "id": "workspace",
         "label": "Espace de travail",
         "heading": "Accédez à l’espace de travail complet, prêt à l’emploi.",
-        "body": "Choisissez un moteur, définissez durée et résolution et le générateur affiche les champs attendus. Pas de liste d'attente, pas de maquettes."
+        "body": "Choisissez un modèle, définissez durée et résolution et le générateur affiche les champs attendus. Pas de liste d'attente, pas de maquettes."
       },
       {
         "id": "price",
@@ -1165,7 +1165,7 @@
         "body": "Rechargez une seule fois, suivez vos dépenses depuis l’en-tête et bénéficiez de remboursements automatiques en cas d’échec."
       },
       {
-        "title": "Tous vos moteurs au même endroit.",
+        "title": "Tous vos modèles au même endroit.",
         "body": "Basculez entre Sora, Veo, Pika, MiniMax et Hunyuan sans jongler entre plusieurs tableaux de bord ni clés API."
       }
     ],
@@ -1222,8 +1222,8 @@
     "generateWaysResources": {
       "models": {
         "eyebrow": "Modèles",
-        "title": "Consultez les pages modèle avant de choisir le moteur",
-        "body": "Accédez aux fiches modèles : specs, limites, prix et recommandations de workflow, avant de choisir le bon moteur.",
+        "title": "Consultez les pages modèle avant de choisir",
+        "body": "Accédez aux fiches modèles : specs, limites, prix et recommandations de workflow, avant de choisir le bon modèle.",
         "cta": "Voir les fiches modèles"
       },
       "examples": {
@@ -1235,14 +1235,15 @@
     },
     "examplesCallout": {
       "eyebrow": "Galerie en direct",
-      "title": "Voyez comment chaque moteur traite le même brief.",
+      "title": "Voyez comment chaque modèle traite le même brief.",
       "subtitle": "Regardez de vrais rendus tourner autour du CTA, puis allez directement à la page Exemples pour cloner les paramètres pour votre projet.",
-      "cta": "Parcourir des exemples en direct"
+      "cta": "Parcourir des exemples en direct",
+      "caption": "Modèle utilisé pour ce rendu."
     },
     "gallery": {
       "title": "Galerie",
       "subtitle": "Capturée directement depuis l'espace de travail en direct — survolez pour prévisualiser, touchez pour agrandir.",
-      "caption": "Moteur utilisé pour ce rendu.",
+      "caption": "Modèle utilisé pour ce rendu.",
       "hoverLabel": "Aperçu en boucle au survol",
       "items": [
         {
@@ -1318,7 +1319,7 @@
         {
           "eyebrow": "Prix visible",
           "title": "Voyez le prix avant de générer",
-          "body": "Choisissez d’abord le moteur et les réglages. Le total se met à jour avant le lancement."
+          "body": "Choisissez d’abord le modèle et les réglages. Le total se met à jour avant le lancement."
         },
         {
           "eyebrow": "Remboursement automatique",
@@ -1341,7 +1342,7 @@
           "6s",
           "1080P"
         ],
-        "note": "L’estimation se met à jour selon le moteur, la durée, la résolution et l’audio."
+        "note": "L’estimation se met à jour selon le modèle, la durée, la résolution et l’audio."
       }
     },
     "faq": {
@@ -1350,11 +1351,11 @@
       "items": [
         {
           "q": "Sora 2 est-il disponible dans l’UE ?",
-          "a": "La disponibilité de Sora 2 reste limitée. MaxVideoAI route votre brief vers les moteurs déjà ouverts aujourd’hui et conserve des presets prêts pour Sora dès que la capacité arrive."
+          "a": "La disponibilité de Sora 2 reste limitée. MaxVideoAI route votre brief vers les modèles déjà ouverts aujourd’hui et conserve des presets prêts pour Sora dès que la capacité arrive."
         },
         {
           "q": "Puis-je activer l’audio ?",
-          "a": "Oui. Les moteurs mis en avant prennent en charge un toggle audio dans le générateur, et la pastille de prix s’actualise dès que vous l’activez."
+          "a": "Oui. Les modèles mis en avant prennent en charge un toggle audio dans le générateur, et la pastille de prix s’actualise dès que vous l’activez."
         },
         {
           "q": "Comment fonctionne la tarification ?",
@@ -1372,7 +1373,7 @@
       "description": "Comparez Seedance, Kling, Veo, LTX, Wan, Pika et plus avant de générer. Prévisualisez de vrais résultats, voyez le prix à l’avance et générez avec paiement à l’usage."
     },
     "compare": {
-      "title": "Comparer les moteurs en un coup d’œil",
+      "title": "Comparer les modèles en un coup d’œil",
       "subtitle": "Durée max · Audio · Meilleur usage",
       "ariaPrev": "Faire défiler vers la carte précédente",
       "ariaNext": "Faire défiler vers la carte suivante",
@@ -1407,10 +1408,10 @@
       "startupFameLabel": "Vu sur Startup Fame"
     },
     "seoContent": {
-      "heroParagraph": "MaxVideoAI est un générateur de vidéos IA multi-moteurs : comparez les modèles, puis générez à partir d’une consigne (prompt), d’une image ou d’une vidéo existante. Le coût est affiché avant chaque génération, pour choisir le bon moteur en toute confiance.",
+      "heroParagraph": "MaxVideoAI est un générateur de vidéos IA multi-modèles : comparez les modèles, puis générez à partir d’une consigne (prompt), d’une image ou d’une vidéo existante. Le coût est affiché avant chaque génération, pour choisir le bon modèle en toute confiance.",
       "heroPoints": [
         "Texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo",
-        "Comparez les résultats entre plusieurs moteurs vidéo IA",
+        "Comparez les résultats entre plusieurs modèles vidéo IA",
         "Coût affiché avant de générer (crédits à l’usage)"
       ],
       "definition": {
@@ -1435,7 +1436,7 @@
         ]
       },
       "compare": {
-        "title": "Comparez les moteurs vidéo IA avant de générer",
+        "title": "Comparez les modèles vidéo IA avant de générer",
         "body": "Testez et comparez plusieurs modèles dans un espace unifié. Analysez leurs forces (vitesse, précision, mouvement, réalisme, style), choisissez le bon pour chaque plan et gardez un contrôle total sur le coût avant génération.",
         "worksWith": "Compatible avec Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02... et d’autres.",
         "popularLinks": [
@@ -1456,10 +1457,10 @@
             "slug": "ltx-2-vs-veo-3-1"
           }
         ],
-        "seeAllLabel": "Voir tous les comparatifs de moteurs vidéo IA",
-        "imageAlt": "Capture d’écran d’une page de comparaison MaxVideoAI avec deux moteurs vidéo IA côte à côte.",
-        "carouselIntro": "Comparez les moteurs vidéo IA par capacités, limites et usages, ou",
-        "carouselLinkLabel": "voir tous les comparatifs de moteurs vidéo IA"
+        "seeAllLabel": "Voir tous les comparatifs de modèles vidéo IA",
+        "imageAlt": "Capture d’écran d’une page de comparaison MaxVideoAI avec deux modèles vidéo IA côte à côte.",
+        "carouselIntro": "Comparez les modèles vidéo IA par capacités, limites et usages, ou",
+        "carouselLinkLabel": "voir tous les comparatifs de modèles vidéo IA"
       },
       "faq": {
         "title": "FAQ du générateur de vidéos IA",
@@ -1467,7 +1468,7 @@
         "items": [
           {
             "q": "Comment choisir le meilleur modèle texte-vers-vidéo IA ?",
-            "a": "Commencez par décider ce qui compte le plus pour le plan : mouvement cinématique, fidélité au prompt, vitesse, coût ou cohérence. Comparez ensuite les modèles côte à côte pour choisir l’option texte-vers-vidéo IA la plus adaptée à ce projet, au lieu de supposer qu’un seul moteur est le meilleur pour tous les briefs."
+            "a": "Commencez par décider ce qui compte le plus pour le plan : mouvement cinématique, fidélité au prompt, vitesse, coût ou cohérence. Comparez ensuite les modèles côte à côte pour choisir l’option texte-vers-vidéo IA la plus adaptée à ce projet, au lieu de supposer qu’un seul modèle est le meilleur pour tous les briefs."
           },
           {
             "q": "Puis-je générer des vidéos à partir de prompts texte ?",
@@ -1494,15 +1495,15 @@
       "title": "Tarifs vidéo IA : prix avant génération.",
       "subtitle": "Démarrez avec 10 $ de crédits.\nSans abonnement, sans engagement.",
       "link": {
-        "before": "Comparez les tarifs des moteurs dans notre ",
+        "before": "Comparez les tarifs des modèles dans notre ",
         "label": "comparatif vidéo IA",
         "after": "."
       }
     },
     "calculator": {
       "title": "Prévisualiser les prix dans l’app",
-      "description": "Ouvrez le workspace pour voir le prix exact avant de lancer une vidéo.",
-      "cta": "Ouvrir le workspace"
+      "description": "Ouvrez le studio pour voir le prix exact avant de lancer une vidéo.",
+      "cta": "Ouvrir le studio"
     },
     "liveLabel": "En ligne",
     "comingSoonLabel": "À venir",
@@ -1510,7 +1511,7 @@
       "title": "Estimateur de coûts",
       "subtitle": "Choisissez le modèle, la durée et la résolution pour voir le prix avant de lancer la génération. Facturé uniquement en cas de succès.",
       "walletLink": "Vous voulez voir les prix dans l’app avant de générer ?",
-      "walletLinkCta": "Ouvrir le workspace",
+      "walletLinkCta": "Ouvrir le studio",
       "chargedNote": "Facturé uniquement si la génération réussit.",
       "audioIncluded": "Audio inclus par défaut.",
       "configureLabel": "Configurer",
@@ -1522,12 +1523,12 @@
       "audioOff": "Non",
       "audioHint": "Le prix se met à jour quand l’audio change.",
       "fields": {
-        "engine": "Moteur",
+        "engine": "Modèle",
         "resolution": "Résolution",
         "duration": "Durée (secondes)",
         "memberStatus": "Statut membre"
       },
-      "engineLabel": "Moteur",
+      "engineLabel": "Modèle",
       "estimateLabels": {
         "heading": "Estimation",
         "base": "Base",
@@ -1536,13 +1537,13 @@
       },
       "descriptions": {
         "sora-2": "Remix texte/image avec audio natif.",
-        "veo-3-1": "Un seul moteur pour texte, image de départ, multi-référence, dernière image et extend.",
+        "veo-3-1": "Un seul modèle pour texte, image de départ, multi-référence, dernière image et extend.",
         "veo-3-1-fast": "Veo 3.1 Fast pour des passes texte, image de départ, dernière image et extend moins chères.",
         "veo-3-1-lite": "Veo 3.1 Lite pour des passes texte, image de départ et dernière image moins chères, avec audio toujours actif.",
         "pika-text-to-video": "Boucles sociales rapides avec légendes et paramètres adaptés au remix.",
-        "minimax-hailuo-02-text": "Brouillons optimisés par prompt avant la génération principale."
+        "minimax-hailuo-02-text": "Tests optimisés par prompt avant la génération principale."
       },
-      "engineRateLabel": "Tarif du moteur",
+      "engineRateLabel": "Tarif du modèle",
       "durationLabel": "Durée",
       "resolutionLabel": "Résolution",
       "perImageLabel": "Tarif appliqué par image générée dans Generate."
@@ -1565,7 +1566,7 @@
       "title": "Exemples de coûts",
       "subtitle": "Rendus réalistes pour planifier. Les prix évoluent selon les modèles.",
       "labels": {
-        "engine": "Moteur",
+        "engine": "Modèle",
         "duration": "Durée",
         "resolution": "Résolution",
         "audio": "Audio"
@@ -1620,9 +1621,9 @@
       "points": [
         "La durée évolue linéairement (4 s / 8 s / 12 s).",
         "La résolution augmente le coût en 1080p vs 720p.",
-        "Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le moteur et le type d’entrée.",
-        "L’audio ajoute une légère prime sur les moteurs compatibles.",
-        "Le niveau du moteur (Sora/Veo/Pika/MiniMax) fixe le tarif de base."
+        "Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le modèle et le type d’entrée.",
+        "L’audio ajoute une légère prime sur les modèles compatibles.",
+        "Le niveau du modèle (Sora/Veo/Pika/MiniMax) fixe le tarif de base."
       ]
     },
     "teams": {
@@ -1670,7 +1671,7 @@
       "title": "Remboursements & protections",
       "points": [
         "Remboursements automatiques lorsque les rendus échouent ou que les fournisseurs ne respectent pas les SLA.",
-        "Reçus détaillés avec moteur, durée, résolution et options additionnelles.",
+        "Reçus détaillés avec modèle, durée, résolution et options additionnelles.",
         "Protections du portefeuille avec Crédits rechargeables optionnels à approbation multiple.",
         "Les frais d’application sont reconnus immédiatement ; la part du fournisseur est réglée lors du paiement.",
         "Chaque tentative de rendu comporte une clé d'idempotence pour éviter les doubles facturations."
@@ -1708,7 +1709,7 @@
       },
       {
         "question": "Les workflows texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA coûtent-ils la même chose ?",
-        "answer": "Pas toujours. Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le moteur, le type d’entrée, la durée, la résolution et l’activation ou non de l’audio ou de contrôles supplémentaires."
+        "answer": "Pas toujours. Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le modèle, le type d’entrée, la durée, la résolution et l’activation ou non de l’audio ou de contrôles supplémentaires."
       }
     ],
     "priceChipSuffix": "Prix avant génération.",
@@ -1721,11 +1722,11 @@
   "workflows": {
     "meta": {
       "title": "Workflow vidéo IA : générer des variantes avec prix en direct | MaxVideoAI",
-      "description": "Générez des vidéos IA dans un seul espace : choisissez un moteur, réglez la durée, la résolution et le format, prévisualisez le prix, générez jusqu'à 4 variantes, copiez les prompts et téléchargez."
+      "description": "Générez des vidéos IA dans un seul espace : choisissez un modèle, réglez la durée, la résolution et le format, prévisualisez le prix, générez jusqu'à 4 variantes, copiez les prompts et téléchargez."
     },
     "hero": {
       "title": "Flux de travail",
-      "subtitle": "Votre workflow vidéo IA reproductible : choisissez un moteur, réglez le plan, prévisualisez le prix et générez des variantes réutilisables.",
+      "subtitle": "Votre workflow vidéo IA reproductible : choisissez un modèle, réglez le plan, prévisualisez le prix et générez des variantes réutilisables.",
       "primaryCta": "Générer maintenant",
       "secondaryCta": "Voir des exemples",
       "tertiaryCta": "Comparer les modèles"
@@ -1734,7 +1735,7 @@
       "title": "Comment ça marche (en direct)",
       "steps": [
         {
-          "title": "Choisir moteur et mode",
+          "title": "Choisir modèle et mode",
           "description": "Texte vers vidéo, image vers vidéo, plus références quand prises en charge."
         },
         {
@@ -1832,19 +1833,19 @@
       "items": [
         {
           "question": "Comment fonctionne \"prix avant génération\" ?",
-          "answer": "Le badge de prix se met à jour quand vous changez de moteur, durée et résolution. Vous n'êtes facturé qu'en cas de succès."
+          "answer": "Le badge de prix se met à jour quand vous changez de modèle, durée et résolution. Vous n'êtes facturé qu'en cas de succès."
         },
         {
           "question": "Que signifient les itérations ?",
           "answer": "Les itérations génèrent 1-4 variantes en une seule exécution avec les mêmes réglages."
         },
         {
-          "question": "Pourquoi les options de durée/résolution/format varient selon le moteur ?",
-          "answer": "Chaque moteur expose ses propres limites, donc l'interface n'affiche que ce qu'il supporte."
+          "question": "Pourquoi les options de durée/résolution/format varient selon le modèle ?",
+          "answer": "Chaque modèle expose ses propres limites, donc l'interface n'affiche que ce qu'il supporte."
         },
         {
           "question": "Quand l'audio est-il disponible ?",
-          "answer": "L'audio apparaît seulement sur les moteurs qui le supportent, avec un interrupteur quand disponible."
+          "answer": "L'audio apparaît seulement sur les modèles qui le supportent, avec un interrupteur quand disponible."
         },
         {
           "question": "Où trouver mes exécutions passées ?",
@@ -1854,7 +1855,7 @@
     },
     "cta": {
       "title": "Commencer à générer en quelques secondes",
-      "subtitle": "Choisissez un moteur, réglez votre plan, prévisualisez le prix, générez des variantes.",
+      "subtitle": "Choisissez un modèle, réglez votre plan, prévisualisez le prix, générez des variantes.",
       "primaryCta": "Générer maintenant",
       "secondaryCta": "Voir des exemples"
     }
@@ -1863,12 +1864,12 @@
     "hero": {
       "title": "Modèles IA (Toutes les specs, limites et prix)",
       "subtitle": "Catalogue des workflows de génération vidéo et image.",
-      "body": "Utilisez cette page comme catalogue de référence pour vérifier capacités, limites runtime et signaux de prix au même endroit. Gardez les comparaisons côte à côte sur la page moteurs vidéo et utilisez ici la vue technique globale."
+      "body": "Utilisez cette page comme catalogue de référence pour vérifier capacités, limites runtime et signaux de prix au même endroit. Gardez les comparaisons côte à côte sur la page modèles vidéo et utilisez ici la vue technique globale."
     },
     "intro": {
       "paragraphs": [
-        "Chaque moteur de ce catalogue est relié à l’espace MaxVideoAI avec latence surveillée, suivi des prix et plans de secours. Nous ajoutons les modèles dès que les fournisseurs ouvrent une vraie capacité — pas de démo en liste d’attente — pour savoir ce qui part en production aujourd’hui.",
-        "Choisissez un moteur pour voir les presets de prompt, les limites de durée et la route actuelle que nous utilisons afin de garder les rendus fluides, puis dupliquez-le dans votre workspace."
+        "Chaque modèle de ce catalogue est relié à l’espace MaxVideoAI avec latence surveillée, suivi des prix et plans de secours. Nous ajoutons les modèles dès que les fournisseurs ouvrent une vraie capacité — pas de démo en liste d’attente — pour savoir ce qui part en production aujourd’hui.",
+        "Choisissez un modèle pour voir les presets de prompt, les limites de durée et la route actuelle que nous utilisons afin de garder les rendus fluides, puis dupliquez-le dans votre studio."
       ],
       "cards": [
         {
@@ -1907,8 +1908,8 @@
       "textImage": "Texte + image vers vidéo",
       "text": "Texte vers vidéo",
       "imageVideo": "Image vers vidéo",
-      "image": "Moteur d’images IA (Texte & Image→Image)",
-      "default": "Moteur IA"
+      "image": "Modèle d’images IA (Texte & Image→Image)",
+      "default": "Modèle IA"
     },
     "availabilityLabels": {
       "available": "Disponible",
@@ -1920,61 +1921,61 @@
       "sora-2": {
         "displayName": "OpenAI Sora 2",
         "description": "Texte→Vidéo et remix avec audio natif via le routage Fal.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
         "description": "Synchronisation labiale cinématographique avec sortie 1792×1024 et contrôle image→vidéo pour les équipes premium.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
         "description": "Contrôle de référence vers vidéo avec guidage du sujet par plusieurs images.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
         "description": "Prompts rapides, animation depuis image de départ, contrôle par dernière image et extend avec audio optionnel.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Veo 3.1 Fast"
       },
       "veo-3-1-lite": {
         "displayName": "Google Veo 3.1 Lite",
         "description": "Tier Veo plus économique pour prompts texte, animation depuis image de départ et contrôle par dernière image avec audio toujours actif.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Veo 3.1 Lite"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texte & Image→Vidéo",
         "description": "Boucles sociales depuis un prompt ou une image envoyée, avec itération rapide.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
         "displayName": "MiniMax Hailuo 02 Standard · Texte & Image→Vidéo",
-        "description": "Brouillons avec optimiseur ou animation de références dans un seul moteur.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "description": "Tests avec optimiseur ou animation de références dans un seul modèle.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Standard"
       },
       "ltx-2-fast": {
         "displayName": "LTX 2 Fast",
         "description": "Clips 6–20 s texte ou image avec audio natif, jusqu’en 4K.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "Fast"
       },
       "ltx-2": {
         "displayName": "LTX 2",
         "description": "Clips 6–10 s haute fidélité avec audio, jusqu’en 4K à 25/50 i/s.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "2"
       },
       "kling-2-6-pro": {
         "displayName": "Kling 2.6 Pro",
         "description": "Clips ciné courts avec dialogue et ambiance natifs.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "v2.6 Pro"
       },
       "title": "Modèles IA : specs, limites et prix | MaxVideoAI",
@@ -1989,10 +1990,10 @@
       "overviewTitle": "Aperçu",
       "overview": {
         "brand": "Marque",
-        "engineId": "ID moteur",
+        "engineId": "ID modèle",
         "slug": "Slug",
         "logoPolicy": "Politique de logo",
-        "platformPrice": "Tarifs en direct dans le workspace Generate."
+        "platformPrice": "Tarifs en direct dans le studio Generate."
       },
       "logoPolicies": {
         "logoAllowed": "Utilisation du logo autorisée",
@@ -2043,7 +2044,7 @@
         "tiles": [
           {
             "title": "Modèles vidéo",
-            "description": "Ouvrez le hub vidéo pour les workflows de rendu, les comparatifs et les moteurs orientés mouvement."
+            "description": "Ouvrez le hub vidéo pour les workflows de rendu, les comparatifs et les modèles orientés mouvement."
           },
           {
             "title": "Modèles image",
@@ -2055,7 +2056,7 @@
           },
           {
             "title": "Prix par workflow",
-            "description": "Séparez les moteurs facturés à la seconde des modèles facturés à l’image."
+            "description": "Séparez les modèles facturés à la seconde des modèles facturés à l’image."
           },
           {
             "title": "Pages modèle et repères",
@@ -2069,7 +2070,7 @@
         "items": [
           {
             "title": "Type de média",
-            "body": "Séparez les moteurs vidéo des modèles image avant d’évaluer specs et coûts."
+            "body": "Séparez les modèles vidéo des modèles image avant d’évaluer specs et coûts."
           },
           {
             "title": "Limites et formats",
@@ -2094,7 +2095,7 @@
             "answer": "Les modèles vidéo sont souvent facturés à la seconde, tandis que les modèles image sont facturés à l’image ou selon la taille de sortie. Ouvrez la fiche modèle pour le schéma exact."
           },
           {
-            "question": "Où comparer les moteurs vidéo côte à côte ?",
+            "question": "Où comparer les modèles vidéo côte à côte ?",
             "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur cet espace comparatif."
           }
         ]
@@ -2192,7 +2193,7 @@
       },
       "compareBar": {
         "selectedTemplate": "Sélectionné : {left} + {right}",
-        "selectTwo": "Sélectionnez deux moteurs à comparer",
+        "selectTwo": "Sélectionnez deux modèles à comparer",
         "clear": "Effacer",
         "compare": "Comparer"
       },
@@ -2253,14 +2254,14 @@
   "examples": {
     "sortLabel": "Trier",
     "countLabel": "rendus sélectionnés",
-    "engineFilterLabel": "Moteurs",
+    "engineFilterLabel": "Modèles",
     "engineFilterAllLabel": "Tous",
     "sort": {
       "newest": "Plus récents",
       "oldest": "Plus anciens",
       "longest": "Plus longs",
       "shortest": "Plus courts",
-      "engineAZ": "Moteur A→Z"
+      "engineAZ": "Modèle A→Z"
     },
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
@@ -2405,7 +2406,7 @@
         "title": "Remboursements",
         "items": [
           "Si un rendu échoue, votre portefeuille est recrédité en quelques minutes avec une note d’incident dans le job.",
-          "Les reçus détaillent moteur, durée, résolution et ID de job pour un transfert facile vers la finance.",
+          "Les reçus détaillent modèle, durée, résolution et ID de job pour un transfert facile vers la finance.",
           {
             "type": "link",
             "before": "Pour les détails juridiques, consultez ",
@@ -2575,7 +2576,7 @@
         },
         {
           "question": "Peut-on contourner le brand-safety pour des projets spécifiques ?",
-          "answer": "Oui. Les admins peuvent demander des allowlists ou des mots-clés restreints par workspace; les cas sensibles passent en revue humaine avec une piste d’audit."
+          "answer": "Oui. Les admins peuvent demander des allowlists ou des mots-clés restreints par studio; les cas sensibles passent en revue humaine avec une piste d’audit."
         }
       ]
     },
@@ -2627,7 +2628,7 @@
       "items": [
         {
           "question": "À quelle fréquence publiez-vous de nouveaux articles ?",
-          "answer": "Nous publions chaque semaine (parfois deux fois) lorsque les moteurs évoluent. Abonnez-vous dans l’app pour recevoir un digest quand un nouvel article sort."
+          "answer": "Nous publions chaque semaine (parfois deux fois) lorsque les modèles évoluent. Abonnez-vous dans l’app pour recevoir un digest quand un nouvel article sort."
         },
         {
           "question": "Puis-je proposer un sujet ou demander une couverture ?",
@@ -2665,15 +2666,15 @@
         "{engineName} a géré ce rendu dans MaxVideoAI, offrant {durationLabel} avec {aspectRatioLabel} et {audioState}.",
         "La séquence met en avant un mouvement cohérent, une lumière soignée et des reflets naturels pour aider les équipes créatives à évaluer le modèle.",
         "Le style de prompt conserve des repères {promptTone} que vous pouvez réutiliser ou étendre avec des références visuelles, une narration ou un upscale.",
-        "Servez-vous de la carte moteur, du lien tarification et du blog ci-dessous pour comparer les modèles ou lancer un essai similaire."
+        "Servez-vous de la carte modèle, du lien tarification et du blog ci-dessous pour comparer les modèles ou lancer un essai similaire."
       ]
     },
     "details": {
       "title": "Détails du rendu",
-      "engineLabel": "Moteur",
+      "engineLabel": "Modèle",
       "engineDescriptionFallback": "Consultez la fiche complète de ce modèle.",
       "engineCta": "Ouvrir la page du modèle",
-      "engineUnavailable": "Moteur indisponible",
+      "engineUnavailable": "Modèle indisponible",
       "durationLabel": "Durée",
       "durationValue": "{value} secondes",
       "durationUnknown": "Inconnue",
@@ -2685,9 +2686,9 @@
       "priceTotalUnknown": "Indisponible",
       "audioLabel": "Audio",
       "pricingEyebrow": "Tarifs",
-      "pricingBody": "Comparez les tarifs des moteurs et planifiez vos budgets avant de lancer.",
+      "pricingBody": "Comparez les tarifs des modèles et planifiez vos budgets avant de lancer.",
       "cta": "Comparer les tarifs",
-      "ctaDescription": "Parcourez tous les moteurs",
+      "ctaDescription": "Parcourez tous les modèles",
       "discountAppliedLabel": "Remise membre appliquée",
       "discountSavedLabel": "Économie de {amount}",
       "discountPercentLabel": "{percent} de réduction",
@@ -2700,29 +2701,29 @@
     "create": {
       "title": "Créer le vôtre",
       "subtitle": "Envie de générer une vidéo comme celle-ci ?",
-      "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre moteur, durée ou audio préféré.",
+      "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre modèle, durée ou audio préféré.",
       "cta": "Générer →"
     },
     "recreate": {
       "title": "Recréer cette vidéo",
-      "body": "Chargez ce rendu dans votre workspace avec les réglages d'origine.",
-      "cta": "Recréer dans Workspace",
+      "body": "Chargez ce rendu dans votre studio avec les réglages d'origine.",
+      "cta": "Recréer dans Studio",
       "microcopy": "Charge prompt + engine + durée + audio."
     },
     "blog": {
       "title": "Aller plus loin",
-      "message": "Apprenez-en plus sur la création vidéo IA — consultez notre blog pour des conseils, comparatifs de moteurs et cas créatifs.",
+      "message": "Apprenez-en plus sur la création vidéo IA — consultez notre blog pour des conseils, comparatifs de modèles et cas créatifs.",
       "cta": "Visiter le blog"
     }
   },
   "about": {
     "hero": {
       "title": "Confiance discrète pour les équipes vidéo IA.",
-      "subtitle": "MaxVideo AI est le hub indépendant pour la production vidéo IA. Nous orientons chaque prise vers le moteur approprié, affichons le prix avant la génération et permettons à votre équipe de garder le contrôle sans dépendance fournisseur."
+      "subtitle": "MaxVideo AI est le hub indépendant pour la production vidéo IA. Nous orientons chaque prise vers le modèle approprié, affichons le prix avant la génération et permettons à votre équipe de garder le contrôle sans dépendance fournisseur."
     },
     "paragraphs": [
       "Nous pensons que les équipes professionnelles méritent de la clarté avant de générer. Cela signifie transparence des prix, routage fiable et contexte partagé entre créatifs, producteurs et parties prenantes.",
-      "L'indépendance compte : nous restons neutres entre les moteurs, nous nous intégrons à Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, et des bêtas rotatives, et n'énumérons les marques déposées que pour décrire la compatibilité.",
+      "L'indépendance compte : nous restons neutres entre les modèles, nous nous intégrons à Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, et des bêtas rotatives, et n'énumérons les marques déposées que pour décrire la compatibilité.",
       "Le produit est conçu pour les équipes ayant besoin de précision sans bruit. Interface discrète, paramètres par défaut premium, contrôles précis et puces « prix avant » qui tiennent la finance informée.",
       "Nous gardons le flux de production concret : comparer les modèles, préparer les assets, générer seulement lorsque le coût et les réglages sont clairs, puis relire les sorties dans un seul espace plutôt que disperser le contexte entre plusieurs tableaux de bord fournisseurs."
     ],
@@ -2738,7 +2739,7 @@
       "cards": {
         "productHelp": {
           "title": "Aide produit",
-          "body": "Pour un problème de rendu, de facturation ou de routage moteur, joignez l’ID du job et nous relirons directement la trace dans le workspace."
+          "body": "Pour un problème de rendu, de facturation ou de routage modèle, joignez l’ID du job et nous relirons directement la trace dans le studio."
         },
         "partnerships": {
           "title": "Partenariats",
@@ -2788,17 +2789,17 @@
         },
         {
           "question": "Proposez-vous des démos en direct ?",
-          "answer": "Oui. Indiquez simplement votre fuseau horaire et les modèles que vous souhaitez voir. Nous réalisons les démos dans le workspace MaxVideoAI pour vous montrer le routage et les prix en temps réel."
+          "answer": "Oui. Indiquez simplement votre fuseau horaire et les modèles que vous souhaitez voir. Nous réalisons les démos dans le studio MaxVideoAI pour vous montrer le routage et les prix en temps réel."
         },
         {
           "question": "Où vérifier l’état du service ?",
-          "answer": "Consultez la {link} pour vérifier la latence des moteurs et l’historique des incidents avant d’ouvrir un ticket."
+          "answer": "Consultez la {link} pour vérifier la latence des modèles et l’historique des incidents avant d’ouvrir un ticket."
         }
       ]
     },
     "statusCard": {
-      "title": "Vérifier l’état des moteurs en direct",
-      "body": "Avant d’ouvrir un ticket, vérifiez si un moteur est déjà dégradé. La page de statut liste les latences, les notes d’incident et les mesures d’atténuation pour vous aider à décider s’il faut relancer ou changer de modèle.",
+      "title": "Vérifier l’état des modèles en direct",
+      "body": "Avant d’ouvrir un ticket, vérifiez si un modèle est déjà dégradé. La page de statut liste les latences, les notes d’incident et les mesures d’atténuation pour vous aider à décider s’il faut relancer ou changer de modèle.",
       "cta": "page de statut"
     }
   },
@@ -2821,7 +2822,7 @@
         },
         {
           "heading": "4. Contenus utilisateur & médias générés",
-          "body": "Vos uploads (photos, logos, vidéos de référence, prompts) restent votre propriété. Nous pouvons stocker, traiter et afficher ces éléments uniquement pour produire le rendu texte-vers-vidéo ou image-vers-vidéo demandé et pour fournir les fonctionnalités que vous activez dans votre workspace. Pour chaque média généré, vous accordez à MaxVideoAI une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable afin d'héberger, reproduire, indexer, afficher et utiliser les vidéos pour faire fonctionner le service, améliorer le routage et les modèles, réaliser les revues de sécurité et présenter la galerie Examples, les pages de modèles ou d'autres activations marketing. Vous pouvez marquer un rendu comme privé depuis votre workspace ou demander sa désindexation auprès du support si l'option de confidentialité n'est pas disponible, et nous honorerons cette demande. Vous conservez la propriété de vos prompts, uploads, descriptions et éléments de marque, tandis que MaxVideoAI conserve celle de la plateforme, de l'interface, des transformations et des améliorations techniques construites dessus."
+          "body": "Vos uploads (photos, logos, vidéos de référence, prompts) restent votre propriété. Nous pouvons stocker, traiter et afficher ces éléments uniquement pour produire le rendu texte-vers-vidéo ou image-vers-vidéo demandé et pour fournir les fonctionnalités que vous activez dans votre studio. Pour chaque média généré, vous accordez à MaxVideoAI une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable afin d'héberger, reproduire, indexer, afficher et utiliser les vidéos pour faire fonctionner le service, améliorer le routage et les modèles, réaliser les revues de sécurité et présenter la galerie Examples, les pages de modèles ou d'autres activations marketing. Vous pouvez marquer un rendu comme privé depuis votre studio ou demander sa désindexation auprès du support si l'option de confidentialité n'est pas disponible, et nous honorerons cette demande. Vous conservez la propriété de vos prompts, uploads, descriptions et éléments de marque, tandis que MaxVideoAI conserve celle de la plateforme, de l'interface, des transformations et des améliorations techniques construites dessus."
         },
         {
           "heading": "5. Facturation",
@@ -2839,7 +2840,7 @@
       "sections": [
         {
           "heading": "1. Données collectées",
-          "body": "Détails workspace, métriques d'usage et informations de facturation nécessaires pour fournir le service."
+          "body": "Détails studio, métriques d'usage et informations de facturation nécessaires pour fournir le service."
         },
         {
           "heading": "2. Usage des données",
@@ -2847,11 +2848,11 @@
         },
         {
           "heading": "3. Stockage & sécurité",
-          "body": "Nous stockons les données dans des systèmes chiffrés avec accès à privilège minimal. Les assets de rendu expirent selon la politique workspace."
+          "body": "Nous stockons les données dans des systèmes chiffrés avec accès à privilège minimal. Les assets de rendu expirent selon la politique studio."
         },
         {
           "heading": "4. Partage",
-          "body": "Les données ne sont partagées qu'avec les fournisseurs de moteurs nécessaires au routage. Jamais revendues."
+          "body": "Les données ne sont partagées qu'avec les fournisseurs de modèles nécessaires au routage. Jamais revendues."
         },
         {
           "heading": "5. Vos choix",
@@ -2863,21 +2864,21 @@
   "changelog": {
     "meta": {
       "title": "Journal des modifications — MaxVideo AI",
-      "description": "Mises à jour transparentes sur les moteurs, les workflows et les performances de file."
+      "description": "Mises à jour transparentes sur les modèles, les workflows et les performances de file."
     },
     "hero": {
       "title": "Journal des modifications",
-      "subtitle": "Chaque mise à jour de moteur, amélioration de flux de travail et ajustement de tarification — publié chaque semaine. Abonnez-vous dans l'application pour recevoir les alertes."
+      "subtitle": "Chaque mise à jour de modèle, amélioration de flux de travail et ajustement de tarification — publié chaque semaine. Abonnez-vous dans l'application pour recevoir les alertes."
     },
     "intro": {
       "paragraphs": [
-        "Nous publions les mises à jour MaxVideoAI par vagues courtes et régulières. Les nouveaux moteurs arrivent dès que les fournisseurs ouvrent l’accès, puis les améliorations de workflow suivent dans la foulée afin que les équipes puissent les adopter sans réapprendre la plateforme.",
+        "Nous publions les mises à jour MaxVideoAI par vagues courtes et régulières. Les nouveaux modèles arrivent dès que les fournisseurs ouvrent l’accès, puis les améliorations de workflow suivent dans la foulée afin que les équipes puissent les adopter sans réapprendre la plateforme.",
         "Utilisez ce journal pour savoir quand une capacité a été mise en ligne, confirmer une correction de latence ou partager une preuve de livraison avec vos parties prenantes. Quand une entrée touche à la facturation ou au routage, elle renvoie vers la documentation correspondante."
       ],
       "releaseTagsTitle": "Comment nous taguons les versions",
       "releaseTags": [
         {
-          "label": "Moteur",
+          "label": "Modèle",
           "body": "nouveau modèle, changement de qualité ou évolution tarifaire."
         },
         {
@@ -2915,8 +2916,8 @@
     },
     "overview": {
       "paragraphs": [
-        "Les contrôles d’état se mettent à jour en continu à partir de la même télémétrie que nous utilisons pour router les rendus. Lorsqu’un moteur passe de « Opérationnel » à « Dégradé », MaxVideoAI bascule automatiquement le trafic vers la région disponible la plus rapide et publie un incident ci-dessous. Si une panne nécessite une action client, nous l’indiquons dans les notes d’incident avec les identifiants de jobs à relancer ou à rembourser.",
-        "Avant de contacter le support, vérifiez si le moteur concerné présente une perturbation et consultez l’historique des incidents. Vous pouvez aussi vous abonner au flux RSS ou au digest e-mail pour recevoir une alerte dès qu’un moteur est dégradé. Pour une escalade urgente, joignez l’ID du job et le nom du moteur afin que nous puissions tracer la file immédiatement."
+        "Les contrôles d’état se mettent à jour en continu à partir de la même télémétrie que nous utilisons pour router les rendus. Lorsqu’un modèle passe de « Opérationnel » à « Dégradé », MaxVideoAI bascule automatiquement le trafic vers la région disponible la plus rapide et publie un incident ci-dessous. Si une panne nécessite une action client, nous l’indiquons dans les notes d’incident avec les identifiants de jobs à relancer ou à rembourser.",
+        "Avant de contacter le support, vérifiez si le modèle concerné présente une perturbation et consultez l’historique des incidents. Vous pouvez aussi vous abonner au flux RSS ou au digest e-mail pour recevoir une alerte dès qu’un modèle est dégradé. Pour une escalade urgente, joignez l’ID du job et le nom du modèle afin que nous puissions tracer la file immédiatement."
       ],
       "quickReferencesTitle": "Repères rapides",
       "quickReferences": [
@@ -2937,9 +2938,9 @@
     },
     "systems": [
       {
-        "name": "Routage des moteurs",
+        "name": "Routage des modèles",
         "status": "Opérationnel",
-        "detail": "Tous les moteurs répondent dans les SLA."
+        "detail": "Tous les modèles répondent dans les SLA."
       },
       {
         "name": "Traitement des files",
@@ -2975,7 +2976,7 @@
   "gallery": {
     "meta": {
       "title": "Exemples vidéo IA + prix affichés | MaxVideoAI",
-      "description": "Explorez des exemples réels avec prompts, durée, audio et prix par clip. Dupliquez un plan dans votre workspace en quelques secondes.",
+      "description": "Explorez des exemples réels avec prompts, durée, audio et prix par clip. Dupliquez un plan dans votre studio en quelques secondes.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
       "description_engine": "Découvrez des exemples {engineName} avec prompts, durée, audio et prix affichés par clip. Ces pages peuvent inclure plusieurs modèles et modes {engineName}."
     }
@@ -3027,8 +3028,8 @@
     },
     "generate": {
       "errors": {
-        "loadEngines": "Impossible de charger les moteurs",
-        "noEngines": "Aucun moteur disponible."
+        "loadEngines": "Impossible de charger les modèles",
+        "noEngines": "Aucun modèle disponible."
       },
       "gallery": {
         "empty": "Lancez un rendu pour remplir votre galerie. Les variantes de chaque essai s’afficheront ici."
@@ -3100,7 +3101,7 @@
           "maxLabel": "Max {seconds}s",
           "rangeLabel": "Durée — secondes",
           "rangeHint": "Min {min}s · Max {max}s",
-          "managed": "La durée est gérée directement par ce moteur."
+          "managed": "La durée est gérée directement par ce modèle."
         },
         "resolution": {
           "label": "Résolution",
@@ -3237,25 +3238,25 @@
       },
       "engineSelect": {
         "avgDuration": "Moy. {value}",
-        "choose": "Choisir un moteur",
+        "choose": "Choisir un modèle",
         "variant": "Variante",
-        "browse": "Explorer les moteurs…",
+        "browse": "Explorer les modèles…",
         "inputMode": "Mode d’entrée",
-        "unsupportedMode": "Mode non pris en charge par ce moteur",
+        "unsupportedMode": "Mode non pris en charge par ce modèle",
         "modal": {
           "close": "Fermer",
-          "title": "Choisissez le moteur adapté à votre plan",
+          "title": "Choisissez le modèle adapté à votre plan",
           "subtitle": "Chaque modèle a ses forces : certains sont rapides, d’autres cinématiques ou expérimentaux. Trouvez celui qui convient à votre projet, puis lancez-vous sereinement.",
-          "searchPlaceholder": "Recherchez par moteur, fournisseur ou capacité",
+          "searchPlaceholder": "Recherchez par modèle, fournisseur ou capacité",
           "modeAll": "Mode : Tous",
           "modeValue": "Mode : {value}",
           "resolutionAll": "Résolution : Toutes",
           "legacyToggleLabel": "Modèles anciens",
           "viewModel": "Voir la page du modèle",
           "viewExamples": "Voir les exemples",
-          "empty": "Aucun moteur ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",
+          "empty": "Aucun modèle ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",
           "disclaimer": "Les logos sont utilisés à titre descriptif uniquement. Les marques appartiennent à leurs propriétaires.",
-          "descriptionFallback": "Moteur polyvalent prêt pour les workflows « prix avant génération ». Consultez les spécifications et lancez vos rendus en toute confiance."
+          "descriptionFallback": "Modèle polyvalent prêt pour les workflows « prix avant génération ». Consultez les spécifications et lancez vos rendus en toute confiance."
         },
         "guides": {
           "pika-text-to-video": {
@@ -3381,10 +3382,10 @@
         "title": "Créer",
         "subtitle": "Lancez un nouveau rendu ou reprenez vos derniers réglages.",
         "videoTitle": "Créer une vidéo",
-        "videoSubtitle": "Choisissez votre moteur et votre mode, puis lancez un rendu.",
+        "videoSubtitle": "Choisissez votre modèle et votre mode, puis lancez un rendu.",
         "imageTitle": "Créer une image",
-        "imageSubtitle": "Générez des images fixes ou des retouches avec les moteurs image.",
-        "engineLabel": "Moteur",
+        "imageSubtitle": "Générez des images fixes ou des retouches avec les modèles image.",
+        "engineLabel": "Modèle",
         "newVideo": "Nouvelle vidéo",
         "generateAudio": "Générer audio",
         "useLastVideo": "Utiliser les réglages vidéo",
@@ -3437,7 +3438,7 @@
         "manage": "Ouvrir la bibliothèque",
         "remove": "Supprimer",
         "meta": {
-          "engine": "Moteur",
+          "engine": "Modèle",
           "format": "Format",
           "duration": "Durée",
           "audio": "Audio",
@@ -3461,9 +3462,9 @@
         "angleBadge": "Nouvelle perspective"
       },
       "engines": {
-        "title": "Statut des moteurs",
-        "allOk": "Tous les moteurs sont opérationnels",
-        "error": "Impossible de charger les moteurs.",
+        "title": "Statut des modèles",
+        "allOk": "Tous les modèles sont opérationnels",
+        "error": "Impossible de charger les modèles.",
         "queueLabel": "file : {count}"
       },
       "actions": {
@@ -3480,7 +3481,7 @@
         "metadata": {
           "created": "Créé le",
           "heroDuration": "Durée du hero",
-          "engine": "Moteur",
+          "engine": "Modèle",
           "duration": "Durée",
           "status": "Statut",
           "notProvided": "Non fourni"
@@ -3561,11 +3562,11 @@
       },
       "estimator": {
         "title": "Estimateur de coûts",
-        "summary": "Choisissez Moteur · Durée · Résolution → Ce rendu : {value} (estimation)",
+        "summary": "Choisissez Modèle · Durée · Résolution → Ce rendu : {value} (estimation)",
         "estimateLoading": "…",
         "estimateMissing": "—",
         "fields": {
-          "engine": "Moteur",
+          "engine": "Modèle",
           "mode": "Mode",
           "duration": "Durée (s)",
           "resolution": "Résolution"
@@ -3629,7 +3630,7 @@
       "errors": {
         "loadReceipts": "Impossible de charger votre historique de paiement. Actualisez la page ou contactez le support.",
         "loadMore": "Impossible de charger davantage de reçus",
-        "loadEngines": "Impossible de charger les moteurs.",
+        "loadEngines": "Impossible de charger les modèles.",
         "estimator": "L’estimateur a échoué",
         "lowBalance": "Votre solde est faible. Rechargez pour continuer."
       }
@@ -3638,7 +3639,7 @@
       "hero": {
         "eyebrow": "Espace image",
         "title": "Générer des images",
-        "subtitle": "Créez et éditez des visuels haute fidélité avec Nano Banana et les autres moteurs Fal."
+        "subtitle": "Créez et éditez des visuels haute fidélité avec Nano Banana et les autres modèles Fal."
       },
       "preview": {
         "eyebrow": "Aperçu de génération",
@@ -3651,7 +3652,7 @@
         "cta": "Générer une image"
       },
       "engine": {
-        "eyebrow": "Moteur",
+        "eyebrow": "Modèle",
         "priceCalculating": "Calcul du prix…",
         "priceLabel": "{amount} / exécution"
       },
@@ -3673,7 +3674,7 @@
         },
         "resolutionLabel": "Résolution",
         "resolutionHint": "Prévisualisez en 1K/2K puis passez en 4K pour le final (prix mis à jour automatiquement).",
-        "resolutionLockedLabel": "Résolution verrouillée par ce moteur.",
+        "resolutionLockedLabel": "Résolution verrouillée par ce modèle.",
         "estimatedCost": "Coût estimé : {amount}",
         "referenceLabel": "Images de référence",
         "referenceHelper": "Optionnel · jusqu’à {count} images",
@@ -3721,7 +3722,7 @@
       "general": {
         "uploading": "Téléversement…",
         "cancelUpload": "Annuler le téléversement",
-        "emptyEngines": "Aucun moteur image disponible."
+        "emptyEngines": "Aucun modèle image disponible."
       },
       "library": {
         "button": "Bibliothèque",
@@ -3854,7 +3855,7 @@
     "tools": {
       "disabledTitle": "Les outils sont désactivés",
       "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
-      "eyebrow": "Workspace",
+      "eyebrow": "Studio",
       "title": "Outils",
       "subtitle": "Prépare des assets de première image réutilisables avant de lancer des rendus image-to-video.",
       "characterEyebrow": "Cohérence personnage",
@@ -4089,8 +4090,8 @@
       "disabledTitle": "Les outils sont désactivés",
       "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
       "back": "Retour aux outils",
-      "engine": "Moteur",
-      "engineSelect": "Sélection du moteur",
+      "engine": "Modèle",
+      "engineSelect": "Sélection du modèle",
       "sourceImage": "Image source",
       "sourceReady": "Image source prête",
       "sourceFromLibrary": "Depuis la bibliothèque",
@@ -4162,11 +4163,11 @@
       "engines": {
         "flux-multiple-angles": {
           "label": "FLUX Multiple Angles",
-          "description": "Moteur FLUX LoRA multi-angle avec contrôles horizontal / vertical / zoom."
+          "description": "Modèle FLUX LoRA multi-angle avec contrôles horizontal / vertical / zoom."
         },
         "qwen-multiple-angles": {
           "label": "Qwen Multiple Angles",
-          "description": "Moteur Qwen d’édition d’image multi-angle optimisé pour la cohérence des angles."
+          "description": "Modèle Qwen d’édition d’image multi-angle optimisé pour la cohérence des angles."
         }
       }
     },
@@ -4553,11 +4554,11 @@
     },
     "modes": {
       "signup": {
-        "title": "Créez votre compte workspace",
+        "title": "Créez votre compte studio",
         "description": "Accédez instantanément à MaxVideoAI. Nous confirmerons votre e-mail avant votre premier rendu."
       },
       "signin": {
-        "title": "Accédez à votre workspace",
+        "title": "Accédez à votre studio",
         "description": "Connectez-vous avec Google ou e-mail pour reprendre vos projets."
       },
       "reset": {
@@ -4608,7 +4609,7 @@
   "comparePage": {
     "meta": {
       "title": "{left} vs {right} — Caractéristiques & prix | MaxVideoAI",
-      "titleFallback": "Moteurs vidéo IA — Caractéristiques & prix | MaxVideoAI",
+      "titleFallback": "Modèles vidéo IA — Caractéristiques & prix | MaxVideoAI",
       "description": "Comparez {left} vs {right} sur MaxVideoAI avec des prompts identiques, des caractéristiques clés et une grille de scores sur 11 critères.",
       "slugOverrides": {
         "kling-2-6-pro-vs-ltx-2": {
@@ -4637,7 +4638,7 @@
         },
         "ltx-2-fast-vs-wan-2-5": {
           "title": "LTX 2 Fast vs WAN 2.5 — Qualité, vitesse & coût | MaxVideoAI",
-          "description": "Comparez LTX 2 Fast vs WAN 2.5 avec des prompts identiques, les caractéristiques clés, le prix et une grille de scores en 11 points. Choisissez le meilleur moteur pour votre flux de production."
+          "description": "Comparez LTX 2 Fast vs WAN 2.5 avec des prompts identiques, les caractéristiques clés, le prix et une grille de scores en 11 points. Choisissez le meilleur modèle pour votre flux de production."
         },
         "kling-3-pro-vs-wan-2-6": {
           "title": "Kling 3 Pro vs WAN 2.6 — Qualité, audio & coût | MaxVideoAI",
@@ -4740,13 +4741,13 @@
           "description": "Comparez LTX 2.3 Fast vs Seedance 2.0 Fast sur MaxVideoAI avec des prompts identiques : vitesse de brouillon, caractéristiques, prix et qualité de sortie côte à côte."
         }
       },
-      "descriptionFallback": "Comparaison face à face des moteurs vidéo IA avec les métriques et repères MaxVideoAI."
+      "descriptionFallback": "Comparaison face à face des modèles vidéo IA avec les métriques et repères MaxVideoAI."
     },
     "hero": {
       "back": "Retour aux comparatifs",
-      "kicker": "Comparer les moteurs",
-      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les caractéristiques complètes et des exemples de prompts.",
-      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les caractéristiques complètes et des exemples de prompts.",
+      "kicker": "Comparer les modèles",
+      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page modèle pour les caractéristiques complètes et des exemples de prompts.",
+      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page modèle pour les caractéristiques complètes et des exemples de prompts.",
       "takeawaysTitle": "Points clés",
       "lastUpdatedLabel": "Mis à jour"
     },
@@ -4758,7 +4759,7 @@
       "winnerSummary": "Résumé gagnant",
       "winnerSummaryPrelaunch": "Leader actuel (pré-lancement)",
       "generateWith": "Générer avec {engine}",
-      "fullProfile": "Profil complet du moteur"
+      "fullProfile": "Profil complet du modèle"
     },
     "labels": {
       "pending": "Données en attente",
@@ -4769,7 +4770,7 @@
       "tryPrompt": "Essayez ce prompt :",
       "tryPromptPrelaunch": "Actions de prompt :",
       "opensGenerator": "Ouvre le générateur pré-rempli.",
-      "opensGeneratorPrelaunch": "Utilisez ces liens de prompt pour préparer vos tests ; les moteurs pré-lancement s’ouvrent au lancement.",
+      "opensGeneratorPrelaunch": "Utilisez ces liens de prompt pour préparer vos tests ; les modèles pré-lancement s’ouvrent au lancement.",
       "savePromptForLaunch": "Enregistrer ce prompt pour le lancement",
       "whatTests": "Ce que ça teste",
       "placeholder": "Exemple provisoire — rendu du prompt bientôt",
@@ -4780,7 +4781,7 @@
     },
     "keySpecs": {
       "title": "Caractéristiques clés (face à face)",
-      "subtitle": "Comparez les caractéristiques clés des modèles vidéo IA face à face (prix, entrées, résolution, durée, formats, audio et contrôles). Instantané haut niveau — voir la page moteur pour la liste complète et des exemples de prompts.",
+      "subtitle": "Comparez les caractéristiques clés des modèles vidéo IA face à face (prix, entrées, résolution, durée, formats, audio et contrôles). Instantané haut niveau — voir la page modèle pour la liste complète et des exemples de prompts.",
       "keyLabel": "Caractéristique clé"
     },
     "specLabels": {
@@ -4808,29 +4809,29 @@
       "subtitle": "Rendus face à face issus du même prompt sur MaxVideoAI. Prompts identiques ; les sorties peuvent varier selon le modèle.",
       "subtitlePrelaunch": "Prompts et rendus face à face (lorsqu’ils sont disponibles) sur MaxVideoAI. Les prompts sont identiques ; les sorties peuvent varier selon le modèle.",
       "note": "Jusqu’à 3 paires de prompts pour la clarté.",
-      "footer": "Cette comparaison face à face utilise des prompts identiques pour mettre en évidence les différences de mouvement, réalisme, fidélité humaine et lisibilité du texte. Pour les caractéristiques complètes, contrôles et plus d’exemples, ouvrez chaque page moteur."
+      "footer": "Cette comparaison face à face utilise des prompts identiques pour mettre en évidence les différences de mouvement, réalisme, fidélité humaine et lisibilité du texte. Pour les caractéristiques complètes, contrôles et plus d’exemples, ouvrez chaque page modèle."
     },
     "prelaunch": {
       "title": "Comparaison pré-lancement",
-      "notice": "Au moins un moteur de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles ; les prix et sorties finales sont confirmés au lancement."
+      "notice": "Au moins un modèle de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles ; les prix et sorties finales sont confirmés au lancement."
     },
     "faq": {
       "title": "FAQ",
       "subtitle": "Réponses rapides sur {left} vs {right} sur MaxVideoAI (prix, modes, caractéristiques et raisons des écarts).",
       "validating": "en cours de validation",
-      "pricingDiff": "Les tarifs varient selon le moteur et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} vs {right} commence à {rightValue}.",
+      "pricingDiff": "Les tarifs varient selon le modèle et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} vs {right} commence à {rightValue}.",
       "capabilityDiff": "{label} : {left} est {leftValue} vs {right} est {rightValue}.",
       "capabilityPending": "{label} : {status} pour l’instant.",
       "outputDiff": "{label} : {left} est {leftValue} vs {right} est {rightValue}.",
-      "outputPending": "{label} : données encore en validation pour un ou deux moteurs.",
+      "outputPending": "{label} : données encore en validation pour un ou deux modèles.",
       "capabilityLabel": "Capacité",
       "outputLabel": "Résolution max",
       "q1": "Que sont {left} et {right} ?",
-      "a1": "{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page les compare face à face avec les mêmes prompts, les caractéristiques clés et les données ci-dessus.",
+      "a1": "{left} et {right} sont des modèles de génération vidéo IA disponibles sur MaxVideoAI. Cette page les compare face à face avec les mêmes prompts, les caractéristiques clés et les données ci-dessus.",
       "q2": "Quel est le meilleur : {left} ou {right} ?",
       "a2": "Cela dépend du flux de production. Utilisez la grille de scores et les duels “même prompt” pour comparer l’adhérence au prompt, le réalisme du mouvement, la fidélité humaine et la lisibilité du texte — puis ouvrez chaque profil pour les détails complets.",
       "q3": "Lequel est le moins cher sur MaxVideoAI ?",
-      "a3": "Les tarifs varient selon le moteur et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} et {right} commence à {rightValue} (voir « Tarifs (MaxVideoAI) » pour les détails).",
+      "a3": "Les tarifs varient selon le modèle et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} et {right} commence à {rightValue} (voir « Tarifs (MaxVideoAI) » pour les détails).",
       "q4": "Quelles sont les plus grandes différences entre {left} et {right} ?",
       "q5": "Supportent-ils Texte→Vidéo / Image→Vidéo / Vidéo→Vidéo ?",
       "a5": "Sur MaxVideoAI : Texte→Vidéo est {t2vLeft} vs {t2vRight} ; Image→Vidéo est {i2vLeft} vs {i2vRight} ; Vidéo→Vidéo est {v2vLeft} vs {v2vRight}. Certains champs peuvent encore être en validation.",
@@ -4845,7 +4846,7 @@
       "q10": "Pourquoi les résultats diffèrent avec le même prompt ?",
       "a10": "Même avec des prompts identiques, les modèles interprètent différemment les instructions et utilisent des jeux de données distincts. C’est pourquoi la section Showdown existe : même prompt, rendus face à face.",
       "q11": "Où trouver les caractéristiques complètes, contrôles et plus d’exemples de prompts ?",
-      "a11": "Ouvrez les pages moteur complètes pour toutes les caractéristiques, contrôles et plus de prompts : /models/{leftSlug} et /models/{rightSlug}. Vous pouvez aussi parcourir plus de rendus dans les galeries."
+      "a11": "Ouvrez les pages modèle complètes pour toutes les caractéristiques, contrôles et plus de prompts : /models/{leftSlug} et /models/{rightSlug}. Vous pouvez aussi parcourir plus de rendus dans les galeries."
     },
     "summary": {
       "scorecardLabel": "Leader de la grille de scores",
@@ -5575,7 +5576,7 @@
           "Générer une ancre portrait réutilisable",
           "Générer une planche personnage à 8 panneaux avec quatre vues en pied et quatre gros plans assortis",
           "Réutiliser la même référence personnage dans les prompts et les retouches image",
-          "Utiliser la référence dans Nano Banana et dans les moteurs vidéo qui acceptent les images fixes de référence"
+          "Utiliser la référence dans Nano Banana et dans les modèles vidéo qui acceptent les images fixes de référence"
         ],
         "howToTitle": "Comment fonctionne Character Builder",
         "howToDescription": "Créez une référence personnage réutilisable pour garder des images IA cohérentes et préparer vos vidéos à partir d'une image fixe."
@@ -5850,7 +5851,7 @@
           },
           {
             "question": "Puis-je réutiliser cela dans des workflows image-to-video ?",
-            "answer": "Oui. Vous pouvez le réutiliser dans les prompts, dans la préparation du premier plan avec Nano Banana et dans les moteurs vidéo qui acceptent les images fixes de référence."
+            "answer": "Oui. Vous pouvez le réutiliser dans les prompts, dans la préparation du premier plan avec Nano Banana et dans les modèles vidéo qui acceptent les images fixes de référence."
           }
         ]
       },
