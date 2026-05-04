@@ -49,7 +49,7 @@ export function getSeedanceAssetState(inputAssets: SeedanceAssetMap) {
 
 export function getUnifiedSeedanceMode(inputAssets: SeedanceAssetMap): Mode {
   const state = getSeedanceAssetState(inputAssets);
-  if (state.hasReferenceVideo && state.hasReferenceImage) return 'v2v';
+  if (state.hasReferenceImage) return 'ref2v';
   if (state.hasReferenceVideo && !state.hasReferenceAudio) return 'extend';
   if (state.hasReferenceInputs) return 'ref2v';
   if (state.hasStartOrEndImage) return 'i2v';

@@ -93,8 +93,8 @@ test('upscale landing hero uses app screenshots with default preview media in li
 
   assert.match(source, /upscale-hero-app-light\.webp/);
   assert.match(source, /upscale-hero-app-dark\.webp/);
-  assert.match(source, /role="img"/);
-  assert.match(source, /aria-label=\{imageAlt\}/);
+  assert.match(source, /<MarketingHeroImage/);
+  assert.match(source, /alt=\{imageAlt\}/);
   assert.doesNotMatch(source, /SOURCE_IMAGE_URL|OUTPUT_IMAGE_URL/);
   assert.doesNotMatch(source, /hero\.studioLabel|hero\.stackLabel/);
   assert.doesNotMatch(source, /<HeroVisual imageAlt=\{content\.meta\.imageAlt\} hero=/);

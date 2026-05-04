@@ -82,7 +82,7 @@ test('GSC dashboard can authenticate with OAuth refresh-token credentials when s
     assert.equal(data.configured, true);
     assert.equal(data.siteUrl, 'sc-domain:maxvideoai.com');
     assert.equal(tokenRequests.length, 1);
-    assert.equal(searchRequests.length, 3);
+    assert.equal(searchRequests.length, 5);
     assert.ok(searchRequests.every((request) => request.authorization === 'Bearer oauth-access-token'));
     assert.ok(searchRequests.every((request) => request.url.includes('/sites/sc-domain%3Amaxvideoai.com/searchAnalytics/query')));
     assert.ok(searchRequests.every((request) => (request.body as { type?: string }).type === 'web'));

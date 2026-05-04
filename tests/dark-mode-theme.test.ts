@@ -167,13 +167,15 @@ test('tools pricing and blog hero images use compare-style derived dark assets',
     },
   ] as const;
 
-  assert.match(comparePageSource, /compare-hero-reference-light\.webp/);
-  assert.match(comparePageSource, /dark:bg-\[url\('\/assets\/compare\/compare-hero-reference-dark\.webp'\)\] dark:opacity-70/);
+  assert.match(comparePageSource, /src="\/assets\/compare\/compare-hero-reference-light\.webp"/);
+  assert.match(comparePageSource, /darkSrc="\/assets\/compare\/compare-hero-reference-dark\.webp"/);
+  assert.match(comparePageSource, /className="opacity-55 dark:opacity-70"/);
 
   for (const hero of heroAssets) {
     assert.ok(existsSync(hero.darkFile), `${hero.name} should have a derived dark hero asset`);
-    assert.match(hero.source, new RegExp(`bg-\\[url\\('${escapeRegExp(hero.lightUrl)}'\\)\\]`));
-    assert.match(hero.source, new RegExp(`dark:bg-\\[url\\('${escapeRegExp(hero.darkUrl)}'\\)\\] dark:opacity-70`));
+    assert.match(hero.source, new RegExp(`src="${escapeRegExp(hero.lightUrl)}"`));
+    assert.match(hero.source, new RegExp(`darkSrc="${escapeRegExp(hero.darkUrl)}"`));
+    assert.match(hero.source, /className="opacity-55 dark:opacity-70"/);
     assert.match(hero.source, hero.overlay);
     assert.doesNotMatch(hero.source, /dark:(brightness|contrast|saturate|invert)/, `${hero.name} should use a dark asset instead of CSS image filters`);
   }
