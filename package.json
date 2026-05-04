@@ -23,6 +23,7 @@
     "model:scaffold": "npm --prefix frontend run models:scaffold --",
     "model:setup": "node scripts/model-setup.mjs",
     "models:audit": "node scripts/models-audit.mjs",
+    "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "audit:premerge": "rm -rf frontend/.next && pnpm --prefix frontend run build && pnpm test:validate && pnpm --prefix frontend run i18n:check && pnpm --prefix frontend run seo:check && pnpm model:check && pnpm models:audit",
     "sources:check": "node scripts/sources-check.mjs",
     "engine:catalog": "./frontend/node_modules/.bin/tsx scripts/build-engine-catalog.ts",
