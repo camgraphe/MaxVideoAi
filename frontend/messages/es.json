@@ -59,6 +59,17 @@
           "wan-2-6": "Wan 2.6",
           "seedance-1-5-pro": "Seedance 1.5 Pro",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+        },
+        "sections": {
+          "useCaseGuides": {
+            "items": {
+              "all-use-case-guides": "Todas las guías Mejor para",
+              "cinematic-realism": "Realismo cinematográfico",
+              "image-to-video": "Imagen a video",
+              "fast-drafts": "Pruebas rápidas",
+              "ads": "Anuncios de producto"
+            }
+          }
         }
       },
       "examples": {
@@ -101,12 +112,24 @@
           "ltx-2-3-pro-vs-veo-3-1": "LTX 2.3 Pro vs Veo 3.1",
           "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
           "ltx-2-vs-veo-3-1": "LTX 2 vs Veo 3.1"
+        },
+        "sections": {
+          "useCaseGuides": {
+            "items": {
+              "best-for": "Mejores modelos por objetivo",
+              "cinematic-realism": "Realismo cinematográfico",
+              "image-to-video": "Imagen a video",
+              "fast-drafts": "Pruebas rápidas",
+              "ads": "Anuncios de producto"
+            }
+          }
         }
       },
       "tools": {
         "items": {
           "character-builder": "Personajes IA consistentes",
           "angle": "Cambiar ángulo de cámara",
+          "upscale": "Upscale con IA",
           "image": "Generar imagen"
         }
       },

@@ -10,6 +10,7 @@ import {
 } from '../frontend/config/navigation.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
+const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
 
 const bestForUseCaseLinks = [
   ['Cinematic realism', '/ai-video-engines/best-for/cinematic-realism'],
@@ -79,6 +80,41 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingNavSource, /font-semibold text-text-primary/);
 });
 
+test('localized marketing dropdown sections avoid English fallbacks', () => {
+  const expectedUseCaseKeys = ['cinematic-realism', 'image-to-video', 'fast-drafts', 'ads'];
+  const forbiddenFallbacks = [
+    'All use-case guides',
+    'Best models by use case',
+    'Cinematic realism',
+    'Fast drafts',
+    'Product ads',
+    'AI Upscale',
+  ];
+
+  for (const locale of ['fr', 'es'] as const) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    const dropdown = dictionary.nav.dropdown;
+    const modelsSection = dropdown.models.sections.useCaseGuides.items;
+    const compareSection = dropdown.compare.sections.useCaseGuides.items;
+
+    assert.equal(typeof modelsSection['all-use-case-guides'], 'string', `${locale} models dropdown should localize all-use-case-guides`);
+    assert.equal(typeof compareSection['best-for'], 'string', `${locale} compare dropdown should localize best-for`);
+
+    for (const key of expectedUseCaseKeys) {
+      assert.equal(typeof modelsSection[key], 'string', `${locale} models dropdown should localize ${key}`);
+      assert.equal(typeof compareSection[key], 'string', `${locale} compare dropdown should localize ${key}`);
+    }
+    assert.equal(typeof dropdown.tools.items.upscale, 'string', `${locale} tools dropdown should localize upscale`);
+
+    const navJson = JSON.stringify(dropdown);
+    for (const fallback of forbiddenFallbacks) {
+      assert.equal(navJson.includes(fallback), false, `${locale} dropdown should not expose "${fallback}"`);
+    }
+  }
+
+  assert.match(headerBarSource, /nav\.dropdown\.\$\{item\.key\}\.sections/);
+});
+
 test('marketing footer keeps crawlable Best-For hub and priority child links', () => {
   assert.equal(hrefPath(MARKETING_NAV_BEST_FOR_HUB.href), '/ai-video-engines/best-for');
   assert.deepEqual(
@@ -103,7 +139,7 @@ test('marketing footer separates Best-For use cases from popular comparisons', (
 test('marketing nav keeps logged-out state after an explicit workspace logout intent', () => {
   assert.match(marketingNavSource, /import \{ consumeLogoutIntent, setLogoutIntent \} from '@\/lib\/logout-intent';/);
   assert.match(marketingNavSource, /const logoutIntentActive = consumeLogoutIntent\(\);/);
-  assert.match(marketingNavSource, /if \(logoutIntentActive\) \{\s*markLoggedOut\(\);\s*void supabase\.auth\.signOut\(\)/s);
+  assert.match(marketingNavSource, /if \(logoutIntentActive\) \{\s*await supabase\.auth\.signOut\(\)\.catch\(\(\) => undefined\);\s*return;/s);
   assert.match(marketingNavSource, /if \(logoutIntentActive\) return;/);
 });
 

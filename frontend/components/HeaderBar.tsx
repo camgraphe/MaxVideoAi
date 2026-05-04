@@ -511,6 +511,7 @@ export function HeaderBar() {
               }
               const isOpen = desktopDropdownOpen === item.key;
               const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
+              const hasSections = Boolean(dropdown.sections?.length);
               return (
                 <div
                   key={item.href}
@@ -543,33 +544,72 @@ export function HeaderBar() {
                     <div
                       className={clsx(
                         'rounded-card border border-hairline bg-surface p-2 shadow-float',
-                        item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]'
+                        hasSections ? 'min-w-[520px] w-max' : item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]'
                       )}
                     >
-                      <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
-                        <Link
-                          href={resolveLocalizedHref(dropdown.allHref)}
-                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
-                          role="menuitem"
-                          onClick={() => closeDesktopDropdown(200)}
-                        >
-                          {allLabel}
-                        </Link>
-                        {dropdown.items.map((entry) => {
-                          const href = resolveLocalizedHref(entry.href);
+                      <div className={clsx('grid gap-3', hasSections ? 'grid-cols-[1fr_1fr]' : 'grid-cols-1')}>
+                        <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                          <Link
+                            href={resolveLocalizedHref(dropdown.allHref)}
+                            className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
+                            role="menuitem"
+                            onClick={() => closeDesktopDropdown(200)}
+                          >
+                            {allLabel}
+                          </Link>
+                          {dropdown.items.map((entry) => {
+                            const href = resolveLocalizedHref(entry.href);
+                            return (
+                              <Link
+                                key={entry.key}
+                                href={href}
+                                className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
+                                role="menuitem"
+                                onClick={() => closeDesktopDropdown(200)}
+                              >
+                                {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                              </Link>
+                            );
+                          })}
+                        </nav>
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
                           return (
-                            <Link
-                              key={entry.key}
-                              href={href}
-                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
-                              role="menuitem"
-                              onClick={() => closeDesktopDropdown(200)}
+                            <nav
+                              key={section.key}
+                              className="flex flex-col gap-1 border-l border-hairline pl-3"
+                              role="menu"
+                              aria-label={sectionLabel}
                             >
-                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
-                            </Link>
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => {
+                                const href = resolveLocalizedHref(entry.href);
+                                return (
+                                  <Link
+                                    key={entry.key}
+                                    href={href}
+                                    className={clsx(
+                                      'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap',
+                                      entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
+                                    )}
+                                    role="menuitem"
+                                    onClick={() => closeDesktopDropdown(200)}
+                                  >
+                                    {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                  </Link>
+                                );
+                              })}
+                            </nav>
                           );
                         })}
-                      </nav>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -879,6 +919,37 @@ export function HeaderBar() {
                             >
                               {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                             </Link>
+                          );
+                        })}
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
+                          return (
+                            <div key={section.key} className="mt-2 border-t border-hairline pt-2">
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => {
+                                const href = resolveLocalizedHref(entry.href);
+                                return (
+                                  <Link
+                                    key={entry.key}
+                                    href={href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={clsx(
+                                      'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                      entry.emphasized ? 'font-semibold text-text-primary' : undefined
+                                    )}
+                                  >
+                                    {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                  </Link>
+                                );
+                              })}
+                            </div>
                           );
                         })}
                       </div>
