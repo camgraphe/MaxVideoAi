@@ -4,6 +4,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
 import type { UpscaleMediaType, UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import { UpscaleToolError } from '@/server/tools/upscale';
+import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 type UpscaleRunner = (
   input: UpscaleToolRequest & {
@@ -61,6 +62,19 @@ export async function handleUpscaleToolRequest(
         },
       },
       { status: 401 }
+    );
+  }
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'account_restricted',
+          message: RESTRICTED_ACCOUNT_MESSAGE,
+        },
+      },
+      { status: 403 }
     );
   }
 

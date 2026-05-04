@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { executeImageGeneration, ImageGenerationExecutionError } from '@/server/images/execute-image-generation';
+import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 function respondError(
   mode: ImageGenerationRequest['mode'],
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return respondError('t2i', 'auth_required', 'Authentication required.', 401);
+  }
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return respondError('t2i', 'account_restricted', RESTRICTED_ACCOUNT_MESSAGE, 403);
   }
 
   try {

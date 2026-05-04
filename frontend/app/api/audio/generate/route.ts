@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { generateAudioRun, AudioGenerationError } from '@/server/audio/generate-audio';
+import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 export const runtime = 'nodejs';
 
@@ -9,6 +10,13 @@ export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 });
+  }
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return NextResponse.json(
+      { ok: false, error: 'account_restricted', message: RESTRICTED_ACCOUNT_MESSAGE },
+      { status: 403 }
+    );
   }
 
   const body = await req.json().catch(() => null);
@@ -47,4 +55,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

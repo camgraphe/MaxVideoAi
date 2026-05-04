@@ -5,6 +5,7 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolRequest, AngleToolNumericParams } from '@/types/tools-angle';
 import { runAngleTool, AngleToolError } from '@/server/tools/angle';
+import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 function parseParams(value: unknown): AngleToolNumericParams | null {
   if (!value || typeof value !== 'object') return null;
@@ -67,6 +68,19 @@ export async function POST(req: NextRequest) {
         },
       },
       { status: 401 }
+    );
+  }
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'account_restricted',
+          message: RESTRICTED_ACCOUNT_MESSAGE,
+        },
+      },
+      { status: 403 }
     );
   }
 

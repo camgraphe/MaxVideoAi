@@ -5,6 +5,7 @@ import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { FEATURES } from '@/content/feature-flags';
 import { CharacterBuilderError, runCharacterBuilder } from '@/server/tools/character-builder';
+import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 export async function POST(req: NextRequest) {
   if (!FEATURES.workflows.toolsSection) {
@@ -48,6 +49,19 @@ export async function POST(req: NextRequest) {
         },
       } satisfies CharacterBuilderResponse,
       { status: 401 }
+    );
+  }
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'account_restricted',
+          message: RESTRICTED_ACCOUNT_MESSAGE,
+        },
+      } satisfies CharacterBuilderResponse,
+      { status: 403 }
     );
   }
 

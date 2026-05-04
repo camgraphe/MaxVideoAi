@@ -25,6 +25,7 @@ import { extractGaClientId } from '@/server/ga4';
 import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
+import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -201,6 +202,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const userId = await resolveAuthenticatedUser();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    return NextResponse.json(buildRestrictedAccountPayload(), { status: 403 });
+  }
 
   let useMock = false;
   const databaseConfigured = Boolean(process.env.DATABASE_URL);

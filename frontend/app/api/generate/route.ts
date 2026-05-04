@@ -46,6 +46,7 @@ import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-
 import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
+import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   buildBytePlusSeedancePayload,
@@ -951,6 +952,11 @@ export async function POST(req: NextRequest) {
   }
   const userId = authenticatedUserId;
   metricState.userId = userId;
+  const restriction = await getActiveAccountRestriction(userId);
+  if (restriction) {
+    logMetric('rejected', { errorCode: 'ACCOUNT_RESTRICTED' });
+    return NextResponse.json(buildRestrictedAccountPayload(), { status: 403 });
+  }
   const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
   if (localKey && userId) {
     const existingJobs = await query<ExistingVideoJobRow>(
