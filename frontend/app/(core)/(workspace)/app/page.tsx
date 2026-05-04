@@ -8,6 +8,7 @@ import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
 import { supabase } from '@/lib/supabaseClient';
+import { getImageProps } from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
@@ -35,7 +36,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
-import type { VideoGroup } from '@/types/video-groups';
+import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import {
   mapSelectedPreviewToGroup,
   mapSharedVideoToGroup,
@@ -110,6 +111,55 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
   { ssr: false }
 );
+
+const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
+const COMPOSITE_PREVIEW_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
+  x1: 1,
+  x2: 2,
+  x3: 4,
+  x4: 4,
+};
+
+function isCompositePreviewVideoItem(item: VideoItem): boolean {
+  const hint = typeof item.meta?.mediaType === 'string' ? item.meta.mediaType.toLowerCase() : null;
+  if (hint === 'video') return true;
+  if (hint === 'image') return false;
+  const url = item.url.toLowerCase();
+  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
+}
+
+function getCompositePreviewPosterSrc(group: VideoGroup | null): string | null {
+  if (!group) return null;
+  const desired = COMPOSITE_PREVIEW_SLOT_COUNT[group.layout] ?? Math.min(group.items.length, 4);
+  const visibleItems = group.items.slice(0, desired);
+  const activeVideoItem = visibleItems.find((item) => item.thumb && isCompositePreviewVideoItem(item));
+  const fallbackItem = visibleItems.find((item) => item.thumb);
+  return activeVideoItem?.thumb ?? fallbackItem?.thumb ?? null;
+}
+
+function WorkspacePreviewPosterPreload({ src }: { src: string | null }) {
+  if (!src || isPlaceholderMediaUrl(src)) return null;
+
+  const { props } = getImageProps({
+    src,
+    alt: '',
+    width: 960,
+    height: 540,
+    priority: true,
+    sizes: COMPOSITE_PREVIEW_POSTER_SIZES,
+  });
+
+  return (
+    <link
+      rel="preload"
+      as="image"
+      href={props.src}
+      imageSrcSet={props.srcSet}
+      imageSizes={props.sizes}
+      fetchPriority="high"
+    />
+  );
+}
 
 function CompositePreviewDockSkeleton() {
   return (
@@ -2466,6 +2516,7 @@ useEffect(() => {
   const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
   const selectedPreviewGroup = useMemo(() => mapSelectedPreviewToGroup(selectedPreview, provider), [selectedPreview, provider]);
   const displayCompositeGroup = compositeGroup ?? selectedPreviewGroup ?? null;
+  const compositePreviewPosterSrc = useMemo(() => getCompositePreviewPosterSrc(displayCompositeGroup), [displayCompositeGroup]);
 
   useEffect(() => {
     if (compositeOverrideSummary) {
@@ -6714,6 +6765,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   </div>
                 )
               ) : null}
+              <WorkspacePreviewPosterPreload src={compositePreviewPosterSrc} />
               <CompositePreviewDock
                 group={displayCompositeGroup}
                 isLoading={isGenerationLoading && !displayCompositeGroup}
