@@ -97,6 +97,10 @@ function setFromSlugs(entries, key = 'modelSlug') {
   return new Set(entries.map((entry) => entry?.[key]).filter((slug) => typeof slug === 'string' && slug.length));
 }
 
+function hasPublishedModelPage(entry) {
+  return entry?.surfaces?.modelPage?.indexable !== false || entry?.surfaces?.modelPage?.includeInSitemap !== false;
+}
+
 function diffSet(left, right) {
   const missing = [];
   left.forEach((value) => {
@@ -778,7 +782,8 @@ async function main() {
     LOCALES.map(async (locale) => ({ locale, slugs: await loadLocaleContentSlugs(locale) }))
   );
 
-  const catalogSlugs = setFromSlugs(catalog, 'modelSlug');
+  const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
+  const catalogSlugs = setFromSlugs(publicCatalog, 'modelSlug');
   const rosterSlugs = setFromSlugs(roster, 'modelSlug');
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
 
