@@ -29,7 +29,7 @@ export interface GalleryFeedState {
   sampleOnly: boolean;
 }
 
-interface Props {
+export interface GalleryRailProps {
   engine: EngineCaps;
   engineRegistry?: EngineCaps[];
   feedType?: 'video' | 'image';
@@ -75,9 +75,9 @@ const DEFAULT_GALLERY_COPY = {
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 const INITIAL_EAGER_PREVIEW_COUNT = 0;
-const BACKGROUND_WARM_PREVIEW_LIMIT = 10;
+const DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT = 2;
 const BACKGROUND_WARM_START_DELAY_MS = 200;
-const BACKGROUND_WARM_STEP_DELAY_MS = 550;
+const BACKGROUND_WARM_STEP_DELAY_MS = 900;
 
 type NavigatorWithConnection = Navigator & {
   connection?: {
@@ -86,14 +86,15 @@ type NavigatorWithConnection = Navigator & {
   };
 };
 
-function resolveBackgroundWarmPreviewLimit(): number {
-  if (typeof navigator === 'undefined') return BACKGROUND_WARM_PREVIEW_LIMIT;
+function resolveBackgroundWarmPreviewLimit(variant: GalleryVariant): number {
+  if (variant !== 'desktop') return 0;
+  if (typeof navigator === 'undefined') return DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT;
   const connection = (navigator as NavigatorWithConnection).connection;
   if (connection?.saveData) return 0;
   const effectiveType = connection?.effectiveType;
   if (effectiveType === 'slow-2g' || effectiveType === '2g') return 1;
-  if (effectiveType === '3g') return 4;
-  return BACKGROUND_WARM_PREVIEW_LIMIT;
+  if (effectiveType === '3g') return 1;
+  return DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT;
 }
 
 function resolveDisplayedActiveGroup(
@@ -127,7 +128,7 @@ export function GalleryRail({
   onFeedStateChange,
   jobFilter,
   variant = 'desktop',
-}: Props) {
+}: GalleryRailProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
   const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
@@ -235,7 +236,10 @@ export function GalleryRail({
     };
     const handlePrimaryReady = () => {
       clearTimers();
-      const targetCount = Math.min(resolveBackgroundWarmPreviewLimit(), Math.max(INITIAL_EAGER_PREVIEW_COUNT, renderedGroups.length));
+      const targetCount = Math.min(
+        resolveBackgroundWarmPreviewLimit(variant),
+        Math.max(INITIAL_EAGER_PREVIEW_COUNT, renderedGroups.length)
+      );
       for (let count = INITIAL_EAGER_PREVIEW_COUNT + 1; count <= targetCount; count += 1) {
         const delay =
           BACKGROUND_WARM_START_DELAY_MS +
@@ -257,7 +261,7 @@ export function GalleryRail({
       clearTimers();
       window.removeEventListener(PRIMARY_VIDEO_READY_EVENT, handlePrimaryReady);
     };
-  }, [feedType, renderedGroups.length]);
+  }, [feedType, renderedGroups.length, variant]);
   const sampleOnly = useMemo(
     () => renderedGroups.length > 0 && renderedGroups.every((group) => group.hero.job?.curated === true),
     [renderedGroups]
@@ -689,7 +693,7 @@ export function GalleryRail({
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
-            warmOnVisible={feedType === 'video'}
+            warmOnVisible={false}
           />
         );
       })}

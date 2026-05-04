@@ -1,9 +1,8 @@
 'use client';
 
 import clsx from 'clsx';
-import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ChangeEvent } from 'react';
+import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
@@ -27,9 +26,9 @@ import {
 } from '@/components/Composer';
 import type { KlingElementState, KlingElementAsset, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
-import { GalleryRail, type GalleryFeedState } from '@/components/GalleryRail';
+import type { GalleryFeedState, GalleryRailProps } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
-import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
+import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -54,7 +53,7 @@ import { readLastKnownUserId } from '@/lib/last-known';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import type { AssetLibraryBrowserProps } from '@/components/library/AssetLibraryBrowser';
+import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -86,15 +85,55 @@ import {
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
 
-const AssetLibraryBrowser = dynamic<AssetLibraryBrowserProps>(
-  () => import('@/components/library/AssetLibraryBrowser').then((mod) => mod.AssetLibraryBrowser),
+const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
+  () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
   { ssr: false }
+);
+
+const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
+  () => import('@/components/groups/CompositePreviewDock').then((mod) => mod.CompositePreviewDock),
+  {
+    ssr: false,
+    loading: () => <CompositePreviewDockSkeleton />,
+  }
+);
+
+const GalleryRail = dynamic<GalleryRailProps>(
+  () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
+  {
+    ssr: false,
+    loading: () => <GalleryRailSkeleton />,
+  }
 );
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
   { ssr: false }
 );
+
+function CompositePreviewDockSkeleton() {
+  return (
+    <div className="rounded-card border border-border bg-surface-glass-60 p-4" aria-hidden>
+      <div className="mx-auto aspect-video w-full max-w-[760px] overflow-hidden rounded-card bg-skeleton" />
+      <div className="mx-auto mt-3 flex w-full max-w-[760px] gap-2">
+        <div className="h-8 w-32 rounded-full bg-skeleton" />
+        <div className="h-8 w-24 rounded-full bg-skeleton" />
+      </div>
+    </div>
+  );
+}
+
+function GalleryRailSkeleton() {
+  return (
+    <div className="w-full rounded-card border border-border bg-surface-glass-60 p-3" aria-hidden>
+      <div className="mb-3 h-4 w-24 rounded-full bg-skeleton" />
+      <div className="space-y-3">
+        <div className="aspect-video rounded-card bg-skeleton" />
+        <div className="aspect-video rounded-card bg-skeleton" />
+      </div>
+    </div>
+  );
+}
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -214,21 +253,6 @@ type AssetPickerTarget =
   | { kind: 'field'; field: EngineInputField; slotIndex?: number }
   | { kind: 'kling'; elementId: string; slot: 'frontal' | 'reference'; slotIndex?: number };
 
-type AssetLibraryModalProps = {
-  fieldLabel: string;
-  assetType: AssetLibraryKind;
-  assets: UserAsset[];
-  isLoading: boolean;
-  error: string | null;
-  onClose: () => void;
-  onSelect: (asset: UserAsset) => void;
-  source: AssetLibrarySource;
-  onSourceChange: (source: AssetLibrarySource) => void;
-  onRefresh: (source?: AssetLibrarySource) => void;
-  onDelete: (asset: UserAsset) => Promise<void> | void;
-  deletingAssetId: string | null;
-};
-
 function buildAssetLibraryCacheKey(kind: AssetLibraryKind, source: AssetLibrarySource): string {
   return `${kind}:${source}`;
 }
@@ -298,6 +322,26 @@ const DEFAULT_WORKSPACE_COPY = {
     },
   },
 } as const;
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function mergeCopy<T extends Record<string, unknown>>(defaults: T, overrides?: Partial<T> | null): T {
+  if (!isPlainRecord(overrides)) return defaults;
+  const next: Record<string, unknown> = { ...defaults };
+  Object.entries(overrides).forEach(([key, overrideValue]) => {
+    const defaultValue = next[key];
+    if (isPlainRecord(defaultValue) && isPlainRecord(overrideValue)) {
+      next[key] = mergeCopy(defaultValue, overrideValue);
+      return;
+    }
+    if (overrideValue !== undefined) {
+      next[key] = overrideValue;
+    }
+  });
+  return next as T;
+}
 
 function normalizeEngineToken(value?: string | null): string {
   if (typeof value !== 'string' || value.length === 0) return '';
@@ -424,270 +468,6 @@ function matchesEngineToken(engine: EngineCaps, token: string): boolean {
   const slug = normalizeEngineToken(engine.providerMeta?.modelSlug);
   if (slug && slug === token) return true;
   return false;
-}
-
-function AssetLibraryModal({
-  fieldLabel,
-  assetType,
-  assets,
-  isLoading,
-  error,
-  onClose,
-  onSelect,
-  source,
-  onSourceChange,
-  onRefresh,
-  onDelete,
-  deletingAssetId,
-}: AssetLibraryModalProps) {
-  const { t, locale } = useI18n();
-  const uiLocale = normalizeUiLocale(locale);
-  const rawCopy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary);
-  const copyAssetLibrary = useMemo(
-    () =>
-      deepmerge(
-        DEFAULT_WORKSPACE_COPY.assetLibrary,
-        (rawCopy ?? {}) as Partial<typeof DEFAULT_WORKSPACE_COPY.assetLibrary>
-      ),
-    [rawCopy]
-  );
-  const importLabel = copyAssetLibrary.import ?? DEFAULT_WORKSPACE_COPY.assetLibrary.import;
-  const importingLabel = copyAssetLibrary.importing ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importing;
-  const importFailedLabel = copyAssetLibrary.importFailed ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importFailed;
-  const importAccept = assetType === 'video' ? 'video/*' : 'image/*';
-  const importEndpoint = assetType === 'video' ? '/api/uploads/video' : '/api/uploads/image';
-  const emptyLabel =
-    source === 'generated'
-      ? assetType === 'video'
-        ? uiLocale === 'fr'
-          ? "Aucune vidéo générée pour l’instant. Lancez un rendu vidéo pour la réutiliser ici."
-          : uiLocale === 'es'
-            ? 'Aún no hay videos generados. Renderiza un video para reutilizarlo aquí.'
-            : 'No generated videos yet. Render a video to reuse it here.'
-        : copyAssetLibrary.emptyGenerated
-      : source === 'upload'
-        ? assetType === 'video'
-          ? uiLocale === 'fr'
-            ? "Aucune vidéo uploadée pour l’instant. Importez une vidéo source pour la voir ici."
-            : uiLocale === 'es'
-              ? 'Aún no hay videos subidos. Sube un video fuente para verlo aquí.'
-              : 'No uploaded videos yet. Upload a source video to see it here.'
-        : copyAssetLibrary.emptyUploads
-      : source === 'character'
-        ? copyAssetLibrary.emptyCharacter
-      : source === 'angle'
-        ? copyAssetLibrary.emptyAngle
-      : source === 'upscale'
-        ? copyAssetLibrary.emptyUpscale
-        : assetType === 'video'
-          ? uiLocale === 'fr'
-            ? "Aucune vidéo enregistrée pour l’instant. Importez ou générez une vidéo pour la voir ici."
-            : uiLocale === 'es'
-              ? 'Aún no hay videos guardados. Sube o genera un video para verlo aquí.'
-              : 'No saved videos yet. Upload or generate a video to see it here.'
-          : copyAssetLibrary.empty;
-  const [isImporting, setIsImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const importInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImportChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.currentTarget.files?.[0] ?? null;
-      event.currentTarget.value = '';
-      if (!file) return;
-
-      setImportError(null);
-      setIsImporting(true);
-      try {
-        const preparedFile =
-          assetType === 'image'
-            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-            : file;
-        const formData = new FormData();
-        formData.append('file', preparedFile, preparedFile.name);
-        const response = await authFetch(importEndpoint, {
-          method: 'POST',
-          body: formData,
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-          throw createUploadFailure(assetType, response.status, payload, importFailedLabel);
-        }
-
-        const uploadedAsset = payload.asset as {
-          id?: string;
-          url: string;
-          width?: number | null;
-          height?: number | null;
-          size?: number | null;
-          mime?: string | null;
-        };
-
-        onSelect({
-          id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
-          url: uploadedAsset.url,
-          kind: assetType,
-          width: uploadedAsset.width ?? null,
-          height: uploadedAsset.height ?? null,
-          size: uploadedAsset.size ?? null,
-          mime: uploadedAsset.mime ?? null,
-          canDelete: true,
-        });
-      } catch (error) {
-        setImportError(getUploadFailureMessage(assetType, error, importFailedLabel));
-      } finally {
-        setIsImporting(false);
-      }
-    },
-    [assetType, importEndpoint, importFailedLabel, onSelect]
-  );
-  const sourceOptions = assetType === 'video'
-    ? (['all', 'upload', 'generated', 'upscale'] as const)
-    : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
-  const searchPlaceholder =
-    copyAssetLibrary.searchPlaceholder ??
-    (uiLocale === 'fr' ? 'Rechercher des assets…' : uiLocale === 'es' ? 'Buscar assets…' : 'Search assets…');
-  const sourcesTitle =
-    copyAssetLibrary.sourcesTitle ?? (uiLocale === 'fr' ? 'Bibliothèque' : uiLocale === 'es' ? 'Biblioteca' : 'Library');
-  const toolsTitle =
-    copyAssetLibrary.toolsTitle ??
-    (uiLocale === 'fr' ? 'Créer ou transformer' : uiLocale === 'es' ? 'Crear o transformar' : 'Create or transform');
-  const toolsDescription =
-    copyAssetLibrary.toolsDescription ??
-    (uiLocale === 'fr'
-      ? 'Ouvrez un autre workspace pour préparer une meilleure source avant de l’importer ici.'
-      : uiLocale === 'es'
-        ? 'Abre otro workspace para preparar una mejor fuente antes de importarla aquí.'
-        : 'Open another workspace to prepare a better source before importing it here.');
-  const emptySearchLabel =
-    copyAssetLibrary.emptySearch ??
-    (uiLocale === 'fr' ? 'Aucun asset ne correspond à cette recherche.' : uiLocale === 'es' ? 'Ningún asset coincide con esta búsqueda.' : 'No assets match this search.');
-  const shortcutLabels = {
-    createImage:
-      copyAssetLibrary.shortcuts?.createImage ??
-      (uiLocale === 'fr' ? 'Créer une image' : uiLocale === 'es' ? 'Crear imagen' : 'Create image'),
-    changeAngle:
-      copyAssetLibrary.shortcuts?.changeAngle ??
-      (uiLocale === 'fr' ? 'Changer l’angle' : uiLocale === 'es' ? 'Cambiar ángulo' : 'Change angle'),
-    characterBuilder:
-      copyAssetLibrary.shortcuts?.characterBuilder ??
-      (uiLocale === 'fr' ? 'Character Builder' : uiLocale === 'es' ? 'Character Builder' : 'Character builder'),
-    upscale:
-      copyAssetLibrary.shortcuts?.upscale ??
-      (uiLocale === 'fr' ? 'Upscale' : uiLocale === 'es' ? 'Upscale' : 'Upscale'),
-  };
-  const browserToolLinks =
-    assetType === 'image'
-      ? [
-          { href: '/app/image', label: shortcutLabels.createImage },
-          { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
-          { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
-          { href: '/app/tools/upscale', label: shortcutLabels.upscale },
-        ]
-      : [];
-
-  return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-50 px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-4">
-      <div className="absolute inset-0" role="presentation" onClick={onClose} />
-      <input
-        ref={importInputRef}
-        type="file"
-        accept={importAccept}
-        className="sr-only"
-        onChange={handleImportChange}
-      />
-      <AssetLibraryBrowser
-        className="relative z-10 h-[92svh] max-w-[1240px] sm:h-[84vh]"
-        title={copyAssetLibrary.title}
-        subtitle={fieldLabel}
-        onClose={onClose}
-        closeLabel={copyAssetLibrary.close}
-        assetType={assetType}
-        assets={assets}
-        isLoading={isLoading}
-        error={importError ?? error}
-        source={source}
-        availableSources={[...sourceOptions]}
-        sourceLabels={copyAssetLibrary.tabs}
-        onSourceChange={onSourceChange}
-        searchPlaceholder={searchPlaceholder}
-        sourcesTitle={sourcesTitle}
-        emptyLabel={emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.')}
-        emptySearchLabel={emptySearchLabel}
-        toolsTitle={assetType === 'image' ? toolsTitle : undefined}
-        toolsDescription={assetType === 'image' ? toolsDescription : undefined}
-        toolLinks={browserToolLinks}
-        headerActions={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-              disabled={isImporting}
-              onClick={() => importInputRef.current?.click()}
-            >
-              {isImporting ? importingLabel : importLabel}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-              onClick={() => onRefresh(source)}
-            >
-              {copyAssetLibrary.refresh}
-            </Button>
-          </>
-        }
-        renderAssetActions={(asset) => {
-          const isDeleting = deletingAssetId === asset.id;
-          const canDelete = asset.canDelete !== false && !asset.id.startsWith('job:');
-          return (
-            <>
-              {canDelete ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className={clsx(
-                    'min-h-[34px] flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro focus-visible:ring-error-border sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                    isDeleting
-                      ? 'border-error-border bg-error-bg text-error opacity-70'
-                      : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
-                  )}
-                  onClick={() => {
-                    const result = onDelete(asset);
-                    if (result && typeof result.then === 'function') {
-                      void result.catch(() => {
-                        // errors handled upstream
-                      });
-                    }
-                  }}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting…' : 'Delete'}
-                </Button>
-              ) : null}
-              <Button
-                type="button"
-                onClick={() => onSelect(asset)}
-                disabled={isDeleting}
-                variant="primary"
-                size="sm"
-                className={clsx(
-                  'min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                  isDeleting ? 'opacity-60' : 'hover:bg-brandHover'
-                )}
-              >
-                Use
-              </Button>
-            </>
-          );
-        }}
-      />
-    </div>
-  );
 }
 
 const DESKTOP_RAIL_MIN_WIDTH = 1088;
@@ -1478,7 +1258,7 @@ export default function Page() {
   const rawWorkspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY);
   const workspaceCopy = useMemo(
     () =>
-      deepmerge(
+      mergeCopy(
         DEFAULT_WORKSPACE_COPY,
         (rawWorkspaceCopy ?? {}) as Partial<typeof DEFAULT_WORKSPACE_COPY>
       ),
