@@ -6,7 +6,6 @@ import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { ChevronDown, Image as ImageIcon, ListVideo, Moon, Sparkles, Sun, Wallet } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -23,6 +22,7 @@ import {
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 function resolveLocalizedHref(href: LocalizedLinkHref): string {
   if (typeof href === 'string') {
@@ -63,6 +63,11 @@ const GUEST_MOBILE_NAV_ICONS = {
   'generate-image': ImageIcon,
   jobs: ListVideo,
 } as const;
+
+async function getSupabaseClient() {
+  const { supabase } = await import('@/lib/supabaseClient');
+  return supabase;
+}
 
 export function HeaderBar() {
   const { locale, t } = useI18n();
@@ -164,59 +169,8 @@ export function HeaderBar() {
         // Keep last known values on transient failures.
       }
     };
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!mounted) return;
-        const session = data.session ?? null;
-        const userId = session?.user?.id ?? null;
-        if (userId) {
-          writeLastKnownUserId(userId);
-        }
-        setEmail(session?.user?.email ?? null);
-        if (!userId) {
-          setWallet(null);
-          setIsAdmin(false);
-        }
-        setAuthResolved(true);
-        if (userId) {
-          void fetchAccountState(session?.access_token, userId);
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setEmail(null);
-          setWallet(null);
-          setIsAdmin(false);
-          setAuthResolved(true);
-        }
-      });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      const eventType = event as string;
-      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-        clearLastKnownAccount();
-        writeLastKnownUserId(null);
-        setEmail(null);
-        setWallet(null);
-        setIsAdmin(false);
-        setAuthResolved(true);
-        return;
-      }
-      const userId = session?.user?.id ?? null;
-      if (userId) {
-        writeLastKnownUserId(userId);
-      } else {
-        setWallet(null);
-        setIsAdmin(false);
-      }
-      setEmail(session?.user?.email ?? null);
-      setAuthResolved(true);
-      if (userId) {
-        void fetchAccountState(session?.access_token, userId);
-      }
-    });
     const handleInvalidate = async () => {
+      const supabase = await getSupabaseClient();
       const { data } = await supabase.auth.getSession();
       const session = data.session ?? null;
       const userId = session?.user?.id ?? null;
@@ -229,16 +183,95 @@ export function HeaderBar() {
       }
       await fetchAccountState(session?.access_token, userId);
     };
+    let subscription: { subscription: { unsubscribe: () => void } } | null = null;
+    if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+      setEmail(null);
+      setWallet(null);
+      setIsAdmin(false);
+      setAuthResolved(true);
+      window.addEventListener('wallet:invalidate', handleInvalidate);
+      return () => {
+        mounted = false;
+        window.removeEventListener('wallet:invalidate', handleInvalidate);
+      };
+    }
+    void getSupabaseClient()
+      .then((supabase) => {
+        if (!mounted) return;
+        supabase.auth
+          .getSession()
+          .then(({ data }) => {
+            if (!mounted) return;
+            const session = data.session ?? null;
+            const userId = session?.user?.id ?? null;
+            if (userId) {
+              writeLastKnownUserId(userId);
+            }
+            setEmail(session?.user?.email ?? null);
+            if (!userId) {
+              setWallet(null);
+              setIsAdmin(false);
+            }
+            setAuthResolved(true);
+            if (userId) {
+              void fetchAccountState(session?.access_token, userId);
+            }
+          })
+          .catch(() => {
+            if (mounted) {
+              setEmail(null);
+              setWallet(null);
+              setIsAdmin(false);
+              setAuthResolved(true);
+            }
+          });
+        const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (!mounted) return;
+          const eventType = event as string;
+          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+            clearLastKnownAccount();
+            writeLastKnownUserId(null);
+            setEmail(null);
+            setWallet(null);
+            setIsAdmin(false);
+            setAuthResolved(true);
+            return;
+          }
+          const userId = session?.user?.id ?? null;
+          if (userId) {
+            writeLastKnownUserId(userId);
+          } else {
+            setWallet(null);
+            setIsAdmin(false);
+          }
+          setEmail(session?.user?.email ?? null);
+          setAuthResolved(true);
+          if (userId) {
+            void fetchAccountState(session?.access_token, userId);
+          }
+        });
+        subscription = sub;
+      })
+      .catch(() => {
+        if (mounted) {
+          setEmail(null);
+          setWallet(null);
+          setIsAdmin(false);
+          setAuthResolved(true);
+        }
+      });
     window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
+      subscription?.subscription.unsubscribe();
       window.removeEventListener('wallet:invalidate', handleInvalidate);
     };
   }, []);
 
   const sendSignOutRequest = () => {
-    void supabase.auth.signOut().catch(() => undefined);
+    void getSupabaseClient()
+      .then((supabase) => supabase.auth.signOut())
+      .catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([payload], { type: 'application/json' });

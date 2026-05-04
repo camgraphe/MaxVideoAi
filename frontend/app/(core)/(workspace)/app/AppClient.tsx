@@ -7,8 +7,7 @@ import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, s
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
-import { supabase } from '@/lib/supabaseClient';
-import Image, { getImageProps } from 'next/image';
+import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
@@ -134,30 +133,6 @@ function getCompositePreviewPosterSrc(group: VideoGroup | null): string | null {
   const activeVideoItem = visibleItems.find((item) => item.thumb && isCompositePreviewVideoItem(item));
   const fallbackItem = visibleItems.find((item) => item.thumb);
   return activeVideoItem?.thumb ?? fallbackItem?.thumb ?? null;
-}
-
-function WorkspacePreviewPosterPreload({ src }: { src: string | null }) {
-  if (!src || isPlaceholderMediaUrl(src)) return null;
-
-  const { props } = getImageProps({
-    src,
-    alt: '',
-    width: 960,
-    height: 540,
-    priority: true,
-    sizes: COMPOSITE_PREVIEW_POSTER_SIZES,
-  });
-
-  return (
-    <link
-      rel="preload"
-      as="image"
-      href={props.src}
-      imageSrcSet={props.srcSet}
-      imageSizes={props.sizes}
-      fetchPriority="high"
-    />
-  );
 }
 
 function CompositePreviewDockSkeleton() {
@@ -298,7 +273,6 @@ function WorkspaceBootContent({
     <div className="stack-gap-lg">
       {initialPreviewGroup ? (
         <>
-          <WorkspacePreviewPosterPreload src={posterSrc} />
           <CompositePreviewDock
             group={initialPreviewGroup}
             isLoading={false}
@@ -5399,6 +5373,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
+    const { supabase } = await import('@/lib/supabaseClient');
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token ?? null;
     if (!token) {
@@ -6936,7 +6911,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   </div>
                 )
               ) : null}
-              <WorkspacePreviewPosterPreload src={compositePreviewPosterSrc} />
               <CompositePreviewDock
                 group={displayCompositeGroup}
                 isLoading={isGenerationLoading && !displayCompositeGroup}

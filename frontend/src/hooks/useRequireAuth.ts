@@ -3,7 +3,6 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 import {
   disableClarityForVisitor,
   enableClarityForVisitor,
@@ -13,6 +12,7 @@ import {
 } from '@/lib/clarity-client';
 import { consumeLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 type RequireAuthResult = {
   userId: string | null;
@@ -32,12 +32,17 @@ const AUTH_FOCUS_THROTTLE_MS = 2000;
 
 let refreshPromise: Promise<Session | null> | null = null;
 
+async function getSupabaseClient() {
+  const { supabase } = await import('@/lib/supabaseClient');
+  return supabase;
+}
+
 async function refreshSessionOnce(): Promise<Session | null> {
   if (refreshPromise) {
     return refreshPromise;
   }
-  refreshPromise = supabase.auth
-    .refreshSession()
+  refreshPromise = getSupabaseClient()
+    .then((supabase) => supabase.auth.refreshSession())
     .then(({ data }) => data.session ?? null)
     .catch(() => null)
     .finally(() => {
@@ -151,6 +156,11 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
     }
     const run = (async () => {
       try {
+        if (!lastKnownUserIdRef.current && !hasSupabaseAuthCookie()) {
+          markLoggedOut();
+          return;
+        }
+        const supabase = await getSupabaseClient();
         const sessionResult = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
         if (cancelledRef.current) return;
         let nextSession = sessionResult.data.session ?? null;
@@ -210,35 +220,42 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
     cancelledRef.current = false;
     void ensureSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (cancelledRef.current) return;
-      const eventType = event as string;
-      if (newSession?.user) {
-        applySession(newSession);
-        return;
-      }
-      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-        markLoggedOut();
-        return;
-      }
-      const sessionResult = await supabase.auth.getSession().catch(() => null);
-      if (cancelledRef.current) return;
-      const recoveredSession = sessionResult?.data?.session ?? null;
-      if (recoveredSession?.user) {
-        applySession(recoveredSession);
-        return;
-      }
-      const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);
-      if (hasLastKnownUser) {
-        markRefreshing();
-        if (!initialResolvedRef.current) {
-          setLoading(false);
-          initialResolvedRef.current = true;
-        }
-        return;
-      }
-      markLoggedOut();
-    });
+    let subscription: { subscription: { unsubscribe: () => void } } | null = null;
+    if (lastKnownUserIdRef.current || hasSupabaseAuthCookie()) {
+      void getSupabaseClient().then((supabase) => {
+        if (cancelledRef.current) return;
+        const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+          if (cancelledRef.current) return;
+          const eventType = event as string;
+          if (newSession?.user) {
+            applySession(newSession);
+            return;
+          }
+          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+            markLoggedOut();
+            return;
+          }
+          const sessionResult = await supabase.auth.getSession().catch(() => null);
+          if (cancelledRef.current) return;
+          const recoveredSession = sessionResult?.data?.session ?? null;
+          if (recoveredSession?.user) {
+            applySession(recoveredSession);
+            return;
+          }
+          const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);
+          if (hasLastKnownUser) {
+            markRefreshing();
+            if (!initialResolvedRef.current) {
+              setLoading(false);
+              initialResolvedRef.current = true;
+            }
+            return;
+          }
+          markLoggedOut();
+        });
+        subscription = data;
+      });
+    }
 
     return () => {
       cancelledRef.current = true;

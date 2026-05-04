@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
-import { supabase } from '@/lib/supabaseClient';
 import { authFetch } from '@/lib/authFetch';
 import { readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { Job, JobsPage } from '@/types/jobs';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -20,6 +20,11 @@ import type { JobSurface } from '@/types/billing';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
+
+async function getSupabaseClient() {
+  const { supabase } = await import('@/lib/supabaseClient');
+  return supabase;
+}
 
 function toPrimitive(value: unknown): PrimitiveValue {
   if (value == null) return value as null | undefined;
@@ -325,6 +330,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         setCacheKey('anonymous');
         return;
       }
+      const knownUserId = lastKnownUserIdRef.current ?? readLastKnownUserId();
+      if (!knownUserId && !hasSupabaseAuthCookie()) {
+        setCacheKey('anonymous');
+        return;
+      }
+      const supabase = await getSupabaseClient();
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       const userId = data.session?.user?.id ?? null;
@@ -347,25 +358,31 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       setCacheKey('anonymous');
     };
     void updateCacheKey();
-    const subscription = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (cancelled) return;
-      const eventType = event as string;
-      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-        await updateCacheKey(true);
-        return;
-      }
-      const nextUserId = session?.user?.id ?? null;
-      if (nextUserId) {
-        lastKnownUserIdRef.current = nextUserId;
-        writeLastKnownUserId(nextUserId);
-        setCacheKey(nextUserId);
-        return;
-      }
-      await updateCacheKey();
-    });
+    let subscription: { data?: { subscription?: { unsubscribe: () => void } } } | null = null;
+    if (lastKnownUserIdRef.current || readLastKnownUserId() || hasSupabaseAuthCookie()) {
+      void getSupabaseClient().then((supabase) => {
+        if (cancelled) return;
+        subscription = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (cancelled) return;
+          const eventType = event as string;
+          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+            await updateCacheKey(true);
+            return;
+          }
+          const nextUserId = session?.user?.id ?? null;
+          if (nextUserId) {
+            lastKnownUserIdRef.current = nextUserId;
+            writeLastKnownUserId(nextUserId);
+            setCacheKey(nextUserId);
+            return;
+          }
+          await updateCacheKey();
+        });
+      });
+    }
     return () => {
       cancelled = true;
-      subscription.data?.subscription?.unsubscribe();
+      subscription?.data?.subscription?.unsubscribe();
     };
   }, []);
 
