@@ -41,7 +41,7 @@ const DEFAULT_PREVIEW_COPY = {
 
 type PreviewCopy = typeof DEFAULT_PREVIEW_COPY;
 
-interface CompositePreviewDockProps {
+export interface CompositePreviewDockProps {
   group: VideoGroup | null;
   isLoading?: boolean;
   onOpenModal?: (group: VideoGroup) => void;
