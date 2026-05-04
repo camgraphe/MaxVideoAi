@@ -11,7 +11,7 @@ import { translateError } from '@/lib/error-messages';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { normalizeUiLocale } from '@/lib/ltx-localization';
 
-export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
+export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
 export type AssetLibraryKind = 'image' | 'video';
 
 export type UserAsset = {
@@ -25,6 +25,8 @@ export type UserAsset = {
   source?: string | null;
   createdAt?: string;
   canDelete?: boolean;
+  jobId?: string | null;
+  sourceOutputId?: string | null;
 };
 
 export type AssetLibraryModalProps = {
@@ -66,6 +68,7 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
   empty: 'No saved images yet. Upload a reference image to see it here.',
   emptyUploads: 'No uploaded images yet. Upload a reference image to see it here.',
   emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
+  emptyRecent: 'No recent outputs yet. Run a generation to reuse an output here.',
   emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
   emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
   emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
@@ -73,6 +76,7 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
     all: 'All',
     upload: 'Uploaded',
     generated: 'Generated',
+    recent: 'Recent outputs',
     character: 'Character',
     angle: 'Angle',
     upscale: 'Upscale',
@@ -221,7 +225,15 @@ export function AssetLibraryModal({
   const importAccept = assetType === 'video' ? 'video/*' : 'image/*';
   const importEndpoint = assetType === 'video' ? '/api/uploads/video' : '/api/uploads/image';
   const emptyLabel =
-    source === 'generated'
+    source === 'recent'
+      ? assetType === 'video'
+        ? uiLocale === 'fr'
+          ? "Aucune sortie recente pour l'instant. Lancez un rendu pour reutiliser une video ici."
+          : uiLocale === 'es'
+            ? 'Aun no hay salidas recientes. Renderiza un video para reutilizarlo aqui.'
+            : copyAssetLibrary.emptyRecent
+        : copyAssetLibrary.emptyRecent
+    : source === 'generated'
       ? assetType === 'video'
         ? uiLocale === 'fr'
           ? "Aucune video generee pour l'instant. Lancez un rendu video pour la reutiliser ici."
@@ -307,7 +319,7 @@ export function AssetLibraryModal({
   );
 
   const sourceOptions = assetType === 'video'
-    ? (['all', 'upload', 'generated', 'upscale'] as const)
+    ? (['all', 'upload', 'recent', 'generated', 'upscale'] as const)
     : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
   const searchPlaceholder =
     copyAssetLibrary.searchPlaceholder ??

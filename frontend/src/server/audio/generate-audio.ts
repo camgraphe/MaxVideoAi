@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { upsertLegacyJobOutputs } from '@/server/media-library';
 
 import {
   AUDIO_MAX_DURATION_SEC,
@@ -941,6 +942,21 @@ export async function generateAudioRun(params: {
       hasAudio: true,
       paymentStatus: 'paid_wallet',
       settingsSnapshotJson: finalSettingsSnapshotJson,
+    });
+
+    await upsertLegacyJobOutputs({
+      job_id: jobId,
+      user_id: params.userId,
+      surface: 'audio',
+      video_url: uploadedVideoUrl,
+      audio_url: uploadedAudioUrl,
+      thumb_url: uploadedThumbUrl ?? initialThumb,
+      preview_frame: uploadedThumbUrl ?? initialThumb,
+      render_ids: null,
+      duration_sec: durationSec,
+      status: 'completed',
+    }).catch((outputError) => {
+      console.warn('[audio] failed to persist job outputs', { jobId }, outputError);
     });
 
     return {

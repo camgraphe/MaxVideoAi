@@ -5,6 +5,7 @@ import { uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
+import { ensureReusableAsset } from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
@@ -200,6 +201,19 @@ export async function POST(req: NextRequest) {
         normalizedFromMime,
         contentSha256,
       },
+    });
+
+    await ensureReusableAsset({
+      userId,
+      url: uploadResult.url,
+      kind: 'image',
+      source: 'upload',
+      mimeType: uploadResult.mime,
+      width: uploadResult.width,
+      height: uploadResult.height,
+      sizeBytes: uploadResult.size,
+    }).catch((error) => {
+      console.warn('[upload] failed to mirror image into media_assets', error);
     });
 
     return NextResponse.json({

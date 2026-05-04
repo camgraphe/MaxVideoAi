@@ -69,6 +69,7 @@ interface LibraryCopy {
     all: string;
     upload: string;
     generated: string;
+    recent: string;
     character: string;
     angle: string;
     upscale: string;
@@ -123,6 +124,7 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     all: 'All images',
     upload: 'Uploaded images',
     generated: 'Generated images',
+    recent: 'Recent outputs',
     character: 'Character assets',
     angle: 'Angle assets',
     upscale: 'Upscale assets',
@@ -201,7 +203,7 @@ export default function LibraryPage() {
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
-  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale'>('all');
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale'>('all');
   const assetsKey = user
     ? activeSource === 'all'
       ? '/api/user-assets?limit=200'

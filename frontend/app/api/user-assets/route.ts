@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ensureAssetSchema } from '@/lib/schema';
-import { query } from '@/lib/db';
-import { deleteUserAsset, StorageUploadError, uploadFileBuffer, uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
-import { normalizeUserAssetSource } from '@/lib/job-surface';
+import {
+  deleteLibraryAsset,
+  ensureReusableAsset,
+  listLibraryAssets,
+  type MediaKind,
+} from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
-const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
-const MAX_VIDEO_BYTES = Number(process.env.ASSET_MAX_VIDEO_MB ?? '30') * 1024 * 1024;
+function normalizeKindFromRequest(value: unknown): MediaKind {
+  if (value === 'video' || value === 'audio' || value === 'image') return value;
+  return 'image';
+}
 
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
@@ -20,51 +24,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  await ensureAssetSchema();
+  const assets = await listLibraryAssets({
+    userId,
+    source: req.nextUrl.searchParams.get('source'),
+    originUrl: req.nextUrl.searchParams.get('originUrl'),
+    limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+  });
 
-  const limit = Math.min(200, Number(req.nextUrl.searchParams.get('limit') ?? 50));
-  const source = (req.nextUrl.searchParams.get('source') ?? '').trim() || null;
-  const originUrl = (req.nextUrl.searchParams.get('originUrl') ?? '').trim() || null;
-  const rows = await query<{
-    asset_id: string;
-    url: string;
-    mime_type: string | null;
-    width: number | null;
-    height: number | null;
-    size_bytes: string | number | null;
-    source: string | null;
-    metadata: unknown;
-    created_at: string;
-  }>(
-    `SELECT asset_id, url, mime_type, width, height, size_bytes, source, metadata, created_at
-     FROM user_assets
-     WHERE user_id = $1
-       AND ($3::text IS NULL OR source = $3::text)
-       AND ($4::text IS NULL OR metadata->>'originUrl' = $4::text)
-     ORDER BY created_at DESC
-     LIMIT $2`,
-    [userId, limit, source, originUrl]
-  );
-
-  const assets = rows.map((row) => ({
-    id: row.asset_id,
-    url: row.url,
-    mime: row.mime_type,
-    width: row.width,
-    height: row.height,
-    size: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
-    source: row.source,
-    jobId:
-      row.metadata &&
-      typeof row.metadata === 'object' &&
-      'jobId' in (row.metadata as Record<string, unknown>) &&
-      typeof (row.metadata as Record<string, unknown>).jobId === 'string'
-        ? (row.metadata as Record<string, unknown>).jobId
-        : null,
-    createdAt: row.created_at,
-  }));
-
-  return NextResponse.json({ ok: true, assets });
+  return NextResponse.json({
+    ok: true,
+    assets: assets.map((asset) => ({
+      id: asset.id,
+      url: asset.url,
+      mime: asset.mimeType,
+      width: asset.width,
+      height: asset.height,
+      size: asset.sizeBytes,
+      source: asset.source === 'saved_job_output' ? 'generated' : asset.source,
+      kind: asset.kind,
+      jobId: asset.sourceJobId,
+      createdAt: asset.createdAt,
+    })),
+  });
 }
 
 export async function DELETE(req: NextRequest) {
@@ -89,7 +70,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'ASSET_ID_REQUIRED' }, { status: 400 });
   }
 
-  const result = await deleteUserAsset({ assetId, userId });
+  const result = await deleteLibraryAsset({ assetId, userId });
   if (result === 'not_found') {
     return NextResponse.json({ ok: false, error: 'NOT_FOUND' }, { status: 404 });
   }
@@ -103,185 +84,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let payload: { url?: string; name?: string; label?: string; jobId?: string; source?: string; kind?: string } | null = null;
-  try {
-    payload = (await req.json()) as {
-      url?: string;
-      name?: string;
-      label?: string;
-      jobId?: string;
-      source?: string;
-      kind?: string;
-    } | null;
-  } catch {
-    return NextResponse.json({ ok: false, error: 'INVALID_JSON' }, { status: 400 });
-  }
+  const payload = (await req.json().catch(() => null)) as {
+    url?: unknown;
+    name?: unknown;
+    label?: unknown;
+    jobId?: unknown;
+    source?: unknown;
+    kind?: unknown;
+    mime?: unknown;
+    width?: unknown;
+    height?: unknown;
+    size?: unknown;
+    thumbUrl?: unknown;
+    sourceOutputId?: unknown;
+  } | null;
 
   const sourceUrl = typeof payload?.url === 'string' ? payload.url.trim() : '';
   if (!sourceUrl) {
     return NextResponse.json({ ok: false, error: 'URL_REQUIRED' }, { status: 400 });
   }
 
-  const requestedKind = payload?.kind === 'video' ? 'video' : 'image';
+  try {
+    const asset = await ensureReusableAsset({
+      userId,
+      url: sourceUrl,
+      kind: normalizeKindFromRequest(payload?.kind),
+      source: payload?.source,
+      sourceJobId: typeof payload?.jobId === 'string' ? payload.jobId : null,
+      sourceOutputId: typeof payload?.sourceOutputId === 'string' ? payload.sourceOutputId : null,
+      label: typeof payload?.label === 'string' ? payload.label : typeof payload?.name === 'string' ? payload.name : null,
+      mimeType: typeof payload?.mime === 'string' ? payload.mime : null,
+      width: typeof payload?.width === 'number' ? payload.width : null,
+      height: typeof payload?.height === 'number' ? payload.height : null,
+      sizeBytes: typeof payload?.size === 'number' ? payload.size : null,
+      thumbUrl: typeof payload?.thumbUrl === 'string' ? payload.thumbUrl : null,
+    });
 
-  await ensureAssetSchema();
-
-  const existing = await query<{
-    asset_id: string;
-    url: string;
-    mime_type: string | null;
-    width: number | null;
-    height: number | null;
-    size_bytes: string | number | null;
-  }>(
-    `SELECT asset_id, url, mime_type, width, height, size_bytes
-     FROM user_assets
-     WHERE user_id = $1
-       AND metadata->>'originUrl' = $2
-     ORDER BY created_at DESC
-     LIMIT 1`,
-    [userId, sourceUrl]
-  );
-
-  if (existing.length) {
-    const [asset] = existing;
     return NextResponse.json({
       ok: true,
       asset: {
-        id: asset.asset_id,
+        id: asset.id,
         url: asset.url,
         width: asset.width,
         height: asset.height,
-        mime: asset.mime_type,
-        size: typeof asset.size_bytes === 'string' ? Number(asset.size_bytes) : asset.size_bytes,
-      },
-    });
-  }
-
-  let parsed: URL;
-  try {
-    parsed = new URL(sourceUrl);
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-      throw new Error('unsupported protocol');
-    }
-  } catch {
-    return NextResponse.json({ ok: false, error: 'INVALID_URL' }, { status: 400 });
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const response = await fetch(parsed.toString(), { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!response.ok) {
-      return NextResponse.json(
-        { ok: false, error: 'FETCH_FAILED', status: response.status },
-        { status: 422 }
-      );
-    }
-    const mime = response.headers.get('content-type') ?? (requestedKind === 'video' ? 'video/mp4' : 'image/png');
-    const isImage = mime.startsWith('image/');
-    const isVideo = mime.startsWith('video/');
-    if ((requestedKind === 'image' && !isImage) || (requestedKind === 'video' && !isVideo)) {
-      return NextResponse.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 });
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    if (!buffer.length) {
-      return NextResponse.json({ ok: false, error: requestedKind === 'video' ? 'EMPTY_VIDEO' : 'EMPTY_IMAGE' }, { status: 422 });
-    }
-    const maxBytes = requestedKind === 'video' ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
-    if (buffer.length > maxBytes) {
-      return NextResponse.json(
-        { ok: false, error: requestedKind === 'video' ? 'VIDEO_TOO_LARGE' : 'IMAGE_TOO_LARGE' },
-        { status: 422 }
-      );
-    }
-
-    const fileName =
-      payload?.name ??
-      payload?.label ??
-      parsed.pathname.split('/').pop() ??
-      (requestedKind === 'video' ? 'video.mp4' : 'image.png');
-
-    let uploadUrl = '';
-    let uploadMime = mime;
-    let uploadWidth: number | null = null;
-    let uploadHeight: number | null = null;
-
-    if (requestedKind === 'video') {
-      const upload = await uploadFileBuffer({
-        data: buffer,
-        mime,
-        userId,
-        prefix: 'library',
-        fileName,
-      });
-      uploadUrl = upload.url;
-    } else {
-      const upload = await uploadImageToStorage({
-        data: buffer,
-        mime,
-        userId,
-        prefix: 'library',
-        fileName,
-      });
-      uploadUrl = upload.url;
-      uploadMime = upload.mime;
-      uploadWidth = upload.width;
-      uploadHeight = upload.height;
-    }
-
-    const assetId = await recordUserAsset({
-      userId,
-      url: uploadUrl,
-      mime: uploadMime,
-      width: uploadWidth,
-      height: uploadHeight,
-      size: buffer.length,
-      source: normalizeUserAssetSource(payload?.source),
-      metadata: {
-        originUrl: sourceUrl,
-        jobId: payload?.jobId ?? null,
-        label: payload?.label ?? payload?.name ?? null,
-        kind: requestedKind,
-      },
-    });
-
-    return NextResponse.json({
-      ok: true,
-      asset: {
-        id: assetId,
-        url: uploadUrl,
-        width: uploadWidth,
-        height: uploadHeight,
-        mime: uploadMime,
-        size: buffer.length,
+        mime: asset.mimeType,
+        size: asset.sizeBytes,
       },
     });
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      return NextResponse.json({ ok: false, error: 'FETCH_TIMEOUT' }, { status: 504 });
-    }
-    if (error instanceof StorageUploadError) {
-      console.error('[user-assets] storage upload failed', {
-        message: error.message,
-        key: error.context.key ?? null,
-        keyBytes: error.context.keyBytes ?? null,
-        prefix: error.context.prefix ?? 'library',
-        userId,
-        originalFileName: error.context.originalFileName ?? payload?.name ?? payload?.label ?? null,
-        originalFileNameBytes: Buffer.byteLength(
-          String(error.context.originalFileName ?? payload?.name ?? payload?.label ?? ''),
-          'utf8'
-        ),
-        labelBytes: Buffer.byteLength(String(payload?.label ?? ''), 'utf8'),
-        nameBytes: Buffer.byteLength(String(payload?.name ?? ''), 'utf8'),
-        sourceUrlBytes: Buffer.byteLength(sourceUrl, 'utf8'),
-      });
-    } else {
-      console.error('[user-assets] save failed', error);
-    }
-    return NextResponse.json({ ok: false, error: 'SAVE_FAILED' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'STORE_FAILED';
+    return NextResponse.json({ ok: false, error: message }, { status: 422 });
   }
 }

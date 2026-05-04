@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { ensureReusableAsset } from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
@@ -59,6 +60,17 @@ export async function POST(req: NextRequest) {
       size: buffer.length,
       source: 'upload',
       metadata: { originalName: blob.name, kind: 'audio' },
+    });
+
+    await ensureReusableAsset({
+      userId,
+      url: uploadResult.url,
+      kind: 'audio',
+      source: 'upload',
+      mimeType: mime,
+      sizeBytes: buffer.length,
+    }).catch((error) => {
+      console.warn('[upload] failed to mirror audio into media_assets', error);
     });
 
     return NextResponse.json({

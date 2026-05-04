@@ -20,6 +20,7 @@ import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
+import { upsertLegacyJobOutputs } from '@/server/media-library';
 
 function fallbackThumbnail(aspectRatio?: string | null): string {
   const normalized = aspectRatio?.trim().toLowerCase();
@@ -1114,6 +1115,21 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       providerVideoCopyStateJson,
     ]
   );
+
+  await upsertLegacyJobOutputs({
+    job_id: job.job_id,
+    user_id: job.user_id,
+    surface: isImageEngine ? 'image' : 'video',
+    video_url: shouldClearVideo ? null : finalVideoUrl ?? job.video_url,
+    audio_url: null,
+    thumb_url: shouldClearThumb ? null : finalThumbUrl ?? job.thumb_url,
+    preview_frame: shouldClearThumb ? null : finalPreviewFrame ?? job.preview_frame,
+    render_ids: renderIdsJson ? JSON.parse(renderIdsJson) : job.render_ids,
+    duration_sec: job.duration_sec,
+    status: nextStatus,
+  }).catch((error) => {
+    console.warn('[fal-webhook] failed to persist job outputs', { jobId: job.job_id }, error);
+  });
 
   if (nextStatus === 'completed' && finalVideoUrl && !isImageEngine) {
     await Promise.allSettled([

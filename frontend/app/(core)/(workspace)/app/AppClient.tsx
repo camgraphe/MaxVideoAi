@@ -389,9 +389,11 @@ type UserAsset = {
   source?: string | null;
   createdAt?: string;
   canDelete?: boolean;
+  jobId?: string | null;
+  sourceOutputId?: string | null;
 };
 
-type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
+type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
 type AssetLibraryKind = 'image' | 'video';
 type UploadableAssetKind = 'image' | 'video' | 'audio';
 type UploadFailurePayload = { error?: unknown; maxMB?: unknown } | null;
@@ -2889,18 +2891,15 @@ const showNotice = useCallback((message: string) => {
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
-      const assetUrl =
-        source === 'all'
-          ? '/api/user-assets?limit=60'
-          : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
-      const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
-      if (kind === 'video' && source !== 'upload') {
-        const jobsUrl = source === 'upscale' ? '/api/jobs?limit=60&surface=upscale' : '/api/jobs?limit=60&type=video';
-        requests.push(authFetch(jobsUrl));
-      }
+      const isRecentOutputSource = source === 'recent';
+      const assetUrl = isRecentOutputSource
+        ? `/api/media-library/recent-outputs?limit=60&kind=${encodeURIComponent(kind)}`
+        : source === 'all'
+          ? `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}`
+          : `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}&source=${encodeURIComponent(source)}`;
 
-      const [assetResponse, jobsResponse] = await Promise.all(requests);
-      if (assetResponse.status === 401 || jobsResponse?.status === 401) {
+      const assetResponse = await authFetch(assetUrl);
+      if (assetResponse.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError(
           kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.'
@@ -2918,8 +2917,9 @@ const showNotice = useCallback((message: string) => {
               : 'Failed to load images';
         throw new Error(message);
       }
-      const assets = Array.isArray(payload.assets)
-        ? (payload.assets as Array<Omit<UserAsset, 'kind' | 'canDelete'>>).map((asset) => {
+      const rawItems = isRecentOutputSource ? payload.outputs : payload.assets;
+      const assets = Array.isArray(rawItems)
+        ? (rawItems as Array<Omit<UserAsset, 'canDelete'> & { thumbUrl?: string | null; sourceOutputId?: string | null; jobId?: string | null }>).map((asset) => {
             const mime = asset.mime ?? null;
             return {
               id: asset.id,
@@ -2929,9 +2929,11 @@ const showNotice = useCallback((message: string) => {
               height: asset.height ?? null,
               size: asset.size ?? null,
               mime,
-              source: asset.source ?? null,
+              source: isRecentOutputSource ? 'recent' : asset.source ?? null,
               createdAt: asset.createdAt,
-              canDelete: true,
+              canDelete: !isRecentOutputSource,
+              jobId: asset.jobId ?? null,
+              sourceOutputId: asset.sourceOutputId ?? (isRecentOutputSource ? asset.id : null),
             } satisfies UserAsset;
           })
         : [];
@@ -2941,28 +2943,7 @@ const showNotice = useCallback((message: string) => {
           : !asset.mime || asset.mime.startsWith('image/')
       );
 
-      let generatedVideos: UserAsset[] = [];
-      if (kind === 'video' && jobsResponse) {
-        const jobsPayload = await jobsResponse.json().catch(() => null);
-        if (jobsResponse.ok && Array.isArray(jobsPayload?.jobs)) {
-          generatedVideos = (jobsPayload.jobs as Job[])
-            .filter((job) => typeof job.videoUrl === 'string' && job.videoUrl.trim().length > 0)
-            .map((job) => ({
-              id: `job:${job.jobId}`,
-              url: job.videoUrl as string,
-              kind: 'video',
-              mime: 'video/mp4',
-              source: 'generated',
-              createdAt: job.createdAt,
-              canDelete: false,
-            }));
-        }
-      }
-
-      const combined =
-        kind === 'video'
-          ? [...filteredUploads, ...generatedVideos]
-          : filteredUploads;
+      const combined = filteredUploads;
       const deduped = combined.filter(
         (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
       );
@@ -3091,7 +3072,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice(blockedMessage);
         return;
       }
-      const nextSource: AssetLibrarySource = field.type === 'video' ? 'generated' : 'all';
+      const nextSource: AssetLibrarySource = field.type === 'video' ? 'recent' : 'all';
       if (nextSource !== assetLibrarySource) {
         setAssetLibrarySource(nextSource);
         setAssetLibrary([]);
@@ -3139,6 +3120,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           const host = new URL(asset.url).host.toLowerCase();
           const shouldMirrorVideo =
             asset.source === 'generated' ||
+            asset.source === 'recent' ||
             host === 'fal.media' ||
             host.endsWith('.fal.media');
           if (shouldMirrorVideo) {
@@ -3148,8 +3130,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 field.label ??
                 asset.url.split('/').pop() ??
                 'Video',
-              source: asset.source,
+              source: asset.source === 'recent' ? 'saved_job_output' : asset.source,
               kind: 'video',
+              jobId: asset.jobId ?? null,
+              sourceOutputId: asset.sourceOutputId ?? null,
             });
             resolvedAsset = {
               ...asset,

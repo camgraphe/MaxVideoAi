@@ -14,6 +14,7 @@ import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { isStorageConfigured, recordUserAsset, uploadImageToStorage } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
 import {
   applyCinemaSafeParams,
   buildBestAngleVariantParams,
@@ -832,6 +833,38 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
         JSON.stringify(storedRenderEntries),
         heroRenderId,
       ]
+    );
+
+    await upsertLegacyJobOutputs({
+      job_id: jobId,
+      user_id: input.userId,
+      surface: 'angle',
+      video_url: null,
+      audio_url: null,
+      thumb_url: heroThumb,
+      preview_frame: heroThumb,
+      render_ids: storedRenderEntries,
+      duration_sec: 1,
+      status: 'completed',
+    }).catch((outputError) => {
+      console.warn('[tools/angle] failed to persist job outputs', { jobId }, outputError);
+    });
+
+    await Promise.allSettled(
+      outputsWithThumbs.map((output, index) =>
+        ensureReusableAsset({
+          userId: input.userId,
+          url: output.url,
+          kind: 'image',
+          source: 'angle',
+          sourceJobId: jobId,
+          sourceOutputId: `${jobId}:image:${index}`,
+          mimeType: output.mimeType ?? 'image/png',
+          width: output.width ?? null,
+          height: output.height ?? null,
+          thumbUrl: output.thumbUrl ?? null,
+        })
+      )
     );
 
     await insertToolEvent({

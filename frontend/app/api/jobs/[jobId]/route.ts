@@ -22,6 +22,7 @@ import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { getVisitorImageLikeJob, getVisitorStarterJob } from '@/server/visitor-workspace';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
+import { applyOutputsToJobPayload, listJobOutputsByJobIds, upsertLegacyJobOutputs } from '@/server/media-library';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,7 @@ type DbJobRow = {
   preview_video_url: string | null;
   audio_url: string | null;
   thumb_url: string | null;
+  preview_frame: string | null;
   engine_id: string;
   engine_label: string;
   duration_sec: number;
@@ -74,7 +76,7 @@ type DbJobRow = {
   aspect_ratio: string | null;
 };
 
-const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, provider, surface, billing_product_key, video_url, preview_video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, provider, surface, billing_product_key, video_url, preview_video_url, audio_url, thumb_url, preview_frame, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`;
@@ -266,6 +268,43 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     videoUrl: job.video_url,
     renderIds: job.render_ids,
   });
+
+  try {
+    let outputMap = await listJobOutputsByJobIds([job.job_id]);
+    if (!outputMap.has(job.job_id)) {
+      await upsertLegacyJobOutputs({
+        job_id: job.job_id,
+        user_id: job.user_id,
+        surface: job.surface,
+        video_url: job.video_url,
+        audio_url: job.audio_url,
+        thumb_url: job.thumb_url,
+        preview_frame: job.preview_frame,
+        render_ids: job.render_ids,
+        duration_sec: job.duration_sec,
+        status: job.status,
+      });
+      outputMap = await listJobOutputsByJobIds([job.job_id]);
+    }
+    const enriched = applyOutputsToJobPayload(
+      {
+        jobId: job.job_id,
+        videoUrl: normalizedVideoUrl,
+        audioUrl: normalizedAudioUrl,
+        thumbUrl: normalizedThumbUrl,
+        renderIds: parsedRenderIds ?? null,
+        renderThumbUrls: parsedRenderThumbUrls ?? null,
+      },
+      outputMap.get(job.job_id)
+    );
+    normalizedVideoUrl = enriched.videoUrl ?? null;
+    normalizedAudioUrl = enriched.audioUrl ?? null;
+    normalizedThumbUrl = enriched.thumbUrl ?? null;
+    parsedRenderIds = enriched.renderIds ?? parsedRenderIds;
+    parsedRenderThumbUrls = enriched.renderThumbUrls ?? parsedRenderThumbUrls;
+  } catch (error) {
+    console.warn('[api/jobs] media output detail enrichment failed', { jobId, error });
+  }
 
   // Optionally poll FAL once if pending and we have provider job id
   if (surface !== 'audio' && shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
@@ -526,4 +565,40 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     etaSeconds: job.eta_seconds ?? undefined,
     etaLabel: job.eta_label ?? undefined,
   });
+}
+
+export async function PATCH(req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const { jobId } = await props.params;
+  if (!isDatabaseConfigured()) {
+    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
+
+  const { userId } = await getRouteAuthContext(req);
+  if (!userId) {
+    return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = (await req.json().catch(() => null)) as { hidden?: unknown } | null;
+  if (payload?.hidden !== true) {
+    return json({ ok: false, error: 'Unsupported patch' }, { status: 400 });
+  }
+
+  try {
+    const rows = await query<{ job_id: string }>(
+      `UPDATE app_jobs
+          SET hidden = $1,
+              updated_at = NOW()
+        WHERE job_id = $2
+          AND user_id = $3
+        RETURNING job_id`,
+      [true, jobId, userId]
+    );
+    if (!rows.length) {
+      return json({ ok: false, error: 'Not found' }, { status: 404 });
+    }
+    return json({ ok: true, jobId, hidden: true });
+  } catch (error) {
+    console.warn('[api/jobs] failed to patch job', { jobId, error });
+    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
 }

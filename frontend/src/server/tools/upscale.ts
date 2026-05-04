@@ -13,6 +13,7 @@ import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { isStorageConfigured, recordUserAsset, uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
 import {
   UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   clampUpscaleFactor,
@@ -1014,6 +1015,36 @@ export async function runUpscaleToolBase(
         heroRenderId,
       ]
     );
+
+    await upsertLegacyJobOutputs({
+      job_id: jobId,
+      user_id: input.userId,
+      surface: 'upscale',
+      video_url: mediaType === 'video' ? persistedOutput.url : null,
+      audio_url: null,
+      thumb_url: thumbUrl,
+      preview_frame: thumbUrl,
+      render_ids: renderIdsJson ? JSON.parse(renderIdsJson) : null,
+      duration_sec: videoMetadata?.durationSec ?? 1,
+      status: 'completed',
+    }).catch((outputError) => {
+      console.warn('[tools/upscale] failed to persist job outputs', { jobId }, outputError);
+    });
+
+    await ensureReusableAsset({
+      userId: input.userId,
+      url: persistedOutput.url,
+      kind: mediaType,
+      source: 'upscale',
+      sourceJobId: jobId,
+      sourceOutputId: `${jobId}:${mediaType}:0`,
+      mimeType: persistedOutput.mimeType ?? (mediaType === 'video' ? 'video/mp4' : 'image/png'),
+      width: persistedOutput.width ?? null,
+      height: persistedOutput.height ?? null,
+      thumbUrl,
+    }).catch((assetError) => {
+      console.warn('[tools/upscale] failed to persist media asset', { jobId }, assetError);
+    });
 
     await insertToolEvent({
       jobId,
