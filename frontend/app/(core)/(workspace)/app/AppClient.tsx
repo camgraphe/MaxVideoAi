@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
@@ -237,14 +237,16 @@ function ComposerBootSkeleton() {
   );
 }
 
-function WorkspaceBootShell({
+function WorkspaceChrome({
   isDesktopLayout,
-  message,
-  initialPreviewPosterSrc,
+  children,
+  desktopRail,
+  mobileRail,
 }: {
   isDesktopLayout: boolean;
-  message?: string;
-  initialPreviewPosterSrc?: string | null;
+  children: ReactNode;
+  desktopRail: ReactNode;
+  mobileRail: ReactNode;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -254,29 +256,60 @@ function WorkspaceBootShell({
           <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
-              {message ? (
-                <div className="rounded-card border border-border bg-surface-glass-70 px-4 py-2 text-sm text-text-secondary">
-                  {message}
-                </div>
-              ) : null}
-              <div className="stack-gap-lg">
-                <WorkspaceBootPreview posterSrc={initialPreviewPosterSrc} />
-                <ComposerBootSkeleton />
-              </div>
+              {children}
             </main>
           </div>
         </div>
         {isDesktopLayout ? (
           <div className="flex w-[320px] justify-end py-4 pl-2 pr-0">
-            <GalleryRailSkeleton />
+            {desktopRail}
           </div>
         ) : null}
       </div>
       {!isDesktopLayout ? (
         <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
-          <GalleryRailSkeleton />
+          {mobileRail}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function EngineSettingsBootSkeleton() {
+  return (
+    <div className="flex flex-wrap items-center gap-2" aria-hidden>
+      <div className="h-9 w-40 rounded-input bg-skeleton" />
+      <div className="h-9 w-28 rounded-input bg-skeleton" />
+      <div className="h-9 w-24 rounded-input bg-skeleton" />
+    </div>
+  );
+}
+
+function WorkspaceBootContent({
+  initialPreviewGroup,
+  initialPreviewPosterSrc,
+}: {
+  initialPreviewGroup?: VideoGroup | null;
+  initialPreviewPosterSrc?: string | null;
+}) {
+  const posterSrc = getCompositePreviewPosterSrc(initialPreviewGroup ?? null) ?? initialPreviewPosterSrc ?? null;
+
+  return (
+    <div className="stack-gap-lg">
+      {initialPreviewGroup ? (
+        <>
+          <WorkspacePreviewPosterPreload src={posterSrc} />
+          <CompositePreviewDock
+            group={initialPreviewGroup}
+            isLoading={false}
+            showTitle={false}
+            engineSettings={<EngineSettingsBootSkeleton />}
+          />
+        </>
+      ) : (
+        <WorkspaceBootPreview posterSrc={posterSrc} />
+      )}
+      <ComposerBootSkeleton />
     </div>
   );
 }
@@ -6790,11 +6823,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   if (isLoading && engines.length === 0) {
     return (
-      <WorkspaceBootShell
-        isDesktopLayout={isDesktopLayout}
-        message="Loading workspace…"
-        initialPreviewPosterSrc={compositePreviewPosterSrc}
-      />
+      <>
+        <WorkspaceChrome
+          isDesktopLayout={isDesktopLayout}
+          desktopRail={<GalleryRailSkeleton />}
+          mobileRail={<GalleryRailSkeleton />}
+        >
+          <WorkspaceBootContent initialPreviewGroup={initialPreviewFallbackGroup} initialPreviewPosterSrc={compositePreviewPosterSrc} />
+        </WorkspaceChrome>
+      </>
     );
   }
 
@@ -6809,11 +6846,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   if (!selectedEngine || !form) {
     if (engines.length > 0) {
       return (
-        <WorkspaceBootShell
-          isDesktopLayout={isDesktopLayout}
-          message="Preparing workspace…"
-          initialPreviewPosterSrc={compositePreviewPosterSrc}
-        />
+        <>
+          <WorkspaceChrome
+            isDesktopLayout={isDesktopLayout}
+            desktopRail={<GalleryRailSkeleton />}
+            mobileRail={<GalleryRailSkeleton />}
+          >
+            <WorkspaceBootContent initialPreviewGroup={initialPreviewFallbackGroup} initialPreviewPosterSrc={compositePreviewPosterSrc} />
+          </WorkspaceChrome>
+        </>
       );
     }
 
@@ -6825,13 +6866,32 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
-      <HeaderBar />
-      <div className={clsx('flex flex-1', isDesktopLayout ? 'flex-row' : 'flex-col')}>
-        <div className="flex flex-1 min-w-0">
-          <AppSidebar />
-          <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
-            <main className="flex flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
+    <>
+      <WorkspaceChrome
+        isDesktopLayout={isDesktopLayout}
+        desktopRail={
+          <GalleryRail
+            engine={selectedEngine}
+            engineRegistry={engines}
+            activeGroups={normalizedPendingGroups}
+            onOpenGroup={openGroupViaGallery}
+            onGroupAction={handleGalleryGroupAction}
+            onFeedStateChange={handleGalleryFeedStateChange}
+            variant="desktop"
+          />
+        }
+        mobileRail={
+          <GalleryRail
+            engine={selectedEngine}
+            engineRegistry={engines}
+            activeGroups={normalizedPendingGroups}
+            onOpenGroup={openGroupViaGallery}
+            onGroupAction={handleGalleryGroupAction}
+            onFeedStateChange={handleGalleryFeedStateChange}
+            variant="mobile"
+          />
+        }
+      >
             {notice && (
               <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
                 {notice}
@@ -7082,36 +7142,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 }
               />
             </div>
-          </main>
-        </div>
-        {isDesktopLayout && (
-          <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
-            <GalleryRail
-              engine={selectedEngine}
-              engineRegistry={engines}
-              activeGroups={normalizedPendingGroups}
-              onOpenGroup={openGroupViaGallery}
-              onGroupAction={handleGalleryGroupAction}
-              onFeedStateChange={handleGalleryFeedStateChange}
-              variant="desktop"
-            />
-          </div>
-        )}
-      </div>
-      {!isDesktopLayout && (
-        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
-          <GalleryRail
-            engine={selectedEngine}
-            engineRegistry={engines}
-            activeGroups={normalizedPendingGroups}
-            onOpenGroup={openGroupViaGallery}
-            onGroupAction={handleGalleryGroupAction}
-            onFeedStateChange={handleGalleryFeedStateChange}
-            variant="mobile"
-          />
-        </div>
-      )}
-      </div>
+      </WorkspaceChrome>
       {viewerGroup ? (
         <GroupViewerModal
           group={viewerGroup}
@@ -7290,7 +7321,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           deletingAssetId={assetDeletePendingId}
         />
       )}
-    </div>
+    </>
   );
 }
 const GroupViewerModal = dynamic(

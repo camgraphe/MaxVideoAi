@@ -666,6 +666,7 @@ export function CompositePreviewDock({
                                 alt=""
                                 fill
                                 priority={itemKey === activeVideoKey}
+                                fetchPriority={itemKey === activeVideoKey ? 'high' : undefined}
                                 sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
                                 className={clsx(
                                   'pointer-events-none z-10 transition-opacity duration-150',
