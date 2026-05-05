@@ -77,7 +77,12 @@ export function createSupabaseMiddlewareClient(req: NextRequest, res: NextRespon
 
 export async function updateSession(req: NextRequest, res: NextResponse) {
   const supabase = createSupabaseMiddlewareClient(req, res);
-  const { data, error } = await supabase.auth.getClaims();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token ?? null;
+  if (!accessToken || sessionError) {
+    return { supabase, userId: null, error: sessionError };
+  }
+  const { data, error } = await supabase.auth.getClaims(accessToken);
   const claims = data?.claims as { sub?: string } | null | undefined;
   const userId = typeof claims?.sub === 'string' ? claims.sub : null;
   return { supabase, userId, error };
@@ -88,21 +93,20 @@ export async function getRouteAuthContext(req?: NextRequest) {
   const accessToken = readBearerAccessToken(req?.headers);
 
   if (accessToken) {
-    const [{ data: sessionData }, { data: userData }] = await Promise.all([
-      supabase.auth.getSession(),
-      supabase.auth.getUser(accessToken),
-    ]);
+    const { data: userData } = await supabase.auth.getUser(accessToken);
     const tokenUserId = userData.user?.id ?? null;
     if (tokenUserId) {
+      const { data: sessionData } = await supabase.auth.getSession();
       return { supabase, session: sessionData.session ?? null, userId: tokenUserId };
     }
   }
 
-  const [{ data: sessionData }, { data: claimsData }] = await Promise.all([
-    supabase.auth.getSession(),
-    supabase.auth.getClaims(),
-  ]);
+  const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData.session ?? null;
+  if (!session?.access_token) {
+    return { supabase, session, userId: null };
+  }
+  const { data: claimsData } = await supabase.auth.getClaims(session.access_token);
   const sessionUserId = typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub : null;
   return { supabase, session, userId: sessionUserId };
 }
