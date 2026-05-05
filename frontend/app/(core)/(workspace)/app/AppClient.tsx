@@ -1645,7 +1645,9 @@ useEffect(() => {
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
   const [galleryRetentionTick, setGalleryRetentionTick] = useState(0);
-  const [viewerTarget, setViewerTarget] = useState<{ kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | null>(null);
+  const [viewerTarget, setViewerTarget] = useState<
+    { kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | { kind: 'group'; group: VideoGroup } | null
+  >(null);
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -2654,6 +2656,9 @@ useEffect(() => {
       const summary = pendingSummaryMap.get(viewerTarget.id);
       if (!summary) return null;
       return adaptGroupSummary(normalizeGroupSummary(summary), provider);
+    }
+    if (viewerTarget.kind === 'group') {
+      return viewerTarget.group;
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
   }, [viewerTarget, pendingSummaryMap, provider]);
@@ -6923,7 +6928,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   }
                   if (compositeOverrideSummary && compositeOverrideSummary.id === group.id) {
                     setViewerTarget({ kind: 'summary', summary: compositeOverrideSummary });
+                    return;
                   }
+                  setViewerTarget({ kind: 'group', group });
                 }}
               />
               <Composer

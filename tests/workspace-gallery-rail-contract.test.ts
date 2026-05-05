@@ -33,3 +33,14 @@ test('Seedance completion persists canonical video outputs before preview enrich
   assert.match(pollSource, /thumb_url:\s*thumb/);
   assert.match(pollSource, /generateAndPersistJobPreviewVideo/);
 });
+
+test('composite preview modal button opens direct preview groups', () => {
+  const appSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+    'utf8'
+  );
+
+  assert.match(appSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
+  assert.match(appSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
+  assert.match(appSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group\s*\}\)/);
+});
