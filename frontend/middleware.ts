@@ -475,12 +475,12 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  const { userId } = await updateSession(req, response);
-
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
+
+  const { userId } = await updateSession(req, response);
 
   if (isAdminRoute) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');

@@ -15,7 +15,7 @@ export function PublicSessionWatchdog() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const refresh = async () => {
+    const syncExistingSession = async () => {
       if (document.visibilityState === 'hidden') return;
       const now = Date.now();
       if (now - lastAttemptRef.current < REFRESH_THROTTLE_MS) return;
@@ -24,21 +24,15 @@ export function PublicSessionWatchdog() {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user) {
         notifyAccountRefresh();
-        return;
-      }
-
-      const refreshed = await supabase.auth.refreshSession().catch(() => null);
-      if (refreshed?.data?.session?.user) {
-        notifyAccountRefresh();
       }
     };
 
     const handleFocus = () => {
-      void refresh();
+      void syncExistingSession();
     };
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        void refresh();
+        void syncExistingSession();
       }
     };
 
