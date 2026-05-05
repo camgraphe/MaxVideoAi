@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { access, chmod, copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -18,6 +19,7 @@ const DEFAULT_MAX_BYTES = 80 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 45_000;
 let ffmpegPathResolved = false;
 let resolvedFfmpegPath: string | null = null;
+const executableFfmpegCopies = new Map<string, string>();
 
 function getFfmpegPath(): string | null {
   if (ffmpegPathResolved) {
@@ -83,6 +85,32 @@ async function runFastStart(ffmpegPath: string, inputPath: string, outputPath: s
   });
 }
 
+export async function ensureExecutableFfmpegPath(ffmpegPath: string): Promise<string> {
+  await access(ffmpegPath, fsConstants.R_OK);
+  try {
+    await access(ffmpegPath, fsConstants.X_OK);
+    return ffmpegPath;
+  } catch {
+    const cached = executableFfmpegCopies.get(ffmpegPath);
+    if (cached) {
+      try {
+        await access(cached, fsConstants.X_OK);
+        return cached;
+      } catch {
+        executableFfmpegCopies.delete(ffmpegPath);
+      }
+    }
+  }
+
+  const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-ffmpeg-'));
+  const tempBinary = path.join(tempDir, path.basename(ffmpegPath) || 'ffmpeg');
+  await copyFile(ffmpegPath, tempBinary);
+  await chmod(tempBinary, 0o755);
+  await access(tempBinary, fsConstants.X_OK);
+  executableFfmpegCopies.set(ffmpegPath, tempBinary);
+  return tempBinary;
+}
+
 export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions): Promise<string | null> {
   const sourceUrl = normalizeMediaUrl(options.videoUrl) ?? options.videoUrl;
   if (!options.jobId || !/^https?:\/\//i.test(sourceUrl)) return null;
@@ -126,7 +154,8 @@ export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions)
     const inputPath = path.join(tempDir, 'source.mp4');
     const outputPath = path.join(tempDir, 'faststart.mp4');
     await writeFile(inputPath, buffer);
-    await runFastStart(ffmpegPath, inputPath, outputPath);
+    const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
+    await runFastStart(executableFfmpegPath, inputPath, outputPath);
     const optimized = await readFile(outputPath);
     if (!optimized.length) return null;
 
