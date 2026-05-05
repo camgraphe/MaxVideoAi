@@ -300,6 +300,12 @@ function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: st
   }
 }
 
+function resolvePolledThumbUrl(current?: string | null, next?: string | null): string | undefined {
+  if (next && !isPlaceholderMediaUrl(next)) return next;
+  if (current) return current;
+  return next ?? undefined;
+}
+
 type SharedVideoPayload = SharedVideoPreview;
 
 function coerceNumber(value: unknown): number | null {
@@ -2116,7 +2122,7 @@ useEffect(() => {
                       readyVideoUrl: status.videoUrl ?? item.readyVideoUrl,
                       videoUrl: status.videoUrl ?? item.videoUrl ?? item.readyVideoUrl,
                       previewVideoUrl: status.previewVideoUrl ?? item.previewVideoUrl,
-                      thumbUrl: status.thumbUrl ?? item.thumbUrl,
+                      thumbUrl: resolvePolledThumbUrl(item.thumbUrl, status.thumbUrl),
                       aspectRatio: status.aspectRatio ?? item.aspectRatio,
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? item.priceCents,
                       currency: status.currency ?? status.pricing?.currency ?? item.currency,
@@ -2137,7 +2143,7 @@ useEffect(() => {
                     progress: status.progress ?? cur.progress,
                     videoUrl: status.videoUrl ?? cur.videoUrl,
                     previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
-                    thumbUrl: status.thumbUrl ?? cur.thumbUrl,
+                    thumbUrl: resolvePolledThumbUrl(cur.thumbUrl, status.thumbUrl),
                     aspectRatio: status.aspectRatio ?? cur.aspectRatio,
                     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
                     currency: status.currency ?? status.pricing?.currency ?? cur.currency,
@@ -2547,6 +2553,7 @@ useEffect(() => {
           currency: item.currency ?? group.currency ?? null,
           thumbUrl: thumb,
           videoUrl: memberVideoUrl,
+          previewVideoUrl: gatingActive ? null : item.previewVideoUrl ?? null,
           aspectRatio: item.aspectRatio ?? null,
           prompt: item.prompt,
           status: memberStatus,
@@ -2575,6 +2582,7 @@ useEffect(() => {
           id: member.id,
           thumbUrl: member.thumbUrl,
           videoUrl: member.videoUrl,
+          previewVideoUrl: member.previewVideoUrl,
           aspectRatio: member.aspectRatio,
         }));
       const batchKey = group.groupId ?? group.items[0]?.batchId ?? id;
@@ -3802,6 +3810,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         setSelectedPreview({
           id: video.id,
           videoUrl: video.videoUrl ?? undefined,
+          previewVideoUrl: video.previewVideoUrl ?? undefined,
           thumbUrl: video.thumbUrl ?? undefined,
           aspectRatio: video.aspectRatio ?? undefined,
           prompt: video.prompt ?? video.promptExcerpt ?? undefined,
@@ -3861,6 +3870,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setSelectedPreview({
       id: latestJobWithMedia.jobId,
       videoUrl: latestJobWithMedia.videoUrl ?? undefined,
+      previewVideoUrl: latestJobWithMedia.previewVideoUrl ?? undefined,
       aspectRatio: latestJobWithMedia.aspectRatio ?? undefined,
       thumbUrl: latestJobWithMedia.thumbUrl ?? undefined,
       priceCents: latestJobWithMedia.finalPriceCents ?? latestJobWithMedia.pricingSnapshot?.totalCents,
@@ -3895,6 +3905,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               status?: string;
               progress?: number;
               videoUrl?: string;
+              previewVideoUrl?: string;
               thumbUrl?: string;
               aspectRatio?: string;
               finalPriceCents?: number;
@@ -3932,6 +3943,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
         const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
         const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
+        const previewVideoUrl =
+          typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length
+            ? payload.previewVideoUrl
+            : undefined;
         const url = videoUrl ?? thumbUrl;
         if (!url) {
           throw new Error('Job has no preview media');
@@ -3949,6 +3964,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               prompt: promptValue,
               thumbUrl,
               videoUrl,
+              previewVideoUrl,
               aspectRatio: payload.aspectRatio ?? undefined,
               createdAt,
             },
@@ -3959,6 +3975,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         setSelectedPreview({
           id: storedJobId,
           videoUrl,
+          previewVideoUrl,
           thumbUrl,
           aspectRatio: payload.aspectRatio ?? undefined,
           progress: typeof payload.progress === 'number' ? payload.progress : undefined,
@@ -4546,6 +4563,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               error?: string;
               settingsSnapshot?: unknown;
               videoUrl?: string;
+              previewVideoUrl?: string;
               thumbUrl?: string;
               aspectRatio?: string;
               progress?: number;
@@ -4588,6 +4606,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
           const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
           const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
+          const previewVideoUrl =
+            typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length
+              ? payload.previewVideoUrl
+              : undefined;
           if (thumbUrl || videoUrl) {
             setCompositeOverride(
               mapSharedVideoToGroup(
@@ -4599,6 +4621,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   prompt: promptValue,
                   thumbUrl,
                   videoUrl,
+                  previewVideoUrl,
                   aspectRatio: payload.aspectRatio ?? undefined,
                   createdAt:
                     typeof payload.createdAt === 'string' && payload.createdAt.length
@@ -4612,6 +4635,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             setSelectedPreview({
               id: requestedJobId,
               videoUrl,
+              previewVideoUrl,
               thumbUrl,
               aspectRatio: payload.aspectRatio ?? undefined,
               progress: typeof payload.progress === 'number' ? payload.progress : undefined,
@@ -6179,7 +6203,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               return;
             }
             const hasVideo = Boolean(status.videoUrl);
-            const hasThumb = Boolean(status.thumbUrl);
+            const hasThumb = Boolean(status.thumbUrl && !isPlaceholderMediaUrl(status.thumbUrl));
             setRenders((prev) =>
               prev.map((r) =>
                 r.id === jobId
@@ -6197,7 +6221,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       readyVideoUrl: status.videoUrl ?? r.readyVideoUrl,
                       videoUrl: status.videoUrl ?? r.videoUrl ?? r.readyVideoUrl,
                       previewVideoUrl: status.previewVideoUrl ?? r.previewVideoUrl,
-                      thumbUrl: status.thumbUrl ?? r.thumbUrl,
+                      thumbUrl: resolvePolledThumbUrl(r.thumbUrl, status.thumbUrl),
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
                       currency: status.currency ?? status.pricing?.currency ?? r.currency,
                       pricingSnapshot: status.pricing ?? r.pricingSnapshot,
@@ -6218,7 +6242,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     progress: status.progress ?? cur.progress,
                     videoUrl: status.videoUrl ?? target?.readyVideoUrl ?? cur.videoUrl,
                     previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
-                    thumbUrl: status.thumbUrl ?? cur.thumbUrl,
+                    thumbUrl: resolvePolledThumbUrl(cur.thumbUrl, status.thumbUrl),
                     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
                     currency: status.currency ?? status.pricing?.currency ?? cur.currency,
                     etaLabel: cur.etaLabel,
@@ -6540,11 +6564,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleGalleryGroupAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => {
-      setActiveGroupId(group.id);
       if (action === 'remove') {
         return;
       }
       if (group.source === 'active') {
+        setActiveGroupId(group.id);
         const renderGroup = renderGroups.get(group.id);
         if (!renderGroup || renderGroup.items.length === 0) return;
         const preferredHeroKey =
@@ -6568,8 +6592,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setCompositeOverride(null);
           setCompositeOverrideSummary(null);
           setSharedPrompt(null);
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(heroJobId);
           return;
         }
         if (action === 'continue') {
@@ -6762,25 +6784,22 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const openGroupViaGallery = useCallback(
     (group: GroupSummary) => {
-      setActiveGroupId(group.id);
       handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
     },
-    [handleGalleryGroupAction, setActiveGroupId]
+    [handleGalleryGroupAction]
   );
   const handleActiveGroupOpen = useCallback(
     (group: GroupSummary) => {
-      setActiveGroupId(group.id);
       handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
     },
-    [handleGalleryGroupAction, setActiveGroupId]
+    [handleGalleryGroupAction]
   );
   const handleActiveGroupAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction) => {
       if (action === 'remove') return;
-      setActiveGroupId(group.id);
       handleGalleryGroupAction(group, action, { autoPlayPreview: action === 'open' });
     },
-    [handleGalleryGroupAction, setActiveGroupId]
+    [handleGalleryGroupAction]
   );
 
   const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;

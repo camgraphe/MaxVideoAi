@@ -59,5 +59,36 @@ test('composite preview preserves lightweight preview video urls', () => {
   assert.match(appSource, /previewVideoUrl:\s*tile\.previewVideoUrl/);
   assert.match(appSource, /previewVideoUrl:\s*nextPreviewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(appSource, /previewUrl:\s*nextPreviewVideoUrl\s*\?\?\s*item\.previewUrl/);
+  assert.match(appSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
   assert.match(dockSource, /return item\.previewUrl \?\? item\.url/);
+});
+
+test('rail history previews do not mutate the active render group', () => {
+  const appSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+    'utf8'
+  );
+
+  assert.match(appSource, /if\s*\(group\.source === 'active'\)\s*\{\s*setActiveGroupId\(group\.id\)/);
+  assert.match(appSource, /const openGroupViaGallery = useCallback\(\s*\(\s*group: GroupSummary\s*\)\s*=>\s*\{\s*handleGalleryGroupAction\(group,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\);/);
+  assert.doesNotMatch(appSource, /const openGroupViaGallery[\s\S]*?setActiveGroupId\(group\.id\)[\s\S]*?\[handleGalleryGroupAction\]/);
+  const activeOpenStart = appSource.indexOf("if (group.source === 'active')");
+  const activeOpenEnd = appSource.indexOf("if (action === 'continue')", activeOpenStart);
+  assert.notEqual(activeOpenStart, -1);
+  assert.notEqual(activeOpenEnd, -1);
+  const activeOpenBlock = appSource.slice(activeOpenStart, activeOpenEnd);
+  assert.doesNotMatch(activeOpenBlock, /applyVideoSettingsFromTile\(tile\);/);
+  assert.doesNotMatch(activeOpenBlock, /hydrateVideoSettingsFromJob\(heroJobId\);/);
+});
+
+test('video polling waits for a real static thumbnail', () => {
+  const appSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+    'utf8'
+  );
+
+  assert.match(appSource, /function resolvePolledThumbUrl/);
+  assert.match(appSource, /status\.thumbUrl && !isPlaceholderMediaUrl\(status\.thumbUrl\)/);
+  assert.match(appSource, /thumbUrl:\s*resolvePolledThumbUrl\(r\.thumbUrl,\s*status\.thumbUrl\)/);
+  assert.match(appSource, /thumbUrl:\s*resolvePolledThumbUrl\(item\.thumbUrl,\s*status\.thumbUrl\)/);
 });
