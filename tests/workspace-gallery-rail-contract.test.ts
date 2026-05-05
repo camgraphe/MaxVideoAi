@@ -20,6 +20,7 @@ test('workspace video rail opens renders in the composite preview, not the group
 
   assert.match(railSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
   assert.match(railSource, /showOpenOverlay=\{false\}/);
+  assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
 
 test('Seedance completion persists canonical video outputs before preview enrichment', () => {
@@ -43,4 +44,20 @@ test('composite preview modal button opens direct preview groups', () => {
   assert.match(appSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
   assert.match(appSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
   assert.match(appSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group\s*\}\)/);
+});
+
+test('composite preview preserves lightweight preview video urls', () => {
+  const appSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+    'utf8'
+  );
+  const dockSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/groups/CompositePreviewDock.tsx'),
+    'utf8'
+  );
+
+  assert.match(appSource, /previewVideoUrl:\s*tile\.previewVideoUrl/);
+  assert.match(appSource, /previewVideoUrl:\s*nextPreviewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
+  assert.match(appSource, /previewUrl:\s*nextPreviewVideoUrl\s*\?\?\s*item\.previewUrl/);
+  assert.match(dockSource, /return item\.previewUrl \?\? item\.url/);
 });

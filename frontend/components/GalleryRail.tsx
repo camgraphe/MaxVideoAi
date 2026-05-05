@@ -35,7 +35,7 @@ export interface GalleryRailProps {
   feedType?: 'video' | 'image';
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
-  onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
+  onGroupAction?: (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => void;
   onFeedStateChange?: (state: GalleryFeedState) => void;
   jobFilter?: (job: Job) => boolean;
   variant?: GalleryVariant;
@@ -428,6 +428,10 @@ export function GalleryRail({
   const handleCardOpen = useCallback(
     (group: GroupSummary) => {
       const original = summaryIndex.get(group.id) ?? group;
+      if (feedType === 'video' && onGroupAction) {
+        onGroupAction(original, 'open', { autoPlayPreview: true });
+        return;
+      }
       if (onOpenGroup) {
         onOpenGroup(original);
         return;
@@ -436,7 +440,7 @@ export function GalleryRail({
       const adapted = adaptGroupSummary(normalized, DEFAULT_GROUP_PROVIDER);
       setViewerGroup(adapted);
     },
-    [onOpenGroup, summaryIndex]
+    [feedType, onGroupAction, onOpenGroup, summaryIndex]
   );
 
   const handleCardView = useCallback(
@@ -500,6 +504,10 @@ export function GalleryRail({
     (group: GroupSummary, action: GroupedJobAction) => {
       const original = summaryIndex.get(group.id) ?? group;
       if (action === 'open') {
+        if (feedType === 'video' && onGroupAction) {
+          onGroupAction(original, 'open', { autoPlayPreview: true });
+          return;
+        }
         handleCardOpen(original);
         return;
       }

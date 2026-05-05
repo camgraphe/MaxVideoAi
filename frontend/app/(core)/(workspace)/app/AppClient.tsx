@@ -4411,6 +4411,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               ok?: boolean;
               settingsSnapshot?: unknown;
               videoUrl?: string;
+              previewVideoUrl?: string;
               thumbUrl?: string;
               aspectRatio?: string;
               progress?: number;
@@ -4423,6 +4424,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
 
         const nextVideoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : null;
+        const nextPreviewVideoUrl =
+          typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length ? payload.previewVideoUrl : null;
         const nextThumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : null;
         if (!nextVideoUrl && !nextThumbUrl) return;
 
@@ -4431,6 +4434,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           return {
             ...current,
             videoUrl: nextVideoUrl ?? current.videoUrl,
+            previewVideoUrl: nextPreviewVideoUrl ?? current.previewVideoUrl,
             thumbUrl: nextThumbUrl ?? current.thumbUrl,
             aspectRatio: payload.aspectRatio ?? current.aspectRatio,
             progress: typeof payload.progress === 'number' ? payload.progress : current.progress,
@@ -4447,6 +4451,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             return {
               ...item,
               url: nextVideoUrl ?? item.url,
+              previewUrl: nextPreviewVideoUrl ?? item.previewUrl,
               thumb: nextThumbUrl ?? item.thumb,
               aspect: payload.aspectRatio === '9:16' || payload.aspectRatio === '1:1' ? payload.aspectRatio : item.aspect,
             };
@@ -6496,6 +6501,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             iterationIndex: tile.iterationIndex,
             iterationCount: tile.iterationCount,
             videoUrl: tile.videoUrl,
+            previewVideoUrl: tile.previewVideoUrl,
             aspectRatio: tile.aspectRatio,
             thumbUrl: tile.thumbUrl,
             progress: tile.progress,
@@ -6646,6 +6652,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           iterationIndex: tile.iterationIndex,
           iterationCount: tile.iterationCount,
           videoUrl: tile.videoUrl,
+          previewVideoUrl: tile.previewVideoUrl,
           aspectRatio: tile.aspectRatio,
           thumbUrl: tile.thumbUrl,
           progress: tile.progress,

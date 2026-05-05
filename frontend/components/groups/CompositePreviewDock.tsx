@@ -86,7 +86,7 @@ function isVideo(item: VideoItem): boolean {
 }
 
 function getInlinePreviewUrl(item: VideoItem): string {
-  return item.url;
+  return item.previewUrl ?? item.url;
 }
 
 function resolveAspectHint(item: VideoItem): string | null {
@@ -154,7 +154,6 @@ export function CompositePreviewDock({
     videoRefs.current.clear();
     videoRefCallbacksRef.current.clear();
     setReadyItems({});
-    setIsPlaying(false);
   }, [group?.id]);
 
   useEffect(() => {
