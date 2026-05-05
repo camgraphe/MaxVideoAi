@@ -598,7 +598,7 @@ export async function POST(req: NextRequest) {
     ? isSeedanceBytePlusModeAllowed(mode)
     : isSeedanceFastBytePlusModeAllowed(mode);
   if (isBytePlusV1a && !bytePlusModeAllowed) {
-    return NextResponse.json({ ok: false, error: 'BytePlus V1b only supports the configured Seedance modes.' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'This Seedance route only supports the configured modes.' }, { status: 400 });
   }
 
   const prompt = String(body.prompt || '');
@@ -825,7 +825,7 @@ export async function POST(req: NextRequest) {
         meta: { durationSec },
       });
       return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_DURATION_UNSUPPORTED', message: 'BytePlus V1a duration must be an integer from 5 to 15 seconds.' },
+        { ok: false, error: 'BYTEPLUS_DURATION_UNSUPPORTED', message: 'This Seedance route requires an integer duration from 5 to 15 seconds.' },
         { status: 400 }
       );
     }
@@ -838,7 +838,7 @@ export async function POST(req: NextRequest) {
         meta: { resolution: requestedResolution, engineId: engine.id },
       });
       return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_RESOLUTION_UNSUPPORTED', message: 'BytePlus does not support this resolution for the selected Seedance model.' },
+        { ok: false, error: 'BYTEPLUS_RESOLUTION_UNSUPPORTED', message: 'This Seedance route does not support this resolution for the selected model.' },
         { status: 400 }
       );
     }
@@ -849,7 +849,7 @@ export async function POST(req: NextRequest) {
         meta: { aspectRatio, engineId: engine.id },
       });
       return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_RATIO_UNSUPPORTED', message: 'BytePlus does not support this aspect ratio for Seedance.' },
+        { ok: false, error: 'BYTEPLUS_RATIO_UNSUPPORTED', message: 'This Seedance route does not support this aspect ratio.' },
         { status: 400 }
       );
     }
@@ -2456,7 +2456,7 @@ async function rollbackPendingPayment(params: {
           jobId,
           providerTask.status === 'running' ? 'running' : 'queued',
           providerTask.status === 'running' ? 30 : 10,
-          'BytePlus render submitted.',
+          'Render submitted.',
           BYTEPLUS_MODELARK_PROVIDER,
           providerJobId,
         ]

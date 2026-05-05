@@ -225,6 +225,7 @@ export interface GroupedJobCardProps {
   recreateLabel?: string;
   openLabel?: string;
   actionMenuLabel?: string;
+  showOpenOverlay?: boolean;
   eagerPreview?: boolean;
   warmOnVisible?: boolean;
 }
@@ -250,6 +251,7 @@ export function GroupedJobCard({
   recreateLabel = 'Generate same settings',
   openLabel = 'Open group',
   actionMenuLabel = 'Actions',
+  showOpenOverlay = true,
   eagerPreview = false,
   warmOnVisible = false,
 }: GroupedJobCardProps) {
@@ -461,7 +463,7 @@ export function GroupedJobCard({
             {splitLabel}
           </div>
         ) : null}
-        {onOpen ? (
+        {showOpenOverlay && onOpen ? (
           <div className="pointer-events-none absolute bottom-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-surface-on-media-dark-75 px-2.5 py-1 text-[11px] font-semibold text-on-inverse shadow-md backdrop-blur transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus:opacity-100">
             <Maximize2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span className="truncate">{openLabel}</span>
@@ -573,10 +575,10 @@ export function GroupedJobCard({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => handleAction('view')}
+                onClick={() => handleAction('open')}
                 className="w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
-                <span>Open</span>
+                <span>Preview</span>
               </Button>
               <Button
                 type="button"

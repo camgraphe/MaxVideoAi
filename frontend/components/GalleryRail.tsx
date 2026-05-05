@@ -692,6 +692,8 @@ export function GalleryRail({
             allowRemove={allowCardRemoval(group)}
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
+            openLabel={feedType === 'video' ? 'Preview' : undefined}
+            showOpenOverlay={false}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
             warmOnVisible={false}
           />

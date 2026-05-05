@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
@@ -376,7 +377,7 @@ export async function runBytePlusPoll() {
     }
     const createdAtMs = Date.parse(job.created_at);
     if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
-      await markJobFailed(job, 'BytePlus polling exceeded the expected render window.', 'timeout');
+      await markJobFailed(job, 'Render exceeded the expected processing window.', 'timeout');
       updates += 1;
       continue;
     }
@@ -404,7 +405,7 @@ export async function runBytePlusPoll() {
             job.job_id,
             task.status === 'running' ? 'running' : 'queued',
             task.status === 'running' ? 50 : 15,
-            'BytePlus render is in progress.',
+            'Render is in progress.',
             ACTIVE_JOB_STATUSES,
           ]
         );
@@ -413,13 +414,13 @@ export async function runBytePlusPoll() {
       }
 
       if (task.status === 'failed') {
-        await markJobFailed(job, task.message ?? 'BytePlus reported this render as failed.', task.rawStatus);
+        await markJobFailed(job, task.message ?? 'The render service reported this render as failed.', task.rawStatus);
         updates += 1;
         continue;
       }
 
       if (!task.videoUrl) {
-        await markJobFailed(job, 'BytePlus completed this render but returned no video URL.', task.rawStatus);
+        await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus);
         updates += 1;
         continue;
       }
@@ -444,7 +445,7 @@ export async function runBytePlusPoll() {
         } else {
           await markJobFailed(
             job,
-            `BytePlus output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
+            `The output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
             task.rawStatus
           );
         }
@@ -519,6 +520,24 @@ export async function runBytePlusPoll() {
         await recordPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
+      await upsertLegacyJobOutputs({
+        job_id: job.job_id,
+        user_id: job.user_id,
+        surface: 'video',
+        video_url: copiedVideoUrl,
+        audio_url: null,
+        thumb_url: thumb,
+        preview_frame: thumb,
+        preview_video_url: job.preview_video_url,
+        render_ids: null,
+        duration_sec: job.duration_sec,
+        status: 'completed',
+      }).catch((error) => {
+        console.warn('[byteplus-poll] failed to persist media output', {
+          jobId: job.job_id,
+          error: error instanceof Error ? error.message : error,
+        });
+      });
       await Promise.allSettled([
         generateAndPersistJobPreviewVideo({
           jobId: job.job_id,
