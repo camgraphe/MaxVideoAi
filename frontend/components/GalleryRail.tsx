@@ -8,7 +8,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup, ResultProvider } from '@/types/video-groups';
-import { hideJob, saveImageToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
+import { saveImageToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
@@ -285,74 +285,6 @@ export function GalleryRail({
   useEffect(() => {
     setHasMounted(true);
   }, []);
-  const handleRemoveJob = useCallback(
-    async (job: Job) => {
-      if (job.curated) {
-        setSnackbar({ message: copy.snackbar.samples, duration: 2400 });
-        return;
-      }
-      try {
-        await hideJob(job.jobId);
-        setSnackbar({ message: copy.snackbar.removed, duration: 2400 });
-        await mutate(
-          (pages) => {
-            if (!pages) return pages;
-            return pages.map((page) => ({
-              ...page,
-              jobs: page.jobs.filter((entry) => entry.jobId !== job.jobId),
-            }));
-          },
-          false
-        );
-      } catch (error) {
-        console.error('Failed to hide job', error);
-        setSnackbar({ message: copy.snackbar.failed, duration: 2400 });
-      }
-    },
-    [copy.snackbar.failed, copy.snackbar.removed, copy.snackbar.samples, mutate]
-  );
-
-  const handleRemoveJobId = useCallback(
-    async (jobId: string) => {
-      try {
-        await hideJob(jobId);
-        setSnackbar({ message: copy.snackbar.removed, duration: 2400 });
-        await mutate(
-          (pages) => {
-            if (!pages) return pages;
-            return pages.map((page) => ({
-              ...page,
-              jobs: page.jobs.filter((entry) => entry.jobId !== jobId),
-            }));
-          },
-          false
-        );
-      } catch (error) {
-        console.error('Failed to hide job', error);
-        setSnackbar({ message: copy.snackbar.failed, duration: 2400 });
-      }
-    },
-    [copy.snackbar.failed, copy.snackbar.removed, mutate]
-  );
-
-  const handleRemoveGroup = useCallback(
-    (group: GroupSummary) => {
-      if (activeGroupIds.has(group.id) || group.count > 1) return;
-      const jobId = group.hero.job?.jobId ?? group.hero.jobId;
-      if (!jobId) return;
-      if (group.hero.job?.curated) {
-        setSnackbar({ message: copy.snackbar.samples, duration: 2400 });
-        return;
-      }
-      if (group.hero.job) {
-        void handleRemoveJob(group.hero.job);
-        return;
-      }
-      void handleRemoveJobId(jobId);
-    },
-    [activeGroupIds, copy.snackbar.samples, handleRemoveJob, handleRemoveJobId]
-  );
-
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engineList.forEach((entry) => {
@@ -528,7 +460,6 @@ export function GalleryRail({
         return;
       }
       if (action === 'remove') {
-        handleRemoveGroup(original);
         return;
       }
       onGroupAction?.(original, action);
@@ -540,20 +471,9 @@ export function GalleryRail({
       handleCardSaveImage,
       handleCardOpen,
       handleCardView,
-      handleRemoveGroup,
       onGroupAction,
       summaryIndex,
     ]
-  );
-
-  const allowCardRemoval = useCallback(
-    (group: GroupSummary) => {
-      const original = summaryIndex.get(group.id) ?? group;
-      const job = original.hero.job;
-      if (job?.curated) return false;
-      return !activeGroupIds.has(group.id) && original.count <= 1;
-    },
-    [activeGroupIds, summaryIndex]
   );
 
   const loadMore = useCallback(() => {
@@ -697,7 +617,7 @@ export function GalleryRail({
             engine={engineEntry ?? undefined}
             onOpen={handleCardOpen}
             onAction={handleCardAction}
-            allowRemove={allowCardRemoval(group)}
+            allowRemove={false}
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
             openLabel={feedType === 'video' ? 'Preview' : undefined}
