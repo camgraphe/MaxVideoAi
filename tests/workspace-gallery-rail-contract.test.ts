@@ -79,6 +79,10 @@ test('rail history previews do not mutate the active render group', () => {
   const activeOpenBlock = appSource.slice(activeOpenStart, activeOpenEnd);
   assert.doesNotMatch(activeOpenBlock, /applyVideoSettingsFromTile\(tile\);/);
   assert.doesNotMatch(activeOpenBlock, /hydrateVideoSettingsFromJob\(heroJobId\);/);
+  assert.doesNotMatch(
+    appSource,
+    /useEffect\(\(\)\s*=>\s*\{\s*if\s*\(!activeGroupId\)[\s\S]*?setCompositeOverride\(null\)[\s\S]*?\},\s*\[activeGroupId,\s*renderGroups\]\)/
+  );
 });
 
 test('video polling waits for a real static thumbnail', () => {

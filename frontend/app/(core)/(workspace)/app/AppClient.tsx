@@ -2670,14 +2670,6 @@ useEffect(() => {
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
   }, [viewerTarget, pendingSummaryMap, provider]);
-  useEffect(() => {
-    if (!activeGroupId) return;
-    if (renderGroups.has(activeGroupId)) {
-      setCompositeOverride(null);
-      setCompositeOverrideSummary(null);
-      setSharedPrompt(null);
-    }
-  }, [activeGroupId, renderGroups]);
   const buildQuadTileFromRender = useCallback(
     (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
       const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
