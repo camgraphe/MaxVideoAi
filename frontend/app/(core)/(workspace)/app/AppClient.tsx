@@ -23,7 +23,6 @@ import type { CompositePreviewDockProps } from '@/components/groups/CompositePre
 import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { VideoGroup } from '@/types/video-groups';
@@ -92,6 +91,7 @@ import {
   supportsNegativePromptInput,
 } from './_lib/workspace-generation-guards';
 import { buildWorkspaceGeneratePayload } from './_lib/workspace-generation-payload';
+import { prepareLocalGenerationRender } from './_lib/workspace-local-generation-render';
 import {
   buildComposerModeToggles,
   coerceFormState,
@@ -2817,22 +2817,30 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         return;
       }
 
-      const localKey = `local_${batchId}_${iterationIndex + 1}`;
-      const id = localKey;
-      const ar = form.aspectRatio;
-      const thumb = ar === '9:16'
-        ? '/assets/frames/thumb-9x16.svg'
-        : ar === '1:1'
-          ? '/assets/frames/thumb-1x1.svg'
-          : '/assets/frames/thumb-16x9.svg';
-
-      const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, effectiveDurationSec);
-      const friendlyMessage =
-        iterationCount > 1 ? formatTakeLabel(iterationIndex + 1, iterationCount) : '';
-      const startedAt = Date.now();
-      const minEtaSeconds = Math.min(Math.max(etaSeconds ?? 4, 0), 8);
-      const minDurationMs = Math.max(1200, minEtaSeconds * 1000);
-      const minReadyAt = startedAt + minDurationMs;
+      const localRender = prepareLocalGenerationRender({
+        batchId,
+        iterationIndex,
+        iterationCount,
+        selectedEngine,
+        form,
+        effectiveDurationSec,
+        effectivePrompt,
+        preflight,
+        formatTakeLabel,
+      });
+      const {
+        localKey,
+        id,
+        thumb,
+        etaSeconds,
+        etaLabel,
+        friendlyMessage,
+        startedAt,
+        minDurationMs,
+        minReadyAt,
+        initialRender,
+        selectedPreview: initialSelectedPreview,
+      } = localRender;
 
       let progressMessage = friendlyMessage;
       const totalMs = minDurationMs;
@@ -2881,37 +2889,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }, timeoutMs);
       };
 
-      const initial: LocalRender = {
-        localKey,
-        batchId,
-        iterationIndex,
-        iterationCount,
-        id,
-        engineId: selectedEngine.id,
-        engineLabel: selectedEngine.label,
-        createdAt: new Date().toISOString(),
-        aspectRatio: form.aspectRatio,
-        durationSec: effectiveDurationSec,
-        prompt: effectivePrompt,
-        progress: 5,
-        message: friendlyMessage,
-        status: 'pending',
-        thumbUrl: thumb,
-        readyVideoUrl: undefined,
-        priceCents: preflight?.pricing?.totalCents ?? undefined,
-        currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
-        pricingSnapshot: preflight?.pricing,
-        paymentStatus: 'pending_payment',
-        etaSeconds,
-        etaLabel,
-        startedAt,
-        minReadyAt,
-        groupId: batchId,
-        renderIds: undefined,
-        heroRenderId: null,
-      };
-
-      setRenders((prev) => [initial, ...prev]);
+      setRenders((prev) => [initialRender, ...prev]);
       setBatchHeroes((prev) => {
         if (prev[batchId]) return prev;
         return { ...prev, [batchId]: localKey };
@@ -2921,23 +2899,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (iterationCount > 1) {
         setViewMode((prev) => (prev === 'quad' ? prev : 'quad'));
       }
-      setSelectedPreview({
-        id,
-        localKey,
-        batchId,
-        iterationIndex,
-        iterationCount,
-        aspectRatio: form.aspectRatio,
-        thumbUrl: thumb,
-        progress: initial.progress,
-        message: friendlyMessage,
-        priceCents: initial.priceCents,
-        currency: initial.currency,
-        etaSeconds,
-        etaLabel,
-        prompt: effectivePrompt,
-        status: initial.status,
-      });
+      setSelectedPreview(initialSelectedPreview);
 
       startProgressTracking();
 
