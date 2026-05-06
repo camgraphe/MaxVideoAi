@@ -2,17 +2,14 @@
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
-import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
-import { HeaderBar } from '@/components/HeaderBar';
-import { AppSidebar } from '@/components/AppSidebar';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
@@ -35,7 +32,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
-import type { VideoGroup, VideoItem } from '@/types/video-groups';
+import type { VideoGroup } from '@/types/video-groups';
 import {
   mapSelectedPreviewToGroup,
   mapSharedVideoToGroup,
@@ -84,6 +81,15 @@ import {
   localizeLtxField,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
+import { WorkspaceChrome } from './_components/WorkspaceChrome';
+import {
+  ComposerBootSkeleton,
+  CompositePreviewDockSkeleton,
+  EngineSettingsBootSkeleton,
+  GalleryRailSkeleton,
+  WorkspaceBootPreview,
+} from './_components/WorkspaceBootSkeletons';
+import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -109,156 +115,6 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
   { ssr: false }
 );
-
-const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
-const COMPOSITE_PREVIEW_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
-  x1: 1,
-  x2: 2,
-  x3: 4,
-  x4: 4,
-};
-
-function isCompositePreviewVideoItem(item: VideoItem): boolean {
-  const hint = typeof item.meta?.mediaType === 'string' ? item.meta.mediaType.toLowerCase() : null;
-  if (hint === 'video') return true;
-  if (hint === 'image') return false;
-  const url = item.url.toLowerCase();
-  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
-}
-
-function getCompositePreviewPosterSrc(group: VideoGroup | null): string | null {
-  if (!group) return null;
-  const desired = COMPOSITE_PREVIEW_SLOT_COUNT[group.layout] ?? Math.min(group.items.length, 4);
-  const visibleItems = group.items.slice(0, desired);
-  const activeVideoItem = visibleItems.find((item) => item.thumb && isCompositePreviewVideoItem(item));
-  const fallbackItem = visibleItems.find((item) => item.thumb);
-  return activeVideoItem?.thumb ?? fallbackItem?.thumb ?? null;
-}
-
-function CompositePreviewDockSkeleton() {
-  return (
-    <div className="rounded-card border border-border bg-surface-glass-60 p-4" aria-hidden>
-      <div className="mx-auto aspect-video w-full max-w-[760px] overflow-hidden rounded-card bg-skeleton" />
-      <div className="mx-auto mt-3 flex w-full max-w-[760px] gap-2">
-        <div className="h-8 w-32 rounded-full bg-skeleton" />
-        <div className="h-8 w-24 rounded-full bg-skeleton" />
-      </div>
-    </div>
-  );
-}
-
-function GalleryRailSkeleton() {
-  return (
-    <div className="w-full rounded-card border border-border bg-surface-glass-60 p-3" aria-hidden>
-      <div className="mb-3 h-4 w-24 rounded-full bg-skeleton" />
-      <div className="space-y-3">
-        <div className="aspect-video rounded-card bg-skeleton" />
-        <div className="aspect-video rounded-card bg-skeleton" />
-      </div>
-    </div>
-  );
-}
-
-function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
-      <div className="border-b border-hairline px-4 py-3">
-        <div className="h-9 w-full max-w-[520px] rounded-full bg-skeleton" />
-      </div>
-      <div className="px-4 py-4">
-        <div className="relative mx-auto aspect-video w-full max-w-[960px] overflow-hidden rounded-card bg-placeholder">
-          {posterSrc ? (
-            <Image
-              src={posterSrc}
-              alt=""
-              fill
-              priority
-              sizes={COMPOSITE_PREVIEW_POSTER_SIZES}
-              className="object-cover"
-            />
-          ) : (
-            <div className="skeleton absolute inset-0" />
-          )}
-        </div>
-        <div className="mx-auto mt-3 flex w-full max-w-[760px] gap-2">
-          <div className="h-8 w-32 rounded-full bg-skeleton" />
-          <div className="h-8 w-24 rounded-full bg-skeleton" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ComposerBootSkeleton() {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-80 p-4 shadow-card" aria-hidden>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="h-4 w-36 rounded-full bg-skeleton" />
-        <div className="h-8 w-28 rounded-full bg-skeleton" />
-      </div>
-      <div className="min-h-[156px] rounded-card border border-hairline bg-surface-2 p-4">
-        <div className="h-4 w-3/4 rounded-full bg-skeleton" />
-        <div className="mt-3 h-4 w-5/6 rounded-full bg-skeleton" />
-        <div className="mt-3 h-4 w-2/3 rounded-full bg-skeleton" />
-      </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
-          <div className="h-9 w-24 rounded-input bg-skeleton" />
-          <div className="h-9 w-24 rounded-input bg-skeleton" />
-        </div>
-        <div className="h-11 w-36 rounded-input bg-skeleton" />
-      </div>
-    </section>
-  );
-}
-
-function WorkspaceChrome({
-  isDesktopLayout,
-  children,
-  desktopRail,
-  mobileRail,
-}: {
-  isDesktopLayout: boolean;
-  children: ReactNode;
-  desktopRail: ReactNode;
-  mobileRail: ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen flex-col bg-bg">
-      <HeaderBar />
-      <div className={clsx('flex flex-1', isDesktopLayout ? 'flex-row' : 'flex-col')}>
-        <div className="flex min-w-0 flex-1">
-          <AppSidebar />
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
-              {children}
-            </main>
-          </div>
-        </div>
-        {isDesktopLayout ? (
-          <div className="flex w-[320px] justify-end py-4 pl-2 pr-0">
-            {desktopRail}
-          </div>
-        ) : null}
-      </div>
-      {!isDesktopLayout ? (
-        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
-          {mobileRail}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function EngineSettingsBootSkeleton() {
-  return (
-    <div className="flex flex-wrap items-center gap-2" aria-hidden>
-      <div className="h-9 w-40 rounded-input bg-skeleton" />
-      <div className="h-9 w-28 rounded-input bg-skeleton" />
-      <div className="h-9 w-24 rounded-input bg-skeleton" />
-    </div>
-  );
-}
 
 function WorkspaceBootContent({
   initialPreviewGroup,
