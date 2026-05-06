@@ -99,6 +99,15 @@ import {
   type LocalRender,
   type LocalRenderGroup,
 } from './_lib/render-persistence';
+import {
+  buildMultiPromptSummary,
+  createKlingElement,
+  createLocalId,
+  createMultiPromptScene,
+  MULTI_PROMPT_MAX_SEC,
+  MULTI_PROMPT_MIN_SEC,
+  normalizeSharedVideoPayload,
+} from './_lib/workspace-input-helpers';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -153,65 +162,12 @@ function WorkspaceBootContent({
   );
 }
 
-type SharedVideoPayload = SharedVideoPreview;
-
-function coerceNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-const MULTI_PROMPT_MIN_SEC = 3;
-const MULTI_PROMPT_MAX_SEC = 15;
-
-function createLocalId(prefix: string): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function createMultiPromptScene(): MultiPromptScene {
-  return {
-    id: createLocalId('scene'),
-    prompt: '',
-    duration: 5,
-  };
-}
-
-function buildMultiPromptSummary(scenes: MultiPromptScene[]): string {
-  return scenes
-    .filter((scene) => scene.prompt.trim().length)
-    .map((scene, index) => `Scene ${index + 1}: ${scene.prompt.trim()}`)
-    .join(' | ');
-}
-
 function haveSameGroupOrder(a: GroupSummary[], b: GroupSummary[]): boolean {
   if (a.length !== b.length) return false;
   for (let index = 0; index < a.length; index += 1) {
     if (a[index]?.id !== b[index]?.id) return false;
   }
   return true;
-}
-
-function createKlingElement(): KlingElementState {
-  return {
-    id: createLocalId('element'),
-    frontal: null,
-    references: Array.from({ length: 3 }, () => null),
-    video: null,
-  };
-}
-
-function normalizeSharedVideoPayload(raw: SharedVideoPayload): SharedVideoPayload {
-  const durationSec = coerceNumber(raw.durationSec) ?? 0;
-  return {
-    ...raw,
-    durationSec,
-  };
 }
 
 type ReferenceAsset = {
@@ -1246,7 +1202,7 @@ useEffect(() => {
 }, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
-  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPayload | null>(null);
+  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
@@ -3395,7 +3351,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (!res.ok) return;
         const json = await res.json();
         if (!json?.ok || !json.video || cancelled) return;
-        const video = normalizeSharedVideoPayload(json.video as SharedVideoPayload);
+        const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
         setCompositeOverrideSummary(null);
