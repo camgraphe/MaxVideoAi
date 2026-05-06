@@ -41,8 +41,13 @@ test('login page can consume a PKCE OAuth code directly', () => {
   );
   assert.match(
     loginPageSource,
-    /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(safeNextPath\)\}`/,
+    /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(sanitizeNextPath\(nextPath\)\)\}`/,
     'Google OAuth should use the existing allowlisted callback before forwarding the code to browser-side exchange'
+  );
+  assert.match(
+    loginPageSource,
+    /redirectTo:\s*oauthRedirectTo/,
+    'Google OAuth should pass the allowlisted callback URL to Supabase'
   );
 });
 

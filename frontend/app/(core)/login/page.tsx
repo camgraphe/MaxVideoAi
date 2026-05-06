@@ -73,6 +73,18 @@ function sanitizeNextPath(candidate: string | null | undefined): string {
   return isAllowed ? trimmed : DEFAULT_NEXT_PATH;
 }
 
+function getBrowserAuthRedirectOrigin(): string {
+  if (typeof window === 'undefined') return '';
+  return window.location.origin;
+}
+
+function buildAuthCallbackRedirect(origin: string, nextPath: string): string | undefined {
+  const trimmed = origin.trim();
+  if (!trimmed) return undefined;
+  const base = trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
+  return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
+}
+
 function markPendingGoogleLogin() {
   if (typeof window === 'undefined') return;
   try {
@@ -111,39 +123,9 @@ function consumePendingGoogleLogin(): boolean {
 export default function LoginPage() {
   const router = useRouter();
   const [locale, setLocale] = useState<Locale>('en');
-  const [nextPath, setNextPath] = useState<string>(() => {
-    if (typeof window === 'undefined') return DEFAULT_NEXT_PATH;
-    const params = new URLSearchParams(window.location.search);
-    const queryValue = params.get('next');
-    if (queryValue && queryValue.startsWith('/')) {
-      return sanitizeNextPath(queryValue);
-    }
-    let stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-    if (!stored) {
-      const legacyStored = window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-      if (legacyStored) {
-        window.localStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
-        stored = legacyStored;
-      }
-    }
-    if (stored) {
-      return sanitizeNextPath(stored);
-    }
-    let lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (!lastTarget) {
-      const legacyLast = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
-      if (legacyLast) {
-        window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
-        lastTarget = legacyLast;
-      }
-    }
-    if (lastTarget) {
-      return sanitizeNextPath(lastTarget);
-    }
-    return DEFAULT_NEXT_PATH;
-  });
+  const [nextPath, setNextPath] = useState<string>(DEFAULT_NEXT_PATH);
   const [nextPathReady, setNextPathReady] = useState(false);
-  const authRedirectOrigin = (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || '') as string;
+  const [authRedirectOrigin, setAuthRedirectOrigin] = useState('');
   const persistNextTarget = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
@@ -203,11 +185,6 @@ export default function LoginPage() {
   const [browserLocale, setBrowserLocale] = useState<string | null>(null);
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const safeNextPath = useMemo(() => sanitizeNextPath(nextPath), [nextPath]);
-  const redirectTo = useMemo(() => {
-    if (!authRedirectOrigin) return undefined;
-    const base = authRedirectOrigin.endsWith('/') ? authRedirectOrigin.slice(0, -1) : authRedirectOrigin;
-    return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
-  }, [authRedirectOrigin, safeNextPath]);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
 
   const completeAuthenticatedRedirect = useCallback(
@@ -259,6 +236,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (canonicalizeBrowserAuthOrigin()) return;
     if (typeof window === 'undefined') return;
+    setAuthRedirectOrigin(getBrowserAuthRedirectOrigin());
     const params = new URLSearchParams(window.location.search);
     const value = params.get('next');
     let resolved = DEFAULT_NEXT_PATH;
@@ -670,10 +648,14 @@ export default function LoginPage() {
       method: 'password',
       marketing_opt_in: marketingOptIn,
     });
+    const emailRedirectTo = buildAuthCallbackRedirect(
+      getBrowserAuthRedirectOrigin() || authRedirectOrigin,
+      safeNextPath
+    );
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: redirectTo },
+      options: { emailRedirectTo },
     });
     if (error) {
       setError(error.message);
@@ -722,7 +704,13 @@ export default function LoginPage() {
     setStatusTone('info');
     setStatus('Sending reset link…');
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    const passwordResetRedirectTo = buildAuthCallbackRedirect(
+      getBrowserAuthRedirectOrigin() || authRedirectOrigin,
+      safeNextPath
+    );
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: passwordResetRedirectTo,
+    });
     if (error) {
       setError(error.message);
       setStatus(null);
@@ -738,7 +726,12 @@ export default function LoginPage() {
     googleOAuthStartedRef.current = true;
     setIsGoogleOAuthStarting(true);
     setError(null);
-    if (!redirectTo) {
+    const safeNext = sanitizeNextPath(nextPath);
+    const oauthRedirectTo = buildAuthCallbackRedirect(
+      getBrowserAuthRedirectOrigin() || authRedirectOrigin,
+      safeNext
+    );
+    if (!oauthRedirectTo) {
       googleOAuthStartedRef.current = false;
       setIsGoogleOAuthStarting(false);
       setStatusTone('info');
@@ -750,7 +743,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo,
+        redirectTo: oauthRedirectTo,
         skipBrowserRedirect: true,
         queryParams: {
           access_type: 'offline',
@@ -767,7 +760,6 @@ export default function LoginPage() {
     }
     if (data?.url) {
       if (typeof window !== 'undefined') {
-        const safeNext = sanitizeNextPath(nextPath);
         persistNextTarget(safeNext);
         markPendingGoogleLogin();
       }
