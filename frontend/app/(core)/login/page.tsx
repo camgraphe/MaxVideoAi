@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
 import { writeLastKnownUserId } from '@/lib/last-known';
-import { clearStaleBrowserAuthState, isInvalidRefreshTokenError, readBrowserSession } from '@/lib/supabase-auth-cleanup';
+import {
+  clearStaleBrowserAuthState,
+  isInvalidRefreshTokenError,
+  readBrowserSession,
+} from '@/lib/supabase-auth-cleanup';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -223,6 +227,24 @@ export default function LoginPage() {
     [persistNextTarget, router]
   );
 
+  const redirectFromExistingBrowserSession = useCallback(
+    async function redirectFromExistingBrowserSession(target: string): Promise<boolean> {
+      const session = await readBrowserSession();
+      const userId = session?.user?.id ?? null;
+      if (!session?.access_token || !userId) return false;
+      if (consumePendingGoogleLogin()) {
+        persistPendingAnalyticsEvent('login_completed', {
+          route_family: 'auth',
+          auth_surface: 'login',
+          method: 'google',
+        });
+      }
+      completeAuthenticatedRedirect(target, userId);
+      return true;
+    },
+    [completeAuthenticatedRedirect]
+  );
+
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
     const nextPassword = passwordRef.current?.value ?? '';
@@ -355,12 +377,15 @@ export default function LoginPage() {
     const target = sanitizeNextPath(params.get('next') ?? nextPath);
     void supabase.auth
       .exchangeCodeForSession(oauthCode)
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (cancelled) return;
         if (error || !data.session) {
           if (isInvalidRefreshTokenError(error)) {
             void clearStaleBrowserAuthState();
           }
+          const fallbackRedirected = await redirectFromExistingBrowserSession(target);
+          if (cancelled || fallbackRedirected) return;
+          oauthCodeExchangeStartedRef.current = false;
           clearPendingGoogleLogin();
           setStatus(null);
           setError(localizedCopy.oauthCallbackError);
@@ -375,11 +400,14 @@ export default function LoginPage() {
         }
         completeAuthenticatedRedirect(target, data.session.user?.id ?? null);
       })
-      .catch((err) => {
+      .catch(async (err) => {
         if (cancelled) return;
         if (isInvalidRefreshTokenError(err)) {
           void clearStaleBrowserAuthState();
         }
+        const fallbackRedirected = await redirectFromExistingBrowserSession(target);
+        if (cancelled || fallbackRedirected) return;
+        oauthCodeExchangeStartedRef.current = false;
         clearPendingGoogleLogin();
         setStatus(null);
         setError(localizedCopy.oauthCallbackError);
@@ -388,7 +416,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [authCopy, completeAuthenticatedRedirect, nextPath]);
+  }, [authCopy, completeAuthenticatedRedirect, nextPath, redirectFromExistingBrowserSession]);
 
   useEffect(() => {
     if (mode !== 'signup' && termsError) {
