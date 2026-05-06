@@ -4,7 +4,7 @@ import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { getUserIdentity } from '@/server/supabase-admin';
 
 export const RESTRICTED_ACCOUNT_MESSAGE =
-  'Your account is temporarily restricted for security reasons. Please contact support.';
+  'Your account is temporarily restricted for security reasons. Please contact support@maxvideoai.com.';
 
 const CREDIT_REVERSAL_DESCRIPTION = 'Credit reversal: refunded suspected fraudulent payment';
 const FRAUD_REVERSAL_REASON = 'fraud_credit_reversal';

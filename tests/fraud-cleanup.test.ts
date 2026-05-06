@@ -141,5 +141,8 @@ test('planFraudTopupActions restricts clearly fraudulent repeated small top-ups 
   assert.equal(plan.items[0]?.restrictAccount, true);
   assert.equal(plan.items[0]?.restrictionReason, 'fraud_marked_payment');
   assert.equal(plan.summary.accountsToRestrict, 1);
-  assert.equal(RESTRICTED_ACCOUNT_MESSAGE, 'Your account is temporarily restricted for security reasons. Please contact support.');
+  assert.equal(
+    RESTRICTED_ACCOUNT_MESSAGE,
+    'Your account is temporarily restricted for security reasons. Please contact support@maxvideoai.com.'
+  );
 });
