@@ -393,6 +393,14 @@ test('Fal requests serialize numeric duration selections as string enum values w
     '15'
   );
   assert.equal(
+    normalizeFalDurationValueForModel('kling-3-pro', 'fal-ai/kling-video/v3/pro/text-to-video', '9s'),
+    '9'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('kling-3-4k', 'fal-ai/kling-video/v3/4k/text-to-video', 9),
+    '9'
+  );
+  assert.equal(
     normalizeFalDurationValueForModel('veo-3-1', 'fal-ai/veo3.1/text-to-video', 8),
     8
   );
