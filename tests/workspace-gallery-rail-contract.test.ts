@@ -115,6 +115,10 @@ test('video polling waits for a real static thumbnail', () => {
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRenderState.ts'),
     'utf8'
   );
+  const generationRunnerHookSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts'),
+    'utf8'
+  );
 
   assert.match(renderPersistenceSource, /export function resolvePolledThumbUrl/);
   assert.match(renderPersistenceSource, /next && !isPlaceholderMediaUrl\(next\)/);
@@ -122,6 +126,6 @@ test('video polling waits for a real static thumbnail', () => {
   assert.match(renderStatusSource, /thumbUrl:\s*resolvePolledThumbUrl\(current\.thumbUrl,\s*status\.thumbUrl\)/);
   assert.match(generationPollingSource, /thumbUrl:\s*resolvePolledThumbUrl\(render\.thumbUrl,\s*projection\.status\.thumbUrl\)/);
   assert.match(generationPollingSource, /thumbUrl:\s*resolvePolledThumbUrl\(current\.thumbUrl,\s*projection\.status\.thumbUrl\)/);
-  assert.match(appSource, /applyGenerationPollToRender\(r,\s*pollProjection\)/);
+  assert.match(generationRunnerHookSource, /applyGenerationPollToRender\(r,\s*pollProjection\)/);
   assert.match(renderStateHookSource, /applyPolledJobStatusToRender\(item,\s*status\)/);
 });
