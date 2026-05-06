@@ -1,6 +1,7 @@
 'use client';
 
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
+import { createStorageFromOptions } from '@supabase/ssr/dist/module/cookies';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -28,9 +29,26 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === 'production',
 };
 
-export const supabase = createBrowserClient(supabaseUrl, supabaseKey, {
-  cookieOptions,
+const { storage } = createStorageFromOptions(
+  {
+    cookieEncoding: 'base64url',
+    cookieOptions,
+  },
+  false
+);
+
+// The SSR browser factory always enables URL session detection; the login page owns PKCE code exchange.
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  global: {
+    headers: {
+      'X-Client-Info': 'maxvideoai-browser-auth',
+    },
+  },
   auth: {
+    flowType: 'pkce',
+    autoRefreshToken: true,
     detectSessionInUrl: false,
+    persistSession: true,
+    storage,
   },
 });
