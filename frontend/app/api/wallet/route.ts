@@ -30,6 +30,12 @@ import {
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
+import {
+  evaluateWalletCheckoutGuard,
+  markCheckoutAttemptSessionCreated,
+  markCheckoutAttemptSessionFailed,
+  resolveCheckoutClientIp,
+} from '@/server/checkout-guard';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -441,14 +447,57 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  let checkoutAttemptId: number | null = null;
+
   try {
     // Create a one-off Checkout Session for top-up
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
+    const tier = findTopupTier({ usdAmountCents: amountCents });
     const blockAmexCards = shouldBlockAmexForWalletTopUp({
       blockAmexFeatureEnabled: envFlagEnabled(ENV.STRIPE_BLOCK_AMEX),
       hasCompletedTopUp,
     });
+    const captchaToken = typeof body.captchaToken === 'string' ? body.captchaToken : null;
+    const checkoutGuard = await evaluateWalletCheckoutGuard({
+      userId,
+      clientIp: resolveCheckoutClientIp(req.headers),
+      amountCents,
+      mode: isExpressCheckoutTopUp ? 'express_checkout' : 'hosted',
+      hasCompletedTopUp,
+      isPresetTopupTier: Boolean(tier),
+      captchaToken,
+      metadata: {
+        currency: resolvedCurrencyUpper,
+        locale: checkoutLocale,
+        checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+      },
+    });
+    checkoutAttemptId = checkoutGuard.attemptId;
+
+    if (checkoutGuard.action === 'captcha_required') {
+      return json(
+        {
+          error: 'captcha_required',
+          captchaRequired: true,
+          reason: checkoutGuard.reason,
+        },
+        { status: 403 }
+      );
+    }
+
+    if (checkoutGuard.action === 'rate_limited') {
+      const retryAfterSeconds = checkoutGuard.retryAfterSeconds ?? 900;
+      const response = json(
+        {
+          error: 'too_many_attempts',
+          retryAfterSeconds,
+        },
+        { status: 429 }
+      );
+      response.headers.set('Retry-After', String(retryAfterSeconds));
+      return response;
+    }
 
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
     const stripeCustomerId = await getOrCreateStripeCustomerForUser(stripe, userId, {
@@ -466,8 +515,10 @@ export async function POST(req: NextRequest) {
       checkout_ui_mode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
       first_wallet_topup: String(isFirstTopUp),
       amex_block_required: String(blockAmexCards),
+      checkout_attempt_id: String(checkoutGuard.attemptId),
+      checkout_guard_reason: checkoutGuard.reason,
+      checkout_captcha_passed: String(checkoutGuard.captchaPassed),
     };
-    const tier = findTopupTier({ usdAmountCents: amountCents });
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
     if (tier?.label) {
       sessionMetadata.topup_tier_label = tier.label;
@@ -567,6 +618,10 @@ export async function POST(req: NextRequest) {
       session = await stripe.checkout.sessions.create(fallbackSessionParams as Stripe.Checkout.SessionCreateParams);
     }
 
+    await markCheckoutAttemptSessionCreated(checkoutGuard.attemptId, session.id).catch((error) => {
+      console.warn('[checkout-guard] failed to mark checkout session created', error);
+    });
+
     console.info('[payments] checkout session created', {
       sessionId: session.id,
       checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
@@ -596,6 +651,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id: session.id, url: session.url });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Stripe error creating checkout session';
+    if (checkoutAttemptId) {
+      await markCheckoutAttemptSessionFailed(checkoutAttemptId, message).catch((markError) => {
+        console.warn('[checkout-guard] failed to mark checkout session failed', markError);
+      });
+    }
     console.error('POST /api/wallet error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }

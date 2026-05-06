@@ -69,6 +69,26 @@ const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVER
 const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_VALUE ?? 1);
 const GOOGLE_ADS_CONVERSION_VALUE_FALLBACK = Number.isFinite(GOOGLE_ADS_CONVERSION_VALUE_ENV) ? GOOGLE_ADS_CONVERSION_VALUE_ENV : 1;
 const PENDING_TOPUP_CANCELLED_STORAGE_KEY = 'mv-pending-topup-cancelled-event';
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
+
+type TurnstileRenderOptions = {
+  sitekey: string;
+  theme?: 'auto' | 'light' | 'dark';
+  callback?: (token: string) => void;
+  'error-callback'?: () => void;
+  'expired-callback'?: () => void;
+};
+
+type TurnstileApi = {
+  render: (container: HTMLElement, options: TurnstileRenderOptions) => string;
+  remove?: (widgetId: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
 
 const DEFAULT_BILLING_COPY = {
   title: 'Billing',
@@ -104,6 +124,11 @@ const DEFAULT_BILLING_COPY = {
     expressError: 'Express checkout unavailable.',
     expressClosed: 'Fast pay window closed. No charge made.',
     expressAriaLabel: 'Express checkout',
+    expressRevealCta: 'Show Apple Pay / Google Pay / Link',
+    captchaPrompt: 'Security check required before Checkout.',
+    captchaComplete: 'Security check complete. Continue to payment.',
+    captchaError: 'Security check unavailable. Try again.',
+    rateLimited: 'Too many payment attempts. Try again in {seconds}s.',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -250,6 +275,7 @@ type WalletExpressCheckoutProps = {
   chargeCurrency: string;
   localAmountLabel?: string | null;
   locale: string;
+  captchaToken?: string | null;
   session: { access_token?: string | null } | null;
   stripePromise: Promise<Stripe | null> | null;
   labels: Pick<
@@ -262,7 +288,9 @@ type WalletExpressCheckoutProps = {
     | 'expressError'
     | 'expressClosed'
     | 'expressAriaLabel'
+    | 'rateLimited'
   >;
+  onCaptchaRequired: () => void;
   onPaymentStarted: (amountCents: number) => void;
   onPaymentFailed: (amountCents: number, reason?: string) => void;
 };
@@ -272,9 +300,11 @@ function WalletExpressCheckout({
   chargeCurrency,
   localAmountLabel = null,
   locale,
+  captchaToken = null,
   session,
   stripePromise,
   labels,
+  onCaptchaRequired,
   onPaymentStarted,
   onPaymentFailed,
 }: WalletExpressCheckoutProps) {
@@ -312,10 +342,23 @@ function WalletExpressCheckout({
             currency: normalizedChargeCurrency.toLowerCase(),
             mode: 'express_checkout',
             locale,
+            captchaToken: captchaToken ?? undefined,
           }),
         });
         const payload = await response.json().catch(() => null);
         if (!response.ok) {
+          if (payload?.captchaRequired) {
+            setStatus('unavailable');
+            setMessage(null);
+            onCaptchaRequired();
+            return;
+          }
+          if (response.status === 429) {
+            const seconds = Number(payload?.retryAfterSeconds ?? 900);
+            setStatus('error');
+            setMessage(labels.rateLimited.replace('{seconds}', String(seconds)));
+            return;
+          }
           throw new Error(payload?.error ?? 'express_checkout_session_failed');
         }
         const clientSecret =
@@ -424,8 +467,11 @@ function WalletExpressCheckout({
     labels.expressError,
     labels.expressClosed,
     labels.expressUnavailable,
+    labels.rateLimited,
     locale,
+    captchaToken,
     normalizedChargeCurrency,
+    onCaptchaRequired,
     onPaymentFailed,
     onPaymentStarted,
     session,
@@ -459,6 +505,70 @@ function WalletExpressCheckout({
   );
 }
 
+function TurnstileChallenge({
+  siteKey,
+  onToken,
+  onError,
+}: {
+  siteKey: string;
+  onToken: (token: string | null) => void;
+  onError: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!siteKey || !containerRef.current) return undefined;
+
+    let cancelled = false;
+    let widgetId: string | null = null;
+    const container = containerRef.current;
+
+    const renderWidget = () => {
+      if (cancelled || widgetId || !window.turnstile || !container.isConnected) return;
+      widgetId = window.turnstile.render(container, {
+        sitekey: siteKey,
+        theme: 'auto',
+        callback: (token) => onToken(token),
+        'expired-callback': () => onToken(null),
+        'error-callback': onError,
+      });
+    };
+
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      let script = document.getElementById('cf-turnstile-api') as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'cf-turnstile-api';
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', renderWidget);
+      script.addEventListener('error', onError);
+      return () => {
+        cancelled = true;
+        script?.removeEventListener('load', renderWidget);
+        script?.removeEventListener('error', onError);
+        if (widgetId && window.turnstile?.remove) {
+          window.turnstile.remove(widgetId);
+        }
+      };
+    }
+
+    return () => {
+      cancelled = true;
+      if (widgetId && window.turnstile?.remove) {
+        window.turnstile.remove(widgetId);
+      }
+    };
+  }, [onError, onToken, siteKey]);
+
+  return <div ref={containerRef} className="min-h-[65px]" />;
+}
+
 export default function BillingPage() {
   const { locale, t } = useI18n();
   const rawCopy = t('workspace.billing', DEFAULT_BILLING_COPY);
@@ -481,6 +591,11 @@ export default function BillingPage() {
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isTopupStarting, setIsTopupStarting] = useState(false);
+  const [expressRequested, setExpressRequested] = useState(false);
+  const [checkoutCaptchaRequired, setCheckoutCaptchaRequired] = useState(false);
+  const [checkoutCaptchaToken, setCheckoutCaptchaToken] = useState<string | null>(null);
+  const [checkoutCaptchaError, setCheckoutCaptchaError] = useState<string | null>(null);
 
   const [currencyOptions, setCurrencyOptions] = useState<string[]>(['USD']);
   const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
@@ -521,6 +636,13 @@ export default function BillingPage() {
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const loginRedirectTarget = pathname || '/billing';
   const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
+
+  useEffect(() => {
+    setExpressRequested(false);
+    setCheckoutCaptchaRequired(false);
+    setCheckoutCaptchaToken(null);
+    setCheckoutCaptchaError(null);
+  }, [normalizedChargeCurrency, selectedTopupCents]);
 
   useEffect(() => {
     autoCurrencyRef.current = autoCurrency;
@@ -937,6 +1059,9 @@ export default function BillingPage() {
       setAuthModalOpen(true);
       return;
     }
+    if (isTopupStarting) return;
+    setIsTopupStarting(true);
+    setCheckoutCaptchaError(null);
     const token = session?.access_token ?? null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
@@ -950,10 +1075,21 @@ export default function BillingPage() {
           amountCents,
           currency: (chargeCurrency || 'USD').toLowerCase(),
           locale,
+          captchaToken: checkoutCaptchaToken ?? undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
+        if (payload?.captchaRequired) {
+          setCheckoutCaptchaRequired(true);
+          setCheckoutCaptchaToken(null);
+          return;
+        }
+        if (response.status === 429) {
+          const seconds = Number(payload?.retryAfterSeconds ?? 900);
+          setToast(copy.wallet.rateLimited.replace('{seconds}', String(seconds)));
+          return;
+        }
         throw new Error(payload?.error ?? 'checkout_session_failed');
       }
       const checkoutUrl = typeof payload?.url === 'string' ? payload.url : null;
@@ -961,6 +1097,8 @@ export default function BillingPage() {
       if (!hasCheckoutTarget) {
         throw new Error('missing_checkout_target');
       }
+      setCheckoutCaptchaRequired(false);
+      setCheckoutCaptchaToken(null);
       triggerTopupStarted(amountCents, normalizedChargeCurrency);
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
@@ -980,6 +1118,8 @@ export default function BillingPage() {
       const reason = error instanceof Error ? error.message : 'topup_failed';
       triggerTopupFailed(amountCents, normalizedChargeCurrency, reason);
       setToast(copy.errors.topupStart);
+    } finally {
+      setIsTopupStarting(false);
     }
   }
 
@@ -997,6 +1137,24 @@ export default function BillingPage() {
     },
     [copy.errors.topupStart, normalizedChargeCurrency, triggerTopupFailed]
   );
+
+  const handleCheckoutCaptchaRequired = useCallback(() => {
+    setCheckoutCaptchaRequired(true);
+    setCheckoutCaptchaToken(null);
+    setCheckoutCaptchaError(null);
+  }, []);
+
+  const handleCheckoutCaptchaToken = useCallback((token: string | null) => {
+    setCheckoutCaptchaToken(token);
+    if (token) {
+      setCheckoutCaptchaError(null);
+    }
+  }, []);
+
+  const handleCheckoutCaptchaError = useCallback(() => {
+    setCheckoutCaptchaToken(null);
+    setCheckoutCaptchaError(copy.wallet.captchaError);
+  }, [copy.wallet.captchaError]);
 
   async function loadMoreReceipts() {
     if (receipts.loading || receipts.nextCursor === null) return;
@@ -1303,6 +1461,7 @@ export default function BillingPage() {
                     <Button
                       type="button"
                       size="lg"
+                      disabled={isTopupStarting}
                       onClick={() => handleTopUp(selectedTopupCents)}
                       className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto sm:px-5"
                     >
@@ -1312,26 +1471,69 @@ export default function BillingPage() {
                   <p className="mt-2 text-xs text-text-secondary">{copy.wallet.checkoutNote}</p>
                 </div>
 
-                <WalletExpressCheckout
-                  amountCents={selectedTopupCents}
-                  chargeCurrency={normalizedChargeCurrency}
-                  localAmountLabel={selectedTopupLocalLabel}
-                  locale={locale}
-                  session={session}
-                  stripePromise={stripePromise}
-                  labels={{
-                    selectedAmount: copy.wallet.selectedAmount,
-                    expressTitle: copy.wallet.expressTitle,
-                    expressSubtitle: copy.wallet.expressSubtitle,
-                    expressLoading: copy.wallet.expressLoading,
-                    expressUnavailable: copy.wallet.expressUnavailable,
-                    expressError: copy.wallet.expressError,
-                    expressClosed: copy.wallet.expressClosed,
-                    expressAriaLabel: copy.wallet.expressAriaLabel,
-                  }}
-                  onPaymentStarted={handleExpressTopupStarted}
-                  onPaymentFailed={handleExpressTopupFailed}
-                />
+                {checkoutCaptchaRequired ? (
+                  <div className="mt-3 rounded-input border border-border bg-bg p-3">
+                    <p className="text-sm font-semibold text-text-primary">{copy.wallet.captchaPrompt}</p>
+                    {TURNSTILE_SITE_KEY ? (
+                      <div className="mt-3">
+                        <TurnstileChallenge
+                          siteKey={TURNSTILE_SITE_KEY}
+                          onToken={handleCheckoutCaptchaToken}
+                          onError={handleCheckoutCaptchaError}
+                        />
+                      </div>
+                    ) : null}
+                    <p className={`mt-2 text-xs ${checkoutCaptchaError ? 'text-state-warning' : checkoutCaptchaToken ? 'text-success' : 'text-text-secondary'}`}>
+                      {checkoutCaptchaError ?? (checkoutCaptchaToken ? copy.wallet.captchaComplete : copy.wallet.captchaPrompt)}
+                    </p>
+                  </div>
+                ) : null}
+
+                {session && !expressRequested ? (
+                  <div className="mt-4 rounded-input border border-border bg-bg p-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-text-primary">{copy.wallet.expressTitle}</p>
+                        <p className="mt-0.5 text-xs text-text-secondary">{copy.wallet.expressSubtitle}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="md"
+                        variant="outline"
+                        onClick={() => setExpressRequested(true)}
+                        className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto"
+                      >
+                        {copy.wallet.expressRevealCta}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {expressRequested ? (
+                  <WalletExpressCheckout
+                    amountCents={selectedTopupCents}
+                    chargeCurrency={normalizedChargeCurrency}
+                    localAmountLabel={selectedTopupLocalLabel}
+                    locale={locale}
+                    captchaToken={checkoutCaptchaToken}
+                    session={session}
+                    stripePromise={stripePromise}
+                    labels={{
+                      selectedAmount: copy.wallet.selectedAmount,
+                      expressTitle: copy.wallet.expressTitle,
+                      expressSubtitle: copy.wallet.expressSubtitle,
+                      expressLoading: copy.wallet.expressLoading,
+                      expressUnavailable: copy.wallet.expressUnavailable,
+                      expressError: copy.wallet.expressError,
+                      expressClosed: copy.wallet.expressClosed,
+                      expressAriaLabel: copy.wallet.expressAriaLabel,
+                      rateLimited: copy.wallet.rateLimited,
+                    }}
+                    onCaptchaRequired={handleCheckoutCaptchaRequired}
+                    onPaymentStarted={handleExpressTopupStarted}
+                    onPaymentFailed={handleExpressTopupFailed}
+                  />
+                ) : null}
                 <div className="mt-3 flex flex-col gap-1 text-left sm:hidden">
                   <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select-mobile">
                     {copy.wallet.currencyLabel}
