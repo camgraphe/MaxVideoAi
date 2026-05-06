@@ -3546,6 +3546,7 @@
         "expressClosed": "Ventana de pago rápido cerrada. No se aplicó ningún cargo.",
         "expressAriaLabel": "Pago exprés",
         "expressRevealCta": "Mostrar Apple Pay / Google Pay / Link",
+        "expressRevealAction": "Mostrar",
         "captchaPrompt": "Verificación de seguridad requerida antes del Checkout.",
         "captchaComplete": "Verificación completada. Continúa al pago.",
         "captchaError": "Verificación de seguridad no disponible. Inténtalo de nuevo.",

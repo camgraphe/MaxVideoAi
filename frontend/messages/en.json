@@ -3629,6 +3629,7 @@
         "expressClosed": "Fast pay window closed. No charge made.",
         "expressAriaLabel": "Express checkout",
         "expressRevealCta": "Show Apple Pay / Google Pay / Link",
+        "expressRevealAction": "Show",
         "captchaPrompt": "Security check required before Checkout.",
         "captchaComplete": "Security check complete. Continue to payment.",
         "captchaError": "Security check unavailable. Try again.",

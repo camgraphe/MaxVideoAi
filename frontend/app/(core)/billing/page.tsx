@@ -125,6 +125,7 @@ const DEFAULT_BILLING_COPY = {
     expressClosed: 'Fast pay window closed. No charge made.',
     expressAriaLabel: 'Express checkout',
     expressRevealCta: 'Show Apple Pay / Google Pay / Link',
+    expressRevealAction: 'Show',
     captchaPrompt: 'Security check required before Checkout.',
     captchaComplete: 'Security check complete. Continue to payment.',
     captchaError: 'Security check unavailable. Try again.',
@@ -567,6 +568,27 @@ function TurnstileChallenge({
   }, [onError, onToken, siteKey]);
 
   return <div ref={containerRef} className="min-h-[65px]" />;
+}
+
+function FastPayLogoStrip() {
+  return (
+    <span className="inline-flex items-center justify-center gap-1.5" aria-hidden="true">
+      <span className="inline-flex h-6 min-w-[54px] items-center justify-center rounded-[5px] bg-black px-2 text-[11px] font-semibold leading-none text-white shadow-sm">
+        Apple Pay
+      </span>
+      <span className="inline-flex h-6 min-w-[50px] items-center justify-center gap-0.5 rounded-[5px] border border-border bg-white px-2 text-[11px] font-semibold leading-none text-slate-800 shadow-sm">
+        <span className="text-[#4285f4]">G</span>
+        <span>Pay</span>
+      </span>
+      <span className="inline-flex h-6 min-w-[56px] items-center justify-center rounded-[5px] border border-[#d7e8ff] bg-white px-2 text-[11px] font-bold leading-none shadow-sm">
+        <span className="text-[#003087]">Pay</span>
+        <span className="text-[#009cde]">Pal</span>
+      </span>
+      <span className="inline-flex h-6 min-w-[42px] items-center justify-center rounded-[5px] bg-[#625afa] px-2 text-[11px] font-bold leading-none text-white shadow-sm">
+        Link
+      </span>
+    </span>
+  );
 }
 
 export default function BillingPage() {
@@ -1501,9 +1523,13 @@ export default function BillingPage() {
                         size="md"
                         variant="outline"
                         onClick={() => setExpressRequested(true)}
-                        className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto"
+                        aria-label={copy.wallet.expressRevealCta}
+                        className="w-full whitespace-normal px-3 text-center leading-snug sm:w-auto sm:px-4"
                       >
-                        {copy.wallet.expressRevealCta}
+                        <span className="flex flex-col items-center justify-center gap-2">
+                          <span className="text-xs font-semibold">{copy.wallet.expressRevealAction}</span>
+                          <FastPayLogoStrip />
+                        </span>
                       </Button>
                     </div>
                   </div>
