@@ -1,5 +1,6 @@
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
+import type { AppLocale } from '@/i18n/locales';
 import {
   FULL_BLEED_SECTION,
   SECTION_BG_A,
@@ -20,8 +21,15 @@ type ModelSafetyFaqSectionProps = {
   safetyInterpretation: string[];
   faqList: FaqEntry[];
   faqTitle: string | null;
+  locale: AppLocale;
   isSoraPrompting: boolean;
   faqJsonLdEntries: FaqEntry[];
+};
+
+const DEFAULT_SAFETY_TITLE_BY_LOCALE: Record<AppLocale, string> = {
+  en: 'Safety & people / likeness',
+  fr: "Sécurité, personnes et droit à l'image",
+  es: 'Seguridad, personas y parecido',
 };
 
 export function ModelSafetyFaqSection({
@@ -30,9 +38,12 @@ export function ModelSafetyFaqSection({
   safetyInterpretation,
   faqList,
   faqTitle,
+  locale,
   isSoraPrompting,
   faqJsonLdEntries,
 }: ModelSafetyFaqSectionProps) {
+  const safetyTitle = copy.safetyTitle ?? DEFAULT_SAFETY_TITLE_BY_LOCALE[locale] ?? DEFAULT_SAFETY_TITLE_BY_LOCALE.en;
+
   return (
 <>
         {copy.safetyTitle || safetyRules.length || safetyInterpretation.length ? (
@@ -41,7 +52,7 @@ export function ModelSafetyFaqSection({
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              {copy.safetyTitle ?? 'Safety & people / likeness'}
+              {safetyTitle}
             </h2>
             <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {safetyRules.length ? (

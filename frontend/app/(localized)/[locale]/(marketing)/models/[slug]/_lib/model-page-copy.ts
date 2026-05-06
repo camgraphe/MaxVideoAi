@@ -70,6 +70,26 @@ export const DEFAULT_VIDEO_SAFETY = [
 
 export const DEFAULT_GENERIC_SAFETY = DEFAULT_VIDEO_SAFETY;
 
+const DEFAULT_VIDEO_SAFETY_BY_LOCALE: Record<AppLocale, string[]> = {
+  en: DEFAULT_VIDEO_SAFETY,
+  fr: [
+    'Ne générez pas de personnes réelles ni de personnalités publiques (célébrités, responsables politiques, etc.).',
+    'Pas de mineurs, contenu sexuel, contenu haineux ou violence graphique.',
+    "N'utilisez pas l'image ou la ressemblance d'une personne sans son consentement.",
+    'Certains prompts et images de référence peuvent être bloqués ; les personnages et scènes génériques sont acceptés.',
+  ],
+  es: [
+    'No generes personas reales ni figuras públicas (celebridades, políticos, etc.).',
+    'Sin menores, contenido sexual, contenido de odio ni violencia gráfica.',
+    'No uses la imagen o el parecido de una persona sin su consentimiento.',
+    'Algunos prompts e imágenes de referencia pueden bloquearse; los personajes y escenas genéricos son aceptables.',
+  ],
+};
+
+export function getDefaultGenericSafety(locale: AppLocale): string[] {
+  return DEFAULT_VIDEO_SAFETY_BY_LOCALE[locale] ?? DEFAULT_VIDEO_SAFETY_BY_LOCALE.en;
+}
+
 export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
   const filtered = allEngines.filter((entry) => {
     if (entry.modelSlug === currentSlug) return false;

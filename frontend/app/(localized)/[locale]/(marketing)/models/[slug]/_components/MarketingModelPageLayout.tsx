@@ -19,9 +19,9 @@ import { ModelExamplesSection } from './ModelExamplesSection';
 import { ModelCompareSection } from './ModelCompareSection';
 import {
   DEFAULT_DETAIL_COPY,
-  DEFAULT_GENERIC_SAFETY,
   buildVideoBoundaries,
   getDefaultVideoTroubleshooting,
+  getDefaultGenericSafety,
   type DetailCopy,
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
@@ -257,7 +257,7 @@ export function MarketingModelPageLayout({
         ? getDefaultVideoTroubleshooting(locale, supportsNativeAudio)
         : [];
   const tipsCardLabels = TIPS_CARD_LABELS[locale] ?? TIPS_CARD_LABELS.en;
-  const safetyRules = copy.safetyRules.length ? copy.safetyRules : DEFAULT_GENERIC_SAFETY;
+  const safetyRules = copy.safetyRules.length ? copy.safetyRules : getDefaultGenericSafety(locale);
   const safetyInterpretation = copy.safetyInterpretation;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
@@ -584,6 +584,7 @@ export function MarketingModelPageLayout({
           safetyInterpretation={safetyInterpretation}
           faqList={faqList}
           faqTitle={faqTitle}
+          locale={locale}
           isSoraPrompting={isSoraPrompting}
           faqJsonLdEntries={faqJsonLdEntries}
         />
