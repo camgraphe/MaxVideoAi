@@ -301,6 +301,16 @@ export function isStripeCheckoutCardRestrictionError(error: unknown): boolean {
   );
 }
 
+export function shouldBlockAmexForWalletTopUp({
+  blockAmexFeatureEnabled,
+  hasCompletedTopUp,
+}: {
+  blockAmexFeatureEnabled: boolean;
+  hasCompletedTopUp: boolean;
+}): boolean {
+  return blockAmexFeatureEnabled && !hasCompletedTopUp;
+}
+
 export function buildWalletTopUpCheckoutSessionParams({
   currency,
   settlementAmountCents,

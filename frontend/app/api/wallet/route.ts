@@ -22,7 +22,11 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
-import { buildWalletTopUpCheckoutSessionParams, isStripeCheckoutCardRestrictionError } from '@/lib/stripe-checkout';
+import {
+  buildWalletTopUpCheckoutSessionParams,
+  isStripeCheckoutCardRestrictionError,
+  shouldBlockAmexForWalletTopUp,
+} from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -118,6 +122,18 @@ async function resolveAuthenticatedUser(): Promise<string | null> {
     // ignore helper errors and fall back
   }
   return null;
+}
+
+async function hasCompletedWalletTopUp(userId: string): Promise<boolean> {
+  const rows = await query<{ topup_count: number | string }>(
+    `SELECT COUNT(*)::int AS topup_count
+       FROM app_receipts
+      WHERE user_id = $1
+        AND type = 'topup'
+        AND amount_cents > 0`,
+    [userId]
+  );
+  return Number(rows[0]?.topup_count ?? 0) > 0;
 }
 
 export async function GET(req: NextRequest) {
@@ -427,6 +443,13 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create a one-off Checkout Session for top-up
+    const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
+    const isFirstTopUp = !hasCompletedTopUp;
+    const blockAmexCards = shouldBlockAmexForWalletTopUp({
+      blockAmexFeatureEnabled: envFlagEnabled(ENV.STRIPE_BLOCK_AMEX),
+      hasCompletedTopUp,
+    });
+
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
     const stripeCustomerId = await getOrCreateStripeCustomerForUser(stripe, userId, {
       preferredLocale: checkoutLocale,
@@ -441,6 +464,8 @@ export async function POST(req: NextRequest) {
       currency: resolvedCurrencyUpper,
       currency_source: currencyResolution.source,
       checkout_ui_mode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+      first_wallet_topup: String(isFirstTopUp),
+      amex_block_required: String(blockAmexCards),
     };
     const tier = findTopupTier({ usdAmountCents: amountCents });
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
@@ -480,7 +505,7 @@ export async function POST(req: NextRequest) {
     const paymentIntentMetadata: Record<string, string> = {
       ...sessionMetadata,
     };
-    const blockAmexCards = envFlagEnabled(ENV.STRIPE_BLOCK_AMEX);
+    const checkoutParamBlockAmexCards = blockAmexCards && !isExpressCheckoutTopUp;
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
       currency: resolvedCurrencyLower,
       settlementAmountCents,
@@ -500,14 +525,14 @@ export async function POST(req: NextRequest) {
         name: 'auto',
         shipping: 'auto',
       },
-      blockAmexCards,
+      blockAmexCards: checkoutParamBlockAmexCards,
     });
 
     let session: Stripe.Checkout.Session;
     try {
       session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
     } catch (error) {
-      if (!blockAmexCards || !isStripeCheckoutCardRestrictionError(error)) {
+      if (!checkoutParamBlockAmexCards || !isStripeCheckoutCardRestrictionError(error)) {
         throw error;
       }
       const stripeError = error as { type?: string; code?: string; param?: string; requestId?: string; message?: string };

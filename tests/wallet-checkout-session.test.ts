@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 
 import {
   WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,
   buildWalletTopUpCheckoutSessionParams,
   isStripeCheckoutCardRestrictionError,
+  shouldBlockAmexForWalletTopUp,
 } from '../frontend/src/lib/stripe-checkout.ts';
 
 function buildParams(overrides: Partial<Parameters<typeof buildWalletTopUpCheckoutSessionParams>[0]> = {}) {
@@ -103,6 +106,21 @@ test('wallet top-up Checkout can temporarily block American Express cards', () =
   assert.deepEqual((params.payment_method_options as any)?.card?.restrictions?.brands_blocked, ['american_express']);
 });
 
+test('wallet top-up blocks Amex only before the first completed top-up', () => {
+  assert.equal(
+    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: true, hasCompletedTopUp: false }),
+    true
+  );
+  assert.equal(
+    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: true, hasCompletedTopUp: true }),
+    false
+  );
+  assert.equal(
+    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: false, hasCompletedTopUp: false }),
+    false
+  );
+});
+
 test('wallet top-up Checkout does not block card brands by default', () => {
   const params = buildParams();
 
@@ -129,4 +147,17 @@ test('does not treat unrelated Stripe failures as card restriction failures', ()
     }),
     false
   );
+});
+
+test('wallet route marks first top-up Amex blocking without disabling Express Checkout', () => {
+  const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+
+  assert.match(routeSource, /async function hasCompletedWalletTopUp\(userId: string\)/);
+  assert.match(routeSource, /shouldBlockAmexForWalletTopUp\(\{\s*blockAmexFeatureEnabled:[\s\S]*?hasCompletedTopUp/s);
+  assert.match(routeSource, /first_wallet_topup: String\(isFirstTopUp\)/);
+  assert.match(routeSource, /amex_block_required: String\(blockAmexCards\)/);
+  assert.match(routeSource, /const checkoutParamBlockAmexCards = blockAmexCards && !isExpressCheckoutTopUp/);
+  assert.match(routeSource, /blockAmexCards: checkoutParamBlockAmexCards/);
+  assert.doesNotMatch(routeSource, /express_checkout_unavailable_for_first_topup/);
+  assert.doesNotMatch(routeSource, /if \(isExpressCheckoutTopUp && blockAmexCards\)/);
 });
