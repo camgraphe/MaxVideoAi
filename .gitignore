@@ -45,5 +45,10 @@ private/
 output/playwright/
 playwright-report/
 test-results/
+.playwright-mcp/
 output/internal-link-audit-live.json
 frontend/.tmp/
+
+# Local browser screenshots captured during manual QA
+/jobs-*.png
+/library-page.png
