@@ -2,17 +2,14 @@
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
-import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
-import { HeaderBar } from '@/components/HeaderBar';
-import { AppSidebar } from '@/components/AppSidebar';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
@@ -35,7 +32,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
-import type { VideoGroup, VideoItem } from '@/types/video-groups';
+import type { VideoGroup } from '@/types/video-groups';
 import {
   mapSelectedPreviewToGroup,
   mapSharedVideoToGroup,
@@ -84,6 +81,47 @@ import {
   localizeLtxField,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
+import { WorkspaceChrome } from './_components/WorkspaceChrome';
+import {
+  ComposerBootSkeleton,
+  CompositePreviewDockSkeleton,
+  EngineSettingsBootSkeleton,
+  GalleryRailSkeleton,
+  WorkspaceBootPreview,
+} from './_components/WorkspaceBootSkeletons';
+import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
+import {
+  deserializePendingRenders,
+  isAudioWorkspaceRender,
+  resolvePolledThumbUrl,
+  resolveRenderThumb,
+  serializePendingRenders,
+  type LocalRender,
+  type LocalRenderGroup,
+} from './_lib/render-persistence';
+import {
+  coerceStoredExtraInputValues,
+  normalizeExtraInputValue,
+  parseStoredForm,
+  type FormState,
+} from './_lib/workspace-form-state';
+import {
+  buildMultiPromptSummary,
+  createKlingElement,
+  createLocalId,
+  createMultiPromptScene,
+  MULTI_PROMPT_MAX_SEC,
+  MULTI_PROMPT_MIN_SEC,
+  normalizeSharedVideoPayload,
+} from './_lib/workspace-input-helpers';
+import {
+  buildWorkspaceStorageKey,
+  readScopedWorkspaceStorage,
+  readWorkspaceStorage,
+  STORAGE_KEYS,
+  writeScopedWorkspaceStorage,
+  writeWorkspaceStorage,
+} from './_lib/workspace-storage';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -109,156 +147,6 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
   { ssr: false }
 );
-
-const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
-const COMPOSITE_PREVIEW_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
-  x1: 1,
-  x2: 2,
-  x3: 4,
-  x4: 4,
-};
-
-function isCompositePreviewVideoItem(item: VideoItem): boolean {
-  const hint = typeof item.meta?.mediaType === 'string' ? item.meta.mediaType.toLowerCase() : null;
-  if (hint === 'video') return true;
-  if (hint === 'image') return false;
-  const url = item.url.toLowerCase();
-  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
-}
-
-function getCompositePreviewPosterSrc(group: VideoGroup | null): string | null {
-  if (!group) return null;
-  const desired = COMPOSITE_PREVIEW_SLOT_COUNT[group.layout] ?? Math.min(group.items.length, 4);
-  const visibleItems = group.items.slice(0, desired);
-  const activeVideoItem = visibleItems.find((item) => item.thumb && isCompositePreviewVideoItem(item));
-  const fallbackItem = visibleItems.find((item) => item.thumb);
-  return activeVideoItem?.thumb ?? fallbackItem?.thumb ?? null;
-}
-
-function CompositePreviewDockSkeleton() {
-  return (
-    <div className="rounded-card border border-border bg-surface-glass-60 p-4" aria-hidden>
-      <div className="mx-auto aspect-video w-full max-w-[760px] overflow-hidden rounded-card bg-skeleton" />
-      <div className="mx-auto mt-3 flex w-full max-w-[760px] gap-2">
-        <div className="h-8 w-32 rounded-full bg-skeleton" />
-        <div className="h-8 w-24 rounded-full bg-skeleton" />
-      </div>
-    </div>
-  );
-}
-
-function GalleryRailSkeleton() {
-  return (
-    <div className="w-full rounded-card border border-border bg-surface-glass-60 p-3" aria-hidden>
-      <div className="mb-3 h-4 w-24 rounded-full bg-skeleton" />
-      <div className="space-y-3">
-        <div className="aspect-video rounded-card bg-skeleton" />
-        <div className="aspect-video rounded-card bg-skeleton" />
-      </div>
-    </div>
-  );
-}
-
-function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
-      <div className="border-b border-hairline px-4 py-3">
-        <div className="h-9 w-full max-w-[520px] rounded-full bg-skeleton" />
-      </div>
-      <div className="px-4 py-4">
-        <div className="relative mx-auto aspect-video w-full max-w-[960px] overflow-hidden rounded-card bg-placeholder">
-          {posterSrc ? (
-            <Image
-              src={posterSrc}
-              alt=""
-              fill
-              priority
-              sizes={COMPOSITE_PREVIEW_POSTER_SIZES}
-              className="object-cover"
-            />
-          ) : (
-            <div className="skeleton absolute inset-0" />
-          )}
-        </div>
-        <div className="mx-auto mt-3 flex w-full max-w-[760px] gap-2">
-          <div className="h-8 w-32 rounded-full bg-skeleton" />
-          <div className="h-8 w-24 rounded-full bg-skeleton" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ComposerBootSkeleton() {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-80 p-4 shadow-card" aria-hidden>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="h-4 w-36 rounded-full bg-skeleton" />
-        <div className="h-8 w-28 rounded-full bg-skeleton" />
-      </div>
-      <div className="min-h-[156px] rounded-card border border-hairline bg-surface-2 p-4">
-        <div className="h-4 w-3/4 rounded-full bg-skeleton" />
-        <div className="mt-3 h-4 w-5/6 rounded-full bg-skeleton" />
-        <div className="mt-3 h-4 w-2/3 rounded-full bg-skeleton" />
-      </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
-          <div className="h-9 w-24 rounded-input bg-skeleton" />
-          <div className="h-9 w-24 rounded-input bg-skeleton" />
-        </div>
-        <div className="h-11 w-36 rounded-input bg-skeleton" />
-      </div>
-    </section>
-  );
-}
-
-function WorkspaceChrome({
-  isDesktopLayout,
-  children,
-  desktopRail,
-  mobileRail,
-}: {
-  isDesktopLayout: boolean;
-  children: ReactNode;
-  desktopRail: ReactNode;
-  mobileRail: ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen flex-col bg-bg">
-      <HeaderBar />
-      <div className={clsx('flex flex-1', isDesktopLayout ? 'flex-row' : 'flex-col')}>
-        <div className="flex min-w-0 flex-1">
-          <AppSidebar />
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
-              {children}
-            </main>
-          </div>
-        </div>
-        {isDesktopLayout ? (
-          <div className="flex w-[320px] justify-end py-4 pl-2 pr-0">
-            {desktopRail}
-          </div>
-        ) : null}
-      </div>
-      {!isDesktopLayout ? (
-        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
-          {mobileRail}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function EngineSettingsBootSkeleton() {
-  return (
-    <div className="flex flex-wrap items-center gap-2" aria-hidden>
-      <div className="h-9 w-40 rounded-input bg-skeleton" />
-      <div className="h-9 w-28 rounded-input bg-skeleton" />
-      <div className="h-9 w-24 rounded-input bg-skeleton" />
-    </div>
-  );
-}
 
 function WorkspaceBootContent({
   initialPreviewGroup,
@@ -288,83 +176,12 @@ function WorkspaceBootContent({
   );
 }
 
-function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
-  if (render.thumbUrl) return render.thumbUrl;
-  switch (render.aspectRatio) {
-    case '9:16':
-      return '/assets/frames/thumb-9x16.svg';
-    case '1:1':
-      return '/assets/frames/thumb-1x1.svg';
-    default:
-      return '/assets/frames/thumb-16x9.svg';
-  }
-}
-
-function resolvePolledThumbUrl(current?: string | null, next?: string | null): string | undefined {
-  if (next && !isPlaceholderMediaUrl(next)) return next;
-  if (current) return current;
-  return next ?? undefined;
-}
-
-type SharedVideoPayload = SharedVideoPreview;
-
-function coerceNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-const MULTI_PROMPT_MIN_SEC = 3;
-const MULTI_PROMPT_MAX_SEC = 15;
-
-function createLocalId(prefix: string): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function createMultiPromptScene(): MultiPromptScene {
-  return {
-    id: createLocalId('scene'),
-    prompt: '',
-    duration: 5,
-  };
-}
-
-function buildMultiPromptSummary(scenes: MultiPromptScene[]): string {
-  return scenes
-    .filter((scene) => scene.prompt.trim().length)
-    .map((scene, index) => `Scene ${index + 1}: ${scene.prompt.trim()}`)
-    .join(' | ');
-}
-
 function haveSameGroupOrder(a: GroupSummary[], b: GroupSummary[]): boolean {
   if (a.length !== b.length) return false;
   for (let index = 0; index < a.length; index += 1) {
     if (a[index]?.id !== b[index]?.id) return false;
   }
   return true;
-}
-
-function createKlingElement(): KlingElementState {
-  return {
-    id: createLocalId('element'),
-    frontal: null,
-    references: Array.from({ length: 3 }, () => null),
-    video: null,
-  };
-}
-
-function normalizeSharedVideoPayload(raw: SharedVideoPayload): SharedVideoPayload {
-  const durationSec = coerceNumber(raw.durationSec) ?? 0;
-  return {
-    ...raw,
-    durationSec,
-  };
 }
 
 type ReferenceAsset = {
@@ -729,51 +546,6 @@ function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, loc
   return getLocalizedModeLabel(mode, locale);
 }
 
-function coerceStoredExtraInputValues(value: unknown): Record<string, unknown> | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>((acc, [key, entry]) => {
-    if (!key.trim()) return acc;
-    if (
-      entry === null ||
-      typeof entry === 'string' ||
-      typeof entry === 'number' ||
-      typeof entry === 'boolean' ||
-      (Array.isArray(entry) &&
-        entry.every(
-          (item) => item === null || typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
-        ))
-    ) {
-      acc[key] = entry;
-    }
-    return acc;
-  }, {});
-}
-
-function normalizeExtraInputValue(field: EngineInputField, value: unknown): unknown {
-  if (value == null) return undefined;
-  if (field.type === 'number') {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return undefined;
-      const parsed = Number(trimmed);
-      return Number.isFinite(parsed) ? parsed : undefined;
-    }
-    return undefined;
-  }
-  if (field.type === 'enum') {
-    const raw = typeof value === 'number' ? value : typeof value === 'string' ? value.trim() : '';
-    if (raw === '') return undefined;
-    return raw;
-  }
-  if (field.type === 'text') {
-    if (typeof value !== 'string') return undefined;
-    const trimmed = value.trim();
-    return trimmed.length ? trimmed : undefined;
-  }
-  return undefined;
-}
-
 function parseBooleanInput(value: unknown): boolean | null {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number' && Number.isFinite(value)) return value !== 0;
@@ -1053,342 +825,7 @@ function emitClientMetric(event: string, payload?: Record<string, unknown>) {
   dispatchAnalyticsEvent(event, payload);
 }
 
-interface FormState {
-  engineId: string;
-  mode: Mode;
-  durationSec: number;
-  durationOption?: number | string | null;
-  numFrames?: number | null;
-  resolution: string;
-  aspectRatio: string;
-  fps: number;
-  iterations: number;
-  seedLocked?: boolean;
-  loop?: boolean;
-  audio: boolean;
-  seed?: number | null;
-  cameraFixed?: boolean;
-  safetyChecker?: boolean;
-  extraInputValues: Record<string, unknown>;
-}
-
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
-const STORAGE_KEYS = {
-  prompt: 'maxvideoai.generate.prompt.v1',
-  negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
-  form: 'maxvideoai.generate.form.v1',
-  memberTier: 'maxvideoai.generate.memberTier.v1',
-  pendingRenders: 'maxvideoai.generate.pendingRenders.v1',
-  previewJobId: 'maxvideoai.generate.previewJobId.v1',
-  multiPromptEnabled: 'maxvideoai.generate.multiPromptEnabled.v1',
-  multiPromptScenes: 'maxvideoai.generate.multiPromptScenes.v1',
-  shotType: 'maxvideoai.generate.shotType.v1',
-  voiceIds: 'maxvideoai.generate.voiceIds.v1',
-} as const;
-
-type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
-
-function parseStoredForm(value: string): StoredFormState | null {
-  try {
-    const raw = JSON.parse(value) as StoredFormState | null;
-    if (!raw || typeof raw !== 'object') return null;
-
-    const {
-      engineId,
-      mode,
-      durationSec,
-      durationOption,
-      numFrames,
-      resolution,
-      aspectRatio,
-      fps,
-      iterations,
-      seedLocked,
-      loop,
-      audio,
-      seed,
-      cameraFixed,
-      safetyChecker,
-      extraInputValues,
-      updatedAt,
-    } = raw;
-
-    if (typeof engineId !== 'string' || typeof mode !== 'string') return null;
-
-    return {
-      engineId,
-      mode: mode as Mode,
-      durationSec: typeof durationSec === 'number' && Number.isFinite(durationSec) ? durationSec : undefined,
-      durationOption:
-        typeof durationOption === 'number' || typeof durationOption === 'string'
-          ? durationOption
-          : undefined,
-      numFrames:
-        typeof numFrames === 'number' && Number.isFinite(numFrames) && numFrames > 0
-          ? Math.round(numFrames)
-          : undefined,
-      resolution: typeof resolution === 'string' ? resolution : undefined,
-      aspectRatio: typeof aspectRatio === 'string' ? aspectRatio : undefined,
-      fps: typeof fps === 'number' && Number.isFinite(fps) ? fps : undefined,
-      iterations: typeof iterations === 'number' && iterations > 0 ? iterations : undefined,
-      seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
-      loop: typeof loop === 'boolean' ? loop : undefined,
-      audio: typeof audio === 'boolean' ? audio : undefined,
-      seed: typeof seed === 'number' && Number.isFinite(seed) ? Math.trunc(seed) : undefined,
-      cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : undefined,
-      safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : undefined,
-      extraInputValues: coerceStoredExtraInputValues(extraInputValues),
-      updatedAt: typeof updatedAt === 'number' && Number.isFinite(updatedAt) ? updatedAt : undefined,
-    };
-  } catch {
-    return null;
-  }
-}
-
-type LocalRender = {
-  localKey: string;
-  batchId: string;
-  iterationIndex: number;
-  iterationCount: number;
-  id: string;
-  jobId?: string;
-  engineId: string;
-  engineLabel: string;
-  createdAt: string;
-  aspectRatio: string;
-  durationSec: number;
-  prompt: string;
-  progress: number; // 0-100
-  message: string;
-  status: 'pending' | 'completed' | 'failed';
-  videoUrl?: string;
-  previewVideoUrl?: string;
-  readyVideoUrl?: string;
-  thumbUrl?: string;
-  hasAudio?: boolean;
-  priceCents?: number;
-  currency?: string;
-  pricingSnapshot?: PreflightResponse['pricing'];
-  paymentStatus?: string;
-  failedAt?: number;
-  etaSeconds?: number;
-  etaLabel?: string;
-  startedAt: number;
-  minReadyAt: number;
-  groupId?: string | null;
-  renderIds?: string[];
-  heroRenderId?: string | null;
-};
-
-type LocalRenderGroup = {
-  id: string;
-  items: LocalRender[];
-  iterationCount: number;
-  readyCount: number;
-  totalPriceCents: number | null;
-  currency?: string;
-  groupId?: string | null;
-};
-
-const PERSISTED_RENDER_VERSION = 1;
-const MAX_PERSISTED_RENDERS = 24;
-
-type PersistedRender = {
-  version: number;
-  localKey: string;
-  batchId: string;
-  iterationIndex: number;
-  iterationCount: number;
-  id: string;
-  jobId?: string;
-  engineId: string;
-  engineLabel: string;
-  createdAt: string;
-  aspectRatio: string;
-  durationSec: number;
-  prompt: string;
-  progress: number;
-  message: string;
-  status: 'pending' | 'completed' | 'failed';
-  videoUrl?: string | null;
-  previewVideoUrl?: string | null;
-  readyVideoUrl?: string | null;
-  thumbUrl?: string | null;
-  hasAudio?: boolean;
-  priceCents?: number | null;
-  currency?: string | null;
-  paymentStatus?: string | null;
-  failedAt?: number | null;
-  etaSeconds?: number | null;
-  etaLabel?: string | null;
-  startedAt: number;
-  minReadyAt: number;
-  groupId?: string | null;
-  renderIds?: string[];
-  heroRenderId?: string | null;
-};
-
-function isAudioWorkspaceRender(input: {
-  jobId?: string | null;
-  engineId?: string | null;
-  surface?: string | null;
-}): boolean {
-  const surface = typeof input.surface === 'string' ? input.surface.trim().toLowerCase() : '';
-  if (surface === 'audio') return true;
-  const jobId = typeof input.jobId === 'string' ? input.jobId.trim().toLowerCase() : '';
-  if (jobId.startsWith('aud_')) return true;
-  const engineId = typeof input.engineId === 'string' ? input.engineId.trim().toLowerCase() : '';
-  return engineId.startsWith('audio-');
-}
-
-function coercePersistedRender(entry: PersistedRender): LocalRender | null {
-  const localKey = typeof entry.localKey === 'string' && entry.localKey.length ? entry.localKey : null;
-  const engineId = typeof entry.engineId === 'string' && entry.engineId.length ? entry.engineId : null;
-  const engineLabel = typeof entry.engineLabel === 'string' && entry.engineLabel.length ? entry.engineLabel : null;
-  if (!localKey || !engineId || !engineLabel) {
-    return null;
-  }
-  if (isAudioWorkspaceRender({ jobId: entry.jobId, engineId })) {
-    return null;
-  }
-
-  const createdAt =
-    typeof entry.createdAt === 'string' && entry.createdAt.length ? entry.createdAt : new Date().toISOString();
-  const iterationIndex =
-    Number.isFinite(entry.iterationIndex) && entry.iterationIndex >= 0 ? Math.trunc(entry.iterationIndex) : 0;
-  const iterationCount =
-    Number.isFinite(entry.iterationCount) && entry.iterationCount > 0 ? Math.trunc(entry.iterationCount) : 1;
-  const durationSec =
-    Number.isFinite(entry.durationSec) && entry.durationSec >= 0 ? Math.round(entry.durationSec) : 0;
-  const progress =
-    Number.isFinite(entry.progress) && entry.progress >= 0
-      ? Math.max(0, Math.min(100, Math.round(entry.progress)))
-      : 0;
-  const status: 'pending' | 'completed' | 'failed' =
-    entry.status === 'completed' || entry.status === 'failed' ? entry.status : 'pending';
-  const startedAt =
-    Number.isFinite(entry.startedAt) && entry.startedAt > 0 ? Math.trunc(entry.startedAt) : Date.now();
-  const minReadyAt =
-    Number.isFinite(entry.minReadyAt) && entry.minReadyAt > 0 ? Math.trunc(entry.minReadyAt) : startedAt;
-
-  return {
-    localKey,
-    batchId: typeof entry.batchId === 'string' && entry.batchId.length ? entry.batchId : localKey,
-    iterationIndex,
-    iterationCount,
-    id: typeof entry.id === 'string' && entry.id.length ? entry.id : localKey,
-    jobId: typeof entry.jobId === 'string' && entry.jobId.length ? entry.jobId : undefined,
-    engineId,
-    engineLabel,
-    createdAt,
-    aspectRatio: typeof entry.aspectRatio === 'string' && entry.aspectRatio.length ? entry.aspectRatio : '16:9',
-    durationSec,
-    prompt: typeof entry.prompt === 'string' ? entry.prompt : '',
-    progress,
-    message: typeof entry.message === 'string' && entry.message.length ? entry.message : '',
-    status,
-    videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
-    previewVideoUrl:
-      typeof entry.previewVideoUrl === 'string' && entry.previewVideoUrl.length ? entry.previewVideoUrl : undefined,
-    readyVideoUrl:
-      typeof entry.readyVideoUrl === 'string' && entry.readyVideoUrl.length ? entry.readyVideoUrl : undefined,
-    thumbUrl: typeof entry.thumbUrl === 'string' && entry.thumbUrl.length ? entry.thumbUrl : undefined,
-    hasAudio: typeof entry.hasAudio === 'boolean' ? entry.hasAudio : undefined,
-    priceCents: typeof entry.priceCents === 'number' ? entry.priceCents : undefined,
-    currency: typeof entry.currency === 'string' && entry.currency.length ? entry.currency : undefined,
-    pricingSnapshot: undefined,
-    paymentStatus: typeof entry.paymentStatus === 'string' && entry.paymentStatus.length ? entry.paymentStatus : undefined,
-    failedAt: typeof entry.failedAt === 'number' && Number.isFinite(entry.failedAt) && entry.failedAt > 0 ? Math.trunc(entry.failedAt) : undefined,
-    etaSeconds: typeof entry.etaSeconds === 'number' ? entry.etaSeconds : undefined,
-    etaLabel: typeof entry.etaLabel === 'string' && entry.etaLabel.length ? entry.etaLabel : undefined,
-    startedAt,
-    minReadyAt,
-    groupId:
-      typeof entry.groupId === 'string'
-        ? entry.groupId
-        : entry.groupId === null
-          ? null
-          : undefined,
-    renderIds: Array.isArray(entry.renderIds)
-      ? entry.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
-      : undefined,
-    heroRenderId: typeof entry.heroRenderId === 'string' ? entry.heroRenderId : null,
-  };
-}
-
-function deserializePendingRenders(value: string | null): LocalRender[] {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value) as Array<Partial<PersistedRender>> | null;
-    if (!Array.isArray(parsed)) return [];
-    const items: LocalRender[] = [];
-    parsed.forEach((entry) => {
-      if (!entry || typeof entry !== 'object') return;
-      if (entry.version !== PERSISTED_RENDER_VERSION) return;
-      const normalized = coercePersistedRender(entry as PersistedRender);
-      if (normalized && normalized.status === 'pending' && typeof normalized.jobId === 'string' && normalized.jobId.length > 0) {
-        items.push(normalized);
-      }
-    });
-    items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-    return items;
-  } catch {
-    return [];
-  }
-}
-
-function serializePendingRenders(renders: LocalRender[]): string | null {
-  const pending = renders
-    .filter(
-      (render) =>
-        render.status === 'pending' &&
-        typeof render.jobId === 'string' &&
-        render.jobId.length > 0 &&
-        !isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId })
-    )
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-    .slice(0, MAX_PERSISTED_RENDERS)
-    .map((render) => ({
-      version: PERSISTED_RENDER_VERSION,
-      localKey: render.localKey,
-      batchId: render.batchId,
-      iterationIndex: render.iterationIndex,
-      iterationCount: render.iterationCount,
-      id: render.id,
-      jobId: render.jobId,
-      engineId: render.engineId,
-      engineLabel: render.engineLabel,
-      createdAt: render.createdAt,
-      aspectRatio: render.aspectRatio,
-      durationSec: render.durationSec,
-      prompt: render.prompt,
-      progress: render.progress,
-      message: render.message,
-      status: render.status,
-      videoUrl: render.videoUrl,
-      previewVideoUrl: render.previewVideoUrl,
-      readyVideoUrl: render.readyVideoUrl,
-      thumbUrl: render.thumbUrl,
-      hasAudio: render.hasAudio,
-      priceCents: render.priceCents,
-      currency: render.currency,
-      paymentStatus: render.paymentStatus,
-      failedAt: render.failedAt ?? null,
-      etaSeconds: render.etaSeconds,
-      etaLabel: render.etaLabel,
-      startedAt: render.startedAt,
-      minReadyAt: render.minReadyAt,
-      groupId: render.groupId ?? null,
-      renderIds: render.renderIds,
-      heroRenderId: render.heroRenderId ?? null,
-    }));
-  if (!pending.length) return null;
-  try {
-    return JSON.stringify(pending);
-  } catch {
-    return null;
-  }
-}
 
 const DEBOUNCE_MS = 200;
 const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
@@ -1470,69 +907,32 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   const storageScope = useMemo(() => userId ?? 'anon', [userId]);
   const storageKey = useCallback(
-    (base: string, scope: string = storageScope) => `${base}:${scope}`,
+    (base: string, scope: string = storageScope) => buildWorkspaceStorageKey(base, scope),
     [storageScope]
   );
   const readScopedStorage = useCallback(
     (base: string): string | null => {
-      if (typeof window === 'undefined') return null;
-      return window.localStorage.getItem(storageKey(base));
+      return readScopedWorkspaceStorage(base, storageScope);
     },
-    [storageKey]
+    [storageScope]
   );
   const readStorage = useCallback(
     (base: string): string | null => {
-      if (typeof window === 'undefined') return null;
-      // Prefer the unscoped "last state" to survive auth transitions and hard refreshes.
-      if (storageScope === 'anon') {
-        const baseValue = window.localStorage.getItem(base);
-        if (baseValue !== null) return baseValue;
-        return window.localStorage.getItem(storageKey(base));
-      }
-
-      const scopedValue = window.localStorage.getItem(storageKey(base));
-      if (scopedValue !== null) return scopedValue;
-
-      const baseValue = window.localStorage.getItem(base);
-      if (baseValue !== null) return baseValue;
-
-      const anonValue = window.localStorage.getItem(storageKey(base, 'anon'));
-      if (anonValue !== null) return anonValue;
-
-      return null;
+      return readWorkspaceStorage(base, storageScope);
     },
-    [storageKey, storageScope]
+    [storageScope]
   );
   const writeScopedStorage = useCallback(
     (base: string, value: string | null) => {
-      if (typeof window === 'undefined') return;
-      const key = storageKey(base);
-      if (value === null) {
-        window.localStorage.removeItem(key);
-      } else {
-        window.localStorage.setItem(key, value);
-      }
-      window.localStorage.removeItem(base);
+      writeScopedWorkspaceStorage(base, storageScope, value);
     },
-    [storageKey]
+    [storageScope]
   );
   const writeStorage = useCallback(
     (base: string, value: string | null) => {
-      if (typeof window === 'undefined') return;
-      const key = storageKey(base);
-      if (value === null) {
-        window.localStorage.removeItem(key);
-      } else {
-        window.localStorage.setItem(key, value);
-      }
-      // Always keep an unscoped fallback so the last state survives auth transitions/navigation.
-      if (value === null) {
-        window.localStorage.removeItem(base);
-      } else {
-        window.localStorage.setItem(base, value);
-      }
+      writeWorkspaceStorage(base, storageScope, value);
     },
-    [storageKey]
+    [storageScope]
   );
 const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
 const requestedJobId = useMemo(() => {
@@ -1644,7 +1044,7 @@ useEffect(() => {
 }, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
-  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPayload | null>(null);
+  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
@@ -3793,7 +3193,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (!res.ok) return;
         const json = await res.json();
         if (!json?.ok || !json.video || cancelled) return;
-        const video = normalizeSharedVideoPayload(json.video as SharedVideoPayload);
+        const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
         setCompositeOverrideSummary(null);
