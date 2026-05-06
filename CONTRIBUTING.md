@@ -21,6 +21,17 @@
    ```
 4. Open a pull request. A maintainer will confirm the exposure checklist before merging.
 
+## Architecture Guidelines
+
+Before modifying large routes, client pages, or shared frontend structure, read:
+
+- [`AGENTS.md`](AGENTS.md)
+- [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md)
+- [`docs/engineering/page-architecture.md`](docs/engineering/page-architecture.md)
+- [`docs/engineering/refactor-roadmap.md`](docs/engineering/refactor-roadmap.md)
+
+Keep `page.tsx` files focused on route orchestration. Move large JSX sections, pure builders, pricing/spec helpers, and browser-only state into named files with clear responsibilities.
+
 ## Commercial Features
 
 If you need access to production code or want to integrate MaxVideoAI commercially, contact `licensing@maxvideo.ai` for the commercial licence programme (see `docs/licensing/dual-license.md`).
