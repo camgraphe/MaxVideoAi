@@ -27,7 +27,6 @@ import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapte
 import type { VideoGroup } from '@/types/video-groups';
 import {
   mapSelectedPreviewToGroup,
-  mapSharedVideoToGroup,
   type SelectedVideoPreview,
   type SharedVideoPreview,
 } from '@/lib/video-preview-group';
@@ -121,7 +120,6 @@ import {
   PRIMARY_IMAGE_SLOT_IDS,
   PRIMARY_VIDEO_SLOT_IDS,
   revokeAssetPreview,
-  revokeKlingAssetPreview,
   type ReferenceAsset,
 } from './_lib/workspace-assets';
 import {
@@ -143,7 +141,6 @@ import {
   createMultiPromptScene,
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
-  normalizeSharedVideoPayload,
 } from './_lib/workspace-input-helpers';
 import {
   readScopedWorkspaceStorage,
@@ -187,18 +184,8 @@ import {
   mergeRecentJobsIntoLocalRenders,
   shouldRemoveCompletedSyncedRender,
 } from './_lib/workspace-render-status';
-import {
-  applyVideoJobMediaPatchToCompositeOverride,
-  applyVideoJobMediaPatchToSelectedPreview,
-  buildRequestedJobPreview,
-  buildVideoJobMediaPatch,
-  buildVideoSettingsFormState,
-  buildVideoSettingsSnapshotFromSharedVideo,
-  buildVideoSettingsSnapshotFromTile,
-  resolveVideoSettingsSnapshot,
-  type VideoJobPayload,
-} from './_lib/workspace-video-settings';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
+import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -365,7 +352,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     loginRedirectTarget,
   } = workspaceRequest;
   const skipOnboardingRef = useRef<boolean>(false);
-  const hydratedJobRef = useRef<string | null>(null);
   const preserveStoredDraftRef = useRef<boolean>(false);
   const requestedEngineOverrideIdRef = useRef<string | null>(null);
   const requestedEngineOverrideTokenRef = useRef<string | null>(null);
@@ -767,7 +753,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
   const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
   const guidedSampleGroups = guidedSampleFeed.visibleGroups;
-  const restoredPreviewJobRef = useRef<string | null>(null);
   const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
   const activeVideoGroup = useMemo<VideoGroup | null>(() => {
     if (compositeOverride) return null;
@@ -1119,55 +1104,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   }, [authChecked, router]);
 
   useEffect(() => {
-    if (!fromVideoId) return undefined;
-    let cancelled = false;
-    (async () => {
-      let shouldStripParam = false;
-      try {
-        const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, { cache: 'no-store' });
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!json?.ok || !json.video || cancelled) return;
-        const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
-        const overrideGroup = mapSharedVideoToGroup(video, provider);
-        setCompositeOverride(overrideGroup);
-        setCompositeOverrideSummary(null);
-        setSharedPrompt(video.prompt ?? video.promptExcerpt ?? null);
-        setSharedVideoSettings(video);
-        setSelectedPreview({
-          id: video.id,
-          videoUrl: video.videoUrl ?? undefined,
-          previewVideoUrl: video.previewVideoUrl ?? undefined,
-          thumbUrl: video.thumbUrl ?? undefined,
-          aspectRatio: video.aspectRatio ?? undefined,
-          prompt: video.prompt ?? video.promptExcerpt ?? undefined,
-        });
-        shouldStripParam = true;
-      } catch (error) {
-        console.warn('[app] failed to load shared video', error);
-      } finally {
-        if (cancelled) return;
-        if (shouldStripParam && searchString.includes('from=')) {
-          const params = new URLSearchParams(searchString);
-          params.delete('from');
-          const next = params.toString();
-          router.replace(next ? `/app?${next}` : '/app');
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [fromVideoId, provider, router, searchString]);
-
-  useEffect(() => {
-    if (!compositeOverride) {
-      setSharedPrompt(null);
-      setSharedVideoSettings(null);
-    }
-  }, [compositeOverride]);
-
-  useEffect(() => {
     if (!topUpModal) return undefined;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -1206,136 +1142,13 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     });
   }, [effectiveRequestedEngineId, effectiveRequestedEngineToken, readScopedStorage, recentJobs, renders.length, selectedPreview]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!authChecked) return;
-    if (!engines.length) return;
-    if (hydratedForScope !== storageScope) return;
-    if (effectiveRequestedEngineId || effectiveRequestedEngineToken) return;
-    if (requestedJobId) return;
-    if (fromVideoId) return;
-    if (renders.length > 0) return;
-    if (compositeOverride) return;
-    if (compositeOverrideSummary) return;
-
-    const storedJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
-    if (!storedJobId.startsWith('job_')) return;
-    if (restoredPreviewJobRef.current === storedJobId) return;
-    restoredPreviewJobRef.current = storedJobId;
-
-    void authFetch(`/api/jobs/${encodeURIComponent(storedJobId)}`)
-      .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              ok?: boolean;
-              error?: string;
-              status?: string;
-              progress?: number;
-              videoUrl?: string;
-              previewVideoUrl?: string;
-              thumbUrl?: string;
-              aspectRatio?: string;
-              finalPriceCents?: number;
-              currency?: string;
-              pricing?: { totalCents?: number; currency?: string } | null;
-              settingsSnapshot?: unknown;
-              createdAt?: string;
-            }
-          | null;
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
-        }
-
-        const snapshot = payload.settingsSnapshot as
-          | {
-              schemaVersion?: unknown;
-              surface?: unknown;
-              engineId?: unknown;
-              engineLabel?: unknown;
-              prompt?: unknown;
-              core?: unknown;
-            }
-          | null
-          | undefined;
-        if (snapshot?.schemaVersion !== 1 || snapshot?.surface !== 'video') {
-          throw new Error('Invalid settings snapshot for preview');
-        }
-
-        applyVideoSettingsSnapshotRef.current(snapshot);
-
-        const core = snapshot.core && typeof snapshot.core === 'object' ? (snapshot.core as Record<string, unknown>) : {};
-        const durationSec = typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : undefined;
-        const engineId = typeof snapshot.engineId === 'string' ? snapshot.engineId : 'unknown-engine';
-        const engineLabel = typeof snapshot.engineLabel === 'string' ? snapshot.engineLabel : engineId;
-        const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
-        const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
-        const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
-        const previewVideoUrl =
-          typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length
-            ? payload.previewVideoUrl
-            : undefined;
-        const url = videoUrl ?? thumbUrl;
-        if (!url) {
-          throw new Error('Job has no preview media');
-        }
-        const createdAt =
-          typeof payload.createdAt === 'string' && payload.createdAt.length ? payload.createdAt : new Date().toISOString();
-
-        setCompositeOverride(
-          mapSharedVideoToGroup(
-            {
-              id: storedJobId,
-              engineId,
-              engineLabel,
-              durationSec: durationSec ?? 0,
-              prompt: promptValue,
-              thumbUrl,
-              videoUrl,
-              previewVideoUrl,
-              aspectRatio: payload.aspectRatio ?? undefined,
-              createdAt,
-            },
-            provider
-          )
-        );
-        setCompositeOverrideSummary(null);
-        setSelectedPreview({
-          id: storedJobId,
-          videoUrl,
-          previewVideoUrl,
-          thumbUrl,
-          aspectRatio: payload.aspectRatio ?? undefined,
-          progress: typeof payload.progress === 'number' ? payload.progress : undefined,
-          status:
-            payload.status === 'failed' ? 'failed' : payload.status === 'completed' ? 'completed' : ('pending' as const),
-          priceCents: payload.finalPriceCents ?? payload.pricing?.totalCents ?? undefined,
-          currency: payload.currency ?? payload.pricing?.currency ?? undefined,
-          prompt: promptValue,
-        });
-      })
-      .catch(() => {
-        // ignore preview restore failures
-      });
-  }, [
-    authChecked,
-    engines.length,
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    compositeOverride,
-    compositeOverrideSummary,
-    fromVideoId,
-    hydratedForScope,
-    readScopedStorage,
-    renders.length,
-    requestedJobId,
-    storageScope,
-    provider,
-  ]);
-
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
     composerRef.current.focus({ preventScroll: true });
   }, []);
+  const replaceWorkspaceRoute = useCallback((href: string) => {
+    router.replace(href);
+  }, [router]);
 
   const engineOverride = useMemo<EngineCaps | null>(() => {
     if (!effectiveRequestedEngineToken) return null;
@@ -1441,145 +1254,52 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     return map;
   }, [engines]);
 
-  const applyVideoSettingsSnapshot = useCallback(
-    (snapshot: unknown) => {
-      try {
-        const resolved = resolveVideoSettingsSnapshot(snapshot, {
-          engines,
-          engineMap,
-          createLocalId,
-          createFallbackScene: createMultiPromptScene,
-          createFallbackKlingElement: createKlingElement,
-        });
-        setPrompt(resolved.prompt);
-        setNegativePrompt(resolved.negativePrompt);
-        if (resolved.memberTier) {
-          setMemberTier(resolved.memberTier);
-        }
-        if (resolved.cfgScale !== null) {
-          setCfgScale(resolved.cfgScale);
-        }
-        if (resolved.shotType) {
-          setShotType(resolved.shotType);
-        }
-        setVoiceIdsInput(resolved.voiceIdsInput);
-        setMultiPromptEnabled(resolved.multiPrompt.enabled);
-        setMultiPromptScenes(resolved.multiPrompt.scenes);
-        setForm((current) => buildVideoSettingsFormState(resolved, current ?? null));
-
-        const nextInputAssets = resolved.inputAssets;
-        if (nextInputAssets) {
-          setInputAssets((previous) => {
-            Object.values(previous).forEach((entries) => {
-              entries.forEach((asset) => revokeAssetPreview(asset));
-            });
-            return nextInputAssets;
-          });
-        }
-
-        const nextKlingElements = resolved.klingElements;
-        if (nextKlingElements) {
-          setKlingElements((previous) => {
-            previous.forEach((element) => {
-              revokeKlingAssetPreview(element.frontal);
-              element.references.forEach((asset) => revokeKlingAssetPreview(asset));
-              revokeKlingAssetPreview(element.video);
-            });
-            return nextKlingElements;
-          });
-        }
-
-        queueMicrotask(() => {
-          focusComposer();
-        });
-      } catch (error) {
-        setNotice(error instanceof Error ? error.message : 'Failed to apply settings.');
-      }
-    },
-    [engineMap, engines, focusComposer, setInputAssets]
-  );
+  const {
+    applyVideoSettingsSnapshot,
+    hydrateVideoSettingsFromJob,
+    applyVideoSettingsFromTile,
+  } = useWorkspaceVideoSettings({
+    engines,
+    engineMap,
+    provider,
+    fromVideoId,
+    requestedJobId,
+    searchString,
+    sharedVideoSettings,
+    authChecked,
+    hydratedForScope,
+    storageScope,
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
+    rendersLength: renders.length,
+    compositeOverride,
+    compositeOverrideSummary,
+    focusComposer,
+    readScopedStorage,
+    writeScopedStorage,
+    replaceRoute: replaceWorkspaceRoute,
+    setPrompt,
+    setNegativePrompt,
+    setMemberTier,
+    setCfgScale,
+    setShotType,
+    setVoiceIdsInput,
+    setMultiPromptEnabled,
+    setMultiPromptScenes,
+    setForm,
+    setInputAssets,
+    setKlingElements,
+    setSelectedPreview,
+    setCompositeOverride,
+    setCompositeOverrideSummary,
+    setSharedPrompt,
+    setSharedVideoSettings,
+    setNotice,
+  });
 
   useEffect(() => {
     applyVideoSettingsSnapshotRef.current = applyVideoSettingsSnapshot;
   }, [applyVideoSettingsSnapshot]);
-
-  const hydrateVideoSettingsFromJob = useCallback(
-    async (jobId: string | null | undefined) => {
-      if (!jobId) return;
-      try {
-        const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
-        if (!response.ok) {
-          if (response.status === 404) return;
-          return;
-        }
-        const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
-        if (!payload?.ok) return;
-        if (payload.settingsSnapshot) {
-          applyVideoSettingsSnapshot(payload.settingsSnapshot);
-        }
-
-        const mediaPatch = buildVideoJobMediaPatch(payload);
-        if (!mediaPatch) return;
-
-        setSelectedPreview((current) => applyVideoJobMediaPatchToSelectedPreview(current, jobId, mediaPatch));
-        setCompositeOverride((current) => applyVideoJobMediaPatchToCompositeOverride(current, jobId, mediaPatch));
-      } catch {
-        // ignore best-effort recalls from gallery
-      }
-    },
-    [applyVideoSettingsSnapshot]
-  );
-
-  const applyVideoSettingsFromTile = useCallback(
-    (tile: QuadPreviewTile) => {
-      try {
-        applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile));
-      } catch {
-        // ignore
-      }
-    },
-    [applyVideoSettingsSnapshot]
-  );
-
-  useEffect(() => {
-    if (!sharedVideoSettings) return;
-    applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
-    void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
-  }, [applyVideoSettingsSnapshot, hydrateVideoSettingsFromJob, sharedVideoSettings]);
-
-  useEffect(() => {
-    if (!requestedJobId) return;
-    if (!engines.length) return;
-    if (hydratedJobRef.current === requestedJobId) return;
-    hydratedJobRef.current = requestedJobId;
-    setNotice(null);
-    void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`)
-      .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
-        }
-        applyVideoSettingsSnapshot(payload.settingsSnapshot);
-
-        try {
-          if (requestedJobId.startsWith('job_')) {
-            writeScopedStorage(STORAGE_KEYS.previewJobId, requestedJobId);
-          }
-        } catch {
-          // ignore storage failures
-        }
-
-        const requestedPreview = buildRequestedJobPreview(requestedJobId, payload);
-        if (requestedPreview) {
-          setCompositeOverride(mapSharedVideoToGroup(requestedPreview.sharedVideo, provider));
-          setCompositeOverrideSummary(null);
-          setSelectedPreview(requestedPreview.selectedPreview);
-        }
-      })
-      .catch((error) => {
-        setNotice(error instanceof Error ? error.message : 'Failed to load job settings.');
-      });
-  }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeScopedStorage]);
 
   const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
   const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
