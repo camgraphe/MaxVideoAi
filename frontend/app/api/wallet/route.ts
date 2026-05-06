@@ -22,7 +22,7 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
-import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
+import { buildWalletTopUpCheckoutSessionParams, isStripeCheckoutCardRestrictionError } from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -480,6 +480,7 @@ export async function POST(req: NextRequest) {
     const paymentIntentMetadata: Record<string, string> = {
       ...sessionMetadata,
     };
+    const blockAmexCards = envFlagEnabled(ENV.STRIPE_BLOCK_AMEX);
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
       currency: resolvedCurrencyLower,
       settlementAmountCents,
@@ -499,10 +500,47 @@ export async function POST(req: NextRequest) {
         name: 'auto',
         shipping: 'auto',
       },
-      blockAmexCards: envFlagEnabled(ENV.STRIPE_BLOCK_AMEX),
+      blockAmexCards,
     });
 
-    const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
+    } catch (error) {
+      if (!blockAmexCards || !isStripeCheckoutCardRestrictionError(error)) {
+        throw error;
+      }
+      const stripeError = error as { type?: string; code?: string; param?: string; requestId?: string; message?: string };
+      console.warn('[payments][high-priority] Stripe rejected Checkout card brand restrictions; retrying top-up without Amex block.', {
+        checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+        stripeType: stripeError.type ?? null,
+        stripeCode: stripeError.code ?? null,
+        stripeParam: stripeError.param ?? null,
+        stripeRequestId: stripeError.requestId ?? null,
+      });
+      const fallbackSessionParams = buildWalletTopUpCheckoutSessionParams({
+        currency: resolvedCurrencyLower,
+        settlementAmountCents,
+        checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+        successUrl,
+        cancelUrl,
+        returnUrl: successUrl,
+        locale: checkoutLocale,
+        productName: checkoutCopy.productName,
+        taxLocationMessage: checkoutCopy.taxLocationMessage,
+        sessionMetadata,
+        paymentIntentMetadata,
+        productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
+        customer: stripeCustomerId,
+        customerUpdate: {
+          address: 'auto',
+          name: 'auto',
+          shipping: 'auto',
+        },
+        blockAmexCards: false,
+      });
+      session = await stripe.checkout.sessions.create(fallbackSessionParams as Stripe.Checkout.SessionCreateParams);
+    }
 
     console.info('[payments] checkout session created', {
       sessionId: session.id,

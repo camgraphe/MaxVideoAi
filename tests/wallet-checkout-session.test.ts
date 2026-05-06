@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,
   buildWalletTopUpCheckoutSessionParams,
+  isStripeCheckoutCardRestrictionError,
 } from '../frontend/src/lib/stripe-checkout.ts';
 
 function buildParams(overrides: Partial<Parameters<typeof buildWalletTopUpCheckoutSessionParams>[0]> = {}) {
@@ -106,4 +107,26 @@ test('wallet top-up Checkout does not block card brands by default', () => {
   const params = buildParams();
 
   assert.equal(params.payment_method_options, undefined);
+});
+
+test('detects Stripe Checkout card restriction parameter failures', () => {
+  assert.equal(
+    isStripeCheckoutCardRestrictionError({
+      type: 'StripeInvalidRequestError',
+      param: 'payment_method_options.card.restrictions',
+      message: 'Received unknown parameter: payment_method_options.card.restrictions',
+    }),
+    true
+  );
+});
+
+test('does not treat unrelated Stripe failures as card restriction failures', () => {
+  assert.equal(
+    isStripeCheckoutCardRestrictionError({
+      type: 'StripeInvalidRequestError',
+      param: 'line_items',
+      message: 'Missing required param: line_items',
+    }),
+    false
+  );
 });

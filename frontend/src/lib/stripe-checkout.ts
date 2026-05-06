@@ -288,6 +288,19 @@ function normalizeOptionalStripeId(value: string | null | undefined): string | n
   return trimmed ? trimmed : null;
 }
 
+export function isStripeCheckoutCardRestrictionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as { param?: unknown; message?: unknown };
+  const param = typeof record.param === 'string' ? record.param : '';
+  const message = typeof record.message === 'string' ? record.message : '';
+  return (
+    param === 'payment_method_options.card.restrictions' ||
+    param === 'payment_method_options[card][restrictions]' ||
+    message.includes('payment_method_options.card.restrictions') ||
+    message.includes('payment_method_options[card][restrictions]')
+  );
+}
+
 export function buildWalletTopUpCheckoutSessionParams({
   currency,
   settlementAmountCents,
