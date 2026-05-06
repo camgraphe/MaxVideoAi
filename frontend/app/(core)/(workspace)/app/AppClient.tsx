@@ -29,7 +29,6 @@ import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard } from '@/components/GroupedJobCard';
 import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { Button } from '@/components/ui/Button';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
@@ -39,16 +38,9 @@ import {
 } from '@/lib/luma-ray2';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
-  getSeedanceAssetState,
   getSeedanceFieldBlockKey,
-  getUnifiedSeedanceMode,
-  isUnifiedSeedanceEngineId,
   SEEDANCE_REFERENCE_AUDIO_FIELD_IDS,
 } from '@/lib/seedance-workflow';
-import {
-  getUnifiedHappyHorseMode,
-  isHappyHorseEngineId,
-} from '@/lib/happy-horse-workflow';
 import {
   getLocalizedModeLabel,
   getLocalizedWorkflowCopy,
@@ -70,26 +62,13 @@ import {
   type FormState,
 } from './_lib/workspace-form-state';
 import {
-  buildComposerModeToggles,
-  coerceFormState,
-  findGenerateAudioField,
-  framesToSeconds,
-  getComposerWorkflowNotice,
   getEngineModeLabel,
-  getEngineModeOptions,
-  getModeCaps,
-  getPreferredEngineMode,
-  matchesEngineToken,
 } from './_lib/workspace-engine-helpers';
 import {
   buildAssetFieldIdSet,
   buildComposerAttachments,
   buildReferenceAudioFieldIds,
   getPrimaryAssetFieldLabel,
-  getReferenceInputStatus,
-  hasInputAssetInSlots,
-  PRIMARY_IMAGE_SLOT_IDS,
-  PRIMARY_VIDEO_SLOT_IDS,
   revokeAssetPreview,
   type ReferenceAsset,
 } from './_lib/workspace-assets';
@@ -100,10 +79,8 @@ import {
 import {
   DEFAULT_PROMPT,
   DESKTOP_RAIL_MIN_WIDTH,
-  UNIFIED_VEO_FIRST_LAST_ENGINE_IDS,
 } from './_lib/workspace-client-helpers';
 import {
-  buildMultiPromptSummary,
   createKlingElement,
   createLocalId,
   createMultiPromptScene,
@@ -129,6 +106,7 @@ import {
   summarizeWorkspaceInputSchema,
 } from './_lib/workspace-input-schema';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
+import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
@@ -658,47 +636,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     }
   }, []);
 
-  const handleMultiPromptAddScene = useCallback(() => {
-    setMultiPromptScenes((previous) => [...previous, createMultiPromptScene()]);
-  }, []);
-
-  const handleMultiPromptRemoveScene = useCallback((id: string) => {
-    setMultiPromptScenes((previous) => {
-      const next = previous.filter((scene) => scene.id !== id);
-      return next.length ? next : [createMultiPromptScene()];
-    });
-  }, []);
-
-  const handleMultiPromptUpdateScene = useCallback(
-    (id: string, patch: Partial<Pick<MultiPromptScene, 'prompt' | 'duration'>>) => {
-      setMultiPromptScenes((previous) =>
-        previous.map((scene) => (scene.id === id ? { ...scene, ...patch } : scene))
-      );
-    },
-    []
-  );
-
-  const handleSeedChange = useCallback((value: string) => {
-    setForm((current) => {
-      if (!current) return current;
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return { ...current, seed: null };
-      }
-      const parsed = Number(trimmed);
-      if (!Number.isFinite(parsed)) return current;
-      return { ...current, seed: Math.trunc(parsed) };
-    });
-  }, []);
-
-  const handleCameraFixedChange = useCallback((value: boolean) => {
-    setForm((current) => (current ? { ...current, cameraFixed: value } : current));
-  }, []);
-
-  const handleSafetyCheckerChange = useCallback((value: boolean) => {
-    setForm((current) => (current ? { ...current, safetyChecker: value } : current));
-  }, []);
-
   useEffect(() => {
     if (!authChecked || skipOnboardingRef.current) return undefined;
     if (process.env.NODE_ENV !== 'production') {
@@ -777,102 +714,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     router.replace(href);
   }, [router]);
 
-  const engineOverride = useMemo<EngineCaps | null>(() => {
-    if (!effectiveRequestedEngineToken) return null;
-    if (!engines.length) return null;
-    if (hasStoredFormRef.current) return null;
-    return (
-      engines.find((engine) => matchesEngineToken(engine, effectiveRequestedEngineToken)) ?? null
-    );
-  }, [engines, effectiveRequestedEngineToken]);
-
-  const selectedEngine = useMemo<EngineCaps | null>(() => {
-    if (!engines.length) return null;
-    if (engineOverride) return engineOverride;
-    if (form && engines.some((engine) => engine.id === form.engineId)) {
-      return engines.find((engine) => engine.id === form.engineId) ?? engines[0];
-    }
-    return engines[0];
-  }, [engines, form, engineOverride]);
-
-  const supportsKlingV3Controls =
-    selectedEngine?.id === 'kling-3-pro' ||
-    selectedEngine?.id === 'kling-3-standard' ||
-    selectedEngine?.id === 'kling-3-4k';
-  const supportsKlingV3VoiceControl =
-    selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
-  const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
-  const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
-  const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
-  const multiPromptTotalSec = useMemo(
-    () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
-    [multiPromptScenes]
-  );
-  const multiPromptActive = Boolean(supportsKlingV3Controls && multiPromptEnabled);
-  const multiPromptInvalid = multiPromptActive
-    ? multiPromptScenes.length === 0 ||
-      multiPromptScenes.some((scene) => !scene.prompt.trim()) ||
-      multiPromptTotalSec < MULTI_PROMPT_MIN_SEC ||
-      multiPromptTotalSec > MULTI_PROMPT_MAX_SEC
-    : false;
-  const voiceIds = useMemo(
-    () =>
-      voiceIdsInput
-        .split(',')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    [voiceIdsInput]
-  );
-  const voiceControlEnabled = Boolean(supportsKlingV3VoiceControl && voiceIds.length);
-  const promptMaxChars = !multiPromptActive ? (selectedEngine?.inputLimits.promptMaxChars ?? null) : null;
-  const promptCharLimitExceeded = typeof promptMaxChars === 'number' && prompt.length > promptMaxChars;
-  const seedValue =
-    typeof form?.seed === 'number' && Number.isFinite(form.seed) ? String(form.seed) : '';
-  const cameraFixedValue = typeof form?.cameraFixed === 'boolean' ? form.cameraFixed : false;
-  const safetyCheckerValue = typeof form?.safetyChecker === 'boolean' ? form.safetyChecker : true;
-  const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
-  const primaryAudioDurationSec = useMemo(() => {
-    for (const entries of Object.values(inputAssets)) {
-      for (const asset of entries) {
-        if (asset?.kind === 'audio' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.round(asset.durationSec));
-        }
-      }
-    }
-    return null;
-  }, [inputAssets]);
-  const primaryVideoDurationSec = useMemo(() => {
-    for (const fieldId of PRIMARY_VIDEO_SLOT_IDS) {
-      const entries = inputAssets[fieldId] ?? [];
-      for (const asset of entries) {
-        if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.round(asset.durationSec));
-        }
-      }
-    }
-    return null;
-  }, [inputAssets]);
-  const multiPromptError = multiPromptInvalid
-    ? `Multi-prompt requires a prompt per scene and total duration between ${MULTI_PROMPT_MIN_SEC}s and ${MULTI_PROMPT_MAX_SEC}s.`
-    : null;
-
-  useEffect(() => {
-    if (!supportsKlingV3Controls && multiPromptEnabled) {
-      setMultiPromptEnabled(false);
-    }
-  }, [supportsKlingV3Controls, multiPromptEnabled]);
-
-  useEffect(() => {
-    if (form?.engineId === 'pika-image-to-video') {
-      setForm((current) => {
-        if (!current || current.engineId !== 'pika-image-to-video') return current;
-        return { ...current, engineId: 'pika-text-to-video' };
-      });
-    }
-  }, [form?.engineId, setForm]);
-
-  const engineModeOptions = useMemo(() => getEngineModeOptions(selectedEngine), [selectedEngine]);
-
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engines.forEach((entry) => {
@@ -928,322 +769,81 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     applyVideoSettingsSnapshotRef.current = applyVideoSettingsSnapshot;
   }, [applyVideoSettingsSnapshot]);
 
-  const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
-  const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
-  const hasPrimaryImageInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, PRIMARY_IMAGE_SLOT_IDS, 'image'),
-    [inputAssets]
-  );
-  const hasLastFrameInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, ['last_frame_url'], 'image'),
-    [inputAssets]
-  );
-
-  const implicitMode = useMemo<Mode>(() => {
-    if (!selectedEngine) return form?.mode ?? 't2v';
-    if (isUnifiedSeedance) {
-      return getUnifiedSeedanceMode(inputAssets);
-    }
-    if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
-      return getUnifiedHappyHorseMode(inputAssets);
-    }
-    const modes = selectedEngine.modes;
-    if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
-    if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
-    if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
-    if (referenceInputStatus.hasVideo && modes.includes('reframe')) return 'reframe';
-    if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
-    if (modes.includes('t2v')) return 't2v';
-    return modes[0] ?? 't2v';
-  }, [form?.mode, inputAssets, isUnifiedHappyHorse, isUnifiedSeedance, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
-
-  const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
-  const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
-  const audioWorkflowUnsupported =
-    referenceInputStatus.hasAudio &&
-    Boolean(selectedEngine) &&
-    !audioToVideoSupported &&
-    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio);
-
-  const activeManualMode = useMemo<Mode | null>(() => {
-    if (!selectedEngine) return null;
-    if (isUnifiedSeedance) return null;
-    if (referenceInputStatus.hasAudio && !isUnifiedSeedance) return null;
-    const currentMode = form?.mode ?? null;
-    if (
-      (currentMode === 'v2v' ||
-        currentMode === 'reframe' ||
-        currentMode === 'ref2v' ||
-        currentMode === 'extend' ||
-        currentMode === 'retake') &&
-        selectedEngine.modes.includes(currentMode)
-    ) {
-      return currentMode;
-    }
-    return null;
-  }, [form?.mode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine]);
-
-  const activeMode: Mode = activeManualMode ?? implicitMode;
-  const allowsUnifiedVeoFirstLast = useMemo(() => {
-    return Boolean(
-      selectedEngine &&
-        UNIFIED_VEO_FIRST_LAST_ENGINE_IDS.has(selectedEngine.id) &&
-        activeManualMode === null &&
-        (activeMode === 't2v' || activeMode === 'i2v')
-    );
-  }, [activeManualMode, activeMode, selectedEngine]);
-  const submissionMode = useMemo<Mode>(() => {
-    if (allowsUnifiedVeoFirstLast && hasPrimaryImageInput && hasLastFrameInput) {
-      return 'fl2v';
-    }
-    return activeMode;
-  }, [activeMode, allowsUnifiedVeoFirstLast, hasLastFrameInput, hasPrimaryImageInput]);
-  const showSafetyCheckerControl = useMemo(() => {
-    const schema = selectedEngine?.inputSchema;
-    if (!schema) return false;
-    return [...(schema.required ?? []), ...(schema.optional ?? [])].some((field) => {
-      if (field.id !== 'enable_safety_checker') return false;
-      return !field.modes || field.modes.includes(submissionMode);
-    });
-  }, [selectedEngine, submissionMode]);
-  const effectiveDurationSec = useMemo(() => {
-    if (multiPromptActive) return multiPromptTotalSec;
-    if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number') {
-      return primaryVideoDurationSec;
-    }
-    return form?.durationSec ?? 0;
-  }, [multiPromptActive, multiPromptTotalSec, submissionMode, primaryAudioDurationSec, primaryVideoDurationSec, form?.durationSec]);
-
-  useEffect(() => {
-    if (!selectedEngine || !form) return;
-    if (activeManualMode) return;
-    if (form.mode === implicitMode) return;
-    setForm((current) => {
-      if (!current || current.mode === implicitMode) return current;
-      return coerceFormState(selectedEngine, implicitMode, { ...current, mode: implicitMode });
-    });
-  }, [activeManualMode, form, implicitMode, selectedEngine, setForm]);
-
-  useEffect(() => {
-    if (!supportsKlingV3Controls) return;
-    if (activeMode !== 'i2v') return;
-    if (shotType !== 'customize') {
-      setShotType('customize');
-    }
-  }, [activeMode, supportsKlingV3Controls, shotType]);
-
-  const capability = useMemo(() => {
-    if (!selectedEngine) return undefined;
-    return getModeCaps(selectedEngine, submissionMode);
-  }, [selectedEngine, submissionMode]);
-
-  const generateAudioField = useMemo(() => {
-    if (!selectedEngine) return null;
-    return findGenerateAudioField(selectedEngine, submissionMode);
-  }, [selectedEngine, submissionMode]);
-
-  const supportsAudioToggle =
-    Boolean(selectedEngine && capability?.audioToggle && generateAudioField && supportsAudioPricingToggle(selectedEngine));
-
-  useEffect(() => {
-    if (!voiceControlEnabled) return;
-    setForm((current) => {
-      if (!current || current.audio) return current;
-      return { ...current, audio: true };
-    });
-  }, [voiceControlEnabled]);
-
-  const handleEngineChange = useCallback(
-    (engineId: string) => {
-      const nextEngine = engines.find((entry) => entry.id === engineId);
-      if (!nextEngine) return;
-      requestedEngineOverrideIdRef.current = null;
-      requestedEngineOverrideTokenRef.current = null;
-      requestedModeOverrideRef.current = null;
-      preserveStoredDraftRef.current = false;
-      setForm((current) => {
-        const candidate = current ?? null;
-        const nextMode = getPreferredEngineMode(nextEngine, candidate?.mode ?? null);
-        const normalizedPrevious = candidate ? { ...candidate, engineId: nextEngine.id, mode: nextMode } : null;
-        return coerceFormState(nextEngine, nextMode, normalizedPrevious);
-      });
-    },
-    [engines]
-  );
-
-  useEffect(() => {
-    if (!engineOverride) return;
-    if (hasStoredFormRef.current) return;
-    setForm((current) => {
-      const candidate = current ?? null;
-      if (candidate?.engineId === engineOverride.id) return candidate;
-      const preferredMode = getPreferredEngineMode(engineOverride, candidate?.mode ?? null);
-      const normalizedPrevious = candidate ? { ...candidate, engineId: engineOverride.id, mode: preferredMode } : null;
-      const nextState = coerceFormState(engineOverride, preferredMode, normalizedPrevious);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[generate] engine override applied', {
-          previous: candidate?.engineId,
-          next: nextState.engineId,
-        });
-      }
-      queueMicrotask(() => {
-        try {
-          writeStorage(STORAGE_KEYS.form, JSON.stringify(nextState));
-        } catch {
-          // noop
-        }
-      });
-      return nextState;
-    });
-  }, [engineOverride, writeStorage]);
-
-  useEffect(() => {
-    const pinnedToken = requestedEngineOverrideTokenRef.current;
-    if (!pinnedToken) return;
-    if (!authChecked) return;
-    if (hydratedForScope !== storageScope) return;
-    if (!selectedEngine) return;
-    if (matchesEngineToken(selectedEngine, pinnedToken)) return;
-    const pinnedEngine = engines.find((engine) => matchesEngineToken(engine, pinnedToken));
-    if (!pinnedEngine) return;
-    setForm((current) => {
-      const candidate = current ?? null;
-      const nextMode = getPreferredEngineMode(pinnedEngine, candidate?.mode ?? null);
-      const normalizedPrevious = candidate ? { ...candidate, engineId: pinnedEngine.id, mode: nextMode } : null;
-      return coerceFormState(pinnedEngine, nextMode, normalizedPrevious);
-    });
-  }, [authChecked, hydratedForScope, storageScope, selectedEngine, engines]);
-
-  const handleModeChange = useCallback(
-    (mode: Mode) => {
-      if (!selectedEngine) return;
-      const nextMode = getPreferredEngineMode(selectedEngine, mode);
-      setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
-    },
-    [selectedEngine]
-  );
-
-  const composerModeToggles = useMemo(
-    () =>
-      buildComposerModeToggles({
-        selectedEngine,
-        audioWorkflowLocked,
-        uiLocale,
-        workflowCopy,
-      }),
-    [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]
-  );
-
-  const showRetakeWorkflowAction = Boolean(selectedEngine?.id === 'ltx-2-3' && selectedEngine.modes.includes('retake'));
-
-  const composerWorkflowNotice = useMemo(
-    () =>
-      getComposerWorkflowNotice({
-        selectedEngine,
-        hasAudioInput: referenceInputStatus.hasAudio,
-        audioWorkflowUnsupported,
-        workflowCopy,
-      }),
-    [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy]
-  );
-
-  const handleComposerModeToggle = useCallback(
-    (mode: Mode | null) => {
-      if (!selectedEngine) return;
-      if (
-        referenceInputStatus.hasAudio &&
-        !isUnifiedSeedance &&
-        (mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake')
-      ) {
-        showNotice(workflowCopy.removeAudioToUseEdit);
-        return;
-      }
-      const nextMode = mode ?? implicitMode;
-      setForm((current) =>
-        coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
-      );
-    },
-    [implicitMode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, showNotice, workflowCopy]
-  );
-
-  const handleDurationChange = useCallback(
-    (raw: number | string) => {
-      if (multiPromptActive) return;
-      setForm((current) => {
-        if (!current) return current;
-        const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
-        const durationSec = Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
-        return {
-          ...current,
-          durationSec,
-          durationOption: raw,
-          numFrames: null,
-        };
-      });
-    },
-    [multiPromptActive]
-  );
-
-  const handleFramesChange = useCallback((value: number) => {
-    setForm((current) => {
-      if (!current) return current;
-      const safeFrames = Math.max(1, Math.round(value));
-      return {
-        ...current,
-        numFrames: safeFrames,
-        durationSec: framesToSeconds(safeFrames),
-        durationOption: safeFrames,
-      };
-    });
-  }, []);
-
-  const handleResolutionChange = useCallback(
-    (resolution: string) => {
-      setForm((current) => {
-        if (!current) return current;
-        if (!selectedEngine) return current;
-        const allowed = capability?.resolution && capability.resolution.length ? capability.resolution : selectedEngine.resolutions;
-        if (allowed.length && !allowed.includes(resolution)) {
-          const fallback = allowed.includes(current.resolution) ? current.resolution : allowed[0];
-          return fallback === current.resolution ? current : { ...current, resolution: fallback };
-        }
-        if (current.resolution === resolution) return current;
-        return { ...current, resolution };
-      });
-    },
-    [capability, selectedEngine]
-  );
-
-  const handleAspectRatioChange = useCallback(
-    (ratio: string) => {
-      setForm((current) => {
-        if (!current) return current;
-        if (!selectedEngine) return current;
-        const allowed =
-          capability?.aspectRatio && capability.aspectRatio.length
-            ? capability.aspectRatio
-            : capability
-              ? []
-              : selectedEngine.aspectRatios;
-        if (allowed.length && !allowed.includes(ratio)) {
-          const fallback = allowed.includes(current.aspectRatio) ? current.aspectRatio : allowed[0];
-          return fallback === current.aspectRatio ? current : { ...current, aspectRatio: fallback };
-        }
-        if (current.aspectRatio === ratio) return current;
-        return { ...current, aspectRatio: ratio };
-      });
-    },
-    [capability, selectedEngine]
-  );
-
-  const handleFpsChange = useCallback((fps: number) => {
-    setForm((current) => {
-      if (!current) return current;
-      if (current.fps === fps) return current;
-      return { ...current, fps };
-    });
-  }, []);
+  const {
+    selectedEngine,
+    supportsKlingV3Controls,
+    supportsKlingV3VoiceControl,
+    isSeedance,
+    isUnifiedSeedance,
+    isUnifiedHappyHorse,
+    multiPromptTotalSec,
+    multiPromptActive,
+    multiPromptInvalid,
+    multiPromptError,
+    voiceIds,
+    voiceControlEnabled,
+    promptMaxChars,
+    promptCharLimitExceeded,
+    seedValue,
+    cameraFixedValue,
+    safetyCheckerValue,
+    effectivePrompt,
+    hasLastFrameInput,
+    audioWorkflowLocked,
+    audioWorkflowUnsupported,
+    activeManualMode,
+    activeMode,
+    allowsUnifiedVeoFirstLast,
+    submissionMode,
+    showSafetyCheckerControl,
+    effectiveDurationSec,
+    capability,
+    supportsAudioToggle,
+    engineModeOptions,
+    composerModeToggles,
+    showRetakeWorkflowAction,
+    composerWorkflowNotice,
+    handleMultiPromptAddScene,
+    handleMultiPromptRemoveScene,
+    handleMultiPromptUpdateScene,
+    handleSeedChange,
+    handleCameraFixedChange,
+    handleSafetyCheckerChange,
+    handleEngineChange,
+    handleModeChange,
+    handleComposerModeToggle,
+    handleDurationChange,
+    handleFramesChange,
+    handleResolutionChange,
+    handleAspectRatioChange,
+    handleFpsChange,
+  } = useWorkspaceComposerState({
+    engines,
+    form,
+    setForm,
+    inputAssets,
+    prompt,
+    multiPromptEnabled,
+    setMultiPromptEnabled,
+    multiPromptScenes,
+    setMultiPromptScenes,
+    voiceIdsInput,
+    shotType,
+    setShotType,
+    effectiveRequestedEngineToken,
+    authChecked,
+    hydratedForScope,
+    storageScope,
+    hasStoredFormRef,
+    preserveStoredDraftRef,
+    requestedEngineOverrideIdRef,
+    requestedEngineOverrideTokenRef,
+    requestedModeOverrideRef,
+    writeStorage,
+    uiLocale,
+    workflowCopy,
+    showNotice,
+  });
 
   const inputSchemaSummary = useMemo(
     () =>
@@ -1499,37 +1099,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     shotType,
     klingElements,
   });
-
-  useEffect(() => {
-    if (!selectedEngine || !authChecked) return;
-    setForm((current) => {
-      const candidate = current ?? null;
-      if (!candidate) return candidate;
-      const nextMode = getPreferredEngineMode(selectedEngine, candidate?.mode ?? null);
-      const normalizedPrevious = candidate ? { ...candidate, mode: nextMode } : null;
-      const nextState = coerceFormState(selectedEngine, nextMode, normalizedPrevious);
-      if (candidate) {
-        const hasChanged =
-          candidate.engineId !== nextState.engineId ||
-          candidate.mode !== nextState.mode ||
-          candidate.durationSec !== nextState.durationSec ||
-          candidate.durationOption !== nextState.durationOption ||
-          candidate.numFrames !== nextState.numFrames ||
-          candidate.resolution !== nextState.resolution ||
-          candidate.aspectRatio !== nextState.aspectRatio ||
-          candidate.fps !== nextState.fps ||
-          candidate.iterations !== nextState.iterations ||
-          candidate.seedLocked !== nextState.seedLocked ||
-          candidate.loop !== nextState.loop ||
-          candidate.audio !== nextState.audio ||
-          candidate.seed !== nextState.seed ||
-          candidate.cameraFixed !== nextState.cameraFixed ||
-          candidate.safetyChecker !== nextState.safetyChecker;
-        return hasChanged ? nextState : candidate;
-      }
-      return nextState;
-    });
-  }, [selectedEngine, authChecked]);
 
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
   const {
