@@ -85,6 +85,11 @@ import {
 } from './_lib/workspace-form-state';
 import { prepareGenerationInputs } from './_lib/workspace-generation-inputs';
 import {
+  applyAcceptedGenerationResultToRender,
+  applyAcceptedGenerationResultToSelectedPreview,
+  projectAcceptedGenerationResult,
+} from './_lib/workspace-generation-result';
+import {
   getGenerationIterationGuardMessage,
   getLumaRay2GenerationContext,
   getStartRenderValidationMessage,
@@ -2958,142 +2963,61 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
         const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
-        const resolvedJobId = res.jobId ?? id;
-        const resolvedBatchId = res.batchId ?? batchId;
-        const resolvedGroupId = res.groupId ?? batchId;
-        const resolvedIterationIndex = res.iterationIndex ?? iterationIndex;
-        const resolvedIterationCount = res.iterationCount ?? iterationCount;
-        const resolvedThumb = res.thumbUrl ?? thumb;
-        const resolvedPriceCents =
-          res.pricing?.totalCents ?? preflight?.pricing?.totalCents ?? undefined;
-        const resolvedCurrency =
-          res.pricing?.currency ?? preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
-        const resolvedEtaSeconds =
-          typeof res.etaSeconds === 'number' ? res.etaSeconds : etaSeconds;
-        const resolvedEtaLabel = res.etaLabel ?? etaLabel;
-        const resolvedMessage = res.message ?? friendlyMessage;
-        const resolvedStatus =
-          res.status ?? (res.videoUrl ? 'completed' : 'pending');
-        const resolvedProgress =
-          typeof res.progress === 'number' ? res.progress : res.videoUrl ? 100 : 5;
-        const resolvedPricingSnapshot = res.pricing ?? preflight?.pricing;
-        const resolvedPaymentStatus = res.paymentStatus ?? 'pending_payment';
-        const resolvedRenderIds = res.renderIds ?? undefined;
-        const resolvedHeroRenderId = res.heroRenderId ?? null;
-        const resolvedVideoUrl = res.videoUrl ?? undefined;
+        const acceptedResult = projectAcceptedGenerationResult({
+          response: res,
+          fallback: {
+            id,
+            batchId,
+            iterationIndex,
+            iterationCount,
+            thumbUrl: thumb,
+            priceCents: preflight?.pricing?.totalCents ?? undefined,
+            currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
+            pricingSnapshot: preflight?.pricing,
+            etaSeconds,
+            etaLabel,
+            message: friendlyMessage,
+            minReadyAt,
+            aspectRatio: form.aspectRatio,
+            localKey,
+          },
+          now: Date.now(),
+        });
 
         try {
-          if (resolvedJobId.startsWith('job_')) {
-            writeScopedStorage(STORAGE_KEYS.previewJobId, resolvedJobId);
+          if (acceptedResult.jobId.startsWith('job_')) {
+            writeScopedStorage(STORAGE_KEYS.previewJobId, acceptedResult.jobId);
           }
         } catch {
           // ignore storage failures
         }
 
-        const now = Date.now();
-        const gatingActive = Boolean(resolvedVideoUrl) && now < minReadyAt;
-        const clampedProgress = resolvedProgress < 5 ? 5 : resolvedProgress;
-        const gatedProgress = gatingActive ? Math.min(clampedProgress, 95) : clampedProgress;
-
         setRenders((prev) =>
           prev.map((render) =>
             render.localKey === localKey
-              ? (() => {
-                  const nextFailedAt =
-                    resolvedStatus === 'failed' && isRefundedPaymentStatus(resolvedPaymentStatus)
-                      ? render.failedAt ?? now
-                      : undefined;
-                  return {
-                  ...render,
-                  id: resolvedJobId,
-                  jobId: resolvedJobId,
-                  batchId: resolvedBatchId,
-                  groupId: resolvedGroupId,
-                  iterationIndex: resolvedIterationIndex,
-                  iterationCount: resolvedIterationCount,
-                  thumbUrl: resolvedThumb,
-                  message: resolvedMessage,
-                  progress: gatedProgress,
-                  status: gatingActive ? 'pending' : resolvedStatus,
-                  priceCents: resolvedPriceCents,
-                  currency: resolvedCurrency,
-                  pricingSnapshot: resolvedPricingSnapshot,
-                  paymentStatus: resolvedPaymentStatus,
-                  failedAt: nextFailedAt,
-                  etaSeconds: resolvedEtaSeconds,
-                  etaLabel: resolvedEtaLabel,
-                  renderIds: resolvedRenderIds,
-                  heroRenderId: resolvedHeroRenderId,
-                  readyVideoUrl: resolvedVideoUrl ?? render.readyVideoUrl,
-                  videoUrl: gatingActive ? render.videoUrl : resolvedVideoUrl ?? render.videoUrl,
-                  previewVideoUrl: render.previewVideoUrl,
-                  };
-                })()
+              ? applyAcceptedGenerationResultToRender(render, acceptedResult)
               : render
           )
         );
-        progressMessage = resolvedMessage;
-        setSelectedPreview((cur) =>
-          cur && cur.localKey === localKey
-            ? {
-                ...cur,
-                id: resolvedJobId,
-                batchId: resolvedBatchId,
-                iterationIndex: resolvedIterationIndex,
-                iterationCount: resolvedIterationCount,
-                thumbUrl: resolvedThumb,
-                progress: gatedProgress,
-                message: resolvedMessage,
-                priceCents: resolvedPriceCents,
-                currency: resolvedCurrency,
-                etaSeconds: resolvedEtaSeconds,
-                etaLabel: resolvedEtaLabel,
-                videoUrl: gatingActive ? cur.videoUrl : resolvedVideoUrl ?? cur.videoUrl,
-                previewVideoUrl: cur.previewVideoUrl,
-                status: gatingActive ? 'pending' : resolvedStatus,
-              }
-            : cur
-        );
+        progressMessage = acceptedResult.message;
+        setSelectedPreview((cur) => applyAcceptedGenerationResultToSelectedPreview(cur, acceptedResult));
 
-        if (resolvedIterationCount > 1) {
+        if (acceptedResult.iterationCount > 1) {
           setViewMode((prev) => (prev === 'quad' ? prev : 'quad'));
         }
-        setActiveBatchId(resolvedBatchId);
-        setActiveGroupId(resolvedBatchId ?? batchId ?? id);
+        setActiveBatchId(acceptedResult.batchId);
+        setActiveGroupId(acceptedResult.batchId ?? batchId ?? id);
         setBatchHeroes((prev) => {
-          if (prev[resolvedBatchId]) return prev;
-          return { ...prev, [resolvedBatchId]: localKey };
+          if (prev[acceptedResult.batchId]) return prev;
+          return { ...prev, [acceptedResult.batchId]: localKey };
         });
 
-        if (resolvedVideoUrl || resolvedStatus === 'completed') {
+        if (acceptedResult.videoUrl || acceptedResult.status === 'completed') {
           stopProgressTracking();
         }
 
         if (typeof window !== 'undefined') {
-          const detail = {
-            ok: true,
-            jobId: resolvedJobId,
-            status: resolvedStatus ?? 'pending',
-            progress: resolvedProgress,
-            videoUrl: resolvedVideoUrl ?? null,
-            thumbUrl: resolvedThumb ?? null,
-            aspectRatio: form.aspectRatio ?? null,
-            pricing: resolvedPricingSnapshot,
-            finalPriceCents: resolvedPriceCents ?? null,
-            currency: resolvedCurrency,
-            paymentStatus: resolvedPaymentStatus ?? 'platform',
-            batchId: resolvedBatchId ?? null,
-            groupId: resolvedGroupId ?? null,
-            iterationIndex: resolvedIterationIndex ?? null,
-            iterationCount: resolvedIterationCount ?? null,
-            renderIds: resolvedRenderIds ?? null,
-            heroRenderId: resolvedHeroRenderId ?? null,
-            localKey,
-            message: resolvedMessage ?? null,
-            etaSeconds: resolvedEtaSeconds ?? null,
-            etaLabel: resolvedEtaLabel ?? null,
-          };
-          window.dispatchEvent(new CustomEvent('jobs:status', { detail }));
+          window.dispatchEvent(new CustomEvent('jobs:status', { detail: acceptedResult.statusEventDetail }));
         }
 
         void mutateLatestJobs(undefined, { revalidate: true });
@@ -3102,7 +3026,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           window.dispatchEvent(new Event('wallet:invalidate'));
         }
 
-        const jobId = resolvedJobId;
+        const jobId = acceptedResult.jobId;
         const poll = async () => {
           try {
             const status = await getJobStatus(jobId);
@@ -3181,7 +3105,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         };
         window.setTimeout(poll, 1500);
 
-        if (resolvedVideoUrl) {
+        if (acceptedResult.videoUrl) {
           stopProgressTracking();
         }
       } catch (error) {
