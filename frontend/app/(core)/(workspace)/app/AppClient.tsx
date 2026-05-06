@@ -19,7 +19,7 @@ import {
 import type { KlingElementState, KlingElementAsset, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import type { GalleryFeedState, GalleryRailProps } from '@/components/GalleryRail';
-import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
+import type { GroupSummary } from '@/types/groups';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
@@ -89,7 +89,6 @@ import {
   resolveRenderThumb,
   serializePendingRenders,
   type LocalRender,
-  type LocalRenderGroup,
 } from './_lib/render-persistence';
 import {
   coerceStoredExtraInputValues,
@@ -167,6 +166,21 @@ import {
   summarizeWorkspaceInputSchema,
 } from './_lib/workspace-input-schema';
 import {
+  buildPendingGroupSummaries,
+  buildPendingSummaryMap,
+  buildQuadTileFromGroupMember,
+  buildQuadTileFromRender,
+  buildRenderGroups,
+  clearRemovedGroupId,
+  clearSelectedPreviewForRemovedRenders,
+  filterLocalRenders,
+  getGenerationSkeletonCount,
+  hasRemovedRenderRefs,
+  haveSameGroupOrder,
+  isGenerationGroupLoading,
+  pruneBatchHeroes,
+} from './_lib/workspace-render-groups';
+import {
   createUploadFailure,
   getUploadFailureMessage,
   type UploadableAssetKind,
@@ -224,14 +238,6 @@ function WorkspaceBootContent({
       <ComposerBootSkeleton />
     </div>
   );
-}
-
-function haveSameGroupOrder(a: GroupSummary[], b: GroupSummary[]): boolean {
-  if (a.length !== b.length) return false;
-  for (let index = 0; index < a.length; index += 1) {
-    if (a[index]?.id !== b[index]?.id) return false;
-  }
-  return true;
 }
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
@@ -1080,61 +1086,25 @@ useEffect(() => {
   }, [convertJobToLocalRender, recentJobs]);
 
   useEffect(() => {
-    const removedLocalKeys: string[] = [];
-    const removedGroupIds = new Set<string>();
-
-    setRenders((prev) => {
-      let changed = false;
-      const next = prev.filter((render) => {
-        const shouldRemove = isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId });
-        if (!shouldRemove) {
-          return true;
-        }
-        changed = true;
-        if (render.localKey) {
-          removedLocalKeys.push(render.localKey);
-        }
-        if (render.batchId) {
-          removedGroupIds.add(render.batchId);
-        }
-        if (render.groupId) {
-          removedGroupIds.add(render.groupId);
-        }
-        return false;
-      });
-      return changed ? next : prev;
-    });
-
-    if (!removedLocalKeys.length && !removedGroupIds.size) {
+    const shouldRemove = (render: LocalRender) =>
+      isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId });
+    const removedRefs = filterLocalRenders(renders, shouldRemove);
+    if (!hasRemovedRenderRefs(removedRefs)) {
       return;
     }
 
-    setBatchHeroes((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      removedGroupIds.forEach((groupId) => {
-        if (groupId && next[groupId]) {
-          delete next[groupId];
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
+    setRenders((prev) => {
+      if (prev === renders) return removedRefs.renders;
+      const nextRemoval = filterLocalRenders(prev, shouldRemove);
+      return nextRemoval.changed ? nextRemoval.renders : prev;
     });
-    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setSelectedPreview((current) => {
-      if (!current) return current;
-      if (typeof current.id === 'string' && current.id.toLowerCase().startsWith('aud_')) {
-        return null;
-      }
-      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
-        return null;
-      }
-      if (current.batchId && removedGroupIds.has(current.batchId)) {
-        return null;
-      }
-      return current;
-    });
+
+    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
+    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setSelectedPreview((current) =>
+      clearSelectedPreviewForRemovedRenders(current, removedRefs, { clearAudioPreview: true })
+    );
   }, [renders]);
 
   useEffect(() => {
@@ -1146,162 +1116,51 @@ useEffect(() => {
       }
     });
     if (!recentJobIds.size) return;
-    const removedLocalKeys: string[] = [];
-    const removedGroupIds = new Set<string>();
-    setRenders((prev) => {
-      let changed = false;
-      const next = prev.filter((render) => {
-        if (!render.jobId || !recentJobIds.has(render.jobId)) {
-          return true;
-        }
-        if (render.status !== 'completed') {
-          return true;
-        }
-        const hasVideo = Boolean(render.videoUrl ?? render.readyVideoUrl);
-        if (!hasVideo) {
-          return true;
-        }
-        changed = true;
-        if (render.localKey) {
-          removedLocalKeys.push(render.localKey);
-        }
-        if (render.batchId) {
-          removedGroupIds.add(render.batchId);
-        }
-        if (render.groupId) {
-          removedGroupIds.add(render.groupId);
-        }
+    const shouldRemove = (render: LocalRender) => {
+      if (!render.jobId || !recentJobIds.has(render.jobId)) {
         return false;
-      });
-      return changed ? next : prev;
-    });
-    if (!removedLocalKeys.length && !removedGroupIds.size) {
+      }
+      if (render.status !== 'completed') {
+        return false;
+      }
+      const hasVideo = Boolean(render.videoUrl ?? render.readyVideoUrl);
+      return hasVideo;
+    };
+    const removedRefs = filterLocalRenders(renders, shouldRemove);
+    if (!hasRemovedRenderRefs(removedRefs)) {
       return;
     }
-    setBatchHeroes((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      removedGroupIds.forEach((groupId) => {
-        if (groupId && next[groupId]) {
-          delete next[groupId];
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
+    setRenders((prev) => {
+      if (prev === renders) return removedRefs.renders;
+      const nextRemoval = filterLocalRenders(prev, shouldRemove);
+      return nextRemoval.changed ? nextRemoval.renders : prev;
     });
-    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setSelectedPreview((current) => {
-      if (!current) return current;
-      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
-        return null;
-      }
-      if (current.batchId && removedGroupIds.has(current.batchId)) {
-        return null;
-      }
-      return current;
-    });
-  }, [recentJobs, renders.length]);
+    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
+    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
+  }, [recentJobs, renders]);
 
   useEffect(() => {
     if (!renders.length) return;
     const now = Date.now();
-    const removedLocalKeys: string[] = [];
-    const removedGroupIds = new Set<string>();
-    setRenders((prev) => {
-      let changed = false;
-      const next = prev.filter((render) => {
-        if (!isExpiredRefundedFailedGalleryItem(render, now)) {
-          return true;
-        }
-        changed = true;
-        if (render.localKey) {
-          removedLocalKeys.push(render.localKey);
-        }
-        if (render.batchId) {
-          removedGroupIds.add(render.batchId);
-        }
-        if (render.groupId) {
-          removedGroupIds.add(render.groupId);
-        }
-        return false;
-      });
-      return changed ? next : prev;
-    });
-    if (!removedLocalKeys.length && !removedGroupIds.size) {
+    const shouldRemove = (render: LocalRender) => isExpiredRefundedFailedGalleryItem(render, now);
+    const removedRefs = filterLocalRenders(renders, shouldRemove);
+    if (!hasRemovedRenderRefs(removedRefs)) {
       return;
     }
-    setBatchHeroes((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      removedGroupIds.forEach((groupId) => {
-        if (groupId && next[groupId]) {
-          delete next[groupId];
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
+    setRenders((prev) => {
+      if (prev === renders) return removedRefs.renders;
+      const nextRemoval = filterLocalRenders(prev, shouldRemove);
+      return nextRemoval.changed ? nextRemoval.renders : prev;
     });
-    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
-    setSelectedPreview((current) => {
-      if (!current) return current;
-      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
-        return null;
-      }
-      if (current.batchId && removedGroupIds.has(current.batchId)) {
-        return null;
-      }
-      return current;
-    });
+    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
+    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
+    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
   }, [renders, galleryRetentionTick]);
 
-  const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
-    const map = new Map<string, LocalRenderGroup>();
-    renders.forEach((item) => {
-      const key = item.groupId ?? item.batchId ?? item.localKey;
-      const existing = map.get(key);
-      if (existing) {
-        existing.items.push(item);
-        existing.readyCount += item.videoUrl ? 1 : 0;
-        if (typeof item.priceCents === 'number') {
-          existing.totalPriceCents = (existing.totalPriceCents ?? 0) + item.priceCents;
-        }
-        if (!existing.currency && item.currency) {
-          existing.currency = item.currency;
-        }
-        if (!existing.groupId && item.groupId) {
-          existing.groupId = item.groupId;
-        }
-      } else {
-        map.set(key, {
-          id: key,
-          items: [item],
-          iterationCount: item.iterationCount || 1,
-          readyCount: item.videoUrl ? 1 : 0,
-          totalPriceCents: typeof item.priceCents === 'number' ? item.priceCents : null,
-          currency: item.currency,
-          groupId: item.groupId ?? item.batchId ?? null,
-        });
-      }
-    });
-    map.forEach((group) => {
-      group.items.sort((a, b) => a.iterationIndex - b.iterationIndex);
-      if (!group.items.length) {
-        group.iterationCount = 1;
-        group.totalPriceCents = null;
-        return;
-      }
-      const observedCount = Math.max(group.iterationCount, group.items.length);
-      group.iterationCount = Math.max(1, Math.min(4, observedCount));
-      if (group.totalPriceCents != null && group.iterationCount > group.items.length) {
-        // scale total if some iterations missing price yet
-        const average = group.totalPriceCents / group.items.length;
-        group.totalPriceCents = Math.round(average * group.iterationCount);
-      }
-    });
-    return map;
-  }, [renders]);
+  const renderGroups = useMemo(() => buildRenderGroups(renders), [renders]);
   const effectiveBatchId = useMemo(() => activeBatchId ?? selectedPreview?.batchId ?? null, [activeBatchId, selectedPreview?.batchId]);
   useEffect(() => {
     if (!effectiveBatchId) return;
@@ -1319,105 +1178,9 @@ useEffect(() => {
       setViewMode('single');
     }
   }, [form?.iterations, viewMode]);
-  const pendingGroups = useMemo<GroupSummary[]>(() => {
-    const summaries: GroupSummary[] = [];
-    renderGroups.forEach((group, id) => {
-
-      const now = Date.now();
-      const members: GroupMemberSummary[] = group.items.map((item) => {
-        const thumb = item.thumbUrl ?? resolveRenderThumb(item);
-        const gatingActive = now < item.minReadyAt && item.status !== 'failed';
-        const memberVideoUrl = gatingActive ? null : item.videoUrl ?? item.readyVideoUrl ?? null;
-        const memberStatus: GroupMemberSummary['status'] = (() => {
-          if (item.status === 'failed') return 'failed';
-          if (gatingActive) return 'pending';
-          if (item.status === 'completed' || memberVideoUrl) return 'completed';
-          return 'pending';
-        })();
-        const memberProgress = typeof item.progress === 'number'
-          ? gatingActive
-            ? Math.min(Math.max(item.progress, 5), 95)
-            : item.progress
-          : memberStatus === 'completed'
-            ? 100
-            : item.progress;
-        const member: GroupMemberSummary = {
-          id: item.id,
-          jobId: item.id,
-          localKey: item.localKey,
-          batchId: item.batchId,
-          iterationIndex: item.iterationIndex,
-          iterationCount: group.iterationCount,
-          engineId: item.engineId,
-          engineLabel: item.engineLabel,
-          durationSec: item.durationSec,
-          priceCents: item.priceCents ?? null,
-          currency: item.currency ?? group.currency ?? null,
-          thumbUrl: thumb,
-          videoUrl: memberVideoUrl,
-          previewVideoUrl: gatingActive ? null : item.previewVideoUrl ?? null,
-          aspectRatio: item.aspectRatio ?? null,
-          prompt: item.prompt,
-          status: memberStatus,
-          progress: memberProgress,
-          message: item.message,
-          etaLabel: item.etaLabel ?? null,
-          etaSeconds: item.etaSeconds ?? null,
-          createdAt: item.createdAt,
-          source: 'render',
-        };
-        return member;
-      });
-
-      if (members.length === 0) return;
-
-      const preferredHeroKey = batchHeroes[id] ?? group.items.find((item) => item.videoUrl)?.localKey ?? group.items[0]?.localKey;
-      const hero = preferredHeroKey
-        ? members.find((member) => member.localKey === preferredHeroKey) ?? members[0]
-        : members[0];
-      const observedCount = Math.max(group.iterationCount, members.length);
-      const displayCount = Math.max(1, Math.min(4, observedCount));
-
-      const previews = members
-        .slice(0, displayCount)
-        .map((member) => ({
-          id: member.id,
-          thumbUrl: member.thumbUrl,
-          videoUrl: member.videoUrl,
-          previewVideoUrl: member.previewVideoUrl,
-          aspectRatio: member.aspectRatio,
-        }));
-      const batchKey = group.groupId ?? group.items[0]?.batchId ?? id;
-
-      summaries.push({
-        id,
-        source: 'active',
-        splitMode: displayCount > 1 ? 'quad' : 'single',
-        batchId: batchKey,
-        count: displayCount,
-        totalPriceCents: group.totalPriceCents,
-        currency: group.currency ?? hero.currency ?? null,
-        createdAt: hero.createdAt,
-        hero,
-        previews,
-        members,
-      });
-    });
-
-    return summaries.sort((a, b) => {
-      const timeA = Date.parse(a.createdAt);
-      const timeB = Date.parse(b.createdAt);
-      return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
-    });
-  }, [renderGroups, batchHeroes]);
+  const pendingGroups = useMemo(() => buildPendingGroupSummaries(renderGroups, batchHeroes), [renderGroups, batchHeroes]);
   const normalizedPendingGroups = useMemo(() => normalizeGroupSummaries(pendingGroups), [pendingGroups]);
-  const pendingSummaryMap = useMemo(() => {
-    const map = new Map<string, GroupSummary>();
-    pendingGroups.forEach((group) => {
-      map.set(group.id, group);
-    });
-    return map;
-  }, [pendingGroups]);
+  const pendingSummaryMap = useMemo(() => buildPendingSummaryMap(pendingGroups), [pendingGroups]);
   const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
@@ -1455,11 +1218,11 @@ useEffect(() => {
     }
   }, [pendingGroups, activeGroupId, compositeOverrideSummary]);
 
-  const isGenerationLoading = useMemo(() => pendingGroups.some((group) => group.members.some((member) => member.status !== 'completed')), [pendingGroups]);
-  const generationSkeletonCount = useMemo(() => {
-    const count = renders.length > 0 ? renders.length : form?.iterations ?? 1;
-    return Math.max(1, Math.min(4, count || 1));
-  }, [renders, form?.iterations]);
+  const isGenerationLoading = useMemo(() => isGenerationGroupLoading(pendingGroups), [pendingGroups]);
+  const generationSkeletonCount = useMemo(
+    () => getGenerationSkeletonCount(renders, form?.iterations),
+    [renders, form?.iterations]
+  );
   const viewerGroup = useMemo<VideoGroup | null>(() => {
     if (!viewerTarget) return null;
     if (viewerTarget.kind === 'pending') {
@@ -1472,51 +1235,6 @@ useEffect(() => {
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
   }, [viewerTarget, pendingSummaryMap, provider]);
-  const buildQuadTileFromRender = useCallback(
-    (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
-      const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
-      const videoUrl = gatingActive ? undefined : render.videoUrl ?? render.readyVideoUrl;
-      const previewVideoUrl = gatingActive ? undefined : render.previewVideoUrl;
-      const progress = gatingActive
-        ? Math.min(Math.max(render.progress ?? 5, 95), 95)
-        : videoUrl
-          ? 100
-          : render.progress;
-      const status: QuadPreviewTile['status'] =
-        render.status === 'failed'
-          ? 'failed'
-          : gatingActive
-            ? 'pending'
-            : videoUrl
-              ? 'completed'
-              : render.status ?? 'pending';
-
-      return {
-        localKey: render.localKey,
-        batchId: render.batchId,
-        id: render.id,
-        jobId: render.jobId,
-        iterationIndex: render.iterationIndex,
-        iterationCount: group.iterationCount,
-        videoUrl,
-        previewVideoUrl,
-        thumbUrl: render.thumbUrl,
-        aspectRatio: render.aspectRatio,
-        progress,
-        message: render.message,
-        priceCents: render.priceCents,
-        currency: render.currency ?? group.currency ?? preflight?.currency ?? 'USD',
-        durationSec: render.durationSec,
-        engineLabel: render.engineLabel,
-        engineId: render.engineId,
-        etaLabel: render.etaLabel,
-        prompt: render.prompt,
-        status,
-        hasAudio: typeof render.hasAudio === 'boolean' ? render.hasAudio : undefined,
-      };
-    },
-    [preflight?.currency]
-  );
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
@@ -5049,7 +4767,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           showNotice('Compare view is coming soon.');
           return;
         }
-        const tile = buildQuadTileFromRender(heroRender, renderGroup);
+        const tile = buildQuadTileFromRender(heroRender, renderGroup, preflight?.currency ?? 'USD');
         if (action === 'open') {
           if (options?.autoPlayPreview) {
             setPreviewAutoPlayRequestId((current) => current + 1);
@@ -5079,29 +4797,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
 
       const hero = group.hero;
-      const memberToTile = (member: GroupMemberSummary): QuadPreviewTile => ({
-        localKey: member.localKey ?? member.id,
-        batchId: member.batchId ?? group.id,
-        id: member.jobId ?? member.id,
-        jobId: member.jobId ?? undefined,
-        iterationIndex: member.iterationIndex ?? 0,
-        iterationCount: member.iterationCount ?? group.count,
-        videoUrl: member.videoUrl ?? undefined,
-        previewVideoUrl: member.previewVideoUrl ?? undefined,
-        thumbUrl: member.thumbUrl ?? undefined,
-        aspectRatio: member.aspectRatio ?? '16:9',
-        progress: typeof member.progress === 'number' ? member.progress : member.status === 'completed' ? 100 : 0,
-        message: member.message ?? '',
-        priceCents: member.priceCents ?? undefined,
-        currency: member.currency ?? undefined,
-        durationSec: member.durationSec,
-        engineLabel: member.engineLabel,
-        engineId: member.engineId ?? fallbackEngineId,
-        etaLabel: member.etaLabel ?? undefined,
-        prompt: member.prompt ?? '',
-        status: member.status ?? 'completed',
-        hasAudio: typeof member.job?.hasAudio === 'boolean' ? member.job.hasAudio : undefined,
-      });
 
       if (action === 'compare') {
         emitClientMetric('compare_used', { batchId: group.id });
@@ -5114,7 +4809,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         return;
       }
 
-      const tile = memberToTile(hero);
+      const tile = buildQuadTileFromGroupMember(group, hero, fallbackEngineId);
       const heroJobId = hero.jobId ?? tile.id;
 
       if (action === 'open') {
@@ -5175,7 +4870,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [
       renderGroups,
       batchHeroes,
-      buildQuadTileFromRender,
+      preflight?.currency,
       handleQuadTileAction,
       showNotice,
       fallbackEngineId,

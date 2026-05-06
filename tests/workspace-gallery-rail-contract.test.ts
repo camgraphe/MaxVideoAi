@@ -51,6 +51,10 @@ test('composite preview preserves preview urls but plays canonical video urls', 
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
     'utf8'
   );
+  const renderGroupSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-render-groups.ts'),
+    'utf8'
+  );
   const dockSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/components/groups/CompositePreviewDock.tsx'),
     'utf8'
@@ -59,7 +63,7 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(appSource, /previewVideoUrl:\s*tile\.previewVideoUrl/);
   assert.match(appSource, /previewVideoUrl:\s*nextPreviewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(appSource, /previewUrl:\s*nextPreviewVideoUrl\s*\?\?\s*item\.previewUrl/);
-  assert.match(appSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
+  assert.match(renderGroupSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
   assert.match(dockSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
   assert.doesNotMatch(dockSource, /return item\.previewUrl \?\? item\.url/);
 });
