@@ -103,9 +103,15 @@ test('video polling waits for a real static thumbnail', () => {
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/render-persistence.ts'),
     'utf8'
   );
+  const renderStatusSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-render-status.ts'),
+    'utf8'
+  );
 
   assert.match(renderPersistenceSource, /export function resolvePolledThumbUrl/);
   assert.match(renderPersistenceSource, /next && !isPlaceholderMediaUrl\(next\)/);
+  assert.match(renderStatusSource, /thumbUrl:\s*resolvePolledThumbUrl\(render\.thumbUrl,\s*status\.thumbUrl\)/);
+  assert.match(renderStatusSource, /thumbUrl:\s*resolvePolledThumbUrl\(current\.thumbUrl,\s*status\.thumbUrl\)/);
   assert.match(appSource, /thumbUrl:\s*resolvePolledThumbUrl\(r\.thumbUrl,\s*status\.thumbUrl\)/);
-  assert.match(appSource, /thumbUrl:\s*resolvePolledThumbUrl\(item\.thumbUrl,\s*status\.thumbUrl\)/);
+  assert.match(appSource, /applyPolledJobStatusToRender\(item,\s*status\)/);
 });
