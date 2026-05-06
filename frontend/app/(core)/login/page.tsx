@@ -14,6 +14,7 @@ import {
   readBrowserSession,
 } from '@/lib/supabase-auth-cleanup';
 import { canonicalizeBrowserAuthOrigin } from '@/lib/siteOrigin';
+import { startOAuthCookieRedirectFallback } from './_lib/oauth-cookie-fallback';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -83,10 +84,6 @@ function buildAuthCallbackRedirect(origin: string, nextPath: string): string | u
   if (!trimmed) return undefined;
   const base = trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
   return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
-}
-
-function buildAuthFinishUrl(nextPath: string): string {
-  return `/auth/finish?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
 }
 
 function markPendingGoogleLogin() {
@@ -204,11 +201,10 @@ export default function LoginPage() {
         persistNextTarget(safeTarget);
         window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
         window.dispatchEvent(new Event('wallet:invalidate'));
-        const finishUrl = buildAuthFinishUrl(safeTarget);
-        window.location.replace(finishUrl);
+        window.location.replace(safeTarget);
         return;
       }
-      router.replace(buildAuthFinishUrl(safeTarget));
+      router.replace(safeTarget);
     },
     [persistNextTarget, router]
   );
@@ -363,6 +359,19 @@ export default function LoginPage() {
 
     let cancelled = false;
     const target = sanitizeNextPath(params.get('next') ?? nextPath);
+    const cancelAuthCookieFallback = startOAuthCookieRedirectFallback({
+      isCancelled: () => cancelled || authNavigationStartedRef.current,
+      onAuthenticatedCookie: () => {
+        if (consumePendingGoogleLogin()) {
+          persistPendingAnalyticsEvent('login_completed', {
+            route_family: 'auth',
+            auth_surface: 'login',
+            method: 'google',
+          });
+        }
+        completeAuthenticatedRedirect(target);
+      },
+    });
     void supabase.auth
       .exchangeCodeForSession(oauthCode)
       .then(async ({ data, error }) => {
@@ -403,6 +412,7 @@ export default function LoginPage() {
 
     return () => {
       cancelled = true;
+      cancelAuthCookieFallback();
     };
   }, [authCopy, completeAuthenticatedRedirect, nextPath, redirectFromExistingBrowserSession]);
 
