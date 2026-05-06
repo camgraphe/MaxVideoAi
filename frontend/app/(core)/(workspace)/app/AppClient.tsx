@@ -1,12 +1,10 @@
 'use client';
 
-import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
-import { useEngines, useInfiniteJobs, runPreflight, getJobStatus } from '@/lib/api';
+import { useEngines, useInfiniteJobs, getJobStatus } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
@@ -20,7 +18,6 @@ import type { GroupSummary } from '@/types/groups';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
-import { CURRENCY_LOCALE } from '@/lib/intl';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { VideoGroup } from '@/types/video-groups';
@@ -34,8 +31,7 @@ import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
 import {
   isLumaRay2EngineId,
@@ -66,6 +62,8 @@ import {
   GalleryRailSkeleton,
   WorkspaceBootPreview,
 } from './_components/WorkspaceBootSkeletons';
+import { WorkspaceAuthGateModal } from './_components/WorkspaceAuthGateModal';
+import { WorkspaceTopUpModal } from './_components/WorkspaceTopUpModal';
 import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
   normalizeExtraInputValue,
@@ -100,7 +98,6 @@ import {
   mergeCopy,
 } from './_lib/workspace-copy';
 import {
-  DEBOUNCE_MS,
   DEFAULT_PROMPT,
   DESKTOP_RAIL_MIN_WIDTH,
   UNIFIED_VEO_FIRST_LAST_ENGINE_IDS,
@@ -134,6 +131,7 @@ import {
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
+import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
 import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
@@ -248,20 +246,8 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [voiceIdsInput, setVoiceIdsInput] = useState<string>('');
   const [klingElements, setKlingElements] = useState<KlingElementState[]>(() => [createKlingElement()]);
   const [cfgScale, setCfgScale] = useState<number | null>(null);
-  const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
-  const [preflightError, setPreflightError] = useState<string | undefined>();
-  const [isPricing, setPricing] = useState(false);
   const [memberTier, setMemberTier] = useState<'Member' | 'Plus' | 'Pro'>('Member');
   const [notice, setNotice] = useState<string | null>(null);
-  const [topUpModal, setTopUpModal] = useState<{
-    message: string;
-    amountLabel?: string;
-    shortfallCents?: number;
-  } | null>(null);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [topUpAmount, setTopUpAmount] = useState<number>(1000);
-  const [isTopUpLoading, setIsTopUpLoading] = useState(false);
-  const [topUpError, setTopUpError] = useState<string | null>(null);
 
   const storageScope = useMemo(() => userId ?? 'anon', [userId]);
   const readScopedStorage = useCallback(
@@ -658,10 +644,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setKlingElements,
   });
 
-  const showComposerError = useCallback((message: string) => {
-    setPreflightError(message);
-  }, []);
-
   const handleRefreshJob = useCallback(async (jobId: string) => {
     try {
       const status = await getJobStatus(jobId);
@@ -674,12 +656,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     } catch (error) {
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
-  }, []);
-
-  const closeTopUpModal = useCallback(() => {
-    setTopUpModal(null);
-    setTopUpAmount(1000);
-    setTopUpError(null);
   }, []);
 
   const handleMultiPromptAddScene = useCallback(() => {
@@ -723,76 +699,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setForm((current) => (current ? { ...current, safetyChecker: value } : current));
   }, []);
 
-  const handleSelectPresetAmount = useCallback((value: number) => {
-    setTopUpAmount(value);
-  }, []);
-
-  const handleCustomAmountChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
-    if (Number.isNaN(value)) {
-      setTopUpAmount(1000);
-      return;
-    }
-    setTopUpAmount(Math.max(1000, Math.round(value * 100)));
-  }, []);
-
-  const handleConfirmTopUp = useCallback(async () => {
-    if (!topUpModal) return;
-    const amountCents = Math.max(1000, topUpAmount);
-    setIsTopUpLoading(true);
-    setTopUpError(null);
-    try {
-      const res = await authFetch('/api/wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amountCents }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json?.error ?? 'Wallet top-up failed');
-      }
-      if (json?.url) {
-        window.location.href = json.url as string;
-        return;
-      }
-      closeTopUpModal();
-      showNotice('Top-up initiated. Complete the payment to update your balance.');
-    } catch (error) {
-      setTopUpError(error instanceof Error ? error.message : 'Failed to start top-up');
-    } finally {
-      setIsTopUpLoading(false);
-    }
-  }, [topUpAmount, topUpModal, closeTopUpModal, showNotice]);
-
-  const handleTopUpSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      void handleConfirmTopUp();
-    },
-    [handleConfirmTopUp]
-  );
-
-  useEffect(() => {
-    if (!authChecked) return undefined;
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await authFetch('/api/member-status');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (mounted) {
-          const tier = (json?.tier ?? 'Member') as 'Member' | 'Plus' | 'Pro';
-          setMemberTier(tier);
-        }
-      } catch {
-        // noop
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [authChecked]);
-
   useEffect(() => {
     if (!authChecked || skipOnboardingRef.current) return undefined;
     if (process.env.NODE_ENV !== 'production') {
@@ -826,17 +732,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       cancelled = true;
     };
   }, [authChecked, router]);
-
-  useEffect(() => {
-    if (!topUpModal) return undefined;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeTopUpModal();
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [topUpModal, closeTopUpModal]);
 
   useEffect(() => {
     return () => {
@@ -1514,6 +1409,38 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]
   );
 
+  const {
+    preflight,
+    preflightError,
+    isPricing,
+    price,
+    currency,
+    topUpModal,
+    topUpAmount,
+    isTopUpLoading,
+    topUpError,
+    authModalOpen,
+    showComposerError,
+    closeTopUpModal,
+    handleSelectPresetAmount,
+    handleCustomAmountChange,
+    handleTopUpSubmit,
+    setAuthModalOpen,
+    setPreflightError,
+    setTopUpModal,
+  } = useWorkspacePricingGate({
+    form,
+    selectedEngine,
+    authChecked,
+    memberTier,
+    setMemberTier,
+    supportsAudioToggle,
+    effectiveDurationSec,
+    voiceControlEnabled,
+    submissionMode,
+    showNotice,
+  });
+
   const { startRender } = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported,
     form,
@@ -1604,62 +1531,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     });
   }, [selectedEngine, authChecked]);
 
-  useEffect(() => {
-    if (!form || !selectedEngine || !authChecked) return;
-    let canceled = false;
-
-    const payload: PreflightRequest = {
-      engine: form.engineId,
-      mode: submissionMode,
-      durationSec: effectiveDurationSec,
-      resolution: form.resolution as PreflightRequest['resolution'],
-      aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
-      fps: form.fps,
-      seedLocked: Boolean(form.seedLocked),
-      loop: form.loop,
-      ...(supportsAudioToggle ? { audio: form.audio } : {}),
-      ...(voiceControlEnabled ? { voiceControl: true } : {}),
-      user: { memberTier },
-    };
-    setPricing(true);
-    setPreflightError(undefined);
-
-    const timeout = setTimeout(() => {
-      Promise.resolve()
-        .then(() => runPreflight(payload))
-        .then((response) => {
-          if (canceled) return;
-          setPreflight(response);
-          if (!response.ok) {
-            const message =
-              (typeof response.error?.message === 'string' && response.error.message.trim().length
-                ? response.error.message.trim()
-                : undefined) ??
-              response.messages?.find((entry) => typeof entry === 'string' && entry.trim().length)?.trim() ??
-              'Unable to compute pricing';
-            setPreflightError(message);
-            return;
-          }
-          setPreflightError(undefined);
-        })
-        .catch((err) => {
-          if (canceled) return;
-          console.error('[preflight] failed', err);
-          setPreflightError(err instanceof Error ? err.message : 'Preflight failed');
-        })
-        .finally(() => {
-          if (!canceled) {
-            setPricing(false);
-          }
-        });
-    }, DEBOUNCE_MS);
-
-    return () => {
-      canceled = true;
-      clearTimeout(timeout);
-    };
-  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled, submissionMode]);
-
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
   const {
     previewAutoPlayRequestId,
@@ -1694,15 +1565,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setCompositeOverrideSummary,
     setSharedPrompt,
   });
-
-  const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;
-  const singlePrice =
-    typeof singlePriceCents === 'number' ? singlePriceCents / 100 : null;
-  const price =
-    typeof singlePrice === 'number' && form?.iterations
-      ? singlePrice * form.iterations
-      : singlePrice;
-  const currency = preflight?.currency ?? 'USD';
 
   if (isLoading && engines.length === 0) {
     return (
@@ -2034,143 +1896,27 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
           onRefreshJob={handleRefreshJob}
         />
       ) : null}
-      {topUpModal && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
-          <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />
-          <form
-            className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"
-            onSubmit={handleTopUpSubmit}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h2 className="text-base font-semibold text-text-primary">Wallet balance too low</h2>
-                <p className="mt-2 text-sm text-text-secondary">{topUpModal.message}</p>
-                {topUpModal.amountLabel && (
-                  <p className="mt-2 text-sm font-medium text-text-primary">
-                    Suggested top-up: {topUpModal.amountLabel}
-                  </p>
-                )}
-                <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{workspaceCopy.topUp.title}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {[1000, 2500, 5000].map((value) => {
-                      const formatted = (() => {
-                        try {
-                          return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(value / 100);
-                        } catch {
-                          return `${currency} ${(value / 100).toFixed(2)}`;
-                        }
-                      })();
-                      const isActive = topUpAmount === value;
-                      return (
-                        <Button
-                          key={value}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSelectPresetAmount(value)}
-                          className={clsx(
-                            'min-h-0 h-8 px-3 py-1.5 text-sm font-medium',
-                            isActive
-                              ? 'border-brand bg-surface-2 text-brand hover:border-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {formatted}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3">
-                    <label htmlFor="custom-topup" className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                      {workspaceCopy.topUp.otherAmountLabel}
-                    </label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-text-secondary">
-                          $
-                        </span>
-                        <Input
-                          id="custom-topup"
-                          type="number"
-                          min={10}
-                          step={1}
-                          value={Math.max(10, Math.round(topUpAmount / 100))}
-                          onChange={handleCustomAmountChange}
-                          className="h-10 pl-6 pr-3"
-                        />
-                      </div>
-                      <span className="text-xs text-text-muted">
-                        {workspaceCopy.topUp.minLabel.replace('{amount}', '$10')}
-                      </span>
-                    </div>
-                  </div>
-                  {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={closeTopUpModal}
-                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
-                aria-label={workspaceCopy.topUp.close}
-              >
-                {workspaceCopy.topUp.close}
-              </Button>
-            </div>
-            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" size="sm" onClick={closeTopUpModal} className="px-4">
-                {workspaceCopy.topUp.maybeLater}
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isTopUpLoading}
-                className={clsx('px-4', !isTopUpLoading && 'hover:brightness-105')}
-              >
-                {isTopUpLoading ? workspaceCopy.topUp.submitting : workspaceCopy.topUp.submit}
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-      {authModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
-          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
-          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h2 className="text-base font-semibold text-text-primary">{workspaceCopy.authGate.title}</h2>
-                <p className="mt-2 text-sm text-text-secondary">{workspaceCopy.authGate.body}</p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setAuthModalOpen(false)}
-                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
-                aria-label={workspaceCopy.authGate.close}
-              >
-                {workspaceCopy.authGate.close}
-              </Button>
-            </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
-                {workspaceCopy.authGate.primary}
-              </ButtonLink>
-              <ButtonLink
-                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
-                variant="outline"
-                size="sm"
-                className="px-4"
-              >
-                {workspaceCopy.authGate.secondary}
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      )}
+      {topUpModal ? (
+        <WorkspaceTopUpModal
+          modal={topUpModal}
+          copy={workspaceCopy.topUp}
+          currency={currency}
+          topUpAmount={topUpAmount}
+          isTopUpLoading={isTopUpLoading}
+          topUpError={topUpError}
+          onClose={closeTopUpModal}
+          onSubmit={handleTopUpSubmit}
+          onSelectPresetAmount={handleSelectPresetAmount}
+          onCustomAmountChange={handleCustomAmountChange}
+        />
+      ) : null}
+      {authModalOpen ? (
+        <WorkspaceAuthGateModal
+          copy={workspaceCopy.authGate}
+          loginRedirectTarget={loginRedirectTarget}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      ) : null}
       {assetPickerTarget && (
         <AssetLibraryModal
           fieldLabel={
