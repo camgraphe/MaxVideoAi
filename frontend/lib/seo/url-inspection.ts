@@ -341,6 +341,7 @@ function normalizeCanonical(value: string) {
 
 function sanitizeRawInspectionResult(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  const { inspectionResultLink: _inspectionResultLink, ...rest } = raw as Record<string, unknown>;
+  const rest = { ...(raw as Record<string, unknown>) };
+  delete rest.inspectionResultLink;
   return rest;
 }

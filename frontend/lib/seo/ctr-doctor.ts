@@ -6,7 +6,6 @@ import type {
   SeoIntentType,
   SeoPageMetadataSnapshot,
   SeoQueryCluster,
-  StrategicSeoFamily,
 } from './internal-seo-types';
 import {
   compactIntentLabel,

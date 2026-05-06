@@ -154,6 +154,15 @@ Key behaviours implemented:
 - **Change Date**: 10 October 2028 → Apache 2.0.  
 - **Usage**: Non-commercial evaluation of the software. Commercial deployments require a licence.
 
+## Engineering Guides
+
+Start here before large frontend, route, or architecture changes:
+
+- [`AGENTS.md`](AGENTS.md) — repository-wide rules for Codex, AI agents, and contributors.
+- [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md) — where code should live.
+- [`docs/engineering/page-architecture.md`](docs/engineering/page-architecture.md) — how to keep `page.tsx` files focused.
+- [`docs/engineering/refactor-roadmap.md`](docs/engineering/refactor-roadmap.md) — phased cleanup plan for the largest pages.
+
 This repository hosts the full MaxVideoAI application. Review [`docs/public-vs-private.md`](docs/public-vs-private.md) before publishing to ensure no secrets or contractual data ship with the codebase.
 
 Before syncing the public mirror, run:

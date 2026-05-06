@@ -264,7 +264,7 @@ function finalizeMomentumItem(draft: MomentumDraft): ContentMomentumItem {
   const impressionDelta = draft.current.impressions - draft.previous.impressions;
   const ctrDelta = draft.current.ctr - draft.previous.ctr;
   const positionDelta = draft.current.averagePosition - draft.previous.averagePosition;
-  const score = calibrateScore(draft, scoreMomentumDraft(draft, clickDelta, impressionDelta, ctrDelta, positionDelta));
+  const score = calibrateScore(draft, scoreMomentumDraft(draft, clickDelta, impressionDelta, ctrDelta));
   const itemWithoutDraft: Omit<ContentMomentumItem, 'codexTaskDraft'> = {
     id: `${draft.type}_${stableId(`${draft.pageUrl ?? ''}|${draft.queryCluster ?? ''}|${draft.family}`)}`,
     type: draft.type,
@@ -295,8 +295,7 @@ function scoreMomentumDraft(
   draft: MomentumDraft,
   clickDelta: number,
   impressionDelta: number,
-  ctrDelta: number,
-  positionDelta: number
+  ctrDelta: number
 ) {
   const maxImpressions = Math.max(draft.current.impressions, draft.previous.impressions);
   const deltaMagnitude = Math.abs(impressionDelta) + Math.abs(clickDelta) * 8;

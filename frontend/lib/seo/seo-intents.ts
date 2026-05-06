@@ -240,10 +240,6 @@ function expandSeoAliases(id: string, label: string, navLabel: string): string[]
   return aliases;
 }
 
-function aliasMatches(alias: string, haystack: string): boolean {
-  return aliasMatchIndex(alias, haystack) >= 0;
-}
-
 function aliasMatchIndex(alias: string, haystack: string): number {
   if (!alias) return -1;
   const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\ /g, '[\\s./-]+');
