@@ -7,17 +7,16 @@ import { getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { FAQSchema } from '@/components/seo/FAQSchema';
-import { TextLink } from '@/components/ui/TextLink';
-import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { serializeJsonLd } from '../../model-jsonld';
 import { ModelHeroSection } from './ModelHeroSection';
 import { ModelPageToc } from './ModelPageToc';
 import { ModelPromptingSection } from './ModelPromptingSection';
 import { ModelPrepLinksSection } from './ModelPrepLinksSection';
+import { ModelSafetyFaqSection } from './ModelSafetyFaqSection';
 import { ModelSpecsSection } from './ModelSpecsSection';
 import { ModelTipsSection } from './ModelTipsSection';
 import { ModelExamplesSection } from './ModelExamplesSection';
+import { ModelCompareSection } from './ModelCompareSection';
 import {
   DEFAULT_DETAIL_COPY,
   DEFAULT_GENERIC_SAFETY,
@@ -30,9 +29,7 @@ import { buildProductSchema, resolveProviderInfo } from '../_lib/model-page-sche
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
-  CANONICAL_ONLY_COMPARE_SLUGS,
   COMPARE_BASE_PATH_MAP,
-  COMPARE_EXCLUDED_SLUGS,
   getDefaultSecondaryModelHref,
   MODELS_BASE_PATH_MAP,
   resolveExamplesHrefFromRaw,
@@ -41,12 +38,7 @@ import {
   toAbsoluteUrl,
 } from '../_lib/model-page-links';
 import {
-  FULL_BLEED_SECTION,
   GENERIC_TRUST_LINE,
-  SECTION_BG_A,
-  SECTION_BG_B,
-  SECTION_PAD,
-  SECTION_SCROLL_MARGIN,
   TIPS_CARD_LABELS,
   buildAutoHeroSpecChips,
   buildAutoSpecSections,
@@ -571,160 +563,30 @@ export function MarketingModelPageLayout({
           troubleshootingTitle={troubleshootingTitle}
         />
 
-        {hasCompareSection ? (
-          <section
-            id={compareAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
-          >
-            {focusVsConfig ? (
-              <>
-                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  {focusVsConfig.title}
-                </h2>
-                <TextLink
-                  href={localizeModelsPath(focusVsConfig.ctaSlug)}
-                  className="mx-auto text-sm font-semibold text-brand hover:text-brandHover"
-                  linkComponent={Link}
-                >
-                  {focusVsConfig.ctaLabel}
-                </TextLink>
-                <div className="grid grid-gap-sm lg:grid-cols-2">
-                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                    <h3 className="text-base font-semibold text-text-primary">{focusVsConfig.leftTitle}</h3>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                      {focusVsConfig.leftItems.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                    <h3 className="text-base font-semibold text-text-primary">{focusVsConfig.rightTitle}</h3>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                      {focusVsConfig.rightItems.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </>
-            ) : null}
-            {hasCompareGrid ? (
-              <div className={focusVsConfig ? 'mt-10 stack-gap sm:mt-12' : 'stack-gap'}>
-                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  {compareCopy.title}
-                </h2>
-                <p className="text-center text-base leading-relaxed text-text-secondary">
-                  {compareCopy.introPrefix}
-                  <strong>{compareCopy.introStrong}</strong>
-                  {compareCopy.introSuffix}
-                </p>
-                <p className="text-center text-sm text-text-secondary">{compareCopy.subline}</p>
-                <div className="grid grid-gap-sm md:grid-cols-3">
-                  {(() => {
-                    const hasRelatedItems = relatedItems.length > 0;
-                    const compareCards = hasRelatedItems
-                      ? relatedItems
-                      : compareEngines.map((entry) => ({
-                        brand: entry.brandId,
-                        title: entry.marketingName ?? entry.engine.label,
-                        modelSlug: entry.modelSlug,
-                        description: entry.seo?.description ?? '',
-                      }));
-                    return compareCards;
-                  })()
-                    .filter((entry) => Boolean(entry.modelSlug))
-                    .map((entry) => {
-                      const label = entry.title ?? '';
-                      const canCompare =
-                        !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
-                      const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                      const compareHref = canCompare
-                        ? CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
-                          ? localizeComparePath(compareSlug)
-                          : localizeComparePath(compareSlug, engineSlug)
-                        : localizeModelsPath(entry.modelSlug ?? '');
-                      const ctaLabel = canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label);
-                      const description =
-                        relatedItems.length > 0
-                          ? entry.description || compareCopy.cardDescription(label)
-                          : locale === 'en'
-                            ? entry.description || compareCopy.cardDescription(label)
-                            : compareCopy.cardDescription(label);
-                      return (
-                        <article
-                          key={entry.modelSlug}
-                          className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                        >
-                          <div className="min-w-0">
-                            <h3 className="text-lg font-semibold text-text-primary">
-                              {heroTitle} vs {label}
-                            </h3>
-                          </div>
-                          <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
-                          <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                            {ctaLabel}
-                          </TextLink>
-                        </article>
-                      );
-                    })}
-                </div>
-              </div>
-            ) : null}
-          </section>
-        ) : null}
+        <ModelCompareSection
+          hasCompareSection={hasCompareSection}
+          compareAnchorId={compareAnchorId}
+          focusVsConfig={focusVsConfig}
+          localizeModelsPath={localizeModelsPath}
+          hasCompareGrid={hasCompareGrid}
+          compareCopy={compareCopy}
+          relatedItems={relatedItems}
+          compareEngines={compareEngines}
+          engineSlug={engineSlug}
+          localizeComparePath={localizeComparePath}
+          locale={locale}
+          heroTitle={heroTitle}
+        />
 
-        {copy.safetyTitle || safetyRules.length || safetyInterpretation.length ? (
-          <section
-            id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              {copy.safetyTitle ?? 'Safety & people / likeness'}
-            </h2>
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-              {safetyRules.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {safetyRules.map((rule) => (
-                    <li key={rule}>{rule}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {safetyInterpretation.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {safetyInterpretation.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-            {copy.safetyNote ? <p className="text-sm text-text-secondary">{copy.safetyNote}</p> : null}
-          </section>
-        ) : null}
-
-        {faqList.length ? (
-          <section
-            id="faq"
-            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            {faqTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
-            ) : null}
-            <div className="stack-gap-sm">
-              {faqList.map((entry) => (
-                <ResponsiveDetails
-                  openOnDesktop
-                  key={entry.question}
-                  className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                  summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
-                  summary={entry.question}
-                >
-                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
-                </ResponsiveDetails>
-              ))}
-            </div>
-          </section>
-        ) : null}
-        <FAQSchema questions={faqJsonLdEntries} />
+        <ModelSafetyFaqSection
+          copy={copy}
+          safetyRules={safetyRules}
+          safetyInterpretation={safetyInterpretation}
+          faqList={faqList}
+          faqTitle={faqTitle}
+          isSoraPrompting={isSoraPrompting}
+          faqJsonLdEntries={faqJsonLdEntries}
+        />
         </div>
       </main>
     </>
