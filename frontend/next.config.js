@@ -71,6 +71,7 @@ const nextConfig = {
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
+    qualities: [52, 70, 72, 75, 80],
     remotePatterns: [
       { protocol: 'https', hostname: 'videohub-uploads-us.s3.amazonaws.com' },
       { protocol: 'https', hostname: 'media.maxvideoai.com' },
