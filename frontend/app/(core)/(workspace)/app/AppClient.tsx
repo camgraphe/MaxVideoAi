@@ -14,10 +14,6 @@ import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import {
   Composer,
-  type ComposerAttachment,
-  type AssetFieldConfig,
-  type AssetFieldRole,
-  type ComposerPromotedAction,
   type MultiPromptScene,
 } from '@/components/Composer';
 import type { KlingElementState, KlingElementAsset, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -46,7 +42,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { isExpiredRefundedFailedGalleryItem, isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
-import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
@@ -68,7 +63,6 @@ import {
   getUnifiedSeedanceMode,
   isUnifiedSeedanceEngineId,
   SEEDANCE_REFERENCE_AUDIO_FIELD_IDS,
-  UNIFIED_SEEDANCE_ENGINE_IDS,
 } from '@/lib/seedance-workflow';
 import {
   getUnifiedHappyHorseMode,
@@ -77,7 +71,6 @@ import {
 import {
   getLocalizedModeLabel,
   getLocalizedWorkflowCopy,
-  localizeLtxField,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
 import { WorkspaceChrome } from './_components/WorkspaceChrome';
@@ -105,22 +98,53 @@ import {
   type FormState,
 } from './_lib/workspace-form-state';
 import {
+  buildComposerModeToggles,
   coerceFormState,
   findGenerateAudioField,
   framesToSeconds,
+  getComposerWorkflowNotice,
   getEngineModeLabel,
+  getEngineModeOptions,
   getModeCaps,
   getPreferredEngineMode,
   isModeValue,
   matchesEngineToken,
-  normalizeFieldId,
   normalizeEngineToken,
-  parseBooleanInput,
-  PROMOTED_WORKFLOW_FIELD_IDS,
   resolveAudioDefault,
   resolveBooleanFieldDefault,
-  STANDARD_ENGINE_FIELD_IDS,
 } from './_lib/workspace-engine-helpers';
+import {
+  buildAssetFieldIdSet,
+  buildAssetLibraryCacheKey,
+  buildAssetLibraryUrl,
+  buildComposerAttachments,
+  buildReferenceAudioFieldIds,
+  getPrimaryAssetFieldLabel,
+  getReferenceInputStatus,
+  hasInputAssetInSlots,
+  normalizeAssetLibraryPayload,
+  PRIMARY_IMAGE_SLOT_IDS,
+  PRIMARY_VIDEO_SLOT_IDS,
+  revokeAssetPreview,
+  revokeKlingAssetPreview,
+  type AssetLibraryKind,
+  type AssetLibrarySource,
+  type AssetPickerTarget,
+  type ReferenceAsset,
+  type UserAsset,
+} from './_lib/workspace-assets';
+import {
+  DEFAULT_WORKSPACE_COPY,
+  mergeCopy,
+} from './_lib/workspace-copy';
+import {
+  DEBOUNCE_MS,
+  DEFAULT_PROMPT,
+  DESKTOP_RAIL_MIN_WIDTH,
+  emitClientMetric,
+  isInsufficientFundsError,
+  UNIFIED_VEO_FIRST_LAST_ENGINE_IDS,
+} from './_lib/workspace-client-helpers';
 import {
   buildMultiPromptSummary,
   createKlingElement,
@@ -138,6 +162,10 @@ import {
   writeScopedWorkspaceStorage,
   writeWorkspaceStorage,
 } from './_lib/workspace-storage';
+import {
+  buildComposerPromotedActions,
+  summarizeWorkspaceInputSchema,
+} from './_lib/workspace-input-schema';
 import {
   createUploadFailure,
   getUploadFailureMessage,
@@ -205,168 +233,6 @@ function haveSameGroupOrder(a: GroupSummary[], b: GroupSummary[]): boolean {
   }
   return true;
 }
-
-type ReferenceAsset = {
-  id: string;
-  fieldId: string;
-  previewUrl: string;
-  kind: 'image' | 'video' | 'audio';
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  width?: number | null;
-  height?: number | null;
-  durationSec?: number | null;
-  assetId?: string;
-  status: 'uploading' | 'ready' | 'error';
-  error?: string;
-};
-
-type UserAsset = {
-  id: string;
-  url: string;
-  kind: 'image' | 'video' | 'audio';
-  width?: number | null;
-  height?: number | null;
-  size?: number | null;
-  mime?: string | null;
-  source?: string | null;
-  createdAt?: string;
-  canDelete?: boolean;
-  jobId?: string | null;
-  sourceOutputId?: string | null;
-};
-
-type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
-type AssetLibraryKind = 'image' | 'video';
-
-type AssetPickerTarget =
-  | { kind: 'field'; field: EngineInputField; slotIndex?: number }
-  | { kind: 'kling'; elementId: string; slot: 'frontal' | 'reference'; slotIndex?: number };
-
-function buildAssetLibraryCacheKey(kind: AssetLibraryKind, source: AssetLibrarySource): string {
-  return `${kind}:${source}`;
-}
-
-const DEFAULT_WORKSPACE_COPY = {
-  errors: {
-    loadEngines: 'Failed to load engines.',
-    noEngines: 'No engines available.',
-  },
-  gallery: {
-    empty: 'Launch a generation to populate your gallery. Variants for each run will appear here.',
-  },
-  wallet: {
-    insufficient: 'Insufficient wallet balance. Please add funds to continue generating.',
-    insufficientWithAmount: 'Insufficient wallet balance. Add at least {amount} to continue generating.',
-  },
-  topUp: {
-    title: 'Add credits',
-    presetsLabel: 'Add credits',
-    otherAmountLabel: 'Other amount',
-    minLabel: 'Min {amount}',
-    close: 'Close',
-    maybeLater: 'Maybe later',
-    submit: 'Add funds',
-    submitting: 'Starting top-up…',
-  },
-  authGate: {
-    title: 'Create an account to render',
-    body: 'You can explore the full workspace with starter renders, but launching a real render requires an account.',
-    primary: 'Create account',
-    secondary: 'Sign in',
-    close: 'Maybe later',
-    uploadLocked: 'Sign in to upload',
-  },
-  assetLibrary: {
-    title: 'Select asset',
-    searchPlaceholder: 'Search assets…',
-    import: 'Import',
-    importing: 'Importing…',
-    importFailed: 'Import failed. Please try again.',
-    refresh: 'Refresh',
-    close: 'Close',
-    fieldFallback: 'Asset',
-    sourcesTitle: 'Library',
-    toolsTitle: 'Create or transform',
-    toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
-    emptySearch: 'No assets match this search.',
-    empty: 'No saved images yet. Upload a reference image to see it here.',
-    emptyUploads: 'No uploaded images yet. Upload a reference image to see it here.',
-    emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
-    emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
-    emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
-    emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
-    tabs: {
-      all: 'All',
-      upload: 'Uploaded',
-      generated: 'Generated',
-      character: 'Character',
-      angle: 'Angle',
-      upscale: 'Upscale',
-    },
-    shortcuts: {
-      createImage: 'Create image',
-      changeAngle: 'Change angle',
-      characterBuilder: 'Character builder',
-      upscale: 'Upscale',
-    },
-  },
-} as const;
-
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function mergeCopy<T extends Record<string, unknown>>(defaults: T, overrides?: Partial<T> | null): T {
-  if (!isPlainRecord(overrides)) return defaults;
-  const next: Record<string, unknown> = { ...defaults };
-  Object.entries(overrides).forEach(([key, overrideValue]) => {
-    const defaultValue = next[key];
-    if (isPlainRecord(defaultValue) && isPlainRecord(overrideValue)) {
-      next[key] = mergeCopy(defaultValue, overrideValue);
-      return;
-    }
-    if (overrideValue !== undefined) {
-      next[key] = overrideValue;
-    }
-  });
-  return next as T;
-}
-
-const DESKTOP_RAIL_MIN_WIDTH = 1088;
-
-type GenerateClientError = Error & {
-  code?: string;
-  originalMessage?: string | null;
-  providerMessage?: string | null;
-  field?: string;
-  allowed?: Array<string | number>;
-  value?: unknown;
-  details?: {
-    requiredCents?: number;
-    balanceCents?: number;
-    [key: string]: unknown;
-  };
-};
-
-function isInsufficientFundsError(error: unknown): error is GenerateClientError & { code: 'INSUFFICIENT_WALLET_FUNDS' } {
-  if (!(error instanceof Error)) return false;
-  const code = (error as GenerateClientError).code;
-  return code === 'INSUFFICIENT_WALLET_FUNDS' || code === 'INSUFFICIENT_FUNDS';
-}
-
-function emitClientMetric(event: string, payload?: Record<string, unknown>) {
-  dispatchAnalyticsEvent(event, payload);
-}
-
-const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
-
-const DEBOUNCE_MS = 200;
-const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
-const PRIMARY_VIDEO_SLOT_IDS = ['video_url', 'input_video', 'video'] as const;
-const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -1768,20 +1634,6 @@ useEffect(() => {
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
   const klingElementsRef = useRef<KlingElementState[]>([]);
 
-const revokeAssetPreview = (asset: ReferenceAsset | null | undefined) => {
-  if (!asset) return;
-  if (asset.previewUrl.startsWith('blob:')) {
-    URL.revokeObjectURL(asset.previewUrl);
-  }
-};
-
-const revokeKlingAssetPreview = (asset: { previewUrl: string } | null | undefined) => {
-  if (!asset) return;
-  if (asset.previewUrl && asset.previewUrl.startsWith('blob:')) {
-    URL.revokeObjectURL(asset.previewUrl);
-  }
-};
-
 useEffect(() => {
   assetsRef.current = inputAssets;
 }, [inputAssets]);
@@ -1832,14 +1684,7 @@ const showNotice = useCallback((message: string) => {
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
-      const isRecentOutputSource = source === 'recent';
-      const assetUrl = isRecentOutputSource
-        ? `/api/media-library/recent-outputs?limit=60&kind=${encodeURIComponent(kind)}`
-        : source === 'all'
-          ? `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}`
-          : `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}&source=${encodeURIComponent(source)}`;
-
-      const assetResponse = await authFetch(assetUrl);
+      const assetResponse = await authFetch(buildAssetLibraryUrl(kind, source));
       if (assetResponse.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError(
@@ -1858,37 +1703,7 @@ const showNotice = useCallback((message: string) => {
               : 'Failed to load images';
         throw new Error(message);
       }
-      const rawItems = isRecentOutputSource ? payload.outputs : payload.assets;
-      const assets = Array.isArray(rawItems)
-        ? (rawItems as Array<Omit<UserAsset, 'canDelete'> & { thumbUrl?: string | null; sourceOutputId?: string | null; jobId?: string | null }>).map((asset) => {
-            const mime = asset.mime ?? null;
-            return {
-              id: asset.id,
-              url: asset.url,
-              kind: mime?.startsWith('video/') ? 'video' : 'image',
-              width: asset.width ?? null,
-              height: asset.height ?? null,
-              size: asset.size ?? null,
-              mime,
-              source: isRecentOutputSource ? 'recent' : asset.source ?? null,
-              createdAt: asset.createdAt,
-              canDelete: !isRecentOutputSource,
-              jobId: asset.jobId ?? null,
-              sourceOutputId: asset.sourceOutputId ?? (isRecentOutputSource ? asset.id : null),
-            } satisfies UserAsset;
-          })
-        : [];
-      const filteredUploads = assets.filter((asset) =>
-        kind === 'video'
-          ? Boolean(asset.mime?.startsWith('video/'))
-          : !asset.mime || asset.mime.startsWith('image/')
-      );
-
-      const combined = filteredUploads;
-      const deduped = combined.filter(
-        (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
-      );
-      setAssetLibrary(deduped);
+      setAssetLibrary(normalizeAssetLibraryPayload(payload, source, kind));
       setAssetLibraryLoadedKey(requestKey);
     } catch (error) {
       console.error('[assets] failed to load library', error);
@@ -3032,33 +2847,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
   }, [form?.engineId, setForm]);
 
-  const engineModeOptions = useMemo<Mode[] | undefined>(() => {
-    if (!selectedEngine) return undefined;
-    if (UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)) {
-      return undefined;
-    }
-    if (selectedEngine.id === 'veo-3-1') {
-      const order: Mode[] = ['ref2v', 'extend'];
-      const available = order.filter((value) => selectedEngine.modes.includes(value));
-      return available.length ? available : undefined;
-    }
-    if (selectedEngine.id === 'veo-3-1-fast') {
-      const order: Mode[] = ['extend'];
-      const available = order.filter((value) => selectedEngine.modes.includes(value));
-      return available.length ? available : undefined;
-    }
-    if (selectedEngine.id === 'veo-3-1-lite') {
-      return undefined;
-    }
-    if (selectedEngine.id === 'ltx-2-3') {
-      const order: Mode[] = ['extend', 'retake'];
-      const available = order.filter((value) => selectedEngine.modes.includes(value));
-      return available.length ? available : undefined;
-    }
-    const preferredOrder: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
-    const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
-    return available.length ? available : undefined;
-  }, [selectedEngine]);
+  const engineModeOptions = useMemo(() => getEngineModeOptions(selectedEngine), [selectedEngine]);
 
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
@@ -3585,35 +3374,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       });
   }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeScopedStorage]);
 
-  const referenceInputStatus = useMemo(() => {
-    let hasImage = false;
-    let hasVideo = false;
-    let hasAudio = false;
-    Object.values(inputAssets).forEach((entries) => {
-      entries.forEach((asset) => {
-        if (!asset) return;
-        if (asset.kind === 'image') {
-          hasImage = true;
-        }
-        if (asset.kind === 'video') {
-          hasVideo = true;
-        }
-        if (asset.kind === 'audio') {
-          hasAudio = true;
-        }
-      });
-    });
-    return { hasImage, hasVideo, hasAudio };
-  }, [inputAssets]);
+  const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
   const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
-  const hasPrimaryImageInput = useMemo(() => {
-    return PRIMARY_IMAGE_SLOT_IDS.some((fieldId) =>
-      (inputAssets[fieldId] ?? []).some((asset) => asset?.kind === 'image')
-    );
-  }, [inputAssets]);
-  const hasLastFrameInput = useMemo(() => {
-    return (inputAssets['last_frame_url'] ?? []).some((asset) => asset?.kind === 'image');
-  }, [inputAssets]);
+  const hasPrimaryImageInput = useMemo(
+    () => hasInputAssetInSlots(inputAssets, PRIMARY_IMAGE_SLOT_IDS, 'image'),
+    [inputAssets]
+  );
+  const hasLastFrameInput = useMemo(
+    () => hasInputAssetInSlots(inputAssets, ['last_frame_url'], 'image'),
+    [inputAssets]
+  );
 
   const implicitMode = useMemo<Mode>(() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
@@ -3800,56 +3570,29 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [selectedEngine]
   );
 
-  const composerModeToggles = useMemo(() => {
-    if (!selectedEngine) return undefined;
-    const explicitModes =
-      isLumaRay2EngineId(selectedEngine.id)
-        ? (['v2v', 'reframe'] as const)
-        : selectedEngine.id === 'ltx-2-3'
-        ? (['extend'] as const)
-        : selectedEngine.id === 'veo-3-1'
-          ? (['ref2v', 'extend'] as const)
-          : selectedEngine.id === 'veo-3-1-fast'
-            ? (['extend'] as const)
-            : selectedEngine.id === 'veo-3-1-lite'
-              ? ([] as const)
-            : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
-              ? ([] as const)
-              : null;
-    if (!explicitModes) return undefined;
-    const disabledReason = audioWorkflowLocked
-      ? workflowCopy.removeAudioToUnlock
-      : undefined;
-    return [
-      { mode: null, label: workflowCopy.generateVideo },
-      ...explicitModes
-        .filter((mode) => selectedEngine.modes.includes(mode))
-        .map((mode) => ({
-          mode,
-          label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
-          disabled: audioWorkflowLocked,
-          disabledReason,
-        })),
-    ];
-  }, [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]);
+  const composerModeToggles = useMemo(
+    () =>
+      buildComposerModeToggles({
+        selectedEngine,
+        audioWorkflowLocked,
+        uiLocale,
+        workflowCopy,
+      }),
+    [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]
+  );
 
   const showRetakeWorkflowAction = Boolean(selectedEngine?.id === 'ltx-2-3' && selectedEngine.modes.includes('retake'));
 
-  const composerWorkflowNotice = useMemo(() => {
-    if (!selectedEngine || !referenceInputStatus.hasAudio) return null;
-    if (audioWorkflowUnsupported) {
-      return workflowCopy.audioUnsupported;
-    }
-    if (
-      selectedEngine.id === 'ltx-2-3' ||
-      selectedEngine.id === 'veo-3-1' ||
-      selectedEngine.id === 'veo-3-1-fast' ||
-      selectedEngine.id === 'veo-3-1-lite'
-    ) {
-      return workflowCopy.audioLocked;
-    }
-    return workflowCopy.audioLockedFallback;
-  }, [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy]);
+  const composerWorkflowNotice = useMemo(
+    () =>
+      getComposerWorkflowNotice({
+        selectedEngine,
+        hasAudioInput: referenceInputStatus.hasAudio,
+        audioWorkflowUnsupported,
+        workflowCopy,
+      }),
+    [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy]
+  );
 
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
@@ -3948,156 +3691,18 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
-  const resolveAssetFieldRole = (field: EngineInputField, required: boolean): AssetFieldRole => {
-    const id = (field.id ?? '').toLowerCase();
-    if (id.includes('first_frame') || id.includes('last_frame') || id.includes('end_image')) return 'frame';
-    if (id === 'image_urls' || id.endsWith('_image_urls')) return 'reference';
-    if (id === 'video_urls' || id.endsWith('_video_urls')) return 'reference';
-    if (id === 'audio_urls' || id.endsWith('_audio_urls')) return 'reference';
-    if (id.includes('reference')) return 'reference';
-    if (id === 'image_url' || id === 'input_image') return 'primary';
-    if (required && field.type === 'image') return 'primary';
-    if (field.type === 'image') return 'reference';
-    return 'generic';
-  };
-
-  const inputSchemaSummary = useMemo(() => {
-    const schema = selectedEngine?.inputSchema;
-    if (!schema) {
-      return {
-        assetFields: [] as AssetFieldConfig[],
-        promotedFields: [] as Array<{ field: EngineInputField; required: boolean }>,
-        secondaryFields: [] as Array<{ field: EngineInputField; required: boolean }>,
-        promptField: undefined as EngineInputField | undefined,
-        promptRequired: true,
-        negativePromptField: undefined as EngineInputField | undefined,
-        negativePromptRequired: false,
-      };
-    }
-
-    const allowsCrossModeAssets =
-      activeMode === 't2v' &&
-      Boolean(
-        selectedEngine?.modes?.some(
-          (mode) => mode === 'i2v' || mode === 'v2v' || mode === 'reframe' || mode === 'r2v' || mode === 'a2v'
-        )
-      );
-    const appliesToMode = (field: EngineInputField) => {
-      if (!field.modes || field.modes.includes(activeMode)) return true;
-      if (
-        isUnifiedSeedance &&
-        (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
-        (field.modes.includes('i2v') || field.modes.includes('ref2v'))
-      ) {
-        return true;
-      }
-      if (
-        isUnifiedHappyHorse &&
-        activeMode === 't2v' &&
-        (field.type === 'image' || field.type === 'video') &&
-        (field.modes.includes('i2v') || field.modes.includes('ref2v') || field.modes.includes('v2v'))
-      ) {
-        return true;
-      }
-      if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
-      if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
-      if (!allowsCrossModeAssets) return false;
-      if (field.type === 'image' && field.modes.includes('i2v')) return true;
-      if (field.type === 'video' && (field.modes.includes('r2v') || field.modes.includes('v2v') || field.modes.includes('reframe'))) {
-        return true;
-      }
-      if (field.type === 'audio' && field.modes.includes('a2v')) return true;
-      return false;
-    };
-    const isRequired = (field: EngineInputField, origin: 'required' | 'optional') => {
-      if (field.requiredInModes) {
-        return field.requiredInModes.includes(activeMode);
-      }
-      return origin === 'required';
-    };
-
-    const assetFields: AssetFieldConfig[] = [];
-    const promotedFields: Array<{ field: EngineInputField; required: boolean }> = [];
-    const secondaryFields: Array<{ field: EngineInputField; required: boolean }> = [];
-    let promptField: EngineInputField | undefined;
-    let promptFieldOrigin: 'required' | 'optional' | undefined;
-    let negativePromptField: EngineInputField | undefined;
-    let negativePromptOrigin: 'required' | 'optional' | undefined;
-
-    const ingest = (fields: EngineInputField[] | undefined, origin: 'required' | 'optional') => {
-      if (!fields) return;
-      fields.forEach((field) => {
-        if (!appliesToMode(field)) return;
-        const localizedField = localizeLtxField(field, uiLocale, selectedEngine?.id);
-        const normalizedId = normalizeFieldId(localizedField.id);
-        if (localizedField.type === 'text') {
-          const normalizedIdValue = (localizedField.id ?? '').toLowerCase();
-          const normalizedIdCompact = normalizedIdValue.replace(/[^a-z0-9]/g, '');
-          const normalizedLabel = (localizedField.label ?? '').toLowerCase();
-          const normalizedLabelCompact = normalizedLabel.replace(/\s+/g, '');
-          const hasNegativePromptCue = (value: string) =>
-            value.includes('negativeprompt') ||
-            (value.includes('negative') && value.includes('prompt')) ||
-            value.includes('negprompt');
-          const isNegative =
-            normalizedIdValue === 'negative_prompt' ||
-            hasNegativePromptCue(normalizedIdCompact) ||
-            normalizedLabel.includes('negative prompt') ||
-            hasNegativePromptCue(normalizedLabelCompact);
-          if (isNegative) {
-            if (!negativePromptField) {
-              negativePromptField = localizedField;
-              negativePromptOrigin = origin;
-            }
-            return;
-          }
-          const isPrompt = normalizedIdValue === 'prompt';
-          if (!promptField || isPrompt) {
-            promptField = localizedField;
-            promptFieldOrigin = origin;
-          }
-          return;
-        }
-        const required = isRequired(localizedField, origin);
-        if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
-          const role = resolveAssetFieldRole(localizedField, required);
-          assetFields.push({ field: localizedField, required, role });
-          return;
-        }
-        if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
-          const isPromotedBooleanToggle =
-            PROMOTED_WORKFLOW_FIELD_IDS.has(normalizedId) &&
-            localizedField.type === 'enum' &&
-            Array.isArray(localizedField.values) &&
-            localizedField.values.includes('true') &&
-            localizedField.values.includes('false');
-          if (isPromotedBooleanToggle) {
-            promotedFields.push({ field: localizedField, required });
-            return;
-          }
-          secondaryFields.push({ field: localizedField, required });
-        }
-      });
-    };
-
-    ingest(schema.required, 'required');
-    ingest(schema.optional, 'optional');
-
-    const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : true;
-    const negativePromptRequired = negativePromptField
-      ? isRequired(negativePromptField, negativePromptOrigin ?? 'optional')
-      : false;
-
-    return {
-      assetFields,
-      promotedFields,
-      secondaryFields,
-      promptField,
-      promptRequired,
-      negativePromptField,
-      negativePromptRequired,
-    };
-  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, isUnifiedHappyHorse, isUnifiedSeedance, uiLocale]);
+  const inputSchemaSummary = useMemo(
+    () =>
+      summarizeWorkspaceInputSchema({
+        selectedEngine,
+        activeMode,
+        allowsUnifiedVeoFirstLast,
+        isUnifiedHappyHorse,
+        isUnifiedSeedance,
+        uiLocale,
+      }),
+    [activeMode, allowsUnifiedVeoFirstLast, isUnifiedHappyHorse, isUnifiedSeedance, selectedEngine, uiLocale]
+  );
 
   const extraInputFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
@@ -4145,45 +3750,37 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, [inputSchemaSummary.assetFields]);
 
-  const primaryAssetFieldIds = useMemo(() => {
-    const ids = inputSchemaSummary.assetFields
-      .filter((entry) => entry.role === 'primary' && typeof entry.field.id === 'string')
-      .map((entry) => entry.field.id as string);
-    return new Set(ids);
-  }, [inputSchemaSummary.assetFields]);
+  const primaryAssetFieldIds = useMemo(
+    () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'primary'),
+    [inputSchemaSummary.assetFields]
+  );
 
-  const referenceAssetFieldIds = useMemo(() => {
-    const ids = inputSchemaSummary.assetFields
-      .filter((entry) => entry.role === 'reference' && typeof entry.field.id === 'string')
-      .map((entry) => entry.field.id as string);
-    return new Set(ids);
-  }, [inputSchemaSummary.assetFields]);
+  const referenceAssetFieldIds = useMemo(
+    () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'reference'),
+    [inputSchemaSummary.assetFields]
+  );
 
-  const genericImageFieldIds = useMemo(() => {
-    const ids = inputSchemaSummary.assetFields
-      .filter((entry) => entry.role === 'generic' && entry.field.type === 'image' && typeof entry.field.id === 'string')
-      .map((entry) => entry.field.id as string);
-    return new Set(ids);
-  }, [inputSchemaSummary.assetFields]);
+  const genericImageFieldIds = useMemo(
+    () => buildAssetFieldIdSet(
+      inputSchemaSummary.assetFields,
+      (entry) => entry.role === 'generic' && entry.field.type === 'image'
+    ),
+    [inputSchemaSummary.assetFields]
+  );
 
-  const frameAssetFieldIds = useMemo(() => {
-    const ids = inputSchemaSummary.assetFields
-      .filter((entry) => entry.role === 'frame' && typeof entry.field.id === 'string')
-      .map((entry) => entry.field.id as string);
-    return new Set(ids);
-  }, [inputSchemaSummary.assetFields]);
-  const referenceAudioFieldIds = useMemo(() => {
-    const ids = inputSchemaSummary.assetFields
-      .filter((entry) => entry.field.type === 'audio' && typeof entry.field.id === 'string')
-      .map((entry) => entry.field.id as string)
-      .filter((fieldId) => SEEDANCE_REFERENCE_AUDIO_FIELD_IDS.has(fieldId));
-    return new Set(ids);
-  }, [inputSchemaSummary.assetFields]);
+  const frameAssetFieldIds = useMemo(
+    () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'frame'),
+    [inputSchemaSummary.assetFields]
+  );
+  const referenceAudioFieldIds = useMemo(
+    () => buildReferenceAudioFieldIds(inputSchemaSummary.assetFields, SEEDANCE_REFERENCE_AUDIO_FIELD_IDS),
+    [inputSchemaSummary.assetFields]
+  );
 
-  const primaryAssetFieldLabel = useMemo(() => {
-    const primaryField = inputSchemaSummary.assetFields.find((entry) => entry.role === 'primary')?.field;
-    return primaryField?.label ?? 'Reference image';
-  }, [inputSchemaSummary.assetFields]);
+  const primaryAssetFieldLabel = useMemo(
+    () => getPrimaryAssetFieldLabel(inputSchemaSummary.assetFields),
+    [inputSchemaSummary.assetFields]
+  );
   const guestUploadLockedReason = !authChecked || (!authLoading && !user?.id) ? workspaceCopy.authGate.uploadLocked : null;
   const composerAssetFields = useMemo(() => {
     return inputSchemaSummary.assetFields.map((entry) => {
@@ -4232,25 +3829,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
   }, [cfgScale, selectedEngine, form?.mode]);
 
-  const composerAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(() => {
-    const map: Record<string, (ComposerAttachment | null)[]> = {};
-    Object.entries(inputAssets).forEach(([fieldId, entries]) => {
-      map[fieldId] = entries.map((asset) =>
-        asset
-          ? {
-              kind: asset.kind,
-              name: asset.name,
-              size: asset.size,
-              type: asset.type,
-              previewUrl: asset.previewUrl,
-              status: asset.status,
-              error: asset.error,
-            }
-          : null
-      );
-    });
-    return map;
-  }, [inputAssets]);
+  const composerAssets = useMemo(() => buildComposerAttachments(inputAssets), [inputAssets]);
   const handleExtraInputValueChange = useCallback((field: EngineInputField, value: unknown) => {
     setForm((current) => {
       if (!current) return current;
@@ -4265,57 +3844,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
-  const composerPromotedActions = useMemo<ComposerPromotedAction[]>(() => {
-    if (!form) return [];
-    return inputSchemaSummary.promotedFields.map(({ field }) => {
-      const normalizedId = normalizeFieldId(field.id);
-      const currentValue = parseBooleanInput(form.extraInputValues[field.id] ?? field.default);
-      const active = currentValue ?? false;
-      const promotedCopy =
-        normalizedId === 'enhanceprompt'
-          ? uiLocale === 'fr'
-            ? {
-                label: 'Améliorer',
-                tooltip: 'Réécrit le prompt avant envoi pour un résultat plus propre.',
-              }
-            : uiLocale === 'es'
-              ? {
-                  label: 'Mejorar',
-                  tooltip: 'Reescribe el prompt antes de enviarlo para un resultado más limpio.',
-                }
-              : {
-                  label: 'Improve',
-                  tooltip: 'Rewrites your prompt before sending it for a cleaner result.',
-                }
-          : normalizedId === 'autofix'
-            ? uiLocale === 'fr'
-              ? {
-                  label: 'Corriger si bloqué',
-                  tooltip: 'Si le prompt est bloqué, réessaie automatiquement avec une version sûre.',
-                }
-              : uiLocale === 'es'
-                ? {
-                    label: 'Corregir si bloquea',
-                    tooltip: 'Si el prompt es bloqueado, reintenta automáticamente con una versión segura.',
-                  }
-                : {
-                    label: 'Fix if blocked',
-                    tooltip: 'If the prompt is blocked, retry automatically with a safe rewrite.',
-                  }
-            : {
-                label: field.label,
-                tooltip: field.description ?? field.label,
-              };
-      return {
-        id: field.id,
-        label: promotedCopy.label,
-        tooltip: promotedCopy.tooltip,
-        active,
-        icon: normalizedId === 'autofix' ? 'shield' : 'sparkles',
-        onToggle: () => handleExtraInputValueChange(field, active ? 'false' : 'true'),
-      };
-    });
-  }, [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]);
+  const composerPromotedActions = useMemo(
+    () =>
+      buildComposerPromotedActions({
+        form,
+        promotedFields: inputSchemaSummary.promotedFields,
+        uiLocale,
+        onToggle: handleExtraInputValueChange,
+      }),
+    [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]
+  );
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;

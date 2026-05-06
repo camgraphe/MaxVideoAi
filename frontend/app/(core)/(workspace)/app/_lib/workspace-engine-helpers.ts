@@ -1,5 +1,6 @@
 import { isLumaRay2EngineId, isLumaRay2GenerateMode } from '@/lib/luma-ray2';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
+import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { FormState } from './workspace-form-state';
 
@@ -115,6 +116,118 @@ export function getEngineModeLabel(engineId: string | null | undefined, mode: Mo
     return 'R2V';
   }
   return getLocalizedModeLabel(mode, locale);
+}
+
+export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefined {
+  if (!engine) return undefined;
+  if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
+    return undefined;
+  }
+  if (engine.id === 'veo-3-1') {
+    const order: Mode[] = ['ref2v', 'extend'];
+    const available = order.filter((value) => engine.modes.includes(value));
+    return available.length ? available : undefined;
+  }
+  if (engine.id === 'veo-3-1-fast') {
+    const order: Mode[] = ['extend'];
+    const available = order.filter((value) => engine.modes.includes(value));
+    return available.length ? available : undefined;
+  }
+  if (engine.id === 'veo-3-1-lite') {
+    return undefined;
+  }
+  if (engine.id === 'ltx-2-3') {
+    const order: Mode[] = ['extend', 'retake'];
+    const available = order.filter((value) => engine.modes.includes(value));
+    return available.length ? available : undefined;
+  }
+  const preferredOrder: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
+  const available = preferredOrder.filter((value) => engine.modes.includes(value));
+  return available.length ? available : undefined;
+}
+
+type ComposerModeToggle = {
+  mode: Mode | null;
+  label: string;
+  disabled?: boolean;
+  disabledReason?: string;
+};
+
+type WorkspaceWorkflowCopy = {
+  generateVideo: string;
+  removeAudioToUnlock: string;
+  audioUnsupported: string;
+  audioLocked: string;
+  audioLockedFallback: string;
+};
+
+export function buildComposerModeToggles({
+  selectedEngine,
+  audioWorkflowLocked,
+  uiLocale,
+  workflowCopy,
+}: {
+  selectedEngine: EngineCaps | null;
+  audioWorkflowLocked: boolean;
+  uiLocale: string;
+  workflowCopy: WorkspaceWorkflowCopy;
+}): ComposerModeToggle[] | undefined {
+  if (!selectedEngine) return undefined;
+  const explicitModes =
+    isLumaRay2EngineId(selectedEngine.id)
+      ? (['v2v', 'reframe'] as const)
+      : selectedEngine.id === 'ltx-2-3'
+        ? (['extend'] as const)
+        : selectedEngine.id === 'veo-3-1'
+          ? (['ref2v', 'extend'] as const)
+          : selectedEngine.id === 'veo-3-1-fast'
+            ? (['extend'] as const)
+            : selectedEngine.id === 'veo-3-1-lite'
+              ? ([] as const)
+              : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
+                ? ([] as const)
+                : null;
+  if (!explicitModes) return undefined;
+  const disabledReason = audioWorkflowLocked
+    ? workflowCopy.removeAudioToUnlock
+    : undefined;
+  return [
+    { mode: null, label: workflowCopy.generateVideo },
+    ...explicitModes
+      .filter((mode) => selectedEngine.modes.includes(mode))
+      .map((mode) => ({
+        mode,
+        label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
+        disabled: audioWorkflowLocked,
+        disabledReason,
+      })),
+  ];
+}
+
+export function getComposerWorkflowNotice({
+  selectedEngine,
+  hasAudioInput,
+  audioWorkflowUnsupported,
+  workflowCopy,
+}: {
+  selectedEngine: EngineCaps | null;
+  hasAudioInput: boolean;
+  audioWorkflowUnsupported: boolean;
+  workflowCopy: WorkspaceWorkflowCopy;
+}): string | null {
+  if (!selectedEngine || !hasAudioInput) return null;
+  if (audioWorkflowUnsupported) {
+    return workflowCopy.audioUnsupported;
+  }
+  if (
+    selectedEngine.id === 'ltx-2-3' ||
+    selectedEngine.id === 'veo-3-1' ||
+    selectedEngine.id === 'veo-3-1-fast' ||
+    selectedEngine.id === 'veo-3-1-lite'
+  ) {
+    return workflowCopy.audioLocked;
+  }
+  return workflowCopy.audioLockedFallback;
 }
 
 export function parseBooleanInput(value: unknown): boolean | null {
