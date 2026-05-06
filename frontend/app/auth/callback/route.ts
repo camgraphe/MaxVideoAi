@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,22 +17,29 @@ function sanitizeNextPath(value: string | null): string {
 export async function GET(req: NextRequest) {
   const requestUrl = new URL(req.url);
   const code = requestUrl.searchParams.get('code');
+  const state = requestUrl.searchParams.get('state');
+  const providerError = requestUrl.searchParams.get('error');
   const nextParam = requestUrl.searchParams.get('next');
   const nextPath = sanitizeNextPath(nextParam);
 
-  if (code) {
-    const supabase = await createSupabaseRouteClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      console.error('[auth.callback] exchange failed', error);
-      const fallbackUrl = new URL('/login', requestUrl.origin);
-      fallbackUrl.searchParams.set('mode', 'signin');
-      fallbackUrl.searchParams.set('authError', 'oauth_callback_failed');
-      if (nextPath && nextPath !== DEFAULT_NEXT_PATH) {
-        fallbackUrl.searchParams.set('next', nextPath);
-      }
-      return NextResponse.redirect(fallbackUrl);
+  if (providerError || code) {
+    const loginUrl = new URL('/login', requestUrl.origin);
+    loginUrl.searchParams.set('mode', 'signin');
+    if (nextPath && nextPath !== DEFAULT_NEXT_PATH) {
+      loginUrl.searchParams.set('next', nextPath);
     }
+    if (providerError) {
+      loginUrl.searchParams.set('authError', 'oauth_callback_failed');
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!code) {
+      return NextResponse.redirect(loginUrl);
+    }
+    loginUrl.searchParams.set('code', code);
+    if (state) {
+      loginUrl.searchParams.set('state', state);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.redirect(new URL(nextPath, requestUrl.origin));

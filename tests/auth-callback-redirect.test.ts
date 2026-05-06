@@ -9,13 +9,13 @@ const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8
 test('OAuth callback failure does not reattach a failed code to /login', () => {
   assert.doesNotMatch(
     authCallbackSource,
-    /fallbackUrl\.searchParams\.set\(['"]code['"]/,
-    'failed OAuth codes must not be redirected back to /login because middleware will retry them forever'
+    /\.exchangeCodeForSession\(code\)/,
+    'the server callback should not exchange PKCE codes because Safari may not send the browser code verifier cookie'
   );
   assert.match(
     authCallbackSource,
-    /fallbackUrl\.searchParams\.set\(['"]authError['"],\s*['"]oauth_callback_failed['"]\)/,
-    'the login page should receive a stable, non-secret error marker instead'
+    /loginUrl\.searchParams\.set\(['"]code['"],\s*code\)/,
+    'the callback should forward OAuth codes to /login for browser-side exchange'
   );
 });
 
@@ -37,5 +37,28 @@ test('login page can consume a PKCE OAuth code directly', () => {
     loginPageSource,
     /\.exchangeCodeForSession\(oauthCode\)/,
     'the login page should exchange direct OAuth codes with the browser Supabase client'
+  );
+  assert.match(
+    loginPageSource,
+    /return `\$\{base\}\/login\?mode=signin&next=\$\{encodeURIComponent\(safeNextPath\)\}`/,
+    'Google OAuth should return directly to /login so the initiating browser can exchange the PKCE code'
+  );
+});
+
+test('login auth success records a session hint before leaving the auth page', () => {
+  assert.match(
+    loginPageSource,
+    /import \{ writeLastKnownUserId \} from ['"]@\/lib\/last-known['"]/,
+    'successful login flows should prime the protected app auth hook with a last-known user id'
+  );
+  assert.match(
+    loginPageSource,
+    /writeLastKnownUserId\(userId\)/,
+    'the login page should store the authenticated user id before redirecting'
+  );
+  assert.match(
+    loginPageSource,
+    /window\.location\.assign\(safeTarget\)/,
+    'auth redirects should use a document navigation so Safari sends freshly written auth cookies'
   );
 });

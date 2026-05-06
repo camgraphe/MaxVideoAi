@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { writeLastKnownUserId } from '@/lib/last-known';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -185,6 +186,7 @@ export default function LoginPage() {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const oauthCodeExchangeStartedRef = useRef(false);
+  const authNavigationStartedRef = useRef(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
@@ -195,9 +197,30 @@ export default function LoginPage() {
   const redirectTo = useMemo(() => {
     if (!authRedirectOrigin) return undefined;
     const base = authRedirectOrigin.endsWith('/') ? authRedirectOrigin.slice(0, -1) : authRedirectOrigin;
-    return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
+    return `${base}/login?mode=signin&next=${encodeURIComponent(safeNextPath)}`;
   }, [authRedirectOrigin, safeNextPath]);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
+
+  const completeAuthenticatedRedirect = useCallback(
+    (target: string, authenticatedUserId?: string | null) => {
+      if (authNavigationStartedRef.current) return;
+      authNavigationStartedRef.current = true;
+      const safeTarget = sanitizeNextPath(target);
+      const userId = authenticatedUserId ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
+      if (typeof window !== 'undefined') {
+        persistNextTarget(safeTarget);
+        window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+        window.dispatchEvent(new Event('wallet:invalidate'));
+        window.location.assign(safeTarget);
+        return;
+      }
+      router.replace(safeTarget);
+    },
+    [persistNextTarget, router]
+  );
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
@@ -346,9 +369,7 @@ export default function LoginPage() {
             method: 'google',
           });
         }
-        persistNextTarget(target);
-        window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
-        router.replace(target);
+        completeAuthenticatedRedirect(target, data.session.user?.id ?? null);
       })
       .catch(() => {
         if (cancelled) return;
@@ -360,7 +381,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [authCopy, nextPath, persistNextTarget, router]);
+  }, [authCopy, completeAuthenticatedRedirect, nextPath]);
 
   useEffect(() => {
     if (mode !== 'signup' && termsError) {
@@ -405,6 +426,10 @@ export default function LoginPage() {
           return;
         }
         if (data.session) {
+          const userId = data.session.user?.id ?? null;
+          if (userId) {
+            writeLastKnownUserId(userId);
+          }
           if (consumePendingGoogleLogin()) {
             persistPendingAnalyticsEvent('login_completed', {
               route_family: 'auth',
@@ -451,8 +476,7 @@ export default function LoginPage() {
           });
         }
         const safeTarget = sanitizeNextPath(nextPath);
-        persistNextTarget(safeTarget);
-        router.replace(safeTarget);
+        completeAuthenticatedRedirect(safeTarget, user.id);
       } else if (!user) {
         // stay on page
       }
@@ -473,8 +497,7 @@ export default function LoginPage() {
             });
           }
           const safeTarget = sanitizeNextPath(nextPath);
-          persistNextTarget(safeTarget);
-          router.replace(safeTarget);
+          completeAuthenticatedRedirect(safeTarget, user.id);
         } else if (!user) {
           // remain unauthenticated
         }
@@ -485,7 +508,7 @@ export default function LoginPage() {
       cancelled = true;
       authListener?.subscription.unsubscribe();
     };
-  }, [nextPath, nextPathReady, persistNextTarget, router]);
+  }, [completeAuthenticatedRedirect, nextPath, nextPathReady]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -494,7 +517,7 @@ export default function LoginPage() {
     setError(null);
     setSignupSuggestion(null);
     clearPendingGoogleLogin();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error instanceof AuthApiError && error.status === 400) {
         setSignupSuggestion({ email, password });
@@ -518,11 +541,7 @@ export default function LoginPage() {
     });
 
     const safeTarget = sanitizeNextPath(nextPath);
-    if (typeof window !== 'undefined') {
-      persistNextTarget(safeTarget);
-      window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
-    }
-    router.replace(safeTarget);
+    completeAuthenticatedRedirect(safeTarget, data.session?.user?.id ?? data.user?.id ?? null);
   }
 
   const handleAcceptSignupSuggestion = useCallback(() => {
@@ -626,11 +645,7 @@ export default function LoginPage() {
         email_confirmation_required: false,
       });
       const target = sanitizeNextPath('/generate');
-      if (typeof window !== 'undefined') {
-        persistNextTarget(target);
-        window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
-      }
-      router.replace(target);
+      completeAuthenticatedRedirect(target, data.session.user?.id ?? data.user?.id ?? null);
     } else {
       setStatusTone('success');
       setStatus('Check your inbox to confirm your email.');
@@ -708,15 +723,14 @@ export default function LoginPage() {
           });
         }
         const safeTarget = sanitizeNextPath(nextPath);
-        persistNextTarget(safeTarget);
-        router.replace(safeTarget);
+        completeAuthenticatedRedirect(safeTarget, session.user?.id ?? null);
       } else {
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [router, nextPath, persistNextTarget, nextPathReady]);
+  }, [completeAuthenticatedRedirect, nextPath, nextPathReady]);
 
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 
