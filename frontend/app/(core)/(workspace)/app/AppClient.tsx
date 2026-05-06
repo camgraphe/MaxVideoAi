@@ -108,6 +108,14 @@ import {
   MULTI_PROMPT_MIN_SEC,
   normalizeSharedVideoPayload,
 } from './_lib/workspace-input-helpers';
+import {
+  buildWorkspaceStorageKey,
+  readScopedWorkspaceStorage,
+  readWorkspaceStorage,
+  STORAGE_KEYS,
+  writeScopedWorkspaceStorage,
+  writeWorkspaceStorage,
+} from './_lib/workspace-storage';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -876,19 +884,6 @@ interface FormState {
 }
 
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
-const STORAGE_KEYS = {
-  prompt: 'maxvideoai.generate.prompt.v1',
-  negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
-  form: 'maxvideoai.generate.form.v1',
-  memberTier: 'maxvideoai.generate.memberTier.v1',
-  pendingRenders: 'maxvideoai.generate.pendingRenders.v1',
-  previewJobId: 'maxvideoai.generate.previewJobId.v1',
-  multiPromptEnabled: 'maxvideoai.generate.multiPromptEnabled.v1',
-  multiPromptScenes: 'maxvideoai.generate.multiPromptScenes.v1',
-  shotType: 'maxvideoai.generate.shotType.v1',
-  voiceIds: 'maxvideoai.generate.voiceIds.v1',
-} as const;
-
 type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
 
 function parseStoredForm(value: string): StoredFormState | null {
@@ -1028,69 +1023,32 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   const storageScope = useMemo(() => userId ?? 'anon', [userId]);
   const storageKey = useCallback(
-    (base: string, scope: string = storageScope) => `${base}:${scope}`,
+    (base: string, scope: string = storageScope) => buildWorkspaceStorageKey(base, scope),
     [storageScope]
   );
   const readScopedStorage = useCallback(
     (base: string): string | null => {
-      if (typeof window === 'undefined') return null;
-      return window.localStorage.getItem(storageKey(base));
+      return readScopedWorkspaceStorage(base, storageScope);
     },
-    [storageKey]
+    [storageScope]
   );
   const readStorage = useCallback(
     (base: string): string | null => {
-      if (typeof window === 'undefined') return null;
-      // Prefer the unscoped "last state" to survive auth transitions and hard refreshes.
-      if (storageScope === 'anon') {
-        const baseValue = window.localStorage.getItem(base);
-        if (baseValue !== null) return baseValue;
-        return window.localStorage.getItem(storageKey(base));
-      }
-
-      const scopedValue = window.localStorage.getItem(storageKey(base));
-      if (scopedValue !== null) return scopedValue;
-
-      const baseValue = window.localStorage.getItem(base);
-      if (baseValue !== null) return baseValue;
-
-      const anonValue = window.localStorage.getItem(storageKey(base, 'anon'));
-      if (anonValue !== null) return anonValue;
-
-      return null;
+      return readWorkspaceStorage(base, storageScope);
     },
-    [storageKey, storageScope]
+    [storageScope]
   );
   const writeScopedStorage = useCallback(
     (base: string, value: string | null) => {
-      if (typeof window === 'undefined') return;
-      const key = storageKey(base);
-      if (value === null) {
-        window.localStorage.removeItem(key);
-      } else {
-        window.localStorage.setItem(key, value);
-      }
-      window.localStorage.removeItem(base);
+      writeScopedWorkspaceStorage(base, storageScope, value);
     },
-    [storageKey]
+    [storageScope]
   );
   const writeStorage = useCallback(
     (base: string, value: string | null) => {
-      if (typeof window === 'undefined') return;
-      const key = storageKey(base);
-      if (value === null) {
-        window.localStorage.removeItem(key);
-      } else {
-        window.localStorage.setItem(key, value);
-      }
-      // Always keep an unscoped fallback so the last state survives auth transitions/navigation.
-      if (value === null) {
-        window.localStorage.removeItem(base);
-      } else {
-        window.localStorage.setItem(base, value);
-      }
+      writeWorkspaceStorage(base, storageScope, value);
     },
-    [storageKey]
+    [storageScope]
   );
 const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
 const requestedJobId = useMemo(() => {
