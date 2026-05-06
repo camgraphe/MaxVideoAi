@@ -3,14 +3,26 @@ import type Stripe from 'stripe';
 type CheckoutAllowedCountry =
   Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry;
 type CheckoutUiMode = 'hosted' | 'elements';
+type BlockedCardBrand = 'american_express';
+type CheckoutPaymentMethodOptions = Omit<
+  Stripe.Checkout.SessionCreateParams.PaymentMethodOptions,
+  'card'
+> & {
+  card?: Stripe.Checkout.SessionCreateParams.PaymentMethodOptions.Card & {
+    restrictions?: {
+      brands_blocked: BlockedCardBrand[];
+    };
+  };
+};
 type WalletTopUpCheckoutSessionParams = Omit<
   Stripe.Checkout.SessionCreateParams,
-  'ui_mode' | 'success_url' | 'cancel_url' | 'return_url'
+  'ui_mode' | 'success_url' | 'cancel_url' | 'return_url' | 'payment_method_options'
 > & {
   ui_mode?: Stripe.Checkout.SessionCreateParams.UiMode | 'elements';
   success_url?: string;
   cancel_url?: string;
   return_url?: string;
+  payment_method_options?: CheckoutPaymentMethodOptions;
 };
 
 export const WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES = [
@@ -268,6 +280,7 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   productTaxCode: string;
   customer?: string | null;
   customerUpdate?: Stripe.Checkout.SessionCreateParams.CustomerUpdate | null;
+  blockAmexCards?: boolean;
 };
 
 function normalizeOptionalStripeId(value: string | null | undefined): string | null {
@@ -290,6 +303,7 @@ export function buildWalletTopUpCheckoutSessionParams({
   productTaxCode,
   customer,
   customerUpdate,
+  blockAmexCards = false,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
     metadata: paymentIntentMetadata,
@@ -318,6 +332,17 @@ export function buildWalletTopUpCheckoutSessionParams({
     metadata: sessionMetadata,
     payment_intent_data: paymentIntentData,
   };
+
+  if (blockAmexCards) {
+    // Temporary fraud mitigation for card-testing waves targeting Amex.
+    params.payment_method_options = {
+      card: {
+        restrictions: {
+          brands_blocked: ['american_express'],
+        },
+      },
+    };
+  }
 
   const customerId = normalizeOptionalStripeId(customer);
   if (customerId) {

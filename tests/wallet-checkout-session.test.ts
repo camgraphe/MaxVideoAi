@@ -95,3 +95,15 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.equal(params.payment_method_types, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
 });
+
+test('wallet top-up Checkout can temporarily block American Express cards', () => {
+  const params = buildParams({ blockAmexCards: true });
+
+  assert.deepEqual((params.payment_method_options as any)?.card?.restrictions?.brands_blocked, ['american_express']);
+});
+
+test('wallet top-up Checkout does not block card brands by default', () => {
+  const params = buildParams();
+
+  assert.equal(params.payment_method_options, undefined);
+});

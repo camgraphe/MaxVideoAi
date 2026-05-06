@@ -31,6 +31,7 @@ const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 const STRIPE_API_VERSION = '2023-10-16';
+const STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION = '2025-03-31.basil' as Stripe.LatestApiVersion;
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
 const CHECKOUT_COPY_BY_LOCALE: Record<
   AppLocale,
@@ -97,6 +98,11 @@ function resolveCheckoutLocale(req: NextRequest, bodyLocale: unknown): AppLocale
   if (/\bfr\b/i.test(acceptLanguage)) return 'fr';
   if (/\bes\b/i.test(acceptLanguage)) return 'es';
   return defaultLocale;
+}
+
+function envFlagEnabled(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === 'true' || normalized === '1';
 }
 
 async function resolveAuthenticatedUser(): Promise<string | null> {
@@ -258,8 +264,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const stripeApiVersion =
+    requestMode === 'direct'
+      ? STRIPE_API_VERSION
+      : isExpressCheckoutTopUp
+        ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION
+        : STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION;
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, {
-    apiVersion: isExpressCheckoutTopUp ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION : STRIPE_API_VERSION,
+    apiVersion: stripeApiVersion,
   });
 
   if (body.mode === 'direct') {
@@ -487,6 +499,7 @@ export async function POST(req: NextRequest) {
         name: 'auto',
         shipping: 'auto',
       },
+      blockAmexCards: envFlagEnabled(ENV.STRIPE_BLOCK_AMEX),
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
