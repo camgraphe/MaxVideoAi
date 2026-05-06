@@ -6,7 +6,7 @@ This route is the main signed-in video generation workspace.
 
 - `AppClient.tsx`: top-level state orchestration while the workspace is being split.
 - `_components`: route-local chrome, panels, skeletons, modals, and presentational UI.
-- `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, generation guards, local render preparation, generation payloads and accepted results, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
+- `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, generation guards, local render preparation, generation payloads, accepted results, generation polling projections, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
 
 ## Refactor Rules
@@ -19,6 +19,7 @@ This route is the main signed-in video generation workspace.
 - Keep generation validation guards and `runGenerate` payload assembly in `_lib`; `AppClient.tsx` should decide when to show errors and when to call the network.
 - Keep local pending-render and selected-preview preparation in `_lib`; `AppClient.tsx` should apply returned state objects and own timers.
 - Keep accepted `runGenerate` response projection and immediate render/preview patches in `_lib`; `AppClient.tsx` should dispatch events and start polling.
+- Keep generation polling projections and poll-delay decisions in `_lib`; `AppClient.tsx` should own `getJobStatus`, timers, and React setters.
 - Keep video settings snapshot parsing and job media patch mapping in `_lib`; `AppClient.tsx` should wire those results into React state.
 - Keep workspace request parsing and boot hydration decisions in `_lib`; `AppClient.tsx` should apply the resolved state.
 - Keep asset-library selection, reference slot insertion, and Kling library asset mapping in `_lib`; `AppClient.tsx` should handle network calls and React state wiring.

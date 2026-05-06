@@ -36,7 +36,7 @@ import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { isExpiredRefundedFailedGalleryItem, isRefundedPaymentStatus } from '@/lib/gallery-retention';
+import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -47,7 +47,6 @@ import {
   isLumaRay2GenerateMode,
 } from '@/lib/luma-ray2';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { isPlaceholderMediaUrl } from '@/lib/media';
 import {
   getSeedanceAssetState,
   getSeedanceFieldBlockKey,
@@ -75,7 +74,6 @@ import {
 import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
   isAudioWorkspaceRender,
-  resolvePolledThumbUrl,
   serializePendingRenders,
   type LocalRender,
 } from './_lib/render-persistence';
@@ -84,6 +82,11 @@ import {
   type FormState,
 } from './_lib/workspace-form-state';
 import { prepareGenerationInputs } from './_lib/workspace-generation-inputs';
+import {
+  applyGenerationPollToRender,
+  applyGenerationPollToSelectedPreview,
+  projectGenerationPollStatus,
+} from './_lib/workspace-generation-polling';
 import {
   applyAcceptedGenerationResultToRender,
   applyAcceptedGenerationResultToSelectedPreview,
@@ -3034,69 +3037,29 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               progressMessage = status.message;
             }
             const target = rendersRef.current.find((r) => r.id === jobId);
-            const now = Date.now();
-            const minReadyAtCurrent = target?.minReadyAt ?? 0;
-            const isCompleted = status.status === 'completed' || Boolean(status.videoUrl);
-            if (isCompleted && target && now < minReadyAtCurrent) {
-              window.setTimeout(poll, Math.max(500, minReadyAtCurrent - now));
+            const pollProjection = projectGenerationPollStatus({
+              status,
+              target,
+              jobId,
+              localKey,
+              now: Date.now(),
+            });
+            if (pollProjection.deferUntilReady && pollProjection.nextPollDelayMs !== null) {
+              window.setTimeout(poll, pollProjection.nextPollDelayMs);
               return;
             }
-            const hasVideo = Boolean(status.videoUrl);
-            const hasThumb = Boolean(status.thumbUrl && !isPlaceholderMediaUrl(status.thumbUrl));
             setRenders((prev) =>
               prev.map((r) =>
                 r.id === jobId
-                  ? (() => {
-                      const nextStatus = status.status ?? r.status;
-                      const nextPaymentStatus = status.paymentStatus ?? r.paymentStatus;
-                      const nextFailedAt =
-                        nextStatus === 'failed' && isRefundedPaymentStatus(nextPaymentStatus)
-                          ? r.failedAt ?? now
-                          : undefined;
-                      return {
-                      ...r,
-                      status: nextStatus,
-                      progress: status.progress ?? r.progress,
-                      readyVideoUrl: status.videoUrl ?? r.readyVideoUrl,
-                      videoUrl: status.videoUrl ?? r.videoUrl ?? r.readyVideoUrl,
-                      previewVideoUrl: status.previewVideoUrl ?? r.previewVideoUrl,
-                      thumbUrl: resolvePolledThumbUrl(r.thumbUrl, status.thumbUrl),
-                      priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
-                      currency: status.currency ?? status.pricing?.currency ?? r.currency,
-                      pricingSnapshot: status.pricing ?? r.pricingSnapshot,
-                      paymentStatus: nextPaymentStatus,
-                      failedAt: nextFailedAt,
-                    };
-                  })()
+                  ? applyGenerationPollToRender(r, pollProjection)
                   : r
               )
             );
-            setSelectedPreview((cur) =>
-              cur && (cur.id === jobId || cur.localKey === localKey)
-                ? {
-                    ...cur,
-                    status: status.status ?? cur.status,
-                    id: jobId,
-                    localKey,
-                    progress: status.progress ?? cur.progress,
-                    videoUrl: status.videoUrl ?? target?.readyVideoUrl ?? cur.videoUrl,
-                    previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
-                    thumbUrl: resolvePolledThumbUrl(cur.thumbUrl, status.thumbUrl),
-                    priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
-                    currency: status.currency ?? status.pricing?.currency ?? cur.currency,
-                    etaLabel: cur.etaLabel,
-                    etaSeconds: cur.etaSeconds,
-                  }
-                : cur
-            );
-            const shouldKeepPolling =
-              status.status !== 'failed' &&
-              (status.status !== 'completed' || !hasVideo || !hasThumb);
-            if (shouldKeepPolling) {
-              const delay = status.status === 'completed' && !hasVideo ? 4000 : 2000;
-              window.setTimeout(poll, delay);
+            setSelectedPreview((cur) => applyGenerationPollToSelectedPreview(cur, pollProjection));
+            if (pollProjection.shouldKeepPolling && pollProjection.nextPollDelayMs !== null) {
+              window.setTimeout(poll, pollProjection.nextPollDelayMs);
             }
-            if (status.status === 'failed' || (status.status === 'completed' && hasVideo && hasThumb)) {
+            if (pollProjection.shouldStopProgressTracking) {
               stopProgressTracking();
             }
           } catch {
