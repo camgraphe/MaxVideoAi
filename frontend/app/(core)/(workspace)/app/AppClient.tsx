@@ -23,18 +23,16 @@ import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { ENV as CLIENT_ENV } from '@/lib/env';
-import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
+import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { VideoGroup } from '@/types/video-groups';
 import {
   mapSelectedPreviewToGroup,
-  type SelectedVideoPreview,
   type SharedVideoPreview,
 } from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
-import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
+import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -70,11 +68,6 @@ import {
   WorkspaceBootPreview,
 } from './_components/WorkspaceBootSkeletons';
 import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
-import {
-  isAudioWorkspaceRender,
-  serializePendingRenders,
-  type LocalRender,
-} from './_lib/render-persistence';
 import {
   normalizeExtraInputValue,
   type FormState,
@@ -151,7 +144,6 @@ import {
 } from './_lib/workspace-storage';
 import {
   buildInitialWorkspaceFormState,
-  buildPendingRenderHydrationState,
   consumeWorkspaceOnboardingSkipIntent,
   parseStoredMultiPromptScenes,
   readStoredWorkspaceForm,
@@ -162,29 +154,12 @@ import {
   summarizeWorkspaceInputSchema,
 } from './_lib/workspace-input-schema';
 import {
-  buildPendingGroupSummaries,
-  buildPendingSummaryMap,
   buildQuadTileFromGroupMember,
   buildQuadTileFromRender,
-  buildRenderGroups,
-  clearRemovedGroupId,
-  clearSelectedPreviewForRemovedRenders,
-  filterLocalRenders,
-  getGenerationSkeletonCount,
-  hasRemovedRenderRefs,
   haveSameGroupOrder,
-  isGenerationGroupLoading,
-  pruneBatchHeroes,
 } from './_lib/workspace-render-groups';
-import {
-  applyPolledJobStatusToRender,
-  applyPolledJobStatusToSelectedPreview,
-  buildRecentJobIdSet,
-  getRendersNeedingStatusRefresh,
-  mergeRecentJobsIntoLocalRenders,
-  shouldRemoveCompletedSyncedRender,
-} from './_lib/workspace-render-status';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
+import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
@@ -388,19 +363,13 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       }
     }
   }, [fromVideoId]);
-  const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
-  const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
-  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
-  const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
-  const [galleryRetentionTick, setGalleryRetentionTick] = useState(0);
   const [viewerTarget, setViewerTarget] = useState<
     { kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | { kind: 'group'; group: VideoGroup } | null
   >(null);
-  const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`).matches;
@@ -419,11 +388,41 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
   }, []);
-  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-  const rendersRef = useRef<LocalRender[]>([]);
-  const persistedRendersRef = useRef<string | null>(null);
-  const pendingPollRef = useRef<number | null>(null);
-  const statusErrorCountsRef = useRef<Map<string, { unauthorized: number }>>(new Map());
+  const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
+  const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
+  const {
+    renders,
+    setRenders,
+    rendersRef,
+    selectedPreview,
+    setSelectedPreview,
+    setActiveBatchId,
+    batchHeroes,
+    setBatchHeroes,
+    setActiveGroupId,
+    setViewMode,
+    renderGroups,
+    normalizedPendingGroups,
+    pendingSummaryMap,
+    activeVideoGroup,
+    isGenerationLoading,
+    generationSkeletonCount,
+    hydratePendingRendersFromStorage,
+    resetRenderState,
+  } = useWorkspaceRenderState({
+    recentJobs,
+    engineIdByLabel,
+    provider,
+    storageScope,
+    hydratedForScope,
+    formIterations: form?.iterations,
+    compositeOverride,
+    compositeOverrideSummary,
+    writeScopedStorage,
+  });
+  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
+  const guidedSampleGroups = guidedSampleFeed.visibleGroups;
+  const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
   const hydratedScopeRef = useRef<string | null>(null);
   const hasStoredFormRef = useRef<boolean>(false);
 
@@ -449,13 +448,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   }, [authLoading, authStatus, user?.id]);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setGalleryRetentionTick((current) => current + 1);
-    }, 5_000);
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!engines.length) return;
     if (requestedJobId) return;
@@ -463,10 +455,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     hydratedScopeRef.current = storageScope;
     setHydratedForScope(null);
 
-    setRenders([]);
-    setBatchHeroes({});
-    setActiveBatchId(null);
-    setActiveGroupId(null);
+    resetRenderState();
 
     try {
       const promptValue = readStorage(STORAGE_KEYS.prompt);
@@ -523,26 +512,18 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       }
 
       const pendingValue = readScopedStorage(STORAGE_KEYS.pendingRenders);
-      const pendingHydration = buildPendingRenderHydrationState(pendingValue);
-      if (pendingHydration.pendingRenders.length) {
-        setRenders(pendingHydration.pendingRenders);
-        setBatchHeroes(pendingHydration.batchHeroes);
-        setActiveBatchId(pendingHydration.activeBatchId);
-        setActiveGroupId(pendingHydration.activeGroupId);
-      }
-      persistedRendersRef.current = pendingHydration.serialized;
+      hydratePendingRendersFromStorage(pendingValue);
     } catch {
-      setRenders([]);
-      setBatchHeroes({});
-      setActiveBatchId(null);
-      setActiveGroupId(null);
+      resetRenderState();
     } finally {
       setHydratedForScope(storageScope);
     }
   }, [
     engines,
+    hydratePendingRendersFromStorage,
     readScopedStorage,
     readStorage,
+    resetRenderState,
     writeStorage,
     setMemberTier,
     storageScope,
@@ -552,214 +533,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     requestedJobId,
   ]);
 
-  useEffect(() => {
-    rendersRef.current = renders;
-  }, [renders]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedScopeRef.current !== storageScope) return;
-    const serialized = serializePendingRenders(renders);
-    if (serialized === persistedRendersRef.current) return;
-    persistedRendersRef.current = serialized;
-    writeScopedStorage(STORAGE_KEYS.pendingRenders, serialized);
-  }, [renders, storageScope, writeScopedStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const jobsNeedingRefresh = getRendersNeedingStatusRefresh(renders);
-    if (!jobsNeedingRefresh.length) {
-      if (pendingPollRef.current !== null) {
-        window.clearInterval(pendingPollRef.current);
-        pendingPollRef.current = null;
-      }
-      return;
-    }
-    let cancelled = false;
-
-    const poll = async () => {
-      await Promise.all(
-        jobsNeedingRefresh.map(async (render) => {
-          if (!render.jobId) return;
-          try {
-            const status = await getJobStatus(render.jobId);
-            statusErrorCountsRef.current.delete(render.jobId);
-            if (cancelled) return;
-            setRenders((prev) =>
-              prev.map((item) =>
-                item.jobId === render.jobId ? applyPolledJobStatusToRender(item, status) : item
-              )
-            );
-            setSelectedPreview((cur) =>
-              applyPolledJobStatusToSelectedPreview(cur, render, status)
-            );
-          } catch (error) {
-            const statusCode = typeof error === 'object' && error ? (error as { status?: unknown }).status : undefined;
-            if (statusCode === 404) {
-              statusErrorCountsRef.current.delete(render.jobId);
-              if (cancelled) return;
-              setRenders((prev) => prev.filter((item) => item.jobId !== render.jobId));
-              setSelectedPreview((cur) => (cur && cur.id === render.jobId ? null : cur));
-              return;
-            }
-
-            if (statusCode === 401) {
-              const meta = statusErrorCountsRef.current.get(render.jobId) ?? { unauthorized: 0 };
-              meta.unauthorized += 1;
-              statusErrorCountsRef.current.set(render.jobId, meta);
-              if (meta.unauthorized >= 3) {
-                statusErrorCountsRef.current.delete(render.jobId);
-                if (cancelled) return;
-                setRenders((prev) => prev.filter((item) => item.jobId !== render.jobId));
-                setSelectedPreview((cur) => (cur && cur.id === render.jobId ? null : cur));
-              }
-              return;
-            }
-
-            // ignore other transient errors and retry on next tick
-          }
-        })
-      );
-    };
-
-    void poll();
-    if (pendingPollRef.current !== null) {
-      window.clearInterval(pendingPollRef.current);
-    }
-    pendingPollRef.current = window.setInterval(() => {
-      void poll();
-    }, 4000);
-
-    return () => {
-      cancelled = true;
-      if (pendingPollRef.current !== null) {
-        window.clearInterval(pendingPollRef.current);
-        pendingPollRef.current = null;
-      }
-    };
-  }, [renders, setSelectedPreview]);
-
-  useEffect(() => {
-    if (!recentJobs.length) return;
-    let heroCandidates: Array<{ batchId: string | null; localKey: string }> = [];
-
-    setRenders((previous) => {
-      if (!recentJobs.length) return previous;
-      const result = mergeRecentJobsIntoLocalRenders(previous, recentJobs, { engineIdByLabel });
-      heroCandidates = result.heroCandidates;
-      return result.renders;
-    });
-
-    if (heroCandidates.length) {
-      setBatchHeroes((previous) => {
-        const next = { ...previous };
-        let modified = false;
-        heroCandidates.forEach(({ batchId, localKey }) => {
-          if (!batchId || !localKey) return;
-          if (!next[batchId]) {
-            next[batchId] = localKey;
-            modified = true;
-          }
-        });
-        return modified ? next : previous;
-      });
-    }
-  }, [engineIdByLabel, recentJobs]);
-
-  useEffect(() => {
-    const shouldRemove = (render: LocalRender) =>
-      isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId });
-    const removedRefs = filterLocalRenders(renders, shouldRemove);
-    if (!hasRemovedRenderRefs(removedRefs)) {
-      return;
-    }
-
-    setRenders((prev) => {
-      if (prev === renders) return removedRefs.renders;
-      const nextRemoval = filterLocalRenders(prev, shouldRemove);
-      return nextRemoval.changed ? nextRemoval.renders : prev;
-    });
-
-    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
-    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setSelectedPreview((current) =>
-      clearSelectedPreviewForRemovedRenders(current, removedRefs, { clearAudioPreview: true })
-    );
-  }, [renders]);
-
-  useEffect(() => {
-    if (!renders.length || !recentJobs.length) return;
-    const recentJobIds = buildRecentJobIdSet(recentJobs);
-    if (!recentJobIds.size) return;
-    const shouldRemove = (render: LocalRender) => shouldRemoveCompletedSyncedRender(render, recentJobIds);
-    const removedRefs = filterLocalRenders(renders, shouldRemove);
-    if (!hasRemovedRenderRefs(removedRefs)) {
-      return;
-    }
-    setRenders((prev) => {
-      if (prev === renders) return removedRefs.renders;
-      const nextRemoval = filterLocalRenders(prev, shouldRemove);
-      return nextRemoval.changed ? nextRemoval.renders : prev;
-    });
-    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
-    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
-  }, [recentJobs, renders]);
-
-  useEffect(() => {
-    if (!renders.length) return;
-    const now = Date.now();
-    const shouldRemove = (render: LocalRender) => isExpiredRefundedFailedGalleryItem(render, now);
-    const removedRefs = filterLocalRenders(renders, shouldRemove);
-    if (!hasRemovedRenderRefs(removedRefs)) {
-      return;
-    }
-    setRenders((prev) => {
-      if (prev === renders) return removedRefs.renders;
-      const nextRemoval = filterLocalRenders(prev, shouldRemove);
-      return nextRemoval.changed ? nextRemoval.renders : prev;
-    });
-    setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
-    setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
-  }, [renders, galleryRetentionTick]);
-
-  const renderGroups = useMemo(() => buildRenderGroups(renders), [renders]);
-  const effectiveBatchId = useMemo(() => activeBatchId ?? selectedPreview?.batchId ?? null, [activeBatchId, selectedPreview?.batchId]);
-  useEffect(() => {
-    if (!effectiveBatchId) return;
-    if (batchHeroes[effectiveBatchId]) return;
-    const group = renderGroups.get(effectiveBatchId);
-    if (!group || !group.items.length) return;
-    setBatchHeroes((prev) => {
-      if (prev[effectiveBatchId]) return prev;
-      return { ...prev, [effectiveBatchId]: group.items[0].localKey };
-    });
-  }, [effectiveBatchId, renderGroups, batchHeroes]);
-  useEffect(() => {
-    const currentIterations = form?.iterations ?? 1;
-    if (currentIterations <= 1 && viewMode !== 'single') {
-      setViewMode('single');
-    }
-  }, [form?.iterations, viewMode]);
-  const pendingGroups = useMemo(() => buildPendingGroupSummaries(renderGroups, batchHeroes), [renderGroups, batchHeroes]);
-  const normalizedPendingGroups = useMemo(() => normalizeGroupSummaries(pendingGroups), [pendingGroups]);
-  const pendingSummaryMap = useMemo(() => buildPendingSummaryMap(pendingGroups), [pendingGroups]);
-  const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
-  const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
-  const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
-  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
-  const guidedSampleGroups = guidedSampleFeed.visibleGroups;
-  const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
-  const activeVideoGroup = useMemo<VideoGroup | null>(() => {
-    if (compositeOverride) return null;
-    if (!activeVideoGroups.length) return null;
-    if (!activeGroupId) return activeVideoGroups[0] ?? null;
-    return activeVideoGroups.find((group) => group.id === activeGroupId) ?? activeVideoGroups[0] ?? null;
-  }, [activeVideoGroups, activeGroupId, compositeOverride]);
   const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
   const selectedPreviewGroup = useMemo(() => mapSelectedPreviewToGroup(selectedPreview, provider), [selectedPreview, provider]);
   const initialPreviewFallbackGroup =
@@ -769,26 +542,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const displayCompositeGroup = compositeGroup ?? selectedPreviewGroup ?? initialPreviewFallbackGroup;
   const compositePreviewPosterSrc = useMemo(() => getCompositePreviewPosterSrc(displayCompositeGroup), [displayCompositeGroup]);
 
-  useEffect(() => {
-    if (compositeOverrideSummary) {
-      return;
-    }
-    if (!pendingGroups.length) {
-      if (activeGroupId !== null) {
-        setActiveGroupId(null);
-      }
-      return;
-    }
-    if (!activeGroupId || !pendingGroups.some((group) => group.id === activeGroupId)) {
-      setActiveGroupId(pendingGroups[0].id);
-    }
-  }, [pendingGroups, activeGroupId, compositeOverrideSummary]);
-
-  const isGenerationLoading = useMemo(() => isGenerationGroupLoading(pendingGroups), [pendingGroups]);
-  const generationSkeletonCount = useMemo(
-    () => getGenerationSkeletonCount(renders, form?.iterations),
-    [renders, form?.iterations]
-  );
   const viewerGroup = useMemo<VideoGroup | null>(() => {
     if (!viewerTarget) return null;
     if (viewerTarget.kind === 'pending') {
@@ -1140,7 +893,15 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
-  }, [effectiveRequestedEngineId, effectiveRequestedEngineToken, readScopedStorage, recentJobs, renders.length, selectedPreview]);
+  }, [
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
+    readScopedStorage,
+    recentJobs,
+    renders.length,
+    selectedPreview,
+    setSelectedPreview,
+  ]);
 
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
@@ -2297,6 +2058,12 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     extraInputFields,
     inputAssets,
     setActiveGroupId,
+    setActiveBatchId,
+    setBatchHeroes,
+    setRenders,
+    setSelectedPreview,
+    setViewMode,
+    rendersRef,
     uiLocale,
     workflowCopy,
     capability,
@@ -2479,7 +2246,16 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
           break;
       }
     },
-    [applyVideoSettingsFromTile, focusComposer, hydrateVideoSettingsFromJob, setPrompt, showNotice]
+    [
+      applyVideoSettingsFromTile,
+      focusComposer,
+      hydrateVideoSettingsFromJob,
+      setActiveBatchId,
+      setPrompt,
+      setSelectedPreview,
+      setViewMode,
+      showNotice,
+    ]
   );
 
   const handleCopySharedPrompt = useCallback(() => {
@@ -2631,6 +2407,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       setActiveGroupId,
       setViewMode,
       setActiveBatchId,
+      setBatchHeroes,
       setSelectedPreview,
       setPreviewAutoPlayRequestId,
       provider,
