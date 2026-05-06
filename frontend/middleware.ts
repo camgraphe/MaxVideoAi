@@ -6,7 +6,6 @@ import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
-import { updateSession } from '@/lib/supabase-ssr';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { isSeoWatchVideoPath } from '@/lib/video-seo';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
@@ -480,6 +479,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
+  const { updateSession } = await import('@/lib/supabase-ssr');
   const { userId } = await updateSession(req, response);
 
   if (isAdminRoute) {
