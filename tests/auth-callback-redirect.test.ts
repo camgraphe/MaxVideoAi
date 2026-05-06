@@ -76,3 +76,21 @@ test('login page does not probe stale sessions while exchanging an OAuth code', 
     'login page should clear stale browser auth state after invalid refresh token errors'
   );
 });
+
+test('login page redirects if OAuth exchange reports an error after a session was stored', () => {
+  assert.match(
+    loginPageSource,
+    /async function redirectFromExistingBrowserSession\(target: string\): Promise<boolean>/,
+    'login page should have a fallback redirect for Safari when the session exists but the OAuth exchange response errors'
+  );
+  assert.match(
+    loginPageSource,
+    /const fallbackRedirected = await redirectFromExistingBrowserSession\(target\);/,
+    'OAuth error handling should check the browser session before showing the login error'
+  );
+  assert.match(
+    loginPageSource,
+    /oauthCodeExchangeStartedRef\.current = false;/,
+    'OAuth error handling should release the exchange guard when no session exists'
+  );
+});
