@@ -91,7 +91,6 @@ import {
   type LocalRender,
 } from './_lib/render-persistence';
 import {
-  coerceStoredExtraInputValues,
   normalizeExtraInputValue,
   parseStoredForm,
   type FormState,
@@ -109,8 +108,6 @@ import {
   isModeValue,
   matchesEngineToken,
   normalizeEngineToken,
-  resolveAudioDefault,
-  resolveBooleanFieldDefault,
 } from './_lib/workspace-engine-helpers';
 import {
   buildAssetFieldIdSet,
@@ -186,6 +183,17 @@ import {
   type UploadableAssetKind,
   type UploadFailure,
 } from './_lib/workspace-upload-errors';
+import {
+  applyVideoJobMediaPatchToCompositeOverride,
+  applyVideoJobMediaPatchToSelectedPreview,
+  buildRequestedJobPreview,
+  buildVideoJobMediaPatch,
+  buildVideoSettingsFormState,
+  buildVideoSettingsSnapshotFromSharedVideo,
+  buildVideoSettingsSnapshotFromTile,
+  resolveVideoSettingsSnapshot,
+  type VideoJobPayload,
+} from './_lib/workspace-video-settings';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -2578,260 +2586,48 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
       try {
-        if (!snapshot || typeof snapshot !== 'object') {
-          throw new Error('Settings snapshot missing');
-        }
-        const record = snapshot as {
-          schemaVersion?: unknown;
-          surface?: unknown;
-          engineId?: unknown;
-          inputMode?: unknown;
-          prompt?: unknown;
-          negativePrompt?: unknown;
-          core?: unknown;
-          advanced?: unknown;
-          refs?: unknown;
-          meta?: unknown;
-        };
-        if (record.schemaVersion !== 1) {
-          throw new Error('Unsupported snapshot version');
-        }
-        if (record.surface !== 'video') {
-          throw new Error('This snapshot is not for video');
-        }
-
-        const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
-        const snapshotToken = snapshotEngineId ? normalizeEngineToken(snapshotEngineId) : null;
-        const engine =
-          (snapshotEngineId ? engineMap.get(snapshotEngineId) : null) ??
-          (snapshotToken ? engines.find((candidate) => matchesEngineToken(candidate, snapshotToken)) : null) ??
-          engines[0] ??
-          null;
-        if (!engine) {
-          throw new Error('No engines available to apply this snapshot');
-        }
-        const snapshotModeRaw = typeof record.inputMode === 'string' ? record.inputMode : '';
-        const snapshotMode: Mode = isModeValue(snapshotModeRaw) ? snapshotModeRaw : getPreferredEngineMode(engine);
-        const mode = engine.modes.includes(snapshotMode) ? snapshotMode : getPreferredEngineMode(engine);
-
-        const promptValue = typeof record.prompt === 'string' ? record.prompt : '';
-        const negativePromptValue = typeof record.negativePrompt === 'string' ? record.negativePrompt : '';
-        setPrompt(promptValue);
-        setNegativePrompt(negativePromptValue);
-
-        const meta = record.meta && typeof record.meta === 'object' ? (record.meta as Record<string, unknown>) : {};
-        const tier = typeof meta.memberTier === 'string' ? meta.memberTier : null;
-        if (tier === 'Member' || tier === 'Plus' || tier === 'Pro') {
-          setMemberTier(tier);
-        }
-
-        const core = record.core && typeof record.core === 'object' ? (record.core as Record<string, unknown>) : {};
-        const durationSec =
-          typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : undefined;
-        const durationOption =
-          typeof core.durationOption === 'number' || typeof core.durationOption === 'string' ? core.durationOption : undefined;
-        const numFrames =
-          typeof core.numFrames === 'number' && Number.isFinite(core.numFrames) ? Math.trunc(core.numFrames) : undefined;
-        const resolution = typeof core.resolution === 'string' ? core.resolution : undefined;
-        const aspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : undefined;
-        const fps = typeof core.fps === 'number' && Number.isFinite(core.fps) ? Math.trunc(core.fps) : undefined;
-        const iterations =
-          typeof core.iterationCount === 'number' && Number.isFinite(core.iterationCount)
-            ? Math.max(1, Math.min(4, Math.trunc(core.iterationCount)))
-            : undefined;
-        const audio = typeof core.audio === 'boolean' ? core.audio : undefined;
-
-        const advanced =
-          record.advanced && typeof record.advanced === 'object' ? (record.advanced as Record<string, unknown>) : {};
-        const extraInputValues = coerceStoredExtraInputValues(advanced.extraInputValues) ?? {};
-        const cfgScaleValue =
-          typeof advanced.cfgScale === 'number' && Number.isFinite(advanced.cfgScale) ? advanced.cfgScale : null;
-        if (cfgScaleValue !== null) {
-          setCfgScale(cfgScaleValue);
-        }
-        const loopValue = typeof advanced.loop === 'boolean' ? advanced.loop : undefined;
-        const seedValue =
-          typeof advanced.seed === 'number' && Number.isFinite(advanced.seed) ? Math.trunc(advanced.seed) : null;
-        const cameraFixedValue = typeof advanced.cameraFixed === 'boolean' ? advanced.cameraFixed : undefined;
-        const safetyCheckerValue = typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined;
-        const shotTypeRaw = typeof advanced.shotType === 'string' ? advanced.shotType.trim().toLowerCase() : '';
-        if (shotTypeRaw === 'customize' || shotTypeRaw === 'intelligent') {
-          setShotType(shotTypeRaw);
-        }
-
-        const voiceIdsRaw = advanced.voiceIds;
-        const voiceIdsList = Array.isArray(voiceIdsRaw)
-          ? voiceIdsRaw
-              .map((value) => (typeof value === 'string' ? value.trim() : ''))
-              .filter((value): value is string => value.length > 0)
-          : typeof voiceIdsRaw === 'string'
-            ? voiceIdsRaw
-                .split(',')
-                .map((value) => value.trim())
-                .filter((value) => value.length > 0)
-            : [];
-        setVoiceIdsInput(voiceIdsList.join(', '));
-
-        const multiPromptRaw = Array.isArray(advanced.multiPrompt) ? advanced.multiPrompt : null;
-        const multiPromptScenesValue = multiPromptRaw
-          ? multiPromptRaw
-              .map((entry) => {
-                if (!entry || typeof entry !== 'object') return null;
-                const record = entry as Record<string, unknown>;
-                const scenePrompt = typeof record.prompt === 'string' ? record.prompt : '';
-                const sceneDuration =
-                  typeof record.duration === 'number'
-                    ? Math.round(record.duration)
-                    : typeof record.duration === 'string'
-                      ? Math.round(Number(record.duration.replace(/[^\d.]/g, '')))
-                      : 0;
-                if (!scenePrompt.trim()) return null;
-                return {
-                  id: createLocalId('scene'),
-                  prompt: scenePrompt,
-                  duration: sceneDuration || MULTI_PROMPT_MIN_SEC,
-                };
-              })
-              .filter((scene): scene is MultiPromptScene => Boolean(scene))
-          : null;
-        if (multiPromptScenesValue && multiPromptScenesValue.length) {
-          setMultiPromptEnabled(true);
-          setMultiPromptScenes(multiPromptScenesValue);
-        } else {
-          setMultiPromptEnabled(false);
-          setMultiPromptScenes([createMultiPromptScene()]);
-        }
-
-        setForm((current) => {
-          const previous = current ?? null;
-          const candidate: FormState = {
-            engineId: engine.id,
-            mode,
-            durationSec: typeof durationSec === 'number' ? durationSec : previous?.durationSec ?? 4,
-            durationOption: durationOption ?? previous?.durationOption ?? undefined,
-            numFrames: numFrames ?? previous?.numFrames ?? undefined,
-            resolution: resolution ?? previous?.resolution ?? (engine.resolutions[0] ?? '1080p'),
-            aspectRatio: aspectRatio ?? previous?.aspectRatio ?? (engine.aspectRatios[0] ?? '16:9'),
-            fps: fps ?? previous?.fps ?? (engine.fps?.[0] ?? 24),
-            iterations: iterations ?? previous?.iterations ?? 1,
-            seedLocked: previous?.seedLocked ?? false,
-            loop: typeof loopValue === 'boolean' ? loopValue : previous?.loop,
-            audio: typeof audio === 'boolean' ? audio : previous?.audio ?? resolveAudioDefault(engine, mode),
-            seed: seedValue ?? previous?.seed ?? null,
-            cameraFixed:
-              typeof cameraFixedValue === 'boolean'
-                ? cameraFixedValue
-                : previous?.cameraFixed ?? resolveBooleanFieldDefault(engine, mode, 'camera_fixed', false),
-            safetyChecker:
-              typeof safetyCheckerValue === 'boolean'
-                ? safetyCheckerValue
-                : previous?.safetyChecker ?? resolveBooleanFieldDefault(engine, mode, 'enable_safety_checker', true),
-            extraInputValues,
-          };
-          return coerceFormState(engine, mode, candidate);
+        const resolved = resolveVideoSettingsSnapshot(snapshot, {
+          engines,
+          engineMap,
+          createLocalId,
+          createFallbackScene: createMultiPromptScene,
+          createFallbackKlingElement: createKlingElement,
         });
+        setPrompt(resolved.prompt);
+        setNegativePrompt(resolved.negativePrompt);
+        if (resolved.memberTier) {
+          setMemberTier(resolved.memberTier);
+        }
+        if (resolved.cfgScale !== null) {
+          setCfgScale(resolved.cfgScale);
+        }
+        if (resolved.shotType) {
+          setShotType(resolved.shotType);
+        }
+        setVoiceIdsInput(resolved.voiceIdsInput);
+        setMultiPromptEnabled(resolved.multiPrompt.enabled);
+        setMultiPromptScenes(resolved.multiPrompt.scenes);
+        setForm((current) => buildVideoSettingsFormState(resolved, current ?? null));
 
-        const refs = record.refs && typeof record.refs === 'object' ? (record.refs as Record<string, unknown>) : {};
-        const inputsRaw = refs.inputs;
-        if (inputsRaw === null || Array.isArray(inputsRaw)) {
+        const nextInputAssets = resolved.inputAssets;
+        if (nextInputAssets) {
           setInputAssets((previous) => {
             Object.values(previous).forEach((entries) => {
               entries.forEach((asset) => revokeAssetPreview(asset));
             });
-            const next: Record<string, (ReferenceAsset | null)[]> = {};
-            if (Array.isArray(inputsRaw)) {
-              inputsRaw.forEach((entry, index) => {
-                if (!entry || typeof entry !== 'object') return;
-                const attachment = entry as Record<string, unknown>;
-                const slotId = typeof attachment.slotId === 'string' ? attachment.slotId : '';
-                const url = typeof attachment.url === 'string' ? attachment.url : '';
-                if (!slotId || !url) return;
-                const kind = attachment.kind === 'video' ? 'video' : attachment.kind === 'audio' ? 'audio' : 'image';
-                const name = typeof attachment.name === 'string' ? attachment.name : `${kind}-${index + 1}`;
-                const type =
-                  typeof attachment.type === 'string'
-                    ? attachment.type
-                    : kind === 'image'
-                      ? 'image/*'
-                      : kind === 'audio'
-                        ? 'audio/*'
-                        : 'video/*';
-                const size =
-                  typeof attachment.size === 'number' && Number.isFinite(attachment.size) ? attachment.size : 0;
-                const width =
-                  typeof attachment.width === 'number' && Number.isFinite(attachment.width) ? attachment.width : null;
-                const height =
-                  typeof attachment.height === 'number' && Number.isFinite(attachment.height) ? attachment.height : null;
-                const assetId = typeof attachment.assetId === 'string' ? attachment.assetId : undefined;
-                const refAsset: ReferenceAsset = {
-                  id: assetId ?? `snapshot-${index}`,
-                  fieldId: slotId,
-                  previewUrl: url,
-                  kind,
-                  name,
-                  size,
-                  type,
-                  url,
-                  width,
-                  height,
-                  assetId,
-                  status: 'ready',
-                };
-                next[slotId] = [...(next[slotId] ?? []), refAsset];
-              });
-            }
-            return next;
+            return nextInputAssets;
           });
         }
 
-        const elementsRaw = refs.elements;
-        if (elementsRaw === null || Array.isArray(elementsRaw)) {
-          const buildKlingAssetFromUrl = (url: string, kind: 'image' | 'video', index: number): KlingElementAsset => ({
-            id: createLocalId(`kling_${kind}`),
-            previewUrl: url,
-            name: url.split('/').pop() ?? `${kind}-${index + 1}`,
-            kind,
-            status: 'ready',
-            url,
-          });
-          const parsedElements = Array.isArray(elementsRaw)
-            ? elementsRaw
-                .map((entry, elementIndex) => {
-                  if (!entry || typeof entry !== 'object') return null;
-                  const record = entry as Record<string, unknown>;
-                  const frontalUrl =
-                    typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
-                      ? record.frontalImageUrl.trim()
-                      : null;
-                  const referenceUrls = Array.isArray(record.referenceImageUrls)
-                    ? record.referenceImageUrls
-                        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-                        .filter((value): value is string => value.length > 0)
-                        .slice(0, 3)
-                    : [];
-                  const videoUrl =
-                    typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
-                  if (!frontalUrl && referenceUrls.length === 0 && !videoUrl) return null;
-                  const references = Array.from({ length: 3 }, (_, index) =>
-                    referenceUrls[index] ? buildKlingAssetFromUrl(referenceUrls[index], 'image', index) : null
-                  );
-                  return {
-                    id: createLocalId(`element_${elementIndex}`),
-                    frontal: frontalUrl ? buildKlingAssetFromUrl(frontalUrl, 'image', 0) : null,
-                    references,
-                    video: videoUrl ? buildKlingAssetFromUrl(videoUrl, 'video', 0) : null,
-                  } as KlingElementState;
-                })
-                .filter((element): element is KlingElementState => Boolean(element))
-            : [];
-          const nextElements = parsedElements.length ? parsedElements : [createKlingElement()];
+        const nextKlingElements = resolved.klingElements;
+        if (nextKlingElements) {
           setKlingElements((previous) => {
             previous.forEach((element) => {
               revokeKlingAssetPreview(element.frontal);
               element.references.forEach((asset) => revokeKlingAssetPreview(asset));
               revokeKlingAssetPreview(element.video);
             });
-            return nextElements;
+            return nextKlingElements;
           });
         }
 
@@ -2858,58 +2654,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           if (response.status === 404) return;
           return;
         }
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              ok?: boolean;
-              settingsSnapshot?: unknown;
-              videoUrl?: string;
-              previewVideoUrl?: string;
-              thumbUrl?: string;
-              aspectRatio?: string;
-              progress?: number;
-              status?: string;
-            }
-          | null;
+        const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
         if (!payload?.ok) return;
         if (payload.settingsSnapshot) {
           applyVideoSettingsSnapshot(payload.settingsSnapshot);
         }
 
-        const nextVideoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : null;
-        const nextPreviewVideoUrl =
-          typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length ? payload.previewVideoUrl : null;
-        const nextThumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : null;
-        if (!nextVideoUrl && !nextThumbUrl) return;
+        const mediaPatch = buildVideoJobMediaPatch(payload);
+        if (!mediaPatch) return;
 
-        setSelectedPreview((current) => {
-          if (!current || (current.id !== jobId && current.localKey !== jobId)) return current;
-          return {
-            ...current,
-            videoUrl: nextVideoUrl ?? current.videoUrl,
-            previewVideoUrl: nextPreviewVideoUrl ?? current.previewVideoUrl,
-            thumbUrl: nextThumbUrl ?? current.thumbUrl,
-            aspectRatio: payload.aspectRatio ?? current.aspectRatio,
-            progress: typeof payload.progress === 'number' ? payload.progress : current.progress,
-            status: payload.status === 'failed' ? 'failed' : payload.status === 'pending' ? 'pending' : current.status,
-          };
-        });
-
-        setCompositeOverride((current) => {
-          if (!current) return current;
-          let changed = false;
-          const items = current.items.map((item) => {
-            if (item.id !== jobId && item.jobId !== jobId) return item;
-            changed = true;
-            return {
-              ...item,
-              url: nextVideoUrl ?? item.url,
-              previewUrl: nextPreviewVideoUrl ?? item.previewUrl,
-              thumb: nextThumbUrl ?? item.thumb,
-              aspect: payload.aspectRatio === '9:16' || payload.aspectRatio === '1:1' ? payload.aspectRatio : item.aspect,
-            };
-          });
-          return changed ? { ...current, items } : current;
-        });
+        setSelectedPreview((current) => applyVideoJobMediaPatchToSelectedPreview(current, jobId, mediaPatch));
+        setCompositeOverride((current) => applyVideoJobMediaPatchToCompositeOverride(current, jobId, mediaPatch));
       } catch {
         // ignore best-effort recalls from gallery
       }
@@ -2920,27 +2675,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const applyVideoSettingsFromTile = useCallback(
     (tile: QuadPreviewTile) => {
       try {
-        applyVideoSettingsSnapshot({
-          schemaVersion: 1,
-          surface: 'video',
-          engineId: tile.engineId,
-          inputMode: 't2v',
-          prompt: tile.prompt,
-          negativePrompt: null,
-          core: {
-            durationSec: tile.durationSec,
-            durationOption: null,
-            numFrames: null,
-            aspectRatio: tile.aspectRatio,
-            resolution: null,
-            fps: null,
-            iterationCount: tile.iterationCount,
-            audio: typeof tile.hasAudio === 'boolean' ? tile.hasAudio : null,
-          },
-          advanced: { cfgScale: null, loop: null },
-          refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
-          meta: { derived: true },
-        });
+        applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile));
       } catch {
         // ignore
       }
@@ -2950,37 +2685,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (!sharedVideoSettings) return;
-    const durationSec =
-      typeof sharedVideoSettings.durationSec === 'number' && sharedVideoSettings.durationSec > 0
-        ? sharedVideoSettings.durationSec
-        : null;
-    const aspectRatio =
-      typeof sharedVideoSettings.aspectRatio === 'string' && sharedVideoSettings.aspectRatio.trim().length
-        ? sharedVideoSettings.aspectRatio.trim()
-        : '16:9';
-    const promptValue = sharedVideoSettings.prompt ?? sharedVideoSettings.promptExcerpt ?? '';
-    applyVideoSettingsSnapshot({
-      schemaVersion: 1,
-      surface: 'video',
-      engineId: sharedVideoSettings.engineId,
-      engineLabel: sharedVideoSettings.engineLabel,
-      inputMode: 't2v',
-      prompt: promptValue,
-      negativePrompt: null,
-      core: {
-        durationSec,
-        durationOption: null,
-        numFrames: null,
-        aspectRatio,
-        resolution: null,
-        fps: null,
-        iterationCount: 1,
-        audio: null,
-      },
-      advanced: { cfgScale: null, loop: null },
-      refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
-      meta: { derived: true },
-    });
+    applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
   }, [applyVideoSettingsSnapshot, hydrateVideoSettingsFromJob, sharedVideoSettings]);
 
@@ -2992,23 +2697,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setNotice(null);
     void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`)
       .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              ok?: boolean;
-              error?: string;
-              settingsSnapshot?: unknown;
-              videoUrl?: string;
-              previewVideoUrl?: string;
-              thumbUrl?: string;
-              aspectRatio?: string;
-              progress?: number;
-              status?: string;
-              pricing?: { totalCents?: number; currency?: string } | null;
-              finalPriceCents?: number;
-              currency?: string;
-              createdAt?: string;
-            }
-          | null;
+        const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
         }
@@ -3022,69 +2711,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           // ignore storage failures
         }
 
-        const snapshot = payload.settingsSnapshot as
-          | {
-              schemaVersion?: unknown;
-              surface?: unknown;
-              engineId?: unknown;
-              engineLabel?: unknown;
-              prompt?: unknown;
-              core?: unknown;
-            }
-          | null
-          | undefined;
-        if (snapshot?.schemaVersion === 1 && snapshot?.surface === 'video') {
-          const core = snapshot.core && typeof snapshot.core === 'object' ? (snapshot.core as Record<string, unknown>) : {};
-          const durationSec = typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : 0;
-          const engineId = typeof snapshot.engineId === 'string' ? snapshot.engineId : 'unknown-engine';
-          const engineLabel = typeof snapshot.engineLabel === 'string' ? snapshot.engineLabel : engineId;
-          const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
-          const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
-          const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
-          const previewVideoUrl =
-            typeof payload.previewVideoUrl === 'string' && payload.previewVideoUrl.length
-              ? payload.previewVideoUrl
-              : undefined;
-          if (thumbUrl || videoUrl) {
-            setCompositeOverride(
-              mapSharedVideoToGroup(
-                {
-                  id: requestedJobId,
-                  engineId,
-                  engineLabel,
-                  durationSec,
-                  prompt: promptValue,
-                  thumbUrl,
-                  videoUrl,
-                  previewVideoUrl,
-                  aspectRatio: payload.aspectRatio ?? undefined,
-                  createdAt:
-                    typeof payload.createdAt === 'string' && payload.createdAt.length
-                      ? payload.createdAt
-                      : new Date().toISOString(),
-                },
-                provider
-              )
-            );
-            setCompositeOverrideSummary(null);
-            setSelectedPreview({
-              id: requestedJobId,
-              videoUrl,
-              previewVideoUrl,
-              thumbUrl,
-              aspectRatio: payload.aspectRatio ?? undefined,
-              progress: typeof payload.progress === 'number' ? payload.progress : undefined,
-              status:
-                payload.status === 'failed'
-                  ? 'failed'
-                  : payload.status === 'completed'
-                    ? 'completed'
-                    : ('pending' as const),
-              priceCents: payload.finalPriceCents ?? payload.pricing?.totalCents ?? undefined,
-              currency: payload.currency ?? payload.pricing?.currency ?? undefined,
-              prompt: promptValue,
-            });
-          }
+        const requestedPreview = buildRequestedJobPreview(requestedJobId, payload);
+        if (requestedPreview) {
+          setCompositeOverride(mapSharedVideoToGroup(requestedPreview.sharedVideo, provider));
+          setCompositeOverrideSummary(null);
+          setSelectedPreview(requestedPreview.selectedPreview);
         }
       })
       .catch((error) => {
