@@ -36,7 +36,6 @@ import {
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
-import type { Job } from '@/types/jobs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { isExpiredRefundedFailedGalleryItem, isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
@@ -84,7 +83,6 @@ import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
   isAudioWorkspaceRender,
   resolvePolledThumbUrl,
-  resolveRenderThumb,
   serializePendingRenders,
   type LocalRender,
 } from './_lib/render-persistence';
@@ -189,6 +187,14 @@ import {
   isGenerationGroupLoading,
   pruneBatchHeroes,
 } from './_lib/workspace-render-groups';
+import {
+  applyPolledJobStatusToRender,
+  applyPolledJobStatusToSelectedPreview,
+  buildRecentJobIdSet,
+  getRendersNeedingStatusRefresh,
+  mergeRecentJobsIntoLocalRenders,
+  shouldRemoveCompletedSyncedRender,
+} from './_lib/workspace-render-status';
 import {
   createUploadFailure,
   getUploadFailureMessage,
@@ -445,103 +451,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const persistedRendersRef = useRef<string | null>(null);
   const pendingPollRef = useRef<number | null>(null);
   const statusErrorCountsRef = useRef<Map<string, { unauthorized: number }>>(new Map());
-  const convertJobToLocalRender = useCallback(
-    (job: Job): LocalRender => {
-      const baseLocalKey = job.localKey ?? job.jobId;
-      const localKey = baseLocalKey ?? `job_${job.jobId}`;
-      const batchId = job.batchId ?? job.groupId ?? localKey;
-      const renderIds = Array.isArray(job.renderIds)
-        ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
-        : undefined;
-      const normalizedStatus = (() => {
-        const raw = (job.status ?? '').toLowerCase();
-        if (raw === 'failed') return 'failed' as const;
-        if (raw === 'completed') return 'completed' as const;
-        if (job.videoUrl) return 'completed' as const;
-        return 'pending' as const;
-      })();
-      const normalizedProgress = (() => {
-        if (typeof job.progress === 'number' && Number.isFinite(job.progress)) {
-          return Math.max(0, Math.min(100, Math.round(job.progress)));
-        }
-        if (normalizedStatus === 'completed' || job.videoUrl) return 100;
-        if (normalizedStatus === 'failed') return 100;
-        return 0;
-      })();
-      const createdAt = typeof job.createdAt === 'string' && job.createdAt.length ? job.createdAt : new Date().toISOString();
-      const parsedCreated = Number.isFinite(Date.parse(createdAt)) ? Date.parse(createdAt) : Date.now();
-      const priceCents = typeof job.finalPriceCents === 'number' ? job.finalPriceCents : job.pricingSnapshot?.totalCents;
-      const currency = job.currency ?? job.pricingSnapshot?.currency ?? undefined;
-      const engineId =
-        job.engineId ?? (job.engineLabel ? engineIdByLabel.get(job.engineLabel.toLowerCase()) ?? undefined : undefined) ?? 'unknown-engine';
-      const pendingMessage = (() => {
-        if (engineId.startsWith('sora-2')) {
-          return 'Sora 2 renders take a little longer—hang tight while we finish up the magic.';
-        }
-        return 'Render pending.';
-      })();
-
-      const message =
-        job.message ??
-        (normalizedStatus === 'completed'
-          ? 'Render completed.'
-          : normalizedStatus === 'failed'
-            ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
-            : pendingMessage);
-      const jobThumb = job.thumbUrl && !isPlaceholderMediaUrl(job.thumbUrl) ? job.thumbUrl : null;
-      const thumbUrl =
-        jobThumb ??
-        job.previewFrame ??
-        resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });
-
-      return {
-        localKey,
-        batchId,
-        iterationIndex:
-          typeof job.iterationIndex === 'number' && Number.isFinite(job.iterationIndex)
-            ? Math.max(0, Math.trunc(job.iterationIndex))
-            : 0,
-        iterationCount: Math.max(
-          1,
-          typeof job.iterationCount === 'number' && Number.isFinite(job.iterationCount)
-            ? Math.trunc(job.iterationCount)
-            : renderIds?.length ?? 1
-        ),
-        id: job.jobId,
-        jobId: job.jobId,
-        engineId,
-        engineLabel: job.engineLabel ?? 'Unknown engine',
-        createdAt,
-        aspectRatio: job.aspectRatio ?? '16:9',
-        durationSec: job.durationSec,
-        prompt: job.prompt ?? '',
-        progress: normalizedProgress,
-        message,
-      status: normalizedStatus,
-      videoUrl: job.videoUrl ?? undefined,
-      previewVideoUrl: job.previewVideoUrl ?? undefined,
-      readyVideoUrl: job.videoUrl ?? undefined,
-      thumbUrl,
-      hasAudio: typeof job.hasAudio === 'boolean' ? job.hasAudio : undefined,
-      priceCents: priceCents ?? undefined,
-        currency,
-        pricingSnapshot: job.pricingSnapshot,
-        paymentStatus: job.paymentStatus ?? 'platform',
-        failedAt:
-          normalizedStatus === 'failed' && isRefundedPaymentStatus(job.paymentStatus ?? null)
-            ? parsedCreated
-            : undefined,
-        etaSeconds: job.etaSeconds ?? undefined,
-        etaLabel: job.etaLabel ?? undefined,
-        startedAt: parsedCreated,
-        minReadyAt: parsedCreated,
-        groupId: job.groupId ?? job.batchId ?? null,
-        renderIds,
-        heroRenderId: job.heroRenderId ?? null,
-      };
-    },
-    [engineIdByLabel]
-  );
   const hydratedScopeRef = useRef<string | null>(null);
   const hasStoredFormRef = useRef<boolean>(false);
 
@@ -685,14 +594,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const jobsNeedingRefresh = renders.filter((render) => {
-      if (typeof render.jobId !== 'string' || render.jobId.length === 0) return false;
-      if (render.status === 'failed') return false;
-      const hasVideo = Boolean(render.videoUrl);
-      const hasThumb = Boolean(render.thumbUrl && !isPlaceholderMediaUrl(render.thumbUrl));
-      if ((render.status ?? 'pending') !== 'completed') return true;
-      return !hasVideo || !hasThumb;
-    });
+    const jobsNeedingRefresh = getRendersNeedingStatusRefresh(renders);
     if (!jobsNeedingRefresh.length) {
       if (pendingPollRef.current !== null) {
         window.clearInterval(pendingPollRef.current);
@@ -712,42 +614,11 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
             if (cancelled) return;
             setRenders((prev) =>
               prev.map((item) =>
-                item.jobId === render.jobId
-                  ? {
-                      ...item,
-                      status: status.status ?? item.status,
-                      progress: status.progress ?? item.progress,
-                      readyVideoUrl: status.videoUrl ?? item.readyVideoUrl,
-                      videoUrl: status.videoUrl ?? item.videoUrl ?? item.readyVideoUrl,
-                      previewVideoUrl: status.previewVideoUrl ?? item.previewVideoUrl,
-                      thumbUrl: resolvePolledThumbUrl(item.thumbUrl, status.thumbUrl),
-                      aspectRatio: status.aspectRatio ?? item.aspectRatio,
-                      priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? item.priceCents,
-                      currency: status.currency ?? status.pricing?.currency ?? item.currency,
-                      pricingSnapshot: status.pricing ?? item.pricingSnapshot,
-                      paymentStatus: status.paymentStatus ?? item.paymentStatus,
-                      message: status.message ?? item.message,
-                    }
-                  : item
+                item.jobId === render.jobId ? applyPolledJobStatusToRender(item, status) : item
               )
             );
             setSelectedPreview((cur) =>
-              cur && (cur.id === render.jobId || cur.localKey === render.localKey)
-                ? {
-                    ...cur,
-                    id: render.jobId,
-                    localKey: render.localKey,
-                    status: status.status ?? cur.status,
-                    progress: status.progress ?? cur.progress,
-                    videoUrl: status.videoUrl ?? cur.videoUrl,
-                    previewVideoUrl: status.previewVideoUrl ?? cur.previewVideoUrl,
-                    thumbUrl: resolvePolledThumbUrl(cur.thumbUrl, status.thumbUrl),
-                    aspectRatio: status.aspectRatio ?? cur.aspectRatio,
-                    priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
-                    currency: status.currency ?? status.pricing?.currency ?? cur.currency,
-                    message: status.message ?? cur.message,
-                  }
-                : cur
+              applyPolledJobStatusToSelectedPreview(cur, render, status)
             );
           } catch (error) {
             const statusCode = typeof error === 'object' && error ? (error as { status?: unknown }).status : undefined;
@@ -797,66 +668,13 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   useEffect(() => {
     if (!recentJobs.length) return;
-    const heroCandidates: Array<{ batchId: string | null; localKey: string }> = [];
+    let heroCandidates: Array<{ batchId: string | null; localKey: string }> = [];
 
     setRenders((previous) => {
       if (!recentJobs.length) return previous;
-
-      const next = [...previous];
-      const byLocalKey = new Map<string, number>();
-      const byJobId = new Map<string, number>();
-      previous.forEach((render, index) => {
-        if (render.localKey) {
-          byLocalKey.set(render.localKey, index);
-        }
-        if (render.jobId) {
-          byJobId.set(render.jobId, index);
-        }
-      });
-
-      let changed = false;
-
-      recentJobs.forEach((job) => {
-        if (!job.jobId) return;
-        const converted = convertJobToLocalRender(job);
-        const jobIdIndex = converted.jobId ? byJobId.get(converted.jobId) : undefined;
-        const localKeyIndex = byLocalKey.get(converted.localKey);
-        const targetIndex = jobIdIndex ?? localKeyIndex;
-
-        if (targetIndex !== undefined) {
-          const existing = next[targetIndex];
-          const merged: LocalRender = {
-            ...converted,
-            localKey: existing.localKey ?? converted.localKey,
-            batchId: existing.batchId ?? converted.batchId,
-          };
-          next[targetIndex] = merged;
-          if (merged.localKey) {
-            byLocalKey.set(merged.localKey, targetIndex);
-          }
-          if (merged.jobId) {
-            byJobId.set(merged.jobId, targetIndex);
-          }
-          heroCandidates.push({ batchId: merged.batchId ?? null, localKey: merged.localKey });
-          changed = true;
-        } else {
-          const merged: LocalRender = converted;
-          next.push(merged);
-          if (merged.localKey) {
-            byLocalKey.set(merged.localKey, next.length - 1);
-          }
-          if (merged.jobId) {
-            byJobId.set(merged.jobId, next.length - 1);
-          }
-          heroCandidates.push({ batchId: merged.batchId ?? null, localKey: merged.localKey });
-          changed = true;
-        }
-      });
-
-      if (!changed) return previous;
-
-      next.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-      return next;
+      const result = mergeRecentJobsIntoLocalRenders(previous, recentJobs, { engineIdByLabel });
+      heroCandidates = result.heroCandidates;
+      return result.renders;
     });
 
     if (heroCandidates.length) {
@@ -873,7 +691,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
         return modified ? next : previous;
       });
     }
-  }, [convertJobToLocalRender, recentJobs]);
+  }, [engineIdByLabel, recentJobs]);
 
   useEffect(() => {
     const shouldRemove = (render: LocalRender) =>
@@ -899,23 +717,9 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   useEffect(() => {
     if (!renders.length || !recentJobs.length) return;
-    const recentJobIds = new Set<string>();
-    recentJobs.forEach((job) => {
-      if (typeof job.jobId === 'string' && job.jobId.length > 0) {
-        recentJobIds.add(job.jobId);
-      }
-    });
+    const recentJobIds = buildRecentJobIdSet(recentJobs);
     if (!recentJobIds.size) return;
-    const shouldRemove = (render: LocalRender) => {
-      if (!render.jobId || !recentJobIds.has(render.jobId)) {
-        return false;
-      }
-      if (render.status !== 'completed') {
-        return false;
-      }
-      const hasVideo = Boolean(render.videoUrl ?? render.readyVideoUrl);
-      return hasVideo;
-    };
+    const shouldRemove = (render: LocalRender) => shouldRemoveCompletedSyncedRender(render, recentJobIds);
     const removedRefs = filterLocalRenders(renders, shouldRemove);
     if (!hasRemovedRenderRefs(removedRefs)) {
       return;
