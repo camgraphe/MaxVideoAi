@@ -46,7 +46,7 @@ test('composite preview modal button opens direct preview groups', () => {
   assert.match(appSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group\s*\}\)/);
 });
 
-test('composite preview preserves lightweight preview video urls', () => {
+test('composite preview preserves preview urls but plays canonical video urls', () => {
   const appSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
     'utf8'
@@ -60,7 +60,8 @@ test('composite preview preserves lightweight preview video urls', () => {
   assert.match(appSource, /previewVideoUrl:\s*nextPreviewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(appSource, /previewUrl:\s*nextPreviewVideoUrl\s*\?\?\s*item\.previewUrl/);
   assert.match(appSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
-  assert.match(dockSource, /return item\.previewUrl \?\? item\.url/);
+  assert.match(dockSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
+  assert.doesNotMatch(dockSource, /return item\.previewUrl \?\? item\.url/);
 });
 
 test('rail history previews do not mutate the active render group', () => {
