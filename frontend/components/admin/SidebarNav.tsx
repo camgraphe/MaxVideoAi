@@ -22,6 +22,7 @@ import {
   Receipt,
   Scale,
   Search,
+  ShieldAlert,
   Users,
   X,
 } from 'lucide-react';
@@ -36,6 +37,7 @@ const ADMIN_ICON_MAP: Record<string, LucideIcon> = {
   users: Users,
   jobs: ListChecks,
   transactions: Receipt,
+  shield: ShieldAlert,
   audit: ClipboardList,
   engines: Cpu,
   pricing: BadgeDollarSign,
