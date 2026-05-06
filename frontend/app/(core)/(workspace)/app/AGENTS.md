@@ -6,7 +6,7 @@ This route is the main signed-in video generation workspace.
 
 - `AppClient.tsx`: top-level state orchestration while the workspace is being split.
 - `_components`: route-local chrome, panels, skeletons, modals, and presentational UI.
-- `_lib`: route-local pure helpers for previews, render grouping, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, payload builders, input normalization, and workflow mapping.
+- `_lib`: route-local pure helpers for previews, render grouping, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
 
 ## Refactor Rules
@@ -16,6 +16,7 @@ This route is the main signed-in video generation workspace.
 - Keep render grouping and preview tile mapping in `_lib`; `AppClient.tsx` should decide state transitions, not rebuild group summary objects inline.
 - Keep video settings snapshot parsing and job media patch mapping in `_lib`; `AppClient.tsx` should wire those results into React state.
 - Keep workspace request parsing and boot hydration decisions in `_lib`; `AppClient.tsx` should apply the resolved state.
+- Keep asset-library selection, reference slot insertion, and Kling library asset mapping in `_lib`; `AppClient.tsx` should handle network calls and React state wiring.
 - Keep generation, polling, wallet, preflight, and upload behavior unchanged unless the task explicitly targets those flows.
 - Keep browser storage keys and pending-render serialization backward compatible.
 - Do not introduce a global state library until repeated state sharing across workspace surfaces justifies it.

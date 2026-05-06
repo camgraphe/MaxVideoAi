@@ -1,5 +1,5 @@
 import type { ComposerAttachment, AssetFieldConfig } from '@/components/Composer';
-import type { KlingElementAsset } from '@/components/KlingElementsBuilder';
+import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineInputField } from '@/types/engines';
 
 export type ReferenceAsset = {
@@ -100,6 +100,191 @@ export function normalizeAssetLibraryPayload(
   return filteredAssets.filter(
     (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
   );
+}
+
+export function getAssetLibrarySourceForField(field: EngineInputField): AssetLibrarySource {
+  return field.type === 'video' ? 'recent' : 'all';
+}
+
+export function getLibraryAssetFieldMismatchMessage(field: EngineInputField, asset: UserAsset): string | null {
+  if (field.type === 'video' && asset.kind !== 'video') {
+    return 'This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.';
+  }
+  if (field.type === 'image' && asset.kind !== 'image') {
+    return 'This slot requires an image source. Pick an image from the library or import one.';
+  }
+  return null;
+}
+
+export function shouldMirrorVideoLibraryAsset(asset: UserAsset): boolean {
+  const host = new URL(asset.url).host.toLowerCase();
+  return (
+    asset.source === 'generated' ||
+    asset.source === 'recent' ||
+    host === 'fal.media' ||
+    host.endsWith('.fal.media')
+  );
+}
+
+export function shouldMirrorCharacterImageAsset(asset: UserAsset): boolean {
+  if (asset.source !== 'character') return false;
+  const host = new URL(asset.url).host.toLowerCase();
+  return host === 'fal.media' || host.endsWith('.fal.media');
+}
+
+export function mergeMirroredLibraryAsset(
+  asset: UserAsset,
+  mirrored: {
+    id: string;
+    url: string;
+    width?: number | null;
+    height?: number | null;
+    size?: number | null;
+    mime?: string | null;
+  }
+): UserAsset {
+  return {
+    ...asset,
+    id: mirrored.id,
+    url: mirrored.url,
+    width: mirrored.width ?? asset.width,
+    height: mirrored.height ?? asset.height,
+    size: mirrored.size ?? asset.size,
+    mime: mirrored.mime ?? asset.mime,
+    canDelete: true,
+  };
+}
+
+export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, asset: UserAsset): ReferenceAsset {
+  return {
+    id: asset.id || `library_${Date.now().toString(36)}`,
+    fieldId: field.id,
+    previewUrl: asset.url,
+    kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
+    name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
+    size: asset.size ?? 0,
+    type: asset.mime ?? (field.type === 'video' ? 'video/*' : field.type === 'audio' ? 'audio/*' : 'image/*'),
+    url: asset.url,
+    width: asset.width ?? null,
+    height: asset.height ?? null,
+    assetId: asset.id,
+    status: 'ready',
+  };
+}
+
+export function insertReferenceAsset(
+  previous: Record<string, (ReferenceAsset | null)[]>,
+  field: EngineInputField,
+  asset: ReferenceAsset,
+  slotIndex?: number,
+  options?: {
+    release?: (asset: ReferenceAsset) => void;
+    onMaxReached?: () => void;
+  }
+): Record<string, (ReferenceAsset | null)[]> {
+  const maxCount = field.maxCount ?? 0;
+  const current = previous[field.id] ? [...previous[field.id]] : [];
+
+  if (maxCount > 0 && current.length < maxCount) {
+    while (current.length < maxCount) {
+      current.push(null);
+    }
+  }
+
+  let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
+  if (maxCount > 0 && targetIndex >= maxCount) {
+    targetIndex = -1;
+  }
+  if (targetIndex < 0) {
+    targetIndex = current.findIndex((entry) => entry === null);
+  }
+  if (targetIndex < 0) {
+    if (maxCount > 0 && current.length >= maxCount) {
+      options?.onMaxReached?.();
+      return previous;
+    }
+    current.push(asset);
+  } else {
+    const existing = current[targetIndex];
+    if (existing) {
+      options?.release?.(existing);
+    }
+    current[targetIndex] = asset;
+  }
+
+  return { ...previous, [field.id]: current };
+}
+
+export function removeReferenceAsset(
+  previous: Record<string, (ReferenceAsset | null)[]>,
+  field: EngineInputField,
+  index: number,
+  release?: (asset: ReferenceAsset) => void
+): Record<string, (ReferenceAsset | null)[]> {
+  const current = previous[field.id];
+  if (!current || index < 0 || index >= current.length) return previous;
+  const nextList = [...current];
+  const toRelease = nextList[index];
+  if (toRelease) {
+    release?.(toRelease);
+  }
+
+  const maxCount = field.maxCount ?? 0;
+  if (maxCount > 0) {
+    nextList[index] = null;
+  } else {
+    nextList.splice(index, 1);
+  }
+
+  const nextState = { ...previous };
+  const hasValues = nextList.some((asset) => asset !== null);
+
+  if (hasValues || (maxCount > 0 && nextList.length)) {
+    nextState[field.id] = nextList;
+  } else {
+    delete nextState[field.id];
+  }
+
+  return nextState;
+}
+
+export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
+  return {
+    id: asset.id || `library_${Date.now().toString(36)}`,
+    previewUrl: asset.url,
+    kind: 'image',
+    name: asset.url.split('/').pop() ?? 'Image',
+    status: 'ready',
+    url: asset.url,
+  };
+}
+
+export function insertKlingLibraryAsset(
+  elements: KlingElementState[],
+  target: Extract<AssetPickerTarget, { kind: 'kling' }>,
+  asset: KlingElementAsset,
+  release?: (asset: KlingElementAsset | null | undefined) => void
+): KlingElementState[] {
+  return elements.map((element) => {
+    if (element.id !== target.elementId) return element;
+
+    if (target.slot === 'frontal') {
+      release?.(element.frontal);
+      return { ...element, frontal: asset };
+    }
+
+    const references = [...element.references];
+    let targetIndex = typeof target.slotIndex === 'number' ? target.slotIndex : references.findIndex((entry) => entry === null);
+    if (targetIndex < 0) {
+      targetIndex = references.length > 0 ? references.length - 1 : 0;
+    }
+    if (targetIndex >= references.length) {
+      return element;
+    }
+    release?.(references[targetIndex]);
+    references[targetIndex] = asset;
+    return { ...element, references };
+  });
 }
 
 export function revokeAssetPreview(asset: ReferenceAsset | null | undefined) {

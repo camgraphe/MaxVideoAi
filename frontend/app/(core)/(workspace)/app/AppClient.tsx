@@ -109,15 +109,25 @@ import {
   buildAssetLibraryCacheKey,
   buildAssetLibraryUrl,
   buildComposerAttachments,
+  buildKlingLibraryAsset,
   buildReferenceAudioFieldIds,
+  buildReferenceAssetFromLibraryAsset,
+  getAssetLibrarySourceForField,
   getPrimaryAssetFieldLabel,
   getReferenceInputStatus,
+  getLibraryAssetFieldMismatchMessage,
   hasInputAssetInSlots,
+  insertKlingLibraryAsset,
+  insertReferenceAsset,
+  mergeMirroredLibraryAsset,
   normalizeAssetLibraryPayload,
   PRIMARY_IMAGE_SLOT_IDS,
   PRIMARY_VIDEO_SLOT_IDS,
+  removeReferenceAsset,
   revokeAssetPreview,
   revokeKlingAssetPreview,
+  shouldMirrorCharacterImageAsset,
+  shouldMirrorVideoLibraryAsset,
   type AssetLibraryKind,
   type AssetLibrarySource,
   type AssetPickerTarget,
@@ -1326,7 +1336,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice(blockedMessage);
         return;
       }
-      const nextSource: AssetLibrarySource = field.type === 'video' ? 'recent' : 'all';
+      const nextSource = getAssetLibrarySourceForField(field);
       if (nextSource !== assetLibrarySource) {
         setAssetLibrarySource(nextSource);
         setAssetLibrary([]);
@@ -1358,12 +1368,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice(blockedMessage);
         return;
       }
-      if (field.type === 'video' && asset.kind !== 'video') {
-        showNotice('This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.');
-        return;
-      }
-      if (field.type === 'image' && asset.kind !== 'image') {
-        showNotice('This slot requires an image source. Pick an image from the library or import one.');
+      const mismatchMessage = getLibraryAssetFieldMismatchMessage(field, asset);
+      if (mismatchMessage) {
+        showNotice(mismatchMessage);
         return;
       }
 
@@ -1371,13 +1378,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       if (field.type === 'video' && asset.kind === 'video') {
         try {
-          const host = new URL(asset.url).host.toLowerCase();
-          const shouldMirrorVideo =
-            asset.source === 'generated' ||
-            asset.source === 'recent' ||
-            host === 'fal.media' ||
-            host.endsWith('.fal.media');
-          if (shouldMirrorVideo) {
+          if (shouldMirrorVideoLibraryAsset(asset)) {
             const mirrored = await saveAssetToLibrary({
               url: asset.url,
               label:
@@ -1389,16 +1390,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               jobId: asset.jobId ?? null,
               sourceOutputId: asset.sourceOutputId ?? null,
             });
-            resolvedAsset = {
-              ...asset,
-              id: mirrored.id,
-              url: mirrored.url,
-              width: mirrored.width ?? asset.width,
-              height: mirrored.height ?? asset.height,
-              size: mirrored.size ?? asset.size,
-              mime: mirrored.mime ?? asset.mime,
-              canDelete: true,
-            };
+            resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
             setAssetLibrary((previous) =>
               previous.map((entry) =>
                 entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
@@ -1412,14 +1404,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
       }
 
-      if (
-        field.type === 'image' &&
-        asset.kind === 'image' &&
-        asset.source === 'character'
-      ) {
+      if (field.type === 'image' && asset.kind === 'image') {
         try {
-          const host = new URL(asset.url).host.toLowerCase();
-          if (host === 'fal.media' || host.endsWith('.fal.media')) {
+          if (shouldMirrorCharacterImageAsset(asset)) {
             const mirrored = await saveImageToLibrary({
               url: asset.url,
               label:
@@ -1428,16 +1415,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 'Image',
               source: asset.source,
             });
-            resolvedAsset = {
-              ...asset,
-              id: mirrored.id,
-              url: mirrored.url,
-              width: mirrored.width ?? asset.width,
-              height: mirrored.height ?? asset.height,
-              size: mirrored.size ?? asset.size,
-              mime: mirrored.mime ?? asset.mime,
-              canDelete: true,
-            };
+            resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
             setAssetLibrary((previous) =>
               previous.map((entry) =>
                 entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
@@ -1451,57 +1429,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
       }
 
-      const newAsset: ReferenceAsset = {
-        id: resolvedAsset.id || `library_${Date.now().toString(36)}`,
-        fieldId: field.id,
-        previewUrl: resolvedAsset.url,
-        kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
-        name:
-          resolvedAsset.url.split('/').pop() ??
-          (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
-        size: resolvedAsset.size ?? 0,
-        type:
-          resolvedAsset.mime ??
-          (field.type === 'video' ? 'video/*' : field.type === 'audio' ? 'audio/*' : 'image/*'),
-        url: resolvedAsset.url,
-        width: resolvedAsset.width ?? null,
-        height: resolvedAsset.height ?? null,
-        assetId: resolvedAsset.id,
-        status: 'ready' as const,
-      };
+      const newAsset = buildReferenceAssetFromLibraryAsset(field, resolvedAsset);
 
       setInputAssets((previous) => {
-        const maxCount = field.maxCount ?? 0;
-        const current = previous[field.id] ? [...previous[field.id]] : [];
-
-        if (maxCount > 0 && current.length < maxCount) {
-          while (current.length < maxCount) {
-            current.push(null);
-          }
-        }
-
-        let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
-        if (maxCount > 0 && targetIndex >= maxCount) {
-          targetIndex = -1;
-        }
-        if (targetIndex < 0) {
-          targetIndex = current.findIndex((entry) => entry === null);
-        }
-        if (targetIndex < 0) {
-          if (maxCount > 0 && current.length >= maxCount) {
-            showNotice(`Maximum ${field.label ?? 'reference image'} count reached for this engine.`);
-            return previous;
-          }
-          current.push(newAsset);
-        } else {
-          const existing = current[targetIndex];
-          if (existing) {
-            revokeAssetPreview(existing);
-          }
-          current[targetIndex] = newAsset;
-        }
-
-        return { ...previous, [field.id]: current };
+        return insertReferenceAsset(previous, field, newAsset, slotIndex, {
+          release: revokeAssetPreview,
+          onMaxReached: () => showNotice(`Maximum ${field.label ?? 'reference image'} count reached for this engine.`),
+        });
       });
 
       setAssetPickerTarget(null);
@@ -1511,36 +1445,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleSelectKlingLibraryAsset = useCallback(
     (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => {
-      const newAsset: KlingElementAsset = {
-        id: asset.id || `library_${Date.now().toString(36)}`,
-        previewUrl: asset.url,
-        kind: 'image',
-        name: asset.url.split('/').pop() ?? 'Image',
-        status: 'ready',
-        url: asset.url,
-      };
-
+      const newAsset = buildKlingLibraryAsset(asset);
       setKlingElements((previous) =>
-        previous.map((element) => {
-          if (element.id !== target.elementId) return element;
-
-          if (target.slot === 'frontal') {
-            revokeKlingAssetPreview(element.frontal);
-            return { ...element, frontal: newAsset };
-          }
-
-          const references = [...element.references];
-          let targetIndex = typeof target.slotIndex === 'number' ? target.slotIndex : references.findIndex((entry) => entry === null);
-          if (targetIndex < 0) {
-            targetIndex = references.length > 0 ? references.length - 1 : 0;
-          }
-          if (targetIndex >= references.length) {
-            return element;
-          }
-          revokeKlingAssetPreview(references[targetIndex]);
-          references[targetIndex] = newAsset;
-          return { ...element, references };
-        })
+        insertKlingLibraryAsset(previous, target, newAsset, revokeKlingAssetPreview)
       );
 
       setAssetPickerTarget(null);
@@ -1573,37 +1480,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       };
 
       setInputAssets((previous) => {
-        const maxCount = field.maxCount ?? 0;
-        const current = previous[field.id] ? [...previous[field.id]] : [];
-
-        if (maxCount > 0 && current.length < maxCount) {
-          while (current.length < maxCount) {
-            current.push(null);
-          }
-        }
-
-        let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
-        if (maxCount > 0 && targetIndex >= maxCount) {
-          targetIndex = -1;
-        }
-        if (targetIndex < 0) {
-          targetIndex = current.findIndex((asset) => asset === null);
-        }
-        if (targetIndex < 0) {
-          if (maxCount > 0 && current.length >= maxCount) {
-            revokeAssetPreview(baseAsset);
-            return previous;
-          }
-          current.push(baseAsset);
-        } else {
-          const existing = current[targetIndex];
-          if (existing) {
-            revokeAssetPreview(existing);
-          }
-          current[targetIndex] = baseAsset;
-        }
-
-        return { ...previous, [field.id]: current };
+        return insertReferenceAsset(previous, field, baseAsset, slotIndex, {
+          release: revokeAssetPreview,
+          onMaxReached: () => revokeAssetPreview(baseAsset),
+        });
       });
 
       const upload = async () => {
@@ -1698,31 +1578,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleAssetRemove = useCallback((field: EngineInputField, index: number) => {
     setInputAssets((previous) => {
-      const current = previous[field.id];
-      if (index < 0 || index >= current.length) return previous;
-      const nextList = [...current];
-      const toRelease = nextList[index];
-      if (toRelease) {
-        revokeAssetPreview(toRelease);
-      }
-
-      const maxCount = field.maxCount ?? 0;
-      if (maxCount > 0) {
-        nextList[index] = null;
-      } else {
-        nextList.splice(index, 1);
-      }
-
-      const nextState = { ...previous };
-      const hasValues = nextList.some((asset) => asset !== null);
-
-      if (hasValues || (maxCount > 0 && nextList.length)) {
-        nextState[field.id] = nextList;
-      } else {
-        delete nextState[field.id];
-      }
-
-      return nextState;
+      return removeReferenceAsset(previous, field, index, revokeAssetPreview);
     });
   }, []);
 
