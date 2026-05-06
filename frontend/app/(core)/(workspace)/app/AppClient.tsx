@@ -44,14 +44,8 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
 import {
-  getLumaRay2DurationInfo,
-  getLumaRay2ResolutionInfo,
   isLumaRay2EngineId,
-  isLumaRay2AspectRatio,
   isLumaRay2GenerateMode,
-  toLumaRay2DurationLabel,
-  LUMA_RAY2_ERROR_UNSUPPORTED,
-  type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isPlaceholderMediaUrl } from '@/lib/media';
@@ -91,6 +85,13 @@ import {
   type FormState,
 } from './_lib/workspace-form-state';
 import { prepareGenerationInputs } from './_lib/workspace-generation-inputs';
+import {
+  getGenerationIterationGuardMessage,
+  getLumaRay2GenerationContext,
+  getStartRenderValidationMessage,
+  supportsNegativePromptInput,
+} from './_lib/workspace-generation-guards';
+import { buildWorkspaceGeneratePayload } from './_lib/workspace-generation-payload';
 import {
   buildComposerModeToggles,
   coerceFormState,
@@ -2647,79 +2648,34 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       return;
     }
     setPreflightError(undefined);
-    if (audioWorkflowUnsupported) {
-      showComposerError(workflowCopy.audioUnsupported);
-      return;
-    }
     const trimmedPrompt = effectivePrompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
-    const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
-    const isLumaRay2 = isLumaRay2EngineId(selectedEngine.id);
-    const isLumaRay2GenerateWorkflow = isLumaRay2 && isLumaRay2GenerateMode(submissionMode);
-    const isLumaRay2ReframeWorkflow = isLumaRay2 && submissionMode === 'reframe';
-    const lumaDuration = isLumaRay2
-      ? getLumaRay2DurationInfo(form.durationOption ?? form.durationSec)
-      : null;
-    const lumaResolution = isLumaRay2 ? getLumaRay2ResolutionInfo(form.resolution) : null;
-    const lumaAspectOk =
-      !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio, { includeSquare: isLumaRay2ReframeWorkflow });
-
-    if (multiPromptActive && multiPromptInvalid) {
-      showComposerError(multiPromptError ?? 'Multi-prompt requires a prompt per scene and a valid total duration.');
-      return;
-    }
-
-    if (promptCharLimitExceeded && typeof promptMaxChars === 'number') {
-      const overflow = prompt.length - promptMaxChars;
-      showComposerError(
-        `Prompt is ${overflow} character${overflow === 1 ? '' : 's'} over the ${promptMaxChars}-character limit for ${selectedEngine.label}.`
-      );
-      return;
-    }
-
-    if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
-      showComposerError('A prompt is required for this engine and mode.');
-      return;
-    }
-
-    if (
-      supportsNegativePrompt &&
-      inputSchemaSummary.negativePromptRequired &&
-      !trimmedNegativePrompt
-    ) {
-      const label = inputSchemaSummary.negativePromptField?.label ?? 'Negative prompt';
-      showComposerError(`${label} is required before generating.`);
-      return;
-    }
-
-    const missingAssetField = inputSchemaSummary.assetFields.find(({ field, required }) => {
-      if (!required) return false;
-      const minCount = field.minCount ?? 1;
-      const current = (inputAssets[field.id]?.filter((asset) => asset !== null).length) ?? 0;
-      return current < minCount;
+    const supportsNegativePrompt = supportsNegativePromptInput(inputSchemaSummary);
+    const lumaContext = getLumaRay2GenerationContext({
+      selectedEngineId: selectedEngine.id,
+      submissionMode,
+      form,
     });
-
-    if (missingAssetField) {
-      showComposerError(`${missingAssetField.field.label} is required before generating.`);
-      return;
-    }
-
-    const missingGenericField = extraInputFields.find(({ field, required }) => {
-      if (!required) return false;
-      const value = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
-      return value === undefined;
+    const validationMessage = getStartRenderValidationMessage({
+      audioWorkflowUnsupported,
+      audioUnsupportedMessage: workflowCopy.audioUnsupported,
+      multiPromptActive,
+      multiPromptInvalid,
+      multiPromptError,
+      promptLength: prompt.length,
+      promptCharLimitExceeded,
+      promptMaxChars,
+      selectedEngineLabel: selectedEngine.label,
+      trimmedPrompt,
+      trimmedNegativePrompt,
+      inputSchemaSummary,
+      inputAssets,
+      extraInputFields,
+      form,
+      lumaContext,
     });
-
-    if (missingGenericField) {
-      showComposerError(`${missingGenericField.field.label} is required before generating.`);
-      return;
-    }
-
-    if (
-      (isLumaRay2GenerateWorkflow && (!lumaDuration || !lumaResolution || !lumaAspectOk)) ||
-      (isLumaRay2ReframeWorkflow && !lumaAspectOk)
-    ) {
-      showComposerError(LUMA_RAY2_ERROR_UNSUPPORTED);
+    if (validationMessage) {
+      showComposerError(validationMessage);
       return;
     }
 
@@ -2839,74 +2795,26 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     } = generationInputs;
 
     const runIteration = async (iterationIndex: number) => {
-      const isImageDrivenMode = submissionMode === 'i2v' || submissionMode === 'i2i';
-      const isReferenceImageMode = submissionMode === 'ref2v';
-      const isFirstLastMode = submissionMode === 'fl2v';
-      const firstFrameAttachment = isFirstLastMode
-        ? (inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url') ?? primaryAttachment)
-        : null;
-      const lastFrameAttachment = isFirstLastMode
-        ? inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url')
-        : null;
-
-      if (allowsUnifiedVeoFirstLast && hasLastFrameInput && !primaryImageUrl) {
-        showComposerError('Add a start image before using Last frame with Veo.');
-        return;
-      }
-      if (isImageDrivenMode && !primaryImageUrl) {
-        const guardMessage = selectedEngine.id.startsWith('sora-2')
-          ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
-          : `Add at least one ${primaryAssetFieldLabel.toLowerCase()} (URL or upload) before running this mode.`;
+      const guardMessage = getGenerationIterationGuardMessage({
+        selectedEngineId: selectedEngine.id,
+        submissionMode,
+        allowsUnifiedVeoFirstLast,
+        hasLastFrameInput,
+        isUnifiedSeedance,
+        primaryImageUrl,
+        primaryAudioUrl,
+        primaryAssetFieldLabel,
+        referenceImageUrls,
+        referenceVideoUrls,
+        referenceAudioUrls,
+        inputsPayload,
+        primaryAttachment,
+        addReferenceMediaBeforeAudioMessage: workflowCopy.addReferenceMediaBeforeAudio,
+        extendOrRetakeSourceVideoMessage: workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)),
+      });
+      if (guardMessage) {
         showComposerError(guardMessage);
         return;
-      }
-      if (isReferenceImageMode) {
-        if (isUnifiedSeedance) {
-          if (referenceImageUrls.length === 0 && referenceVideoUrls.length === 0) {
-            showComposerError(
-              referenceAudioUrls.length > 0
-                ? workflowCopy.addReferenceMediaBeforeAudio
-                : 'Add at least one reference image or reference video before running Seedance Reference → Video.'
-            );
-            return;
-          }
-        } else if (referenceImageUrls.length === 0) {
-          showComposerError(
-            selectedEngine.id === 'happy-horse-1-0'
-              ? 'Add 1–9 reference images before running Happy Horse R2V.'
-              : 'Add 1–4 reference images before running Reference → Video.'
-          );
-          return;
-        }
-      }
-      const isVideoDrivenMode = submissionMode === 'r2v';
-      if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
-        showComposerError('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
-        return;
-      }
-      const isAudioDrivenMode = submissionMode === 'a2v';
-      if (isAudioDrivenMode && !primaryAudioUrl) {
-        showComposerError('Add an audio file before running Audio → Video.');
-        return;
-      }
-      const isExtendOrRetakeMode = submissionMode === 'extend' || submissionMode === 'retake';
-      if (isExtendOrRetakeMode && referenceVideoUrls.length === 0) {
-        showComposerError(workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)));
-        return;
-      }
-      if (isFirstLastMode) {
-        if (!firstFrameAttachment || !lastFrameAttachment) {
-          showComposerError('Upload both a start image and last frame before generating with Veo.');
-          return;
-        }
-        const sameSource =
-          firstFrameAttachment.assetId && lastFrameAttachment.assetId
-            ? firstFrameAttachment.assetId === lastFrameAttachment.assetId
-            : firstFrameAttachment.url === lastFrameAttachment.url;
-        if (sameSource) {
-          showComposerError('First and last frames must be two different images for this engine.');
-          return;
-        }
       }
 
       const localKey = `local_${batchId}_${iterationIndex + 1}`;
@@ -3034,84 +2942,43 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       startProgressTracking();
 
       try {
-        const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
-        const resolvedDurationSeconds = isLumaRay2GenerateWorkflow && lumaDuration ? lumaDuration.seconds : effectiveDurationSec;
-        const durationOptionLabel: LumaRay2DurationLabel | undefined =
-          typeof form.durationOption === 'string'
-            ? (['5s', '9s'].includes(form.durationOption) ? (form.durationOption as LumaRay2DurationLabel) : undefined)
-            : undefined;
-        const resolvedDurationLabel =
-          isLumaRay2GenerateWorkflow && lumaDuration
-            ? lumaDuration.label
-            : toLumaRay2DurationLabel(effectiveDurationSec, durationOptionLabel) ??
-              durationOptionLabel ??
-              effectiveDurationSec;
-        const shouldSendDuration = !capability || Boolean(capability.duration || capability.frames);
-        const shouldSendResolution = !capability || (capability.resolution?.length ?? 0) > 0;
-        const resolvedResolution = isLumaRay2GenerateWorkflow && lumaResolution ? lumaResolution.value : form.resolution;
-        const shouldSendFps =
-          !capability ||
-          (Array.isArray(capability.fps) ? capability.fps.length > 0 : typeof capability.fps === 'number');
-        const seedNumber =
-          typeof form.seed === 'number' && Number.isFinite(form.seed) ? Math.trunc(form.seed) : undefined;
-        const cameraFixed =
-          typeof form.cameraFixed === 'boolean' ? form.cameraFixed : undefined;
-        const safetyChecker =
-          typeof form.safetyChecker === 'boolean' ? form.safetyChecker : undefined;
-
-        const generatePayload: Parameters<typeof runGenerate>[0] = {
-          engineId: selectedEngine.id,
-          prompt: trimmedPrompt,
-          mode: submissionMode,
-          durationSec: resolvedDurationSeconds,
-          membershipTier: memberTier,
-          payment: { mode: paymentMode },
-          cfgScale: typeof cfgScale === 'number' ? cfgScale : undefined,
-          ...(selectedEngine.id.startsWith('sora-2')
-            ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
-            : {}),
-          ...(shouldSendDuration ? { durationOption: resolvedDurationLabel } : {}),
-          ...(form.numFrames != null ? { numFrames: form.numFrames } : {}),
-          ...(shouldSendResolution ? { resolution: resolvedResolution } : {}),
-          ...(shouldSendFps ? { fps: form.fps } : {}),
-          ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
-          ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
-          ...(supportsAudioToggle ? { audio: form.audio } : {}),
-          ...(inputsPayload ? { inputs: inputsPayload } : {}),
-          ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
-          ...(primaryAudioUrl ? { audioUrl: primaryAudioUrl } : {}),
-          ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
-          ...(endImageUrl ? { endImageUrl } : {}),
-          ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
-          ...(multiPromptPayload && multiPromptPayload.length ? { multiPrompt: multiPromptPayload } : {}),
-          ...(supportsKlingV3Controls
-            ? {
-                shotType: activeMode === 'i2v' ? 'customize' : shotType,
-                ...(supportsKlingV3VoiceControl && voiceIds.length ? { voiceIds } : {}),
-                ...(voiceControlEnabled ? { voiceControl: true } : {}),
-                ...(klingElementsPayload ? { elements: klingElementsPayload } : {}),
-              }
-            : {}),
-          ...(isSeedance
-            ? {
-                ...(typeof seedNumber === 'number' ? { seed: seedNumber } : {}),
-                ...(typeof cameraFixed === 'boolean' ? { cameraFixed } : {}),
-                ...(typeof safetyChecker === 'boolean' ? { safetyChecker } : {}),
-              }
-            : {}),
-          idempotencyKey: id,
+        const { payload: generatePayload, resolvedDurationSeconds } = buildWorkspaceGeneratePayload({
+          selectedEngineId: selectedEngine.id,
+          activeMode,
+          submissionMode,
+          form,
+          trimmedPrompt,
+          trimmedNegativePrompt,
+          effectiveDurationSec,
+          memberTier,
+          paymentMode,
+          cfgScale,
+          capability,
+          supportsNegativePrompt,
+          supportsAudioToggle,
+          isSeedance,
+          supportsKlingV3Controls,
+          supportsKlingV3VoiceControl,
+          voiceIds,
+          voiceControlEnabled,
+          shotType,
+          localKey,
           batchId,
-          groupId: batchId,
           iterationIndex,
           iterationCount,
-          localKey,
-          message: friendlyMessage,
+          friendlyMessage,
           etaSeconds,
           etaLabel,
-          visibility: 'private',
-          indexable: false,
-          ...(isLumaRay2GenerateWorkflow ? { loop: Boolean(form.loop) } : {}),
-        };
+          lumaContext,
+          inputsPayload,
+          primaryImageUrl,
+          primaryAudioUrl,
+          referenceImageUrls,
+          endImageUrl,
+          extraInputValues,
+          multiPromptPayload,
+          klingElementsPayload,
+        });
 
         emitClientMetric('generation_started', {
           local_key: localKey,
