@@ -6,7 +6,7 @@ This route is the main signed-in video generation workspace.
 
 - `AppClient.tsx`: top-level state orchestration while the workspace is being split.
 - `_components`: route-local chrome, panels, skeletons, modals, and presentational UI.
-- `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
+- `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
 
 ## Refactor Rules
@@ -15,6 +15,7 @@ This route is the main signed-in video generation workspace.
 - Keep schema summarization, asset-library normalization, and copy merging in `_lib`; `AppClient.tsx` should consume those results instead of rebuilding them inline.
 - Keep render grouping and preview tile mapping in `_lib`; `AppClient.tsx` should decide state transitions, not rebuild group summary objects inline.
 - Keep job-to-render conversion, status polling projections, and recent-job reconciliation in `_lib`; `AppClient.tsx` should own timers and network calls.
+- Keep generation attachment ordering, derived input URLs, Kling element payloads, and multi-prompt payloads in `_lib`; `AppClient.tsx` should keep workflow guards and the `runGenerate` call.
 - Keep video settings snapshot parsing and job media patch mapping in `_lib`; `AppClient.tsx` should wire those results into React state.
 - Keep workspace request parsing and boot hydration decisions in `_lib`; `AppClient.tsx` should apply the resolved state.
 - Keep asset-library selection, reference slot insertion, and Kling library asset mapping in `_lib`; `AppClient.tsx` should handle network calls and React state wiring.

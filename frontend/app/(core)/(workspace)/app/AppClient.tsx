@@ -90,6 +90,7 @@ import {
   normalizeExtraInputValue,
   type FormState,
 } from './_lib/workspace-form-state';
+import { prepareGenerationInputs } from './_lib/workspace-generation-inputs';
 import {
   buildComposerModeToggles,
   coerceFormState,
@@ -2799,205 +2800,43 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
     }
 
-    const schema = selectedEngine?.inputSchema;
-    const fieldIndex = new Map<string, EngineInputField>();
-    if (schema) {
-      [...(schema.required ?? []), ...(schema.optional ?? [])].forEach((field) => {
-        fieldIndex.set(field.id, field);
-      });
-    }
-
-    const orderedAttachments: Array<{ field: EngineInputField; asset: ReferenceAsset }> = [];
-    inputSchemaSummary.assetFields.forEach(({ field }) => {
-      const items = inputAssets[field.id] ?? [];
-      items.forEach((asset) => {
-        if (!asset) return;
-        orderedAttachments.push({ field, asset });
-      });
+    const generationInputs = prepareGenerationInputs({
+      selectedEngineId: selectedEngine.id,
+      activeMode,
+      submissionMode,
+      form,
+      inputSchema: selectedEngine.inputSchema,
+      inputSchemaSummary,
+      extraInputFields,
+      inputAssets,
+      primaryAssetFieldIds,
+      referenceAssetFieldIds,
+      genericImageFieldIds,
+      frameAssetFieldIds,
+      referenceAudioFieldIds,
+      supportsKlingV3Controls,
+      klingElements,
+      multiPromptActive,
+      multiPromptScenes,
     });
-
-    Object.entries(inputAssets).forEach(([fieldId, items]) => {
-      if (orderedAttachments.some((entry) => entry.field.id === fieldId)) return;
-      const field = fieldIndex.get(fieldId);
-      if (!field) return;
-      items.forEach((asset) => {
-        if (!asset) return;
-        orderedAttachments.push({ field, asset });
-      });
-    });
-
-    let inputsPayload: Array<{
-      name: string;
-      type: string;
-      size: number;
-      kind: 'image' | 'video' | 'audio';
-      slotId?: string;
-      label?: string;
-      url: string;
-      width?: number | null;
-      height?: number | null;
-      assetId?: string;
-    }> | undefined;
-
-    if (orderedAttachments.length) {
-      const collected: typeof inputsPayload = [];
-      for (const { field, asset } of orderedAttachments) {
-        if (!asset) continue;
-        if (asset.status === 'uploading') {
-          showComposerError('Please wait for uploads to finish before generating.');
-          return;
-        }
-        if (asset.status === 'error' || !asset.url) {
-          showComposerError('One of your reference files is unavailable. Remove it and try again.');
-          return;
-        }
-        collected.push({
-          name: asset.name,
-          type: asset.type || (asset.kind === 'image' ? 'image/*' : asset.kind === 'audio' ? 'audio/*' : 'video/*'),
-          size: asset.size,
-          kind: asset.kind,
-          slotId: field.id,
-          label: field.label,
-          url: asset.url,
-          width: asset.width,
-          height: asset.height,
-          assetId: asset.assetId,
-        });
-      }
-      if (collected.length) {
-        inputsPayload = collected;
-      }
+    if (!generationInputs.ok) {
+      showComposerError(generationInputs.message);
+      return;
     }
 
-    const referenceSlots = referenceAssetFieldIds.size > 0 ? referenceAssetFieldIds : genericImageFieldIds;
-    const activeReferenceSlots =
-      selectedEngine.id === 'happy-horse-1-0'
-        ? submissionMode === 'v2v'
-          ? new Set(['reference_image_urls'])
-          : submissionMode === 'ref2v'
-            ? new Set(['image_urls'])
-            : referenceSlots
-        : referenceSlots;
-    const primaryAttachment =
-      inputsPayload?.find(
-        (attachment) => typeof attachment.slotId === 'string' && primaryAssetFieldIds.has(attachment.slotId)
-      ) ?? null;
-    const referenceImageUrls = inputsPayload
-      ? inputsPayload
-          .filter((attachment) => {
-            if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-            const slotId = attachment.slotId;
-            if (slotId && primaryAssetFieldIds.has(slotId)) return false;
-            if (slotId && frameAssetFieldIds.has(slotId)) return false;
-            if (!slotId) return activeReferenceSlots.size === 0;
-            if (activeReferenceSlots.size === 0) {
-              return !primaryAssetFieldIds.has(slotId);
-            }
-            return activeReferenceSlots.has(slotId);
-          })
-          .map((attachment) => attachment.url)
-          .filter((url, index, self) => self.indexOf(url) === index)
-      : [];
-    const referenceVideoUrls = inputsPayload
-      ? inputsPayload
-          .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
-          .map((attachment) => attachment.url)
-          .filter((url, index, self) => self.indexOf(url) === index)
-      : [];
-    const referenceAudioUrls = inputsPayload
-      ? inputsPayload
-          .filter(
-            (attachment) =>
-              attachment.kind === 'audio' &&
-              typeof attachment.url === 'string' &&
-              typeof attachment.slotId === 'string' &&
-              referenceAudioFieldIds.has(attachment.slotId)
-          )
-          .map((attachment) => attachment.url)
-          .filter((url, index, self) => self.indexOf(url) === index)
-      : [];
-
-    const primaryImageUrl =
-      primaryAttachment?.url ?? (activeMode === 'i2v' || activeMode === 'i2i' ? referenceImageUrls[0] : undefined);
-    const primaryAudioUrl =
-      inputsPayload?.find(
-        (attachment) =>
-          attachment.kind === 'audio' &&
-          typeof attachment.url === 'string' &&
-          !(typeof attachment.slotId === 'string' && referenceAudioFieldIds.has(attachment.slotId))
-      )?.url ?? undefined;
-    const endImageUrl =
-      inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
-        ?.url ?? undefined;
-    const extraInputValues = extraInputFields.reduce<Record<string, unknown>>((acc, { field }) => {
-      const normalized = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
-      if (normalized !== undefined) {
-        acc[field.id] = normalized;
-      }
-      return acc;
-    }, {});
-
-    let klingElementsPayload:
-      | Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>
-      | undefined;
-    if (supportsKlingV3Controls && form.mode === 'i2v') {
-      let videoCount = 0;
-      const collected: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }> = [];
-      for (const element of klingElements) {
-        const frontal = element.frontal;
-        const references = element.references.filter((asset): asset is KlingElementAsset => Boolean(asset));
-        const video = element.video;
-        const hasAnyAsset = Boolean(frontal || references.length || video);
-        if (!hasAnyAsset) {
-          continue;
-        }
-
-        const assetsToCheck = [frontal, ...references, video].filter(Boolean) as KlingElementAsset[];
-        for (const asset of assetsToCheck) {
-          if (asset.status === 'uploading') {
-            showComposerError('Please wait for element uploads to finish before generating.');
-            return;
-          }
-          if (asset.status === 'error' || !asset.url) {
-            showComposerError('One of your element assets failed to upload. Remove it and try again.');
-            return;
-          }
-        }
-
-        const frontalUrl = frontal?.url;
-        const referenceUrls = references
-          .map((asset) => asset.url)
-          .filter((url): url is string => Boolean(url));
-        const videoUrl = video?.url;
-        if (videoUrl) {
-          videoCount += 1;
-        }
-        const hasImageSet = Boolean(frontalUrl && referenceUrls.length > 0);
-        const hasVideoReference = Boolean(videoUrl);
-        if (!hasImageSet && !hasVideoReference) {
-          showComposerError('Each Kling element needs a frontal image plus at least one reference image, or one video reference.');
-          return;
-        }
-        collected.push({
-          frontalImageUrl: frontalUrl,
-          referenceImageUrls: referenceUrls.length ? referenceUrls : undefined,
-          videoUrl,
-        });
-      }
-      if (videoCount > 1) {
-        showComposerError('Only one Kling element can include a video reference.');
-        return;
-      }
-      if (collected.length) {
-        klingElementsPayload = collected;
-      }
-    }
-
-    const multiPromptPayload = multiPromptActive
-      ? multiPromptScenes
-          .filter((scene) => scene.prompt.trim().length)
-          .map((scene) => ({ prompt: scene.prompt.trim(), duration: Math.round(scene.duration || 0) }))
-      : undefined;
+    const {
+      inputsPayload,
+      primaryAttachment,
+      referenceImageUrls,
+      referenceVideoUrls,
+      referenceAudioUrls,
+      primaryImageUrl,
+      primaryAudioUrl,
+      endImageUrl,
+      extraInputValues,
+      klingElementsPayload,
+      multiPromptPayload,
+    } = generationInputs;
 
     const runIteration = async (iterationIndex: number) => {
       const isImageDrivenMode = submissionMode === 'i2v' || submissionMode === 'i2i';
