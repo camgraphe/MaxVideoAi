@@ -10,8 +10,10 @@ import { writeLastKnownUserId } from '@/lib/last-known';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
+  isPkceCodeVerifierError,
   readBrowserSession,
 } from '@/lib/supabase-auth-cleanup';
+import { canonicalizeBrowserAuthOrigin } from '@/lib/siteOrigin';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -192,6 +194,8 @@ export default function LoginPage() {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const oauthCodeExchangeStartedRef = useRef(false);
   const authNavigationStartedRef = useRef(false);
+  const googleOAuthStartedRef = useRef(false);
+  const [isGoogleOAuthStarting, setIsGoogleOAuthStarting] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
@@ -253,6 +257,7 @@ export default function LoginPage() {
   }, [setEmail, setPassword]);
 
   useEffect(() => {
+    if (canonicalizeBrowserAuthOrigin()) return;
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const value = params.get('next');
@@ -380,7 +385,7 @@ export default function LoginPage() {
       .then(async ({ data, error }) => {
         if (cancelled) return;
         if (error || !data.session) {
-          if (isInvalidRefreshTokenError(error)) {
+          if (isInvalidRefreshTokenError(error) || isPkceCodeVerifierError(error)) {
             void clearStaleBrowserAuthState();
           }
           const fallbackRedirected = await redirectFromExistingBrowserSession(target);
@@ -402,7 +407,7 @@ export default function LoginPage() {
       })
       .catch(async (err) => {
         if (cancelled) return;
-        if (isInvalidRefreshTokenError(err)) {
+        if (isInvalidRefreshTokenError(err) || isPkceCodeVerifierError(err)) {
           void clearStaleBrowserAuthState();
         }
         const fallbackRedirected = await redirectFromExistingBrowserSession(target);
@@ -728,8 +733,14 @@ export default function LoginPage() {
   }
 
   async function signInWithGoogle() {
+    if (googleOAuthStartedRef.current) return;
+    if (canonicalizeBrowserAuthOrigin()) return;
+    googleOAuthStartedRef.current = true;
+    setIsGoogleOAuthStarting(true);
     setError(null);
     if (!redirectTo) {
+      googleOAuthStartedRef.current = false;
+      setIsGoogleOAuthStarting(false);
       setStatusTone('info');
       setStatus('Google sign-in is unavailable because the auth redirect URL could not be resolved.');
       return;
@@ -748,6 +759,8 @@ export default function LoginPage() {
       },
     });
     if (error) {
+      googleOAuthStartedRef.current = false;
+      setIsGoogleOAuthStarting(false);
       setError(error.message);
       setStatus(null);
       return;
@@ -759,7 +772,10 @@ export default function LoginPage() {
         markPendingGoogleLogin();
       }
       window.location.href = data.url;
+      return;
     }
+    googleOAuthStartedRef.current = false;
+    setIsGoogleOAuthStarting(false);
   }
 
   useEffect(() => {
@@ -885,6 +901,8 @@ export default function LoginPage() {
               type="button"
               onClick={signInWithGoogle}
               variant="outline"
+              disabled={isGoogleOAuthStarting}
+              aria-busy={isGoogleOAuthStarting}
               className="w-full justify-center gap-2 font-medium"
             >
               <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center">

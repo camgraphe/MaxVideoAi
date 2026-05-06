@@ -33,3 +33,16 @@ export function resolveSiteOrigin(): string {
 
 export const SITE_ORIGIN = resolveSiteOrigin();
 export const CANONICAL_PRODUCTION_ORIGIN = PRODUCTION_SITE_ORIGIN;
+
+export function shouldCanonicalizeBrowserAuthOrigin(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname.toLowerCase() === 'www.maxvideoai.com';
+}
+
+export function canonicalizeBrowserAuthOrigin(): boolean {
+  if (!shouldCanonicalizeBrowserAuthOrigin()) return false;
+  const url = new URL(window.location.href);
+  url.hostname = new URL(CANONICAL_PRODUCTION_ORIGIN).hostname;
+  window.location.replace(url.toString());
+  return true;
+}
