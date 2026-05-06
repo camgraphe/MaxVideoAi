@@ -4644,7 +4644,8 @@
       "body": "Create an account with {email} without re-entering your details.",
       "accept": "Create this account",
       "decline": "I'll try again"
-    }
+    },
+    "oauthCallbackError": "Google sign-in could not be completed. Please try again."
   },
   "comparePage": {
     "meta": {

@@ -4679,7 +4679,8 @@
       "body": "Créez un compte avec {email} sans ressaisir vos informations.",
       "accept": "Créer ce compte",
       "decline": "Je réessaierai plus tard"
-    }
+    },
+    "oauthCallbackError": "La connexion Google n’a pas pu aboutir. Veuillez réessayer."
   },
   "comparePage": {
     "meta": {

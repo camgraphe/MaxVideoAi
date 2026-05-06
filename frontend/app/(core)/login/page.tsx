@@ -184,6 +184,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const oauthCodeExchangeStartedRef = useRef(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
@@ -196,6 +197,7 @@ export default function LoginPage() {
     const base = authRedirectOrigin.endsWith('/') ? authRedirectOrigin.slice(0, -1) : authRedirectOrigin;
     return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
   }, [authRedirectOrigin, safeNextPath]);
+  const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
@@ -288,6 +290,77 @@ export default function LoginPage() {
       setMode(paramMode);
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const oauthCode = params.get('code');
+    const authError = params.get('authError');
+    if (!oauthCode && authError !== 'oauth_callback_failed') return;
+
+    const cleanAuthQuery = () => {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('code');
+      cleanUrl.searchParams.delete('state');
+      cleanUrl.searchParams.delete('authError');
+      cleanUrl.searchParams.delete('error');
+      cleanUrl.searchParams.delete('error_description');
+      cleanUrl.searchParams.delete('redirect_to');
+      window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    };
+
+    const localizedCopy = AUTH_COPY[detectLocale()] ?? authCopy;
+    setMode('signin');
+
+    if (authError === 'oauth_callback_failed') {
+      cleanAuthQuery();
+      clearPendingGoogleLogin();
+      setStatus(null);
+      setError(localizedCopy.oauthCallbackError);
+      return;
+    }
+
+    if (!oauthCode || oauthCodeExchangeStartedRef.current) return;
+    oauthCodeExchangeStartedRef.current = true;
+    cleanAuthQuery();
+    setStatusTone('info');
+    setStatus('Completing sign-in…');
+    setError(null);
+
+    let cancelled = false;
+    const target = sanitizeNextPath(params.get('next') ?? nextPath);
+    void supabase.auth
+      .exchangeCodeForSession(oauthCode)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data.session) {
+          clearPendingGoogleLogin();
+          setStatus(null);
+          setError(localizedCopy.oauthCallbackError);
+          return;
+        }
+        if (consumePendingGoogleLogin()) {
+          persistPendingAnalyticsEvent('login_completed', {
+            route_family: 'auth',
+            auth_surface: 'login',
+            method: 'google',
+          });
+        }
+        persistNextTarget(target);
+        window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+        router.replace(target);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        clearPendingGoogleLogin();
+        setStatus(null);
+        setError(localizedCopy.oauthCallbackError);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authCopy, nextPath, persistNextTarget, router]);
 
   useEffect(() => {
     if (mode !== 'signup' && termsError) {
@@ -663,8 +736,6 @@ export default function LoginPage() {
     const detected = detectLocale();
     setLocale(detected);
   }, []);
-
-  const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
 
   const renderTermsStatement = () => (
     <span className={clsx(termsError && 'text-state-warning')}>

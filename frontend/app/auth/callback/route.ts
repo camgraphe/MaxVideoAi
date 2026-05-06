@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
     if (error) {
       console.error('[auth.callback] exchange failed', error);
       const fallbackUrl = new URL('/login', requestUrl.origin);
-      fallbackUrl.searchParams.set('code', code);
+      fallbackUrl.searchParams.set('mode', 'signin');
+      fallbackUrl.searchParams.set('authError', 'oauth_callback_failed');
       if (nextPath && nextPath !== DEFAULT_NEXT_PATH) {
         fallbackUrl.searchParams.set('next', nextPath);
       }

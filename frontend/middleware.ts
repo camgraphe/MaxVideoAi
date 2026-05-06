@@ -125,7 +125,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
 ];
 const QUERY_PARAM_ALLOWLISTS = {
   examples: new Set(['sort', 'engine', 'page']),
-  login: new Set(['next']),
+  login: new Set(['next', 'mode', 'authError']),
   video: new Set(['from']),
   compare: new Set(['order']),
 };
@@ -337,7 +337,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
   const authCode = req.nextUrl.searchParams.get('code');
-  if (authCode && req.nextUrl.pathname !== '/auth/callback') {
+  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH) {
     const callbackUrl = req.nextUrl.clone();
     callbackUrl.pathname = '/auth/callback';
     callbackUrl.search = '';

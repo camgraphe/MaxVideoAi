@@ -4671,7 +4671,8 @@
       "body": "Crea una cuenta con {email} sin volver a escribir tus datos.",
       "accept": "Crear esta cuenta",
       "decline": "Lo intentaré más tarde"
-    }
+    },
+    "oauthCallbackError": "No se pudo completar el inicio de sesión con Google. Inténtalo de nuevo."
   },
   "comparePage": {
     "meta": {
