@@ -6,7 +6,7 @@ This route is the main signed-in video generation workspace.
 
 - `AppClient.tsx`: top-level state orchestration while the workspace is being split.
 - `_components`: route-local chrome, panels, skeletons, modals, and presentational UI.
-- `_hooks`: route-local stateful workflow hooks for bounded client concerns such as asset library, upload orchestration, generation runner orchestration, render state and polling, video settings application, and hydration.
+- `_hooks`: route-local stateful workflow hooks for bounded client concerns such as asset library, upload orchestration, gallery action orchestration, generation runner orchestration, render state and polling, video settings application, and hydration.
 - `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, generation guards, local render preparation, generation payloads, accepted results, generation polling projections, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
 
@@ -18,6 +18,7 @@ This route is the main signed-in video generation workspace.
 - Keep job-to-render conversion, status polling projections, and recent-job reconciliation in `_lib`; route-local hooks should own render state, timers, and bounded network polling.
 - Keep generation attachment ordering, derived input URLs, Kling element payloads, and multi-prompt payloads in `_lib`; `AppClient.tsx` should consume prepared inputs instead of deriving attachment URLs inline.
 - Keep generation validation guards and `runGenerate` payload assembly in `_lib`; route-local hooks should own generation network orchestration while `AppClient.tsx` wires UI state.
+- Keep gallery action orchestration, guided sample navigation, and preview open/continue/refine/copy behavior in route-local hooks; `AppClient.tsx` should pass returned handlers into rails, cards, and preview surfaces.
 - Keep local pending-render and selected-preview preparation in `_lib`; `AppClient.tsx` should apply returned state objects and own timers.
 - Keep accepted `runGenerate` response projection and immediate render/preview patches in `_lib`; `AppClient.tsx` should dispatch events and start polling.
 - Keep generation polling projections and poll-delay decisions in `_lib`; `AppClient.tsx` should own `getJobStatus`, timers, and React setters.
