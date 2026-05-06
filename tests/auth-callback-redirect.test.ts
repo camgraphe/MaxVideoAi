@@ -64,8 +64,8 @@ test('login auth success records a session hint before leaving the auth page', (
   );
   assert.match(
     loginPageSource,
-    /window\.location\.assign\(safeTarget\)/,
-    'auth redirects should use a document navigation so Safari sends freshly written auth cookies'
+    /window\.location\.replace\(finishUrl\)/,
+    'auth redirects should use a document navigation through the finish route so Safari sends freshly written auth cookies'
   );
 });
 

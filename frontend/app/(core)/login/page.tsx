@@ -85,6 +85,10 @@ function buildAuthCallbackRedirect(origin: string, nextPath: string): string | u
   return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
 }
 
+function buildAuthFinishUrl(nextPath: string): string {
+  return `/auth/finish?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
+}
+
 function markPendingGoogleLogin() {
   if (typeof window === 'undefined') return;
   try {
@@ -200,10 +204,11 @@ export default function LoginPage() {
         persistNextTarget(safeTarget);
         window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
         window.dispatchEvent(new Event('wallet:invalidate'));
-        window.location.assign(safeTarget);
+        const finishUrl = buildAuthFinishUrl(safeTarget);
+        window.location.replace(finishUrl);
         return;
       }
-      router.replace(safeTarget);
+      router.replace(buildAuthFinishUrl(safeTarget));
     },
     [persistNextTarget, router]
   );
