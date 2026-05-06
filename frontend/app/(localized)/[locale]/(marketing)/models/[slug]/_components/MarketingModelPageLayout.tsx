@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions } from '@/i18n/locales';
@@ -9,17 +8,16 @@ import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { FAQSchema } from '@/components/seo/FAQSchema';
-import { ButtonLink } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { TextLink } from '@/components/ui/TextLink';
-import { UIIcon } from '@/components/ui/UIIcon';
-import { BackLink } from '@/components/video/BackLink';
-import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
 import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
-import { SpecDetailsGrid } from '@/components/marketing/SpecDetailsGrid.client';
-import { Check } from 'lucide-react';
 import { serializeJsonLd } from '../../model-jsonld';
-import { MediaPreview } from './MediaPreview';
+import { ModelHeroSection } from './ModelHeroSection';
+import { ModelPageToc } from './ModelPageToc';
+import { ModelPromptingSection } from './ModelPromptingSection';
+import { ModelPrepLinksSection } from './ModelPrepLinksSection';
+import { ModelSpecsSection } from './ModelSpecsSection';
+import { ModelTipsSection } from './ModelTipsSection';
+import { ModelExamplesSection } from './ModelExamplesSection';
 import {
   DEFAULT_DETAIL_COPY,
   DEFAULT_GENERIC_SAFETY,
@@ -29,7 +27,7 @@ import {
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
 import { buildProductSchema, resolveProviderInfo } from '../_lib/model-page-schema';
-import { PREP_LINK_VISUALS, resolveFocusVsConfig } from '../_lib/model-page-static';
+import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
   CANONICAL_ONLY_COMPARE_SLUGS,
@@ -43,13 +41,8 @@ import {
   toAbsoluteUrl,
 } from '../_lib/model-page-links';
 import {
-  BEST_USE_CASE_ICON_MAP,
-  FULL_BLEED_CONTENT,
   FULL_BLEED_SECTION,
   GENERIC_TRUST_LINE,
-  HERO_AUTOPLAY_DELAY_MS,
-  HERO_BG,
-  HERO_SPEC_ICON_MAP,
   SECTION_BG_A,
   SECTION_BG_B,
   SECTION_PAD,
@@ -60,7 +53,6 @@ import {
   buildSupportLine,
   buildEyebrow,
   isSupported,
-  localizeSpecStatus,
   normalizeBestUseCaseItems,
   normalizeHeroSubtitle,
   normalizeHeroTitle,
@@ -480,327 +472,57 @@ export function MarketingModelPageLayout({
       ))}
       <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
         <div className="stack-gap-lg gap-0">
-          <div className="stack-gap-xs">
-            <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-              <BackLink
-                href={modelsPathname}
-                label={backLabel}
-                className="font-semibold text-brand hover:text-brandHover"
-              />
-              <span aria-hidden className="text-text-muted">
-                /
-              </span>
-              <Link href={localizeModelsPath()} className="font-semibold text-text-secondary hover:text-text-primary">
-                {resolvedBreadcrumb.models}
-              </Link>
-              <span aria-hidden className="text-text-muted">
-                /
-              </span>
-              <span className="font-semibold text-text-muted">{breadcrumbModelLabel}</span>
-            </nav>
+          <ModelHeroSection
+            modelsPathname={modelsPathname}
+            backLabel={backLabel}
+            localizeModelsPath={localizeModelsPath}
+            resolvedBreadcrumb={resolvedBreadcrumb}
+            breadcrumbModelLabel={breadcrumbModelLabel}
+            heroEyebrow={heroEyebrow}
+            heroTitle={heroTitle}
+            heroSubtitle={heroSubtitle}
+            heroSupportLine={heroSupportLine}
+            heroSpecChips={heroSpecChips}
+            heroBadge={heroBadge}
+            heroLimitsLine={heroLimitsLine}
+            showHeroDescriptions={showHeroDescriptions}
+            heroDesc1={heroDesc1}
+            heroDesc2={heroDesc2}
+            resolvedPrimaryCta={resolvedPrimaryCta}
+            normalizedPrimaryCtaHref={normalizedPrimaryCtaHref}
+            secondaryCta={secondaryCta}
+            localizedSecondaryCtaHref={localizedSecondaryCtaHref}
+            heroQuickLinks={heroQuickLinks}
+            pricingLinkHref={pricingLinkHref}
+            pricingLinkLabel={pricingLinkLabel}
+            heroTrustLine={heroTrustLine}
+            isEsLocale={isEsLocale}
+            howToLatamTitle={howToLatamTitle}
+            howToLatamSteps={howToLatamSteps}
+            heroMedia={heroMedia}
+            locale={locale}
+            audioBadgeLabel={audioBadgeLabel}
+            heroMetaLines={heroMetaLines}
+            mediaAltContexts={mediaAltContexts}
+            bestUseCaseItems={bestUseCaseItems}
+            bestUseCases={bestUseCases}
+            bestUseCasesTitle={copy.bestUseCasesTitle}
+            whyTitle={copy.whyTitle}
+            heroHighlights={heroHighlights}
+          />
 
-            <section className={`${FULL_BLEED_SECTION} ${HERO_BG} stack-gap rounded-3xl bg-surface/80 p-6 sm:p-8`}>
-              <div className="stack-gap-lg">
-            <div className="stack-gap-sm text-center">
-              {heroEyebrow ? (
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
-                  {heroEyebrow}
-                </p>
-              ) : null}
-              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
-                {heroTitle}
-              </h1>
-              {heroSubtitle ? (
-                <p className="text-base leading-relaxed text-text-secondary sm:text-lg">
-                  {heroSubtitle}
-                </p>
-              ) : null}
-              {heroSupportLine ? (
-                <p className="text-sm font-medium text-text-secondary">
-                  {heroSupportLine}
-                </p>
-              ) : null}
-              {heroSpecChips.length ? (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {heroSpecChips.map((chip, index) => {
-                    const Icon = chip.icon ? HERO_SPEC_ICON_MAP[chip.icon] : null;
-                    return (
-                      <Chip
-                        key={`${chip.label}-${index}`}
-                        variant="outline"
-                        className="!border-accent-alt/40 !bg-accent-alt px-3 py-1 text-[11px] font-semibold normal-case tracking-normal !text-on-accent-alt shadow-card"
-                      >
-                        {Icon ? <UIIcon icon={Icon} size={14} className="text-on-accent-alt" /> : null}
-                        <span>{chip.label}</span>
-                      </Chip>
-                    );
-                  })}
-                </div>
-              ) : heroBadge ? (
-                <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
-                  {heroBadge.split('·').map((chunk, index, arr) => (
-                    <span key={`${chunk}-${index}`} className="flex items-center gap-2">
-                      <span>{chunk.trim()}</span>
-                      {index < arr.length - 1 ? <span aria-hidden>·</span> : null}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {heroLimitsLine ? (
-                <p className="mx-auto max-w-2xl text-xs font-medium leading-5 text-text-muted">
-                  {heroLimitsLine}
-                </p>
-              ) : null}
-              {showHeroDescriptions && heroDesc1 ? (
-                <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p>
-              ) : null}
-              {showHeroDescriptions && heroDesc2 ? (
-                <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap justify-center gap-4">
-              {resolvedPrimaryCta ? (
-                <ButtonLink
-                  href={normalizedPrimaryCtaHref}
-                  size="lg"
-                  className="shadow-card"
-                  linkComponent={Link}
-                >
-                  {resolvedPrimaryCta}
-                </ButtonLink>
-              ) : null}
-              {secondaryCta && localizedSecondaryCtaHref ? (
-                <ButtonLink
-                  href={localizedSecondaryCtaHref}
-                  variant="outline"
-                  size="lg"
-                  linkComponent={Link}
-                >
-                  {secondaryCta}
-                </ButtonLink>
-              ) : null}
-            </div>
-            {heroQuickLinks.length ? (
-              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
-                {heroQuickLinks.map((item) => (
-                  <Link key={`${item.label}-${String(item.href)}`} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-            {!heroSpecChips.length ? (
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                  {pricingLinkLabel}
-                </Link>
-              </div>
-            ) : null}
-            {heroTrustLine ? (
-              <p className="text-center text-xs font-semibold text-text-muted">{heroTrustLine}</p>
-            ) : null}
-            {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
-              <section className="rounded-2xl border border-hairline bg-surface/70 p-5 shadow-card">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{howToLatamTitle}</h2>
-                <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-text-secondary">
-                  {howToLatamSteps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-              </section>
-            ) : null}
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-              <div className="flex justify-center">
-                <div className="w-full max-w-5xl">
-                  <MediaPreview
-                    media={heroMedia}
-                    label={heroTitle}
-                    locale={locale}
-                    audioBadgeLabel={audioBadgeLabel}
-                    hideLabel
-                    hidePrompt
-                    metaLines={heroMetaLines}
-                    altContext={mediaAltContexts.hero}
-                    autoPlayDelayMs={HERO_AUTOPLAY_DELAY_MS}
-                    waitForLcp
-                    showPlayButton={false}
-                    priority
-                    fetchPriority="high"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-4">
-                {bestUseCaseItems.length || bestUseCases.length ? (
-                  <div className="space-y-1.5 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
-                    {copy.bestUseCasesTitle ? (
-                      <p className="text-xs font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
-                    ) : null}
-                    {bestUseCaseItems.length ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {bestUseCaseItems.map((item, index) => {
-                          const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
-                          const chip = (
-                            <Chip
-                              variant="outline"
-                              className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
-                            >
-                              {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
-                              <span>{item.title}</span>
-                            </Chip>
-                          );
-                          if (!item.href) {
-                            return <span key={`${item.title}-${index}`}>{chip}</span>;
-                          }
-                          return (
-                            <Link
-                              key={`${item.title}-${index}`}
-                              href={item.href}
-                              className="inline-flex rounded-full transition hover:border-brand/35 hover:text-brandHover focus:outline-none focus:ring-2 focus:ring-brand/35"
-                            >
-                              {chip}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <ul className="grid gap-1 text-xs text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
-                        {bestUseCases.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : null}
-                {copy.whyTitle || heroHighlights.length ? (
-                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-3 py-2.5">
-                    {copy.whyTitle ? <p className="text-xs font-semibold text-text-primary">{copy.whyTitle}</p> : null}
-                    {heroHighlights.length ? (
-                      <ul className="grid gap-1.5 text-xs text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
-                        {heroHighlights.map((item) => {
-                          const [title, detail] = item.split('||');
-                          const trimmedTitle = title?.trim();
-                          const trimmedDetail = detail?.trim();
-                          return (
-                            <li key={item} className="flex items-start gap-2">
-                              <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden />
-                              {trimmedDetail ? (
-                                <span>
-                                  <strong className="font-semibold">{trimmedTitle}</strong>
-                                  {trimmedDetail ? ` (${trimmedDetail})` : null}
-                                </span>
-                              ) : (
-                                <span>{item}</span>
-                              )}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-              </div>
-            </section>
-          </div>
+        <ModelPageToc items={tocItems} />
 
-        {tocItems.length ? (
-          <nav
-            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-30 border-b border-hairline bg-surface before:bg-surface`}
-            aria-label="Model page sections"
-          >
-            <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">
-              <div className="flex flex-wrap justify-center gap-2 py-2">
-                {tocItems.map((item) => (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    className="inline-flex items-center rounded-full border border-hairline bg-surface/90 px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </nav>
-        ) : null}
-
-        {hasSpecs ? (
-          <section
-            id="specs"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            {specTitle ? (
-              <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                {specTitle}
-              </h2>
-            ) : null}
-            {specNote ? (
-              <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-center text-sm text-text-secondary">
-                {specNote}
-              </blockquote>
-            ) : null}
-            {keySpecRows.length ? (
-              <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-3 gap-y-1.5 border-t border-hairline/70 pt-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                {keySpecRows.map((row, index) => (
-                  <div
-                    key={row.id}
-                    className={`flex items-start gap-2 border-hairline/70 py-1.5 pr-1 ${
-                      index < keySpecRows.length - 1 ? 'border-b' : ''
-                    }`}
-                  >
-                    <span className="mt-[3px] inline-flex h-1.5 w-1.5 rounded-full bg-text-muted/60" aria-hidden />
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
-                        {row.label}
-                      </span>
-                      <span className="text-[13px] font-semibold leading-snug text-text-primary">
-                        {row.valueLines?.length ? (
-                          <span className="flex flex-col gap-1">
-                            {row.valueLines.map((line) => (
-                              <span key={line}>{localizeSpecStatus(line, locale)}</span>
-                            ))}
-                          </span>
-                        ) : isSupported(row.value) ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-600">
-                            <UIIcon icon={Check} size={14} className="text-emerald-600" />
-                            <span className="sr-only">{statusLabels.supported}</span>
-                          </span>
-                        ) : (
-                          localizeSpecStatus(row.value, locale)
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {specSectionsToShow.length ? (
-              isImageEngine ? (
-                <div className="grid grid-gap-sm sm:grid-cols-2">
-                  {specSectionsToShow.map((section) => (
-                    <article
-                      key={section.title}
-                      className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                    >
-                      <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
-                      {section.intro ? (
-                        <p className="text-sm text-text-secondary">{section.intro}</p>
-                      ) : null}
-                      <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                        {section.items.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <SpecDetailsGrid sections={specSectionsToShow} />
-              )
-            ) : null}
-          </section>
-        ) : null}
+        <ModelSpecsSection
+          hasSpecs={hasSpecs}
+          specTitle={specTitle}
+          specNote={specNote}
+          keySpecRows={keySpecRows}
+          specSectionsToShow={specSectionsToShow}
+          isImageEngine={isImageEngine}
+          locale={locale}
+          statusLabels={statusLabels}
+        />
 
         {isImageEngine && copy.microCta ? (
           <div className="flex justify-center">
@@ -814,281 +536,40 @@ export function MarketingModelPageLayout({
         ) : null}
 
 
-        {!hideExamplesSection ? (
-          <section
-            id={textAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN}`}
-          >
-            <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
-              {copy.galleryTitle ? (
-                <h2 className="mt-0 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  {copy.galleryTitle}
-                </h2>
-              ) : null}
-              {galleryVideos.length ? (
-                <>
-                  {copy.galleryIntro ? (
-                    <p className="mt-2 text-center text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p>
-                  ) : null}
-                  <div className="mt-4 stack-gap">
-                    <div className="overflow-x-auto pb-2">
-                      <div className="flex min-w-full gap-4">
-                        {galleryVideos.slice(0, 6).map((video) => (
-                          <article
-                            key={video.id}
-                            className="flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
-                          >
-                            <Link href={video.href} className="group relative block aspect-video bg-placeholder">
-                              {video.optimizedPosterUrl || video.rawPosterUrl ? (
-                                <Image
-                                  src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
-                                  alt={
-                                    galleryPreviewAlts.get(video.id) ??
-                                    getImageAlt({
-                                      kind: 'renderThumb',
-                                      engine: video.engineLabel,
-                                      label: video.prompt,
-                                      prompt: video.prompt,
-                                      locale,
-                                    })
-                                  }
-                                  fill
-                                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                                  sizes="320px"
-                                  quality={70}
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
-                                  No preview
-                                </div>
-                              )}
-                            </Link>
-                            <div className="space-y-1 px-4 py-3">
-                              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                {video.engineLabel} · {video.durationSec}s
-                              </p>
-                              {video.recreateHref && copy.recreateLabel ? (
-                                <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
-                                  {copy.recreateLabel}
-                                </TextLink>
-                              ) : null}
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  {copy.galleryAllCta ? (
-                    <p className="mt-4 text-center text-base leading-relaxed text-text-secondary">
-                      <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                        {copy.galleryAllCta}
-                      </Link>
-                    </p>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
-                  {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
-                  {copy.galleryAllCta ? (
-                    <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                      {copy.galleryAllCta}
-                    </Link>
-                  ) : null}
-                </div>
-              )}
-              {copy.gallerySceneCta ? (
-                <div className="mt-6">
-                  <ButtonLink
-                    href={galleryCtaHref}
-                    size="lg"
-                    className="shadow-card"
-                    linkComponent={Link}
-                  >
-                    {copy.gallerySceneCta}
-                  </ButtonLink>
-                </div>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
+        <ModelExamplesSection
+          hideExamplesSection={hideExamplesSection}
+          textAnchorId={textAnchorId}
+          copy={copy}
+          galleryVideos={galleryVideos}
+          galleryPreviewAlts={galleryPreviewAlts}
+          locale={locale}
+          examplesLinkHref={examplesLinkHref}
+          galleryCtaHref={galleryCtaHref}
+        />
 
-        <section
-          id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-        >
-          {isVideoEngine ? (
-            <div className="stack-gap-lg">
-                <SoraPromptingTabs
-                  title={copy.promptingTitle ?? undefined}
-                  intro={copy.promptingIntro ?? undefined}
-                  tip={copy.promptingTip ?? undefined}
-                  guideLabel={copy.promptingGuideLabel ?? undefined}
-                  guideUrl={copy.promptingGuideUrl ?? undefined}
-                  mode="video"
-                  supportsAudio={supportsNativeAudio}
-                  tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
-                  globalPrinciples={copy.promptingGlobalPrinciples}
-                  engineWhy={copy.promptingEngineWhy}
-                  tabNotes={copy.promptingTabNotes}
-                />
-              {copy.demoTitle || copy.demoPrompt.length ? (
-                <div className="stack-gap-lg">
-                  {copy.demoTitle ? (
-                    <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
-                      {copy.demoTitle}
-                    </h2>
-                  ) : null}
-                  <div className="mx-auto w-full max-w-5xl">
-                    {demoMedia ? (
-                      <MediaPreview
-                        media={demoMedia}
-                        label={copy.demoTitle ?? 'Sora 2 demo'}
-                        locale={locale}
-                        audioBadgeLabel={audioBadgeLabel}
-                        altContext={mediaAltContexts.demo}
-                        hideLabel
-                        promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
-                        promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
-                      />
-                    ) : (
-                      <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                        {copy.galleryIntro ?? (locale === 'fr' ? 'Aperçu de démonstration.' : locale === 'es' ? 'Vista previa de demostración.' : 'Demo preview.')}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div className="stack-gap-lg">
-              <SoraPromptingTabs
-                title={copy.promptingTitle ?? undefined}
-                intro={copy.promptingIntro ?? undefined}
-                tip={copy.promptingTip ?? undefined}
-                guideLabel={copy.promptingGuideLabel ?? undefined}
-                guideUrl={copy.promptingGuideUrl ?? undefined}
-                mode="image"
-                supportsAudio={supportsNativeAudio}
-                tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
-                globalPrinciples={copy.promptingGlobalPrinciples}
-                engineWhy={copy.promptingEngineWhy}
-                tabNotes={copy.promptingTabNotes}
-              />
-            </div>
-          )}
-        </section>
+        <ModelPromptingSection
+          imageAnchorId={imageAnchorId}
+          isVideoEngine={isVideoEngine}
+          copy={copy}
+          supportsNativeAudio={supportsNativeAudio}
+          demoMedia={demoMedia}
+          locale={locale}
+          audioBadgeLabel={audioBadgeLabel}
+          mediaAltContexts={mediaAltContexts}
+          useDemoMediaPrompt={useDemoMediaPrompt}
+        />
 
-        {prepLinksSection ? (
-          <section
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            <div className="rounded-[28px] border border-hairline bg-surface/85 p-5 shadow-card sm:p-6">
-              <div className="mx-auto max-w-3xl text-center">
-                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                  {prepLinksSection.eyebrow}
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold text-text-primary sm:text-3xl">
-                  {prepLinksSection.title}
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-text-secondary sm:text-base">
-                  {prepLinksSection.body}
-                </p>
-              </div>
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {prepLinksSection.links.map((item) => {
-                  const visual = PREP_LINK_VISUALS[item.href as keyof typeof PREP_LINK_VISUALS];
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="group overflow-hidden rounded-2xl border border-hairline bg-bg shadow-card transition hover:-translate-y-0.5 hover:border-text-muted"
-                    >
-                      {visual ? (
-                        <div className="relative aspect-[16/10] overflow-hidden bg-placeholder">
-                          <Image
-                            src={visual.imageSrc}
-                            alt={visual.alt[locale] ?? visual.alt.en}
-                            fill
-                            className="object-cover transition duration-300 group-hover:scale-[1.02]"
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-                        </div>
-                      ) : null}
-                      <div className="space-y-2 px-4 py-4">
-                        <h3 className="text-base font-semibold text-text-primary">{item.label}</h3>
-                        {visual ? (
-                          <p className="text-sm leading-relaxed text-text-secondary">
-                            {visual.summary[locale] ?? visual.summary.en}
-                          </p>
-                        ) : null}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        ) : null}
+        <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
 
-        {hasTipsSection ? (
-          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              {copy.tipsTitle ?? 'Tips & Limitations'}
-            </h2>
-            {copy.tipsIntro ? (
-              <p className="text-center text-base leading-relaxed text-text-secondary">{copy.tipsIntro}</p>
-            ) : null}
-            {(() => {
-              const tipsCardCount =
-                (strengths.length ? 1 : 0) +
-                (troubleshootingItems.length ? 1 : 0) +
-                (boundaries.length ? 1 : 0);
-              const gridClass =
-                tipsCardCount === 1
-                  ? 'mx-auto grid w-full max-w-3xl grid-gap-sm'
-                  : tipsCardCount === 2
-                  ? 'mx-auto grid w-full max-w-4xl grid-gap-sm lg:grid-cols-2'
-                  : 'mx-auto grid w-full max-w-5xl grid-gap-sm lg:grid-cols-3';
-              return (
-                <div className={gridClass}>
-              {strengths.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <h3 className="text-base font-semibold text-text-primary">{tipsCardLabels.strengths}</h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {strengths.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {troubleshootingItems.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <h3 className="text-base font-semibold text-text-primary">
-                    {troubleshootingTitle ?? 'Common problems → fast fixes'}
-                  </h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {troubleshootingItems.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {boundaries.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <h3 className="text-base font-semibold text-text-primary">{tipsCardLabels.boundaries}</h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {boundaries.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-                </div>
-              );
-            })()}
-          </section>
-        ) : null}
+        <ModelTipsSection
+          hasTipsSection={hasTipsSection}
+          copy={copy}
+          strengths={strengths}
+          troubleshootingItems={troubleshootingItems}
+          boundaries={boundaries}
+          tipsCardLabels={tipsCardLabels}
+          troubleshootingTitle={troubleshootingTitle}
+        />
 
         {hasCompareSection ? (
           <section
