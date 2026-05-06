@@ -40,8 +40,8 @@ test('login page can consume a PKCE OAuth code directly', () => {
   );
   assert.match(
     loginPageSource,
-    /return `\$\{base\}\/login\?mode=signin&next=\$\{encodeURIComponent\(safeNextPath\)\}`/,
-    'Google OAuth should redirect directly back to /login so the browser can exchange PKCE without the extra /auth/callback hop'
+    /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(safeNextPath\)\}`/,
+    'Google OAuth should use the existing allowlisted callback before forwarding the code to browser-side exchange'
   );
 });
 

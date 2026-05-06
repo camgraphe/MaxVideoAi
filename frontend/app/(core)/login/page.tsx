@@ -202,7 +202,7 @@ export default function LoginPage() {
   const redirectTo = useMemo(() => {
     if (!authRedirectOrigin) return undefined;
     const base = authRedirectOrigin.endsWith('/') ? authRedirectOrigin.slice(0, -1) : authRedirectOrigin;
-    return `${base}/login?mode=signin&next=${encodeURIComponent(safeNextPath)}`;
+    return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
   }, [authRedirectOrigin, safeNextPath]);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
 
