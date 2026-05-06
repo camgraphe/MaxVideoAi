@@ -15,8 +15,7 @@ import {
   type MultiPromptScene,
 } from '@/components/Composer';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
-import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
-import type { GalleryFeedState, GalleryRailProps } from '@/components/GalleryRail';
+import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { GroupSummary } from '@/types/groups';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
@@ -30,7 +29,7 @@ import {
   type SharedVideoPreview,
 } from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
-import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import { GroupedJobCard } from '@/components/GroupedJobCard';
 import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
@@ -104,7 +103,6 @@ import {
   DEBOUNCE_MS,
   DEFAULT_PROMPT,
   DESKTOP_RAIL_MIN_WIDTH,
-  emitClientMetric,
   UNIFIED_VEO_FIRST_LAST_ENGINE_IDS,
 } from './_lib/workspace-client-helpers';
 import {
@@ -133,12 +131,8 @@ import {
   buildComposerPromotedActions,
   summarizeWorkspaceInputSchema,
 } from './_lib/workspace-input-schema';
-import {
-  buildQuadTileFromGroupMember,
-  buildQuadTileFromRender,
-  haveSameGroupOrder,
-} from './_lib/workspace-render-groups';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
+import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
@@ -346,8 +340,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   }, [fromVideoId]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
-  const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
-  const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
   const [viewerTarget, setViewerTarget] = useState<
     { kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | { kind: 'group'; group: VideoGroup } | null
   >(null);
@@ -401,8 +393,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     compositeOverrideSummary,
     writeScopedStorage,
   });
-  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
-  const guidedSampleGroups = guidedSampleFeed.visibleGroups;
   const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
   const hydratedScopeRef = useRef<string | null>(null);
   const hasStoredFormRef = useRef<boolean>(false);
@@ -1670,315 +1660,40 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     };
   }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled, submissionMode]);
 
-  const handleQuadTileAction = useCallback(
-    (action: QuadTileAction, tile: QuadPreviewTile) => {
-      emitClientMetric('tile_action', { action, batchId: tile.batchId, version: tile.iterationIndex + 1 });
-      const jobId = tile.jobId ?? tile.id;
-      switch (action) {
-        case 'continue': {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(jobId);
-          setPrompt(tile.prompt);
-          focusComposer();
-          break;
-        }
-        case 'refine': {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(jobId);
-          setPrompt(`${tile.prompt}\n\n// refine here`);
-          focusComposer();
-          break;
-        }
-        case 'branch': {
-          showNotice('Branching flow is coming soon in this build.');
-          break;
-        }
-        case 'copy': {
-          if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            void navigator.clipboard.writeText(tile.prompt).then(
-              () => showNotice('Prompt copied to clipboard'),
-              () => showNotice('Unable to copy prompt, please copy manually.')
-            );
-          } else {
-            showNotice('Clipboard not available in this context.');
-          }
-          break;
-        }
-        case 'open': {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(jobId);
-          setActiveBatchId(tile.batchId);
-          setViewMode('quad');
-          setSelectedPreview({
-            id: tile.id,
-            localKey: tile.localKey,
-            batchId: tile.batchId,
-            iterationIndex: tile.iterationIndex,
-            iterationCount: tile.iterationCount,
-            videoUrl: tile.videoUrl,
-            previewVideoUrl: tile.previewVideoUrl,
-            aspectRatio: tile.aspectRatio,
-            thumbUrl: tile.thumbUrl,
-            progress: tile.progress,
-            message: tile.message,
-            priceCents: tile.priceCents,
-            currency: tile.currency,
-            etaLabel: tile.etaLabel,
-            prompt: tile.prompt,
-          });
-          break;
-        }
-        default:
-          break;
-      }
-    },
-    [
-      applyVideoSettingsFromTile,
-      focusComposer,
-      hydrateVideoSettingsFromJob,
-      setActiveBatchId,
-      setPrompt,
-      setSelectedPreview,
-      setViewMode,
-      showNotice,
-    ]
-  );
-
-  const handleCopySharedPrompt = useCallback(() => {
-    const promptValue = sharedPrompt ?? selectedPreview?.prompt ?? null;
-    if (!promptValue) {
-      showNotice('No prompt available to copy.');
-      return;
-    }
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      void navigator.clipboard.writeText(promptValue).then(
-        () => showNotice('Prompt copied to clipboard'),
-        () => showNotice('Unable to copy prompt, please copy manually.')
-      );
-    } else {
-      showNotice('Clipboard not available in this context.');
-    }
-  }, [sharedPrompt, selectedPreview, showNotice]);
-
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
-
-  const handleGalleryGroupAction = useCallback(
-    (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => {
-      if (action === 'remove') {
-        return;
-      }
-      if (group.source === 'active') {
-        setActiveGroupId(group.id);
-        const renderGroup = renderGroups.get(group.id);
-        if (!renderGroup || renderGroup.items.length === 0) return;
-        const preferredHeroKey =
-          batchHeroes[group.id] ?? renderGroup.items.find((item) => item.videoUrl)?.localKey ?? renderGroup.items[0]?.localKey;
-        const heroRender = preferredHeroKey
-          ? renderGroup.items.find((item) => item.localKey === preferredHeroKey) ?? renderGroup.items[0]
-          : renderGroup.items[0];
-        if (!heroRender) return;
-        const heroJobId = heroRender.jobId ?? heroRender.id;
-        if (action === 'compare') {
-          emitClientMetric('compare_used', { batchId: group.id });
-          showNotice('Compare view is coming soon.');
-          return;
-        }
-        const tile = buildQuadTileFromRender(heroRender, renderGroup, preflight?.currency ?? 'USD');
-        if (action === 'open') {
-          if (options?.autoPlayPreview) {
-            setPreviewAutoPlayRequestId((current) => current + 1);
-          }
-          handleQuadTileAction('open', tile);
-          setCompositeOverride(null);
-          setCompositeOverrideSummary(null);
-          setSharedPrompt(null);
-          return;
-        }
-        if (action === 'continue') {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(heroJobId);
-          handleQuadTileAction('continue', tile);
-          return;
-        }
-        if (action === 'refine') {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(heroJobId);
-          handleQuadTileAction('refine', tile);
-          return;
-        }
-        if (action === 'branch') {
-          handleQuadTileAction('branch', tile);
-        }
-        return;
-      }
-
-      const hero = group.hero;
-
-      if (action === 'compare') {
-        emitClientMetric('compare_used', { batchId: group.id });
-        showNotice('Compare view is coming soon.');
-        return;
-      }
-
-      if (action === 'branch') {
-        showNotice('Branching flow is coming soon in this build.');
-        return;
-      }
-
-      const tile = buildQuadTileFromGroupMember(group, hero, fallbackEngineId);
-      const heroJobId = hero.jobId ?? tile.id;
-
-      if (action === 'open') {
-        if (options?.autoPlayPreview) {
-          setPreviewAutoPlayRequestId((current) => current + 1);
-        }
-        const targetBatchId = tile.batchId ?? group.batchId ?? null;
-        if (tile.iterationCount > 1) {
-          setViewMode('quad');
-        } else {
-          setViewMode('single');
-        }
-        if (targetBatchId) {
-          setActiveBatchId(targetBatchId);
-          if (tile.localKey) {
-            setBatchHeroes((prev) => ({ ...prev, [targetBatchId]: tile.localKey! }));
-          }
-        }
-        setSelectedPreview({
-          id: tile.id,
-          localKey: tile.localKey,
-          batchId: tile.batchId,
-          iterationIndex: tile.iterationIndex,
-          iterationCount: tile.iterationCount,
-          videoUrl: tile.videoUrl,
-          previewVideoUrl: tile.previewVideoUrl,
-          aspectRatio: tile.aspectRatio,
-          thumbUrl: tile.thumbUrl,
-          progress: tile.progress,
-          message: tile.message,
-          priceCents: tile.priceCents,
-          currency: tile.currency,
-          etaLabel: tile.etaLabel,
-          prompt: tile.prompt,
-        });
-        const normalizedSummary = normalizeGroupSummary(group);
-        setCompositeOverride(adaptGroupSummary(normalizedSummary, provider));
-        setCompositeOverrideSummary(normalizedSummary);
-        try {
-          if (heroJobId.startsWith('job_')) {
-            writeScopedStorage(STORAGE_KEYS.previewJobId, heroJobId);
-          }
-        } catch {
-          // ignore storage failures
-        }
-        applyVideoSettingsFromTile(tile);
-        void hydrateVideoSettingsFromJob(heroJobId);
-        return;
-      }
-
-      if (action === 'continue' || action === 'refine') {
-        applyVideoSettingsFromTile(tile);
-        void hydrateVideoSettingsFromJob(heroJobId);
-        handleQuadTileAction(action, tile);
-        return;
-      }
-    },
-    [
-      renderGroups,
-      batchHeroes,
-      preflight?.currency,
-      handleQuadTileAction,
-      showNotice,
-      fallbackEngineId,
-      setActiveGroupId,
-      setViewMode,
-      setActiveBatchId,
-      setBatchHeroes,
-      setSelectedPreview,
-      setPreviewAutoPlayRequestId,
-      provider,
-      setCompositeOverride,
-      setCompositeOverrideSummary,
-      applyVideoSettingsFromTile,
-      hydrateVideoSettingsFromJob,
-      writeScopedStorage,
-    ]
-  );
-
-  const handleGalleryFeedStateChange = useCallback((state: GalleryFeedState) => {
-    setGuidedSampleFeed((prev) => {
-      if (prev.sampleOnly === state.sampleOnly && haveSameGroupOrder(prev.visibleGroups, state.visibleGroups)) {
-        return prev;
-      }
-      return state;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (isGuidedSamplesActive) return;
-    if (compositeOverrideSummary?.hero.job?.curated) {
-      setCompositeOverride(null);
-      setCompositeOverrideSummary(null);
-    }
-  }, [compositeOverrideSummary, isGuidedSamplesActive]);
-
-  useEffect(() => {
-    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return;
-    const currentGroupId = compositeOverrideSummary?.id ?? null;
-    if (currentGroupId && guidedSampleGroups.some((group) => group.id === currentGroupId)) {
-      return;
-    }
-    handleGalleryGroupAction(guidedSampleGroups[0], 'open');
-  }, [compositeOverrideSummary?.id, guidedSampleGroups, handleGalleryGroupAction, isGuidedSamplesActive]);
-
-  const currentGuidedSampleIndex = useMemo(() => {
-    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return -1;
-    const currentGroupId = compositeOverrideSummary?.id ?? null;
-    if (!currentGroupId) return -1;
-    return guidedSampleGroups.findIndex((group) => group.id === currentGroupId);
-  }, [compositeOverrideSummary?.id, guidedSampleGroups, isGuidedSamplesActive]);
-
-  const openGuidedSampleAt = useCallback(
-    (index: number) => {
-      const target = guidedSampleGroups[index];
-      if (!target) return;
-      handleGalleryGroupAction(target, 'open', { autoPlayPreview: true });
-    },
-    [guidedSampleGroups, handleGalleryGroupAction]
-  );
-
-  const guidedNavigation = useMemo(() => {
-    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return null;
-    const activeIndex = currentGuidedSampleIndex >= 0 ? currentGuidedSampleIndex : 0;
-    return {
-      currentIndex: activeIndex,
-      total: guidedSampleGroups.length,
-      canPrev: activeIndex > 0,
-      canNext: activeIndex < guidedSampleGroups.length - 1,
-      onPrev: () => openGuidedSampleAt(activeIndex - 1),
-      onNext: () => openGuidedSampleAt(activeIndex + 1),
-    };
-  }, [currentGuidedSampleIndex, guidedSampleGroups, isGuidedSamplesActive, openGuidedSampleAt]);
-
-  const openGroupViaGallery = useCallback(
-    (group: GroupSummary) => {
-      handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
-    },
-    [handleGalleryGroupAction]
-  );
-  const handleActiveGroupOpen = useCallback(
-    (group: GroupSummary) => {
-      handleGalleryGroupAction(group, 'open', { autoPlayPreview: true });
-    },
-    [handleGalleryGroupAction]
-  );
-  const handleActiveGroupAction = useCallback(
-    (group: GroupSummary, action: GroupedJobAction) => {
-      if (action === 'remove') return;
-      handleGalleryGroupAction(group, action, { autoPlayPreview: action === 'open' });
-    },
-    [handleGalleryGroupAction]
-  );
+  const {
+    previewAutoPlayRequestId,
+    guidedNavigation,
+    handleCopySharedPrompt,
+    handleGalleryGroupAction,
+    handleGalleryFeedStateChange,
+    openGroupViaGallery,
+    handleActiveGroupOpen,
+    handleActiveGroupAction,
+  } = useWorkspaceGalleryActions({
+    provider,
+    renderGroups,
+    batchHeroes,
+    preflightCurrency: preflight?.currency,
+    fallbackEngineId,
+    sharedPrompt,
+    selectedPreview,
+    compositeOverrideSummary,
+    applyVideoSettingsFromTile,
+    hydrateVideoSettingsFromJob,
+    focusComposer,
+    showNotice,
+    writeScopedStorage,
+    setPrompt,
+    setActiveGroupId,
+    setViewMode,
+    setActiveBatchId,
+    setBatchHeroes,
+    setSelectedPreview,
+    setCompositeOverride,
+    setCompositeOverrideSummary,
+    setSharedPrompt,
+  });
 
   const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;
   const singlePrice =
