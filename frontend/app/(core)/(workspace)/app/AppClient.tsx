@@ -8,7 +8,6 @@ import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
-import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
@@ -83,7 +82,6 @@ import {
 } from './_components/WorkspaceBootSkeletons';
 import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
-  deserializePendingRenders,
   isAudioWorkspaceRender,
   resolvePolledThumbUrl,
   resolveRenderThumb,
@@ -92,7 +90,6 @@ import {
 } from './_lib/render-persistence';
 import {
   normalizeExtraInputValue,
-  parseStoredForm,
   type FormState,
 } from './_lib/workspace-form-state';
 import {
@@ -105,9 +102,7 @@ import {
   getEngineModeOptions,
   getModeCaps,
   getPreferredEngineMode,
-  isModeValue,
   matchesEngineToken,
-  normalizeEngineToken,
 } from './_lib/workspace-engine-helpers';
 import {
   buildAssetFieldIdSet,
@@ -151,13 +146,20 @@ import {
   normalizeSharedVideoPayload,
 } from './_lib/workspace-input-helpers';
 import {
-  buildWorkspaceStorageKey,
   readScopedWorkspaceStorage,
   readWorkspaceStorage,
   STORAGE_KEYS,
   writeScopedWorkspaceStorage,
   writeWorkspaceStorage,
 } from './_lib/workspace-storage';
+import {
+  buildInitialWorkspaceFormState,
+  buildPendingRenderHydrationState,
+  consumeWorkspaceOnboardingSkipIntent,
+  parseStoredMultiPromptScenes,
+  readStoredWorkspaceForm,
+  resolveWorkspaceRequestParams,
+} from './_lib/workspace-hydration';
 import {
   buildComposerPromotedActions,
   summarizeWorkspaceInputSchema,
@@ -322,10 +324,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [topUpError, setTopUpError] = useState<string | null>(null);
 
   const storageScope = useMemo(() => userId ?? 'anon', [userId]);
-  const storageKey = useCallback(
-    (base: string, scope: string = storageScope) => buildWorkspaceStorageKey(base, scope),
-    [storageScope]
-  );
   const readScopedStorage = useCallback(
     (base: string): string | null => {
       return readScopedWorkspaceStorage(base, storageScope);
@@ -350,114 +348,57 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     },
     [storageScope]
   );
-const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
-const requestedJobId = useMemo(() => {
-  const value = searchParams?.get('job');
-  if (!value) return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-}, [searchParams]);
-const requestedEngineId = useMemo(() => {
-  const value = searchParams?.get('engine');
-  if (!value) return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-}, [searchParams]);
-const requestedMode = useMemo<Mode | null>(() => {
-  const value = searchParams?.get('mode');
-  if (!value) return null;
-  const trimmed = value.trim().toLowerCase();
-  return isModeValue(trimmed) ? trimmed : null;
-}, [searchParams]);
-const resolvedRequestedEngineId = useMemo(() => {
-  if (!requestedEngineId) return null;
-  const normalized = requestedEngineId.trim().toLowerCase();
-  if (normalized === 'pika-image-to-video') {
-    return 'pika-text-to-video';
-  }
-  return requestedEngineId;
-}, [requestedEngineId]);
-const requestedEngineToken = useMemo(
-  () => normalizeEngineToken(resolvedRequestedEngineId),
-  [resolvedRequestedEngineId]
-);
-const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
-const loginRedirectTarget = useMemo(() => {
-  const base = pathname ?? '/app';
-  return searchString ? `${base}?${searchString}` : base;
-}, [pathname, searchString]);
-const skipOnboardingRef = useRef<boolean>(false);
-const hydratedJobRef = useRef<string | null>(null);
-const preserveStoredDraftRef = useRef<boolean>(false);
-const requestedEngineOverrideIdRef = useRef<string | null>(null);
-const requestedEngineOverrideTokenRef = useRef<string | null>(null);
-const requestedModeOverrideRef = useRef<Mode | null>(null);
+  const workspaceRequest = useMemo(
+    () => resolveWorkspaceRequestParams(searchParams, pathname),
+    [pathname, searchParams]
+  );
+  const {
+    fromVideoId,
+    requestedJobId,
+    resolvedRequestedEngineId,
+    requestedEngineToken,
+    requestedMode,
+    searchString,
+    loginRedirectTarget,
+  } = workspaceRequest;
+  const skipOnboardingRef = useRef<boolean>(false);
+  const hydratedJobRef = useRef<string | null>(null);
+  const preserveStoredDraftRef = useRef<boolean>(false);
+  const requestedEngineOverrideIdRef = useRef<string | null>(null);
+  const requestedEngineOverrideTokenRef = useRef<string | null>(null);
+  const requestedModeOverrideRef = useRef<Mode | null>(null);
 
-useEffect(() => {
-  if (!resolvedRequestedEngineId) return;
-  requestedEngineOverrideIdRef.current = resolvedRequestedEngineId;
-  requestedEngineOverrideTokenRef.current = requestedEngineToken;
-  requestedModeOverrideRef.current = requestedMode;
-}, [resolvedRequestedEngineId, requestedEngineToken, requestedMode]);
+  useEffect(() => {
+    if (!resolvedRequestedEngineId) return;
+    requestedEngineOverrideIdRef.current = resolvedRequestedEngineId;
+    requestedEngineOverrideTokenRef.current = requestedEngineToken;
+    requestedModeOverrideRef.current = requestedMode;
+  }, [resolvedRequestedEngineId, requestedEngineToken, requestedMode]);
 
-const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
-const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
-const effectiveRequestedMode = requestedMode ?? requestedModeOverrideRef.current;
+  const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
+  const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
+  const effectiveRequestedMode = requestedMode ?? requestedModeOverrideRef.current;
 
-useEffect(() => {
-  if (typeof window === 'undefined') return;
-  let skipFlag = window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
-  if (!skipFlag) {
-    skipFlag = window.localStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
-    if (skipFlag) {
-      window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
-      window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, skipFlag);
-    }
-  }
-  if (skipFlag === 'true') {
-    skipOnboardingRef.current = true;
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[app] skip onboarding via flag');
-    }
-    window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
-    window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
-  }
-  let lastTarget =
-    window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY) ??
-    null;
-  if (!lastTarget) {
-    lastTarget = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (lastTarget) {
-      window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
-      window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, lastTarget);
-    }
-  }
-  if (lastTarget) {
-    const normalized = lastTarget.trim();
-    const shouldSkip =
-      normalized.startsWith('/generate') ||
-      normalized.startsWith('/app') ||
-      normalized.includes('from=') ||
-      normalized.includes('engine=');
-    if (shouldSkip) {
+  useEffect(() => {
+    const skipIntent = consumeWorkspaceOnboardingSkipIntent(fromVideoId);
+    if (skipIntent.shouldSkip) {
       skipOnboardingRef.current = true;
     }
     if (process.env.NODE_ENV !== 'production') {
-      console.log('[app] read last target', { lastTarget, shouldSkip });
+      if (skipIntent.skippedViaFlag) {
+        console.log('[app] skip onboarding via flag');
+      }
+      if (skipIntent.lastTarget) {
+        console.log('[app] read last target', {
+          lastTarget: skipIntent.lastTarget,
+          shouldSkip: skipIntent.lastTargetShouldSkip,
+        });
+      }
+      if (skipIntent.fromVideoId) {
+        console.log('[app] skip onboarding due to fromVideoId', { fromVideoId: skipIntent.fromVideoId });
+      }
     }
-    window.sessionStorage.removeItem(LOGIN_LAST_TARGET_KEY);
-    window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
-  }
-}, []);
-
-useEffect(() => {
-  if (fromVideoId) {
-    skipOnboardingRef.current = true;
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[app] skip onboarding due to fromVideoId', { fromVideoId });
-    }
-  }
-}, [fromVideoId]);
+  }, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
@@ -644,27 +585,9 @@ useEffect(() => {
 
       const storedMultiPromptEnabled = readStorage(STORAGE_KEYS.multiPromptEnabled);
       setMultiPromptEnabled(storedMultiPromptEnabled === 'true');
-      const storedMultiPromptScenes = readStorage(STORAGE_KEYS.multiPromptScenes);
-      if (storedMultiPromptScenes) {
-        try {
-          const parsed = JSON.parse(storedMultiPromptScenes) as MultiPromptScene[];
-          if (Array.isArray(parsed) && parsed.length) {
-            const sanitized = parsed
-              .map((scene) => ({
-                id: typeof scene.id === 'string' ? scene.id : createLocalId('scene'),
-                prompt: typeof scene.prompt === 'string' ? scene.prompt : '',
-                duration:
-                  typeof scene.duration === 'number' && Number.isFinite(scene.duration)
-                    ? Math.round(scene.duration)
-                    : 5,
-              }))
-              .filter((scene) => scene.prompt.length || scene.duration);
-            setMultiPromptScenes(sanitized.length ? sanitized : [createMultiPromptScene()]);
-          }
-        } catch {
-          setMultiPromptScenes([createMultiPromptScene()]);
-        }
-      }
+      setMultiPromptScenes(
+        parseStoredMultiPromptScenes(readStorage(STORAGE_KEYS.multiPromptScenes), createLocalId, createMultiPromptScene)
+      );
 
       const storedShotType = readStorage(STORAGE_KEYS.shotType);
       if (storedShotType === 'customize' || storedShotType === 'intelligent') {
@@ -676,171 +599,31 @@ useEffect(() => {
       }
 
       const formValue = readStorage(STORAGE_KEYS.form);
-      const storedFormRaw = (() => {
-        try {
-          const scoped = window.localStorage.getItem(storageKey(STORAGE_KEYS.form));
-          const base = window.localStorage.getItem(STORAGE_KEYS.form);
-          const scopedParsed = scoped ? parseStoredForm(scoped) : null;
-          const baseParsed = base ? parseStoredForm(base) : null;
-          if (storageScope === 'anon') {
-            return baseParsed ?? scopedParsed ?? (formValue ? parseStoredForm(formValue) : null);
-          }
-          if (scopedParsed && baseParsed) {
-            const scopedAt = typeof scopedParsed.updatedAt === 'number' ? scopedParsed.updatedAt : 0;
-            const baseAt = typeof baseParsed.updatedAt === 'number' ? baseParsed.updatedAt : 0;
-            return baseAt > scopedAt ? baseParsed : scopedParsed;
-          }
-          return scopedParsed ?? baseParsed ?? (formValue ? parseStoredForm(formValue) : null);
-        } catch {
-          return formValue ? parseStoredForm(formValue) : null;
-        }
-      })();
-      let nextForm: FormState | null = null;
-      preserveStoredDraftRef.current = Boolean(effectiveRequestedEngineId && storedFormRaw);
-
-      if (storedFormRaw) {
-        const storedToken = normalizeEngineToken(storedFormRaw.engineId);
-        const engine =
-          engines.find((entry) => entry.id === storedFormRaw.engineId) ??
-          (storedToken ? engines.find((entry) => matchesEngineToken(entry, storedToken)) : null) ??
-          engines[0] ??
-          null;
-        if (engine) {
-          const mode = getPreferredEngineMode(engine, storedFormRaw.mode);
-          const base = coerceFormState(engine, mode, null);
-          const candidate: FormState = {
-            ...base,
-            engineId: engine.id,
-            mode,
-            durationSec:
-              typeof storedFormRaw.durationSec === 'number' && Number.isFinite(storedFormRaw.durationSec)
-                ? storedFormRaw.durationSec
-                : base.durationSec,
-            durationOption:
-              typeof storedFormRaw.durationOption === 'number' || typeof storedFormRaw.durationOption === 'string'
-                ? storedFormRaw.durationOption
-                : base.durationOption,
-            numFrames:
-              typeof storedFormRaw.numFrames === 'number' && Number.isFinite(storedFormRaw.numFrames)
-                ? storedFormRaw.numFrames
-                : base.numFrames,
-            resolution: typeof storedFormRaw.resolution === 'string' ? storedFormRaw.resolution : base.resolution,
-            aspectRatio: typeof storedFormRaw.aspectRatio === 'string' ? storedFormRaw.aspectRatio : base.aspectRatio,
-            fps: typeof storedFormRaw.fps === 'number' && Number.isFinite(storedFormRaw.fps) ? storedFormRaw.fps : base.fps,
-            iterations:
-              typeof storedFormRaw.iterations === 'number' && Number.isFinite(storedFormRaw.iterations)
-                ? storedFormRaw.iterations
-                : base.iterations,
-            seedLocked: typeof storedFormRaw.seedLocked === 'boolean' ? storedFormRaw.seedLocked : base.seedLocked,
-            loop: typeof storedFormRaw.loop === 'boolean' ? storedFormRaw.loop : base.loop,
-            audio: typeof storedFormRaw.audio === 'boolean' ? storedFormRaw.audio : base.audio,
-            seed: typeof storedFormRaw.seed === 'number' ? storedFormRaw.seed : base.seed,
-            cameraFixed:
-              typeof storedFormRaw.cameraFixed === 'boolean' ? storedFormRaw.cameraFixed : base.cameraFixed,
-            safetyChecker:
-              typeof storedFormRaw.safetyChecker === 'boolean'
-                ? storedFormRaw.safetyChecker
-                : base.safetyChecker,
-            extraInputValues: storedFormRaw.extraInputValues ?? base.extraInputValues,
-          };
-          nextForm = coerceFormState(engine, mode, candidate);
-        }
+      const initialForm = buildInitialWorkspaceFormState({
+        engines,
+        storedFormRaw: readStoredWorkspaceForm(storageScope, formValue),
+        effectiveRequestedEngineId,
+        effectiveRequestedEngineToken,
+        effectiveRequestedMode,
+      });
+      preserveStoredDraftRef.current = initialForm.preserveStoredDraft;
+      hasStoredFormRef.current = initialForm.hasStoredForm;
+      if (initialForm.form) {
+        setForm(initialForm.form);
       }
-      hasStoredFormRef.current = Boolean(nextForm);
-
-      if (effectiveRequestedEngineId) {
-        const requestedEngine =
-          engines.find((entry) => entry.id === effectiveRequestedEngineId) ??
-          (effectiveRequestedEngineToken
-            ? engines.find((entry) => matchesEngineToken(entry, effectiveRequestedEngineToken))
-            : null) ??
-          null;
-        if (requestedEngine) {
-          const preferredMode = getPreferredEngineMode(requestedEngine, effectiveRequestedMode ?? nextForm?.mode ?? null);
-          const normalizedPrevious = nextForm
-            ? { ...nextForm, engineId: requestedEngine.id, mode: preferredMode }
-            : null;
-          const base: FormState = normalizedPrevious
-            ? coerceFormState(requestedEngine, preferredMode, normalizedPrevious)
-            : {
-                engineId: requestedEngine.id,
-                mode: preferredMode,
-                durationSec: 4,
-                durationOption: 4,
-                numFrames: undefined,
-                resolution: '720p',
-                aspectRatio: '16:9',
-                fps: 24,
-                iterations: 1,
-                seedLocked: false,
-                audio: true,
-                seed: null,
-                cameraFixed: false,
-                safetyChecker: true,
-                extraInputValues: {},
-              };
-          nextForm = base;
-          hasStoredFormRef.current = hasStoredFormRef.current && preserveStoredDraftRef.current;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[generate] engine override from storage hydrate', {
-              from: storedFormRaw?.engineId ?? null,
-              to: nextForm.engineId,
-              preserveStoredDraft: preserveStoredDraftRef.current,
-            });
-          }
-          const shouldPersistRequestedEngine =
-            !storedFormRaw ||
-            storedFormRaw.engineId !== nextForm.engineId ||
-            storedFormRaw.mode !== nextForm.mode;
-          if (!preserveStoredDraftRef.current || shouldPersistRequestedEngine) {
-            queueMicrotask(() => {
-              try {
-                writeStorage(STORAGE_KEYS.form, JSON.stringify(nextForm));
-              } catch {
-                // noop
-              }
-            });
-          }
-        } else if (!storedFormRaw) {
-          const preferredMode: Mode = effectiveRequestedMode ?? 't2v';
-          const base: FormState = {
-            engineId: effectiveRequestedEngineId,
-            mode: preferredMode,
-            durationSec: 4,
-            durationOption: 4,
-            numFrames: undefined,
-            resolution: '720p',
-            aspectRatio: '16:9',
-            fps: 24,
-            iterations: 1,
-            seedLocked: false,
-            audio: true,
-            seed: null,
-            cameraFixed: false,
-            safetyChecker: true,
-            extraInputValues: {},
-          };
-          nextForm = base;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[generate] engine override from storage hydrate', {
-              from: null,
-              to: nextForm.engineId,
-            });
-          }
-          queueMicrotask(() => {
-            try {
-              writeStorage(STORAGE_KEYS.form, JSON.stringify(nextForm));
-            } catch {
-              // noop
-            }
-          });
-        }
+      if (initialForm.debugEngineOverride && process.env.NODE_ENV !== 'production') {
+        console.log('[generate] engine override from storage hydrate', initialForm.debugEngineOverride);
       }
-      if (!nextForm) {
-        const engine = engines[0];
-        nextForm = coerceFormState(engine, getPreferredEngineMode(engine, effectiveRequestedMode), null);
+      if (initialForm.formToPersist) {
+        const formToPersist = initialForm.formToPersist;
+        queueMicrotask(() => {
+          try {
+            writeStorage(STORAGE_KEYS.form, JSON.stringify(formToPersist));
+          } catch {
+            // noop
+          }
+        });
       }
-      setForm(nextForm);
 
       const storedTier = readStorage(STORAGE_KEYS.memberTier);
       if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
@@ -848,24 +631,14 @@ useEffect(() => {
       }
 
       const pendingValue = readScopedStorage(STORAGE_KEYS.pendingRenders);
-      const pendingRenders = deserializePendingRenders(pendingValue);
-      if (pendingRenders.length) {
-        setRenders(pendingRenders);
-        setBatchHeroes(() => {
-          const next: Record<string, string> = {};
-          pendingRenders.forEach((render) => {
-            if (render.batchId && render.localKey && !next[render.batchId]) {
-              next[render.batchId] = render.localKey;
-            }
-          });
-          return next;
-        });
-        const first = pendingRenders[0];
-        const batchId = first.batchId ?? first.groupId ?? first.localKey ?? null;
-        setActiveBatchId(batchId);
-        setActiveGroupId(first.groupId ?? batchId);
+      const pendingHydration = buildPendingRenderHydrationState(pendingValue);
+      if (pendingHydration.pendingRenders.length) {
+        setRenders(pendingHydration.pendingRenders);
+        setBatchHeroes(pendingHydration.batchHeroes);
+        setActiveBatchId(pendingHydration.activeBatchId);
+        setActiveGroupId(pendingHydration.activeGroupId);
       }
-      persistedRendersRef.current = serializePendingRenders(pendingRenders);
+      persistedRendersRef.current = pendingHydration.serialized;
     } catch {
       setRenders([]);
       setBatchHeroes({});
@@ -878,7 +651,6 @@ useEffect(() => {
     engines,
     readScopedStorage,
     readStorage,
-    storageKey,
     writeStorage,
     setMemberTier,
     storageScope,

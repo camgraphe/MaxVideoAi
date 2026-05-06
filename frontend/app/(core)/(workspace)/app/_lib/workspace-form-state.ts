@@ -19,7 +19,7 @@ export interface FormState {
   extraInputValues: Record<string, unknown>;
 }
 
-type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
+export type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
 
 export function coerceStoredExtraInputValues(value: unknown): Record<string, unknown> | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
