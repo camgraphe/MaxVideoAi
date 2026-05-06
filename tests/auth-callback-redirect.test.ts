@@ -48,7 +48,7 @@ test('login page can consume a PKCE OAuth code directly', () => {
 test('login auth success records a session hint before leaving the auth page', () => {
   assert.match(
     loginPageSource,
-    /import \{ writeLastKnownUserId \} from ['"]@\/lib\/last-known['"]/,
+    /import \{[^}]*writeLastKnownUserId[^}]*\} from ['"]@\/lib\/last-known['"]/,
     'successful login flows should prime the protected app auth hook with a last-known user id'
   );
   assert.match(
@@ -60,5 +60,19 @@ test('login auth success records a session hint before leaving the auth page', (
     loginPageSource,
     /window\.location\.assign\(safeTarget\)/,
     'auth redirects should use a document navigation so Safari sends freshly written auth cookies'
+  );
+});
+
+test('login page does not probe stale sessions while exchanging an OAuth code', () => {
+  const guardMatches = loginPageSource.match(/if \(oauthCodeExchangeStartedRef\.current\) return;/g) ?? [];
+
+  assert.ok(
+    guardMatches.length >= 2,
+    'login page should not call getUser/getSession while an OAuth code exchange is already in progress'
+  );
+  assert.match(
+    loginPageSource,
+    /clearStaleBrowserAuthState\(\)/,
+    'login page should clear stale browser auth state after invalid refresh token errors'
   );
 });

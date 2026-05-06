@@ -19,6 +19,13 @@ test('route auth avoids parallel session refreshes', () => {
   const routeAuthBlock = source.slice(source.indexOf('export async function getRouteAuthContext'));
 
   assert.doesNotMatch(routeAuthBlock, /Promise\.all\(\s*\[/);
-  assert.match(routeAuthBlock, /const \{ data: sessionData \} = await supabase\.auth\.getSession\(\);/);
+  assert.match(routeAuthBlock, /const \{ data: sessionData, error: sessionError \} = await supabase\.auth\.getSession\(\);/);
   assert.match(routeAuthBlock, /supabase\.auth\.getClaims\(session\.access_token\)/);
+});
+
+test('server auth clears invalid Supabase refresh cookies', () => {
+  assert.match(source, /function isInvalidRefreshTokenError\(error: unknown\): boolean/);
+  assert.match(source, /function clearSupabaseAuthCookies\(req: NextRequest, res: NextResponse\)/);
+  assert.match(source, /if \(isInvalidRefreshTokenError\(sessionError\)\) \{/);
+  assert.match(source, /clearSupabaseAuthCookies\(req, res\);/);
 });

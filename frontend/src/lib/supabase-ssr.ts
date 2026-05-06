@@ -31,6 +31,38 @@ const cookieOptions: CookieOptionsWithName = {
   secure: process.env.NODE_ENV === 'production',
 };
 
+const hostOnlyCookieOptions: CookieOptionsWithName = {
+  path: '/',
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production',
+};
+
+function isInvalidRefreshTokenError(error: unknown): boolean {
+  const candidate = error as { code?: unknown; message?: unknown; status?: unknown } | null;
+  const code = typeof candidate?.code === 'string' ? candidate.code.toLowerCase() : '';
+  const message = typeof candidate?.message === 'string' ? candidate.message.toLowerCase() : '';
+  return (
+    code === 'refresh_token_not_found' ||
+    code === 'invalid_refresh_token' ||
+    message.includes('invalid refresh token') ||
+    message.includes('refresh token not found')
+  );
+}
+
+function isSupabaseAuthCookieName(name: string): boolean {
+  return name.startsWith('sb-') && name.includes('-auth-token');
+}
+
+function clearSupabaseAuthCookies(req: NextRequest, res: NextResponse) {
+  for (const { name } of req.cookies.getAll()) {
+    if (!isSupabaseAuthCookieName(name)) continue;
+    res.cookies.set(name, '', { ...cookieOptions, maxAge: 0 });
+    if (cookieDomain) {
+      res.cookies.set(name, '', { ...hostOnlyCookieOptions, maxAge: 0 });
+    }
+  }
+}
+
 function createServerClientWithCookies(cookieStore: Awaited<Awaited<ReturnType<typeof cookies>>>, cookieOptions?: CookieOptionsWithName) {
   assertSupabaseEnv();
   return createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
@@ -78,6 +110,9 @@ export function createSupabaseMiddlewareClient(req: NextRequest, res: NextRespon
 export async function updateSession(req: NextRequest, res: NextResponse) {
   const supabase = createSupabaseMiddlewareClient(req, res);
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (isInvalidRefreshTokenError(sessionError)) {
+    clearSupabaseAuthCookies(req, res);
+  }
   const accessToken = sessionData.session?.access_token ?? null;
   if (!accessToken || sessionError) {
     return { supabase, userId: null, error: sessionError };
@@ -96,12 +131,18 @@ export async function getRouteAuthContext(req?: NextRequest) {
     const { data: userData } = await supabase.auth.getUser(accessToken);
     const tokenUserId = userData.user?.id ?? null;
     if (tokenUserId) {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (isInvalidRefreshTokenError(sessionError)) {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+      }
       return { supabase, session: sessionData.session ?? null, userId: tokenUserId };
     }
   }
 
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (isInvalidRefreshTokenError(sessionError)) {
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+  }
   const session = sessionData.session ?? null;
   if (!session?.access_token) {
     return { supabase, session, userId: null };
