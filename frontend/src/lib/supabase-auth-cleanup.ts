@@ -18,6 +18,17 @@ export function isInvalidRefreshTokenError(error: unknown): boolean {
   );
 }
 
+export function isPkceCodeVerifierError(error: unknown): boolean {
+  const candidate = error as { code?: unknown; message?: unknown } | null;
+  const code = typeof candidate?.code === 'string' ? candidate.code.toLowerCase() : '';
+  const message = typeof candidate?.message === 'string' ? candidate.message.toLowerCase() : '';
+  return (
+    code === 'bad_code_verifier' ||
+    message.includes('code challenge does not match') ||
+    message.includes('code verifier')
+  );
+}
+
 function isSupabaseAuthCookieName(name: string): boolean {
   return name.startsWith('sb-') && name.includes('-auth-token');
 }

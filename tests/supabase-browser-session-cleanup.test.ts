@@ -20,9 +20,11 @@ test('browser auth code centralizes stale refresh-token cleanup', () => {
   assert.ok(existsSync(cleanupPath), 'shared browser auth cleanup helper should exist');
   const source = readFileSync(cleanupPath, 'utf8');
   assert.match(source, /export function isInvalidRefreshTokenError\(error: unknown\): boolean/);
+  assert.match(source, /export function isPkceCodeVerifierError\(error: unknown\): boolean/);
   assert.match(source, /export async function clearStaleBrowserAuthState\(\): Promise<void>/);
   assert.match(source, /refresh_token_not_found/);
   assert.match(source, /invalid_refresh_token/);
+  assert.match(source, /bad_code_verifier/);
 });
 
 for (const file of browserSessionCallSites) {

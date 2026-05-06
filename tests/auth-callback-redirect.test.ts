@@ -5,6 +5,7 @@ import test from 'node:test';
 const authCallbackSource = readFileSync('frontend/app/auth/callback/route.ts', 'utf8');
 const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
+const siteOriginSource = readFileSync('frontend/lib/siteOrigin.ts', 'utf8');
 
 test('OAuth callback failure does not reattach a failed code to /login', () => {
   assert.doesNotMatch(
@@ -92,5 +93,33 @@ test('login page redirects if OAuth exchange reports an error after a session wa
     loginPageSource,
     /oauthCodeExchangeStartedRef\.current = false;/,
     'OAuth error handling should release the exchange guard when no session exists'
+  );
+});
+
+test('login page protects Google PKCE from duplicate starts and host drift', () => {
+  assert.match(
+    loginPageSource,
+    /import \{ canonicalizeBrowserAuthOrigin \} from ['"]@\/lib\/siteOrigin['"]/,
+    'login page should use the shared site origin helper before creating a PKCE verifier'
+  );
+  assert.match(
+    siteOriginSource,
+    /export function canonicalizeBrowserAuthOrigin\(\): boolean/,
+    'auth host canonicalization should live with shared site origin helpers'
+  );
+  assert.match(
+    loginPageSource,
+    /if \(googleOAuthStartedRef\.current\) return;/,
+    'Google OAuth should ignore repeated clicks once a PKCE flow has started'
+  );
+  assert.match(
+    loginPageSource,
+    /disabled=\{isGoogleOAuthStarting\}/,
+    'the Google button should be disabled while the OAuth URL is being created'
+  );
+  assert.match(
+    loginPageSource,
+    /isPkceCodeVerifierError\(error\)/,
+    'PKCE verifier mismatches should trigger stale auth cleanup before the next retry'
   );
 });
