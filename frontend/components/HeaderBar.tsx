@@ -22,6 +22,7 @@ import {
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
+import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 function resolveLocalizedHref(href: LocalizedLinkHref): string {
@@ -170,9 +171,7 @@ export function HeaderBar() {
       }
     };
     const handleInvalidate = async () => {
-      const supabase = await getSupabaseClient();
-      const { data } = await supabase.auth.getSession();
-      const session = data.session ?? null;
+      const session = await readBrowserSession();
       const userId = session?.user?.id ?? null;
       if (userId) {
         writeLastKnownUserId(userId);
@@ -196,35 +195,23 @@ export function HeaderBar() {
       };
     }
     void getSupabaseClient()
-      .then((supabase) => {
+      .then(async (supabase) => {
         if (!mounted) return;
-        supabase.auth
-          .getSession()
-          .then(({ data }) => {
-            if (!mounted) return;
-            const session = data.session ?? null;
-            const userId = session?.user?.id ?? null;
-            if (userId) {
-              writeLastKnownUserId(userId);
-            }
-            setEmail(session?.user?.email ?? null);
-            if (!userId) {
-              setWallet(null);
-              setIsAdmin(false);
-            }
-            setAuthResolved(true);
-            if (userId) {
-              void fetchAccountState(session?.access_token, userId);
-            }
-          })
-          .catch(() => {
-            if (mounted) {
-              setEmail(null);
-              setWallet(null);
-              setIsAdmin(false);
-              setAuthResolved(true);
-            }
-          });
+        const session = await readBrowserSession();
+        if (!mounted) return;
+        const userId = session?.user?.id ?? null;
+        if (userId) {
+          writeLastKnownUserId(userId);
+        }
+        setEmail(session?.user?.email ?? null);
+        if (!userId) {
+          setWallet(null);
+          setIsAdmin(false);
+        }
+        setAuthResolved(true);
+        if (userId) {
+          void fetchAccountState(session?.access_token, userId);
+        }
         const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (!mounted) return;
           const eventType = event as string;

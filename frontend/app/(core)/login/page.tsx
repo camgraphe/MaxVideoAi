@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
-import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
+import { writeLastKnownUserId } from '@/lib/last-known';
+import { clearStaleBrowserAuthState, isInvalidRefreshTokenError, readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -99,70 +100,6 @@ function consumePendingGoogleLogin(): boolean {
   } catch {
     return false;
   }
-}
-
-function isInvalidRefreshTokenError(error: unknown): boolean {
-  const candidate = error as { code?: unknown; message?: unknown; status?: unknown } | null;
-  const code = typeof candidate?.code === 'string' ? candidate.code.toLowerCase() : '';
-  const message = typeof candidate?.message === 'string' ? candidate.message.toLowerCase() : '';
-  return (
-    code === 'refresh_token_not_found' ||
-    code === 'invalid_refresh_token' ||
-    message.includes('invalid refresh token') ||
-    message.includes('refresh token not found')
-  );
-}
-
-function isSupabaseAuthCookieName(name: string): boolean {
-  return name.startsWith('sb-') && name.includes('-auth-token');
-}
-
-function getCookieDomainCandidates(): Array<string | undefined> {
-  if (typeof window === 'undefined') return [undefined];
-  const hostname = window.location.hostname.trim().toLowerCase();
-  const candidates = new Set<string | undefined>([undefined]);
-  if (!hostname || hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
-    return Array.from(candidates);
-  }
-  candidates.add(hostname);
-  if (hostname.startsWith('www.')) {
-    const apex = hostname.slice(4);
-    candidates.add(apex);
-    candidates.add(`.${apex}`);
-  }
-  const parts = hostname.split('.').filter(Boolean);
-  if (parts.length >= 2) {
-    candidates.add(`.${parts.slice(-2).join('.')}`);
-  }
-  return Array.from(candidates);
-}
-
-function expireBrowserCookie(name: string, domain?: string): void {
-  if (typeof document === 'undefined') return;
-  const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
-  const domainAttribute = domain ? `; domain=${domain}` : '';
-  document.cookie = `${name}=; Max-Age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domainAttribute}; SameSite=Lax${secure}`;
-}
-
-function clearBrowserSupabaseAuthCookies(): void {
-  if (typeof document === 'undefined') return;
-  const names = document.cookie
-    .split(';')
-    .map((cookie) => cookie.split('=')[0]?.trim())
-    .filter((name): name is string => Boolean(name && isSupabaseAuthCookieName(name)));
-  const domains = getCookieDomainCandidates();
-  for (const name of names) {
-    for (const domain of domains) {
-      expireBrowserCookie(name, domain);
-    }
-  }
-}
-
-async function clearStaleBrowserAuthState(): Promise<void> {
-  clearBrowserSupabaseAuthCookies();
-  clearLastKnownAccount();
-  writeLastKnownUserId(null);
-  await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }
 
 export default function LoginPage() {
@@ -801,15 +738,8 @@ export default function LoginPage() {
     if (!nextPathReady) return;
     if (oauthCodeExchangeStartedRef.current) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data, error }) => {
-      const session = data.session ?? null;
+    readBrowserSession().then((session) => {
       if (cancelled) return;
-      if (error) {
-        if (isInvalidRefreshTokenError(error)) {
-          void clearStaleBrowserAuthState();
-        }
-        return;
-      }
       if (session?.access_token) {
         if (consumePendingGoogleLogin()) {
           persistPendingAnalyticsEvent('login_completed', {

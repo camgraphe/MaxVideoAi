@@ -6,6 +6,7 @@ import { getJobStatus, runGenerate } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
+import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import type {
   EngineCaps,
   EngineModeUiCaps,
@@ -194,9 +195,8 @@ export function useWorkspaceGenerationRunner({
 }: UseWorkspaceGenerationRunnerOptions) {
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
-    const { supabase } = await import('@/lib/supabaseClient');
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token ?? null;
+    const session = await readBrowserSession();
+    const token = session?.access_token ?? null;
     if (!token) {
       setAuthModalOpen(true);
       return;

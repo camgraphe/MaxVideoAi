@@ -12,6 +12,12 @@ import {
 } from '@/lib/clarity-client';
 import { consumeLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
+import {
+  clearStaleBrowserAuthState,
+  isInvalidRefreshTokenError,
+  readBrowserSession,
+  refreshBrowserSession,
+} from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 type RequireAuthResult = {
@@ -41,9 +47,7 @@ async function refreshSessionOnce(): Promise<Session | null> {
   if (refreshPromise) {
     return refreshPromise;
   }
-  refreshPromise = getSupabaseClient()
-    .then((supabase) => supabase.auth.refreshSession())
-    .then(({ data }) => data.session ?? null)
+  refreshPromise = refreshBrowserSession()
     .catch(() => null)
     .finally(() => {
       refreshPromise = null;
@@ -161,14 +165,21 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
           return;
         }
         const supabase = await getSupabaseClient();
-        const sessionResult = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
+        let nextSession = await withTimeout(readBrowserSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
         if (cancelledRef.current) return;
-        let nextSession = sessionResult.data.session ?? null;
         if (!nextSession) {
+          if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+            markLoggedOut();
+            return;
+          }
           markRefreshing();
           const refreshed = await withTimeout(refreshSessionOnce(), AUTH_SESSION_LOOKUP_TIMEOUT_MS).catch(() => null);
           if (cancelledRef.current) return;
           nextSession = refreshed ?? null;
+          if (!nextSession && !readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+            markLoggedOut();
+            return;
+          }
         }
         if (!nextSession || !nextSession.user) {
           const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);
@@ -188,6 +199,13 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
         try {
           const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
           if (cancelledRef.current) return;
+          if (userResult.error && isInvalidRefreshTokenError(userResult.error)) {
+            await clearStaleBrowserAuthState();
+            if (!cancelledRef.current) {
+              markLoggedOut();
+            }
+            return;
+          }
           const verifiedUser = userResult.data.user ?? null;
           if (verifiedUser) {
             setUser(verifiedUser);
@@ -235,11 +253,14 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
             markLoggedOut();
             return;
           }
-          const sessionResult = await supabase.auth.getSession().catch(() => null);
+          const recoveredSession = await readBrowserSession().catch(() => null);
           if (cancelledRef.current) return;
-          const recoveredSession = sessionResult?.data?.session ?? null;
           if (recoveredSession?.user) {
             applySession(recoveredSession);
+            return;
+          }
+          if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+            markLoggedOut();
             return;
           }
           const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);

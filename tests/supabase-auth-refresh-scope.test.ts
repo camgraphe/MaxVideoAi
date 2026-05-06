@@ -16,6 +16,6 @@ test('middleware only refreshes Supabase sessions for protected routes', () => {
 });
 
 test('public session watchdog does not manually refresh missing sessions', () => {
-  assert.match(publicWatchdogSource, /supabase\.auth\.getSession\(\)/);
+  assert.match(publicWatchdogSource, /readBrowserSession\(\)/);
   assert.doesNotMatch(publicWatchdogSource, /supabase\.auth\.refreshSession\(\)/);
 });

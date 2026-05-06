@@ -1,6 +1,7 @@
 'use client';
 
 import { readLastKnownUserId } from '@/lib/last-known';
+import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 type FetchInput = Parameters<typeof fetch>[0];
@@ -10,9 +11,8 @@ export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Re
   let token: string | null = null;
   if (readLastKnownUserId() || hasSupabaseAuthCookie()) {
     try {
-      const { supabase } = await import('@/lib/supabaseClient');
-      const { data } = await supabase.auth.getSession();
-      token = data.session?.access_token ?? null;
+      const session = await readBrowserSession();
+      token = session?.access_token ?? null;
     } catch {
       token = null;
     }

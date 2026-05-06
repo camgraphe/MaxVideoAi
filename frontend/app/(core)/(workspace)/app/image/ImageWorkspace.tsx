@@ -71,6 +71,7 @@ import {
 } from '@/lib/image/gptImage2';
 import { authFetch } from '@/lib/authFetch';
 import { readLastKnownUserId } from '@/lib/last-known';
+import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import { normalizeJobSurface } from '@/lib/job-surface-normalize';
 import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
@@ -86,13 +87,6 @@ const GroupViewerModal = dynamic(
   () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
   { ssr: false }
 );
-
-let supabaseClientPromise: Promise<typeof import('@/lib/supabaseClient')['supabase']> | null = null;
-
-function getSupabaseClient(): Promise<typeof import('@/lib/supabaseClient')['supabase']> {
-  supabaseClientPromise ??= import('@/lib/supabaseClient').then((mod) => mod.supabase);
-  return supabaseClientPromise;
-}
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -2372,9 +2366,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setAuthModalOpen(true);
         return;
       }
-      const supabase = await getSupabaseClient();
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.access_token) {
+      const session = await readBrowserSession();
+      if (!session?.access_token) {
         setAuthModalOpen(true);
         return;
       }
