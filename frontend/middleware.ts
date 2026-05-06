@@ -125,7 +125,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
 ];
 const QUERY_PARAM_ALLOWLISTS = {
   examples: new Set(['sort', 'engine', 'page']),
-  login: new Set(['next', 'mode', 'authError']),
+  login: new Set(['next', 'mode', 'authError', 'code', 'state']),
   video: new Set(['from']),
   compare: new Set(['order']),
 };

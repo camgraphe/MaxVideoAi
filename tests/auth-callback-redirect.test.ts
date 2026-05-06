@@ -22,8 +22,8 @@ test('OAuth callback failure does not reattach a failed code to /login', () => {
 test('login query cleanup preserves OAuth fallback state', () => {
   assert.match(
     middlewareSource,
-    /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"]\]\)/,
-    'middleware must not strip mode/authError from /login fallback URLs'
+    /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"]\]\)/,
+    'middleware must not strip OAuth state from /login callback URLs'
   );
 });
 
