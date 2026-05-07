@@ -50,7 +50,6 @@
     "@maxvideoai/pricing": "file:../packages/pricing",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
-    "@react-three/fiber": "^8.17.14",
     "@stripe/stripe-js": "^8.3.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.45.4",

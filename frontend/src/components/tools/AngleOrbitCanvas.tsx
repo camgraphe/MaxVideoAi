@@ -1,7 +1,6 @@
 'use client';
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { buildBestAngleVariantParams } from '@/lib/tools-angle';
 import type { AngleToolNumericParams } from '@/types/tools-angle';
@@ -19,6 +18,24 @@ type AngleOrbitCanvasProps = {
   generateBestAngles: boolean;
 };
 
+type OrbitSceneState = {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  frameMesh: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>;
+  imageMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
+  glossMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  guidesGroup: THREE.Group;
+  animationFrame: number | null;
+  resizeObserver: ResizeObserver | null;
+  texture: THREE.Texture | null;
+};
+
+const DEFAULT_ASPECT = 0.72;
+const MAX_CARD_WIDTH = 4.8;
+const MAX_CARD_HEIGHT = 3.15;
+const CAMERA_TARGET = new THREE.Vector3(0, 1.2, 0);
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -31,96 +48,76 @@ function buildTextureProxyUrl(url: string | null | undefined): string | null {
   return `/api/media-proxy?url=${encodeURIComponent(trimmed)}`;
 }
 
-function getTextureCandidates(sourceImage: OrbitSourceImage): string[] {
+function getTextureCandidates(sourceImage?: OrbitSourceImage | null): string[] {
+  if (!sourceImage) return [];
   return [buildTextureProxyUrl(sourceImage.previewUrl), buildTextureProxyUrl(sourceImage.url)]
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry, index, array) => entry.length > 0 && array.indexOf(entry) === index);
 }
 
-function AngleCameraRig({ params }: { params: AngleToolNumericParams }) {
-  const { camera } = useThree();
-  const target = useRef(new THREE.Vector3(0, 1.2, 0));
-  const desiredPosition = useRef(new THREE.Vector3(0, 1.35, 7.9));
+function resolveCardSize(aspect: number): { width: number; height: number } {
+  const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : DEFAULT_ASPECT;
+  if (safeAspect >= 1) {
+    const width = MAX_CARD_WIDTH;
+    const height = Math.max(1.4, width / safeAspect);
+    return { width, height: Math.min(height, MAX_CARD_HEIGHT) };
+  }
 
-  useFrame(() => {
-    const yaw = (params.rotation * Math.PI) / 180;
-    const pitch = (params.tilt / 30) * (Math.PI / 5);
-    const distance = 8.3 - params.zoom * 0.46;
-    const planarDistance = Math.cos(pitch) * distance;
+  const height = MAX_CARD_HEIGHT;
+  const width = Math.max(1.4, height * safeAspect);
+  return { width: Math.min(width, MAX_CARD_WIDTH), height };
+}
 
-    desiredPosition.current.set(
-      Math.sin(yaw) * planarDistance,
-      1.15 + Math.sin(pitch) * distance * 1.1,
-      Math.cos(yaw) * planarDistance
-    );
+function disposeMaterial(material: THREE.Material | THREE.Material[]) {
+  if (Array.isArray(material)) {
+    material.forEach((entry) => entry.dispose());
+    return;
+  }
+  material.dispose();
+}
 
-    camera.position.lerp(desiredPosition.current, 0.16);
-    camera.lookAt(target.current);
-
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const nextFov = clamp(32 - params.zoom * 0.72, 20, 32);
-      if (Math.abs(camera.fov - nextFov) > 0.01) {
-        camera.fov = nextFov;
-        camera.updateProjectionMatrix();
-      }
+function disposeObject(object: THREE.Object3D) {
+  object.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (mesh.geometry) {
+      mesh.geometry.dispose();
+    }
+    if (mesh.material) {
+      disposeMaterial(mesh.material);
     }
   });
-
-  return null;
 }
 
-function AngleReferenceScene({
-  sourceImage,
-  generateBestAngles,
-  params,
-}: {
-  sourceImage?: OrbitSourceImage | null;
-  generateBestAngles: boolean;
-  params: AngleToolNumericParams;
-}) {
-  return (
-    <>
-      <group position={[0, -0.95, 0]}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <circleGeometry args={[6.6, 64]} />
-          <meshStandardMaterial color="#eef2f9" roughness={0.98} metalness={0.02} />
-        </mesh>
-      </group>
-
-      {generateBestAngles ? <AngleBestAnglesGuides params={params} /> : null}
-      {sourceImage?.url ? <AngleImageCard sourceImage={sourceImage} /> : null}
-    </>
-  );
+function setCardAspect(state: OrbitSceneState, aspect: number) {
+  const { width, height } = resolveCardSize(aspect);
+  state.frameMesh.scale.set(width + 0.18, height + 0.2, 0.1);
+  state.imageMesh.scale.set(width, height, 1);
+  state.glossMesh.scale.set(width + 0.02, height + 0.02, 1);
 }
 
-function AngleBestAnglesGuides({ params }: { params: AngleToolNumericParams }) {
+function setImageTexture(state: OrbitSceneState, texture: THREE.Texture | null) {
+  if (state.texture && state.texture !== texture) {
+    state.texture.dispose();
+  }
+  state.texture = texture;
+  state.imageMesh.material.map = texture ?? null;
+  state.imageMesh.material.color.set(texture ? '#ffffff' : '#c1d0e6');
+  state.imageMesh.material.needsUpdate = true;
+}
+
+function updateGuides(state: OrbitSceneState, params: AngleToolNumericParams, generateBestAngles: boolean) {
+  state.guidesGroup.children.forEach((child) => {
+    disposeObject(child);
+  });
+  state.guidesGroup.clear();
+
+  if (!generateBestAngles) return;
+
   const guideColor = '#97a8c2';
   const offsets = buildBestAngleVariantParams(params);
-  const target = useMemo(() => new THREE.Vector3(0, 1.2, 0), []);
-
-  return (
-    <group>
-      {offsets.map((offset, index) => (
-        <AngleGuideLine key={`best-angle-guide-${index}`} target={target} rotation={offset.rotation} tilt={offset.tilt} color={guideColor} />
-      ))}
-    </group>
-  );
-}
-
-function AngleGuideLine({
-  target,
-  rotation,
-  tilt,
-  color,
-}: {
-  target: THREE.Vector3;
-  rotation: number;
-  tilt: number;
-  color: string;
-}) {
-  const lineObject = useMemo(() => {
-    const yaw = (rotation * Math.PI) / 180;
-    const pitch = (tilt / 30) * (Math.PI / 5);
+  offsets.forEach((offset) => {
+    const yaw = (offset.rotation * Math.PI) / 180;
+    const pitch = (offset.tilt / 30) * (Math.PI / 5);
     const distance = 4.8;
     const planarDistance = Math.cos(pitch) * distance;
     const position = new THREE.Vector3(
@@ -128,46 +125,206 @@ function AngleGuideLine({
       1.2 + Math.sin(pitch) * distance * 1.05,
       Math.cos(yaw) * planarDistance
     );
-    const geometry = new THREE.BufferGeometry().setFromPoints([target.clone(), position]);
-    const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.8 });
-    return new THREE.Line(geometry, material);
-  }, [color, rotation, target, tilt]);
-
-  useEffect(() => {
-    return () => {
-      lineObject.geometry.dispose();
-      const material = lineObject.material;
-      if (material instanceof THREE.Material) {
-        material.dispose();
-      }
-    };
-  }, [lineObject]);
-
-  return <primitive object={lineObject} />;
+    const geometry = new THREE.BufferGeometry().setFromPoints([CAMERA_TARGET.clone(), position]);
+    const material = new THREE.LineBasicMaterial({ color: guideColor, transparent: true, opacity: 0.8 });
+    state.guidesGroup.add(new THREE.Line(geometry, material));
+  });
 }
 
-function useSourceTexture(urls: Array<string | null | undefined>) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+function updateCamera(camera: THREE.PerspectiveCamera, params: AngleToolNumericParams) {
+  const yaw = (params.rotation * Math.PI) / 180;
+  const pitch = (params.tilt / 30) * (Math.PI / 5);
+  const distance = 8.3 - params.zoom * 0.46;
+  const planarDistance = Math.cos(pitch) * distance;
+  const desiredPosition = new THREE.Vector3(
+    Math.sin(yaw) * planarDistance,
+    1.15 + Math.sin(pitch) * distance * 1.1,
+    Math.cos(yaw) * planarDistance
+  );
+
+  camera.position.lerp(desiredPosition, 0.16);
+  camera.lookAt(CAMERA_TARGET);
+
+  const nextFov = clamp(32 - params.zoom * 0.72, 20, 32);
+  if (Math.abs(camera.fov - nextFov) > 0.01) {
+    camera.fov = nextFov;
+    camera.updateProjectionMatrix();
+  }
+}
+
+function createScene(mount: HTMLDivElement): OrbitSceneState {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#f6f8fc');
+  scene.fog = new THREE.Fog('#f6f8fc', 10, 22);
+
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+  camera.position.set(0, 1.35, 6.4);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setClearColor('#f6f8fc', 1);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.domElement.className = 'block h-full w-full';
+  mount.appendChild(renderer.domElement);
+
+  const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(6.6, 64),
+    new THREE.MeshStandardMaterial({ color: '#eef2f9', roughness: 0.98, metalness: 0.02 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.95;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  const guidesGroup = new THREE.Group();
+  scene.add(guidesGroup);
+
+  const cardGroup = new THREE.Group();
+  cardGroup.position.set(0, 0.7, 0);
+  scene.add(cardGroup);
+
+  const frameMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshStandardMaterial({ color: '#dfe7f2', roughness: 0.9, metalness: 0.04 })
+  );
+  frameMesh.position.set(0, 0.92, -0.08);
+  frameMesh.castShadow = true;
+  frameMesh.receiveShadow = true;
+  cardGroup.add(frameMesh);
+
+  const imageMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ color: '#c1d0e6', transparent: true, alphaTest: 0.04, side: THREE.DoubleSide })
+  );
+  imageMesh.position.set(0, 0.92, 0.065);
+  imageMesh.castShadow = true;
+  imageMesh.receiveShadow = true;
+  cardGroup.add(imageMesh);
+
+  const glossMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshStandardMaterial({
+      color: '#ffffff',
+      transparent: true,
+      opacity: 0.12,
+      roughness: 1,
+      metalness: 0,
+      side: THREE.DoubleSide,
+    })
+  );
+  glossMesh.position.set(0, 0.92, 0.085);
+  glossMesh.castShadow = true;
+  cardGroup.add(glossMesh);
+
+  scene.add(new THREE.AmbientLight('#ffffff', 1.3));
+  const mainLight = new THREE.DirectionalLight('#ffffff', 2.1);
+  mainLight.position.set(5, 6, 4);
+  scene.add(mainLight);
+  const fillLight = new THREE.DirectionalLight('#dbe6f7', 0.65);
+  fillLight.position.set(-3, 1.5, -4);
+  scene.add(fillLight);
+  const floorLight = new THREE.PointLight('#cddaf0', 0.16);
+  floorLight.position.set(0, -1.2, 0);
+  scene.add(floorLight);
+
+  const state: OrbitSceneState = {
+    renderer,
+    scene,
+    camera,
+    frameMesh,
+    imageMesh,
+    glossMesh,
+    guidesGroup,
+    animationFrame: null,
+    resizeObserver: null,
+    texture: null,
+  };
+  setCardAspect(state, DEFAULT_ASPECT);
+  return state;
+}
+
+export default function AngleOrbitCanvas({ params, sourceImage, generateBestAngles }: AngleOrbitCanvasProps) {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const sceneRef = useRef<OrbitSceneState | null>(null);
+  const paramsRef = useRef(params);
+  const [webglUnavailable, setWebglUnavailable] = useState(false);
 
   useEffect(() => {
-    const candidates = urls
-      .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
-      .filter((entry, index, array) => entry.length > 0 && array.indexOf(entry) === index);
-    if (!candidates.length) {
-      setTexture(null);
+    paramsRef.current = params;
+  }, [params]);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    let state: OrbitSceneState;
+    try {
+      state = createScene(mount);
+    } catch {
+      setWebglUnavailable(true);
       return;
     }
 
-    let active = true;
-    let currentTexture: THREE.Texture | null = null;
+    sceneRef.current = state;
 
-    const tryLoad = (index: number) => {
+    const resize = () => {
+      const width = Math.max(1, mount.clientWidth);
+      const height = Math.max(1, mount.clientHeight);
+      state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      state.renderer.setSize(width, height, false);
+      state.camera.aspect = width / height;
+      state.camera.updateProjectionMatrix();
+    };
+
+    resize();
+    state.resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize);
+    state.resizeObserver?.observe(mount);
+
+    const render = () => {
+      updateCamera(state.camera, paramsRef.current);
+      state.renderer.render(state.scene, state.camera);
+      state.animationFrame = window.requestAnimationFrame(render);
+    };
+    render();
+
+    return () => {
+      if (state.animationFrame !== null) {
+        window.cancelAnimationFrame(state.animationFrame);
+      }
+      state.resizeObserver?.disconnect();
+      setImageTexture(state, null);
+      disposeObject(state.scene);
+      state.renderer.dispose();
+      state.renderer.domElement.remove();
+      sceneRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const state = sceneRef.current;
+    if (!state) return;
+    updateGuides(state, params, generateBestAngles);
+  }, [generateBestAngles, params]);
+
+  useEffect(() => {
+    const state = sceneRef.current;
+    if (!state) return;
+
+    let active = true;
+    const candidates = getTextureCandidates(sourceImage);
+    if (!candidates.length) {
+      setImageTexture(state, null);
+      setCardAspect(state, DEFAULT_ASPECT);
+      return;
+    }
+
+    const loadCandidate = (index: number) => {
       if (!active || index >= candidates.length) {
         if (active) {
-          setTexture(null);
+          setImageTexture(state, null);
         }
         return;
       }
+
       const loader = new THREE.TextureLoader();
       const candidate = candidates[index];
       if (!candidate.startsWith('blob:') && !candidate.startsWith('/')) {
@@ -176,108 +333,39 @@ function useSourceTexture(urls: Array<string | null | undefined>) {
 
       loader.load(
         candidate,
-        (nextTexture) => {
+        (texture) => {
           if (!active) {
-            nextTexture.dispose();
+            texture.dispose();
             return;
           }
-          if (currentTexture && currentTexture !== nextTexture) {
-            currentTexture.dispose();
-          }
-          nextTexture.colorSpace = THREE.SRGBColorSpace;
-          nextTexture.minFilter = THREE.LinearFilter;
-          nextTexture.magFilter = THREE.LinearFilter;
-          currentTexture = nextTexture;
-          setTexture(nextTexture);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          setImageTexture(state, texture);
+          const image = texture.image as { width?: number; height?: number } | undefined;
+          const aspect =
+            sourceImage?.width && sourceImage.height
+              ? sourceImage.width / sourceImage.height
+              : image?.width && image.height
+                ? image.width / image.height
+                : DEFAULT_ASPECT;
+          setCardAspect(state, aspect);
         },
         undefined,
-        () => {
-          tryLoad(index + 1);
-        }
+        () => loadCandidate(index + 1)
       );
     };
 
-    tryLoad(0);
+    loadCandidate(0);
 
     return () => {
       active = false;
-      if (currentTexture) {
-        currentTexture.dispose();
-      }
     };
-  }, [urls]);
+  }, [sourceImage]);
 
-  return texture;
-}
+  if (webglUnavailable) {
+    return <div className="h-full w-full bg-[#f6f8fc]" aria-hidden="true" />;
+  }
 
-function AngleImageCard({ sourceImage }: { sourceImage: OrbitSourceImage }) {
-  const texture = useSourceTexture(getTextureCandidates(sourceImage));
-  const aspect = useMemo(() => {
-    if (sourceImage.width && sourceImage.height) {
-      return sourceImage.width / sourceImage.height;
-    }
-    const image = texture?.image as { width?: number; height?: number } | undefined;
-    if (image?.width && image?.height) {
-      return image.width / image.height;
-    }
-    return 0.72;
-  }, [sourceImage.height, sourceImage.width, texture]);
-  const maxCardWidth = 4.8;
-  const maxCardHeight = 3.15;
-  const { cardWidth, cardHeight } = useMemo(() => {
-    if (aspect >= 1) {
-      const width = maxCardWidth;
-      const height = Math.max(1.4, width / aspect);
-      return { cardWidth: width, cardHeight: Math.min(height, maxCardHeight) };
-    }
-
-    const height = maxCardHeight;
-    const width = Math.max(1.4, height * aspect);
-    return { cardWidth: Math.min(width, maxCardWidth), cardHeight: height };
-  }, [aspect]);
-  const frameZ = -0.08;
-  const imageZ = 0.065;
-  const glossZ = 0.085;
-
-  return (
-    <group position={[0, 0.7, 0]}>
-      <mesh position={[0, 0.92, frameZ]} castShadow receiveShadow>
-        <boxGeometry args={[cardWidth + 0.18, cardHeight + 0.2, 0.1]} />
-        <meshStandardMaterial color="#dfe7f2" roughness={0.9} metalness={0.04} />
-      </mesh>
-      <mesh position={[0, 0.92, imageZ]} castShadow receiveShadow>
-        <planeGeometry args={[cardWidth, cardHeight]} />
-        <meshBasicMaterial
-          map={texture ?? undefined}
-          color={texture ? '#ffffff' : '#c1d0e6'}
-          transparent
-          alphaTest={0.04}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh position={[0, 0.92, glossZ]} castShadow>
-        <planeGeometry args={[cardWidth + 0.02, cardHeight + 0.02]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.12} roughness={1} metalness={0} side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-}
-
-export default function AngleOrbitCanvas({ params, sourceImage, generateBestAngles }: AngleOrbitCanvasProps) {
-  return (
-    <Canvas
-      dpr={[1, 2]}
-      camera={{ position: [0, 1.35, 6.4], fov: 32, near: 0.1, far: 50 }}
-      gl={{ antialias: true, alpha: false }}
-    >
-      <color attach="background" args={['#f6f8fc']} />
-      <fog attach="fog" args={['#f6f8fc', 10, 22]} />
-      <ambientLight intensity={1.3} />
-      <directionalLight position={[5, 6, 4]} intensity={2.1} color="#ffffff" />
-      <directionalLight position={[-3, 1.5, -4]} intensity={0.65} color="#dbe6f7" />
-      <pointLight position={[0, -1.2, 0]} intensity={0.16} color="#cddaf0" />
-      <AngleCameraRig params={params} />
-      <AngleReferenceScene sourceImage={sourceImage} generateBestAngles={generateBestAngles} params={params} />
-    </Canvas>
-  );
+  return <div ref={mountRef} className="h-full w-full" data-angle-orbit-canvas="three" />;
 }
