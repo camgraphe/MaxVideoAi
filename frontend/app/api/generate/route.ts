@@ -22,6 +22,7 @@ import {
 } from './_lib/fal-error-handling';
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
+import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -804,76 +805,27 @@ export async function POST(req: NextRequest) {
   }
   const processedAttachments = attachmentProcessing.attachments;
 
-  const maxUploadedBytes =
-    processedAttachments.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
-  const firstFrameUrl =
-    processedAttachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
-  const lastFrameUrl =
-    processedAttachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
-  const attachmentPrimaryImageUrl =
-    processedAttachments.find((attachment) => {
-      if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-      return (
-        attachment.slotId === 'image_url' ||
-        attachment.slotId === 'input_image' ||
-        attachment.slotId === 'image'
-      );
-    })?.url?.trim() ?? undefined;
-  const requestedPrimaryImageUrl =
-    soraRequest?.mode === 'i2v'
-      ? soraRequest.image_url
-      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
-        ? body.imageUrl.trim()
-        : typeof body.image_url === 'string' && body.image_url.trim().length
-          ? body.image_url.trim()
-          : attachmentPrimaryImageUrl;
-  const referenceImagesInput = Array.isArray(body.referenceImages)
-    ? body.referenceImages
-    : Array.isArray(body.reference_images)
-      ? body.reference_images
-      : null;
-  const attachmentReferenceImageUrls = processedAttachments
-    .filter((attachment) => {
-      if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-      if (engine.id === 'happy-horse-1-0') {
-        if (mode === 'v2v') return attachment.slotId === 'reference_image_urls';
-        if (mode === 'ref2v') return attachment.slotId === 'image_urls' || attachment.slotId === 'reference_images';
-      }
-      return (
-        attachment.slotId === 'image_urls' ||
-        attachment.slotId === 'reference_images' ||
-        attachment.slotId === 'reference_image_urls'
-      );
-    })
-    .map((attachment) => attachment.url!.trim())
-    .filter((url) => url.length > 0);
-  const normalizedReferenceImages = Array.from(
-    new Set(
-      [
-        ...(Array.isArray(referenceImagesInput)
-          ? referenceImagesInput
-              .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-              .filter((value): value is string => value.length > 0)
-          : []),
-        ...attachmentReferenceImageUrls,
-      ]
-    )
-  );
-  const videoUrls = processedAttachments
-    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
-    .map((attachment) => attachment.url!.trim())
-    .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
-  const audioUrls = processedAttachments
-    .filter((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')
-    .map((attachment) => attachment.url!.trim())
-    .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
-  const resolvedAudioUrl = rawAudioUrl ?? audioUrls[0] ?? undefined;
-  const initialImageUrl =
-    mode === 'i2v' || mode === 'i2i' || mode === 'v2v' || mode === 'reframe'
-      ? requestedPrimaryImageUrl
-      : undefined;
-  const resolvedFirstFrameUrl = mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
-  const sourceInputVideoUrl = videoUrls[0];
+  const {
+    maxUploadedBytes,
+    lastFrameUrl,
+    normalizedReferenceImages,
+    videoUrls,
+    audioUrls,
+    resolvedAudioUrl,
+    initialImageUrl,
+    resolvedFirstFrameUrl,
+    sourceInputVideoUrl,
+  } = deriveGenerationAttachmentReferences({
+    attachments: processedAttachments,
+    engineId: engine.id,
+    mode,
+    soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
+    imageUrl: body.imageUrl,
+    image_url: body.image_url,
+    referenceImages: body.referenceImages,
+    reference_images: body.reference_images,
+    rawAudioUrl,
+  });
   const validationPayload: Record<string, unknown> = {};
   if (prompt.length > 0) {
     validationPayload.prompt = prompt;
