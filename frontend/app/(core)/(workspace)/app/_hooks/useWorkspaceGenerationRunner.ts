@@ -3,8 +3,6 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import { getJobStatus, runGenerate } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
-import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import type {
@@ -51,6 +49,7 @@ import type {
 } from '../_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
+import { useWorkspaceWalletPreflight } from './useWorkspaceWalletPreflight';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
@@ -193,6 +192,12 @@ export function useWorkspaceGenerationRunner({
   shotType,
   klingElements,
 }: UseWorkspaceGenerationRunnerOptions) {
+  const { presentInsufficientFunds, verifyWalletBalance } = useWorkspaceWalletPreflight({
+    workspaceCopy,
+    setTopUpModal,
+    showComposerError,
+  });
+
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
     const session = await readBrowserSession();
@@ -250,65 +255,9 @@ export function useWorkspaceGenerationRunner({
     const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
     const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
 
-    const presentInsufficientFunds = (shortfallCents?: number) => {
-      const normalizedShortfall = typeof shortfallCents === 'number' ? Math.max(0, shortfallCents) : undefined;
-
-      let friendlyNotice: string = workspaceCopy.wallet.insufficient;
-      let formattedShortfall: string | undefined;
-      if (typeof normalizedShortfall === 'number' && normalizedShortfall > 0) {
-        try {
-          formattedShortfall = new Intl.NumberFormat(CURRENCY_LOCALE, {
-            style: 'currency',
-            currency: currencyCode,
-          }).format(normalizedShortfall / 100);
-          friendlyNotice = workspaceCopy.wallet.insufficientWithAmount.replace('{amount}', formattedShortfall);
-        } catch {
-          formattedShortfall = `${currencyCode} ${(normalizedShortfall / 100).toFixed(2)}`;
-          friendlyNotice = workspaceCopy.wallet.insufficientWithAmount.replace('{amount}', formattedShortfall);
-        }
-      }
-
-      setTopUpModal({
-        message: friendlyNotice,
-        amountLabel: formattedShortfall,
-        shortfallCents: typeof normalizedShortfall === 'number' ? normalizedShortfall : undefined,
-      });
-      showComposerError(friendlyNotice);
-    };
-
     if (paymentMode === 'wallet') {
-      const unitCostCents =
-        typeof preflight?.pricing?.totalCents === 'number'
-          ? preflight.pricing.totalCents
-          : typeof preflight?.total === 'number'
-            ? preflight.total
-            : null;
-      if (typeof unitCostCents === 'number' && unitCostCents > 0) {
-        const requiredCents = unitCostCents * iterationCount;
-        try {
-          const res = await authFetch('/api/wallet');
-          if (res.ok) {
-            const walletJson = await res.json();
-            const balanceCents =
-              typeof walletJson.balanceCents === 'number'
-                ? walletJson.balanceCents
-                : typeof walletJson.balance === 'number'
-                  ? Math.round(walletJson.balance * 100)
-                  : typeof walletJson.balance === 'string'
-                    ? Math.round(Number(walletJson.balance) * 100)
-                    : undefined;
-            if (typeof balanceCents === 'number') {
-              const shortfall = requiredCents - balanceCents;
-              if (shortfall > 0) {
-                presentInsufficientFunds(shortfall);
-                return;
-              }
-            }
-          }
-        } catch (walletError) {
-          console.warn('[startRender] wallet balance check failed', walletError);
-        }
-      }
+      const hasWalletBalance = await verifyWalletBalance({ preflight, iterationCount, currencyCode });
+      if (!hasWalletBalance) return;
     }
 
     const generationInputs = prepareGenerationInputs({
@@ -645,7 +594,7 @@ export function useWorkspaceGenerationRunner({
         setSelectedPreview((cur) => (cur && cur.localKey === localKey ? null : cur));
         if (isInsufficientFundsError(error)) {
           const shortfallCents = error.details?.requiredCents;
-          presentInsufficientFunds(shortfallCents);
+          presentInsufficientFunds({ currencyCode, shortfallCents });
           return;
         }
         if (error && typeof error === 'object' && (error as { error?: string }).error === 'FAL_UNPROCESSABLE_ENTITY') {
@@ -703,7 +652,6 @@ export function useWorkspaceGenerationRunner({
     inputAssets,
     setAuthModalOpen,
     setPreflightError,
-    setTopUpModal,
     setActiveGroupId,
     setActiveBatchId,
     setBatchHeroes,
@@ -713,7 +661,6 @@ export function useWorkspaceGenerationRunner({
     rendersRef,
     uiLocale,
     workflowCopy,
-    workspaceCopy,
     capability,
     cfgScale,
     formatTakeLabel,
@@ -737,8 +684,10 @@ export function useWorkspaceGenerationRunner({
     promptLength,
     promptCharLimitExceeded,
     promptMaxChars,
+    presentInsufficientFunds,
     voiceIds,
     voiceControlEnabled,
+    verifyWalletBalance,
     shotType,
     klingElements,
   ]);

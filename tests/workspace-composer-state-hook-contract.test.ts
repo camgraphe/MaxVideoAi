@@ -12,9 +12,15 @@ test('workspace composer mode and settings state is owned by a route-local hook'
     process.cwd(),
     'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts'
   );
+  const engineModeHookPath = path.join(
+    process.cwd(),
+    'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts'
+  );
   assert.equal(fs.existsSync(hookPath), true);
+  assert.equal(fs.existsSync(engineModeHookPath), true);
 
   const hookSource = fs.readFileSync(hookPath, 'utf8');
+  const engineModeHookSource = fs.readFileSync(engineModeHookPath, 'utf8');
 
   assert.match(appSource, /import \{ useWorkspaceComposerState \} from '\.\/_hooks\/useWorkspaceComposerState';/);
   assert.match(appSource, /useWorkspaceComposerState\(\{/);
@@ -27,15 +33,23 @@ test('workspace composer mode and settings state is owned by a route-local hook'
   assert.doesNotMatch(appSource, /const handleResolutionChange = useCallback/);
 
   assert.match(hookSource, /export function useWorkspaceComposerState/);
+  assert.match(hookSource, /useWorkspaceEngineModeState/);
   assert.match(hookSource, /const multiPromptTotalSec = useMemo/);
-  assert.match(hookSource, /const implicitMode = useMemo<Mode>/);
-  assert.match(hookSource, /const audioWorkflowUnsupported =/);
-  assert.match(hookSource, /const handleEngineChange = useCallback/);
-  assert.match(hookSource, /const handleComposerModeToggle = useCallback/);
   assert.match(hookSource, /const handleDurationChange = useCallback/);
   assert.match(hookSource, /const handleResolutionChange = useCallback/);
-  assert.match(hookSource, /buildComposerModeToggles/);
-  assert.match(hookSource, /getComposerWorkflowNotice/);
-  assert.match(hookSource, /getUnifiedSeedanceMode/);
-  assert.match(hookSource, /getUnifiedHappyHorseMode/);
+
+  assert.doesNotMatch(hookSource, /const implicitMode = useMemo<Mode>/);
+  assert.doesNotMatch(hookSource, /const audioWorkflowUnsupported =/);
+  assert.doesNotMatch(hookSource, /getUnifiedSeedanceMode/);
+  assert.doesNotMatch(hookSource, /getUnifiedHappyHorseMode/);
+
+  assert.match(engineModeHookSource, /export function useWorkspaceEngineModeState/);
+  assert.match(engineModeHookSource, /const implicitMode = useMemo<Mode>/);
+  assert.match(engineModeHookSource, /const audioWorkflowUnsupported =/);
+  assert.match(engineModeHookSource, /const handleEngineChange = useCallback/);
+  assert.match(engineModeHookSource, /const handleComposerModeToggle = useCallback/);
+  assert.match(engineModeHookSource, /buildComposerModeToggles/);
+  assert.match(engineModeHookSource, /getComposerWorkflowNotice/);
+  assert.match(engineModeHookSource, /getUnifiedSeedanceMode/);
+  assert.match(engineModeHookSource, /getUnifiedHappyHorseMode/);
 });
