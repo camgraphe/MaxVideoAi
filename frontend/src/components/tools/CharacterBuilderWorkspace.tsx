@@ -23,7 +23,6 @@ import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   AUTO_TRAIT_KEYS,
-  CHARACTER_BUILDER_STORAGE_KEY,
   createDefaultCharacterBuilderState,
   getCharacterFormatMultiplier,
   normalizeCharacterFormatMode,
@@ -35,7 +34,6 @@ import { FEATURES } from '@/content/feature-flags';
 import type {
   CharacterBuilderAction,
   CharacterBuilderResult,
-  CharacterBuilderRun,
   CharacterBuilderSettingsSnapshot,
   CharacterBuilderState,
   CharacterBuilderTraitSource,
@@ -63,13 +61,14 @@ import {
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
 import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks/useCharacterBuilderHistoricalResults';
+import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks/useCharacterBuilderJobSnapshotLoader';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
+import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
+import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
-  buildRecoveredRunFromJob,
   buildReferenceImage,
   buildResetCharacterBuilderState,
-  CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY,
   countConfiguredSecondaryControls,
   decrementLoadingRequestCount,
   emitClientMetric,
@@ -90,19 +89,14 @@ import {
   normalizeHairAndOutfitModes,
   normalizeTag,
   parseCharacterBuilderSnapshot,
-  readPersistedPendingRuns,
-  readPersistedState,
   removeReferenceImage,
   serializeResettableCharacterBuilderState,
   summarizeCustomText,
   updateReferenceImage,
   uploadImage,
-  writePersistedPendingRuns,
-  writePersistedState,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
   BillingProductResponse,
-  CharacterJobPayload,
   CharacterLibraryAsset,
   HistoricalCharacterGalleryItem,
   LoadingRequestCounts,
@@ -138,7 +132,6 @@ export default function CharacterBuilderPage() {
   const styleFileRef = useRef<HTMLInputElement | null>(null);
   const resultsScrollContainerRef = useRef<HTMLDivElement | null>(null);
   const resultsSentinelRef = useRef<HTMLDivElement | null>(null);
-  const visitorSanitizedRef = useRef(false);
   const loginRedirectTarget = useMemo(() => {
     const base = pathname || '/app/tools/character-builder';
     const search = searchParams?.toString();
@@ -181,6 +174,26 @@ export default function CharacterBuilderPage() {
   } = useCharacterBuilderHistoricalResults(flattenedResults);
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
+  useCharacterBuilderPersistence({
+    authLoading,
+    hydrated,
+    pendingRuns,
+    setAdvancedOpen,
+    setError,
+    setHairOpen,
+    setHydrated,
+    setLightboxEntry,
+    setLoadingActions,
+    setMustRemainDraft,
+    setPendingRuns,
+    setSavingResultId,
+    setShowStyleReferenceSlot,
+    setState,
+    setStatusMessage,
+    state,
+    styleReference,
+    user,
+  });
   const hasIdentityReference = Boolean(identityReference);
   const hasCompletedResults = flattenedResults.length > 0;
   const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
@@ -205,6 +218,23 @@ export default function CharacterBuilderPage() {
   const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
+  useCharacterBuilderPendingRunsSync({
+    authLoading,
+    hydrated,
+    mutateHistoricalJobs,
+    pendingRuns,
+    setPendingRuns,
+    setState,
+    user,
+  });
+  useCharacterBuilderJobSnapshotLoader({
+    hydrated,
+    jobIdFromQuery,
+    loadFromJobDoneMessage: copy.loadFromJobDone,
+    setShowStyleReferenceSlot,
+    setState,
+    setStatusMessage,
+  });
   const { data: billingProductData } = useSWR(
     `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
     async (url: string) => {
@@ -222,172 +252,6 @@ export default function CharacterBuilderPage() {
       ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
       : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
-  useEffect(() => {
-    const persisted = readPersistedState();
-    if (persisted) {
-      setState(persisted);
-      setAdvancedOpen(Boolean(persisted.advancedNotes));
-      setShowStyleReferenceSlot(Boolean(getRefByRole(persisted.referenceImages, 'style')));
-    }
-    const pending = readPersistedPendingRuns();
-    if (pending.length) {
-      setPendingRuns(pending);
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (styleReference) {
-      setShowStyleReferenceSlot(true);
-    }
-  }, [styleReference]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    writePersistedState(state);
-  }, [hydrated, state]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    writePersistedPendingRuns(pendingRuns);
-  }, [hydrated, pendingRuns]);
-
-  useEffect(() => {
-    if (authLoading || !hydrated) return;
-    if (user) {
-      visitorSanitizedRef.current = false;
-      return;
-    }
-    if (visitorSanitizedRef.current) return;
-    visitorSanitizedRef.current = true;
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.removeItem(CHARACTER_BUILDER_STORAGE_KEY);
-        window.localStorage.removeItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
-      } catch {
-        // ignore storage failures
-      }
-    }
-    setState(createDefaultCharacterBuilderState());
-    setAdvancedOpen(false);
-    setHairOpen(false);
-    setShowStyleReferenceSlot(false);
-    setMustRemainDraft('');
-    setLoadingActions(INITIAL_LOADING_REQUEST_COUNTS);
-    setPendingRuns([]);
-    setSavingResultId(null);
-    setLightboxEntry(null);
-    setError(null);
-    setStatusMessage(null);
-  }, [authLoading, hydrated, user]);
-
-  useEffect(() => {
-    if (!hydrated || authLoading || !user || !pendingRuns.length) return undefined;
-
-    let cancelled = false;
-
-    async function syncPendingRuns() {
-      const completedRuns: CharacterBuilderRun[] = [];
-      const completedIds = new Set<string>();
-      const failedIds = new Set<string>();
-
-      await Promise.all(
-        pendingRuns.map(async (pendingRun) => {
-          try {
-            const response = await authFetch(`/api/jobs/${encodeURIComponent(pendingRun.jobId)}`);
-            const payload = (await response.json().catch(() => null)) as CharacterJobPayload | null;
-            if (!response.ok || !payload?.ok || cancelled) return;
-
-            const normalizedStatus = typeof payload.status === 'string' ? payload.status.toLowerCase() : '';
-            const recoveredRun = buildRecoveredRunFromJob(pendingRun, payload);
-            if (recoveredRun) {
-              completedRuns.push(recoveredRun);
-              completedIds.add(pendingRun.id);
-              return;
-            }
-
-            if (normalizedStatus === 'failed' || normalizedStatus === 'error' || normalizedStatus === 'cancelled' || normalizedStatus === 'canceled') {
-              failedIds.add(pendingRun.id);
-            }
-          } catch {
-            // ignore transient polling failures
-          }
-        })
-      );
-
-      if (cancelled) return;
-
-      if (completedIds.size || failedIds.size) {
-        setPendingRuns((previous) =>
-          previous.filter((entry) => !completedIds.has(entry.id) && !failedIds.has(entry.id))
-        );
-      }
-
-      if (completedRuns.length) {
-        setState((previous) => {
-          const seenJobIds = new Set(previous.runs.map((run) => run.jobId));
-          const freshRuns = completedRuns.filter((run) => !seenJobIds.has(run.jobId));
-          if (!freshRuns.length) return previous;
-          const nextRuns = [...freshRuns, ...previous.runs].slice(0, 12);
-          const firstResultId = freshRuns[0]?.results[0]?.id ?? previous.selectedResultId;
-          return {
-            ...previous,
-            runs: nextRuns,
-            selectedResultId: firstResultId,
-          };
-        });
-        void mutateHistoricalJobs(undefined, { revalidate: true });
-      }
-    }
-
-    void syncPendingRuns();
-    const intervalId = window.setInterval(() => {
-      void syncPendingRuns();
-    }, 8000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [authLoading, hydrated, mutateHistoricalJobs, pendingRuns, user]);
-
-  useEffect(() => {
-    const requestedJobId = jobIdFromQuery;
-    if (!hydrated || !requestedJobId) return;
-    const activeJobId: string = requestedJobId;
-    let cancelled = false;
-
-    async function loadFromJob() {
-      try {
-        const response = await authFetch(`/api/jobs/${encodeURIComponent(activeJobId)}`);
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              ok?: boolean;
-              settingsSnapshot?: unknown;
-            }
-          | null;
-        if (!response.ok || !payload?.ok || !payload.settingsSnapshot || cancelled) return;
-        const snapshotState = parseCharacterBuilderSnapshot(payload.settingsSnapshot);
-        if (!snapshotState) return;
-        setState((previous) => ({
-          ...previous,
-          ...snapshotState,
-        }));
-        setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
-        setStatusMessage(copy.loadFromJobDone);
-      } catch (loadError) {
-        if (!cancelled) {
-          console.warn('[character-builder] failed to load job snapshot', loadError);
-        }
-      }
-    }
-
-    void loadFromJob();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [copy.loadFromJobDone, hydrated, jobIdFromQuery]);
 
   useEffect(() => {
     const sentinel = resultsSentinelRef.current;

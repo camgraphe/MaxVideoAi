@@ -16,6 +16,9 @@ const referenceLibraryPath = join(root, 'frontend/src/components/tools/character
 const resultCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-result-cards.tsx');
 const optionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderOptions.ts');
 const historicalResultsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderHistoricalResults.ts');
+const pendingRunsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPendingRunsSync.ts');
+const jobSnapshotHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderJobSnapshotLoader.ts');
+const persistenceHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPersistence.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -31,10 +34,16 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(resultCardsPath), 'result card components should live in a focused component module');
   assert.ok(existsSync(optionsHookPath), 'localized option derivation should live in a focused hook');
   assert.ok(existsSync(historicalResultsHookPath), 'historical result derivation should live in a focused hook');
+  assert.ok(existsSync(pendingRunsHookPath), 'pending run polling should live in a focused hook');
+  assert.ok(existsSync(jobSnapshotHookPath), 'job snapshot loading should live in a focused hook');
+  assert.ok(existsSync(persistenceHookPath), 'local persistence should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderJobSnapshotLoader'/, 'workspace should import job snapshot loader hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-helpers'/, 'workspace should import helpers');
@@ -53,9 +62,14 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /GENDER_PRESENTATION_OPTIONS\.map/, 'localized option derivation belongs in useCharacterBuilderOptions');
   assert.doesNotMatch(workspaceSource, /useInfiniteJobs\(18, \{ surface: 'character' \}\)/, 'historical result feed belongs in useCharacterBuilderHistoricalResults');
   assert.doesNotMatch(workspaceSource, /localResultUrls/, 'historical duplicate filtering belongs in useCharacterBuilderHistoricalResults');
+  assert.doesNotMatch(workspaceSource, /function syncPendingRuns\(/, 'pending run polling belongs in useCharacterBuilderPendingRunsSync');
+  assert.doesNotMatch(workspaceSource, /function loadFromJob\(/, 'job query hydration belongs in useCharacterBuilderJobSnapshotLoader');
+  assert.doesNotMatch(workspaceSource, /readPersistedState\(\)/, 'local hydration belongs in useCharacterBuilderPersistence');
+  assert.doesNotMatch(workspaceSource, /writePersistedPendingRuns/, 'pending run persistence belongs in useCharacterBuilderPersistence');
+  assert.doesNotMatch(workspaceSource, /visitorSanitizedRef/, 'visitor cleanup tracking belongs in useCharacterBuilderPersistence');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1800, `CharacterBuilderWorkspace should stay below 1800 lines after hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1660, `CharacterBuilderWorkspace should stay below 1660 lines after runtime hook extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -70,6 +84,9 @@ test('character builder helper modules expose the expected workspace contract', 
   const resultCardsSource = readFileSync(resultCardsPath, 'utf8');
   const optionsHookSource = readFileSync(optionsHookPath, 'utf8');
   const historicalResultsHookSource = readFileSync(historicalResultsHookPath, 'utf8');
+  const pendingRunsHookSource = readFileSync(pendingRunsHookPath, 'utf8');
+  const jobSnapshotHookSource = readFileSync(jobSnapshotHookPath, 'utf8');
+  const persistenceHookSource = readFileSync(persistenceHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_CHARACTER_COPY =/, 'copy module should export default copy');
   assert.match(copySource, /export type CharacterCopy =/, 'copy module should export copy type');
@@ -169,4 +186,11 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(optionsHookSource, /getAvailableCharacterFormatOptions/, 'options hook should own format option derivation');
   assert.match(historicalResultsHookSource, /export function useCharacterBuilderHistoricalResults/, 'historical results hook should be exported');
   assert.match(historicalResultsHookSource, /useInfiniteJobs\(18, \{ surface: 'character' \}\)/, 'historical results hook should own the character feed');
+  assert.match(pendingRunsHookSource, /export function useCharacterBuilderPendingRunsSync/, 'pending run sync hook should be exported');
+  assert.match(pendingRunsHookSource, /buildRecoveredRunFromJob/, 'pending run sync hook should recover completed runs');
+  assert.match(jobSnapshotHookSource, /export function useCharacterBuilderJobSnapshotLoader/, 'job snapshot loader hook should be exported');
+  assert.match(jobSnapshotHookSource, /parseCharacterBuilderSnapshot/, 'job snapshot loader hook should own query hydration parsing');
+  assert.match(persistenceHookSource, /export function useCharacterBuilderPersistence/, 'persistence hook should be exported');
+  assert.match(persistenceHookSource, /readPersistedState/, 'persistence hook should own local hydration');
+  assert.match(persistenceHookSource, /writePersistedPendingRuns/, 'persistence hook should own pending run persistence');
 });
