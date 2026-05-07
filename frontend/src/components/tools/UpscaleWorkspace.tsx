@@ -56,384 +56,45 @@ import type {
   UpscaleOutputFormat,
   UpscaleTargetResolution,
   UpscaleToolEngineId,
-  UpscaleToolOutput,
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
-
-const SAMPLE_IMAGE_URL =
-  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
-
-const DEFAULT_COPY = {
-  disabledTitle: 'Tools are disabled',
-  disabledBody: 'Enable `FEATURES.workflows.toolsSection` to access this area.',
-  back: 'Back to Tools',
-  eyebrow: 'AI Upscale Studio',
-  title: 'Upscale images and videos',
-  subtitle: 'A clean finishing pass for stills and short clips before they go back into Library, Image, or Video.',
-  image: 'Image',
-  video: 'Video',
-  sourceTitle: 'Source',
-  upload: 'Drop or choose file',
-  urlPlaceholder: 'Paste an image or video URL',
-  uploadFailed: 'Upload failed.',
-  settingsTitle: 'Upscale recipe',
-  mediaType: 'Media type',
-  engine: 'Engine',
-  mode: 'Mode',
-  factor: 'Factor',
-  target: 'Target',
-  output: 'Format',
-  run: 'Run Upscale',
-  running: 'Upscaling...',
-  outputTitle: 'Studio preview',
-  emptyOutput: 'Add a source and run an upscale to compare the finished asset here.',
-  previewSource: 'Source',
-  previewResult: 'Result',
-  previewCompare: 'Compare',
-  previewZoom: 'Pixel zoom',
-  previewZoomFit: 'Fit',
-  save: 'Save',
-  saved: 'Saved to Library.',
-  saveFailed: 'Failed to save to Library.',
-  download: 'Download',
-  recentTitle: 'Recent upscales',
-  priceEyebrow: 'Est. price',
-  priceLoading: 'Loading price...',
-  priceUnavailable: 'Price unavailable',
-  priceReady: 'Shown before generation',
-  priceVideoLoading: 'Reading video metadata...',
-  priceVideoMissing: 'Add a readable video source to estimate.',
-  library: 'Library',
-  libraryChoose: 'Choose from Library',
-  libraryTitle: 'Choose source asset',
-  libraryBody: 'Select an image or video already saved in your Library.',
-  librarySearch: 'Search assets...',
-  librarySourcesTitle: 'Library',
-  libraryEmpty: 'No saved assets yet.',
-  libraryEmptyImages: 'No saved images yet.',
-  libraryEmptyVideos: 'No saved videos yet.',
-  libraryEmptySearch: 'No assets match this search.',
-  libraryError: 'Failed to load Library assets.',
-  libraryRefresh: 'Refresh',
-  libraryUse: 'Use',
-  libraryCount: '{count} assets',
-  libraryTabs: {
-    all: 'All assets',
-    upload: 'Uploaded',
-    generated: 'Generated',
-    character: 'Character',
-    angle: 'Angle',
-    upscale: 'Upscale',
-  },
-  authTitle: 'Sign in to upscale',
-  authBody: 'Uploads, wallet billing, and Library actions require an account.',
-  authPrimary: 'Create account',
-  authSecondary: 'Sign in',
-} as const;
-
-const SOURCE_FALLBACK_WIDTH = 1024;
-const SOURCE_FALLBACK_HEIGHT = 1280;
-
-type UploadedAsset = {
-  id?: string | null;
-  jobId?: string | null;
-  url: string;
-  width?: number | null;
-  height?: number | null;
-  mime?: string | null;
-  name?: string | null;
-};
-
-type PreviewMode = 'source' | 'result' | 'compare';
-type PreviewZoom = 'fit' | '100' | '200' | '400';
-type RecentUpscaleMedia = {
-  url: string;
-  thumbUrl?: string | null;
-  mediaType: UpscaleMediaType;
-  mimeType: string;
-  source?: {
-    url: string;
-    assetId?: string | null;
-    jobId?: string | null;
-    width?: number | null;
-    height?: number | null;
-    mimeType: string;
-  } | null;
-  job: Job;
-  engineLabel: string;
-  engineId?: string;
-  createdAt: string;
-  totalCents: number | null;
-  currency: string;
-};
-
-const PREVIEW_ZOOM_OPTIONS: Array<{ value: PreviewZoom; label: string }> = [
-  { value: 'fit', label: 'Fit' },
-  { value: '100', label: '100%' },
-  { value: '200', label: '200%' },
-  { value: '400', label: '400%' },
-];
-
-type BillingProductResponse = {
-  ok: boolean;
-  product?: {
-    productKey: string;
-    currency: string;
-    unitPriceCents: number;
-  };
-  error?: string;
-};
-
-type UserAssetsResponse = {
-  ok: boolean;
-  assets?: Array<{
-    id: string;
-    url: string;
-    mime?: string | null;
-    width?: number | null;
-    height?: number | null;
-    size?: number | null;
-    source?: string | null;
-    createdAt?: string;
-  }>;
-  error?: string;
-};
-
-type JobDetailResponse = Partial<Job> & {
-  ok?: boolean;
-  pricing?: Job['pricingSnapshot'];
-  error?: string;
-};
-
-type JobsLibraryResponse = {
-  ok?: boolean;
-  jobs?: Array<{
-    jobId: string;
-    videoUrl?: string | null;
-    readyVideoUrl?: string | null;
-    createdAt?: string;
-  }>;
-  error?: string;
-};
-
-function isOutputVideo(output?: UpscaleToolOutput | null) {
-  return Boolean(output?.mimeType?.startsWith('video/') || output?.url.match(/\.(mp4|webm|mov)(\?|$)/i));
-}
-
-function firstUsableUrl(...values: Array<string | null | undefined>) {
-  return values.find((value): value is string => typeof value === 'string' && value.trim().length > 0) ?? null;
-}
-
-function inferMimeType(url: string, mediaType: UpscaleMediaType) {
-  if (mediaType === 'video') {
-    if (url.match(/\.webm(\?|$)/i)) return 'video/webm';
-    if (url.match(/\.mov(\?|$)/i)) return 'video/quicktime';
-    return 'video/mp4';
-  }
-  if (url.match(/\.jpe?g(\?|$)/i)) return 'image/jpeg';
-  if (url.match(/\.webp(\?|$)/i)) return 'image/webp';
-  return 'image/png';
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
-}
-
-function finiteNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function parseRecentImageVariantIndex(id?: string | null) {
-  const match = id?.match(/-image-(\d+)$/);
-  if (!match) return 0;
-  const index = Number.parseInt(match[1], 10);
-  return Number.isFinite(index) && index >= 0 ? index : 0;
-}
-
-function resolveRecentUpscaleSource(job: Job): RecentUpscaleMedia['source'] {
-  const snapshot = asRecord(job.settingsSnapshot);
-  const source = asRecord(snapshot?.source);
-  const rawUrl = source?.mediaUrl;
-  const url = typeof rawUrl === 'string' ? rawUrl.trim() : '';
-  if (!url) return null;
-
-  const metadata = asRecord(source?.metadata);
-  const mediaType = snapshot?.mediaType === 'video' ? 'video' : 'image';
-  return {
-    url,
-    assetId: typeof source?.sourceAssetId === 'string' ? source.sourceAssetId : null,
-    jobId: typeof source?.sourceJobId === 'string' ? source.sourceJobId : null,
-    width: finiteNumber(metadata?.width),
-    height: finiteNumber(metadata?.height),
-    mimeType: inferMimeType(url, mediaType),
-  };
-}
-
-function resolveRecentUpscaleMedia(job: Job | null | undefined, preferredImageIndex = 0): RecentUpscaleMedia | null {
-  if (!job) return null;
-  const videoUrl = firstUsableUrl(job.videoUrl, job.readyVideoUrl);
-  const totalCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
-  const currency = job.currency ?? job.pricingSnapshot?.currency ?? 'USD';
-  const source = resolveRecentUpscaleSource(job);
-  if (videoUrl) {
-    return {
-      url: videoUrl,
-      thumbUrl: job.thumbUrl ?? job.previewFrame ?? null,
-      mediaType: 'video',
-      mimeType: inferMimeType(videoUrl, 'video'),
-      source,
-      job,
-      engineLabel: job.engineLabel,
-      engineId: job.engineId,
-      createdAt: job.createdAt,
-      totalCents,
-      currency,
-    };
-  }
-
-  const renderIds = Array.isArray(job.renderIds)
-    ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    : [];
-  const renderThumbs = Array.isArray(job.renderThumbUrls)
-    ? job.renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    : [];
-  const imageUrl = firstUsableUrl(job.heroRenderId, renderIds[preferredImageIndex], renderIds[0], job.thumbUrl, job.previewFrame);
-  if (!imageUrl) return null;
-  return {
-    url: imageUrl,
-    thumbUrl: renderThumbs[preferredImageIndex] ?? renderThumbs[0] ?? job.thumbUrl ?? job.previewFrame ?? imageUrl,
-    mediaType: 'image',
-    mimeType: inferMimeType(imageUrl, 'image'),
-    source,
-    job,
-    engineLabel: job.engineLabel,
-    engineId: job.engineId,
-    createdAt: job.createdAt,
-    totalCents,
-    currency,
-  };
-}
-
-function resolveRecentUpscaleMediaFromGroup(group: GroupSummary): RecentUpscaleMedia | null {
-  const heroJob = group.hero.job ?? null;
-  const fallbackJob = group.members.find((member) => member.job)?.job ?? null;
-  const variantIndex = parseRecentImageVariantIndex(group.hero.id);
-  return resolveRecentUpscaleMedia(heroJob ?? fallbackJob, variantIndex);
-}
-
-function resolveRecentUpscaleJobFromGroup(group: GroupSummary): Job | null {
-  return group.hero.job ?? group.members.find((member) => member.job)?.job ?? null;
-}
-
-function resolveGeneratedImageSource(job: Job | null | undefined): UploadedAsset | null {
-  if (!job) return null;
-  const renderIds = Array.isArray(job.renderIds)
-    ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    : [];
-  const imageUrl = firstUsableUrl(job.heroRenderId, renderIds[0], job.thumbUrl, job.previewFrame);
-  if (!imageUrl) return null;
-  return {
-    id: null,
-    jobId: job.jobId,
-    url: imageUrl,
-    mime: inferMimeType(imageUrl, 'image'),
-    name: `Generated image · ${job.engineLabel}`,
-  };
-}
-
-function hasRenderableUpscaleJobMedia(job: Job): boolean {
-  const hasImageMedia = Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.trim().length > 0);
-  return Boolean(firstUsableUrl(job.videoUrl, job.readyVideoUrl, job.audioUrl) || hasImageMedia);
-}
-
-function resolveUpscaleEngineId(value: string | undefined, mediaType: UpscaleMediaType): UpscaleToolEngineId {
-  const engines = listUpscaleToolEngines(mediaType);
-  return (
-    engines.find((entry) => entry.id === value)?.id ??
-    (mediaType === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID)
-  );
-}
-
-function mediaTypeFromMime(mime?: string | null): UpscaleMediaType | null {
-  if (!mime) return null;
-  if (mime.startsWith('image/')) return 'image';
-  if (mime.startsWith('video/')) return 'video';
-  return null;
-}
-
-async function uploadSourceFile(file: File, mediaType: UpscaleMediaType): Promise<UploadedAsset> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await authFetch(mediaType === 'video' ? '/api/uploads/video' : '/api/uploads/image', {
-    method: 'POST',
-    body: form,
-  });
-  const payload = (await response.json().catch(() => null)) as {
-    ok?: boolean;
-    error?: string;
-    asset?: UploadedAsset;
-  } | null;
-  if (!response.ok || !payload?.ok || !payload.asset?.url) {
-    throw new Error(payload?.error ?? `Upload failed (${response.status})`);
-  }
-  return payload.asset;
-}
-
-function formatCurrency(amountCents?: number | null, currency = 'USD', locale?: string): string {
-  if (typeof amountCents !== 'number') return '-';
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-    }).format(amountCents / 100);
-  } catch {
-    return `${currency} ${(amountCents / 100).toFixed(2)}`;
-  }
-}
-
-function readVideoPricingMetadata(url: string): Promise<UpscaleVideoPricingMetadata> {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video');
-    video.preload = 'metadata';
-    video.muted = true;
-    video.playsInline = true;
-
-    const cleanup = () => {
-      video.removeAttribute('src');
-      video.load();
-    };
-
-    video.onloadedmetadata = () => {
-      const durationSec = Number.isFinite(video.duration) ? video.duration : 0;
-      const width = video.videoWidth;
-      const height = video.videoHeight;
-      cleanup();
-      if (width > 0 && height > 0 && durationSec > 0) {
-        resolve({ width, height, durationSec });
-        return;
-      }
-      reject(new Error('Video metadata unavailable'));
-    };
-    video.onerror = () => {
-      cleanup();
-      reject(new Error('Video metadata unavailable'));
-    };
-    video.src = url;
-  });
-}
+import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
+import {
+  buildLibraryCacheKey,
+  clampComparePosition,
+  formatCurrency,
+  hasRenderableUpscaleJobMedia,
+  inferMimeType,
+  isOutputVideo,
+  mediaTypeFromMime,
+  parseRecentImageVariantIndex,
+  PREVIEW_ZOOM_OPTIONS,
+  readVideoPricingMetadata,
+  resolveGeneratedImageSource,
+  resolveRecentUpscaleJobFromGroup,
+  resolveRecentUpscaleMedia,
+  resolveRecentUpscaleMediaFromGroup,
+  resolveUpscaleEngineId,
+  SAMPLE_IMAGE_URL,
+  SOURCE_FALLBACK_HEIGHT,
+  SOURCE_FALLBACK_WIDTH,
+  uploadSourceFile,
+} from './upscale/_lib/upscale-workspace-helpers';
+import type {
+  BillingProductResponse,
+  JobDetailResponse,
+  JobsLibraryResponse,
+  PreviewMode,
+  PreviewZoom,
+  RecentUpscaleMedia,
+  UploadedAsset,
+  UserAssetsResponse,
+} from './upscale/_lib/upscale-workspace-types';
 
 function Label({ children }: { children: React.ReactNode }) {
   return <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">{children}</span>;
-}
-
-function clampComparePosition(value: number) {
-  return Math.min(92, Math.max(8, value));
-}
-
-function buildLibraryCacheKey(kind: UpscaleMediaType, source: AssetLibrarySource) {
-  return `${kind}:${source}`;
 }
 
 function SegmentButton({
@@ -467,8 +128,8 @@ export default function UpscaleWorkspace() {
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { locale, t } = useI18n();
   const copy = {
-    ...DEFAULT_COPY,
-    ...((t('workspace.upscale') ?? {}) as Partial<typeof DEFAULT_COPY>),
+    ...DEFAULT_UPSCALE_COPY,
+    ...((t('workspace.upscale') ?? {}) as Partial<typeof DEFAULT_UPSCALE_COPY>),
   };
   const [mediaType, setMediaType] = useState<UpscaleMediaType>('image');
   const [engineId, setEngineId] = useState<UpscaleToolEngineId>(DEFAULT_UPSCALE_IMAGE_ENGINE_ID);
