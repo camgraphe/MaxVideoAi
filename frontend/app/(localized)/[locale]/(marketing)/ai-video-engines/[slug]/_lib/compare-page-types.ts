@@ -88,6 +88,31 @@ export type EngineKeySpecsFile = {
   specs?: EngineKeySpecsEntry[];
 };
 
+export type CompareSpecValues = {
+  textToVideo: string;
+  imageToVideo: string;
+  videoToVideo: string;
+  firstLastFrame: string;
+  referenceImageStyle: string;
+  referenceVideo: string;
+  maxResolution: string;
+  maxDuration: string;
+  aspectRatios: string;
+  fpsOptions: string;
+  outputFormats: string;
+  audioOutput: string;
+  nativeAudioGeneration: string;
+  lipSync: string;
+  cameraMotionControls: string;
+  watermark: string;
+};
+
+export type ComparePricingDisplay = {
+  headline: string;
+  subline: string | null;
+  prices: number[];
+};
+
 export type ShowdownSide = {
   label?: string;
   jobId?: string;

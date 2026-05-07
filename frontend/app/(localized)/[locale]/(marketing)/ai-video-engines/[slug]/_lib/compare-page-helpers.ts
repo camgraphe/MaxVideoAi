@@ -10,7 +10,16 @@ import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getPublicVideosByIds } from '@/server/videos';
 import type { EngineCaps } from '@/types/engines';
 import { CATALOG_BY_SLUG, EXCLUDED_ENGINE_SLUGS, MODELS_SLUG_MAP } from './compare-page-config';
-import type { EngineCatalogEntry, EngineKeySpecsEntry, EngineKeySpecsFile, EngineScore, EngineScoresFile, ShowdownEntry } from './compare-page-types';
+import type {
+  ComparePricingDisplay,
+  CompareSpecValues,
+  EngineCatalogEntry,
+  EngineKeySpecsEntry,
+  EngineKeySpecsFile,
+  EngineScore,
+  EngineScoresFile,
+  ShowdownEntry,
+} from './compare-page-types';
 
 export function reverseCompareSlug(slug: string) {
   const parts = slug.split('-vs-');
@@ -469,7 +478,10 @@ export function isPending(value: string) {
   return value.trim().toLowerCase() === 'data pending';
 }
 
-export function buildSpecValues(entry: EngineCatalogEntry, specs: Record<string, unknown> | undefined) {
+export function buildSpecValues(
+  entry: EngineCatalogEntry,
+  specs: Record<string, unknown> | undefined
+): CompareSpecValues {
   return {
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(entry, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(entry, 'i2v')),
@@ -591,7 +603,7 @@ export async function resolvePricingDisplay(
   entry: EngineCatalogEntry,
   locale: AppLocale,
   pricingEngine?: EngineCaps | null
-) {
+): Promise<ComparePricingDisplay> {
   const availability = String(entry.availability ?? '').toLowerCase();
   if (availability === 'waitlist') {
     return {

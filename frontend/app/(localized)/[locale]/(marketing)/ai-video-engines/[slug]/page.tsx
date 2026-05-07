@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import clsx from 'clsx';
-import { ArrowLeft, ArrowRight, Trophy } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { localePathnames, locales } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -10,12 +10,11 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { isDatabaseConfigured } from '@/lib/db';
 import { getCompareShowdowns, type CompareShowdown } from '@/config/compare-showdowns';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
-import { ButtonLink } from '@/components/ui/Button';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
-import { EngineIcon } from '@/components/ui/EngineIcon';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
+import { CompareGenerateCard } from './_components/CompareGenerateCard';
 import { renderShowdownMedia } from './_components/CompareShowdownMedia';
 import { renderSpecValue } from './_components/CompareSpecValue';
 import { getLatestPublicVideoByPromptAndEngine, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -31,13 +30,21 @@ import {
   TROPHY_COMPARISONS,
 } from './_lib/compare-page-config';
 import type {
-  EngineCatalogEntry,
   Params,
   ShowdownEntry,
   ShowdownSide,
 } from './_lib/compare-page-types';
 import type { ComparePageCopy } from './_lib/compare-page-copy';
 import { getComparePageOverride } from './_lib/compare-page-overrides';
+import { buildCompareFaqItems, buildCompareFaqJsonLd } from './_lib/compare-page-faq';
+import {
+  buildCompareSummaryRows,
+  buildComparisonMetrics,
+  deriveCompareStrengths,
+  formatWinnerSummaryValue,
+  resolveSummaryLabelClass,
+  resolveSummaryMarker,
+} from './_lib/compare-page-scorecard';
 import {
   buildGenerateHref,
   buildSpecValues,
@@ -63,18 +70,12 @@ import {
   loadEngineScores,
   localizeBestFor,
   localizeMappedValue,
-  localizeSpecDetailValue,
-  parseFirstNumber,
-  parseResolutionValue,
-  pickFirstCapabilityDifference,
-  pickOutputDifference,
   replaceCriteriaCount,
   resolveEngines,
   resolveExcludedCompareRedirect,
   resolvePricingDisplay,
   reverseCompareSlug,
   stripAudioReferencesForSilentPair,
-  type OverallTone,
 } from './_lib/compare-page-helpers';
 
 export const dynamicParams = true;
@@ -526,268 +527,22 @@ export default async function CompareDetailPage(
       (item): item is { href: { pathname: string; params: { slug: string } }; label: string } => Boolean(item)
     );
 
-  const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
-  const formatFaqValue = (value: string) =>
-    isPending(value) ? validatingLabel : localizeSpecDetailValue(value, activeLocale, labels);
-  const faqPricingLeft = formatFaqValue(leftPricingDisplay.headline);
-  const faqPricingRight = formatFaqValue(rightPricingDisplay.headline);
-  const faqT2vLeft = formatFaqValue(leftSpecs.textToVideo);
-  const faqT2vRight = formatFaqValue(rightSpecs.textToVideo);
-  const faqI2vLeft = formatFaqValue(leftSpecs.imageToVideo);
-  const faqI2vRight = formatFaqValue(rightSpecs.imageToVideo);
-  const faqV2vLeft = formatFaqValue(leftSpecs.videoToVideo);
-  const faqV2vRight = formatFaqValue(rightSpecs.videoToVideo);
-  const faqFirstLastLeft = formatFaqValue(leftSpecs.firstLastFrame);
-  const faqFirstLastRight = formatFaqValue(rightSpecs.firstLastFrame);
-  const faqRefImgLeft = formatFaqValue(leftSpecs.referenceImageStyle);
-  const faqRefImgRight = formatFaqValue(rightSpecs.referenceImageStyle);
-  const faqRefVidLeft = formatFaqValue(leftSpecs.referenceVideo);
-  const faqRefVidRight = formatFaqValue(rightSpecs.referenceVideo);
-  const faqResLeft = formatFaqValue(leftSpecs.maxResolution);
-  const faqResRight = formatFaqValue(rightSpecs.maxResolution);
-  const faqDurLeft = formatFaqValue(leftSpecs.maxDuration);
-  const faqDurRight = formatFaqValue(rightSpecs.maxDuration);
-  const faqArLeft = formatFaqValue(leftSpecs.aspectRatios);
-  const faqArRight = formatFaqValue(rightSpecs.aspectRatios);
-  const faqAudioOutLeft = formatFaqValue(leftSpecs.audioOutput);
-  const faqAudioOutRight = formatFaqValue(rightSpecs.audioOutput);
-  const faqAudioGenLeft = formatFaqValue(leftSpecs.nativeAudioGeneration);
-  const faqAudioGenRight = formatFaqValue(rightSpecs.nativeAudioGeneration);
-  const faqLipLeft = formatFaqValue(leftSpecs.lipSync);
-  const faqLipRight = formatFaqValue(rightSpecs.lipSync);
-  const capabilityTemplates = {
-    value:
-      compareCopy.faq?.capabilityDiff ??
-      '{label}: {left} is {leftValue} vs {right} is {rightValue}.',
-    pending:
-      compareCopy.faq?.capabilityPending ??
-      '{label}: both are {status}.',
-  };
-  const outputTemplates = {
-    value:
-      compareCopy.faq?.outputDiff ??
-      '{label}: {left} is {leftValue} vs {right} is {rightValue}.',
-    pending:
-      compareCopy.faq?.outputPending ??
-      '{label}: data is still being validated for one or both engines.',
-  };
-  const faqCapabilityDiff = pickFirstCapabilityDifference(
+  const faqItems = buildCompareFaqItems({
+    activeLocale,
+    compareCopy,
+    labels,
     left,
     right,
-    [
-      { label: specLabels.lipSync ?? 'Lip sync', leftStatus: faqLipLeft, rightStatus: faqLipRight },
-      {
-        label: specLabels.nativeAudioGeneration ?? 'Native audio generation',
-        leftStatus: faqAudioGenLeft,
-        rightStatus: faqAudioGenRight,
-      },
-      { label: specLabels.firstLastFrame ?? 'First/Last frame', leftStatus: faqFirstLastLeft, rightStatus: faqFirstLastRight },
-      {
-        label: specLabels.referenceImageStyle ?? 'Reference image / style reference',
-        leftStatus: faqRefImgLeft,
-        rightStatus: faqRefImgRight,
-      },
-      { label: specLabels.referenceVideo ?? 'Reference video', leftStatus: faqRefVidLeft, rightStatus: faqRefVidRight },
-      { label: specLabels.videoToVideo ?? 'Video-to-Video', leftStatus: faqV2vLeft, rightStatus: faqV2vRight },
-      { label: specLabels.imageToVideo ?? 'Image-to-Video', leftStatus: faqI2vLeft, rightStatus: faqI2vRight },
-      { label: specLabels.textToVideo ?? 'Text-to-Video', leftStatus: faqT2vLeft, rightStatus: faqT2vRight },
-    ],
-    capabilityTemplates,
-    validatingLabel,
-    activeLocale
-  );
-  const faqOutputDiff = pickOutputDifference(
-    formatEngineName(left),
-    formatEngineName(right),
-    faqResLeft,
-    faqResRight,
-    compareCopy.faq?.outputLabel ?? 'Max resolution',
-    outputTemplates,
-    validatingLabel
-  );
-  const faqTemplates = compareCopy.faq ?? {};
-  const kling3Native4kFaqCopy = pairHasKling3Native4k
-    ? activeLocale === 'fr'
-      ? {
-          a1: '{left} et {right} sont des modèles de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare la livraison 4K native, le coût d’itération, les caractéristiques clés et les données ci-dessus.',
-          a2: 'Cela dépend du flux de production. Utilisez la grille de scores et les caractéristiques pour décider si le plan a besoin d’une livraison 4K native ou d’une route d’itération moins coûteuse, puis ouvrez chaque profil pour les détails complets.',
-          q10: 'Pourquoi les résultats peuvent-ils différer entre ces routes ?',
-          a10: 'Même avec des instructions proches, les modèles interprètent différemment les contraintes et les réglages. Pour Kling 3 4K, comparez d’abord les caractéristiques et l’échelle de coût, puis rendez seulement les plans finalisés en 4K native.',
-        }
-      : activeLocale === 'es'
-        ? {
-            a1: '{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página compara entrega 4K nativa, costo de iteración, specs clave y los datos anteriores.',
-            a2: 'Depende de tu flujo de trabajo. Usa el scorecard y las specs para decidir si el plano necesita entrega 4K nativa o una ruta de iteración de menor costo, luego abre cada perfil para los detalles completos.',
-            q10: '¿Por qué pueden diferir los resultados entre estas rutas?',
-            a10: 'Incluso con instrucciones similares, los modelos interpretan las restricciones y los ajustes de forma distinta. Para Kling 3 4K, compara primero las specs y la escala de costo, luego renderiza en 4K nativo solo los planos aprobados.',
-          }
-        : {
-            a1: '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares native 4K delivery, iteration cost, key specs, and performance data shown above.',
-            a2: 'It depends on your workflow. Use the scorecard and specs to decide whether the job needs native 4K delivery or a lower-cost iteration route, then open each engine profile for full details.',
-            q10: 'Why can results differ between these routes?',
-            a10: 'Even with similar instructions, models interpret constraints and settings differently. For Kling 3 4K, compare the specs and cost ladder first, then render only approved final shots in native 4K.',
-          }
-    : null;
-
-  const generatedFaqItems = [
-    {
-      question: formatTemplate(
-        faqTemplates.q1 ?? 'What are {left} and {right}?',
-        { left: formatEngineName(left), right: formatEngineName(right) }
-      ),
-      answer: formatTemplate(
-        kling3Native4kFaqCopy?.a1 ??
-          faqTemplates.a1 ??
-          '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares them side-by-side using the same prompts, key specs, and performance data shown above.',
-        { left: formatEngineName(left), right: formatEngineName(right) }
-      ),
-    },
-    {
-      question: formatTemplate(
-        faqTemplates.q2 ?? 'Which is better: {left} or {right}?',
-        { left: formatEngineName(left), right: formatEngineName(right) }
-      ),
-      answer:
-        kling3Native4kFaqCopy?.a2 ??
-        faqTemplates.a2 ??
-        'It depends on your workflow. Use the scorecard and the “same prompt” showdowns to compare prompt adherence, motion realism, human fidelity, and text legibility — then open each engine profile for full details.',
-    },
-    {
-      question: faqTemplates.q3 ?? 'Which is cheaper on MaxVideoAI?',
-      answer: formatTemplate(
-        stripAudioReferencesForSilentPair(
-          faqTemplates.a3 ??
-          (pairHasNativeAudio
-            ? 'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'
-            : 'Pricing varies by engine and settings (duration and resolution). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'),
-          pairHasNativeAudio
-        ),
-        {
-          left: formatEngineName(left),
-          right: formatEngineName(right),
-          leftValue: faqPricingLeft,
-          rightValue: faqPricingRight,
-        }
-      ),
-    },
-    {
-      question: formatTemplate(
-        faqTemplates.q4 ?? 'What are the biggest differences between {left} and {right}?',
-        { left: formatEngineName(left), right: formatEngineName(right) }
-      ),
-      answer: [faqCapabilityDiff, faqOutputDiff],
-    },
-    {
-      question:
-        faqTemplates.q5 ?? 'Do they support Text-to-Video / Image-to-Video / Video-to-Video?',
-      answer: formatTemplate(
-        faqTemplates.a5 ??
-          'On MaxVideoAI: Text-to-Video is {t2vLeft} vs {t2vRight}; Image-to-Video is {i2vLeft} vs {i2vRight}; Video-to-Video is {v2vLeft} vs {v2vRight}. Some fields may still be under validation.',
-        {
-          t2vLeft: faqT2vLeft,
-          t2vRight: faqT2vRight,
-          i2vLeft: faqI2vLeft,
-          i2vRight: faqI2vRight,
-          v2vLeft: faqV2vLeft,
-          v2vRight: faqV2vRight,
-        }
-      ),
-    },
-    {
-      question: faqTemplates.q6 ?? 'Do they support First/Last frame or references?',
-      answer: formatTemplate(
-        faqTemplates.a6 ??
-          'First/Last frame is {firstLeft} vs {firstRight}. Reference image/style is {refImgLeft} vs {refImgRight}; Reference video is {refVidLeft} vs {refVidRight}.',
-        {
-          firstLeft: faqFirstLastLeft,
-          firstRight: faqFirstLastRight,
-          refImgLeft: faqRefImgLeft,
-          refImgRight: faqRefImgRight,
-          refVidLeft: faqRefVidLeft,
-          refVidRight: faqRefVidRight,
-        }
-      ),
-    },
-    {
-      question: faqTemplates.q7 ?? 'What are the max resolution, duration, and aspect ratios?',
-      answer: formatTemplate(
-        faqTemplates.a7 ??
-          'Max output is {resLeft} / {durLeft} for {left} and {resRight} / {durRight} for {right}. Supported aspect ratios include {arLeft} vs {arRight} (see Key Specs for the full list).',
-        {
-          resLeft: faqResLeft,
-          durLeft: faqDurLeft,
-          left: formatEngineName(left),
-          resRight: faqResRight,
-          durRight: faqDurRight,
-          right: formatEngineName(right),
-          arLeft: faqArLeft,
-          arRight: faqArRight,
-        }
-      ),
-    },
-    ...(pairHasNativeAudio
-      ? [
-          {
-            question: faqTemplates.q8 ?? 'Do they support audio generation and lip sync?',
-            answer: formatTemplate(
-              faqTemplates.a8 ??
-                'Audio output is {audioOutLeft} vs {audioOutRight}. Native audio generation is {audioGenLeft} vs {audioGenRight}, and lip sync is {lipLeft} vs {lipRight} (some fields may still be under validation).',
-              {
-                audioOutLeft: faqAudioOutLeft,
-                audioOutRight: faqAudioOutRight,
-                audioGenLeft: faqAudioGenLeft,
-                audioGenRight: faqAudioGenRight,
-                lipLeft: faqLipLeft,
-                lipRight: faqLipRight,
-              }
-            ),
-          },
-        ]
-      : []),
-    {
-      question: faqTemplates.q9 ?? 'Does MaxVideoAI add a watermark?',
-      answer:
-        faqTemplates.a9 ??
-        'No. MaxVideoAI exports are watermark-free (“Watermark: No (MaxVideoAI)”).',
-    },
-    {
-      question:
-        kling3Native4kFaqCopy?.q10 ??
-        faqTemplates.q10 ??
-        'Why do results look different with the same prompt?',
-      answer:
-        kling3Native4kFaqCopy?.a10 ??
-        faqTemplates.a10 ??
-        'Even with identical prompts, models interpret instructions differently and use different training data and generation strategies. That’s why the Showdown section exists: same prompt, side-by-side outputs.',
-    },
-    {
-      question: faqTemplates.q11 ?? 'Where can I find full specs, controls, and more prompt examples?',
-      answer: formatTemplate(
-        faqTemplates.a11 ??
-          'Open the full engine profiles for complete specs, controls, and more prompts: /models/{leftSlug} and /models/{rightSlug}. You can also browse more outputs in the engine galleries.',
-        { leftSlug: left.modelSlug, rightSlug: right.modelSlug }
-      ),
-    },
-  ];
-  const faqItems = pageOverride?.faq?.items ?? generatedFaqItems;
-
-  const faqJsonLdItems = faqItems.filter((item) => {
-    const text = Array.isArray(item.answer) ? item.answer.join(' ') : item.answer;
-    return !text.toLowerCase().includes('data pending');
+    leftPricingDisplay,
+    rightPricingDisplay,
+    leftSpecs,
+    rightSpecs,
+    pageOverride,
+    pairHasKling3Native4k,
+    pairHasNativeAudio,
+    specLabels,
   });
-
-  const faqJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqJsonLdItems.slice(0, 6).map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: Array.isArray(item.answer) ? item.answer.join(' ') : item.answer,
-      },
-    })),
-  };
+  const faqJsonLd = buildCompareFaqJsonLd(faqItems);
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -831,318 +586,29 @@ export default async function CompareDetailPage(
     }),
   };
 
-  const comparisonMetrics = [
-    {
-      id: 'prompt_adherence',
-      label: compareCopy.metrics?.prompt_adherence?.label ?? 'Prompt Adherence',
-      tooltip: compareCopy.metrics?.prompt_adherence?.tooltip ?? 'prompt alignment / instruction following',
-      leftValue: leftScore?.fidelity ?? null,
-      rightValue: rightScore?.fidelity ?? null,
-    },
-    {
-      id: 'visual_quality',
-      label: compareCopy.metrics?.visual_quality?.label ?? 'Visual Quality',
-      tooltip:
-        compareCopy.metrics?.visual_quality?.tooltip ??
-        'image quality / aesthetic quality / realism / artifacts / flicker',
-      leftValue: leftScore?.visualQuality ?? null,
-      rightValue: rightScore?.visualQuality ?? null,
-    },
-    {
-      id: 'motion_realism',
-      label: compareCopy.metrics?.motion_realism?.label ?? 'Motion Realism',
-      tooltip: compareCopy.metrics?.motion_realism?.tooltip ?? 'motion smoothness / physics plausibility',
-      leftValue: leftScore?.motion ?? null,
-      rightValue: rightScore?.motion ?? null,
-    },
-    {
-      id: 'temporal_consistency',
-      label: compareCopy.metrics?.temporal_consistency?.label ?? 'Temporal Consistency',
-      tooltip:
-        compareCopy.metrics?.temporal_consistency?.tooltip ?? 'temporal coherence / identity consistency',
-      leftValue: leftScore?.consistency ?? null,
-      rightValue: rightScore?.consistency ?? null,
-    },
-    {
-      id: 'human_fidelity',
-      label: compareCopy.metrics?.human_fidelity?.label ?? 'Human Fidelity',
-      tooltip: compareCopy.metrics?.human_fidelity?.tooltip ?? 'faces / hands / body realism',
-      leftValue: leftScore?.anatomy ?? null,
-      rightValue: rightScore?.anatomy ?? null,
-    },
-    {
-      id: 'text_ui_legibility',
-      label: compareCopy.metrics?.text_ui_legibility?.label ?? 'Text & UI Legibility',
-      tooltip: compareCopy.metrics?.text_ui_legibility?.tooltip ?? 'text rendering / readability',
-      leftValue: leftScore?.textRendering ?? null,
-      rightValue: rightScore?.textRendering ?? null,
-    },
-    ...(pairHasNativeAudio
-      ? [
-          {
-            id: 'audio_lip_sync',
-            label: compareCopy.metrics?.audio_lip_sync?.label ?? 'Audio & Lip Sync',
-            tooltip: compareCopy.metrics?.audio_lip_sync?.tooltip ?? 'lip sync quality / dialogue sync',
-            leftValue: leftScore?.lipsyncQuality ?? null,
-            rightValue: rightScore?.lipsyncQuality ?? null,
-          },
-        ]
-      : []),
-    {
-      id: 'multi_shot_sequencing',
-      label: compareCopy.metrics?.multi_shot_sequencing?.label ?? 'Multi-Shot Sequencing',
-      tooltip:
-        compareCopy.metrics?.multi_shot_sequencing?.tooltip ?? 'shot-to-shot continuity / multi-shot',
-      leftValue: leftScore?.sequencingQuality ?? null,
-      rightValue: rightScore?.sequencingQuality ?? null,
-    },
-    {
-      id: 'controllability',
-      label: compareCopy.metrics?.controllability?.label ?? 'Controllability',
-      tooltip: compareCopy.metrics?.controllability?.tooltip ?? 'camera control / constraint following',
-      leftValue: leftScore?.controllability ?? null,
-      rightValue: rightScore?.controllability ?? null,
-    },
-    {
-      id: 'speed_stability',
-      label: compareCopy.metrics?.speed_stability?.label ?? 'Speed & Stability',
-      tooltip: compareCopy.metrics?.speed_stability?.tooltip ?? 'latency / success rate',
-      leftValue: leftScore?.speedStability ?? speedScores.leftScore,
-      rightValue: rightScore?.speedStability ?? speedScores.rightScore,
-    },
-    {
-      id: 'pricing',
-      label: compareCopy.metrics?.pricing?.label ?? 'Pricing',
-      tooltip:
-        compareCopy.metrics?.pricing?.tooltip ?? 'price per second / credits / estimated cost',
-      leftValue: priceScores.leftScore,
-      rightValue: priceScores.rightScore,
-    },
-  ];
-
-  const scoredMetrics = comparisonMetrics
-    .filter((metric) => typeof metric.leftValue === 'number' && typeof metric.rightValue === 'number')
-    .map((metric) => {
-      const leftValue = metric.leftValue as number;
-      const rightValue = metric.rightValue as number;
-      const winner = leftValue === rightValue ? 'tie' : leftValue > rightValue ? 'left' : 'right';
-      return {
-        label: metric.label,
-        leftValue,
-        rightValue,
-        winner,
-        delta: Math.abs(leftValue - rightValue),
-      };
-    });
-  const leftWins = scoredMetrics.filter((metric) => metric.winner === 'left').length;
-  const rightWins = scoredMetrics.filter((metric) => metric.winner === 'right').length;
-  const totalScored = scoredMetrics.length;
-  const scoreLeader = leftWins === rightWins ? null : leftWins > rightWins ? 'left' : 'right';
-  const topWinner = scoreLeader === 'left' ? left : scoreLeader === 'right' ? right : null;
-  const topDeltas = scoredMetrics
-    .filter((metric) => metric.winner === scoreLeader)
-    .sort((a, b) => b.delta - a.delta)
-    .slice(0, 2)
-    .map((metric) => metric.label);
-
-  const pricingWinner =
-    typeof priceScores.leftScore === 'number' && typeof priceScores.rightScore === 'number'
-      ? priceScores.leftScore === priceScores.rightScore
-        ? null
-        : priceScores.leftScore > priceScores.rightScore
-          ? 'left'
-          : 'right'
-      : null;
-
-  const deriveStrengths = (side: 'left' | 'right') =>
-    comparisonMetrics
-      .filter((metric) => typeof metric.leftValue === 'number' && typeof metric.rightValue === 'number')
-      .map((metric) => {
-        const leftValue = metric.leftValue as number;
-        const rightValue = metric.rightValue as number;
-        if (side === 'left' && leftValue > rightValue) {
-          return { label: metric.label, delta: Math.abs(leftValue - rightValue) };
-        }
-        if (side === 'right' && rightValue > leftValue) {
-          return { label: metric.label, delta: Math.abs(leftValue - rightValue) };
-        }
-        return null;
-      })
-      .filter((entry): entry is { label: string; delta: number } => Boolean(entry))
-      .sort((a, b) => b.delta - a.delta)
-      .slice(0, 2)
-      .map((entry) => entry.label);
-
-  const durationLeft = parseFirstNumber(leftSpecs.maxDuration);
-  const durationRight = parseFirstNumber(rightSpecs.maxDuration);
-  const durationWinner =
-    typeof durationLeft === 'number' && typeof durationRight === 'number'
-      ? durationLeft === durationRight
-        ? null
-        : durationLeft > durationRight
-          ? 'left'
-          : 'right'
-      : null;
-  const durationSummary = `${formatFaqValue(leftSpecs.maxDuration)} vs ${formatFaqValue(rightSpecs.maxDuration)}`;
-  const pricingSummary = `${leftPricingDisplay.headline} vs ${rightPricingDisplay.headline}`;
-  const summaryCopy = compareCopy.summary ?? {};
-  const scorecardTemplate = hasPrelaunchEngine
-    ? (summaryCopy.scorecardTemplatePrelaunch ??
-      'Currently leads on scorecard (provisional): {engine} leads on {wins}/{total}{best}.')
-    : (summaryCopy.scorecardTemplate ??
-      'Scorecard winner: {engine} leads on {wins}/{total}{best}.');
-  const scorecardSummaryLabel = hasPrelaunchEngine
-    ? (summaryCopy.scorecardLabelPrelaunch ?? 'Currently leads on scorecard (provisional)')
-    : (summaryCopy.scorecardLabel ?? 'Scorecard winner');
-  const pricingTemplate =
-    summaryCopy.pricingTemplate ??
-    'Cheaper: {engine} ({pricing}).';
-  const durationTemplate =
-    summaryCopy.durationTemplate ??
-    'Max duration: {engine} ({duration}).';
-  const specTemplate =
-    summaryCopy.specTemplate ??
-    '{label}: {engine} ({leftValue} vs {rightValue}).';
-  const resolutionTemplate =
-    summaryCopy.resolutionTemplate ??
-    'Max resolution: {engine} ({leftValue} vs {rightValue}).';
-  const specWinnerRow: { id: string; icon: string; label: string; value: string; accent: OverallTone } | null = (() => {
-    const valueForSupport = (label: string, leftValue: string, rightValue: string) => {
-      const leftNormalized = leftValue.toLowerCase();
-      const rightNormalized = rightValue.toLowerCase();
-      const leftIsSupported = leftNormalized === 'supported' || leftNormalized.startsWith('supported ');
-      const rightIsSupported = rightNormalized === 'supported' || rightNormalized.startsWith('supported ');
-      if (leftIsSupported === rightIsSupported) return null;
-      const winner = leftIsSupported ? 'left' : 'right';
-      return {
-        id: 'spec',
-        icon: 'spec',
-        label,
-        value: formatTemplate(specTemplate, {
-          label,
-          engine: formatEngineName(winner === 'left' ? left : right),
-          leftValue,
-          rightValue,
-        }),
-        accent: winner as OverallTone,
-      };
-    };
-    if (!isPending(leftSpecs.videoToVideo) && !isPending(rightSpecs.videoToVideo)) {
-      const row = valueForSupport(
-        specLabels.videoToVideo ?? 'Video-to-Video',
-        leftSpecs.videoToVideo,
-        rightSpecs.videoToVideo
-      );
-      if (row) return row;
-    }
-    if (!isPending(leftSpecs.firstLastFrame) && !isPending(rightSpecs.firstLastFrame)) {
-      const row = valueForSupport(
-        specLabels.firstLastFrame ?? 'First/Last frame',
-        leftSpecs.firstLastFrame,
-        rightSpecs.firstLastFrame
-      );
-      if (row) return row;
-    }
-    const leftRes = parseResolutionValue(leftSpecs.maxResolution);
-    const rightRes = parseResolutionValue(rightSpecs.maxResolution);
-    if (leftRes && rightRes && leftRes !== rightRes) {
-      const winner = leftRes > rightRes ? 'left' : 'right';
-      return {
-        id: 'spec',
-        icon: 'spec',
-        label: specLabels.maxResolution ?? 'Max resolution',
-        value: formatTemplate(resolutionTemplate, {
-          engine: formatEngineName(winner === 'left' ? left : right),
-          leftValue: leftSpecs.maxResolution,
-          rightValue: rightSpecs.maxResolution,
-        }),
-        accent: winner as OverallTone,
-      };
-    }
-    if (durationWinner) {
-      return {
-        id: 'duration',
-        icon: 'duration',
-        label: summaryCopy.durationLabel ?? 'Max duration',
-        value: formatTemplate(durationTemplate, {
-          engine: formatEngineName(durationWinner === 'left' ? left : right),
-          duration: durationSummary,
-        }),
-        accent: durationWinner,
-      };
-    }
-    return null;
-  })();
-  const winnerSummaryRows: Array<{ id: string; icon: string; label: string; value: string; accent: OverallTone | null }> = [];
-  if (scoreLeader && topWinner) {
-    winnerSummaryRows.push({
-      id: 'scorecard',
-      icon: 'scorecard',
-      label: scorecardSummaryLabel,
-      value: formatTemplate(scorecardTemplate, {
-        engine: formatEngineName(topWinner),
-        wins: String(scoreLeader === 'left' ? leftWins : rightWins),
-        total: String(totalScored),
-        best: topDeltas.length ? ` (${compareCopy.summary?.bestLabel ?? 'best'}: ${topDeltas.join(', ')})` : '',
-      }),
-      accent: scoreLeader,
-    });
-  }
-  if (pricingWinner) {
-    winnerSummaryRows.push({
-      id: 'pricing',
-      icon: 'pricing',
-      label: summaryCopy.pricingLabel ?? 'Pricing',
-      value: formatTemplate(pricingTemplate, {
-        engine: formatEngineName(pricingWinner === 'left' ? left : right),
-        pricing: pricingSummary,
-        tarifs: pricingSummary,
-      }),
-      accent: pricingWinner,
-    });
-  }
-  if (specWinnerRow) {
-    winnerSummaryRows.push(specWinnerRow);
-  } else if (durationWinner) {
-    winnerSummaryRows.push({
-      id: 'duration',
-      icon: 'duration',
-      label: summaryCopy.durationLabel ?? 'Max duration',
-      value: formatTemplate(durationTemplate, {
-        engine: formatEngineName(durationWinner === 'left' ? left : right),
-        duration: durationSummary,
-      }),
-      accent: durationWinner,
-    });
-  }
-  const summaryRows = winnerSummaryRows.slice(0, 3);
-  const resolveSummaryMarker = (rowId: string, accent: OverallTone | null) => {
-    if (rowId === 'pricing') {
-      return 'rounded-full bg-orange-500 shadow-[0_0_0_4px_rgba(249,115,22,0.12)]';
-    }
-    if (rowId === 'scorecard' || rowId === 'spec' || rowId === 'duration') {
-      return 'rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]';
-    }
-    if (accent === 'left') return clsx('rounded-full shadow-[0_0_0_4px_rgba(46,99,216,0.12)]', leftAccent.barClass);
-    if (accent === 'right') return clsx('rounded-full shadow-[0_0_0_4px_rgba(46,99,216,0.12)]', rightAccent.barClass);
-    return 'rounded-full bg-neutral-300';
-  };
-  const resolveSummaryLabelClass = (rowId: string) => {
-    if (rowId === 'scorecard' || rowId === 'spec' || rowId === 'duration') {
-      return 'text-emerald-600 dark:text-emerald-300';
-    }
-    if (rowId === 'pricing') {
-      return 'text-orange-600 dark:text-orange-300';
-    }
-    return 'text-text-muted';
-  };
-  const formatWinnerSummaryValue = (row: { id: string; value: string }) => {
-    if (row.id !== 'scorecard') return row.value;
-    return row.value
-      .replace(/^Leads on scorecard:\s*/i, '')
-      .replace(/^Scorecard winner:\s*/i, '')
-      .replace(/^Currently leads on scorecard \(provisional\):\s*/i, '');
-  };
+  const comparisonMetrics = buildComparisonMetrics({
+    compareCopy,
+    leftScore,
+    rightScore,
+    pairHasNativeAudio,
+    priceScores,
+    speedScores,
+  });
+  const summaryRows = buildCompareSummaryRows({
+    activeLocale,
+    compareCopy,
+    comparisonMetrics,
+    hasPrelaunchEngine,
+    labels,
+    left,
+    right,
+    leftPricingDisplay,
+    rightPricingDisplay,
+    leftSpecs,
+    rightSpecs,
+    priceScores,
+    specLabels,
+  });
   const leftScoreStyle = getEngineToneVars(left, leftOverall);
   const rightScoreStyle = getEngineToneVars(right, rightOverall);
   const scorecardCriteriaLabel =
@@ -1150,68 +616,6 @@ export default async function CompareDetailPage(
   const generateWithLabel = formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
     engine: '',
   }).trim();
-  const renderGenerateCard = (entry: EngineCatalogEntry, side: 'left' | 'right', canGenerate: boolean) => {
-    const isLeft = side === 'left';
-    const tone = isLeft
-      ? {
-          icon: 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/25 dark:bg-orange-400/10',
-          button:
-            'border-orange-200 bg-orange-50 text-orange-700 hover:border-orange-300 hover:bg-orange-100 dark:border-orange-400/25 dark:bg-orange-400/10 dark:text-orange-200 dark:hover:bg-orange-400/15',
-          link: 'text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200',
-        }
-      : {
-          icon: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10',
-          button:
-            'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200 dark:hover:bg-emerald-400/15',
-          link: 'text-emerald-600 hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200',
-        };
-
-    return (
-      <article className="rounded-[16px] border border-hairline bg-surface shadow-card">
-        <div className="flex items-center justify-between gap-4 px-4 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className={clsx('grid h-9 w-9 shrink-0 place-items-center rounded-full border shadow-sm', tone.icon)}>
-              <EngineIcon
-                engine={{ id: entry.modelSlug, label: formatEngineName(entry), brandId: entry.brandId }}
-                size={20}
-                rounded="full"
-              />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-text-secondary">
-                {generateWithLabel}
-              </p>
-              <p className="truncate text-base font-semibold leading-5 text-text-primary">
-                {formatEngineName(entry)}
-              </p>
-            </div>
-          </div>
-          {canGenerate ? (
-            <ButtonLink
-              href={`/app?engine=${entry.modelSlug}`}
-              variant="outline"
-              size="sm"
-              aria-label={formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
-                engine: formatEngineName(entry),
-              })}
-              className={clsx('h-10 w-10 shrink-0 rounded-[10px] p-0 shadow-none', tone.button)}
-            >
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </ButtonLink>
-          ) : null}
-        </div>
-        <div className="border-t border-hairline px-4 py-3">
-          <Link
-            href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
-            className={clsx('inline-flex items-center gap-1 text-xs font-semibold', tone.link)}
-          >
-            {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
-      </article>
-    );
-  };
 
   return (
     <div className="relative isolate overflow-hidden">
@@ -1291,7 +695,7 @@ export default async function CompareDetailPage(
                   />
                   {(() => {
                     const bestFor = localizeBestFor(left.bestFor, activeLocale);
-                    const derived = deriveStrengths('left').join(', ');
+                    const derived = deriveCompareStrengths(comparisonMetrics, 'left').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
                       <p className="max-w-[280px] text-xs leading-5 text-text-secondary">
@@ -1341,7 +745,7 @@ export default async function CompareDetailPage(
                   />
                   {(() => {
                     const bestFor = localizeBestFor(right.bestFor, activeLocale);
-                    const derived = deriveStrengths('right').join(', ');
+                    const derived = deriveCompareStrengths(comparisonMetrics, 'right').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
                       <p className="max-w-[280px] text-xs leading-5 text-text-secondary">
@@ -1424,7 +828,7 @@ export default async function CompareDetailPage(
                       className="flex flex-col items-center gap-2 text-center"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent))} />
+                        <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent, leftAccent, rightAccent))} />
                         <span className={clsx('text-[10px] font-semibold uppercase tracking-micro', resolveSummaryLabelClass(row.id))}>
                           {row.label}
                         </span>
@@ -1439,7 +843,7 @@ export default async function CompareDetailPage(
                         className="flex flex-col items-center gap-2 px-3 text-center"
                       >
                         <div className="flex items-center gap-2">
-                          <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent))} />
+                          <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent, leftAccent, rightAccent))} />
                           <span className={clsx('text-[10px] font-semibold uppercase tracking-micro', resolveSummaryLabelClass(row.id))}>
                             {row.label}
                           </span>
@@ -1455,8 +859,26 @@ export default async function CompareDetailPage(
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {renderGenerateCard(left, 'left', leftCanGenerate)}
-            {renderGenerateCard(right, 'right', rightCanGenerate)}
+            <CompareGenerateCard
+              canGenerate={leftCanGenerate}
+              entry={left}
+              fullProfileLabel={compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
+              generateButtonLabel={formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                engine: formatEngineName(left),
+              })}
+              generateWithLabel={generateWithLabel}
+              side="left"
+            />
+            <CompareGenerateCard
+              canGenerate={rightCanGenerate}
+              entry={right}
+              fullProfileLabel={compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
+              generateButtonLabel={formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                engine: formatEngineName(right),
+              })}
+              generateWithLabel={generateWithLabel}
+              side="right"
+            />
           </div>
 
           <section className="mt-4 rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
