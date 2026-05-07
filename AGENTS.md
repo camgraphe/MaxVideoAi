@@ -96,6 +96,15 @@ For large files, split by responsibility rather than by technical layer:
 - client-only interactions
 - tables/charts/panels
 
+## Workspace App Boundaries
+
+For the authenticated workspace route, keep `frontend/app/(core)/(workspace)/app/AppClient.tsx` as the route-level orchestrator.
+
+- Keep route shell rendering in `_components/WorkspaceAppShell.tsx`; `AppClient.tsx` should not compose `WorkspaceChrome`, `GalleryRail`, the center gallery, or the preview dock inline.
+- Keep notice timers, onboarding route redirects, and preview/viewer composition in route-local hooks under `_hooks/`.
+- Keep composer JSX in `_components/WorkspaceComposerSurface.tsx` and shared modal wiring in `_components/WorkspaceRuntimeModals.tsx`.
+- Add or update contract tests in `tests/workspace-*-contract.test.ts` when moving workspace responsibilities, so the architecture stays explicit.
+
 ## Verification
 
 Use focused checks first:
@@ -127,4 +136,3 @@ For client app pages, verify:
 ## Documentation
 
 When adding a new feature area, add or update the relevant guide in `docs/engineering/` if future work would otherwise require rediscovering the architecture.
-
