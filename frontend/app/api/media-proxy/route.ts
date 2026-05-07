@@ -5,6 +5,7 @@ import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 export const runtime = 'nodejs';
 
 const PUBLIC_MEDIA_PROXY_HOSTS = new Set([
+  'media.maxvideoai.com',
   'videohub-uploads-us.s3.amazonaws.com',
   'v3b.fal.media',
   'fal.media',
