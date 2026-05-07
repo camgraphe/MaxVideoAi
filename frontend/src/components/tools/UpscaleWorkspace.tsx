@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,7 +31,6 @@ import { SelectMenu } from '@/components/ui/SelectMenu';
 import {
   AssetLibraryBrowser,
   type AssetBrowserAsset,
-  type AssetLibrarySource,
 } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 import { getJobStatus, runUpscaleTool, saveAssetToLibrary, useInfiniteJobs } from '@/lib/api';
@@ -62,7 +61,6 @@ import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
 import {
-  buildLibraryCacheKey,
   clampComparePosition,
   formatCurrency,
   hasRenderableUpscaleJobMedia,
@@ -82,15 +80,14 @@ import {
   SOURCE_FALLBACK_WIDTH,
   uploadSourceFile,
 } from './upscale/_lib/upscale-workspace-helpers';
+import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import type {
   BillingProductResponse,
   JobDetailResponse,
-  JobsLibraryResponse,
   PreviewMode,
   PreviewZoom,
   RecentUpscaleMedia,
   UploadedAsset,
-  UserAssetsResponse,
 } from './upscale/_lib/upscale-workspace-types';
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -150,12 +147,22 @@ export default function UpscaleWorkspace() {
   const [compareDragging, setCompareDragging] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('source');
   const [previewZoom, setPreviewZoom] = useState<PreviewZoom>('fit');
-  const [libraryModalOpen, setLibraryModalOpen] = useState(false);
-  const [libraryAssets, setLibraryAssets] = useState<AssetBrowserAsset[]>([]);
-  const [libraryLoading, setLibraryLoading] = useState(false);
-  const [libraryError, setLibraryError] = useState<string | null>(null);
-  const [librarySource, setLibrarySource] = useState<AssetLibrarySource>('all');
-  const [libraryLoadedKey, setLibraryLoadedKey] = useState<string | null>(null);
+  const {
+    fetchLibraryAssets,
+    libraryError,
+    libraryLoading,
+    libraryModalOpen,
+    librarySource,
+    librarySourceOptions,
+    openLibraryModal,
+    resetLibraryState,
+    setLibraryModalOpen,
+    visibleLibraryAssets,
+  } = useUpscaleLibraryAssets({
+    libraryErrorCopy: copy.libraryError,
+    mediaType,
+    user,
+  });
   const [activeRecentGroupId, setActiveRecentGroupId] = useState<string | null>(null);
   const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
   const previewScrollerRef = useRef<HTMLDivElement | null>(null);
@@ -242,23 +249,6 @@ export default function UpscaleWorkspace() {
   const zoomCanvasWidth = activePreviewMode === 'source' ? sourceWidth : outputWidth;
   const zoomCanvasHeight = activePreviewMode === 'source' ? sourceHeight : outputHeight;
   const mediaTypeLabel = mediaType === 'video' ? 'Video' : 'Image';
-  const libraryCacheKey = libraryModalOpen ? buildLibraryCacheKey(mediaType, librarySource) : null;
-  const librarySourceOptions = useMemo(
-    () =>
-      mediaType === 'video'
-        ? (['all', 'upload', 'generated', 'upscale'] as const)
-        : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const),
-    [mediaType]
-  );
-  const visibleLibraryAssets = useMemo(
-    () =>
-      libraryAssets.filter((asset) =>
-        mediaType === 'video'
-          ? asset.kind === 'video' || asset.mime?.startsWith('video/')
-          : asset.kind === 'image' || !asset.mime || asset.mime.startsWith('image/')
-      ),
-    [libraryAssets, mediaType]
-  );
   const recentGroups = useMemo(() => {
     const jobs = recentJobs.map((job) => (!job.videoUrl && job.readyVideoUrl ? { ...job, videoUrl: job.readyVideoUrl } : job));
     return normalizeGroupSummaries(groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }).groups);
@@ -386,119 +376,6 @@ export default function UpscaleWorkspace() {
     return () => window.cancelAnimationFrame(frame);
   }, [activePreviewMode, isPixelZoom, previewZoom, resultPreviewUrl, sourcePreviewUrl]);
 
-  const fetchLibraryAssets = useCallback(
-    async (options?: { source?: AssetLibrarySource; kind?: UpscaleMediaType }) => {
-      const sourceFilter = options?.source ?? librarySource;
-      const kind = options?.kind ?? mediaType;
-      const requestKey = buildLibraryCacheKey(kind, sourceFilter);
-      setLibraryLoading(true);
-      setLibraryError(null);
-      try {
-        if (!user) {
-          setLibraryAssets([]);
-          setLibraryError(kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.');
-          setLibraryLoadedKey(requestKey);
-          return;
-        }
-
-        const assetUrl =
-          sourceFilter === 'all'
-            ? '/api/user-assets?limit=80'
-            : `/api/user-assets?limit=80&source=${encodeURIComponent(sourceFilter)}`;
-        const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
-        if (kind === 'video' && sourceFilter !== 'upload') {
-          const jobsUrl = sourceFilter === 'upscale' ? '/api/jobs?limit=80&surface=upscale' : '/api/jobs?limit=80&type=video';
-          requests.push(authFetch(jobsUrl));
-        }
-
-        const [assetsResponse, jobsResponse] = await Promise.all(requests);
-        if (assetsResponse.status === 401 || jobsResponse?.status === 401) {
-          setLibraryAssets([]);
-          setLibraryError(kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.');
-          setLibraryLoadedKey(requestKey);
-          return;
-        }
-
-        const assetsPayload = (await assetsResponse.json().catch(() => null)) as UserAssetsResponse | null;
-        if (!assetsResponse.ok || !assetsPayload?.ok) {
-          throw new Error(assetsPayload?.error ?? copy.libraryError);
-        }
-
-        const savedAssets = Array.isArray(assetsPayload.assets)
-          ? assetsPayload.assets.map((asset) => {
-              const mime = asset.mime ?? null;
-              return {
-                id: asset.id,
-                url: asset.url,
-                kind: mime?.startsWith('video/') ? 'video' : 'image',
-                width: asset.width ?? null,
-                height: asset.height ?? null,
-                size: asset.size ?? null,
-                mime,
-                source: asset.source ?? null,
-                createdAt: asset.createdAt,
-                canDelete: false,
-              } satisfies AssetBrowserAsset;
-            })
-          : [];
-        const filteredAssets = savedAssets.filter((asset) =>
-          kind === 'video'
-            ? asset.kind === 'video' || asset.mime?.startsWith('video/')
-            : asset.kind === 'image' || !asset.mime || asset.mime.startsWith('image/')
-        );
-
-        let generatedVideos: AssetBrowserAsset[] = [];
-        if (kind === 'video' && jobsResponse) {
-          const jobsPayload = (await jobsResponse.json().catch(() => null)) as JobsLibraryResponse | null;
-          if (jobsResponse.ok && Array.isArray(jobsPayload?.jobs)) {
-            generatedVideos = jobsPayload.jobs
-              .map((job) => ({
-                id: `job:${job.jobId}`,
-                url: job.videoUrl ?? job.readyVideoUrl ?? '',
-                kind: 'video' as const,
-                mime: 'video/mp4',
-                source: 'generated',
-                createdAt: job.createdAt,
-                canDelete: false,
-              }))
-              .filter((asset) => asset.url.trim().length > 0);
-          }
-        }
-
-        const combined = kind === 'video' ? [...filteredAssets, ...generatedVideos] : filteredAssets;
-        const deduped = combined.filter(
-          (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
-        );
-        setLibraryAssets(deduped);
-        setLibraryLoadedKey(requestKey);
-      } catch (libraryLoadError) {
-        console.error('[upscale] failed to load library assets', libraryLoadError);
-        setLibraryAssets([]);
-        setLibraryError(libraryLoadError instanceof Error ? libraryLoadError.message : copy.libraryError);
-        setLibraryLoadedKey(requestKey);
-      } finally {
-        setLibraryLoading(false);
-      }
-    },
-    [copy.libraryError, librarySource, mediaType, user]
-  );
-
-  useEffect(() => {
-    if (!libraryModalOpen || !libraryCacheKey || libraryLoading) return;
-    if (libraryLoadedKey === libraryCacheKey) return;
-    setLibraryAssets([]);
-    setLibraryError(null);
-    void fetchLibraryAssets({ kind: mediaType, source: librarySource });
-  }, [
-    fetchLibraryAssets,
-    libraryCacheKey,
-    libraryLoadedKey,
-    libraryLoading,
-    libraryModalOpen,
-    librarySource,
-    mediaType,
-  ]);
-
   function changeMediaType(next: UpscaleMediaType) {
     setMediaType(next);
     const nextEngine = next === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID;
@@ -514,10 +391,7 @@ export default function UpscaleWorkspace() {
     setError(null);
     setMessage(null);
     setPreviewMode('source');
-    setLibraryAssets([]);
-    setLibraryError(null);
-    setLibraryLoadedKey(null);
-    setLibrarySource(next === 'video' ? 'generated' : 'all');
+    resetLibraryState(next === 'video' ? 'generated' : 'all');
   }
 
   function changeEngine(nextId: UpscaleToolEngineId) {
@@ -605,17 +479,6 @@ export default function UpscaleWorkspace() {
   function handleDownload() {
     if (!output?.url) return;
     triggerAppDownload(output.url, suggestDownloadFilename(output.url, `upscale-${mediaType}`));
-  }
-
-  function openLibraryModal() {
-    const nextSource: AssetLibrarySource = mediaType === 'video' ? 'generated' : 'all';
-    if (librarySource !== nextSource) {
-      setLibrarySource(nextSource);
-      setLibraryAssets([]);
-      setLibraryError(null);
-      setLibraryLoadedKey(null);
-    }
-    setLibraryModalOpen(true);
   }
 
   function selectLibraryAsset(asset: AssetBrowserAsset) {
@@ -1350,10 +1213,7 @@ export default function UpscaleWorkspace() {
             sourceLabels={copy.libraryTabs}
             onSourceChange={(nextSource) => {
               if (nextSource === librarySource) return;
-              setLibrarySource(nextSource);
-              setLibraryAssets([]);
-              setLibraryError(null);
-              setLibraryLoadedKey(null);
+              resetLibraryState(nextSource);
             }}
             searchPlaceholder={copy.librarySearch}
             sourcesTitle={copy.librarySourcesTitle}

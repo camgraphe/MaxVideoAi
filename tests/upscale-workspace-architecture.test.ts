@@ -8,6 +8,7 @@ const workspacePath = join(root, 'frontend/src/components/tools/UpscaleWorkspace
 const copyPath = join(root, 'frontend/src/components/tools/upscale/_lib/upscale-workspace-copy.ts');
 const typesPath = join(root, 'frontend/src/components/tools/upscale/_lib/upscale-workspace-types.ts');
 const helpersPath = join(root, 'frontend/src/components/tools/upscale/_lib/upscale-workspace-helpers.ts');
+const libraryHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleLibraryAssets.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -15,10 +16,12 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(copyPath), 'upscale workspace copy should live in a colocated copy module');
   assert.ok(existsSync(typesPath), 'upscale workspace local contracts should live in a colocated type module');
   assert.ok(existsSync(helpersPath), 'upscale workspace helper logic should live in a colocated helper module');
+  assert.ok(existsSync(libraryHookPath), 'upscale library asset loading should live in a colocated hook');
 
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-copy'/, 'workspace should import upscale copy');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-types'/, 'workspace should import upscale local types');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-helpers'/, 'workspace should import upscale helpers');
+  assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleLibraryAssets'/, 'workspace should import library hook');
 });
 
 test('upscale workspace does not regain extracted ownership', () => {
@@ -27,15 +30,19 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /function resolveRecentUpscaleMedia\(/, 'recent media resolution belongs in _lib/upscale-workspace-helpers.ts');
   assert.doesNotMatch(workspaceSource, /function uploadSourceFile\(/, 'upload helper belongs in _lib/upscale-workspace-helpers.ts');
   assert.doesNotMatch(workspaceSource, /function readVideoPricingMetadata\(/, 'video metadata reader belongs in _lib/upscale-workspace-helpers.ts');
+  assert.doesNotMatch(workspaceSource, /UserAssetsResponse/, 'library asset response parsing belongs in useUpscaleLibraryAssets');
+  assert.doesNotMatch(workspaceSource, /JobsLibraryResponse/, 'generated video library merging belongs in useUpscaleLibraryAssets');
+  assert.doesNotMatch(workspaceSource, /buildLibraryCacheKey/, 'library cache key orchestration belongs in useUpscaleLibraryAssets');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1520, `UpscaleWorkspace should stay below 1520 lines after helper extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1260, `UpscaleWorkspace should stay below 1260 lines after library hook extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
   const copySource = readFileSync(copyPath, 'utf8');
   const typesSource = readFileSync(typesPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
+  const libraryHookSource = readFileSync(libraryHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_UPSCALE_COPY =/, 'copy module should export default copy');
 
@@ -62,4 +69,9 @@ test('upscale helper modules expose the expected workspace contract', () => {
   ]) {
     assert.match(helpersSource, new RegExp(`export (const|function|async function) ${exportName}`), `${exportName} should be exported`);
   }
+
+  assert.match(libraryHookSource, /export function useUpscaleLibraryAssets/, 'library hook should be exported');
+  assert.match(libraryHookSource, /buildLibraryCacheKey/, 'library hook should own cache key usage');
+  assert.match(libraryHookSource, /UserAssetsResponse/, 'library hook should parse saved asset responses');
+  assert.match(libraryHookSource, /JobsLibraryResponse/, 'library hook should merge generated video jobs');
 });
