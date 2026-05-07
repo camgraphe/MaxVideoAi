@@ -29,11 +29,11 @@ import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
 import { buildGenerateValidationPayload } from './_lib/validation-payload';
 import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
 import { buildGenerateRequestOptions, isVideoMode } from './_lib/request-options';
+import { resolveGenerateUserGate } from './_lib/auth-idempotency';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
   VideoInitialJobError,
-  type ExistingVideoJobRow,
   type PaymentMode,
 } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
@@ -41,9 +41,7 @@ import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
 import { LUMA_RAY2_ERROR_UNSUPPORTED } from '@/lib/luma-ray2';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
-import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
-import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
-import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
+import { AdminAuthError, requireAdmin } from '@/server/admin';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   isSeedanceBytePlusModeAllowed,
@@ -60,25 +58,6 @@ const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
 const FAL_HARD_TIMEOUT_MS = 400_000;
 const FAL_PROGRESS_FLOOR = 10;
-
-async function resolveUserId(req?: NextRequest): Promise<string | null> {
-  try {
-    const supabase = await createSupabaseRouteClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user?.id) {
-      return user.id;
-    }
-  } catch {
-    // swallow helper errors
-  }
-  const localAdminUserId = await resolveLocalAdminBypassUserId(req);
-  if (localAdminUserId) {
-    return localAdminUserId;
-  }
-  return null;
-}
 
 async function markJobAwaitingFal(params: {
   jobId: string;
@@ -275,41 +254,15 @@ export async function POST(req: NextRequest) {
     typeof body.payment === 'object' && body.payment
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
-  const authenticatedUserId = await resolveUserId(req);
-  if (!authenticatedUserId) {
-    logMetric('rejected', { errorCode: 'AUTH_REQUIRED' });
-    return NextResponse.json(
-      { ok: false, error: 'auth_required', message: 'Authentication required.' },
-      { status: 401 }
-    );
-  }
-  const userId = authenticatedUserId;
-  metricState.userId = userId;
-  const restriction = await getActiveAccountRestriction(userId);
-  if (restriction) {
-    logMetric('rejected', { errorCode: 'ACCOUNT_RESTRICTED' });
-    return NextResponse.json(buildRestrictedAccountPayload(), { status: 403 });
-  }
-  const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
-  if (localKey && userId) {
-    const existingJobs = await query<ExistingVideoJobRow>(
-      `
-        SELECT job_id, user_id, status, video_url, thumb_url, provider_job_id, progress, message,
-               batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id
-          FROM app_jobs
-         WHERE user_id = $1
-           AND local_key = $2
-           AND created_at > NOW() - INTERVAL '30 minutes'
-         ORDER BY created_at DESC
-         LIMIT 1
-      `,
-      [userId, localKey]
-    );
-    const existing = existingJobs[0];
-    if (existing) {
-      return NextResponse.json(buildResponseFromExistingVideoJob(existing, localKey));
+  const userGate = await resolveGenerateUserGate({ req, body });
+  if (userGate.kind === 'response') {
+    if (userGate.metric) {
+      logMetric('rejected', userGate.metric);
     }
+    return NextResponse.json(userGate.body, { status: userGate.status });
   }
+  const { userId, localKey } = userGate;
+  metricState.userId = userId;
   let walletChargeReserved = false;
 
   const extraInputValidation = validateExtraInputValues({ engine, mode, rawExtraInputValues });
