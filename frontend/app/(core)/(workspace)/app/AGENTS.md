@@ -9,6 +9,7 @@ This route is the main signed-in video generation workspace.
 - `_hooks`: route-local stateful workflow hooks for bounded client concerns such as draft storage/hydration, asset library, upload orchestration, composer mode/settings orchestration, gallery action orchestration, pricing/auth gate orchestration, generation runner orchestration, render state and polling, and video settings application.
 - `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, generation guards, local render preparation, generation payloads, accepted results, generation polling projections, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
+- The image workspace has its own `image/AGENTS.md`; keep still-image helpers, copy, library modal UI, and route-specific hooks under `image/_lib`, `image/_components`, and `image/_hooks`.
 
 ## Refactor Rules
 
