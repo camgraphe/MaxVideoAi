@@ -12,17 +12,34 @@ const overrideSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts',
   'utf8'
 );
+const faqSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts',
+  'utf8'
+);
+const scorecardSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-scorecard.ts',
+  'utf8'
+);
+const generateCardSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx',
+  'utf8'
+);
 
 test('comparison detail page delegates copy, helper, and media responsibilities', () => {
   const lineCount = pageSource.split('\n').length;
 
-  assert.ok(lineCount < 1900, `comparison page should stay under 1900 lines after split, got ${lineCount}`);
+  assert.ok(lineCount < 1300, `comparison page should stay under 1300 lines after split, got ${lineCount}`);
   assert.ok(pageSource.includes("from './_lib/compare-page-helpers'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-overrides'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-faq'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-scorecard'"));
+  assert.ok(pageSource.includes("from './_components/CompareGenerateCard'"));
   assert.ok(pageSource.includes("from './_components/CompareShowdownMedia'"));
   assert.ok(pageSource.includes("from './_components/CompareSpecValue'"));
   assert.doesNotMatch(pageSource, /const COMPARE_PAGE_OVERRIDES/);
   assert.doesNotMatch(pageSource, /type ComparePageCopy =/);
+  assert.doesNotMatch(pageSource, /const generatedFaqItems =/);
+  assert.doesNotMatch(pageSource, /const comparisonMetrics = \[/);
 });
 
 test('comparison detail helpers own routing, pricing, specs, and localized overrides', () => {
@@ -31,4 +48,13 @@ test('comparison detail helpers own routing, pricing, specs, and localized overr
   assert.match(helperSource, /export async function resolvePricingDisplay/);
   assert.match(helperSource, /export function buildSpecValues/);
   assert.match(overrideSource, /export function getComparePageOverride/);
+});
+
+test('comparison detail split helpers own FAQ, scorecard, and generate card responsibilities', () => {
+  assert.match(faqSource, /export function buildCompareFaqItems/);
+  assert.match(faqSource, /export function buildCompareFaqJsonLd/);
+  assert.match(scorecardSource, /export function buildComparisonMetrics/);
+  assert.match(scorecardSource, /export function buildCompareSummaryRows/);
+  assert.match(scorecardSource, /export function deriveCompareStrengths/);
+  assert.match(generateCardSource, /export function CompareGenerateCard/);
 });
