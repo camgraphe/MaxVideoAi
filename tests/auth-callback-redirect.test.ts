@@ -5,6 +5,7 @@ import test from 'node:test';
 const authCallbackSource = readFileSync('frontend/app/auth/callback/route.ts', 'utf8');
 const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
+const loginHelpersSource = readFileSync('frontend/app/(core)/login/_lib/login-helpers.ts', 'utf8');
 const siteOriginSource = readFileSync('frontend/lib/siteOrigin.ts', 'utf8');
 
 test('OAuth callback exchanges PKCE on the server before using the browser fallback', () => {
@@ -55,7 +56,7 @@ test('login page can consume a PKCE OAuth code directly', () => {
     'the login page should exchange direct OAuth codes with the browser Supabase client'
   );
   assert.match(
-    loginPageSource,
+    loginHelpersSource,
     /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(sanitizeNextPath\(nextPath\)\)\}`/,
     'Google OAuth should use the existing allowlisted callback before forwarding the code to browser-side exchange'
   );
