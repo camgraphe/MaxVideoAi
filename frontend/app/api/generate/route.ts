@@ -27,6 +27,7 @@ import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
 import { createProviderJobTracker } from './_lib/provider-job-tracker';
+import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/final-job-persistence';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1819,57 +1820,30 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await query(
-      `UPDATE app_jobs
-       SET thumb_url = $2,
-           aspect_ratio = $3,
-           preview_frame = $4,
-           eta_seconds = $5,
-           eta_label = $6,
-           video_url = $7,
-           status = $8,
-           progress = $9,
-           provider_job_id = COALESCE($10, provider_job_id),
-           final_price_cents = $11,
-           pricing_snapshot = $12::jsonb,
-           cost_breakdown_usd = $13::jsonb,
-           currency = $14,
-           vendor_account_id = $15,
-           payment_status = $16,
-           stripe_payment_intent_id = $17,
-           stripe_charge_id = $18,
-           visibility = $19,
-           indexable = $20,
-           message = $21,
-           settings_snapshot = $22::jsonb,
-           provisional = FALSE,
-           updated_at = NOW()
-       WHERE job_id = $1`,
-      [
-        jobId,
-        thumb,
-        aspectRatio,
-        previewFrame,
-        etaSeconds,
-        etaLabel,
-        video,
-        status,
-        progress,
-        providerJobId,
-        pricing.totalCents,
-        pricingSnapshotJson,
-        costBreakdownJson,
-        pricing.currency,
-        vendorAccountId,
-        paymentStatus,
-        stripePaymentIntentId,
-        stripeChargeId,
-        visibility,
-        indexable,
-        message,
-        settingsSnapshotJson,
-      ]
-    );
+    await persistFinalVideoJobUpdate({
+      jobId,
+      thumb,
+      aspectRatio,
+      previewFrame,
+      etaSeconds,
+      etaLabel,
+      video,
+      status,
+      progress,
+      providerJobId,
+      finalPriceCents: pricing.totalCents,
+      pricingSnapshotJson,
+      costBreakdownJson,
+      currency: pricing.currency,
+      vendorAccountId,
+      paymentStatus,
+      stripePaymentIntentId,
+      stripeChargeId,
+      visibility,
+      indexable,
+      message,
+      settingsSnapshotJson,
+    });
   } catch (error) {
     console.error('[api/generate] failed to update job record', error);
     if (pendingReceipt) {
@@ -1909,36 +1883,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  try {
-    await query(
-      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-      [
-        jobId,
-        providerMode,
-        providerJobId,
-        engine.id,
-        status,
-        JSON.stringify({
-          request: {
-            durationSec,
-            durationLabel,
-            aspectRatio,
-            resolution: effectiveResolution,
-            loop: isLumaRay2 ? loop : undefined,
-          },
-          inputSummary: falInputSummary,
-          pricing: {
-            totalCents: pricing.totalCents,
-            currency: pricing.currency,
-            cost_breakdown_usd: costBreakdownUsd,
-          },
-        }),
-      ]
-    );
-  } catch (error) {
-    console.warn('[queue-log] failed to insert entry', error);
-  }
+  await recordFinalGenerateQueueLog({
+    jobId,
+    provider: providerMode,
+    providerJobId,
+    engineId: engine.id,
+    status,
+    durationSec,
+    durationLabel,
+    aspectRatio,
+    resolution: effectiveResolution,
+    loop: isLumaRay2 ? loop : undefined,
+    inputSummary: falInputSummary,
+    totalCents: pricing.totalCents,
+    currency: pricing.currency,
+    costBreakdownUsd,
+  });
 
   if (status === 'completed' && video) {
     await generateAndPersistJobKeyframes({
