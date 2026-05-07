@@ -25,6 +25,7 @@ import { deriveGenerationAttachmentReferences } from './_lib/attachment-referenc
 import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
+import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1087,55 +1088,43 @@ export async function POST(req: NextRequest) {
     cfgScale: body.cfgScale,
   });
 
-  const negativePrompt =
-    typeof body.negativePrompt === 'string' && body.negativePrompt.trim().length ? body.negativePrompt.trim() : null;
-  const membershipTier =
-    typeof body.membershipTier === 'string' && body.membershipTier.trim().length ? body.membershipTier.trim() : null;
-  const settingsSnapshot = {
-    schemaVersion: 1,
-    surface: 'video',
+  const settingsSnapshot = buildGenerationSettingsSnapshot({
     engineId: engine.id,
     engineLabel: engine.label,
-    inputMode: mode,
+    mode,
     prompt,
-    negativePrompt,
-    core: {
-      durationSec,
-      durationOption: falDurationOption,
-      numFrames: numFrames ?? null,
-      aspectRatio,
-      resolution: effectiveResolution,
-      fps: typeof clampedFps === 'number' ? clampedFps : typeof body.fps === 'number' ? Math.trunc(body.fps) : null,
-      iterationCount: iterationCount ?? null,
-      audio: typeof audioEnabled === 'boolean' ? audioEnabled : null,
-    },
-    advanced: {
-      cfgScale: typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale) ? body.cfgScale : null,
-      loop: isLumaRay2 ? Boolean(loop) : null,
-      shotType: shotType ?? null,
-      seed: typeof seed === 'number' ? seed : null,
-      cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : null,
-      safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : null,
-      voiceIds: voiceIds.length ? voiceIds : null,
-      voiceControl: voiceControl ? true : null,
-      multiPrompt: multiPrompt ?? null,
-      extraInputValues: Object.keys(validatedExtraInputValues).length ? validatedExtraInputValues : null,
-    },
-    refs: {
-      imageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
-      audioUrl: resolvedAudioUrl ?? null,
-      referenceImages: normalizedReferenceImages ?? null,
-      videoUrls: videoUrls.length ? videoUrls : null,
-      firstFrameUrl: resolvedFirstFrameUrl ?? null,
-      lastFrameUrl: lastFrameUrl ?? null,
-      endImageUrl: endImageUrl ?? null,
-      elements: elements ?? null,
-      inputs: falInputs ?? null,
-    },
-    meta: {
-      memberTier: membershipTier,
-    },
-  };
+    negativePrompt: body.negativePrompt,
+    membershipTier: body.membershipTier,
+    durationSec,
+    durationOption: falDurationOption,
+    numFrames,
+    aspectRatio,
+    resolution: effectiveResolution,
+    clampedFps,
+    rawFps: body.fps,
+    iterationCount,
+    audioEnabled,
+    cfgScale: body.cfgScale,
+    isLumaRay2,
+    loop,
+    shotType,
+    seed,
+    cameraFixed,
+    safetyChecker,
+    voiceIds,
+    voiceControl,
+    multiPrompt,
+    extraInputValues: validatedExtraInputValues,
+    initialImageUrl,
+    resolvedFirstFrameUrl,
+    resolvedAudioUrl,
+    normalizedReferenceImages,
+    videoUrls,
+    lastFrameUrl,
+    endImageUrl,
+    elements,
+    falInputs,
+  });
   let settingsSnapshotJson = JSON.stringify(settingsSnapshot);
 
   let lastProviderJobId: string | null = null;
