@@ -9,6 +9,8 @@ const workspacePath = path.join(imageDir, 'ImageWorkspace.tsx');
 
 const splitFiles = [
   '_components/ImageLibraryModal.tsx',
+  '_hooks/useImageWorkspaceHistory.ts',
+  '_hooks/useImageWorkspacePricing.ts',
   '_hooks/useImageWorkspaceDesktopLayout.ts',
   '_lib/image-workspace-character-references.ts',
   '_lib/image-workspace-copy.ts',
@@ -30,6 +32,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   }
 
   assert.match(source, /from '\.\/_components\/ImageLibraryModal'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceHistory'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-copy'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-history'/);
@@ -42,4 +46,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.doesNotMatch(source, /function mapJobToHistoryEntry\(/);
   assert.doesNotMatch(source, /function buildPendingGroup\(/);
   assert.doesNotMatch(source, /function buildCompletedGroup\(/);
+  assert.doesNotMatch(source, /useSWR\(/, 'pricing SWR orchestration belongs in useImageWorkspacePricing');
+  assert.doesNotMatch(source, /useInfiniteJobs\(24, \{ surface: 'image' \}\)/, 'image job feed orchestration belongs in useImageWorkspaceHistory');
+  assert.doesNotMatch(source, /const remoteImageJobs =/, 'remote image history derivation belongs in useImageWorkspaceHistory');
 });
