@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
+import { resolveBlogCanonicalSlug, resolveLocalizedBlogSlug } from '@/config/blog-slugs';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 
@@ -35,6 +36,14 @@ const LOCALIZED_SEGMENT_TO_EN: Record<string, string> = Object.values(localizedS
 function shouldBypassLocale(pathname: string | null | undefined) {
   if (!pathname) return false;
   return LOCALE_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function decodePathSegment(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 type LanguageToggleVariant = 'select' | 'icon';
@@ -81,11 +90,22 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
       const isComparePage = typeof rawPathname === 'string'
         ? /^\/(?:en|fr|es)?\/(?:ai-video-engines|comparatif|comparativa)\/[^\/?#]+/i.test(rawPathname)
         : false;
+      const isBlogPage = typeof rawPathname === 'string'
+        ? /^\/(?:en|fr|es)?\/blog\/[^\/?#]+/i.test(rawPathname)
+        : false;
       if (!slugValue && typeof rawPathname === 'string') {
         const m = rawPathname.match(
-          /^\/(?:en|fr|es)?\/(?:models|modeles|modelos|ai-video-engines|comparatif|comparativa)\/([^\/?#]+)/i
+          /^\/(?:en|fr|es)?\/(?:models|modeles|modelos|ai-video-engines|comparatif|comparativa|blog)\/([^\/?#]+)/i
         );
         if (m && m[1]) slugValue = m[1];
+      }
+      if (slugValue && isBlogPage) {
+        const decodedSlug = decodePathSegment(slugValue);
+        const canonicalSlug =
+          resolveBlogCanonicalSlug(locale as Locale, decodedSlug) ?? resolveBlogCanonicalSlug('en', decodedSlug) ?? decodedSlug;
+        const targetSlug = resolveLocalizedBlogSlug(canonicalSlug, value) ?? canonicalSlug;
+        router.replace({ pathname: '/blog/[slug]', params: { slug: targetSlug } }, { locale: value });
+        return;
       }
       if (slugValue && isComparePage) {
         router.replace({ pathname: '/ai-video-engines/[slug]', params: { slug: slugValue } }, { locale: value });
@@ -132,6 +152,11 @@ function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
   }
   const [first, ...rest] = segments;
   const englishFirst = LOCALIZED_SEGMENT_TO_EN[first] ?? first;
+  if (englishFirst === 'blog' && rest.length > 0) {
+    const localizedSlug = decodePathSegment(rest[0]);
+    const englishSlug = resolveBlogCanonicalSlug(currentLocale, localizedSlug) ?? localizedSlug;
+    return `/${[englishFirst, englishSlug, ...rest.slice(1)].join('/')}`;
+  }
   return `/${[englishFirst, ...rest].join('/')}`;
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
 import type { Dictionary, Locale } from '@/lib/i18n/types';
 
 type TranslateFn = <T = unknown>(path: string, fallback?: T) => T | undefined;
@@ -33,6 +33,10 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ locale, dictionary, fallback, children }: I18nProviderProps) {
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   const value = useMemo<I18nContextValue>(() => {
     const translate: TranslateFn = (path, defaultValue) => {
       const primary = resolvePath(dictionary as unknown as Record<string, unknown>, path);
