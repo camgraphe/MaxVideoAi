@@ -11,6 +11,18 @@ Read these files before changing architecture or route structure:
 - `docs/engineering/page-architecture.md`
 - `docs/engineering/refactor-roadmap.md`
 
+Then run the large-file audit when choosing a cleanup target:
+
+```bash
+npm run architecture:audit -- --min-lines 900
+```
+
+Use JSON when another tool or agent needs to rank candidates:
+
+```bash
+npm run architecture:audit -- --json --min-lines 900
+```
+
 For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
 
 ## Working Rules
@@ -65,7 +77,8 @@ npm --prefix frontend run build
 
 ## Current Architecture Notes
 
-- The model detail route has already been split into route-local `_components` and `_lib`.
-- The dashboard route has already been split into route-local panels and helpers.
-- The next large cleanup candidates are the workspace app client, image/audio workspaces, tool workspaces, and older `ai-video-engines` marketing pages.
+- The comparison detail route, admin insights route, and billing route have route-local architecture contract tests.
+- The model detail route has route-local `_components` and `_lib`, but supporting files such as `model-page-specs.ts` can still be large.
+- The dashboard route has route-local panels and helpers, but workspace app/image/audio routes and tool workspaces remain major cleanup candidates.
+- Before proposing a new architecture PR, run `npm run architecture:audit -- --min-lines 900` and use the roadmap to separate low-risk route splits from high-blast-radius provider/API work.
 - Root-level browser screenshots and `.playwright-mcp/` files are local QA artifacts and should stay untracked.

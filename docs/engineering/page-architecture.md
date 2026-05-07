@@ -120,6 +120,7 @@ Keep serialization centralized to avoid inconsistent escaping.
 
 Before moving code:
 
+- run `npm run architecture:audit -- --min-lines 900` if you are choosing the next cleanup target
 - identify behavior that must not change
 - find route params, redirects, and metadata coupling
 - check whether the file is server or client
@@ -132,4 +133,3 @@ After moving code:
 - smoke-test the route
 - compare important generated metadata/JSON-LD if the route is public
 - confirm localized paths still resolve
-

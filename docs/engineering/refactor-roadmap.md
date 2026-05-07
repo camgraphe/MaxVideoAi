@@ -1,176 +1,78 @@
 # Refactor Roadmap
 
-This roadmap turns the current large-page problem into small, testable work.
+This roadmap turns large-file cleanup into small, testable PRs.
 
-## Current Signals
+## Audit Command
 
-The largest route files are:
+Run the current large-file audit before choosing a refactor target:
 
-| File | Lines | Risk |
+```bash
+npm run architecture:audit -- --min-lines 900
+```
+
+For scripts or Codex context, use JSON:
+
+```bash
+npm run architecture:audit -- --json --min-lines 900
+```
+
+The audit scans `frontend` source files, ignores build/generated folders, and sorts files by line count.
+
+## Recently Completed
+
+The first architecture cleanup wave has landed:
+
+- Comparison detail page: split copy, helpers, overrides, types, and media/spec components.
+- Admin insights page: split route-local types, helpers, and panels.
+- Billing page: split route server wrapper, client orchestrator, wallet top-up panel, receipts panel, copy, types, helpers, Stripe Express Checkout, Turnstile, and analytics.
+
+These areas now have contract tests:
+
+```txt
+tests/compare-page-architecture.test.ts
+tests/admin-insights-architecture.test.ts
+tests/billing-page-architecture.test.ts
+```
+
+## Current High-Signal Candidates
+
+Snapshot from `npm run architecture:audit -- --min-lines 900` after the first cleanup wave:
+
+| File | Lines | Recommended approach |
 | --- | ---: | --- |
-| `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx` | 4936 | Very high maintainability risk. Server-side, but mixes route, SEO, pricing, schemas, and rendering. |
-| `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx` | 3572 | Very high maintainability risk. Comparison logic and rendering are tightly coupled. |
-| `frontend/app/(core)/dashboard/page.tsx` | 2284 | High client-side complexity. This should be split before adding dashboard behavior. |
-| `frontend/app/(core)/admin/insights/page.tsx` | 1939 | High maintainability risk. Good candidate for extracting charts/tables/builders. |
-| `frontend/app/(core)/billing/page.tsx` | 1597 | Client-side page; likely worth extracting panels and hooks. |
+| `frontend/src/config/falEngines.ts` | 7677 | Split only with strong model-registry tests. High blast radius. |
+| `frontend/src/components/tools/CharacterBuilderWorkspace.tsx` | 3962 | Split into tool-local hooks, panels, preview/runtime modules. |
+| `frontend/app/api/generate/route.ts` | 3203 | Split request parsing, auth/preflight, provider dispatch, response projection. High blast radius. |
+| `frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx` | 1934 | Split catalog copy, filters, cards, and SEO-oriented sections. |
+| `frontend/src/components/tools/AngleWorkspace.tsx` | 1833 | Split tool state, canvas/runtime, prompt form, examples/results panels. |
+| `frontend/src/server/images/execute-image-generation.ts` | 1813 | Split validation, provider payloads, persistence, polling/projection. |
+| `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page.tsx` | 1609 | Split localized copy, ranking builders, schema helpers, route sections. |
+| `frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx` | 1660 | Continue route-local hook/component extraction with contract tests. |
+| `frontend/app/(core)/(workspace)/app/audio/AudioWorkspace.tsx` | 1559 | Split audio form state, provider options, uploads, preview/progress surfaces. |
+| `frontend/app/(core)/login/page.tsx` | 1135 | Low-risk next split: copy and auth/browser helpers first. |
+| `frontend/app/(core)/admin/pricing/page.tsx` | 921 | Low-risk next split: types, helpers, and card components. |
 
-## Phase 1: Documentation and Guardrails
+Line counts change over time. Treat the table as a dated snapshot, not source of truth.
 
-Goal: make the target structure explicit before large moves.
+## Next Cleanup Sequence
 
-- Add `AGENTS.md`.
-- Add `docs/engineering/project-structure.md`.
-- Add `docs/engineering/page-architecture.md`.
-- Add this roadmap.
-- Link these guides from `README.md` and `CONTRIBUTING.md`.
+Prefer this order unless product work changes the risk profile:
 
-Expected result: future work has a shared standard.
+1. Login page helpers and copy.
+2. Admin pricing cards/helpers.
+3. Tool workspace split, starting with Angle or Character Builder.
+4. Best-for usecase marketing page split.
+5. API/generate split with broader regression coverage.
+6. `falEngines.ts` registry split after a dedicated model-registry plan.
 
-## Phase 2: Dashboard Split
+## Definition Of Done
 
-Goal: reduce the largest client page without changing behavior.
-
-Target files:
-
-```txt
-frontend/app/(core)/dashboard/
-  page.tsx
-  _components/
-    CreateHero.tsx
-    InProgressList.tsx
-    RecentGrid.tsx
-    InsightsPanel.tsx
-    ToolsPanel.tsx
-  _hooks/
-    useDashboardSelections.ts
-    useDashboardTemplates.ts
-  _lib/
-    dashboard-storage.ts
-    dashboard-media.ts
-    dashboard-formatters.ts
-```
-
-Order:
-
-1. Move browser storage helpers into `_lib/dashboard-storage.ts`.
-2. Move media/lightbox helper functions into `_lib/dashboard-media.ts`.
-3. Move formatting helpers into `_lib/dashboard-formatters.ts`.
-4. Move visual sections into `_components`.
-5. Move selection/template state into hooks only after the helper extraction is stable.
-
-Verification:
-
-```bash
-npm --prefix frontend run lint
-```
-
-Manual smoke test:
-
-- open `/dashboard` or the route that maps to it
-- confirm auth/loading state
-- confirm create video/image actions
-- confirm recent grid opens media lightbox
-- confirm template/remix actions still route correctly
-
-## Phase 3: Model Detail Page Split
-
-Goal: turn the model detail page into route orchestration plus named builders/sections.
-
-Target files:
-
-```txt
-frontend/app/(localized)/[locale]/(marketing)/models/[slug]/
-  page.tsx
-  _components/
-    ModelHeroSection.tsx
-    ModelSpecSections.tsx
-    ModelPricingSection.tsx
-    ModelExamplesSection.tsx
-    ModelFaqSection.tsx
-  _lib/
-    model-page-data.ts
-    model-page-pricing.ts
-    model-page-specs.ts
-    model-page-schema.ts
-    model-page-links.ts
-```
-
-Order:
-
-1. Move schema helpers.
-2. Move pricing/spec helpers.
-3. Move link/canonical helpers.
-4. Move small rendering sections.
-5. Move hero and examples only after props are stable.
-
-Verification:
-
-```bash
-npm --prefix frontend run lint
-```
-
-Manual smoke test:
-
-- `/models/veo-3-1`
-- localized variants for French and Spanish
-- legacy redirects such as `veo-3-1-first-last`
-- JSON-LD script output
-- canonical and hreflang output
-
-## Phase 4: Comparison Detail Page Split
-
-Goal: isolate comparison data preparation from comparison rendering.
-
-Target files:
-
-```txt
-frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/
-  page.tsx
-  _components/
-    CompareHero.tsx
-    CompareScoreSummary.tsx
-    CompareSpecTable.tsx
-    CompareMediaShowdown.tsx
-    CompareFaq.tsx
-  _lib/
-    compare-page-data.ts
-    compare-page-schema.ts
-    compare-page-specs.ts
-    compare-page-routing.ts
-```
-
-Verification should cover canonical order, reversed slugs, excluded redirects, and localized copy.
-
-## Phase 5: Admin Insights Split
-
-Goal: keep the admin page server-driven while extracting chart/table surfaces.
-
-Target files:
-
-```txt
-frontend/app/(core)/admin/insights/
-  page.tsx
-  _components/
-    PrioritySignalPanel.tsx
-    WindowPulseGrid.tsx
-    ComparisonChart.tsx
-    RevenueBoardTable.tsx
-    HealthPanel.tsx
-  _lib/
-    insights-builders.ts
-    insights-formatters.ts
-```
-
-Verification should cover range/focus search params and admin access behavior.
-
-## Definition of Done
-
-A refactor phase is complete when:
+A cleanup PR is complete when:
 
 - behavior is unchanged
-- route file is materially shorter
+- the route or feature owner file is materially shorter
 - extracted files have clear names and responsibilities
-- lint passes
-- manual smoke checks pass
-- the roadmap is updated if the actual structure differs from this plan
-
+- a contract test guards the architectural boundary
+- focused tests pass
+- `npm --prefix frontend run lint`, `npm run lint:exposure`, `pnpm --prefix frontend exec tsc --noEmit --pretty false`, and `git diff --check` pass
+- a full build passes before merge when the PR touches routes, app-level components, or provider logic
