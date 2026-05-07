@@ -16,6 +16,10 @@ test('Seedance runtime user messages do not expose provider names', () => {
     path.join(process.cwd(), 'frontend/src/server/video-providers/byteplus-modelark.ts'),
     'utf8'
   );
+  const byteplusSubmission = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/generate/_lib/byteplus-submission.ts'),
+    'utf8'
+  );
 
   const forbiddenUserCopy = [
     'BytePlus render submitted.',
@@ -30,7 +34,7 @@ test('Seedance runtime user messages do not expose provider names', () => {
     'BytePlus does not support',
   ];
 
-  const runtimeCopy = [generateRoute, byteplusPoll, providerSource].join('\n');
+  const runtimeCopy = [generateRoute, byteplusPoll, providerSource, byteplusSubmission].join('\n');
   forbiddenUserCopy.forEach((copy) => {
     assert.doesNotMatch(runtimeCopy, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   });
