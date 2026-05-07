@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import useSWR from 'swr';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -15,13 +14,12 @@ import { EngineSelect } from '@/components/ui/EngineSelect';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
-import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
+import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import type {
   CharacterReferenceSelection,
   ImageGenerationMode,
 } from '@/types/image-generation';
 import type { GroupSummary } from '@/types/groups';
-import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
@@ -48,10 +46,9 @@ import { authFetch } from '@/lib/authFetch';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
-import { normalizeJobSurface } from '@/lib/job-surface-normalize';
-import { groupJobsIntoSummaries } from '@/lib/job-groups';
-import { countResolvedVisualSlots } from '@/lib/group-progress';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
+import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
+import { useImageWorkspacePricing } from './_hooks/useImageWorkspacePricing';
 import { useImageSettingsFields } from './_hooks/useImageSettingsFields';
 import { useImageWorkspaceDesktopLayout } from './_hooks/useImageWorkspaceDesktopLayout';
 import { useImagePreviewActions } from './_hooks/useImagePreviewActions';
@@ -70,7 +67,6 @@ import {
 import {
   buildCompletedGroup,
   buildPendingGroup,
-  mapJobToHistoryEntry,
 } from './_lib/image-workspace-history';
 import { parsePersistedImageComposerState } from './_lib/image-workspace-persistence';
 import {
@@ -86,7 +82,6 @@ import {
   type ImageEngineOption,
   type PersistedImageComposerState,
   type ReferenceSlotValue,
-  type PricingEstimateResponse,
 } from './_lib/image-workspace-types';
 
 export type { ImageEngineOption } from './_lib/image-workspace-types';
@@ -137,19 +132,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
-  const [pendingGroups, setPendingGroups] = useState<GroupSummary[]>([]);
   const isDesktopLayout = useImageWorkspaceDesktopLayout();
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [
-    priceEstimateKey,
-    setPriceEstimateKey,
-  ] = useState<[string, string, ImageGenerationMode, number, string, string, boolean, string, string, string] | null>(() =>
-    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', '', false, '', '', ''] : null
-  );
-
   const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
   const selectedEngine = useMemo(
     () => engines.find((engine) => engine.id === engineId) ?? engines[0],
@@ -244,191 +231,28 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     supportedReferenceFormatsLabel,
     toolsEnabled,
   });
-  useEffect(() => {
-    if (!selectedEngine) return;
-    setPriceEstimateKey([
-      'image-pricing',
-      selectedEngine.id,
-      mode,
-      numImages,
-      resolution ?? '',
-      quality ?? '',
-      enableWebSearch,
-      customImageWidth,
-      customImageHeight,
-      referenceSizeSignature,
-    ]);
-  }, [selectedEngine, mode, numImages, resolution, quality, enableWebSearch, customImageWidth, customImageHeight, referenceSizeSignature]);
-
   const {
-    data: pricingData,
-    error: pricingError,
-  } = useSWR(
-    priceEstimateKey,
-    async ([
-      ,
-      engineId,
-      requestMode,
-      count,
-      requestResolution,
-      requestQuality,
-      requestEnableWebSearch,
-      requestCustomWidth,
-      requestCustomHeight,
-    ]) => {
-      const requestCustomImageSize =
-        requestResolution === 'custom'
-          ? buildCustomImageSize(requestCustomWidth, requestCustomHeight)
-          : null;
-      const response = await authFetch('/api/images/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          engineId,
-          mode: requestMode,
-          numImages: count,
-          resolution: requestResolution || undefined,
-          customImageSize: requestCustomImageSize,
-          referenceImageSizes: requestMode === 'i2i' ? readyReferenceSizes : undefined,
-          quality: requestQuality || undefined,
-          enableWebSearch: requestEnableWebSearch || undefined,
-        }),
-      });
-      const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;
-      if (!response.ok || !payload?.ok) {
-        throw new Error((payload as { error?: string } | null)?.error ?? 'Unable to estimate price');
-      }
-      return payload;
-    },
-    {
-      keepPreviousData: true,
-    }
-  );
-
-  const pricingSnapshot = pricingData?.pricing ?? null;
-
+    pricingError,
+    pricingSnapshot,
+  } = useImageWorkspacePricing({
+    customImageHeight,
+    customImageWidth,
+    enableWebSearch,
+    mode,
+    numImages,
+    quality,
+    readyReferenceSizes,
+    referenceSizeSignature,
+    resolution,
+    selectedEngineId: selectedEngine?.id,
+  });
   const {
-    data: jobPages,
-    mutate: mutateJobs,
-  } = useInfiniteJobs(24, { surface: 'image' });
-
-  const imageEngineAliasSet = useMemo(() => {
-    const set = new Set<string>();
-    engines.forEach((option) => {
-      const aliases = option.aliases?.length ? option.aliases : [option.engineCaps.id, option.id];
-      aliases.forEach((alias) => {
-        if (typeof alias === 'string' && alias.trim().length) {
-          set.add(alias.trim().toLowerCase());
-        }
-      });
-    });
-    return set;
-  }, [engines]);
-
-  const isImageJob = useCallback(
-    (job: Job) => {
-      const surface = normalizeJobSurface(job.surface);
-      if (surface) {
-        return surface === 'image';
-      }
-      const check = (value: string | null | undefined) =>
-        Boolean(value && imageEngineAliasSet.has(value.trim().toLowerCase()));
-      if (check(job.engineId)) return true;
-      if (check(job.engineLabel)) return true;
-      if (!job.videoUrl && Array.isArray(job.renderIds) && job.renderIds.length > 0) return true;
-      return false;
-    },
-    [imageEngineAliasSet]
-  );
-
-  const remoteImageJobs = useMemo(() => {
-    if (!jobPages) return [];
-    return jobPages
-      .flatMap((page) => page.jobs ?? [])
-      .filter((job) => isImageJob(job));
-  }, [jobPages, isImageJob]);
-
-  const remoteHistory = useMemo(() => {
-    if (!remoteImageJobs.length) return [];
-    return remoteImageJobs
-      .map((job) => mapJobToHistoryEntry(job))
-      .filter((entry): entry is HistoryEntry => Boolean(entry));
-  }, [remoteImageJobs]);
-
-  const remoteResolvedGroupMap = useMemo(() => {
-    if (!remoteImageJobs.length) return new Map<string, number>();
-    const { groups } = groupJobsIntoSummaries(remoteImageJobs, { includeSinglesAsGroups: true });
-    const map = new Map<string, number>();
-    groups.forEach((group) => {
-      const resolvedCount = countResolvedVisualSlots(group);
-      const candidateIds = new Set<string>();
-      candidateIds.add(group.id);
-      if (group.hero.jobId) {
-        candidateIds.add(group.hero.jobId);
-      }
-      group.members.forEach((member) => {
-        if (member.jobId) {
-          candidateIds.add(member.jobId);
-        }
-      });
-      candidateIds.forEach((candidateId) => {
-        if (!candidateId) return;
-        map.set(candidateId, Math.max(map.get(candidateId) ?? 0, resolvedCount));
-      });
-    });
-    return map;
-  }, [remoteImageJobs]);
-
-  const combinedHistory = useMemo(() => {
-    const map = new Map<string, HistoryEntry>();
-    remoteHistory.forEach((entry) => {
-      map.set(entry.id, entry);
-    });
-    localHistory.forEach((entry) => {
-      map.set(entry.id, entry);
-    });
-    return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
-  }, [localHistory, remoteHistory]);
-
-  useEffect(() => {
-    if (!remoteResolvedGroupMap.size) return;
-    setPendingGroups((previous) =>
-      previous.filter((group) => {
-        const expectedCount = Math.max(1, Math.min(4, group.count || group.members.length || 1));
-        const relatedIds = new Set<string>();
-        relatedIds.add(group.id);
-        if (group.hero.jobId) {
-          relatedIds.add(group.hero.jobId);
-        }
-        group.members.forEach((member) => {
-          if (member.jobId) {
-            relatedIds.add(member.jobId);
-          }
-        });
-        for (const candidateId of relatedIds) {
-          const resolvedCount = remoteResolvedGroupMap.get(candidateId) ?? 0;
-          if (resolvedCount >= expectedCount) {
-            return false;
-          }
-        }
-        return true;
-      })
-    );
-  }, [remoteResolvedGroupMap]);
-
-  useEffect(() => {
-    if (!pendingGroups.length) return;
-    const intervalId = window.setInterval(() => {
-      void mutateJobs();
-    }, 2000);
-    const timeoutId = window.setTimeout(() => {
-      window.clearInterval(intervalId);
-    }, 30000);
-    return () => {
-      window.clearInterval(intervalId);
-      window.clearTimeout(timeoutId);
-    };
-  }, [mutateJobs, pendingGroups]);
+    historyEntries,
+    isImageJob,
+    mutateJobs,
+    pendingGroups,
+    setPendingGroups,
+  } = useImageWorkspaceHistory({ engines, localHistory });
 
   const referenceNoteText = resolvedCopy.composer.referenceNote;
 
@@ -1072,10 +896,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       thinkingLevel,
       thinkingLevelField,
       mutateJobs,
+      setPendingGroups,
     ]
   );
-
-  const historyEntries = combinedHistory;
 
   const handleSelectGalleryGroup = useCallback(
     (group: GroupSummary) => {
