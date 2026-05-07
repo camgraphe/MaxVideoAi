@@ -8,7 +8,6 @@ import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
 import Stripe from 'stripe';
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
-import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
@@ -23,6 +22,7 @@ import {
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
 import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
+import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -127,37 +127,6 @@ async function resolveUserId(req?: NextRequest): Promise<string | null> {
     return localAdminUserId;
   }
   return null;
-}
-
-function buildReceiptSnapshot(pricing: PricingSnapshot): Record<string, unknown> {
-  const snapshot: Record<string, unknown> = {
-    totalCents: pricing.totalCents,
-    currency: pricing.currency,
-  };
-
-  const discountCandidate = (pricing as unknown as { discount?: { amountCents?: number; percentApplied?: number; label?: string } }).discount;
-  if (discountCandidate && typeof discountCandidate.amountCents === 'number' && discountCandidate.amountCents > 0) {
-    snapshot.discount = {
-      amountCents: discountCandidate.amountCents,
-      percentApplied: discountCandidate.percentApplied ?? null,
-      label: discountCandidate.label ?? null,
-    };
-  }
-
-  const taxesCandidate = (pricing as unknown as { taxes?: Array<{ amountCents?: number; label?: string }> }).taxes;
-  if (Array.isArray(taxesCandidate)) {
-    const taxes = taxesCandidate
-      .filter((tax) => tax && typeof tax.amountCents === 'number' && tax.amountCents > 0)
-      .map((tax) => ({
-        amountCents: tax.amountCents!,
-        label: tax.label ?? null,
-      }));
-    if (taxes.length) {
-      snapshot.taxes = taxes;
-    }
-  }
-
-  return snapshot;
 }
 
 async function markJobAwaitingFal(params: {
