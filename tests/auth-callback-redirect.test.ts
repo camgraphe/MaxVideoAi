@@ -7,16 +7,31 @@ const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
 const siteOriginSource = readFileSync('frontend/lib/siteOrigin.ts', 'utf8');
 
-test('OAuth callback failure does not reattach a failed code to /login', () => {
-  assert.doesNotMatch(
+test('OAuth callback exchanges PKCE on the server before using the browser fallback', () => {
+  assert.match(
+    authCallbackSource,
+    /createSupabaseMiddlewareClient\(req,\s*response\)/,
+    'the callback should use the SSR Supabase cookie client for Safari-compatible PKCE exchange'
+  );
+  assert.match(
     authCallbackSource,
     /\.exchangeCodeForSession\(code\)/,
-    'the server callback should not exchange PKCE codes because Safari may not send the browser code verifier cookie'
+    'the callback should exchange PKCE codes server-side when the code verifier cookie is available'
+  );
+  assert.match(
+    authCallbackSource,
+    /const serverExchangeResponse = await exchangeCodeOnServer\(req,\s*code,\s*nextPath\);[\s\S]*if \(serverExchangeResponse\) \{[\s\S]*return serverExchangeResponse;/,
+    'successful server exchange should send the user to the target page without another login hop'
   );
   assert.match(
     authCallbackSource,
     /loginUrl\.searchParams\.set\(['"]code['"],\s*code\)/,
-    'the callback should forward OAuth codes to /login for browser-side exchange'
+    'failed server exchange should still forward OAuth codes to /login for browser-side fallback'
+  );
+  assert.match(
+    authCallbackSource,
+    /Cache-Control['"],\s*['"]private, no-store, max-age=0/,
+    'auth redirects that set or carry session state should not be cached'
   );
 });
 
