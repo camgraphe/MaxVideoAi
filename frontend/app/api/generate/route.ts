@@ -27,6 +27,7 @@ import { buildInitialProviderMediaState, resolveProviderMediaState } from './_li
 import { buildFinalGenerateResponse } from './_lib/final-response';
 import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
 import { buildGenerateValidationPayload } from './_lib/validation-payload';
+import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -55,13 +56,8 @@ import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/s
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
-  buildBytePlusSeedancePayload,
-  BytePlusModelArkError,
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-  getBytePlusArkConfig,
-  getBytePlusModelArkClient,
   getBytePlusSeedanceAllowedResolutions,
-  getBytePlusUserSafeErrorMessage,
   isSeedanceBytePlusModeAllowed,
   isSeedanceFastBytePlusModeAllowed,
   isBytePlusModelArkEnabled,
@@ -70,7 +66,6 @@ import {
   seedanceFastBytePlusAdminOnly,
   shouldRoutePublicSeedanceToBytePlus,
   shouldRoutePublicSeedanceFastToBytePlus,
-  scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 
 type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'>;
@@ -943,151 +938,46 @@ export async function POST(req: NextRequest) {
   }
 
   if (isBytePlusV1a) {
-    try {
-      const config = getBytePlusArkConfig();
-      const payload = buildBytePlusSeedancePayload({
-        modelId: isPublicSeedanceBytePlus ? config.seedanceModelId : config.seedanceFastModelId,
-        prompt,
-        durationSec,
-        mode:
-          mode === 'i2v'
-            ? 'i2v'
-            : mode === 'ref2v'
-              ? 'ref2v'
-              : mode === 'v2v'
-                ? 'v2v'
-                : mode === 'extend'
-                  ? 'extend'
-                  : 't2v',
-        imageUrl: mode === 'i2v' ? initialImageUrl : null,
-        endImageUrl: mode === 'i2v' ? endImageUrl : null,
-        referenceImageUrls: mode === 'ref2v' || mode === 'v2v' ? normalizedReferenceImages : undefined,
-        referenceVideoUrls: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? videoUrls : undefined,
-        referenceAudioUrls:
-          mode === 'ref2v' || mode === 'v2v' || mode === 'extend'
-            ? Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls]))
-            : undefined,
-        resolution: effectiveResolution,
-        ratio: aspectRatio,
-        generateAudio: audioEnabled !== false,
-        allowedResolutions: getBytePlusSeedanceAllowedResolutions(engine.id),
-      });
-      const providerTask = await getBytePlusModelArkClient().createSeedanceFastTask(payload);
-      const providerJobId = providerTask.providerJobId;
-      await persistProviderJobId(providerJobId);
-      await query(
-        `UPDATE app_jobs
-         SET status = $2,
-             progress = $3,
-             message = $4,
-             provider = $5,
-             provider_job_id = $6,
-             provisional = FALSE,
-             updated_at = NOW()
-         WHERE job_id = $1`,
-        [
-          jobId,
-          providerTask.status === 'running' ? 'running' : 'queued',
-          providerTask.status === 'running' ? 30 : 10,
-          'Render submitted.',
-          BYTEPLUS_MODELARK_PROVIDER,
-          providerJobId,
-        ]
-      );
-      logMetric('accepted', {
-        jobId,
-        meta: {
-          providerJobId,
-          provider: BYTEPLUS_MODELARK_PROVIDER,
-          inputSummary: {
-            mode,
-            promptLength: prompt.length,
-            durationSec,
-            resolution: effectiveResolution,
-            aspectRatio,
-            generateAudio: audioEnabled !== false,
-            hasImage: Boolean(mode === 'i2v' && initialImageUrl),
-            hasEndImage: Boolean(mode === 'i2v' && endImageUrl),
-            referenceImageCount: mode === 'ref2v' || mode === 'v2v' ? normalizedReferenceImages.length : 0,
-            referenceVideoCount: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? videoUrls.length : 0,
-            referenceAudioCount: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? audioUrls.length : 0,
-          },
-        },
-      });
-      return NextResponse.json({
-        ok: true,
-        jobId,
-        videoUrl: null,
-        video: null,
-        thumbUrl: placeholderThumb,
-        status: providerTask.status === 'running' ? 'running' : 'queued',
-        progress: providerTask.status === 'running' ? 30 : 10,
-        pricing,
-        paymentStatus,
-        provider: BYTEPLUS_MODELARK_PROVIDER,
-        providerJobId,
-        batchId,
-        groupId,
-        iterationIndex,
-        iterationCount,
-        renderIds,
-        heroRenderId,
-        localKey,
-      });
-    } catch (error) {
-      const providerMessage = scrubBytePlusError(error);
-      const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
-      const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
-      const failureMessage = getBytePlusUserSafeErrorMessage(providerMessage);
-      console.warn('[byteplus] task submission failed', {
-        jobId,
-        engineId: engine.id,
-        status: providerStatus,
-        code: errorCode,
-        message: providerMessage,
-      });
-      try {
-        await query(
-          `UPDATE app_jobs
-           SET status = 'failed',
-               progress = 0,
-               message = $2,
-               provider = $3,
-               provisional = FALSE,
-               payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
-               updated_at = NOW()
-           WHERE job_id = $1`,
-          [
-            jobId,
-            failureMessage,
-            BYTEPLUS_MODELARK_PROVIDER,
-            pendingReceipt ? (paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded') : null,
-          ]
-        );
-      } catch (updateError) {
-        console.warn('[byteplus] failed to mark submission failure', { jobId }, updateError);
-      }
-      if (pendingReceipt) {
-        await rollbackPendingPayment({
-          pendingReceipt,
-          walletChargeReserved,
-          refundDescription: `Refund ${engine.label} - ${durationSec}s - BytePlus start failed`,
-        });
-      }
-      logMetric('failed', {
-        jobId,
-        errorCode,
-        meta: { provider: BYTEPLUS_MODELARK_PROVIDER, providerStatus },
-      });
-      return NextResponse.json(
-        {
-          ok: false,
-          error: errorCode,
-          message: failureMessage,
-        },
-        { status: providerStatus && providerStatus >= 400 && providerStatus < 500 ? 502 : 503 }
-      );
-    }
+    const bytePlusSubmission = await submitBytePlusGenerateTask({
+      jobId,
+      userId,
+      engineId: engine.id,
+      engineLabel: engine.label,
+      isPublicSeedanceBytePlus,
+      prompt,
+      durationSec,
+      mode,
+      initialImageUrl,
+      endImageUrl,
+      normalizedReferenceImages,
+      videoUrls,
+      resolvedAudioUrl,
+      audioUrls,
+      effectiveResolution,
+      aspectRatio,
+      audioEnabled,
+      placeholderThumb,
+      pricing,
+      paymentStatus,
+      pendingReceipt,
+      paymentMode,
+      walletChargeReserved,
+      batchId,
+      groupId,
+      iterationIndex,
+      iterationCount,
+      renderIds,
+      heroRenderId,
+      localKey,
+      deps: {
+        persistProviderJobIdFn: persistProviderJobId,
+        logMetricFn: logMetric,
+      },
+    });
+    return NextResponse.json(
+      bytePlusSubmission.body,
+      bytePlusSubmission.ok ? undefined : { status: bytePlusSubmission.status }
+    );
   }
 
   try {
