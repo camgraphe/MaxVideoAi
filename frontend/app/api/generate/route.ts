@@ -28,6 +28,7 @@ import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
 import { createProviderJobTracker } from './_lib/provider-job-tracker';
 import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/final-job-persistence';
+import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './_lib/final-receipts';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1856,32 +1857,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Failed to update job record' }, { status: 500 });
   }
 
-  if (pendingReceipt && !walletChargeReserved) {
-    try {
-      await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-         VALUES ($1,'charge',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)`,
-        [
-          pendingReceipt.userId,
-          pendingReceipt.amountCents,
-          pendingReceipt.currency,
-          pendingReceipt.description,
-          pendingReceipt.jobId,
-          'video',
-          null,
-          JSON.stringify(pendingReceipt.snapshot),
-          pendingReceipt.applicationFeeCents ?? null,
-          pendingReceipt.vendorAccountId,
-          pendingReceipt.stripePaymentIntentId ?? null,
-          pendingReceipt.stripeChargeId ?? null,
-          pendingReceipt.applicationFeeCents ?? null,
-          pendingReceipt.vendorAccountId,
-        ]
-      );
-    } catch (error) {
-      console.error('[api/generate] failed to persist payment receipt', error);
-    }
-  }
+  await persistFinalChargeReceipt({ pendingReceipt, walletChargeReserved });
 
   await recordFinalGenerateQueueLog({
     jobId,
@@ -1909,34 +1885,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {
-    try {
-      await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-         VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
-         ON CONFLICT DO NOTHING`,
-        [
-          pendingReceipt.userId,
-          pendingReceipt.amountCents,
-          pendingReceipt.currency,
-          `Refund ${engine.label} - ${durationSec}s`,
-          pendingReceipt.jobId,
-          'video',
-          null,
-          JSON.stringify(pendingReceipt.snapshot),
-          priceOnlyReceipts ? null : 0,
-          priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-          pendingReceipt.stripePaymentIntentId ?? null,
-          pendingReceipt.stripeChargeId ?? null,
-          priceOnlyReceipts ? null : 0,
-          priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-        ]
-      );
-      await query(`UPDATE app_jobs SET payment_status = 'refunded_wallet' WHERE job_id = $1`, [jobId]);
-    } catch (error) {
-      console.warn('[wallet] failed to record refund', error);
-    }
-  }
+  await persistWalletFailureRefundReceipt({
+    status,
+    pendingReceipt,
+    paymentMode,
+    engineLabel: engine.label,
+    durationSec,
+    priceOnlyReceipts,
+  });
 
   const responsePaymentStatus =
     status === 'failed' && pendingReceipt && paymentMode === 'wallet' ? 'refunded_wallet' : paymentStatus;
