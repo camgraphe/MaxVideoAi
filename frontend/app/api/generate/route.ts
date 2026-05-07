@@ -23,6 +23,7 @@ import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
 import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
 import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
+import { createGenerateMetricLogger } from './_lib/metric-logger';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -60,7 +61,6 @@ import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency 
 import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
-import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -186,46 +186,7 @@ async function markJobAwaitingFal(params: {
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
-  const metricState: {
-    engineId: string | null;
-    engineLabel: string | null;
-    mode: Mode | null;
-    userId: string | null;
-    jobId: string | null;
-    durationSec: number | null;
-    resolution: string | null;
-  } = {
-    engineId: null,
-    engineLabel: null,
-    mode: null,
-    userId: null,
-    jobId: null,
-    durationSec: null,
-    resolution: null,
-  };
-  const logMetric = (
-    status: 'accepted' | 'rejected' | 'completed' | 'failed',
-    options?: { errorCode?: string; meta?: Record<string, unknown>; durationMs?: number; jobId?: string | null }
-  ) => {
-    if (!metricState.engineId) return;
-    const durationMs = options?.durationMs ?? Date.now() - requestStartedAt;
-    const meta = {
-      durationSec: metricState.durationSec,
-      resolution: metricState.resolution,
-      ...(options?.meta ?? {}),
-    };
-    void recordGenerateMetric({
-      jobId: options?.jobId ?? metricState.jobId,
-      userId: metricState.userId,
-      engineId: metricState.engineId,
-      engineLabel: metricState.engineLabel ?? undefined,
-      mode: metricState.mode ?? undefined,
-      status,
-      durationMs,
-      errorCode: options?.errorCode,
-      meta,
-    });
-  };
+  const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
 
   const body = await req
     .json()
