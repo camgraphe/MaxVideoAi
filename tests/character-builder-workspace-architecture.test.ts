@@ -14,6 +14,8 @@ const generateDockPath = join(root, 'frontend/src/components/tools/character-bui
 const formControlsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-form-controls.tsx');
 const referenceLibraryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-reference-library.tsx');
 const resultCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-result-cards.tsx');
+const optionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderOptions.ts');
+const historicalResultsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderHistoricalResults.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -27,8 +29,12 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(formControlsPath), 'form controls should live in a focused component module');
   assert.ok(existsSync(referenceLibraryPath), 'reference library components should live in a focused component module');
   assert.ok(existsSync(resultCardsPath), 'result card components should live in a focused component module');
+  assert.ok(existsSync(optionsHookPath), 'localized option derivation should live in a focused hook');
+  assert.ok(existsSync(historicalResultsHookPath), 'historical result derivation should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-helpers'/, 'workspace should import helpers');
@@ -44,9 +50,12 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /function HairEditorPanel\(/, 'hair editor UI belongs in _components/character-builder-workspace-components.tsx');
   assert.doesNotMatch(workspaceSource, /function CharacterReferenceLibraryModal\(/, 'library modal UI belongs in _components/character-builder-workspace-components.tsx');
   assert.doesNotMatch(workspaceSource, /function ResultCard\(/, 'result card UI belongs in _components/character-builder-workspace-components.tsx');
+  assert.doesNotMatch(workspaceSource, /GENDER_PRESENTATION_OPTIONS\.map/, 'localized option derivation belongs in useCharacterBuilderOptions');
+  assert.doesNotMatch(workspaceSource, /useInfiniteJobs\(18, \{ surface: 'character' \}\)/, 'historical result feed belongs in useCharacterBuilderHistoricalResults');
+  assert.doesNotMatch(workspaceSource, /localResultUrls/, 'historical duplicate filtering belongs in useCharacterBuilderHistoricalResults');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1950, `CharacterBuilderWorkspace should stay below 1950 lines after component extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1800, `CharacterBuilderWorkspace should stay below 1800 lines after hook extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -59,6 +68,8 @@ test('character builder helper modules expose the expected workspace contract', 
   const formControlsSource = readFileSync(formControlsPath, 'utf8');
   const referenceLibrarySource = readFileSync(referenceLibraryPath, 'utf8');
   const resultCardsSource = readFileSync(resultCardsPath, 'utf8');
+  const optionsHookSource = readFileSync(optionsHookPath, 'utf8');
+  const historicalResultsHookSource = readFileSync(historicalResultsHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_CHARACTER_COPY =/, 'copy module should export default copy');
   assert.match(copySource, /export type CharacterCopy =/, 'copy module should export copy type');
@@ -153,4 +164,9 @@ test('character builder helper modules expose the expected workspace contract', 
   ]) {
     assert.match(resultCardsSource, new RegExp(`export function ${exportName}`), `${exportName} should be exported`);
   }
+
+  assert.match(optionsHookSource, /export function useCharacterBuilderOptions/, 'options hook should be exported');
+  assert.match(optionsHookSource, /getAvailableCharacterFormatOptions/, 'options hook should own format option derivation');
+  assert.match(historicalResultsHookSource, /export function useCharacterBuilderHistoricalResults/, 'historical results hook should be exported');
+  assert.match(historicalResultsHookSource, /useInfiniteJobs\(18, \{ surface: 'character' \}\)/, 'historical results hook should own the character feed');
 });
