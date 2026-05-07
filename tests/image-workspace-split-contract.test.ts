@@ -6,10 +6,12 @@ import path from 'node:path';
 const root = process.cwd();
 const imageDir = path.join(root, 'frontend/app/(core)/(workspace)/app/image');
 const workspacePath = path.join(imageDir, 'ImageWorkspace.tsx');
+const composerPersistenceHookPath = path.join(imageDir, '_hooks/useImageComposerPersistence.ts');
 
 const splitFiles = [
   '_components/ImageAuthGateModal.tsx',
   '_components/ImageLibraryModal.tsx',
+  '_hooks/useImageComposerPersistence.ts',
   '_hooks/useImageWorkspaceHistory.ts',
   '_hooks/useImageWorkspacePricing.ts',
   '_hooks/useImageWorkspaceDesktopLayout.ts',
@@ -27,6 +29,7 @@ function readImageWorkspace() {
 
 test('image workspace foundations are split from the route orchestrator', () => {
   const source = readImageWorkspace();
+  const composerPersistenceHookSource = readFileSync(composerPersistenceHookPath, 'utf8');
 
   for (const file of splitFiles) {
     statSync(path.join(imageDir, file));
@@ -34,12 +37,12 @@ test('image workspace foundations are split from the route orchestrator', () => 
 
   assert.match(source, /from '\.\/_components\/ImageLibraryModal'/);
   assert.match(source, /from '\.\/_components\/ImageAuthGateModal'/);
+  assert.match(source, /from '\.\/_hooks\/useImageComposerPersistence'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceHistory'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-copy'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-history'/);
-  assert.match(source, /from '\.\/_lib\/image-workspace-persistence'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-utils'/);
 
   assert.doesNotMatch(source, /const DEFAULT_COPY: ImageWorkspaceCopy =/);
@@ -53,7 +56,15 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.doesNotMatch(source, /useSWR\(/, 'pricing SWR orchestration belongs in useImageWorkspacePricing');
   assert.doesNotMatch(source, /useInfiniteJobs\(24, \{ surface: 'image' \}\)/, 'image job feed orchestration belongs in useImageWorkspaceHistory');
   assert.doesNotMatch(source, /const remoteImageJobs =/, 'remote image history derivation belongs in useImageWorkspaceHistory');
+  assert.doesNotMatch(source, /parsePersistedImageComposerState/, 'composer storage parsing belongs in useImageComposerPersistence');
+  assert.doesNotMatch(source, /IMAGE_COMPOSER_STORAGE_KEY/, 'composer storage constants belong in useImageComposerPersistence');
+
+  assert.match(composerPersistenceHookSource, /export function useImageComposerPersistence/);
+  assert.match(composerPersistenceHookSource, /parsePersistedImageComposerState/);
+  assert.match(composerPersistenceHookSource, /IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS/);
+  assert.match(composerPersistenceHookSource, /localStorage\.getItem\(IMAGE_COMPOSER_STORAGE_KEY\)/);
+  assert.match(composerPersistenceHookSource, /localStorage\.setItem\(IMAGE_COMPOSER_STORAGE_KEY, serialized\)/);
 
   const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 1460, `ImageWorkspace should stay below 1460 lines after auth modal extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1300, `ImageWorkspace should stay below 1300 lines after composer persistence extraction, got ${lineCount}`);
 });
