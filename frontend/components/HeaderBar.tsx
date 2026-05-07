@@ -967,7 +967,7 @@ export function HeaderBar() {
           </div>
         </div>
       ) : null}
-      <ReconsentPrompt />
+      <ReconsentPrompt enabled={authResolved && isAuthenticated} />
     </>
   );
 }

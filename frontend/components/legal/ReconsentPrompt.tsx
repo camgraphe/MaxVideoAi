@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { readLastKnownUserId } from '@/lib/last-known';
+import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 type DocumentStatus = {
   key: 'terms' | 'privacy' | 'cookies';
@@ -29,6 +32,23 @@ type ApiResponse = {
   documents?: DocumentStatus[];
   error?: string;
 };
+
+async function resolveReconsentRequestHeaders(): Promise<Headers | null> {
+  if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
+    return null;
+  }
+
+  const session = await readBrowserSession();
+  if (!session?.user) {
+    return null;
+  }
+
+  const headers = new Headers();
+  if (session.access_token) {
+    headers.set('Authorization', `Bearer ${session.access_token}`);
+  }
+  return headers;
+}
 
 function describeDocument(key: DocumentStatus['key']): { label: string; href: string } {
   switch (key) {
@@ -73,7 +93,10 @@ function useCountdown(targetIso: string | null): string | null {
 
 async function fetchStatus(): Promise<ReconsentStatus> {
   try {
-    const res = await fetch('/api/legal/reconsent', { credentials: 'include' });
+    const headers = await resolveReconsentRequestHeaders();
+    if (!headers) return null;
+
+    const res = await fetch('/api/legal/reconsent', { credentials: 'include', headers });
     if (res.status === 401) return null;
     const json = (await res.json()) as ApiResponse;
     if (!json.ok) {
@@ -103,9 +126,15 @@ async function fetchStatus(): Promise<ReconsentStatus> {
 
 async function acceptDocuments(documents: DocumentStatus[]): Promise<ReconsentStatus> {
   const locale = typeof navigator !== 'undefined' ? navigator.language ?? null : null;
+  const headers = await resolveReconsentRequestHeaders();
+  if (!headers) {
+    throw new Error('Please sign in again to accept the updated legal terms.');
+  }
+  headers.set('Content-Type', 'application/json');
+
   const res = await fetch('/api/legal/reconsent', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
     body: JSON.stringify({
       documents: documents.map((doc) => doc.key),
@@ -135,13 +164,23 @@ async function acceptDocuments(documents: DocumentStatus[]): Promise<ReconsentSt
   };
 }
 
-export function ReconsentPrompt() {
+type ReconsentPromptProps = {
+  enabled?: boolean;
+};
+
+export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
   const [status, setStatus] = useState<ReconsentStatus>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const loadStatus = useCallback(async () => {
+    if (!enabled) {
+      setStatus(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -152,16 +191,22 @@ export function ReconsentPrompt() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setStatus(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     void loadStatus();
     const handleFocus = () => {
       void loadStatus();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [loadStatus]);
+  }, [enabled, loadStatus]);
 
   const countdown = useCountdown(status?.graceEndsAt ?? null);
 
