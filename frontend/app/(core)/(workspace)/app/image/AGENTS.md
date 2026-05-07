@@ -17,6 +17,7 @@ This route owns the dedicated still-image generation workspace.
 - Keep job-to-history and local active group builders in `_lib/image-workspace-history.ts`.
 - Keep reference slot state, upload orchestration, library selection, and character toggling in `_hooks/useImageReferenceSlots.ts`.
 - Keep preview copy/download actions and generated-library save/remove orchestration in `_hooks/useImagePreviewActions.ts`.
+- Keep image setting field derivation, select options, and schema-driven default resets in `_hooks/useImageSettingsFields.ts`.
 - Keep browser-only library UI in `_components/ImageLibraryModal.tsx`.
 - Keep `ImageWorkspace.tsx` focused on orchestration; do not add new inline helper blocks or route-local modal implementations there.
 - Keep image composer storage keys and stored payload shape backward compatible.
