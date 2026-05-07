@@ -3,7 +3,6 @@ import { ApiError, ValidationError } from '@fal-ai/client';
 import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
 import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { getFalClient } from '@/lib/fal-client';
-import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
@@ -19,7 +18,6 @@ import {
   clampUpscaleFactor,
   estimateImageUpscaleCostUsd,
   estimateVideoUpscaleCostUsd,
-  getTargetResolutionHeight,
   resolveUpscaleOutputFetchTimeoutMs,
   resolveUpscaleMode,
   resolveUpscaleOutputFormat,
@@ -28,28 +26,32 @@ import {
 import type {
   UpscaleMediaType,
   UpscaleOutputFormat,
-  UpscaleTargetResolution,
-  UpscaleToolEngineDefinition,
   UpscaleToolEngineId,
   UpscaleToolOutput,
   UpscaleToolRequest,
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
 import type { PricingSnapshot } from '@/types/engines';
+import {
+  UPSCALE_SURFACE,
+  buildUpscaleFalInput,
+  buildUpscalePromptSummary,
+  buildUpscaleSettingsSnapshot,
+  cloneUpscalePricingWithDynamicTotal,
+  extractUpscaleActualCostUsd,
+  extractUpscaleOutput,
+  formatToImageMime,
+  formatToVideoMime,
+  parseUpscaleRequestId,
+  toUpscaleValidationMessage,
+  type VideoMetadata,
+} from './upscale-request-utils';
 
 const TOOL_EVENT_NAME = 'tool_upscale_generate';
-const UPSCALE_SURFACE = 'upscale' as const;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
 type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
-};
-
-export type VideoMetadata = {
-  width: number;
-  height: number;
-  durationSec: number;
-  fps: number;
 };
 
 type ImageThumbnailBatchInput = {
@@ -115,322 +117,6 @@ export class UpscaleToolError extends Error {
 function usdToCredits(value: number | null | undefined): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
   return Math.max(1, Math.round(value * 100));
-}
-
-function normalizeFalUrl(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return trimmed;
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `https://fal.media/files/${trimmed.replace(/^\.?\/+/, '')}`;
-}
-
-function formatToImageMime(format: UpscaleOutputFormat): string {
-  if (format === 'png') return 'image/png';
-  if (format === 'webp') return 'image/webp';
-  return 'image/jpeg';
-}
-
-function formatToVideoMime(format: UpscaleOutputFormat): string {
-  if (format === 'webm') return 'video/webm';
-  if (format === 'mov') return 'video/quicktime';
-  if (format === 'gif') return 'image/gif';
-  return 'video/mp4';
-}
-
-function seedVideoFormat(format: UpscaleOutputFormat): string {
-  if (format === 'webm') return 'VP9 (.webm)';
-  if (format === 'mov') return 'PRORES4444 (.mov)';
-  if (format === 'gif') return 'GIF (.gif)';
-  return 'X264 (.mp4)';
-}
-
-function toUpscaleOutput(entry: Record<string, unknown>, mediaType: UpscaleMediaType): UpscaleToolOutput | null {
-  const urlRaw =
-    typeof entry.url === 'string'
-      ? entry.url
-      : typeof entry.image_url === 'string'
-        ? entry.image_url
-        : typeof entry.video_url === 'string'
-          ? entry.video_url
-          : typeof entry.path === 'string'
-            ? entry.path
-            : null;
-  if (!urlRaw) return null;
-
-  const width = typeof entry.width === 'number' ? entry.width : null;
-  const height = typeof entry.height === 'number' ? entry.height : null;
-  const mimeType =
-    typeof entry.content_type === 'string'
-      ? entry.content_type
-      : typeof entry.mimetype === 'string'
-        ? entry.mimetype
-        : typeof entry.mime === 'string'
-          ? entry.mime
-          : mediaType === 'video'
-            ? 'video/mp4'
-            : 'image/png';
-
-  const url = normalizeFalUrl(urlRaw);
-  return {
-    url: normalizeMediaUrl(url) ?? url,
-    width,
-    height,
-    mimeType,
-  };
-}
-
-function extractOutput(payload: unknown, mediaType: UpscaleMediaType): UpscaleToolOutput | null {
-  const roots: unknown[] = [];
-  if (payload && typeof payload === 'object') {
-    const record = payload as Record<string, unknown>;
-    roots.push(record);
-    if (record.output && typeof record.output === 'object') roots.push(record.output);
-    if (record.response && typeof record.response === 'object') roots.push(record.response);
-    if (record.data && typeof record.data === 'object') roots.push(record.data);
-  }
-
-  for (const root of roots) {
-    if (!root || typeof root !== 'object') continue;
-    const record = root as Record<string, unknown>;
-    const key = mediaType === 'video' ? 'video' : 'image';
-
-    if (record[key] && typeof record[key] === 'object') {
-      const output = toUpscaleOutput(record[key] as Record<string, unknown>, mediaType);
-      if (output) return output;
-    }
-
-    if (Array.isArray(record.images) && mediaType === 'image') {
-      for (const entry of record.images) {
-        if (entry && typeof entry === 'object') {
-          const output = toUpscaleOutput(entry as Record<string, unknown>, mediaType);
-          if (output) return output;
-        }
-      }
-    }
-
-    if (typeof record.url === 'string') {
-      const output = toUpscaleOutput(record, mediaType);
-      if (output) return output;
-    }
-  }
-  return null;
-}
-
-function parseRequestId(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== 'object') return undefined;
-  const record = payload as Record<string, unknown>;
-  if (typeof record.request_id === 'string') return record.request_id;
-  if (typeof record.id === 'string') return record.id;
-  if (record.response && typeof record.response === 'object') {
-    const responseRecord = record.response as Record<string, unknown>;
-    if (typeof responseRecord.request_id === 'string') return responseRecord.request_id;
-    if (typeof responseRecord.id === 'string') return responseRecord.id;
-  }
-  return undefined;
-}
-
-function extractActualCostUsd(payload: unknown): number | null {
-  const queue: Array<{ value: unknown; depth: number }> = [{ value: payload, depth: 0 }];
-  const candidates: number[] = [];
-
-  while (queue.length) {
-    const current = queue.shift();
-    if (!current) continue;
-    const { value, depth } = current;
-    if (depth > 5 || value == null) continue;
-    if (Array.isArray(value)) {
-      value.slice(0, 20).forEach((entry) => queue.push({ value: entry, depth: depth + 1 }));
-      continue;
-    }
-    if (typeof value !== 'object') continue;
-
-    Object.entries(value as Record<string, unknown>).forEach(([key, field]) => {
-      const lowered = key.toLowerCase();
-      const costLike =
-        lowered === 'cost' ||
-        lowered === 'price' ||
-        lowered.includes('cost_usd') ||
-        lowered.includes('price_usd') ||
-        lowered.includes('actual_cost') ||
-        lowered.includes('estimated_cost');
-      if (costLike && typeof field === 'number' && Number.isFinite(field) && field > 0 && field < 10_000) {
-        candidates.push(field);
-        return;
-      }
-      queue.push({ value: field, depth: depth + 1 });
-    });
-  }
-
-  if (!candidates.length) return null;
-  return Number(candidates[0].toFixed(6));
-}
-
-function resolveTopazTargetFactor(metadata: VideoMetadata | null, target: UpscaleTargetResolution): number {
-  if (!metadata) return 2;
-  const sourceShortEdge = Math.max(1, Math.min(metadata.width, metadata.height));
-  const factor = getTargetResolutionHeight(target) / sourceShortEdge;
-  return Math.max(1, Math.min(4, Number(factor.toFixed(2))));
-}
-
-function buildFalInput(args: {
-  engine: UpscaleToolEngineDefinition;
-  mediaUrl: string;
-  mode: 'factor' | 'target';
-  upscaleFactor: number;
-  targetResolution: UpscaleTargetResolution;
-  outputFormat: UpscaleOutputFormat;
-  metadata: VideoMetadata | null;
-}): Record<string, unknown> {
-  const { engine, mediaUrl, mode, upscaleFactor, targetResolution, outputFormat, metadata } = args;
-
-  if (engine.id === 'seedvr-image') {
-    return {
-      image_url: mediaUrl,
-      upscale_mode: mode,
-      upscale_factor: upscaleFactor,
-      target_resolution: targetResolution,
-      noise_scale: 0.1,
-      output_format: outputFormat,
-    };
-  }
-
-  if (engine.id === 'topaz-image') {
-    return {
-      image_url: mediaUrl,
-      model: 'Standard V2',
-      upscale_factor: Math.min(4, upscaleFactor),
-      crop_to_fill: false,
-      output_format: outputFormat === 'png' ? 'png' : 'jpeg',
-      subject_detection: 'All',
-      face_enhancement: true,
-      face_enhancement_creativity: 0,
-      face_enhancement_strength: 0.8,
-    };
-  }
-
-  if (engine.id === 'recraft-crisp') {
-    return {
-      image_url: mediaUrl,
-      enable_safety_checker: true,
-    };
-  }
-
-  if (engine.id === 'seedvr-video') {
-    return {
-      video_url: mediaUrl,
-      upscale_mode: mode,
-      upscale_factor: upscaleFactor,
-      target_resolution: targetResolution,
-      noise_scale: 0.1,
-      output_format: seedVideoFormat(outputFormat),
-      output_quality: 'high',
-      output_write_mode: 'balanced',
-      sync_mode: false,
-    };
-  }
-
-  if (engine.id === 'flashvsr-video') {
-    return {
-      video_url: mediaUrl,
-      upscale_factor: upscaleFactor,
-      acceleration: 'regular',
-      color_fix: true,
-      quality: 70,
-      preserve_audio: true,
-      output_format: seedVideoFormat(outputFormat),
-      output_quality: 'high',
-      output_write_mode: 'balanced',
-    };
-  }
-
-  return {
-    video_url: mediaUrl,
-    model: 'Proteus',
-    upscale_factor: resolveTopazTargetFactor(metadata, targetResolution),
-    H264_output: true,
-  };
-}
-
-function buildPromptSummary(args: {
-  engine: UpscaleToolEngineDefinition;
-  mediaType: UpscaleMediaType;
-  mode: 'factor' | 'target';
-  upscaleFactor: number;
-  targetResolution: UpscaleTargetResolution;
-  outputFormat: UpscaleOutputFormat;
-}): string {
-  const target = args.mode === 'target' ? args.targetResolution : `${args.upscaleFactor}x`;
-  return `Upscale ${args.mediaType} · ${args.engine.label} · ${target} · ${args.outputFormat.toUpperCase()}`;
-}
-
-function buildSettingsSnapshot(args: {
-  engine: UpscaleToolEngineDefinition;
-  mediaUrl: string;
-  mode: 'factor' | 'target';
-  upscaleFactor: number;
-  targetResolution: UpscaleTargetResolution;
-  outputFormat: UpscaleOutputFormat;
-  billingProductKey: string;
-  sourceJobId?: string | null;
-  sourceAssetId?: string | null;
-  metadata: VideoMetadata | null;
-}): Record<string, unknown> {
-  return {
-    schemaVersion: 1,
-    surface: UPSCALE_SURFACE,
-    billingProductKey: args.billingProductKey,
-    engineId: args.engine.id,
-    engineLabel: args.engine.label,
-    mediaType: args.engine.mediaType,
-    inputMode: args.engine.mediaType === 'video' ? 'v2v' : 'i2i',
-    source: {
-      mediaUrl: args.mediaUrl,
-      sourceJobId: args.sourceJobId ?? null,
-      sourceAssetId: args.sourceAssetId ?? null,
-      metadata: args.metadata,
-    },
-    controls: {
-      mode: args.mode,
-      upscaleFactor: args.upscaleFactor,
-      targetResolution: args.targetResolution,
-      outputFormat: args.outputFormat,
-    },
-  };
-}
-
-function clonePricingWithDynamicTotal(
-  pricing: PricingSnapshot,
-  dynamicTotalCents: number,
-  meta: Record<string, unknown>
-): PricingSnapshot {
-  const totalCents = Math.max(pricing.totalCents, dynamicTotalCents);
-  if (totalCents === pricing.totalCents) {
-    return {
-      ...pricing,
-      meta: {
-        ...(pricing.meta ?? {}),
-        ...meta,
-      },
-    };
-  }
-
-  return {
-    ...pricing,
-    totalCents,
-    subtotalBeforeDiscountCents: totalCents,
-    base: {
-      ...pricing.base,
-      amountCents: totalCents,
-      rate: Number((totalCents / 100).toFixed(4)),
-    },
-    discount: undefined,
-    meta: {
-      ...(pricing.meta ?? {}),
-      pricingModel: 'dynamic-upscale-video',
-      dynamicFloorCents: pricing.totalCents,
-      ...meta,
-    },
-  };
 }
 
 async function recordUpscaleRefundReceipt(receipt: PendingUpscaleReceipt, label: string, priceOnly: boolean) {
@@ -750,18 +436,6 @@ async function persistUpscaleOutput(params: {
   }
 }
 
-function toValidationMessage(error: ValidationError): string {
-  const messages = error.fieldErrors
-    .map((entry) => {
-      const loc = Array.isArray(entry.loc) ? entry.loc.filter((part) => part !== 'body') : [];
-      const path = loc.length ? loc.join('.') : null;
-      const msg = typeof entry.msg === 'string' ? entry.msg.trim() : '';
-      return msg ? (path ? `${path}: ${msg}` : msg) : null;
-    })
-    .filter((entry): entry is string => Boolean(entry));
-  return messages.length ? messages.slice(0, 3).join(' · ') : error.message || 'Validation failed';
-}
-
 export async function runUpscaleToolBase(
   input: RunUpscaleToolInput,
   dependencies: RunUpscaleToolDependencies = {}
@@ -817,7 +491,7 @@ export async function runUpscaleToolBase(
         durationSec: videoMetadata.durationSec,
       };
       const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
-      pricing = clonePricingWithDynamicTotal(pricing, dynamicCents, {
+      pricing = cloneUpscalePricingWithDynamicTotal(pricing, dynamicCents, {
         surface: UPSCALE_SURFACE,
         billingProductKey,
         providerEstimateUsd: estimate.costUsd,
@@ -854,7 +528,7 @@ export async function runUpscaleToolBase(
 
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
   const chargedCredits = usdToCredits(chargedUsd) ?? 1;
-  const settingsSnapshot = buildSettingsSnapshot({
+  const settingsSnapshot = buildUpscaleSettingsSnapshot({
     engine,
     mediaUrl: input.mediaUrl,
     mode,
@@ -866,7 +540,7 @@ export async function runUpscaleToolBase(
     sourceAssetId: input.sourceAssetId,
     metadata: videoMetadata,
   });
-  const promptSummary = buildPromptSummary({
+  const promptSummary = buildUpscalePromptSummary({
     engine,
     mediaType,
     mode,
@@ -908,7 +582,7 @@ export async function runUpscaleToolBase(
     preferredCurrency,
   });
 
-  const falInput = buildFalInput({
+  const falInput = buildUpscaleFalInput({
     engine,
     mediaUrl: input.mediaUrl,
     mode,
@@ -935,7 +609,7 @@ export async function runUpscaleToolBase(
       },
     });
 
-    const output = extractOutput(result.data, mediaType);
+    const output = extractUpscaleOutput(result.data, mediaType);
     if (!output) {
       throw new UpscaleToolError('The selected engine did not return an upscale output.', {
         status: 502,
@@ -944,8 +618,8 @@ export async function runUpscaleToolBase(
     }
 
     const latencyMs = Date.now() - startedAt;
-    const requestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
-    const providerCostUsd = extractActualCostUsd(result.data) ?? extractActualCostUsd(lastQueueUpdate);
+    const requestId = providerJobId ?? parseUpscaleRequestId(result.data) ?? result.requestId ?? null;
+    const providerCostUsd = extractUpscaleActualCostUsd(result.data) ?? extractUpscaleActualCostUsd(lastQueueUpdate);
     const persistedOutput = await persistUpscaleOutput({
       output,
       mediaType,
@@ -1117,7 +791,7 @@ export async function runUpscaleToolBase(
       detail = error.detail;
       code = error.code;
     } else if (error instanceof ValidationError) {
-      message = toValidationMessage(error);
+      message = toUpscaleValidationMessage(error);
       status = 422;
       detail = error.fieldErrors;
       code = 'validation_error';
