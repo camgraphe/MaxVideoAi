@@ -32,11 +32,9 @@ import {
   type AssetBrowserAsset,
 } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
-import { getJobStatus, runUpscaleTool, saveAssetToLibrary, useInfiniteJobs } from '@/lib/api';
+import { runUpscaleTool, saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
-import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import {
@@ -58,13 +56,11 @@ import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
 import {
   clampComparePosition,
   formatCurrency,
-  hasRenderableUpscaleJobMedia,
   inferMimeType,
   isOutputVideo,
   mediaTypeFromMime,
   parseRecentImageVariantIndex,
   PREVIEW_ZOOM_OPTIONS,
-  resolveGeneratedImageSource,
   resolveRecentUpscaleJobFromGroup,
   resolveRecentUpscaleMedia,
   resolveRecentUpscaleMediaFromGroup,
@@ -76,6 +72,7 @@ import {
 } from './upscale/_lib/upscale-workspace-helpers';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
+import { useUpscaleRecentJobs } from './upscale/_hooks/useUpscaleRecentJobs';
 import type {
   JobDetailResponse,
   PreviewMode,
@@ -158,9 +155,6 @@ export default function UpscaleWorkspace() {
   const [activeRecentGroupId, setActiveRecentGroupId] = useState<string | null>(null);
   const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
   const previewScrollerRef = useRef<HTMLDivElement | null>(null);
-  const defaultGeneratedImageAppliedRef = useRef(false);
-  const { stableJobs: recentJobs, mutate } = useInfiniteJobs(12, { surface: 'upscale' });
-  const { stableJobs: recentGeneratedImageJobs } = useInfiniteJobs(8, { surface: 'image' });
 
   const engines = useMemo(() => listUpscaleToolEngines(mediaType), [mediaType]);
   const engine = useMemo(() => engines.find((entry) => entry.id === engineId) ?? engines[0], [engineId, engines]);
@@ -202,53 +196,18 @@ export default function UpscaleWorkspace() {
   const zoomCanvasWidth = activePreviewMode === 'source' ? sourceWidth : outputWidth;
   const zoomCanvasHeight = activePreviewMode === 'source' ? sourceHeight : outputHeight;
   const mediaTypeLabel = mediaType === 'video' ? 'Video' : 'Image';
-  const recentGroups = useMemo(() => {
-    const jobs = recentJobs.map((job) => (!job.videoUrl && job.readyVideoUrl ? { ...job, videoUrl: job.readyVideoUrl } : job));
-    return normalizeGroupSummaries(groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }).groups);
-  }, [recentJobs]);
-  const pendingRecentJobIds = useMemo(
-    () =>
-      recentJobs
-        .filter((job) => {
-          const status = typeof job.status === 'string' ? job.status.toLowerCase() : '';
-          if (status === 'failed' || status === 'cancelled' || status === 'canceled') return false;
-          return status !== 'completed' || !hasRenderableUpscaleJobMedia(job);
-        })
-        .map((job) => job.jobId)
-        .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
-    [recentJobs]
-  );
-  const pendingRecentJobKey = pendingRecentJobIds.join('|');
-  const defaultGeneratedImageSource = useMemo(() => {
-    const sortedJobs = [...recentGeneratedImageJobs].sort(
-      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
-    );
-    for (const job of sortedJobs) {
-      const candidate = resolveGeneratedImageSource(job);
-      if (candidate) return candidate;
-    }
-    return null;
-  }, [recentGeneratedImageJobs]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !pendingRecentJobKey) return undefined;
-    let cancelled = false;
-    const jobIds = pendingRecentJobKey.split('|').filter(Boolean);
-    const pollPendingJobs = async () => {
-      await Promise.all(jobIds.map((jobId) => getJobStatus(jobId).catch(() => null)));
-      if (!cancelled) {
-        void mutate();
-      }
-    };
-    void pollPendingJobs();
-    const interval = window.setInterval(() => {
-      void pollPendingJobs();
-    }, 5_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, [mutate, pendingRecentJobKey]);
+  const { mutate, recentGroups } = useUpscaleRecentJobs({
+    hasResult,
+    mediaType,
+    mediaUrl,
+    setMediaUrl,
+    setMessage,
+    setPreviewMode,
+    setPreviewZoom,
+    setSource,
+    source,
+    user,
+  });
 
   useEffect(() => {
     const url = mediaUrl.trim();
@@ -275,17 +234,6 @@ export default function UpscaleWorkspace() {
       cancelled = true;
     };
   }, [mediaType, mediaUrl, source?.height, source?.url, source?.width]);
-
-  useEffect(() => {
-    if (defaultGeneratedImageAppliedRef.current) return;
-    if (!user || mediaType !== 'image' || source || result || mediaUrl.trim() || !defaultGeneratedImageSource) return;
-    defaultGeneratedImageAppliedRef.current = true;
-    setSource(defaultGeneratedImageSource);
-    setMediaUrl(defaultGeneratedImageSource.url);
-    setPreviewMode('source');
-    setPreviewZoom('100');
-    setMessage(defaultGeneratedImageSource.name ?? null);
-  }, [defaultGeneratedImageSource, mediaType, mediaUrl, result, source, user]);
 
   useEffect(() => {
     const scroller = previewScrollerRef.current;
