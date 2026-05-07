@@ -20,6 +20,7 @@ import {
   shouldDeferFalError,
   withFalTimeout,
 } from './_lib/fal-error-handling';
+import { validateExtraInputValues } from './_lib/extra-input-values';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -107,26 +108,6 @@ function isVideoMode(value: unknown): value is VideoMode {
     value === 'reframe'
   );
 }
-
-function normalizeFieldId(value: string | undefined): string {
-  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-const STANDARD_INPUT_FIELD_IDS = new Set([
-  'prompt',
-  'negativeprompt',
-  'duration',
-  'durationseconds',
-  'resolution',
-  'aspectratio',
-  'fps',
-  'generateaudio',
-  'seed',
-  'camerafixed',
-  'enablesafetychecker',
-  'cfgscale',
-  'loop',
-]);
 
 async function resolveUserId(req?: NextRequest): Promise<string | null> {
   try {
@@ -810,85 +791,11 @@ export async function POST(req: NextRequest) {
   let stripeChargeId: string | null = null;
   let walletChargeReserved = false;
 
-  const applicableSchemaFields = (() => {
-    const schema = engine.inputSchema;
-    if (!schema) return [] as Array<{ id: string; type: string; required: boolean; values?: Array<string | number> }>;
-    return [...(schema.required ?? []), ...(schema.optional ?? [])]
-      .filter((field) => !field.modes || field.modes.includes(mode))
-      .filter((field) => field.type === 'text' || field.type === 'number' || field.type === 'enum')
-      .filter((field) => !STANDARD_INPUT_FIELD_IDS.has(normalizeFieldId(field.id)))
-      .map((field) => ({
-        id: field.id,
-        type: field.type,
-        required: Boolean(field.requiredInModes ? field.requiredInModes.includes(mode) : (schema.required ?? []).includes(field)),
-        values: field.values,
-      }));
-  })();
-
-  const applicableFieldMap = new Map(applicableSchemaFields.map((field) => [field.id, field]));
-  const validatedExtraInputValues: Record<string, unknown> = {};
-  if (rawExtraInputValues) {
-    for (const [key, rawValue] of Object.entries(rawExtraInputValues)) {
-      const schemaField = applicableFieldMap.get(key);
-      if (!schemaField) {
-        return NextResponse.json(
-          { ok: false, error: 'INVALID_EXTRA_FIELD', field: key, message: `Unsupported input field "${key}" for this mode.` },
-          { status: 400 }
-        );
-      }
-      if (schemaField.type === 'number') {
-        const parsed =
-          typeof rawValue === 'number'
-            ? rawValue
-            : typeof rawValue === 'string' && rawValue.trim().length
-              ? Number(rawValue.trim())
-              : Number.NaN;
-        if (!Number.isFinite(parsed)) {
-          return NextResponse.json(
-            { ok: false, error: 'INVALID_EXTRA_FIELD', field: key, message: `${key} must be a number.` },
-            { status: 400 }
-          );
-        }
-        validatedExtraInputValues[key] = parsed;
-        continue;
-      }
-      if (schemaField.type === 'enum') {
-        const parsed = typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? rawValue.trim() : '';
-        if (parsed === '') {
-          continue;
-        }
-        if (Array.isArray(schemaField.values) && !schemaField.values.some((value) => String(value) === String(parsed))) {
-          return NextResponse.json(
-            {
-              ok: false,
-              error: 'INVALID_EXTRA_FIELD',
-              field: key,
-              message: `${key} must be one of ${(schemaField.values ?? []).join(', ')}.`,
-            },
-            { status: 400 }
-          );
-        }
-        validatedExtraInputValues[key] = parsed;
-        continue;
-      }
-      if (schemaField.type === 'text') {
-        const parsed = typeof rawValue === 'string' ? rawValue.trim() : '';
-        if (!parsed) {
-          continue;
-        }
-        validatedExtraInputValues[key] = parsed;
-      }
-    }
+  const extraInputValidation = validateExtraInputValues({ engine, mode, rawExtraInputValues });
+  if (!extraInputValidation.ok) {
+    return NextResponse.json(extraInputValidation.body, { status: extraInputValidation.status });
   }
-
-  for (const field of applicableSchemaFields) {
-    if (field.required && validatedExtraInputValues[field.id] == null) {
-      return NextResponse.json(
-        { ok: false, error: 'MISSING_EXTRA_FIELD', field: field.id, message: `${field.id} is required for this mode.` },
-        { status: 400 }
-      );
-    }
-  }
+  const validatedExtraInputValues = extraInputValidation.values;
 
   let generationResult: Awaited<ReturnType<typeof generateVideo>> | null = null;
   type NormalizedAttachment = {
