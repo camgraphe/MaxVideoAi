@@ -24,6 +24,7 @@ import { processGenerationAttachments } from './_lib/attachments';
 import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
 import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
+import { buildFalRequestParts } from './_lib/fal-request';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1037,85 +1038,54 @@ export async function POST(req: NextRequest) {
         ? '/assets/frames/thumb-1x1.svg'
         : '/assets/frames/thumb-16x9.svg';
 
-  const falInputs =
-    processedAttachments.length > 0
-      ? processedAttachments.map((attachment) => ({
-          name: attachment.name,
-          type: attachment.type,
-          size: attachment.size,
-          kind: attachment.kind,
-          slotId: attachment.slotId,
-          label: attachment.label,
-          url: attachment.url,
-          width: attachment.width ?? undefined,
-          height: attachment.height ?? undefined,
-          assetId: attachment.assetId,
-        }))
-      : undefined;
-  const falInputSummary = {
-    primaryImageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
-    primaryAudioUrl: resolvedAudioUrl ?? null,
-    referenceImageCount: Array.isArray(normalizedReferenceImages) ? normalizedReferenceImages.length : 0,
-    referenceVideoCount: videoUrls.length,
-    referenceAudioCount: audioUrls.length,
-    hasFirstFrame: Boolean(resolvedFirstFrameUrl),
-    hasLastFrame: Boolean(lastFrameUrl),
-    inputSlots:
-      falInputs?.map((attachment) => ({
-        slotId: attachment.slotId ?? null,
-        kind: attachment.kind ?? null,
-        hasUrl: Boolean(attachment.url),
-      })) ?? [],
-  };
-
-  const falDurationOption = lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null;
-  const isLtxFastLong = (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10;
-  let clampedFps =
-    typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0 ? Math.trunc(body.fps) : undefined;
-  if (isLtxFastLong) {
-    clampedFps = 25;
-  }
-  const falPayload: Parameters<typeof generateVideo>[0] = {
+  const {
+    falInputs,
+    falInputSummary,
+    falDurationOption,
+    clampedFps,
+    falPayload,
+  } = buildFalRequestParts({
+    attachments: processedAttachments,
     engineId: engine.id,
-    prompt: prompt,
+    prompt,
     mode,
-    apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
-    idempotencyKey: jobId,
-    imageUrl:
-      needsImage || mode === 'v2v' || mode === 'reframe'
-        ? initialImageUrl
-        : needsFirstLastFrames
-          ? resolvedFirstFrameUrl
-          : undefined,
-    audioUrl: resolvedAudioUrl,
-    referenceImages: normalizedReferenceImages.length ? normalizedReferenceImages : undefined,
-    inputs: falInputs,
-    soraRequest: soraRequest ?? undefined,
+    apiKey: body.apiKey,
     jobId,
     localKey,
-    loop: isLumaRay2 ? loop : undefined,
-    multiPrompt: multiPrompt ?? undefined,
-    shotType: mode === 'i2v' ? 'customize' : shotType ?? undefined,
-    seed: typeof seed === 'number' ? seed : undefined,
-    cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : undefined,
-    safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : undefined,
-    voiceIds: voiceIds.length ? voiceIds : undefined,
-    elements: elements ?? undefined,
-    endImageUrl: endImageUrl ?? undefined,
-    extraInputValues: Object.keys(validatedExtraInputValues).length ? validatedExtraInputValues : undefined,
-    ...(supportsDuration ? { durationSec, durationOption: falDurationOption, numFrames } : {}),
-    ...(supportsAspectRatio ? { aspectRatio: aspectRatio ?? undefined } : {}),
-    ...(supportsResolution ? { resolution: effectiveResolution } : {}),
-  };
-  if (typeof audioEnabled === 'boolean') {
-    falPayload.audio = audioEnabled;
-  }
-  if (supportsFps && typeof clampedFps === 'number') {
-    falPayload.fps = clampedFps;
-  }
-  if (typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale)) {
-    falPayload.cfgScale = body.cfgScale;
-  }
+    needsImage,
+    needsFirstLastFrames,
+    initialImageUrl,
+    resolvedFirstFrameUrl,
+    lastFrameUrl,
+    resolvedAudioUrl,
+    normalizedReferenceImages,
+    videoUrls,
+    audioUrls,
+    soraRequest,
+    isLumaRay2,
+    loop,
+    multiPrompt,
+    shotType,
+    seed,
+    cameraFixed,
+    safetyChecker,
+    voiceIds,
+    elements,
+    endImageUrl,
+    extraInputValues: validatedExtraInputValues,
+    supportsDuration,
+    durationSec,
+    durationOption: lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null,
+    numFrames,
+    supportsAspectRatio,
+    aspectRatio,
+    supportsResolution,
+    resolution: effectiveResolution,
+    audioEnabled,
+    supportsFps,
+    fps: body.fps,
+    cfgScale: body.cfgScale,
+  });
 
   const negativePrompt =
     typeof body.negativePrompt === 'string' && body.negativePrompt.trim().length ? body.negativePrompt.trim() : null;
