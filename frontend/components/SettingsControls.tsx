@@ -1,7 +1,6 @@
 "use client";
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, Ref } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
@@ -9,6 +8,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { matchesDurationOptionValue, parseDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
+import { FieldGroup, RangeWithInput } from '@/components/settings-controls/settings-control-parts';
 
 interface Props {
   engine: EngineCaps;
@@ -1194,129 +1195,4 @@ export function SettingsControls({
       </div>
     </Card>
   );
-}
-
-interface FieldGroupProps {
-  label: string;
-  options: (string | number)[];
-  value: string;
-  onChange: (value: string) => void;
-  focusRef?: Ref<HTMLDivElement>;
-  disabled?: boolean;
-  labelFor?: (option: string | number) => string;
-  iconFor?: (option: string | number) => string | undefined;
-}
-
-function FieldGroup({ label, options, value, onChange, focusRef, disabled = false, labelFor, iconFor }: FieldGroupProps) {
-  return (
-    <div
-      className={clsx(
-        'rounded-input border border-border bg-surface p-3 text-sm text-text-secondary',
-        focusRef && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-      )}
-      ref={focusRef}
-      tabIndex={focusRef ? -1 : undefined}
-    >
-      <span className="text-[12px] uppercase tracking-micro text-text-muted">{label}</span>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {options.map((option) => (
-          <Button
-            key={option}
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={disabled}
-            onClick={() => onChange(String(option))}
-            className={clsx(
-              'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-              disabled && 'cursor-not-allowed opacity-70',
-              String(option) === value
-                ? 'border-brand bg-brand text-on-brand'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-            )}
-          >
-            {iconFor && iconFor(option) && (
-              <Image src={iconFor(option)!} alt="" width={14} height={14} className="mr-2 inline-block h-3.5 w-3.5 align-[-2px]" />
-            )}
-            {labelFor ? labelFor(option) : String(option)}
-          </Button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RangeWithInput({
-  value,
-  min = 0,
-  max = 1,
-  step = 0.05,
-  onChange,
-}: {
-  value: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-4">
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.currentTarget.value))}
-        className="range-input h-1 flex-1 appearance-none overflow-hidden rounded-full bg-hairline"
-      />
-      <input
-        type="number"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.currentTarget.value))}
-        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      />
-    </div>
-  );
-}
-
-type DurationOptionMeta = {
-  raw: number | string;
-  value: number;
-  label: string;
-};
-
-function parseDurationOptionValue(option: number | string): DurationOptionMeta {
-  if (typeof option === 'number') {
-    return {
-      raw: option,
-      value: option,
-      label: `${option}s`,
-    };
-  }
-  const numeric = Number(option.replace(/[^\d.]/g, ''));
-  return {
-    raw: option,
-    value: Number.isFinite(numeric) ? numeric : 0,
-    label: option,
-  };
-}
-
-function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | string | null | undefined, seconds: number): boolean {
-  if (raw != null) {
-    if (typeof raw === 'number') {
-      return Math.abs(option.value - raw) < 0.001;
-    }
-    if (typeof raw === 'string') {
-      if (raw === option.raw || raw === option.label) return true;
-      const numeric = Number(raw.replace(/[^\d.]/g, ''));
-      if (Number.isFinite(numeric)) {
-        return Math.abs(option.value - numeric) < 0.001;
-      }
-    }
-  }
-  return Math.abs(option.value - seconds) < 0.001;
 }
