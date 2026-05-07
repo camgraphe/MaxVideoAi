@@ -441,11 +441,11 @@ function normalizeGenerationElements(value: unknown): GenerationElement[] | null
       const videoUrl =
         typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
       if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) return null;
-      return {
-        frontalImageUrl: frontalImageUrl ?? undefined,
-        referenceImageUrls: referenceImageUrls.length ? referenceImageUrls : undefined,
-        videoUrl: videoUrl ?? undefined,
-      };
+      const element: GenerationElement = {};
+      if (frontalImageUrl) element.frontalImageUrl = frontalImageUrl;
+      if (referenceImageUrls.length) element.referenceImageUrls = referenceImageUrls;
+      if (videoUrl) element.videoUrl = videoUrl;
+      return element;
     })
     .filter((entry: GenerationElement | null): entry is GenerationElement => Boolean(entry));
 
