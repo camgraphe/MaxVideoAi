@@ -7,7 +7,6 @@ import { generateVideo, FalGenerationError } from '@/lib/fal';
 import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import type { Mode } from '@/types/engines';
-import { validateRequest } from './_lib/validate';
 import {
   condenseFalErrorMessage,
   extractFalProviderMessage,
@@ -27,6 +26,7 @@ import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './
 import { buildInitialProviderMediaState, resolveProviderMediaState } from './_lib/provider-media';
 import { buildFinalGenerateResponse } from './_lib/final-response';
 import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
+import { buildGenerateValidationPayload } from './_lib/validation-payload';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -668,172 +668,37 @@ export async function POST(req: NextRequest) {
     reference_images: body.reference_images,
     rawAudioUrl,
   });
-  const validationPayload: Record<string, unknown> = {};
-  if (prompt.length > 0) {
-    validationPayload.prompt = prompt;
+  const validationPayloadResult = buildGenerateValidationPayload({
+    engineId: engine.id,
+    mode,
+    prompt,
+    multiPrompt,
+    supportsResolution,
+    effectiveResolution,
+    supportsAspectRatio,
+    aspectRatio,
+    audioEnabled,
+    isBytePlusV1a,
+    supportsDuration,
+    numFrames,
+    validationDuration: lumaDurationInfo?.label ?? (Number.isFinite(durationSec) ? durationSec : null),
+    maxUploadedBytes,
+    resolvedFirstFrameUrl,
+    lastFrameUrl,
+    normalizedReferenceImages,
+    videoUrls,
+    audioUrls,
+    resolvedAudioUrl,
+    sourceInputVideoUrl,
+    elements,
+    isLumaRay2,
+    initialImageUrl,
+  });
+  if (!validationPayloadResult.ok) {
+    logMetric('rejected', validationPayloadResult.metric);
+    return NextResponse.json(validationPayloadResult.body, { status: validationPayloadResult.status });
   }
-  if (multiPrompt?.length) {
-    validationPayload.multi_prompt = multiPrompt;
-  }
-  if (supportsResolution) {
-    validationPayload.resolution = effectiveResolution;
-  }
-  if (supportsAspectRatio && aspectRatio) {
-    validationPayload.aspect_ratio = aspectRatio;
-  }
-  if (typeof audioEnabled === 'boolean' && !isBytePlusV1a) {
-    validationPayload.generate_audio = audioEnabled;
-  }
-
-  if (supportsDuration) {
-    if (numFrames != null) {
-      validationPayload.num_frames = numFrames;
-    } else if (lumaDurationInfo) {
-      validationPayload.duration = lumaDurationInfo.label;
-    } else if (Number.isFinite(durationSec)) {
-      validationPayload.duration = durationSec;
-    }
-  }
-
-  if (maxUploadedBytes > 0) {
-    validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
-  }
-
-  if (resolvedFirstFrameUrl) {
-    validationPayload.first_frame_url = resolvedFirstFrameUrl;
-  }
-  if (lastFrameUrl) {
-    validationPayload.last_frame_url = lastFrameUrl;
-  }
-  if (mode === 'ref2v' && normalizedReferenceImages.length) {
-    validationPayload.image_urls = normalizedReferenceImages;
-  }
-  if (mode === 'ref2v' && videoUrls.length) {
-    validationPayload.video_urls = videoUrls;
-  }
-  if (mode === 'ref2v') {
-    const refAudioUrls = Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls]));
-    if (refAudioUrls.length) {
-      validationPayload.audio_urls = refAudioUrls;
-    }
-  }
-  if (mode === 'v2v' && normalizedReferenceImages.length) {
-    validationPayload.reference_image_urls = normalizedReferenceImages;
-  }
-  if (mode === 'r2v' && videoUrls.length) {
-    validationPayload.video_urls = videoUrls;
-  }
-  if ((mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake') && sourceInputVideoUrl) {
-    validationPayload.video_url = sourceInputVideoUrl;
-  }
-  if (resolvedAudioUrl) {
-    validationPayload.audio_url = resolvedAudioUrl;
-  }
-  if (elements?.length) {
-    validationPayload.elements = elements;
-  }
-
-  const needsImage = mode === 'i2v' || mode === 'i2i';
-  const needsReferenceImages = mode === 'ref2v';
-  const needsFirstLastFrames = mode === 'fl2v';
-  const needsAudio = mode === 'a2v';
-  const needsSourceVideoEdit = mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake';
-  if (isLumaRay2 && mode === 'i2v') {
-    if (!initialImageUrl) {
-      logMetric('rejected', {
-        errorCode: 'IMAGE_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json({ ok: false, error: 'Image URL is required for Luma Ray 2 image-to-video' }, { status: 400 });
-    }
-    validationPayload.image_url = initialImageUrl;
-  } else if (needsImage) {
-    if (!initialImageUrl) {
-      logMetric('rejected', {
-        errorCode: 'IMAGE_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json({ ok: false, error: 'Image URL is required for this engine mode' }, { status: 400 });
-    }
-    if (initialImageUrl) {
-      validationPayload.image_url = initialImageUrl;
-    }
-  } else if (mode === 'v2v' || mode === 'reframe') {
-    if (initialImageUrl) {
-      validationPayload.image_url = initialImageUrl;
-    }
-  } else if (needsReferenceImages) {
-    const bytePlusHasAnyReference =
-      isBytePlusV1a && (normalizedReferenceImages.length > 0 || videoUrls.length > 0);
-    if (!normalizedReferenceImages.length && !bytePlusHasAnyReference) {
-      logMetric('rejected', {
-        errorCode: 'IMAGE_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json(
-        { ok: false, error: isBytePlusV1a ? 'At least one reference image or video is required for this engine mode' : 'Reference images are required for this engine mode' },
-        { status: 400 }
-      );
-    }
-  } else if (needsFirstLastFrames) {
-    if (!resolvedFirstFrameUrl || !lastFrameUrl) {
-      logMetric('rejected', {
-        errorCode: 'IMAGE_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json(
-        { ok: false, error: 'Both first and last frames are required for this engine mode' },
-        { status: 400 }
-      );
-    }
-  } else if (mode === 'r2v') {
-    if (!videoUrls.length) {
-      logMetric('rejected', {
-        errorCode: 'VIDEO_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json({ ok: false, error: 'Video URLs are required for this engine mode' }, { status: 400 });
-    }
-  } else if (needsSourceVideoEdit) {
-    if (!sourceInputVideoUrl) {
-      logMetric('rejected', {
-        errorCode: 'VIDEO_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json({ ok: false, error: 'Source video is required for this engine mode' }, { status: 400 });
-    }
-  } else if (needsAudio) {
-    if (!resolvedAudioUrl) {
-      logMetric('rejected', {
-        errorCode: 'AUDIO_URL_REQUIRED',
-        meta: { engineId: engine.id, mode },
-      });
-      return NextResponse.json({ ok: false, error: 'Audio URL is required for this engine mode' }, { status: 400 });
-    }
-  }
-
-  const validationResult = validateRequest(engine.id, mode, validationPayload);
-  if (!validationResult.ok) {
-    logMetric('rejected', {
-      errorCode: validationResult.error.code ?? 'ENGINE_CONSTRAINT',
-      meta: {
-        field: validationResult.error.field,
-        allowed: validationResult.error.allowed,
-        value: validationResult.error.value,
-      },
-    });
-    return NextResponse.json(
-      {
-        ok: false,
-        error: validationResult.error.code ?? 'ENGINE_CONSTRAINT',
-        message: validationResult.error.message,
-        field: validationResult.error.field,
-        allowed: validationResult.error.allowed,
-        value: validationResult.error.value,
-      },
-      { status: 400 }
-    );
-  }
+  const { needsImage, needsFirstLastFrames } = validationPayloadResult;
 
   const billingPreflight = await resolveGenerateBillingPreflight({
     req,
