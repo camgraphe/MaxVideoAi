@@ -83,9 +83,14 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
           ? window.location.pathname
           : pathname;
       const slugParam = params?.slug;
+      const usecaseParam = params?.usecase;
       let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
+      let usecaseValue = Array.isArray(usecaseParam) ? usecaseParam[0] : usecaseParam;
       const isModelPage = typeof rawPathname === 'string'
         ? /^\/(?:en|fr|es)?\/(?:models|modeles|modelos)\/[^\/?#]+/i.test(rawPathname)
+        : false;
+      const isBestForUsecasePage = typeof rawPathname === 'string'
+        ? /^\/(?:(?:en|fr|es)\/)?(?:ai-video-engines|comparatif|comparativa)\/best-for\/[^\/?#]+/i.test(rawPathname)
         : false;
       const isComparePage = typeof rawPathname === 'string'
         ? /^\/(?:en|fr|es)?\/(?:ai-video-engines|comparatif|comparativa)\/[^\/?#]+/i.test(rawPathname)
@@ -93,6 +98,12 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
       const isBlogPage = typeof rawPathname === 'string'
         ? /^\/(?:en|fr|es)?\/blog\/[^\/?#]+/i.test(rawPathname)
         : false;
+      if (!usecaseValue && typeof rawPathname === 'string') {
+        const m = rawPathname.match(
+          /^\/(?:(?:en|fr|es)\/)?(?:ai-video-engines|comparatif|comparativa)\/best-for\/([^\/?#]+)/i
+        );
+        if (m && m[1]) usecaseValue = m[1];
+      }
       if (!slugValue && typeof rawPathname === 'string') {
         const m = rawPathname.match(
           /^\/(?:en|fr|es)?\/(?:models|modeles|modelos|ai-video-engines|comparatif|comparativa|blog)\/([^\/?#]+)/i
@@ -105,6 +116,16 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
           resolveBlogCanonicalSlug(locale as Locale, decodedSlug) ?? resolveBlogCanonicalSlug('en', decodedSlug) ?? decodedSlug;
         const targetSlug = resolveLocalizedBlogSlug(canonicalSlug, value) ?? canonicalSlug;
         router.replace({ pathname: '/blog/[slug]', params: { slug: targetSlug } }, { locale: value });
+        return;
+      }
+      if (usecaseValue && isBestForUsecasePage) {
+        router.replace(
+          {
+            pathname: '/ai-video-engines/best-for/[usecase]',
+            params: { usecase: decodePathSegment(usecaseValue) },
+          },
+          { locale: value }
+        );
         return;
       }
       if (slugValue && isComparePage) {

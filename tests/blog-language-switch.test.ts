@@ -60,6 +60,20 @@ test('marketing language toggle handles blog dynamic routes before generic local
   assert.match(source, /pathname: '\/blog\/\[slug\]'/);
 });
 
+test('marketing language toggle preserves best-for usecase routes before generic compare pages', () => {
+  const source = readFileSync('frontend/components/marketing/LanguageToggle.tsx', 'utf8');
+  const bestForUsecaseIndex = source.indexOf("pathname: '/ai-video-engines/best-for/[usecase]'");
+  const genericCompareIndex = source.indexOf("pathname: '/ai-video-engines/[slug]'");
+
+  assert.notEqual(bestForUsecaseIndex, -1, 'best-for usecase routes should have an explicit language switch branch');
+  assert.notEqual(genericCompareIndex, -1, 'generic compare routes should keep their language switch branch');
+  assert.ok(
+    bestForUsecaseIndex < genericCompareIndex,
+    'best-for usecase routes should be handled before generic compare routes'
+  );
+  assert.match(source, /params\?\.usecase/);
+});
+
 test('client i18n provider keeps the document language in sync after locale switches', () => {
   const source = readFileSync('frontend/lib/i18n/I18nProvider.tsx', 'utf8');
 
