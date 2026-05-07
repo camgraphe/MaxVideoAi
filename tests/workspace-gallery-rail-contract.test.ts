@@ -40,10 +40,14 @@ test('composite preview modal button opens direct preview groups', () => {
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
     'utf8'
   );
+  const previewDockSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_components/WorkspacePreviewDock.tsx'),
+    'utf8'
+  );
 
-  assert.match(appSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
+  assert.match(previewDockSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
   assert.match(appSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
-  assert.match(appSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group\s*\}\)/);
+  assert.match(previewDockSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group:\s*nextGroup\s*\}\)/);
 });
 
 test('composite preview preserves preview urls but plays canonical video urls', () => {

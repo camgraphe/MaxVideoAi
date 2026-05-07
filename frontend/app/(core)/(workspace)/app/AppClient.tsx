@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEngines, useInfiniteJobs, getJobStatus } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { useRouter } from 'next/navigation';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
-import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import {
   Composer,
   type MultiPromptScene,
@@ -15,7 +14,6 @@ import {
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { GroupSummary } from '@/types/groups';
-import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { ENV as CLIENT_ENV } from '@/lib/env';
@@ -26,12 +24,9 @@ import {
   type SharedVideoPreview,
 } from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
-import { GroupedJobCard } from '@/components/GroupedJobCard';
 import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { readLastKnownUserId } from '@/lib/last-known';
 import { Button } from '@/components/ui/Button';
-import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
 import {
   isLumaRay2EngineId,
   isLumaRay2GenerateMode,
@@ -46,24 +41,20 @@ import {
   getLocalizedWorkflowCopy,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
+import { WorkspaceBootSurface } from './_components/WorkspaceBootSurface';
+import { WorkspaceCenterGallery } from './_components/WorkspaceCenterGallery';
 import { WorkspaceChrome } from './_components/WorkspaceChrome';
 import {
-  ComposerBootSkeleton,
-  CompositePreviewDockSkeleton,
-  EngineSettingsBootSkeleton,
   GalleryRailSkeleton,
-  WorkspaceBootPreview,
 } from './_components/WorkspaceBootSkeletons';
-import { WorkspaceAuthGateModal } from './_components/WorkspaceAuthGateModal';
-import { WorkspaceTopUpModal } from './_components/WorkspaceTopUpModal';
+import { WorkspacePreviewDock } from './_components/WorkspacePreviewDock';
+import type { WorkspaceViewerTarget } from './_components/WorkspacePreviewDock';
+import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
 import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
   normalizeExtraInputValue,
   type FormState,
 } from './_lib/workspace-form-state';
-import {
-  getEngineModeLabel,
-} from './_lib/workspace-engine-helpers';
 import {
   buildAssetFieldIdSet,
   buildComposerAttachments,
@@ -81,25 +72,10 @@ import {
 } from './_lib/workspace-client-helpers';
 import {
   createKlingElement,
-  createLocalId,
   createMultiPromptScene,
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from './_lib/workspace-input-helpers';
-import {
-  readScopedWorkspaceStorage,
-  readWorkspaceStorage,
-  STORAGE_KEYS,
-  writeScopedWorkspaceStorage,
-  writeWorkspaceStorage,
-} from './_lib/workspace-storage';
-import {
-  buildInitialWorkspaceFormState,
-  consumeWorkspaceOnboardingSkipIntent,
-  parseStoredMultiPromptScenes,
-  readStoredWorkspaceForm,
-  resolveWorkspaceRequestParams,
-} from './_lib/workspace-hydration';
 import {
   buildComposerPromotedActions,
   summarizeWorkspaceInputSchema,
@@ -107,23 +83,13 @@ import {
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
 import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
+import { useWorkspaceDraftHydration } from './_hooks/useWorkspaceDraftHydration';
+import { useWorkspaceDraftStorage } from './_hooks/useWorkspaceDraftStorage';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
 import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
-
-const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
-  () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
-  { ssr: false }
-);
-
-const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
-  () => import('@/components/groups/CompositePreviewDock').then((mod) => mod.CompositePreviewDock),
-  {
-    loading: () => <CompositePreviewDockSkeleton />,
-  }
-);
 
 const GalleryRail = dynamic<GalleryRailProps>(
   () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
@@ -137,34 +103,6 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
   { ssr: false }
 );
-
-function WorkspaceBootContent({
-  initialPreviewGroup,
-  initialPreviewPosterSrc,
-}: {
-  initialPreviewGroup?: VideoGroup | null;
-  initialPreviewPosterSrc?: string | null;
-}) {
-  const posterSrc = getCompositePreviewPosterSrc(initialPreviewGroup ?? null) ?? initialPreviewPosterSrc ?? null;
-
-  return (
-    <div className="stack-gap-lg">
-      {initialPreviewGroup ? (
-        <>
-          <CompositePreviewDock
-            group={initialPreviewGroup}
-            isLoading={false}
-            showTitle={false}
-            engineSettings={<EngineSettingsBootSkeleton />}
-          />
-        </>
-      ) : (
-        <WorkspaceBootPreview posterSrc={posterSrc} />
-      )}
-      <ComposerBootSkeleton />
-    </div>
-  );
-}
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -209,11 +147,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   );
 
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [hydratedForScope, setHydratedForScope] = useState<string | null>(null);
 
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
@@ -227,86 +160,36 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [memberTier, setMemberTier] = useState<'Member' | 'Plus' | 'Pro'>('Member');
   const [notice, setNotice] = useState<string | null>(null);
 
-  const storageScope = useMemo(() => userId ?? 'anon', [userId]);
-  const readScopedStorage = useCallback(
-    (base: string): string | null => {
-      return readScopedWorkspaceStorage(base, storageScope);
-    },
-    [storageScope]
-  );
-  const readStorage = useCallback(
-    (base: string): string | null => {
-      return readWorkspaceStorage(base, storageScope);
-    },
-    [storageScope]
-  );
-  const writeScopedStorage = useCallback(
-    (base: string, value: string | null) => {
-      writeScopedWorkspaceStorage(base, storageScope, value);
-    },
-    [storageScope]
-  );
-  const writeStorage = useCallback(
-    (base: string, value: string | null) => {
-      writeWorkspaceStorage(base, storageScope, value);
-    },
-    [storageScope]
-  );
-  const workspaceRequest = useMemo(
-    () => resolveWorkspaceRequestParams(searchParams, pathname),
-    [pathname, searchParams]
-  );
   const {
     fromVideoId,
     requestedJobId,
-    resolvedRequestedEngineId,
-    requestedEngineToken,
-    requestedMode,
     searchString,
     loginRedirectTarget,
-  } = workspaceRequest;
-  const skipOnboardingRef = useRef<boolean>(false);
-  const preserveStoredDraftRef = useRef<boolean>(false);
-  const requestedEngineOverrideIdRef = useRef<string | null>(null);
-  const requestedEngineOverrideTokenRef = useRef<string | null>(null);
-  const requestedModeOverrideRef = useRef<Mode | null>(null);
-
-  useEffect(() => {
-    if (!resolvedRequestedEngineId) return;
-    requestedEngineOverrideIdRef.current = resolvedRequestedEngineId;
-    requestedEngineOverrideTokenRef.current = requestedEngineToken;
-    requestedModeOverrideRef.current = requestedMode;
-  }, [resolvedRequestedEngineId, requestedEngineToken, requestedMode]);
-
-  const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
-  const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
-  const effectiveRequestedMode = requestedMode ?? requestedModeOverrideRef.current;
-
-  useEffect(() => {
-    const skipIntent = consumeWorkspaceOnboardingSkipIntent(fromVideoId);
-    if (skipIntent.shouldSkip) {
-      skipOnboardingRef.current = true;
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      if (skipIntent.skippedViaFlag) {
-        console.log('[app] skip onboarding via flag');
-      }
-      if (skipIntent.lastTarget) {
-        console.log('[app] read last target', {
-          lastTarget: skipIntent.lastTarget,
-          shouldSkip: skipIntent.lastTargetShouldSkip,
-        });
-      }
-      if (skipIntent.fromVideoId) {
-        console.log('[app] skip onboarding due to fromVideoId', { fromVideoId: skipIntent.fromVideoId });
-      }
-    }
-  }, [fromVideoId]);
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
+    effectiveRequestedMode,
+    authChecked,
+    storageScope,
+    hydratedForScope,
+    setHydratedForScope,
+    readScopedStorage,
+    readStorage,
+    writeScopedStorage,
+    writeStorage,
+    skipOnboardingRef,
+    preserveStoredDraftRef,
+    hasStoredFormRef,
+    requestedEngineOverrideIdRef,
+    requestedEngineOverrideTokenRef,
+    requestedModeOverrideRef,
+  } = useWorkspaceDraftStorage({
+    authLoading,
+    authStatus,
+    authenticatedUserId: user?.id,
+  });
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
-  const [viewerTarget, setViewerTarget] = useState<
-    { kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | { kind: 'group'; group: VideoGroup } | null
-  >(null);
+  const [viewerTarget, setViewerTarget] = useState<WorkspaceViewerTarget>(null);
   const isDesktopLayout = useWorkspaceDesktopLayout();
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
@@ -341,115 +224,45 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     writeScopedStorage,
   });
   const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
-  const hydratedScopeRef = useRef<string | null>(null);
-  const hasStoredFormRef = useRef<boolean>(false);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (user?.id) {
-      setUserId(user.id);
-      setAuthChecked(true);
-      return;
-    }
-    if (authStatus === 'refreshing' || authStatus === 'unknown') {
-      const lastKnownUserId = readLastKnownUserId();
-      if (lastKnownUserId) {
-        setUserId(lastKnownUserId);
-      } else {
-        setUserId(null);
-      }
-      setAuthChecked(true);
-      return;
-    }
-    setUserId(null);
-    setAuthChecked(true);
-  }, [authLoading, authStatus, user?.id]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!engines.length) return;
-    if (requestedJobId) return;
-    if (hydratedScopeRef.current === storageScope) return;
-    hydratedScopeRef.current = storageScope;
-    setHydratedForScope(null);
-
-    resetRenderState();
-
-    try {
-      const promptValue = readStorage(STORAGE_KEYS.prompt);
-      setPrompt(promptValue ?? DEFAULT_PROMPT);
-
-      const negativeValue = readStorage(STORAGE_KEYS.negativePrompt);
-      setNegativePrompt(negativeValue ?? '');
-
-      const storedMultiPromptEnabled = readStorage(STORAGE_KEYS.multiPromptEnabled);
-      setMultiPromptEnabled(storedMultiPromptEnabled === 'true');
-      setMultiPromptScenes(
-        parseStoredMultiPromptScenes(readStorage(STORAGE_KEYS.multiPromptScenes), createLocalId, createMultiPromptScene)
-      );
-
-      const storedShotType = readStorage(STORAGE_KEYS.shotType);
-      if (storedShotType === 'customize' || storedShotType === 'intelligent') {
-        setShotType(storedShotType);
-      }
-      const storedVoiceIds = readStorage(STORAGE_KEYS.voiceIds);
-      if (typeof storedVoiceIds === 'string') {
-        setVoiceIdsInput(storedVoiceIds);
-      }
-
-      const formValue = readStorage(STORAGE_KEYS.form);
-      const initialForm = buildInitialWorkspaceFormState({
-        engines,
-        storedFormRaw: readStoredWorkspaceForm(storageScope, formValue),
-        effectiveRequestedEngineId,
-        effectiveRequestedEngineToken,
-        effectiveRequestedMode,
-      });
-      preserveStoredDraftRef.current = initialForm.preserveStoredDraft;
-      hasStoredFormRef.current = initialForm.hasStoredForm;
-      if (initialForm.form) {
-        setForm(initialForm.form);
-      }
-      if (initialForm.debugEngineOverride && process.env.NODE_ENV !== 'production') {
-        console.log('[generate] engine override from storage hydrate', initialForm.debugEngineOverride);
-      }
-      if (initialForm.formToPersist) {
-        const formToPersist = initialForm.formToPersist;
-        queueMicrotask(() => {
-          try {
-            writeStorage(STORAGE_KEYS.form, JSON.stringify(formToPersist));
-          } catch {
-            // noop
-          }
-        });
-      }
-
-      const storedTier = readStorage(STORAGE_KEYS.memberTier);
-      if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
-        setMemberTier(storedTier);
-      }
-
-      const pendingValue = readScopedStorage(STORAGE_KEYS.pendingRenders);
-      hydratePendingRendersFromStorage(pendingValue);
-    } catch {
-      resetRenderState();
-    } finally {
-      setHydratedForScope(storageScope);
-    }
-  }, [
+  useWorkspaceDraftHydration({
     engines,
-    hydratePendingRendersFromStorage,
-    readScopedStorage,
-    readStorage,
-    resetRenderState,
-    writeStorage,
-    setMemberTier,
-    storageScope,
-    effectiveRequestedEngineId,
-    effectiveRequestedMode,
-    effectiveRequestedEngineToken,
     requestedJobId,
-  ]);
+    fromVideoId,
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
+    effectiveRequestedMode,
+    storageScope,
+    hydratedForScope,
+    setHydratedForScope,
+    readStorage,
+    readScopedStorage,
+    writeStorage,
+    form,
+    prompt,
+    negativePrompt,
+    multiPromptEnabled,
+    multiPromptScenes,
+    shotType,
+    voiceIdsInput,
+    memberTier,
+    recentJobs,
+    selectedPreview,
+    rendersLength: renders.length,
+    preserveStoredDraftRef,
+    hasStoredFormRef,
+    setForm,
+    setPrompt,
+    setNegativePrompt,
+    setMultiPromptEnabled,
+    setMultiPromptScenes,
+    setShotType,
+    setVoiceIdsInput,
+    setMemberTier,
+    setSelectedPreview,
+    hydratePendingRendersFromStorage,
+    resetRenderState,
+  });
 
   const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
   const selectedPreviewGroup = useMemo(() => mapSelectedPreviewToGroup(selectedPreview, provider), [selectedPreview, provider]);
@@ -472,93 +285,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
   }, [viewerTarget, pendingSummaryMap, provider]);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (!form) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.form, JSON.stringify({ ...form, updatedAt: Date.now() }));
-    } catch {
-      // noop
-    }
-  }, [form, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.prompt, prompt);
-    } catch {
-      // noop
-    }
-  }, [prompt, hydratedForScope, storageScope, writeStorage]);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.negativePrompt, negativePrompt);
-    } catch {
-      // noop
-    }
-  }, [negativePrompt, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.multiPromptEnabled, multiPromptEnabled ? 'true' : 'false');
-    } catch {
-      // noop
-    }
-  }, [multiPromptEnabled, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.multiPromptScenes, JSON.stringify(multiPromptScenes));
-    } catch {
-      // noop
-    }
-  }, [multiPromptScenes, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.shotType, shotType);
-    } catch {
-      // noop
-    }
-  }, [shotType, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.voiceIds, voiceIdsInput);
-    } catch {
-      // noop
-    }
-  }, [voiceIdsInput, hydratedForScope, storageScope, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (hydratedForScope !== storageScope) return;
-    if (preserveStoredDraftRef.current) return;
-    try {
-      writeStorage(STORAGE_KEYS.memberTier, memberTier);
-    } catch {
-      // noop
-    }
-  }, [memberTier, hydratedForScope, storageScope, writeStorage]);
 
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
@@ -651,7 +377,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     return () => {
       cancelled = true;
     };
-  }, [authChecked, router]);
+  }, [authChecked, router, skipOnboardingRef]);
 
   useEffect(() => {
     return () => {
@@ -660,34 +386,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (selectedPreview || renders.length > 0) return;
-    if (effectiveRequestedEngineId || effectiveRequestedEngineToken) return;
-    if (hasStoredFormRef.current) return;
-    const storedPreviewJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
-    if (storedPreviewJobId.startsWith('job_')) return;
-    const latestJobWithMedia = recentJobs.find((job) => job.thumbUrl || job.videoUrl);
-    if (!latestJobWithMedia) return;
-    setSelectedPreview({
-      id: latestJobWithMedia.jobId,
-      videoUrl: latestJobWithMedia.videoUrl ?? undefined,
-      previewVideoUrl: latestJobWithMedia.previewVideoUrl ?? undefined,
-      aspectRatio: latestJobWithMedia.aspectRatio ?? undefined,
-      thumbUrl: latestJobWithMedia.thumbUrl ?? undefined,
-      priceCents: latestJobWithMedia.finalPriceCents ?? latestJobWithMedia.pricingSnapshot?.totalCents,
-      currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
-      prompt: latestJobWithMedia.prompt ?? undefined,
-    });
-  }, [
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    readScopedStorage,
-    recentJobs,
-    renders.length,
-    selectedPreview,
-    setSelectedPreview,
-  ]);
 
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
@@ -1120,15 +818,11 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   if (isLoading && engines.length === 0) {
     return (
-      <>
-        <WorkspaceChrome
-          isDesktopLayout={isDesktopLayout}
-          desktopRail={<GalleryRailSkeleton />}
-          mobileRail={<GalleryRailSkeleton />}
-        >
-          <WorkspaceBootContent initialPreviewGroup={initialPreviewFallbackGroup} initialPreviewPosterSrc={compositePreviewPosterSrc} />
-        </WorkspaceChrome>
-      </>
+      <WorkspaceBootSurface
+        isDesktopLayout={isDesktopLayout}
+        initialPreviewGroup={initialPreviewFallbackGroup}
+        initialPreviewPosterSrc={compositePreviewPosterSrc}
+      />
     );
   }
 
@@ -1143,15 +837,11 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   if (!selectedEngine || !form) {
     if (engines.length > 0) {
       return (
-        <>
-          <WorkspaceChrome
-            isDesktopLayout={isDesktopLayout}
-            desktopRail={<GalleryRailSkeleton />}
-            mobileRail={<GalleryRailSkeleton />}
-          >
-            <WorkspaceBootContent initialPreviewGroup={initialPreviewFallbackGroup} initialPreviewPosterSrc={compositePreviewPosterSrc} />
-          </WorkspaceChrome>
-        </>
+        <WorkspaceBootSurface
+          isDesktopLayout={isDesktopLayout}
+          initialPreviewGroup={initialPreviewFallbackGroup}
+          initialPreviewPosterSrc={compositePreviewPosterSrc}
+        />
       );
     }
 
@@ -1195,76 +885,35 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
               </div>
             )}
             <div className="stack-gap-lg">
-              {showCenterGallery ? (
-                normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
-                  <div className="rounded-card border border-border bg-surface-glass-80 p-5 text-center text-sm text-text-secondary">
-                    {workspaceCopy.gallery.empty}
-                  </div>
-                ) : (
-                  <div className="grid grid-gap-sm sm:grid-cols-2">
-                    {normalizedPendingGroups.map((group, index) => {
-                      const engineId = group.hero.engineId;
-                      const engine = engineId ? engineMap.get(engineId) ?? null : null;
-                      return (
-                        <GroupedJobCard
-                          key={group.id}
-                          group={group}
-                          engine={engine ?? undefined}
-                          onOpen={handleActiveGroupOpen}
-                          onAction={handleActiveGroupAction}
-                          allowRemove={false}
-                          eagerPreview={index === 0}
-                        />
-                      );
-                    })}
-                    {isGenerationLoading &&
-                      Array.from({ length: normalizedPendingGroups.length ? 0 : generationSkeletonCount }).map((_, index) => (
-                        <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                          <div className="relative overflow-hidden rounded-card">
-                            <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                              <div className="skeleton absolute inset-0" />
-                            </div>
-                          </div>
-                          <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
-                            <div className="h-3 w-24 rounded-full bg-skeleton" />
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )
-              ) : null}
-              <CompositePreviewDock
+              <WorkspaceCenterGallery
+                show={showCenterGallery}
+                groups={normalizedPendingGroups}
+                engineMap={engineMap}
+                isGenerationLoading={isGenerationLoading}
+                generationSkeletonCount={generationSkeletonCount}
+                emptyLabel={workspaceCopy.gallery.empty}
+                onOpenGroup={handleActiveGroupOpen}
+                onGroupAction={handleActiveGroupAction}
+              />
+              <WorkspacePreviewDock
                 group={displayCompositeGroup}
                 isLoading={isGenerationLoading && !displayCompositeGroup}
                 autoPlayRequestId={previewAutoPlayRequestId}
-                copyPrompt={sharedVideoSettings ? null : sharedPrompt}
-                onCopyPrompt={sharedVideoSettings ? undefined : sharedPrompt ? handleCopySharedPrompt : undefined}
-                showTitle={false}
+                sharedPrompt={sharedPrompt}
+                hasSharedVideoSettings={Boolean(sharedVideoSettings)}
+                onCopySharedPrompt={handleCopySharedPrompt}
                 guidedNavigation={guidedNavigation}
-                engineSettings={
-                  <EngineSettingsBar
-                    engines={engines}
-                    engineId={form.engineId}
-                    onEngineChange={handleEngineChange}
-                    mode={activeMode}
-                    onModeChange={handleModeChange}
-                    modeOptions={engineModeOptions}
-                    modeLabel={getEngineModeLabel(selectedEngine?.id, activeMode, uiLocale)}
-                    showModeBadge={false}
-                  />
-                }
-                onOpenModal={(group) => {
-                  if (!group) return;
-                  if (renderGroups.has(group.id)) {
-                    setViewerTarget({ kind: 'pending', id: group.id });
-                    return;
-                  }
-                  if (compositeOverrideSummary && compositeOverrideSummary.id === group.id) {
-                    setViewerTarget({ kind: 'summary', summary: compositeOverrideSummary });
-                    return;
-                  }
-                  setViewerTarget({ kind: 'group', group });
-                }}
+                engines={engines}
+                engineId={form.engineId}
+                selectedEngineId={selectedEngine.id}
+                activeMode={activeMode}
+                engineModeOptions={engineModeOptions}
+                modeLabelLocale={uiLocale}
+                onEngineChange={handleEngineChange}
+                onModeChange={handleModeChange}
+                renderGroups={renderGroups}
+                compositeOverrideSummary={compositeOverrideSummary}
+                setViewerTarget={setViewerTarget}
               />
               <Composer
                 engine={selectedEngine}
@@ -1441,66 +1090,39 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
               />
             </div>
       </WorkspaceChrome>
-      {viewerGroup ? (
-        <GroupViewerModal
-          group={viewerGroup}
-          onClose={() => setViewerTarget(null)}
-          onRefreshJob={handleRefreshJob}
-        />
-      ) : null}
-      {topUpModal ? (
-        <WorkspaceTopUpModal
-          modal={topUpModal}
-          copy={workspaceCopy.topUp}
-          currency={currency}
-          topUpAmount={topUpAmount}
-          isTopUpLoading={isTopUpLoading}
-          topUpError={topUpError}
-          onClose={closeTopUpModal}
-          onSubmit={handleTopUpSubmit}
-          onSelectPresetAmount={handleSelectPresetAmount}
-          onCustomAmountChange={handleCustomAmountChange}
-        />
-      ) : null}
-      {authModalOpen ? (
-        <WorkspaceAuthGateModal
-          copy={workspaceCopy.authGate}
-          loginRedirectTarget={loginRedirectTarget}
-          onClose={() => setAuthModalOpen(false)}
-        />
-      ) : null}
-      {assetPickerTarget && (
-        <AssetLibraryModal
-          fieldLabel={
-            assetPickerTarget.kind === 'field'
-              ? assetPickerTarget.field.label ?? workspaceCopy.assetLibrary.fieldFallback
-              : assetPickerTarget.slot === 'frontal'
-                ? 'Kling frontal image'
-                : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
-          }
-          assetType={assetLibraryKind}
-          assets={visibleAssetLibrary}
-          isLoading={isAssetLibraryLoading}
-          error={assetLibraryError}
-          source={assetLibrarySource}
-          onSourceChange={handleAssetLibrarySourceChange}
-          onClose={closeAssetLibrary}
-          onRefresh={(sourceOverride) => fetchAssetLibrary({ source: sourceOverride ?? assetLibrarySource, kind: assetLibraryKind })}
-          onSelect={(asset) => {
-            if (assetPickerTarget.kind === 'field') {
-              void handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
-              return;
-            }
-            handleSelectKlingLibraryAsset(assetPickerTarget, asset);
-          }}
-          onDelete={handleDeleteLibraryAsset}
-          deletingAssetId={assetDeletePendingId}
-        />
-      )}
+      <WorkspaceRuntimeModals
+        viewerGroup={viewerGroup}
+        onCloseViewer={() => setViewerTarget(null)}
+        onRefreshJob={handleRefreshJob}
+        topUpModal={topUpModal}
+        topUpCopy={workspaceCopy.topUp}
+        currency={currency}
+        topUpAmount={topUpAmount}
+        isTopUpLoading={isTopUpLoading}
+        topUpError={topUpError}
+        onCloseTopUp={closeTopUpModal}
+        onTopUpSubmit={handleTopUpSubmit}
+        onSelectPresetAmount={handleSelectPresetAmount}
+        onCustomAmountChange={handleCustomAmountChange}
+        authModalOpen={authModalOpen}
+        authGateCopy={workspaceCopy.authGate}
+        loginRedirectTarget={loginRedirectTarget}
+        onCloseAuthModal={() => setAuthModalOpen(false)}
+        assetPickerTarget={assetPickerTarget}
+        assetLibraryKind={assetLibraryKind}
+        assetLibrarySource={assetLibrarySource}
+        visibleAssetLibrary={visibleAssetLibrary}
+        isAssetLibraryLoading={isAssetLibraryLoading}
+        assetLibraryError={assetLibraryError}
+        assetDeletePendingId={assetDeletePendingId}
+        fieldFallbackLabel={workspaceCopy.assetLibrary.fieldFallback}
+        onAssetLibrarySourceChange={handleAssetLibrarySourceChange}
+        onCloseAssetLibrary={closeAssetLibrary}
+        onRefreshAssets={fetchAssetLibrary}
+        onSelectFieldAsset={handleSelectLibraryAsset}
+        onSelectKlingAsset={handleSelectKlingLibraryAsset}
+        onDeleteAsset={handleDeleteLibraryAsset}
+      />
     </>
   );
 }
-const GroupViewerModal = dynamic(
-  () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
-  { ssr: false }
-);

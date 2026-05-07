@@ -4,9 +4,9 @@ This route is the main signed-in video generation workspace.
 
 ## Responsibilities
 
-- `AppClient.tsx`: top-level state orchestration while the workspace is being split.
-- `_components`: route-local chrome, panels, skeletons, wallet/auth modals, and presentational UI.
-- `_hooks`: route-local stateful workflow hooks for bounded client concerns such as asset library, upload orchestration, composer mode/settings orchestration, gallery action orchestration, pricing/auth gate orchestration, generation runner orchestration, render state and polling, video settings application, and hydration.
+- `AppClient.tsx`: top-level orchestration only; it wires route-local hooks into route-local surfaces.
+- `_components`: route-local chrome, boot surfaces, gallery/preview surfaces, runtime modals, panels, skeletons, wallet/auth modals, and presentational UI.
+- `_hooks`: route-local stateful workflow hooks for bounded client concerns such as draft storage/hydration, asset library, upload orchestration, composer mode/settings orchestration, gallery action orchestration, pricing/auth gate orchestration, generation runner orchestration, render state and polling, and video settings application.
 - `_lib`: route-local pure helpers for previews, render grouping, render status reconciliation, generation input preparation, generation guards, local render preparation, generation payloads, accepted results, generation polling projections, video settings hydration, workspace boot hydration, storage, copy fallback, client constants, asset normalization, asset selection, payload builders, input normalization, and workflow mapping.
 - Tool-specific workspaces should stay in their own route folders unless code is clearly shared.
 
@@ -25,7 +25,8 @@ This route is the main signed-in video generation workspace.
 - Keep accepted `runGenerate` response projection and immediate render/preview patches in `_lib`; `AppClient.tsx` should dispatch events and start polling.
 - Keep generation polling projections and poll-delay decisions in `_lib`; `AppClient.tsx` should own `getJobStatus`, timers, and React setters.
 - Keep video settings snapshot parsing and job media patch mapping in `_lib`; route-local hooks should wire those results into React state and own settings hydration requests.
-- Keep workspace request parsing and boot hydration decisions in `_lib`; `AppClient.tsx` should apply the resolved state.
+- Keep workspace request parsing and boot hydration decisions in `_lib`; route-local draft hooks should apply the resolved state and keep browser storage reads/writes out of `AppClient.tsx`.
+- Keep route shell UI in `_components`; `AppClient.tsx` should render named surfaces instead of owning gallery cards, preview dock internals, boot skeleton composition, or runtime modal JSX inline.
 - Keep asset-library selection, reference slot insertion, and Kling library asset mapping in `_lib`; route-local hooks should own bounded asset library state, upload orchestration, and network calls.
 - Keep generation, polling, wallet, preflight, and upload behavior unchanged unless the task explicitly targets those flows.
 - Keep browser storage keys and pending-render serialization backward compatible.
