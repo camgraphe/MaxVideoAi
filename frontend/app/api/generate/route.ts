@@ -9,7 +9,6 @@ import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/serve
 import Stripe from 'stripe';
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
-import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import {
@@ -29,6 +28,7 @@ import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
 import { createProviderJobTracker } from './_lib/provider-job-tracker';
 import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/final-job-persistence';
 import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './_lib/final-receipts';
+import { buildInitialProviderMediaState, resolveProviderMediaState } from './_lib/provider-media';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -38,16 +38,6 @@ import {
   type PendingReceipt,
 } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
-import {
-  buildNextProviderVideoCopyState,
-  buildSafeProviderMediaLog,
-  PROVIDER_VIDEO_COPY_FAILURE_MESSAGE,
-  PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
-  shouldFailVideoJobOnProviderCopyMiss,
-  shouldRetryProviderVideoCopy,
-} from '@/server/provider-output-policy';
-import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
-import { ensureFastStartVideo } from '@/server/video-faststart';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
@@ -1682,19 +1672,21 @@ export async function POST(req: NextRequest) {
     throw new Error('Fal generation did not return a result.');
   }
 
-  let thumb =
-    normalizeMediaUrl(generationResult.thumbUrl) ??
-      (typeof generationResult.thumbUrl === 'string' && generationResult.thumbUrl.trim().length
-        ? generationResult.thumbUrl
-        : null) ??
-    placeholderThumb;
-  let previewFrame = thumb;
-  let video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
-  let videoAsset = generationResult.video ?? null;
-  const providerMode = generationResult.provider;
-  let status: string = generationResult.status ?? (video ? 'completed' : 'queued');
-  let progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
-  const providerJobId = generationResult.providerJobId ?? batchId ?? null;
+  const initialMediaState = buildInitialProviderMediaState({
+    generationResult,
+    batchId,
+    placeholderThumb,
+  });
+  let {
+    thumb,
+    previewFrame,
+    video,
+    videoAsset,
+    providerMode,
+    status,
+    progress,
+    providerJobId,
+  } = initialMediaState;
 
   // Safety net: if Fal didn’t return a provider job id and we have no video result, treat as failed and refund.
   if (!providerJobId && !video) {
@@ -1738,87 +1730,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (isLumaRay2) {
-    console.info('[fal] luma ray generation', {
-      jobId,
-      providerJobId,
-      status,
-      video: buildSafeProviderMediaLog(video),
-    });
-  }
-
-  const sourceVideoUrl =
-    (typeof generationResult.video?.url === 'string' && generationResult.video.url.length
-      ? generationResult.video.url
-      : typeof generationResult.videoUrl === 'string' && generationResult.videoUrl.length
-        ? generationResult.videoUrl
-        : null) ?? null;
-  const isSourceAbsolute = Boolean(sourceVideoUrl && /^https?:\/\//i.test(sourceVideoUrl));
-  if (sourceVideoUrl && isSourceAbsolute) {
-    const fastStartVideo = await ensureFastStartVideo({
-      jobId,
-      userId,
-      videoUrl: sourceVideoUrl,
-    });
-    if (fastStartVideo) {
-      video = fastStartVideo;
-      if (videoAsset) {
-        videoAsset.url = fastStartVideo;
-      }
-    } else if (
-      shouldFailVideoJobOnProviderCopyMiss({
-        provider: providerMode,
-        sourceUrl: sourceVideoUrl,
-        copiedUrl: null,
-      })
-    ) {
-      const nextCopyState = buildNextProviderVideoCopyState(settingsSnapshot, {
-        providerStatus: status,
-        reason: 'provider_video_copy_failed',
-      });
-      const canRetryCopy =
-        Boolean(providerJobId) &&
-        shouldRetryProviderVideoCopy({ state: nextCopyState, createdAt: new Date().toISOString() });
-      console.warn('[api/generate] provider video copy failed', {
-        jobId,
-        providerJobId,
-        provider: providerMode,
-        video: buildSafeProviderMediaLog(sourceVideoUrl),
-        retryDeferred: canRetryCopy,
-      });
-      video = null;
-      videoAsset = null;
-      (settingsSnapshot as Record<string, unknown>).providerVideoCopy = nextCopyState;
-      settingsSnapshotJson = JSON.stringify(settingsSnapshot);
-      if (canRetryCopy) {
-        status = 'processing';
-        progress = 90;
-        message = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
-      } else {
-        status = 'failed';
-        progress = 0;
-        message = PROVIDER_VIDEO_COPY_FAILURE_MESSAGE;
-      }
-    }
-  }
-
-  const thumbnailSourceVideoUrl = video ?? sourceVideoUrl;
-  if (thumbnailSourceVideoUrl && /^https?:\/\//i.test(thumbnailSourceVideoUrl) && isPlaceholderThumbnail(thumb)) {
-    const generatedThumb = await ensureJobThumbnail({
-      jobId,
-      userId,
-      videoUrl: thumbnailSourceVideoUrl,
-      aspectRatio: aspectRatio ?? undefined,
-      existingThumbUrl: thumb,
-    });
-    if (generatedThumb) {
-      thumb = generatedThumb;
-      previewFrame = generatedThumb;
-      if (videoAsset) {
-        videoAsset.thumbnailUrl = generatedThumb;
-      }
-    }
-  }
+  const mediaState = await resolveProviderMediaState({
+    state: initialMediaState,
+    generationResult,
+    jobId,
+    userId,
+    isLumaRay2,
+    aspectRatio,
+    settingsSnapshot,
+    settingsSnapshotJson,
+    message,
+  });
+  ({
+    thumb,
+    previewFrame,
+    video,
+    videoAsset,
+    providerMode,
+    status,
+    progress,
+    providerJobId,
+    settingsSnapshotJson,
+    message,
+  } = mediaState);
 
   try {
     await persistFinalVideoJobUpdate({
