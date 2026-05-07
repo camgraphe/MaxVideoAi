@@ -42,3 +42,16 @@ test('OAuth cookie fallback redirects only after a new Supabase auth cookie appe
     'fallback should hand control back to login when a new auth cookie appears'
   );
 });
+
+test('login waits for the final next path before starting PKCE exchange', () => {
+  assert.match(
+    loginPageSource,
+    /if \(!nextPathReady\) return;\s+if \(typeof window === 'undefined'\) return;\s+const params = new URLSearchParams\(window\.location\.search\);/,
+    'PKCE exchange should not start until nextPath has been resolved'
+  );
+  assert.match(
+    loginPageSource,
+    /oauthCodeExchangeStartedRef\.current = true;[\s\S]*const target = sanitizeNextPath\(params\.get\('next'\) \?\? nextPath\);/,
+    'the exchange should capture a stable redirect target after nextPathReady'
+  );
+});

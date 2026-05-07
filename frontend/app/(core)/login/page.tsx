@@ -322,6 +322,7 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (!nextPathReady) return;
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const oauthCode = params.get('code');
@@ -414,7 +415,7 @@ export default function LoginPage() {
       cancelled = true;
       cancelAuthCookieFallback();
     };
-  }, [authCopy, completeAuthenticatedRedirect, nextPath, redirectFromExistingBrowserSession]);
+  }, [authCopy, completeAuthenticatedRedirect, nextPath, nextPathReady, redirectFromExistingBrowserSession]);
 
   useEffect(() => {
     if (mode !== 'signup' && termsError) {
