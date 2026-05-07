@@ -4,10 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { randomUUID } from 'crypto';
 import { generateVideo, FalGenerationError } from '@/lib/fal';
-import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
-import Stripe from 'stripe';
-import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
@@ -21,7 +18,6 @@ import {
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
 import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
-import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
@@ -30,13 +26,13 @@ import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/
 import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './_lib/final-receipts';
 import { buildInitialProviderMediaState, resolveProviderMediaState } from './_lib/provider-media';
 import { buildFinalGenerateResponse } from './_lib/final-response';
+import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
   VideoInitialJobError,
   type ExistingVideoJobRow,
   type PaymentMode,
-  type PendingReceipt,
 } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
@@ -53,10 +49,7 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
-import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
-import type { Currency } from '@/lib/currency';
-import { convertCents } from '@/lib/exchange';
-import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -79,9 +72,6 @@ import {
   shouldRoutePublicSeedanceFastToBytePlus,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
-
-const DISPLAY_CURRENCY = 'USD';
-const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'>;
 
@@ -636,86 +626,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(buildResponseFromExistingVideoJob(existing, localKey));
     }
   }
-  const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
-
-  let preferredCurrency: Currency | null = null;
-  if (userId) {
-    preferredCurrency = await getUserPreferredCurrency(String(userId));
-  }
-  const currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
-  const resolvedCurrencyLower = currencyResolution.currency;
-  const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
-
-  const pricingEngine = applyEngineVariantPricing(engine, mode);
-  const pricingAddons = buildEngineAddonInput(pricingEngine, {
-    audioEnabled,
-    voiceControl,
-  });
-  const pricing = await computePricingSnapshot({
-    engine: pricingEngine,
-    durationSec,
-    resolution: pricingResolution,
-    mode,
-    membershipTier: body.membershipTier,
-    loop: isLumaRay2 ? loop : undefined,
-    durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
-    currency: 'USD',
-    addons: pricingAddons,
-  });
-  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = await convertCents(
-    pricing.totalCents,
-    DISPLAY_CURRENCY_LOWER,
-    resolvedCurrencyLower
-  );
   const rawDurationLabel: LumaRay2DurationLabel | undefined =
     typeof rawDurationOption === 'string' && ['5s', '9s'].includes(rawDurationOption)
       ? (rawDurationOption as LumaRay2DurationLabel)
       : undefined;
   const durationLabel =
     lumaDurationInfo?.label ?? toLumaRay2DurationLabel(durationSec, rawDurationLabel) ?? undefined;
-  const requestMeta: Record<string, unknown> = {
-    engineId: engine.id,
-    engineLabel: engine.label,
-    mode,
-    durationSec,
-    variant: soraRequest?.variant,
-    aspectRatio: aspectRatio ?? 'source',
-    resolution: effectiveResolution,
-    effectiveResolution: pricingResolution,
-  };
-  if (durationLabel) {
-    requestMeta.durationLabel = durationLabel;
-  }
-  if (isLumaRay2) {
-    requestMeta.loop = loop;
-  }
-
-  pricing.meta = {
-    ...(pricing.meta ?? {}),
-    request: requestMeta,
-    currency_source: currencyResolution.source,
-    currency_country: currencyResolution.country ?? null,
-    display_currency: DISPLAY_CURRENCY,
-    settlement_currency: resolvedCurrencyUpper,
-    settlement_amount_cents: settlementAmountCents,
-    settlement_fx_rate: settlementFxRate,
-    settlement_fx_source: settlementFxSource,
-  };
-  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
-  const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
-  const receiptSnapshot = priceOnlyReceipts ? buildReceiptSnapshot(pricing) : pricing;
-  const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
-  const costBreakdownJson = !priceOnlyReceipts && costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
-
-  const vendorAccountId: string | null = null;
-  const applicationFeeCents = getPlatformFeeCents(pricing);
-  const visibility: 'public' | 'private' = 'private';
-  const indexable = false;
-
-  let pendingReceipt: PendingReceipt | null = null;
-  let paymentStatus: string = 'platform';
-  let stripePaymentIntentId: string | null = null;
-  let stripeChargeId: string | null = null;
   let walletChargeReserved = false;
 
   const extraInputValidation = validateExtraInputValues({ engine, mode, rawExtraInputValues });
@@ -919,112 +835,52 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (paymentMode === 'wallet') {
-    const walletUserId = userId ? String(userId) : null;
-    if (!walletUserId) {
-      logMetric('rejected', {
-        errorCode: 'WALLET_AUTH_REQUIRED',
-        meta: { paymentMode },
-      });
-      return NextResponse.json({ ok: false, error: 'Wallet payment requires authentication' }, { status: 401 });
+  const billingPreflight = await resolveGenerateBillingPreflight({
+    req,
+    engine,
+    mode,
+    userId,
+    payment,
+    jobId,
+    durationSec,
+    durationLabel,
+    pricingResolution,
+    effectiveResolution,
+    aspectRatio,
+    membershipTier: body.membershipTier,
+    soraVariant: soraRequest?.variant,
+    isLumaRay2,
+    loop,
+    rawDurationOption,
+    lumaDurationLabel: lumaDurationInfo?.label ?? null,
+    audioEnabled,
+    voiceControl,
+  });
+  if (!billingPreflight.ok) {
+    if (billingPreflight.metric) {
+      logMetric('rejected', billingPreflight.metric);
     }
-
-    pendingReceipt = {
-      userId: walletUserId,
-      amountCents: pricing.totalCents,
-      currency: DISPLAY_CURRENCY,
-      description: `Run ${engine.label} - ${durationSec}s`,
-      jobId,
-      snapshot: receiptSnapshot,
-      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
-      vendorAccountId,
-    };
-    paymentStatus = 'paid_wallet';
-  } else if (paymentMode === 'direct') {
-    if (!ENV.STRIPE_SECRET_KEY) {
-      logMetric('rejected', { errorCode: 'STRIPE_NOT_CONFIGURED', meta: { paymentMode } });
-      return NextResponse.json({ ok: false, error: 'Stripe not configured' }, { status: 501 });
-    }
-    if (!userId) {
-      logMetric('rejected', { errorCode: 'DIRECT_AUTH_REQUIRED', meta: { paymentMode } });
-      return NextResponse.json({ ok: false, error: 'Direct payment requires authentication' }, { status: 401 });
-    }
-    if (!payment.paymentIntentId) {
-      logMetric('rejected', { errorCode: 'PAYMENT_INTENT_MISSING', meta: { paymentMode } });
-      return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
-    }
-    const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
-    const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId, { expand: ['latest_charge'] });
-
-    const receivedSettlementCents = intent.amount_received ?? intent.amount ?? 0;
-    const metadataSettlementCents = intent.metadata?.settlement_amount_cents
-      ? Number(intent.metadata.settlement_amount_cents)
-      : null;
-    const expectedSettlementCents = metadataSettlementCents && metadataSettlementCents > 0
-      ? metadataSettlementCents
-      : (await convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
-    if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
-      logMetric('rejected', {
-        errorCode: 'PAYMENT_NOT_CAPTURED',
-        meta: { paymentIntentId: intent.id },
-      });
-      return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
-    }
-    const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
-    if (intentCurrency !== resolvedCurrencyUpper) {
-      console.warn('[payments] payment intent currency mismatch', {
-        expected: resolvedCurrencyUpper,
-        received: intentCurrency,
-        userId,
-        paymentIntentId: intent.id,
-      });
-      logMetric('rejected', {
-        errorCode: 'PAYMENT_CURRENCY_MISMATCH',
-        meta: { expected: resolvedCurrencyUpper, received: intentCurrency },
-      });
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `Wallet currency locked to ${resolvedCurrencyUpper}. Contact support to request a change.`,
-        },
-        { status: 409 }
-      );
-    }
-    if (!preferredCurrency) {
-      await ensureUserPreferredCurrency(String(userId), resolvedCurrencyLower);
-      preferredCurrency = resolvedCurrencyLower;
-    }
-
-    stripePaymentIntentId = intent.id;
-    const latestCharge = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
-    stripeChargeId = latestCharge;
-    const intentJobId = typeof intent.metadata?.job_id === 'string' ? intent.metadata.job_id : null;
-    if (intentJobId && intentJobId !== jobId) {
-      return NextResponse.json({ ok: false, error: 'Payment job mismatch' }, { status: 409 });
-    }
-
-    const metadataWalletAmountCents = intent.metadata?.wallet_amount_cents
-      ? Number(intent.metadata.wallet_amount_cents)
-      : pricing.totalCents;
-
-    pendingReceipt = {
-      userId: String(userId),
-      amountCents: metadataWalletAmountCents,
-      currency: DISPLAY_CURRENCY,
-      description: `Run ${engine.label} - ${durationSec}s`,
-      jobId,
-      snapshot: receiptSnapshot,
-      applicationFeeCents: null,
-      vendorAccountId,
-      stripePaymentIntentId,
-      stripeChargeId,
-    };
-    paymentStatus = 'paid_direct';
-  } else if (paymentMode === 'platform') {
-    paymentStatus = 'platform';
-  } else {
-    return NextResponse.json({ ok: false, error: 'Unsupported payment mode' }, { status: 400 });
+    return NextResponse.json(billingPreflight.body, { status: billingPreflight.status });
   }
+
+  const billing = billingPreflight.preflight;
+  let { preferredCurrency } = billing;
+  const {
+    resolvedCurrencyLower,
+    pricing,
+    priceOnlyReceipts,
+    costBreakdownUsd,
+    pricingSnapshotJson,
+    costBreakdownJson,
+    vendorAccountId,
+    visibility,
+    indexable,
+    paymentMode,
+    pendingReceipt,
+    paymentStatus,
+    stripePaymentIntentId,
+    stripeChargeId,
+  } = billing;
 
   const placeholderThumb =
     aspectRatio === '9:16'
