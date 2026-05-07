@@ -36,8 +36,8 @@ test('Seedance completion persists canonical video outputs before preview enrich
 });
 
 test('composite preview modal button opens direct preview groups', () => {
-  const appSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+  const previewStateHookSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreviewState.ts'),
     'utf8'
   );
   const previewDockSource = fs.readFileSync(
@@ -46,7 +46,7 @@ test('composite preview modal button opens direct preview groups', () => {
   );
 
   assert.match(previewDockSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
-  assert.match(appSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
+  assert.match(previewStateHookSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
   assert.match(previewDockSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group:\s*nextGroup\s*\}\)/);
 });
 

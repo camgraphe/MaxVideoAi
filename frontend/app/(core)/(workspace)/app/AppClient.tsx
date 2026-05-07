@@ -2,41 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEngines, useInfiniteJobs, getJobStatus } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
-import { useRouter } from 'next/navigation';
 import type { EngineCaps } from '@/types/engines';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { GroupSummary } from '@/types/groups';
-import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { ENV as CLIENT_ENV } from '@/lib/env';
-import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { VideoGroup } from '@/types/video-groups';
-import {
-  mapSelectedPreviewToGroup,
-  type SharedVideoPreview,
-} from '@/lib/video-preview-group';
+import type { SharedVideoPreview } from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
-import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   getLocalizedWorkflowCopy,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
+import { WorkspaceAppShell } from './_components/WorkspaceAppShell';
 import { WorkspaceBootSurface } from './_components/WorkspaceBootSurface';
-import { WorkspaceCenterGallery } from './_components/WorkspaceCenterGallery';
-import { WorkspaceChrome } from './_components/WorkspaceChrome';
 import { WorkspaceComposerSurface } from './_components/WorkspaceComposerSurface';
-import {
-  GalleryRailSkeleton,
-} from './_components/WorkspaceBootSkeletons';
-import { WorkspacePreviewDock } from './_components/WorkspacePreviewDock';
-import type { WorkspaceViewerTarget } from './_components/WorkspacePreviewDock';
 import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
-import { getCompositePreviewPosterSrc } from './_lib/composite-preview';
 import {
   type FormState,
 } from './_lib/workspace-form-state';
@@ -59,17 +43,12 @@ import { useWorkspaceDraftStorage } from './_hooks/useWorkspaceDraftStorage';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspaceInputSchemaState } from './_hooks/useWorkspaceInputSchemaState';
+import { useWorkspaceNotice } from './_hooks/useWorkspaceNotice';
+import { useWorkspacePreviewState } from './_hooks/useWorkspacePreviewState';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
 import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
+import { useWorkspaceRouteNavigation } from './_hooks/useWorkspaceRouteNavigation';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
-
-const GalleryRail = dynamic<GalleryRailProps>(
-  () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
-  {
-    ssr: false,
-    loading: () => <GalleryRailSkeleton />,
-  }
-);
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -113,8 +92,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     [processingCopy.takeLabel]
   );
 
-  const router = useRouter();
-
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [negativePrompt, setNegativePrompt] = useState<string>('');
@@ -125,7 +102,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [klingElements, setKlingElements] = useState<KlingElementState[]>(() => [createKlingElement()]);
   const [cfgScale, setCfgScale] = useState<number | null>(null);
   const [memberTier, setMemberTier] = useState<'Member' | 'Plus' | 'Pro'>('Member');
-  const [notice, setNotice] = useState<string | null>(null);
+  const { notice, showNotice, setNotice } = useWorkspaceNotice();
 
   const {
     fromVideoId,
@@ -154,9 +131,12 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     authStatus,
     authenticatedUserId: user?.id,
   });
+  const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation({
+    authChecked,
+    skipOnboardingRef,
+  });
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
-  const [viewerTarget, setViewerTarget] = useState<WorkspaceViewerTarget>(null);
   const isDesktopLayout = useWorkspaceDesktopLayout();
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
@@ -231,40 +211,26 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     resetRenderState,
   });
 
-  const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
-  const selectedPreviewGroup = useMemo(() => mapSelectedPreviewToGroup(selectedPreview, provider), [selectedPreview, provider]);
-  const initialPreviewFallbackGroup =
-    effectiveRequestedEngineId || effectiveRequestedEngineToken || requestedJobId || fromVideoId
-      ? null
-      : initialPreviewGroup;
-  const displayCompositeGroup = compositeGroup ?? selectedPreviewGroup ?? initialPreviewFallbackGroup;
-  const compositePreviewPosterSrc = useMemo(() => getCompositePreviewPosterSrc(displayCompositeGroup), [displayCompositeGroup]);
-
-  const viewerGroup = useMemo<VideoGroup | null>(() => {
-    if (!viewerTarget) return null;
-    if (viewerTarget.kind === 'pending') {
-      const summary = pendingSummaryMap.get(viewerTarget.id);
-      if (!summary) return null;
-      return adaptGroupSummary(normalizeGroupSummary(summary), provider);
-    }
-    if (viewerTarget.kind === 'group') {
-      return viewerTarget.group;
-    }
-    return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
-  }, [viewerTarget, pendingSummaryMap, provider]);
+  const {
+    setViewerTarget,
+    viewerGroup,
+    initialPreviewFallbackGroup,
+    displayCompositeGroup,
+    compositePreviewPosterSrc,
+  } = useWorkspacePreviewState({
+    provider,
+    selectedPreview,
+    pendingSummaryMap,
+    compositeOverride,
+    activeVideoGroup,
+    initialPreviewGroup,
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
+    requestedJobId,
+    fromVideoId,
+  });
 
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
-  const noticeTimeoutRef = useRef<number | null>(null);
-  const showNotice = useCallback((message: string) => {
-    setNotice(message);
-    if (noticeTimeoutRef.current !== null) {
-      window.clearTimeout(noticeTimeoutRef.current);
-    }
-    noticeTimeoutRef.current = window.setTimeout(() => {
-      setNotice(null);
-      noticeTimeoutRef.current = null;
-    }, 6000);
-  }, []);
 
   const {
     inputAssets,
@@ -312,55 +278,10 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     }
   }, []);
 
-  useEffect(() => {
-    if (!authChecked || skipOnboardingRef.current) return undefined;
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[app] onboarding check running', { skip: skipOnboardingRef.current });
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await authFetch('/api/user/exports/summary');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!json?.ok) return;
-        if (cancelled) return;
-        if ((json.total ?? 0) === 0 && json.onboardingDone !== true) {
-          const params: Record<string, string> = { tab: 'starter', first: '1' };
-          const search = new URLSearchParams(params).toString();
-          router.replace(`/gallery?${search}`);
-          await authFetch('/api/user/preferences', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ onboardingDone: true }),
-          }).catch(() => undefined);
-        }
-      } catch (error) {
-        console.warn('[app] onboarding redirect failed', error);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [authChecked, router, skipOnboardingRef]);
-
-  useEffect(() => {
-    return () => {
-      if (noticeTimeoutRef.current !== null) {
-        window.clearTimeout(noticeTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
     composerRef.current.focus({ preventScroll: true });
   }, []);
-  const replaceWorkspaceRoute = useCallback((href: string) => {
-    router.replace(href);
-  }, [router]);
 
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
@@ -681,67 +602,39 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
 
   return (
     <>
-      <WorkspaceChrome
+      <WorkspaceAppShell
         isDesktopLayout={isDesktopLayout}
-        desktopRail={
-          <GalleryRail
-            engine={selectedEngine}
-            engineRegistry={engines}
-            activeGroups={normalizedPendingGroups}
-            onOpenGroup={openGroupViaGallery}
-            onGroupAction={handleGalleryGroupAction}
-            onFeedStateChange={handleGalleryFeedStateChange}
-            variant="desktop"
-          />
-        }
-        mobileRail={
-          <GalleryRail
-            engine={selectedEngine}
-            engineRegistry={engines}
-            activeGroups={normalizedPendingGroups}
-            onOpenGroup={openGroupViaGallery}
-            onGroupAction={handleGalleryGroupAction}
-            onFeedStateChange={handleGalleryFeedStateChange}
-            variant="mobile"
-          />
-        }
-      >
-            {notice && (
-              <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
-                {notice}
-              </div>
-            )}
-            <div className="stack-gap-lg">
-              <WorkspaceCenterGallery
-                show={showCenterGallery}
-                groups={normalizedPendingGroups}
-                engineMap={engineMap}
-                isGenerationLoading={isGenerationLoading}
-                generationSkeletonCount={generationSkeletonCount}
-                emptyLabel={workspaceCopy.gallery.empty}
-                onOpenGroup={handleActiveGroupOpen}
-                onGroupAction={handleActiveGroupAction}
-              />
-              <WorkspacePreviewDock
-                group={displayCompositeGroup}
-                isLoading={isGenerationLoading && !displayCompositeGroup}
-                autoPlayRequestId={previewAutoPlayRequestId}
-                sharedPrompt={sharedPrompt}
-                hasSharedVideoSettings={Boolean(sharedVideoSettings)}
-                onCopySharedPrompt={handleCopySharedPrompt}
-                guidedNavigation={guidedNavigation}
-                engines={engines}
-                engineId={form.engineId}
-                selectedEngineId={selectedEngine.id}
-                activeMode={activeMode}
-                engineModeOptions={engineModeOptions}
-                modeLabelLocale={uiLocale}
-                onEngineChange={handleEngineChange}
-                onModeChange={handleModeChange}
-                renderGroups={renderGroups}
-                compositeOverrideSummary={compositeOverrideSummary}
-                setViewerTarget={setViewerTarget}
-              />
+        selectedEngine={selectedEngine}
+        engines={engines}
+        normalizedPendingGroups={normalizedPendingGroups}
+        openGroupViaGallery={openGroupViaGallery}
+        handleGalleryGroupAction={handleGalleryGroupAction}
+        handleGalleryFeedStateChange={handleGalleryFeedStateChange}
+        notice={notice}
+        showCenterGallery={showCenterGallery}
+        engineMap={engineMap}
+        isGenerationLoading={isGenerationLoading}
+        generationSkeletonCount={generationSkeletonCount}
+        galleryEmptyLabel={workspaceCopy.gallery.empty}
+        handleActiveGroupOpen={handleActiveGroupOpen}
+        handleActiveGroupAction={handleActiveGroupAction}
+        displayCompositeGroup={displayCompositeGroup}
+        previewAutoPlayRequestId={previewAutoPlayRequestId}
+        sharedPrompt={sharedPrompt}
+        hasSharedVideoSettings={Boolean(sharedVideoSettings)}
+        handleCopySharedPrompt={handleCopySharedPrompt}
+        guidedNavigation={guidedNavigation}
+        engineId={form.engineId}
+        selectedEngineId={selectedEngine.id}
+        activeMode={activeMode}
+        engineModeOptions={engineModeOptions}
+        modeLabelLocale={uiLocale}
+        handleEngineChange={handleEngineChange}
+        handleModeChange={handleModeChange}
+        renderGroups={renderGroups}
+        compositeOverrideSummary={compositeOverrideSummary}
+        setViewerTarget={setViewerTarget}
+        composerSurface={
               <WorkspaceComposerSurface
                 selectedEngine={selectedEngine}
                 form={form}
@@ -818,8 +711,8 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
                 handleOpenKlingAssetLibrary={handleOpenKlingAssetLibrary}
                 setViewMode={setViewMode}
               />
-            </div>
-      </WorkspaceChrome>
+        }
+      />
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
