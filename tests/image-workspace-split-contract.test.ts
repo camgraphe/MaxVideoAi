@@ -8,6 +8,7 @@ const imageDir = path.join(root, 'frontend/app/(core)/(workspace)/app/image');
 const workspacePath = path.join(imageDir, 'ImageWorkspace.tsx');
 
 const splitFiles = [
+  '_components/ImageAuthGateModal.tsx',
   '_components/ImageLibraryModal.tsx',
   '_hooks/useImageWorkspaceHistory.ts',
   '_hooks/useImageWorkspacePricing.ts',
@@ -32,6 +33,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   }
 
   assert.match(source, /from '\.\/_components\/ImageLibraryModal'/);
+  assert.match(source, /from '\.\/_components\/ImageAuthGateModal'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceHistory'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
@@ -42,6 +44,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
 
   assert.doesNotMatch(source, /const DEFAULT_COPY: ImageWorkspaceCopy =/);
   assert.doesNotMatch(source, /function ImageLibraryModal\(/);
+  assert.doesNotMatch(source, /function ImageAuthGateModal\(/);
+  assert.doesNotMatch(source, /resolvedCopy\.authGate\.primary/, 'auth gate modal UI belongs in ImageAuthGateModal');
   assert.doesNotMatch(source, /function parsePersistedImageComposerState\(/);
   assert.doesNotMatch(source, /function mapJobToHistoryEntry\(/);
   assert.doesNotMatch(source, /function buildPendingGroup\(/);
@@ -49,4 +53,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.doesNotMatch(source, /useSWR\(/, 'pricing SWR orchestration belongs in useImageWorkspacePricing');
   assert.doesNotMatch(source, /useInfiniteJobs\(24, \{ surface: 'image' \}\)/, 'image job feed orchestration belongs in useImageWorkspaceHistory');
   assert.doesNotMatch(source, /const remoteImageJobs =/, 'remote image history derivation belongs in useImageWorkspaceHistory');
+
+  const lineCount = source.split('\n').length;
+  assert.ok(lineCount <= 1460, `ImageWorkspace should stay below 1460 lines after auth modal extraction, got ${lineCount}`);
 });

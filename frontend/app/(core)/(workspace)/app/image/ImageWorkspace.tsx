@@ -9,7 +9,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { GalleryRail } from '@/components/GalleryRail';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
@@ -46,6 +46,7 @@ import { authFetch } from '@/lib/authFetch';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
+import { ImageAuthGateModal } from './_components/ImageAuthGateModal';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
 import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
 import { useImageWorkspacePricing } from './_hooks/useImageWorkspacePricing';
@@ -1424,42 +1425,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         onSaveToLibrary={handleSaveVariantToLibrary}
       />
     ) : null}
-      {authModalOpen ? (
-      <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6">
-        <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
-        <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h2 className="text-base font-semibold text-text-primary">{resolvedCopy.authGate.title}</h2>
-              <p className="mt-2 text-sm text-text-secondary">{resolvedCopy.authGate.body}</p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setAuthModalOpen(false)}
-              className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
-              aria-label={resolvedCopy.authGate.close}
-            >
-              {resolvedCopy.authGate.close}
-            </Button>
-          </div>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
-              {resolvedCopy.authGate.primary}
-            </ButtonLink>
-            <ButtonLink
-              href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
-              variant="outline"
-              size="sm"
-              className="px-4"
-            >
-              {resolvedCopy.authGate.secondary}
-            </ButtonLink>
-          </div>
-        </div>
-      </div>
-    ) : null}
+      <ImageAuthGateModal
+        open={authModalOpen}
+        copy={resolvedCopy.authGate}
+        loginRedirectTarget={loginRedirectTarget}
+        onClose={() => setAuthModalOpen(false)}
+      />
       {libraryModal.open ? (
       <ImageLibraryModal
         open={libraryModal.open}
