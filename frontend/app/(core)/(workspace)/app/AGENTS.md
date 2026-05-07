@@ -14,11 +14,13 @@ This route is the main signed-in video generation workspace.
 
 - Extract stable UI and pure helpers before moving generation state.
 - Keep schema summarization, asset-library normalization, and copy merging in `_lib`; `AppClient.tsx` should consume those results instead of rebuilding them inline.
+- Keep workspace input-schema state in `_hooks/useWorkspaceInputSchemaState.ts`; `AppClient.tsx` should not derive promoted fields, asset field ids, upload lock reasons, or asset-pruning effects inline.
 - Keep render grouping and preview tile mapping in `_lib`; `AppClient.tsx` should decide state transitions, not rebuild group summary objects inline.
 - Keep job-to-render conversion, status polling projections, and recent-job reconciliation in `_lib`; route-local hooks should own render state, timers, and bounded network polling.
 - Keep generation attachment ordering, derived input URLs, Kling element payloads, and multi-prompt payloads in `_lib`; `AppClient.tsx` should consume prepared inputs instead of deriving attachment URLs inline.
 - Keep generation validation guards and `runGenerate` payload assembly in `_lib`; route-local hooks should own generation network orchestration while `AppClient.tsx` wires UI state.
 - Keep composer mode inference, engine switching, multi-prompt derived state, voice-control derived state, and settings handlers in route-local hooks; `AppClient.tsx` should wire returned values into composer, settings bars, and generation runner props.
+- Keep the composer and settings JSX in `_components/WorkspaceComposerSurface.tsx`; `AppClient.tsx` should not import `Composer`, `SettingsControls`, `CoreSettingsBar`, or Kling builder UI directly.
 - Keep gallery action orchestration, guided sample navigation, and preview open/continue/refine/copy behavior in route-local hooks; `AppClient.tsx` should pass returned handlers into rails, cards, and preview surfaces.
 - Keep preflight pricing, member-status refresh, wallet top-up modal state, and auth gate modal state in route-local hooks/components; `AppClient.tsx` should wire returned state into composer and generation runner props.
 - Keep local pending-render and selected-preview preparation in `_lib`; `AppClient.tsx` should apply returned state objects and own timers.
