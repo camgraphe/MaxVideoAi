@@ -28,6 +28,7 @@ import { buildFinalGenerateResponse } from './_lib/final-response';
 import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
 import { buildGenerateValidationPayload } from './_lib/validation-payload';
 import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
+import { buildGenerateRequestOptions, isVideoMode } from './_lib/request-options';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -37,27 +38,14 @@ import {
 } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
-import { getEngineCaps } from '@/fixtures/engineCaps';
-import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
-import {
-  getLumaRay2DurationInfo,
-  getLumaRay2ResolutionInfo,
-  isLumaRay2EngineId,
-  isLumaRay2AspectRatio,
-  normaliseLumaRay2Loop,
-  toLumaRay2DurationLabel,
-  LUMA_RAY2_ERROR_UNSUPPORTED,
-  type LumaRay2DurationLabel,
-} from '@/lib/luma-ray2';
+import { LUMA_RAY2_ERROR_UNSUPPORTED } from '@/lib/luma-ray2';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
-  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-  getBytePlusSeedanceAllowedResolutions,
   isSeedanceBytePlusModeAllowed,
   isSeedanceFastBytePlusModeAllowed,
   isBytePlusModelArkEnabled,
@@ -68,28 +56,10 @@ import {
   shouldRoutePublicSeedanceFastToBytePlus,
 } from '@/server/video-providers/byteplus-modelark';
 
-type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'>;
-
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
 const FAL_HARD_TIMEOUT_MS = 400_000;
 const FAL_PROGRESS_FLOOR = 10;
-
-function isVideoMode(value: unknown): value is VideoMode {
-  return (
-    value === 't2v' ||
-    value === 'i2v' ||
-    value === 'ref2v' ||
-    value === 'fl2v' ||
-    value === 'i2i' ||
-    value === 'v2v' ||
-    value === 'r2v' ||
-    value === 'a2v' ||
-    value === 'extend' ||
-    value === 'retake' ||
-    value === 'reframe'
-  );
-}
 
 async function resolveUserId(req?: NextRequest): Promise<string | null> {
   try {
@@ -245,342 +215,61 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'This Seedance route only supports the configured modes.' }, { status: 400 });
   }
 
-  const prompt = String(body.prompt || '');
-  const multiPromptRaw = Array.isArray(body.multiPrompt) ? body.multiPrompt : null;
-  const multiPrompt = multiPromptRaw
-    ? multiPromptRaw
-        .map((entry: unknown) => {
-          if (!entry || typeof entry !== 'object') return null;
-          const record = entry as Record<string, unknown>;
-          const promptValue = typeof record.prompt === 'string' ? record.prompt.trim() : '';
-          const durationValue =
-            typeof record.duration === 'number'
-              ? Math.round(record.duration)
-              : typeof record.duration === 'string'
-                ? Math.round(Number(record.duration.replace(/[^\d.]/g, '')))
-                : 0;
-          if (!promptValue) return null;
-          return { prompt: promptValue, duration: durationValue };
-        })
-        .filter(
-          (entry: { prompt: string; duration: number } | null): entry is { prompt: string; duration: number } =>
-            Boolean(entry)
-        )
-    : null;
-  const multiPromptTotalSec = multiPrompt
-    ? multiPrompt.reduce(
-        (sum: number, entry: { prompt: string; duration: number }) => sum + (entry.duration || 0),
-        0
-      )
-    : 0;
-  let audioEnabled =
-    typeof body.audio === 'boolean'
-      ? body.audio
-      : typeof body.generate_audio === 'boolean'
-        ? body.generate_audio
-        : undefined;
-  const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const capability = getEngineCaps(engine.id, mode);
-  const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
-  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
-  const supportsFps = capability
-    ? Array.isArray(capability.fps)
-      ? capability.fps.length > 0
-      : typeof capability.fps === 'number'
-    : true;
-  const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
-  const rawDurationOption =
-    typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  let durationSec = Number(body.durationSec || body.duration || 4);
-  if (multiPromptTotalSec > 0) {
-    durationSec = multiPromptTotalSec;
-  }
-  const lumaDurationInfo =
-    isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
-  if (isLumaRay2 && supportsDuration && !lumaDurationInfo) {
-    logMetric('rejected', {
-      errorCode: 'LUMA_DURATION_UNSUPPORTED',
-      meta: { durationOption: rawDurationOption, durationSec: body.durationSec },
-    });
-    return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
-  }
-  if (lumaDurationInfo) {
-    durationSec = lumaDurationInfo.seconds;
-  }
-  const shotTypeRaw = typeof body.shotType === 'string' ? body.shotType.trim().toLowerCase() : '';
-  const shotType = shotTypeRaw === 'intelligent' ? 'intelligent' : shotTypeRaw === 'customize' ? 'customize' : null;
-  const seedRaw = body.seed;
-  const seed =
-    typeof seedRaw === 'number' && Number.isFinite(seedRaw)
-      ? Math.trunc(seedRaw)
-      : typeof seedRaw === 'string' && seedRaw.trim().length
-        ? Number.isFinite(Number(seedRaw))
-          ? Math.trunc(Number(seedRaw))
-          : null
-        : null;
-  const cameraFixed = typeof body.cameraFixed === 'boolean' ? body.cameraFixed : null;
-  const safetyChecker = typeof body.safetyChecker === 'boolean' ? body.safetyChecker : null;
-  const voiceIdsRaw = Array.isArray(body.voiceIds)
-    ? body.voiceIds
-    : typeof body.voiceIds === 'string'
-      ? body.voiceIds.split(',')
-      : null;
-  const voiceIds = voiceIdsRaw
-    ? voiceIdsRaw
-        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-        .filter((value: string): value is string => value.length > 0)
-    : [];
-  const voiceControl = Boolean(body.voiceControl) || voiceIds.length > 0;
-  if (voiceControl) {
-    audioEnabled = true;
-  }
-  const elementsRaw = Array.isArray(body.elements) ? body.elements : null;
-  const elements = elementsRaw
-    ? elementsRaw
-        .map((entry: unknown) => {
-          if (!entry || typeof entry !== 'object') return null;
-          const record = entry as Record<string, unknown>;
-          const frontalImageUrl =
-            typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
-              ? record.frontalImageUrl.trim()
-              : null;
-          const referenceImageUrls = Array.isArray(record.referenceImageUrls)
-            ? record.referenceImageUrls
-                .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-                .filter((value: string): value is string => value.length > 0)
-            : [];
-          const videoUrl =
-            typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
-          if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) return null;
-          return {
-            frontalImageUrl: frontalImageUrl ?? undefined,
-            referenceImageUrls: referenceImageUrls.length ? referenceImageUrls : undefined,
-            videoUrl: videoUrl ?? undefined,
-          };
-        })
-        .filter(
-          (
-            entry: { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } | null
-          ): entry is { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } => Boolean(entry)
-        )
-    : null;
-  const endImageUrl =
-    typeof body.endImageUrl === 'string' && body.endImageUrl.trim().length ? body.endImageUrl.trim() : null;
-  const rawAudioUrl =
-    typeof body.audioUrl === 'string' && body.audioUrl.trim().length
-      ? body.audioUrl.trim()
-      : typeof body.audio_url === 'string' && body.audio_url.trim().length
-        ? body.audio_url.trim()
-        : null;
-  const rawAspectRatio =
-    supportsAspectRatio && typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length
-      ? body.aspectRatio.trim()
-      : null;
-  const fallbackAspectRatio = supportsAspectRatio
-    ? capability?.aspectRatio?.find((value) => value !== 'auto') ??
-      engine.aspectRatios?.find((value) => value !== 'auto') ??
-      engine.aspectRatios?.[0] ??
-      '16:9'
-    : null;
-  let aspectRatio =
-    rawAspectRatio && fallbackAspectRatio
-      ? rawAspectRatio === 'auto'
-        ? fallbackAspectRatio
-        : rawAspectRatio
-      : rawAspectRatio ?? fallbackAspectRatio ?? null;
-  if (isLumaRay2 && supportsAspectRatio) {
-    if (aspectRatio && !isLumaRay2AspectRatio(aspectRatio, { includeSquare: mode === 'reframe' })) {
-      logMetric('rejected', {
-        errorCode: 'LUMA_ASPECT_UNSUPPORTED',
-        meta: { aspectRatio },
-      });
-      return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
+  const requestOptionsResult = buildGenerateRequestOptions({
+    body,
+    engine,
+    mode,
+    isBytePlusV1a,
+  });
+  if (!requestOptionsResult.ok) {
+    if (requestOptionsResult.metric) {
+      logMetric('rejected', requestOptionsResult.metric);
     }
-    if (!aspectRatio) {
-      aspectRatio = fallbackAspectRatio ?? '16:9';
-    }
+    return NextResponse.json(requestOptionsResult.body, { status: requestOptionsResult.status });
   }
-  const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
-  const groupId = typeof body.groupId === 'string' && body.groupId.trim().length ? body.groupId.trim() : null;
-  const iterationIndex =
-    typeof body.iterationIndex === 'number' && Number.isFinite(body.iterationIndex)
-      ? Math.max(0, Math.trunc(body.iterationIndex))
-      : null;
-  const iterationCount =
-    typeof body.iterationCount === 'number' && Number.isFinite(body.iterationCount)
-      ? Math.max(1, Math.trunc(body.iterationCount))
-      : null;
-  const renderIds =
-    Array.isArray(body.renderIds) && body.renderIds.length
-      ? body.renderIds.map((value: unknown) => (typeof value === 'string' ? value : null)).filter(Boolean)
-      : null;
-  const heroRenderId =
-    typeof body.heroRenderId === 'string' && body.heroRenderId.trim().length ? body.heroRenderId.trim() : null;
-  let message = typeof body.message === 'string' && body.message.trim().length ? body.message.trim() : null;
-  const etaSeconds =
-    typeof body.etaSeconds === 'number' && Number.isFinite(body.etaSeconds)
-      ? Math.max(0, Math.trunc(body.etaSeconds))
-      : null;
-  const etaLabel = typeof body.etaLabel === 'string' && body.etaLabel.trim().length ? body.etaLabel.trim() : null;
-  const rawExtraInputValues =
-    body.extraInputValues && typeof body.extraInputValues === 'object' && !Array.isArray(body.extraInputValues)
-      ? (body.extraInputValues as Record<string, unknown>)
-      : null;
 
-  let requestedResolution =
-    typeof body.resolution === 'string' && body.resolution.trim().length
-      ? body.resolution.trim()
-      : engine.resolutions?.[0] ?? '1080p';
-  let pricingResolution =
-    requestedResolution === 'auto'
-      ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
-      : requestedResolution;
-  let effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
-  let lumaResolutionInfo = isLumaRay2 && supportsResolution ? getLumaRay2ResolutionInfo(requestedResolution) : null;
-  if (isLumaRay2 && supportsResolution) {
-    if (requestedResolution === 'auto') {
-      requestedResolution = '540p';
-      lumaResolutionInfo = getLumaRay2ResolutionInfo(requestedResolution);
-    }
-    if (!lumaResolutionInfo) {
-      return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
-    }
-    pricingResolution = lumaResolutionInfo.value;
-    effectiveResolution = lumaResolutionInfo.value;
-    requestedResolution = lumaResolutionInfo.value;
-  } else if (!supportsResolution) {
-    const fallbackResolution =
-      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '540p';
-    pricingResolution = fallbackResolution;
-    effectiveResolution = fallbackResolution;
-    requestedResolution = fallbackResolution;
-  }
-  if ((engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10) {
-    // Fal requirement: 12–20s clips must run at 1080p/25fps on LTX fast variants.
-    requestedResolution = '1080p';
-    pricingResolution = '1080p';
-    effectiveResolution = '1080p';
-  }
-  if (isBytePlusV1a) {
-    const normalizedDuration = Math.trunc(durationSec);
-    if (!Number.isFinite(durationSec) || normalizedDuration !== durationSec || normalizedDuration < 5 || normalizedDuration > 15) {
-      logMetric('rejected', {
-        errorCode: 'BYTEPLUS_DURATION_UNSUPPORTED',
-        meta: { durationSec },
-      });
-      return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_DURATION_UNSUPPORTED', message: 'This Seedance route requires an integer duration from 5 to 15 seconds.' },
-        { status: 400 }
-      );
-    }
-    durationSec = normalizedDuration;
-    const allowedResolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
-    const bytePlusResolution = requestedResolution === 'auto' ? '720p' : requestedResolution;
-    if (!allowedResolutions.includes(bytePlusResolution as (typeof allowedResolutions)[number])) {
-      logMetric('rejected', {
-        errorCode: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
-        meta: { resolution: requestedResolution, engineId: engine.id },
-      });
-      return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_RESOLUTION_UNSUPPORTED', message: 'This Seedance route does not support this resolution for the selected model.' },
-        { status: 400 }
-      );
-    }
-    const bytePlusAspectRatio = !aspectRatio || aspectRatio === 'auto' ? '16:9' : aspectRatio;
-    if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(bytePlusAspectRatio as (typeof BYTEPLUS_SEEDANCE_ASPECT_RATIOS)[number])) {
-      logMetric('rejected', {
-        errorCode: 'BYTEPLUS_RATIO_UNSUPPORTED',
-        meta: { aspectRatio, engineId: engine.id },
-      });
-      return NextResponse.json(
-        { ok: false, error: 'BYTEPLUS_RATIO_UNSUPPORTED', message: 'This Seedance route does not support this aspect ratio.' },
-        { status: 400 }
-      );
-    }
-    requestedResolution = bytePlusResolution;
-    pricingResolution = bytePlusResolution;
-    effectiveResolution = bytePlusResolution;
-    aspectRatio = bytePlusAspectRatio;
-    audioEnabled = audioEnabled ?? true;
-  }
+  const {
+    prompt,
+    multiPrompt,
+    audioEnabled,
+    isLumaRay2,
+    supportsDuration,
+    supportsResolution,
+    supportsFps,
+    supportsAspectRatio,
+    rawDurationOption,
+    rawDurationLabel,
+    durationLabel,
+    durationSec,
+    lumaDurationInfo,
+    shotType,
+    seed,
+    cameraFixed,
+    safetyChecker,
+    voiceIds,
+    voiceControl,
+    elements,
+    endImageUrl,
+    rawAudioUrl,
+    aspectRatio,
+    batchId,
+    groupId,
+    iterationIndex,
+    iterationCount,
+    renderIds,
+    heroRenderId,
+    etaSeconds,
+    etaLabel,
+    rawExtraInputValues,
+    pricingResolution,
+    effectiveResolution,
+    numFrames,
+    loop,
+    soraRequest,
+  } = requestOptionsResult.options;
+  let { message } = requestOptionsResult.options;
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
-
-  const rawNumFrames =
-    typeof body.numFrames === 'number'
-      ? body.numFrames
-      : typeof body.num_frames === 'number'
-        ? body.num_frames
-        : null;
-  const numFrames =
-    rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
-
-  const loopValue = isLumaRay2 ? normaliseLumaRay2Loop(body.loop) : undefined;
-  const loop = isLumaRay2 ? loopValue === true : false;
-
-  let soraRequest: SoraRequest | null = null;
-  if (isSoraEngineId(engine.id)) {
-    const variant = getSoraVariantForEngine(engine.id);
-    const fallbackAspect = mode === 'i2v' ? 'auto' : '16:9';
-    const soraDefaultResolution =
-      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
-    const candidate: Record<string, unknown> = {
-      variant,
-      mode,
-      prompt,
-      resolution: requestedResolution === 'auto' && mode === 't2v' ? soraDefaultResolution : requestedResolution,
-      aspect_ratio: rawAspectRatio ?? fallbackAspect,
-      duration: durationSec,
-      api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
-    };
-
-    if (mode === 'i2v') {
-      const imageUrl =
-        typeof body.imageUrl === 'string' && body.imageUrl.trim().length
-          ? body.imageUrl.trim()
-          : typeof body.image_url === 'string' && body.image_url.trim().length
-            ? body.image_url.trim()
-            : undefined;
-      if (!imageUrl) {
-        logMetric('rejected', {
-          errorCode: 'IMAGE_URL_REQUIRED',
-          meta: { engineId: engine.id, mode },
-        });
-        return NextResponse.json({ ok: false, error: 'Image URL is required for Sora image-to-video' }, { status: 400 });
-      }
-      candidate.image_url = imageUrl;
-    }
-
-    try {
-      soraRequest = parseSoraRequest(candidate);
-    } catch (error) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: 'Invalid Sora payload',
-          details: error instanceof Error ? error.message : undefined,
-        },
-        { status: 400 }
-      );
-    }
-
-    durationSec = soraRequest.duration;
-    requestedResolution = soraRequest.resolution;
-    const fallbackResolution =
-      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
-    pricingResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
-    effectiveResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
-    const fallbackAspectNormalized =
-      engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9';
-    aspectRatio =
-      soraRequest.mode === 'i2v' && soraRequest.aspect_ratio === 'auto'
-        ? fallbackAspectNormalized
-        : soraRequest.aspect_ratio === 'auto'
-          ? fallbackAspectNormalized
-          : soraRequest.aspect_ratio;
-    metricState.durationSec = durationSec;
-    metricState.resolution = effectiveResolution;
-  }
 
   const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
     typeof body.payment === 'object' && body.payment
@@ -621,12 +310,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(buildResponseFromExistingVideoJob(existing, localKey));
     }
   }
-  const rawDurationLabel: LumaRay2DurationLabel | undefined =
-    typeof rawDurationOption === 'string' && ['5s', '9s'].includes(rawDurationOption)
-      ? (rawDurationOption as LumaRay2DurationLabel)
-      : undefined;
-  const durationLabel =
-    lumaDurationInfo?.label ?? toLumaRay2DurationLabel(durationSec, rawDurationLabel) ?? undefined;
   let walletChargeReserved = false;
 
   const extraInputValidation = validateExtraInputValues({ engine, mode, rawExtraInputValues });
