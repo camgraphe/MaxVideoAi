@@ -26,6 +26,7 @@ import { buildReceiptSnapshot } from './_lib/receipt-snapshot';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
+import { createProviderJobTracker } from './_lib/provider-job-tracker';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1127,43 +1128,14 @@ export async function POST(req: NextRequest) {
   });
   let settingsSnapshotJson = JSON.stringify(settingsSnapshot);
 
-  let lastProviderJobId: string | null = null;
-  const persistProviderJobId = async (requestId: string) => {
-    if (!requestId || lastProviderJobId === requestId) return;
-    lastProviderJobId = requestId;
-    try {
-      await query(
-        `UPDATE app_jobs
-         SET provider_job_id = $2, updated_at = NOW()
-         WHERE job_id = $1
-           AND (provider_job_id IS NULL OR provider_job_id <> $2)`,
-        [jobId, requestId]
-      );
-    } catch (error) {
-      console.warn('[api/generate] failed to persist provider_job_id', { jobId, requestId }, error);
-    }
-    try {
-      await query(
-        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-	      [
-	        jobId,
-	        providerKey,
-	        requestId,
-          engine.id,
-          'enqueue',
-          JSON.stringify({
-            at: new Date().toISOString(),
-            engineId: engine.id,
-            promptLength: prompt.length,
-            inputSummary: falInputSummary,
-          }),
-        ]
-      );
-    } catch (error) {
-      console.warn('[queue-log] failed to record enqueue event', { jobId, requestId }, error);
-    }
-  };
+  const providerJobTracker = createProviderJobTracker({
+    jobId,
+    providerKey,
+    engineId: engine.id,
+    prompt,
+    inputSummary: falInputSummary,
+  });
+  const { getLastProviderJobId, persistProviderJobId, setLastProviderJobId } = providerJobTracker;
 
   try {
     const initialJobState = await createAtomicInitialVideoJob({
@@ -1415,10 +1387,8 @@ export async function POST(req: NextRequest) {
         onQueueUpdate: (status) => {
           if (!status) return;
           const requestId =
-            (status as { request_id?: string }).request_id ?? lastProviderJobId ?? null;
-          if (requestId) {
-            lastProviderJobId = requestId;
-          }
+            (status as { request_id?: string }).request_id ?? getLastProviderJobId() ?? null;
+          setLastProviderJobId(requestId);
         },
       }
     );
@@ -1473,7 +1443,7 @@ export async function POST(req: NextRequest) {
         ? error.providerJobId
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
-          : lastProviderJobId ?? batchId ?? null;
+          : getLastProviderJobId() ?? batchId ?? null;
   const paymentStatusOverride =
       pendingReceipt && paymentMode === 'wallet'
         ? 'refunded_wallet'
