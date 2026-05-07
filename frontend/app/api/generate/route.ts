@@ -29,6 +29,7 @@ import { createProviderJobTracker } from './_lib/provider-job-tracker';
 import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/final-job-persistence';
 import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './_lib/final-receipts';
 import { buildInitialProviderMediaState, resolveProviderMediaState } from './_lib/provider-media';
+import { buildFinalGenerateResponse } from './_lib/final-response';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -1828,40 +1829,33 @@ export async function POST(req: NextRequest) {
     priceOnlyReceipts,
   });
 
-  const responsePaymentStatus =
-    status === 'failed' && pendingReceipt && paymentMode === 'wallet' ? 'refunded_wallet' : paymentStatus;
+  const finalResponse = buildFinalGenerateResponse({
+    jobId,
+    media: { video, videoAsset, thumb },
+    completion: { status, progress, message, etaSeconds, etaLabel },
+    pricing,
+    payment: { pendingReceipt, paymentMode, paymentStatus },
+    provider: { providerMode, providerJobId },
+    batch: {
+      batchId,
+      groupId,
+      iterationIndex,
+      iterationCount,
+      renderIds,
+      heroRenderId,
+      localKey,
+    },
+  });
 
   logMetric(status === 'failed' ? 'failed' : 'completed', {
     jobId,
     meta: {
       providerJobId,
       provider: providerMode,
-      paymentStatus: responsePaymentStatus,
+      paymentStatus: finalResponse.paymentStatus,
       inputSummary: falInputSummary,
     },
   });
 
-  return NextResponse.json({
-    ok: true,
-    jobId,
-    videoUrl: video,
-    video: videoAsset,
-    thumbUrl: thumb,
-    status,
-    progress,
-    pricing,
-    paymentStatus: responsePaymentStatus,
-    provider: providerMode,
-    providerJobId,
-    batchId,
-    groupId,
-    iterationIndex,
-    iterationCount,
-    renderIds,
-    heroRenderId,
-    localKey,
-    message,
-    etaSeconds,
-    etaLabel,
-  });
+  return NextResponse.json(finalResponse);
 }
