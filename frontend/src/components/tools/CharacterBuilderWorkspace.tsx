@@ -22,32 +22,14 @@ import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
-  ACCESSORY_OPTIONS,
-  AGE_RANGE_OPTIONS,
   AUTO_TRAIT_KEYS,
-  BODY_BUILD_OPTIONS,
   CHARACTER_BUILDER_STORAGE_KEY,
-  CHARACTER_CONSISTENCY_OPTIONS,
-  CHARACTER_OUTPUT_OPTIONS,
-  CHARACTER_QUALITY_OPTIONS,
-  CHARACTER_REFERENCE_STRENGTH_OPTIONS,
   createDefaultCharacterBuilderState,
-  DISTINCTIVE_FEATURE_OPTIONS,
-  EYE_COLOR_OPTIONS,
-  FACE_CUES_OPTIONS,
-  GENDER_PRESENTATION_OPTIONS,
-  HAIR_COLOR_OPTIONS,
-  HAIR_LENGTH_OPTIONS,
-  HAIRSTYLE_OPTIONS,
-  getAvailableCharacterFormatOptions,
   getCharacterFormatMultiplier,
   normalizeCharacterFormatMode,
   normalizeTraitsForSourceMode,
-  OUTFIT_STYLE_OPTIONS,
-  REALISM_STYLE_OPTIONS,
-  SKIN_TONE_OPTIONS,
 } from '@/lib/character-builder';
-import { runCharacterBuilderTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
+import { runCharacterBuilderTool, saveImageToLibrary } from '@/lib/api';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
@@ -80,6 +62,8 @@ import {
   StyleChoiceCard,
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
+import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks/useCharacterBuilderHistoricalResults';
+import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
   buildRecoveredRunFromJob,
@@ -164,152 +148,37 @@ export default function CharacterBuilderPage() {
     setAuthModalOpen(true);
   }, []);
 
-  const genderOptions = useMemo(
-    () => GENDER_PRESENTATION_OPTIONS.map((option) => ({ ...option, label: copy.options.gender[option.id as keyof typeof copy.options.gender] ?? option.label })),
-    [copy]
-  );
-  const ageOptions = useMemo(
-    () => AGE_RANGE_OPTIONS.map((option) => ({ ...option, label: copy.options.age[option.id as keyof typeof copy.options.age] ?? option.label })),
-    [copy]
-  );
-  const skinToneOptions = useMemo(
-    () => SKIN_TONE_OPTIONS.map((option) => ({ ...option, label: copy.options.skinTone[option.id as keyof typeof copy.options.skinTone] ?? option.label })),
-    [copy]
-  );
-  const faceCueOptions = useMemo(
-    () => FACE_CUES_OPTIONS.map((option) => ({ ...option, label: copy.options.faceCues[option.id as keyof typeof copy.options.faceCues] ?? option.label })),
-    [copy]
-  );
-  const hairColorOptions = useMemo(
-    () => HAIR_COLOR_OPTIONS.map((option) => ({ ...option, label: copy.options.hairColor[option.id as keyof typeof copy.options.hairColor] ?? option.label })),
-    [copy]
-  );
-  const hairLengthOptions = useMemo(
-    () => HAIR_LENGTH_OPTIONS.map((option) => ({ ...option, label: copy.options.hairLength[option.id as keyof typeof copy.options.hairLength] ?? option.label })),
-    [copy]
-  );
-  const hairstyleOptions = useMemo(
-    () => HAIRSTYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.hairstyle[option.id as keyof typeof copy.options.hairstyle] ?? option.label })),
-    [copy]
-  );
-  const eyeColorOptions = useMemo(
-    () => EYE_COLOR_OPTIONS.map((option) => ({ ...option, label: copy.options.eyeColor[option.id as keyof typeof copy.options.eyeColor] ?? option.label })),
-    [copy]
-  );
-  const bodyBuildOptions = useMemo(
-    () => BODY_BUILD_OPTIONS.map((option) => ({ ...option, label: copy.options.bodyBuild[option.id as keyof typeof copy.options.bodyBuild] ?? option.label })),
-    [copy]
-  );
-  const outfitOptions = useMemo(
-    () => OUTFIT_STYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.outfit[option.id as keyof typeof copy.options.outfit] ?? option.label })),
-    [copy]
-  );
-  const realismOptions = useMemo(
-    () => REALISM_STYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.realism[option.id as keyof typeof copy.options.realism] ?? option.label })),
-    [copy]
-  );
-  const accessoryOptions = useMemo(
-    () => ACCESSORY_OPTIONS.map((option) => ({ ...option, label: copy.options.accessories[option.id as keyof typeof copy.options.accessories] ?? option.label })),
-    [copy]
-  );
-  const distinctiveOptions = useMemo(
-    () => DISTINCTIVE_FEATURE_OPTIONS.map((option) => ({ ...option, label: copy.options.distinctive[option.id as keyof typeof copy.options.distinctive] ?? option.label })),
-    [copy]
-  );
-  const outputModeOptions = useMemo(
-    () =>
-      CHARACTER_OUTPUT_OPTIONS.map((option) => ({
-        ...option,
-        label: copy.options.outputMode[option.id].label,
-        description: copy.options.outputMode[option.id].description,
-      })),
-    [copy]
-  );
-  const consistencyOptions = useMemo(
-    () =>
-      CHARACTER_CONSISTENCY_OPTIONS.map((option) => ({
-        ...option,
-        label: copy.options.consistency[option.id].label,
-        description: copy.options.consistency[option.id].description,
-      })),
-    [copy]
-  );
-  const referenceStrengthOptions = useMemo(
-    () =>
-      CHARACTER_REFERENCE_STRENGTH_OPTIONS.map((option) => ({
-        ...option,
-        label: copy.options.referenceStrength[option.id].label,
-        description: copy.options.referenceStrength[option.id].description,
-      })),
-    [copy]
-  );
-  const qualityOptions = useMemo(
-    () =>
-      CHARACTER_QUALITY_OPTIONS.map((option) => ({
-        ...option,
-        label: copy.options.quality[option.id].label,
-        description: copy.options.quality[option.id].description,
-      })),
-    [copy]
-  );
-  const formatOptions = useMemo(
-    () =>
-      getAvailableCharacterFormatOptions(state.qualityMode).map((option) => ({
-        ...option,
-        label: getFormatDisplayLabel(copy, option.id, state.qualityMode),
-        description: copy.options.format[option.id].description,
-      })),
-    [copy, state.qualityMode]
-  );
   const {
-    data: historicalJobPages,
-    stableJobs: historicalJobs,
-    mutate: mutateHistoricalJobs,
-    setSize: setHistoricalSize,
-    isLoading: historicalJobsLoading,
-    isValidating: historicalJobsValidating,
-  } = useInfiniteJobs(18, { surface: 'character' });
-
+    genderOptions,
+    ageOptions,
+    skinToneOptions,
+    faceCueOptions,
+    hairColorOptions,
+    hairLengthOptions,
+    hairstyleOptions,
+    eyeColorOptions,
+    bodyBuildOptions,
+    outfitOptions,
+    realismOptions,
+    accessoryOptions,
+    distinctiveOptions,
+    outputModeOptions,
+    consistencyOptions,
+    referenceStrengthOptions,
+    qualityOptions,
+    outputModeLabelOptions,
+    qualityLabelOptions,
+    formatLabelOptions,
+  } = useCharacterBuilderOptions(copy, state.qualityMode);
   const flattenedResults = getFlattenedResults(state.runs);
-  const outputModeLabelOptions = useMemo(
-    () => outputModeOptions.map((option) => ({ id: option.id, label: option.label })),
-    [outputModeOptions]
-  );
-  const qualityLabelOptions = useMemo(
-    () => qualityOptions.map((option) => ({ id: option.id, label: option.label })),
-    [qualityOptions]
-  );
-  const formatLabelOptions = useMemo(
-    () => formatOptions.map((option) => ({ id: option.id, label: option.label })),
-    [formatOptions]
-  );
-  const localResultUrls = useMemo(
-    () => new Set(flattenedResults.map((result) => result.url).filter((value): value is string => Boolean(value))),
-    [flattenedResults]
-  );
-  const historicalResults = useMemo<HistoricalCharacterGalleryItem[]>(() => {
-    return historicalJobs.flatMap<HistoricalCharacterGalleryItem>((job) => {
-      const renderIds = Array.isArray(job.renderIds) ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0) : [];
-      if (!renderIds.length) return [];
-      const renderThumbUrls = Array.isArray(job.renderThumbUrls)
-        ? job.renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.length > 0)
-        : [];
-
-      return renderIds.reduce<HistoricalCharacterGalleryItem[]>((acc, imageUrl, index) => {
-        if (localResultUrls.has(imageUrl)) return acc;
-        acc.push({
-          id: `${job.jobId}:historical:${index + 1}`,
-          jobId: job.jobId,
-          imageUrl,
-          thumbUrl: renderThumbUrls[index] ?? imageUrl,
-          engineLabel: job.engineLabel,
-          createdAt: job.createdAt,
-          prompt: job.prompt ?? null,
-        });
-        return acc;
-      }, []);
-    });
-  }, [historicalJobs, localResultUrls]);
+  const {
+    historicalResults,
+    historicalHasMore,
+    historicalIsFetchingMore,
+    historicalJobsLoading,
+    loadMoreHistoricalResults,
+    mutateHistoricalJobs,
+  } = useCharacterBuilderHistoricalResults(flattenedResults);
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
@@ -353,14 +222,6 @@ export default function CharacterBuilderPage() {
       ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
       : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
-  const historicalLastPage = historicalJobPages?.[historicalJobPages.length - 1];
-  const historicalHasMore = Boolean(historicalLastPage?.nextCursor);
-  const historicalIsFetchingMore = historicalJobsValidating && Boolean(historicalJobPages?.length);
-  const loadMoreHistoricalResults = useCallback(() => {
-    if (!historicalHasMore || historicalJobsLoading || historicalIsFetchingMore) return;
-    void setHistoricalSize((current) => current + 1);
-  }, [historicalHasMore, historicalIsFetchingMore, historicalJobsLoading, setHistoricalSize]);
-
   useEffect(() => {
     const persisted = readPersistedState();
     if (persisted) {
