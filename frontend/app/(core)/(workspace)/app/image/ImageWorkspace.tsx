@@ -16,7 +16,6 @@ import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/comp
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
-import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import type {
   CharacterReferenceSelection,
   ImageGenerationMode,
@@ -61,6 +60,7 @@ import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { countResolvedVisualSlots } from '@/lib/group-progress';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
 import { useImageWorkspaceDesktopLayout } from './_hooks/useImageWorkspaceDesktopLayout';
+import { useImagePreviewActions } from './_hooks/useImagePreviewActions';
 import { useImageReferenceSlots } from './_hooks/useImageReferenceSlots';
 import {
   createCharacterReferenceSlot,
@@ -91,10 +91,8 @@ import {
   IMAGE_COMPOSER_STORAGE_VERSION,
   MAX_REFERENCE_SLOTS,
   QUICK_IMAGE_COUNT_OPTIONS,
-  type AssetsResponse,
   type HistoryEntry,
   type ImageEngineOption,
-  type LibraryAsset,
   type PersistedImageComposerState,
   type ReferenceSlotValue,
   type PricingEstimateResponse,
@@ -152,9 +150,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const isDesktopLayout = useImageWorkspaceDesktopLayout();
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
-  const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [
@@ -1263,24 +1258,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     ]
   );
 
-  const handleCopy = useCallback((url: string) => {
-    if (!navigator?.clipboard) {
-      setCopiedUrl(url);
-      return;
-    }
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        setCopiedUrl(url);
-        setTimeout(() => setCopiedUrl(null), 2000);
-      })
-      .catch(() => setCopiedUrl(null));
-  }, []);
-
-  const handleDownload = useCallback((url: string) => {
-    triggerAppDownload(url, suggestDownloadFilename(url, 'image-generation'));
-  }, []);
-
   const historyEntries = combinedHistory;
 
   const handleSelectGalleryGroup = useCallback(
@@ -1413,31 +1390,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     return historyEntries[0];
   })();
   const canUseWorkspace = Boolean(selectedEngine && selectedEngineCaps);
-  const selectedPreviewUrl = previewEntry?.images?.[selectedPreviewImageIndex]?.url ?? null;
-  const savedAssetKey =
-    canUseWorkspace && selectedPreviewUrl
-      ? `/api/user-assets?limit=1&source=generated&originUrl=${encodeURIComponent(selectedPreviewUrl)}`
-      : null;
   const {
-    data: savedAssets,
-    mutate: mutateSavedAssets,
-  } = useSWR(savedAssetKey, async (url: string) => {
-    const response = await authFetch(url);
-    const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
-    if (!response.ok || !payload?.ok) {
-      let message: string | undefined;
-      if (payload && typeof payload === 'object' && 'error' in payload) {
-        const maybeError = (payload as { error?: unknown }).error;
-        if (typeof maybeError === 'string') {
-          message = maybeError;
-        }
-      }
-      throw new Error(message ?? 'Failed to load library');
-    }
-    return payload.assets;
+    copiedUrl,
+    handleAddToLibrary,
+    handleCopy,
+    handleDownload,
+    handleRemoveFromLibrary,
+    isInLibrary,
+    isRemovingFromLibrary,
+    isSavingToLibrary,
+  } = useImagePreviewActions({
+    canUseWorkspace,
+    genericError: resolvedCopy.errors.generic,
+    previewEntry,
+    removedFromLibraryMessage: t(
+      'workspace.image.messages.removedFromLibrary',
+      DEFAULT_COPY.messages.removedFromLibrary
+    ) as string,
+    savedToLibraryMessage: t(
+      'workspace.image.messages.savedToLibrary',
+      DEFAULT_COPY.messages.savedToLibrary
+    ) as string,
+    selectedPreviewImageIndex,
+    setError,
+    setStatusMessage,
   });
-  const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
-  const isInLibrary = Boolean(savedAsset?.id);
 
   const inProgressMessage = useMemo(() => {
     const count = pendingGroups.length;
@@ -1628,64 +1605,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
                 onDownload={handleDownload}
                 onCopyLink={handleCopy}
-                onAddToLibrary={(url) => {
-                  if (!previewEntry?.id) return;
-                  if (isSavingToLibrary) return;
-                  if (isRemovingFromLibrary) return;
-                  setIsSavingToLibrary(true);
-                  setError(null);
-                  setStatusMessage(null);
-                  void saveImageToLibrary({
-                    url,
-                    jobId: previewEntry.jobId ?? previewEntry.id,
-                    label: previewEntry.prompt ?? undefined,
-                  })
-                    .then(() => {
-                      const savedMessage = t(
-                        'workspace.image.messages.savedToLibrary',
-                        DEFAULT_COPY.messages.savedToLibrary
-                      ) as string;
-                      setStatusMessage(savedMessage);
-                      void mutateSavedAssets();
-                    })
-                    .catch((error) => {
-                      setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
-                    })
-                    .finally(() => {
-                      setIsSavingToLibrary(false);
-                    });
-                }}
-                onRemoveFromLibrary={() => {
-                  if (!savedAsset?.id) return;
-                  if (isRemovingFromLibrary) return;
-                  if (isSavingToLibrary) return;
-                  setIsRemovingFromLibrary(true);
-                  setError(null);
-                  setStatusMessage(null);
-                  void authFetch('/api/user-assets', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: savedAsset.id }),
-                  })
-                    .then(async (response) => {
-                      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-                      if (!response.ok || !payload?.ok) {
-                        throw new Error(payload?.error ?? 'Failed to remove from library');
-                      }
-                      const removedMessage = t(
-                        'workspace.image.messages.removedFromLibrary',
-                        DEFAULT_COPY.messages.removedFromLibrary
-                      ) as string;
-                      setStatusMessage(removedMessage);
-                      void mutateSavedAssets();
-                    })
-                    .catch((error) => {
-                      setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
-                    })
-                    .finally(() => {
-                      setIsRemovingFromLibrary(false);
-                    });
-                }}
+                onAddToLibrary={handleAddToLibrary}
+                onRemoveFromLibrary={handleRemoveFromLibrary}
                 isInLibrary={isInLibrary}
                 isSavingToLibrary={isSavingToLibrary}
                 isRemovingFromLibrary={isRemovingFromLibrary}
