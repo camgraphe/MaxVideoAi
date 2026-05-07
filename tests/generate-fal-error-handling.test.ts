@@ -15,13 +15,15 @@ import {
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/fal-error-handling.ts');
+const submissionPath = join(root, 'frontend/app/api/generate/_lib/fal-submission.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
+const submissionSource = existsSync(submissionPath) ? readFileSync(submissionPath, 'utf8') : '';
 
 test('generate route delegates Fal error handling helpers', () => {
   assert.ok(existsSync(helperPath), 'Fal error helpers should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/fal-error-handling'/);
+  assert.match(submissionSource || routeSource, /from '\.\/fal-error-handling'/);
 
   for (const implementationName of [
     'normalizeFalErrorValue',
