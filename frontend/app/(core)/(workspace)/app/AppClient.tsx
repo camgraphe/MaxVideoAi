@@ -78,7 +78,6 @@ import {
 } from './_lib/workspace-copy';
 import {
   DEFAULT_PROMPT,
-  DESKTOP_RAIL_MIN_WIDTH,
 } from './_lib/workspace-client-helpers';
 import {
   createKlingElement,
@@ -107,6 +106,7 @@ import {
 } from './_lib/workspace-input-schema';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
+import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
@@ -307,24 +307,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const [viewerTarget, setViewerTarget] = useState<
     { kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | { kind: 'group'; group: VideoGroup } | null
   >(null);
-  const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`).matches;
-  });
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const mediaQuery = window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`);
-    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
-      setIsDesktopLayout(event.matches);
-    };
-    handleChange(mediaQuery);
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
-  }, []);
+  const isDesktopLayout = useWorkspaceDesktopLayout();
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
   const {
