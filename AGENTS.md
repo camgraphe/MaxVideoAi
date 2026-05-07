@@ -104,6 +104,7 @@ For the authenticated workspace route, keep `frontend/app/(core)/(workspace)/app
 - Keep notice timers, onboarding route redirects, and preview/viewer composition in route-local hooks under `_hooks/`.
 - Keep composer engine/mode orchestration in `_hooks/useWorkspaceEngineModeState.ts`; `useWorkspaceComposerState.ts` should focus on composer input field state and field handlers.
 - Keep wallet balance preflight in `_hooks/useWorkspaceWalletPreflight.ts`; `useWorkspaceGenerationRunner.ts` should focus on generation submission, local render state, accepted results, and polling.
+- Keep workspace asset library, reference field assets, and Kling element assets split across `_hooks/useWorkspaceAssetLibrary.ts`, `_hooks/useWorkspaceReferenceAssets.ts`, and `_hooks/useWorkspaceKlingElementAssets.ts`; `useWorkspaceAssets.ts` should stay an orchestrator.
 - Keep composer JSX in `_components/WorkspaceComposerSurface.tsx` and shared modal wiring in `_components/WorkspaceRuntimeModals.tsx`.
 - Add or update contract tests in `tests/workspace-*-contract.test.ts` when moving workspace responsibilities, so the architecture stays explicit.
 
