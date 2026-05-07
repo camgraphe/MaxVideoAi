@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from 'next/link';
-import useSWR from 'swr';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
 import {
   ArrowLeft,
@@ -45,10 +44,6 @@ import {
   DEFAULT_UPSCALE_VIDEO_ENGINE_ID,
   listUpscaleToolEngines,
 } from '@/config/tools-upscale-engines';
-import {
-  buildUpscalePricingPreview,
-  type UpscaleVideoPricingMetadata,
-} from '@/lib/tools-upscale';
 import type {
   UpscaleMediaType,
   UpscaleMode,
@@ -69,7 +64,6 @@ import {
   mediaTypeFromMime,
   parseRecentImageVariantIndex,
   PREVIEW_ZOOM_OPTIONS,
-  readVideoPricingMetadata,
   resolveGeneratedImageSource,
   resolveRecentUpscaleJobFromGroup,
   resolveRecentUpscaleMedia,
@@ -81,8 +75,8 @@ import {
   uploadSourceFile,
 } from './upscale/_lib/upscale-workspace-helpers';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
+import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
 import type {
-  BillingProductResponse,
   JobDetailResponse,
   PreviewMode,
   PreviewZoom,
@@ -141,8 +135,6 @@ export default function UpscaleWorkspace() {
   const [result, setResult] = useState<UpscaleToolResponse | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [videoMetadata, setVideoMetadata] = useState<UpscaleVideoPricingMetadata | null>(null);
-  const [videoMetadataLoading, setVideoMetadataLoading] = useState(false);
   const [comparePosition, setComparePosition] = useState(50);
   const [compareDragging, setCompareDragging] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('source');
@@ -172,60 +164,21 @@ export default function UpscaleWorkspace() {
 
   const engines = useMemo(() => listUpscaleToolEngines(mediaType), [mediaType]);
   const engine = useMemo(() => engines.find((entry) => entry.id === engineId) ?? engines[0], [engineId, engines]);
-  const billingProductKey = engine?.billingProductKey ?? null;
   const {
-    data: billingProductData,
-    error: billingProductError,
-    isLoading: billingProductLoading,
-  } = useSWR(
-    billingProductKey ? `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}` : null,
-    async (url: string) => {
-      const response = await authFetch(url);
-      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
-      if (!response.ok || !payload?.ok || !payload.product) {
-        throw new Error(payload?.error ?? copy.priceUnavailable);
-      }
-      return payload.product;
-    },
-    { keepPreviousData: true }
-  );
+    priceHint,
+    priceLabel,
+  } = useUpscalePricingPreview({
+    copy,
+    engine,
+    locale,
+    mediaType,
+    mediaUrl,
+    mode,
+    source,
+    targetResolution,
+    upscaleFactor,
+  });
   const output = result?.output ?? null;
-  const pricePreview = useMemo(
-    () =>
-      buildUpscalePricingPreview({
-        mediaType,
-        engineId: engine.id,
-        unitPriceCents: billingProductData?.unitPriceCents ?? null,
-        currency: billingProductData?.currency ?? 'USD',
-        imageWidth: mediaType === 'image' ? source?.width ?? null : null,
-        imageHeight: mediaType === 'image' ? source?.height ?? null : null,
-        videoMetadata: mediaType === 'video' ? videoMetadata : null,
-        targetResolution: mode === 'target' ? targetResolution : null,
-        upscaleFactor,
-      }),
-    [
-      billingProductData?.currency,
-      billingProductData?.unitPriceCents,
-      engine.id,
-      mediaType,
-      mode,
-      source?.height,
-      source?.width,
-      targetResolution,
-      upscaleFactor,
-      videoMetadata,
-    ]
-  );
-  const priceLabel = formatCurrency(pricePreview.totalCents, pricePreview.currency, locale);
-  const priceHint = billingProductLoading
-    ? copy.priceLoading
-    : billingProductError
-      ? copy.priceUnavailable
-      : mediaType === 'video' && videoMetadataLoading
-        ? copy.priceVideoLoading
-        : mediaType === 'video' && !pricePreview.ready
-          ? copy.priceVideoMissing
-          : copy.priceReady;
   const canRun = Boolean(user && mediaUrl.trim() && engine && !running && !uploading);
   const hasResult = Boolean(output?.url);
   const hasSourcePreview = Boolean(mediaUrl.trim());
@@ -276,33 +229,6 @@ export default function UpscaleWorkspace() {
     }
     return null;
   }, [recentGeneratedImageJobs]);
-
-  useEffect(() => {
-    const url = mediaUrl.trim();
-    if (mediaType !== 'video' || !url) {
-      setVideoMetadata(null);
-      setVideoMetadataLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setVideoMetadata(null);
-    setVideoMetadataLoading(true);
-    readVideoPricingMetadata(url)
-      .then((metadata) => {
-        if (!cancelled) setVideoMetadata(metadata);
-      })
-      .catch(() => {
-        if (!cancelled) setVideoMetadata(null);
-      })
-      .finally(() => {
-        if (!cancelled) setVideoMetadataLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [mediaType, mediaUrl]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !pendingRecentJobKey) return undefined;
@@ -554,7 +480,6 @@ export default function UpscaleWorkspace() {
     setUpscaleFactor(resolved.defaultUpscaleFactor);
     setTargetResolution(resolved.defaultTargetResolution ?? '1080p');
     setOutputFormat(resolved.defaultOutputFormat);
-    setVideoMetadata(null);
   }
 
   async function resolveRecentSelectionWithSource(group: GroupSummary): Promise<RecentUpscaleMedia | null> {
