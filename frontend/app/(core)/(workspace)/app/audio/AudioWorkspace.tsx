@@ -22,7 +22,6 @@ import {
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
-import { runAudioGenerate } from '@/lib/api';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -61,6 +60,7 @@ import AudioLatestRendersRail from './AudioLatestRendersRail';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
 import { AudioModePicker, AudioSelectControl, ToggleRow } from './_components/audio-workspace-controls';
 import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
+import { useAudioGenerationRunner } from './_hooks/useAudioGenerationRunner';
 import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
 import {
   AUDIO_VOICE_GENDER_VALUES,
@@ -541,84 +541,40 @@ export default function AudioWorkspace() {
     }
   }, []);
 
-  const handleGenerate = useCallback(async () => {
-    if (!canGenerate) return;
-    setIsGenerating(true);
-    setNotice(null);
-    try {
-      const response = await runAudioGenerate({
-        sourceVideoUrl: sourceVideo?.url ?? undefined,
-        sourceJobId: sourceVideo?.jobId ?? undefined,
-        pack,
-        prompt: !showVoiceFields ? prompt.trim() : undefined,
-        mood: showMood ? mood : undefined,
-        intensity: showIntensity ? intensity : undefined,
-        script: packConfig.requiresScript ? script.trim() : undefined,
-        voiceSampleUrl: showVoiceFields ? voiceSample?.url : undefined,
-        voiceGender: showVoiceFields ? voiceGender : undefined,
-        voiceProfile: showVoiceFields ? voiceProfile : undefined,
-        voiceDelivery: showVoiceFields ? voiceDelivery : undefined,
-        language: showVoiceFields ? language : undefined,
-        durationSec: pack === 'music_only' && !sourceVideo?.url ? manualDurationSec : undefined,
-        musicEnabled: showMusicToggle ? musicEnabled : undefined,
-        exportAudioFile: showExportToggle ? exportAudioFile : undefined,
-        locale,
-      });
-      const nextResult: AudioResultState = {
-        jobId: response.jobId,
-        videoUrl: response.videoUrl,
-        audioUrl: response.audioUrl ?? null,
-        thumbUrl: response.thumbUrl,
-        outputKind: response.outputKind,
-      };
-      setResult(nextResult);
-      setActiveJob({
-        jobId: response.jobId,
-        status: response.status,
-        progress: response.progress,
-        message: copy.messages.processing.complete,
-        videoUrl: response.videoUrl,
-        audioUrl: response.audioUrl ?? null,
-        thumbUrl: response.thumbUrl,
-        outputKind: response.outputKind,
-      });
-      router.replace(`${pathname}?job=${encodeURIComponent(response.jobId)}`, { scroll: false });
-      setNotice(copy.messages.renderComplete);
-    } catch (error) {
-      setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [
+  const handleGeneratedJobId = useCallback((jobId: string) => {
+    router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
+  }, [pathname, router]);
+
+  const handleGenerate = useAudioGenerationRunner({
     canGenerate,
+    copy,
     exportAudioFile,
     intensity,
     language,
+    locale,
     manualDurationSec,
     mood,
     musicEnabled,
+    onGeneratedJobId: handleGeneratedJobId,
     pack,
-    packConfig.requiresScript,
     prompt,
-    pathname,
-    router,
+    requiresScript: packConfig.requiresScript,
     script,
+    setActiveJob,
+    setIsGenerating,
+    setNotice,
+    setResult,
     showExportToggle,
     showIntensity,
     showMood,
     showMusicToggle,
     showVoiceFields,
-    sourceVideo?.jobId,
-    sourceVideo?.url,
-    copy.messages.generationFailed,
-    copy.messages.processing.complete,
-    copy.messages.renderComplete,
+    sourceVideo,
     voiceDelivery,
     voiceGender,
     voiceProfile,
-    voiceSample?.url,
-    locale,
-  ]);
+    voiceSample,
+  });
 
   const handleSelectLatestJob = useCallback(
     (jobId: string) => {

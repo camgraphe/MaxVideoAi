@@ -12,6 +12,7 @@ const helpersPath = join(audioDir, '_lib/audio-workspace-helpers.ts');
 const typesPath = join(audioDir, '_lib/audio-workspace-types.ts');
 const activeJobHookPath = join(audioDir, '_hooks/useAudioActiveJobPolling.ts');
 const generatedVideosHookPath = join(audioDir, '_hooks/useAudioGeneratedVideos.ts');
+const generationRunnerHookPath = join(audioDir, '_hooks/useAudioGenerationRunner.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -22,11 +23,13 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(typesPath), 'audio local contracts should live in a route-local type module');
   assert.ok(existsSync(activeJobHookPath), 'active audio job polling should live in a route-local hook');
   assert.ok(existsSync(generatedVideosHookPath), 'generated video loading should live in a route-local hook');
+  assert.ok(existsSync(generationRunnerHookPath), 'audio generation runner should live in a route-local hook');
 
   assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-controls'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generated-video-picker'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioActiveJobPolling'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGeneratedVideos'/);
+  assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGenerationRunner'/);
   assert.match(workspaceSource, /from '\.\/_lib\/audio-workspace-helpers'/);
   assert.match(workspaceSource, /from '\.\/_lib\/audio-workspace-types'/);
 });
@@ -43,9 +46,11 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /copy\.picker\.audioBadge/, 'generated video picker card UI belongs in _components/audio-generated-video-picker.tsx');
   assert.doesNotMatch(workspaceSource, /getJobStatus/, 'active job polling belongs in useAudioActiveJobPolling');
   assert.doesNotMatch(workspaceSource, /surface=video&limit=60/, 'generated video loading belongs in useAudioGeneratedVideos');
+  assert.doesNotMatch(workspaceSource, /runAudioGenerate/, 'audio generation submission belongs in useAudioGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /resolveUiErrorMessage\(error, copy\.messages\.generationFailed/, 'generation failure mapping belongs in useAudioGenerationRunner');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1075, `AudioWorkspace should stay below 1075 lines after runtime hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1030, `AudioWorkspace should stay below 1030 lines after generation runner extraction, got ${lineCount}`);
 });
 
 test('audio helper modules expose the expected workspace contract', () => {
@@ -55,6 +60,7 @@ test('audio helper modules expose the expected workspace contract', () => {
   const typesSource = readFileSync(typesPath, 'utf8');
   const activeJobHookSource = readFileSync(activeJobHookPath, 'utf8');
   const generatedVideosHookSource = readFileSync(generatedVideosHookPath, 'utf8');
+  const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
 
   for (const exportName of [
     'AudioModePicker',
@@ -73,6 +79,9 @@ test('audio helper modules expose the expected workspace contract', () => {
   assert.match(activeJobHookSource, /getJobStatus/, 'active job polling hook should poll job status');
   assert.match(generatedVideosHookSource, /export function useAudioGeneratedVideos/, 'generated videos hook should be exported');
   assert.match(generatedVideosHookSource, /surface=video&limit=60/, 'generated videos hook should load video jobs');
+  assert.match(generationRunnerHookSource, /export function useAudioGenerationRunner/, 'generation runner hook should be exported');
+  assert.match(generationRunnerHookSource, /runAudioGenerate/, 'generation runner hook should submit generation requests');
+  assert.match(generationRunnerHookSource, /resolveUiErrorMessage/, 'generation runner hook should map generation failures');
 
   for (const exportName of [
     'DEFAULT_PACK',
