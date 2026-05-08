@@ -12,10 +12,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
-import {
-  getExampleModelLanding,
-  getHubExamplesFaq,
-} from '@/lib/examples/modelLanding';
+import { getExampleModelLanding, getHubExamplesFaq } from '@/lib/examples/modelLanding';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import {
   ALLOWED_QUERY_KEYS,
@@ -42,7 +39,6 @@ import {
   formatModelSlugLabel,
   formatPromptExcerpt,
   getAspectRatioStyle,
-  getEngineAccentOutlineStyle,
   getPlaceholderPoster,
   getSort,
   getVideoMimeType,
@@ -53,14 +49,14 @@ import {
   resolveEngineLabel,
   resolveEngineLinkId,
   resolveFilterDescriptor,
-  serializeJsonLd,
   toAbsoluteUrl,
   type EngineFilterOption,
 } from './_lib/examples-route-utils';
-import {
-  getExampleFamilyDescriptor,
-} from '@/lib/model-families';
+import { getExampleFamilyDescriptor } from '@/lib/model-families';
+import { ExamplesEngineFilterNav } from './_components/examples-engine-filter-nav';
+import { ExamplesJsonLdScripts } from './_components/examples-jsonld-scripts';
 import { ExamplesMainVideoFeature } from './_components/examples-main-video-feature';
+import { ExamplesIntroHero, ExamplesNextStepsSection } from './_components/examples-route-sections';
 import {
   buildExamplesNextStepLinks,
   getExamplesBrowseByModelLabel,
@@ -594,59 +590,13 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
 
   return (
     <>
-      {engineFilterOptions.length ? (
-        <div className="sticky top-16 z-[35] -mt-px border-b border-hairline bg-surface">
-          <div className="container-page max-w-6xl">
-            <nav
-              aria-label={browseByModelLabel}
-              className="flex flex-col gap-2 py-2 lg:flex-row lg:items-center lg:gap-4 lg:py-2"
-            >
-              <span className="shrink-0 pl-1 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                {browseByModelLabel}
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(5.75rem,1fr))] gap-1 rounded-xl bg-surface-2/70 p-1 sm:grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] lg:grid-flow-col lg:auto-cols-fr lg:grid-cols-none">
-                  <Link
-                    href={buildEngineFilterHref(null)}
-                    scroll={false}
-                    prefetch={false}
-                    className={clsx(
-                      'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
-                      selectedEngine
-                        ? 'text-text-secondary hover:bg-surface hover:text-text-primary'
-                        : 'bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
-                    )}
-                  >
-                    {engineFilterAllLabel}
-                  </Link>
-                  {engineFilterOptions.map((engine) => {
-                    const isActive = selectedEngine === engine.id;
-                    const activeAccentStyle = isActive ? getEngineAccentOutlineStyle(engine.brandId) : undefined;
-                    return (
-                      <Link
-                        key={engine.id}
-                        href={buildEngineFilterHref(engine.id)}
-                        scroll={false}
-                        prefetch={false}
-                        className={clsx(
-                          'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
-                          isActive
-                            ? 'bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
-                            : 'text-text-secondary hover:bg-surface hover:text-text-primary'
-                        )}
-                        style={activeAccentStyle}
-                      >
-                        {engine.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </nav>
-          </div>
-        </div>
-      ) : null}
+      <ExamplesEngineFilterNav
+        browseByModelLabel={browseByModelLabel}
+        engineFilterAllLabel={engineFilterAllLabel}
+        engineFilterOptions={engineFilterOptions}
+        getEngineFilterHref={buildEngineFilterHref}
+        selectedEngine={selectedEngine}
+      />
 
       <main
         className={clsx(
@@ -655,13 +605,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
         )}
       >
         <div className="stack-gap-lg">
-          <section className="halo-hero stack-gap-sm text-center sm:stack-gap-md">
-            <header className="mx-auto max-w-3xl stack-gap-sm text-center">
-              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
-              <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle}</p>
-              <p className="mx-auto max-w-2xl text-sm leading-relaxed text-text-secondary/90">{heroLead}</p>
-            </header>
-          </section>
+          <ExamplesIntroHero heroLead={heroLead} heroSubtitle={heroSubtitle} heroTitle={heroTitle} />
 
           {mainVideo && mainVideoContentUrl ? (
             <ExamplesMainVideoFeature
@@ -814,22 +758,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
             </section>
           )}
 
-          <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-            <h2 className="text-lg font-semibold text-text-primary">
-              {locale === 'fr'
-                ? 'Aller plus loin'
-                : locale === 'es'
-                  ? 'Siguientes pasos'
-                  : 'Next steps'}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              {nextStepLinks.map((item) => (
-                <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </section>
+          <ExamplesNextStepsSection locale={appLocale} nextStepLinks={nextStepLinks} />
 
           {faqBlock.items.length ? (
             <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
@@ -847,27 +776,11 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
 
         </div>
 
-        {breadcrumbJsonLd ? (
-          <script
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
-          />
-        ) : null}
-        {itemListJson ? (
-          <script
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJson) }}
-          />
-        ) : null}
-        {faqJsonLd ? (
-          <script
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
-          />
-        ) : null}
+        <ExamplesJsonLdScripts
+          breadcrumbJsonLd={breadcrumbJsonLd}
+          faqJsonLd={faqJsonLd}
+          itemListJson={itemListJson}
+        />
       </main>
     </>
   );
