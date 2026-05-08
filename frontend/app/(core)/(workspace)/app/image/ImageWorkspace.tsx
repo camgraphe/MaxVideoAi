@@ -9,25 +9,22 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { GalleryRail } from '@/components/GalleryRail';
 import { Button } from '@/components/ui/Button';
-import { EngineSelect } from '@/components/ui/EngineSelect';
-import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
-import { ImageSettingsBar } from '@/components/ImageSettingsBar';
-import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
+import type { AssetFieldConfig, ComposerAttachment } from '@/components/Composer';
 import { saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
-import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
+import type { ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { FEATURES } from '@/content/feature-flags';
 import { clampRequestedImageCount } from '@/lib/image/inputSchema';
 import {
-  GPT_IMAGE_2_SIZE_CONSTRAINTS,
   parseGptImage2SizeKey,
 } from '@/lib/image/gptImage2';
 import { ImageAuthGateModal } from './_components/ImageAuthGateModal';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
+import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
 import { useImageGallerySelection } from './_hooks/useImageGallerySelection';
 import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
 import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
@@ -528,235 +525,90 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
         <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
           <main className="flex w-full flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-4 sm:p-6">
-            <div className="stack-gap-lg">
-              <ImageCompositePreviewDock
-                entry={compositePreviewEntry}
-                selectedIndex={selectedPreviewImageIndex}
-                onSelectIndex={setSelectedPreviewImageIndex}
-                onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
-                onDownload={handleDownload}
-                onCopyLink={handleCopy}
-                onAddToLibrary={handleAddToLibrary}
-                onRemoveFromLibrary={handleRemoveFromLibrary}
-                isInLibrary={isInLibrary}
-                isSavingToLibrary={isSavingToLibrary}
-                isRemovingFromLibrary={isRemovingFromLibrary}
-                copiedUrl={copiedUrl}
-                showTitle={false}
-                engineSettings={
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
-                  <EngineSelect
-                    engines={engineCapsList}
-                    engineId={selectedEngine.id}
-                    onEngineChange={(nextId) => setEngineId(nextId)}
-                    mode={mode}
-                    onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
-                    modeOptions={['t2i', 'i2i']}
-                    modeLabelOverrides={{
-                      t2i: resolvedCopy.modeTabs.generate,
-                      i2i: resolvedCopy.modeTabs.edit,
-                    }}
-                    showModeSelect={false}
-                    modeLayout="stacked"
-                    showBillingNote={false}
-                    variant="bar"
-                    className="min-w-0 flex-1"
-                  />
-                  </div>
-                }
-              />
-
-              <form onSubmit={handleRun} className="space-y-4">
-                {inProgressMessage ? (
-                  <p
-                    role="status"
-                    aria-live="polite"
-                    className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
-                  >
-                    {inProgressMessage}
-                  </p>
-                ) : statusMessage ? (
-                  <p
-                    role="status"
-                    aria-live="polite"
-                    className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
-                  >
-                    {statusMessage}
-                  </p>
-                ) : null}
-
-                <Composer
-                  engine={selectedEngineCaps}
-                  prompt={prompt}
-                  onPromptChange={setPrompt}
-                  price={estimatedCostAmount}
-                  currency={estimatedCostCurrency}
-                  isLoading={false}
-                  error={composerError ?? undefined}
-                  promptField={{
-                    id: 'prompt',
-                    type: 'text',
-                    label: resolvedCopy.composer.promptLabel,
-                  }}
-                  promptRequired
-                  promptPlaceholder={resolvedCopy.composer.promptPlaceholder}
-                  promptPlaceholderWithAsset={
-                    resolvedCopy.composer.promptPlaceholderWithImage ?? resolvedCopy.composer.promptPlaceholder
-                  }
-                  assetFields={referenceAssetFields}
-                  assets={composerReferenceAssets}
-                  onAssetAdd={(_, file, slotIndex = 0) => {
-                    void handleReferenceFile(slotIndex, file);
-                  }}
-                  onAssetRemove={(_, index) => handleRemoveReferenceSlot(index)}
-                  onAssetUrlSelect={(_, url, slotIndex) => handleReferenceUrl(slotIndex, url, 'paste')}
-                  onOpenLibrary={(_, index) => openLibraryForSlot(index)}
-                  onNotice={setError}
-                  settingsBar={
-                    <ImageSettingsBar
-                      numImages={
-                        showNumImagesControl
-                          ? {
-                              value: numImages,
-                              options: imageCountOptions,
-                              onChange: setNumImagesPreset,
-                            }
-                          : undefined
-                      }
-                      aspectRatio={
-                        showAspectRatioControl
-                          ? {
-                              value: aspectRatio ?? String(aspectRatioSelectOptions[0]?.value ?? ''),
-                              options: aspectRatioSelectOptions,
-                              onChange: setAspectRatio,
-                            }
-                          : undefined
-                      }
-                      resolution={
-                        showResolutionControl
-                          ? {
-                              value: resolution ?? String(resolutionSelectOptions[0]?.value ?? ''),
-                              options: resolutionSelectOptions,
-                              onChange: setResolutionPreset,
-                              disabled: isResolutionLocked,
-                            }
-                          : undefined
-                      }
-                      quality={
-                        showQualityControl
-                          ? {
-                              value: quality ?? String(qualitySelectOptions[0]?.value ?? ''),
-                              options: qualitySelectOptions,
-                              onChange: setQuality,
-                            }
-                          : undefined
-                      }
-                      outputFormat={
-                        showOutputFormatControl
-                          ? {
-                              value: outputFormat ?? String(outputFormatSelectOptions[0]?.value ?? ''),
-                              options: outputFormatSelectOptions,
-                              onChange: setOutputFormat,
-                            }
-                          : undefined
-                      }
-                    />
-                  }
-                  onGenerate={() => {
-                    void handleRun();
-                  }}
-                  generateLabel={resolvedCopy.runButton.idle}
-                  generateLoadingLabel={resolvedCopy.runButton.running}
-                  afterAssets={
-                    canCollapseReferenceSlots ? (
-                      <div className="flex justify-center">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setAreReferenceSlotsExpanded((previous) => !previous)}
-                          className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
-                        >
-                          {referenceToggleLabel}
-                        </Button>
-                      </div>
-                    ) : null
-                  }
-                  extraFields={
-                    <div className="space-y-6">
-                      <ImageAdvancedSettings
-                        title={advancedSettingsTitle}
-                        seed={
-                          showSeedControl
-                            ? {
-                                label: resolvedCopy.composer.seedLabel,
-                                placeholder: resolvedCopy.composer.seedPlaceholder,
-                                value: seed,
-                                onChange: setSeed,
-                              }
-                            : undefined
-                        }
-                        thinkingLevel={
-                          showThinkingLevelControl
-                            ? {
-                                label: resolvedCopy.composer.thinkingLevelLabel,
-                                value: thinkingLevel ?? String(thinkingLevelSelectOptions[0]?.value ?? ''),
-                                options: thinkingLevelSelectOptions,
-                                onChange: setThinkingLevel,
-                            }
-                            : undefined
-                        }
-                        customImageSize={
-                          showCustomImageSizeControl
-                            ? {
-                                widthLabel: resolvedCopy.composer.customWidthLabel,
-                                heightLabel: resolvedCopy.composer.customHeightLabel,
-                                widthValue: customImageWidth,
-                                heightValue: customImageHeight,
-                                min: 16,
-                                max: GPT_IMAGE_2_SIZE_CONSTRAINTS.maxEdge,
-                                step: GPT_IMAGE_2_SIZE_CONSTRAINTS.multipleOf,
-                                onWidthChange: setCustomImageWidth,
-                                onHeightChange: setCustomImageHeight,
-                              }
-                            : undefined
-                        }
-                        maskUrl={
-                          maskUrlField
-                            ? {
-                                label: resolvedCopy.composer.maskUrlLabel,
-                                placeholder: resolvedCopy.composer.maskUrlPlaceholder,
-                                value: maskUrl,
-                                onChange: setMaskUrl,
-                              }
-                            : undefined
-                        }
-                        enableWebSearch={
-                          showEnableWebSearchControl
-                            ? {
-                                label: resolvedCopy.composer.enableWebSearchLabel,
-                                value: enableWebSearch,
-                                options: booleanSelectOptions,
-                                onChange: setEnableWebSearch,
-                              }
-                            : undefined
-                        }
-                        limitGenerations={
-                          showLimitGenerationsControl
-                            ? {
-                                label: resolvedCopy.composer.limitGenerationsLabel,
-                                value: limitGenerations,
-                                options: booleanSelectOptions,
-                                onChange: setLimitGenerations,
-                              }
-                            : undefined
-                        }
-                      />
-                    </div>
-                  }
-                />
-              </form>
-            </div>
+            <ImageWorkspaceComposerSurface
+              advancedSettingsTitle={advancedSettingsTitle}
+              aspectRatio={aspectRatio}
+              aspectRatioSelectOptions={aspectRatioSelectOptions}
+              booleanSelectOptions={booleanSelectOptions}
+              canCollapseReferenceSlots={canCollapseReferenceSlots}
+              composerError={composerError}
+              composerReferenceAssets={composerReferenceAssets}
+              compositePreviewEntry={compositePreviewEntry}
+              copiedUrl={copiedUrl}
+              currency={estimatedCostCurrency}
+              customImageHeight={customImageHeight}
+              customImageWidth={customImageWidth}
+              enableWebSearch={enableWebSearch}
+              engineCapsList={engineCapsList}
+              estimatedCostAmount={estimatedCostAmount}
+              handleAddToLibrary={handleAddToLibrary}
+              handleCopy={handleCopy}
+              handleDownload={handleDownload}
+              handleOpenHistoryEntry={handleOpenHistoryEntry}
+              handleReferenceFile={handleReferenceFile}
+              handleReferenceUrl={handleReferenceUrl}
+              handleRemoveFromLibrary={handleRemoveFromLibrary}
+              handleRemoveReferenceSlot={handleRemoveReferenceSlot}
+              handleRun={handleRun}
+              imageCountOptions={imageCountOptions}
+              inProgressMessage={inProgressMessage}
+              isInLibrary={isInLibrary}
+              isRemovingFromLibrary={isRemovingFromLibrary}
+              isResolutionLocked={isResolutionLocked}
+              isSavingToLibrary={isSavingToLibrary}
+              limitGenerations={limitGenerations}
+              maskUrl={maskUrl}
+              mode={mode}
+              numImages={numImages}
+              openLibraryForSlot={openLibraryForSlot}
+              outputFormat={outputFormat}
+              outputFormatSelectOptions={outputFormatSelectOptions}
+              previewEntry={previewEntry}
+              prompt={prompt}
+              quality={quality}
+              qualitySelectOptions={qualitySelectOptions}
+              referenceAssetFields={referenceAssetFields}
+              referenceToggleLabel={referenceToggleLabel}
+              resolution={resolution}
+              resolutionSelectOptions={resolutionSelectOptions}
+              resolvedCopy={resolvedCopy}
+              seed={seed}
+              selectedEngineCaps={selectedEngineCaps}
+              selectedEngineId={selectedEngine.id}
+              selectedPreviewImageIndex={selectedPreviewImageIndex}
+              setAreReferenceSlotsExpanded={setAreReferenceSlotsExpanded}
+              setAspectRatio={setAspectRatio}
+              setCustomImageHeight={setCustomImageHeight}
+              setCustomImageWidth={setCustomImageWidth}
+              setEnableWebSearch={setEnableWebSearch}
+              setEngineId={setEngineId}
+              setError={setError}
+              setLimitGenerations={setLimitGenerations}
+              setMaskUrl={setMaskUrl}
+              setMode={setMode}
+              setNumImagesPreset={setNumImagesPreset}
+              setOutputFormat={setOutputFormat}
+              setPrompt={setPrompt}
+              setQuality={setQuality}
+              setResolutionPreset={setResolutionPreset}
+              setSeed={setSeed}
+              setSelectedPreviewImageIndex={setSelectedPreviewImageIndex}
+              setThinkingLevel={setThinkingLevel}
+              showAspectRatioControl={showAspectRatioControl}
+              showCustomImageSizeControl={showCustomImageSizeControl}
+              showEnableWebSearchControl={showEnableWebSearchControl}
+              showLimitGenerationsControl={showLimitGenerationsControl}
+              showMaskUrlControl={Boolean(maskUrlField)}
+              showNumImagesControl={showNumImagesControl}
+              showOutputFormatControl={showOutputFormatControl}
+              showQualityControl={showQualityControl}
+              showResolutionControl={showResolutionControl}
+              showSeedControl={showSeedControl}
+              showThinkingLevelControl={showThinkingLevelControl}
+              statusMessage={statusMessage}
+              thinkingLevel={thinkingLevel}
+              thinkingLevelSelectOptions={thinkingLevelSelectOptions}
+            />
           </main>
         </div>
         {isDesktopLayout ? (
