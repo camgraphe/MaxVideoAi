@@ -22,7 +22,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { runAngleTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
+import { saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -33,6 +33,7 @@ import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } fro
 import { AngleImageLibraryModal } from './angle/_components/angle-image-library-modal';
 import { AngleOrbitSelector } from './angle/_components/angle-orbit-selector';
 import { AngleOutputMosaic } from './angle/_components/angle-output-mosaic';
+import { useAngleGenerationRunner } from './angle/_hooks/useAngleGenerationRunner';
 import { DEFAULT_ANGLE_COPY, type AngleCopy } from './angle/_lib/angle-workspace-copy';
 import {
   ANGLE_GUEST_EXAMPLE_OUTPUT_URL,
@@ -41,7 +42,6 @@ import {
   cleanupSourcePreview,
   collectAnglePreviewImages,
   DEFAULT_ENGINE_ID,
-  emitClientMetric,
   ENGINES,
   formatUsdCompact,
   getAngleBillingProductKey,
@@ -394,70 +394,21 @@ export default function AngleToolPage() {
     setLibraryModalOpen(false);
   };
 
-  const handleGenerate = async () => {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    if (!sourceImage?.url) {
-      setError(copy.missingSource);
-      return;
-    }
-
-    setGenerating(true);
-    setError(null);
-
-    emitClientMetric('tool_start', {
-      tool_name: 'angle',
-      tool_surface: 'workspace',
-      logged_in: true,
-      engine: engineId,
-      generate_best_angles: generateBestAngles,
-      rotation: params.rotation,
-      tilt: params.tilt,
-      zoom: params.zoom,
-    });
-
-    try {
-      const normalizedParams = sanitizeParams(params);
-      const resolvedEngineId = resolveAngleEngineForParams(engineId, normalizedParams);
-      setParams(normalizedParams);
-      const response = await runAngleTool({
-        imageUrl: sourceImage.url,
-        engineId: resolvedEngineId,
-        params: normalizedParams,
-        safeMode,
-        generateBestAngles,
-        imageWidth: sourceImage.width ?? undefined,
-        imageHeight: sourceImage.height ?? undefined,
-      });
-
-      setResult(response);
-      setSelectedOutputIndex(0);
-
-      emitClientMetric('tool_complete', {
-        tool_name: 'angle',
-        tool_surface: 'workspace',
-        logged_in: true,
-        engine: response.engineId,
-        latency_ms: response.latencyMs,
-        estimated_cost_usd: response.pricing.estimatedCostUsd,
-        actual_cost_usd: response.pricing.actualCostUsd ?? null,
-        estimated_credits: response.pricing.estimatedCredits,
-        actual_credits: response.pricing.actualCredits ?? null,
-        generate_best_angles: generateBestAngles,
-        output_count: response.requestedOutputCount,
-      });
-    } catch (runError) {
-      if (isAuthRequiredError(runError)) {
-        openAuthGate();
-        return;
-      }
-      setError(runError instanceof Error ? runError.message : copy.generationFailed);
-    } finally {
-      setGenerating(false);
-    }
-  };
+  const handleGenerate = useAngleGenerationRunner({
+    copy,
+    engineId,
+    generateBestAngles,
+    openAuthGate,
+    params,
+    safeMode,
+    setError,
+    setGenerating,
+    setParams,
+    setResult,
+    setSelectedOutputIndex,
+    sourceImage,
+    user,
+  });
 
   const handleAddOutputToLibrary = async (url: string, jobId?: string | null) => {
     if (!user) {

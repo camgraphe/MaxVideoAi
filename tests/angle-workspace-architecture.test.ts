@@ -9,6 +9,7 @@ const componentsDir = join(root, 'frontend/src/components/tools/angle/_component
 const libraryModalPath = join(componentsDir, 'angle-image-library-modal.tsx');
 const orbitSelectorPath = join(componentsDir, 'angle-orbit-selector.tsx');
 const outputMosaicPath = join(componentsDir, 'angle-output-mosaic.tsx');
+const generationRunnerHookPath = join(root, 'frontend/src/components/tools/angle/_hooks/useAngleGenerationRunner.ts');
 const copyPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-copy.ts');
 const typesPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-types.ts');
 const helpersPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-helpers.ts');
@@ -19,6 +20,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(libraryModalPath), 'angle library modal should live in a colocated component module');
   assert.ok(existsSync(orbitSelectorPath), 'angle orbit selector should live in a colocated component module');
   assert.ok(existsSync(outputMosaicPath), 'angle output mosaic should live in a colocated component module');
+  assert.ok(existsSync(generationRunnerHookPath), 'angle generation runner should live in a colocated hook');
   assert.ok(existsSync(copyPath), 'angle workspace copy should live in a route-local copy module');
   assert.ok(existsSync(typesPath), 'angle workspace local contracts should live in a route-local type module');
   assert.ok(existsSync(helpersPath), 'angle workspace helper logic should live in a route-local helper module');
@@ -26,6 +28,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-image-library-modal'/, 'workspace should import angle library modal');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-orbit-selector'/, 'workspace should import angle orbit selector');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-output-mosaic'/, 'workspace should import angle output mosaic');
+  assert.match(workspaceSource, /from '\.\/angle\/_hooks\/useAngleGenerationRunner'/, 'workspace should import angle generation runner');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-copy'/, 'workspace should import angle copy');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-types'/, 'workspace should import angle local types');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-helpers'/, 'workspace should import angle helpers');
@@ -41,15 +44,18 @@ test('angle workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /function AngleOrbitSelector\(/, 'orbit selector JSX belongs in _components/angle-orbit-selector.tsx');
   assert.doesNotMatch(workspaceSource, /function AngleOutputMosaic\(/, 'output mosaic JSX belongs in _components/angle-output-mosaic.tsx');
   assert.doesNotMatch(workspaceSource, /import dynamic from 'next\/dynamic'/, 'orbit canvas dynamic import belongs in angle orbit selector component');
+  assert.doesNotMatch(workspaceSource, /runAngleTool/, 'angle generation submission belongs in useAngleGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /emitClientMetric\('tool_start'/, 'generation analytics belongs in useAngleGenerationRunner');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1100, `AngleWorkspace should stay below 1100 lines after UI extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1020, `AngleWorkspace should stay below 1020 lines after generation runner extraction, got ${lineCount}`);
 });
 
 test('angle helper modules expose the expected workspace contract', () => {
   const libraryModalSource = readFileSync(libraryModalPath, 'utf8');
   const orbitSelectorSource = readFileSync(orbitSelectorPath, 'utf8');
   const outputMosaicSource = readFileSync(outputMosaicPath, 'utf8');
+  const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
   const copySource = readFileSync(copyPath, 'utf8');
   const typesSource = readFileSync(typesPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
@@ -58,6 +64,9 @@ test('angle helper modules expose the expected workspace contract', () => {
   assert.match(orbitSelectorSource, /export function AngleOrbitSelector/, 'orbit selector module should export AngleOrbitSelector');
   assert.match(orbitSelectorSource, /dynamic\(\(\) => import\('@\/components\/tools\/AngleOrbitCanvas'\)/, 'orbit selector should own the dynamic canvas import');
   assert.match(outputMosaicSource, /export function AngleOutputMosaic/, 'output mosaic module should export AngleOutputMosaic');
+  assert.match(generationRunnerHookSource, /export function useAngleGenerationRunner/, 'generation runner hook should be exported');
+  assert.match(generationRunnerHookSource, /runAngleTool/, 'generation runner hook should submit angle requests');
+  assert.match(generationRunnerHookSource, /emitClientMetric\('tool_start'/, 'generation runner hook should own generation analytics');
 
   assert.match(copySource, /export const DEFAULT_ANGLE_COPY =/, 'copy module should export default copy');
   assert.match(copySource, /export type AngleCopy =/, 'copy module should export the copy type');
