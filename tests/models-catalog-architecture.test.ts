@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx');
+const cardsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-cards.ts');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts');
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-copy.ts');
 const valueCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-value-copy.ts');
@@ -14,6 +15,7 @@ const gallerySectionPath = join(root, 'frontend/app/(localized)/[locale]/(market
 const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogJsonLdScripts.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
+const cardsSource = readFileSync(cardsPath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const valueCopySource = readFileSync(valueCopyPath, 'utf8');
@@ -24,6 +26,7 @@ const jsonLdScriptsSource = readFileSync(jsonLdScriptsPath, 'utf8');
 
 test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(pagePath), 'models catalog route component should exist');
+  assert.ok(existsSync(cardsPath), 'models catalog card data module should exist');
   assert.ok(existsSync(utilsPath), 'models catalog helper module should exist');
   assert.ok(existsSync(copyPath), 'models catalog localized copy module should exist');
   assert.ok(existsSync(valueCopyPath), 'models catalog value copy module should exist');
@@ -33,6 +36,7 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(jsonLdScriptsPath), 'models catalog JSON-LD scripts should live in a route-local component');
 
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-utils'/, 'route should import catalog helpers');
+  assert.match(pageSource, /from '\.\/_lib\/models-catalog-cards'/, 'route should import catalog card builder');
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-sections'/, 'route should import section builders');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogHero'/, 'route should import the hero component');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogGallerySection'/, 'route should import the gallery section component');
@@ -42,6 +46,11 @@ test('models catalog route delegates catalog helper logic', () => {
 
   assert.doesNotMatch(pageSource, /from 'node:path'/, 'route should not own benchmark file path resolution');
   assert.doesNotMatch(pageSource, /promises as fs/, 'route should not read benchmark files directly');
+  assert.doesNotMatch(pageSource, /listFalEngines/, 'route should not own raw engine catalog iteration');
+  assert.doesNotMatch(pageSource, /computeMarketingPriceRange/, 'route should not own card pricing projections');
+  assert.doesNotMatch(pageSource, /getEngineLocalized/, 'route should not own per-card model localization');
+  assert.doesNotMatch(pageSource, /getEnginePictogram/, 'route should not own card pictogram derivation');
+  assert.doesNotMatch(pageSource, /loadEngineScores/, 'route should not own model score loading');
   assert.doesNotMatch(pageSource, /buildSlugMap\('models'\)/, 'route should not rebuild localized slug maps inline');
   assert.doesNotMatch(pageSource, /applyDisplayedPriceMarginCents/, 'route should not own pricing display math');
   assert.doesNotMatch(pageSource, /const MODELS_SCOPE_DEFAULTS =/, 'localized scope defaults belong in the helper module');
@@ -54,13 +63,20 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.doesNotMatch(pageSource, /models-breadcrumb-jsonld/, 'JSON-LD script tags belong in ModelsCatalogJsonLdScripts.tsx');
 
   const lineCount = pageSource.split('\n').length;
-  assert.ok(lineCount <= 760, `ModelsCatalogPage should stay below 760 lines after hero extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 500, `ModelsCatalogPage should stay below 500 lines after card data extraction, got ${lineCount}`);
 
   const utilsLineCount = utilsSource.split('\n').length;
   assert.ok(utilsLineCount <= 500, `models-catalog-utils should stay below 500 lines after copy split, got ${utilsLineCount}`);
 });
 
 test('models catalog helper module exposes the route contract', () => {
+  assert.match(cardsSource, /export async function buildModelsCatalogCards/, 'card module should export catalog card builder');
+  assert.match(cardsSource, /MODELS_CATALOG_PRIORITY_ORDER/, 'card module should own featured model ordering');
+  assert.match(cardsSource, /listFalEngines/, 'card module should own raw engine catalog iteration');
+  assert.match(cardsSource, /computeMarketingPriceRange/, 'card module should own card pricing projections');
+  assert.match(cardsSource, /getEngineLocalized/, 'card module should own per-card localization');
+  assert.match(cardsSource, /getEnginePictogram/, 'card module should own pictogram derivation');
+
   assert.match(utilsSource, /from '\.\/models-catalog-copy'/, 'utils should re-export localized page copy');
   assert.match(utilsSource, /from '\.\/models-catalog-value-copy'/, 'utils should re-export value sentence copy');
 
