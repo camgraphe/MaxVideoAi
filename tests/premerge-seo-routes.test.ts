@@ -76,7 +76,10 @@ test('Happy Horse model pages link best-use-case chips to localized Best-For gui
 });
 
 test('homepage marketing media stays on optimized WebP sources', () => {
-  const source = readFileSync(path.join(repoRoot, 'frontend/components/marketing/home/HomeRedesignSections.tsx'), 'utf8');
+  const source = [
+    readFileSync(path.join(repoRoot, 'frontend/components/marketing/home/HomeRedesignSections.tsx'), 'utf8'),
+    readFileSync(path.join(repoRoot, 'frontend/components/marketing/home/HomeConversionSections.tsx'), 'utf8'),
+  ].join('\n');
   const requiredAssets = [
     'frontend/public/hero/showcase-seedance-2-0.webp',
     'frontend/public/hero/showcase-kling-3-pro.webp',

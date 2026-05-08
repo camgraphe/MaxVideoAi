@@ -24,6 +24,13 @@ const examplesCopy = enMessages.home.redesign.examples;
 const cards = examplesCopy.fallbackCards as FallbackCard[];
 const modelSlugs = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
+function readHomeSectionsSource() {
+  return [
+    readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+    readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
+  ].join('\n');
+}
+
 test('homepage real examples preview uses compact decision-oriented copy and CTAs', () => {
   assert.equal(examplesCopy.title, 'Preview real outputs before you choose an engine.');
   assert.equal(
@@ -95,7 +102,7 @@ test('homepage examples preview keeps only real crawlable example routes', () =>
 });
 
 test('homepage real examples component uses compact two-column rows instead of the old large gallery', () => {
-  const source = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
+  const source = readHomeSectionsSource();
   const homePageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx", 'utf8');
   const previewSource = source.slice(
     source.indexOf('export function RealExamplesPreview'),
@@ -127,8 +134,12 @@ test('homepage real examples component uses compact two-column rows instead of t
 });
 
 test('homepage hero uses the current Kling 3 Pro render even when programmed slots exist', () => {
-  const source = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
-  const heroSource = source.slice(source.indexOf('const HERO_VIDEO_ORDER'), source.indexOf('const BEST_FOR_CARD_VISUALS'));
+  const source = readHomeSectionsSource();
+  const visualsSource = readFileSync('frontend/components/marketing/home/home-redesign-visuals.ts', 'utf8');
+  const heroSource = visualsSource.slice(
+    visualsSource.indexOf('export const HERO_VIDEO_ORDER'),
+    visualsSource.indexOf('export const BEST_FOR_CARD_VISUALS')
+  );
   const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('const valueCards'));
 
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
@@ -171,7 +182,7 @@ test('homepage supported engines strip includes the Happy Horse family', () => {
 });
 
 test('homepage final sections keep alternating backgrounds before the footer', () => {
-  const source = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
+  const source = readHomeSectionsSource();
   const pricingSource = source.slice(
     source.indexOf('export function TransparentPricingBlock'),
     source.indexOf('export function ProviderEngineStrip')
