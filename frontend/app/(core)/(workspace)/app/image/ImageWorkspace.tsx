@@ -7,14 +7,13 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
-import type { FormEvent } from 'react';
 import { GalleryRail } from '@/components/GalleryRail';
 import { Button } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
-import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
+import { saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
@@ -31,14 +30,11 @@ import {
 import {
   GPT_IMAGE_2_SIZE_CONSTRAINTS,
   parseGptImage2SizeKey,
-  validateGptImage2CustomImageSize,
 } from '@/lib/image/gptImage2';
 import { authFetch } from '@/lib/authFetch';
-import { readLastKnownUserId } from '@/lib/last-known';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
-import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import { ImageAuthGateModal } from './_components/ImageAuthGateModal';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
+import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
 import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
 import { useImageWorkspacePricing } from './_hooks/useImageWorkspacePricing';
 import { useImageSettingsFields } from './_hooks/useImageSettingsFields';
@@ -54,11 +50,6 @@ import {
   type ImageWorkspaceCopy,
 } from './_lib/image-workspace-copy';
 import {
-  buildCompletedGroup,
-  buildPendingGroup,
-} from './_lib/image-workspace-history';
-import {
-  buildCustomImageSize,
   findImageEngine,
 } from './_lib/image-workspace-utils';
 import {
@@ -355,174 +346,45 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     }
   }, []);
 
-  const handleRun = useCallback(
-    async (event?: FormEvent<HTMLFormElement> | null) => {
-      event?.preventDefault();
-      if (!selectedEngine) return;
-      if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
-        setAuthModalOpen(true);
-        return;
-      }
-      const session = await readBrowserSession();
-      if (!session?.access_token) {
-        setAuthModalOpen(true);
-        return;
-      }
-      const trimmedPrompt = prompt.trim();
-      if (!trimmedPrompt) {
-        setError(resolvedCopy.errors.promptMissing);
-        return;
-      }
-      if (referenceMinRequired > 0 && combinedReferenceUrls.length < referenceMinRequired) {
-        setError(resolvedCopy.errors.referenceMissing);
-        return;
-      }
-      const trimmedMaskUrl = maskUrlField ? maskUrl.trim() : '';
-      if (trimmedMaskUrl && !/^https?:\/\//i.test(trimmedMaskUrl)) {
-        setError('Mask URL must be an absolute http(s) URL.');
-        return;
-      }
-      const customImageSize = resolution === 'custom' ? buildCustomImageSize(customImageWidth, customImageHeight) : null;
-      if (resolution === 'custom') {
-        const customSizeResult = validateGptImage2CustomImageSize(customImageSize);
-        if (!customSizeResult.ok) {
-          setError(customSizeResult.message);
-          return;
-        }
-      }
-      setError(null);
-      setStatusMessage(null);
-      const pendingId = `img_${crypto.randomUUID()}`;
-      const pendingCreatedAt = Date.now();
-      setPendingGroups((prev) => [
-        buildPendingGroup({
-          id: pendingId,
-          engineId: selectedEngine.id,
-          engineLabel: selectedEngine.name,
-          prompt: trimmedPrompt,
-          count: numImages,
-          createdAt: pendingCreatedAt,
-        }),
-        ...prev,
-      ]);
-      let keepActiveGroup = false;
-      try {
-        const appliedAspectRatio = aspectRatioField
-          ? aspectRatio ?? getDefaultAspectRatio(selectedEngine.engineCaps, mode) ?? undefined
-          : undefined;
-        const normalizedSeed = (() => {
-          const trimmed = seed.trim();
-          if (!trimmed.length) return undefined;
-          const parsed = Number(trimmed);
-          return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
-        })();
-        const response = await runImageGeneration({
-          jobId: pendingId,
-          engineId: selectedEngine.id,
-          mode,
-          prompt: trimmedPrompt,
-          numImages,
-          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
-          referenceImageSizes: mode === 'i2i' ? readyReferenceSizes : undefined,
-          characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
-          aspectRatio: appliedAspectRatio,
-          resolution: resolution ?? undefined,
-          customImageSize,
-          seed: seedField ? normalizedSeed : undefined,
-          outputFormat: outputFormatField
-            ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
-            : undefined,
-          quality: qualityField ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
-          maskUrl: trimmedMaskUrl || undefined,
-          enableWebSearch: enableWebSearchField ? enableWebSearch : undefined,
-          thinkingLevel: thinkingLevelField
-            ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
-            : undefined,
-          limitGenerations: limitGenerationsField ? limitGenerations : undefined,
-        });
-        const entry: HistoryEntry = {
-          id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
-          jobId: response.jobId ?? response.requestId ?? null,
-          engineId: response.engineId ?? selectedEngine.id,
-          engineLabel: response.engineLabel ?? selectedEngine.name,
-          mode,
-          prompt: trimmedPrompt,
-          createdAt: Date.now(),
-          description: response.description,
-          images: response.images,
-          aspectRatio: response.aspectRatio ?? appliedAspectRatio ?? null,
-        };
-        setLocalHistory((prev) => [entry, ...prev].slice(0, 24));
-        setSelectedPreviewEntryId(entry.id);
-        setSelectedPreviewImageIndex(0);
-        const suffix = response.images.length === 1 ? '' : 's';
-        setStatusMessage(
-          formatTemplate(resolvedCopy.messages.success, { count: response.images.length, suffix })
-        );
-        const resolvedGroupId = response.jobId ?? pendingId;
-        if (response.images.length > 0) {
-          keepActiveGroup = true;
-          setPendingGroups((prev) => [
-            buildCompletedGroup({
-              id: resolvedGroupId,
-              engineId: response.engineId ?? selectedEngine.id,
-              engineLabel: response.engineLabel ?? selectedEngine.name,
-              prompt: trimmedPrompt,
-              aspectRatio: response.aspectRatio ?? appliedAspectRatio ?? null,
-              images: response.images,
-              createdAt: pendingCreatedAt,
-              totalPriceCents: response.pricing?.totalCents ?? response.costCents ?? null,
-              currency: response.pricing?.currency ?? response.currency ?? null,
-            }),
-            ...prev.filter((group) => group.id !== pendingId && group.id !== resolvedGroupId),
-          ]);
-        }
-        void mutateJobs();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
-      } finally {
-        if (!keepActiveGroup) {
-          setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
-        }
-      }
-    },
-    [
-      mode,
-      numImages,
-      prompt,
-      combinedReferenceUrls,
-      resolvedCopy.errors.generic,
-      resolvedCopy.errors.promptMissing,
-      resolvedCopy.errors.referenceMissing,
-      resolvedCopy.messages.success,
-      aspectRatio,
-      aspectRatioField,
-      customImageHeight,
-      customImageWidth,
-      enableWebSearch,
-      enableWebSearchField,
-      limitGenerations,
-      limitGenerationsField,
-      referenceMinRequired,
-      resolution,
-      seed,
-      seedField,
-      selectedEngine,
-      outputFormat,
-      outputFormatField,
-      quality,
-      qualityField,
-      readyReferenceSizes,
-      readyReferenceUrls,
-      selectedCharacterReferences,
-      maskUrl,
-      maskUrlField,
-      thinkingLevel,
-      thinkingLevelField,
-      mutateJobs,
-      setPendingGroups,
-    ]
-  );
+  const handleRun = useImageGenerationRunner({
+    aspectRatio,
+    combinedReferenceUrls,
+    customImageHeight,
+    customImageWidth,
+    enableWebSearch,
+    hasAspectRatioField: Boolean(aspectRatioField),
+    hasEnableWebSearchField: Boolean(enableWebSearchField),
+    hasLimitGenerationsField: Boolean(limitGenerationsField),
+    hasMaskUrlField: Boolean(maskUrlField),
+    hasOutputFormatField: Boolean(outputFormatField),
+    hasQualityField: Boolean(qualityField),
+    hasSeedField: Boolean(seedField),
+    hasThinkingLevelField: Boolean(thinkingLevelField),
+    limitGenerations,
+    maskUrl,
+    mode,
+    mutateJobs,
+    numImages,
+    outputFormat,
+    prompt,
+    quality,
+    readyReferenceSizes,
+    readyReferenceUrls,
+    referenceMinRequired,
+    resolution,
+    resolvedCopy,
+    seed,
+    selectedCharacterReferences,
+    selectedEngine,
+    setAuthModalOpen,
+    setError,
+    setLocalHistory,
+    setPendingGroups,
+    setSelectedPreviewEntryId,
+    setSelectedPreviewImageIndex,
+    setStatusMessage,
+    thinkingLevel,
+  });
 
   const handleSelectGalleryGroup = useCallback(
     (group: GroupSummary) => {

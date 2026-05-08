@@ -8,6 +8,7 @@ const imageDir = path.join(root, 'frontend/app/(core)/(workspace)/app/image');
 const workspacePath = path.join(imageDir, 'ImageWorkspace.tsx');
 const composerPersistenceHookPath = path.join(imageDir, '_hooks/useImageComposerPersistence.ts');
 const queryHydrationHookPath = path.join(imageDir, '_hooks/useImageWorkspaceQueryHydration.ts');
+const generationRunnerHookPath = path.join(imageDir, '_hooks/useImageGenerationRunner.ts');
 
 const splitFiles = [
   '_components/ImageAuthGateModal.tsx',
@@ -17,6 +18,7 @@ const splitFiles = [
   '_hooks/useImageWorkspacePricing.ts',
   '_hooks/useImageWorkspaceDesktopLayout.ts',
   '_hooks/useImageWorkspaceQueryHydration.ts',
+  '_hooks/useImageGenerationRunner.ts',
   '_lib/image-workspace-character-references.ts',
   '_lib/image-workspace-copy.ts',
   '_lib/image-workspace-history.ts',
@@ -33,6 +35,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const source = readImageWorkspace();
   const composerPersistenceHookSource = readFileSync(composerPersistenceHookPath, 'utf8');
   const queryHydrationHookSource = readFileSync(queryHydrationHookPath, 'utf8');
+  const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
 
   for (const file of splitFiles) {
     statSync(path.join(imageDir, file));
@@ -45,8 +48,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceQueryHydration'/);
+  assert.match(source, /from '\.\/_hooks\/useImageGenerationRunner'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-copy'/);
-  assert.match(source, /from '\.\/_lib\/image-workspace-history'/);
   assert.match(source, /from '\.\/_lib\/image-workspace-utils'/);
 
   assert.doesNotMatch(source, /const DEFAULT_COPY: ImageWorkspaceCopy =/);
@@ -65,6 +68,9 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.doesNotMatch(source, /const requestedJobId = useMemo/, 'query job hydration belongs in useImageWorkspaceQueryHydration');
   assert.doesNotMatch(source, /const requestedEngineId = useMemo/, 'query engine hydration belongs in useImageWorkspaceQueryHydration');
   assert.doesNotMatch(source, /Job settings snapshot missing/, 'snapshot application belongs in useImageWorkspaceQueryHydration');
+  assert.doesNotMatch(source, /runImageGeneration/, 'generation submission belongs in useImageGenerationRunner');
+  assert.doesNotMatch(source, /readBrowserSession/, 'auth preflight belongs in useImageGenerationRunner');
+  assert.doesNotMatch(source, /validateGptImage2CustomImageSize/, 'custom size validation belongs in useImageGenerationRunner');
 
   assert.match(composerPersistenceHookSource, /export function useImageComposerPersistence/);
   assert.match(composerPersistenceHookSource, /parsePersistedImageComposerState/);
@@ -75,7 +81,13 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(queryHydrationHookSource, /const requestedJobId = useMemo/);
   assert.match(queryHydrationHookSource, /const requestedEngineId = useMemo/);
   assert.match(queryHydrationHookSource, /applyImageSettingsSnapshot/);
+  assert.match(generationRunnerHookSource, /export function useImageGenerationRunner/);
+  assert.match(generationRunnerHookSource, /runImageGeneration/);
+  assert.match(generationRunnerHookSource, /readBrowserSession/);
+  assert.match(generationRunnerHookSource, /from '\.\.\/_lib\/image-workspace-history'/);
+  assert.match(generationRunnerHookSource, /buildPendingGroup/);
+  assert.match(generationRunnerHookSource, /buildCompletedGroup/);
 
   const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 1085, `ImageWorkspace should stay below 1085 lines after query hydration extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 950, `ImageWorkspace should stay below 950 lines after generation runner extraction, got ${lineCount}`);
 });
