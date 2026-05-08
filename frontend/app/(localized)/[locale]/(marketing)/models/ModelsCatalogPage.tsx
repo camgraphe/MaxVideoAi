@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Script from 'next/script';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { ArrowRight, ChevronRight, Sparkles, Timer } from 'lucide-react';
+import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
@@ -11,7 +10,6 @@ import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
-import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { isImageOnlyModel, isModelInScope } from '@/lib/models/catalog';
 import { getEngineLocalized } from '@/lib/models/i18n';
@@ -62,6 +60,9 @@ import {
   buildModelsOutcomeTiles,
   buildModelsReliabilityItems,
 } from './_lib/models-catalog-sections';
+import { ModelsCatalogGallerySection } from './_components/ModelsCatalogGallerySection';
+import { ModelsCatalogHero } from './_components/ModelsCatalogHero';
+import { ModelsCatalogJsonLdScripts } from './_components/ModelsCatalogJsonLdScripts';
 
 export async function generateModelsMetadata({
   params,
@@ -468,6 +469,14 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const ctaPills = scope === 'all' ? listingCopy.cta?.pills ?? scopeDefaults.ctaPills : scopeDefaults.ctaPills;
   const galleryVisibleFilters: Array<'sort' | 'mode' | 'format' | 'duration' | 'price' | 'age'> =
     scope === 'video' ? ['sort', 'mode', 'format', 'duration', 'price', 'age'] : ['sort', 'format', 'price', 'age'];
+  const gallerySrTitle =
+    scope === 'all'
+      ? listingCopy.grid?.srTitle ?? scopeDefaults.gridSrTitle
+      : scopeDefaults.gridSrTitle;
+  const galleryBridgeText =
+    scope === 'all'
+      ? listingCopy.grid?.bridgeText ?? scopeDefaults.bridgeText
+      : scopeDefaults.bridgeText;
 
   const itemListJsonLd = {
     '@context': 'https://schema.org',
@@ -495,97 +504,26 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
 
   return (
     <main className="bg-bg text-text-primary">
-      <section className="relative isolate overflow-hidden border-b border-hairline bg-[linear-gradient(180deg,#fbfdff_0%,#f7faff_68%,#f3f6fb_100%)] dark:bg-[linear-gradient(180deg,#070b12_0%,#0b111c_68%,#0f1724_100%)]">
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <Image
-            src={MODELS_HERO_IMAGE_URL}
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center opacity-[0.82] mix-blend-multiply dark:opacity-[0.38] dark:mix-blend-screen dark:invert"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,250,252,0.96)_0%,rgba(248,250,252,0.82)_39%,rgba(248,250,252,0.32)_72%,rgba(248,250,252,0.12)_100%)] dark:bg-[linear-gradient(90deg,rgba(7,11,18,0.96)_0%,rgba(7,11,18,0.82)_42%,rgba(7,11,18,0.38)_74%,rgba(7,11,18,0.18)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,var(--bg)_100%)]" />
-        </div>
-        <div className="container-page relative z-10 max-w-[1248px] py-14 sm:py-16 lg:min-h-[520px] lg:py-20">
-          <nav
-            aria-label={activeLocale === 'fr' ? 'Vues du catalogue modèles' : activeLocale === 'es' ? 'Vistas del catálogo de modelos' : 'Model catalog views'}
-            className="flex flex-wrap gap-2"
-          >
-            {scopeTabs.map((tab) => (
-              <Link
-                key={tab.id}
-                href={tab.href}
-                className={`rounded-full border px-5 py-2.5 text-xs font-semibold uppercase tracking-micro shadow-sm transition ${
-                  tab.active
-                    ? 'border-text-primary bg-text-primary text-bg'
-                    : 'border-hairline bg-surface/88 text-text-secondary backdrop-blur hover:border-text-muted hover:text-text-primary'
-                }`}
-                aria-current={tab.active ? 'page' : undefined}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </nav>
-          <header className="mt-12 max-w-[710px] sm:mt-14">
-            <h1 className="text-balance text-[42px] font-semibold leading-[1.04] tracking-normal text-text-primary sm:text-[56px] lg:text-[64px]">
-              {heroTitleParts.lead}
-              {heroTitleParts.accent ? (
-                <>
-                  <br />
-                  <span>
-                    {heroAccentParts.prefix}
-                    {heroAccentParts.emphasis}
-                  </span>
-                </>
-              ) : null}
-            </h1>
-            <p className="mt-6 max-w-[62ch] text-base font-medium leading-relaxed text-text-secondary sm:text-lg">
-              {heroSubhead}
-            </p>
-            <ul className="mt-8 grid gap-5 text-sm text-text-secondary sm:grid-cols-2">
-              {heroBullets.slice(0, 2).map((bullet, index) => (
-                <li key={bullet} className="flex items-center gap-4">
-                  <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-hairline bg-surface/85 text-text-primary shadow-sm backdrop-blur">
-                    <UIIcon icon={index === 0 ? Sparkles : Timer} size={18} />
-                  </span>
-                  <span className="font-semibold leading-relaxed">{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          </header>
-        </div>
-      </section>
+      <ModelsCatalogHero
+        activeLocale={activeLocale}
+        heroAccentParts={heroAccentParts}
+        heroBullets={heroBullets}
+        heroSubhead={heroSubhead}
+        heroTitleParts={heroTitleParts}
+        scopeTabs={scopeTabs}
+      />
 
       <div className="container-page max-w-[1248px] py-10 sm:py-12">
         <div className="stack-gap-lg">
-
-        <section id="models-grid" className="stack-gap-md scroll-mt-24">
-          <h2 className="sr-only">
-            {scope === 'all'
-              ? listingCopy.grid?.srTitle ?? scopeDefaults.gridSrTitle
-              : scopeDefaults.gridSrTitle}
-          </h2>
-          <ModelsGallery
-            cards={modelCards}
-            ctaLabel={cardCtaLabel}
-            copy={content.gallery}
-            visibleFilters={galleryVisibleFilters}
+          <ModelsCatalogGallerySection
             allowCompare={scope === 'video'}
+            bridgeText={galleryBridgeText}
+            cards={modelCards}
+            copy={content.gallery}
+            ctaLabel={cardCtaLabel}
+            srTitle={gallerySrTitle}
+            visibleFilters={galleryVisibleFilters}
           />
-        </section>
-        <p className="mx-auto flex max-w-4xl items-start gap-3 px-4 text-sm font-medium leading-relaxed text-text-secondary sm:items-center">
-          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand sm:mt-0">
-            <UIIcon icon={Sparkles} size={15} />
-          </span>
-          <span>
-            {scope === 'all'
-              ? listingCopy.grid?.bridgeText ?? scopeDefaults.bridgeText
-              : scopeDefaults.bridgeText}
-          </span>
-        </p>
         <div className="space-y-8 py-4 sm:py-8">
           {showVideoCompare && quickCompareShortcuts.length ? (
             <section className="content-visibility-auto rounded-[16px] border border-hairline bg-surface/90 p-6 shadow-card dark:bg-white/5 sm:p-8">
@@ -811,15 +749,11 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
         </div>
       </div>
       </div>
-      <Script id="models-breadcrumb-jsonld" type="application/ld+json">
-        {JSON.stringify(breadcrumbJsonLd)}
-      </Script>
-      <Script id="models-itemlist-jsonld" type="application/ld+json">
-        {JSON.stringify(itemListJsonLd)}
-      </Script>
-      <Script id="models-faq-jsonld" type="application/ld+json">
-        {JSON.stringify(faqJsonLd)}
-      </Script>
+      <ModelsCatalogJsonLdScripts
+        breadcrumbJsonLd={breadcrumbJsonLd}
+        faqJsonLd={faqJsonLd}
+        itemListJsonLd={itemListJsonLd}
+      />
     </main>
   );
 }
