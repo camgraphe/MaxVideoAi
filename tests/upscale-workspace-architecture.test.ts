@@ -17,6 +17,7 @@ const sourceMediaHookPath = join(root, 'frontend/src/components/tools/upscale/_h
 const controlsPath = join(root, 'frontend/src/components/tools/upscale/_components/upscale-workspace-controls.tsx');
 const heroSummaryCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleHeroSummaryCard.tsx');
 const previewCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscalePreviewCard.tsx');
+const recentRailPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleRecentRail.tsx');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -33,6 +34,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(controlsPath), 'upscale workspace controls should live in colocated components');
   assert.ok(existsSync(heroSummaryCardPath), 'upscale hero summary should live in a colocated component');
   assert.ok(existsSync(previewCardPath), 'upscale preview card should live in a colocated component');
+  assert.ok(existsSync(recentRailPath), 'upscale recent rail should live in a colocated component');
 
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-copy'/, 'workspace should import upscale copy');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-types'/, 'workspace should import upscale local types');
@@ -46,6 +48,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/upscale-workspace-controls'/, 'workspace should import workspace controls');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleHeroSummaryCard'/, 'workspace should import hero summary card');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscalePreviewCard'/, 'workspace should import preview card');
+  assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleRecentRail'/, 'workspace should import recent rail');
 });
 
 test('upscale workspace does not regain extracted ownership', () => {
@@ -77,9 +80,12 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /setComparePosition/, 'compare keyboard updates belong in useUpscalePreviewState');
   assert.doesNotMatch(workspaceSource, /Before \/ after preview/, 'preview JSX belongs in UpscalePreviewCard');
   assert.doesNotMatch(workspaceSource, /PREVIEW_ZOOM_OPTIONS/, 'preview zoom controls belong in UpscalePreviewCard');
+  assert.doesNotMatch(workspaceSource, /recentGroups\.slice/, 'recent rail rendering belongs in UpscaleRecentRail');
+  assert.doesNotMatch(workspaceSource, /Reuse finished assets/, 'recent rail copy belongs in UpscaleRecentRail');
+  assert.doesNotMatch(workspaceSource, /<GroupedJobCard/, 'recent job cards belong in UpscaleRecentRail');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 840, `UpscaleWorkspace should stay below 840 lines after preview extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 790, `UpscaleWorkspace should stay below 790 lines after recent rail extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
@@ -95,6 +101,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   const controlsSource = readFileSync(controlsPath, 'utf8');
   const heroSummaryCardSource = readFileSync(heroSummaryCardPath, 'utf8');
   const previewCardSource = readFileSync(previewCardPath, 'utf8');
+  const recentRailSource = readFileSync(recentRailPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_UPSCALE_COPY =/, 'copy module should export default copy');
 
@@ -153,4 +160,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(previewCardSource, /export function UpscalePreviewCard/, 'preview card should be exported');
   assert.match(previewCardSource, /PREVIEW_ZOOM_OPTIONS/, 'preview card should own zoom controls');
   assert.match(previewCardSource, /ChevronsLeftRight/, 'preview card should own compare affordance');
+  assert.match(recentRailSource, /export function UpscaleRecentRail/, 'recent rail should be exported');
+  assert.match(recentRailSource, /GroupedJobCard/, 'recent rail should own grouped card rendering');
+  assert.match(recentRailSource, /\/app\/library/, 'recent rail should own its library link');
 });
