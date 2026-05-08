@@ -112,7 +112,7 @@ export async function generateMetadata(
 
 type ExamplesPageProps = {
   params: Promise<{ locale: AppLocale }>;
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 // Labels will be localized from dictionary at render time

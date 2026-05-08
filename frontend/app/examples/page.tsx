@@ -16,7 +16,10 @@ export default async function ExamplesDefaultPage(
 ) {
   return (
     <DefaultMarketingLayout>
-      <ExamplesPage params={Promise.resolve({ locale: DEFAULT_LOCALE })} searchParams={(await props.searchParams) ?? {}} />
+      <ExamplesPage
+        params={Promise.resolve({ locale: DEFAULT_LOCALE })}
+        searchParams={Promise.resolve((await props.searchParams) ?? {})}
+      />
     </DefaultMarketingLayout>
   );
 }

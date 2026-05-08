@@ -150,5 +150,5 @@ export default async function ExamplesModelPage(
     engine: normalized,
     __engineFromPath: normalized,
   };
-  return <ExamplesPage params={Promise.resolve({ locale: params.locale })} searchParams={mergedSearchParams} />;
+  return <ExamplesPage params={Promise.resolve({ locale: params.locale })} searchParams={Promise.resolve(mergedSearchParams)} />;
 }
