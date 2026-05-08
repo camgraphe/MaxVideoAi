@@ -10,6 +10,7 @@ const referenceNormalizationPath = join(root, 'frontend/src/server/images/image-
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
+const completionPath = join(root, 'frontend/src/server/images/image-generation-completion.ts');
 const receiptsPath = join(root, 'frontend/src/server/images/image-generation-receipts.ts');
 const settingsSnapshotPath = join(root, 'frontend/src/server/images/image-generation-settings-snapshot.ts');
 
@@ -19,6 +20,7 @@ const referenceNormalizationSource = readFileSync(referenceNormalizationPath, 'u
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
+const completionSource = readFileSync(completionPath, 'utf8');
 const receiptsSource = readFileSync(receiptsPath, 'utf8');
 const settingsSnapshotSource = readFileSync(settingsSnapshotPath, 'utf8');
 
@@ -28,6 +30,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(initialJobPath), 'atomic initial image job creation should live in a focused module');
   assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
   assert.ok(existsSync(providerPayloadPath), 'provider payload parsing should live in a focused module');
+  assert.ok(existsSync(completionPath), 'image generation completion persistence should live in a focused module');
   assert.ok(existsSync(receiptsPath), 'image generation receipt helpers should live in a focused module');
   assert.ok(existsSync(settingsSnapshotPath), 'image settings snapshot helpers should live in a focused module');
   assert.match(executorSource, /from '\.\/existing-image-job-response'/);
@@ -35,6 +38,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.match(executorSource, /from '\.\/image-initial-job'/);
   assert.match(executorSource, /from '\.\/image-generation-error'/);
   assert.match(executorSource, /from '\.\/image-provider-payload'/);
+  assert.match(executorSource, /from '\.\/image-generation-completion'/);
   assert.match(executorSource, /from '\.\/image-generation-receipts'/);
   assert.match(executorSource, /from '\.\/image-generation-settings-snapshot'/);
   assert.match(executorSource, /export \{ buildResponseFromExistingJob \} from '\.\/existing-image-job-response'/);
@@ -60,9 +64,13 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /function buildReceiptSnapshot\(/, 'receipt snapshots belong in image-generation-receipts.ts');
   assert.doesNotMatch(executorSource, /async function recordRefundReceipt\(/, 'refund receipt writes belong in image-generation-receipts.ts');
   assert.doesNotMatch(executorSource, /function buildDefaultSettingsSnapshot\(/, 'default settings snapshots belong in image-generation-settings-snapshot.ts');
+  assert.doesNotMatch(executorSource, /recordUserAsset/, 'completed character asset persistence belongs in image-generation-completion.ts');
+  assert.doesNotMatch(executorSource, /upsertLegacyJobOutputs/, 'completed output persistence belongs in image-generation-completion.ts');
+  assert.doesNotMatch(executorSource, /ensureReusableAsset/, 'reusable character asset persistence belongs in image-generation-completion.ts');
+  assert.doesNotMatch(executorSource, /status = 'completed'/, 'completed job update belongs in image-generation-completion.ts');
 
   const lineCount = executorSource.split('\n').length;
-  assert.ok(lineCount <= 970, `image generation executor should stay below 970 lines after receipt and settings extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 860, `image generation executor should stay below 860 lines after completion extraction, got ${lineCount}`);
 });
 
 test('existing image job response module exposes the expected contract', () => {
@@ -86,6 +94,11 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(providerPayloadSource, /export function buildCharacterReferencePrompt/);
   assert.match(providerPayloadSource, /export function extractImages/);
   assert.match(providerPayloadSource, /export function parseRequestId/);
+  assert.match(completionSource, /export async function persistCompletedImageGeneration/);
+  assert.match(completionSource, /recordUserAsset/);
+  assert.match(completionSource, /upsertLegacyJobOutputs/);
+  assert.match(completionSource, /ensureReusableAsset/);
+  assert.match(completionSource, /status = 'completed'/);
   assert.match(receiptsSource, /export type PendingReceipt/);
   assert.match(receiptsSource, /export function buildReceiptSnapshot/);
   assert.match(receiptsSource, /export async function recordRefundReceipt/);
