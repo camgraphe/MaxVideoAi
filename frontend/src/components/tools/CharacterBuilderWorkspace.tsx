@@ -65,9 +65,9 @@ import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
+import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
-  buildReferenceImage,
   buildResetCharacterBuilderState,
   countConfiguredSecondaryControls,
   findChoiceLabel,
@@ -87,12 +87,9 @@ import {
   removeReferenceImage,
   serializeResettableCharacterBuilderState,
   summarizeCustomText,
-  updateReferenceImage,
-  uploadImage,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
   BillingProductResponse,
-  CharacterLibraryAsset,
   HistoricalCharacterGalleryItem,
   LoadingRequestCounts,
   LoadingRequestKey,
@@ -201,6 +198,20 @@ export default function CharacterBuilderPage() {
     setState,
     setStatusMessage,
     state,
+    user,
+  });
+  const {
+    handleLibrarySelect,
+    triggerUpload,
+  } = useCharacterBuilderReferenceAssets({
+    copy,
+    libraryModalRole,
+    openAuthGate,
+    setError,
+    setLibraryModalRole,
+    setShowStyleReferenceSlot,
+    setState,
+    setStatusMessage,
     user,
   });
   const hasCompletedResults = flattenedResults.length > 0;
@@ -370,83 +381,6 @@ export default function CharacterBuilderPage() {
     setError(null);
     setStatusMessage(copy.resetDone);
   }, [copy.resetDone, resetState]);
-
-  async function handleUpload(role: CharacterBuilderReferenceImage['role'], file: File) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setError(null);
-    setStatusMessage(role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart);
-
-    try {
-      const asset = await uploadImage(file, copy);
-      const nextImage = buildReferenceImage(role, asset);
-      if (role === 'style') {
-        setShowStyleReferenceSlot(true);
-      }
-      setState((previous) => ({
-        ...previous,
-        sourceMode: role === 'identity' ? 'reference-image' : previous.sourceMode,
-        referenceStrength:
-          role === 'identity'
-            ? previous.referenceStrength ?? 'balanced'
-            : previous.referenceStrength,
-        referenceImages: updateReferenceImage(previous.referenceImages, nextImage),
-        traits: role === 'identity' ? normalizeTraitsForSourceMode(previous.traits, 'reference-image') : previous.traits,
-      }));
-      setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
-    } catch (uploadError) {
-      if (isAuthRequiredError(uploadError)) {
-        openAuthGate();
-        return;
-      }
-      setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
-      setStatusMessage(null);
-    }
-  }
-
-  async function triggerUpload(role: CharacterBuilderReferenceImage['role'], fileList: FileList | null) {
-    const file = fileList?.[0];
-    if (!file) return;
-    await handleUpload(role, file);
-  }
-
-  function handleLibrarySelect(asset: CharacterLibraryAsset) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    const role = libraryModalRole;
-    if (!role) return;
-
-    const nextImage: CharacterBuilderReferenceImage = {
-      id: asset.id,
-      url: asset.url,
-      role,
-      width: asset.width ?? null,
-      height: asset.height ?? null,
-      name: null,
-    };
-
-    if (role === 'style') {
-      setShowStyleReferenceSlot(true);
-    }
-
-    setState((previous) => ({
-      ...previous,
-      sourceMode: role === 'identity' ? 'reference-image' : previous.sourceMode,
-      referenceStrength:
-        role === 'identity'
-          ? previous.referenceStrength ?? 'balanced'
-          : previous.referenceStrength,
-      referenceImages: updateReferenceImage(previous.referenceImages, nextImage),
-      traits: role === 'identity' ? normalizeTraitsForSourceMode(previous.traits, 'reference-image') : previous.traits,
-    }));
-    setLibraryModalRole(null);
-    setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
-    setError(null);
-  }
 
   function addMustRemainTag() {
     const tag = normalizeTag(mustRemainDraft);

@@ -19,6 +19,7 @@ const historicalResultsHookPath = join(root, 'frontend/src/components/tools/char
 const pendingRunsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPendingRunsSync.ts');
 const jobSnapshotHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderJobSnapshotLoader.ts');
 const generationRunnerHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderGenerationRunner.ts');
+const referenceAssetsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderReferenceAssets.ts');
 const persistenceHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPersistence.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
@@ -38,6 +39,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(pendingRunsHookPath), 'pending run polling should live in a focused hook');
   assert.ok(existsSync(jobSnapshotHookPath), 'job snapshot loading should live in a focused hook');
   assert.ok(existsSync(generationRunnerHookPath), 'generation submission should live in a focused hook');
+  assert.ok(existsSync(referenceAssetsHookPath), 'reference asset upload and library selection should live in a focused hook');
   assert.ok(existsSync(persistenceHookPath), 'local persistence should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
@@ -46,6 +48,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderJobSnapshotLoader'/, 'workspace should import job snapshot loader hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderGenerationRunner'/, 'workspace should import generation runner hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderReferenceAssets'/, 'workspace should import reference asset hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
@@ -70,12 +73,15 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /async function handleRun\(/, 'generation submission belongs in useCharacterBuilderGenerationRunner');
   assert.doesNotMatch(workspaceSource, /runCharacterBuilderTool/, 'generation API calls belong in useCharacterBuilderGenerationRunner');
   assert.doesNotMatch(workspaceSource, /emitClientMetric\('tool_start'/, 'generation analytics belong in useCharacterBuilderGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /async function handleUpload\(/, 'reference upload handling belongs in useCharacterBuilderReferenceAssets');
+  assert.doesNotMatch(workspaceSource, /function handleLibrarySelect\(/, 'reference library selection belongs in useCharacterBuilderReferenceAssets');
+  assert.doesNotMatch(workspaceSource, /buildReferenceImage/, 'reference image construction belongs in useCharacterBuilderReferenceAssets');
   assert.doesNotMatch(workspaceSource, /readPersistedState\(\)/, 'local hydration belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /writePersistedPendingRuns/, 'pending run persistence belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /visitorSanitizedRef/, 'visitor cleanup tracking belongs in useCharacterBuilderPersistence');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1560, `CharacterBuilderWorkspace should stay below 1560 lines after generation runner extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1485, `CharacterBuilderWorkspace should stay below 1485 lines after reference asset hook extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -93,6 +99,7 @@ test('character builder helper modules expose the expected workspace contract', 
   const pendingRunsHookSource = readFileSync(pendingRunsHookPath, 'utf8');
   const jobSnapshotHookSource = readFileSync(jobSnapshotHookPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
+  const referenceAssetsHookSource = readFileSync(referenceAssetsHookPath, 'utf8');
   const persistenceHookSource = readFileSync(persistenceHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_CHARACTER_COPY =/, 'copy module should export default copy');
@@ -201,6 +208,10 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(generationRunnerHookSource, /runCharacterBuilderTool/, 'generation runner hook should submit character jobs');
   assert.match(generationRunnerHookSource, /emitClientMetric\('tool_start'/, 'generation runner hook should own generation analytics');
   assert.match(generationRunnerHookSource, /normalizeHairAndOutfitModes/, 'generation runner hook should own request trait normalization');
+  assert.match(referenceAssetsHookSource, /export function useCharacterBuilderReferenceAssets/, 'reference asset hook should be exported');
+  assert.match(referenceAssetsHookSource, /uploadImage/, 'reference asset hook should own uploads');
+  assert.match(referenceAssetsHookSource, /buildReferenceImage/, 'reference asset hook should build uploaded references');
+  assert.match(referenceAssetsHookSource, /updateReferenceImage/, 'reference asset hook should update reference slots');
   assert.match(persistenceHookSource, /export function useCharacterBuilderPersistence/, 'persistence hook should be exported');
   assert.match(persistenceHookSource, /readPersistedState/, 'persistence hook should own local hydration');
   assert.match(persistenceHookSource, /writePersistedPendingRuns/, 'persistence hook should own pending run persistence');
