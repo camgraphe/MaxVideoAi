@@ -63,8 +63,8 @@ test('composite preview preserves preview urls but plays canonical video urls', 
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions.ts'),
     'utf8'
   );
-  const dockSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/components/groups/CompositePreviewDock.tsx'),
+  const dockUtilsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/groups/composite-preview-dock-utils.ts'),
     'utf8'
   );
 
@@ -72,8 +72,8 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(videoSettingsSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(videoSettingsSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
   assert.match(renderGroupSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
-  assert.match(dockSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
-  assert.doesNotMatch(dockSource, /return item\.previewUrl \?\? item\.url/);
+  assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
+  assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);
 });
 
 test('rail history previews do not mutate the active render group', () => {
