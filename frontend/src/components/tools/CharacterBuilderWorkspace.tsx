@@ -23,14 +23,11 @@ import {
   createDefaultCharacterBuilderState,
   getCharacterFormatMultiplier,
   normalizeCharacterFormatMode,
-  normalizeTraitsForSourceMode,
 } from '@/lib/character-builder';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
   CharacterBuilderState,
-  CharacterBuilderTraitSource,
-  CharacterBuilderTraits,
   CharacterBuilderReferenceImage,
 } from '@/types/character-builder';
 import {
@@ -59,6 +56,7 @@ import {
 } from './character-builder/_components/character-builder-page-shell';
 import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks/useCharacterBuilderHistoricalResults';
 import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks/useCharacterBuilderJobSnapshotLoader';
+import { useCharacterBuilderLookSummaries } from './character-builder/_hooks/useCharacterBuilderLookSummaries';
 import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/useCharacterBuilderGenerationRunner';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
@@ -66,23 +64,15 @@ import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/u
 import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
 import { useCharacterBuilderResultActions } from './character-builder/_hooks/useCharacterBuilderResultActions';
 import { useCharacterBuilderResultsInfiniteScroll } from './character-builder/_hooks/useCharacterBuilderResultsInfiniteScroll';
+import { useCharacterBuilderTraitActions } from './character-builder/_hooks/useCharacterBuilderTraitActions';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
-  buildResetCharacterBuilderState,
-  countConfiguredSecondaryControls,
-  findChoiceLabel,
   getCharacterBillingProductKey,
   getFlattenedResults,
-  getHairSummary,
-  getOutfitSummary,
   getRefByRole,
   hasCustomOutfitSettings,
   hasCustomHairSettings,
   INITIAL_LOADING_REQUEST_COUNTS,
-  normalizeTag,
-  removeReferenceImage,
-  serializeResettableCharacterBuilderState,
-  summarizeCustomText,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
   BillingProductResponse,
@@ -233,25 +223,51 @@ export default function CharacterBuilderPage() {
   });
   const hasCompletedResults = flattenedResults.length > 0;
   const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
-  const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
-  const resetState = useMemo(() => buildResetCharacterBuilderState(state), [state]);
-  const canResetBuilder = useMemo(
-    () => serializeResettableCharacterBuilderState(state) !== serializeResettableCharacterBuilderState(resetState),
-    [resetState, state]
-  );
-  const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
-  const outfitSummary = getOutfitSummary(state.traits, outfitOptions, copy);
-  const accessoriesFeaturesSummary = [
-    ...accessoryOptions.filter((option) => state.traits.accessories.includes(option.id)).map((option) => option.label),
-    ...distinctiveOptions
-      .filter((option) => state.traits.distinctiveFeatures.includes(option.id))
-      .map((option) => option.label),
-    summarizeCustomText(state.traits.customDetailsDescription),
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  const identitySummary = `${findChoiceLabel(genderOptions, state.traits.genderPresentation.value) ?? copy.open} · ${findChoiceLabel(ageOptions, state.traits.ageRange.value) ?? copy.open}`;
-  const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
+  const {
+    accessoriesFeaturesSummary,
+    canResetBuilder,
+    hairSummary,
+    identitySummary,
+    outfitSummary,
+    realismSummary,
+    resetState,
+    secondaryControlsCount,
+  } = useCharacterBuilderLookSummaries({
+    accessoryOptions,
+    ageOptions,
+    copy,
+    distinctiveOptions,
+    genderOptions,
+    hairColorOptions,
+    hairLengthOptions,
+    hairstyleOptions,
+    hasIdentityReference,
+    outfitOptions,
+    realismOptions,
+    state,
+  });
+  const {
+    addMustRemainTag,
+    handleResetBuilder,
+    handleSelectResult,
+    removeIdentityReference,
+    removeMustRemainTag,
+    removeStyleReference,
+    toggleListValue,
+    updateTrait,
+  } = useCharacterBuilderTraitActions({
+    copy,
+    mustRemainDraft,
+    resetState,
+    setActiveBuildSection,
+    setAdvancedOpen,
+    setError,
+    setHairOpen,
+    setMustRemainDraft,
+    setShowStyleReferenceSlot,
+    setState,
+    setStatusMessage,
+  });
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
   useCharacterBuilderPendingRunsSync({
@@ -288,96 +304,6 @@ export default function CharacterBuilderPage() {
       ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
       : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
-
-  function updateTrait<K extends keyof Pick<
-    CharacterBuilderTraits,
-    | 'genderPresentation'
-    | 'ageRange'
-    | 'skinTone'
-    | 'faceCues'
-    | 'hairColor'
-    | 'hairLength'
-    | 'hairstyle'
-    | 'eyeColor'
-    | 'bodyBuild'
-    | 'outfitStyle'
-  >>(key: K, value: string | 'auto') {
-    setState((previous) => {
-      const nextTraits = {
-        ...previous.traits,
-        [key]: {
-          value,
-          source: (value === 'auto' ? 'auto' : 'manual') as CharacterBuilderTraitSource,
-        },
-      } as CharacterBuilderTraits;
-
-      if (key === 'hairColor' || key === 'hairLength' || key === 'hairstyle') {
-        nextTraits.hairEnabled = hasCustomHairSettings(nextTraits);
-      }
-
-      if (key === 'outfitStyle') {
-        nextTraits.outfitEnabled = hasCustomOutfitSettings(nextTraits);
-      }
-
-      return {
-        ...previous,
-        traits: nextTraits,
-      };
-    });
-  }
-
-  function toggleListValue(key: 'accessories' | 'distinctiveFeatures', value: string) {
-    setState((previous) => {
-      const current = previous.traits[key];
-      const nextValues = current.includes(value)
-        ? current.filter((entry) => entry !== value)
-        : [...current, value];
-      return {
-        ...previous,
-        traits: {
-          ...previous.traits,
-          [key]: nextValues,
-        },
-      };
-    });
-  }
-
-  const handleResetBuilder = useCallback(() => {
-    setState(resetState);
-    setAdvancedOpen(false);
-    setHairOpen(false);
-    setActiveBuildSection('identity');
-    setShowStyleReferenceSlot(Boolean(getRefByRole(resetState.referenceImages, 'style')));
-    setMustRemainDraft('');
-    setError(null);
-    setStatusMessage(copy.resetDone);
-  }, [copy.resetDone, resetState]);
-
-  function addMustRemainTag() {
-    const tag = normalizeTag(mustRemainDraft);
-    if (!tag) return;
-    setState((previous) => ({
-      ...previous,
-      mustRemainVisible: previous.mustRemainVisible.includes(tag)
-        ? previous.mustRemainVisible
-        : [...previous.mustRemainVisible, tag],
-    }));
-    setMustRemainDraft('');
-  }
-
-  function removeMustRemainTag(tag: string) {
-    setState((previous) => ({
-      ...previous,
-      mustRemainVisible: previous.mustRemainVisible.filter((entry) => entry !== tag),
-    }));
-  }
-
-  const handleSelectResult = useCallback((resultId: string) => {
-    setState((previous) => ({
-      ...previous,
-      selectedResultId: resultId,
-    }));
-  }, []);
 
   function renderResultsGallery(variant: 'desktop' | 'mobile') {
     return (
@@ -532,18 +458,7 @@ export default function CharacterBuilderPage() {
                           removeLabel={copy.references.remove}
                           libraryLabel={copy.library.open}
                           optionalLabel={copy.sections.optional}
-                          onRemove={() =>
-                            setState((previous) => ({
-                              ...previous,
-                              sourceMode: previous.sourceMode === 'reference-image' ? 'scratch' : previous.sourceMode,
-                              referenceStrength: previous.sourceMode === 'reference-image' ? null : previous.referenceStrength,
-                              referenceImages: removeReferenceImage(previous.referenceImages, 'identity'),
-                              traits:
-                                previous.sourceMode === 'reference-image'
-                                  ? normalizeTraitsForSourceMode(previous.traits, 'scratch')
-                                  : previous.traits,
-                            }))
-                          }
+                          onRemove={removeIdentityReference}
                         />
                         {showStyleReferenceSlot || styleReference ? (
                           <ReferenceSlot
@@ -568,13 +483,7 @@ export default function CharacterBuilderPage() {
                             removeLabel={copy.references.remove}
                             libraryLabel={copy.library.open}
                             optionalLabel={copy.sections.optional}
-                            onRemove={() => {
-                              setShowStyleReferenceSlot(false);
-                              setState((previous) => ({
-                                ...previous,
-                                referenceImages: removeReferenceImage(previous.referenceImages, 'style'),
-                              }));
-                            }}
+                            onRemove={removeStyleReference}
                           />
                         ) : (
                           <button
