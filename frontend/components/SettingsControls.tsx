@@ -5,6 +5,10 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { matchesDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
+import {
+  SettingsKlingV3Controls,
+  SettingsSeedanceAdvancedControls,
+} from '@/components/settings-controls/settings-control-engine-advanced';
 import { SettingsGenericAdvancedFields } from '@/components/settings-controls/settings-control-generic-fields';
 import { FieldGroup, RangeWithInput } from '@/components/settings-controls/settings-control-parts';
 import type { SettingsControlsProps } from '@/components/settings-controls/settings-control-types';
@@ -291,119 +295,28 @@ export function SettingsControls({
             ) : null}
 
             {showKlingV3Controls ? (
-              <div className="space-y-3">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Kling v3 controls</span>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Shot type</span>
-                    <div className="flex flex-wrap gap-2">
-                      {(['customize', 'intelligent'] as const).map((option) => (
-                        <Button
-                          key={option}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={mode === 'i2v'}
-                          onClick={() => {
-                            if (mode === 'i2v') return;
-                            onKlingShotTypeChange?.(option);
-                          }}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === klingShotType
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option}
-                        </Button>
-                      ))}
-                    </div>
-                    {mode === 'i2v' ? (
-                      <span className="text-[11px] text-text-muted">Shot type is locked to customize for image-to-video.</span>
-                    ) : null}
-                  </label>
-                  {showKlingV3VoiceControls ? (
-                    <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                      <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
-                      <input
-                        type="text"
-                        placeholder="voice_1, voice_2"
-                        value={voiceIdsValue}
-                        onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
-                        className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                      <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
-                      {voiceControlActive ? (
-                        <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
-                      ) : null}
-                    </label>
-                  ) : null}
-                </div>
-              </div>
+              <SettingsKlingV3Controls
+                klingShotType={klingShotType}
+                layout="compact"
+                mode={mode}
+                onKlingShotTypeChange={onKlingShotTypeChange}
+                onVoiceIdsChange={onVoiceIdsChange}
+                showVoiceControls={showKlingV3VoiceControls}
+                voiceControlActive={voiceControlActive}
+                voiceIdsValue={voiceIdsValue}
+              />
             ) : null}
 
             {showSeedanceControls ? (
-              <div className="space-y-3">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Seedance advanced</span>
-                <div className="grid gap-3 md:grid-cols-3">
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Seed</span>
-                    <input
-                      type="number"
-                      placeholder="-1 for random"
-                      value={seedValue}
-                      onChange={(e) => onSeedChange?.(e.currentTarget.value)}
-                      className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <span className="text-[11px] text-text-muted">Use -1 for random.</span>
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Camera fixed</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'camera-on' : 'camera-off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onCameraFixedChange?.(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === cameraFixed
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? 'On' : 'Off'}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Safety checker</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'safety-on' : 'safety-off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onSafetyCheckerChange?.(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === safetyChecker
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? 'On' : 'Off'}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                </div>
-              </div>
+              <SettingsSeedanceAdvancedControls
+                cameraFixed={cameraFixed}
+                layout="compact"
+                onCameraFixedChange={onCameraFixedChange}
+                onSafetyCheckerChange={onSafetyCheckerChange}
+                onSeedChange={onSeedChange}
+                safetyChecker={safetyChecker}
+                seedValue={seedValue}
+              />
             ) : null}
 
             {engine.params.cfg_scale ? (
@@ -795,121 +708,28 @@ export function SettingsControls({
             )}
 
             {showKlingV3Controls && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Kling v3 controls</span>
-                <div className="space-y-2 rounded-input border border-border bg-surface p-3">
-                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Shot type</span>
-                    <div className="flex flex-wrap gap-2">
-                      {(['customize', 'intelligent'] as const).map((option) => (
-                        <Button
-                          key={option}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={mode === 'i2v'}
-                          onClick={() => {
-                            if (mode === 'i2v') return;
-                            onKlingShotTypeChange?.(option);
-                          }}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === klingShotType
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option}
-                        </Button>
-                      ))}
-                    </div>
-                    {mode === 'i2v' && (
-                      <span className="text-[11px] text-text-muted">
-                        Shot type is locked to customize for image-to-video.
-                      </span>
-                    )}
-                  </label>
-                  {showKlingV3VoiceControls ? (
-                    <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                      <span className="text-[12px] uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
-                      <input
-                        type="text"
-                        placeholder="voice_1, voice_2"
-                        value={voiceIdsValue}
-                        onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
-                        className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                      <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
-                      {voiceControlActive && (
-                        <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
-                      )}
-                    </label>
-                  ) : null}
-                </div>
-              </div>
+              <SettingsKlingV3Controls
+                klingShotType={klingShotType}
+                layout="panel"
+                mode={mode}
+                onKlingShotTypeChange={onKlingShotTypeChange}
+                onVoiceIdsChange={onVoiceIdsChange}
+                showVoiceControls={showKlingV3VoiceControls}
+                voiceControlActive={voiceControlActive}
+                voiceIdsValue={voiceIdsValue}
+              />
             )}
 
             {showSeedanceControls && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Seedance advanced</span>
-                <div className="space-y-3 rounded-input border border-border bg-surface p-3">
-                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
-                    <input
-                      type="number"
-                      placeholder="-1 for random"
-                      value={seedValue}
-                      onChange={(e) => onSeedChange?.(e.currentTarget.value)}
-                      className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <span className="text-[11px] text-text-muted">Use -1 for random.</span>
-                  </label>
-                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Camera fixed</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'on' : 'off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onCameraFixedChange?.(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === cameraFixed
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? 'On' : 'Off'}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Safety checker</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'on' : 'off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onSafetyCheckerChange?.(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === safetyChecker
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? 'On' : 'Off'}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                </div>
-              </div>
+              <SettingsSeedanceAdvancedControls
+                cameraFixed={cameraFixed}
+                layout="panel"
+                onCameraFixedChange={onCameraFixedChange}
+                onSafetyCheckerChange={onSafetyCheckerChange}
+                onSeedChange={onSeedChange}
+                safetyChecker={safetyChecker}
+                seedValue={seedValue}
+              />
             )}
 
             {engine.params.cfg_scale && (
