@@ -10,8 +10,8 @@ import type {
   CharacterBuilderState,
 } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
+import { findChoiceLabel } from '../_lib/character-builder-summary-helpers';
 import {
-  findChoiceLabel,
   getFormatDisplayLabel,
   getResultActionLabel,
 } from '../_lib/character-builder-helpers';

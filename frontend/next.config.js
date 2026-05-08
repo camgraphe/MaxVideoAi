@@ -74,6 +74,12 @@ const nextConfig = {
     qualities: [52, 70, 72, 75, 80],
     localPatterns: [
       { pathname: '/assets/**' },
+      { pathname: '/brand/**' },
+      { pathname: '/examples/**' },
+      { pathname: '/hero/**' },
+      { pathname: '/icons/**' },
+      { pathname: '/images/**' },
+      { pathname: '/og/**' },
       { pathname: '/assets/tools/character-builder-workspace.png', search: '?hero=1' },
     ],
     remotePatterns: [

@@ -13,6 +13,8 @@ import type {
 import {
   findChoiceLabel,
   findChoiceSwatch,
+} from '../_lib/character-builder-summary-helpers';
+import {
   formatUsd,
   hasCustomHairSettings,
 } from '../_lib/character-builder-helpers';
