@@ -38,7 +38,7 @@ test('upscale API splits image and video routes so heavy native dependencies do 
 });
 
 test('client posts upscale jobs to the media-specific API route', () => {
-  const apiSource = source('frontend/lib/api.ts');
+  const apiSource = source('frontend/lib/api-generation.ts');
 
   assert.match(apiSource, /\/api\/tools\/upscale\/\$\{payload\.mediaType\}/);
 });
