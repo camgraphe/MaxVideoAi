@@ -1,24 +1,32 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
+import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor } from '@/lib/model-families';
-import type { listExamplesPage } from '@/server/videos';
+import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import {
   CURRENT_ENGINE_MODEL_LINKS_BY_GROUP,
   ENGINE_META,
   ENGINE_MODEL_LINKS,
   ENGINE_MODEL_LINKS_BY_GROUP,
+  FAMILY_INITIAL_DESKTOP_GALLERY_BATCH,
   GALLERY_POSTER_OPTIONS,
   HERO_POSTER_OPTIONS,
+  HUB_INITIAL_DESKTOP_GALLERY_BATCH,
   PREFERRED_ENGINE_ORDER,
   buildLocalizedExampleLabel,
+  buildMainVideoHeroLine,
   buildModelHref,
   formatModelSlugLabel,
   formatPromptExcerpt,
+  getAspectRatioStyle,
   getPlaceholderPoster,
+  getVideoMimeType,
+  isPortraitAspectRatio,
   normalizeFilterId,
   resolveEngineLinkId,
   resolveFilterDescriptor,
+  toAbsoluteUrl,
   type EngineFilterOption,
 } from './examples-route-utils';
 
@@ -155,6 +163,106 @@ export function buildExamplesGalleryData({
   return {
     videos: filteredEntries.map((entry) => entry.video),
     clientVideos: filteredEntries.map(({ video, index }) => buildClientVideo({ video, index, locale })),
+  };
+}
+
+export function buildExamplesGalleryPresentation({
+  allVideos,
+  clientVideos,
+  currentPage,
+  isModelLanding,
+  pageOffsetStart,
+  sort,
+  videos,
+}: {
+  allVideos: ExampleRouteVideo[];
+  clientVideos: ExampleGalleryVideo[];
+  currentPage: number;
+  isModelLanding: boolean;
+  pageOffsetStart: number;
+  sort: ExampleSort;
+  videos: ExampleRouteVideo[];
+}) {
+  const showModelHero = isModelLanding && currentPage === 1 && sort === 'playlist';
+  const playableHeroCard = showModelHero ? pickFirstPlayableVideo(clientVideos) : null;
+  const mainVideoIndex = playableHeroCard ? clientVideos.indexOf(playableHeroCard) : -1;
+  const mainVideo =
+    mainVideoIndex >= 0
+      ? {
+          video: videos[mainVideoIndex],
+          card: clientVideos[mainVideoIndex],
+        }
+      : null;
+  const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
+  const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
+  const initialDesktopBatch = isModelLanding ? FAMILY_INITIAL_DESKTOP_GALLERY_BATCH : HUB_INITIAL_DESKTOP_GALLERY_BATCH;
+  const initialExamples = galleryClientVideos.slice(0, initialDesktopBatch);
+  const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
+  const pageOffsetEnd = pageOffsetStart + allVideos.length;
+  const consumedMaxIndex = Math.max(mainVideo?.card.sourceIndex ?? -1, initialMaxIndex);
+  const nextOffsetStart = pageOffsetStart + Math.max(0, consumedMaxIndex + 1);
+  const showGallerySection = galleryClientVideos.length > 0 || nextOffsetStart < pageOffsetEnd;
+
+  return {
+    galleryClientVideos,
+    galleryVideos,
+    initialDesktopBatch,
+    initialExamples,
+    mainVideo,
+    nextOffsetStart,
+    pageOffsetEnd,
+    showGallerySection,
+  };
+}
+
+export function buildExamplesMainVideoFeatureData({
+  locale,
+  mainVideo,
+  modelLandingSummary,
+  modelLandingLabel,
+  modelLandingHeroSubtitle,
+}: {
+  locale: AppLocale;
+  mainVideo: {
+    video: ExampleRouteVideo;
+    card: ExampleGalleryVideo;
+  } | null;
+  modelLandingSummary?: string | null;
+  modelLandingLabel?: string | null;
+  modelLandingHeroSubtitle?: string | null;
+}) {
+  const mainVideoModelLabel = modelLandingLabel ?? mainVideo?.card.engineLabel ?? 'Model';
+  const title =
+    locale === 'en'
+      ? mainVideo?.video.promptExcerpt ||
+        mainVideo?.video.prompt ||
+        `${mainVideoModelLabel} example video`
+      : buildLocalizedExampleLabel(
+          locale,
+          mainVideoModelLabel,
+          mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null,
+          mainVideo?.video.durationSec ?? null
+        );
+  const promptFull = locale === 'en' ? mainVideo?.video.prompt?.trim() || null : null;
+  const heroLine = mainVideo
+    ? buildMainVideoHeroLine(locale, mainVideoModelLabel, modelLandingHeroSubtitle ?? modelLandingSummary ?? null)
+    : null;
+  const contentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
+  const poster =
+    mainVideo?.card.heroPosterUrl ?? mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
+  const aspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
+  const isPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
+  const mimeType = getVideoMimeType(contentUrl);
+
+  return {
+    aspectRatio,
+    contentUrl,
+    heroLine,
+    isPortrait,
+    mimeType,
+    poster,
+    promptFull,
+    title,
   };
 }
 

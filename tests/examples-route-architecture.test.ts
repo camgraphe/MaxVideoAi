@@ -8,6 +8,9 @@ const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examp
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-route-utils.ts');
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts');
 const pageDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-data.ts');
+const hrefsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-hrefs.ts');
+const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-jsonld.ts');
+const pageViewPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-page-view.tsx');
 const mainVideoFeaturePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature.tsx');
 const engineFilterNavPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-engine-filter-nav.tsx');
 const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-jsonld-scripts.tsx');
@@ -17,6 +20,9 @@ const pageSource = readFileSync(pagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const pageDataSource = readFileSync(pageDataPath, 'utf8');
+const hrefsSource = readFileSync(hrefsPath, 'utf8');
+const jsonLdSource = readFileSync(jsonLdPath, 'utf8');
+const pageViewSource = readFileSync(pageViewPath, 'utf8');
 const mainVideoFeatureSource = readFileSync(mainVideoFeaturePath, 'utf8');
 const engineFilterNavSource = readFileSync(engineFilterNavPath, 'utf8');
 const jsonLdScriptsSource = readFileSync(jsonLdScriptsPath, 'utf8');
@@ -27,18 +33,20 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.ok(existsSync(utilsPath), 'examples route helper module should exist');
   assert.ok(existsSync(copyPath), 'examples route copy helper module should exist');
   assert.ok(existsSync(pageDataPath), 'examples page data helper module should exist');
+  assert.ok(existsSync(hrefsPath), 'examples href helper module should exist');
+  assert.ok(existsSync(jsonLdPath), 'examples JSON-LD builder module should exist');
+  assert.ok(existsSync(pageViewPath), 'examples page view component should exist');
   assert.ok(existsSync(mainVideoFeaturePath), 'examples main video feature should exist');
   assert.ok(existsSync(engineFilterNavPath), 'examples engine filter nav should exist');
   assert.ok(existsSync(jsonLdScriptsPath), 'examples JSON-LD scripts should exist');
   assert.ok(existsSync(routeSectionsPath), 'examples route sections should exist');
 
-  assert.match(pageSource, /from '\.\/_components\/examples-main-video-feature'/, 'route should import main video feature');
-  assert.match(pageSource, /from '\.\/_components\/examples-engine-filter-nav'/, 'route should import engine filter nav');
-  assert.match(pageSource, /from '\.\/_components\/examples-jsonld-scripts'/, 'route should import JSON-LD scripts');
-  assert.match(pageSource, /from '\.\/_components\/examples-route-sections'/, 'route should import route sections');
+  assert.match(pageSource, /from '\.\/_components\/examples-page-view'/, 'route should import page view');
   assert.match(pageSource, /from '\.\/_lib\/examples-route-utils'/, 'route should import examples helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-copy'/, 'route should import examples copy helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-data'/, 'route should import examples data builders');
+  assert.match(pageSource, /from '\.\/_lib\/examples-page-hrefs'/, 'route should import href builders');
+  assert.match(pageSource, /from '\.\/_lib\/examples-page-jsonld'/, 'route should import JSON-LD builders');
   assert.match(pageSource, /export async function generateMetadata/, 'route should keep metadata orchestration');
   assert.match(pageSource, /export default async function ExamplesPage/, 'route should keep page orchestration');
 
@@ -64,9 +72,17 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.doesNotMatch(pageSource, /<details key=\{item\.question\}/, 'FAQ disclosure markup belongs in ExamplesFaqSection');
   assert.doesNotMatch(pageSource, /const engineFilterMap =/, 'engine filter state belongs in examples page data helpers');
   assert.doesNotMatch(pageSource, /const filteredEntries =/, 'gallery entry projection belongs in examples page data helpers');
+  assert.doesNotMatch(pageSource, /const buildPaginationHref =/, 'pagination href building belongs in examples href helpers');
+  assert.doesNotMatch(pageSource, /const buildEngineFilterHref = \(engineId: string \| null\): string => \{/, 'filter href details belong in examples href helpers');
+  assert.doesNotMatch(pageSource, /BreadcrumbList/, 'breadcrumb schema building belongs in examples JSON-LD helpers');
+  assert.doesNotMatch(pageSource, /FAQPage/, 'FAQ schema building belongs in examples JSON-LD helpers');
+  assert.doesNotMatch(pageSource, /ItemListOrderAscending/, 'item list schema building belongs in examples JSON-LD helpers');
+  assert.doesNotMatch(pageSource, /pickFirstPlayableVideo\(clientVideos\)/, 'hero video selection belongs in examples page data helpers');
+  assert.doesNotMatch(pageSource, /<ExamplesMainVideoFeature/, 'route view should render the main video feature');
+  assert.doesNotMatch(pageSource, /<ExamplesGallerySection/, 'route view should render the gallery section');
 
   const lineCount = pageSource.split('\n').length;
-  assert.ok(lineCount <= 620, `examples page should stay below 620 lines after route section and data extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 400, `examples page should stay below 400 lines after route extraction, got ${lineCount}`);
 });
 
 test('examples helper module exposes the route contract', () => {
@@ -126,6 +142,8 @@ test('examples page data helper owns filter, model link, and gallery projections
     'buildExamplesEngineFilterState',
     'buildExamplesModelLinks',
     'buildExamplesGalleryData',
+    'buildExamplesGalleryPresentation',
+    'buildExamplesMainVideoFeatureData',
   ]) {
     assert.match(pageDataSource, new RegExp(`export function ${exportName}\\(`), `${exportName} should be exported`);
   }
@@ -134,7 +152,26 @@ test('examples page data helper owns filter, model link, and gallery projections
   assert.match(pageDataSource, /PREFERRED_ENGINE_ORDER/, 'page data helper should own preferred family ordering');
   assert.match(pageDataSource, /buildOptimizedPosterUrl/, 'page data helper should own gallery poster optimization');
   assert.match(pageDataSource, /formatPromptExcerpt/, 'page data helper should own client prompt display shaping');
+  assert.match(pageDataSource, /pickFirstPlayableVideo/, 'page data helper should own hero video selection');
+  assert.match(pageDataSource, /buildMainVideoHeroLine/, 'page data helper should own main video hero copy shaping');
   assert.match(pageDataSource, /export type ExamplesModelLink/, 'page data helper should export model link shape');
+});
+
+test('examples href and JSON-LD helpers expose route contracts', () => {
+  for (const exportName of [
+    'buildExamplesEngineFilterHref',
+    'buildExamplesPaginationHref',
+    'buildExamplesQueryParams',
+    'buildExamplesNormalizedRedirectTarget',
+  ]) {
+    assert.match(hrefsSource, new RegExp(`export function ${exportName}\\(`), `${exportName} should be exported`);
+  }
+
+  assert.match(jsonLdSource, /export function buildExamplesJsonLd\(/, 'JSON-LD builder should be exported');
+  assert.match(jsonLdSource, /BreadcrumbList/, 'JSON-LD builder should own breadcrumb schema');
+  assert.match(jsonLdSource, /FAQPage/, 'JSON-LD builder should own FAQ schema');
+  assert.match(jsonLdSource, /ItemListOrderAscending/, 'JSON-LD builder should own item list ordering');
+  assert.match(jsonLdSource, /numberOfItems/, 'JSON-LD builder should preserve item list counts');
 });
 
 test('examples page copy helper exposes localized route copy builders', () => {
@@ -159,6 +196,11 @@ test('examples main video feature owns the hero media card', () => {
 });
 
 test('examples route components own nav and JSON-LD rendering', () => {
+  assert.match(pageViewSource, /export function ExamplesPageView/, 'page view should be exported');
+  assert.match(pageViewSource, /ExamplesEngineFilterNav/, 'page view should compose engine filter nav');
+  assert.match(pageViewSource, /ExamplesMainVideoFeature/, 'page view should compose the main video feature');
+  assert.match(pageViewSource, /ExamplesGallerySection/, 'page view should compose the gallery section');
+  assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
   assert.match(engineFilterNavSource, /getEngineAccentOutlineStyle/, 'engine filter nav should own active brand outline styling');

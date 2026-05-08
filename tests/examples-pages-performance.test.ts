@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-const examplesPageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx", 'utf8');
+const examplesPageViewSource = readFileSync(
+  "frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-page-view.tsx",
+  'utf8'
+);
 const examplesMainVideoFeatureSource = readFileSync(
   "frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature.tsx",
   'utf8'
@@ -17,7 +20,7 @@ test('examples hero video keeps mobile rendering poster-first instead of autopla
 });
 
 test('examples model landing hero links do not prefetch RSC routes during initial render', () => {
-  assert.match(examplesPageSource, /<ExamplesMainVideoFeature/);
+  assert.match(examplesPageViewSource, /<ExamplesMainVideoFeature/);
   assert.match(
     examplesMainVideoFeatureSource,
     /<Link\s+[\s\S]{0,180}?href=\{exampleHref\}[\s\S]{0,220}?prefetch=\{false\}/

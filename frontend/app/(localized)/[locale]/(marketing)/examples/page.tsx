@@ -1,54 +1,29 @@
-import clsx from 'clsx';
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { listExampleFamilyPage, listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
+import { listExampleFamilyPage, listExamples, listExamplesPage } from '@/server/videos';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding, getHubExamplesFaq } from '@/lib/examples/modelLanding';
-import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import {
   ALLOWED_QUERY_KEYS,
   DEFAULT_SORT,
-  ENGINE_META,
   EXAMPLES_PAGE_SIZE,
-  FAMILY_INITIAL_DESKTOP_GALLERY_BATCH,
   GALLERY_SLUG_MAP,
-  HUB_INITIAL_DESKTOP_GALLERY_BATCH,
   INITIAL_MOBILE_GALLERY_BATCH,
   SITE,
-  appendTrackingParams,
-  buildLocalizedExampleLabel,
-  buildMainVideoHeroLine,
   buildPricingHref,
   compactLeadCopy,
-  getAspectRatioStyle,
   getSort,
-  getVideoMimeType,
-  isPortraitAspectRatio,
   isTrackingParam,
   resolveCanonicalEngineParam,
   resolveEngineLabel,
-  resolveEngineLinkId,
   toAbsoluteUrl,
 } from './_lib/examples-route-utils';
-import { ExamplesEngineFilterNav } from './_components/examples-engine-filter-nav';
-import { ExamplesJsonLdScripts } from './_components/examples-jsonld-scripts';
-import { ExamplesMainVideoFeature } from './_components/examples-main-video-feature';
-import {
-  ExamplesFaqSection,
-  ExamplesGallerySection,
-  ExamplesIntroHero,
-  ExamplesModelLandingCardsSection,
-  ExamplesModelLinksSection,
-  ExamplesNextStepsSection,
-  ExamplesPaginationNav,
-  ExamplesSummarySection,
-} from './_components/examples-route-sections';
+import { ExamplesPageView } from './_components/examples-page-view';
 import {
   buildExamplesNextStepLinks,
   getExamplesBrowseByModelLabel,
@@ -61,8 +36,16 @@ import {
 import {
   buildExamplesEngineFilterState,
   buildExamplesGalleryData,
+  buildExamplesGalleryPresentation,
+  buildExamplesMainVideoFeatureData,
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
+import {
+  buildExamplesEngineFilterHref,
+  buildExamplesNormalizedRedirectTarget,
+  buildExamplesPaginationHref,
+} from './_lib/examples-page-hrefs';
+import { buildExamplesJsonLd } from './_lib/examples-page-jsonld';
 
 export async function generateMetadata(
   props: {
@@ -201,20 +184,16 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const galleryBasePath = `${localePrefix}/${gallerySegment}`.replace(/\/{2,}/g, '/');
 
   const redirectToNormalized = (targetPage: number) => {
-    const normalizedBasePath =
-      engineFromPath && modelLanding ? `${galleryBasePath}/${modelLanding.slug}` : galleryBasePath;
-    const redirectedQuery = new URLSearchParams();
-    appendTrackingParams(redirectedQuery, searchParams);
-    if (sort !== DEFAULT_SORT) {
-      redirectedQuery.set('sort', sort);
-    }
-    if (targetPage > 1) {
-      redirectedQuery.set('page', String(targetPage));
-    }
-    const target = redirectedQuery.toString()
-      ? `${normalizedBasePath}?${redirectedQuery.toString()}`
-      : normalizedBasePath;
-    permanentRedirect(target);
+    permanentRedirect(
+      buildExamplesNormalizedRedirectTarget({
+        engineFromPath,
+        galleryBasePath,
+        modelLandingSlug: modelLanding?.slug,
+        searchParams,
+        sort,
+        targetPage,
+      })
+    );
   };
 
   if (hasInvalidPageParam) {
@@ -224,18 +203,16 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
   if (collapsedEngineParam && !engineFromPath) {
     if (canonicalExampleSlug) {
-      const redirectedQuery = new URLSearchParams();
-      appendTrackingParams(redirectedQuery, searchParams);
-      if (sort !== DEFAULT_SORT) {
-        redirectedQuery.set('sort', sort);
-      }
-      if (currentPage > 1) {
-        redirectedQuery.set('page', String(currentPage));
-      }
-      const target = redirectedQuery.toString()
-        ? `${galleryBasePath}/${canonicalExampleSlug}?${redirectedQuery.toString()}`
-        : `${galleryBasePath}/${canonicalExampleSlug}`;
-      permanentRedirect(target);
+      permanentRedirect(
+        buildExamplesNormalizedRedirectTarget({
+          currentPage,
+          engineFromPath: '',
+          galleryBasePath: `${galleryBasePath}/${canonicalExampleSlug}`,
+          searchParams,
+          sort,
+          targetPage: currentPage,
+        })
+      );
     }
     redirectToNormalized(currentPage);
   }
@@ -302,288 +279,116 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     locale: appLocale,
     selectedEngine,
   });
-  const showModelHero = isModelLanding && currentPage === 1 && sort === DEFAULT_SORT;
-  const playableHeroCard = showModelHero ? pickFirstPlayableVideo(clientVideos) : null;
-  const mainVideoIndex = playableHeroCard ? clientVideos.indexOf(playableHeroCard) : -1;
-  const mainVideo =
-    mainVideoIndex >= 0
-      ? {
-          video: videos[mainVideoIndex],
-          card: clientVideos[mainVideoIndex],
-        }
-      : null;
-  const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
-  const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
-  const initialDesktopBatch = isModelLanding ? FAMILY_INITIAL_DESKTOP_GALLERY_BATCH : HUB_INITIAL_DESKTOP_GALLERY_BATCH;
-  const initialExamples = galleryClientVideos.slice(0, initialDesktopBatch);
-  const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
-  const pageOffsetStart = offset;
-  const pageOffsetEnd = offset + allVideos.length;
-  const consumedMaxIndex = Math.max(mainVideo?.card.sourceIndex ?? -1, initialMaxIndex);
-  const nextOffsetStart = pageOffsetStart + Math.max(0, consumedMaxIndex + 1);
+  const {
+    galleryVideos,
+    initialDesktopBatch,
+    initialExamples,
+    mainVideo,
+    nextOffsetStart,
+    pageOffsetEnd,
+    showGallerySection,
+  } = buildExamplesGalleryPresentation({
+    allVideos,
+    clientVideos,
+    currentPage,
+    isModelLanding,
+    pageOffsetStart: offset,
+    sort,
+    videos,
+  });
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
-  const showGallerySection = galleryClientVideos.length > 0 || nextOffsetStart < pageOffsetEnd;
-  const buildQueryParams = (
-    nextSort: ExampleSort,
-    engineValue: string | null,
-    pageValue?: number
-  ): Record<string, string> | undefined => {
-    const query: Record<string, string> = {};
-    if (nextSort !== DEFAULT_SORT) {
-      query.sort = nextSort;
-    }
-    if (engineValue && !engineFromPath) {
-      query.engine = engineValue;
-    }
-    if (pageValue && pageValue > 1) {
-      query.page = String(pageValue);
-    }
-    return Object.keys(query).length ? query : undefined;
-  };
-  const buildEngineFilterHref = (engineId: string | null): string => {
-    if (!engineId) {
-      return galleryBasePath;
-    }
-    const canonicalSlug = resolveExampleCanonicalSlug(engineId);
-    if (canonicalSlug) {
-      return `${galleryBasePath}/${canonicalSlug}`;
-    }
-    const query = new URLSearchParams();
-    query.set('engine', engineId);
-    const suffix = query.toString();
-    return suffix ? `${galleryBasePath}?${suffix}` : galleryBasePath;
-  };
-  const buildPaginationHref = (targetPage: number) => {
-    const query = buildQueryParams(sort, selectedEngine, targetPage);
-    if (engineFromPath && modelLanding) {
-      const modelPath = `${galleryBasePath}/${modelLanding.slug}`;
-      if (!query) return modelPath;
-      const params = new URLSearchParams(query);
-      const suffix = params.toString();
-      return suffix ? `${modelPath}?${suffix}` : modelPath;
-    }
-    return {
-      pathname: '/examples' as const,
-      query,
-    };
-  };
-  const previousPageHref = buildPaginationHref(Math.max(1, currentPage - 1));
-  const nextPageHref = buildPaginationHref(currentPage + 1);
-
-  const itemListElements = galleryVideos.map((video, index) => {
-      const canonicalEngineId = resolveEngineLinkId(video.engineId);
-      const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
-      const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-      const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
-      const detailPath = `/video/${encodeURIComponent(video.id)}`;
-      const absoluteUrl = `${SITE}${detailPath}`;
-      const fallbackLabel = `MaxVideoAI example ${video.id}`;
-      const name =
-        locale === 'en'
-          ? video.promptExcerpt || video.prompt || `${engineLabel} video example` || fallbackLabel
-          : buildLocalizedExampleLabel(locale as AppLocale, engineLabel, video.aspectRatio ?? null, video.durationSec);
-      return {
-        '@type': 'ListItem',
-        position: index + 1,
-        url: absoluteUrl,
-        name: name || fallbackLabel,
-      };
-    });
-
-  const baseExamplesUrl = `${SITE}${galleryBasePath}`;
+  const buildEngineFilterHref = (engineId: string | null): string =>
+    buildExamplesEngineFilterHref({ engineId, galleryBasePath });
+  const previousPageHref = buildExamplesPaginationHref({
+    engineFromPath,
+    galleryBasePath,
+    modelLandingSlug: modelLanding?.slug,
+    selectedEngine,
+    sort,
+    targetPage: Math.max(1, currentPage - 1),
+  });
+  const nextPageHref = buildExamplesPaginationHref({
+    engineFromPath,
+    galleryBasePath,
+    modelLandingSlug: modelLanding?.slug,
+    selectedEngine,
+    sort,
+    targetPage: currentPage + 1,
+  });
   const canonicalUrl = modelLanding
     ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
-    : baseExamplesUrl;
-  const mainVideoModelLabel = modelLanding?.label ?? selectedOption?.label ?? mainVideo?.card.engineLabel ?? 'Model';
-  const mainVideoTitle =
-    locale === 'en'
-      ? mainVideo?.video.promptExcerpt ||
-        mainVideo?.video.prompt ||
-        `${mainVideoModelLabel} example video`
-      : buildLocalizedExampleLabel(
-          locale as AppLocale,
-          mainVideoModelLabel,
-          mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null,
-          mainVideo?.video.durationSec ?? null
-        );
-  const mainVideoPromptFull = locale === 'en' ? mainVideo?.video.prompt?.trim() || null : null;
-  const mainVideoHeroLine = mainVideo
-    ? buildMainVideoHeroLine(
-        locale as AppLocale,
-        mainVideoModelLabel,
-        modelLanding?.heroSubtitle ?? modelLanding?.summary ?? null
-      )
-    : null;
-  const mainVideoContentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
-  const mainVideoPoster =
-    mainVideo?.card.heroPosterUrl ?? mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
-  const mainVideoAspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
-  const mainVideoIsPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
-  const mainVideoMimeType = getVideoMimeType(mainVideoContentUrl);
-  const breadcrumbLabels = getBreadcrumbLabels(appLocale);
-  const breadcrumbItems = [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: breadcrumbLabels.home,
-      item: `${SITE}${localePrefix || ''}`,
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: breadcrumbLabels.examples,
-      item: baseExamplesUrl,
-    },
-  ];
-  if (modelLanding) {
-    breadcrumbItems.push({
-      '@type': 'ListItem',
-      position: 3,
-      name: modelLanding.label,
-      item: canonicalUrl,
-    });
-  }
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: breadcrumbItems,
-  };
-
-  const itemListJson =
-    itemListElements.length > 0
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
-          name: modelLanding
-            ? `AI video examples for ${modelLanding.label} on MaxVideoAI`
-            : 'AI video examples on MaxVideoAI',
-          numberOfItems: itemListElements.length,
-          itemListOrder: 'https://schema.org/ItemListOrderAscending',
-          url: canonicalUrl,
-          itemListElement: itemListElements,
-        }
-      : null;
-  const faqJsonLd = faqBlock.items.length
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: faqBlock.items.map((item) => ({
-          '@type': 'Question',
-          name: item.question,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: item.answer,
-          },
-        })),
-        }
-      : null;
+    : `${SITE}${galleryBasePath}`;
+  const mainVideoFeature = buildExamplesMainVideoFeatureData({
+    locale: appLocale,
+    mainVideo,
+    modelLandingHeroSubtitle: modelLanding?.heroSubtitle,
+    modelLandingLabel: modelLanding?.label ?? selectedOption?.label,
+    modelLandingSummary: modelLanding?.summary,
+  });
+  const { breadcrumbJsonLd, faqJsonLd, itemListJson } = buildExamplesJsonLd({
+    canonicalUrl,
+    faqBlock,
+    galleryBasePath,
+    galleryVideos,
+    locale: appLocale,
+    localePrefix,
+    modelLandingLabel: modelLanding?.label ?? null,
+  });
   const mainVideoCopy = getExamplesMainVideoCopy(appLocale);
 
   return (
-    <>
-      <ExamplesEngineFilterNav
-        browseByModelLabel={browseByModelLabel}
-        engineFilterAllLabel={engineFilterAllLabel}
-        engineFilterOptions={engineFilterOptions}
-        getEngineFilterHref={buildEngineFilterHref}
-        selectedEngine={selectedEngine}
-      />
-
-      <main
-        className={clsx(
-          'container-page max-w-7xl',
-          engineFilterOptions.length ? 'pb-[var(--section-padding-y)] pt-4 sm:pt-6' : 'section'
-        )}
-      >
-        <div className="stack-gap-lg">
-          <ExamplesIntroHero heroLead={heroLead} heroSubtitle={heroSubtitle} heroTitle={heroTitle} />
-
-          {mainVideo && mainVideoContentUrl ? (
-            <ExamplesMainVideoFeature
-              aspectRatio={mainVideoAspectRatio}
-              contentUrl={mainVideoContentUrl}
-              copy={mainVideoCopy}
-              durationSec={mainVideo.video.durationSec}
-              engineLabel={mainVideo.card.engineLabel}
-              exampleHref={mainVideo.card.href}
-              hasAudio={mainVideo.video.hasAudio}
-              heroLine={mainVideoHeroLine}
-              isPortrait={mainVideoIsPortrait}
-              locale={locale}
-              mimeType={mainVideoMimeType}
-              modelHref={mainVideo.card.modelHref ?? null}
-              poster={mainVideoPoster ?? null}
-              promptFull={mainVideoPromptFull}
-              title={mainVideoTitle}
-            />
-          ) : null}
-
-          <ExamplesModelLinksSection
-            currentModelPagesLabel={currentModelPagesLabel}
-            isModelLanding={isModelLanding}
-            modelLinks={modelLinks}
-            modelPagesLabel={modelPagesLabel}
-            pricingLinkLabel={pricingLinkLabel}
-            pricingPath={pricingPath}
-            primaryModelLinks={primaryModelLinks}
-            selectedEngine={selectedEngine}
-            supportedOlderModelLinks={supportedOlderModelLinks}
-            supportedOlderVersionLabel={supportedOlderVersionLabel}
-            usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
-          />
-
-          <ExamplesModelLandingCardsSection sections={modelLandingSections} />
-
-          <ExamplesGallerySection
-            audioAvailableLabel={galleryUiCopy.audioAvailable}
-            engineFilter={selectedEngine?.toLowerCase() ?? null}
-            initialDesktopBatch={initialDesktopBatch}
-            initialExamples={initialExamples}
-            initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
-            initialOffset={nextOffsetStart}
-            loadMoreLabel={loadMoreLabel}
-            loadingLabel={galleryUiCopy.loading}
-            locale={locale}
-            noPreviewLabel={galleryUiCopy.noPreview}
-            pageOffsetEnd={pageOffsetEnd}
-            show={showGallerySection}
-            sort={sort}
-          />
-
-          {modelLanding && heroLead !== heroBody ? (
-            <section className="mx-auto max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-              <p>{heroBody}</p>
-            </section>
-          ) : null}
-
-          <ExamplesPaginationNav
-            currentPage={currentPage}
-            displayTotalPages={displayTotalPages}
-            hasNextPage={hasNextPage}
-            hasPreviousPage={hasPreviousPage}
-            nextHref={nextPageHref}
-            nextLabel={paginationNextLabel}
-            pageLabel={paginationPageLabel}
-            previousHref={previousPageHref}
-            previousLabel={paginationPrevLabel}
-            show={totalPages > 1}
-          />
-
-          <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLanding?.summary} />
-
-          <ExamplesNextStepsSection locale={appLocale} nextStepLinks={nextStepLinks} />
-
-          <ExamplesFaqSection faqBlock={faqBlock} />
-
-        </div>
-
-        <ExamplesJsonLdScripts
-          breadcrumbJsonLd={breadcrumbJsonLd}
-          faqJsonLd={faqJsonLd}
-          itemListJson={itemListJson}
-        />
-      </main>
-    </>
+    <ExamplesPageView
+      browseByModelLabel={browseByModelLabel}
+      breadcrumbJsonLd={breadcrumbJsonLd}
+      currentModelPagesLabel={currentModelPagesLabel}
+      currentPage={currentPage}
+      displayTotalPages={displayTotalPages}
+      engineFilterAllLabel={engineFilterAllLabel}
+      engineFilterOptions={engineFilterOptions}
+      faqBlock={faqBlock}
+      faqJsonLd={faqJsonLd}
+      galleryUiCopy={galleryUiCopy}
+      getEngineFilterHref={buildEngineFilterHref}
+      hasNextPage={hasNextPage}
+      hasPreviousPage={hasPreviousPage}
+      heroBody={heroBody}
+      heroLead={heroLead}
+      heroSubtitle={heroSubtitle}
+      heroTitle={heroTitle}
+      initialDesktopBatch={initialDesktopBatch}
+      initialExamples={initialExamples}
+      initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
+      isModelLanding={isModelLanding}
+      itemListJson={itemListJson}
+      loadMoreLabel={loadMoreLabel}
+      locale={appLocale}
+      longDescription={longDescription}
+      mainVideo={mainVideo}
+      mainVideoCopy={mainVideoCopy}
+      mainVideoFeature={mainVideoFeature}
+      modelLandingSections={modelLandingSections}
+      modelLandingSummary={modelLanding?.summary}
+      modelLinks={modelLinks}
+      modelPagesLabel={modelPagesLabel}
+      nextHref={nextPageHref}
+      nextLabel={paginationNextLabel}
+      nextOffsetStart={nextOffsetStart}
+      nextStepLinks={nextStepLinks}
+      pageLabel={paginationPageLabel}
+      pageOffsetEnd={pageOffsetEnd}
+      previousHref={previousPageHref}
+      previousLabel={paginationPrevLabel}
+      pricingLinkLabel={pricingLinkLabel}
+      pricingPath={pricingPath}
+      primaryModelLinks={primaryModelLinks}
+      selectedEngine={selectedEngine}
+      showGallerySection={showGallerySection}
+      sort={sort}
+      supportedOlderModelLinks={supportedOlderModelLinks}
+      supportedOlderVersionLabel={supportedOlderVersionLabel}
+      totalPages={totalPages}
+      usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
+    />
   );
 }
