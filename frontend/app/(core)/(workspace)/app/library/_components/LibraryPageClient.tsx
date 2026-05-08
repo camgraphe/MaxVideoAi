@@ -2,35 +2,27 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { ChangeEvent } from 'react';
-import useSWR from 'swr';
+import { useState, useEffect, useMemo } from 'react';
 import deepmerge from 'deepmerge';
 import { CheckCircle2, Download, History, Plus, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { AssetLibraryBrowser, type AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
+import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { authFetch } from '@/lib/authFetch';
-import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
+import { useLibraryPageData } from '../_hooks/useLibraryPageData';
 import {
-  assetsFetcher,
   DEFAULT_LIBRARY_COPY,
   formatTemplate,
   getAssetJobHref,
-  inferKind,
   LIBRARY_PAGE_SIZE,
-  recentOutputsFetcher,
-  resolveImageUploadErrorMessage,
-  type AssetsResponse,
   type LibraryCopy,
   type LibraryKind,
   type LibraryView,
-  type RecentOutputsResponse,
   type SavedAssetSource,
 } from '../_lib/library-page-helpers';
 
@@ -48,93 +40,52 @@ export function LibraryPageClient() {
   const [savedAssetLimit, setSavedAssetLimit] = useState(LIBRARY_PAGE_SIZE);
   const [recentOutputLimit, setRecentOutputLimit] = useState(LIBRARY_PAGE_SIZE);
 
-  const savedAssetsKey = user
-    ? activeSource === 'all'
-      ? `/api/media-library/assets?limit=${savedAssetLimit}&kind=${encodeURIComponent(activeKind)}`
-      : `/api/media-library/assets?limit=${savedAssetLimit}&kind=${encodeURIComponent(activeKind)}&source=${encodeURIComponent(activeSource)}`
-    : null;
-  const recentOutputsKey = user
-    ? `/api/media-library/recent-outputs?limit=${recentOutputLimit}&kind=${encodeURIComponent(activeKind)}`
-    : null;
-
   const {
-    data: assetsData,
-    error: assetsError,
-    isLoading: assetsLoading,
-    isValidating: assetsValidating,
-    mutate: mutateAssets,
-  } = useSWR<AssetsResponse>(savedAssetsKey, assetsFetcher, {
-    dedupingInterval: 60_000,
+    assetsData,
+    assetsError,
+    assetsLoading,
+    assetsValidating,
+    mutateAssets,
+    recentData,
+    recentError,
+    recentLoading,
+    recentValidating,
+    mutateRecentOutputs,
+    currentAssets,
+  } = useLibraryPageData({
+    userId: user?.id,
+    activeView,
+    activeKind,
+    activeSource,
+    savedAssetLimit,
+    recentOutputLimit,
+    toolsEnabled,
   });
   const {
-    data: recentData,
-    error: recentError,
-    isLoading: recentLoading,
-    isValidating: recentValidating,
-    mutate: mutateRecentOutputs,
-  } = useSWR<RecentOutputsResponse>(activeView === 'review' ? recentOutputsKey : null, recentOutputsFetcher, {
-    dedupingInterval: 30_000,
+    importInputRef,
+    deletingId,
+    savingOutputIds,
+    deleteError,
+    saveError,
+    isImporting,
+    importError,
+    clearMutationErrors,
+    resetSourceMutationState,
+    setDeleteError,
+    setImportError,
+    setSaveError,
+    handleImportChange,
+    handleDeleteAsset,
+    handleSaveRecentOutput,
+  } = useLibraryAssetMutations({
+    activeKind,
+    activeSource,
+    copy,
+    mutateAssets,
+    mutateRecentOutputs,
+    setActiveSource,
+    setActiveView,
   });
-
-  const assets = useMemo(
-    () =>
-      (assetsData?.assets ?? []).filter((asset) =>
-        toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
-      ),
-    [assetsData?.assets, toolsEnabled]
-  );
-  const savedBrowserAssets = useMemo<AssetBrowserAsset[]>(
-    () =>
-      assets.map((asset) => ({
-        id: asset.id,
-        url: asset.url,
-        thumbUrl: asset.thumbUrl,
-        previewUrl: asset.previewUrl,
-        kind: inferKind(asset),
-        width: asset.width,
-        height: asset.height,
-        size: asset.size,
-        mime: asset.mime,
-        source: asset.source,
-        createdAt: asset.createdAt,
-        canDelete: true,
-        jobId: asset.jobId ?? null,
-        sourceOutputId: asset.sourceOutputId ?? null,
-      })),
-    [assets]
-  );
-  const reviewBrowserAssets = useMemo<AssetBrowserAsset[]>(
-    () =>
-      (recentData?.outputs ?? [])
-        .filter((output) => output.kind === activeKind)
-        .map((output) => ({
-          id: output.id,
-          url: output.url,
-          thumbUrl: output.thumbUrl,
-          previewUrl: output.previewUrl,
-          kind: activeKind,
-          width: output.width,
-          height: output.height,
-          size: null,
-          mime: output.mime,
-          source: 'recent',
-          createdAt: output.createdAt,
-          canDelete: false,
-          jobId: output.jobId,
-          sourceOutputId: output.id,
-          isSaved: Boolean(output.isSaved),
-          savedAssetId: output.savedAssetId ?? null,
-        })),
-    [activeKind, recentData?.outputs]
-  );
-
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [savingOutputIds, setSavingOutputIds] = useState<Set<string>>(new Set());
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const importInputRef = useRef<HTMLInputElement | null>(null);
   const availableSources = useMemo(
     () =>
       activeKind === 'video'
@@ -171,7 +122,6 @@ export function LibraryPageClient() {
         : copy.tabs,
     [activeKind, copy.tabs]
   );
-  const currentAssets = activeView === 'saved' ? savedBrowserAssets : reviewBrowserAssets;
   const assetCountLabel = formatTemplate(copy.assets.countLabel, { count: currentAssets.length });
   const emptyLabel =
     activeView === 'review'
@@ -212,109 +162,6 @@ export function LibraryPageClient() {
   useEffect(() => {
     setRecentOutputLimit(LIBRARY_PAGE_SIZE);
   }, [activeKind]);
-
-  const handleImportChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.currentTarget.files?.[0] ?? null;
-      event.currentTarget.value = '';
-      if (!file) return;
-
-      setImportError(null);
-      setSaveError(null);
-      setIsImporting(true);
-      try {
-        const preparedFile =
-          activeKind === 'image'
-            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-            : file;
-        const formData = new FormData();
-        formData.append('file', preparedFile, preparedFile.name);
-        const uploadEndpoint =
-          activeKind === 'video'
-            ? '/api/uploads/video'
-            : activeKind === 'audio'
-              ? '/api/uploads/audio'
-              : '/api/uploads/image';
-        const response = await authFetch(uploadEndpoint, {
-          method: 'POST',
-          body: formData,
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-          const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
-          throw new Error(message);
-        }
-
-        setActiveView('saved');
-        if (activeSource !== 'all' && activeSource !== 'upload') {
-          setActiveSource('upload');
-        }
-        await mutateAssets();
-      } catch (error) {
-        setImportError(error instanceof Error ? error.message : copy.browser.importFailed);
-      } finally {
-        setIsImporting(false);
-      }
-    },
-    [activeKind, activeSource, copy.browser.importFailed, mutateAssets]
-  );
-
-  const handleDeleteAsset = useCallback(
-    async (assetId: string) => {
-      setDeletingId(assetId);
-      setDeleteError(null);
-      setSaveError(null);
-      try {
-        const response = await authFetch(`/api/media-library/assets/${encodeURIComponent(assetId)}`, {
-          method: 'DELETE',
-        });
-        const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? copy.assets.deleteError);
-        }
-        await Promise.all([mutateAssets(), mutateRecentOutputs()]);
-      } catch (error) {
-        setDeleteError(error instanceof Error ? error.message : copy.assets.deleteError);
-      } finally {
-        setDeletingId((current) => (current === assetId ? null : current));
-      }
-    },
-    [copy.assets.deleteError, mutateAssets, mutateRecentOutputs]
-  );
-
-  const handleSaveRecentOutput = useCallback(
-    async (asset: AssetBrowserAsset) => {
-      if (!asset.jobId || !asset.sourceOutputId || asset.isSaved) return;
-      const outputId = asset.sourceOutputId;
-      setSaveError(null);
-      setSavingOutputIds((previous) => {
-        const next = new Set(previous);
-        next.add(outputId);
-        return next;
-      });
-      try {
-        const response = await authFetch('/api/media-library/save-output', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId: asset.jobId, outputId }),
-        });
-        const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? copy.review.saveError);
-        }
-        await Promise.all([mutateRecentOutputs(), mutateAssets()]);
-      } catch (error) {
-        setSaveError(error instanceof Error ? error.message : copy.review.saveError);
-      } finally {
-        setSavingOutputIds((previous) => {
-          const next = new Set(previous);
-          next.delete(outputId);
-          return next;
-        });
-      }
-    },
-    [copy.review.saveError, mutateAssets, mutateRecentOutputs]
-  );
 
   return (
     <div className="flex min-h-screen flex-col bg-bg lg:h-[100dvh]">
@@ -382,10 +229,7 @@ export function LibraryPageClient() {
                 onSourceChange={(source) => {
                   if (source === 'recent') return;
                   setActiveSource(source as SavedAssetSource);
-                  setDeleteError(null);
-                  setDeletingId(null);
-                  setImportError(null);
-                  setSaveError(null);
+                  resetSourceMutationState();
                 }}
                 searchPlaceholder={copy.browser.searchPlaceholder}
                 sourcesTitle={activeView === 'review' ? copy.review.sourcesTitle : copy.browser.sourcesTitle}
@@ -493,9 +337,7 @@ export function LibraryPageClient() {
                       size="sm"
                       className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
                       onClick={() => {
-                        setDeleteError(null);
-                        setImportError(null);
-                        setSaveError(null);
+                        clearMutationErrors();
                         if (activeView === 'review') {
                           void mutateRecentOutputs();
                         } else {

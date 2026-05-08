@@ -1,15 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useEngines, useInfiniteJobs, getJobStatus } from '@/lib/api';
 import type { EngineCaps } from '@/types/engines';
-import type { MultiPromptScene } from '@/components/Composer';
-import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import type { GroupSummary } from '@/types/groups';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import type { VideoGroup } from '@/types/video-groups';
-import type { SharedVideoPreview } from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -22,19 +18,9 @@ import { WorkspaceBootSurface } from './_components/WorkspaceBootSurface';
 import { WorkspaceComposerSurface } from './_components/WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
 import {
-  type FormState,
-} from './_lib/workspace-form-state';
-import {
   DEFAULT_WORKSPACE_COPY,
   mergeCopy,
 } from './_lib/workspace-copy';
-import {
-  DEFAULT_PROMPT,
-} from './_lib/workspace-client-helpers';
-import {
-  createKlingElement,
-  createMultiPromptScene,
-} from './_lib/workspace-input-helpers';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
 import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
@@ -48,6 +34,7 @@ import { useWorkspacePreviewState } from './_hooks/useWorkspacePreviewState';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
 import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceRouteNavigation } from './_hooks/useWorkspaceRouteNavigation';
+import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
@@ -92,16 +79,38 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     [processingCopy.takeLabel]
   );
 
-  const [form, setForm] = useState<FormState | null>(null);
-  const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
-  const [negativePrompt, setNegativePrompt] = useState<string>('');
-  const [multiPromptEnabled, setMultiPromptEnabled] = useState(false);
-  const [multiPromptScenes, setMultiPromptScenes] = useState<MultiPromptScene[]>(() => [createMultiPromptScene()]);
-  const [shotType, setShotType] = useState<'customize' | 'intelligent'>('customize');
-  const [voiceIdsInput, setVoiceIdsInput] = useState<string>('');
-  const [klingElements, setKlingElements] = useState<KlingElementState[]>(() => [createKlingElement()]);
-  const [cfgScale, setCfgScale] = useState<number | null>(null);
-  const [memberTier, setMemberTier] = useState<'Member' | 'Plus' | 'Pro'>('Member');
+  const {
+    form,
+    setForm,
+    prompt,
+    setPrompt,
+    negativePrompt,
+    setNegativePrompt,
+    multiPromptEnabled,
+    setMultiPromptEnabled,
+    multiPromptScenes,
+    setMultiPromptScenes,
+    shotType,
+    setShotType,
+    voiceIdsInput,
+    setVoiceIdsInput,
+    klingElements,
+    setKlingElements,
+    cfgScale,
+    setCfgScale,
+    memberTier,
+    setMemberTier,
+    sharedPrompt,
+    setSharedPrompt,
+    sharedVideoSettings,
+    setSharedVideoSettings,
+    compositeOverride,
+    setCompositeOverride,
+    compositeOverrideSummary,
+    setCompositeOverrideSummary,
+    composerRef,
+    focusComposer,
+  } = useWorkspaceRouteFormState();
   const { notice, showNotice, setNotice } = useWorkspaceNotice();
 
   const {
@@ -135,11 +144,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     authChecked,
     skipOnboardingRef,
   });
-  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
-  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPreview | null>(null);
   const isDesktopLayout = useWorkspaceDesktopLayout();
-  const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
-  const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
   const {
     renders,
     setRenders,
@@ -170,8 +175,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     compositeOverrideSummary,
     writeScopedStorage,
   });
-  const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
-
   useWorkspaceDraftHydration({
     engines,
     requestedJobId,
@@ -230,8 +233,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     fromVideoId,
   });
 
-  const composerRef = useRef<HTMLTextAreaElement | null>(null);
-
   const {
     inputAssets,
     setInputAssets,
@@ -278,11 +279,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     }
   }, []);
 
-  const focusComposer = useCallback(() => {
-    if (!composerRef.current) return;
-    composerRef.current.focus({ preventScroll: true });
-  }, []);
-
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engines.forEach((entry) => {
@@ -292,7 +288,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   }, [engines]);
 
   const {
-    applyVideoSettingsSnapshot,
     hydrateVideoSettingsFromJob,
     applyVideoSettingsFromTile,
   } = useWorkspaceVideoSettings({
@@ -333,10 +328,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setSharedVideoSettings,
     setNotice,
   });
-
-  useEffect(() => {
-    applyVideoSettingsSnapshotRef.current = applyVideoSettingsSnapshot;
-  }, [applyVideoSettingsSnapshot]);
 
   const {
     selectedEngine,
