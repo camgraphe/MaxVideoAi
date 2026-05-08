@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { ChevronDown, Image as ImageIcon, ListVideo, Moon, Sparkles, Sun, Wallet } from 'lucide-react';
+import { ChevronDown, Moon, Sun, Wallet } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -12,50 +12,15 @@ import { usePathname } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
-import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
+import {
+  getGuestMobileNavItems,
+  GUEST_MOBILE_NAV_ICONS,
+  normalizeMarketingLinks,
+  resolveLocalizedHref,
+} from '@/components/header/header-nav-helpers';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
-
-function resolveLocalizedHref(href: LocalizedLinkHref): string {
-  if (typeof href === 'string') {
-    return href;
-  }
-  const pathname = typeof href.pathname === 'string' ? href.pathname : '';
-  const params = 'params' in href ? href.params : undefined;
-  let resolved = pathname;
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      resolved = resolved.replace(`[${key}]`, encodeURIComponent(String(value)));
-    });
-  }
-  const query = 'query' in href ? href.query : undefined;
-  if (query) {
-    const search = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => {
-      if (typeof value === 'string' || typeof value === 'number') {
-        search.set(key, String(value));
-      }
-    });
-    const suffix = search.toString();
-    if (suffix) {
-      resolved = `${resolved}?${suffix}`;
-    }
-  }
-  return resolved;
-}
-
-const MARKETING_TOP_NAV_HREF_BY_KEY: Record<string, string> = Object.fromEntries(
-  MARKETING_TOP_NAV_LINKS.map((item) => [item.key, item.href])
-);
-
-const GUEST_MOBILE_NAV_ITEM_IDS = new Set(['generate', 'generate-image', 'jobs']);
-
-const GUEST_MOBILE_NAV_ICONS = {
-  generate: Sparkles,
-  'generate-image': ImageIcon,
-  jobs: ListVideo,
-} as const;
 
 export function HeaderBar() {
   const { locale, t } = useI18n();
@@ -268,31 +233,9 @@ export function HeaderBar() {
   }, [email]);
 
   const rawMarketingLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
-  const marketingLinks = useMemo(() => {
-    const source = Array.isArray(rawMarketingLinks) ? rawMarketingLinks : [];
-    const normalized: Array<{ key: string; href: string }> = [];
-    const seen = new Set<string>();
-
-    for (const entry of source) {
-      if (!entry || typeof entry !== 'object') continue;
-      const key = (entry as { key?: unknown }).key;
-      if (typeof key !== 'string' || seen.has(key)) continue;
-      const allowedHref = MARKETING_TOP_NAV_HREF_BY_KEY[key];
-      if (!allowedHref) continue;
-      seen.add(key);
-      normalized.push({ key, href: allowedHref });
-    }
-
-    if (normalized.length) {
-      return normalized;
-    }
-    return MARKETING_TOP_NAV_LINKS.map((item) => ({ key: item.key, href: item.href }));
-  }, [rawMarketingLinks]);
+  const marketingLinks = useMemo(() => normalizeMarketingLinks(rawMarketingLinks), [rawMarketingLinks]);
   const isAuthenticated = Boolean(email);
-  const guestMobileNavItems = useMemo(
-    () => NAV_ITEMS.filter((item) => GUEST_MOBILE_NAV_ITEM_IDS.has(item.id)),
-    []
-  );
+  const guestMobileNavItems = useMemo(() => getGuestMobileNavItems(), []);
 
   return (
     <>
