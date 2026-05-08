@@ -1,0 +1,52 @@
+import type { PricingSnapshot } from '@/types/engines';
+
+export type JobsRouteParam = string | number | Date | string[];
+export type JobsRouteSurface = 'video' | 'image' | 'character' | 'angle' | 'audio' | 'upscale';
+
+export const APP_JOBS_SELECT = `id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id`;
+
+export type JobRow = {
+  id: number;
+  job_id: string;
+  user_id: string | null;
+  updated_at: string;
+  surface: string | null;
+  billing_product_key: string | null;
+  settings_snapshot: unknown;
+  engine_id: string;
+  engine_label: string;
+  duration_sec: number;
+  prompt: string;
+  thumb_url: string;
+  video_url: string | null;
+  preview_video_url: string | null;
+  audio_url: string | null;
+  created_at: string;
+  aspect_ratio: string | null;
+  has_audio: boolean | null;
+  can_upscale: boolean | null;
+  preview_frame: string | null;
+  final_price_cents: number | null;
+  pricing_snapshot: PricingSnapshot | null;
+  currency: string | null;
+  vendor_account_id: string | null;
+  payment_status: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_charge_id: string | null;
+  batch_id: string | null;
+  group_id: string | null;
+  iteration_index: number | null;
+  iteration_count: number | null;
+  render_ids: unknown;
+  hero_render_id: string | null;
+  local_key: string | null;
+  message: string | null;
+  eta_seconds: number | null;
+  eta_label: string | null;
+  visibility: string | null;
+  indexable: boolean | null;
+  status: string | null;
+  progress: number | null;
+  provider: string | null;
+  provider_job_id: string | null;
+};
