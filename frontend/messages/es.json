@@ -3550,7 +3550,7 @@
         "captchaPrompt": "Verificación de seguridad requerida antes del Checkout.",
         "captchaComplete": "Verificación completada. Continúa al pago.",
         "captchaError": "Verificación de seguridad no disponible. Inténtalo de nuevo.",
-        "rateLimited": "Demasiados intentos de pago. Inténtalo de nuevo en {seconds}s.",
+        "rateLimited": "Demasiados intentos de pago. Inténtalo de nuevo en {time}.",
         "autoTopUp": "Activar recarga automática (opcional)",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
         "currencyLabel": "Moneda de cobro",

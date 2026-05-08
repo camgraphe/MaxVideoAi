@@ -10,6 +10,7 @@ import type {
 } from '@stripe/stripe-js';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
+import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 type StripeWithCheckoutElements = Stripe & {
   initCheckoutElementsSdk?: (options: { clientSecret: Promise<string> | string }) => StripeCheckout;
@@ -101,7 +102,7 @@ export function WalletExpressCheckout({
           if (response.status === 429) {
             const seconds = Number(payload?.retryAfterSeconds ?? 900);
             setStatus('error');
-            setMessage(labels.rateLimited.replace('{seconds}', String(seconds)));
+            setMessage(formatRateLimitMessage(labels.rateLimited, seconds));
             return;
           }
           throw new Error(payload?.error ?? 'express_checkout_session_failed');
@@ -227,8 +228,10 @@ export function WalletExpressCheckout({
     return null;
   }
 
+  const hideExpressElement = status === 'unavailable' || status === 'error';
+
   return (
-    <div className={`mt-4 rounded-input border border-border bg-bg p-3 ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}>
+    <div className="mt-4 rounded-input border border-border bg-bg p-3">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-text-primary">{labels.expressTitle}</p>
@@ -241,7 +244,7 @@ export function WalletExpressCheckout({
       </div>
       <div
         ref={mountRef}
-        className={`min-h-[44px] ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}
+        className={`min-h-[44px] ${hideExpressElement ? 'hidden' : ''}`}
         aria-label={labels.expressAriaLabel}
       />
       {status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
