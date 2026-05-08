@@ -1,13 +1,11 @@
 'use client';
 
 import deepmerge from 'deepmerge';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import type { Job } from '@/types/jobs';
 import { ButtonLink } from '@/components/ui/Button';
 import {
   AUDIO_INTENSITY_VALUES,
@@ -19,13 +17,6 @@ import {
   AUDIO_VOICE_DELIVERY_VALUES,
   AUDIO_VOICE_PROFILE_VALUES,
   buildAudioPricingSnapshot,
-  coerceAudioIntensity,
-  coerceAudioLanguage,
-  coerceAudioMood,
-  coerceAudioPackId,
-  coerceAudioVoiceDelivery,
-  coerceAudioVoiceGender,
-  coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
   formatAudioDurationLabel,
   getAudioPackConfig,
@@ -44,6 +35,8 @@ import { AudioWorkspaceComposerSurface } from './_components/audio-workspace-com
 import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
 import { useAudioGenerationRunner } from './_hooks/useAudioGenerationRunner';
 import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
+import { useAudioSourceMediaHandlers } from './_hooks/useAudioSourceMediaHandlers';
+import { useAudioWorkspaceRestoration } from './_hooks/useAudioWorkspaceRestoration';
 import {
   AUDIO_VOICE_GENDER_VALUES,
   DEFAULT_INTENSITY,
@@ -54,18 +47,12 @@ import {
   DEFAULT_VOICE_DELIVERY,
   DEFAULT_VOICE_GENDER,
   DEFAULT_VOICE_PROFILE,
-  fetchJobDetail,
   formatCopy,
   formatCurrency,
-  inferOutputKind,
-  probeVideoDuration,
-  resolveUiErrorMessage,
-  uploadAsset,
 } from './_lib/audio-workspace-helpers';
 import type {
   ActiveAudioJobState,
   AudioResultState,
-  GeneratedSourceVideo,
   SourceVideoState,
 } from './_lib/audio-workspace-types';
 import {
@@ -118,11 +105,29 @@ export default function AudioWorkspace() {
   });
   const sourceInputRef = useRef<HTMLInputElement | null>(null);
   const voiceInputRef = useRef<HTMLInputElement | null>(null);
-  const restoredQueryJobRef = useRef<string | null>(null);
-  const latestRestoreAttemptedRef = useRef(false);
-  const manualWorkspaceOverrideRef = useRef(false);
-
   const queryJobId = searchParams?.get('job') ?? null;
+  const { manualWorkspaceOverrideRef } = useAudioWorkspaceRestoration({
+    copy,
+    queryJobId,
+    user,
+    setActiveJob,
+    setExportAudioFile,
+    setIntensity,
+    setLanguage,
+    setManualDurationSec,
+    setMood,
+    setMusicEnabled,
+    setNotice,
+    setPack,
+    setPrompt,
+    setResult,
+    setScript,
+    setSourceVideo,
+    setVoiceDelivery,
+    setVoiceGender,
+    setVoiceProfile,
+    setVoiceSample,
+  });
   const packConfig = getAudioPackConfig(pack);
   const sourceVideoRequired = packConfig.requiresVideo;
   const showMood = packConfig.requiresMood;
@@ -203,206 +208,7 @@ export default function AudioWorkspace() {
     if (!nextConfig.includesVoice) {
       setVoiceSample(null);
     }
-  }, []);
-
-  const hydrateSourceVideo = useCallback(async (input: {
-    sourceJobId?: string | null;
-    sourceVideoUrl?: string | null;
-    fallbackAspectRatio?: string | null;
-  }) => {
-    const sourceJobId = input.sourceJobId?.trim() || null;
-    if (sourceJobId) {
-      try {
-        const sourceJob = await fetchJobDetail(sourceJobId);
-        if (sourceJob.videoUrl) {
-          setSourceVideo({
-            url: sourceJob.videoUrl,
-            jobId: sourceJob.jobId,
-            thumbUrl: sourceJob.thumbUrl ?? null,
-            durationSec: typeof sourceJob.durationSec === 'number' ? sourceJob.durationSec : null,
-            aspectRatio: sourceJob.aspectRatio ?? input.fallbackAspectRatio ?? null,
-            label: sourceJob.engineLabel
-              ? formatCopy(copy.source.sourceLabel, { label: sourceJob.engineLabel })
-              : formatCopy(copy.source.jobLabel, { id: sourceJob.jobId }),
-          });
-          return;
-        }
-      } catch {
-        // Fall back to the raw URL below.
-      }
-    }
-
-    const sourceVideoUrl = input.sourceVideoUrl?.trim() || null;
-    if (!sourceVideoUrl) {
-      setSourceVideo(null);
-      return;
-    }
-    const durationSec = await probeVideoDuration(sourceVideoUrl);
-    setSourceVideo({
-      url: sourceVideoUrl,
-      jobId: sourceJobId,
-      thumbUrl: null,
-      durationSec,
-      aspectRatio: input.fallbackAspectRatio ?? null,
-      label: sourceJobId
-        ? formatCopy(copy.source.jobLabel, { id: sourceJobId })
-        : copy.source.restoredLabel,
-    });
-  }, [copy]);
-
-  const restoreAudioJob = useCallback(
-    async (jobId: string) => {
-      const detail = await fetchJobDetail(jobId);
-      if (manualWorkspaceOverrideRef.current) {
-        return;
-      }
-      const nextPack = coerceAudioPackId(detail.settingsSnapshot?.pack) ?? DEFAULT_PACK;
-      const nextMood = coerceAudioMood(detail.settingsSnapshot?.mood) ?? DEFAULT_MOOD;
-      const nextIntensity = coerceAudioIntensity(detail.settingsSnapshot?.intensity) ?? DEFAULT_INTENSITY;
-      const nextMusicEnabled =
-        typeof detail.settingsSnapshot?.musicEnabled === 'boolean'
-          ? detail.settingsSnapshot.musicEnabled
-          : getAudioPackConfig(nextPack).supportsMusicToggle
-            ? getAudioPackConfig(nextPack).defaultMusicEnabled
-            : false;
-      const nextExportAudioFile =
-        typeof detail.settingsSnapshot?.exportAudioFile === 'boolean'
-          ? detail.settingsSnapshot.exportAudioFile
-          : false;
-      const nextOutputKind = inferOutputKind({
-        outputKind: detail.settingsSnapshot?.outputKind ?? null,
-        videoUrl: detail.videoUrl ?? null,
-        audioUrl: detail.audioUrl ?? null,
-      });
-
-      setPack(nextPack);
-      setPrompt(detail.settingsSnapshot?.prompt ?? '');
-      setMood(nextMood);
-      setIntensity(nextIntensity);
-      setScript(detail.settingsSnapshot?.script ?? '');
-      setVoiceGender(coerceAudioVoiceGender(detail.settingsSnapshot?.voiceGender) ?? DEFAULT_VOICE_GENDER);
-      setVoiceProfile(coerceAudioVoiceProfile(detail.settingsSnapshot?.voiceProfile) ?? DEFAULT_VOICE_PROFILE);
-      setVoiceDelivery(coerceAudioVoiceDelivery(detail.settingsSnapshot?.voiceDelivery) ?? DEFAULT_VOICE_DELIVERY);
-      setLanguage(coerceAudioLanguage(detail.settingsSnapshot?.language) ?? DEFAULT_LANGUAGE);
-      setManualDurationSec(typeof detail.settingsSnapshot?.durationSec === 'number' ? detail.settingsSnapshot.durationSec : DEFAULT_MANUAL_DURATION_SEC);
-      setMusicEnabled(nextMusicEnabled);
-      setExportAudioFile(nextExportAudioFile);
-      setVoiceSample(null);
-
-      await hydrateSourceVideo({
-        sourceJobId: detail.settingsSnapshot?.sourceJobId ?? null,
-        sourceVideoUrl:
-          detail.settingsSnapshot?.refs?.sourceVideoUrl ??
-          detail.settingsSnapshot?.sourceVideoUrl ??
-          null,
-        fallbackAspectRatio: detail.aspectRatio ?? null,
-      });
-
-      const status =
-        (detail.videoUrl || detail.audioUrl)
-          ? 'completed'
-          : detail.status ?? 'pending';
-      const progress = typeof detail.progress === 'number' ? detail.progress : status === 'completed' ? 100 : 0;
-
-      const normalizedJob: ActiveAudioJobState = {
-        jobId: detail.jobId,
-        status,
-        progress,
-        message: detail.message ?? null,
-        videoUrl: detail.videoUrl ?? null,
-        audioUrl: detail.audioUrl ?? null,
-        thumbUrl: detail.thumbUrl ?? null,
-        outputKind: nextOutputKind,
-      };
-      setActiveJob(normalizedJob);
-
-      if (detail.videoUrl || detail.audioUrl) {
-        setResult({
-          jobId: detail.jobId,
-          videoUrl: detail.videoUrl ?? null,
-          audioUrl: detail.audioUrl ?? null,
-          thumbUrl: detail.thumbUrl ?? null,
-          outputKind: nextOutputKind,
-        });
-      } else {
-        setResult(null);
-      }
-    },
-    [hydrateSourceVideo]
-  );
-
-  useEffect(() => {
-    if (!queryJobId || !user) return;
-    if (restoredQueryJobRef.current === queryJobId) return;
-    restoredQueryJobRef.current = queryJobId;
-    let cancelled = false;
-    setNotice(null);
-    fetchJobDetail(queryJobId)
-      .then(async (payload) => {
-        if (cancelled) return;
-        if (payload.surface === 'audio') {
-          await restoreAudioJob(payload.jobId);
-          return;
-        }
-        if (manualWorkspaceOverrideRef.current) {
-          return;
-        }
-        if (!payload.videoUrl) {
-          throw new Error(payload.error ?? copy.messages.loadSourceJob);
-        }
-        setActiveJob(null);
-        setResult(null);
-        setSourceVideo({
-          url: payload.videoUrl,
-          jobId: payload.jobId,
-          thumbUrl: payload.thumbUrl ?? null,
-          durationSec: typeof payload.durationSec === 'number' ? payload.durationSec : null,
-          aspectRatio: payload.aspectRatio ?? null,
-          label: payload.engineLabel
-            ? formatCopy(copy.source.sourceLabel, { label: payload.engineLabel })
-            : formatCopy(copy.source.jobLabel, { id: payload.jobId }),
-        });
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          restoredQueryJobRef.current = null;
-          setNotice(resolveUiErrorMessage(error, copy.messages.loadSourceJob, ['Unable to load job.']));
-        }
-      })
-    return () => {
-      cancelled = true;
-    };
-  }, [copy, queryJobId, restoreAudioJob, user]);
-
-  useEffect(() => {
-    if (queryJobId || !user) return;
-    if (latestRestoreAttemptedRef.current) return;
-    latestRestoreAttemptedRef.current = true;
-    let cancelled = false;
-    authFetch('/api/jobs?surface=audio&limit=12')
-      .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as
-          | { ok?: boolean; error?: string; jobs?: Job[] }
-          | null;
-        if (!response.ok || !payload?.ok || !Array.isArray(payload.jobs)) {
-          throw new Error(payload?.error ?? copy.messages.loadLatestJob);
-        }
-        const latestJob =
-          payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl || job.audioUrl)) ??
-          null;
-        if (!latestJob || cancelled) return;
-        if (manualWorkspaceOverrideRef.current) return;
-        await restoreAudioJob(latestJob.jobId);
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn('[audio] latest job restore failed', error);
-        }
-      })
-    return () => {
-      cancelled = true;
-    };
-  }, [copy, queryJobId, restoreAudioJob, user]);
+  }, [manualWorkspaceOverrideRef]);
 
   useAudioActiveJobPolling({
     activeJob,
@@ -443,84 +249,24 @@ export default function AudioWorkspace() {
     (!packConfig.requiresScript || script.trim().length > 0) &&
     ((packConfig.includesVoice && pack !== 'cinematic') || prompt.trim().length > 0);
 
-  const handleSourceFileSelect = useCallback(async (fileList: FileList | null) => {
-    const file = fileList?.[0];
-    if (!file) return;
-    manualWorkspaceOverrideRef.current = true;
-    setIsUploadingSource(true);
-    setNotice(null);
-    setResult(null);
-    try {
-      const uploaded = await uploadAsset(file, 'video');
-      const durationSec = await probeVideoDuration(uploaded.url);
-      setSourceVideo({
-        url: uploaded.url,
-        jobId: null,
-        thumbUrl: null,
-        durationSec,
-        aspectRatio: null,
-        label: uploaded.name,
-      });
-      if (!durationSec) {
-        setNotice(copy.source.uploadDurationWarning);
-      }
-    } catch (error) {
-      setNotice(resolveUiErrorMessage(error, copy.messages.sourceUploadFailed, ['Upload failed']));
-    } finally {
-      setIsUploadingSource(false);
-      if (sourceInputRef.current) {
-        sourceInputRef.current.value = '';
-      }
-    }
-  }, [copy.messages.sourceUploadFailed, copy.source.uploadDurationWarning]);
-
-  const handleVoiceFileSelect = useCallback(async (fileList: FileList | null) => {
-    const file = fileList?.[0];
-    if (!file) return;
-    manualWorkspaceOverrideRef.current = true;
-    setIsUploadingVoice(true);
-    setNotice(null);
-    try {
-      const uploaded = await uploadAsset(file, 'audio');
-      setVoiceSample(uploaded);
-    } catch (error) {
-      setNotice(resolveUiErrorMessage(error, copy.messages.voiceUploadFailed, ['Upload failed']));
-    } finally {
-      setIsUploadingVoice(false);
-      if (voiceInputRef.current) {
-        voiceInputRef.current.value = '';
-      }
-    }
-  }, [copy.messages.voiceUploadFailed]);
-
-  const handleSelectGeneratedVideo = useCallback(async (video: GeneratedSourceVideo) => {
-    manualWorkspaceOverrideRef.current = true;
-    setNotice(null);
-    const durationSec = video.durationSec ?? (await probeVideoDuration(video.url));
-    setSourceVideo({
-      url: video.url,
-      jobId: video.jobId,
-      thumbUrl: video.thumbUrl,
-      durationSec,
-      aspectRatio: video.aspectRatio,
-      label: video.label,
-    });
-    setResult(null);
-    if (!durationSec) {
-      setNotice(copy.source.selectedDurationWarning);
-    }
-    setGeneratedPickerOpen(false);
-  }, [copy.source.selectedDurationWarning]);
-
-  const handleClearSourceVideo = useCallback(() => {
-    manualWorkspaceOverrideRef.current = true;
-    setSourceVideo(null);
-    setResult(null);
-    setNotice(null);
-    if (sourceInputRef.current) {
-      sourceInputRef.current.value = '';
-    }
-  }, []);
+  const {
+    handleClearSourceVideo,
+    handleSelectGeneratedVideo,
+    handleSourceFileSelect,
+    handleVoiceFileSelect,
+  } = useAudioSourceMediaHandlers({
+    copy,
+    manualWorkspaceOverrideRef,
+    sourceInputRef,
+    voiceInputRef,
+    setGeneratedPickerOpen,
+    setIsUploadingSource,
+    setIsUploadingVoice,
+    setNotice,
+    setResult,
+    setSourceVideo,
+    setVoiceSample,
+  });
 
   const handleGeneratedJobId = useCallback((jobId: string) => {
     router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
@@ -562,7 +308,7 @@ export default function AudioWorkspace() {
       manualWorkspaceOverrideRef.current = false;
       void router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
     },
-    [pathname, router]
+    [manualWorkspaceOverrideRef, pathname, router]
   );
 
   const composerIsScript = showVoiceFields;

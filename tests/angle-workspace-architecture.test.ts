@@ -16,6 +16,7 @@ const recentJobModalPath = join(componentsDir, 'angle-recent-job-modal.tsx');
 const authGateModalPath = join(componentsDir, 'angle-auth-gate-modal.tsx');
 const sourceImagePanelPath = join(componentsDir, 'angle-source-image-panel.tsx');
 const generationRunnerHookPath = join(root, 'frontend/src/components/tools/angle/_hooks/useAngleGenerationRunner.ts');
+const sourceImageHandlersHookPath = join(root, 'frontend/src/components/tools/angle/_hooks/useAngleSourceImageHandlers.ts');
 const copyPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-copy.ts');
 const typesPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-types.ts');
 const helpersPath = join(root, 'frontend/src/components/tools/angle/_lib/angle-workspace-helpers.ts');
@@ -33,6 +34,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(authGateModalPath), 'angle auth gate modal should live in a colocated component module');
   assert.ok(existsSync(sourceImagePanelPath), 'angle source image panel should live in a colocated component module');
   assert.ok(existsSync(generationRunnerHookPath), 'angle generation runner should live in a colocated hook');
+  assert.ok(existsSync(sourceImageHandlersHookPath), 'angle source image handlers should live in a colocated hook');
   assert.ok(existsSync(copyPath), 'angle workspace copy should live in a route-local copy module');
   assert.ok(existsSync(typesPath), 'angle workspace local contracts should live in a route-local type module');
   assert.ok(existsSync(helpersPath), 'angle workspace helper logic should live in a route-local helper module');
@@ -43,6 +45,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-recent-job-modal'/, 'workspace should import angle recent job modal');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-auth-gate-modal'/, 'workspace should import angle auth gate modal');
   assert.match(workspaceSource, /from '\.\/angle\/_hooks\/useAngleGenerationRunner'/, 'workspace should import angle generation runner');
+  assert.match(workspaceSource, /from '\.\/angle\/_hooks\/useAngleSourceImageHandlers'/, 'workspace should import angle source image handlers');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-copy'/, 'workspace should import angle copy');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-types'/, 'workspace should import angle local types');
   assert.match(workspaceSource, /from '\.\/angle\/_lib\/angle-workspace-helpers'/, 'workspace should import angle helpers');
@@ -62,6 +65,10 @@ test('angle workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /import dynamic from 'next\/dynamic'/, 'orbit canvas dynamic import belongs in angle orbit selector component');
   assert.doesNotMatch(workspaceSource, /runAngleTool/, 'angle generation submission belongs in useAngleGenerationRunner');
   assert.doesNotMatch(workspaceSource, /emitClientMetric\('tool_start'/, 'generation analytics belongs in useAngleGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /const handleSourceFile =/, 'source file handling belongs in useAngleSourceImageHandlers');
+  assert.doesNotMatch(workspaceSource, /const handleSourceUrl =/, 'source URL handling belongs in useAngleSourceImageHandlers');
+  assert.doesNotMatch(workspaceSource, /URL\.createObjectURL/, 'local source preview creation belongs in useAngleSourceImageHandlers');
+  assert.doesNotMatch(workspaceSource, /crypto\.randomUUID/, 'pasted source identity belongs in useAngleSourceImageHandlers');
   assert.doesNotMatch(workspaceSource, /z-\[10040\]/, 'recent job dialog JSX belongs in angle-recent-job-modal.tsx');
   assert.doesNotMatch(workspaceSource, /z-\[10050\]/, 'auth gate dialog JSX belongs in angle-auth-gate-modal.tsx');
   assert.doesNotMatch(workspaceSource, /ANGLE_GUEST_EXAMPLE_OUTPUT_URL/, 'guest output preview belongs in angle-output-panel.tsx');
@@ -77,7 +84,7 @@ test('angle workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /copy\.cameraControls/, 'camera sliders belong in angle-camera-controls.tsx');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 570, `AngleWorkspace should stay below 570 lines after generation settings panel extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 460, `AngleWorkspace should stay below 460 lines after source handler extraction, got ${lineCount}`);
 });
 
 test('angle helper modules expose the expected workspace contract', () => {
@@ -91,6 +98,7 @@ test('angle helper modules expose the expected workspace contract', () => {
   const authGateModalSource = readFileSync(authGateModalPath, 'utf8');
   const sourceImagePanelSource = readFileSync(sourceImagePanelPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
+  const sourceImageHandlersHookSource = readFileSync(sourceImageHandlersHookPath, 'utf8');
   const copySource = readFileSync(copyPath, 'utf8');
   const typesSource = readFileSync(typesPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
@@ -121,6 +129,11 @@ test('angle helper modules expose the expected workspace contract', () => {
   assert.match(generationRunnerHookSource, /export function useAngleGenerationRunner/, 'generation runner hook should be exported');
   assert.match(generationRunnerHookSource, /runAngleTool/, 'generation runner hook should submit angle requests');
   assert.match(generationRunnerHookSource, /emitClientMetric\('tool_start'/, 'generation runner hook should own generation analytics');
+  assert.match(sourceImageHandlersHookSource, /export function useAngleSourceImageHandlers/, 'source image handlers hook should be exported');
+  assert.match(sourceImageHandlersHookSource, /uploadImage/, 'source image handlers hook should own uploads');
+  assert.match(sourceImageHandlersHookSource, /URL\.createObjectURL/, 'source image handlers hook should own local previews');
+  assert.match(sourceImageHandlersHookSource, /handleSourcePaste/, 'source image handlers hook should own paste wiring');
+  assert.match(sourceImageHandlersHookSource, /handleLibrarySelect/, 'source image handlers hook should own library selection');
 
   assert.match(copySource, /export const DEFAULT_ANGLE_COPY =/, 'copy module should export default copy');
   assert.match(copySource, /export type AngleCopy =/, 'copy module should export the copy type');

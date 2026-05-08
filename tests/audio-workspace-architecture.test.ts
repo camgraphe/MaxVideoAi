@@ -18,6 +18,8 @@ const typesPath = join(audioDir, '_lib/audio-workspace-types.ts');
 const activeJobHookPath = join(audioDir, '_hooks/useAudioActiveJobPolling.ts');
 const generatedVideosHookPath = join(audioDir, '_hooks/useAudioGeneratedVideos.ts');
 const generationRunnerHookPath = join(audioDir, '_hooks/useAudioGenerationRunner.ts');
+const sourceMediaHandlersHookPath = join(audioDir, '_hooks/useAudioSourceMediaHandlers.ts');
+const restorationHookPath = join(audioDir, '_hooks/useAudioWorkspaceRestoration.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
@@ -35,6 +37,8 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(activeJobHookPath), 'active audio job polling should live in a route-local hook');
   assert.ok(existsSync(generatedVideosHookPath), 'generated video loading should live in a route-local hook');
   assert.ok(existsSync(generationRunnerHookPath), 'audio generation runner should live in a route-local hook');
+  assert.ok(existsSync(sourceMediaHandlersHookPath), 'audio source/voice media handlers should live in a route-local hook');
+  assert.ok(existsSync(restorationHookPath), 'audio job restoration should live in a route-local hook');
 
   assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-composer-surface'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generated-video-picker'/);
@@ -46,6 +50,8 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioActiveJobPolling'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGeneratedVideos'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGenerationRunner'/);
+  assert.match(workspaceSource, /from '\.\/_hooks\/useAudioSourceMediaHandlers'/);
+  assert.match(workspaceSource, /from '\.\/_hooks\/useAudioWorkspaceRestoration'/);
   assert.match(workspaceSource, /from '\.\/_lib\/audio-workspace-helpers'/);
   assert.match(workspaceSource, /from '\.\/_lib\/audio-workspace-types'/);
 });
@@ -66,6 +72,12 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /getJobStatus/, 'active job polling belongs in useAudioActiveJobPolling');
   assert.doesNotMatch(workspaceSource, /surface=video&limit=60/, 'generated video loading belongs in useAudioGeneratedVideos');
   assert.doesNotMatch(workspaceSource, /runAudioGenerate/, 'audio generation submission belongs in useAudioGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /fetchJobDetail\(queryJobId\)/, 'query job restoration belongs in useAudioWorkspaceRestoration');
+  assert.doesNotMatch(workspaceSource, /authFetch\('\/api\/jobs\?surface=audio&limit=12'\)/, 'latest audio restoration belongs in useAudioWorkspaceRestoration');
+  assert.doesNotMatch(workspaceSource, /const hydrateSourceVideo = useCallback/, 'source hydration belongs in useAudioWorkspaceRestoration');
+  assert.doesNotMatch(workspaceSource, /const handleSourceFileSelect = useCallback/, 'source upload handling belongs in useAudioSourceMediaHandlers');
+  assert.doesNotMatch(workspaceSource, /const handleVoiceFileSelect = useCallback/, 'voice upload handling belongs in useAudioSourceMediaHandlers');
+  assert.doesNotMatch(workspaceSource, /const handleSelectGeneratedVideo = useCallback/, 'generated video selection belongs in useAudioSourceMediaHandlers');
   assert.doesNotMatch(workspaceSource, /resolveUiErrorMessage\(error, copy\.messages\.generationFailed/, 'generation failure mapping belongs in useAudioGenerationRunner');
   assert.doesNotMatch(workspaceSource, /<AudioSelectControl/, 'audio option selectors belong in audio-options-section.tsx');
   assert.doesNotMatch(workspaceSource, /copy\.controls\.providerStack/, 'provider stack UI belongs in audio-options-section.tsx');
@@ -77,7 +89,7 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /copy\.controls\.estimatedDuration/, 'script composer UI belongs in audio-workspace-composer-surface.tsx');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 720, `AudioWorkspace should stay below 720 lines after composer surface extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 520, `AudioWorkspace should stay below 520 lines after media/restoration extraction, got ${lineCount}`);
 });
 
 test('audio helper modules expose the expected workspace contract', () => {
@@ -92,6 +104,8 @@ test('audio helper modules expose the expected workspace contract', () => {
   const activeJobHookSource = readFileSync(activeJobHookPath, 'utf8');
   const generatedVideosHookSource = readFileSync(generatedVideosHookPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
+  const sourceMediaHandlersHookSource = readFileSync(sourceMediaHandlersHookPath, 'utf8');
+  const restorationHookSource = readFileSync(restorationHookPath, 'utf8');
 
   for (const exportName of [
     'AudioModePicker',
@@ -127,6 +141,14 @@ test('audio helper modules expose the expected workspace contract', () => {
   assert.match(generationRunnerHookSource, /export function useAudioGenerationRunner/, 'generation runner hook should be exported');
   assert.match(generationRunnerHookSource, /runAudioGenerate/, 'generation runner hook should submit generation requests');
   assert.match(generationRunnerHookSource, /resolveUiErrorMessage/, 'generation runner hook should map generation failures');
+  assert.match(sourceMediaHandlersHookSource, /export function useAudioSourceMediaHandlers/, 'source media handlers hook should be exported');
+  assert.match(sourceMediaHandlersHookSource, /handleSourceFileSelect/, 'source media handlers hook should own source upload selection');
+  assert.match(sourceMediaHandlersHookSource, /handleVoiceFileSelect/, 'source media handlers hook should own voice sample upload selection');
+  assert.match(sourceMediaHandlersHookSource, /handleSelectGeneratedVideo/, 'source media handlers hook should own generated video source selection');
+  assert.match(restorationHookSource, /export function useAudioWorkspaceRestoration/, 'restoration hook should be exported');
+  assert.match(restorationHookSource, /fetchJobDetail\(queryJobId\)/, 'restoration hook should load query jobs');
+  assert.match(restorationHookSource, /surface=audio&limit=12/, 'restoration hook should restore latest audio jobs');
+  assert.match(restorationHookSource, /hydrateSourceVideo/, 'restoration hook should own source video hydration');
 
   for (const exportName of [
     'DEFAULT_PACK',

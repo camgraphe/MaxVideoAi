@@ -8,11 +8,9 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
-import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import { HeaderBar } from '@/components/HeaderBar';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { authFetch } from '@/lib/authFetch';
 import { runUpscaleTool, saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -31,22 +29,13 @@ import type {
   UpscaleToolEngineId,
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
-import type { GroupSummary } from '@/types/groups';
-import type { Job } from '@/types/jobs';
 import { UpscaleRecipePanel, UpscaleSourcePanel } from './upscale/_components/UpscaleInputPanels';
 import { UpscaleHeroSummaryCard } from './upscale/_components/UpscaleHeroSummaryCard';
 import { UpscaleLibraryModal } from './upscale/_components/UpscaleLibraryModal';
 import { UpscalePreviewCard } from './upscale/_components/UpscalePreviewCard';
 import { UpscaleRecentRail } from './upscale/_components/UpscaleRecentRail';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
-import {
-  formatCurrency,
-  parseRecentImageVariantIndex,
-  resolveRecentUpscaleJobFromGroup,
-  resolveRecentUpscaleMedia,
-  resolveRecentUpscaleMediaFromGroup,
-  resolveUpscaleEngineId,
-} from './upscale/_lib/upscale-workspace-helpers';
+import { useUpscaleRecentActions } from './upscale/_hooks/useUpscaleRecentActions';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
 import { useUpscalePreviewScroller } from './upscale/_hooks/useUpscalePreviewScroller';
@@ -54,10 +43,8 @@ import { useUpscalePreviewState } from './upscale/_hooks/useUpscalePreviewState'
 import { useUpscaleRecentJobs } from './upscale/_hooks/useUpscaleRecentJobs';
 import { useUpscaleSourceMedia } from './upscale/_hooks/useUpscaleSourceMedia';
 import type {
-  JobDetailResponse,
   PreviewMode,
   PreviewZoom,
-  RecentUpscaleMedia,
   UploadedAsset,
 } from './upscale/_lib/upscale-workspace-types';
 
@@ -100,7 +87,6 @@ export default function UpscaleWorkspace() {
     user,
   });
   const [activeRecentGroupId, setActiveRecentGroupId] = useState<string | null>(null);
-  const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
 
   const engines = useMemo(() => listUpscaleToolEngines(mediaType), [mediaType]);
   const engine = useMemo(() => engines.find((entry) => entry.id === engineId) ?? engines[0], [engineId, engines]);
@@ -187,6 +173,29 @@ export default function UpscaleWorkspace() {
     setSource,
     setUploading,
     source,
+  });
+  const {
+    handleRecentGroupAction,
+    savingRecentGroupId,
+    selectRecentUpscale,
+  } = useUpscaleRecentActions({
+    copy,
+    hasSourcePreview,
+    locale,
+    mediaType,
+    setActiveRecentGroupId,
+    setEngineId,
+    setError,
+    setMediaType,
+    setMediaUrl,
+    setMessage,
+    setMode,
+    setOutputFormat,
+    setPreviewMode,
+    setResult,
+    setSource,
+    setTargetResolution,
+    setUpscaleFactor,
   });
 
   function changeMediaType(next: UpscaleMediaType) {
@@ -275,162 +284,6 @@ export default function UpscaleWorkspace() {
   function handleDownload() {
     if (!output?.url) return;
     triggerAppDownload(output.url, suggestDownloadFilename(output.url, `upscale-${mediaType}`));
-  }
-
-  function buildRecentUpscaleResult(selection: RecentUpscaleMedia): UpscaleToolResponse {
-    const resolvedEngineId = resolveUpscaleEngineId(selection.engineId, selection.mediaType);
-    const totalCents = selection.totalCents ?? 0;
-    return {
-      ok: true,
-      jobId: selection.job.jobId,
-      engineId: resolvedEngineId,
-      engineLabel: selection.engineLabel,
-      mediaType: selection.mediaType,
-      latencyMs: 0,
-      pricing: {
-        estimatedCostUsd: totalCents / 100,
-        actualCostUsd: selection.totalCents == null ? null : totalCents / 100,
-        currency: selection.currency,
-        estimatedCredits: totalCents,
-        actualCredits: selection.totalCents,
-        totalCents: selection.totalCents,
-        billingProductKey: selection.job.billingProductKey ?? null,
-      },
-      output: {
-        url: selection.url,
-        thumbUrl: selection.thumbUrl ?? null,
-        mimeType: selection.mimeType,
-        originUrl: selection.url,
-        source: 'upscale',
-        persisted: true,
-      },
-    };
-  }
-
-  function applyRecentUpscaleMediaType(selection: RecentUpscaleMedia) {
-    if (selection.mediaType === mediaType) return;
-    const nextEngineId = resolveUpscaleEngineId(selection.engineId, selection.mediaType);
-    const resolved =
-      listUpscaleToolEngines(selection.mediaType).find((entry) => entry.id === nextEngineId) ??
-      listUpscaleToolEngines(selection.mediaType)[0];
-    setMediaType(selection.mediaType);
-    setEngineId(resolved.id);
-    setMode(resolved.defaultMode);
-    setUpscaleFactor(resolved.defaultUpscaleFactor);
-    setTargetResolution(resolved.defaultTargetResolution ?? '1080p');
-    setOutputFormat(resolved.defaultOutputFormat);
-  }
-
-  async function resolveRecentSelectionWithSource(group: GroupSummary): Promise<RecentUpscaleMedia | null> {
-    const selection = resolveRecentUpscaleMediaFromGroup(group);
-    if (selection?.source?.url) return selection;
-
-    const baseJob = resolveRecentUpscaleJobFromGroup(group);
-    if (!baseJob?.jobId) return selection;
-
-    try {
-      const response = await authFetch(`/api/jobs/${encodeURIComponent(baseJob.jobId)}`);
-      const payload = (await response.json().catch(() => null)) as JobDetailResponse | null;
-      if (!response.ok || !payload?.ok) return selection;
-      const detailedJob: Job = {
-        ...baseJob,
-        settingsSnapshot: payload.settingsSnapshot ?? baseJob.settingsSnapshot,
-        renderIds: payload.renderIds ?? baseJob.renderIds,
-        renderThumbUrls: payload.renderThumbUrls ?? baseJob.renderThumbUrls,
-        heroRenderId: payload.heroRenderId ?? baseJob.heroRenderId,
-        videoUrl: payload.videoUrl ?? baseJob.videoUrl,
-        readyVideoUrl: payload.readyVideoUrl ?? baseJob.readyVideoUrl,
-        thumbUrl: payload.thumbUrl ?? baseJob.thumbUrl,
-        previewFrame: payload.previewFrame ?? baseJob.previewFrame,
-        finalPriceCents: payload.finalPriceCents ?? baseJob.finalPriceCents,
-        currency: payload.currency ?? baseJob.currency,
-        pricingSnapshot: payload.pricingSnapshot ?? payload.pricing ?? baseJob.pricingSnapshot,
-      };
-      return resolveRecentUpscaleMedia(detailedJob, parseRecentImageVariantIndex(group.hero.id)) ?? selection;
-    } catch {
-      return selection;
-    }
-  }
-
-  async function selectRecentUpscale(group: GroupSummary) {
-    setError(null);
-    const selection = await resolveRecentSelectionWithSource(group);
-    if (!selection) {
-      setError('No finished upscale output is available for this job yet.');
-      return;
-    }
-    applyRecentUpscaleMediaType(selection);
-    if (selection.source?.url) {
-      setSource({
-        id: selection.source.assetId ?? null,
-        jobId: selection.source.jobId ?? null,
-        url: selection.source.url,
-        width: selection.source.width ?? null,
-        height: selection.source.height ?? null,
-        mime: selection.source.mimeType,
-        name: 'Recent upscale source',
-      });
-      setMediaUrl(selection.source.url);
-    }
-    setResult(buildRecentUpscaleResult(selection));
-    setActiveRecentGroupId(group.id);
-    setError(null);
-    setMessage(
-      selection.totalCents == null
-        ? selection.engineLabel
-        : `${selection.engineLabel} · ${formatCurrency(selection.totalCents, selection.currency, locale)}`
-    );
-    setPreviewMode(selection.source?.url || (hasSourcePreview && selection.mediaType === mediaType) ? 'compare' : 'result');
-  }
-
-  async function saveRecentUpscale(group: GroupSummary) {
-    const selection = resolveRecentUpscaleMediaFromGroup(group);
-    if (!selection) {
-      setError('No finished upscale output is available for this job yet.');
-      return;
-    }
-    setSavingRecentGroupId(group.id);
-    setError(null);
-    try {
-      await saveAssetToLibrary({
-        url: selection.url,
-        jobId: selection.job.jobId,
-        label: selection.engineLabel,
-        source: 'upscale',
-        kind: selection.mediaType,
-      });
-      setMessage(copy.saved);
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : copy.saveFailed);
-    } finally {
-      setSavingRecentGroupId(null);
-    }
-  }
-
-  function handleRecentGroupAction(group: GroupSummary, action: GroupedJobAction) {
-    const selection = resolveRecentUpscaleMediaFromGroup(group);
-    if ((action === 'open' || action === 'view' || action === 'compare' || action === 'continue' || action === 'refine' || action === 'branch') && selection) {
-      void selectRecentUpscale(group);
-      return;
-    }
-    if (!selection) {
-      setError('No finished upscale output is available for this job yet.');
-      return;
-    }
-    if (action === 'download') {
-      triggerAppDownload(selection.url, suggestDownloadFilename(selection.url, `upscale-${selection.job.jobId}`));
-      return;
-    }
-    if (action === 'copy') {
-      void navigator.clipboard
-        ?.writeText(selection.url)
-        .then(() => setMessage('Link copied.'))
-        .catch(() => setError('Unable to copy link.'));
-      return;
-    }
-    if (action === 'save-image') {
-      void saveRecentUpscale(group);
-    }
   }
 
   if (authLoading) {

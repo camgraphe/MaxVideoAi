@@ -6,16 +6,7 @@ import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { GalleryRail } from '@/components/GalleryRail';
-import { Button } from '@/components/ui/Button';
-import type { AssetFieldConfig, ComposerAttachment } from '@/components/Composer';
-import { saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode } from '@/types/image-generation';
-import type { VideoGroup } from '@/types/video-groups';
-import type { MediaLightboxEntry } from '@/components/MediaLightbox';
-import type { ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
-import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { FEATURES } from '@/content/feature-flags';
 import { clampRequestedImageCount } from '@/lib/image/inputSchema';
@@ -25,6 +16,8 @@ import {
 import { ImageAuthGateModal } from './_components/ImageAuthGateModal';
 import { ImageLibraryModal } from './_components/ImageLibraryModal';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
+import { ImageWorkspaceGalleryRail } from './_components/ImageWorkspaceGalleryRail';
+import { useImageWorkspaceDisplayState } from './_hooks/useImageWorkspaceDisplayState';
 import { useImageGallerySelection } from './_hooks/useImageGallerySelection';
 import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
 import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
@@ -35,9 +28,10 @@ import { useImagePreviewActions } from './_hooks/useImagePreviewActions';
 import { useImageWorkspaceQueryHydration } from './_hooks/useImageWorkspaceQueryHydration';
 import { useImageReferenceSlots } from './_hooks/useImageReferenceSlots';
 import { useImageComposerPersistence } from './_hooks/useImageComposerPersistence';
+import { useImageWorkspaceReferenceAssets } from './_hooks/useImageWorkspaceReferenceAssets';
+import { useImageWorkspaceViewer } from './_hooks/useImageWorkspaceViewer';
 import {
   DEFAULT_COPY,
-  formatTemplate,
   mergeCopy,
   type ImageWorkspaceCopy,
 } from './_lib/image-workspace-copy';
@@ -92,8 +86,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const isDesktopLayout = useImageWorkspaceDesktopLayout();
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const {
+    closeViewer,
+    handleOpenHistoryEntry,
+    handleSaveVariantToLibrary,
+    viewerGroup,
+  } = useImageWorkspaceViewer();
   const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
   const selectedEngine = useMemo(
     () => engines.find((engine) => engine.id === engineId) ?? engines[0],
@@ -226,40 +225,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     }
   }, [autoModeFromReferences, hasAnyReferenceSelection, mode, selectedEngine]);
 
-  const handleOpenHistoryEntry = useCallback((entry: HistoryEntry) => {
-    if (!entry.images.length) return;
-    const group = buildVideoGroupFromImageRun({
-      id: entry.id,
-      jobId: entry.jobId ?? entry.id,
-      createdAt: entry.createdAt,
-      prompt: entry.prompt,
-      engineLabel: entry.engineLabel,
-      engineId: entry.engineId,
-      aspectRatio: entry.aspectRatio ?? null,
-      images: entry.images.map((image) => ({
-        url: image.url,
-        thumbUrl: image.thumbUrl ?? null,
-        width: image.width ?? null,
-        height: image.height ?? null,
-      })),
-    });
-    setViewerGroup(group);
-  }, []);
-
-  const closeViewer = useCallback(() => setViewerGroup(null), []);
-
-  const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
-    const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.imageUrl ?? entry.thumbUrl;
-    if (!mediaUrl) {
-      throw new Error('No image available to save');
-    }
-    await saveImageToLibrary({
-      url: mediaUrl,
-      jobId: entry.jobId ?? entry.id,
-      label: entry.label ?? undefined,
-    });
-  }, []);
-
   useImageComposerPersistence({
     engines,
     engineId,
@@ -388,14 +353,25 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setSelectedPreviewImageIndex,
   });
 
-  const previewEntry = (() => {
-    if (selectedPreviewEntryId) {
-      const match = historyEntries.find((entry) => entry.id === selectedPreviewEntryId);
-      if (match) return match;
-    }
-    return historyEntries[0];
-  })();
-  const canUseWorkspace = Boolean(selectedEngine && selectedEngineCaps);
+  const {
+    canUseWorkspace,
+    composerError,
+    compositePreviewEntry,
+    estimatedCostAmount,
+    estimatedCostCurrency,
+    inProgressMessage,
+    previewEntry,
+  } = useImageWorkspaceDisplayState({
+    error,
+    historyEntries,
+    numImages,
+    pendingGroups,
+    pricingErrorMessage: pricingError?.message ?? null,
+    pricingSnapshot,
+    resolvedCopy,
+    selectedEngine,
+    selectedPreviewEntryId,
+  });
   const {
     copiedUrl,
     handleAddToLibrary,
@@ -422,95 +398,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setStatusMessage,
   });
 
-  const inProgressMessage = useMemo(() => {
-    const count = pendingGroups.length;
-    if (count <= 0) return null;
-    return formatTemplate(resolvedCopy.messages.generatingInProgress, { count });
-  }, [pendingGroups.length, resolvedCopy.messages.generatingInProgress]);
-  const compositePreviewEntry: ImageCompositePreviewEntry | null = previewEntry
-    ? {
-        id: previewEntry.id,
-        engineLabel: previewEntry.engineLabel,
-        prompt: previewEntry.prompt,
-        createdAt: previewEntry.createdAt,
-        mode: previewEntry.mode,
-        aspectRatio: previewEntry.aspectRatio ?? null,
-        images: previewEntry.images,
-      }
-    : null;
-  const estimatedCostAmount = pricingSnapshot
-    ? pricingSnapshot.totalCents / 100
-    : (selectedEngine?.pricePerImage ?? 0) * numImages;
-  const estimatedCostCurrency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
   const advancedSettingsTitle = t('workspace.generate.controls.advancedTitle', 'Advanced settings') as string;
-  const characterHeaderAction = useMemo(() => {
-    if (!supportsCharacterReferences) return null;
-    return (
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={(event) => {
-          event.stopPropagation();
-          openCharacterLibrary();
-        }}
-        className="min-h-0 h-7 gap-1.5 rounded-full px-2.5 py-0 text-[11px] font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
-      >
-        <Plus className="h-3.5 w-3.5 text-brand" />
-        <span>{resolvedCopy.composer.characterButton}</span>
-      </Button>
-    );
-  }, [openCharacterLibrary, resolvedCopy.composer.characterButton, supportsCharacterReferences]);
-  const referenceAssetFields = useMemo<AssetFieldConfig[]>(() => {
-    if (referenceSlotLimit <= 0) return [];
-    return [
-      {
-        field: {
-          id: 'reference_images',
-          type: 'image',
-          label: resolvedCopy.composer.referenceLabel,
-          description: `${referenceHelperText}. ${referenceNoteText}`,
-          minCount: mode === 'i2i' ? referenceMinRequired : 0,
-          maxCount: displayedReferenceSlotCount,
-        },
-        required: mode === 'i2i' && referenceMinRequired > 0,
-        role: 'reference',
-        headerAction: characterHeaderAction,
-      },
-    ];
-  }, [
-    characterHeaderAction,
+  const {
+    composerReferenceAssets,
+    referenceAssetFields,
+  } = useImageWorkspaceReferenceAssets({
     displayedReferenceSlotCount,
+    displayedReferenceSlots,
     mode,
+    openCharacterLibrary,
     referenceHelperText,
     referenceMinRequired,
     referenceNoteText,
     referenceSlotLimit,
-    resolvedCopy.composer.referenceLabel,
-  ]);
-  const composerReferenceAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(
-    () => ({
-      reference_images: displayedReferenceSlots.map((slot) =>
-        slot
-          ? {
-              kind: 'image',
-              name: slot.name ?? slot.url.split('/').pop() ?? resolvedCopy.composer.referenceSlotNameFallback,
-              size: 0,
-              type: 'image/*',
-              previewUrl: slot.previewUrl ?? slot.url,
-              status: slot.status,
-              badge: slot.characterReference ? resolvedCopy.composer.characterButton : undefined,
-            }
-          : null
-      ),
-    }),
-    [
-      displayedReferenceSlots,
-      resolvedCopy.composer.characterButton,
-      resolvedCopy.composer.referenceSlotNameFallback,
-    ]
-  );
-  const composerError = error ?? pricingError?.message ?? null;
+    resolvedCopy,
+    supportsCharacterReferences,
+  });
 
   if (!selectedEngine || !selectedEngineCaps) {
     return (
@@ -612,39 +515,33 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           </main>
         </div>
         {isDesktopLayout ? (
-          <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
-            <GalleryRail
-              engine={selectedEngineCaps}
-              engineRegistry={engineCapsList}
-              feedType="image"
-              activeGroups={pendingGroups}
-              jobFilter={isImageJob}
-              onOpenGroup={handleSelectGalleryGroup}
-              variant="desktop"
-            />
-          </div>
+          <ImageWorkspaceGalleryRail
+            activeGroups={pendingGroups}
+            engineCapsList={engineCapsList}
+            isImageJob={isImageJob}
+            onOpenGroup={handleSelectGalleryGroup}
+            selectedEngineCaps={selectedEngineCaps}
+            variant="desktop"
+          />
         ) : null}
       </div>
       {!isDesktopLayout ? (
-        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
-          <GalleryRail
-            engine={selectedEngineCaps}
-            engineRegistry={engineCapsList}
-            feedType="image"
-            activeGroups={pendingGroups}
-            jobFilter={isImageJob}
-            onOpenGroup={handleSelectGalleryGroup}
-            variant="mobile"
-          />
-        </div>
+        <ImageWorkspaceGalleryRail
+          activeGroups={pendingGroups}
+          engineCapsList={engineCapsList}
+          isImageJob={isImageJob}
+          onOpenGroup={handleSelectGalleryGroup}
+          selectedEngineCaps={selectedEngineCaps}
+          variant="mobile"
+        />
       ) : null}
       {viewerGroup ? (
-      <GroupViewerModal
-        group={viewerGroup}
-        onClose={closeViewer}
-        onSaveToLibrary={handleSaveVariantToLibrary}
-      />
-    ) : null}
+        <GroupViewerModal
+          group={viewerGroup}
+          onClose={closeViewer}
+          onSaveToLibrary={handleSaveVariantToLibrary}
+        />
+      ) : null}
       <ImageAuthGateModal
         open={authModalOpen}
         copy={resolvedCopy.authGate}
@@ -652,22 +549,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         onClose={() => setAuthModalOpen(false)}
       />
       {libraryModal.open ? (
-      <ImageLibraryModal
-        open={libraryModal.open}
-        onClose={closeLibraryModal}
-        onSelect={handleLibrarySelect}
-        onToggleCharacter={toggleCharacterReference}
-        selectedCharacterReferences={selectedCharacterReferences}
-        characterSelectionLimit={characterSelectionLimit}
-        copy={resolvedCopy.library}
-        characterCopy={resolvedCopy.characterPicker}
-        selectionMode={libraryModal.selectionMode}
-        initialSource={libraryModal.initialSource}
-        supportedFormats={supportedReferenceFormats}
-        supportedFormatsLabel={supportedReferenceFormatsLabel}
-        toolsEnabled={toolsEnabled}
-      />
-    ) : null}
+        <ImageLibraryModal
+          open={libraryModal.open}
+          onClose={closeLibraryModal}
+          onSelect={handleLibrarySelect}
+          onToggleCharacter={toggleCharacterReference}
+          selectedCharacterReferences={selectedCharacterReferences}
+          characterSelectionLimit={characterSelectionLimit}
+          copy={resolvedCopy.library}
+          characterCopy={resolvedCopy.characterPicker}
+          selectionMode={libraryModal.selectionMode}
+          initialSource={libraryModal.initialSource}
+          supportedFormats={supportedReferenceFormats}
+          supportedFormatsLabel={supportedReferenceFormatsLabel}
+          toolsEnabled={toolsEnabled}
+        />
+      ) : null}
     </>
   );
 }
