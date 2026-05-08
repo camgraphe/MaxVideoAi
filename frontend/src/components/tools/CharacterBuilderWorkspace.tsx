@@ -10,7 +10,6 @@ import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
-  Upload,
 } from 'lucide-react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -40,14 +39,13 @@ import {
   HairEditorPanel,
   IconChoiceCard,
   MultiToggleGroup,
-  OutputPreviewCard,
   REALISM_CARD_META,
-  ReferenceSlot,
   SectionTitle,
   SegmentedControl,
   StyleChoiceCard,
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
+import { CharacterBuilderStartSection } from './character-builder/_components/character-builder-start-section';
 import {
   CharacterBuilderAuthGateModal,
   CharacterBuilderDisabledState,
@@ -399,112 +397,22 @@ export default function CharacterBuilderPage() {
               <div className="min-w-0 flex-1 space-y-6">
                 <Card className="overflow-visible border border-border p-6 lg:p-7">
                   <div className="space-y-6">
-                    <section className="space-y-4">
-                      <SectionTitle title={copy.top.start} />
-                      <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
-                        <OutputPreviewCard
-                          selected={state.outputMode === 'character-sheet'}
-                          title={copy.generatePanel.sheetTitle}
-                          subtitle={copy.generatePanel.sheetBody}
-                          mode="character-sheet"
-                          onClick={() =>
-                            setState((previous) => ({
-                              ...previous,
-                              outputMode: 'character-sheet',
-                              outputOptions: {
-                                ...previous.outputOptions,
-                                fullBodyRequired: true,
-                              },
-                            }))
-                          }
-                        />
-                        <OutputPreviewCard
-                          selected={state.outputMode === 'portrait-reference'}
-                          title={copy.generatePanel.portraitTitle}
-                          subtitle={copy.generatePanel.portraitBody}
-                          mode="portrait-reference"
-                          onClick={() =>
-                            setState((previous) => ({
-                              ...previous,
-                              outputMode: 'portrait-reference',
-                              outputOptions: {
-                                ...previous.outputOptions,
-                                fullBodyRequired: false,
-                              },
-                            }))
-                          }
-                        />
-                      </div>
-
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <ReferenceSlot
-                          title={copy.references.identityTitle}
-                          subtitle={copy.references.identityBody}
-                          image={identityReference}
-                          onUpload={() => {
-                            if (!user) {
-                              openAuthGate();
-                              return;
-                            }
-                            identityFileRef.current?.click();
-                          }}
-                          onOpenLibrary={() => {
-                            if (!user) {
-                              openAuthGate();
-                              return;
-                            }
-                            setLibraryModalRole('identity');
-                          }}
-                          removeLabel={copy.references.remove}
-                          libraryLabel={copy.library.open}
-                          optionalLabel={copy.sections.optional}
-                          onRemove={removeIdentityReference}
-                        />
-                        {showStyleReferenceSlot || styleReference ? (
-                          <ReferenceSlot
-                            title={copy.references.styleTitle}
-                            subtitle={copy.references.styleBody}
-                            image={styleReference}
-                            onUpload={() => {
-                              if (!user) {
-                                openAuthGate();
-                                return;
-                              }
-                              styleFileRef.current?.click();
-                            }}
-                            onOpenLibrary={() => {
-                              if (!user) {
-                                openAuthGate();
-                                return;
-                              }
-                              setShowStyleReferenceSlot(true);
-                              setLibraryModalRole('style');
-                            }}
-                            removeLabel={copy.references.remove}
-                            libraryLabel={copy.library.open}
-                            optionalLabel={copy.sections.optional}
-                            onRemove={removeStyleReference}
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setShowStyleReferenceSlot(true)}
-                            className="flex min-h-[180px] flex-col items-center justify-center rounded-card border border-dashed border-border bg-bg/40 px-4 py-6 text-center transition hover:border-border-hover hover:bg-surface-hover"
-                          >
-                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
-                              <Upload className="h-5 w-5" />
-                            </span>
-                            <div className="mt-3 flex items-center justify-center gap-2">
-                              <p className="text-sm font-semibold text-text-primary">{copy.references.addInspiration}</p>
-                              <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
-                                {copy.sections.optional}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-xs text-text-secondary">{copy.references.addInspirationBody}</p>
-                          </button>
-                        )}
-                      </div>
-                    </section>
+                    <CharacterBuilderStartSection
+                      canUseReferences={Boolean(user)}
+                      copy={copy}
+                      identityFileRef={identityFileRef}
+                      identityReference={identityReference}
+                      onAuthRequired={openAuthGate}
+                      onRemoveIdentityReference={removeIdentityReference}
+                      onRemoveStyleReference={removeStyleReference}
+                      outputMode={state.outputMode}
+                      setLibraryModalRole={setLibraryModalRole}
+                      setShowStyleReferenceSlot={setShowStyleReferenceSlot}
+                      setState={setState}
+                      showStyleReferenceSlot={showStyleReferenceSlot}
+                      styleFileRef={styleFileRef}
+                      styleReference={styleReference}
+                    />
 
                     <section className="space-y-4 border-t border-border pt-6">
                       <SectionTitle title={copy.top.buildLook}>
