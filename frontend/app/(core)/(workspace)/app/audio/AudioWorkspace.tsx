@@ -22,7 +22,7 @@ import {
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
-import { getJobStatus, runAudioGenerate } from '@/lib/api';
+import { runAudioGenerate } from '@/lib/api';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -60,6 +60,8 @@ import {
 import AudioLatestRendersRail from './AudioLatestRendersRail';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
 import { AudioModePicker, AudioSelectControl, ToggleRow } from './_components/audio-workspace-controls';
+import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
+import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
 import {
   AUDIO_VOICE_GENDER_VALUES,
   DEFAULT_INTENSITY,
@@ -124,9 +126,15 @@ export default function AudioWorkspace() {
   const [result, setResult] = useState<AudioResultState | null>(null);
   const [activeJob, setActiveJob] = useState<ActiveAudioJobState | null>(null);
   const [generatedPickerOpen, setGeneratedPickerOpen] = useState(false);
-  const [generatedVideos, setGeneratedVideos] = useState<GeneratedSourceVideo[]>([]);
-  const [isGeneratedVideosLoading, setIsGeneratedVideosLoading] = useState(false);
-  const [generatedVideosError, setGeneratedVideosError] = useState<string | null>(null);
+  const {
+    generatedVideos,
+    generatedVideosError,
+    isGeneratedVideosLoading,
+  } = useAudioGeneratedVideos({
+    loadErrorMessage: copy.messages.loadGeneratedVideos,
+    open: generatedPickerOpen,
+    user,
+  });
   const sourceInputRef = useRef<HTMLInputElement | null>(null);
   const voiceInputRef = useRef<HTMLInputElement | null>(null);
   const restoredQueryJobRef = useRef<string | null>(null);
@@ -342,38 +350,6 @@ export default function AudioWorkspace() {
     [hydrateSourceVideo]
   );
 
-  const fetchGeneratedVideos = useCallback(async () => {
-    setIsGeneratedVideosLoading(true);
-    setGeneratedVideosError(null);
-    try {
-      const response = await authFetch('/api/jobs?surface=video&limit=60');
-      const payload = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string; jobs?: Job[] }
-        | null;
-      if (!response.ok || !payload?.ok || !Array.isArray(payload.jobs)) {
-        throw new Error(payload?.error ?? copy.messages.loadGeneratedVideos);
-      }
-      const next = payload.jobs
-        .filter((job) => typeof job.videoUrl === 'string' && job.videoUrl.trim().length > 0)
-        .map((job) => ({
-          jobId: job.jobId,
-          url: job.videoUrl as string,
-          thumbUrl: job.thumbUrl ?? null,
-          durationSec: typeof job.durationSec === 'number' ? job.durationSec : null,
-          aspectRatio: job.aspectRatio ?? null,
-          label: job.engineLabel?.trim().length ? job.engineLabel : `Job ${job.jobId}`,
-          createdAt: job.createdAt,
-          hasAudio: Boolean(job.hasAudio),
-        }))
-        .filter((job, index, list) => list.findIndex((entry) => entry.jobId === job.jobId) === index);
-      setGeneratedVideos(next);
-    } catch (error) {
-      setGeneratedVideosError(resolveUiErrorMessage(error, copy.messages.loadGeneratedVideos, ['Unable to load generated videos.']));
-    } finally {
-      setIsGeneratedVideosLoading(false);
-    }
-  }, [copy.messages.loadGeneratedVideos]);
-
   useEffect(() => {
     if (!queryJobId || !user) return;
     if (restoredQueryJobRef.current === queryJobId) return;
@@ -447,60 +423,11 @@ export default function AudioWorkspace() {
     };
   }, [copy, queryJobId, restoreAudioJob, user]);
 
-  useEffect(() => {
-    if (!activeJob || (activeJob.status !== 'pending' && activeJob.status !== 'running')) {
-      return;
-    }
-    let cancelled = false;
-    const poll = async () => {
-      try {
-        const status = await getJobStatus(activeJob.jobId);
-        if (cancelled) return;
-        const nextOutputKind = inferOutputKind({
-          videoUrl: status.videoUrl ?? null,
-          audioUrl: status.audioUrl ?? null,
-        });
-        const nextStatus: ActiveAudioJobState = {
-          jobId: status.jobId,
-          status: status.videoUrl || status.audioUrl ? 'completed' : status.status,
-          progress: status.progress,
-          message: status.message ?? null,
-          videoUrl: status.videoUrl ?? null,
-          audioUrl: status.audioUrl ?? null,
-          thumbUrl: status.thumbUrl ?? null,
-          outputKind: nextOutputKind,
-        };
-        setActiveJob(nextStatus);
-        if (status.videoUrl || status.audioUrl) {
-          setResult({
-            jobId: status.jobId,
-            videoUrl: status.videoUrl ?? null,
-            audioUrl: status.audioUrl ?? null,
-            thumbUrl: status.thumbUrl ?? null,
-            outputKind: nextOutputKind,
-          });
-        }
-      } catch {
-        // Keep current state and retry on the next interval.
-      }
-    };
-
-    void poll();
-    const interval = window.setInterval(() => {
-      void poll();
-    }, 5000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, [activeJob]);
-
-  useEffect(() => {
-    if (!generatedPickerOpen || !user) return;
-    if (generatedVideos.length || isGeneratedVideosLoading) return;
-    void fetchGeneratedVideos();
-  }, [fetchGeneratedVideos, generatedPickerOpen, generatedVideos.length, isGeneratedVideosLoading, user]);
+  useAudioActiveJobPolling({
+    activeJob,
+    setActiveJob,
+    setResult,
+  });
 
   const estimatedDurationSec = useMemo(() => {
     if (pack === 'voice_only') {
