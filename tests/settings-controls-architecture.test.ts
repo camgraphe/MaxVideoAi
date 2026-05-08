@@ -10,6 +10,7 @@ const durationPath = join(root, 'frontend/components/settings-controls/settings-
 const copyPath = join(root, 'frontend/components/settings-controls/settings-control-copy.ts');
 const genericFieldsPath = join(root, 'frontend/components/settings-controls/settings-control-generic-fields.tsx');
 const engineAdvancedPath = join(root, 'frontend/components/settings-controls/settings-control-engine-advanced.tsx');
+const advancedPanelPath = join(root, 'frontend/components/settings-controls/SettingsAdvancedPanel.tsx');
 const typesPath = join(root, 'frontend/components/settings-controls/settings-control-types.ts');
 const stateHookPath = join(root, 'frontend/components/settings-controls/useSettingsControlState.ts');
 
@@ -19,6 +20,7 @@ const durationSource = readFileSync(durationPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const genericFieldsSource = readFileSync(genericFieldsPath, 'utf8');
 const engineAdvancedSource = readFileSync(engineAdvancedPath, 'utf8');
+const advancedPanelSource = readFileSync(advancedPanelPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
 const stateHookSource = readFileSync(stateHookPath, 'utf8');
 
@@ -28,16 +30,19 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.ok(existsSync(copyPath), 'settings controls copy should live in a focused module');
   assert.ok(existsSync(genericFieldsPath), 'generic advanced fields should live in a focused module');
   assert.ok(existsSync(engineAdvancedPath), 'engine-specific advanced controls should live in a focused module');
+  assert.ok(existsSync(advancedPanelPath), 'advanced panel rendering should live in a focused module');
   assert.ok(existsSync(typesPath), 'settings controls props contract should live in a focused module');
   assert.ok(existsSync(stateHookPath), 'settings control derived state should live in a focused hook');
 
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-duration'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-copy'/);
-  assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
-  assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-engine-advanced'/);
+  assert.match(controlsSource, /from '@\/components\/settings-controls\/SettingsAdvancedPanel'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-types'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/useSettingsControlState'/);
+  assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
+  assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-engine-advanced'/);
+  assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
 });
 
 test('settings controls does not regain extracted ownership', () => {
@@ -51,6 +56,9 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /<select[\s\S]*field\.values/, 'generic enum field rendering belongs in settings-control-generic-fields.tsx');
   assert.doesNotMatch(controlsSource, /Voice IDs \(CSV\)/, 'Kling voice controls belong in settings-control-engine-advanced.tsx');
   assert.doesNotMatch(controlsSource, /Camera fixed/, 'Seedance engine controls belong in settings-control-engine-advanced.tsx');
+  assert.doesNotMatch(controlsSource, /SettingsGenericAdvancedFields/, 'generic advanced field composition belongs in SettingsAdvancedPanel.tsx');
+  assert.doesNotMatch(controlsSource, /SettingsKlingV3Controls/, 'engine-specific advanced composition belongs in SettingsAdvancedPanel.tsx');
+  assert.doesNotMatch(controlsSource, /RangeWithInput/, 'advanced range rendering belongs in SettingsAdvancedPanel.tsx');
   assert.doesNotMatch(controlsSource, /interface Props/, 'settings controls prop contract belongs in settings-control-types.ts');
   assert.doesNotMatch(controlsSource, /EngineInputField/, 'advanced field prop typing belongs in settings-control-types.ts');
   assert.doesNotMatch(controlsSource, /useEffect\(/, 'derived option syncing belongs in useSettingsControlState');
@@ -58,7 +66,9 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /const resolutionOptions =/, 'resolution option derivation belongs in useSettingsControlState');
 
   const lineCount = controlsSource.split('\n').length;
-  assert.ok(lineCount <= 760, `SettingsControls should stay below 760 lines after engine advanced extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 500, `SettingsControls should stay below 500 lines after panel extraction, got ${lineCount}`);
+  const advancedPanelLineCount = advancedPanelSource.split('\n').length;
+  assert.ok(advancedPanelLineCount <= 500, `SettingsAdvancedPanel should stay below 500 lines, got ${advancedPanelLineCount}`);
 });
 
 test('settings control helper modules expose the expected contract', () => {
@@ -76,6 +86,10 @@ test('settings control helper modules expose the expected contract', () => {
   assert.match(engineAdvancedSource, /export function SettingsSeedanceAdvancedControls/);
   assert.match(engineAdvancedSource, /Voice IDs \(CSV\)/);
   assert.match(engineAdvancedSource, /Camera fixed/);
+  assert.match(advancedPanelSource, /export function SettingsAdvancedPanel/);
+  assert.match(advancedPanelSource, /SettingsGenericAdvancedFields/);
+  assert.match(advancedPanelSource, /SettingsKlingV3Controls/);
+  assert.match(advancedPanelSource, /RangeWithInput/);
   assert.match(typesSource, /export interface SettingsControlsProps/);
   assert.match(typesSource, /EngineInputField/);
   assert.match(stateHookSource, /export function useSettingsControlState/);

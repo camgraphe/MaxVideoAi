@@ -5,12 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { matchesDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
-import {
-  SettingsKlingV3Controls,
-  SettingsSeedanceAdvancedControls,
-} from '@/components/settings-controls/settings-control-engine-advanced';
-import { SettingsGenericAdvancedFields } from '@/components/settings-controls/settings-control-generic-fields';
-import { FieldGroup, RangeWithInput } from '@/components/settings-controls/settings-control-parts';
+import { SettingsAdvancedPanel } from '@/components/settings-controls/SettingsAdvancedPanel';
+import { FieldGroup } from '@/components/settings-controls/settings-control-parts';
 import type { SettingsControlsProps } from '@/components/settings-controls/settings-control-types';
 import { useSettingsControlState } from '@/components/settings-controls/useSettingsControlState';
 
@@ -68,40 +64,7 @@ export function SettingsControls({
   variant = 'full',
 }: SettingsControlsProps) {
   const showCore = variant !== 'advanced';
-  const {
-    advancedHasContent,
-    aspectOptions,
-    audioNotice,
-    canToggleAudio,
-    controlsCopy,
-    durationMaxSeconds,
-    durationOptionsContainerRef,
-    durationRange,
-    durationSliderRef,
-    effectiveCfgScale,
-    enumeratedDurationOptions,
-    frameOptions,
-    frameOptionsContainerRef,
-    guidance,
-    hasGenericAdvancedFields,
-    initInfluence,
-    isAdvancedOpen,
-    isLtxFastLong,
-    promptStrength,
-    resolutionLocked,
-    resolutionOptions,
-    resolvedDurationManagedLabel,
-    seed,
-    setGuidance,
-    setInitInfluence,
-    setInternalCfgScale,
-    setIsAdvancedOpen,
-    setPromptStrength,
-    setSeed,
-    showAspectControl,
-    showAudioToggle,
-    showResolutionControl,
-  } = useSettingsControlState({
+  const controlState = useSettingsControlState({
     advancedFields,
     audioControlDisabled,
     audioControlNote,
@@ -128,219 +91,60 @@ export function SettingsControls({
     showSafetyCheckerControl,
     showSeedanceControls,
   });
+  const {
+    aspectOptions,
+    audioNotice,
+    canToggleAudio,
+    controlsCopy,
+    durationMaxSeconds,
+    durationOptionsContainerRef,
+    durationRange,
+    durationSliderRef,
+    enumeratedDurationOptions,
+    frameOptions,
+    frameOptionsContainerRef,
+    isLtxFastLong,
+    resolutionLocked,
+    resolutionOptions,
+    resolvedDurationManagedLabel,
+    showAspectControl,
+    showAudioToggle,
+    showResolutionControl,
+  } = controlState;
+
+  const advancedPanelProps = {
+    advancedFieldValues,
+    advancedFields,
+    cameraFixed,
+    engine,
+    klingShotType,
+    loopEnabled,
+    mode,
+    onAdvancedFieldChange,
+    onCameraFixedChange,
+    onCfgScaleChange,
+    onKlingShotTypeChange,
+    onLoopChange,
+    onSafetyCheckerChange,
+    onSeedChange,
+    onSeedLockedChange,
+    onVoiceIdsChange,
+    safetyChecker,
+    seedLocked,
+    seedValue,
+    showExtendControl,
+    showKlingV3Controls,
+    showKlingV3VoiceControls,
+    showLoopControl,
+    showSafetyCheckerControl,
+    showSeedanceControls,
+    state: controlState,
+    voiceControlActive,
+    voiceIdsValue,
+  };
 
   if (variant === 'advanced') {
-    if (!advancedHasContent) return null;
-
-    return (
-      <div className="space-y-3">
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="min-h-0 h-auto w-full justify-between px-0 py-0 text-left font-normal"
-          onClick={() => setIsAdvancedOpen((prev) => !prev)}
-          aria-expanded={isAdvancedOpen}
-        >
-          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-            {controlsCopy.advancedTitle}
-          </span>
-          <svg
-            className={clsx('h-4 w-4 text-text-muted transition-transform', isAdvancedOpen ? 'rotate-180' : 'rotate-0')}
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Button>
-        {isAdvancedOpen ? (
-          <div className="space-y-4 rounded-input border border-border bg-surface-glass-60 p-3">
-            {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange ? (
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
-                  <div className="flex flex-wrap gap-2">
-                    {[true, false].map((option) => (
-                      <Button
-                        key={option ? 'loop-on' : 'loop-off'}
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onLoopChange(option)}
-                        className={clsx(
-                          'min-h-0 h-auto px-2.5 py-1 text-[12px]',
-                          option === loopEnabled
-                            ? 'border-brand bg-brand text-on-brand'
-                            : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                        )}
-                      >
-                        {option ? controlsCopy.loop.on : controlsCopy.loop.off}
-                      </Button>
-                    ))}
-                  </div>
-                </label>
-              </div>
-            ) : null}
-
-            {!showSeedanceControls ? (
-              <div className="grid gap-3 md:grid-cols-3 md:items-end">
-                <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
-                  <input
-                    type="number"
-                    placeholder={controlsCopy.seed.placeholder}
-                    value={onSeedChange ? seedValue : seed}
-                    onChange={(e) => {
-                      setSeed(e.currentTarget.value);
-                      onSeedChange?.(e.currentTarget.value);
-                    }}
-                    className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                </label>
-                <label className="inline-flex min-h-[40px] items-center gap-2 text-[13px] text-text-secondary">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(seedLocked)}
-                    onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-                  />
-                  <span>{controlsCopy.seed.lock}</span>
-                </label>
-                {showSafetyCheckerControl ? (
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Safety checker</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'generic-safety-on' : 'generic-safety-off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onSafetyCheckerChange?.(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                            option === safetyChecker
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? 'On' : 'Off'}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                ) : null}
-              </div>
-            ) : null}
-
-            {engine.params.promptStrength ? (
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.promptStrength}</span>
-                <RangeWithInput
-                  value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
-                  min={engine.params.promptStrength.min ?? 0}
-                  max={engine.params.promptStrength.max ?? 1}
-                  step={engine.params.promptStrength.step ?? 0.05}
-                  onChange={(value) => setPromptStrength(value)}
-                />
-              </div>
-            ) : null}
-
-            {engine.params.guidance ? (
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.guidance}</span>
-                <RangeWithInput
-                  value={guidance ?? engine.params.guidance.default ?? 0.5}
-                  min={engine.params.guidance.min ?? 0}
-                  max={engine.params.guidance.max ?? 1}
-                  step={engine.params.guidance.step ?? 0.05}
-                  onChange={(value) => setGuidance(value)}
-                />
-              </div>
-            ) : null}
-
-            {mode === 'i2v' && engine.params.initInfluence ? (
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.inputInfluence}</span>
-                <RangeWithInput
-                  value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
-                  min={engine.params.initInfluence.min ?? 0}
-                  max={engine.params.initInfluence.max ?? 1}
-                  step={engine.params.initInfluence.step ?? 0.05}
-                  onChange={(value) => setInitInfluence(value)}
-                />
-              </div>
-            ) : null}
-
-            {showExtendControl && engine.extend ? (
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.extend.label}</span>
-                <div className="flex flex-wrap items-center gap-2 text-[13px] text-text-secondary">
-                  <span>{controlsCopy.extend.action}</span>
-                  <input type="number" min={1} max={30} defaultValue={5} className="h-10 w-20 rounded-input border border-border bg-surface px-2 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-                  <span>{controlsCopy.extend.unit}</span>
-                </div>
-              </div>
-            ) : null}
-
-            {engine.keyframes ? <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div> : null}
-
-            {hasGenericAdvancedFields ? (
-              <SettingsGenericAdvancedFields
-                fields={advancedFields}
-                values={advancedFieldValues}
-                onChange={onAdvancedFieldChange}
-              />
-            ) : null}
-
-            {showKlingV3Controls ? (
-              <SettingsKlingV3Controls
-                klingShotType={klingShotType}
-                layout="compact"
-                mode={mode}
-                onKlingShotTypeChange={onKlingShotTypeChange}
-                onVoiceIdsChange={onVoiceIdsChange}
-                showVoiceControls={showKlingV3VoiceControls}
-                voiceControlActive={voiceControlActive}
-                voiceIdsValue={voiceIdsValue}
-              />
-            ) : null}
-
-            {showSeedanceControls ? (
-              <SettingsSeedanceAdvancedControls
-                cameraFixed={cameraFixed}
-                layout="compact"
-                onCameraFixedChange={onCameraFixedChange}
-                onSafetyCheckerChange={onSafetyCheckerChange}
-                onSeedChange={onSeedChange}
-                safetyChecker={safetyChecker}
-                seedValue={seedValue}
-              />
-            ) : null}
-
-            {engine.params.cfg_scale ? (
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.cfgScale}</span>
-                <RangeWithInput
-                  value={effectiveCfgScale}
-                  min={engine.params.cfg_scale.min ?? 0}
-                  max={engine.params.cfg_scale.max ?? 1}
-                  step={engine.params.cfg_scale.step ?? 0.01}
-                  onChange={(value) => {
-                    if (onCfgScaleChange) {
-                      onCfgScaleChange(value);
-                    } else {
-                      setInternalCfgScale(value);
-                    }
-                  }}
-                />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    );
+    return <SettingsAdvancedPanel {...advancedPanelProps} panelVariant="standalone" />;
   }
 
   return (
@@ -602,157 +406,7 @@ export function SettingsControls({
           )}
         </>
       )}
-      <div className="rounded-input border border-border bg-surface">
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="min-h-0 h-auto w-full justify-between px-3 py-2 text-left font-normal"
-          onClick={() => setIsAdvancedOpen((prev) => !prev)}
-          aria-expanded={isAdvancedOpen}
-        >
-          <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
-            {controlsCopy.advancedTitle}
-          </span>
-          <svg
-            className={clsx('h-4 w-4 text-text-muted transition-transform', isAdvancedOpen ? 'rotate-180' : 'rotate-0')}
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Button>
-        {isAdvancedOpen && (
-          <div className="stack-gap-sm border-t border-border px-3 pb-3 pt-2">
-            {!showSeedanceControls && (
-              <>
-                <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                  <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
-                  <input
-                    type="number"
-                    placeholder={controlsCopy.seed.placeholder}
-                    value={seed}
-                    onChange={(e) => setSeed(e.currentTarget.value)}
-                    className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                </label>
-                <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(seedLocked)}
-                    onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-                  />
-                  <span>{controlsCopy.seed.lock}</span>
-                </label>
-              </>
-            )}
-
-            {engine.params.promptStrength && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.promptStrength}</span>
-                <RangeWithInput
-                  value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
-                  min={engine.params.promptStrength.min ?? 0}
-                  max={engine.params.promptStrength.max ?? 1}
-                  step={engine.params.promptStrength.step ?? 0.05}
-                  onChange={(value) => setPromptStrength(value)}
-                />
-              </div>
-            )}
-
-            {engine.params.guidance && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.guidance}</span>
-                <RangeWithInput
-                  value={guidance ?? engine.params.guidance.default ?? 0.5}
-                  min={engine.params.guidance.min ?? 0}
-                  max={engine.params.guidance.max ?? 1}
-                  step={engine.params.guidance.step ?? 0.05}
-                  onChange={(value) => setGuidance(value)}
-                />
-              </div>
-            )}
-
-            {mode === 'i2v' && engine.params.initInfluence && (
-              <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
-                  {controlsCopy.inputInfluence}
-                </h4>
-                <RangeWithInput
-                  value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
-                  min={engine.params.initInfluence.min ?? 0}
-                  max={engine.params.initInfluence.max ?? 1}
-                  step={engine.params.initInfluence.step ?? 0.05}
-                  onChange={(value) => setInitInfluence(value)}
-                />
-              </div>
-            )}
-
-            {showExtendControl && engine.extend && (
-              <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
-                  {controlsCopy.extend.label}
-                </h4>
-                <div className="flex items-center gap-2 text-[13px]">
-                  <span>{controlsCopy.extend.action}</span>
-                  <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-                  <span>{controlsCopy.extend.unit}</span>
-                </div>
-              </div>
-            )}
-
-            {engine.keyframes && (
-              <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div>
-            )}
-
-            {showKlingV3Controls && (
-              <SettingsKlingV3Controls
-                klingShotType={klingShotType}
-                layout="panel"
-                mode={mode}
-                onKlingShotTypeChange={onKlingShotTypeChange}
-                onVoiceIdsChange={onVoiceIdsChange}
-                showVoiceControls={showKlingV3VoiceControls}
-                voiceControlActive={voiceControlActive}
-                voiceIdsValue={voiceIdsValue}
-              />
-            )}
-
-            {showSeedanceControls && (
-              <SettingsSeedanceAdvancedControls
-                cameraFixed={cameraFixed}
-                layout="panel"
-                onCameraFixedChange={onCameraFixedChange}
-                onSafetyCheckerChange={onSafetyCheckerChange}
-                onSeedChange={onSeedChange}
-                safetyChecker={safetyChecker}
-                seedValue={seedValue}
-              />
-            )}
-
-            {engine.params.cfg_scale && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.cfgScale}</span>
-                <RangeWithInput
-                  value={effectiveCfgScale}
-                  min={engine.params.cfg_scale.min ?? 0}
-                  max={engine.params.cfg_scale.max ?? 1}
-                  step={engine.params.cfg_scale.step ?? 0.01}
-                  onChange={(value) => {
-                    if (onCfgScaleChange) {
-                      onCfgScaleChange(value);
-                    } else {
-                      setInternalCfgScale(value);
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <SettingsAdvancedPanel {...advancedPanelProps} panelVariant="embedded" />
     </Card>
   );
 }
