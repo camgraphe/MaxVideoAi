@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Upload,
@@ -19,7 +19,6 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { authFetch } from '@/lib/authFetch';
-import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   AUTO_TRAIT_KEYS,
@@ -28,12 +27,9 @@ import {
   normalizeCharacterFormatMode,
   normalizeTraitsForSourceMode,
 } from '@/lib/character-builder';
-import { saveImageToLibrary } from '@/lib/api';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
-  CharacterBuilderResult,
-  CharacterBuilderSettingsSnapshot,
   CharacterBuilderState,
   CharacterBuilderTraitSource,
   CharacterBuilderTraits,
@@ -42,18 +38,16 @@ import type {
 import {
   BuildLookCarouselCard,
   CharacterBuilderStickyDock,
+  CharacterBuilderResultsGallery,
   CharacterReferenceLibraryModal,
   CompactSelectField,
-  EmptyResultsRail,
   GENDER_CARD_META,
   HairEditorPanel,
   IconChoiceCard,
   MultiToggleGroup,
   OutputPreviewCard,
-  PendingResultCard,
   REALISM_CARD_META,
   ReferenceSlot,
-  ResultCard,
   SectionTitle,
   SegmentedControl,
   StyleChoiceCard,
@@ -66,6 +60,8 @@ import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharac
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
 import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
+import { useCharacterBuilderResultActions } from './character-builder/_hooks/useCharacterBuilderResultActions';
+import { useCharacterBuilderResultsInfiniteScroll } from './character-builder/_hooks/useCharacterBuilderResultsInfiniteScroll';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
   buildResetCharacterBuilderState,
@@ -73,24 +69,19 @@ import {
   findChoiceLabel,
   getCharacterBillingProductKey,
   getFlattenedResults,
-  getFormatDisplayLabel,
   getHairSummary,
   getOutfitSummary,
   getRefByRole,
-  getResultActionLabel,
   hasCustomOutfitSettings,
   hasCustomHairSettings,
   INITIAL_LOADING_REQUEST_COUNTS,
-  isAuthRequiredError,
   normalizeTag,
-  parseCharacterBuilderSnapshot,
   removeReferenceImage,
   serializeResettableCharacterBuilderState,
   summarizeCustomText,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
   BillingProductResponse,
-  HistoricalCharacterGalleryItem,
   LoadingRequestCounts,
   LoadingRequestKey,
   PendingCharacterRun,
@@ -114,7 +105,6 @@ export default function CharacterBuilderPage() {
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
   const [pendingRuns, setPendingRuns] = useState<PendingCharacterRun[]>([]);
-  const [savingResultId, setSavingResultId] = useState<string | null>(null);
   const [lightboxEntry, setLightboxEntry] = useState<MediaLightboxEntry | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,8 +112,6 @@ export default function CharacterBuilderPage() {
   const [hydrated, setHydrated] = useState(false);
   const identityFileRef = useRef<HTMLInputElement | null>(null);
   const styleFileRef = useRef<HTMLInputElement | null>(null);
-  const resultsScrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const resultsSentinelRef = useRef<HTMLDivElement | null>(null);
   const loginRedirectTarget = useMemo(() => {
     const base = pathname || '/app/tools/character-builder';
     const search = searchParams?.toString();
@@ -132,6 +120,23 @@ export default function CharacterBuilderPage() {
   const openAuthGate = useCallback(() => {
     setAuthModalOpen(true);
   }, []);
+  const {
+    applySettingsSnapshot,
+    handleDuplicateHistoricalSettings,
+    handleSaveHistoricalResult,
+    handleSaveResult,
+    savingResultId,
+    setSavingResultId,
+  } = useCharacterBuilderResultActions({
+    copy,
+    openAuthGate,
+    setAdvancedOpen,
+    setError,
+    setShowStyleReferenceSlot,
+    setState,
+    setStatusMessage,
+    user,
+  });
 
   const {
     genderOptions,
@@ -164,6 +169,14 @@ export default function CharacterBuilderPage() {
     loadMoreHistoricalResults,
     mutateHistoricalJobs,
   } = useCharacterBuilderHistoricalResults(flattenedResults);
+  const {
+    resultsScrollContainerRef,
+    resultsSentinelRef,
+  } = useCharacterBuilderResultsInfiniteScroll({
+    hasMore: historicalHasMore,
+    loadMoreResults: loadMoreHistoricalResults,
+    resultsLength: historicalResults.length,
+  });
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
@@ -272,52 +285,6 @@ export default function CharacterBuilderPage() {
       : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
 
-  useEffect(() => {
-    const sentinel = resultsSentinelRef.current;
-    if (!sentinel || !historicalHasMore) return;
-
-    let previousY = 0;
-    let previousRatio = 0;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (
-            entry.isIntersecting &&
-            (entry.boundingClientRect.y > previousY || entry.intersectionRatio > previousRatio)
-          ) {
-            loadMoreHistoricalResults();
-          }
-          previousY = entry.boundingClientRect.y;
-          previousRatio = entry.intersectionRatio;
-        });
-      },
-      {
-        root: resultsScrollContainerRef.current,
-        threshold: 0.2,
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [historicalHasMore, historicalResults.length, loadMoreHistoricalResults]);
-
-  useEffect(() => {
-    const scrollContainer = resultsScrollContainerRef.current;
-    if (!scrollContainer || !historicalHasMore) return undefined;
-
-    const maybeLoadMore = () => {
-      const remainingScroll = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
-      if (remainingScroll <= 320) {
-        loadMoreHistoricalResults();
-      }
-    };
-
-    maybeLoadMore();
-    scrollContainer.addEventListener('scroll', maybeLoadMore, { passive: true });
-    return () => scrollContainer.removeEventListener('scroll', maybeLoadMore);
-  }, [historicalHasMore, historicalResults.length, loadMoreHistoricalResults]);
-
   function updateTrait<K extends keyof Pick<
     CharacterBuilderTraits,
     | 'genderPresentation'
@@ -401,286 +368,40 @@ export default function CharacterBuilderPage() {
     }));
   }
 
-  function applySettingsSnapshot(snapshot: CharacterBuilderSettingsSnapshot, selectedId?: string) {
+  const handleSelectResult = useCallback((resultId: string) => {
     setState((previous) => ({
       ...previous,
-      sourceMode: snapshot.builder.sourceMode,
-      referenceImages: snapshot.builder.referenceImages,
-      traits: snapshot.builder.traits,
-      outputMode: snapshot.builder.outputMode,
-      consistencyMode: snapshot.builder.consistencyMode,
-      referenceStrength: snapshot.builder.referenceStrength,
-      qualityMode: snapshot.builder.qualityMode,
-      formatMode: normalizeCharacterFormatMode(snapshot.builder.formatMode, snapshot.builder.qualityMode),
-      outputOptions: snapshot.builder.outputOptions,
-      advancedNotes: snapshot.builder.advancedNotes,
-      mustRemainVisible: snapshot.builder.mustRemainVisible,
-      selectedResultId: selectedId ?? previous.selectedResultId,
+      selectedResultId: resultId,
     }));
-    setAdvancedOpen(Boolean(snapshot.builder.advancedNotes));
-    setStatusMessage(copy.duplicateDone);
-  }
-
-  async function handleSaveResult(result: CharacterBuilderResult) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setSavingResultId(result.id);
-    setError(null);
-    setStatusMessage(null);
-    try {
-      await saveImageToLibrary({
-        url: result.url,
-        jobId: result.jobId,
-        label: copy.generatePanel.portraitTitle,
-        source: 'character',
-      });
-      setStatusMessage(copy.savedToLibrary);
-    } catch (saveError) {
-      if (isAuthRequiredError(saveError)) {
-        openAuthGate();
-        return;
-      }
-      setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
-    } finally {
-      setSavingResultId(null);
-    }
-  }
-
-  async function handleSaveHistoricalResult(item: HistoricalCharacterGalleryItem) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setSavingResultId(item.id);
-    setError(null);
-    setStatusMessage(null);
-    try {
-      await saveImageToLibrary({
-        url: item.imageUrl,
-        jobId: item.jobId,
-        label: copy.generatePanel.portraitTitle,
-        source: 'character',
-      });
-      setStatusMessage(copy.savedToLibrary);
-    } catch (saveError) {
-      if (isAuthRequiredError(saveError)) {
-        openAuthGate();
-        return;
-      }
-      setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
-    } finally {
-      setSavingResultId(null);
-    }
-  }
-
-  async function handleDuplicateHistoricalSettings(item: HistoricalCharacterGalleryItem) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setError(null);
-    setStatusMessage(null);
-    try {
-      const response = await authFetch(`/api/jobs/${encodeURIComponent(item.jobId)}`);
-      const payload = (await response.json().catch(() => null)) as
-        | { ok?: boolean; settingsSnapshot?: unknown; error?: string }
-        | null;
-      if (!response.ok || !payload?.ok || !payload.settingsSnapshot) {
-        throw new Error(payload?.error ?? copy.runFailed);
-      }
-      const snapshotState = parseCharacterBuilderSnapshot(payload.settingsSnapshot);
-      if (!snapshotState) {
-        throw new Error(copy.missingRun);
-      }
-      setState((previous) => ({
-        ...previous,
-        ...snapshotState,
-        selectedResultId: item.id,
-      }));
-      setAdvancedOpen(Boolean(snapshotState.advancedNotes));
-      setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
-      setStatusMessage(copy.duplicateDone);
-    } catch (duplicateError) {
-      if (isAuthRequiredError(duplicateError)) {
-        openAuthGate();
-        return;
-      }
-      setError(duplicateError instanceof Error ? duplicateError.message : copy.runFailed);
-    }
-  }
+  }, []);
 
   function renderResultsGallery(variant: 'desktop' | 'mobile') {
-    if (!hasResults) {
-      return variant === 'desktop' ? <EmptyResultsRail copy={copy} /> : null;
-    }
-    const itemClassName = variant === 'desktop' ? '' : 'min-w-[280px] shrink-0 snap-start';
-    const items = (
-      <>
-        {pendingRuns.map((pendingRun) => {
-          const pendingOutputLabel =
-            findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
-          const pendingQualityLabel =
-            findChoiceLabel(qualityLabelOptions, pendingRun.qualityMode) ?? copy.options.quality.draft.label;
-          const pendingFormatLabel = getFormatDisplayLabel(copy, pendingRun.formatMode, pendingRun.qualityMode);
-          const subtitle = `${pendingOutputLabel} · ${pendingQualityLabel} · ${pendingFormatLabel}`;
-          const badge = pendingRun.generateCount === 4 ? '4x' : null;
-          return (
-            <div key={pendingRun.id} className={itemClassName}>
-              <PendingResultCard
-                title={getResultActionLabel(copy, pendingRun.action)}
-                subtitle={subtitle}
-                badge={badge}
-                copy={copy}
-              />
-            </div>
-          );
-        })}
-        {flattenedResults.map((result) => {
-          const run = state.runs.find((entry) => entry.id === result.runId);
-          const resultOutputLabel =
-            findChoiceLabel(outputModeLabelOptions, result.outputMode) ?? copy.generatePanel.portraitTitle;
-          const resultQualityLabel =
-            findChoiceLabel(qualityLabelOptions, result.qualityMode) ?? copy.options.quality.draft.label;
-          const resultFormatLabel = getFormatDisplayLabel(copy, run?.formatMode ?? 'standard', result.qualityMode);
-          const subtitle = `${resultOutputLabel} · ${resultQualityLabel} · ${resultFormatLabel}`;
-          const badge = run && run.results.length > 1 ? `${run.results.length}x` : null;
-
-          return (
-            <div key={result.id} className={itemClassName}>
-              <ResultCard
-                result={result}
-                selected={state.selectedResultId === result.id}
-                title={getResultActionLabel(copy, result.action)}
-                subtitle={subtitle}
-                badge={badge}
-                saving={savingResultId === result.id}
-                onOpen={() => {
-                  setState((previous) => ({
-                    ...previous,
-                    selectedResultId: result.id,
-                  }));
-                  setLightboxEntry({
-                    id: result.id,
-                    label: getResultActionLabel(copy, result.action),
-                    thumbUrl: result.url,
-                    mediaType: 'image',
-                    status: 'completed',
-                    engineLabel: result.engineLabel,
-                    createdAt: result.createdAt,
-                    jobId: result.jobId,
-                    prompt: run?.settingsSnapshot?.prompt ?? null,
-                  });
-                }}
-                onSelect={() =>
-                  setState((previous) => ({
-                    ...previous,
-                    selectedResultId: result.id,
-                  }))
-                }
-                onDownload={() =>
-                  triggerAppDownload(
-                    result.url,
-                    suggestDownloadFilename(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`)
-                  )
-                }
-                onSave={() => void handleSaveResult(result)}
-                onDuplicateSettings={() => {
-                  if (run?.settingsSnapshot) {
-                    applySettingsSnapshot(run.settingsSnapshot, result.id);
-                  }
-                }}
-                copy={copy}
-              />
-            </div>
-          );
-        })}
-        {historicalResults.map((item) => {
-          const createdLabel = (() => {
-            try {
-              return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(item.createdAt));
-            } catch {
-              return item.createdAt;
-            }
-          })();
-
-          return (
-            <div key={item.id} className={itemClassName}>
-              <ResultCard
-                result={{
-                  id: item.id,
-                  runId: item.jobId,
-                  jobId: item.jobId,
-                  url: item.imageUrl,
-                  thumbUrl: item.thumbUrl,
-                  engineId: '',
-                  engineLabel: item.engineLabel,
-                  action: 'generate',
-                  outputMode: 'portrait-reference',
-                  qualityMode: state.qualityMode,
-                  createdAt: item.createdAt,
-                }}
-                selected={state.selectedResultId === item.id}
-                title={copy.resultCard.referenceOutput}
-                subtitle={`${item.engineLabel} · ${createdLabel}`}
-                saving={savingResultId === item.id}
-                onOpen={() => {
-                  setState((previous) => ({
-                    ...previous,
-                    selectedResultId: item.id,
-                  }));
-                  setLightboxEntry({
-                    id: item.id,
-                    label: copy.resultCard.referenceOutput,
-                    thumbUrl: item.imageUrl,
-                    mediaType: 'image',
-                    status: 'completed',
-                    engineLabel: item.engineLabel,
-                    createdAt: item.createdAt,
-                    jobId: item.jobId,
-                    prompt: item.prompt,
-                  });
-                }}
-                onSelect={() =>
-                  setState((previous) => ({
-                    ...previous,
-                    selectedResultId: item.id,
-                  }))
-                }
-                onDownload={() =>
-                  triggerAppDownload(
-                    item.imageUrl,
-                    suggestDownloadFilename(item.imageUrl, `character-reference-${item.id.replace(/[^a-z0-9]+/gi, '-')}`)
-                  )
-                }
-                onSave={() => void handleSaveHistoricalResult(item)}
-                onDuplicateSettings={() => void handleDuplicateHistoricalSettings(item)}
-                copy={copy}
-              />
-            </div>
-          );
-        })}
-      </>
+    return (
+      <CharacterBuilderResultsGallery
+        copy={copy}
+        flattenedResults={flattenedResults}
+        historicalHasMore={historicalHasMore}
+        historicalIsFetchingMore={historicalIsFetchingMore}
+        historicalJobsLoading={historicalJobsLoading}
+        historicalResults={historicalResults}
+        outputModeLabelOptions={outputModeLabelOptions}
+        pendingRuns={pendingRuns}
+        qualityLabelOptions={qualityLabelOptions}
+        qualityMode={state.qualityMode}
+        resultsScrollContainerRef={resultsScrollContainerRef}
+        resultsSentinelRef={resultsSentinelRef}
+        runs={state.runs}
+        savingResultId={savingResultId}
+        selectedResultId={state.selectedResultId}
+        variant={variant}
+        onDuplicateHistoricalSettings={(item) => void handleDuplicateHistoricalSettings(item)}
+        onDuplicateSettings={applySettingsSnapshot}
+        onOpenLightbox={setLightboxEntry}
+        onSaveHistoricalResult={(item) => void handleSaveHistoricalResult(item)}
+        onSaveResult={(result) => void handleSaveResult(result)}
+        onSelectResult={handleSelectResult}
+      />
     );
-
-    if (variant === 'desktop') {
-      return (
-        <div className="relative flex-1 min-h-0">
-          <div ref={resultsScrollContainerRef} className="scrollbar-rail h-full overflow-y-auto space-y-3 pr-4 pt-1">
-            {items}
-            {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
-            {historicalIsFetchingMore || historicalJobsLoading ? (
-              <div className="flex justify-center py-3 text-xs font-medium text-text-secondary">
-                {copy.resultCard.pending}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      );
-    }
-
-    return <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">{items}</div>;
   }
 
   if (authLoading || !hydrated) {
