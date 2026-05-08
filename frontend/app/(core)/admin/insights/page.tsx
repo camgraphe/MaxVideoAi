@@ -19,9 +19,8 @@ import {
   buildQuickInsights,
   buildRecentLedgerRows,
   buildRevenueBoardRows,
-  describeRange,
-  resolveFocusParam,
 } from './_lib/insights-helpers';
+import { describeRange, resolveFocusParam } from './_lib/insights-navigation';
 import {
   BehaviorGrid,
   ComparisonChart,

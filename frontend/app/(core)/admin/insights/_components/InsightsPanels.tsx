@@ -16,8 +16,8 @@ import type {
 } from '../_lib/insights-types';
 import {
   buildChartTicks,
-  buildInsightsHref,
-  FOCUS_OPTIONS,
+} from '../_lib/insights-helpers';
+import {
   formatCompactNumber,
   formatCurrency,
   formatDay,
@@ -27,7 +27,8 @@ import {
   formatPercent,
   toneBadgeClass,
   toneValueClass,
-} from '../_lib/insights-helpers';
+} from '../_lib/insights-formatters';
+import { buildInsightsHref, FOCUS_OPTIONS } from '../_lib/insights-navigation';
 
 export function InsightsControls({
   current,
