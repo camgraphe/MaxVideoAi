@@ -97,3 +97,41 @@ export type ComparePageCopy = {
   metrics?: Record<string, { label?: string; tooltip?: string }>;
   breadcrumb?: { root?: string };
 };
+
+export type CompareDetailLabels = {
+  pending: string;
+  supported: string;
+  notSupported: string;
+  na: string;
+  prompt: string;
+  tryPrompt: string;
+  tryPromptPrelaunch: string;
+  opensGenerator: string;
+  opensGeneratorPrelaunch: string;
+  savePromptForLaunch: string;
+  whatTests: string;
+  placeholder: string;
+  expandPrompt: string;
+  collapsePrompt: string;
+};
+
+export function buildCompareDetailLabels(compareCopy: ComparePageCopy): CompareDetailLabels {
+  return {
+    pending: compareCopy.labels?.pending ?? 'Data pending',
+    supported: compareCopy.labels?.supported ?? 'Supported',
+    notSupported: compareCopy.labels?.notSupported ?? 'Not supported',
+    na: compareCopy.labels?.na ?? 'N/A',
+    prompt: compareCopy.labels?.prompt ?? 'Prompt',
+    tryPrompt: compareCopy.labels?.tryPrompt ?? 'Try this prompt:',
+    tryPromptPrelaunch: compareCopy.labels?.tryPromptPrelaunch ?? 'Prompt actions:',
+    opensGenerator: compareCopy.labels?.opensGenerator ?? 'Opens the generator pre-filled.',
+    opensGeneratorPrelaunch:
+      compareCopy.labels?.opensGeneratorPrelaunch ??
+      'Use these prompt links for planning; pre-launch engines unlock at launch.',
+    savePromptForLaunch: compareCopy.labels?.savePromptForLaunch ?? 'Save this prompt for launch',
+    whatTests: compareCopy.labels?.whatTests ?? 'What it tests',
+    placeholder: compareCopy.labels?.placeholder ?? '',
+    expandPrompt: compareCopy.labels?.expandPrompt ?? 'Show full prompt',
+    collapsePrompt: compareCopy.labels?.collapsePrompt ?? 'Hide full prompt',
+  };
+}
