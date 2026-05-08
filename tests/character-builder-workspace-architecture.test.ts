@@ -15,6 +15,7 @@ const formControlsPath = join(root, 'frontend/src/components/tools/character-bui
 const referenceLibraryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-reference-library.tsx');
 const resultCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-result-cards.tsx');
 const resultsGalleryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-results-gallery.tsx');
+const pageShellPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-page-shell.tsx');
 const optionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderOptions.ts');
 const historicalResultsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderHistoricalResults.ts');
 const pendingRunsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPendingRunsSync.ts');
@@ -38,6 +39,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(referenceLibraryPath), 'reference library components should live in a focused component module');
   assert.ok(existsSync(resultCardsPath), 'result card components should live in a focused component module');
   assert.ok(existsSync(resultsGalleryPath), 'result gallery composition should live in a focused component module');
+  assert.ok(existsSync(pageShellPath), 'page shell and auth modal chrome should live in a focused component module');
   assert.ok(existsSync(optionsHookPath), 'localized option derivation should live in a focused hook');
   assert.ok(existsSync(historicalResultsHookPath), 'historical result derivation should live in a focused hook');
   assert.ok(existsSync(pendingRunsHookPath), 'pending run polling should live in a focused hook');
@@ -49,6 +51,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(persistenceHookPath), 'local persistence should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
@@ -94,12 +97,15 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /new IntersectionObserver/, 'result infinite scroll observer belongs in useCharacterBuilderResultsInfiniteScroll');
   assert.doesNotMatch(workspaceSource, /scrollContainer\.addEventListener/, 'result scroll listener belongs in useCharacterBuilderResultsInfiniteScroll');
   assert.doesNotMatch(workspaceSource, /<ResultCard/, 'result card composition belongs in CharacterBuilderResultsGallery');
+  assert.doesNotMatch(workspaceSource, /<HeaderBar/, 'page chrome belongs in CharacterBuilderPageFrame');
+  assert.doesNotMatch(workspaceSource, /<AppSidebar/, 'page sidebar chrome belongs in CharacterBuilderPageFrame');
+  assert.doesNotMatch(workspaceSource, /fixed inset-0 z-\[10050\]/, 'auth gate modal UI belongs in CharacterBuilderAuthGateModal');
   assert.doesNotMatch(workspaceSource, /readPersistedState\(\)/, 'local hydration belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /writePersistedPendingRuns/, 'pending run persistence belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /visitorSanitizedRef/, 'visitor cleanup tracking belongs in useCharacterBuilderPersistence');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1210, `CharacterBuilderWorkspace should stay below 1210 lines after result extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1145, `CharacterBuilderWorkspace should stay below 1145 lines after shell extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -113,6 +119,7 @@ test('character builder helper modules expose the expected workspace contract', 
   const referenceLibrarySource = readFileSync(referenceLibraryPath, 'utf8');
   const resultCardsSource = readFileSync(resultCardsPath, 'utf8');
   const resultsGallerySource = readFileSync(resultsGalleryPath, 'utf8');
+  const pageShellSource = readFileSync(pageShellPath, 'utf8');
   const optionsHookSource = readFileSync(optionsHookPath, 'utf8');
   const historicalResultsHookSource = readFileSync(historicalResultsHookPath, 'utf8');
   const pendingRunsHookSource = readFileSync(pendingRunsHookPath, 'utf8');
@@ -222,6 +229,10 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(resultsGallerySource, /export function CharacterBuilderResultsGallery/, 'results gallery should be exported');
   assert.match(resultsGallerySource, /<ResultCard/, 'results gallery should compose result cards');
   assert.match(resultsGallerySource, /triggerAppDownload/, 'results gallery should own downloads');
+  assert.match(pageShellSource, /export function CharacterBuilderPageFrame/, 'page shell should export the workspace frame');
+  assert.match(pageShellSource, /export function CharacterBuilderLoadingSkeleton/, 'page shell should export the loading skeleton');
+  assert.match(pageShellSource, /export function CharacterBuilderDisabledState/, 'page shell should export the disabled state');
+  assert.match(pageShellSource, /export function CharacterBuilderAuthGateModal/, 'page shell should export the auth gate modal');
 
   assert.match(optionsHookSource, /export function useCharacterBuilderOptions/, 'options hook should be exported');
   assert.match(optionsHookSource, /getAvailableCharacterFormatOptions/, 'options hook should own format option derivation');
