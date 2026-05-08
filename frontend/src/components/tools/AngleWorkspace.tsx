@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import deepmerge from 'deepmerge';
-import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -17,7 +16,7 @@ import {
   type ClipboardEvent as ReactClipboardEvent,
   type DragEvent as ReactDragEvent,
 } from 'react';
-import { ArrowLeft, Images, Loader2, Upload, WandSparkles, X } from 'lucide-react';
+import { ArrowLeft, Loader2, WandSparkles } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -30,10 +29,12 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
 import { AngleAuthGateModal } from './angle/_components/angle-auth-gate-modal';
+import { AngleCameraControls } from './angle/_components/angle-camera-controls';
 import { AngleImageLibraryModal } from './angle/_components/angle-image-library-modal';
 import { AngleOrbitSelector } from './angle/_components/angle-orbit-selector';
 import { AngleOutputPanel } from './angle/_components/angle-output-panel';
 import { AngleRecentJobModal } from './angle/_components/angle-recent-job-modal';
+import { AngleSourceImagePanel } from './angle/_components/angle-source-image-panel';
 import { useAngleGenerationRunner } from './angle/_hooks/useAngleGenerationRunner';
 import { DEFAULT_ANGLE_COPY, type AngleCopy } from './angle/_lib/angle-workspace-copy';
 import {
@@ -47,7 +48,6 @@ import {
   getAngleBillingProductKey,
   isAuthRequiredError,
   parsePersistedAngleToolState,
-  sanitizeParams,
   uploadImage,
 } from './angle/_lib/angle-workspace-helpers';
 import type {
@@ -100,16 +100,6 @@ export default function AngleToolPage() {
 
   const selectedEngine = useMemo(() => ENGINES.find((engine) => engine.id === engineId) ?? ENGINES[0], [engineId]);
   const effectiveEngineId = useMemo(() => resolveAngleEngineForParams(engineId, params), [engineId, params]);
-  const negativeTiltActive = params.tilt < 0;
-  const tiltFillPercent = useMemo(() => ((params.tilt + 30) / 60) * 100, [params.tilt]);
-  const tiltTrackStyle = useMemo(
-    () => ({
-      background: `linear-gradient(to right, ${
-        negativeTiltActive ? '#d97706' : '#0ea5e9'
-      } 0%, ${negativeTiltActive ? '#d97706' : '#0ea5e9'} ${tiltFillPercent}%, #d9e0ea ${tiltFillPercent}%, #d9e0ea 100%)`,
-    }),
-    [negativeTiltActive, tiltFillPercent]
-  );
   const billingProductKey = getAngleBillingProductKey(effectiveEngineId, generateBestAngles);
 
   const { data: billingProductData } = useSWR(
@@ -273,11 +263,6 @@ export default function AngleToolPage() {
     }
   }, [activeRecentJob?.outputs, activeRecentOutputIndex]);
 
-  const handleParamChange = (key: keyof AngleToolNumericParams) => (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
-    setParams((previous) => sanitizeParams({ ...previous, [key]: value }));
-  };
-
   const handleSourceFile = async (file: File | null) => {
     if (!file) return;
     if (!user) {
@@ -390,6 +375,26 @@ export default function AngleToolPage() {
     setSelectedOutputIndex(0);
     setError(null);
     setLibraryModalOpen(false);
+  };
+
+  const handleRemoveSource = () => {
+    setSourceImage((previous) => {
+      cleanupSourcePreview(previous);
+      return null;
+    });
+    setResult(null);
+    setSelectedOutputIndex(0);
+    if (!user) {
+      setGuestExampleDismissed(true);
+    }
+  };
+
+  const handleUploadRequest = () => {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
+    fileInputRef.current?.click();
   };
 
   const handleGenerate = useAngleGenerationRunner({
@@ -513,156 +518,22 @@ export default function AngleToolPage() {
                         ) : null}
                       </div>
 
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.sourceImage}</p>
-                        <div
-                          className={clsx(
-                            'mt-2 rounded-card border border-dashed bg-bg p-4 transition',
-                            sourceDragActive ? 'border-brand bg-brand/5' : 'border-border'
-                          )}
-                          onDragOver={(event) => {
-                            event.preventDefault();
-                            event.dataTransfer.dropEffect = 'copy';
-                            setSourceDragActive(true);
-                          }}
-                          onDragLeave={(event) => {
-                            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-                            setSourceDragActive(false);
-                          }}
-                          onDrop={handleSourceDrop}
-                          onPaste={handleSourcePaste}
-                          tabIndex={0}
-                        >
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                          />
-                          {sourceImage?.url ? (
-                            <div className="overflow-hidden rounded-card border border-border bg-bg">
-                              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3">
-                                <div>
-                                  <p className="text-sm font-medium text-text-primary">{copy.sourceReady}</p>
-                                  <p className="text-xs text-text-muted">
-                                    {sourceImage?.width && sourceImage?.height
-                                      ? `${sourceImage.width} x ${sourceImage.height}`
-                                      : sourceImage.source === 'library'
-                                        ? copy.sourceFromLibrary
-                                        : sourceImage.source === 'example'
-                                          ? copy.sourceFromExample
-                                        : sourceImage.source === 'paste'
-                                          ? copy.sourceFromPaste
-                                          : copy.sourceFromDevice}
-                                  </p>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                    onClick={() => {
-                                      if (!user) {
-                                        openAuthGate();
-                                        return;
-                                      }
-                                      fileInputRef.current?.click();
-                                    }}
-                                    disabled={uploading}
-                                  >
-                                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                                    {uploading ? copy.uploading : copy.replace}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                    onClick={() => {
-                                      if (!user) {
-                                        openAuthGate();
-                                        return;
-                                      }
-                                      setLibraryModalOpen(true);
-                                    }}
-                                  >
-                                    <Images className="h-4 w-4" />
-                                    {copy.library}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                    onClick={() => {
-                                      setSourceImage((previous) => {
-                                        cleanupSourcePreview(previous);
-                                        return null;
-                                      });
-                                      setResult(null);
-                                      setSelectedOutputIndex(0);
-                                      if (!user) {
-                                        setGuestExampleDismissed(true);
-                                      }
-                                    }}
-                                  >
-                                    <X className="h-4 w-4" />
-                                    {copy.remove}
-                                  </Button>
-                                </div>
-                              </div>
-                              <div className="overflow-hidden bg-bg">
-                                <img src={sourceImage.url} alt={copy.sourceAlt} className="h-56 w-full object-contain" />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-card border border-dashed border-border bg-bg px-4 text-center">
-                              <div>
-                                <p className="text-sm font-medium text-text-primary">{copy.addSourceTitle}</p>
-                                <p className="mt-1 text-xs text-text-muted">{copy.addSourceBody}</p>
-                              </div>
-                              <div className="flex flex-wrap justify-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                  onClick={() => {
-                                    if (!user) {
-                                      openAuthGate();
-                                      return;
-                                    }
-                                    fileInputRef.current?.click();
-                                  }}
-                                  disabled={uploading}
-                                >
-                                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                                  {uploading ? copy.uploading : copy.upload}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                  onClick={() => {
-                                    if (!user) {
-                                      openAuthGate();
-                                      return;
-                                    }
-                                    setLibraryModalOpen(true);
-                                  }}
-                                >
-                                  <Images className="h-4 w-4" />
-                                  {copy.library}
-                                </Button>
-                              </div>
-                              <p className="text-[11px] text-text-muted">{copy.formats}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <AngleSourceImagePanel
+                        copy={copy}
+                        fileInputRef={fileInputRef}
+                        onAuthRequired={openAuthGate}
+                        onFileSelect={handleFileSelect}
+                        onLibraryOpen={() => setLibraryModalOpen(true)}
+                        onRemoveSource={handleRemoveSource}
+                        onSourceDragActiveChange={setSourceDragActive}
+                        onSourceDrop={handleSourceDrop}
+                        onSourcePaste={handleSourcePaste}
+                        onUploadRequest={handleUploadRequest}
+                        sourceDragActive={sourceDragActive}
+                        sourceImage={sourceImage}
+                        uploading={uploading}
+                        userPresent={Boolean(user)}
+                      />
                     </div>
 
                     <AngleOrbitSelector
@@ -676,60 +547,7 @@ export default function AngleToolPage() {
                     />
                   </div>
 
-                  <div className="space-y-3 rounded-card border border-border bg-bg p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.cameraControls}</p>
-                    </div>
-
-                    <label className="block">
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="font-medium text-text-primary">{copy.rotationRange}</span>
-                        <span className="text-text-muted">{params.rotation.toFixed(0)} {copy.degreeUnit}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={360}
-                        step={1}
-                        value={params.rotation}
-                        onChange={handleParamChange('rotation')}
-                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full bg-hairline"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="font-medium text-text-primary">{copy.tiltRange}</span>
-                        <span className="text-text-muted">{params.tilt.toFixed(0)} {copy.degreeUnit}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={-30}
-                        max={30}
-                        step={1}
-                        value={params.tilt}
-                        onChange={handleParamChange('tilt')}
-                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full"
-                        style={tiltTrackStyle}
-                      />
-                    </label>
-
-                    <label className="block">
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="font-medium text-text-primary">{copy.zoomRange}</span>
-                        <span className="text-text-muted">{params.zoom.toFixed(1)}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                        value={params.zoom}
-                        onChange={handleParamChange('zoom')}
-                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full bg-hairline"
-                      />
-                    </label>
-                  </div>
+                  <AngleCameraControls copy={copy} onParamsChange={setParams} params={params} />
 
                   <div className="rounded-card border border-border bg-bg p-4">
                     <p className="text-xs uppercase tracking-micro text-text-muted">{copy.estimatedCost}</p>
