@@ -9,6 +9,9 @@ const loginPaths = [
   'frontend/app/(core)/login/_hooks/useLoginBrowserLocale.ts',
   'frontend/app/(core)/login/_hooks/useLoginModeFromQuery.ts',
   'frontend/app/(core)/login/_hooks/useLoginNextTarget.ts',
+  'frontend/app/(core)/login/_hooks/useLoginAuthenticatedRedirect.ts',
+  'frontend/app/(core)/login/_hooks/useLoginAuthHashSession.ts',
+  'frontend/app/(core)/login/_hooks/useLoginOAuthCodeExchange.ts',
   'frontend/app/(core)/login/_hooks/useLoginPageController.ts',
 ];
 const loginSources = loginPaths.map((path) => readFileSync(join(process.cwd(), path), 'utf8')).join('\n');

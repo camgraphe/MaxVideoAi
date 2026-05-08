@@ -1,0 +1,75 @@
+import { useEffect, type Dispatch, type SetStateAction } from 'react';
+import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { writeLastKnownUserId } from '@/lib/last-known';
+import { supabase } from '@/lib/supabaseClient';
+import { consumePendingGoogleLogin } from '../_lib/login-helpers';
+
+type UseLoginAuthHashSessionOptions = {
+  setError: Dispatch<SetStateAction<string | null>>;
+  setStatus: Dispatch<SetStateAction<string | null>>;
+  setStatusTone: Dispatch<SetStateAction<'info' | 'success'>>;
+};
+
+export function useLoginAuthHashSession({
+  setError,
+  setStatus,
+  setStatusTone,
+}: UseLoginAuthHashSessionOptions) {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token=')) {
+      return;
+    }
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const accessToken = params.get('access_token');
+    const refreshToken =
+      params.get('refresh_token') ?? params.get('refreshToken') ?? params.get('refresh-token');
+    if (!accessToken || !refreshToken) {
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      return;
+    }
+    let cancelled = false;
+    setStatusTone('info');
+    setStatus('Completing sign-in…');
+    setError(null);
+    void supabase.auth
+      .setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setError(error.message ?? 'Unable to complete sign-in.');
+          setStatus(null);
+          return;
+        }
+        if (data.session) {
+          const userId = data.session.user?.id ?? null;
+          if (userId) {
+            writeLastKnownUserId(userId);
+          }
+          if (consumePendingGoogleLogin()) {
+            persistPendingAnalyticsEvent('login_completed', {
+              route_family: 'auth',
+              auth_surface: 'login',
+              method: 'google',
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
+        setStatus(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [setError, setStatus, setStatusTone]);
+}
