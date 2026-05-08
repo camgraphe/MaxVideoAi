@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import deepmerge from 'deepmerge';
 import { usePathname } from 'next/navigation';
@@ -9,18 +9,18 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { BillingAuthGateModal } from './BillingAuthGateModal';
 import { BillingHero } from './BillingHero';
 import { BillingInfoAside } from './BillingInfoAside';
 import { ReceiptsPanel } from './ReceiptsPanel';
 import { WalletTopupPanel } from './WalletTopupPanel';
+import { useBillingCurrencyState } from '../_hooks/useBillingCurrencyState';
 import { useBillingReceipts } from '../_hooks/useBillingReceipts';
 import { useBillingSessionState } from '../_hooks/useBillingSessionState';
 import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
+import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
-import { parseAmountToCents } from '../_lib/billing-utils';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 type LegacyCheckoutStripe = Stripe & {
@@ -43,10 +43,6 @@ export function BillingClient() {
     return loadStripe(PUBLISHABLE_KEY, { locale });
   }, [locale]);
   const pathname = usePathname();
-  const walletCurrencyDetected = copy.wallet.currencyDetected ?? DEFAULT_BILLING_COPY.wallet.currencyDetected;
-  const walletCurrencyOverride = copy.wallet.currencyOverride ?? DEFAULT_BILLING_COPY.wallet.currencyOverride;
-  const walletCurrencyLoading = copy.wallet.currencyLoading ?? DEFAULT_BILLING_COPY.wallet.currencyLoading;
-  const walletCurrencyLoadError = copy.wallet.currencyLoadError ?? DEFAULT_BILLING_COPY.wallet.currencyLoadError;
   const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -57,41 +53,78 @@ export function BillingClient() {
   const [checkoutCaptchaToken, setCheckoutCaptchaToken] = useState<string | null>(null);
   const [checkoutCaptchaError, setCheckoutCaptchaError] = useState<string | null>(null);
 
-  const [currencyOptions, setCurrencyOptions] = useState<string[]>(['USD']);
   const [toast, setToast] = useState<string | null>(null);
-  const [chargeCurrency, setChargeCurrency] = useState<string>('USD');
-  const [autoCurrency, setAutoCurrency] = useState<string>('USD');
-  const [currencyLoading, setCurrencyLoading] = useState(false);
-  const [currencyError, setCurrencyError] = useState<string | null>(null);
-  const [customAmountInput, setCustomAmountInput] = useState('');
-  const [customEditorOpen, setCustomEditorOpen] = useState(false);
-  const [selectedTopupCents, setSelectedTopupCents] = useState(USD_TOPUP_TIERS[0]?.amountCents ?? 1000);
-  const customAmountCents = parseAmountToCents(customAmountInput);
-  const customAmountError = !customAmountInput.trim()
-    ? null
-    : customAmountCents == null
-      ? copy.wallet.customInvalid
-      : customAmountCents < 1000
-        ? copy.wallet.customMin
-        : null;
-  const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
-  const userCurrencyOverrideRef = useRef(false);
-  const autoCurrencyRef = useRef('USD');
-  const customAmountInputRef = useRef<HTMLInputElement | null>(null);
-  const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const loginRedirectTarget = pathname || '/billing';
   const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
-  const applyDetectedCurrency = useCallback((currency: string) => {
-    const resolvedCurrency = String(currency || 'USD').toUpperCase();
-    setAutoCurrency(resolvedCurrency);
-    if (!userCurrencyOverrideRef.current) {
-      setChargeCurrency(resolvedCurrency);
+
+  const formatMoney = (amountCents: number, currency: string) => {
+    const amount = amountCents / 100;
+    try {
+      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency }).format(amount);
+    } catch {
+      return `${currency} ${amount.toFixed(2)}`;
     }
-  }, []);
+  };
+
+  const formatLocalAmount = useCallback((amountMinor: number, currency: string) => {
+    const upper = (currency ?? 'USD').toUpperCase();
+    const zeroDecimal = upper === 'JPY';
+    const divisor = zeroDecimal ? 1 : 100;
+    const value = amountMinor / divisor;
+    try {
+      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency: upper }).format(value);
+    } catch {
+      return `${upper} ${value.toFixed(zeroDecimal ? 0 : 2)}`;
+    }
+  }, [billingIntlLocale]);
+
+  const formatUsdAmount = (amountCents: number) => {
+    const amount = amountCents / 100;
+    try {
+      return new Intl.NumberFormat(billingIntlLocale, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+      }).format(amount);
+    } catch {
+      return `$${amount.toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+    }
+  };
+  const {
+    applyDetectedCurrency,
+    chargeCurrency,
+    currencyLoading,
+    currencyOptions,
+    currencyStatus,
+    currencyStatusClass,
+    handleCurrencyChange,
+    normalizedChargeCurrency,
+  } = useBillingCurrencyState({
+    authLoading,
+    copy,
+    session,
+  });
   const { wallet, member, stripeMode } = useBillingSessionState({
     authLoading,
     session,
     onDetectedCurrency: applyDetectedCurrency,
+  });
+  const {
+    applyCustomAmount,
+    customAmountCents,
+    customAmountError,
+    customAmountInput,
+    customAmountInputRef,
+    customAmountValid,
+    customCardActive,
+    handlePresetSelected,
+    onCustomAmountInputChange,
+    openCustomAmountEditor,
+    selectedTopupAmountLabel,
+    selectedTopupCents,
+  } = useBillingTopupSelection({
+    copy,
+    formatUsdAmount,
   });
   const { topupQuotes, quoteLoading, quoteError } = useBillingTopupQuotes({
     authLoading,
@@ -130,58 +163,8 @@ export function BillingClient() {
   }, [normalizedChargeCurrency, selectedTopupCents]);
 
   useEffect(() => {
-    autoCurrencyRef.current = autoCurrency;
-  }, [autoCurrency]);
-
-  useEffect(() => {
     replayPendingTopupCancelled();
   }, [replayPendingTopupCancelled]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    let canceled = false;
-    async function loadCurrencySummary() {
-      if (!session) {
-        setCurrencyOptions(['USD']);
-        if (!userCurrencyOverrideRef.current) {
-          setChargeCurrency((autoCurrencyRef.current || 'USD').toUpperCase());
-        }
-        return;
-      }
-      setCurrencyLoading(true);
-      setCurrencyError(null);
-      const token = session?.access_token ?? null;
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      try {
-        const res = await fetch('/api/me/currency', { headers });
-        const data = await res.json().catch(() => null);
-        if (!res.ok || !data?.ok) {
-          throw new Error(data?.error ?? 'currency_summary_failed');
-        }
-        if (canceled) return;
-        const enabled = Array.isArray(data.enabled) && data.enabled.length ? data.enabled : ['USD'];
-        const normalized = enabled.map((code: string) => String(code ?? 'USD').toUpperCase());
-        setCurrencyOptions(normalized);
-        if (!userCurrencyOverrideRef.current) {
-          const preferred = String(data.currency ?? data.defaultCurrency ?? autoCurrencyRef.current ?? 'USD').toUpperCase();
-          setChargeCurrency(preferred);
-        }
-      } catch (error) {
-        console.warn('[billing] currency summary load failed', error);
-        if (!canceled) {
-          setCurrencyError(walletCurrencyLoadError);
-        }
-      } finally {
-        if (!canceled) {
-          setCurrencyLoading(false);
-        }
-      }
-    }
-    loadCurrencySummary();
-    return () => {
-      canceled = true;
-    };
-  }, [authLoading, session, walletCurrencyLoadError]);
 
   // no FX preview when using Checkout redirection
 
@@ -229,12 +212,6 @@ export function BillingClient() {
     }
     return undefined;
   }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion, triggerTopupCancelled]);
-
-  const handleCurrencyChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    const next = String(event.target.value || 'USD').toUpperCase();
-    userCurrencyOverrideRef.current = true;
-    setChargeCurrency(next);
-  }, []);
 
   async function handleTopUp(amountCents: number) {
     if (!session) {
@@ -352,79 +329,11 @@ export function BillingClient() {
     [billingIntlLocale]
   );
 
-  const formatMoney = (amountCents: number, currency: string) => {
-    const amount = amountCents / 100;
-    try {
-      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency }).format(amount);
-    } catch {
-      return `${currency} ${amount.toFixed(2)}`;
-    }
-  };
-
-  const formatLocalAmount = useCallback((amountMinor: number, currency: string) => {
-    const upper = (currency ?? 'USD').toUpperCase();
-    const zeroDecimal = upper === 'JPY';
-    const divisor = zeroDecimal ? 1 : 100;
-    const value = amountMinor / divisor;
-    try {
-      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency: upper }).format(value);
-    } catch {
-      return `${upper} ${value.toFixed(zeroDecimal ? 0 : 2)}`;
-    }
-  }, [billingIntlLocale]);
-
-
-  const formatUsdAmount = (amountCents: number) => {
-    const amount = amountCents / 100;
-    try {
-      return new Intl.NumberFormat(billingIntlLocale, {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
-      }).format(amount);
-    } catch {
-      return `$${amount.toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
-    }
-  };
-  const normalizedAutoCurrency = (autoCurrency || 'USD').toUpperCase();
-  const currencyStatus = currencyError
-    ? currencyError
-    : currencyLoading && !userCurrencyOverrideRef.current
-      ? walletCurrencyLoading
-      : normalizedChargeCurrency === normalizedAutoCurrency
-        ? walletCurrencyDetected.replace('{currency}', normalizedChargeCurrency)
-        : walletCurrencyOverride
-            .replace('{selected}', normalizedChargeCurrency)
-            .replace('{detected}', normalizedAutoCurrency);
-  const currencyStatusClass = currencyError ? 'text-state-warning' : 'text-text-secondary';
-  const selectedPresetTier = USD_TOPUP_TIERS.find((entry) => entry.amountCents === selectedTopupCents) ?? null;
-  const customAmountSelected =
-    customAmountValid && selectedPresetTier == null && selectedTopupCents === customAmountCents;
-  const customCardActive = customEditorOpen || customAmountSelected;
-  const selectedTopupAmountLabel = formatUsdAmount(selectedTopupCents);
   const selectedTopupQuote = topupQuotes[selectedTopupCents];
   const selectedTopupLocalLabel =
     selectedTopupQuote && normalizedChargeCurrency !== 'USD'
       ? `≈ ${formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)}`
       : null;
-
-  const focusCustomAmountInput = useCallback(() => {
-    window.setTimeout(() => {
-      customAmountInputRef.current?.focus();
-      customAmountInputRef.current?.select();
-    }, 0);
-  }, []);
-
-  const openCustomAmountEditor = useCallback(() => {
-    setCustomEditorOpen(true);
-    focusCustomAmountInput();
-  }, [focusCustomAmountInput]);
-
-  const applyCustomAmount = useCallback(() => {
-    if (!customAmountValid || customAmountCents == null) return;
-    setSelectedTopupCents(customAmountCents);
-    setCustomEditorOpen(false);
-  }, [customAmountCents, customAmountValid]);
 
   if (authLoading) {
     return null;
@@ -474,13 +383,10 @@ export function BillingClient() {
                 isTopupStarting={isTopupStarting}
                 locale={locale}
                 normalizedChargeCurrency={normalizedChargeCurrency}
-                onCustomAmountInputChange={setCustomAmountInput}
+                onCustomAmountInputChange={onCustomAmountInputChange}
                 onExpressReveal={() => setExpressRequested(true)}
                 onOpenCustomAmountEditor={openCustomAmountEditor}
-                onPresetSelected={(amountCents) => {
-                  setSelectedTopupCents(amountCents);
-                  setCustomEditorOpen(false);
-                }}
+                onPresetSelected={handlePresetSelected}
                 quoteError={quoteError}
                 quoteLoading={quoteLoading}
                 selectedTopupAmountLabel={selectedTopupAmountLabel}

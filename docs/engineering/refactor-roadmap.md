@@ -28,7 +28,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Admin routes: dashboard helpers, insights panels, SEO cockpit, SEO GSC, engines view model, users list, user detail, and video SEO inventory.
 - Auth/login routes: login controller hooks and hydration/auth contracts.
 - Generate/API routes: provider dispatch, validation payloads, billing preflight, final persistence/response, request options, and media helpers.
-- Client workspace/billing/library routes: workspace app bootstrap and route-form state hooks, billing session/receipts/top-up quote hooks, and library SWR/mutation hooks.
+- Client workspace/billing/library routes: workspace app bootstrap and route-form state hooks, billing session/receipts/top-up quote hooks, billing currency/top-up selection hooks, and library SWR/mutation hooks.
 - Admin audit/jobs routes: server pages now delegate filters, shortcut metrics, tables, and page views to route-local modules.
 - Localized docs index route: server page now delegates docs fallback loading, TOC view-models, section rendering, library/feedback sections, and JSON-LD builders to route-local modules.
 
@@ -63,7 +63,6 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-05-08:
 | `frontend/app/api/jobs/route.ts` | 836 | Split handlers and query builders with API contract tests. |
 | `frontend/components/groups/CompositePreviewDock.tsx` | 818 | Split preview rendering, status controls, and media actions. |
 | `frontend/app/(core)/(workspace)/app/AppClient.tsx` | 700 | Continue with grouped composer/shell view-model extraction. |
-| `frontend/app/(core)/billing/_components/BillingClient.tsx` | 525 | Continue with currency state, checkout session flow, and top-up selection hooks. |
 | `frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx` | 445 | Optional follow-up: extract `AssetLibraryBrowser` prop assembly if the page grows again. |
 
 Line counts change over time. Treat the table as a dated snapshot, not source of truth.
@@ -73,8 +72,7 @@ Line counts change over time. Treat the table as a dated snapshot, not source of
 Prefer this order unless product work changes the risk profile:
 
 1. Workspace `AppClient.tsx`: grouped composer/shell view-model extraction without changing generation behavior.
-2. Billing client: split currency state, checkout session flow, and top-up selection hooks.
-3. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
+2. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
 
 ## Definition Of Done
 
