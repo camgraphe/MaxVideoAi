@@ -1,62 +1,54 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExampleFamilyPage, listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
-import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
-import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding, getHubExamplesFaq } from '@/lib/examples/modelLanding';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import {
   ALLOWED_QUERY_KEYS,
-  CURRENT_ENGINE_MODEL_LINKS_BY_GROUP,
   DEFAULT_SORT,
   ENGINE_META,
-  ENGINE_MODEL_LINKS,
-  ENGINE_MODEL_LINKS_BY_GROUP,
   EXAMPLES_PAGE_SIZE,
   FAMILY_INITIAL_DESKTOP_GALLERY_BATCH,
-  GALLERY_POSTER_OPTIONS,
   GALLERY_SLUG_MAP,
-  HERO_POSTER_OPTIONS,
   HUB_INITIAL_DESKTOP_GALLERY_BATCH,
   INITIAL_MOBILE_GALLERY_BATCH,
-  PREFERRED_ENGINE_ORDER,
   SITE,
   appendTrackingParams,
   buildLocalizedExampleLabel,
   buildMainVideoHeroLine,
-  buildModelHref,
   buildPricingHref,
   compactLeadCopy,
-  formatModelSlugLabel,
-  formatPromptExcerpt,
   getAspectRatioStyle,
-  getPlaceholderPoster,
   getSort,
   getVideoMimeType,
   isPortraitAspectRatio,
   isTrackingParam,
-  normalizeFilterId,
   resolveCanonicalEngineParam,
   resolveEngineLabel,
   resolveEngineLinkId,
-  resolveFilterDescriptor,
   toAbsoluteUrl,
-  type EngineFilterOption,
 } from './_lib/examples-route-utils';
-import { getExampleFamilyDescriptor } from '@/lib/model-families';
 import { ExamplesEngineFilterNav } from './_components/examples-engine-filter-nav';
 import { ExamplesJsonLdScripts } from './_components/examples-jsonld-scripts';
 import { ExamplesMainVideoFeature } from './_components/examples-main-video-feature';
-import { ExamplesIntroHero, ExamplesNextStepsSection } from './_components/examples-route-sections';
+import {
+  ExamplesFaqSection,
+  ExamplesGallerySection,
+  ExamplesIntroHero,
+  ExamplesModelLandingCardsSection,
+  ExamplesModelLinksSection,
+  ExamplesNextStepsSection,
+  ExamplesPaginationNav,
+  ExamplesSummarySection,
+} from './_components/examples-route-sections';
 import {
   buildExamplesNextStepLinks,
   getExamplesBrowseByModelLabel,
@@ -66,6 +58,11 @@ import {
   getExamplesModelPageLabels,
   getKlingExamplesSectionTitles,
 } from './_lib/examples-page-copy';
+import {
+  buildExamplesEngineFilterState,
+  buildExamplesGalleryData,
+  buildExamplesModelLinks,
+} from './_lib/examples-page-data';
 
 export async function generateMetadata(
   props: {
@@ -269,76 +266,16 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));
   const displayTotalPages = Math.max(totalPages, currentPage);
 
-  const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
-    const canonicalEngineId = resolveEngineLinkId(video.engineId);
-    if (!canonicalEngineId) return acc;
-    const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-    const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta);
-    if (!descriptor) return acc;
-    const filterKey = descriptor.id.toLowerCase();
-    const existing = acc.get(filterKey);
-    if (existing) {
-      existing.count += 1;
-      return acc;
-    }
-    acc.set(filterKey, {
-      id: descriptor.id,
-      key: filterKey,
-      label: descriptor.label,
-      brandId: descriptor.brandId,
-      count: 1,
-    });
-    return acc;
-  }, new Map());
-
-  const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
-    const key = normalizeFilterId(preferredId);
-    const existing = engineFilterMap.get(key);
-    if (existing) {
-      return existing;
-    }
-    const base = getExampleFamilyDescriptor(preferredId) ?? { id: preferredId, label: preferredId, brandId: undefined };
-    return {
-      id: base.id,
-      key,
-      label: base.label,
-      brandId: base.brandId,
-      count: 0,
-    };
-  });
-  const selectedOption =
-    collapsedEngineParam && engineFilterOptions.length
-      ? engineFilterOptions.find((option) => option.key === normalizeFilterId(collapsedEngineParam))
-      : null;
-  const selectedEngine = selectedOption?.id ?? null;
-  const modelSlugs = selectedEngine
-    ? ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? []
-    : [];
-  const modelLinks = modelSlugs.map((slug) => {
-    const label = ENGINE_META.get(slug)?.label ?? formatModelSlugLabel(slug);
-    return {
-      slug,
-      label,
-      href: buildModelHref(locale as AppLocale, slug),
-    };
-  });
   const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
-  const currentModelSlugs = selectedEngine
-    ? CURRENT_ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? []
-    : [];
-  const currentModelSlugSet = new Set(currentModelSlugs);
-  const primaryModelLinks =
-    usesCurrentAndSupportedBlocks && currentModelSlugSet.size
-      ? modelLinks.filter((model) => currentModelSlugSet.has(model.slug))
-      : usesCurrentAndSupportedBlocks
-        ? modelLinks.slice(0, 2)
-        : modelLinks;
-  const supportedOlderModelLinks =
-    usesCurrentAndSupportedBlocks && currentModelSlugSet.size
-      ? modelLinks.filter((model) => !currentModelSlugSet.has(model.slug))
-      : usesCurrentAndSupportedBlocks
-        ? modelLinks.slice(2)
-      : [];
+  const { engineFilterOptions, selectedEngine, selectedOption } = buildExamplesEngineFilterState({
+    allVideos,
+    collapsedEngineParam,
+  });
+  const { modelLinks, primaryModelLinks, supportedOlderModelLinks } = buildExamplesModelLinks({
+    locale: appLocale,
+    selectedEngine,
+    usesCurrentAndSupportedBlocks,
+  });
   const pricingPath = buildPricingHref(locale as AppLocale);
   const {
     currentModelPagesLabel,
@@ -360,57 +297,10 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     pricingPath,
   });
 
-  const filteredEntries = selectedEngine
-    ? allVideos
-        .map((video, index) => {
-          const canonicalEngineId = resolveEngineLinkId(video.engineId);
-          if (!canonicalEngineId) return null;
-          const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-          const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta);
-          if (!descriptor) return null;
-          if (descriptor.id.toLowerCase() !== selectedEngine.toLowerCase()) return null;
-          return { video, index };
-        })
-        .filter((entry): entry is { video: typeof allVideos[number]; index: number } => Boolean(entry))
-    : allVideos.map((video, index) => ({ video, index }));
-  const videos = filteredEntries.map((entry) => entry.video);
-  const clientVideos: ExampleGalleryVideo[] = filteredEntries.map(({ video, index }) => {
-    const canonicalEngineId = resolveEngineLinkId(video.engineId);
-    const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
-    const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
-    const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
-    const modelSlug =
-      engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
-    const modelHref = modelSlug ? buildModelHref(locale as AppLocale, modelSlug) : null;
-    const promptDisplay =
-      locale === 'en'
-        ? formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render')
-        : buildLocalizedExampleLabel(
-            locale as AppLocale,
-            engineMeta?.label ?? video.engineLabel ?? 'Engine',
-            video.aspectRatio ?? null,
-            video.durationSec
-          );
-    return {
-      id: video.id,
-      href: `/video/${encodeURIComponent(video.id)}`,
-      engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
-      engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
-      engineBrandId: engineMeta?.brandId,
-      priceLabel: null,
-      prompt: promptDisplay,
-      promptFull: locale === 'en' ? video.prompt ?? null : null,
-      aspectRatio: video.aspectRatio ?? null,
-      durationSec: video.durationSec,
-      hasAudio: video.hasAudio,
-      heroPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, HERO_POSTER_OPTIONS) : null,
-      optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
-      rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
-      videoUrl: video.videoUrl ?? null,
-      previewVideoUrl: video.previewVideoUrl ?? null,
-      modelHref,
-      sourceIndex: index,
-    };
+  const { videos, clientVideos } = buildExamplesGalleryData({
+    allVideos,
+    locale: appLocale,
+    selectedEngine,
   });
   const showModelHero = isModelLanding && currentPage === 1 && sort === DEFAULT_SORT;
   const playableHeroCard = showModelHero ? pickFirstPlayableVideo(clientVideos) : null;
@@ -478,6 +368,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       query,
     };
   };
+  const previousPageHref = buildPaginationHref(Math.max(1, currentPage - 1));
+  const nextPageHref = buildPaginationHref(currentPage + 1);
 
   const itemListElements = galleryVideos.map((video, index) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
@@ -627,82 +519,37 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
             />
           ) : null}
 
-          {isModelLanding && selectedEngine && modelLinks.length ? (
-            <section className="mx-auto max-w-5xl">
-              <div className="flex flex-col items-center gap-3 text-sm text-text-secondary">
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                    {usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}
-                  </span>
-                  {primaryModelLinks.map((model) => (
-                    <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-                      {model.label}
-                    </Link>
-                  ))}
-                  <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-                    {pricingLinkLabel}
-                  </Link>
-                </div>
-                {supportedOlderModelLinks.length ? (
-                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                      {supportedOlderVersionLabel}
-                    </span>
-                    {supportedOlderModelLinks.map((model) => (
-                      <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-                        {model.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </section>
-          ) : null}
+          <ExamplesModelLinksSection
+            currentModelPagesLabel={currentModelPagesLabel}
+            isModelLanding={isModelLanding}
+            modelLinks={modelLinks}
+            modelPagesLabel={modelPagesLabel}
+            pricingLinkLabel={pricingLinkLabel}
+            pricingPath={pricingPath}
+            primaryModelLinks={primaryModelLinks}
+            selectedEngine={selectedEngine}
+            supportedOlderModelLinks={supportedOlderModelLinks}
+            supportedOlderVersionLabel={supportedOlderVersionLabel}
+            usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
+          />
 
-          {modelLandingSections?.length ? (
-            <section className="grid gap-3 md:grid-cols-3">
-              {modelLandingSections.map((section) => (
-                <article
-                  key={section.title}
-                  className="rounded-[20px] border border-hairline/80 bg-surface/85 px-4 py-4 text-left shadow-sm"
-                >
-                  <div className="min-w-0">
-                    <h2 className="text-sm font-semibold leading-tight text-text-primary">{section.title}</h2>
-                    <p
-                      className="mt-2 text-xs leading-relaxed text-text-secondary/90"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {section.body}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </section>
-          ) : null}
+          <ExamplesModelLandingCardsSection sections={modelLandingSections} />
 
-          {showGallerySection ? (
-            <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
-              <ExamplesGalleryGrid
-                initialExamples={initialExamples}
-                loadMoreLabel={loadMoreLabel}
-                loadingLabel={galleryUiCopy.loading}
-                noPreviewLabel={galleryUiCopy.noPreview}
-                audioAvailableLabel={galleryUiCopy.audioAvailable}
-                initialDesktopBatch={initialDesktopBatch}
-                initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
-                sort={sort}
-                engineFilter={selectedEngine?.toLowerCase() ?? null}
-                initialOffset={nextOffsetStart}
-                pageOffsetEnd={pageOffsetEnd}
-                locale={locale}
-              />
-            </section>
-          ) : null}
+          <ExamplesGallerySection
+            audioAvailableLabel={galleryUiCopy.audioAvailable}
+            engineFilter={selectedEngine?.toLowerCase() ?? null}
+            initialDesktopBatch={initialDesktopBatch}
+            initialExamples={initialExamples}
+            initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
+            initialOffset={nextOffsetStart}
+            loadMoreLabel={loadMoreLabel}
+            loadingLabel={galleryUiCopy.loading}
+            locale={locale}
+            noPreviewLabel={galleryUiCopy.noPreview}
+            pageOffsetEnd={pageOffsetEnd}
+            show={showGallerySection}
+            sort={sort}
+          />
 
           {modelLanding && heroLead !== heroBody ? (
             <section className="mx-auto max-w-4xl text-sm leading-relaxed text-text-secondary/90">
@@ -710,69 +557,24 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
             </section>
           ) : null}
 
-          {totalPages > 1 ? (
-            <nav className="flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-surface/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
-              <div>
-                {hasPreviousPage ? (
-                  <Link
-                    href={buildPaginationHref(currentPage - 1)}
-                    rel="prev"
-                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    ← {paginationPrevLabel}
-                  </Link>
-                ) : (
-                  <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
-                    ← {paginationPrevLabel}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                {paginationPageLabel} {currentPage} / {displayTotalPages}
-              </span>
-              <div>
-                {hasNextPage ? (
-                  <Link
-                    href={buildPaginationHref(currentPage + 1)}
-                    rel="next"
-                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {paginationNextLabel} →
-                  </Link>
-                ) : (
-                  <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
-                    {paginationNextLabel} →
-                  </span>
-                )}
-              </div>
-            </nav>
-          ) : null}
+          <ExamplesPaginationNav
+            currentPage={currentPage}
+            displayTotalPages={displayTotalPages}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            nextHref={nextPageHref}
+            nextLabel={paginationNextLabel}
+            pageLabel={paginationPageLabel}
+            previousHref={previousPageHref}
+            previousLabel={paginationPrevLabel}
+            show={totalPages > 1}
+          />
 
-          {!modelLanding ? (
-            <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-              <p>{longDescription}</p>
-            </section>
-          ) : (
-            <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-              <p>{modelLanding.summary}</p>
-            </section>
-          )}
+          <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLanding?.summary} />
 
           <ExamplesNextStepsSection locale={appLocale} nextStepLinks={nextStepLinks} />
 
-          {faqBlock.items.length ? (
-            <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-              <h2 className="text-lg font-semibold text-text-primary">{faqBlock.title}</h2>
-              <div className="mt-4 space-y-3">
-                {faqBlock.items.map((item) => (
-                  <details key={item.question} className="rounded-lg border border-hairline bg-surface px-4 py-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-text-primary">{item.question}</summary>
-                    <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.answer}</p>
-                  </details>
-                ))}
-              </div>
-            </section>
-          ) : null}
+          <ExamplesFaqSection faqBlock={faqBlock} />
 
         </div>
 

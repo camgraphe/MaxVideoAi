@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
+import type { ExampleSort } from '@/server/videos';
 
 type ExamplesIntroHeroProps = {
   heroLead: string;
@@ -15,6 +17,81 @@ type ExamplesNextStepsSectionProps = {
   }>;
 };
 
+type ExamplesModelLink = {
+  slug: string;
+  label: string;
+  href: string;
+};
+
+type ExamplesModelLinksSectionProps = {
+  currentModelPagesLabel: string;
+  isModelLanding: boolean;
+  modelLinks: ExamplesModelLink[];
+  modelPagesLabel: string;
+  pricingLinkLabel: string;
+  pricingPath: string;
+  primaryModelLinks: ExamplesModelLink[];
+  selectedEngine: string | null;
+  supportedOlderModelLinks: ExamplesModelLink[];
+  supportedOlderVersionLabel: string;
+  usesCurrentAndSupportedBlocks: boolean;
+};
+
+type ExamplesModelLandingCardsSectionProps = {
+  sections:
+    | Array<{
+        title: string;
+        body: string;
+      }>
+    | undefined;
+};
+
+type ExamplesGallerySectionProps = {
+  audioAvailableLabel: string;
+  engineFilter: string | null;
+  initialDesktopBatch: number;
+  initialExamples: ExampleGalleryVideo[];
+  initialMobileBatch: number;
+  initialOffset: number;
+  loadMoreLabel: string;
+  loadingLabel: string;
+  locale: string;
+  noPreviewLabel: string;
+  pageOffsetEnd: number;
+  show: boolean;
+  sort: ExampleSort;
+};
+
+type ExamplesPaginationHref = string | { pathname: '/examples'; query?: Record<string, string> };
+
+type ExamplesPaginationNavProps = {
+  currentPage: number;
+  displayTotalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextHref: ExamplesPaginationHref;
+  nextLabel: string;
+  pageLabel: string;
+  previousHref: ExamplesPaginationHref;
+  previousLabel: string;
+  show: boolean;
+};
+
+type ExamplesSummarySectionProps = {
+  longDescription: string;
+  modelLandingSummary?: string;
+};
+
+type ExamplesFaqSectionProps = {
+  faqBlock: {
+    title: string;
+    items: Array<{
+      question: string;
+      answer: string;
+    }>;
+  };
+};
+
 export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
   return (
     <section className="halo-hero stack-gap-sm text-center sm:stack-gap-md">
@@ -23,6 +100,182 @@ export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: Example
         <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle}</p>
         <p className="mx-auto max-w-2xl text-sm leading-relaxed text-text-secondary/90">{heroLead}</p>
       </header>
+    </section>
+  );
+}
+
+export function ExamplesModelLinksSection({
+  currentModelPagesLabel,
+  isModelLanding,
+  modelLinks,
+  modelPagesLabel,
+  pricingLinkLabel,
+  pricingPath,
+  primaryModelLinks,
+  selectedEngine,
+  supportedOlderModelLinks,
+  supportedOlderVersionLabel,
+  usesCurrentAndSupportedBlocks,
+}: ExamplesModelLinksSectionProps) {
+  if (!isModelLanding || !selectedEngine || !modelLinks.length) return null;
+
+  return (
+    <section className="mx-auto max-w-5xl">
+      <div className="flex flex-col items-center gap-3 text-sm text-text-secondary">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+            {usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}
+          </span>
+          {primaryModelLinks.map((model) => (
+            <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
+              {model.label}
+            </Link>
+          ))}
+          <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
+            {pricingLinkLabel}
+          </Link>
+        </div>
+        {supportedOlderModelLinks.length ? (
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+              {supportedOlderVersionLabel}
+            </span>
+            {supportedOlderModelLinks.map((model) => (
+              <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
+                {model.label}
+              </Link>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLandingCardsSectionProps) {
+  if (!sections?.length) return null;
+
+  return (
+    <section className="grid gap-3 md:grid-cols-3">
+      {sections.map((section) => (
+        <article
+          key={section.title}
+          className="rounded-[20px] border border-hairline/80 bg-surface/85 px-4 py-4 text-left shadow-sm"
+        >
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold leading-tight text-text-primary">{section.title}</h2>
+            <p
+              className="mt-2 text-xs leading-relaxed text-text-secondary/90"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {section.body}
+            </p>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+export function ExamplesGallerySection({
+  audioAvailableLabel,
+  engineFilter,
+  initialDesktopBatch,
+  initialExamples,
+  initialMobileBatch,
+  initialOffset,
+  loadMoreLabel,
+  loadingLabel,
+  locale,
+  noPreviewLabel,
+  pageOffsetEnd,
+  show,
+  sort,
+}: ExamplesGallerySectionProps) {
+  if (!show) return null;
+
+  return (
+    <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
+      <ExamplesGalleryGrid
+        initialExamples={initialExamples}
+        loadMoreLabel={loadMoreLabel}
+        loadingLabel={loadingLabel}
+        noPreviewLabel={noPreviewLabel}
+        audioAvailableLabel={audioAvailableLabel}
+        initialDesktopBatch={initialDesktopBatch}
+        initialMobileBatch={initialMobileBatch}
+        sort={sort}
+        engineFilter={engineFilter}
+        initialOffset={initialOffset}
+        pageOffsetEnd={pageOffsetEnd}
+        locale={locale}
+      />
+    </section>
+  );
+}
+
+export function ExamplesPaginationNav({
+  currentPage,
+  displayTotalPages,
+  hasNextPage,
+  hasPreviousPage,
+  nextHref,
+  nextLabel,
+  pageLabel,
+  previousHref,
+  previousLabel,
+  show,
+}: ExamplesPaginationNavProps) {
+  if (!show) return null;
+
+  return (
+    <nav className="flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-surface/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
+      <div>
+        {hasPreviousPage ? (
+          <Link
+            href={previousHref}
+            rel="prev"
+            className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            ← {previousLabel}
+          </Link>
+        ) : (
+          <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+            ← {previousLabel}
+          </span>
+        )}
+      </div>
+      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+        {pageLabel} {currentPage} / {displayTotalPages}
+      </span>
+      <div>
+        {hasNextPage ? (
+          <Link
+            href={nextHref}
+            rel="next"
+            className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {nextLabel} →
+          </Link>
+        ) : (
+          <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+            {nextLabel} →
+          </span>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+export function ExamplesSummarySection({ longDescription, modelLandingSummary }: ExamplesSummarySectionProps) {
+  return (
+    <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+      <p>{modelLandingSummary ?? longDescription}</p>
     </section>
   );
 }
@@ -38,6 +291,24 @@ export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNext
           <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
             {item.label}
           </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function ExamplesFaqSection({ faqBlock }: ExamplesFaqSectionProps) {
+  if (!faqBlock.items.length) return null;
+
+  return (
+    <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
+      <h2 className="text-lg font-semibold text-text-primary">{faqBlock.title}</h2>
+      <div className="mt-4 space-y-3">
+        {faqBlock.items.map((item) => (
+          <details key={item.question} className="rounded-lg border border-hairline bg-surface px-4 py-3">
+            <summary className="cursor-pointer text-sm font-semibold text-text-primary">{item.question}</summary>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.answer}</p>
+          </details>
         ))}
       </div>
     </section>
