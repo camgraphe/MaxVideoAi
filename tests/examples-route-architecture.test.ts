@@ -7,16 +7,20 @@ const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-route-utils.ts');
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts');
+const mainVideoFeaturePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
+const mainVideoFeatureSource = readFileSync(mainVideoFeaturePath, 'utf8');
 
 test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.ok(existsSync(pagePath), 'examples route page should exist');
   assert.ok(existsSync(utilsPath), 'examples route helper module should exist');
   assert.ok(existsSync(copyPath), 'examples route copy helper module should exist');
+  assert.ok(existsSync(mainVideoFeaturePath), 'examples main video feature should exist');
 
+  assert.match(pageSource, /from '\.\/_components\/examples-main-video-feature'/, 'route should import main video feature');
   assert.match(pageSource, /from '\.\/_lib\/examples-route-utils'/, 'route should import examples helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-copy'/, 'route should import examples copy helpers');
   assert.match(pageSource, /export async function generateMetadata/, 'route should keep metadata orchestration');
@@ -30,9 +34,12 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.doesNotMatch(pageSource, /function getSort\(/, 'sort parsing belongs in helper module');
   assert.doesNotMatch(pageSource, /const rawNextStepLinks =/, 'model landing next-step copy belongs in copy helper module');
   assert.doesNotMatch(pageSource, /const galleryUiCopy =\s*locale ===/, 'localized gallery UI copy belongs in copy helper module');
+  assert.doesNotMatch(pageSource, /ExamplesHeroVideo/, 'main video hero rendering belongs in ExamplesMainVideoFeature');
+  assert.doesNotMatch(pageSource, /DeferredSourcePrompt/, 'main video prompt disclosure belongs in ExamplesMainVideoFeature');
+  assert.doesNotMatch(pageSource, /mainVideoCopy\.openExample/, 'main video CTAs belong in ExamplesMainVideoFeature');
 
   const lineCount = pageSource.split('\n').length;
-  assert.ok(lineCount <= 1000, `examples page should stay below 1000 lines after helper extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 900, `examples page should stay below 900 lines after main video extraction, got ${lineCount}`);
 });
 
 test('examples helper module exposes the route contract', () => {
@@ -99,4 +106,11 @@ test('examples page copy helper exposes localized route copy builders', () => {
   ]) {
     assert.match(copySource, new RegExp(`export function ${exportName}`), `${exportName} should be exported`);
   }
+});
+
+test('examples main video feature owns the hero media card', () => {
+  assert.match(mainVideoFeatureSource, /export function ExamplesMainVideoFeature/, 'main video feature should be exported');
+  assert.match(mainVideoFeatureSource, /ExamplesHeroVideo/, 'main video feature should own hero video rendering');
+  assert.match(mainVideoFeatureSource, /AudioEqualizerBadge/, 'main video feature should own audio badge rendering');
+  assert.match(mainVideoFeatureSource, /DeferredSourcePrompt/, 'main video feature should own prompt disclosure');
 });
