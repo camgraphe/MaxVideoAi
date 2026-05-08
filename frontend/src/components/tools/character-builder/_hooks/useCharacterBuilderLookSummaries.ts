@@ -10,7 +10,7 @@ import {
   getOutfitSummary,
   serializeResettableCharacterBuilderState,
   summarizeCustomText,
-} from '../_lib/character-builder-helpers';
+} from '../_lib/character-builder-summary-helpers';
 
 type UseCharacterBuilderLookSummariesOptions = {
   accessoryOptions: ToggleItem[];

@@ -8,8 +8,12 @@ const workspacePath = join(root, 'frontend/src/components/tools/CharacterBuilder
 const copyPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-copy.ts');
 const typesPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-types.ts');
 const helpersPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-helpers.ts');
+const summaryHelpersPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-summary-helpers.ts');
 const componentsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-workspace-components.tsx');
 const buildLookSectionPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-build-look-section.tsx');
+const buildLookPanelsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-build-look-panels.tsx');
+const buildLookAdvancedControlsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-build-look-advanced-controls.tsx');
+const buildLookTypesPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-build-look-types.ts');
 const choiceCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-choice-cards.tsx');
 const generateDockPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-generate-dock.tsx');
 const formControlsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-form-controls.tsx');
@@ -36,8 +40,12 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(copyPath), 'character builder copy should live in a colocated copy module');
   assert.ok(existsSync(typesPath), 'character builder local contracts should live in a colocated type module');
   assert.ok(existsSync(helpersPath), 'character builder helper logic should live in a colocated helper module');
+  assert.ok(existsSync(summaryHelpersPath), 'character builder summary helper logic should live in a focused helper module');
   assert.ok(existsSync(componentsPath), 'character builder UI component barrel should live in a colocated component module');
   assert.ok(existsSync(buildLookSectionPath), 'build look section composition should live in a focused component module');
+  assert.ok(existsSync(buildLookPanelsPath), 'build look tab and active panel composition should live in a focused component module');
+  assert.ok(existsSync(buildLookAdvancedControlsPath), 'build look advanced controls should live in a focused component module');
+  assert.ok(existsSync(buildLookTypesPath), 'build look shared local types should live in a focused component module');
   assert.ok(existsSync(choiceCardsPath), 'choice card components should live in a focused component module');
   assert.ok(existsSync(generateDockPath), 'generate dock components should live in a focused component module');
   assert.ok(existsSync(formControlsPath), 'form controls should live in a focused component module');
@@ -83,7 +91,7 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /type UploadedAsset =/, 'asset contracts belong in _lib/character-builder-types.ts');
   assert.doesNotMatch(workspaceSource, /function readPersistedState\(/, 'persistence helpers belong in _lib/character-builder-helpers.ts');
   assert.doesNotMatch(workspaceSource, /function uploadImage\(/, 'upload helper belongs in _lib/character-builder-helpers.ts');
-  assert.doesNotMatch(workspaceSource, /function getHairSummary\(/, 'trait summary helpers belong in _lib/character-builder-helpers.ts');
+  assert.doesNotMatch(workspaceSource, /function getHairSummary\(/, 'trait summary helpers belong in _lib/character-builder-summary-helpers.ts');
   assert.doesNotMatch(workspaceSource, /function VisualChoiceCard\(/, 'visual cards belong in _components/character-builder-workspace-components.tsx');
   assert.doesNotMatch(workspaceSource, /function HairEditorPanel\(/, 'hair editor UI belongs in _components/character-builder-workspace-components.tsx');
   assert.doesNotMatch(workspaceSource, /function CharacterReferenceLibraryModal\(/, 'library modal UI belongs in _components/character-builder-workspace-components.tsx');
@@ -138,8 +146,12 @@ test('character builder helper modules expose the expected workspace contract', 
   const copySource = readFileSync(copyPath, 'utf8');
   const typesSource = readFileSync(typesPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
+  const summaryHelpersSource = readFileSync(summaryHelpersPath, 'utf8');
   const componentsSource = readFileSync(componentsPath, 'utf8');
   const buildLookSectionSource = readFileSync(buildLookSectionPath, 'utf8');
+  const buildLookPanelsSource = readFileSync(buildLookPanelsPath, 'utf8');
+  const buildLookAdvancedControlsSource = readFileSync(buildLookAdvancedControlsPath, 'utf8');
+  const buildLookTypesSource = readFileSync(buildLookTypesPath, 'utf8');
   const choiceCardsSource = readFileSync(choiceCardsPath, 'utf8');
   const generateDockSource = readFileSync(generateDockPath, 'utf8');
   const formControlsSource = readFileSync(formControlsPath, 'utf8');
@@ -192,13 +204,26 @@ test('character builder helper modules expose the expected workspace contract', 
     'updateReferenceImage',
     'removeReferenceImage',
     'parseCharacterBuilderSnapshot',
-    'getHairSummary',
-    'getOutfitSummary',
-    'buildResetCharacterBuilderState',
     'uploadImage',
   ]) {
     assert.match(helpersSource, new RegExp(`export (const|function|async function) ${exportName}`), `${exportName} should be exported`);
   }
+
+  for (const exportName of [
+    'findChoiceLabel',
+    'describeTraitValue',
+    'summarizeCustomText',
+    'findChoiceSwatch',
+    'getHairSummary',
+    'getOutfitSummary',
+    'countConfiguredSecondaryControls',
+    'buildResetCharacterBuilderState',
+    'serializeResettableCharacterBuilderState',
+  ]) {
+    assert.match(summaryHelpersSource, new RegExp(`export function ${exportName}`), `${exportName} should be exported from summary helpers`);
+  }
+
+  assert.doesNotMatch(helpersSource, /export function getHairSummary|export function findChoiceLabel/, 'generic helpers should not regain summary helper ownership');
 
   for (const moduleName of [
     './character-builder-choice-cards',
@@ -228,9 +253,21 @@ test('character builder helper modules expose the expected workspace contract', 
 
   assert.match(generateDockSource, /export function CharacterBuilderStickyDock/, 'CharacterBuilderStickyDock should be exported');
   assert.match(buildLookSectionSource, /export function CharacterBuilderBuildLookSection/, 'build look section should be exported');
-  assert.match(buildLookSectionSource, /BuildLookCarouselCard/, 'build look section should own section navigation');
+  assert.match(buildLookSectionSource, /CharacterBuilderBuildLookTabs/, 'build look section should compose section navigation');
+  assert.match(buildLookSectionSource, /CharacterBuilderActiveLookPanel/, 'build look section should compose active look panels');
+  assert.match(buildLookSectionSource, /CharacterBuilderAdvancedControls/, 'build look section should compose advanced controls');
   assert.match(buildLookSectionSource, /CharacterBuilderStickyDock/, 'build look section should own generate dock composition');
-  assert.match(buildLookSectionSource, /AUTO_TRAIT_KEYS/, 'build look section should own advanced auto trait controls');
+  assert.doesNotMatch(buildLookSectionSource, /BuildLookCarouselCard|AUTO_TRAIT_KEYS|HairEditorPanel/, 'build look section should not regain tab, panel, or advanced control internals');
+  assert.match(buildLookPanelsSource, /export function CharacterBuilderBuildLookTabs/, 'build look tabs should be exported');
+  assert.match(buildLookPanelsSource, /export function CharacterBuilderActiveLookPanel/, 'active look panel should be exported');
+  assert.match(buildLookPanelsSource, /BuildLookCarouselCard/, 'build look panels should own section navigation');
+  assert.match(buildLookPanelsSource, /HairEditorPanel/, 'build look panels should own hair editor composition');
+  assert.match(buildLookPanelsSource, /GENDER_CARD_META/, 'build look panels should own gender card rendering');
+  assert.match(buildLookPanelsSource, /REALISM_CARD_META/, 'build look panels should own realism card rendering');
+  assert.match(buildLookAdvancedControlsSource, /export function CharacterBuilderAdvancedControls/, 'advanced controls should be exported');
+  assert.match(buildLookAdvancedControlsSource, /AUTO_TRAIT_KEYS/, 'advanced controls should own auto trait select behavior');
+  assert.match(buildLookAdvancedControlsSource, /CompactSelectField/, 'advanced controls should own select field composition');
+  assert.match(buildLookTypesSource, /export type TraitChoiceKey/, 'build look shared type should be exported');
   assert.match(startSectionSource, /export function CharacterBuilderStartSection/, 'CharacterBuilderStartSection should be exported');
   assert.match(startSectionSource, /OutputPreviewCard/, 'start section should own output mode selection');
   assert.match(startSectionSource, /ReferenceSlot/, 'start section should own reference slot composition');
@@ -303,4 +340,10 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(traitActionsHookSource, /export function useCharacterBuilderTraitActions/, 'trait actions hook should be exported');
   assert.match(traitActionsHookSource, /const updateTrait = useCallback/, 'trait actions hook should own trait updates');
   assert.match(traitActionsHookSource, /const handleResetBuilder = useCallback/, 'trait actions hook should own reset orchestration');
+
+  assert.ok(buildLookSectionSource.split('\n').length <= 300, 'build look section should stay an orchestrator after panel extraction');
+  assert.ok(buildLookPanelsSource.split('\n').length <= 400, 'build look panels should stay below 400 lines');
+  assert.ok(buildLookAdvancedControlsSource.split('\n').length <= 260, 'build look advanced controls should stay below 260 lines');
+  assert.ok(helpersSource.split('\n').length <= 500, 'generic character builder helpers should stay below 500 lines after summary helper extraction');
+  assert.ok(summaryHelpersSource.split('\n').length <= 180, 'summary helpers should stay focused and below 180 lines');
 });
