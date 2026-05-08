@@ -11,4 +11,5 @@ test('dashboard recent renders load a small first page', () => {
 
   assert.match(source, /const\s+DASHBOARD_RECENT_PAGE_SIZE\s*=\s*12/);
   assert.match(source, /useInfiniteJobs\(DASHBOARD_RECENT_PAGE_SIZE,\s*recentFeedOptions\)/);
+  assert.ok(source.split('\n').length <= 430, 'dashboard page should stay below the route bloat threshold');
 });
