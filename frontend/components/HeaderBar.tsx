@@ -1,7 +1,6 @@
 'use client';
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
@@ -9,21 +8,14 @@ import { ChevronDown, Image as ImageIcon, ListVideo, Moon, Sparkles, Sun, Wallet
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { setLogoutIntent } from '@/lib/logout-intent';
 import { usePathname } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
-import {
-  clearLastKnownAccount,
-  readLastKnownUserId,
-  writeLastKnownUserId,
-  writeLastKnownWallet,
-} from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
-import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
+import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
+import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
 
 function resolveLocalizedHref(href: LocalizedLinkHref): string {
   if (typeof href === 'string') {
@@ -65,18 +57,10 @@ const GUEST_MOBILE_NAV_ICONS = {
   jobs: ListVideo,
 } as const;
 
-async function getSupabaseClient() {
-  const { supabase } = await import('@/lib/supabaseClient');
-  return supabase;
-}
-
 export function HeaderBar() {
   const { locale, t } = useI18n();
   const pathname = usePathname();
-  const [email, setEmail] = useState<string | null>(null);
-  const [authResolved, setAuthResolved] = useState(false);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { email, authResolved, wallet, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -141,149 +125,10 @@ export function HeaderBar() {
     }
     window.localStorage.setItem(themeStorageKey, nextTheme);
   };
-  useEffect(() => {
-    let mounted = true;
-    const fetchAccountState = async (token?: string | null, userId?: string | null) => {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      try {
-        const [walletRes, adminRes] = await Promise.all([
-          fetch('/api/wallet', { headers, cache: 'no-store' }),
-          fetch('/api/admin/access', { headers, cache: 'no-store' }),
-        ]);
-        const walletJson = await walletRes.json().catch(() => null);
-        const adminJson = await adminRes.json().catch(() => null);
-        if (!mounted) return;
-        const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
-        setIsAdmin(nextAdmin);
-        if (walletRes.ok) {
-          const nextBalance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
-          if (nextBalance !== null) {
-            setWallet({ balance: nextBalance });
-            const nextCurrency = typeof walletJson?.currency === 'string' ? walletJson.currency : undefined;
-            writeLastKnownWallet(
-              { balance: nextBalance, currency: nextCurrency },
-              userId ?? readLastKnownUserId()
-            );
-          }
-        }
-      } catch {
-        // Keep last known values on transient failures.
-      }
-    };
-    const handleInvalidate = async () => {
-      const session = await readBrowserSession();
-      const userId = session?.user?.id ?? null;
-      if (userId) {
-        writeLastKnownUserId(userId);
-      } else {
-        setWallet(null);
-        setIsAdmin(false);
-        return;
-      }
-      await fetchAccountState(session?.access_token, userId);
-    };
-    let subscription: { subscription: { unsubscribe: () => void } } | null = null;
-    if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
-      setEmail(null);
-      setWallet(null);
-      setIsAdmin(false);
-      setAuthResolved(true);
-      window.addEventListener('wallet:invalidate', handleInvalidate);
-      return () => {
-        mounted = false;
-        window.removeEventListener('wallet:invalidate', handleInvalidate);
-      };
-    }
-    void getSupabaseClient()
-      .then(async (supabase) => {
-        if (!mounted) return;
-        const session = await readBrowserSession();
-        if (!mounted) return;
-        const userId = session?.user?.id ?? null;
-        if (userId) {
-          writeLastKnownUserId(userId);
-        }
-        setEmail(session?.user?.email ?? null);
-        if (!userId) {
-          setWallet(null);
-          setIsAdmin(false);
-        }
-        setAuthResolved(true);
-        if (userId) {
-          void fetchAccountState(session?.access_token, userId);
-        }
-        const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (!mounted) return;
-          const eventType = event as string;
-          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-            clearLastKnownAccount();
-            writeLastKnownUserId(null);
-            setEmail(null);
-            setWallet(null);
-            setIsAdmin(false);
-            setAuthResolved(true);
-            return;
-          }
-          const userId = session?.user?.id ?? null;
-          if (userId) {
-            writeLastKnownUserId(userId);
-          } else {
-            setWallet(null);
-            setIsAdmin(false);
-          }
-          setEmail(session?.user?.email ?? null);
-          setAuthResolved(true);
-          if (userId) {
-            void fetchAccountState(session?.access_token, userId);
-          }
-        });
-        subscription = sub;
-      })
-      .catch(() => {
-        if (mounted) {
-          setEmail(null);
-          setWallet(null);
-          setIsAdmin(false);
-          setAuthResolved(true);
-        }
-      });
-    window.addEventListener('wallet:invalidate', handleInvalidate);
-    return () => {
-      mounted = false;
-      subscription?.subscription.unsubscribe();
-      window.removeEventListener('wallet:invalidate', handleInvalidate);
-    };
-  }, []);
-
-  const sendSignOutRequest = () => {
-    void getSupabaseClient()
-      .then((supabase) => supabase.auth.signOut())
-      .catch(() => undefined);
-    const payload = JSON.stringify({});
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-      const blob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon('/api/auth/signout', blob);
-    } else {
-      void fetch('/api/auth/signout', {
-        method: 'POST',
-        credentials: 'include',
-        keepalive: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-      }).catch(() => undefined);
-    }
-  };
 
   const handleSignOut = () => {
     setAccountMenuOpen(false);
-    setLogoutIntent();
-    setEmail(null);
-    setWallet(null);
-    setIsAdmin(false);
-    clearLastKnownAccount();
-    writeLastKnownUserId(null);
-    sendSignOutRequest();
-    window.location.href = '/';
+    signOut();
   };
 
   const openWalletPrompt = () => {
@@ -477,7 +322,7 @@ export function HeaderBar() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </Button>
-          <LogoMark />
+          <HeaderLogoMark />
           <nav
             className="hidden items-center gap-7 text-sm font-medium text-text-secondary xl:flex"
             aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}
@@ -969,15 +814,5 @@ export function HeaderBar() {
       ) : null}
       <ReconsentPrompt enabled={authResolved && isAuthenticated} />
     </>
-  );
-}
-
-function LogoMark() {
-  const { t } = useI18n();
-  return (
-    <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
-      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} className="shrink-0" priority />
-      <span className="text-sm font-semibold tracking-normal text-text-primary sm:text-lg">MaxVideoAI</span>
-    </Link>
   );
 }

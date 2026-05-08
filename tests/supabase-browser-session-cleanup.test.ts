@@ -7,7 +7,7 @@ const cleanupPath = 'frontend/src/lib/supabase-auth-cleanup.ts';
 const browserSessionCallSites = [
   'frontend/src/lib/authFetch.ts',
   'frontend/src/hooks/useRequireAuth.ts',
-  'frontend/components/HeaderBar.tsx',
+  'frontend/components/header/useHeaderAccountState.ts',
   'frontend/components/auth/PublicSessionWatchdog.tsx',
   'frontend/components/marketing/MarketingNav.tsx',
   'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts',
@@ -32,7 +32,7 @@ for (const file of browserSessionCallSites) {
     const source = readFileSync(file, 'utf8');
     assert.match(
       source,
-      /clearStaleBrowserAuthState|readBrowserSession/,
+      /clearStaleBrowserAuthState|readBrowserSession|authFetch/,
       `${file} should use the shared stale auth cleanup helper`
     );
   });
