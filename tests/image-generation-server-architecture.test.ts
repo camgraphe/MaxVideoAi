@@ -9,22 +9,26 @@ const existingJobResponsePath = join(root, 'frontend/src/server/images/existing-
 const referenceNormalizationPath = join(root, 'frontend/src/server/images/image-reference-normalization.ts');
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
+const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
 
 const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
 const referenceNormalizationSource = readFileSync(referenceNormalizationPath, 'utf8');
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
+const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
 
 test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');
   assert.ok(existsSync(referenceNormalizationPath), 'image reference normalization should live in a focused module');
   assert.ok(existsSync(initialJobPath), 'atomic initial image job creation should live in a focused module');
   assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
+  assert.ok(existsSync(providerPayloadPath), 'provider payload parsing should live in a focused module');
   assert.match(executorSource, /from '\.\/existing-image-job-response'/);
   assert.match(executorSource, /from '\.\/image-reference-normalization'/);
   assert.match(executorSource, /from '\.\/image-initial-job'/);
   assert.match(executorSource, /from '\.\/image-generation-error'/);
+  assert.match(executorSource, /from '\.\/image-provider-payload'/);
   assert.match(executorSource, /export \{ buildResponseFromExistingJob \} from '\.\/existing-image-job-response'/);
   assert.match(executorSource, /export \{ ImageGenerationExecutionError \} from '\.\/image-generation-error'/);
 });
@@ -40,9 +44,14 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /reserveWalletChargeInExecutor/, 'wallet reservation belongs in image-initial-job.ts');
   assert.doesNotMatch(executorSource, /async function insertProvisionalImageJob\(/, 'provisional job insert belongs in image-initial-job.ts');
   assert.doesNotMatch(executorSource, /export class ImageGenerationExecutionError/, 'execution error contract belongs in image-generation-error.ts');
+  assert.doesNotMatch(executorSource, /function normalizeUrl\(/, 'provider URL normalization belongs in image-provider-payload.ts');
+  assert.doesNotMatch(executorSource, /function sanitizeCharacterReferences\(/, 'character reference sanitizing belongs in image-provider-payload.ts');
+  assert.doesNotMatch(executorSource, /function buildCharacterReferencePrompt\(/, 'character reference prompt building belongs in image-provider-payload.ts');
+  assert.doesNotMatch(executorSource, /function extractImages\(/, 'provider image extraction belongs in image-provider-payload.ts');
+  assert.doesNotMatch(executorSource, /function parseRequestId\(/, 'provider request id parsing belongs in image-provider-payload.ts');
 
   const lineCount = executorSource.split('\n').length;
-  assert.ok(lineCount <= 1220, `image generation executor should stay below 1220 lines after initial job extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1110, `image generation executor should stay below 1110 lines after provider payload extraction, got ${lineCount}`);
 });
 
 test('existing image job response module exposes the expected contract', () => {
@@ -61,4 +70,9 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(initialJobSource, /withDbTransaction/);
   assert.match(initialJobSource, /reserveWalletChargeInExecutor/);
   assert.match(errorSource, /export class ImageGenerationExecutionError/);
+  assert.match(providerPayloadSource, /export function normalizeProviderImageUrl/);
+  assert.match(providerPayloadSource, /export function sanitizeCharacterReferences/);
+  assert.match(providerPayloadSource, /export function buildCharacterReferencePrompt/);
+  assert.match(providerPayloadSource, /export function extractImages/);
+  assert.match(providerPayloadSource, /export function parseRequestId/);
 });
