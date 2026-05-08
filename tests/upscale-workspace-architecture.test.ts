@@ -10,8 +10,11 @@ const typesPath = join(root, 'frontend/src/components/tools/upscale/_lib/upscale
 const helpersPath = join(root, 'frontend/src/components/tools/upscale/_lib/upscale-workspace-helpers.ts');
 const libraryHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleLibraryAssets.ts');
 const pricingHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscalePricingPreview.ts');
+const previewScrollerHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscalePreviewScroller.ts');
 const recentJobsHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleRecentJobs.ts');
 const sourceMediaHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleSourceMedia.ts');
+const controlsPath = join(root, 'frontend/src/components/tools/upscale/_components/upscale-workspace-controls.tsx');
+const heroSummaryCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleHeroSummaryCard.tsx');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -21,16 +24,22 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(helpersPath), 'upscale workspace helper logic should live in a colocated helper module');
   assert.ok(existsSync(libraryHookPath), 'upscale library asset loading should live in a colocated hook');
   assert.ok(existsSync(pricingHookPath), 'upscale pricing preview should live in a colocated hook');
+  assert.ok(existsSync(previewScrollerHookPath), 'upscale preview scroller should live in a colocated hook');
   assert.ok(existsSync(recentJobsHookPath), 'upscale recent jobs orchestration should live in a colocated hook');
   assert.ok(existsSync(sourceMediaHookPath), 'upscale source media orchestration should live in a colocated hook');
+  assert.ok(existsSync(controlsPath), 'upscale workspace controls should live in colocated components');
+  assert.ok(existsSync(heroSummaryCardPath), 'upscale hero summary should live in a colocated component');
 
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-copy'/, 'workspace should import upscale copy');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-types'/, 'workspace should import upscale local types');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-helpers'/, 'workspace should import upscale helpers');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleLibraryAssets'/, 'workspace should import library hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscalePricingPreview'/, 'workspace should import pricing hook');
+  assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscalePreviewScroller'/, 'workspace should import preview scroller hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleRecentJobs'/, 'workspace should import recent jobs hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleSourceMedia'/, 'workspace should import source media hook');
+  assert.match(workspaceSource, /from '\.\/upscale\/_components\/upscale-workspace-controls'/, 'workspace should import workspace controls');
+  assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleHeroSummaryCard'/, 'workspace should import hero summary card');
 });
 
 test('upscale workspace does not regain extracted ownership', () => {
@@ -51,9 +60,14 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /mediaTypeFromMime/, 'source media MIME detection belongs in useUpscaleSourceMedia');
   assert.doesNotMatch(workspaceSource, /new window\.Image/, 'source image dimension hydration belongs in useUpscaleSourceMedia');
   assert.doesNotMatch(workspaceSource, /function selectLibraryAsset\(/, 'library source selection belongs in useUpscaleSourceMedia');
+  assert.doesNotMatch(workspaceSource, /function Label\(/, 'workspace labels belong in upscale workspace controls');
+  assert.doesNotMatch(workspaceSource, /function SegmentButton\(/, 'workspace segment buttons belong in upscale workspace controls');
+  assert.doesNotMatch(workspaceSource, /requestAnimationFrame/, 'preview centering belongs in useUpscalePreviewScroller');
+  assert.doesNotMatch(workspaceSource, /scrollLeft/, 'preview scroll position belongs in useUpscalePreviewScroller');
+  assert.doesNotMatch(workspaceSource, /rounded-\[20px\] border border-border bg-surface-glass-90/, 'hero summary card belongs in UpscaleHeroSummaryCard');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1060, `UpscaleWorkspace should stay below 1060 lines after source media hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1000, `UpscaleWorkspace should stay below 1000 lines after preview control extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
@@ -62,8 +76,11 @@ test('upscale helper modules expose the expected workspace contract', () => {
   const helpersSource = readFileSync(helpersPath, 'utf8');
   const libraryHookSource = readFileSync(libraryHookPath, 'utf8');
   const pricingHookSource = readFileSync(pricingHookPath, 'utf8');
+  const previewScrollerHookSource = readFileSync(previewScrollerHookPath, 'utf8');
   const recentJobsHookSource = readFileSync(recentJobsHookPath, 'utf8');
   const sourceMediaHookSource = readFileSync(sourceMediaHookPath, 'utf8');
+  const controlsSource = readFileSync(controlsPath, 'utf8');
+  const heroSummaryCardSource = readFileSync(heroSummaryCardPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_UPSCALE_COPY =/, 'copy module should export default copy');
 
@@ -99,6 +116,9 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(pricingHookSource, /buildUpscalePricingPreview/, 'pricing hook should build the preview');
   assert.match(pricingHookSource, /readVideoPricingMetadata/, 'pricing hook should load video metadata');
   assert.match(pricingHookSource, /BillingProductResponse/, 'pricing hook should parse billing products');
+  assert.match(previewScrollerHookSource, /export function useUpscalePreviewScroller/, 'preview scroller hook should be exported');
+  assert.match(previewScrollerHookSource, /requestAnimationFrame/, 'preview scroller hook should center zoomed previews');
+  assert.match(previewScrollerHookSource, /scrollLeft/, 'preview scroller hook should own horizontal scroll positioning');
   assert.match(recentJobsHookSource, /export function useUpscaleRecentJobs/, 'recent jobs hook should be exported');
   assert.match(recentJobsHookSource, /useInfiniteJobs\(12, \{ surface: 'upscale' \}\)/, 'recent jobs hook should own the upscale feed');
   assert.match(recentJobsHookSource, /getJobStatus/, 'recent jobs hook should poll pending jobs');
@@ -107,4 +127,8 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(sourceMediaHookSource, /uploadSourceFile/, 'source media hook should own source uploads');
   assert.match(sourceMediaHookSource, /mediaTypeFromMime/, 'source media hook should own MIME detection');
   assert.match(sourceMediaHookSource, /new window\.Image/, 'source media hook should hydrate image dimensions');
+  assert.match(controlsSource, /export function Label/, 'workspace label component should be exported');
+  assert.match(controlsSource, /export function SegmentButton/, 'workspace segment button should be exported');
+  assert.match(heroSummaryCardSource, /export function UpscaleHeroSummaryCard/, 'hero summary card should be exported');
+  assert.match(heroSummaryCardSource, /WandSparkles/, 'hero summary card should own its action icon');
 });

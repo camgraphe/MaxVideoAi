@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useMemo, useState, type PointerEvent } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -49,6 +49,8 @@ import type {
 } from '@/types/tools-upscale';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
+import { Label, SegmentButton } from './upscale/_components/upscale-workspace-controls';
+import { UpscaleHeroSummaryCard } from './upscale/_components/UpscaleHeroSummaryCard';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
 import {
   clampComparePosition,
@@ -66,6 +68,7 @@ import {
 } from './upscale/_lib/upscale-workspace-helpers';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
+import { useUpscalePreviewScroller } from './upscale/_hooks/useUpscalePreviewScroller';
 import { useUpscaleRecentJobs } from './upscale/_hooks/useUpscaleRecentJobs';
 import { useUpscaleSourceMedia } from './upscale/_hooks/useUpscaleSourceMedia';
 import type {
@@ -75,37 +78,6 @@ import type {
   RecentUpscaleMedia,
   UploadedAsset,
 } from './upscale/_lib/upscale-workspace-types';
-
-function Label({ children }: { children: React.ReactNode }) {
-  return <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">{children}</span>;
-}
-
-function SegmentButton({
-  active,
-  disabled,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`inline-flex min-h-[46px] items-center justify-center gap-2 rounded-input border px-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-        active
-          ? 'border-brand bg-brand text-on-brand shadow-card'
-          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 export default function UpscaleWorkspace() {
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -149,7 +121,6 @@ export default function UpscaleWorkspace() {
   });
   const [activeRecentGroupId, setActiveRecentGroupId] = useState<string | null>(null);
   const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
-  const previewScrollerRef = useRef<HTMLDivElement | null>(null);
 
   const engines = useMemo(() => listUpscaleToolEngines(mediaType), [mediaType]);
   const engine = useMemo(() => engines.find((entry) => entry.id === engineId) ?? engines[0], [engineId, engines]);
@@ -191,6 +162,13 @@ export default function UpscaleWorkspace() {
   const zoomCanvasWidth = activePreviewMode === 'source' ? sourceWidth : outputWidth;
   const zoomCanvasHeight = activePreviewMode === 'source' ? sourceHeight : outputHeight;
   const mediaTypeLabel = mediaType === 'video' ? 'Video' : 'Image';
+  const previewScrollerRef = useUpscalePreviewScroller({
+    activePreviewMode,
+    isPixelZoom,
+    previewZoom,
+    resultPreviewUrl,
+    sourcePreviewUrl,
+  });
   const { mutate, recentGroups } = useUpscaleRecentJobs({
     hasResult,
     mediaType,
@@ -218,21 +196,6 @@ export default function UpscaleWorkspace() {
     setUploading,
     source,
   });
-
-  useEffect(() => {
-    const scroller = previewScrollerRef.current;
-    if (!scroller) return undefined;
-    if (!isPixelZoom) {
-      scroller.scrollLeft = 0;
-      scroller.scrollTop = 0;
-      return undefined;
-    }
-    const frame = window.requestAnimationFrame(() => {
-      scroller.scrollLeft = Math.max(0, (scroller.scrollWidth - scroller.clientWidth) / 2);
-      scroller.scrollTop = Math.max(0, (scroller.scrollHeight - scroller.clientHeight) / 2);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [activePreviewMode, isPixelZoom, previewZoom, resultPreviewUrl, sourcePreviewUrl]);
 
   function changeMediaType(next: UpscaleMediaType) {
     setMediaType(next);
@@ -555,43 +518,18 @@ export default function UpscaleWorkspace() {
                   <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">{copy.subtitle}</p>
                 </div>
 
-                <div className="rounded-[20px] border border-border bg-surface-glass-90 p-5 shadow-card backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-brand text-on-brand">
-                      <WandSparkles className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-base font-semibold text-text-primary">{engine?.label ?? 'Upscale engine'}</p>
-                        <span className="rounded-full border border-success-border bg-success-bg px-2.5 py-1 text-[11px] font-semibold text-success">
-                          Active
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-5 grid grid-cols-4 gap-2 text-center">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Mode</p>
-                      <p className="mt-1 text-sm font-semibold text-text-primary">{mode === 'target' ? targetResolution : `${upscaleFactor}x`}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Type</p>
-                      <p className="mt-1 text-sm font-semibold text-text-primary">{mediaTypeLabel}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Format</p>
-                      <p className="mt-1 text-sm font-semibold text-text-primary">{outputFormat.toUpperCase()}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Price</p>
-                      <p className="mt-1 text-sm font-semibold text-text-primary">{priceLabel}</p>
-                    </div>
-                  </div>
-                  <Button className="mt-5 w-full rounded-[10px] bg-brand py-3 text-on-brand hover:bg-brand-hover" onClick={handleRun} disabled={!canRun}>
-                    {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-                    {running ? copy.running : copy.run}
-                  </Button>
-                </div>
+                <UpscaleHeroSummaryCard
+                  canRun={canRun}
+                  engineLabel={engine?.label ?? 'Upscale engine'}
+                  mediaTypeLabel={mediaTypeLabel}
+                  modeLabel={mode === 'target' ? targetResolution : `${upscaleFactor}x`}
+                  onRun={handleRun}
+                  outputFormatLabel={outputFormat.toUpperCase()}
+                  priceLabel={priceLabel}
+                  runLabel={copy.run}
+                  running={running}
+                  runningLabel={copy.running}
+                />
               </div>
             </section>
 
