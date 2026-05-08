@@ -5,6 +5,7 @@ import test from 'node:test';
 const composerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts';
 const engineModeHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts';
 const generationRunnerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts';
+const generationIterationRunnerPath = 'frontend/app/(core)/(workspace)/app/_hooks/workspace-generation-iteration-runner.ts';
 const walletPreflightHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceWalletPreflight.ts';
 
 test('workspace composer engine and mode orchestration is split from composer field handlers', () => {
@@ -38,19 +39,26 @@ test('workspace generation wallet preflight is split from generation submission 
   assert.equal(existsSync(walletPreflightHookPath), true);
 
   const generationRunnerSource = readFileSync(generationRunnerHookPath, 'utf8');
+  const generationIterationRunnerSource = readFileSync(generationIterationRunnerPath, 'utf8');
   const walletPreflightSource = readFileSync(walletPreflightHookPath, 'utf8');
 
   assert.match(generationRunnerSource, /import \{ useWorkspaceWalletPreflight \} from '\.\/useWorkspaceWalletPreflight';/);
   assert.match(generationRunnerSource, /useWorkspaceWalletPreflight\(\{/);
+  assert.match(generationRunnerSource, /import \{ runWorkspaceGenerationIteration \} from '\.\/workspace-generation-iteration-runner';/);
 
   assert.doesNotMatch(generationRunnerSource, /CURRENCY_LOCALE/);
   assert.doesNotMatch(generationRunnerSource, /authFetch\('\/api\/wallet'\)/);
   assert.doesNotMatch(generationRunnerSource, /const presentInsufficientFunds =/);
   assert.doesNotMatch(generationRunnerSource, /const unitCostCents =/);
+  assert.doesNotMatch(generationRunnerSource, /const poll = async/, 'generation polling belongs in workspace-generation-iteration-runner');
+  assert.doesNotMatch(generationRunnerSource, /window\.setInterval/, 'progress timers belong in workspace-generation-iteration-runner');
 
   assert.match(walletPreflightSource, /export function useWorkspaceWalletPreflight/);
   assert.match(walletPreflightSource, /CURRENCY_LOCALE/);
   assert.match(walletPreflightSource, /authFetch\('\/api\/wallet'\)/);
   assert.match(walletPreflightSource, /presentInsufficientFunds/);
   assert.match(walletPreflightSource, /verifyWalletBalance/);
+  assert.match(generationIterationRunnerSource, /export async function runWorkspaceGenerationIteration/);
+  assert.match(generationIterationRunnerSource, /const poll = async/);
+  assert.match(generationIterationRunnerSource, /window\.setInterval/);
 });
