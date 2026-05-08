@@ -15,11 +15,9 @@ import {
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
-import { MissingFamilyCard } from '@/components/admin/playlists/MissingFamilyCard';
-import { PlaylistRailCard } from '@/components/admin/playlists/PlaylistRailCard';
+import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
 import { StatusPill } from '@/components/admin/playlists/PlaylistStatusPill';
 import {
-  GROUP_LABELS,
   buildFamilyHelpers,
   buildHelperFallbackLabel,
   buildPlaylistUpdateFromItems,
@@ -671,144 +669,21 @@ export function PlaylistsManager({
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="space-y-6">
-          {groupedPlaylists.runtime.length ? (
-            <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.runtime}</h2>
-                <span className="text-xs text-text-muted">{groupedPlaylists.runtime.length}</span>
-              </div>
-              <div className="space-y-2">
-                {groupedPlaylists.runtime.map((playlist) => (
-                  <PlaylistRailCard
-                    key={playlist.id}
-                    playlist={playlist}
-                    isActive={playlist.id === selectedId}
-                    onSelect={handleSelectPlaylist}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setShowFamilyCollections((current) => !current)}
-                className="flex min-w-0 items-center gap-2 text-left"
-              >
-                <svg
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                  className={clsx('h-4 w-4 text-text-muted transition-transform', showFamilyCollections ? 'rotate-90' : 'rotate-0')}
-                >
-                  <path
-                    d="M7.5 5.5 12 10l-4.5 4.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                  />
-                </svg>
-                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.family}</h2>
-              </button>
-              <div className="flex items-center gap-2 text-xs text-text-muted">
-                {emptyFamilyCount ? <span>{emptyFamilyCount} empty</span> : null}
-                <span>{familyHelpers.length}</span>
-              </div>
-            </div>
-            {showFamilyCollections ? (
-              <div className="space-y-2">
-                {familyHelpers.map((helper) => {
-                  const playlist = helper.playlistId
-                    ? groupedPlaylists.family.find((entry) => entry.id === helper.playlistId) ?? null
-                    : null;
-                  if (playlist) {
-                    return (
-                      <PlaylistRailCard
-                        key={playlist.id}
-                        playlist={playlist}
-                        isActive={playlist.id === selectedId}
-                        onSelect={handleSelectPlaylist}
-                      />
-                    );
-                  }
-                  return (
-                    <MissingFamilyCard
-                      key={helper.familyId}
-                      helper={helper}
-                      onCreate={handleCreateMissingFamilyPlaylists}
-                      onSeed={handleSeedFamilyPlaylist}
-                      pending={isPending}
-                    />
-                  );
-                })}
-              </div>
-            ) : null}
-          </section>
-
-          {groupedPlaylists.model.length ? (
-            <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModelCollections((current) => !current)}
-                  className="flex min-w-0 items-center gap-2 text-left"
-                >
-                  <svg
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                    className={clsx('h-4 w-4 text-text-muted transition-transform', showModelCollections ? 'rotate-90' : 'rotate-0')}
-                  >
-                    <path
-                      d="M7.5 5.5 12 10l-4.5 4.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.8"
-                    />
-                  </svg>
-                  <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.model}</h2>
-                </button>
-                <span className="text-xs text-text-muted">{groupedPlaylists.model.length}</span>
-              </div>
-              {showModelCollections ? (
-                <div className="space-y-2">
-                  {groupedPlaylists.model.map((playlist) => (
-                    <PlaylistRailCard
-                      key={playlist.id}
-                      playlist={playlist}
-                      isActive={playlist.id === selectedId}
-                      onSelect={handleSelectPlaylist}
-                    />
-                  ))}
-                </div>
-              ) : null}
-            </section>
-          ) : null}
-
-          {showDraftCollections && groupedPlaylists.draft.length ? (
-            <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.draft}</h2>
-                <span className="text-xs text-text-muted">{groupedPlaylists.draft.length}</span>
-              </div>
-              <div className="space-y-2">
-                {groupedPlaylists.draft.map((playlist) => (
-                  <PlaylistRailCard
-                    key={playlist.id}
-                    playlist={playlist}
-                    isActive={playlist.id === selectedId}
-                    onSelect={handleSelectPlaylist}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </aside>
+        <PlaylistsSidebar
+          emptyFamilyCount={emptyFamilyCount}
+          familyHelpers={familyHelpers}
+          groupedPlaylists={groupedPlaylists}
+          onCreateMissingFamilyPlaylists={handleCreateMissingFamilyPlaylists}
+          onSeedFamilyPlaylist={handleSeedFamilyPlaylist}
+          onSelectPlaylist={handleSelectPlaylist}
+          onToggleFamilyCollections={() => setShowFamilyCollections((current) => !current)}
+          onToggleModelCollections={() => setShowModelCollections((current) => !current)}
+          pending={isPending}
+          selectedId={selectedId}
+          showDraftCollections={showDraftCollections}
+          showFamilyCollections={showFamilyCollections}
+          showModelCollections={showModelCollections}
+        />
 
         <section className="space-y-6">
           {selectedPlaylist ? (
