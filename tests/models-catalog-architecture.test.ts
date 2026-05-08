@@ -6,15 +6,19 @@ import test from 'node:test';
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts');
+const sectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-sections.ts');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
+const sectionsSource = readFileSync(sectionsPath, 'utf8');
 
 test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(pagePath), 'models catalog route component should exist');
   assert.ok(existsSync(utilsPath), 'models catalog helper module should exist');
+  assert.ok(existsSync(sectionsPath), 'models catalog section data module should exist');
 
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-utils'/, 'route should import catalog helpers');
+  assert.match(pageSource, /from '\.\/_lib\/models-catalog-sections'/, 'route should import section builders');
   assert.match(pageSource, /export async function generateModelsMetadata/, 'route should keep metadata orchestration');
   assert.match(pageSource, /export default async function ModelsCatalogPage/, 'route should keep page orchestration');
 
@@ -24,9 +28,12 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.doesNotMatch(pageSource, /applyDisplayedPriceMarginCents/, 'route should not own pricing display math');
   assert.doesNotMatch(pageSource, /const MODELS_SCOPE_DEFAULTS =/, 'localized scope defaults belong in the helper module');
   assert.doesNotMatch(pageSource, /const USE_CASE_MAP =/, 'model value sentence maps belong in the helper module');
+  assert.doesNotMatch(pageSource, /Texte→image/, 'localized outcome tiles belong in the section data module');
+  assert.doesNotMatch(pageSource, /const fallbackFaqItemsByScope =/, 'fallback FAQ data belongs in the section data module');
+  assert.doesNotMatch(pageSource, /const fallbackReliabilityItemsByScope =/, 'fallback reliability data belongs in the section data module');
 
   const lineCount = pageSource.split('\n').length;
-  assert.ok(lineCount <= 1200, `ModelsCatalogPage should stay below 1200 lines after helper extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 850, `ModelsCatalogPage should stay below 850 lines after section data extraction, got ${lineCount}`);
 });
 
 test('models catalog helper module exposes the route contract', () => {
@@ -69,4 +76,15 @@ test('models catalog helper module exposes the route contract', () => {
   assert.match(utilsSource, /export type ModelsPageScope/, 'ModelsPageScope should be exported');
   assert.match(utilsSource, /export type EngineScore/, 'EngineScore should be exported');
   assert.match(utilsSource, /export type ScopePageDefaults/, 'ScopePageDefaults should be exported');
+
+  for (const exportName of [
+    'buildModelsOutcomeTiles',
+    'buildModelsFaqItems',
+    'buildModelsReliabilityItems',
+  ]) {
+    assert.match(sectionsSource, new RegExp(`export function ${exportName}`), `${exportName} should be exported`);
+  }
+  assert.match(sectionsSource, /export type ModelsOutcomeTile/, 'ModelsOutcomeTile should be exported');
+  assert.match(sectionsSource, /Texte→image/, 'section module should own localized outcome fallback data');
+  assert.match(sectionsSource, /FALLBACK_FAQ_ITEMS_BY_SCOPE/, 'section module should own fallback FAQ data');
 });
