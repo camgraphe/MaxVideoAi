@@ -1,26 +1,13 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
-import { useEngines, useInfiniteJobs, getJobStatus } from '@/lib/api';
-import type { EngineCaps } from '@/types/engines';
-import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
-import { ENV as CLIENT_ENV } from '@/lib/env';
+import { useCallback } from 'react';
+import { getJobStatus } from '@/lib/api';
 import type { VideoGroup } from '@/types/video-groups';
-import { useResultProvider } from '@/hooks/useResultProvider';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useI18n } from '@/lib/i18n/I18nProvider';
-import {
-  getLocalizedWorkflowCopy,
-  normalizeUiLocale,
-} from '@/lib/ltx-localization';
 import { WorkspaceAppShell } from './_components/WorkspaceAppShell';
 import { WorkspaceBootSurface } from './_components/WorkspaceBootSurface';
 import { WorkspaceComposerSurface } from './_components/WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
-import {
-  DEFAULT_WORKSPACE_COPY,
-  mergeCopy,
-} from './_lib/workspace-copy';
+import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
 import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
@@ -38,46 +25,24 @@ import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState'
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
-  const { data, error: enginesError, isLoading } = useEngines();
-  const engines = useMemo(() => data?.engines ?? [], [data]);
-  const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
-  const { user, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
-  const engineIdByLabel = useMemo(() => {
-    const map = new Map<string, string>();
-    engines.forEach((engine) => {
-      map.set(engine.label.toLowerCase(), engine.id);
-    });
-    return map;
-  }, [engines]);
-  const recentJobs = useMemo(
-    () => (latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? []).filter((job) => job.surface !== 'audio'),
-    [latestJobsPages]
-  );
-  const provider = useResultProvider();
-  const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
-  const { t, locale } = useI18n();
-  const uiLocale = normalizeUiLocale(locale);
-  const workflowCopy = useMemo(() => getLocalizedWorkflowCopy(uiLocale), [uiLocale]);
-  const rawWorkspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY);
-  const workspaceCopy = useMemo(
-    () =>
-      mergeCopy(
-        DEFAULT_WORKSPACE_COPY,
-        (rawWorkspaceCopy ?? {}) as Partial<typeof DEFAULT_WORKSPACE_COPY>
-      ),
-    [rawWorkspaceCopy]
-  );
-  const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
-    DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
-  const formatTakeLabel = useCallback(
-    (current: number, total: number) => {
-      if (total <= 1) return '';
-      const template = processingCopy.takeLabel ?? DEFAULT_PROCESSING_COPY.takeLabel;
-      if (!template) return '';
-      return template.replace('{current}', `${current}`).replace('{total}', `${total}`);
-    },
-    [processingCopy.takeLabel]
-  );
+  const {
+    authLoading,
+    authStatus,
+    engineIdByLabel,
+    engineMap,
+    engines,
+    enginesError,
+    formatTakeLabel,
+    isLoading,
+    mutateLatestJobs,
+    provider,
+    recentJobs,
+    showCenterGallery,
+    uiLocale,
+    user,
+    workflowCopy,
+    workspaceCopy,
+  } = useWorkspaceAppBootstrap();
 
   const {
     form,
@@ -278,14 +243,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
   }, []);
-
-  const engineMap = useMemo(() => {
-    const map = new Map<string, EngineCaps>();
-    engines.forEach((entry) => {
-      map.set(entry.id, entry);
-    });
-    return map;
-  }, [engines]);
 
   const {
     hydrateVideoSettingsFromJob,
