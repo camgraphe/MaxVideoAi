@@ -37,7 +37,7 @@ export const DEFAULT_BILLING_COPY = {
     captchaPrompt: 'Security check required before Checkout.',
     captchaComplete: 'Security check complete. Continue to payment.',
     captchaError: 'Security check unavailable. Try again.',
-    rateLimited: 'Too many payment attempts. Try again in {seconds}s.',
+    rateLimited: 'Too many payment attempts. Try again in {time}.',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',

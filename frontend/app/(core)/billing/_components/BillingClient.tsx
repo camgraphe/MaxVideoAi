@@ -21,6 +21,7 @@ import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
 import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
+import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 type LegacyCheckoutStripe = Stripe & {
@@ -246,7 +247,7 @@ export function BillingClient() {
         }
         if (response.status === 429) {
           const seconds = Number(payload?.retryAfterSeconds ?? 900);
-          setToast(copy.wallet.rateLimited.replace('{seconds}', String(seconds)));
+          setToast(formatRateLimitMessage(copy.wallet.rateLimited, seconds));
           return;
         }
         throw new Error(payload?.error ?? 'checkout_session_failed');
