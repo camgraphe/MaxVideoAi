@@ -32,6 +32,9 @@ export type MemberStatus = {
 
 export type BillingSession = {
   access_token?: string | null;
+  user?: {
+    id?: string | null;
+  } | null;
 } | null;
 
 export type TopupQuote = {

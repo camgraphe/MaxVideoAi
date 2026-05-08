@@ -12,10 +12,16 @@ test('library page loads media in bounded pages instead of fetching hundreds upf
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_lib/library-page-helpers.ts'),
     'utf8'
   );
+  const dataHookSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_hooks/useLibraryPageData.ts'),
+    'utf8'
+  );
 
   assert.match(helpersSource, /export const\s+LIBRARY_PAGE_SIZE\s*=\s*60/);
-  assert.match(clientSource, /limit=\$\{savedAssetLimit\}/);
-  assert.match(clientSource, /limit=\$\{recentOutputLimit\}/);
+  assert.match(helpersSource, /export function buildSavedAssetsKey/);
+  assert.match(helpersSource, /export function buildRecentOutputsKey/);
+  assert.match(dataHookSource, /savedAssetLimit/);
+  assert.match(dataHookSource, /recentOutputLimit/);
   assert.doesNotMatch(clientSource, /limit=200/);
 });
 

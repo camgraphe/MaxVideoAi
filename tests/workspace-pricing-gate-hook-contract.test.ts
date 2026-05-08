@@ -8,6 +8,10 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
     'utf8'
   );
+  const readyViewPath = path.join(
+    process.cwd(),
+    'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx'
+  );
   const hookPath = path.join(
     process.cwd(),
     'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate.ts'
@@ -25,19 +29,22 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
     'frontend/app/(core)/(workspace)/app/_components/WorkspaceRuntimeModals.tsx'
   );
 
+  assert.equal(fs.existsSync(readyViewPath), true);
   assert.equal(fs.existsSync(hookPath), true);
   assert.equal(fs.existsSync(topUpModalPath), true);
   assert.equal(fs.existsSync(authGateModalPath), true);
   assert.equal(fs.existsSync(runtimeModalsPath), true);
 
+  const readyViewSource = fs.readFileSync(readyViewPath, 'utf8');
   const hookSource = fs.readFileSync(hookPath, 'utf8');
   const topUpModalSource = fs.readFileSync(topUpModalPath, 'utf8');
   const authGateModalSource = fs.readFileSync(authGateModalPath, 'utf8');
   const runtimeModalsSource = fs.readFileSync(runtimeModalsPath, 'utf8');
 
   assert.match(appSource, /import \{ useWorkspacePricingGate \} from '\.\/_hooks\/useWorkspacePricingGate';/);
-  assert.match(appSource, /import \{ WorkspaceRuntimeModals \} from '\.\/_components\/WorkspaceRuntimeModals';/);
+  assert.match(appSource, /import \{ WorkspaceAppReadyView \} from '\.\/_components\/WorkspaceAppReadyView';/);
   assert.match(appSource, /useWorkspacePricingGate\(\{/);
+  assert.doesNotMatch(appSource, /WorkspaceRuntimeModals/);
 
   assert.doesNotMatch(appSource, /const \[preflight, setPreflight\] = useState/);
   assert.doesNotMatch(appSource, /const handleConfirmTopUp = useCallback/);
@@ -63,4 +70,6 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(runtimeModalsSource, /WorkspaceTopUpModal/);
   assert.match(runtimeModalsSource, /WorkspaceAuthGateModal/);
   assert.match(runtimeModalsSource, /AssetLibraryModal/);
+  assert.match(readyViewSource, /import \{ WorkspaceRuntimeModals \} from '\.\/WorkspaceRuntimeModals';/);
+  assert.match(readyViewSource, /<WorkspaceRuntimeModals/);
 });

@@ -210,6 +210,47 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
 
 export const LIBRARY_PAGE_SIZE = 60;
 
+export function buildSavedAssetsKey({
+  userId,
+  activeKind,
+  activeSource,
+  limit,
+}: {
+  userId: string | null | undefined;
+  activeKind: LibraryKind;
+  activeSource: SavedAssetSource;
+  limit: number;
+}) {
+  if (!userId) return null;
+  const params = new URLSearchParams({
+    limit: String(limit),
+    kind: activeKind,
+  });
+  if (activeSource !== 'all') {
+    params.set('source', activeSource);
+  }
+  return `/api/media-library/assets?${params.toString()}`;
+}
+
+export function buildRecentOutputsKey({
+  userId,
+  activeKind,
+  activeView,
+  limit,
+}: {
+  userId: string | null | undefined;
+  activeKind: LibraryKind;
+  activeView: LibraryView;
+  limit: number;
+}) {
+  if (!userId || activeView !== 'review') return null;
+  const params = new URLSearchParams({
+    limit: String(limit),
+    kind: activeKind,
+  });
+  return `/api/media-library/recent-outputs?${params.toString()}`;
+}
+
 export function formatTemplate(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce((result, [key, value]) => {
     return result.replaceAll(`{${key}}`, String(value));

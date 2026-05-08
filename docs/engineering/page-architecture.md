@@ -120,7 +120,7 @@ Keep serialization centralized to avoid inconsistent escaping.
 
 Before moving code:
 
-- run `npm run architecture:audit -- --min-lines 900` if you are choosing the next cleanup target
+- run `npm run architecture:audit -- --min-lines 500` if you are choosing the next cleanup target
 - identify behavior that must not change
 - find route params, redirects, and metadata coupling
 - check whether the file is server or client
@@ -133,3 +133,13 @@ After moving code:
 - smoke-test the route
 - compare important generated metadata/JSON-LD if the route is public
 - confirm localized paths still resolve
+
+## Current Line Caps
+
+Use tighter caps once a route has been split:
+
+- server `page.tsx` wrappers: usually 30-120 lines depending on metadata and redirects
+- client route wrappers: usually below 40 lines
+- route views: usually below 250-450 lines
+- focused section components: usually below 150-250 lines
+- large helper modules: allowed when they are pure and covered by contract tests, but still split when responsibilities diverge

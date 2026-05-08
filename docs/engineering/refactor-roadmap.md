@@ -1,56 +1,68 @@
 # Refactor Roadmap
 
-This roadmap turns large-file cleanup into small, testable PRs.
+This roadmap turns large-file cleanup into testable local batches or PRs.
 
 ## Audit Command
 
 Run the current large-file audit before choosing a refactor target:
 
 ```bash
-npm run architecture:audit -- --min-lines 900
+npm run architecture:audit -- --min-lines 500
 ```
 
 For scripts or Codex context, use JSON:
 
 ```bash
-npm run architecture:audit -- --json --min-lines 900
+npm run architecture:audit -- --json --min-lines 500
 ```
 
 The audit scans `frontend` source files, ignores build/generated folders, and sorts files by line count.
 
 ## Recently Completed
 
-The first architecture cleanup wave has landed:
+The architecture cleanup waves have landed across the main route categories:
 
-- Comparison detail page: split copy, helpers, overrides, types, and media/spec components.
-- Admin insights page: split route-local types, helpers, and panels.
-- Billing page: split route server wrapper, client orchestrator, wallet top-up panel, receipts panel, copy, types, helpers, Stripe Express Checkout, Turnstile, and analytics.
+- Workspace/app routes: shell, runtime modals, composer surface, generation runner, wallet preflight, assets/reference/Kling hooks, gallery/library contracts.
+- Jobs routes: jobs page shell, controller hooks, route types, and SEO/video route controllers.
+- Marketing/SEO routes: examples, blog posts, legal/marketing views, video watch pages, compare detail route modules.
+- Admin routes: dashboard helpers, insights panels, SEO cockpit, SEO GSC, engines view model, users list, user detail, and video SEO inventory.
+- Auth/login routes: login controller hooks and hydration/auth contracts.
+- Generate/API routes: provider dispatch, validation payloads, billing preflight, final persistence/response, request options, and media helpers.
+- Client workspace/billing/library routes: workspace app bootstrap, load-state, ready view, job refresh, and route-form hooks; billing session/receipts/top-up quote hooks; billing currency/top-up selection hooks; and library SWR/mutation hooks.
+- Admin audit/jobs routes: server pages now delegate filters, shortcut metrics, tables, and page views to route-local modules.
+- Localized docs index route: server page now delegates docs fallback loading, TOC view-models, section rendering, library/feedback sections, and JSON-LD builders to route-local modules.
 
-These areas now have contract tests:
+Representative contract tests:
 
 ```txt
 tests/compare-page-architecture.test.ts
 tests/admin-insights-architecture.test.ts
+tests/admin-user-detail-architecture.test.ts
 tests/billing-page-architecture.test.ts
+tests/jobs-page-architecture.test.ts
+tests/blog-post-route-architecture.test.ts
+tests/workspace-library-page-architecture.test.ts
+tests/workspace-app-client-architecture.test.ts
+tests/admin-audit-architecture.test.ts
+tests/admin-jobs-audit-architecture.test.ts
+tests/docs-index-route-architecture.test.ts
 ```
 
 ## Current High-Signal Candidates
 
-Snapshot from `npm run architecture:audit -- --min-lines 900` after the first cleanup wave:
+Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-05-08:
 
 | File | Lines | Recommended approach |
 | --- | ---: | --- |
 | `frontend/src/config/falEngines.ts` | 7677 | Split only with strong model-registry tests. High blast radius. |
-| `frontend/src/components/tools/CharacterBuilderWorkspace.tsx` | 3962 | Split into tool-local hooks, panels, preview/runtime modules. |
-| `frontend/app/api/generate/route.ts` | 3203 | Split request parsing, auth/preflight, provider dispatch, response projection. High blast radius. |
-| `frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx` | 1934 | Split catalog copy, filters, cards, and SEO-oriented sections. |
-| `frontend/src/components/tools/AngleWorkspace.tsx` | 1833 | Split tool state, canvas/runtime, prompt form, examples/results panels. |
-| `frontend/src/server/images/execute-image-generation.ts` | 1813 | Split validation, provider payloads, persistence, polling/projection. |
-| `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page.tsx` | 1609 | Split localized copy, ranking builders, schema helpers, route sections. |
-| `frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx` | 1660 | Continue route-local hook/component extraction with contract tests. |
-| `frontend/app/(core)/(workspace)/app/audio/AudioWorkspace.tsx` | 1559 | Split audio form state, provider options, uploads, preview/progress surfaces. |
-| `frontend/app/(core)/login/page.tsx` | 1135 | Low-risk next split: copy and auth/browser helpers first. |
-| `frontend/app/(core)/admin/pricing/page.tsx` | 921 | Low-risk next split: types, helpers, and card components. |
+| `frontend/middleware.ts` | 983 | Split locale/auth/legal helpers only with redirect regression tests. |
+| `frontend/src/lib/schema.ts` | 975 | Split schema builders by domain when touching SEO/schema work. |
+| `frontend/src/lib/pricing.ts` | 969 | Split pricing helpers only with pricing acceptance coverage. |
+| `frontend/lib/i18n/dictionaries.ts` | 958 | Split dictionary loading helpers carefully; localization blast radius. |
+| `frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts` | 896 | Split catalog copy/filter/metadata helpers. |
+| `frontend/app/api/jobs/route.ts` | 836 | Split handlers and query builders with API contract tests. |
+| `frontend/components/groups/CompositePreviewDock.tsx` | 818 | Split preview rendering, status controls, and media actions. |
+| `frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx` | 445 | Optional follow-up: extract `AssetLibraryBrowser` prop assembly if the page grows again. |
 
 Line counts change over time. Treat the table as a dated snapshot, not source of truth.
 
@@ -58,12 +70,7 @@ Line counts change over time. Treat the table as a dated snapshot, not source of
 
 Prefer this order unless product work changes the risk profile:
 
-1. Login page helpers and copy.
-2. Admin pricing cards/helpers.
-3. Tool workspace split, starting with Angle or Character Builder.
-4. Best-for usecase marketing page split.
-5. API/generate split with broader regression coverage.
-6. `falEngines.ts` registry split after a dedicated model-registry plan.
+1. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
 
 ## Definition Of Done
 
