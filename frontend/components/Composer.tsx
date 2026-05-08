@@ -3,139 +3,24 @@
 
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import type { Ref, ReactNode } from 'react';
-import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode, PreflightResponse } from '@/types/engines';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import {
-  AssetDropzone,
-  type AssetFieldConfig,
-  type AssetFieldRole,
-  type AssetSlotAttachment,
-  type AssetUploadMeta,
-} from '@/components/AssetDropzone';
+import { AssetDropzone } from '@/components/AssetDropzone';
+import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
+import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
+import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-export type ComposerAttachment = AssetSlotAttachment;
-export type { AssetFieldConfig, AssetFieldRole, AssetUploadMeta };
+import type { ComposerProps } from '@/components/composer/composer-types';
 
-export type MultiPromptScene = {
-  id: string;
-  prompt: string;
-  duration: number;
-};
-
-type ComposerModeToggle = {
-  mode: Mode | null;
-  label: string;
-  disabled?: boolean;
-  disabledReason?: string;
-};
-
-export type ComposerPromotedAction = {
-  id: string;
-  label: string;
-  tooltip?: string;
-  active: boolean;
-  icon: 'sparkles' | 'shield';
-  onToggle: () => void;
-  disabled?: boolean;
-};
-
-interface Props {
-  engine: EngineCaps;
-  caps?: CapabilityCaps;
-  prompt: string;
-  onPromptChange: (value: string) => void;
-  negativePrompt?: string;
-  onNegativePromptChange?: (value: string) => void;
-  price: number | null;
-  currency: string;
-  isLoading: boolean;
-  error?: string;
-  messages?: string[];
-  textareaRef?: Ref<HTMLTextAreaElement>;
-  onGenerate?: () => void;
-  iterations?: number;
-  preflight?: PreflightResponse | null;
-  promptField?: EngineInputField;
-  promptRequired: boolean;
-  promptPlaceholder?: string;
-  promptPlaceholderWithAsset?: string;
-  negativePromptField?: EngineInputField;
-  negativePromptRequired?: boolean;
-  assetFields: AssetFieldConfig[];
-  assets: Record<string, (ComposerAttachment | null)[]>;
-  onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
-  onAssetRemove?: (field: EngineInputField, index: number) => void;
-  onNotice?: (message: string) => void;
-  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
-  onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
-  settingsBar?: ReactNode;
-  modeToggles?: ComposerModeToggle[];
-  activeManualMode?: Mode | null;
-  onModeToggle?: (mode: Mode | null) => void;
-  promotedActions?: ComposerPromotedAction[];
-  multiPrompt?: {
-    enabled: boolean;
-    scenes: MultiPromptScene[];
-    totalDurationSec: number;
-    minDurationSec: number;
-    maxDurationSec: number;
-    onToggle: (enabled: boolean) => void;
-    onAddScene: () => void;
-    onRemoveScene: (id: string) => void;
-    onUpdateScene: (id: string, patch: Partial<Pick<MultiPromptScene, 'prompt' | 'duration'>>) => void;
-    error?: string | null;
-  } | null;
-  extraFields?: ReactNode;
-  afterAssets?: ReactNode;
-  disableGenerate?: boolean;
-  workflowNotice?: string | null;
-  generateLabel?: string;
-  generateLoadingLabel?: string;
-}
-
-const DEFAULT_COMPOSER_COPY = {
-  title: 'Composer',
-  subtitle: 'Enhance prompt • Non-destructive reruns',
-  badges: {
-    payg: 'Pay-as-you-go',
-    priceBefore: 'Price-before',
-    alwaysCurrent: 'Always-current',
-  },
-  priceLabel: 'This render: {amount}',
-  memberLabel: 'Member price — You save {percent}%',
-  labels: {
-    required: 'Required',
-    optional: 'Optional',
-  },
-  prompt: {
-    placeholder: 'Describe the scene…',
-    placeholderWithImage: 'Describe how the image should move / transform…',
-  },
-  negativePrompt: {
-    placeholder: 'Elements to avoid…',
-    requiredHint: 'Required',
-  },
-  assetSlots: {
-    imageCtaLabel: 'Generate reference images',
-    imageCtaHref: '/app/image',
-    referenceWarning: '',
-  },
-  shortcuts: {
-    generate: 'Cmd+Enter • Generate',
-    price: 'G • Price-before',
-    seed: 'S • Lock seed',
-  },
-  iterationsLabel: '×{count}',
-  button: {
-    idle: 'Generate',
-    loading: 'Checking price…',
-  },
-} as const;
-
-type ComposerCopy = typeof DEFAULT_COMPOSER_COPY;
+export type {
+  AssetFieldConfig,
+  AssetFieldRole,
+  AssetUploadMeta,
+  ComposerAttachment,
+  ComposerPromotedAction,
+  MultiPromptScene,
+} from '@/components/composer/composer-types';
 
 export function Composer({
   engine,
@@ -177,7 +62,7 @@ export function Composer({
   workflowNotice,
   generateLabel,
   generateLoadingLabel,
-}: Props) {
+}: ComposerProps) {
   const { t } = useI18n();
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -426,77 +311,16 @@ export function Composer({
                     aria-pressed={action.active}
                     className="min-h-0 h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                   >
-                    <span className="shrink-0">{renderPromotedActionIcon(action.icon)}</span>
+                    <span className="shrink-0">
+                      <ComposerPromotedActionIcon icon={action.icon} />
+                    </span>
                     <span className="whitespace-nowrap">{action.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
             {multiPromptEnabled && multiPrompt ? (
-              <div className="space-y-3 px-4 pb-4">
-                {multiPrompt.scenes.map((scene, index) => (
-                  <div
-                    key={scene.id}
-                    className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/72"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
-                      {multiPrompt.scenes.length > 1 && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => multiPrompt.onRemoveScene(scene.id)}
-                          className="min-h-0 h-auto px-2 py-1 text-[11px]"
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </div>
-                    <textarea
-                      value={scene.prompt}
-                      onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
-                      placeholder={`Scene ${index + 1} prompt`}
-                      rows={3}
-                      className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.03] dark:text-white dark:placeholder:text-white/35"
-                    />
-                    <div className="mt-2 flex items-center gap-2 text-[12px] text-text-muted">
-                      <span>Duration (s)</span>
-                      <input
-                        type="number"
-                        min={multiPrompt.minDurationSec}
-                        max={multiPrompt.maxDurationSec}
-                        value={scene.duration}
-                        onChange={(event) =>
-                          multiPrompt.onUpdateScene(scene.id, {
-                            duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
-                          })
-                        }
-                        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.03] dark:text-white"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-text-muted">
-                  <span>
-                    Total: {multiPrompt.totalDurationSec}s · Min {multiPrompt.minDurationSec}s · Max {multiPrompt.maxDurationSec}s
-                  </span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={multiPrompt.onAddScene}
-                    className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[11px] uppercase tracking-micro"
-                  >
-                    + Scene
-                  </Button>
-                </div>
-                {multiPrompt.error ? (
-                  <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[12px] text-error">
-                    {multiPrompt.error}
-                  </div>
-                ) : null}
-              </div>
+              <ComposerMultiPromptEditor multiPrompt={multiPrompt} />
             ) : (
               <textarea
                 value={prompt}
@@ -639,43 +463,5 @@ export function Composer({
         </ul>
       ) : null}
     </Card>
-  );
-}
-
-function renderPromotedActionIcon(icon: ComposerPromotedAction['icon']) {
-  if (icon === 'shield') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <path
-          d="M10 2.5 4.5 4.8v4.6c0 3.3 2 6.2 5.1 7.5l.4.1.4-.1c3.1-1.3 5.1-4.2 5.1-7.5V4.8L10 2.5Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m7.8 10.1 1.5 1.5 3-3.2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-      <path
-        d="M10 2.8 11.6 6l3.5.5-2.6 2.5.6 3.5L10 10.9 6.9 12.5l.6-3.5-2.6-2.5 3.5-.5L10 2.8Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
