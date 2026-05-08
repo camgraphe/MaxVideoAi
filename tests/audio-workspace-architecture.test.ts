@@ -8,6 +8,9 @@ const audioDir = join(root, 'frontend/app/(core)/(workspace)/app/audio');
 const workspacePath = join(audioDir, 'AudioWorkspace.tsx');
 const controlsPath = join(audioDir, '_components/audio-workspace-controls.tsx');
 const generatedPickerPath = join(audioDir, '_components/audio-generated-video-picker.tsx');
+const sourceVideoSectionPath = join(audioDir, '_components/audio-source-video-section.tsx');
+const generationDockPath = join(audioDir, '_components/audio-generation-dock.tsx');
+const voiceSectionPath = join(audioDir, '_components/audio-voice-section.tsx');
 const helpersPath = join(audioDir, '_lib/audio-workspace-helpers.ts');
 const typesPath = join(audioDir, '_lib/audio-workspace-types.ts');
 const activeJobHookPath = join(audioDir, '_hooks/useAudioActiveJobPolling.ts');
@@ -19,6 +22,9 @@ const workspaceSource = readFileSync(workspacePath, 'utf8');
 test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(controlsPath), 'audio control components should live in a route-local component module');
   assert.ok(existsSync(generatedPickerPath), 'generated video picker should live in a route-local component module');
+  assert.ok(existsSync(sourceVideoSectionPath), 'source video section should live in a route-local component module');
+  assert.ok(existsSync(generationDockPath), 'generation dock should live in a route-local component module');
+  assert.ok(existsSync(voiceSectionPath), 'voice section should live in a route-local component module');
   assert.ok(existsSync(helpersPath), 'audio browser/API helpers should live in a route-local helper module');
   assert.ok(existsSync(typesPath), 'audio local contracts should live in a route-local type module');
   assert.ok(existsSync(activeJobHookPath), 'active audio job polling should live in a route-local hook');
@@ -27,6 +33,9 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
 
   assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-controls'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generated-video-picker'/);
+  assert.match(workspaceSource, /from '\.\/_components\/audio-source-video-section'/);
+  assert.match(workspaceSource, /from '\.\/_components\/audio-generation-dock'/);
+  assert.match(workspaceSource, /from '\.\/_components\/audio-voice-section'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioActiveJobPolling'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGeneratedVideos'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGenerationRunner'/);
@@ -44,18 +53,24 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /function AudioSelectControl\(/, 'audio controls belong in _components/audio-workspace-controls.tsx');
   assert.doesNotMatch(workspaceSource, /generated-source-skeleton/, 'generated video picker UI belongs in _components/audio-generated-video-picker.tsx');
   assert.doesNotMatch(workspaceSource, /copy\.picker\.audioBadge/, 'generated video picker card UI belongs in _components/audio-generated-video-picker.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.source\.useGenerated/, 'source video section UI belongs in _components/audio-source-video-section.tsx');
+  assert.doesNotMatch(workspaceSource, /fixed bottom-0 left-0 right-0/, 'generation dock UI belongs in _components/audio-generation-dock.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.controls\.uploadVoiceSampleHint/, 'voice section UI belongs in _components/audio-voice-section.tsx');
   assert.doesNotMatch(workspaceSource, /getJobStatus/, 'active job polling belongs in useAudioActiveJobPolling');
   assert.doesNotMatch(workspaceSource, /surface=video&limit=60/, 'generated video loading belongs in useAudioGeneratedVideos');
   assert.doesNotMatch(workspaceSource, /runAudioGenerate/, 'audio generation submission belongs in useAudioGenerationRunner');
   assert.doesNotMatch(workspaceSource, /resolveUiErrorMessage\(error, copy\.messages\.generationFailed/, 'generation failure mapping belongs in useAudioGenerationRunner');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1030, `AudioWorkspace should stay below 1030 lines after generation runner extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 890, `AudioWorkspace should stay below 890 lines after section extraction, got ${lineCount}`);
 });
 
 test('audio helper modules expose the expected workspace contract', () => {
   const controlsSource = readFileSync(controlsPath, 'utf8');
   const generatedPickerSource = readFileSync(generatedPickerPath, 'utf8');
+  const sourceVideoSectionSource = readFileSync(sourceVideoSectionPath, 'utf8');
+  const generationDockSource = readFileSync(generationDockPath, 'utf8');
+  const voiceSectionSource = readFileSync(voiceSectionPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
   const typesSource = readFileSync(typesPath, 'utf8');
   const activeJobHookSource = readFileSync(activeJobHookPath, 'utf8');
@@ -75,6 +90,12 @@ test('audio helper modules expose the expected workspace contract', () => {
     /export function AudioGeneratedVideoPickerModal/,
     'AudioGeneratedVideoPickerModal should be exported'
   );
+  assert.match(sourceVideoSectionSource, /export function AudioSourceVideoSection/, 'AudioSourceVideoSection should be exported');
+  assert.match(sourceVideoSectionSource, /copy\.source\.useGenerated/, 'source video section should own generated picker trigger copy');
+  assert.match(generationDockSource, /export function AudioGenerationDock/, 'AudioGenerationDock should be exported');
+  assert.match(generationDockSource, /fixed bottom-0 left-0 right-0/, 'generation dock should own fixed dock layout');
+  assert.match(voiceSectionSource, /export function AudioVoiceSection/, 'AudioVoiceSection should be exported');
+  assert.match(voiceSectionSource, /copy\.controls\.uploadVoiceSampleHint/, 'voice section should own voice sample copy');
   assert.match(activeJobHookSource, /export function useAudioActiveJobPolling/, 'active job polling hook should be exported');
   assert.match(activeJobHookSource, /getJobStatus/, 'active job polling hook should poll job status');
   assert.match(generatedVideosHookSource, /export function useAudioGeneratedVideos/, 'generated videos hook should be exported');
