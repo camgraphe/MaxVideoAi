@@ -7,28 +7,23 @@ import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/anal
 import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
 import { writeLastKnownUserId } from '@/lib/last-known';
 import { supabase } from '@/lib/supabaseClient';
-import {
-  clearStaleBrowserAuthState,
-  isInvalidRefreshTokenError,
-  isPkceCodeVerifierError,
-  readBrowserSession,
-} from '@/lib/supabase-auth-cleanup';
 import { canonicalizeBrowserAuthOrigin } from '@/lib/siteOrigin';
-import { startOAuthCookieRedirectFallback } from '../_lib/oauth-cookie-fallback';
 import { AUTH_COPY, type AuthMode, type Locale } from '../_lib/login-copy';
 import {
   buildAuthCallbackRedirect,
   clearPendingGoogleLogin,
-  consumePendingGoogleLogin,
   detectLocale,
   getBrowserAuthRedirectOrigin,
   markPendingGoogleLogin,
   sanitizeNextPath,
 } from '../_lib/login-helpers';
 import { useLoginAutofillSync } from './useLoginAutofillSync';
+import { useLoginAuthenticatedRedirect } from './useLoginAuthenticatedRedirect';
+import { useLoginAuthHashSession } from './useLoginAuthHashSession';
 import { useLoginBrowserLocale } from './useLoginBrowserLocale';
 import { useLoginModeFromQuery } from './useLoginModeFromQuery';
 import { useLoginNextTarget } from './useLoginNextTarget';
+import { useLoginOAuthCodeExchange } from './useLoginOAuthCodeExchange';
 
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
@@ -80,119 +75,26 @@ export function useLoginPageController() {
     [persistNextTarget, router]
   );
 
-  const redirectFromExistingBrowserSession = useCallback(
-    async function redirectFromExistingBrowserSession(target: string): Promise<boolean> {
-      const session = await readBrowserSession();
-      const userId = session?.user?.id ?? null;
-      if (!session?.access_token || !userId) return false;
-      if (consumePendingGoogleLogin()) {
-        persistPendingAnalyticsEvent('login_completed', {
-          route_family: 'auth',
-          auth_surface: 'login',
-          method: 'google',
-        });
-      }
-      completeAuthenticatedRedirect(target, userId);
-      return true;
-    },
-    [completeAuthenticatedRedirect]
-  );
+  const { redirectFromExistingBrowserSession } = useLoginAuthenticatedRedirect({
+    completeAuthenticatedRedirect,
+    nextPath,
+    nextPathReady,
+    oauthCodeExchangeStartedRef,
+  });
 
-  useEffect(() => {
-    if (!nextPathReady) return;
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const oauthCode = params.get('code');
-    const authError = params.get('authError');
-    if (!oauthCode && authError !== 'oauth_callback_failed') return;
-
-    const cleanAuthQuery = () => {
-      const cleanUrl = new URL(window.location.href);
-      cleanUrl.searchParams.delete('code');
-      cleanUrl.searchParams.delete('state');
-      cleanUrl.searchParams.delete('authError');
-      cleanUrl.searchParams.delete('error');
-      cleanUrl.searchParams.delete('error_description');
-      cleanUrl.searchParams.delete('redirect_to');
-      window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
-    };
-
-    const localizedCopy = AUTH_COPY[detectLocale()] ?? authCopy;
-    setMode('signin');
-
-    if (authError === 'oauth_callback_failed') {
-      cleanAuthQuery();
-      clearPendingGoogleLogin();
-      setStatus(null);
-      setError(localizedCopy.oauthCallbackError);
-      return;
-    }
-
-    if (!oauthCode || oauthCodeExchangeStartedRef.current) return;
-    oauthCodeExchangeStartedRef.current = true;
-    cleanAuthQuery();
-    setStatusTone('info');
-    setStatus('Completing sign-in…');
-    setError(null);
-
-    let cancelled = false;
-    const target = sanitizeNextPath(params.get('next') ?? nextPath);
-    const cancelAuthCookieFallback = startOAuthCookieRedirectFallback({
-      isCancelled: () => cancelled || authNavigationStartedRef.current,
-      onAuthenticatedCookie: () => {
-        if (consumePendingGoogleLogin()) {
-          persistPendingAnalyticsEvent('login_completed', {
-            route_family: 'auth',
-            auth_surface: 'login',
-            method: 'google',
-          });
-        }
-        completeAuthenticatedRedirect(target);
-      },
-    });
-    void supabase.auth
-      .exchangeCodeForSession(oauthCode)
-      .then(async ({ data, error }) => {
-        if (cancelled) return;
-        if (error || !data.session) {
-          if (isInvalidRefreshTokenError(error) || isPkceCodeVerifierError(error)) {
-            void clearStaleBrowserAuthState();
-          }
-          const fallbackRedirected = await redirectFromExistingBrowserSession(target);
-          if (cancelled || fallbackRedirected) return;
-          oauthCodeExchangeStartedRef.current = false;
-          clearPendingGoogleLogin();
-          setStatus(null);
-          setError(localizedCopy.oauthCallbackError);
-          return;
-        }
-        if (consumePendingGoogleLogin()) {
-          persistPendingAnalyticsEvent('login_completed', {
-            route_family: 'auth',
-            auth_surface: 'login',
-            method: 'google',
-          });
-        }
-        completeAuthenticatedRedirect(target, data.session.user?.id ?? null);
-      })
-      .catch(async (err) => {
-        if (cancelled) return;
-        if (isInvalidRefreshTokenError(err) || isPkceCodeVerifierError(err)) {
-          void clearStaleBrowserAuthState();
-        }
-        const fallbackRedirected = await redirectFromExistingBrowserSession(target);
-        if (cancelled || fallbackRedirected) return;
-        oauthCodeExchangeStartedRef.current = false;
-        clearPendingGoogleLogin();
-        setStatus(null);
-        setError(localizedCopy.oauthCallbackError);
-      });
-
-    return () => {
-      cancelled = true;
-      cancelAuthCookieFallback();
-    };
-  }, [authCopy, completeAuthenticatedRedirect, nextPath, nextPathReady, redirectFromExistingBrowserSession]);
+  useLoginOAuthCodeExchange({
+    authCopy,
+    authNavigationStartedRef,
+    completeAuthenticatedRedirect,
+    nextPath,
+    nextPathReady,
+    oauthCodeExchangeStartedRef,
+    redirectFromExistingBrowserSession,
+    setError,
+    setMode,
+    setStatus,
+    setStatusTone,
+  });
 
   useEffect(() => {
     if (mode !== 'signup' && termsError) {
@@ -200,139 +102,17 @@ export function useLoginPageController() {
     }
   }, [mode, termsError]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('access_token=')) {
-      return;
-    }
-    const params = new URLSearchParams(hash.replace(/^#/, ''));
-    const accessToken = params.get('access_token');
-    const refreshToken =
-      params.get('refresh_token') ?? params.get('refreshToken') ?? params.get('refresh-token');
-    if (!accessToken || !refreshToken) {
-      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      return;
-    }
-    let cancelled = false;
-    setStatusTone('info');
-    setStatus('Completing sign-in…');
-    setError(null);
-    void supabase.auth
-      .setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      })
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          setError(error.message ?? 'Unable to complete sign-in.');
-          setStatus(null);
-          return;
-        }
-        if (data.session) {
-          const userId = data.session.user?.id ?? null;
-          if (userId) {
-            writeLastKnownUserId(userId);
-          }
-          if (consumePendingGoogleLogin()) {
-            persistPendingAnalyticsEvent('login_completed', {
-              route_family: 'auth',
-              auth_surface: 'login',
-              method: 'google',
-            });
-          }
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
-        setStatus(null);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useLoginAuthHashSession({
+    setError,
+    setStatus,
+    setStatusTone,
+  });
 
   useEffect(() => {
     if (mode !== 'signin' && signupSuggestion) {
       setSignupSuggestion(null);
     }
   }, [mode, signupSuggestion]);
-
-  useEffect(() => {
-    if (!nextPathReady) return;
-    let cancelled = false;
-
-    async function redirectIfAuthenticated() {
-      if (oauthCodeExchangeStartedRef.current) return;
-      const { data, error } = await supabase.auth.getUser();
-      if (cancelled) return;
-      if (error) {
-        if (isInvalidRefreshTokenError(error)) {
-          await clearStaleBrowserAuthState();
-        }
-        return;
-      }
-      const user = data.user ?? null;
-      if (user && nextPath) {
-        if (consumePendingGoogleLogin()) {
-          persistPendingAnalyticsEvent('login_completed', {
-            route_family: 'auth',
-            auth_surface: 'login',
-            method: 'google',
-          });
-        }
-        const safeTarget = sanitizeNextPath(nextPath);
-        completeAuthenticatedRedirect(safeTarget, user.id);
-      } else if (!user) {
-        // stay on page
-      }
-    }
-
-    void redirectIfAuthenticated();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
-      if (oauthCodeExchangeStartedRef.current) return;
-      void supabase.auth.getUser().then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          if (isInvalidRefreshTokenError(error)) {
-            void clearStaleBrowserAuthState();
-          }
-          return;
-        }
-        const user = data.user ?? null;
-        if (user && nextPath) {
-          if (consumePendingGoogleLogin()) {
-            persistPendingAnalyticsEvent('login_completed', {
-              route_family: 'auth',
-              auth_surface: 'login',
-              method: 'google',
-            });
-          }
-          const safeTarget = sanitizeNextPath(nextPath);
-          completeAuthenticatedRedirect(safeTarget, user.id);
-        } else if (!user) {
-          // remain unauthenticated
-        }
-      }).catch((err) => {
-        if (cancelled) return;
-        if (isInvalidRefreshTokenError(err)) {
-          void clearStaleBrowserAuthState();
-        }
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      authListener?.subscription.unsubscribe();
-    };
-  }, [completeAuthenticatedRedirect, nextPath, nextPathReady]);
 
   async function signInWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -570,35 +350,6 @@ export function useLoginPageController() {
     googleOAuthStartedRef.current = false;
     setIsGoogleOAuthStarting(false);
   }
-
-  useEffect(() => {
-    if (!nextPathReady) return;
-    if (oauthCodeExchangeStartedRef.current) return;
-    let cancelled = false;
-    readBrowserSession().then((session) => {
-      if (cancelled) return;
-      if (session?.access_token) {
-        if (consumePendingGoogleLogin()) {
-          persistPendingAnalyticsEvent('login_completed', {
-            route_family: 'auth',
-            auth_surface: 'login',
-            method: 'google',
-          });
-        }
-        const safeTarget = sanitizeNextPath(nextPath);
-        completeAuthenticatedRedirect(safeTarget, session.user?.id ?? null);
-      } else {
-      }
-    }).catch((err) => {
-      if (cancelled) return;
-      if (isInvalidRefreshTokenError(err)) {
-        void clearStaleBrowserAuthState();
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [completeAuthenticatedRedirect, nextPath, nextPathReady]);
 
   const effectiveMode: Exclude<AuthMode, 'reset'> = mode === 'reset' ? 'signin' : mode;
 

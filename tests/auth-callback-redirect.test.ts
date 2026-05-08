@@ -6,6 +6,8 @@ const authCallbackSource = readFileSync('frontend/app/auth/callback/route.ts', '
 const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
 const loginControllerSource = readFileSync('frontend/app/(core)/login/_hooks/useLoginPageController.ts', 'utf8');
+const loginAuthenticatedRedirectSource = readFileSync('frontend/app/(core)/login/_hooks/useLoginAuthenticatedRedirect.ts', 'utf8');
+const loginOAuthCodeExchangeSource = readFileSync('frontend/app/(core)/login/_hooks/useLoginOAuthCodeExchange.ts', 'utf8');
 const loginSurfaceSource = readFileSync('frontend/app/(core)/login/_components/LoginAuthSurface.tsx', 'utf8');
 const loginHelpersSource = readFileSync('frontend/app/(core)/login/_lib/login-helpers.ts', 'utf8');
 const siteOriginSource = readFileSync('frontend/lib/siteOrigin.ts', 'utf8');
@@ -53,9 +55,9 @@ test('login page can consume a PKCE OAuth code directly', () => {
     'middleware should let /login?code=... reach the login page for browser-side PKCE exchange'
   );
   assert.match(
-    loginControllerSource,
+    loginOAuthCodeExchangeSource,
     /\.exchangeCodeForSession\(oauthCode\)/,
-    'the login controller should exchange direct OAuth codes with the browser Supabase client'
+    'the login OAuth code hook should exchange direct OAuth codes with the browser Supabase client'
   );
   assert.match(
     loginHelpersSource,
@@ -88,32 +90,35 @@ test('login auth success records a session hint before leaving the auth page', (
 });
 
 test('login page does not probe stale sessions while exchanging an OAuth code', () => {
-  const guardMatches = loginControllerSource.match(/if \(oauthCodeExchangeStartedRef\.current\) return;/g) ?? [];
+  const guardMatches =
+    `${loginControllerSource}\n${loginAuthenticatedRedirectSource}\n${loginOAuthCodeExchangeSource}`.match(
+      /if \(oauthCodeExchangeStartedRef\.current\) return;/g
+    ) ?? [];
 
   assert.ok(
     guardMatches.length >= 2,
     'login page should not call getUser/getSession while an OAuth code exchange is already in progress'
   );
   assert.match(
-    loginControllerSource,
+    `${loginAuthenticatedRedirectSource}\n${loginOAuthCodeExchangeSource}`,
     /clearStaleBrowserAuthState\(\)/,
-    'login controller should clear stale browser auth state after invalid refresh token errors'
+    'login auth hooks should clear stale browser auth state after invalid refresh token errors'
   );
 });
 
 test('login page redirects if OAuth exchange reports an error after a session was stored', () => {
   assert.match(
-    loginControllerSource,
+    loginAuthenticatedRedirectSource,
     /async function redirectFromExistingBrowserSession\(target: string\): Promise<boolean>/,
-    'login controller should have a fallback redirect for Safari when the session exists but the OAuth exchange response errors'
+    'login authenticated redirect hook should have a fallback redirect for Safari when the session exists but the OAuth exchange response errors'
   );
   assert.match(
-    loginControllerSource,
+    loginOAuthCodeExchangeSource,
     /const fallbackRedirected = await redirectFromExistingBrowserSession\(target\);/,
     'OAuth error handling should check the browser session before showing the login error'
   );
   assert.match(
-    loginControllerSource,
+    loginOAuthCodeExchangeSource,
     /oauthCodeExchangeStartedRef\.current = false;/,
     'OAuth error handling should release the exchange guard when no session exists'
   );
@@ -141,7 +146,7 @@ test('login page protects Google PKCE from duplicate starts and host drift', () 
     'the Google button should be disabled while the OAuth URL is being created'
   );
   assert.match(
-    loginControllerSource,
+    loginOAuthCodeExchangeSource,
     /isPkceCodeVerifierError\(error\)/,
     'PKCE verifier mismatches should trigger stale auth cleanup before the next retry'
   );
