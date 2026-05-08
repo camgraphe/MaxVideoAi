@@ -3,109 +3,22 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PriceFactorsBar, type PriceFactorKind } from '@/components/PriceFactorsBar';
+import { PriceFactorsBar } from '@/components/PriceFactorsBar';
 import { Card } from '@/components/ui/Card';
-import { EngineIcon } from '@/components/ui/EngineIcon';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { QuadMosaicFigure } from '@/components/quad-preview/QuadMosaicFigure';
+import { QuadSingleTilesGrid } from '@/components/quad-preview/QuadSingleTilesGrid';
+import { buildTilesWithPlaceholders, formatCurrency } from '@/components/quad-preview/quad-preview-helpers';
 import { Button } from '@/components/ui/Button';
 import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
-import type { EngineCaps, PreflightResponse } from '@/types/engines';
+import type { QuadMosaicStatus, QuadPreviewPanelProps } from '@/components/quad-preview/quad-preview-types';
 
-export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
-export type QuadGroupAction = 'open' | 'compare' | 'hero';
-
-export interface QuadPreviewTile {
-  localKey: string;
-  batchId: string;
-  id: string;
-  jobId?: string;
-  iterationIndex: number;
-  iterationCount: number;
-  videoUrl?: string;
-  previewVideoUrl?: string;
-  thumbUrl?: string;
-  aspectRatio: string;
-  progress: number;
-  message: string;
-  priceCents?: number;
-  currency?: string;
-  durationSec: number;
-  engineLabel: string;
-  engineId: string;
-  etaLabel?: string;
-  prompt: string;
-  status: 'pending' | 'completed' | 'failed';
-  hasAudio?: boolean;
-}
-
-interface QuadPreviewPanelProps {
-  tiles: QuadPreviewTile[];
-  heroKey?: string;
-  preflight: PreflightResponse | null;
-  iterations: number;
-  currency: string;
-  totalPriceCents?: number | null;
-  onNavigateFactor?: (kind: PriceFactorKind) => void;
-  onTileAction: (action: QuadTileAction, tile: QuadPreviewTile) => void;
-  onGroupAction: (action: QuadGroupAction, tile?: QuadPreviewTile) => void;
-  onSelectHero: (tile: QuadPreviewTile) => void;
-  engineMap: Map<string, EngineCaps>;
-  onSaveComposite?: () => void;
-  onRefreshJob?: (jobId: string) => Promise<void> | void;
-}
-
-const TILE_ACTIONS: Array<{ id: QuadTileAction; label: string; icon: string }> = [
-  { id: 'continue', label: 'Continue', icon: '/assets/icons/play.svg' },
-  { id: 'refine', label: 'Refine', icon: '/assets/icons/remix.svg' },
-  { id: 'branch', label: 'Branch', icon: '/assets/icons/extend.svg' },
-  { id: 'copy', label: 'Copy prompt', icon: '/assets/icons/copy.svg' },
-  { id: 'open', label: 'Open in player', icon: '/assets/icons/expand.svg' },
-];
-
-function getAspectClass(aspectRatio?: string | null): string {
-  const normalized = (aspectRatio ?? '').trim();
-  switch (normalized) {
-    case '1:1':
-    case 'square':
-      return 'aspect-square';
-    case '9:16':
-    case '9/16':
-      return 'aspect-[9/16]';
-    case '9:21':
-    case '9/21':
-      return 'aspect-[9/21]';
-    case '16:9':
-    case '16/9':
-      return 'aspect-[16/9]';
-    case '3:4':
-    case '3/4':
-      return 'aspect-[3/4]';
-    case '4:3':
-    case '4/3':
-      return 'aspect-[4/3]';
-    case '4:5':
-    case '4/5':
-      return 'aspect-[4/5]';
-    case '5:4':
-    case '5/4':
-      return 'aspect-[5/4]';
-    case '21:9':
-    case '21/9':
-      return 'aspect-[21/9]';
-    default:
-      return 'aspect-[16/9]';
-  }
-}
-
-function formatCurrency(amountCents?: number, currency = 'USD') {
-  if (typeof amountCents !== 'number') return null;
-  try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amountCents / 100);
-  } catch {
-    return `${currency} ${(amountCents / 100).toFixed(2)}`;
-  }
-}
+export type {
+  QuadGroupAction,
+  QuadPreviewPanelProps,
+  QuadPreviewTile,
+  QuadTileAction,
+} from '@/components/quad-preview/quad-preview-types';
 
 export function QuadPreviewPanel({
   tiles,
@@ -129,31 +42,10 @@ export function QuadPreviewPanel({
   const sortedTiles = useMemo(() => [...tiles].sort((a, b) => a.iterationIndex - b.iterationIndex), [tiles]);
   const iterationCount = sortedTiles[0]?.iterationCount ?? iterations ?? 1;
 
-  const tilesWithPlaceholders: Array<QuadPreviewTile | null> = useMemo(() => {
-    if (sortedTiles.length === 0) return [];
-
-    const primaryAspectRatio = sortedTiles[0]?.aspectRatio ?? '16:9';
-    const desiredSlots = (() => {
-      if (iterationCount <= 1) return 1;
-      if (iterationCount === 2) return 2;
-      if (primaryAspectRatio === '9:16' && iterationCount === 3) return 3;
-      if (iterationCount >= 3) return 4;
-      return 1;
-    })();
-
-    const list: Array<QuadPreviewTile | null> = [...sortedTiles];
-    while (list.length < desiredSlots) {
-      list.push(null);
-    }
-
-    if (primaryAspectRatio === '9:16' && desiredSlots === 4 && sortedTiles.length === 2) {
-      const first = sortedTiles[0] ?? null;
-      const second = sortedTiles[1] ?? null;
-      return [null, first, second, null];
-    }
-
-    return list.slice(0, desiredSlots);
-  }, [sortedTiles, iterationCount]);
+  const tilesWithPlaceholders = useMemo(
+    () => buildTilesWithPlaceholders(sortedTiles, iterationCount),
+    [sortedTiles, iterationCount]
+  );
 
   const totalPrice = useMemo(() => {
     if (typeof totalPriceCents === 'number') return formatCurrency(totalPriceCents, currency);
@@ -164,7 +56,6 @@ export function QuadPreviewPanel({
   const primaryAspect = sortedTiles[0]?.aspectRatio ?? '16:9';
   const isVerticalComposite = primaryAspect === '9:16';
   const mosaicSlots = tilesWithPlaceholders.length;
-  const compositeAspectClass = getAspectClass(primaryAspect);
   const mosaicGridClass = useMemo(() => {
     if (mosaicSlots <= 1) return 'grid-cols-1';
     if (isVerticalComposite) {
@@ -178,7 +69,7 @@ export function QuadPreviewPanel({
 
   const mosaicTiles = useMemo(() => tilesWithPlaceholders.slice(0, mosaicSlots), [tilesWithPlaceholders, mosaicSlots]);
   const mosaicStatusMap = useMemo(() => {
-    const map = new Map<string, { status: QuadPreviewTile['status']; progress: number; message: string; etaLabel?: string }>();
+    const map = new Map<string, QuadMosaicStatus>();
     sortedTiles.forEach((tile) => {
       map.set(tile.localKey, { status: tile.status, progress: tile.progress, message: tile.message, etaLabel: tile.etaLabel });
     });
@@ -265,275 +156,34 @@ export function QuadPreviewPanel({
         onNavigate={onNavigateFactor}
       />
 
-      {iterationCount > 1 && (
-        <figure className="overflow-hidden rounded-card border border-border bg-surface-glass-80 p-3 text-center">
-          <div className={clsx('relative w-full', compositeAspectClass)}>
-            <div className={clsx('absolute inset-0 grid gap-2 rounded-card bg-placeholder p-1', mosaicGridClass)}>
-              {mosaicTiles.map((preview, index) => {
-                const slotKey = preview?.localKey ?? `slot-${index}`;
-                const statusInfo = preview?.localKey ? mosaicStatusMap.get(preview.localKey) : undefined;
-                const cellAspect = getAspectClass(preview?.aspectRatio ?? primaryAspect);
-                const tileStatus = statusInfo?.status ?? preview?.status ?? 'pending';
-                const failureMessageRaw = statusInfo?.message ?? preview?.message ?? null;
-                const failureMessage =
-                  failureMessageRaw && typeof failureMessageRaw === 'string'
-                    ? failureMessageRaw.replace(/\s+/g, ' ').trim()
-                    : null;
-                const showPendingOverlay = tileStatus !== 'completed' && tileStatus !== 'failed';
-                const showFailedOverlay = tileStatus === 'failed';
-                const shouldPlayPreview = Boolean(isPlaying && preview?.localKey === heroTile?.localKey);
+      {iterationCount > 1 ? (
+        <QuadMosaicFigure
+          heroTile={heroTile}
+          isPlaying={isPlaying}
+          mosaicGridClass={mosaicGridClass}
+          mosaicStatusMap={mosaicStatusMap}
+          mosaicTiles={mosaicTiles}
+          primaryAspect={primaryAspect}
+          onPrimaryVideoReady={handlePrimaryVideoReady}
+        />
+      ) : null}
 
-                return (
-                  <div
-                    key={slotKey}
-                    data-quad-cell={slotKey}
-                    className="relative flex items-center justify-center overflow-hidden rounded-input bg-surface-glass-70"
-                  >
-                    <div className={clsx('relative h-full w-full', cellAspect)}>
-                      {tileStatus !== 'failed' && preview?.videoUrl ? (
-                        <video
-                          data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
-                          data-quad-fallback
-                          src={preview.videoUrl}
-                          className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                          autoPlay={shouldPlayPreview}
-                          muted
-                          playsInline
-                          loop
-                          preload={shouldPlayPreview ? 'auto' : 'none'}
-                          poster={preview?.thumbUrl}
-                          onLoadedData={() => handlePrimaryVideoReady(preview?.localKey)}
-                          onCanPlay={() => handlePrimaryVideoReady(preview?.localKey)}
-                        />
-                      ) : tileStatus !== 'failed' && preview?.thumbUrl ? (
-                        <Image
-                          data-quad-fallback
-                          src={preview.thumbUrl}
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 50vw, 320px"
-                          className="absolute inset-0 object-cover pointer-events-none"
-                          priority={false}
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
-                      )}
-                      {Boolean(preview?.hasAudio) && tileStatus !== 'failed' ? (
-                        <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
-                      ) : null}
-                    </div>
-                    <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />
-                    {showPendingOverlay && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-2 text-center text-[10px] text-on-inverse backdrop-blur-sm">
-                        <span className="uppercase tracking-micro">Processing</span>
-                        {(statusInfo?.message || preview?.message) && (
-                          <span className="mt-1 max-w-[140px] text-[10px] text-on-media-80">
-                            {statusInfo?.message ?? preview?.message}
-                          </span>
-                        )}
-                        {typeof statusInfo?.progress === 'number' && (
-                          <span className="mt-1 text-[10px] font-semibold">{statusInfo.progress}%</span>
-                        )}
-                        {statusInfo?.etaLabel && <span className="mt-1 text-[9px] text-on-media-70">{statusInfo.etaLabel}</span>}
-                      </div>
-                    )}
-                    {showFailedOverlay && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-input bg-error-bg px-3 text-center text-[10px] text-error">
-                        <span className="font-semibold uppercase tracking-micro text-error">Failed</span>
-                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-error">{failureMessage}</span>}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <figcaption className="mt-2 text-[11px] text-text-muted">Composite preview</figcaption>
-        </figure>
-      )}
-
-      {iterationCount <= 1 && (
-        <div
-          className={clsx(
-            'grid grid-gap-sm',
-            sortedTiles.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2',
-            iterationCount >= 3 ? 'auto-rows-[minmax(120px,1fr)]' : undefined
-          )}
-        >
-          {tilesWithPlaceholders.map((tile, index) => {
-            if (!tile) {
-              return (
-                <div
-                  key={`placeholder-${index}`}
-                  className="flex rounded-card border border-dashed border-border bg-gradient-to-br from-surface-2 via-surface to-surface-2"
-                />
-              );
-            }
-
-            const engineCaps = engineMap.get(tile.engineId);
-            const statusLabel =
-              tile.status === 'completed' ? 'Final' : tile.status === 'failed' ? 'Failed' : 'Processing';
-            const formattedPrice = formatCurrency(tile.priceCents, tile.currency ?? currency);
-            const versionLabel = `V${tile.iterationIndex + 1}`;
-            const branchLabel = `Branch ${String.fromCharCode(65 + tile.iterationIndex)}`;
-            const isHero = heroKey === tile.localKey;
-            const tileAspectClass = getAspectClass(tile.aspectRatio);
-            const isFailed = tile.status === 'failed';
-            const failureMessage =
-              tile.message && typeof tile.message === 'string' ? tile.message.replace(/\s+/g, ' ').trim() : null;
-            const shouldPlayPreview = Boolean(isPlaying && tile.localKey === heroTile?.localKey);
-
-            return (
-              <div
-                key={tile.localKey}
-                className={clsx(
-                  'flex flex-col overflow-hidden rounded-card border',
-                  isFailed
-                    ? 'border-error-border bg-error-bg shadow-card'
-                    : isHero
-                      ? 'border-brand shadow-lg'
-                      : 'border-border bg-surface-glass-85 shadow-card'
-                )}
-              >
-                <div
-                  className={clsx(
-                    'flex items-center justify-between gap-2 border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
-                    isFailed
-                      ? 'border-error-border bg-error-bg text-error'
-                      : 'border-hairline bg-surface text-text-muted'
-                  )}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <span className={clsx('rounded-full px-2 py-0.5', isHero ? 'bg-surface-2 text-brand' : 'bg-surface-on-media-dark-5 text-text-secondary')}>
-                      {versionLabel}
-                    </span>
-                    <span>{statusLabel}</span>
-                    <span className="hidden sm:inline text-text-secondary">{branchLabel}</span>
-                  </span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onSelectHero(tile)}
-                    className={clsx(
-                      'min-h-0 h-auto rounded-full px-2 py-0.5 text-[10px]',
-                      isHero ? 'border-brand bg-brand text-on-brand' : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                    )}
-                  >
-                    <Image src="/assets/icons/pin.svg" alt="" width={12} height={12} className="h-3 w-3" aria-hidden />
-                    Hero
-                  </Button>
-                </div>
-
-                <div className={clsx('relative bg-placeholder', tileAspectClass)} data-quad-tile={tile.localKey}>
-                  <div className="relative h-full w-full">
-                    {tile.status !== 'failed' && tile.videoUrl ? (
-                      <video
-                        data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
-                        data-quad-tile-fallback
-                        key={tile.videoUrl}
-                        src={tile.videoUrl}
-                        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                        muted
-                        playsInline
-                        autoPlay={shouldPlayPreview}
-                        loop
-                        preload={shouldPlayPreview ? 'auto' : 'none'}
-                        poster={tile.thumbUrl}
-                        onLoadedData={() => handlePrimaryVideoReady(tile.localKey)}
-                        onCanPlay={() => handlePrimaryVideoReady(tile.localKey)}
-                      />
-                    ) : tile.status !== 'failed' && tile.thumbUrl ? (
-                      <Image
-                        src={tile.thumbUrl}
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="absolute inset-0 object-cover pointer-events-none"
-                        priority={false}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
-                    )}
-                    {tile.status !== 'failed' && tile.videoUrl && tile.hasAudio ? (
-                      <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
-                    ) : null}
-                  </div>
-                  <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />
-                  {tile.status === 'failed' ? (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-error-bg px-4 text-center text-[12px] text-error backdrop-blur-sm">
-                      <span className="font-semibold uppercase tracking-micro text-error">Generation failed</span>
-                      <span className="text-[11px] leading-snug text-error">
-                        {failureMessage ??
-                          'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
-                      </span>
-                    </div>
-                  ) : tile.status !== 'completed' ? (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-40 px-4 text-center text-[12px] text-on-inverse backdrop-blur-sm">
-                      <span className="uppercase tracking-micro">Processing</span>
-                      {tile.message && <span className="mt-1 text-[11px] text-on-media-80">{tile.message}</span>}
-                      <span className="mt-2 text-[11px] font-semibold text-on-media-90">{tile.progress}%</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-col gap-2 border-t border-hairline bg-surface px-3 py-2 text-[12px] text-text-secondary">
-                  {isFailed && (
-                    <div className="rounded-md border border-error-border bg-error-bg px-3 py-2 text-left">
-                      <p className="text-[10px] font-semibold uppercase tracking-micro text-error">Refund note</p>
-                      <p className="mt-1 text-[11px] leading-snug text-error">
-                        {failureMessage ??
-                          'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
-                      </p>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-2 font-medium text-text-primary">
-                      <EngineIcon engine={engineCaps ?? undefined} label={tile.engineLabel} size={28} className="shrink-0" />
-                      {tile.engineLabel}
-                    </span>
-                    {formattedPrice && <span className="text-[11px] font-semibold text-text-primary">{formattedPrice}</span>}
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-text-muted">
-                    <span>{tile.durationSec}s</span>
-                    <span>
-                      {tile.etaLabel ??
-                        (tile.status === 'completed' ? 'Ready' : tile.status === 'failed' ? 'Failed' : 'Estimating…')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-1 border-t border-hairline bg-surface px-2 py-1.5">
-                  <div className="flex gap-1">
-                    {TILE_ACTIONS.map((action) => (
-                      <Button
-                        key={action.id}
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onTileAction(action.id, tile)}
-                        className="h-8 w-8 min-h-0 rounded-full border-hairline bg-surface p-0 text-text-secondary hover:border-text-muted hover:bg-surface-2"
-                        aria-label={action.label}
-                      >
-                        <Image src={action.icon} alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
-                      </Button>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onGroupAction('open', tile)}
-                    className="min-h-0 h-auto rounded-full border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
-                  >
-                    View
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {iterationCount <= 1 ? (
+        <QuadSingleTilesGrid
+          currency={currency}
+          engineMap={engineMap}
+          heroKey={heroKey}
+          heroTile={heroTile}
+          isPlaying={isPlaying}
+          iterationCount={iterationCount}
+          sortedTilesLength={sortedTiles.length}
+          tilesWithPlaceholders={tilesWithPlaceholders}
+          onGroupAction={onGroupAction}
+          onPrimaryVideoReady={handlePrimaryVideoReady}
+          onSelectHero={onSelectHero}
+          onTileAction={onTileAction}
+        />
+      ) : null}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-surface-glass-70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
         <div className="flex flex-wrap items-center gap-2">
