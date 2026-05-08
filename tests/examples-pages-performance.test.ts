@@ -12,6 +12,7 @@ const examplesMainVideoFeatureSource = readFileSync(
 );
 const examplesHeroVideoSource = readFileSync('frontend/components/examples/ExamplesHeroVideo.client.tsx', 'utf8');
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
+const marketingMobileMenuSource = readFileSync('frontend/components/marketing/MarketingMobileMenu.tsx', 'utf8');
 
 test('examples hero video keeps mobile rendering poster-first instead of autoplay loading media', () => {
   assert.match(examplesHeroVideoSource, /max-width:\s*767px/);
@@ -32,7 +33,7 @@ test('examples model landing hero links do not prefetch RSC routes during initia
 });
 
 test('marketing nav login links avoid prefetching app redirects on public pages', () => {
-  const loginLinks = marketingNavSource.match(/<Link\s+href="\/login\?next=\/app"[\s\S]*?<\/Link>/g) ?? [];
+  const loginLinks = `${marketingNavSource}\n${marketingMobileMenuSource}`.match(/<Link\s+href="\/login\?next=\/app"[\s\S]*?<\/Link>/g) ?? [];
 
   assert.equal(loginLinks.length, 2);
   for (const link of loginLinks) {
