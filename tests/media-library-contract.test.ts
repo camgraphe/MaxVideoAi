@@ -207,20 +207,24 @@ test('library cards use icon actions and put source navigation on the visual', (
     path.join(process.cwd(), 'frontend/components/library/AssetLibraryBrowser.tsx'),
     'utf8'
   );
-  const pageSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/page.tsx'),
+  const clientSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx'),
+    'utf8'
+  );
+  const helpersSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_lib/library-page-helpers.ts'),
     'utf8'
   );
 
   assert.match(browserSource, /getAssetHref\?:\s*\(asset:\s*AssetBrowserAsset\)\s*=>\s*string\s*\|\s*null/);
   assert.match(browserSource, /data-library-card-media-link/);
-  assert.match(pageSource, /getAssetHref=\{\(asset\)\s*=>[\s\S]*getAssetJobHref\(asset\)/);
-  assert.match(pageSource, /function\s+isMaxVideoGeneratedAsset/);
-  assert.doesNotMatch(pageSource, /\?\?\s*asset\.url/);
-  assert.match(pageSource, /getAssetHrefLabel=\{\(\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
-  assert.doesNotMatch(pageSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
-  assert.match(pageSource, /<Download\s+className=/);
-  assert.match(pageSource, /<Trash2\s+className=/);
+  assert.match(clientSource, /getAssetHref=\{\(asset\)\s*=>[\s\S]*getAssetJobHref\(asset\)/);
+  assert.match(helpersSource, /export function\s+isMaxVideoGeneratedAsset/);
+  assert.doesNotMatch(clientSource, /\?\?\s*asset\.url/);
+  assert.match(clientSource, /getAssetHrefLabel=\{\(\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
+  assert.doesNotMatch(clientSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
+  assert.match(clientSource, /<Download\s+className=/);
+  assert.match(clientSource, /<Trash2\s+className=/);
 });
 
 test('media assets preserve and backfill thumbnails from job outputs', () => {

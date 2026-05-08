@@ -4,15 +4,19 @@ import path from 'node:path';
 import test from 'node:test';
 
 test('library page loads media in bounded pages instead of fetching hundreds upfront', () => {
-  const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/page.tsx'),
+  const clientSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx'),
+    'utf8'
+  );
+  const helpersSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_lib/library-page-helpers.ts'),
     'utf8'
   );
 
-  assert.match(source, /const\s+LIBRARY_PAGE_SIZE\s*=\s*60/);
-  assert.match(source, /limit=\$\{savedAssetLimit\}/);
-  assert.match(source, /limit=\$\{recentOutputLimit\}/);
-  assert.doesNotMatch(source, /limit=200/);
+  assert.match(helpersSource, /export const\s+LIBRARY_PAGE_SIZE\s*=\s*60/);
+  assert.match(clientSource, /limit=\$\{savedAssetLimit\}/);
+  assert.match(clientSource, /limit=\$\{recentOutputLimit\}/);
+  assert.doesNotMatch(clientSource, /limit=200/);
 });
 
 test('library video cards use thumbnails or placeholders in the grid', () => {
