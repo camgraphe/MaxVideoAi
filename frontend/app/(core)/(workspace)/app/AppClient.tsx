@@ -2,9 +2,7 @@
 
 import type { VideoGroup } from '@/types/video-groups';
 import { getWorkspaceAppLoadState } from './_components/WorkspaceAppLoadState';
-import { WorkspaceAppShell } from './_components/WorkspaceAppShell';
-import { WorkspaceComposerSurface } from './_components/WorkspaceComposerSurface';
-import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
+import { WorkspaceAppReadyView } from './_components/WorkspaceAppReadyView';
 import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
@@ -24,646 +22,294 @@ import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState'
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
-  const {
-    authLoading,
-    authStatus,
-    engineIdByLabel,
-    engineMap,
-    engines,
-    enginesError,
-    formatTakeLabel,
-    isLoading,
-    mutateLatestJobs,
-    provider,
-    recentJobs,
-    showCenterGallery,
-    uiLocale,
-    user,
-    workflowCopy,
-    workspaceCopy,
-  } = useWorkspaceAppBootstrap();
-
-  const {
-    form,
-    setForm,
-    prompt,
-    setPrompt,
-    negativePrompt,
-    setNegativePrompt,
-    multiPromptEnabled,
-    setMultiPromptEnabled,
-    multiPromptScenes,
-    setMultiPromptScenes,
-    shotType,
-    setShotType,
-    voiceIdsInput,
-    setVoiceIdsInput,
-    klingElements,
-    setKlingElements,
-    cfgScale,
-    setCfgScale,
-    memberTier,
-    setMemberTier,
-    sharedPrompt,
-    setSharedPrompt,
-    sharedVideoSettings,
-    setSharedVideoSettings,
-    compositeOverride,
-    setCompositeOverride,
-    compositeOverrideSummary,
-    setCompositeOverrideSummary,
-    composerRef,
-    focusComposer,
-  } = useWorkspaceRouteFormState();
-  const { notice, showNotice, setNotice } = useWorkspaceNotice();
-
-  const {
-    fromVideoId,
-    requestedJobId,
-    searchString,
-    loginRedirectTarget,
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    effectiveRequestedMode,
-    authChecked,
-    storageScope,
-    hydratedForScope,
-    setHydratedForScope,
-    readScopedStorage,
-    readStorage,
-    writeScopedStorage,
-    writeStorage,
-    skipOnboardingRef,
-    preserveStoredDraftRef,
-    hasStoredFormRef,
-    requestedEngineOverrideIdRef,
-    requestedEngineOverrideTokenRef,
-    requestedModeOverrideRef,
-  } = useWorkspaceDraftStorage({
-    authLoading,
-    authStatus,
-    authenticatedUserId: user?.id,
+  const app = useWorkspaceAppBootstrap();
+  const routeForm = useWorkspaceRouteFormState();
+  const noticeState = useWorkspaceNotice();
+  const draft = useWorkspaceDraftStorage({
+    authLoading: app.authLoading,
+    authStatus: app.authStatus,
+    authenticatedUserId: app.user?.id,
   });
   const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation({
-    authChecked,
-    skipOnboardingRef,
+    authChecked: draft.authChecked,
+    skipOnboardingRef: draft.skipOnboardingRef,
   });
   const isDesktopLayout = useWorkspaceDesktopLayout();
-  const {
-    renders,
-    setRenders,
-    rendersRef,
-    selectedPreview,
-    setSelectedPreview,
-    setActiveBatchId,
-    batchHeroes,
-    setBatchHeroes,
-    setActiveGroupId,
-    setViewMode,
-    renderGroups,
-    normalizedPendingGroups,
-    pendingSummaryMap,
-    activeVideoGroup,
-    isGenerationLoading,
-    generationSkeletonCount,
-    hydratePendingRendersFromStorage,
-    resetRenderState,
-  } = useWorkspaceRenderState({
-    recentJobs,
-    engineIdByLabel,
-    provider,
-    storageScope,
-    hydratedForScope,
-    formIterations: form?.iterations,
-    compositeOverride,
-    compositeOverrideSummary,
-    writeScopedStorage,
+  const renderState = useWorkspaceRenderState({
+    recentJobs: app.recentJobs,
+    engineIdByLabel: app.engineIdByLabel,
+    provider: app.provider,
+    storageScope: draft.storageScope,
+    hydratedForScope: draft.hydratedForScope,
+    formIterations: routeForm.form?.iterations,
+    compositeOverride: routeForm.compositeOverride,
+    compositeOverrideSummary: routeForm.compositeOverrideSummary,
+    writeScopedStorage: draft.writeScopedStorage,
   });
+
   useWorkspaceDraftHydration({
-    engines,
-    requestedJobId,
-    fromVideoId,
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    effectiveRequestedMode,
-    storageScope,
-    hydratedForScope,
-    setHydratedForScope,
-    readStorage,
-    readScopedStorage,
-    writeStorage,
-    form,
-    prompt,
-    negativePrompt,
-    multiPromptEnabled,
-    multiPromptScenes,
-    shotType,
-    voiceIdsInput,
-    memberTier,
-    recentJobs,
-    selectedPreview,
-    rendersLength: renders.length,
-    preserveStoredDraftRef,
-    hasStoredFormRef,
-    setForm,
-    setPrompt,
-    setNegativePrompt,
-    setMultiPromptEnabled,
-    setMultiPromptScenes,
-    setShotType,
-    setVoiceIdsInput,
-    setMemberTier,
-    setSelectedPreview,
-    hydratePendingRendersFromStorage,
-    resetRenderState,
+    engines: app.engines,
+    requestedJobId: draft.requestedJobId,
+    fromVideoId: draft.fromVideoId,
+    effectiveRequestedEngineId: draft.effectiveRequestedEngineId,
+    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    effectiveRequestedMode: draft.effectiveRequestedMode,
+    storageScope: draft.storageScope,
+    hydratedForScope: draft.hydratedForScope,
+    setHydratedForScope: draft.setHydratedForScope,
+    readStorage: draft.readStorage,
+    readScopedStorage: draft.readScopedStorage,
+    writeStorage: draft.writeStorage,
+    form: routeForm.form,
+    prompt: routeForm.prompt,
+    negativePrompt: routeForm.negativePrompt,
+    multiPromptEnabled: routeForm.multiPromptEnabled,
+    multiPromptScenes: routeForm.multiPromptScenes,
+    shotType: routeForm.shotType,
+    voiceIdsInput: routeForm.voiceIdsInput,
+    memberTier: routeForm.memberTier,
+    recentJobs: app.recentJobs,
+    selectedPreview: renderState.selectedPreview,
+    rendersLength: renderState.renders.length,
+    preserveStoredDraftRef: draft.preserveStoredDraftRef,
+    hasStoredFormRef: draft.hasStoredFormRef,
+    setForm: routeForm.setForm,
+    setPrompt: routeForm.setPrompt,
+    setNegativePrompt: routeForm.setNegativePrompt,
+    setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
+    setMultiPromptScenes: routeForm.setMultiPromptScenes,
+    setShotType: routeForm.setShotType,
+    setVoiceIdsInput: routeForm.setVoiceIdsInput,
+    setMemberTier: routeForm.setMemberTier,
+    setSelectedPreview: renderState.setSelectedPreview,
+    hydratePendingRendersFromStorage: renderState.hydratePendingRendersFromStorage,
+    resetRenderState: renderState.resetRenderState,
   });
 
-  const {
-    setViewerTarget,
-    viewerGroup,
-    initialPreviewFallbackGroup,
-    displayCompositeGroup,
-    compositePreviewPosterSrc,
-  } = useWorkspacePreviewState({
-    provider,
-    selectedPreview,
-    pendingSummaryMap,
-    compositeOverride,
-    activeVideoGroup,
+  const previewState = useWorkspacePreviewState({
+    provider: app.provider,
+    selectedPreview: renderState.selectedPreview,
+    pendingSummaryMap: renderState.pendingSummaryMap,
+    compositeOverride: routeForm.compositeOverride,
+    activeVideoGroup: renderState.activeVideoGroup,
     initialPreviewGroup,
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    requestedJobId,
-    fromVideoId,
+    effectiveRequestedEngineId: draft.effectiveRequestedEngineId,
+    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    requestedJobId: draft.requestedJobId,
+    fromVideoId: draft.fromVideoId,
   });
-
-  const {
-    inputAssets,
-    setInputAssets,
-    assetPickerTarget,
-    assetLibraryKind,
-    assetLibrarySource,
-    visibleAssetLibrary,
-    isAssetLibraryLoading,
-    assetLibraryError,
-    assetDeletePendingId,
-    fetchAssetLibrary,
-    handleAssetLibrarySourceChange,
-    closeAssetLibrary,
-    handleDeleteLibraryAsset,
-    handleOpenAssetLibrary,
-    handleOpenKlingAssetLibrary,
-    handleSelectLibraryAsset,
-    handleSelectKlingLibraryAsset,
-    handleAssetAdd,
-    handleAssetRemove,
-    handleKlingElementAdd,
-    handleKlingElementRemove,
-    handleKlingElementAssetRemove,
-    handleKlingElementAssetAdd,
-  } = useWorkspaceAssets({
-    engineId: form?.engineId,
-    workflowCopy,
-    showNotice,
-    klingElements,
-    setKlingElements,
+  const assets = useWorkspaceAssets({
+    engineId: routeForm.form?.engineId,
+    workflowCopy: app.workflowCopy,
+    showNotice: noticeState.showNotice,
+    klingElements: routeForm.klingElements,
+    setKlingElements: routeForm.setKlingElements,
   });
-
   const handleRefreshJob = useWorkspaceJobRefresh();
-
-  const {
-    hydrateVideoSettingsFromJob,
-    applyVideoSettingsFromTile,
-  } = useWorkspaceVideoSettings({
-    engines,
-    engineMap,
-    provider,
-    fromVideoId,
-    requestedJobId,
-    searchString,
-    sharedVideoSettings,
-    authChecked,
-    hydratedForScope,
-    storageScope,
-    effectiveRequestedEngineId,
-    effectiveRequestedEngineToken,
-    rendersLength: renders.length,
-    compositeOverride,
-    compositeOverrideSummary,
-    focusComposer,
-    readScopedStorage,
-    writeScopedStorage,
+  const videoSettings = useWorkspaceVideoSettings({
+    engines: app.engines,
+    engineMap: app.engineMap,
+    provider: app.provider,
+    fromVideoId: draft.fromVideoId,
+    requestedJobId: draft.requestedJobId,
+    searchString: draft.searchString,
+    sharedVideoSettings: routeForm.sharedVideoSettings,
+    authChecked: draft.authChecked,
+    hydratedForScope: draft.hydratedForScope,
+    storageScope: draft.storageScope,
+    effectiveRequestedEngineId: draft.effectiveRequestedEngineId,
+    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    rendersLength: renderState.renders.length,
+    compositeOverride: routeForm.compositeOverride,
+    compositeOverrideSummary: routeForm.compositeOverrideSummary,
+    focusComposer: routeForm.focusComposer,
+    readScopedStorage: draft.readScopedStorage,
+    writeScopedStorage: draft.writeScopedStorage,
     replaceRoute: replaceWorkspaceRoute,
-    setPrompt,
-    setNegativePrompt,
-    setMemberTier,
-    setCfgScale,
-    setShotType,
-    setVoiceIdsInput,
-    setMultiPromptEnabled,
-    setMultiPromptScenes,
-    setForm,
-    setInputAssets,
-    setKlingElements,
-    setSelectedPreview,
-    setCompositeOverride,
-    setCompositeOverrideSummary,
-    setSharedPrompt,
-    setSharedVideoSettings,
-    setNotice,
+    setPrompt: routeForm.setPrompt,
+    setNegativePrompt: routeForm.setNegativePrompt,
+    setMemberTier: routeForm.setMemberTier,
+    setCfgScale: routeForm.setCfgScale,
+    setShotType: routeForm.setShotType,
+    setVoiceIdsInput: routeForm.setVoiceIdsInput,
+    setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
+    setMultiPromptScenes: routeForm.setMultiPromptScenes,
+    setForm: routeForm.setForm,
+    setInputAssets: assets.setInputAssets,
+    setKlingElements: routeForm.setKlingElements,
+    setSelectedPreview: renderState.setSelectedPreview,
+    setCompositeOverride: routeForm.setCompositeOverride,
+    setCompositeOverrideSummary: routeForm.setCompositeOverrideSummary,
+    setSharedPrompt: routeForm.setSharedPrompt,
+    setSharedVideoSettings: routeForm.setSharedVideoSettings,
+    setNotice: noticeState.setNotice,
   });
-
-  const {
-    selectedEngine,
-    supportsKlingV3Controls,
-    supportsKlingV3VoiceControl,
-    isSeedance,
-    isUnifiedSeedance,
-    isUnifiedHappyHorse,
-    multiPromptTotalSec,
-    multiPromptActive,
-    multiPromptInvalid,
-    multiPromptError,
-    voiceIds,
-    voiceControlEnabled,
-    promptMaxChars,
-    promptCharLimitExceeded,
-    seedValue,
-    cameraFixedValue,
-    safetyCheckerValue,
-    effectivePrompt,
-    hasLastFrameInput,
-    audioWorkflowLocked,
-    audioWorkflowUnsupported,
-    activeManualMode,
-    activeMode,
-    allowsUnifiedVeoFirstLast,
-    submissionMode,
-    showSafetyCheckerControl,
-    effectiveDurationSec,
-    capability,
-    supportsAudioToggle,
-    engineModeOptions,
-    composerModeToggles,
-    showRetakeWorkflowAction,
-    composerWorkflowNotice,
-    handleMultiPromptAddScene,
-    handleMultiPromptRemoveScene,
-    handleMultiPromptUpdateScene,
-    handleSeedChange,
-    handleCameraFixedChange,
-    handleSafetyCheckerChange,
-    handleEngineChange,
-    handleModeChange,
-    handleComposerModeToggle,
-    handleDurationChange,
-    handleFramesChange,
-    handleResolutionChange,
-    handleAspectRatioChange,
-    handleFpsChange,
-  } = useWorkspaceComposerState({
-    engines,
-    form,
-    setForm,
-    inputAssets,
-    prompt,
-    multiPromptEnabled,
-    setMultiPromptEnabled,
-    multiPromptScenes,
-    setMultiPromptScenes,
-    voiceIdsInput,
-    shotType,
-    setShotType,
-    effectiveRequestedEngineToken,
-    authChecked,
-    hydratedForScope,
-    storageScope,
-    hasStoredFormRef,
-    preserveStoredDraftRef,
-    requestedEngineOverrideIdRef,
-    requestedEngineOverrideTokenRef,
-    requestedModeOverrideRef,
-    writeStorage,
-    uiLocale,
-    workflowCopy,
-    showNotice,
+  const composer = useWorkspaceComposerState({
+    engines: app.engines,
+    form: routeForm.form,
+    setForm: routeForm.setForm,
+    inputAssets: assets.inputAssets,
+    prompt: routeForm.prompt,
+    multiPromptEnabled: routeForm.multiPromptEnabled,
+    setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
+    multiPromptScenes: routeForm.multiPromptScenes,
+    setMultiPromptScenes: routeForm.setMultiPromptScenes,
+    voiceIdsInput: routeForm.voiceIdsInput,
+    shotType: routeForm.shotType,
+    setShotType: routeForm.setShotType,
+    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    authChecked: draft.authChecked,
+    hydratedForScope: draft.hydratedForScope,
+    storageScope: draft.storageScope,
+    hasStoredFormRef: draft.hasStoredFormRef,
+    preserveStoredDraftRef: draft.preserveStoredDraftRef,
+    requestedEngineOverrideIdRef: draft.requestedEngineOverrideIdRef,
+    requestedEngineOverrideTokenRef: draft.requestedEngineOverrideTokenRef,
+    requestedModeOverrideRef: draft.requestedModeOverrideRef,
+    writeStorage: draft.writeStorage,
+    uiLocale: app.uiLocale,
+    workflowCopy: app.workflowCopy,
+    showNotice: noticeState.showNotice,
   });
-
-  const {
-    inputSchemaSummary,
-    extraInputFields,
-    primaryAssetFieldIds,
-    referenceAssetFieldIds,
-    genericImageFieldIds,
-    frameAssetFieldIds,
-    referenceAudioFieldIds,
-    primaryAssetFieldLabel,
-    guestUploadLockedReason,
-  } = useWorkspaceInputSchemaState({
-    selectedEngine,
-    activeMode,
-    allowsUnifiedVeoFirstLast,
-    isUnifiedHappyHorse,
-    isUnifiedSeedance,
-    uiLocale,
-    authChecked,
-    authLoading,
-    authenticatedUserId: user?.id,
-    uploadLockedCopy: workspaceCopy.authGate.uploadLocked,
-    setInputAssets,
-    setForm,
+  const inputSchema = useWorkspaceInputSchemaState({
+    selectedEngine: composer.selectedEngine,
+    activeMode: composer.activeMode,
+    allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
+    isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
+    isUnifiedSeedance: composer.isUnifiedSeedance,
+    uiLocale: app.uiLocale,
+    authChecked: draft.authChecked,
+    authLoading: app.authLoading,
+    authenticatedUserId: app.user?.id,
+    uploadLockedCopy: app.workspaceCopy.authGate.uploadLocked,
+    setInputAssets: assets.setInputAssets,
+    setForm: routeForm.setForm,
   });
-  const {
-    preflight,
-    preflightError,
-    isPricing,
-    price,
-    currency,
-    topUpModal,
-    topUpAmount,
-    isTopUpLoading,
-    topUpError,
-    authModalOpen,
-    showComposerError,
-    closeTopUpModal,
-    handleSelectPresetAmount,
-    handleCustomAmountChange,
-    handleTopUpSubmit,
-    setAuthModalOpen,
-    setPreflightError,
-    setTopUpModal,
-  } = useWorkspacePricingGate({
-    form,
-    selectedEngine,
-    authChecked,
-    memberTier,
-    setMemberTier,
-    supportsAudioToggle,
-    effectiveDurationSec,
-    voiceControlEnabled,
-    submissionMode,
-    showNotice,
+  const pricing = useWorkspacePricingGate({
+    form: routeForm.form,
+    selectedEngine: composer.selectedEngine,
+    authChecked: draft.authChecked,
+    memberTier: routeForm.memberTier,
+    setMemberTier: routeForm.setMemberTier,
+    supportsAudioToggle: composer.supportsAudioToggle,
+    effectiveDurationSec: composer.effectiveDurationSec,
+    voiceControlEnabled: composer.voiceControlEnabled,
+    submissionMode: composer.submissionMode,
+    showNotice: noticeState.showNotice,
   });
-
-  const { startRender } = useWorkspaceGenerationRunner({
-    audioWorkflowUnsupported,
-    form,
-    activeMode,
-    submissionMode,
-    effectivePrompt,
-    effectiveDurationSec,
-    negativePrompt,
-    selectedEngine,
-    preflight,
-    memberTier,
-    showComposerError,
-    writeScopedStorage,
-    mutateLatestJobs,
-    inputSchemaSummary,
-    extraInputFields,
-    inputAssets,
-    setAuthModalOpen,
-    setPreflightError,
-    setTopUpModal,
-    setActiveGroupId,
-    setActiveBatchId,
-    setBatchHeroes,
-    setRenders,
-    setSelectedPreview,
-    setViewMode,
-    rendersRef,
-    uiLocale,
-    workflowCopy,
-    workspaceCopy,
-    capability,
-    cfgScale,
-    formatTakeLabel,
-    primaryAssetFieldLabel,
-    primaryAssetFieldIds,
-    referenceAssetFieldIds,
-    referenceAudioFieldIds,
-    genericImageFieldIds,
-    frameAssetFieldIds,
-    allowsUnifiedVeoFirstLast,
-    hasLastFrameInput,
-    supportsAudioToggle,
-    multiPromptActive,
-    multiPromptInvalid,
-    multiPromptError,
-    multiPromptScenes,
-    supportsKlingV3Controls,
-    supportsKlingV3VoiceControl,
-    isSeedance,
-    isUnifiedSeedance,
-    promptLength: prompt.length,
-    promptCharLimitExceeded,
-    promptMaxChars,
-    voiceIds,
-    voiceControlEnabled,
-    shotType,
-    klingElements,
+  const generation = useWorkspaceGenerationRunner({
+    audioWorkflowUnsupported: composer.audioWorkflowUnsupported,
+    form: routeForm.form,
+    activeMode: composer.activeMode,
+    submissionMode: composer.submissionMode,
+    effectivePrompt: composer.effectivePrompt,
+    effectiveDurationSec: composer.effectiveDurationSec,
+    negativePrompt: routeForm.negativePrompt,
+    selectedEngine: composer.selectedEngine,
+    preflight: pricing.preflight,
+    memberTier: routeForm.memberTier,
+    showComposerError: pricing.showComposerError,
+    writeScopedStorage: draft.writeScopedStorage,
+    mutateLatestJobs: app.mutateLatestJobs,
+    inputSchemaSummary: inputSchema.inputSchemaSummary,
+    extraInputFields: inputSchema.extraInputFields,
+    inputAssets: assets.inputAssets,
+    setAuthModalOpen: pricing.setAuthModalOpen,
+    setPreflightError: pricing.setPreflightError,
+    setTopUpModal: pricing.setTopUpModal,
+    setActiveGroupId: renderState.setActiveGroupId,
+    setActiveBatchId: renderState.setActiveBatchId,
+    setBatchHeroes: renderState.setBatchHeroes,
+    setRenders: renderState.setRenders,
+    setSelectedPreview: renderState.setSelectedPreview,
+    setViewMode: renderState.setViewMode,
+    rendersRef: renderState.rendersRef,
+    uiLocale: app.uiLocale,
+    workflowCopy: app.workflowCopy,
+    workspaceCopy: app.workspaceCopy,
+    capability: composer.capability,
+    cfgScale: routeForm.cfgScale,
+    formatTakeLabel: app.formatTakeLabel,
+    primaryAssetFieldLabel: inputSchema.primaryAssetFieldLabel,
+    primaryAssetFieldIds: inputSchema.primaryAssetFieldIds,
+    referenceAssetFieldIds: inputSchema.referenceAssetFieldIds,
+    referenceAudioFieldIds: inputSchema.referenceAudioFieldIds,
+    genericImageFieldIds: inputSchema.genericImageFieldIds,
+    frameAssetFieldIds: inputSchema.frameAssetFieldIds,
+    allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
+    hasLastFrameInput: composer.hasLastFrameInput,
+    supportsAudioToggle: composer.supportsAudioToggle,
+    multiPromptActive: composer.multiPromptActive,
+    multiPromptInvalid: composer.multiPromptInvalid,
+    multiPromptError: composer.multiPromptError,
+    multiPromptScenes: routeForm.multiPromptScenes,
+    supportsKlingV3Controls: composer.supportsKlingV3Controls,
+    supportsKlingV3VoiceControl: composer.supportsKlingV3VoiceControl,
+    isSeedance: composer.isSeedance,
+    isUnifiedSeedance: composer.isUnifiedSeedance,
+    promptLength: routeForm.prompt.length,
+    promptCharLimitExceeded: composer.promptCharLimitExceeded,
+    promptMaxChars: composer.promptMaxChars,
+    voiceIds: composer.voiceIds,
+    voiceControlEnabled: composer.voiceControlEnabled,
+    shotType: routeForm.shotType,
+    klingElements: routeForm.klingElements,
   });
-
-  const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
-  const {
-    previewAutoPlayRequestId,
-    guidedNavigation,
-    handleCopySharedPrompt,
-    handleGalleryGroupAction,
-    handleGalleryFeedStateChange,
-    openGroupViaGallery,
-    handleActiveGroupOpen,
-    handleActiveGroupAction,
-  } = useWorkspaceGalleryActions({
-    provider,
-    renderGroups,
-    batchHeroes,
-    preflightCurrency: preflight?.currency,
-    fallbackEngineId,
-    sharedPrompt,
-    selectedPreview,
-    compositeOverrideSummary,
-    applyVideoSettingsFromTile,
-    hydrateVideoSettingsFromJob,
-    focusComposer,
-    showNotice,
-    writeScopedStorage,
-    setPrompt,
-    setActiveGroupId,
-    setViewMode,
-    setActiveBatchId,
-    setBatchHeroes,
-    setSelectedPreview,
-    setCompositeOverride,
-    setCompositeOverrideSummary,
-    setSharedPrompt,
+  const gallery = useWorkspaceGalleryActions({
+    provider: app.provider,
+    renderGroups: renderState.renderGroups,
+    batchHeroes: renderState.batchHeroes,
+    preflightCurrency: pricing.preflight?.currency,
+    fallbackEngineId: composer.selectedEngine?.id ?? 'unknown-engine',
+    sharedPrompt: routeForm.sharedPrompt,
+    selectedPreview: renderState.selectedPreview,
+    compositeOverrideSummary: routeForm.compositeOverrideSummary,
+    applyVideoSettingsFromTile: videoSettings.applyVideoSettingsFromTile,
+    hydrateVideoSettingsFromJob: videoSettings.hydrateVideoSettingsFromJob,
+    focusComposer: routeForm.focusComposer,
+    showNotice: noticeState.showNotice,
+    writeScopedStorage: draft.writeScopedStorage,
+    setPrompt: routeForm.setPrompt,
+    setActiveGroupId: renderState.setActiveGroupId,
+    setViewMode: renderState.setViewMode,
+    setActiveBatchId: renderState.setActiveBatchId,
+    setBatchHeroes: renderState.setBatchHeroes,
+    setSelectedPreview: renderState.setSelectedPreview,
+    setCompositeOverride: routeForm.setCompositeOverride,
+    setCompositeOverrideSummary: routeForm.setCompositeOverrideSummary,
+    setSharedPrompt: routeForm.setSharedPrompt,
   });
-
   const loadState = getWorkspaceAppLoadState({
-    engineCount: engines.length,
-    enginesError,
-    hasForm: Boolean(form),
-    hasSelectedEngine: Boolean(selectedEngine),
-    initialPreviewFallbackGroup,
-    initialPreviewPosterSrc: compositePreviewPosterSrc,
+    engineCount: app.engines.length,
+    enginesError: app.enginesError,
+    hasForm: Boolean(routeForm.form),
+    hasSelectedEngine: Boolean(composer.selectedEngine),
+    initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
+    initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,
     isDesktopLayout,
-    isLoading,
-    loadEnginesError: workspaceCopy.errors.loadEngines,
-    noEnginesError: workspaceCopy.errors.noEngines,
+    isLoading: app.isLoading,
+    loadEnginesError: app.workspaceCopy.errors.loadEngines,
+    noEnginesError: app.workspaceCopy.errors.noEngines,
   });
 
-  if (loadState) {
-    return loadState;
-  }
-
-  if (!selectedEngine || !form) return null;
+  if (loadState) return loadState;
 
   return (
-    <>
-      <WorkspaceAppShell
-        isDesktopLayout={isDesktopLayout}
-        selectedEngine={selectedEngine}
-        engines={engines}
-        normalizedPendingGroups={normalizedPendingGroups}
-        openGroupViaGallery={openGroupViaGallery}
-        handleGalleryGroupAction={handleGalleryGroupAction}
-        handleGalleryFeedStateChange={handleGalleryFeedStateChange}
-        notice={notice}
-        showCenterGallery={showCenterGallery}
-        engineMap={engineMap}
-        isGenerationLoading={isGenerationLoading}
-        generationSkeletonCount={generationSkeletonCount}
-        galleryEmptyLabel={workspaceCopy.gallery.empty}
-        handleActiveGroupOpen={handleActiveGroupOpen}
-        handleActiveGroupAction={handleActiveGroupAction}
-        displayCompositeGroup={displayCompositeGroup}
-        previewAutoPlayRequestId={previewAutoPlayRequestId}
-        sharedPrompt={sharedPrompt}
-        hasSharedVideoSettings={Boolean(sharedVideoSettings)}
-        handleCopySharedPrompt={handleCopySharedPrompt}
-        guidedNavigation={guidedNavigation}
-        engineId={form.engineId}
-        selectedEngineId={selectedEngine.id}
-        activeMode={activeMode}
-        engineModeOptions={engineModeOptions}
-        modeLabelLocale={uiLocale}
-        handleEngineChange={handleEngineChange}
-        handleModeChange={handleModeChange}
-        renderGroups={renderGroups}
-        compositeOverrideSummary={compositeOverrideSummary}
-        setViewerTarget={setViewerTarget}
-        composerSurface={
-              <WorkspaceComposerSurface
-                selectedEngine={selectedEngine}
-                form={form}
-                setForm={setForm}
-                prompt={prompt}
-                setPrompt={setPrompt}
-                negativePrompt={negativePrompt}
-                setNegativePrompt={setNegativePrompt}
-                price={price}
-                currency={currency}
-                isPricing={isPricing}
-                preflightError={preflightError}
-                preflight={preflight}
-                composerRef={composerRef}
-                startRender={startRender}
-                inputSchemaSummary={inputSchemaSummary}
-                inputAssets={inputAssets}
-                isUnifiedSeedance={isUnifiedSeedance}
-                workflowCopy={workflowCopy}
-                guestUploadLockedReason={guestUploadLockedReason}
-                uiLocale={uiLocale}
-                composerModeToggles={composerModeToggles}
-                activeManualMode={activeManualMode}
-                handleComposerModeToggle={handleComposerModeToggle}
-                composerWorkflowNotice={composerWorkflowNotice}
-                handleAssetAdd={handleAssetAdd}
-                handleAssetRemove={handleAssetRemove}
-                handleOpenAssetLibrary={handleOpenAssetLibrary}
-                showNotice={showNotice}
-                supportsKlingV3Controls={supportsKlingV3Controls}
-                supportsKlingV3VoiceControl={supportsKlingV3VoiceControl}
-                multiPromptEnabled={multiPromptEnabled}
-                setMultiPromptEnabled={setMultiPromptEnabled}
-                multiPromptScenes={multiPromptScenes}
-                multiPromptTotalSec={multiPromptTotalSec}
-                multiPromptActive={multiPromptActive}
-                multiPromptInvalid={multiPromptInvalid}
-                multiPromptError={multiPromptError}
-                handleMultiPromptAddScene={handleMultiPromptAddScene}
-                handleMultiPromptRemoveScene={handleMultiPromptRemoveScene}
-                handleMultiPromptUpdateScene={handleMultiPromptUpdateScene}
-                audioWorkflowUnsupported={audioWorkflowUnsupported}
-                audioWorkflowLocked={audioWorkflowLocked}
-                showRetakeWorkflowAction={showRetakeWorkflowAction}
-                activeMode={activeMode}
-                submissionMode={submissionMode}
-                capability={capability}
-                handleDurationChange={handleDurationChange}
-                handleFramesChange={handleFramesChange}
-                handleResolutionChange={handleResolutionChange}
-                handleAspectRatioChange={handleAspectRatioChange}
-                handleFpsChange={handleFpsChange}
-                supportsAudioToggle={supportsAudioToggle}
-                voiceControlEnabled={voiceControlEnabled}
-                cfgScale={cfgScale}
-                setCfgScale={setCfgScale}
-                shotType={shotType}
-                setShotType={setShotType}
-                voiceIdsInput={voiceIdsInput}
-                setVoiceIdsInput={setVoiceIdsInput}
-                isSeedance={isSeedance}
-                seedValue={seedValue}
-                handleSeedChange={handleSeedChange}
-                cameraFixedValue={cameraFixedValue}
-                handleCameraFixedChange={handleCameraFixedChange}
-                safetyCheckerValue={safetyCheckerValue}
-                handleSafetyCheckerChange={handleSafetyCheckerChange}
-                showSafetyCheckerControl={showSafetyCheckerControl}
-                klingElements={klingElements}
-                handleKlingElementAdd={handleKlingElementAdd}
-                handleKlingElementRemove={handleKlingElementRemove}
-                handleKlingElementAssetAdd={handleKlingElementAssetAdd}
-                handleKlingElementAssetRemove={handleKlingElementAssetRemove}
-                handleOpenKlingAssetLibrary={handleOpenKlingAssetLibrary}
-                setViewMode={setViewMode}
-              />
-        }
-      />
-      <WorkspaceRuntimeModals
-        viewerGroup={viewerGroup}
-        onCloseViewer={() => setViewerTarget(null)}
-        onRefreshJob={handleRefreshJob}
-        topUpModal={topUpModal}
-        topUpCopy={workspaceCopy.topUp}
-        currency={currency}
-        topUpAmount={topUpAmount}
-        isTopUpLoading={isTopUpLoading}
-        topUpError={topUpError}
-        onCloseTopUp={closeTopUpModal}
-        onTopUpSubmit={handleTopUpSubmit}
-        onSelectPresetAmount={handleSelectPresetAmount}
-        onCustomAmountChange={handleCustomAmountChange}
-        authModalOpen={authModalOpen}
-        authGateCopy={workspaceCopy.authGate}
-        loginRedirectTarget={loginRedirectTarget}
-        onCloseAuthModal={() => setAuthModalOpen(false)}
-        assetPickerTarget={assetPickerTarget}
-        assetLibraryKind={assetLibraryKind}
-        assetLibrarySource={assetLibrarySource}
-        visibleAssetLibrary={visibleAssetLibrary}
-        isAssetLibraryLoading={isAssetLibraryLoading}
-        assetLibraryError={assetLibraryError}
-        assetDeletePendingId={assetDeletePendingId}
-        fieldFallbackLabel={workspaceCopy.assetLibrary.fieldFallback}
-        onAssetLibrarySourceChange={handleAssetLibrarySourceChange}
-        onCloseAssetLibrary={closeAssetLibrary}
-        onRefreshAssets={fetchAssetLibrary}
-        onSelectFieldAsset={handleSelectLibraryAsset}
-        onSelectKlingAsset={handleSelectKlingLibraryAsset}
-        onDeleteAsset={handleDeleteLibraryAsset}
-      />
-    </>
+    <WorkspaceAppReadyView
+      app={app}
+      assets={assets}
+      composer={composer}
+      draft={draft}
+      gallery={gallery}
+      generation={generation}
+      handleRefreshJob={handleRefreshJob}
+      inputSchema={inputSchema}
+      isDesktopLayout={isDesktopLayout}
+      noticeState={noticeState}
+      previewState={previewState}
+      pricing={pricing}
+      renderState={renderState}
+      routeForm={routeForm}
+    />
   );
 }

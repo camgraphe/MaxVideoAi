@@ -5,6 +5,7 @@ import test from 'node:test';
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const appBootstrapHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAppBootstrap.ts';
 const appLoadStatePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppLoadState.tsx';
+const appReadyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
 const jobRefreshHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceJobRefresh.ts';
 const routeFormStateHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState.ts';
 
@@ -26,7 +27,7 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   assert.doesNotMatch(appSource, /CLIENT_ENV/);
   assert.doesNotMatch(appSource, /DEFAULT_PROCESSING_COPY/);
   assert.doesNotMatch(appSource, /mergeCopy/);
-  assert.ok(appLines <= 675, `expected AppClient to stay at or below 675 lines after bootstrap split, got ${appLines}`);
+  assert.ok(appLines <= 330, `expected AppClient to stay at or below 330 lines after ready-view split, got ${appLines}`);
 
   assert.match(bootstrapSource, /export function useWorkspaceAppBootstrap/);
   assert.match(bootstrapSource, /useEngines/);
@@ -37,6 +38,27 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   assert.match(bootstrapSource, /getLocalizedWorkflowCopy/);
   assert.match(bootstrapSource, /mergeCopy/);
   assert.match(bootstrapSource, /formatTakeLabel/);
+});
+
+test('workspace app client delegates ready shell rendering to a route-local view', () => {
+  assert.equal(existsSync(appClientPath), true);
+  assert.equal(existsSync(appReadyViewPath), true);
+
+  const appSource = readFileSync(appClientPath, 'utf8');
+  const readyViewSource = readFileSync(appReadyViewPath, 'utf8');
+  const appLines = appSource.split('\n').length;
+
+  assert.match(appSource, /import \{ WorkspaceAppReadyView \} from '\.\/_components\/WorkspaceAppReadyView';/);
+  assert.match(appSource, /<WorkspaceAppReadyView/);
+  assert.doesNotMatch(appSource, /WorkspaceAppShell/);
+  assert.doesNotMatch(appSource, /WorkspaceComposerSurface/);
+  assert.doesNotMatch(appSource, /WorkspaceRuntimeModals/);
+  assert.ok(appLines <= 330, `expected AppClient to stay at or below 330 lines after ready-view split, got ${appLines}`);
+
+  assert.match(readyViewSource, /export function WorkspaceAppReadyView/);
+  assert.match(readyViewSource, /WorkspaceAppShell/);
+  assert.match(readyViewSource, /WorkspaceComposerSurface/);
+  assert.match(readyViewSource, /WorkspaceRuntimeModals/);
 });
 
 test('workspace app client delegates load state and job refresh surfaces', () => {
@@ -56,7 +78,7 @@ test('workspace app client delegates load state and job refresh surfaces', () =>
   assert.doesNotMatch(appSource, /WorkspaceBootSurface/);
   assert.doesNotMatch(appSource, /getJobStatus/);
   assert.doesNotMatch(appSource, /useCallback/);
-  assert.ok(appLines <= 675, `expected AppClient to stay at or below 675 lines after load-state split, got ${appLines}`);
+  assert.ok(appLines <= 330, `expected AppClient to stay at or below 330 lines after load-state split, got ${appLines}`);
 
   assert.match(loadStateSource, /export function getWorkspaceAppLoadState/);
   assert.match(loadStateSource, /WorkspaceBootSurface/);
@@ -82,7 +104,7 @@ test('workspace app client delegates route form state to a route-local hook', ()
   assert.doesNotMatch(appSource, /const \[klingElements, setKlingElements\] = useState/);
   assert.doesNotMatch(appSource, /const composerRef = useRef/);
   assert.doesNotMatch(appSource, /const focusComposer = useCallback/);
-  assert.ok(appLines <= 675, `expected AppClient to stay at or below 675 lines after route state split, got ${appLines}`);
+  assert.ok(appLines <= 330, `expected AppClient to stay at or below 330 lines after route state split, got ${appLines}`);
 
   assert.match(routeFormStateSource, /export function useWorkspaceRouteFormState/);
   assert.match(routeFormStateSource, /DEFAULT_PROMPT/);

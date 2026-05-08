@@ -3,16 +3,21 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
+const readyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
 const composerSurfacePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx';
 
 test('workspace composer and settings surface is owned by a route-local component', () => {
+  assert.equal(existsSync(readyViewPath), true);
   assert.equal(existsSync(composerSurfacePath), true);
 
   const appSource = readFileSync(appClientPath, 'utf8');
+  const readyViewSource = readFileSync(readyViewPath, 'utf8');
   const surfaceSource = readFileSync(composerSurfacePath, 'utf8');
 
-  assert.match(appSource, /import \{ WorkspaceComposerSurface \} from '\.\/_components\/WorkspaceComposerSurface';/);
-  assert.match(appSource, /<WorkspaceComposerSurface/);
+  assert.match(appSource, /import \{ WorkspaceAppReadyView \} from '\.\/_components\/WorkspaceAppReadyView';/);
+  assert.doesNotMatch(appSource, /WorkspaceComposerSurface/);
+  assert.match(readyViewSource, /import \{ WorkspaceComposerSurface \} from '\.\/WorkspaceComposerSurface';/);
+  assert.match(readyViewSource, /<WorkspaceComposerSurface/);
 
   assert.doesNotMatch(appSource, /<Composer\b/);
   assert.doesNotMatch(appSource, /<SettingsControls\b/);
