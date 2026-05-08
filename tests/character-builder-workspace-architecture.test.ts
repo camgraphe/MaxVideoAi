@@ -14,12 +14,15 @@ const generateDockPath = join(root, 'frontend/src/components/tools/character-bui
 const formControlsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-form-controls.tsx');
 const referenceLibraryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-reference-library.tsx');
 const resultCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-result-cards.tsx');
+const resultsGalleryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-results-gallery.tsx');
 const optionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderOptions.ts');
 const historicalResultsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderHistoricalResults.ts');
 const pendingRunsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPendingRunsSync.ts');
 const jobSnapshotHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderJobSnapshotLoader.ts');
 const generationRunnerHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderGenerationRunner.ts');
 const referenceAssetsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderReferenceAssets.ts');
+const resultActionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderResultActions.ts');
+const resultsInfiniteScrollHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderResultsInfiniteScroll.ts');
 const persistenceHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPersistence.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
@@ -34,12 +37,15 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(formControlsPath), 'form controls should live in a focused component module');
   assert.ok(existsSync(referenceLibraryPath), 'reference library components should live in a focused component module');
   assert.ok(existsSync(resultCardsPath), 'result card components should live in a focused component module');
+  assert.ok(existsSync(resultsGalleryPath), 'result gallery composition should live in a focused component module');
   assert.ok(existsSync(optionsHookPath), 'localized option derivation should live in a focused hook');
   assert.ok(existsSync(historicalResultsHookPath), 'historical result derivation should live in a focused hook');
   assert.ok(existsSync(pendingRunsHookPath), 'pending run polling should live in a focused hook');
   assert.ok(existsSync(jobSnapshotHookPath), 'job snapshot loading should live in a focused hook');
   assert.ok(existsSync(generationRunnerHookPath), 'generation submission should live in a focused hook');
   assert.ok(existsSync(referenceAssetsHookPath), 'reference asset upload and library selection should live in a focused hook');
+  assert.ok(existsSync(resultActionsHookPath), 'result actions should live in a focused hook');
+  assert.ok(existsSync(resultsInfiniteScrollHookPath), 'result infinite scroll should live in a focused hook');
   assert.ok(existsSync(persistenceHookPath), 'local persistence should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
@@ -49,6 +55,8 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderJobSnapshotLoader'/, 'workspace should import job snapshot loader hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderGenerationRunner'/, 'workspace should import generation runner hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderReferenceAssets'/, 'workspace should import reference asset hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultActions'/, 'workspace should import result actions hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultsInfiniteScroll'/, 'workspace should import result infinite scroll hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
@@ -76,12 +84,22 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /async function handleUpload\(/, 'reference upload handling belongs in useCharacterBuilderReferenceAssets');
   assert.doesNotMatch(workspaceSource, /function handleLibrarySelect\(/, 'reference library selection belongs in useCharacterBuilderReferenceAssets');
   assert.doesNotMatch(workspaceSource, /buildReferenceImage/, 'reference image construction belongs in useCharacterBuilderReferenceAssets');
+  assert.doesNotMatch(workspaceSource, /async function handleSaveResult\(/, 'result save actions belong in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /async function handleSaveHistoricalResult\(/, 'historical save actions belong in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /async function handleDuplicateHistoricalSettings\(/, 'historical duplicate actions belong in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /function applySettingsSnapshot\(/, 'result snapshot application belongs in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /saveImageToLibrary/, 'result library saving belongs in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /parseCharacterBuilderSnapshot/, 'historical snapshot parsing belongs in useCharacterBuilderResultActions');
+  assert.doesNotMatch(workspaceSource, /triggerAppDownload/, 'result downloads belong in CharacterBuilderResultsGallery');
+  assert.doesNotMatch(workspaceSource, /new IntersectionObserver/, 'result infinite scroll observer belongs in useCharacterBuilderResultsInfiniteScroll');
+  assert.doesNotMatch(workspaceSource, /scrollContainer\.addEventListener/, 'result scroll listener belongs in useCharacterBuilderResultsInfiniteScroll');
+  assert.doesNotMatch(workspaceSource, /<ResultCard/, 'result card composition belongs in CharacterBuilderResultsGallery');
   assert.doesNotMatch(workspaceSource, /readPersistedState\(\)/, 'local hydration belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /writePersistedPendingRuns/, 'pending run persistence belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /visitorSanitizedRef/, 'visitor cleanup tracking belongs in useCharacterBuilderPersistence');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1485, `CharacterBuilderWorkspace should stay below 1485 lines after reference asset hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1210, `CharacterBuilderWorkspace should stay below 1210 lines after result extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -94,12 +112,15 @@ test('character builder helper modules expose the expected workspace contract', 
   const formControlsSource = readFileSync(formControlsPath, 'utf8');
   const referenceLibrarySource = readFileSync(referenceLibraryPath, 'utf8');
   const resultCardsSource = readFileSync(resultCardsPath, 'utf8');
+  const resultsGallerySource = readFileSync(resultsGalleryPath, 'utf8');
   const optionsHookSource = readFileSync(optionsHookPath, 'utf8');
   const historicalResultsHookSource = readFileSync(historicalResultsHookPath, 'utf8');
   const pendingRunsHookSource = readFileSync(pendingRunsHookPath, 'utf8');
   const jobSnapshotHookSource = readFileSync(jobSnapshotHookPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
   const referenceAssetsHookSource = readFileSync(referenceAssetsHookPath, 'utf8');
+  const resultActionsHookSource = readFileSync(resultActionsHookPath, 'utf8');
+  const resultsInfiniteScrollHookSource = readFileSync(resultsInfiniteScrollHookPath, 'utf8');
   const persistenceHookSource = readFileSync(persistenceHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_CHARACTER_COPY =/, 'copy module should export default copy');
@@ -148,6 +169,7 @@ test('character builder helper modules expose the expected workspace contract', 
     './character-builder-form-controls',
     './character-builder-reference-library',
     './character-builder-result-cards',
+    './character-builder-results-gallery',
   ]) {
     assert.match(componentsSource, new RegExp(`from '${moduleName}'`), `component barrel should re-export ${moduleName}`);
   }
@@ -156,6 +178,7 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.doesNotMatch(componentsSource, /export function HairEditorPanel\(/, 'form controls should not be implemented in the barrel');
   assert.doesNotMatch(componentsSource, /export function CharacterReferenceLibraryModal\(/, 'library modal should not be implemented in the barrel');
   assert.doesNotMatch(componentsSource, /export function ResultCard\(/, 'result cards should not be implemented in the barrel');
+  assert.doesNotMatch(componentsSource, /export function CharacterBuilderResultsGallery\(/, 'result gallery should not be implemented in the barrel');
 
   for (const exportName of [
     'VisualChoiceCard',
@@ -196,6 +219,10 @@ test('character builder helper modules expose the expected workspace contract', 
     assert.match(resultCardsSource, new RegExp(`export function ${exportName}`), `${exportName} should be exported`);
   }
 
+  assert.match(resultsGallerySource, /export function CharacterBuilderResultsGallery/, 'results gallery should be exported');
+  assert.match(resultsGallerySource, /<ResultCard/, 'results gallery should compose result cards');
+  assert.match(resultsGallerySource, /triggerAppDownload/, 'results gallery should own downloads');
+
   assert.match(optionsHookSource, /export function useCharacterBuilderOptions/, 'options hook should be exported');
   assert.match(optionsHookSource, /getAvailableCharacterFormatOptions/, 'options hook should own format option derivation');
   assert.match(historicalResultsHookSource, /export function useCharacterBuilderHistoricalResults/, 'historical results hook should be exported');
@@ -212,6 +239,12 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(referenceAssetsHookSource, /uploadImage/, 'reference asset hook should own uploads');
   assert.match(referenceAssetsHookSource, /buildReferenceImage/, 'reference asset hook should build uploaded references');
   assert.match(referenceAssetsHookSource, /updateReferenceImage/, 'reference asset hook should update reference slots');
+  assert.match(resultActionsHookSource, /export function useCharacterBuilderResultActions/, 'result actions hook should be exported');
+  assert.match(resultActionsHookSource, /saveImageToLibrary/, 'result actions hook should own library saves');
+  assert.match(resultActionsHookSource, /parseCharacterBuilderSnapshot/, 'result actions hook should own historical snapshot parsing');
+  assert.match(resultsInfiniteScrollHookSource, /export function useCharacterBuilderResultsInfiniteScroll/, 'results scroll hook should be exported');
+  assert.match(resultsInfiniteScrollHookSource, /new IntersectionObserver/, 'results scroll hook should own the observer');
+  assert.match(resultsInfiniteScrollHookSource, /scrollContainer\.addEventListener/, 'results scroll hook should own scroll fallback loading');
   assert.match(persistenceHookSource, /export function useCharacterBuilderPersistence/, 'persistence hook should be exported');
   assert.match(persistenceHookSource, /readPersistedState/, 'persistence hook should own local hydration');
   assert.match(persistenceHookSource, /writePersistedPendingRuns/, 'persistence hook should own pending run persistence');

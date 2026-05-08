@@ -27,3 +27,4 @@ export {
   PendingResultCard,
   ResultCard,
 } from './character-builder-result-cards';
+export { CharacterBuilderResultsGallery } from './character-builder-results-gallery';
