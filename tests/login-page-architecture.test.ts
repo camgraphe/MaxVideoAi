@@ -5,32 +5,46 @@ import test from 'node:test';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(core)/login/page.tsx');
+const controllerPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginPageController.ts');
+const autofillHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginAutofillSync.ts');
+const browserLocaleHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginBrowserLocale.ts');
+const modeQueryHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginModeFromQuery.ts');
+const nextTargetHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginNextTarget.ts');
 const copyPath = join(root, 'frontend/app/(core)/login/_lib/login-copy.ts');
 const helpersPath = join(root, 'frontend/app/(core)/login/_lib/login-helpers.ts');
 const authSurfacePath = join(root, 'frontend/app/(core)/login/_components/LoginAuthSurface.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
+const controllerSource = readFileSync(controllerPath, 'utf8');
+const autofillHookSource = readFileSync(autofillHookPath, 'utf8');
+const nextTargetHookSource = readFileSync(nextTargetHookPath, 'utf8');
 
 test('login page delegates localized copy and browser helpers to route-local modules', () => {
+  assert.ok(existsSync(controllerPath), 'login controller hook should stay in a route-local hook module');
+  assert.ok(existsSync(autofillHookPath), 'login autofill sync should stay in a route-local hook module');
+  assert.ok(existsSync(browserLocaleHookPath), 'login browser locale should stay in a route-local hook module');
+  assert.ok(existsSync(modeQueryHookPath), 'login mode query sync should stay in a route-local hook module');
+  assert.ok(existsSync(nextTargetHookPath), 'login next target state should stay in a route-local hook module');
   assert.ok(existsSync(copyPath), 'login localized copy should stay in a route-local copy module');
   assert.ok(existsSync(helpersPath), 'login browser helpers should stay in a route-local helper module');
   assert.ok(existsSync(authSurfacePath), 'login form UI should stay in a route-local component module');
 
   assert.match(
     pageSource,
-    /from '\.\/_lib\/login-copy'/,
-    'login page should import auth copy and auth mode types from the route-local copy module'
-  );
-  assert.match(
-    pageSource,
-    /from '\.\/_lib\/login-helpers'/,
-    'login page should import auth path and OAuth helpers from the route-local helper module'
+    /from '\.\/_hooks\/useLoginPageController'/,
+    'login page should import the route-local controller hook'
   );
   assert.match(
     pageSource,
     /from '\.\/_components\/LoginAuthSurface'/,
     'login page should render the route-local auth surface component'
   );
+  assert.match(controllerSource, /from '\.\.\/_lib\/login-copy'/);
+  assert.match(controllerSource, /from '\.\.\/_lib\/login-helpers'/);
+  assert.match(controllerSource, /from '\.\/useLoginAutofillSync'/);
+  assert.match(controllerSource, /from '\.\/useLoginBrowserLocale'/);
+  assert.match(controllerSource, /from '\.\/useLoginModeFromQuery'/);
+  assert.match(controllerSource, /from '\.\/useLoginNextTarget'/);
 });
 
 test('login page does not regain auth copy or browser helper ownership', () => {
@@ -41,9 +55,17 @@ test('login page does not regain auth copy or browser helper ownership', () => {
     /PENDING_GOOGLE_LOGIN_STORAGE_KEY/,
     'pending Google OAuth storage details belong in _lib/login-helpers.ts'
   );
+  assert.doesNotMatch(pageSource, /supabase\.auth/, 'Supabase auth orchestration belongs in useLoginPageController');
+  assert.doesNotMatch(pageSource, /LOGIN_NEXT_STORAGE_KEY/, 'login storage orchestration belongs in useLoginPageController');
+  assert.doesNotMatch(pageSource, /oauthCodeExchangeStartedRef/, 'OAuth exchange guards belong in useLoginPageController');
 
   const lineCount = pageSource.split('\n').length;
-  assert.ok(lineCount <= 820, `login page should stay below 820 lines after UI extraction, got ${lineCount}`);
+  const controllerLineCount = controllerSource.split('\n').length;
+  assert.ok(lineCount <= 40, `login page should stay below 40 lines after controller extraction, got ${lineCount}`);
+  assert.ok(
+    controllerLineCount <= 700,
+    `login controller should keep shrinking as browser helpers move out, got ${controllerLineCount}`
+  );
   assert.doesNotMatch(pageSource, /<main className=/, 'login page should not own the full form surface JSX');
 });
 
@@ -52,6 +74,14 @@ test('login helper modules expose the expected route contract', () => {
   const helpersSource = readFileSync(helpersPath, 'utf8');
   const authSurfaceSource = readFileSync(authSurfacePath, 'utf8');
 
+  assert.match(controllerSource, /export function useLoginPageController/, 'controller hook should export the login page state machine');
+  assert.match(autofillHookSource, /export function useLoginAutofillSync/, 'autofill sync should live in its own hook');
+  assert.match(nextTargetHookSource, /export function useLoginNextTarget/, 'next target resolution should live in its own hook');
+  assert.match(nextTargetHookSource, /LOGIN_NEXT_STORAGE_KEY/, 'next target hook should own login target storage');
+  assert.match(nextTargetHookSource, /LOGIN_LAST_TARGET_KEY/, 'next target hook should own last target storage');
+  assert.match(controllerSource, /exchangeCodeForSession\(oauthCode\)/, 'controller hook should own browser-side PKCE exchange');
+  assert.match(controllerSource, /startOAuthCookieRedirectFallback/, 'controller hook should own OAuth cookie fallback wiring');
+  assert.match(controllerSource, /signInWithOAuth/, 'controller hook should own Google OAuth submission');
   assert.match(copySource, /export const AUTH_COPY =/, 'copy module should export the auth copy dictionary');
   assert.match(copySource, /export type AuthMode =/, 'copy module should export the auth mode type');
   assert.match(copySource, /export type Locale =/, 'copy module should export the locale type derived from auth copy');
