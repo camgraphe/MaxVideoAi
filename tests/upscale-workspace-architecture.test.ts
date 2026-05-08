@@ -17,6 +17,7 @@ const sourceMediaHookPath = join(root, 'frontend/src/components/tools/upscale/_h
 const controlsPath = join(root, 'frontend/src/components/tools/upscale/_components/upscale-workspace-controls.tsx');
 const inputPanelsPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleInputPanels.tsx');
 const heroSummaryCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleHeroSummaryCard.tsx');
+const libraryModalPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleLibraryModal.tsx');
 const previewCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscalePreviewCard.tsx');
 const recentRailPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleRecentRail.tsx');
 
@@ -35,6 +36,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(controlsPath), 'upscale workspace controls should live in colocated components');
   assert.ok(existsSync(inputPanelsPath), 'upscale input panels should live in colocated components');
   assert.ok(existsSync(heroSummaryCardPath), 'upscale hero summary should live in a colocated component');
+  assert.ok(existsSync(libraryModalPath), 'upscale library modal should live in a colocated component');
   assert.ok(existsSync(previewCardPath), 'upscale preview card should live in a colocated component');
   assert.ok(existsSync(recentRailPath), 'upscale recent rail should live in a colocated component');
 
@@ -49,6 +51,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleSourceMedia'/, 'workspace should import source media hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleInputPanels'/, 'workspace should import input panels');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleHeroSummaryCard'/, 'workspace should import hero summary card');
+  assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleLibraryModal'/, 'workspace should import library modal');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscalePreviewCard'/, 'workspace should import preview card');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleRecentRail'/, 'workspace should import recent rail');
 });
@@ -89,9 +92,13 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /Drop file here/, 'upload dropzone JSX belongs in UpscaleInputPanels');
   assert.doesNotMatch(workspaceSource, /Choose how you want to enhance/, 'recipe panel JSX belongs in UpscaleInputPanels');
   assert.doesNotMatch(workspaceSource, /<SelectMenu/, 'recipe selectors belong in UpscaleInputPanels');
+  assert.doesNotMatch(workspaceSource, /<AssetLibraryBrowser/, 'library browser JSX belongs in UpscaleLibraryModal');
+  assert.doesNotMatch(workspaceSource, /RefreshCw/, 'library refresh action belongs in UpscaleLibraryModal');
+  assert.doesNotMatch(workspaceSource, /copy\.libraryRefresh/, 'library refresh copy belongs in UpscaleLibraryModal');
+  assert.doesNotMatch(workspaceSource, /copy\.libraryUse/, 'library asset actions belong in UpscaleLibraryModal');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 670, `UpscaleWorkspace should stay below 670 lines after input panel extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 620, `UpscaleWorkspace should stay below 620 lines after library modal extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
@@ -107,6 +114,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   const controlsSource = readFileSync(controlsPath, 'utf8');
   const inputPanelsSource = readFileSync(inputPanelsPath, 'utf8');
   const heroSummaryCardSource = readFileSync(heroSummaryCardPath, 'utf8');
+  const libraryModalSource = readFileSync(libraryModalPath, 'utf8');
   const previewCardSource = readFileSync(previewCardPath, 'utf8');
   const recentRailSource = readFileSync(recentRailPath, 'utf8');
 
@@ -168,6 +176,10 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(inputPanelsSource, /SelectMenu/, 'input panels should own recipe selectors');
   assert.match(heroSummaryCardSource, /export function UpscaleHeroSummaryCard/, 'hero summary card should be exported');
   assert.match(heroSummaryCardSource, /WandSparkles/, 'hero summary card should own its action icon');
+  assert.match(libraryModalSource, /export function UpscaleLibraryModal/, 'library modal should be exported');
+  assert.match(libraryModalSource, /AssetLibraryBrowser/, 'library modal should own the shared library browser');
+  assert.match(libraryModalSource, /RefreshCw/, 'library modal should own refresh action rendering');
+  assert.match(libraryModalSource, /copy\.libraryUse/, 'library modal should own asset action copy');
   assert.match(previewCardSource, /export function UpscalePreviewCard/, 'preview card should be exported');
   assert.match(previewCardSource, /PREVIEW_ZOOM_OPTIONS/, 'preview card should own zoom controls');
   assert.match(previewCardSource, /ChevronsLeftRight/, 'preview card should own compare affordance');

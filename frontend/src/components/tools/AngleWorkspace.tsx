@@ -16,11 +16,10 @@ import {
   type ClipboardEvent as ReactClipboardEvent,
   type DragEvent as ReactDragEvent,
 } from 'react';
-import { ArrowLeft, Loader2, WandSparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { ButtonLink } from '@/components/ui/Button';
 import { saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -29,12 +28,10 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
 import { AngleAuthGateModal } from './angle/_components/angle-auth-gate-modal';
-import { AngleCameraControls } from './angle/_components/angle-camera-controls';
+import { AngleGenerationSettingsPanel } from './angle/_components/angle-generation-settings-panel';
 import { AngleImageLibraryModal } from './angle/_components/angle-image-library-modal';
-import { AngleOrbitSelector } from './angle/_components/angle-orbit-selector';
 import { AngleOutputPanel } from './angle/_components/angle-output-panel';
 import { AngleRecentJobModal } from './angle/_components/angle-recent-job-modal';
-import { AngleSourceImagePanel } from './angle/_components/angle-source-image-panel';
 import { useAngleGenerationRunner } from './angle/_hooks/useAngleGenerationRunner';
 import { DEFAULT_ANGLE_COPY, type AngleCopy } from './angle/_lib/angle-workspace-copy';
 import {
@@ -44,7 +41,6 @@ import {
   collectAnglePreviewImages,
   DEFAULT_ENGINE_ID,
   ENGINES,
-  formatUsdCompact,
   getAngleBillingProductKey,
   isAuthRequiredError,
   parsePersistedAngleToolState,
@@ -487,93 +483,34 @@ export default function AngleToolPage() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
-              <Card className="border border-border bg-surface p-5">
-                <div className="space-y-5">
-                  <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)]">
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.engine}</p>
-                        <label className="mt-2 block">
-                          <span className="sr-only">{copy.engineSelect}</span>
-                          <select
-                            value={engineId}
-                            onChange={(event) => setEngineId(event.target.value as AngleToolEngineId)}
-                            className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-                          >
-                            {ENGINES.map((engine) => (
-                              <option key={engine.id} value={engine.id}>
-                                {copy.engines[engine.id].label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <p className="mt-2 text-xs text-text-muted">{selectedEngine ? copy.engines[selectedEngine.id].description : null}</p>
-                        {engineId === 'flux-multiple-angles' ? (
-                          <p className="mt-1 text-xs text-text-muted">
-                            {copy.engineHelpFlux}
-                          </p>
-                        ) : null}
-                        {engineId === 'qwen-multiple-angles' && params.tilt < 0 ? (
-                          <p className="mt-1 text-xs text-warning">{copy.engineHelpQwen}</p>
-                        ) : null}
-                      </div>
-
-                      <AngleSourceImagePanel
-                        copy={copy}
-                        fileInputRef={fileInputRef}
-                        onAuthRequired={openAuthGate}
-                        onFileSelect={handleFileSelect}
-                        onLibraryOpen={() => setLibraryModalOpen(true)}
-                        onRemoveSource={handleRemoveSource}
-                        onSourceDragActiveChange={setSourceDragActive}
-                        onSourceDrop={handleSourceDrop}
-                        onSourcePaste={handleSourcePaste}
-                        onUploadRequest={handleUploadRequest}
-                        sourceDragActive={sourceDragActive}
-                        sourceImage={sourceImage}
-                        uploading={uploading}
-                        userPresent={Boolean(user)}
-                      />
-                    </div>
-
-                    <AngleOrbitSelector
-                      params={params}
-                      onParamsChange={setParams}
-                      generateBestAngles={generateBestAngles}
-                      onGenerateBestAnglesChange={setGenerateBestAngles}
-                      supportsMultiOutput={Boolean(selectedEngine?.supportsMultiOutput)}
-                      sourceImage={sourceImage}
-                      copy={copy}
-                    />
-                  </div>
-
-                  <AngleCameraControls copy={copy} onParamsChange={setParams} params={params} />
-
-                  <div className="rounded-card border border-border bg-bg p-4">
-                    <p className="text-xs uppercase tracking-micro text-text-muted">{copy.estimatedCost}</p>
-                    <p className="mt-2 text-2xl font-semibold leading-none text-text-primary">
-                      {formatUsdCompact(estimatedCostUsd)}
-                    </p>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant={user ? 'primary' : 'outline'}
-                    className="w-full gap-2"
-                    onClick={user ? handleGenerate : openAuthGate}
-                    disabled={generating || uploading || !sourceImage?.url}
-                  >
-                    {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-                    {generating ? copy.generating : user ? copy.generate : copy.generateLocked}
-                  </Button>
-
-                  {error ? (
-                    <p role="alert" className="text-sm text-error">
-                      {error}
-                    </p>
-                  ) : null}
-                </div>
-              </Card>
+              <AngleGenerationSettingsPanel
+                copy={copy}
+                engineId={engineId}
+                engines={ENGINES}
+                error={error}
+                estimatedCostUsd={estimatedCostUsd}
+                fileInputRef={fileInputRef}
+                generateBestAngles={generateBestAngles}
+                generating={generating}
+                onAuthRequired={openAuthGate}
+                onEngineIdChange={setEngineId}
+                onFileSelect={handleFileSelect}
+                onGenerate={handleGenerate}
+                onGenerateBestAnglesChange={setGenerateBestAngles}
+                onLibraryOpen={() => setLibraryModalOpen(true)}
+                onParamsChange={setParams}
+                onRemoveSource={handleRemoveSource}
+                onSourceDragActiveChange={setSourceDragActive}
+                onSourceDrop={handleSourceDrop}
+                onSourcePaste={handleSourcePaste}
+                onUploadRequest={handleUploadRequest}
+                params={params}
+                selectedEngine={selectedEngine}
+                sourceDragActive={sourceDragActive}
+                sourceImage={sourceImage}
+                uploading={uploading}
+                userPresent={Boolean(user)}
+              />
 
               <AngleOutputPanel
                 copy={copy}
