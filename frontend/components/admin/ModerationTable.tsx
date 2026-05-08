@@ -3,20 +3,33 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import clsx from 'clsx';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
+import { ModerationPlaylistControls } from '@/components/admin/moderation/ModerationPlaylistControls';
+import {
+  BUCKET_OPTIONS,
+  SURFACE_OPTIONS,
+  PublicationPill,
+  StatePill,
+  compareChronologically,
+  formatDate,
+  getPublicationLabel,
+  isFailedVideo,
+  matchesBucket,
+  resolvePublicationState,
+} from '@/components/admin/moderation/moderation-table-utils';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
-type PlaylistOption = {
+export type PlaylistOption = {
   id: string;
   name: string;
   slug: string;
   usageTargets?: string[];
 };
 
-type PlaylistTag = {
+export type PlaylistTag = {
   id: string;
   name: string;
 };
@@ -58,102 +71,6 @@ type ModerationTableProps = {
 };
 
 type ModerationViewMode = 'wall' | 'table';
-
-const FAILURE_STATES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted']);
-const BUCKET_OPTIONS: Array<{ id: ModerationBucket; label: string; helper: string }> = [
-  { id: 'not-published', label: 'Not published', helper: 'Anything not yet published on the site' },
-  { id: 'published', label: 'Published', helper: 'Live on site and eligible for public surfaces' },
-  { id: 'all', label: 'All', helper: 'Everything in the editorial publication queue' },
-];
-const SURFACE_OPTIONS: Array<{ id: ModerationSurface; label: string }> = [
-  { id: 'video', label: 'Video' },
-  { id: 'image', label: 'Image' },
-  { id: 'audio', label: 'Audio' },
-  { id: 'character', label: 'Character' },
-  { id: 'angle', label: 'Angle' },
-];
-
-function compareChronologically(a: Pick<ModerationVideo, 'createdAt' | 'id'>, b: Pick<ModerationVideo, 'createdAt' | 'id'>) {
-  const aTime = Number.isNaN(Date.parse(a.createdAt)) ? 0 : Date.parse(a.createdAt);
-  const bTime = Number.isNaN(Date.parse(b.createdAt)) ? 0 : Date.parse(b.createdAt);
-  if (aTime !== bTime) {
-    return bTime - aTime;
-  }
-  return b.id.localeCompare(a.id);
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return 'Unknown';
-  try {
-    return new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-function isFailedVideo(video: Pick<ModerationVideo, 'status'>) {
-  const normalized = video.status?.trim().toLowerCase() ?? '';
-  return FAILURE_STATES.has(normalized);
-}
-
-function resolvePublicationState(video: Pick<ModerationVideo, 'visibility' | 'indexable'>): PublicationState {
-  if (video.visibility === 'public' && video.indexable) {
-    return 'published';
-  }
-  if (video.visibility === 'private' && !video.indexable) {
-    return 'private';
-  }
-  return 'legacy-mismatch';
-}
-
-function getPublicationLabel(video: Pick<ModerationVideo, 'visibility' | 'isPublishedOnSite'>) {
-  if (video.isPublishedOnSite) return 'Published';
-  if (video.visibility === 'private') return 'Private';
-  return 'Not published';
-}
-
-function matchesBucket(video: Pick<ModerationVideo, 'status' | 'visibility' | 'isPublishedOnSite'>, bucket: ModerationBucket) {
-  if (isFailedVideo(video)) return false;
-  if (bucket === 'all') return true;
-  if (bucket === 'published') return video.isPublishedOnSite;
-  return !video.isPublishedOnSite;
-}
-
-function PublicationPill({ state }: { state: PublicationState }) {
-  const className =
-    state === 'published'
-      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
-      : 'border-warning-border/60 bg-warning-bg/20 text-warning';
-
-  const label =
-    state === 'published'
-      ? 'Published'
-      : state === 'private'
-        ? 'Private'
-        : 'Not published';
-
-  return <span className={`inline-flex rounded-full border px-2 py-1 text-[11px] font-semibold ${className}`}>{label}</span>;
-}
-
-function StatePill({
-  children,
-  tone = 'neutral',
-}: {
-  children: ReactNode;
-  tone?: 'ok' | 'warn' | 'neutral';
-}) {
-  const className =
-    tone === 'ok'
-      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
-      : tone === 'warn'
-        ? 'border-warning-border/60 bg-warning-bg/20 text-warning'
-        : 'border-border bg-bg text-text-secondary';
-
-  return <span className={`inline-flex rounded-full border px-2 py-1 text-[11px] font-semibold ${className}`}>{children}</span>;
-}
 
 export function ModerationTable({
   videos,
@@ -525,79 +442,25 @@ export function ModerationTable({
       const compact = options?.compact ?? false;
       const emphasizeAssigned = options?.emphasizeAssigned ?? false;
       const enabled = options?.enabled ?? true;
-      if (!enabled) return null;
       const assignedPlaylists = playlistAssignments[video.id] ?? [];
       const playlistState = playlistStatus[video.id];
-      const isAssigningPlaylist = Boolean(playlistState?.loading);
-      const playlistMessage = playlistState?.message ?? null;
-      const playlistErrorMessage = playlistState?.error ?? null;
 
       return (
-        <div className="space-y-2 text-xs">
-          {assignedPlaylists.length ? (
-            <div className={clsx('flex flex-wrap gap-2', emphasizeAssigned && 'gap-1.5')}>
-              {assignedPlaylists.map((playlist) => (
-                <Button
-                  key={`${video.id}-${playlist.id}`}
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleRemoveFromPlaylist(video, playlist.id)}
-                  disabled={isAssigningPlaylist}
-                  className={clsx(
-                    'min-h-0 h-auto gap-1 rounded-pill px-2 py-1 text-[11px]',
-                    emphasizeAssigned
-                      ? 'border-success-border bg-success-bg font-semibold text-success hover:border-error-border hover:text-error'
-                      : 'border-border bg-bg text-text-secondary hover:border-error-border hover:text-error'
-                  )}
-                >
-                  {playlist.name}
-                  <span aria-hidden>×</span>
-                  <span className="sr-only">Remove from {playlist.name}</span>
-                </Button>
-              ))}
-            </div>
-          ) : compact ? (
-            <p className="text-[11px] text-text-muted">No playlist yet</p>
-          ) : (
-            <p className="text-xs text-text-muted">No playlist assignment yet.</p>
-          )}
-          {compact ? null : (
-            <label className="block text-[11px] font-semibold uppercase tracking-micro text-text-muted">Add to playlist</label>
-          )}
-          <select
-            className={clsx(
-              'w-full rounded-input border border-hairline bg-bg text-xs text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              compact ? 'px-2 py-1.5' : 'px-2 py-2'
-            )}
-            defaultValue=""
-            disabled={playlistsLoading || !playlists.length || isAssigningPlaylist}
-            onChange={(event) => {
-              const playlistId = event.target.value;
-              if (!playlistId) return;
-              void handleAssignToPlaylist(video, playlistId);
-              event.target.value = '';
-            }}
-          >
-            <option value="">
-              {playlistsLoading ? 'Loading playlists…' : playlists.length ? 'Select playlist' : 'No playlists'}
-            </option>
-            {orderedPlaylists.map((playlist) => {
-              const disabled = assignedPlaylists.some((entry) => entry.id === playlist.id);
-              return (
-                <option key={playlist.id} value={playlist.id} disabled={disabled}>
-                  {playlist.usageTargets?.length ? '★ ' : ''}
-                  {playlist.name}
-                </option>
-              );
-            })}
-          </select>
-          {playlistMessage ? <p className="text-[11px] text-success">{playlistMessage}</p> : null}
-          {playlistErrorMessage ? <p className="text-[11px] text-error">{playlistErrorMessage}</p> : null}
-        </div>
+        <ModerationPlaylistControls
+          assignedPlaylists={assignedPlaylists}
+          compact={compact}
+          emphasizeAssigned={emphasizeAssigned}
+          enabled={enabled}
+          isLoadingPlaylists={playlistsLoading}
+          onAssign={(targetVideo, playlistId) => void handleAssignToPlaylist(targetVideo, playlistId)}
+          onRemove={(targetVideo, playlistId) => void handleRemoveFromPlaylist(targetVideo, playlistId)}
+          orderedPlaylists={orderedPlaylists}
+          playlistState={playlistState}
+          video={video}
+        />
       );
     },
-    [handleAssignToPlaylist, handleRemoveFromPlaylist, orderedPlaylists, playlistAssignments, playlistStatus, playlists.length, playlistsLoading]
+    [handleAssignToPlaylist, handleRemoveFromPlaylist, orderedPlaylists, playlistAssignments, playlistStatus, playlistsLoading]
   );
 
   const renderModerationActions = useCallback(
