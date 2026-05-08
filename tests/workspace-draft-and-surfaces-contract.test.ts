@@ -6,6 +6,7 @@ const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const draftStorageHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftStorage.ts';
 const draftHydrationHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration.ts';
 const appShellPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppShell.tsx';
+const appLoadStatePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppLoadState.tsx';
 const bootSurfacePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceBootSurface.tsx';
 const centerGalleryPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceCenterGallery.tsx';
 const previewDockPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspacePreviewDock.tsx';
@@ -52,6 +53,7 @@ test('workspace draft storage and hydration are owned by route-local hooks', () 
 
 test('workspace app shell surfaces are split into route-local components', () => {
   assert.equal(existsSync(appShellPath), true);
+  assert.equal(existsSync(appLoadStatePath), true);
   assert.equal(existsSync(bootSurfacePath), true);
   assert.equal(existsSync(centerGalleryPath), true);
   assert.equal(existsSync(previewDockPath), true);
@@ -59,15 +61,17 @@ test('workspace app shell surfaces are split into route-local components', () =>
 
   const appSource = readFileSync(appClientPath, 'utf8');
   const appShellSource = readFileSync(appShellPath, 'utf8');
+  const appLoadStateSource = readFileSync(appLoadStatePath, 'utf8');
   const previewDockSource = readFileSync(previewDockPath, 'utf8');
   const modalsSource = readFileSync(runtimeModalsPath, 'utf8');
 
   assert.match(appSource, /import \{ WorkspaceAppShell \} from '\.\/_components\/WorkspaceAppShell';/);
-  assert.match(appSource, /import \{ WorkspaceBootSurface \} from '\.\/_components\/WorkspaceBootSurface';/);
+  assert.match(appSource, /import \{ getWorkspaceAppLoadState \} from '\.\/_components\/WorkspaceAppLoadState';/);
   assert.match(appSource, /import \{ WorkspaceRuntimeModals \} from '\.\/_components\/WorkspaceRuntimeModals';/);
   assert.match(appSource, /<WorkspaceAppShell/);
-  assert.match(appSource, /<WorkspaceBootSurface/);
+  assert.match(appSource, /getWorkspaceAppLoadState\(\{/);
   assert.match(appSource, /<WorkspaceRuntimeModals/);
+  assert.doesNotMatch(appSource, /<WorkspaceBootSurface/);
   assert.doesNotMatch(appSource, /<WorkspaceCenterGallery/);
   assert.doesNotMatch(appSource, /<WorkspacePreviewDock/);
   assert.doesNotMatch(appSource, /<WorkspaceChrome/);
@@ -84,6 +88,8 @@ test('workspace app shell surfaces are split into route-local components', () =>
   assert.match(appShellSource, /GalleryRail/);
   assert.match(appShellSource, /WorkspaceCenterGallery/);
   assert.match(appShellSource, /WorkspacePreviewDock/);
+  assert.match(appLoadStateSource, /WorkspaceBootSurface/);
+  assert.match(appLoadStateSource, /loadEnginesError/);
   assert.match(previewDockSource, /CompositePreviewDock/);
   assert.match(previewDockSource, /EngineSettingsBar/);
   assert.match(modalsSource, /WorkspaceTopUpModal/);

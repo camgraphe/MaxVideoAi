@@ -1,10 +1,8 @@
 'use client';
 
-import { useCallback } from 'react';
-import { getJobStatus } from '@/lib/api';
 import type { VideoGroup } from '@/types/video-groups';
+import { getWorkspaceAppLoadState } from './_components/WorkspaceAppLoadState';
 import { WorkspaceAppShell } from './_components/WorkspaceAppShell';
-import { WorkspaceBootSurface } from './_components/WorkspaceBootSurface';
 import { WorkspaceComposerSurface } from './_components/WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
 import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
@@ -16,6 +14,7 @@ import { useWorkspaceDraftStorage } from './_hooks/useWorkspaceDraftStorage';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
 import { useWorkspaceGenerationRunner } from './_hooks/useWorkspaceGenerationRunner';
 import { useWorkspaceInputSchemaState } from './_hooks/useWorkspaceInputSchemaState';
+import { useWorkspaceJobRefresh } from './_hooks/useWorkspaceJobRefresh';
 import { useWorkspaceNotice } from './_hooks/useWorkspaceNotice';
 import { useWorkspacePreviewState } from './_hooks/useWorkspacePreviewState';
 import { useWorkspacePricingGate } from './_hooks/useWorkspacePricingGate';
@@ -230,19 +229,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setKlingElements,
   });
 
-  const handleRefreshJob = useCallback(async (jobId: string) => {
-    try {
-      const status = await getJobStatus(jobId);
-      if (status.status === 'failed') {
-        throw new Error(status.message ?? 'Provider reported this render as failed.');
-      }
-      if (status.status !== 'completed' && !status.videoUrl) {
-        throw new Error('The provider is still processing this render.');
-      }
-    } catch (error) {
-      throw error instanceof Error ? error : new Error('Unable to refresh render status.');
-    }
-  }, []);
+  const handleRefreshJob = useWorkspaceJobRefresh();
 
   const {
     hydrateVideoSettingsFromJob,
@@ -512,41 +499,24 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setSharedPrompt,
   });
 
-  if (isLoading && engines.length === 0) {
-    return (
-      <WorkspaceBootSurface
-        isDesktopLayout={isDesktopLayout}
-        initialPreviewGroup={initialPreviewFallbackGroup}
-        initialPreviewPosterSrc={compositePreviewPosterSrc}
-      />
-    );
+  const loadState = getWorkspaceAppLoadState({
+    engineCount: engines.length,
+    enginesError,
+    hasForm: Boolean(form),
+    hasSelectedEngine: Boolean(selectedEngine),
+    initialPreviewFallbackGroup,
+    initialPreviewPosterSrc: compositePreviewPosterSrc,
+    isDesktopLayout,
+    isLoading,
+    loadEnginesError: workspaceCopy.errors.loadEngines,
+    noEnginesError: workspaceCopy.errors.noEngines,
+  });
+
+  if (loadState) {
+    return loadState;
   }
 
-  if (enginesError && engines.length === 0) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-bg text-state-warning">
-        {workspaceCopy.errors.loadEngines}: {enginesError.message}
-      </main>
-    );
-  }
-
-  if (!selectedEngine || !form) {
-    if (engines.length > 0) {
-      return (
-        <WorkspaceBootSurface
-          isDesktopLayout={isDesktopLayout}
-          initialPreviewGroup={initialPreviewFallbackGroup}
-          initialPreviewPosterSrc={compositePreviewPosterSrc}
-        />
-      );
-    }
-
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
-        {workspaceCopy.errors.noEngines}
-      </main>
-    );
-  }
+  if (!selectedEngine || !form) return null;
 
   return (
     <>
