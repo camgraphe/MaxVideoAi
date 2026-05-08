@@ -6,14 +6,12 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   ArrowLeft,
-  RefreshCw,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import { HeaderBar } from '@/components/HeaderBar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 import { runUpscaleTool, saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
@@ -37,6 +35,7 @@ import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import { UpscaleRecipePanel, UpscaleSourcePanel } from './upscale/_components/UpscaleInputPanels';
 import { UpscaleHeroSummaryCard } from './upscale/_components/UpscaleHeroSummaryCard';
+import { UpscaleLibraryModal } from './upscale/_components/UpscaleLibraryModal';
 import { UpscalePreviewCard } from './upscale/_components/UpscalePreviewCard';
 import { UpscaleRecentRail } from './upscale/_components/UpscaleRecentRail';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
@@ -594,66 +593,20 @@ export default function UpscaleWorkspace() {
           </div>
         </main>
       </div>
-      {libraryModalOpen ? (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-overlay-bg px-3 py-4 backdrop-blur-sm">
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default"
-            aria-label="Close library"
-            onClick={() => setLibraryModalOpen(false)}
-          />
-          <AssetLibraryBrowser
-            className="relative z-10 h-[88svh] max-w-[1180px]"
-            title={copy.libraryTitle}
-            subtitle={copy.libraryBody}
-            countLabel={copy.libraryCount.replace('{count}', String(visibleLibraryAssets.length))}
-            onClose={() => setLibraryModalOpen(false)}
-            closeLabel="Close"
-            assetType={mediaType}
-            assets={visibleLibraryAssets}
-            isLoading={libraryLoading}
-            error={libraryError}
-            source={librarySource}
-            availableSources={[...librarySourceOptions]}
-            sourceLabels={copy.libraryTabs}
-            onSourceChange={(nextSource) => {
-              if (nextSource === librarySource) return;
-              resetLibraryState(nextSource);
-            }}
-            searchPlaceholder={copy.librarySearch}
-            sourcesTitle={copy.librarySourcesTitle}
-            emptyLabel={mediaType === 'video' ? copy.libraryEmptyVideos : copy.libraryEmptyImages}
-            emptySearchLabel={copy.libraryEmptySearch}
-            headerActions={
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-                onClick={() => fetchLibraryAssets({ kind: mediaType, source: librarySource })}
-                disabled={libraryLoading}
-              >
-                <RefreshCw className={`h-4 w-4 ${libraryLoading ? 'animate-spin' : ''}`} />
-                {copy.libraryRefresh}
-              </Button>
-            }
-            renderAssetActions={(asset) => (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                className="min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]"
-                onClick={() => selectLibraryAsset(asset)}
-              >
-                {copy.libraryUse}
-              </Button>
-            )}
-            renderAssetMeta={(asset) =>
-              asset.source ? <span className="capitalize">{asset.source}</span> : null
-            }
-          />
-        </div>
-      ) : null}
+      <UpscaleLibraryModal
+        assets={visibleLibraryAssets}
+        copy={copy}
+        error={libraryError}
+        isLoading={libraryLoading}
+        mediaType={mediaType}
+        onClose={() => setLibraryModalOpen(false)}
+        onRefresh={fetchLibraryAssets}
+        onSelectAsset={selectLibraryAsset}
+        onSourceChange={resetLibraryState}
+        open={libraryModalOpen}
+        source={librarySource}
+        sourceOptions={librarySourceOptions}
+      />
     </div>
   );
 }
