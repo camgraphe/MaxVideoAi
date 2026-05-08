@@ -30,6 +30,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Generate/API routes: provider dispatch, validation payloads, billing preflight, final persistence/response, request options, and media helpers.
 - Client workspace/billing/library routes: workspace route-form state hook, billing session/receipts/top-up quote hooks, and library SWR/mutation hooks.
 - Admin audit/jobs routes: server pages now delegate filters, shortcut metrics, tables, and page views to route-local modules.
+- Localized docs index route: server page now delegates docs fallback loading, TOC view-models, section rendering, library/feedback sections, and JSON-LD builders to route-local modules.
 
 Representative contract tests:
 
@@ -44,6 +45,7 @@ tests/workspace-library-page-architecture.test.ts
 tests/workspace-app-client-architecture.test.ts
 tests/admin-audit-architecture.test.ts
 tests/admin-jobs-audit-architecture.test.ts
+tests/docs-index-route-architecture.test.ts
 ```
 
 ## Current High-Signal Candidates
@@ -63,7 +65,6 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-05-08:
 | `frontend/app/(core)/(workspace)/app/AppClient.tsx` | 743 | Continue with grouped composer/shell view-model extraction. |
 | `frontend/app/(core)/billing/_components/BillingClient.tsx` | 525 | Continue with currency state, checkout session flow, and top-up selection hooks. |
 | `frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx` | 445 | Optional follow-up: extract `AssetLibraryBrowser` prop assembly if the page grows again. |
-| `frontend/app/(localized)/[locale]/(marketing)/docs/page.tsx` | 438 | Split TOC, localized docs fallback, last-updated helpers, and sections. |
 
 Line counts change over time. Treat the table as a dated snapshot, not source of truth.
 
@@ -73,8 +74,7 @@ Prefer this order unless product work changes the risk profile:
 
 1. Workspace `AppClient.tsx`: grouped composer/shell view-model extraction without changing generation behavior.
 2. Billing client: split currency state, checkout session flow, and top-up selection hooks.
-3. Localized docs index route: split TOC/sections/fallback helpers and preserve SEO output.
-4. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
+3. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
 
 ## Definition Of Done
 
