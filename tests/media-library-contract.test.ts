@@ -296,18 +296,22 @@ test('history cards use thumbnails and explicit card actions', () => {
     path.join(process.cwd(), 'frontend/app/(core)/jobs/page.tsx'),
     'utf8'
   );
+  const jobsShellSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/jobs/_components/JobsPageShell.tsx'),
+    'utf8'
+  );
 
   assert.match(cardSource, /const\s+thumbSrc\s*=\s*preview\?\.thumbUrl/);
   assert.match(cardSource, /src=\{thumbSrc\}/);
   assert.match(cardSource, /openLabel\?:\s*string/);
   assert.match(cardSource, /actionMenuLabel\?:\s*string/);
   assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
-  assert.match(jobsSource, /openLabel=\{copy\.actions\.openDetails\}/);
-  assert.match(jobsSource, /actionMenuLabel=\{copy\.actions\.actions\}/);
-  assert.match(jobsSource, /expandSection/);
-  assert.match(jobsSource, /collapseSection/);
-  assert.match(jobsSource, /<ChevronDown/);
-  assert.doesNotMatch(jobsSource, /'▸'|'▾'/);
+  assert.match(jobsShellSource, /openLabel=\{copy\.actions\.openDetails\}/);
+  assert.match(jobsShellSource, /actionMenuLabel=\{copy\.actions\.actions\}/);
+  assert.match(jobsShellSource, /expandSection/);
+  assert.match(jobsShellSource, /collapseSection/);
+  assert.match(jobsShellSource, /<ChevronDown/);
+  assert.doesNotMatch(`${jobsSource}\n${jobsShellSource}`, /'▸'|'▾'/);
 });
 
 test('history can save renders to library from cards and job details', () => {
@@ -317,6 +321,10 @@ test('history can save renders to library from cards and job details', () => {
   );
   const jobsSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/jobs/page.tsx'),
+    'utf8'
+  );
+  const jobsShellSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/jobs/_components/JobsPageShell.tsx'),
     'utf8'
   );
   const jobsHelpersSource = fs.readFileSync(
@@ -335,10 +343,10 @@ test('history can save renders to library from cards and job details', () => {
   assert.match(jobsSource, /saveAssetToLibrary/);
   assert.match(jobsHelpersSource, /function\s+resolveGroupLibrarySavePayload/);
   assert.match(jobsHelpersSource, /function\s+resolveEntryLibrarySavePayload/);
-  assert.match(jobsSource, /showLibraryCta/);
-  assert.match(jobsSource, /<CollapsedGroupRail[\s\S]*onSaveToLibrary/);
-  assert.match(jobsSource, /onSaveToLibrary=\{handleSaveGroupToLibrary\}/);
-  assert.match(jobsSource, /onSaveToLibrary=\{handleSaveLightboxEntryToLibrary\}/);
+  assert.match(jobsShellSource, /showLibraryCta/);
+  assert.match(jobsShellSource, /<CollapsedGroupRail[\s\S]*onSaveToLibrary/);
+  assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveGroupToLibrary\}/);
+  assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveLightboxEntryToLibrary\}/);
   assert.match(apiSource, /kind\?:\s*'image'\s*\|\s*'video'\s*\|\s*'audio'/);
   assert.match(apiSource, /thumbUrl:\s*payload\.thumbUrl/);
   assert.match(apiSource, /previewUrl:\s*payload\.previewUrl/);
