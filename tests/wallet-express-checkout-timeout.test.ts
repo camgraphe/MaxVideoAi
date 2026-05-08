@@ -26,7 +26,7 @@ assert.match(
 
 assert.match(
   source,
-  /setMessage\(labels\.expressUnavailable\)/,
+  /setMessage\((?:labels|labelsRef\.current)\.expressUnavailable\)/,
   'Express Checkout timeout should show the unavailable copy instead of a spinner'
 );
 

@@ -66,6 +66,12 @@ export function WalletExpressCheckout({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const confirmStartedRef = useRef(false);
   const sessionRef = useRef(session);
+  const labelsRef = useRef(labels);
+  const handlersRef = useRef({
+    onCaptchaRequired,
+    onPaymentFailed,
+    onPaymentStarted,
+  });
   const checkoutSessionCacheRef = useRef<{ clientSecret: string; key: string; sessionId: string | null } | null>(null);
   const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
@@ -77,6 +83,15 @@ export function WalletExpressCheckout({
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
+
+  useEffect(() => {
+    labelsRef.current = labels;
+    handlersRef.current = {
+      onCaptchaRequired,
+      onPaymentFailed,
+      onPaymentStarted,
+    };
+  }, [labels, onCaptchaRequired, onPaymentFailed, onPaymentStarted]);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,7 +123,7 @@ export function WalletExpressCheckout({
         expressElement?.destroy();
         expressElement = null;
         setStatus('unavailable');
-        setMessage(labels.expressUnavailable);
+        setMessage(labelsRef.current.expressUnavailable);
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
@@ -131,12 +146,12 @@ export function WalletExpressCheckout({
           if (checkoutSessionResult.type === 'captcha_required') {
             setStatus('unavailable');
             setMessage(null);
-            onCaptchaRequired();
+            handlersRef.current.onCaptchaRequired();
             return;
           }
           if (checkoutSessionResult.type === 'rate_limited') {
             setStatus('error');
-            setMessage(formatRateLimitMessage(labels.rateLimited, checkoutSessionResult.retryAfterSeconds));
+            setMessage(formatRateLimitMessage(labelsRef.current.rateLimited, checkoutSessionResult.retryAfterSeconds));
             return;
           }
           throw new Error(checkoutSessionResult.error);
@@ -170,21 +185,21 @@ export function WalletExpressCheckout({
           const methods = event.availablePaymentMethods;
           const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
           setStatus(hasAnyMethod ? 'ready' : 'unavailable');
-          setMessage(hasAnyMethod ? null : labels.expressUnavailable);
+          setMessage(hasAnyMethod ? null : labelsRef.current.expressUnavailable);
         });
         expressElement.on('loaderror', (event) => {
           if (cancelled || readyTimedOut) return;
           clearExpressCheckoutReadyTimeout();
           setStatus('error');
-          setMessage(event.error?.message ?? labels.expressError);
+          setMessage(event.error?.message ?? labelsRef.current.expressError);
         });
         expressElement.on('cancel', () => {
           if (confirmStartedRef.current) return;
-          setMessage(labels.expressClosed);
+          setMessage(labelsRef.current.expressClosed);
         });
         expressElement.on('confirm', async (event) => {
           confirmStartedRef.current = true;
-          onPaymentStarted(amountCents);
+          handlersRef.current.onPaymentStarted(amountCents);
           try {
             const loadActionsResult = await loadActionsPromise;
             if (loadActionsResult.type !== 'success') {
@@ -195,7 +210,7 @@ export function WalletExpressCheckout({
             });
             if (result.type === 'error') {
               event.paymentFailed({ reason: 'fail', message: result.error.message });
-              onPaymentFailed(amountCents, result.error.message);
+              handlersRef.current.onPaymentFailed(amountCents, result.error.message);
               return;
             }
             const params = new URLSearchParams({
@@ -208,10 +223,10 @@ export function WalletExpressCheckout({
             window.location.href = `/billing?${params.toString()}`;
           } catch (error) {
             const reason = error instanceof Error ? error.message : 'express_checkout_failed';
-            event.paymentFailed({ reason: 'fail', message: labels.expressError });
-            onPaymentFailed(amountCents, reason);
+            event.paymentFailed({ reason: 'fail', message: labelsRef.current.expressError });
+            handlersRef.current.onPaymentFailed(amountCents, reason);
             setStatus('error');
-            setMessage(labels.expressError);
+            setMessage(labelsRef.current.expressError);
           }
         });
 
@@ -227,7 +242,7 @@ export function WalletExpressCheckout({
         const reason = error instanceof Error ? error.message : 'express_checkout_failed';
         console.warn('[billing] express checkout unavailable', reason);
         setStatus('error');
-        setMessage(labels.expressError);
+        setMessage(labelsRef.current.expressError);
       }
     }
 
@@ -309,16 +324,9 @@ export function WalletExpressCheckout({
     };
   }, [
     amountCents,
-    labels.expressError,
-    labels.expressClosed,
-    labels.expressUnavailable,
-    labels.rateLimited,
     locale,
     captchaToken,
     normalizedChargeCurrency,
-    onCaptchaRequired,
-    onPaymentFailed,
-    onPaymentStarted,
     sessionUserId,
     stripePromise,
   ]);
