@@ -23,7 +23,6 @@ import {
 import { describeRange, resolveFocusParam } from './_lib/insights-navigation';
 import {
   BehaviorGrid,
-  ComparisonChart,
   DailyLedgerTable,
   EngineMixTable,
   FunnelRows,
@@ -39,6 +38,7 @@ import {
   TopSpendersTable,
   WindowPulseGrid,
 } from './_components/InsightsPanels';
+import { ComparisonChart } from './_components/InsightsChartSurfaces';
 
 export default async function AdminInsightsPage(props: PageProps) {
   const searchParams = await props.searchParams;
