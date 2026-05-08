@@ -4,7 +4,7 @@ import type {
   ModerationSurface,
   ModerationVideo,
   PublicationState,
-} from '@/components/admin/ModerationTable';
+} from '@/components/admin/moderation/moderation-types';
 
 const FAILURE_STATES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted']);
 

@@ -4,7 +4,7 @@ import type {
   ModerationVideo,
   PlaylistOption,
   PlaylistTag,
-} from '@/components/admin/ModerationTable';
+} from '@/components/admin/moderation/moderation-types';
 
 type PlaylistState = {
   loading: boolean;
