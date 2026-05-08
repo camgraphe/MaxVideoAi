@@ -10,6 +10,7 @@ const durationPath = join(root, 'frontend/components/settings-controls/settings-
 const copyPath = join(root, 'frontend/components/settings-controls/settings-control-copy.ts');
 const genericFieldsPath = join(root, 'frontend/components/settings-controls/settings-control-generic-fields.tsx');
 const typesPath = join(root, 'frontend/components/settings-controls/settings-control-types.ts');
+const stateHookPath = join(root, 'frontend/components/settings-controls/useSettingsControlState.ts');
 
 const controlsSource = readFileSync(controlsPath, 'utf8');
 const partsSource = readFileSync(partsPath, 'utf8');
@@ -17,6 +18,7 @@ const durationSource = readFileSync(durationPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const genericFieldsSource = readFileSync(genericFieldsPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
+const stateHookSource = readFileSync(stateHookPath, 'utf8');
 
 test('settings controls delegates reusable control parts and duration helpers', () => {
   assert.ok(existsSync(partsPath), 'settings control subcomponents should live in a focused module');
@@ -24,12 +26,14 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.ok(existsSync(copyPath), 'settings controls copy should live in a focused module');
   assert.ok(existsSync(genericFieldsPath), 'generic advanced fields should live in a focused module');
   assert.ok(existsSync(typesPath), 'settings controls props contract should live in a focused module');
+  assert.ok(existsSync(stateHookPath), 'settings control derived state should live in a focused hook');
 
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-duration'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-copy'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-types'/);
+  assert.match(controlsSource, /from '@\/components\/settings-controls\/useSettingsControlState'/);
 });
 
 test('settings controls does not regain extracted ownership', () => {
@@ -43,9 +47,12 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /<select[\s\S]*field\.values/, 'generic enum field rendering belongs in settings-control-generic-fields.tsx');
   assert.doesNotMatch(controlsSource, /interface Props/, 'settings controls prop contract belongs in settings-control-types.ts');
   assert.doesNotMatch(controlsSource, /EngineInputField/, 'advanced field prop typing belongs in settings-control-types.ts');
+  assert.doesNotMatch(controlsSource, /useEffect\(/, 'derived option syncing belongs in useSettingsControlState');
+  assert.doesNotMatch(controlsSource, /parseDurationOptionValue/, 'duration option normalization belongs in useSettingsControlState');
+  assert.doesNotMatch(controlsSource, /const resolutionOptions =/, 'resolution option derivation belongs in useSettingsControlState');
 
   const lineCount = controlsSource.split('\n').length;
-  assert.ok(lineCount <= 1010, `SettingsControls should stay below 1010 lines after props contract extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 950, `SettingsControls should stay below 950 lines after state hook extraction, got ${lineCount}`);
 });
 
 test('settings control helper modules expose the expected contract', () => {
@@ -61,4 +68,8 @@ test('settings control helper modules expose the expected contract', () => {
   assert.match(genericFieldsSource, /field\.type === 'number'/);
   assert.match(typesSource, /export interface SettingsControlsProps/);
   assert.match(typesSource, /EngineInputField/);
+  assert.match(stateHookSource, /export function useSettingsControlState/);
+  assert.match(stateHookSource, /parseDurationOptionValue/);
+  assert.match(stateHookSource, /matchesDurationOptionValue/);
+  assert.match(stateHookSource, /setInternalCfgScale\(null\)/);
 });
