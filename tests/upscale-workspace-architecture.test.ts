@@ -11,6 +11,7 @@ const helpersPath = join(root, 'frontend/src/components/tools/upscale/_lib/upsca
 const libraryHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleLibraryAssets.ts');
 const pricingHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscalePricingPreview.ts');
 const recentJobsHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleRecentJobs.ts');
+const sourceMediaHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleSourceMedia.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -21,6 +22,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(libraryHookPath), 'upscale library asset loading should live in a colocated hook');
   assert.ok(existsSync(pricingHookPath), 'upscale pricing preview should live in a colocated hook');
   assert.ok(existsSync(recentJobsHookPath), 'upscale recent jobs orchestration should live in a colocated hook');
+  assert.ok(existsSync(sourceMediaHookPath), 'upscale source media orchestration should live in a colocated hook');
 
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-copy'/, 'workspace should import upscale copy');
   assert.match(workspaceSource, /from '\.\/upscale\/_lib\/upscale-workspace-types'/, 'workspace should import upscale local types');
@@ -28,6 +30,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleLibraryAssets'/, 'workspace should import library hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscalePricingPreview'/, 'workspace should import pricing hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleRecentJobs'/, 'workspace should import recent jobs hook');
+  assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleSourceMedia'/, 'workspace should import source media hook');
 });
 
 test('upscale workspace does not regain extracted ownership', () => {
@@ -45,9 +48,12 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /useInfiniteJobs\(12, \{ surface: 'upscale' \}\)/, 'recent upscale feed belongs in useUpscaleRecentJobs');
   assert.doesNotMatch(workspaceSource, /getJobStatus/, 'recent job polling belongs in useUpscaleRecentJobs');
   assert.doesNotMatch(workspaceSource, /defaultGeneratedImageAppliedRef/, 'default generated image hydration belongs in useUpscaleRecentJobs');
+  assert.doesNotMatch(workspaceSource, /mediaTypeFromMime/, 'source media MIME detection belongs in useUpscaleSourceMedia');
+  assert.doesNotMatch(workspaceSource, /new window\.Image/, 'source image dimension hydration belongs in useUpscaleSourceMedia');
+  assert.doesNotMatch(workspaceSource, /function selectLibraryAsset\(/, 'library source selection belongs in useUpscaleSourceMedia');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1130, `UpscaleWorkspace should stay below 1130 lines after recent jobs hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1060, `UpscaleWorkspace should stay below 1060 lines after source media hook extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
@@ -57,6 +63,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   const libraryHookSource = readFileSync(libraryHookPath, 'utf8');
   const pricingHookSource = readFileSync(pricingHookPath, 'utf8');
   const recentJobsHookSource = readFileSync(recentJobsHookPath, 'utf8');
+  const sourceMediaHookSource = readFileSync(sourceMediaHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_UPSCALE_COPY =/, 'copy module should export default copy');
 
@@ -96,4 +103,8 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(recentJobsHookSource, /useInfiniteJobs\(12, \{ surface: 'upscale' \}\)/, 'recent jobs hook should own the upscale feed');
   assert.match(recentJobsHookSource, /getJobStatus/, 'recent jobs hook should poll pending jobs');
   assert.match(recentJobsHookSource, /resolveGeneratedImageSource/, 'recent jobs hook should hydrate the default generated image source');
+  assert.match(sourceMediaHookSource, /export function useUpscaleSourceMedia/, 'source media hook should be exported');
+  assert.match(sourceMediaHookSource, /uploadSourceFile/, 'source media hook should own source uploads');
+  assert.match(sourceMediaHookSource, /mediaTypeFromMime/, 'source media hook should own MIME detection');
+  assert.match(sourceMediaHookSource, /new window\.Image/, 'source media hook should hydrate image dimensions');
 });
