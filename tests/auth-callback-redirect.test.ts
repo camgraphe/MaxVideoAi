@@ -5,6 +5,7 @@ import test from 'node:test';
 const authCallbackSource = readFileSync('frontend/app/auth/callback/route.ts', 'utf8');
 const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
+const loginSurfaceSource = readFileSync('frontend/app/(core)/login/_components/LoginAuthSurface.tsx', 'utf8');
 const loginHelpersSource = readFileSync('frontend/app/(core)/login/_lib/login-helpers.ts', 'utf8');
 const siteOriginSource = readFileSync('frontend/lib/siteOrigin.ts', 'utf8');
 
@@ -134,7 +135,7 @@ test('login page protects Google PKCE from duplicate starts and host drift', () 
     'Google OAuth should ignore repeated clicks once a PKCE flow has started'
   );
   assert.match(
-    loginPageSource,
+    loginSurfaceSource,
     /disabled=\{isGoogleOAuthStarting\}/,
     'the Google button should be disabled while the OAuth URL is being created'
   );

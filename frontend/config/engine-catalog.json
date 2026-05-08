@@ -184,7 +184,7 @@
         "unit": "USD/s",
         "base": 0.1,
         "currency": "USD",
-        "notes": "$0.10/s via Fal routing (720p guidance)"
+        "notes": "$0.10/s via managed provider routing (720p guidance)"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
@@ -2295,7 +2295,7 @@
           "modes": [
             "v2v"
           ],
-          "notes": "Modify a source clip with optional prompt and reference-image guidance plus Fal adherence presets."
+          "notes": "Modify a source clip with optional prompt and reference-image guidance plus provider adherence presets."
         }
       },
       {
@@ -2784,7 +2784,7 @@
           "modes": [
             "v2v"
           ],
-          "notes": "Modify a source clip quickly with the same Fal adherence and reimagination presets exposed in Flash."
+          "notes": "Modify a source clip quickly with the same adherence and reimagination presets exposed in Flash."
         }
       },
       {
@@ -4025,7 +4025,7 @@
         "unit": "USD/s",
         "base": 0.168,
         "currency": "USD",
-        "notes": "Fal cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
+        "notes": "Provider cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4378,7 +4378,7 @@
         "unit": "USD/s",
         "base": 0.126,
         "currency": "USD",
-        "notes": "Fal cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
+        "notes": "Provider cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4721,7 +4721,7 @@
           "4k": 0.42
         },
         "currency": "USD",
-        "notes": "Fal cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes."
+        "notes": "Provider cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4971,7 +4971,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "R2V reference images (1-9)",
-            "description": "Reference subjects with character1, character2, and up to character9 in the prompt. Fal requires 1-9 JPEG, PNG, or WEBP references.",
+            "description": "Reference subjects with character1, character2, and up to character9 in the prompt. Requires 1-9 JPEG, PNG, or WEBP references.",
             "modes": [
               "ref2v"
             ],
@@ -5103,7 +5103,7 @@
             "id": "seed",
             "type": "number",
             "label": "Seed",
-            "description": "Optional random seed for reproducible Happy Horse generations. Fal accepts 0-2147483647.",
+            "description": "Optional random seed for reproducible Happy Horse generations. Accepted range: 0-2147483647.",
             "modes": [
               "t2v",
               "i2v",
@@ -5118,7 +5118,7 @@
             "id": "enable_safety_checker",
             "type": "boolean",
             "label": "Safety checker",
-            "description": "Enable Fal input and output moderation.",
+            "description": "Enable provider input and output moderation.",
             "modes": [
               "t2v",
               "i2v",
@@ -5165,7 +5165,7 @@
           "1080p": 0.28
         },
         "currency": "USD",
-        "notes": "Fal cost: $0.14/s for 720p and $0.28/s for 1080p text, image, and R2V runs. Video edit is billed at $0.28/s for 720p and $0.56/s for 1080p."
+        "notes": "Provider cost: $0.14/s for 720p and $0.28/s for 1080p text, image, and R2V runs. Video edit is billed at $0.28/s for 720p and $0.56/s for 1080p."
       },
       "updatedAt": "2026-04-28T00:00:00Z",
       "ttlSec": 600,
@@ -6056,7 +6056,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional reference stills for identity, styling, and continuity. Fal allows up to 9 images and 12 total files across all reference inputs.",
+            "description": "Optional reference stills for identity, styling, and continuity. Supports up to 9 images and 12 total files across all reference inputs.",
             "modes": [
               "ref2v"
             ],
@@ -6068,7 +6068,7 @@
             "id": "video_urls",
             "type": "video",
             "label": "Reference video clips (up to 3)",
-            "description": "Optional motion or pacing references for ref2v. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
+            "description": "Optional motion or pacing references for ref2v. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
@@ -6080,7 +6080,7 @@
             "id": "audio_urls",
             "type": "audio",
             "label": "Reference audio clips (up to 3)",
-            "description": "Optional soundtrack, dialogue, or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "description": "Optional soundtrack, dialogue, or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
@@ -6216,7 +6216,7 @@
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Fal bills Seedance 2 from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
+        "notes": "Seedance 2 is billed from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
       },
       "updatedAt": "2026-04-05T00:00:00Z",
       "ttlSec": 600,
@@ -6600,7 +6600,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional still references for draft continuity checks. Fal allows up to 9 images and 12 total files across all reference inputs.",
+            "description": "Optional still references for draft continuity checks. Supports up to 9 images and 12 total files across all reference inputs.",
             "modes": [
               "ref2v"
             ],
@@ -6612,7 +6612,7 @@
             "id": "video_urls",
             "type": "video",
             "label": "Reference video clips (up to 3)",
-            "description": "Optional pacing or motion references for draft-speed ref2v runs. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
+            "description": "Optional pacing or motion references for draft-speed ref2v runs. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
@@ -6624,7 +6624,7 @@
             "id": "audio_urls",
             "type": "audio",
             "label": "Reference audio clips (up to 3)",
-            "description": "Optional soundtrack or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "description": "Optional soundtrack or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
@@ -6754,7 +6754,7 @@
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Fal bills Seedance 2 Fast from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
+        "notes": "Seedance 2 Fast is billed from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
       },
       "updatedAt": "2026-04-05T00:00:00Z",
       "ttlSec": 600,
@@ -6922,6 +6922,307 @@
       }
     },
     "bestFor": "Fast Seedance drafts, reference tests, and shot planning"
+  },
+  {
+    "engineId": "seedance-2-0-fast-byteplus",
+    "modelSlug": "seedance-2-0-fast-byteplus",
+    "marketingName": "Seedance 2.0 Fast BytePlus",
+    "provider": "BytePlus ModelArk",
+    "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "seedance-1-5-pro"
+      ],
+      "currentModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast"
+      ]
+    },
+    "versionLabel": "2.0 Fast BytePlus",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "seedance-2-0-fast-byteplus",
+      "label": "Seedance 2.0 Fast BytePlus",
+      "provider": "BytePlus ModelArk",
+      "version": "2.0",
+      "variant": "Fast",
+      "isLab": true,
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "ap-southeast-1",
+      "modes": [
+        "t2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 4000,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Audio",
+            "default": true
+          }
+        ]
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "fal_tokens",
+          "unitPriceUsdPer1kTokens": 0.0112,
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "auto": {
+                "width": 854,
+                "height": 480
+              },
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
+              "16:9": {
+                "width": 854,
+                "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
+              }
+            },
+            "720p": {
+              "auto": {
+                "width": 1280,
+                "height": 720
+              },
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
+              }
+            },
+            "1080p": {
+              "auto": {
+                "width": 1920,
+                "height": 1080
+              },
+              "21:9": {
+                "width": 2520,
+                "height": 1080
+              },
+              "16:9": {
+                "width": 1920,
+                "height": 1080
+              },
+              "4:3": {
+                "width": 1440,
+                "height": 1080
+              },
+              "1:1": {
+                "width": 1080,
+                "height": 1080
+              },
+              "3:4": {
+                "width": 1080,
+                "height": 1440
+              },
+              "9:16": {
+                "width": 1080,
+                "height": 1920
+              }
+            }
+          },
+          "rounding": "ceil_cent"
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "currency": "USD",
+        "notes": "Admin-only BytePlus ModelArk V1a route. Public Seedance pricing remains unchanged while actual BytePlus cost is recorded separately."
+      },
+      "updatedAt": "2026-05-01T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dreamina-seedance-2-0-fast-260128"
+      },
+      "availability": "limited",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-fast/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "audioToggle": false,
+          "notes": "Admin-only BytePlus ModelArk V1a route: 720p, 16:9, 5-15s, silent output."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
   },
   {
     "engineId": "wan-2-5",
@@ -9089,7 +9390,7 @@
             "16:9"
           ],
           "audioToggle": true,
-          "notes": "Native audio is on by default; 12–20s runs require 1080p at 25fps per Fal."
+          "notes": "Native audio is on by default; 12–20s runs require 1080p at 25fps."
         }
       },
       {
@@ -9128,7 +9429,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Upload one reference still; 12–20s runs require 1080p at 25fps per Fal."
+          "notes": "Upload one reference still; 12–20s runs require 1080p at 25fps."
         }
       }
     ],
@@ -9978,7 +10279,7 @@
             "webp"
           ],
           "maxUploadMB": 25,
-          "notes": "Upload 1–4 references; Fal handles up to 14 sources without manual masks."
+          "notes": "Upload 1–4 references; the provider handles up to 14 sources without manual masks."
         }
       }
     ],
@@ -10485,7 +10786,7 @@
               "custom"
             ],
             "default": "landscape_4_3",
-            "description": "Fal image_size preset or canonical custom size for text-to-image requests."
+            "description": "Provider image_size preset or canonical custom size for text-to-image requests."
           },
           {
             "id": "resolution",
@@ -10512,7 +10813,7 @@
               "custom"
             ],
             "default": "auto",
-            "description": "Use auto to infer the output size, or send a Fal image_size preset/custom object."
+            "description": "Use auto to infer the output size, or send a provider image_size preset/custom object."
           },
           {
             "id": "image_width",
@@ -10527,7 +10828,7 @@
             "max": 3840,
             "step": 16,
             "default": 1024,
-            "description": "Used when Image size is Custom. Fal requires multiples of 16 and max edge 3840px."
+            "description": "Used when Image size is Custom. Requires multiples of 16 and max edge 3840px."
           },
           {
             "id": "image_height",
@@ -10639,7 +10940,7 @@
           "auto": 0.22
         },
         "currency": "USD",
-        "notes": "Fal pricing varies by quality and image_size: 1024x768 costs $0.01/$0.04/$0.15, while 3840x2160 costs $0.02/$0.11/$0.41 for Low/Medium/High."
+        "notes": "Provider pricing varies by quality and image_size: 1024x768 costs $0.01/$0.04/$0.15, while 3840x2160 costs $0.02/$0.11/$0.41 for Low/Medium/High."
       },
       "updatedAt": "2026-04-23T00:00:00Z",
       "ttlSec": 600,
@@ -10706,7 +11007,7 @@
             "webp"
           ],
           "maxUploadMB": 25,
-          "notes": "Upload references for fine-grained edits; optional mask URL and quality controls map to the Fal edit endpoint."
+          "notes": "Upload references for fine-grained edits; optional mask URL and quality controls map to the provider edit endpoint."
         }
       }
     ],

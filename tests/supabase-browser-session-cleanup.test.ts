@@ -11,7 +11,7 @@ const browserSessionCallSites = [
   'frontend/components/auth/PublicSessionWatchdog.tsx',
   'frontend/components/marketing/MarketingNav.tsx',
   'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts',
-  'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx',
+  'frontend/app/(core)/(workspace)/app/image/_hooks/useImageGenerationRunner.ts',
 ] as const;
 
 const marketingAuthSource = readFileSync('frontend/src/server/marketing-auth.ts', 'utf8');

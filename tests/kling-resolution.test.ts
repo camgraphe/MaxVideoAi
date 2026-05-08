@@ -26,10 +26,13 @@ test('Kling fixed-resolution modes expose a visible locked resolution choice', (
 
 test('workspace controls render locked resolution controls instead of hiding them', () => {
   const coreSettingsSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/CoreSettingsBar.tsx'), 'utf8');
-  const settingsControlsSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/SettingsControls.tsx'), 'utf8');
+  const settingsControlStateSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/settings-controls/useSettingsControlState.ts'),
+    'utf8'
+  );
 
   assert.match(coreSettingsSource, /const showResolutionControl = resolutionOptions\.length > 0;/);
-  assert.match(settingsControlsSource, /const showResolutionControl = resolutionOptions\.length > 0;/);
+  assert.match(settingsControlStateSource, /const showResolutionControl = resolutionOptions\.length > 0;/);
 });
 
 test('Kling Fal requests omit resolution because current Fal schemas use fixed-resolution endpoints', () => {

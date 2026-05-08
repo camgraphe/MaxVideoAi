@@ -10,6 +10,10 @@ const modelSpecsSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts',
   'utf8',
 );
+const modelSpecsConstantsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs-constants.ts',
+  'utf8',
+);
 const localizationSource = readFileSync('frontend/lib/ltx-localization.ts', 'utf8');
 
 test('model hero chips expose max duration and max resolution as compact crawlable labels', () => {
@@ -25,7 +29,7 @@ test('model hero chips expose max duration and max resolution as compact crawlab
 
 test('model hero includes a short model limits line near the top of the page', () => {
   assert.match(modelLayoutSource, /const heroLimitsLine = isVideoEngine \? resolveHeroLimitsLine\(locale\) : null/);
-  assert.match(modelSpecsSource, /Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine\./);
-  assert.match(modelSpecsSource, /Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le modèle\./);
-  assert.match(modelSpecsSource, /Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor\./);
+  assert.match(modelSpecsConstantsSource, /Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine\./);
+  assert.match(modelSpecsConstantsSource, /Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le modèle\./);
+  assert.match(modelSpecsConstantsSource, /Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor\./);
 });
