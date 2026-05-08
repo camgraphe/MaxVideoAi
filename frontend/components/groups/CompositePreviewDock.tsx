@@ -1,45 +1,27 @@
 'use client';
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Download, ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
-import type { VideoGroup, VideoItem } from '@/types/video-groups';
-import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { VideoGroup } from '@/types/video-groups';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { parseAspectRatio } from '@/lib/aspect';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
-
-const DEFAULT_PREVIEW_COPY = {
-  title: 'Composite Preview',
-  empty: 'Select a take to preview',
-  variants: {
-    singular: '{count} variant',
-    plural: '{count} variants',
-  },
-  controls: {
-    play: { on: 'Pause', off: 'Play', ariaOn: 'Pause all previews', ariaOff: 'Play all previews' },
-    mute: { on: 'Unmute', off: 'Mute', ariaOn: 'Unmute all previews', ariaOff: 'Mute all previews' },
-    loop: { on: 'Loop on', off: 'Loop off', ariaOn: 'Disable looping', ariaOff: 'Enable looping' },
-    download: { label: 'Download', aria: 'Download preview' },
-    modal: { label: 'Open modal', aria: 'Open preview in modal' },
-    openTake: { label: 'Open', aria: 'Open this take' },
-    copyPrompt: 'Copy prompt',
-  },
-  guided: {
-    previous: 'Previous sample',
-    next: 'Next sample',
-    badge: 'Starter sample {current}/{total}',
-  },
-  placeholder: '—',
-} as const;
-
-type PreviewCopy = typeof DEFAULT_PREVIEW_COPY;
+import { CompositePreviewDockHeader } from './CompositePreviewDockHeader';
+import { CompositePreviewDockTile } from './CompositePreviewDockTile';
+import { CompositePreviewDockToolbar } from './CompositePreviewDockToolbar';
+import {
+  DEFAULT_PREVIEW_COPY,
+  GRID_CLASS,
+  LAYOUT_SLOT_COUNT,
+  isVideo,
+  resolveCompositePreviewSlots,
+  resolvePrimaryMediaUrl,
+  type PreviewCopy,
+} from './composite-preview-dock-utils';
 
 export interface CompositePreviewDockProps {
   group: VideoGroup | null;
@@ -58,46 +40,6 @@ export interface CompositePreviewDockProps {
     onPrev: () => void;
     onNext: () => void;
   } | null;
-}
-
-const LAYOUT_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
-  x1: 1,
-  x2: 2,
-  x3: 4,
-  x4: 4,
-};
-
-const GRID_CLASS: Record<VideoGroup['layout'], string> = {
-  x1: 'grid-cols-1',
-  x2: 'grid-cols-2',
-  x3: 'md:grid-cols-2',
-  x4: 'grid-cols-2',
-};
-
-const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-surface-on-media-25 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
-
-function isVideo(item: VideoItem): boolean {
-  const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
-  if (hint === 'video') return true;
-  if (hint === 'image') return false;
-  const url = item.url.toLowerCase();
-  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
-}
-
-function getInlinePreviewUrl(item: VideoItem): string {
-  return item.url;
-}
-
-function resolveAspectHint(item: VideoItem): string | null {
-  const original =
-    item.meta && typeof item.meta === 'object' && 'originalAspectRatio' in item.meta
-      ? (item.meta as Record<string, unknown>).originalAspectRatio
-      : null;
-  if (typeof original === 'string' && original.trim()) {
-    return original.trim().replace(/x/gi, ':');
-  }
-  return item.aspect ?? null;
 }
 
 export function CompositePreviewDock({
@@ -211,15 +153,7 @@ export function CompositePreviewDock({
   }, []);
 
   const slots = useMemo(() => {
-    if (!group) return [] as Array<VideoItem | null>;
-    const desired = LAYOUT_SLOT_COUNT[group.layout] ?? Math.min(group.items.length, 4);
-    const list = group.items.slice(0, desired);
-    const padded: Array<VideoItem | null> = Array.from({ length: desired }, (_, index) => list[index] ?? null);
-    if (group.layout === 'x3' && padded.length === 4 && !padded[2]) {
-      padded[2] = padded[3];
-      padded[3] = null;
-    }
-    return padded;
+    return resolveCompositePreviewSlots(group);
   }, [group]);
 
   const activeVideoKey = useMemo(() => {
@@ -353,11 +287,7 @@ export function CompositePreviewDock({
   const showGroupError = group?.status === 'error';
   const isSingleLayout = group?.layout === 'x1';
   const primaryMediaUrl = useMemo(() => {
-    if (!group) return null;
-    const videoItem = group.items.find((item) => Boolean(item?.url) && isVideo(item));
-    if (videoItem?.url) return videoItem.url;
-    const fallback = group.items.find((item) => Boolean(item?.url));
-    return fallback?.url ?? null;
+    return resolvePrimaryMediaUrl(group);
   }, [group]);
 
   const handleOpenModal = useCallback(() => {
@@ -378,212 +308,26 @@ export function CompositePreviewDock({
     showSkeleton = !group.items.some((item) => Boolean(item?.url || item?.thumb));
   }
 
-  const headerTitle = showTitle ? (
-    <div>
-      <h2 className="text-sm font-semibold text-text-primary">{copy.title}</h2>
-      <p className="text-xs text-text-muted">
-        {group
-          ? (group.items.length === 1 ? copy.variants.singular : copy.variants.plural).replace('{count}', String(group.items.length))
-          : copy.empty}
-      </p>
-    </div>
-  ) : null;
-
-  const toolbarItems = [
-    {
-      key: 'play',
-      element: (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => setIsPlaying((prev) => !prev)}
-          className={clsx(
-            ICON_BUTTON_BASE,
-            'p-0',
-            isPlaying ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
-          )}
-          aria-label={isPlaying ? controls.play.ariaOn : controls.play.ariaOff}
-          title={isPlaying ? controls.play.on : controls.play.off}
-          aria-pressed={isPlaying}
-        >
-          <span className="inline-flex h-4 w-4 items-center justify-center">
-            <UIIcon icon={isPlaying ? Pause : Play} size={16} />
-          </span>
-          <span className="sr-only">{isPlaying ? controls.play.on : controls.play.off}</span>
-        </Button>
-      ),
-    },
-    {
-      key: 'mute',
-      element: (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => setIsMuted((prev) => !prev)}
-          className={clsx(
-            ICON_BUTTON_BASE,
-            'p-0',
-            isMuted ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
-          )}
-          aria-label={isMuted ? controls.mute.ariaOn : controls.mute.ariaOff}
-          title={isMuted ? controls.mute.on : controls.mute.off}
-          aria-pressed={isMuted}
-        >
-          <span className="inline-flex h-4 w-4 items-center justify-center">
-            <UIIcon icon={isMuted ? VolumeX : Volume2} size={16} />
-          </span>
-          <span className="sr-only">{isMuted ? controls.mute.on : controls.mute.off}</span>
-        </Button>
-      ),
-    },
-    {
-      key: 'loop',
-      element: (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => setIsLooping((prev) => !prev)}
-          className={clsx(
-            ICON_BUTTON_BASE,
-            'p-0',
-            isLooping ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
-          )}
-          aria-label={isLooping ? controls.loop.ariaOn : controls.loop.ariaOff}
-          title={isLooping ? controls.loop.on : controls.loop.off}
-          aria-pressed={isLooping}
-        >
-          <span className="relative inline-flex">
-            <span className="inline-flex h-4 w-4 items-center justify-center">
-              <UIIcon icon={Repeat} size={16} />
-            </span>
-            {!isLooping ? (
-              <span
-                aria-hidden="true"
-                className="absolute left-1/2 top-1/2 h-[2px] w-5 -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-current"
-              />
-            ) : null}
-          </span>
-          <span className="sr-only">{isLooping ? controls.loop.on : controls.loop.off}</span>
-        </Button>
-      ),
-    },
-    {
-      key: 'download',
-      element: (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={handleDownload}
-          disabled={!primaryMediaUrl}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-          aria-label={controls.download.aria}
-          title={controls.download.label}
-        >
-          <span className="inline-flex h-4 w-4 items-center justify-center">
-            <UIIcon icon={Download} size={16} />
-          </span>
-          <span className="sr-only">{controls.download.label}</span>
-        </Button>
-      ),
-    },
-    {
-      key: 'modal',
-      element: (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={handleOpenModal}
-          disabled={!group || !onOpenModal}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-          aria-label={controls.modal.aria}
-          title={controls.modal.label}
-        >
-          <span className="inline-flex h-4 w-4 items-center justify-center">
-            <UIIcon icon={ExternalLink} size={16} />
-          </span>
-          <span className="sr-only">{controls.modal.label}</span>
-        </Button>
-      ),
-    },
-  ];
-
-  const toolbarControls = (
-    <div className="flex flex-wrap items-center justify-center gap-2">
-      {toolbarItems.map((item) => (
-        <span key={item.key}>{item.element}</span>
-      ))}
-    </div>
-  );
-
   return (
     <section className="rounded-card border border-border bg-surface-glass-90 shadow-card">
-      <header className="border-b border-hairline px-4 py-3">
-        {engineSettings ? (
-          <>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">{engineSettings}</div>
-              {!showTitle && copyPrompt && onCopyPrompt ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={onCopyPrompt}
-                  className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
-                >
-                  {controls.copyPrompt}
-                </Button>
-              ) : null}
-            </div>
-            {showTitle ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                {headerTitle}
-                {copyPrompt && onCopyPrompt ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={onCopyPrompt}
-                    className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
-                  >
-                    {controls.copyPrompt}
-                  </Button>
-                ) : null}
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {headerTitle}
-            <div className="flex flex-wrap items-center gap-2">
-              {copyPrompt && onCopyPrompt ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={onCopyPrompt}
-                  className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
-                >
-                  {controls.copyPrompt}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        )}
-      </header>
+      <CompositePreviewDockHeader
+        controls={controls}
+        copy={copy}
+        copyPrompt={copyPrompt}
+        engineSettings={engineSettings}
+        groupItemCount={group?.items.length ?? null}
+        onCopyPrompt={onCopyPrompt}
+        showTitle={showTitle}
+      />
 
       <div className="px-4 py-4">
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
-              className={clsx(
-                'relative w-full max-w-[960px] rounded-card bg-placeholder',
-                isSingleLayout ? 'overflow-hidden p-0' : 'border border-surface-on-media-25 p-[8px]'
-              )}
+            className={clsx(
+              'relative w-full max-w-[960px] rounded-card bg-placeholder',
+              isSingleLayout ? 'overflow-hidden p-0' : 'border border-surface-on-media-25 p-[8px]'
+            )}
             style={{ aspectRatio: '16 / 9' }}
           >
             {showSkeleton ? (
@@ -617,128 +361,26 @@ export function CompositePreviewDock({
                     );
                   }
 
-                  const video = isVideo(item);
-                  const itemStatusRaw = typeof item.meta?.status === 'string' ? String(item.meta.status).toLowerCase() : null;
                   const itemKey = item.id ? `${item.id}-${index}` : `dock-item-${index}`;
-                  const isVideoReady = Boolean(readyItems[itemKey]);
-                  const aspectHint = resolveAspectHint(item);
-                  const parsedAspect = parseAspectRatio(aspectHint?.replace('/', ':') ?? null);
-                  const aspectRatio = parsedAspect ? parsedAspect.width / parsedAspect.height : null;
-                  const isSixteenByNine = aspectRatio ? Math.abs(aspectRatio - 16 / 9) < 0.02 : item.aspect === '16:9';
-                  const shouldZoom = isSixteenByNine;
-                  const mediaFitClass = shouldZoom ? 'object-cover scale-[1.02]' : 'object-contain';
-                  const itemStatus: 'completed' | 'pending' | 'error' = (() => {
-                    if (itemStatusRaw === 'completed' || itemStatusRaw === 'ready') return 'completed';
-                    if (itemStatusRaw === 'failed' || itemStatusRaw === 'error') return 'error';
-                    if (itemStatusRaw === 'pending' || itemStatusRaw === 'loading' || !item.url) return 'pending';
-                    return 'completed';
-                  })();
-                  const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
-                  const inlinePreviewUrl = shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
-                  const showReadyThumb = Boolean(item.thumb);
-                  const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
-
-                  const hasAudio =
-                    typeof item?.hasAudio === 'boolean'
-                      ? item.hasAudio
-                      : Boolean(
-                          item?.meta &&
-                            typeof item.meta === 'object' &&
-                            'hasAudio' in item.meta &&
-                            (item.meta as Record<string, unknown>).hasAudio
-                        );
-
                   return (
-                    <figure
+                    <CompositePreviewDockTile
                       key={itemKey}
-                      className={clsx(
-                        'group relative flex items-center justify-center overflow-hidden bg-[var(--surface-2)]',
-                        isSingleLayout ? 'rounded-none' : 'rounded-card'
-                      )}
-                    >
-                      <div className="absolute inset-0">
-                        {itemStatus === 'completed' && video ? (
-                          <>
-                            {showReadyThumb ? (
-                              <Image
-                                src={item.thumb as string}
-                                alt=""
-                                fill
-                                priority={itemKey === activeVideoKey}
-                                fetchPriority={itemKey === activeVideoKey ? 'high' : undefined}
-                                sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
-                                className={clsx(
-                                  'pointer-events-none z-10 transition-opacity duration-150',
-                                  mediaFitClass,
-                                  shouldZoom ? 'transition-transform' : null,
-                                  shouldPlayVideo && isVideoReady ? 'opacity-0' : 'opacity-100'
-                                )}
-                              />
-                            ) : null}
-                            {shouldPlayVideo ? (
-                              <video
-                                ref={registerVideo(itemKey)}
-                                data-preview-video="active"
-                                src={inlinePreviewUrl}
-                                poster={item.thumb}
-                                className={clsx(
-                                  'relative z-0 h-full w-full',
-                                  mediaFitClass,
-                                  shouldZoom ? 'transition-transform duration-150' : null
-                                )}
-                                muted={isMuted}
-                                playsInline
-                                autoPlay
-                                preload="auto"
-                                loop={isLooping}
-                                onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
-                                onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
-                              />
-                            ) : null}
-                          </>
-                        ) : item.thumb ? (
-                          <Image
-                            src={item.thumb}
-                            alt=""
-                            fill
-                            sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
-                            className={clsx('pointer-events-none', mediaFitClass, shouldZoom ? 'transition-transform' : null)}
-                            onLoadingComplete={() => markReady(itemKey)}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[11px] uppercase tracking-micro text-text-muted">
-                            Media
-                          </div>
-                        )}
-                      </div>
-                      {hasAudio && itemStatus === 'completed' && video ? (
-                        <AudioEqualizerBadge
-                          tone="light"
-                          size="sm"
-                          label="Audio available"
-                          className="absolute bottom-2 right-2"
-                        />
-                      ) : null}
-                      <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
-                      <div
-                        className={clsx(
-                          'pointer-events-none absolute inset-0 border transition',
-                          isSingleLayout
-                            ? 'border-transparent rounded-none'
-                            : 'border-preview-outline-idle rounded-card group-hover:border-preview-outline-hover'
-                        )}
-                      />
-                      {itemStatus !== 'completed' && !showGroupError ? (
-                        <ProcessingOverlay
-                          className="absolute inset-0"
-                          state={itemStatus === 'error' ? 'error' : 'pending'}
-                          message={itemMessage}
-                          tone="light"
-                          tileIndex={index + 1}
-                          tileCount={tileCount || slots.length}
-                        />
-                      ) : null}
-                    </figure>
+                      activeVideoKey={activeVideoKey}
+                      index={index}
+                      isLooping={isLooping}
+                      isMuted={isMuted}
+                      isPlaying={isPlaying}
+                      isSingleLayout={isSingleLayout}
+                      isVideoReady={Boolean(readyItems[itemKey])}
+                      item={item}
+                      itemKey={itemKey}
+                      markReady={markReady}
+                      onVideoCanPlay={handleVideoCanPlay}
+                      onVideoLoadedData={handleVideoLoadedData}
+                      registerVideo={registerVideo}
+                      showGroupError={showGroupError}
+                      tileCount={tileCount || slots.length}
+                    />
                   );
                 })}
               </div>
@@ -807,7 +449,19 @@ export function CompositePreviewDock({
               ref={toolbarRef}
               className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm"
             >
-              {toolbarControls}
+              <CompositePreviewDockToolbar
+                controls={controls}
+                hasGroup={Boolean(group)}
+                isLooping={isLooping}
+                isMuted={isMuted}
+                isPlaying={isPlaying}
+                onDownload={handleDownload}
+                onOpenModal={onOpenModal ? handleOpenModal : undefined}
+                onToggleLoop={() => setIsLooping((prev) => !prev)}
+                onToggleMute={() => setIsMuted((prev) => !prev)}
+                onTogglePlay={() => setIsPlaying((prev) => !prev)}
+                primaryMediaUrl={primaryMediaUrl}
+              />
             </div>
           </div>
         </div>
