@@ -16,6 +16,7 @@ const referenceLibraryPath = join(root, 'frontend/src/components/tools/character
 const resultCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-result-cards.tsx');
 const resultsGalleryPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-results-gallery.tsx');
 const pageShellPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-page-shell.tsx');
+const startSectionPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-start-section.tsx');
 const optionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderOptions.ts');
 const historicalResultsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderHistoricalResults.ts');
 const pendingRunsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPendingRunsSync.ts');
@@ -42,6 +43,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(resultCardsPath), 'result card components should live in a focused component module');
   assert.ok(existsSync(resultsGalleryPath), 'result gallery composition should live in a focused component module');
   assert.ok(existsSync(pageShellPath), 'page shell and auth modal chrome should live in a focused component module');
+  assert.ok(existsSync(startSectionPath), 'start section composition should live in a focused component module');
   assert.ok(existsSync(optionsHookPath), 'localized option derivation should live in a focused hook');
   assert.ok(existsSync(historicalResultsHookPath), 'historical result derivation should live in a focused hook');
   assert.ok(existsSync(pendingRunsHookPath), 'pending run polling should live in a focused hook');
@@ -56,6 +58,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-start-section'/, 'workspace should import start section component');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
@@ -115,9 +118,12 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /function removeMustRemainTag\(/, 'must-remain tag removal belongs in useCharacterBuilderTraitActions');
   assert.doesNotMatch(workspaceSource, /const identitySummary =/, 'look summary derivation belongs in useCharacterBuilderLookSummaries');
   assert.doesNotMatch(workspaceSource, /const accessoriesFeaturesSummary =/, 'accessory summary derivation belongs in useCharacterBuilderLookSummaries');
+  assert.doesNotMatch(workspaceSource, /<OutputPreviewCard/, 'output mode selection belongs in CharacterBuilderStartSection');
+  assert.doesNotMatch(workspaceSource, /<ReferenceSlot/, 'reference slot composition belongs in CharacterBuilderStartSection');
+  assert.doesNotMatch(workspaceSource, /copy\.references\.addInspiration/, 'style inspiration empty slot belongs in CharacterBuilderStartSection');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1050, `CharacterBuilderWorkspace should stay below 1050 lines after hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 970, `CharacterBuilderWorkspace should stay below 970 lines after start section extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -132,6 +138,7 @@ test('character builder helper modules expose the expected workspace contract', 
   const resultCardsSource = readFileSync(resultCardsPath, 'utf8');
   const resultsGallerySource = readFileSync(resultsGalleryPath, 'utf8');
   const pageShellSource = readFileSync(pageShellPath, 'utf8');
+  const startSectionSource = readFileSync(startSectionPath, 'utf8');
   const optionsHookSource = readFileSync(optionsHookPath, 'utf8');
   const historicalResultsHookSource = readFileSync(historicalResultsHookPath, 'utf8');
   const pendingRunsHookSource = readFileSync(pendingRunsHookPath, 'utf8');
@@ -211,6 +218,10 @@ test('character builder helper modules expose the expected workspace contract', 
   }
 
   assert.match(generateDockSource, /export function CharacterBuilderStickyDock/, 'CharacterBuilderStickyDock should be exported');
+  assert.match(startSectionSource, /export function CharacterBuilderStartSection/, 'CharacterBuilderStartSection should be exported');
+  assert.match(startSectionSource, /OutputPreviewCard/, 'start section should own output mode selection');
+  assert.match(startSectionSource, /ReferenceSlot/, 'start section should own reference slot composition');
+  assert.match(startSectionSource, /copy\.references\.addInspiration/, 'start section should own style inspiration empty slot');
 
   for (const exportName of [
     'HairEditorPanel',
