@@ -6,13 +6,17 @@ import test from 'node:test';
 const root = process.cwd();
 const handlerPath = join(root, 'frontend/server/fal-webhook-handler.ts');
 const mappingPath = join(root, 'frontend/server/fal-webhook-mapping.ts');
+const refundsPath = join(root, 'frontend/server/fal-webhook-refunds.ts');
 
 const handlerSource = readFileSync(handlerPath, 'utf8');
 const mappingSource = readFileSync(mappingPath, 'utf8');
+const refundsSource = readFileSync(refundsPath, 'utf8');
 
-test('Fal webhook handler delegates mapping and payload extraction helpers', () => {
+test('Fal webhook handler delegates mapping, payload extraction, and refund helpers', () => {
   assert.ok(existsSync(mappingPath), 'Fal webhook mapping helpers should live in a sibling server module');
+  assert.ok(existsSync(refundsPath), 'Fal webhook refund helpers should live in a sibling server module');
   assert.match(handlerSource, /from '\.\/fal-webhook-mapping'/, 'webhook handler should import mapping helpers');
+  assert.match(handlerSource, /from '\.\/fal-webhook-refunds'/, 'webhook handler should import refund helpers');
 
   for (const implementationName of [
     'fallbackThumbnail',
@@ -28,6 +32,9 @@ test('Fal webhook handler delegates mapping and payload extraction helpers', () 
     'findFirstErrorMessage',
     'extractFalErrorMessage',
     'normalizeStatus',
+    'coerceNumber',
+    'normalizeCurrency',
+    'maybeAutoRefundWalletCharge',
   ]) {
     assert.doesNotMatch(
       handlerSource,
@@ -41,7 +48,7 @@ test('Fal webhook handler delegates mapping and payload extraction helpers', () 
   assert.doesNotMatch(handlerSource, /listUpscaleToolEngines/, 'tool engine media lookup belongs in fal-webhook-mapping.ts');
 
   const lineCount = handlerSource.split('\n').length;
-  assert.ok(lineCount <= 950, `Fal webhook handler should stay below 950 lines after mapping extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 820, `Fal webhook handler should stay below 820 lines after refund extraction, got ${lineCount}`);
 });
 
 test('Fal webhook mapping module exposes the expected helper contract', () => {
@@ -71,4 +78,7 @@ test('Fal webhook mapping module exposes the expected helper contract', () => {
   assert.match(mappingSource, /export type WebhookIdentifiers =/, 'WebhookIdentifiers should move with mapping helpers');
   assert.match(mappingSource, /const PROVIDER_ENGINE_MAP/, 'provider alias map should live with engine inference');
   assert.match(mappingSource, /const ERROR_MESSAGE_KEYS/, 'error message key map should live with error extraction');
+  assert.match(refundsSource, /function coerceNumber\(/, 'numeric coercion should be private to refund helpers');
+  assert.match(refundsSource, /function normalizeCurrency\(/, 'currency normalization should be private to refund helpers');
+  assert.match(refundsSource, /export async function maybeAutoRefundWalletCharge/);
 });
