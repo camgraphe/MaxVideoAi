@@ -9,6 +9,7 @@ const componentsDir = join(root, 'frontend/src/components/tools/angle/_component
 const libraryModalPath = join(componentsDir, 'angle-image-library-modal.tsx');
 const orbitSelectorPath = join(componentsDir, 'angle-orbit-selector.tsx');
 const outputMosaicPath = join(componentsDir, 'angle-output-mosaic.tsx');
+const outputPanelPath = join(componentsDir, 'angle-output-panel.tsx');
 const recentJobModalPath = join(componentsDir, 'angle-recent-job-modal.tsx');
 const authGateModalPath = join(componentsDir, 'angle-auth-gate-modal.tsx');
 const generationRunnerHookPath = join(root, 'frontend/src/components/tools/angle/_hooks/useAngleGenerationRunner.ts');
@@ -22,6 +23,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(libraryModalPath), 'angle library modal should live in a colocated component module');
   assert.ok(existsSync(orbitSelectorPath), 'angle orbit selector should live in a colocated component module');
   assert.ok(existsSync(outputMosaicPath), 'angle output mosaic should live in a colocated component module');
+  assert.ok(existsSync(outputPanelPath), 'angle output panel should live in a colocated component module');
   assert.ok(existsSync(recentJobModalPath), 'angle recent job modal should live in a colocated component module');
   assert.ok(existsSync(authGateModalPath), 'angle auth gate modal should live in a colocated component module');
   assert.ok(existsSync(generationRunnerHookPath), 'angle generation runner should live in a colocated hook');
@@ -31,7 +33,7 @@ test('angle workspace delegates copy, local types, and helper logic', () => {
 
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-image-library-modal'/, 'workspace should import angle library modal');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-orbit-selector'/, 'workspace should import angle orbit selector');
-  assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-output-mosaic'/, 'workspace should import angle output mosaic');
+  assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-output-panel'/, 'workspace should import angle output panel');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-recent-job-modal'/, 'workspace should import angle recent job modal');
   assert.match(workspaceSource, /from '\.\/angle\/_components\/angle-auth-gate-modal'/, 'workspace should import angle auth gate modal');
   assert.match(workspaceSource, /from '\.\/angle\/_hooks\/useAngleGenerationRunner'/, 'workspace should import angle generation runner');
@@ -54,15 +56,19 @@ test('angle workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /emitClientMetric\('tool_start'/, 'generation analytics belongs in useAngleGenerationRunner');
   assert.doesNotMatch(workspaceSource, /z-\[10040\]/, 'recent job dialog JSX belongs in angle-recent-job-modal.tsx');
   assert.doesNotMatch(workspaceSource, /z-\[10050\]/, 'auth gate dialog JSX belongs in angle-auth-gate-modal.tsx');
+  assert.doesNotMatch(workspaceSource, /ANGLE_GUEST_EXAMPLE_OUTPUT_URL/, 'guest output preview belongs in angle-output-panel.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.previousJobs/, 'recent output rail belongs in angle-output-panel.tsx');
+  assert.doesNotMatch(workspaceSource, /angle-preview-/, 'output download wiring belongs in angle-output-panel.tsx');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 920, `AngleWorkspace should stay below 920 lines after dialog extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 820, `AngleWorkspace should stay below 820 lines after output panel extraction, got ${lineCount}`);
 });
 
 test('angle helper modules expose the expected workspace contract', () => {
   const libraryModalSource = readFileSync(libraryModalPath, 'utf8');
   const orbitSelectorSource = readFileSync(orbitSelectorPath, 'utf8');
   const outputMosaicSource = readFileSync(outputMosaicPath, 'utf8');
+  const outputPanelSource = readFileSync(outputPanelPath, 'utf8');
   const recentJobModalSource = readFileSync(recentJobModalPath, 'utf8');
   const authGateModalSource = readFileSync(authGateModalPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
@@ -74,6 +80,10 @@ test('angle helper modules expose the expected workspace contract', () => {
   assert.match(orbitSelectorSource, /export function AngleOrbitSelector/, 'orbit selector module should export AngleOrbitSelector');
   assert.match(orbitSelectorSource, /dynamic\(\(\) => import\('@\/components\/tools\/AngleOrbitCanvas'\)/, 'orbit selector should own the dynamic canvas import');
   assert.match(outputMosaicSource, /export function AngleOutputMosaic/, 'output mosaic module should export AngleOutputMosaic');
+  assert.match(outputPanelSource, /export function AngleOutputPanel/, 'output panel module should export AngleOutputPanel');
+  assert.match(outputPanelSource, /ANGLE_GUEST_EXAMPLE_OUTPUT_URL/, 'output panel should own guest output preview');
+  assert.match(outputPanelSource, /AngleOutputMosaic/, 'output panel should own output mosaic composition');
+  assert.match(outputPanelSource, /triggerAppDownload/, 'output panel should own output downloads');
   assert.match(recentJobModalSource, /export function AngleRecentJobModal/, 'recent job modal module should export AngleRecentJobModal');
   assert.match(recentJobModalSource, /AngleOutputMosaic/, 'recent job modal should own recent output mosaic composition');
   assert.match(authGateModalSource, /export function AngleAuthGateModal/, 'auth gate modal module should export AngleAuthGateModal');
