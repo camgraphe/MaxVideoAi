@@ -8,8 +8,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/settings-controls/settings-control-copy';
 import { matchesDurationOptionValue, parseDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
+import { SettingsGenericAdvancedFields } from '@/components/settings-controls/settings-control-generic-fields';
 import { FieldGroup, RangeWithInput } from '@/components/settings-controls/settings-control-parts';
+
+export { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/settings-controls/settings-control-copy';
 
 interface Props {
   engine: EngineCaps;
@@ -66,94 +70,6 @@ interface Props {
   advancedFieldValues?: Record<string, unknown>;
   onAdvancedFieldChange?: (field: EngineInputField, value: string) => void;
   variant?: 'full' | 'advanced';
-}
-
-export const DEFAULT_CONTROLS_COPY = {
-  core: {
-    title: 'Core settings',
-    subtitle: 'Duration, Aspect, Resolution',
-    audioIncluded: 'Audio included in every render',
-  },
-  frames: {
-    label: 'Frames',
-    options: 'Options: {options}',
-    unit: '{count} frames',
-    hint: 'Frames control clip length; values are forwarded without converting to seconds.',
-  },
-  duration: {
-    optionsLabel: 'Duration',
-    maxLabel: 'Max {seconds}s',
-    rangeLabel: 'Duration — seconds',
-    rangeHint: 'Min {min}s · Max {max}s',
-    managed: 'Duration is managed directly by this engine.',
-  },
-  resolution: {
-    label: 'Resolution',
-    auto: 'Auto',
-    hd: '• HD',
-    fullHd: '• Full HD',
-    ultraHd: '• Ultra HD',
-    proSuffix: '• Pro',
-  },
-  aspect: {
-    label: 'Aspect',
-    options: {
-      auto: 'Auto',
-      source: 'Source',
-      custom: 'Custom',
-    },
-  },
-  iterationsLabel: 'Iterations',
-  loop: {
-    label: 'Loop',
-    on: 'On',
-    off: 'Off',
-  },
-  audio: {
-    label: 'Audio',
-    on: 'On',
-    off: 'Off',
-  },
-  advancedTitle: 'Advanced settings',
-  seed: {
-    label: 'Seed',
-    placeholder: 'Random',
-    lock: 'Lock seed',
-  },
-  fpsSuffix: '{value} fps',
-  promptStrength: 'Prompt strength',
-  guidance: 'Guidance',
-  inputInfluence: 'Input influence',
-  cfgScale: 'Cfg scale',
-  extend: {
-    label: 'Extend',
-    action: 'Extend by',
-    unit: 'seconds',
-  },
-  keyframes: 'Keyframes supported (Pika 2.2)',
-} as const;
-
-export function mergeControlsCopy(source?: Partial<typeof DEFAULT_CONTROLS_COPY>) {
-  return {
-    ...DEFAULT_CONTROLS_COPY,
-    ...source,
-    core: { ...DEFAULT_CONTROLS_COPY.core, ...(source?.core ?? {}) },
-    frames: { ...DEFAULT_CONTROLS_COPY.frames, ...(source?.frames ?? {}) },
-    duration: { ...DEFAULT_CONTROLS_COPY.duration, ...(source?.duration ?? {}) },
-    resolution: { ...DEFAULT_CONTROLS_COPY.resolution, ...(source?.resolution ?? {}) },
-    aspect: {
-      ...DEFAULT_CONTROLS_COPY.aspect,
-      ...(source?.aspect ?? {}),
-      options: {
-        ...DEFAULT_CONTROLS_COPY.aspect.options,
-        ...(source?.aspect?.options ?? {}),
-      },
-    },
-    loop: { ...DEFAULT_CONTROLS_COPY.loop, ...(source?.loop ?? {}) },
-    audio: { ...DEFAULT_CONTROLS_COPY.audio, ...(source?.audio ?? {}) },
-    seed: { ...DEFAULT_CONTROLS_COPY.seed, ...(source?.seed ?? {}) },
-    extend: { ...DEFAULT_CONTROLS_COPY.extend, ...(source?.extend ?? {}) },
-  } as typeof DEFAULT_CONTROLS_COPY;
 }
 
 export function SettingsControls({
@@ -329,64 +245,6 @@ export function SettingsControls({
       hasGenericAdvancedFields
   );
 
-  const renderGenericAdvancedField = ({ field, required }: { field: EngineInputField; required: boolean }) => {
-    const fieldValue = advancedFieldValues[field.id] ?? field.default ?? '';
-    const label = `${field.label}${required ? ' *' : ''}`;
-    if (field.type === 'enum') {
-      const values = Array.isArray(field.values) ? field.values : [];
-      return (
-        <label key={field.id} className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-          <select
-            className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
-            value={String(fieldValue ?? '')}
-            onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
-          >
-            <option value="">—</option>
-            {values.map((value) => (
-              <option key={`${field.id}-${value}`} value={String(value)}>
-                {String(value)}
-              </option>
-            ))}
-          </select>
-          {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-        </label>
-      );
-    }
-    if (field.type === 'number') {
-      return (
-        <label key={field.id} className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-          <input
-            type="number"
-            value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
-            onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
-            placeholder={
-              typeof field.default === 'number' || typeof field.default === 'string'
-                ? String(field.default)
-                : ''
-            }
-            className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-          {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-        </label>
-      );
-    }
-    return (
-      <label key={field.id} className="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
-        <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-        <textarea
-          value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
-          onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
-          placeholder={typeof field.default === 'string' ? field.default : ''}
-          rows={3}
-          className="min-h-[92px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
-        />
-        {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-      </label>
-    );
-  };
-
   if (variant === 'advanced') {
     if (!advancedHasContent) return null;
 
@@ -545,9 +403,11 @@ export function SettingsControls({
             {engine.keyframes ? <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div> : null}
 
             {hasGenericAdvancedFields ? (
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {advancedFields.map(renderGenericAdvancedField)}
-              </div>
+              <SettingsGenericAdvancedFields
+                fields={advancedFields}
+                values={advancedFieldValues}
+                onChange={onAdvancedFieldChange}
+              />
             ) : null}
 
             {showKlingV3Controls ? (
