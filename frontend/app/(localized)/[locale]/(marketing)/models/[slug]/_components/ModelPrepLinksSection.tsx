@@ -4,7 +4,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { PREP_LINK_VISUALS } from '../_lib/model-page-static';
 import { FULL_BLEED_SECTION, SECTION_BG_A, SECTION_PAD, SECTION_SCROLL_MARGIN } from '../_lib/model-page-specs';
 
-type PrepLinksSection = {
+export type PrepLinksSection = {
   eyebrow: string;
   title: string;
   body: string;

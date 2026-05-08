@@ -25,7 +25,7 @@ import {
   type DetailCopy,
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
-import { buildProductSchema, resolveProviderInfo } from '../_lib/model-page-schema';
+import { resolveProviderInfo } from '../_lib/model-page-schema';
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
@@ -62,6 +62,8 @@ import {
   type LocalizedFaqEntry,
   type SoraCopy,
 } from '../_lib/model-page-specs';
+import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
+import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 
 export function MarketingModelPageLayout({
   engine,
@@ -269,94 +271,7 @@ export function MarketingModelPageLayout({
   }));
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqJsonLdEntries = faqList.slice(0, 6);
-  const prepLinksSection = (() => {
-    const isNanoBananaFamily =
-      engine.modelSlug === 'nano-banana' ||
-      engine.modelSlug === 'nano-banana-pro' ||
-      engine.modelSlug === 'nano-banana-2' ||
-      engine.modelSlug === 'gpt-image-2';
-    const isVideoPrepModel =
-      engine.modelSlug === 'veo-3-1' ||
-      engine.modelSlug === 'kling-3-pro' ||
-      engine.modelSlug === 'happy-horse-1-0' ||
-      engine.modelSlug === 'sora-2-pro' ||
-      engine.modelSlug === 'ltx-2-3-pro' ||
-      engine.modelSlug === 'ltx-2-3-fast';
-
-    if (!isNanoBananaFamily && !isVideoPrepModel) {
-      return null;
-    }
-
-    if (locale === 'fr') {
-      return isNanoBananaFamily
-        ? {
-            eyebrow: 'Avant de générer',
-            title: 'Préparez la référence avant l’edit',
-            body: 'Si l’image a d’abord besoin d’une référence personnage réutilisable ou d’un meilleur angle, réglez ça avant Nano Banana.',
-            links: [
-              { href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' },
-              { href: '/tools/angle', label: "Changer le point de vue avant l'edit" },
-              { href: '/app/image', label: 'Ouvrir Image' },
-            ],
-          }
-        : {
-            eyebrow: 'Avant de générer',
-            title: 'Préparez le frame avant la vidéo',
-            body: 'Verrouillez le personnage, corrigez l’angle ou construisez l’image source avant de dépenser des crédits en motion.',
-            links: [
-              { href: '/tools/character-builder', label: 'Conserver le même personnage' },
-              { href: '/tools/angle', label: 'Changer le point de vue avant la vidéo' },
-              { href: '/app/image', label: "Construire l'image source dans Image" },
-            ],
-          };
-    }
-
-    if (locale === 'es') {
-      return isNanoBananaFamily
-        ? {
-            eyebrow: 'Antes de generar',
-            title: 'Prepara la referencia antes del edit',
-            body: 'Si la imagen primero necesita una referencia de personaje reutilizable o un mejor ángulo, resuélvelo antes de Nano Banana.',
-            links: [
-              { href: '/tools/character-builder', label: 'Crear una referencia de personaje reutilizable' },
-              { href: '/tools/angle', label: 'Cambiar el punto de vista antes del edit' },
-              { href: '/app/image', label: 'Abrir Image' },
-            ],
-          }
-        : {
-            eyebrow: 'Antes de generar',
-            title: 'Prepara el frame antes del video',
-            body: 'Fija el personaje, corrige el ángulo o construye la imagen base antes de gastar créditos en motion.',
-            links: [
-              { href: '/tools/character-builder', label: 'Mantener el mismo personaje' },
-              { href: '/tools/angle', label: 'Cambiar el punto de vista antes del video' },
-              { href: '/app/image', label: 'Construir la imagen base en Image' },
-            ],
-          };
-    }
-
-    return isNanoBananaFamily
-      ? {
-          eyebrow: 'Before you generate',
-          title: 'Build the reference before the edit',
-          body: 'If the still needs a reusable character reference or a better viewpoint first, solve that before Nano Banana.',
-          links: [
-            { href: '/tools/character-builder', label: 'Build a reusable character reference' },
-            { href: '/tools/angle', label: 'Change the viewpoint before the edit' },
-            { href: '/app/image', label: 'Open Image' },
-          ],
-        }
-      : {
-          eyebrow: 'Before you generate',
-          title: 'Prepare the frame before video',
-          body: 'Lock the character, fix the viewpoint, or build the source still before you spend credits on motion.',
-          links: [
-            { href: '/tools/character-builder', label: 'Keep the character consistent' },
-            { href: '/tools/angle', label: 'Change the viewpoint before video' },
-            { href: '/app/image', label: 'Build the source still in Image' },
-          ],
-        };
-  })();
+  const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -408,48 +323,18 @@ export function MarketingModelPageLayout({
     { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
     { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ].filter((item) => item.visible);
-  const productSchema = buildProductSchema({
-    engine,
+  const schemaPayloads = buildModelSchemaPayloads({
     canonical,
     description: pageDescription,
-    heroTitle,
+    engine,
     heroPosterAbsolute,
+    heroTitle,
+    inLanguage,
+    localizedCanonical,
+    localizedHomeUrl,
+    localizedModelsUrl,
+    resolvedBreadcrumb,
   });
-  const schemaPayloads = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: heroTitle,
-      description: pageDescription,
-      url: canonical,
-      inLanguage,
-    },
-    productSchema,
-    {
-      '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: resolvedBreadcrumb.home,
-            item: localizedHomeUrl,
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: resolvedBreadcrumb.models,
-            item: localizedModelsUrl,
-          },
-          {
-            '@type': 'ListItem',
-            position: 3,
-            name: heroTitle,
-            item: localizedCanonical,
-          },
-        ],
-      },
-  ].filter(Boolean) as object[];
 
   return (
     <>

@@ -9,12 +9,16 @@ const typesPath = join(root, 'frontend/components/marketing/home/home-redesign-t
 const visualsPath = join(root, 'frontend/components/marketing/home/home-redesign-visuals.ts');
 const workflowSummaryPath = join(root, 'frontend/components/marketing/home/HomeWorkflowSeoSummary.tsx');
 const conversionSectionsPath = join(root, 'frontend/components/marketing/home/HomeConversionSections.tsx');
+const heroSectionPath = join(root, 'frontend/components/marketing/home/HomeHeroSection.tsx');
+const shotTypeSectionPath = join(root, 'frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx');
 
 const sectionsSource = readFileSync(sectionsPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
 const visualsSource = readFileSync(visualsPath, 'utf8');
 const workflowSummarySource = readFileSync(workflowSummaryPath, 'utf8');
 const conversionSectionsSource = readFileSync(conversionSectionsPath, 'utf8');
+const heroSectionSource = readFileSync(heroSectionPath, 'utf8');
+const shotTypeSectionSource = readFileSync(shotTypeSectionPath, 'utf8');
 
 test('home redesign sections delegate shared content contracts', () => {
   assert.ok(existsSync(typesPath), 'home redesign contracts should live beside the home section components');
@@ -31,10 +35,12 @@ test('home redesign sections delegate shared content contracts', () => {
   assert.ok(existsSync(visualsPath), 'home visual constants should live in a local visual module');
   assert.ok(existsSync(workflowSummaryPath), 'workflow SEO summary should live in its own component module');
   assert.ok(existsSync(conversionSectionsPath), 'home conversion sections should live in their own component module');
+  assert.ok(existsSync(heroSectionPath), 'home hero should live in its own component module');
+  assert.ok(existsSync(shotTypeSectionPath), 'best-for selector should live in its own component module');
   assert.match(
-    sectionsSource,
+    `${heroSectionSource}\n${shotTypeSectionSource}`,
     /from '@\/components\/marketing\/home\/home-redesign-visuals'/,
-    'home sections should consume visual constants from the local visual module'
+    'home section modules should consume visual constants from the local visual module'
   );
   assert.match(
     sectionsSource,
@@ -59,7 +65,7 @@ test('home redesign sections do not regain extracted type ownership', () => {
   }
 
   const lineCount = sectionsSource.split('\n').length;
-  assert.ok(lineCount <= 720, `HomeRedesignSections should stay below 720 lines after conversion section extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 80, `HomeRedesignSections should stay a thin facade after section extraction, got ${lineCount}`);
   assert.doesNotMatch(sectionsSource, /const\s+TOOLBOX_VISUALS/);
   assert.doesNotMatch(sectionsSource, /const\s+WORKFLOW_BASICS_COPY/);
   assert.match(visualsSource, /export\s+const\s+TOOLBOX_VISUALS/);

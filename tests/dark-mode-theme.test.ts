@@ -6,6 +6,9 @@ const tokensSource = readFileSync('frontend/src/styles/tokens.css', 'utf8');
 const globalsSource = readFileSync('frontend/app/globals.css', 'utf8');
 const homeSource = [
   readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeHeroSection.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeRealExamplesPreview.tsx', 'utf8'),
   readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
 ].join('\n');
 const heroShowcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
@@ -75,7 +78,7 @@ test('homepage dark sections use a darker base and reusable neon contour treatme
 });
 
 test('homepage dark mode follows the reference with luminous hero and tokenized glass surfaces', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ProofBar'));
+  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(homeHeroSource, /<section className="home-hero-section dark-section-neon relative overflow-hidden border-b border-hairline bg-bg">/);
   assert.match(homeHeroSource, /radial-gradient\(ellipse_at_78%_16%,rgba\(255,255,255,0\.055\),transparent_46%\)/);
@@ -86,7 +89,7 @@ test('homepage dark mode follows the reference with luminous hero and tokenized 
 });
 
 test('homepage hero badge chips wrap on mobile instead of being clipped', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ProofBar'));
+  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(homeHeroSource, /flex min-w-0 flex-wrap gap-2 overflow-visible sm:flex-nowrap sm:overflow-x-auto/);
   assert.match(homeHeroSource, /inline-flex max-w-full shrink-0 items-center/);
@@ -95,7 +98,7 @@ test('homepage hero badge chips wrap on mobile instead of being clipped', () => 
 });
 
 test('homepage hero preview uses subdued dark borders instead of bright white outlines', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ProofBar'));
+  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(globalsSource, /\.home-hero-dark-grid/);
   assert.match(homeHeroSource, /home-hero-dark-grid/);
