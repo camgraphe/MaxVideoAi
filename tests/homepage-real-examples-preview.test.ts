@@ -27,6 +27,9 @@ const modelSlugs = new Set(engineCatalog.map((entry) => entry.modelSlug));
 function readHomeSectionsSource() {
   return [
     readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+    readFileSync('frontend/components/marketing/home/HomeHeroSection.tsx', 'utf8'),
+    readFileSync('frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx', 'utf8'),
+    readFileSync('frontend/components/marketing/home/HomeRealExamplesPreview.tsx', 'utf8'),
     readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
   ].join('\n');
 }
@@ -140,7 +143,7 @@ test('homepage hero uses the current Kling 3 Pro render even when programmed slo
     visualsSource.indexOf('export const HERO_VIDEO_ORDER'),
     visualsSource.indexOf('export const BEST_FOR_CARD_VISUALS')
   );
-  const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('const valueCards'));
+  const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
   assert.match(heroSource, /01245e62-6bb2-4d5d-89c6-c60923a004ad\.jpg/);

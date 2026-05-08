@@ -6,6 +6,10 @@ const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(
 const homeJsonLdSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts', 'utf8');
 const homeSectionsSource = [
   readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeHeroSection.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeRealExamplesPreview.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeStartupFameLink.tsx', 'utf8'),
   readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
 ].join('\n');
 type HomeMessages = {
@@ -122,10 +126,7 @@ test('homepage keeps the Startup Fame dofollow link under the best-for hub CTA',
   );
   const hubCtaIndex = selectorSource.indexOf('data-analytics-cta-name="best-for-hub"');
   const startupFameIndex = selectorSource.indexOf('<StartupFameLink');
-  const startupComponentSource = homeSectionsSource.slice(
-    homeSectionsSource.indexOf('export function StartupFameLink'),
-    homeSectionsSource.indexOf('function formatBestForPickLabel')
-  );
+  const startupComponentSource = readFileSync('frontend/components/marketing/home/HomeStartupFameLink.tsx', 'utf8');
 
   assert.match(homeSource, /startupFameLabel={startupFameLabel}/);
   assert.ok(hubCtaIndex >= 0, 'Best-for hub CTA should render inside the selector');
