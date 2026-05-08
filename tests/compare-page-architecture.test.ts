@@ -8,6 +8,14 @@ const helperSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-helpers.ts',
   'utf8'
 );
+const loaderSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-data-loaders.ts',
+  'utf8'
+);
+const localizationSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-localization.ts',
+  'utf8'
+);
 const overrideSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts',
   'utf8'
@@ -61,11 +69,17 @@ test('comparison detail page delegates copy, helper, and media responsibilities'
 });
 
 test('comparison detail helpers own routing, pricing, specs, and localized overrides', () => {
+  const helperLineCount = helperSource.split('\n').length;
+
+  assert.ok(helperLineCount <= 760, `compare-page-helpers.ts should stay below 760 lines after helper extraction, got ${helperLineCount}`);
   assert.match(helperSource, /export function getCanonicalCompareSlug/);
-  assert.match(helperSource, /export async function loadEngineScores/);
+  assert.match(helperSource, /from '\.\/compare-page-data-loaders'/);
+  assert.match(helperSource, /from '\.\/compare-page-localization'/);
   assert.match(helperSource, /export async function resolvePricingDisplay/);
   assert.match(helperSource, /export function buildSpecValues/);
   assert.match(overrideSource, /export function getComparePageOverride/);
+  assert.doesNotMatch(helperSource, /const LOCALIZED_BEST_FOR/);
+  assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
 });
 
 test('comparison detail split helpers own FAQ, scorecard, and generate card responsibilities', () => {
@@ -82,4 +96,15 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(generateCardSource, /export function CompareGenerateCard/);
   assert.match(detailContentSource, /CompareShowdownMedia/);
   assert.match(detailContentSource, /CompareSpecValue/);
+});
+
+test('comparison detail data and localization helpers expose focused contracts', () => {
+  assert.match(loaderSource, /export async function loadEngineScores/);
+  assert.match(loaderSource, /export async function loadEngineKeySpecs/);
+  assert.match(loaderSource, /export async function hydrateShowdowns/);
+  assert.match(localizationSource, /const LOCALIZED_BEST_FOR/);
+  assert.match(localizationSource, /export const LOCALIZED_SHOWDOWN_TITLES/);
+  assert.match(localizationSource, /export const LOCALIZED_SHOWDOWN_TESTS/);
+  assert.match(localizationSource, /export function localizeMappedValue/);
+  assert.match(localizationSource, /export function localizeBestFor/);
 });
