@@ -25,6 +25,8 @@ const referenceAssetsHookPath = join(root, 'frontend/src/components/tools/charac
 const resultActionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderResultActions.ts');
 const resultsInfiniteScrollHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderResultsInfiniteScroll.ts');
 const persistenceHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPersistence.ts');
+const lookSummariesHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderLookSummaries.ts');
+const traitActionsHookPath = join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderTraitActions.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
@@ -49,6 +51,8 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(resultActionsHookPath), 'result actions should live in a focused hook');
   assert.ok(existsSync(resultsInfiniteScrollHookPath), 'result infinite scroll should live in a focused hook');
   assert.ok(existsSync(persistenceHookPath), 'local persistence should live in a focused hook');
+  assert.ok(existsSync(lookSummariesHookPath), 'look summaries should live in a focused hook');
+  assert.ok(existsSync(traitActionsHookPath), 'trait actions should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
@@ -61,6 +65,8 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultActions'/, 'workspace should import result actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultsInfiniteScroll'/, 'workspace should import result infinite scroll hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderLookSummaries'/, 'workspace should import look summaries hook');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderTraitActions'/, 'workspace should import trait actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-helpers'/, 'workspace should import helpers');
@@ -103,9 +109,15 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /readPersistedState\(\)/, 'local hydration belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /writePersistedPendingRuns/, 'pending run persistence belongs in useCharacterBuilderPersistence');
   assert.doesNotMatch(workspaceSource, /visitorSanitizedRef/, 'visitor cleanup tracking belongs in useCharacterBuilderPersistence');
+  assert.doesNotMatch(workspaceSource, /function updateTrait</, 'trait updates belong in useCharacterBuilderTraitActions');
+  assert.doesNotMatch(workspaceSource, /function toggleListValue\(/, 'trait list toggles belong in useCharacterBuilderTraitActions');
+  assert.doesNotMatch(workspaceSource, /function addMustRemainTag\(/, 'must-remain tag creation belongs in useCharacterBuilderTraitActions');
+  assert.doesNotMatch(workspaceSource, /function removeMustRemainTag\(/, 'must-remain tag removal belongs in useCharacterBuilderTraitActions');
+  assert.doesNotMatch(workspaceSource, /const identitySummary =/, 'look summary derivation belongs in useCharacterBuilderLookSummaries');
+  assert.doesNotMatch(workspaceSource, /const accessoriesFeaturesSummary =/, 'accessory summary derivation belongs in useCharacterBuilderLookSummaries');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 1145, `CharacterBuilderWorkspace should stay below 1145 lines after shell extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1050, `CharacterBuilderWorkspace should stay below 1050 lines after hook extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -129,6 +141,8 @@ test('character builder helper modules expose the expected workspace contract', 
   const resultActionsHookSource = readFileSync(resultActionsHookPath, 'utf8');
   const resultsInfiniteScrollHookSource = readFileSync(resultsInfiniteScrollHookPath, 'utf8');
   const persistenceHookSource = readFileSync(persistenceHookPath, 'utf8');
+  const lookSummariesHookSource = readFileSync(lookSummariesHookPath, 'utf8');
+  const traitActionsHookSource = readFileSync(traitActionsHookPath, 'utf8');
 
   assert.match(copySource, /export const DEFAULT_CHARACTER_COPY =/, 'copy module should export default copy');
   assert.match(copySource, /export type CharacterCopy =/, 'copy module should export copy type');
@@ -259,4 +273,10 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.match(persistenceHookSource, /export function useCharacterBuilderPersistence/, 'persistence hook should be exported');
   assert.match(persistenceHookSource, /readPersistedState/, 'persistence hook should own local hydration');
   assert.match(persistenceHookSource, /writePersistedPendingRuns/, 'persistence hook should own pending run persistence');
+  assert.match(lookSummariesHookSource, /export function useCharacterBuilderLookSummaries/, 'look summaries hook should be exported');
+  assert.match(lookSummariesHookSource, /getHairSummary/, 'look summaries hook should own hair summary derivation');
+  assert.match(lookSummariesHookSource, /countConfiguredSecondaryControls/, 'look summaries hook should own secondary control counts');
+  assert.match(traitActionsHookSource, /export function useCharacterBuilderTraitActions/, 'trait actions hook should be exported');
+  assert.match(traitActionsHookSource, /const updateTrait = useCallback/, 'trait actions hook should own trait updates');
+  assert.match(traitActionsHookSource, /const handleResetBuilder = useCallback/, 'trait actions hook should own reset orchestration');
 });
