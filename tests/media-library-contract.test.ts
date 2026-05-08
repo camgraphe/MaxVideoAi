@@ -315,6 +315,10 @@ test('history can save renders to library from cards and job details', () => {
     path.join(process.cwd(), 'frontend/app/(core)/jobs/page.tsx'),
     'utf8'
   );
+  const jobsHelpersSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/jobs/_lib/jobs-page-helpers.ts'),
+    'utf8'
+  );
   const apiSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/lib/api.ts'),
     'utf8'
@@ -325,10 +329,10 @@ test('history can save renders to library from cards and job details', () => {
   assert.match(cardSource, /<Plus\s+className=/);
   assert.match(cardSource, /handleAction\('save-to-library'\)/);
   assert.match(jobsSource, /saveAssetToLibrary/);
-  assert.match(jobsSource, /function\s+resolveGroupLibrarySavePayload/);
-  assert.match(jobsSource, /function\s+resolveEntryLibrarySavePayload/);
+  assert.match(jobsHelpersSource, /function\s+resolveGroupLibrarySavePayload/);
+  assert.match(jobsHelpersSource, /function\s+resolveEntryLibrarySavePayload/);
   assert.match(jobsSource, /showLibraryCta/);
-  assert.match(jobsSource, /CollapsedGroupRail\([\s\S]*onSaveToLibrary/);
+  assert.match(jobsSource, /<CollapsedGroupRail[\s\S]*onSaveToLibrary/);
   assert.match(jobsSource, /onSaveToLibrary=\{handleSaveGroupToLibrary\}/);
   assert.match(jobsSource, /onSaveToLibrary=\{handleSaveLightboxEntryToLibrary\}/);
   assert.match(apiSource, /kind\?:\s*'image'\s*\|\s*'video'\s*\|\s*'audio'/);

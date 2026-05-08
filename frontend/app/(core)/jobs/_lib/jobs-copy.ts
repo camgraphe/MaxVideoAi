@@ -1,0 +1,42 @@
+export const DEFAULT_JOBS_COPY = {
+  title: 'History',
+  sections: {
+    video: 'Video history',
+    audio: 'Audio history',
+    image: 'Image history',
+    character: 'Character history',
+    angle: 'Angle history',
+    upscale: 'Upscale history',
+    videoEmpty: 'No video renders yet.',
+    audioEmpty: 'No audio renders yet.',
+    imageEmpty: 'No image renders yet.',
+    characterEmpty: 'No character renders yet.',
+    angleEmpty: 'No angle renders yet.',
+    upscaleEmpty: 'No upscale renders yet.',
+  },
+  teams: {
+    title: 'Teams',
+    srLive: 'Live',
+    srSoon: 'Coming soon',
+    live: 'Shared wallets, approvals, and budgets are enabled in your workspace.',
+    beta: 'Coming soon — shared wallets, approvals, and budgets. Join the beta at {email}.',
+    email: 'support@maxvideoai.com',
+  },
+  curated: 'Starter renders curated by the MaxVideo team appear here until you generate your own clips.',
+  error: 'Failed to load history.',
+  retry: 'Retry',
+  empty: 'No renders yet. Start a generation to populate your history.',
+  loadMore: 'Load more',
+  loading: 'Loading…',
+  actions: {
+    addToLibrary: 'Add to Library',
+    saving: 'Saving…',
+    recreate: 'Generate same settings',
+    openDetails: 'View details',
+    actions: 'Actions',
+    expandSection: 'Show',
+    collapseSection: 'Hide',
+  },
+} as const;
+
+export type JobsCopy = typeof DEFAULT_JOBS_COPY;
