@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const examplesPageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx", 'utf8');
+const examplesMainVideoFeatureSource = readFileSync(
+  "frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature.tsx",
+  'utf8'
+);
 const examplesHeroVideoSource = readFileSync('frontend/components/examples/ExamplesHeroVideo.client.tsx', 'utf8');
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 
@@ -13,13 +17,14 @@ test('examples hero video keeps mobile rendering poster-first instead of autopla
 });
 
 test('examples model landing hero links do not prefetch RSC routes during initial render', () => {
+  assert.match(examplesPageSource, /<ExamplesMainVideoFeature/);
   assert.match(
-    examplesPageSource,
-    /<Link\s+href=\{mainVideo\.card\.href\}[\s\S]{0,220}?prefetch=\{false\}/
+    examplesMainVideoFeatureSource,
+    /<Link\s+[\s\S]{0,180}?href=\{exampleHref\}[\s\S]{0,220}?prefetch=\{false\}/
   );
   assert.match(
-    examplesPageSource,
-    /<Link\s+href=\{mainVideo\.card\.modelHref\}[\s\S]{0,220}?prefetch=\{false\}/
+    examplesMainVideoFeatureSource,
+    /<Link\s+[\s\S]{0,180}?href=\{modelHref\}[\s\S]{0,220}?prefetch=\{false\}/
   );
 });
 

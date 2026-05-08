@@ -11,9 +11,6 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
-import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
-import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import {
   getExampleModelLanding,
@@ -63,6 +60,7 @@ import {
 import {
   getExampleFamilyDescriptor,
 } from '@/lib/model-families';
+import { ExamplesMainVideoFeature } from './_components/examples-main-video-feature';
 import {
   buildExamplesNextStepLinks,
   getExamplesBrowseByModelLabel,
@@ -666,119 +664,23 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
           </section>
 
           {mainVideo && mainVideoContentUrl ? (
-            <section className="mx-auto w-full max-w-[920px]">
-              <article className="group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card">
-                <Link
-                  href={mainVideo.card.href}
-                  prefetch={false}
-                  className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                  aria-label={`${mainVideoCopy.openWatchPage}: ${mainVideoTitle}`}
-                >
-                  <div
-                    className="relative overflow-hidden bg-surface-on-media-dark-5"
-                    style={{ aspectRatio: mainVideoIsPortrait ? '16 / 9' : mainVideoAspectRatio }}
-                  >
-                    {mainVideoIsPortrait && mainVideoPoster ? (
-                      <>
-                        <div
-                          className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
-                          style={{ backgroundImage: `url(${mainVideoPoster})` }}
-                          aria-hidden
-                        />
-                        <div className="absolute inset-0 bg-black/30" aria-hidden />
-                      </>
-                    ) : null}
-
-                    <div className="absolute left-3 top-3 z-30 inline-flex items-center rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-micro text-white shadow-sm">
-                      {mainVideoCopy.preview}
-                    </div>
-
-                    <div
-                      className={clsx(
-                        'relative h-full w-full',
-                        mainVideoIsPortrait ? 'flex items-center justify-center p-3 sm:p-4' : ''
-                      )}
-                    >
-                      <ExamplesHeroVideo
-                        className={clsx(
-                          mainVideoIsPortrait
-                            ? 'relative z-10 h-full w-auto max-w-full rounded-[18px] object-contain shadow-[0_18px_48px_rgba(15,23,42,0.28)]'
-                            : 'h-full w-full object-cover'
-                        )}
-                        src={mainVideoContentUrl}
-                        type={mainVideoMimeType}
-                        poster={mainVideoPoster ?? undefined}
-                        posterFit={mainVideoIsPortrait ? 'contain' : 'cover'}
-                        ariaLabel={mainVideoTitle}
-                        ariaHidden
-                        controls={false}
-                      />
-                    </div>
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/15 to-transparent px-3 py-3">
-                      {mainVideo.video.hasAudio ? (
-                        <AudioEqualizerBadge tone="light" size="sm" label={mainVideoCopy.audioOn} />
-                      ) : (
-                        <span />
-                      )}
-                      <span className="inline-flex items-center rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-semibold text-black shadow-sm">
-                        {mainVideoCopy.openWatchPage}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-
-                <div className="space-y-2.5 px-5 py-4 text-left sm:px-6 sm:py-4.5">
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                    {mainVideo.card.modelHref ? (
-                      <Link href={mainVideo.card.modelHref} prefetch={false} className="hover:text-text-primary">
-                        {mainVideo.card.engineLabel}
-                      </Link>
-                    ) : (
-                      <span>{mainVideo.card.engineLabel}</span>
-                    )}
-                    <span>
-                      {mainVideo.video.aspectRatio ?? 'Auto'} · {mainVideo.video.durationSec}s
-                    </span>
-                  </div>
-
-                  <h2 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">
-                    {mainVideoHeroLine}
-                  </h2>
-
-                  {mainVideoPromptFull ? (
-                    <DeferredSourcePrompt
-                      locale={locale}
-                      prompt={mainVideoPromptFull}
-                      mode="details"
-                      className="group"
-                      summaryClassName="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary"
-                      promptClassName="mt-2 whitespace-pre-line text-sm leading-relaxed text-text-secondary"
-                      fallbackClassName="text-sm leading-relaxed text-text-secondary"
-                      summaryLabel={mainVideoCopy.fullPrompt}
-                    />
-                  ) : null}
-
-                  <div className="flex flex-wrap items-center gap-3 pt-0.5">
-                    <Link
-                      href={mainVideo.card.href}
-                      prefetch={false}
-                      className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-bg transition hover:opacity-90"
-                    >
-                      {mainVideoCopy.openExample}
-                    </Link>
-                    {mainVideo.card.modelHref ? (
-                      <Link
-                        href={mainVideo.card.modelHref}
-                        prefetch={false}
-                        className="inline-flex items-center rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
-                      >
-                        {mainVideo.card.engineLabel}
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-              </article>
-            </section>
+            <ExamplesMainVideoFeature
+              aspectRatio={mainVideoAspectRatio}
+              contentUrl={mainVideoContentUrl}
+              copy={mainVideoCopy}
+              durationSec={mainVideo.video.durationSec}
+              engineLabel={mainVideo.card.engineLabel}
+              exampleHref={mainVideo.card.href}
+              hasAudio={mainVideo.video.hasAudio}
+              heroLine={mainVideoHeroLine}
+              isPortrait={mainVideoIsPortrait}
+              locale={locale}
+              mimeType={mainVideoMimeType}
+              modelHref={mainVideo.card.modelHref ?? null}
+              poster={mainVideoPoster ?? null}
+              promptFull={mainVideoPromptFull}
+              title={mainVideoTitle}
+            />
           ) : null}
 
           {isModelLanding && selectedEngine && modelLinks.length ? (
