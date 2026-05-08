@@ -11,6 +11,29 @@ import {
   resolveLibraryAssetIdentity,
 } from '../frontend/server/media-library';
 
+test('media library keeps record mapping helpers outside server orchestration', () => {
+  const libraryPath = path.join(process.cwd(), 'frontend/server/media-library.ts');
+  const recordsPath = path.join(process.cwd(), 'frontend/server/media-library-records.ts');
+  const source = fs.readFileSync(libraryPath, 'utf8');
+  const recordsSource = fs.readFileSync(recordsPath, 'utf8');
+  const libraryLines = source.trimEnd().split(/\r?\n/).length;
+
+  assert.ok(fs.existsSync(recordsPath));
+  assert.ok(libraryLines <= 760, `media-library.ts has ${libraryLines} lines`);
+  assert.match(source, /from '\.\/media-library-records'/);
+  assert.match(source, /export\s+\{[\s\S]*buildMediaAssetInsert[\s\S]*\}\s+from '\.\/media-library-records'/);
+  assert.doesNotMatch(source, /function\s+mapAssetRow\(/);
+  assert.doesNotMatch(source, /function\s+normalizeString\(/);
+  assert.doesNotMatch(source, /export\s+type\s+MediaKind\s*=/);
+  assert.match(recordsSource, /export\s+type\s+MediaKind\s*=/);
+  assert.match(recordsSource, /export\s+function\s+mapLegacyJobRowToOutputs/);
+  assert.match(recordsSource, /export\s+function\s+buildMediaAssetInsert/);
+  assert.match(recordsSource, /export\s+function\s+mapOutputRow/);
+  assert.match(recordsSource, /export\s+function\s+mapAssetRow/);
+  assert.match(recordsSource, /parseStoredImageRenders/);
+  assert.match(recordsSource, /normalizeMediaUrl/);
+});
+
 test('maps legacy app_jobs media columns into ordered job outputs', () => {
   const outputs = mapLegacyJobRowToOutputs({
     job_id: 'job_123',
@@ -223,6 +246,10 @@ test('video preview urls stay separate from final media urls across library cont
     path.join(process.cwd(), 'frontend/server/media-library.ts'),
     'utf8'
   );
+  const recordsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library-records.ts'),
+    'utf8'
+  );
   const assetsRoute = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
     'utf8'
@@ -244,7 +271,7 @@ test('video preview urls stay separate from final media urls across library cont
   assert.match(migration, /job_fallback/i);
   assert.match(migration, /COALESCE\(asset\.source_job_id,\s*asset\.metadata->>'jobId'/);
 
-  assert.match(serviceSource, /previewUrl:\s*string\s*\|\s*null/);
+  assert.match(recordsSource, /previewUrl:\s*string\s*\|\s*null/);
   assert.match(serviceSource, /preview_url/);
   assert.match(serviceSource, /resolveReusableAssetPreviewUrl/);
   assert.match(serviceSource, /createRemoteVideoAssetThumbnail/);
