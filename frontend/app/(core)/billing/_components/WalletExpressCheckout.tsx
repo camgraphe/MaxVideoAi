@@ -10,11 +10,18 @@ import type {
 } from '@stripe/stripe-js';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
+import { buildWalletExpressCheckoutRequestKey } from '../_lib/express-checkout-session-cache';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 type StripeWithCheckoutElements = Stripe & {
   initCheckoutElementsSdk?: (options: { clientSecret: Promise<string> | string }) => StripeCheckout;
 };
+
+type CheckoutSessionResult =
+  | { type: 'success'; clientSecret: string; sessionId: string | null }
+  | { type: 'captcha_required'; payload: unknown }
+  | { type: 'rate_limited'; payload: unknown; retryAfterSeconds: number }
+  | { type: 'error'; error: string };
 
 type WalletExpressCheckoutProps = {
   amountCents: number;
@@ -56,17 +63,25 @@ export function WalletExpressCheckout({
 }: WalletExpressCheckoutProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const confirmStartedRef = useRef(false);
+  const sessionRef = useRef(session);
+  const checkoutSessionCacheRef = useRef<{ clientSecret: string; key: string; sessionId: string | null } | null>(null);
+  const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+  const sessionUserId = session?.user?.id ?? null;
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     let cancelled = false;
     let expressElement: StripeCheckoutExpressCheckoutElement | null = null;
 
     async function mountExpressCheckout() {
-      if (!session || !stripePromise || !mountRef.current) {
+      if (!sessionUserId || !stripePromise || !mountRef.current) {
         setStatus('idle');
         setMessage(null);
         return;
@@ -75,46 +90,34 @@ export function WalletExpressCheckout({
       setStatus('loading');
       setMessage(null);
       confirmStartedRef.current = false;
-      const token = session.access_token ?? null;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers.Authorization = `Bearer ${token}`;
+      const requestKey = buildWalletExpressCheckoutRequestKey({
+        userId: sessionUserId,
+        amountCents,
+        currency: normalizedChargeCurrency,
+        locale,
+        captchaToken,
+      });
 
       try {
-        const response = await fetch('/api/wallet', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            amountCents,
-            currency: normalizedChargeCurrency.toLowerCase(),
-            mode: 'express_checkout',
-            locale,
-            captchaToken: captchaToken ?? undefined,
-          }),
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok) {
-          if (payload?.captchaRequired) {
+        const cachedCheckoutSession = checkoutSessionCacheRef.current;
+        const checkoutSessionResult =
+          cachedCheckoutSession?.key === requestKey
+            ? { type: 'success' as const, clientSecret: cachedCheckoutSession.clientSecret, sessionId: cachedCheckoutSession.sessionId }
+            : await getCheckoutSessionResult(requestKey);
+
+        if (checkoutSessionResult.type !== 'success') {
+          if (checkoutSessionResult.type === 'captcha_required') {
             setStatus('unavailable');
             setMessage(null);
             onCaptchaRequired();
             return;
           }
-          if (response.status === 429) {
-            const seconds = Number(payload?.retryAfterSeconds ?? 900);
+          if (checkoutSessionResult.type === 'rate_limited') {
             setStatus('error');
-            setMessage(formatRateLimitMessage(labels.rateLimited, seconds));
+            setMessage(formatRateLimitMessage(labels.rateLimited, checkoutSessionResult.retryAfterSeconds));
             return;
           }
-          throw new Error(payload?.error ?? 'express_checkout_session_failed');
-        }
-        const clientSecret =
-          typeof payload?.clientSecret === 'string'
-            ? payload.clientSecret
-            : typeof payload?.client_secret === 'string'
-              ? payload.client_secret
-              : null;
-        if (!clientSecret) {
-          throw new Error('missing_checkout_client_secret');
+          throw new Error(checkoutSessionResult.error);
         }
 
         const stripe = (await stripePromise) as StripeWithCheckoutElements | null;
@@ -123,7 +126,7 @@ export function WalletExpressCheckout({
           throw new Error('stripe_checkout_elements_unavailable');
         }
 
-        const checkout = initCheckout.call(stripe, { clientSecret });
+        const checkout = initCheckout.call(stripe, { clientSecret: checkoutSessionResult.clientSecret });
         const loadActionsPromise: Promise<StripeCheckoutLoadActionsResult> = checkout.loadActions();
         expressElement = checkout.createExpressCheckoutElement({
           buttonHeight: 44,
@@ -203,6 +206,76 @@ export function WalletExpressCheckout({
       }
     }
 
+    async function getCheckoutSessionResult(requestKey: string): Promise<CheckoutSessionResult> {
+      const pendingCheckoutSession = pendingCheckoutSessionRef.current;
+      if (pendingCheckoutSession?.key === requestKey) {
+        return pendingCheckoutSession.promise;
+      }
+
+      const promise = createCheckoutSessionResult();
+      pendingCheckoutSessionRef.current = { key: requestKey, promise };
+      const result = await promise;
+      if (pendingCheckoutSessionRef.current?.key === requestKey) {
+        pendingCheckoutSessionRef.current = null;
+      }
+      if (result.type === 'success') {
+        checkoutSessionCacheRef.current = {
+          key: requestKey,
+          clientSecret: result.clientSecret,
+          sessionId: result.sessionId,
+        };
+      }
+      return result;
+    }
+
+    async function createCheckoutSessionResult(): Promise<CheckoutSessionResult> {
+      const currentSession = sessionRef.current;
+      const token = currentSession?.access_token ?? null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await fetch('/api/wallet', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          amountCents,
+          currency: normalizedChargeCurrency.toLowerCase(),
+          mode: 'express_checkout',
+          locale,
+          captchaToken: captchaToken ?? undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (payload?.captchaRequired) {
+          return { type: 'captcha_required', payload };
+        }
+        if (response.status === 429) {
+          return {
+            type: 'rate_limited',
+            payload,
+            retryAfterSeconds: Number(payload?.retryAfterSeconds ?? 900),
+          };
+        }
+        return { type: 'error', error: payload?.error ?? 'express_checkout_session_failed' };
+      }
+
+      const clientSecret =
+        typeof payload?.clientSecret === 'string'
+          ? payload.clientSecret
+          : typeof payload?.client_secret === 'string'
+            ? payload.client_secret
+            : null;
+      if (!clientSecret) {
+        return { type: 'error', error: 'missing_checkout_client_secret' };
+      }
+      return {
+        type: 'success',
+        clientSecret,
+        sessionId: typeof payload?.id === 'string' ? payload.id : null,
+      };
+    }
+
     void mountExpressCheckout();
     return () => {
       cancelled = true;
@@ -220,7 +293,7 @@ export function WalletExpressCheckout({
     onCaptchaRequired,
     onPaymentFailed,
     onPaymentStarted,
-    session,
+    sessionUserId,
     stripePromise,
   ]);
 

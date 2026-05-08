@@ -36,6 +36,7 @@ import {
   markCheckoutAttemptSessionFailed,
   resolveCheckoutClientIp,
 } from '@/server/checkout-guard';
+import { findReusableExpressCheckoutSession } from '@/server/checkout-session-reuse';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -451,6 +452,29 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create a one-off Checkout Session for top-up
+    if (isExpressCheckoutTopUp) {
+      const reusableSession = await findReusableExpressCheckoutSession(stripe, {
+        userId,
+        amountCents,
+        currency: resolvedCurrencyUpper,
+      });
+      if (reusableSession) {
+        console.info('[payments] reusable checkout session returned', {
+          sessionId: reusableSession.id,
+          checkoutUiMode: 'elements',
+          amountCents,
+          settlementCurrency: resolvedCurrencyUpper,
+          userId,
+        });
+        return NextResponse.json({
+          id: reusableSession.id,
+          clientSecret: reusableSession.clientSecret,
+          client_secret: reusableSession.clientSecret,
+          reused: true,
+        });
+      }
+    }
+
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
     const tier = findTopupTier({ usdAmountCents: amountCents });
