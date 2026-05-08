@@ -9,18 +9,19 @@ Read these files before changing architecture or route structure:
 - `AGENTS.md`
 - `docs/engineering/project-structure.md`
 - `docs/engineering/page-architecture.md`
+- `docs/engineering/admin-routes.md` when touching admin pages
 - `docs/engineering/refactor-roadmap.md`
 
 Then run the large-file audit when choosing a cleanup target:
 
 ```bash
-npm run architecture:audit -- --min-lines 900
+npm run architecture:audit -- --min-lines 500
 ```
 
 Use JSON when another tool or agent needs to rank candidates:
 
 ```bash
-npm run architecture:audit -- --json --min-lines 900
+npm run architecture:audit -- --json --min-lines 500
 ```
 
 For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
@@ -77,8 +78,21 @@ npm --prefix frontend run build
 
 ## Current Architecture Notes
 
-- The comparison detail route, admin insights route, and billing route have route-local architecture contract tests.
-- The model detail route has route-local `_components` and `_lib`, but supporting files such as `model-page-specs.ts` can still be large.
-- The dashboard route has route-local panels and helpers, but workspace app/image/audio routes and tool workspaces remain major cleanup candidates.
-- Before proposing a new architecture PR, run `npm run architecture:audit -- --min-lines 900` and use the roadmap to separate low-risk route splits from high-blast-radius provider/API work.
+- The comparison detail route, jobs route, blog post route, examples route, admin users list, admin user detail, admin insights route, admin SEO routes, and billing route have route-local architecture contract tests.
+- The workspace app now has many route-local hooks and shell modules, but `AppClient.tsx` is still a priority cleanup target because it owns a large prop surface.
+- `BillingClient.tsx` and `LibraryPageClient.tsx` pass current contracts but remain good candidates for deeper controller/mutation splits.
+- Before proposing a new architecture PR, run `npm run architecture:audit -- --min-lines 500` and use the roadmap to separate low-risk route splits from high-blast-radius provider/API work.
 - Root-level browser screenshots and `.playwright-mcp/` files are local QA artifacts and should stay untracked.
+
+## Workspace Boundaries
+
+Keep these boundaries stable when continuing workspace cleanup:
+
+- `frontend/app/(core)/(workspace)/app/AppClient.tsx` should remain the route-level orchestrator, not the owner of every prop transformation.
+- `WorkspaceAppShell` owns route shell rendering.
+- `WorkspaceRuntimeModals` owns shared modal wiring.
+- `useWorkspaceEngineModeState` owns engine/mode orchestration.
+- `useWorkspaceComposerState` owns prompt/input field state.
+- `useWorkspaceWalletPreflight` owns wallet balance preflight.
+- `useWorkspaceGenerationRunner` owns generation submission, accepted results, and polling.
+- `useWorkspaceAssetLibrary`, `useWorkspaceReferenceAssets`, and `useWorkspaceKlingElementAssets` own their specific asset concerns.
