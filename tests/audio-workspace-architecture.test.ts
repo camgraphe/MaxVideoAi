@@ -8,6 +8,7 @@ const audioDir = join(root, 'frontend/app/(core)/(workspace)/app/audio');
 const workspacePath = join(audioDir, 'AudioWorkspace.tsx');
 const controlsPath = join(audioDir, '_components/audio-workspace-controls.tsx');
 const generatedPickerPath = join(audioDir, '_components/audio-generated-video-picker.tsx');
+const optionsSectionPath = join(audioDir, '_components/audio-options-section.tsx');
 const sourceVideoSectionPath = join(audioDir, '_components/audio-source-video-section.tsx');
 const generationDockPath = join(audioDir, '_components/audio-generation-dock.tsx');
 const voiceSectionPath = join(audioDir, '_components/audio-voice-section.tsx');
@@ -22,6 +23,7 @@ const workspaceSource = readFileSync(workspacePath, 'utf8');
 test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(controlsPath), 'audio control components should live in a route-local component module');
   assert.ok(existsSync(generatedPickerPath), 'generated video picker should live in a route-local component module');
+  assert.ok(existsSync(optionsSectionPath), 'audio options section should live in a route-local component module');
   assert.ok(existsSync(sourceVideoSectionPath), 'source video section should live in a route-local component module');
   assert.ok(existsSync(generationDockPath), 'generation dock should live in a route-local component module');
   assert.ok(existsSync(voiceSectionPath), 'voice section should live in a route-local component module');
@@ -33,6 +35,7 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
 
   assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-controls'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generated-video-picker'/);
+  assert.match(workspaceSource, /from '\.\/_components\/audio-options-section'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-source-video-section'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generation-dock'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-voice-section'/);
@@ -60,14 +63,18 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /surface=video&limit=60/, 'generated video loading belongs in useAudioGeneratedVideos');
   assert.doesNotMatch(workspaceSource, /runAudioGenerate/, 'audio generation submission belongs in useAudioGenerationRunner');
   assert.doesNotMatch(workspaceSource, /resolveUiErrorMessage\(error, copy\.messages\.generationFailed/, 'generation failure mapping belongs in useAudioGenerationRunner');
+  assert.doesNotMatch(workspaceSource, /<AudioSelectControl/, 'audio option selectors belong in audio-options-section.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.controls\.providerStack/, 'provider stack UI belongs in audio-options-section.tsx');
+  assert.doesNotMatch(workspaceSource, /SlidersHorizontal/, 'advanced options UI belongs in audio-options-section.tsx');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 890, `AudioWorkspace should stay below 890 lines after section extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 800, `AudioWorkspace should stay below 800 lines after options section extraction, got ${lineCount}`);
 });
 
 test('audio helper modules expose the expected workspace contract', () => {
   const controlsSource = readFileSync(controlsPath, 'utf8');
   const generatedPickerSource = readFileSync(generatedPickerPath, 'utf8');
+  const optionsSectionSource = readFileSync(optionsSectionPath, 'utf8');
   const sourceVideoSectionSource = readFileSync(sourceVideoSectionPath, 'utf8');
   const generationDockSource = readFileSync(generationDockPath, 'utf8');
   const voiceSectionSource = readFileSync(voiceSectionPath, 'utf8');
@@ -90,6 +97,10 @@ test('audio helper modules expose the expected workspace contract', () => {
     /export function AudioGeneratedVideoPickerModal/,
     'AudioGeneratedVideoPickerModal should be exported'
   );
+  assert.match(optionsSectionSource, /export function AudioOptionsSection/, 'AudioOptionsSection should be exported');
+  assert.match(optionsSectionSource, /AudioSelectControl/, 'audio options section should own select controls');
+  assert.match(optionsSectionSource, /resolveProviderLabel/, 'audio options section should own provider stack rendering');
+  assert.match(optionsSectionSource, /SlidersHorizontal/, 'audio options section should own advanced options UI');
   assert.match(sourceVideoSectionSource, /export function AudioSourceVideoSection/, 'AudioSourceVideoSection should be exported');
   assert.match(sourceVideoSectionSource, /copy\.source\.useGenerated/, 'source video section should own generated picker trigger copy');
   assert.match(generationDockSource, /export function AudioGenerationDock/, 'AudioGenerationDock should be exported');
