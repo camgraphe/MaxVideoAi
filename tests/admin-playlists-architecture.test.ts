@@ -12,13 +12,26 @@ const statusPillPath = join(playlistsDir, 'PlaylistStatusPill.tsx');
 const railCardPath = join(playlistsDir, 'PlaylistRailCard.tsx');
 const missingFamilyCardPath = join(playlistsDir, 'MissingFamilyCard.tsx');
 const sidebarPath = join(playlistsDir, 'PlaylistsSidebar.tsx');
+const createFormPath = join(playlistsDir, 'PlaylistCreateForm.tsx');
+const detailsPanelPath = join(playlistsDir, 'PlaylistDetailsPanel.tsx');
+const feedbackBannersPath = join(playlistsDir, 'PlaylistFeedbackBanners.tsx');
 
 const managerSource = readFileSync(managerPath, 'utf8');
 const helpersSource = readFileSync(helpersPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
 
 test('admin playlists manager delegates contracts, helper logic, and card UI', () => {
-  for (const file of [typesPath, helpersPath, statusPillPath, railCardPath, missingFamilyCardPath, sidebarPath]) {
+  for (const file of [
+    typesPath,
+    helpersPath,
+    statusPillPath,
+    railCardPath,
+    missingFamilyCardPath,
+    sidebarPath,
+    createFormPath,
+    detailsPanelPath,
+    feedbackBannersPath,
+  ]) {
     assert.ok(existsSync(file), `${file} should exist`);
   }
 
@@ -26,6 +39,9 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/playlist-helpers'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistStatusPill'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsSidebar'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistCreateForm'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistDetailsPanel'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistFeedbackBanners'/);
 });
 
 test('admin playlists manager does not regain extracted ownership', () => {
@@ -36,13 +52,19 @@ test('admin playlists manager does not regain extracted ownership', () => {
   assert.doesNotMatch(managerSource, /function MissingFamilyCard\(/, 'missing family helper UI belongs in MissingFamilyCard.tsx');
   assert.doesNotMatch(managerSource, /GROUP_LABELS\.runtime/, 'playlist rail grouping belongs in PlaylistsSidebar.tsx');
   assert.doesNotMatch(managerSource, /showModelCollections \? \(/, 'model rail disclosure belongs in PlaylistsSidebar.tsx');
+  assert.doesNotMatch(managerSource, /placeholder="Homepage holiday edits"/, 'new collection form UI belongs in PlaylistCreateForm.tsx');
+  assert.doesNotMatch(managerSource, /Fallback model playlists/, 'collection details UI belongs in PlaylistDetailsPanel.tsx');
+  assert.doesNotMatch(managerSource, /getSurfaceRoleLabel/, 'surface labels belong in PlaylistDetailsPanel.tsx');
 
   const lineCount = managerSource.split('\n').length;
-  assert.ok(lineCount <= 960, `PlaylistsManager should stay below 960 lines after sidebar extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 780, `PlaylistsManager should stay below 780 lines after detail panel extraction, got ${lineCount}`);
 });
 
 test('admin playlist helper modules expose the expected contract', () => {
   const sidebarSource = readFileSync(sidebarPath, 'utf8');
+  const createFormSource = readFileSync(createFormPath, 'utf8');
+  const detailsPanelSource = readFileSync(detailsPanelPath, 'utf8');
+  const feedbackBannersSource = readFileSync(feedbackBannersPath, 'utf8');
 
   for (const typeName of ['PlaylistSummary', 'PlaylistItemRecord', 'PlaylistsManagerProps', 'EditablePlaylist', 'FamilyPlaylistHelperCard']) {
     assert.match(typesSource, new RegExp(`export type ${typeName}\\b`), `${typeName} should be exported`);
@@ -51,6 +73,12 @@ test('admin playlist helper modules expose the expected contract', () => {
   assert.match(sidebarSource, /export function PlaylistsSidebar/, 'PlaylistsSidebar should be exported');
   assert.match(sidebarSource, /GROUP_LABELS\.runtime/, 'PlaylistsSidebar should own rail grouping labels');
   assert.match(sidebarSource, /MissingFamilyCard/, 'PlaylistsSidebar should compose missing family cards');
+  assert.match(createFormSource, /export function PlaylistCreateForm/, 'PlaylistCreateForm should be exported');
+  assert.match(createFormSource, /placeholder="Homepage holiday edits"/, 'PlaylistCreateForm should own new collection form fields');
+  assert.match(detailsPanelSource, /export function PlaylistDetailsPanel/, 'PlaylistDetailsPanel should be exported');
+  assert.match(detailsPanelSource, /Fallback model playlists/, 'PlaylistDetailsPanel should own collection metadata details');
+  assert.match(detailsPanelSource, /getSurfaceRoleLabel/, 'PlaylistDetailsPanel should own surface labels');
+  assert.match(feedbackBannersSource, /export function PlaylistFeedbackBanners/, 'PlaylistFeedbackBanners should be exported');
 
   for (const exportName of [
     'GROUP_LABELS',

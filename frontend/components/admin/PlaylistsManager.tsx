@@ -15,31 +15,21 @@ import {
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
+import { PlaylistCreateForm } from '@/components/admin/playlists/PlaylistCreateForm';
+import { PlaylistDetailsPanel } from '@/components/admin/playlists/PlaylistDetailsPanel';
+import { PlaylistFeedbackBanners } from '@/components/admin/playlists/PlaylistFeedbackBanners';
 import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
 import { StatusPill } from '@/components/admin/playlists/PlaylistStatusPill';
 import {
   buildFamilyHelpers,
-  buildHelperFallbackLabel,
   buildPlaylistUpdateFromItems,
-  formatDate,
   getPlaceholderThumb,
   getPlaylistGroup,
-  getSurfaceRoleLabel,
-  getSurfaceRoleTone,
-  getSurfaceStatusLabel,
-  getSurfaceStatusTone,
-  getUsageLabel,
   slugify,
   sortItemsForDisplay,
   sortPlaylists,
 } from '@/components/admin/playlists/playlist-helpers';
-import type {
-  DropPlacement,
-  EditablePlaylist,
-  PlaylistItemRecord,
-  PlaylistsManagerProps,
-  PlaylistSummary,
-} from '@/components/admin/playlists/playlist-types';
+import type { DropPlacement, EditablePlaylist, PlaylistItemRecord, PlaylistsManagerProps, PlaylistSummary } from '@/components/admin/playlists/playlist-types';
 
 export function PlaylistsManager({
   initialPlaylists,
@@ -611,62 +601,25 @@ export function PlaylistsManager({
       </header>
 
       {showCreateForm ? (
-        <section className="rounded-card border border-border bg-surface p-5 shadow-card">
-          <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_minmax(0,1.5fr)_auto]" onSubmit={handleCreatePlaylist}>
-            <label className="text-sm">
-              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
-              <input
-                type="text"
-                value={createName}
-                onChange={(event) => {
-                  const nextName = event.target.value;
-                  setCreateName(nextName);
-                  if (!createSlug.trim()) {
-                    setCreateSlug(slugify(nextName));
-                  }
-                }}
-                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                placeholder="Homepage holiday edits"
-              />
-            </label>
-            <label className="text-sm">
-              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Slug</span>
-              <input
-                type="text"
-                value={createSlug}
-                onChange={(event) => setCreateSlug(slugify(event.target.value))}
-                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                placeholder="homepage-holiday-edits"
-              />
-            </label>
-            <label className="text-sm">
-              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Description</span>
-              <input
-                type="text"
-                value={createDescription}
-                onChange={(event) => setCreateDescription(event.target.value)}
-                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                placeholder="Optional internal note"
-              />
-            </label>
-            <div className="flex items-end gap-2">
-              <Button type="submit" size="sm" disabled={isPending || !createName.trim() || !createSlug.trim()}>
-                Create
-              </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => setShowCreateForm(false)}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </section>
+        <PlaylistCreateForm
+          createDescription={createDescription}
+          createName={createName}
+          createSlug={createSlug}
+          isPending={isPending}
+          onCancel={() => setShowCreateForm(false)}
+          onDescriptionChange={setCreateDescription}
+          onNameChange={(nextName) => {
+            setCreateName(nextName);
+            if (!createSlug.trim()) {
+              setCreateSlug(slugify(nextName));
+            }
+          }}
+          onSlugChange={(value) => setCreateSlug(slugify(value))}
+          onSubmit={handleCreatePlaylist}
+        />
       ) : null}
 
-      {feedback ? (
-        <div className="rounded-card border border-success-border bg-success-bg px-4 py-3 text-sm text-success">{feedback}</div>
-      ) : null}
-      {error ? (
-        <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">{error}</div>
-      ) : null}
+      <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
         <PlaylistsSidebar
@@ -688,150 +641,14 @@ export function PlaylistsManager({
         <section className="space-y-6">
           {selectedPlaylist ? (
             <>
-              <section className="rounded-card border border-border bg-surface p-6 shadow-card">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-semibold text-text-primary">{selectedPlaylist.name}</h2>
-                      <StatusPill tone={getSurfaceRoleTone(selectedPlaylist.surfaceRole)}>
-                        {getSurfaceRoleLabel(selectedPlaylist.surfaceRole)}
-                      </StatusPill>
-                      <StatusPill tone={getSurfaceStatusTone(selectedPlaylist.surfaceStatus)}>
-                        {getSurfaceStatusLabel(selectedPlaylist.surfaceStatus)}
-                      </StatusPill>
-                      {selectedPlaylist.isLocked ? <StatusPill tone="neutral">Locked by runtime</StatusPill> : null}
-                    </div>
-                    <p className="text-sm text-text-secondary">
-                      {selectedPlaylist.surfaceRole === 'family'
-                        ? 'The first positions are fully editorial here. When this playlist runs out, the page auto-fills from model playlists and then the main examples hub.'
-                        : selectedPlaylist.isLocked
-                          ? 'This collection powers a live runtime surface. You can curate clips and order, but metadata is read-only here.'
-                          : 'Editable collection metadata. Clips and ordering are managed separately below.'}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedPlaylist.surfaceRole === 'family' ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleSeedFamilyPlaylist(selectedPlaylist.familyId ?? selectedPlaylist.slug.replace(/^family-/, ''))}
-                        disabled={isPending}
-                      >
-                        Seed from current order
-                      </Button>
-                    ) : null}
-                    {!selectedPlaylist.isLocked ? (
-                      <>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeletePlaylist(selectedPlaylist.id)}
-                          disabled={isPending}
-                        >
-                          Delete collection
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => handleSavePlaylist(selectedPlaylist.id)}
-                          disabled={!selectedPlaylist.dirty || isPending}
-                        >
-                          Save details
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <label className="text-sm">
-                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
-                    <input
-                      type="text"
-                      value={selectedPlaylist.name}
-                      onChange={(event) => handleFieldChange(selectedPlaylist.id, 'name', event.target.value)}
-                      disabled={selectedPlaylist.isLocked}
-                      className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
-                    />
-                  </label>
-                  <label className="text-sm">
-                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Slug</span>
-                    <input
-                      type="text"
-                      value={selectedPlaylist.slug}
-                      onChange={(event) => handleFieldChange(selectedPlaylist.id, 'slug', slugify(event.target.value))}
-                      disabled={selectedPlaylist.isLocked}
-                      className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
-                    />
-                  </label>
-                </div>
-
-                <label className="mt-4 block text-sm">
-                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Description</span>
-                  <textarea
-                    value={selectedPlaylist.description ?? ''}
-                    onChange={(event) => handleFieldChange(selectedPlaylist.id, 'description', event.target.value)}
-                    disabled={selectedPlaylist.isLocked}
-                    rows={3}
-                    className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
-                  />
-                </label>
-
-                <div className="mt-5 grid gap-3 md:grid-cols-3">
-                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Items</p>
-                    <p className="mt-2 text-lg font-semibold text-text-primary">{selectedPlaylist.itemCount}</p>
-                  </div>
-                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Live on site</p>
-                    <p className="mt-2 text-lg font-semibold text-text-primary">{selectedPlaylist.siteVisibleCount}</p>
-                  </div>
-                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Last added</p>
-                    <p className="mt-2 text-sm font-semibold text-text-primary">{formatDate(selectedPlaylist.lastAddedAt)}</p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-card border border-hairline bg-bg px-4 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Helper</p>
-                    <p className="mt-2 text-sm text-text-secondary">
-                      {selectedPlaylist.helperText ?? 'No helper text for this collection.'}
-                    </p>
-                    {selectedPlaylist.drivesRoute ? (
-                      <div className="mt-3">
-                        <StatusPill tone="neutral">{selectedPlaylist.drivesRoute}</StatusPill>
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="rounded-card border border-hairline bg-bg px-4 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Fallback model playlists</p>
-                    {selectedPlaylist.fallbackModelSlugs.length ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {selectedPlaylist.fallbackModelSlugs.map((modelSlug) => (
-                          <StatusPill key={modelSlug} tone="neutral">
-                            {buildHelperFallbackLabel(modelSlug)}
-                          </StatusPill>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-2 text-sm text-text-secondary">No automatic fallback configured.</p>
-                    )}
-                  </div>
-                </div>
-
-                {selectedPlaylist.usageTargets.length ? (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {selectedPlaylist.usageTargets.map((target) => (
-                      <StatusPill key={target} tone="neutral">
-                        {getUsageLabel(target)}
-                      </StatusPill>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
+              <PlaylistDetailsPanel
+                isPending={isPending}
+                onDeletePlaylist={handleDeletePlaylist}
+                onFieldChange={handleFieldChange}
+                onSavePlaylist={handleSavePlaylist}
+                onSeedFamilyPlaylist={handleSeedFamilyPlaylist}
+                playlist={selectedPlaylist}
+              />
 
               <section className="rounded-card border border-border bg-surface p-6 shadow-card">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
