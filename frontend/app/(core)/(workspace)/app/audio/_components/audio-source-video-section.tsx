@@ -1,6 +1,6 @@
 'use client';
 
-import type { RefObject } from 'react';
+import type { Ref, RefObject } from 'react';
 import { CheckCircle2, FileVideo, Upload, Video } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
@@ -20,7 +20,7 @@ export function AudioSourceVideoSection({
   sourceVideo,
 }: {
   copy: AudioWorkspaceCopy;
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   isUploading: boolean;
   onClear: () => void;
   onFileSelect: (fileList: FileList | null) => void | Promise<void>;
@@ -73,7 +73,7 @@ export function AudioSourceVideoSection({
         </div>
       </div>
       <input
-        ref={inputRef}
+        ref={inputRef as Ref<HTMLInputElement>}
         type="file"
         accept="video/*"
         className="sr-only"

@@ -7,6 +7,7 @@ const root = process.cwd();
 const audioDir = join(root, 'frontend/app/(core)/(workspace)/app/audio');
 const workspacePath = join(audioDir, 'AudioWorkspace.tsx');
 const controlsPath = join(audioDir, '_components/audio-workspace-controls.tsx');
+const composerSurfacePath = join(audioDir, '_components/audio-workspace-composer-surface.tsx');
 const generatedPickerPath = join(audioDir, '_components/audio-generated-video-picker.tsx');
 const optionsSectionPath = join(audioDir, '_components/audio-options-section.tsx');
 const sourceVideoSectionPath = join(audioDir, '_components/audio-source-video-section.tsx');
@@ -19,9 +20,11 @@ const generatedVideosHookPath = join(audioDir, '_hooks/useAudioGeneratedVideos.t
 const generationRunnerHookPath = join(audioDir, '_hooks/useAudioGenerationRunner.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
+const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
 
 test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(controlsPath), 'audio control components should live in a route-local component module');
+  assert.ok(existsSync(composerSurfacePath), 'audio composer surface should live in a route-local component module');
   assert.ok(existsSync(generatedPickerPath), 'generated video picker should live in a route-local component module');
   assert.ok(existsSync(optionsSectionPath), 'audio options section should live in a route-local component module');
   assert.ok(existsSync(sourceVideoSectionPath), 'source video section should live in a route-local component module');
@@ -33,12 +36,13 @@ test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(generatedVideosHookPath), 'generated video loading should live in a route-local hook');
   assert.ok(existsSync(generationRunnerHookPath), 'audio generation runner should live in a route-local hook');
 
-  assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-controls'/);
+  assert.match(workspaceSource, /from '\.\/_components\/audio-workspace-composer-surface'/);
   assert.match(workspaceSource, /from '\.\/_components\/audio-generated-video-picker'/);
-  assert.match(workspaceSource, /from '\.\/_components\/audio-options-section'/);
-  assert.match(workspaceSource, /from '\.\/_components\/audio-source-video-section'/);
-  assert.match(workspaceSource, /from '\.\/_components\/audio-generation-dock'/);
-  assert.match(workspaceSource, /from '\.\/_components\/audio-voice-section'/);
+  assert.match(composerSurfaceSource, /from '\.\/audio-workspace-controls'/);
+  assert.match(composerSurfaceSource, /from '\.\/audio-options-section'/);
+  assert.match(composerSurfaceSource, /from '\.\/audio-source-video-section'/);
+  assert.match(composerSurfaceSource, /from '\.\/audio-generation-dock'/);
+  assert.match(composerSurfaceSource, /from '\.\/audio-voice-section'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioActiveJobPolling'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGeneratedVideos'/);
   assert.match(workspaceSource, /from '\.\/_hooks\/useAudioGenerationRunner'/);
@@ -66,9 +70,14 @@ test('audio workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /<AudioSelectControl/, 'audio option selectors belong in audio-options-section.tsx');
   assert.doesNotMatch(workspaceSource, /copy\.controls\.providerStack/, 'provider stack UI belongs in audio-options-section.tsx');
   assert.doesNotMatch(workspaceSource, /SlidersHorizontal/, 'advanced options UI belongs in audio-options-section.tsx');
+  assert.doesNotMatch(workspaceSource, /<AudioModePicker/, 'audio mode picker composition belongs in audio-workspace-composer-surface.tsx');
+  assert.doesNotMatch(workspaceSource, /<AudioGenerationDock/, 'audio generation dock composition belongs in audio-workspace-composer-surface.tsx');
+  assert.doesNotMatch(workspaceSource, /<AudioVoiceSection/, 'voice section composition belongs in audio-workspace-composer-surface.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.hero\.title/, 'audio hero UI belongs in audio-workspace-composer-surface.tsx');
+  assert.doesNotMatch(workspaceSource, /copy\.controls\.estimatedDuration/, 'script composer UI belongs in audio-workspace-composer-surface.tsx');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 800, `AudioWorkspace should stay below 800 lines after options section extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 720, `AudioWorkspace should stay below 720 lines after composer surface extraction, got ${lineCount}`);
 });
 
 test('audio helper modules expose the expected workspace contract', () => {
@@ -97,6 +106,10 @@ test('audio helper modules expose the expected workspace contract', () => {
     /export function AudioGeneratedVideoPickerModal/,
     'AudioGeneratedVideoPickerModal should be exported'
   );
+  assert.match(composerSurfaceSource, /export function AudioWorkspaceComposerSurface/, 'AudioWorkspaceComposerSurface should be exported');
+  assert.match(composerSurfaceSource, /AudioModePicker/, 'composer surface should own mode picker composition');
+  assert.match(composerSurfaceSource, /AudioGenerationDock/, 'composer surface should own generation dock composition');
+  assert.match(composerSurfaceSource, /AudioLatestRendersRail/, 'composer surface should own mobile latest renders rail');
   assert.match(optionsSectionSource, /export function AudioOptionsSection/, 'AudioOptionsSection should be exported');
   assert.match(optionsSectionSource, /AudioSelectControl/, 'audio options section should own select controls');
   assert.match(optionsSectionSource, /resolveProviderLabel/, 'audio options section should own provider stack rendering');

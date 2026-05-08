@@ -3,17 +3,12 @@
 import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  AudioLines,
-} from 'lucide-react';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
 import { ButtonLink } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Input';
-import { UIIcon } from '@/components/ui/UIIcon';
 import {
   AUDIO_INTENSITY_VALUES,
   AUDIO_LANGUAGE_VALUES,
@@ -44,12 +39,8 @@ import {
   type AudioVoiceProfile,
 } from '@/lib/audio-generation';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
-import { AudioGenerationDock } from './_components/audio-generation-dock';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
-import { AudioOptionsSection } from './_components/audio-options-section';
-import { AudioSourceVideoSection } from './_components/audio-source-video-section';
-import { AudioVoiceSection } from './_components/audio-voice-section';
-import { AudioModePicker } from './_components/audio-workspace-controls';
+import { AudioWorkspaceComposerSurface } from './_components/audio-workspace-composer-surface';
 import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
 import { useAudioGenerationRunner } from './_hooks/useAudioGenerationRunner';
 import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
@@ -629,147 +620,75 @@ export default function AudioWorkspace() {
   return (
     <div className="flex flex-1 min-w-0 flex-col bg-bg xl:flex-row">
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
-          <div className="mx-auto flex w-full max-w-[980px] flex-col gap-4 pb-28">
-            {notice ? (
-              <div role="status" aria-live="polite" className="rounded-[10px] border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
-                {notice}
-              </div>
-            ) : null}
-
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="flex items-start gap-4">
-                <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-[9px] border border-hairline bg-surface text-brand shadow-sm">
-                  <UIIcon icon={AudioLines} size={20} strokeWidth={1.9} />
-                </span>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hero.eyebrow}</p>
-                  <h1 className="mt-1 text-2xl font-semibold tracking-normal text-text-primary md:text-3xl">{copy.hero.title}</h1>
-                  <p className="mt-1 max-w-2xl text-sm text-text-secondary">{copy.hero.body}</p>
-                </div>
-              </div>
-            </div>
-
-            <section className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-sm font-semibold text-text-primary">{copy.controls.chooseType}</h2>
-              </div>
-              <div className="mt-3">
-                <AudioModePicker value={pack} options={modeOptions} onChange={handlePackChange} />
-              </div>
-            </section>
-
-            {(sourceVideoRequired || sourceVideo) ? (
-              <AudioSourceVideoSection
-                copy={copy}
-                inputRef={sourceInputRef}
-                isUploading={isUploadingSource}
-                onClear={handleClearSourceVideo}
-                onFileSelect={handleSourceFileSelect}
-                onOpenGeneratedPicker={() => setGeneratedPickerOpen(true)}
-                required={sourceVideoRequired}
-                sourceVideo={sourceVideo}
-              />
-            ) : null}
-
-            <section className="rounded-[12px] border border-hairline bg-surface shadow-card">
-              <label className="block p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-base font-semibold text-text-primary">{composerLabel}</span>
-                  <span className="shrink-0 text-xs text-text-muted">{composerValue.length} / {composerMaxLength}</span>
-                </div>
-                <Textarea
-                  rows={9}
-                  value={composerValue}
-                  onChange={(event) => {
-                    if (composerIsScript) {
-                      setScript(event.target.value);
-                    } else {
-                      setPrompt(event.target.value);
-                    }
-                  }}
-                  placeholder={composerPlaceholder}
-                  className="min-h-[260px] resize-y bg-bg pr-4 text-base leading-7"
-                  maxLength={composerMaxLength}
-                />
-                {pack === 'voice_only' && script.trim().length ? (
-                  <p className="mt-2 text-xs text-text-secondary">
-                    {formatCopy(copy.controls.estimatedDuration, { seconds: estimatedDurationSec ?? '-' })}
-                  </p>
-                ) : null}
-              </label>
-            </section>
-
-            <section className="grid gap-4 lg:grid-cols-2">
-              {showVoiceFields ? (
-                <AudioVoiceSection
-                  copy={copy}
-                  inputRef={voiceInputRef}
-                  isUploading={isUploadingVoice}
-                  onClear={() => setVoiceSample(null)}
-                  onFileSelect={handleVoiceFileSelect}
-                  voiceSample={voiceSample}
-                />
-              ) : null}
-
-              <AudioOptionsSection
-                copy={copy}
-                durationOptions={durationOptions}
-                exportAudioFile={exportAudioFile}
-                intensity={intensity}
-                intensityOptions={intensityOptions}
-                language={language}
-                languageOptions={languageOptions}
-                manualDurationSec={manualDurationSec}
-                mood={mood}
-                moodOptions={moodOptions}
-                musicEnabled={musicEnabled}
-                onExportAudioFileChange={setExportAudioFile}
-                onIntensityChange={setIntensity}
-                onLanguageChange={setLanguage}
-                onManualDurationChange={setManualDurationSec}
-                onMoodChange={setMood}
-                onMusicEnabledChange={setMusicEnabled}
-                onVoiceDeliveryChange={setVoiceDelivery}
-                onVoiceGenderChange={setVoiceGender}
-                onVoiceProfileChange={setVoiceProfile}
-                pack={pack}
-                showExportToggle={showExportToggle}
-                showIntensity={showIntensity}
-                showManualDuration={showManualDuration}
-                showMood={showMood}
-                showMusicToggle={showMusicToggle}
-                showVoiceFields={showVoiceFields}
-                showVoiceGender={showVoiceGender}
-                voiceDelivery={voiceDelivery}
-                voiceDeliveryOptions={voiceDeliveryOptions}
-                voiceGender={voiceGender}
-                voiceGenderOptions={voiceGenderOptions}
-                voiceProfile={voiceProfile}
-                voiceProfileOptions={voiceProfileOptions}
-              />
-            </section>
-
-            <div className="xl:hidden">
-              <AudioLatestRendersRail
-                activeJobId={activeJob?.jobId ?? result?.jobId ?? null}
-                onSelectJob={handleSelectLatestJob}
-                variant="mobile"
-              />
-            </div>
-          </div>
-
-          <AudioGenerationDock
-            activeProgress={activeProgress}
-            canGenerate={canGenerate}
-            copy={copy}
-            durationLabel={dockDurationLabel}
-            generationHint={generationHint}
-            isGenerating={isGenerating}
-            onGenerate={handleGenerate}
-            priceLabel={dockPriceLabel}
-          />
-        </main>
+        <AudioWorkspaceComposerSurface
+          activeJobId={activeJob?.jobId ?? null}
+          activeProgress={activeProgress}
+          canGenerate={canGenerate}
+          composerIsScript={composerIsScript}
+          composerLabel={composerLabel}
+          composerMaxLength={composerMaxLength}
+          composerPlaceholder={composerPlaceholder}
+          composerValue={composerValue}
+          copy={copy}
+          dockDurationLabel={dockDurationLabel}
+          dockPriceLabel={dockPriceLabel}
+          durationOptions={durationOptions}
+          estimatedDurationSec={estimatedDurationSec}
+          exportAudioFile={exportAudioFile}
+          generationHint={generationHint}
+          handleGenerate={handleGenerate}
+          handlePackChange={handlePackChange}
+          handleSelectLatestJob={handleSelectLatestJob}
+          intensity={intensity}
+          intensityOptions={intensityOptions}
+          isGenerating={isGenerating}
+          isUploadingSource={isUploadingSource}
+          isUploadingVoice={isUploadingVoice}
+          language={language}
+          languageOptions={languageOptions}
+          manualDurationSec={manualDurationSec}
+          modeOptions={modeOptions}
+          mood={mood}
+          moodOptions={moodOptions}
+          musicEnabled={musicEnabled}
+          notice={notice}
+          onClearSourceVideo={handleClearSourceVideo}
+          onOpenGeneratedPicker={() => setGeneratedPickerOpen(true)}
+          onSourceFileSelect={handleSourceFileSelect}
+          onVoiceFileSelect={handleVoiceFileSelect}
+          pack={pack}
+          resultJobId={result?.jobId ?? null}
+          setExportAudioFile={setExportAudioFile}
+          setIntensity={setIntensity}
+          setLanguage={setLanguage}
+          setManualDurationSec={setManualDurationSec}
+          setMood={setMood}
+          setMusicEnabled={setMusicEnabled}
+          setPrompt={setPrompt}
+          setScript={setScript}
+          setVoiceDelivery={setVoiceDelivery}
+          setVoiceGender={setVoiceGender}
+          setVoiceProfile={setVoiceProfile}
+          setVoiceSample={setVoiceSample}
+          showExportToggle={showExportToggle}
+          showIntensity={showIntensity}
+          showManualDuration={showManualDuration}
+          showMood={showMood}
+          showMusicToggle={showMusicToggle}
+          showVoiceFields={showVoiceFields}
+          showVoiceGender={showVoiceGender}
+          sourceInputRef={sourceInputRef}
+          sourceVideo={sourceVideo}
+          sourceVideoRequired={sourceVideoRequired}
+          voiceDelivery={voiceDelivery}
+          voiceDeliveryOptions={voiceDeliveryOptions}
+          voiceGender={voiceGender}
+          voiceGenderOptions={voiceGenderOptions}
+          voiceInputRef={voiceInputRef}
+          voiceProfile={voiceProfile}
+          voiceProfileOptions={voiceProfileOptions}
+          voiceSample={voiceSample}
+        />
       </div>
 
       <aside className="hidden h-[calc(100vh-var(--header-height))] w-full max-w-[332px] shrink-0 flex-col border-l border-hairline bg-surface-2 px-4 pb-6 pt-6 xl:flex">

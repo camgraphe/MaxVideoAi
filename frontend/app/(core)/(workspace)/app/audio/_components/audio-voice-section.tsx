@@ -1,6 +1,6 @@
 'use client';
 
-import type { RefObject } from 'react';
+import type { Ref, RefObject } from 'react';
 import { AudioLines, Play, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
@@ -16,7 +16,7 @@ export function AudioVoiceSection({
   voiceSample,
 }: {
   copy: AudioWorkspaceCopy;
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   isUploading: boolean;
   onClear: () => void;
   onFileSelect: (fileList: FileList | null) => void | Promise<void>;
@@ -67,7 +67,7 @@ export function AudioVoiceSection({
             {isUploading ? copy.source.uploading : copy.controls.uploadVoiceSample}
           </Button>
           <input
-            ref={inputRef}
+            ref={inputRef as Ref<HTMLInputElement>}
             type="file"
             accept="audio/*"
             className="sr-only"
