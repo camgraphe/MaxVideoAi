@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   ArrowLeft,
-  ArrowRight,
   Coins,
   Image as ImageIcon,
   LibraryBig,
@@ -17,7 +16,7 @@ import {
   WandSparkles,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
-import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import { HeaderBar } from '@/components/HeaderBar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -48,6 +47,7 @@ import type { Job } from '@/types/jobs';
 import { Label, SegmentButton } from './upscale/_components/upscale-workspace-controls';
 import { UpscaleHeroSummaryCard } from './upscale/_components/UpscaleHeroSummaryCard';
 import { UpscalePreviewCard } from './upscale/_components/UpscalePreviewCard';
+import { UpscaleRecentRail } from './upscale/_components/UpscaleRecentRail';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
 import {
   formatCurrency,
@@ -700,45 +700,14 @@ export default function UpscaleWorkspace() {
                   zoomCanvasWidth={zoomCanvasWidth}
                 />
 
-                <Card className="order-4 rounded-[14px] border border-border bg-surface p-5 shadow-card xl:order-none">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-base font-semibold text-text-primary">{copy.recentTitle}</h2>
-                      <p className="mt-1 text-xs text-text-muted">Reuse finished assets in Image, Video, or Library.</p>
-                    </div>
-                    <Link href="/app/library" className="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary hover:text-text-primary">
-                      View library
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                  <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
-                    {recentGroups.slice(0, 8).map((group) => {
-                      const active = activeRecentGroupId === group.id;
-                      return (
-                        <div
-                          key={group.id}
-                          className={`w-[258px] shrink-0 rounded-[14px] transition ${
-                            active ? 'ring-2 ring-brand ring-offset-2 ring-offset-bg' : ''
-                          }`}
-                        >
-                          <GroupedJobCard
-                            group={group}
-                            onOpen={selectRecentUpscale}
-                            onAction={handleRecentGroupAction}
-                            menuVariant="gallery-image"
-                            allowRemove={false}
-                            savingToLibrary={savingRecentGroupId === group.id}
-                          />
-                        </div>
-                      );
-                    })}
-                    {!recentGroups.length ? (
-                      <div className="w-full rounded-[12px] border border-dashed border-border bg-bg p-4 text-sm text-text-muted">
-                        No upscale runs yet.
-                      </div>
-                    ) : null}
-                  </div>
-                </Card>
+                <UpscaleRecentRail
+                  activeGroupId={activeRecentGroupId}
+                  copy={copy}
+                  groups={recentGroups}
+                  onAction={handleRecentGroupAction}
+                  onOpen={selectRecentUpscale}
+                  savingGroupId={savingRecentGroupId}
+                />
               </section>
             </div>
           </div>
