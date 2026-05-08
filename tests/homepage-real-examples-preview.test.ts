@@ -67,13 +67,13 @@ test('homepage real examples preview uses compact decision-oriented copy and CTA
 });
 
 test('homepage examples preview pins accurate recent 16:9 media for Wan, Veo, and Happy Horse', () => {
-  const homePageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx", 'utf8');
+  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
 
-  assert.match(homePageSource, /HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES/);
-  assert.match(homePageSource, /job_c36e082d-cd1d-4a25-9f17-02246a878eb9/);
-  assert.match(homePageSource, /job_110f0282-bf5e-4d58-ab34-8b117c94d4e4/);
-  assert.match(homePageSource, /1212fdd0-0299-4e07-8546-c8fc0925432d\.webp/);
-  assert.doesNotMatch(homePageSource, /8a1ff925-a483-4dfd-8c29-8ba2e003b86d-job_2c795d5a/);
+  assert.match(homeRouteDataSource, /HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES/);
+  assert.match(homeRouteDataSource, /job_c36e082d-cd1d-4a25-9f17-02246a878eb9/);
+  assert.match(homeRouteDataSource, /job_110f0282-bf5e-4d58-ab34-8b117c94d4e4/);
+  assert.match(homeRouteDataSource, /1212fdd0-0299-4e07-8546-c8fc0925432d\.webp/);
+  assert.doesNotMatch(homeRouteDataSource, /8a1ff925-a483-4dfd-8c29-8ba2e003b86d-job_2c795d5a/);
 
   const wan = cards.find((card) => card.engineId === 'wan-2-6');
   const happyHorse = cards.find((card) => card.engineId === 'happy-horse-1-0');
@@ -103,7 +103,7 @@ test('homepage examples preview keeps only real crawlable example routes', () =>
 
 test('homepage real examples component uses compact two-column rows instead of the old large gallery', () => {
   const source = readHomeSectionsSource();
-  const homePageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx", 'utf8');
+  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
   const previewSource = source.slice(
     source.indexOf('export function RealExamplesPreview'),
     source.indexOf('function ComparisonScorecard')
@@ -120,10 +120,10 @@ test('homepage real examples component uses compact two-column rows instead of t
   assert.match(previewSource, /Browse all examples/);
   assert.match(previewSource, /View all model specs/);
   assert.match(previewSource, /examplesCtaVisible/);
-  assert.match(homePageSource, /preferHomepageExampleVideo/);
-  assert.match(homePageSource, /aspectRatio\s*===\s*'16:9'/);
-  assert.match(homePageSource, /formatHomepageExampleDuration/);
-  assert.match(homePageSource, /formatHomepageExamplePrice/);
+  assert.match(homeRouteDataSource, /preferHomepageExampleVideo/);
+  assert.match(homeRouteDataSource, /aspectRatio\s*===\s*'16:9'/);
+  assert.match(homeRouteDataSource, /formatHomepageExampleDuration/);
+  assert.match(homeRouteDataSource, /formatHomepageExamplePrice/);
   assert.doesNotMatch(previewSource, /supportingText/);
   assert.doesNotMatch(previewSource, /Compare AI video examples/);
   assert.doesNotMatch(previewSource, /lg:grid-cols-2/);
@@ -161,12 +161,12 @@ test('homepage hero avoids initial mobile video downloads', () => {
 });
 
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
-  const homePageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx", 'utf8');
+  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
   const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 
-  assert.match(homePageSource, /function heroModelLabel\(\)/);
-  assert.match(homePageSource, /return 'Specs & pricing';/);
-  assert.doesNotMatch(homePageSource, /Open `?\$\{name\} model|Ouvrir le modèle|Abrir modelo/);
+  assert.match(homeRouteDataSource, /function heroModelLabel\(\)/);
+  assert.match(homeRouteDataSource, /return 'Specs & pricing';/);
+  assert.doesNotMatch(homeRouteDataSource, /Open `?\$\{name\} model|Ouvrir le modèle|Abrir modelo/);
   assert.doesNotMatch(showcaseSource, /Open \$\{selected\.name\} model/);
 });
 
