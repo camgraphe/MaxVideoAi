@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,10 +27,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
-import {
-  AssetLibraryBrowser,
-  type AssetBrowserAsset,
-} from '@/components/library/AssetLibraryBrowser';
+import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 import { runUpscaleTool, saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
@@ -56,9 +53,7 @@ import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
 import {
   clampComparePosition,
   formatCurrency,
-  inferMimeType,
   isOutputVideo,
-  mediaTypeFromMime,
   parseRecentImageVariantIndex,
   PREVIEW_ZOOM_OPTIONS,
   resolveRecentUpscaleJobFromGroup,
@@ -68,11 +63,11 @@ import {
   SAMPLE_IMAGE_URL,
   SOURCE_FALLBACK_HEIGHT,
   SOURCE_FALLBACK_WIDTH,
-  uploadSourceFile,
 } from './upscale/_lib/upscale-workspace-helpers';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
 import { useUpscaleRecentJobs } from './upscale/_hooks/useUpscaleRecentJobs';
+import { useUpscaleSourceMedia } from './upscale/_hooks/useUpscaleSourceMedia';
 import type {
   JobDetailResponse,
   PreviewMode,
@@ -208,32 +203,21 @@ export default function UpscaleWorkspace() {
     source,
     user,
   });
-
-  useEffect(() => {
-    const url = mediaUrl.trim();
-    if (mediaType !== 'image' || !url) return undefined;
-    if (source?.url === url && source.width && source.height) return undefined;
-
-    let cancelled = false;
-    const image = new window.Image();
-    image.onload = () => {
-      if (cancelled || !image.naturalWidth || !image.naturalHeight) return;
-      setSource((current) => {
-        if (current?.url && current.url !== url) return current;
-        return {
-          ...(current ?? {}),
-          url,
-          width: current?.width ?? image.naturalWidth,
-          height: current?.height ?? image.naturalHeight,
-          mime: current?.mime ?? inferMimeType(url, 'image'),
-        };
-      });
-    };
-    image.src = url;
-    return () => {
-      cancelled = true;
-    };
-  }, [mediaType, mediaUrl, source?.height, source?.url, source?.width]);
+  const { handleUpload, selectLibraryAsset } = useUpscaleSourceMedia({
+    changeMediaType,
+    copy,
+    mediaType,
+    mediaUrl,
+    setError,
+    setLibraryModalOpen,
+    setMediaUrl,
+    setMessage,
+    setPreviewMode,
+    setResult,
+    setSource,
+    setUploading,
+    source,
+  });
 
   useEffect(() => {
     const scroller = previewScrollerRef.current;
@@ -276,30 +260,6 @@ export default function UpscaleWorkspace() {
     setUpscaleFactor(nextEngine.defaultUpscaleFactor);
     setTargetResolution(nextEngine.defaultTargetResolution ?? '1080p');
     setOutputFormat(nextEngine.defaultOutputFormat);
-  }
-
-  async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-    const detectedType = mediaTypeFromMime(file.type);
-    const nextMediaType = detectedType ?? mediaType;
-    if (nextMediaType !== mediaType) changeMediaType(nextMediaType);
-    setUploading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const uploaded = await uploadSourceFile(file, nextMediaType);
-      setSource(uploaded);
-      setMediaUrl(uploaded.url);
-      setResult(null);
-      setPreviewMode('source');
-      setMessage(uploaded.name ?? file.name);
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
-    } finally {
-      setUploading(false);
-    }
   }
 
   async function handleRun() {
@@ -353,37 +313,6 @@ export default function UpscaleWorkspace() {
   function handleDownload() {
     if (!output?.url) return;
     triggerAppDownload(output.url, suggestDownloadFilename(output.url, `upscale-${mediaType}`));
-  }
-
-  function selectLibraryAsset(asset: AssetBrowserAsset) {
-    const nextMediaType: UpscaleMediaType = asset.kind === 'video' || asset.mime?.startsWith('video/') ? 'video' : 'image';
-    if (nextMediaType !== mediaType) {
-      setMediaType(nextMediaType);
-      const nextEngine = nextMediaType === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID;
-      const resolved =
-        listUpscaleToolEngines(nextMediaType).find((entry) => entry.id === nextEngine) ??
-        listUpscaleToolEngines(nextMediaType)[0];
-      setEngineId(resolved.id);
-      setMode(resolved.defaultMode);
-      setUpscaleFactor(resolved.defaultUpscaleFactor);
-      setTargetResolution(resolved.defaultTargetResolution ?? '1080p');
-      setOutputFormat(resolved.defaultOutputFormat);
-    }
-    setSource({
-      id: asset.id.startsWith('job:') ? null : asset.id,
-      jobId: asset.id.startsWith('job:') ? asset.id.slice(4) : null,
-      url: asset.url,
-      width: asset.width ?? null,
-      height: asset.height ?? null,
-      mime: asset.mime ?? (nextMediaType === 'video' ? 'video/mp4' : 'image/png'),
-      name: asset.source ? `${asset.source} asset` : copy.library,
-    });
-    setMediaUrl(asset.url);
-    setResult(null);
-    setPreviewMode('source');
-    setError(null);
-    setMessage(asset.source ? `${copy.library}: ${asset.source}` : copy.library);
-    setLibraryModalOpen(false);
   }
 
   function buildRecentUpscaleResult(selection: RecentUpscaleMedia): UpscaleToolResponse {
