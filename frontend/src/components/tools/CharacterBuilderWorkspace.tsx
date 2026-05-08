@@ -28,11 +28,10 @@ import {
   normalizeCharacterFormatMode,
   normalizeTraitsForSourceMode,
 } from '@/lib/character-builder';
-import { runCharacterBuilderTool, saveImageToLibrary } from '@/lib/api';
+import { saveImageToLibrary } from '@/lib/api';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
-  CharacterBuilderAction,
   CharacterBuilderResult,
   CharacterBuilderSettingsSnapshot,
   CharacterBuilderState,
@@ -62,6 +61,7 @@ import {
 } from './character-builder/_components/character-builder-workspace-components';
 import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks/useCharacterBuilderHistoricalResults';
 import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks/useCharacterBuilderJobSnapshotLoader';
+import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/useCharacterBuilderGenerationRunner';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
@@ -70,23 +70,18 @@ import {
   buildReferenceImage,
   buildResetCharacterBuilderState,
   countConfiguredSecondaryControls,
-  decrementLoadingRequestCount,
-  emitClientMetric,
   findChoiceLabel,
   getCharacterBillingProductKey,
   getFlattenedResults,
   getFormatDisplayLabel,
   getHairSummary,
-  getLoadingRequestKey,
   getOutfitSummary,
   getRefByRole,
   getResultActionLabel,
   hasCustomOutfitSettings,
   hasCustomHairSettings,
-  incrementLoadingRequestCount,
   INITIAL_LOADING_REQUEST_COUNTS,
   isAuthRequiredError,
-  normalizeHairAndOutfitModes,
   normalizeTag,
   parseCharacterBuilderSnapshot,
   removeReferenceImage,
@@ -174,6 +169,7 @@ export default function CharacterBuilderPage() {
   } = useCharacterBuilderHistoricalResults(flattenedResults);
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
+  const hasIdentityReference = Boolean(identityReference);
   useCharacterBuilderPersistence({
     authLoading,
     hydrated,
@@ -194,7 +190,19 @@ export default function CharacterBuilderPage() {
     styleReference,
     user,
   });
-  const hasIdentityReference = Boolean(identityReference);
+  const handleRun = useCharacterBuilderGenerationRunner({
+    copy,
+    hasIdentityReference,
+    mutateHistoricalJobs,
+    openAuthGate,
+    setError,
+    setLoadingActions,
+    setPendingRuns,
+    setState,
+    setStatusMessage,
+    state,
+    user,
+  });
   const hasCompletedResults = flattenedResults.length > 0;
   const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
@@ -477,125 +485,6 @@ export default function CharacterBuilderPage() {
     }));
     setAdvancedOpen(Boolean(snapshot.builder.advancedNotes));
     setStatusMessage(copy.duplicateDone);
-  }
-
-  async function handleRun(action: CharacterBuilderAction, generateCount?: 1 | 4) {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setError(null);
-    setStatusMessage(null);
-    const loadingKey = getLoadingRequestKey(action, generateCount);
-    const clientJobId =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? `img_${crypto.randomUUID()}`
-        : `img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-    const requestTraits = normalizeHairAndOutfitModes(state.traits);
-    const pendingCreatedAt = new Date().toISOString();
-    const pendingRun: PendingCharacterRun = {
-      id: clientJobId,
-      jobId: clientJobId,
-      createdAt: pendingCreatedAt,
-      action,
-      outputMode: state.outputMode,
-      qualityMode: state.qualityMode,
-      formatMode: state.formatMode,
-      generateCount: generateCount ?? 1,
-    };
-
-    setLoadingActions((previous) => incrementLoadingRequestCount(previous, loadingKey));
-    setPendingRuns((previous) => [pendingRun, ...previous].slice(0, 12));
-
-    emitClientMetric('tool_start', {
-      tool_name: 'character_builder',
-      tool_surface: 'workspace',
-      logged_in: true,
-      action: action.replace(/-/g, '_'),
-      source_mode: state.sourceMode,
-      output_mode: state.outputMode.replace(/-/g, '_'),
-      quality_mode: state.qualityMode,
-      format_mode: state.formatMode.replace(/-/g, '_'),
-      generate_count: generateCount ?? 1,
-    });
-
-    try {
-      const response = await runCharacterBuilderTool({
-        jobId: clientJobId,
-        action,
-        sourceMode: state.sourceMode,
-        outputMode: state.outputMode,
-        consistencyMode: state.consistencyMode,
-        referenceStrength: hasIdentityReference ? state.referenceStrength : null,
-        qualityMode: state.qualityMode,
-        formatMode: state.formatMode,
-        referenceImages: state.referenceImages,
-        traits: requestTraits,
-        outputOptions: state.outputOptions,
-        advancedNotes: state.advancedNotes,
-        mustRemainVisible: state.mustRemainVisible,
-        generateCount: generateCount ?? 1,
-        selectedResultId: null,
-        selectedResultUrl: null,
-        pinnedReferenceResultId: null,
-        pinnedReferenceResultUrl: null,
-        lineage: {
-          parentResultId: null,
-          parentRunId: null,
-          pinnedReferenceResultId: null,
-        },
-      });
-
-      if (!response.run) {
-        throw new Error(copy.missingRun);
-      }
-
-      setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
-      setState((previous) => {
-        const nextRuns = [response.run!, ...previous.runs].slice(0, 12);
-        const firstResultId = response.run!.results[0]?.id ?? null;
-
-        return {
-          ...previous,
-          runs: nextRuns,
-          selectedResultId: firstResultId,
-          pinnedReferenceResultId: null,
-          refinementHistory: previous.refinementHistory,
-        };
-      });
-
-      setStatusMessage(
-        action === 'generate'
-          ? generateCount === 4
-            ? copy.runGenerateFourDone
-            : copy.runGenerateOneDone
-          : action === 'full-body-fix'
-            ? copy.runFullBodyDone
-            : copy.runLightingDone
-      );
-      emitClientMetric('tool_complete', {
-        tool_name: 'character_builder',
-        tool_surface: 'workspace',
-        logged_in: true,
-        action: action.replace(/-/g, '_'),
-        source_mode: state.sourceMode,
-        output_mode: state.outputMode.replace(/-/g, '_'),
-        quality_mode: state.qualityMode,
-        format_mode: state.formatMode.replace(/-/g, '_'),
-        generate_count: generateCount ?? 1,
-        result_count: response.run.results.length,
-      });
-      void mutateHistoricalJobs(undefined, { revalidate: true });
-    } catch (runError) {
-      setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
-      if (isAuthRequiredError(runError)) {
-        openAuthGate();
-        return;
-      }
-      setError(runError instanceof Error ? runError.message : copy.runFailed);
-    } finally {
-      setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
-    }
   }
 
   async function handleSaveResult(result: CharacterBuilderResult) {
