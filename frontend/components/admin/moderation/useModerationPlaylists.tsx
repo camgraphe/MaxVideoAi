@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
-import type { ModerationVideo, PlaylistOption, PlaylistTag } from '@/components/admin/ModerationTable';
+import type { ModerationVideo, PlaylistOption, PlaylistTag } from '@/components/admin/moderation/moderation-types';
 import { ModerationPlaylistControls } from './ModerationPlaylistControls';
 
 type PlaylistStatus = Record<string, { loading: boolean; message: string | null; error: string | null }>;

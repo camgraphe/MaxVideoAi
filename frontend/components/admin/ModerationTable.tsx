@@ -1,66 +1,22 @@
 "use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
-import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import {
-  BUCKET_OPTIONS,
-  SURFACE_OPTIONS,
-  PublicationPill,
-  StatePill,
   compareChronologically,
-  formatDate,
-  getPublicationLabel,
   isFailedVideo,
   matchesBucket,
   resolvePublicationState,
 } from '@/components/admin/moderation/moderation-table-utils';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ModerationTableHeader } from '@/components/admin/moderation/ModerationTableHeader';
+import { ModerationTableView } from '@/components/admin/moderation/ModerationTableView';
+import { ModerationWallView } from '@/components/admin/moderation/ModerationWallView';
+import type { ModerationBucket, ModerationSurface, ModerationVideo, ModerationViewMode } from '@/components/admin/moderation/moderation-types';
+import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 import { useModerationPlaylists } from '@/components/admin/moderation/useModerationPlaylists';
-import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
-export type PlaylistOption = {
-  id: string;
-  name: string;
-  slug: string;
-  usageTargets?: string[];
-};
-
-export type PlaylistTag = {
-  id: string;
-  name: string;
-};
-
-export type PublicationState = 'published' | 'private' | 'legacy-mismatch';
-export type ModerationBucket = 'not-published' | 'published' | 'all';
-export type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
-
-export type ModerationVideo = {
-  id: string;
-  userId: string | null;
-  status?: string | null;
-  message?: string;
-  updatedAt?: string;
-  engineId: string;
-  engineLabel: string;
-  durationSec: number;
-  prompt: string;
-  thumbUrl?: string;
-  videoUrl?: string;
-  aspectRatio?: string;
-  createdAt: string;
-  visibility: 'public' | 'private';
-  indexable: boolean;
-  featured?: boolean;
-  assignedPlaylists?: PlaylistTag[];
-  seoWatch: boolean;
-  publicationState: PublicationState;
-  isPublishedOnSite: boolean;
-  hasLegacyMismatch: boolean;
-};
+export type { ModerationBucket, ModerationSurface, ModerationVideo, PlaylistOption, PlaylistTag, PublicationState } from '@/components/admin/moderation/moderation-types';
 
 type ModerationTableProps = {
   videos: ModerationVideo[];
@@ -69,8 +25,6 @@ type ModerationTableProps = {
   initialSurface?: ModerationSurface;
   embedded?: boolean;
 };
-
-type ModerationViewMode = 'wall' | 'table';
 
 export function ModerationTable({
   videos,
@@ -289,109 +243,16 @@ export function ModerationTable({
 
   return (
     <div className={embedded ? 'space-y-5' : 'stack-gap-lg'}>
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="space-y-2">
-          {!embedded ? (
-            <div>
-              <h1 className="text-2xl font-semibold text-text-primary">Publication queue</h1>
-              <p className="text-sm text-text-secondary">
-                Manage publishable media by surface, publish or unpublish assets on the site, and curate playlists for video only. Incidents and
-                failures live in Jobs. Google Video rollout stays separate.
-              </p>
-            </div>
-          ) : null}
-          <div className="flex flex-wrap gap-2">
-            {SURFACE_OPTIONS.map((option) => {
-              const active = surface === option.id;
-              return (
-                <Button
-                  key={option.id}
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={isLoadingBucket}
-                  onClick={() => void loadBucket(bucket, { surface: option.id })}
-                  className={clsx(
-                    'gap-2 border-border px-3 text-left',
-                    active ? 'border-text-primary bg-surface text-text-primary' : 'bg-bg text-text-secondary hover:bg-surface'
-                  )}
-                >
-                  <span>{option.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {BUCKET_OPTIONS.map((option) => {
-              const active = bucket === option.id;
-              return (
-                <Button
-                  key={option.id}
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={isLoadingBucket}
-                  onClick={() => void loadBucket(option.id)}
-                  className={clsx(
-                    'gap-2 border-border px-3 text-left',
-                    active ? 'border-text-primary bg-surface text-text-primary' : 'bg-bg text-text-secondary hover:bg-surface'
-                  )}
-                >
-                  <span>{option.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-text-muted">
-            {BUCKET_OPTIONS.find((option) => option.id === bucket)?.helper ?? 'Moderation queue'}
-          </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            <ButtonLink href="/admin/jobs?outcome=failed_action_required" variant="outline" size="sm" prefetch={false}>
-              Open job issues
-            </ButtonLink>
-            <ButtonLink href="/admin/jobs?outcome=refunded_failure_resolved" variant="outline" size="sm" prefetch={false}>
-              Refunded failures
-            </ButtonLink>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 xl:items-end">
-          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-            <div className="inline-flex rounded-md border border-border bg-surface p-1">
-              <button
-                type="button"
-                onClick={() => setViewMode('wall')}
-                className={clsx(
-                  'rounded-sm px-3 py-1.5 text-xs font-medium transition',
-                  viewMode === 'wall' ? 'bg-bg text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'
-                )}
-              >
-                Wall
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={clsx(
-                  'rounded-sm px-3 py-1.5 text-xs font-medium transition',
-                  viewMode === 'table' ? 'bg-bg text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'
-                )}
-              >
-                Table
-              </button>
-            </div>
-            <ButtonLink href="/admin/video-seo" variant="outline" size="sm" prefetch={false}>
-              Open Video SEO
-            </ButtonLink>
-          </div>
-          <div className="grid gap-1 text-right text-xs text-text-muted sm:grid-cols-2 xl:grid-cols-3">
-            <span>Rows: {stats.total}</span>
-            <span>Not published: {stats.notPublishedCount}</span>
-            <span>Published: {stats.publishedCount}</span>
-            <span>Legacy mismatch: {stats.legacyMismatchCount}</span>
-            <span>In Google Video rollout: {stats.seoWatchCount}</span>
-          </div>
-        </div>
-      </header>
+      <ModerationTableHeader
+        bucket={bucket}
+        embedded={embedded}
+        isLoadingBucket={isLoadingBucket}
+        onLoadBucket={(nextBucket, options) => void loadBucket(nextBucket, options)}
+        onSetViewMode={setViewMode}
+        stats={stats}
+        surface={surface}
+        viewMode={viewMode}
+      />
 
       {surface === 'video' && playlistFetchError ? (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">{playlistFetchError}</div>
@@ -404,357 +265,32 @@ export function ModerationTable({
           {isLoadingBucket ? 'Loading moderation queue…' : `No ${surface} items in this moderation bucket.`}
         </div>
       ) : viewMode === 'wall' ? (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-            {displayItems.map((video) => {
-              const isFailed = isFailedVideo(video);
-              const canManagePlaylists = surface === 'video' && !isFailed;
-              const normalizedVideoUrl = video.videoUrl ? normalizeMediaUrl(video.videoUrl) ?? video.videoUrl : undefined;
-              const normalizedThumbUrl = video.thumbUrl ? normalizeMediaUrl(video.thumbUrl) ?? video.thumbUrl : undefined;
-              const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
-              const hasVideoPreview = Boolean(normalizedVideoUrl);
-              const assignedPlaylists = playlistAssignments[video.id] ?? [];
-              const isSelected = selectedVideo?.id === video.id;
-
-              return (
-                <div
-                  key={video.id}
-                  className={clsx(
-                    'overflow-hidden rounded-card border bg-surface text-left transition',
-                    isSelected
-                      ? 'border-text-primary shadow-[0_0_0_1px_rgba(255,255,255,0.1)]'
-                      : 'border-border hover:border-text-muted'
-                  )}
-                >
-                  <button type="button" onClick={() => setSelectedVideoId(video.id)} className="block w-full text-left">
-                    <div className="relative aspect-video overflow-hidden bg-black">
-                      {hasThumbPreview && normalizedThumbUrl ? (
-                        <Image
-                          src={normalizedThumbUrl}
-                          alt="Thumbnail"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 33vw"
-                        />
-                      ) : hasVideoPreview ? (
-                        <video
-                          src={normalizedVideoUrl}
-                          className="absolute inset-0 h-full w-full object-cover"
-                          muted
-                          playsInline
-                          preload="metadata"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
-                      )}
-                      <div className="absolute left-2 top-2 flex flex-wrap gap-2">
-                        <PublicationPill state={video.publicationState} />
-                        {video.hasLegacyMismatch ? <StatePill tone="warn">Legacy mismatch</StatePill> : null}
-                        {isFailed ? <StatePill tone="warn">Issue</StatePill> : null}
-                        {video.seoWatch ? <StatePill tone="neutral">Google Video rollout</StatePill> : null}
-                      </div>
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 py-2">
-                        <div className="flex items-end justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-white">{video.engineLabel}</p>
-                            <p className="text-[11px] text-white/70">
-                              {getPublicationLabel(video)} · {video.durationSec}s
-                              {video.aspectRatio ? ` · ${video.aspectRatio}` : ''}
-                            </p>
-                          </div>
-                          <span className="rounded-full border border-white/20 bg-black/45 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-white">
-                            Queued
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2 p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="line-clamp-1 text-sm font-medium text-text-primary">{video.prompt}</p>
-                        {video.status ? (
-                          <span className="shrink-0 text-[10px] uppercase tracking-micro text-text-muted">{video.status}</span>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-text-muted">
-                        <span>{formatDate(video.createdAt)}</span>
-                        {assignedPlaylists.length ? <span>{assignedPlaylists.length} playlist{assignedPlaylists.length > 1 ? 's' : ''}</span> : null}
-                      </div>
-                    </div>
-                  </button>
-                  <div className="space-y-2 border-t border-border p-3">
-                    {renderPlaylistControls(video, { compact: true, emphasizeAssigned: true, enabled: canManagePlaylists })}
-                    <div className="flex flex-wrap gap-2">
-                      {renderModerationActions(video, { compact: true })}
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-md border-hairline px-2.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary"
-                        onClick={() => setSelectedVideoId(video.id)}
-                      >
-                        Details
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {selectedVideo ? (
-            <aside className="h-fit rounded-card border border-border bg-surface xl:sticky xl:top-4">
-              <div className="space-y-4 p-4">
-                {(() => {
-                  const selectedIsFailed = isFailedVideo(selectedVideo);
-                  const canManageSelectedPlaylists = surface === 'video' && !selectedIsFailed;
-                  return (
-                    <>
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Selected item</p>
-                  <div className="relative aspect-video overflow-hidden rounded-card border border-hairline bg-black">
-                    {selectedVideo.videoUrl ? (
-                      <video
-                        src={normalizeMediaUrl(selectedVideo.videoUrl) ?? selectedVideo.videoUrl}
-                        poster={selectedVideo.thumbUrl ? normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl : undefined}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        controls
-                        muted
-                        playsInline
-                        preload="metadata"
-                      />
-                    ) : selectedVideo.thumbUrl ? (
-                      <Image
-                        src={normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl}
-                        alt="Thumbnail"
-                        fill
-                        className="object-cover"
-                        sizes="352px"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                      <p className="text-sm font-semibold text-text-primary">{selectedVideo.engineLabel}</p>
-                    <div className="flex flex-wrap gap-2">
-                      <PublicationPill state={selectedVideo.publicationState} />
-                      <StatePill tone={selectedVideo.isPublishedOnSite ? 'ok' : 'warn'}>
-                        {getPublicationLabel(selectedVideo)}
-                      </StatePill>
-                      {selectedVideo.hasLegacyMismatch ? <StatePill tone="warn">Legacy mismatch</StatePill> : null}
-                      {selectedIsFailed ? <StatePill tone="warn">Issue</StatePill> : null}
-                      {selectedVideo.seoWatch ? (
-                        <Link href="/admin/video-seo" className="inline-flex rounded-full border border-border bg-bg px-2 py-1 text-[11px] font-semibold text-text-secondary hover:text-text-primary">
-                          In Google Video rollout
-                        </Link>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
-                    <span>Duration: {selectedVideo.durationSec}s</span>
-                    <span>Aspect: {selectedVideo.aspectRatio ?? 'auto'}</span>
-                    <span>Created: {formatDate(selectedVideo.createdAt)}</span>
-                    <span>Updated: {selectedVideo.updatedAt ? formatDate(selectedVideo.updatedAt) : '—'}</span>
-                    <span>User: {selectedVideo.userId ?? '—'}</span>
-                    <span>Status: {selectedVideo.status ?? '—'}</span>
-                  </div>
-
-                  {selectedVideo.message ? (
-                    <div className="rounded-md border border-warning-border bg-warning-bg px-3 py-2 text-xs text-warning">
-                      Runtime message: {selectedVideo.message}
-                    </div>
-                  ) : null}
-
-                  <details className="rounded-md border border-border bg-bg px-3 py-2">
-                    <summary className="cursor-pointer text-xs font-semibold uppercase tracking-micro text-text-muted">Prompt</summary>
-                    <p className="mt-2 text-sm text-text-secondary">{selectedVideo.prompt}</p>
-                  </details>
-                </div>
-
-                {surface === 'video' ? (
-                  <VideoThumbnailEditor
-                    key={selectedVideo.id}
-                    videoId={selectedVideo.id}
-                    title={selectedVideo.prompt}
-                    engineLabel={selectedVideo.engineLabel}
-                    initialThumbUrl={selectedVideo.thumbUrl ?? null}
-                    videoUrl={selectedVideo.videoUrl ?? null}
-                    className="max-w-none"
-                    onThumbnailUpdated={(thumbUrl) => handleThumbnailUpdated(selectedVideo.id, thumbUrl)}
-                  />
-                ) : null}
-
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Moderation</p>
-                  <div className="flex flex-wrap gap-2">{renderModerationActions(selectedVideo)}</div>
-                  {selectedIsFailed ? (
-                    <p className="text-xs text-warning">This item should be handled in Job Audit, not in the editorial moderation queue.</p>
-                  ) : (
-                    <p className="text-xs text-text-muted">
-                      Publishing on site controls whether the asset is live on public surfaces. Google Video rollout membership is managed separately.
-                    </p>
-                  )}
-                  {selectedVideo.hasLegacyMismatch ? (
-                    <p className="text-xs text-warning">
-                      This row still has a legacy visibility/indexable mismatch. Publishing or making it private will normalize it.
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {surface === 'video' && !selectedIsFailed && selectedVideo.isPublishedOnSite ? (
-                    <ButtonLink href={`/video/${encodeURIComponent(selectedVideo.id)}`} variant="outline" size="sm" prefetch={false}>
-                      Open watch page
-                    </ButtonLink>
-                  ) : null}
-                  <ButtonLink href={`/admin/jobs?jobId=${encodeURIComponent(selectedVideo.id)}`} variant="outline" size="sm" prefetch={false}>
-                    Open job audit
-                  </ButtonLink>
-                  {selectedVideo.seoWatch ? (
-                    <ButtonLink href="/admin/video-seo" variant="outline" size="sm" prefetch={false}>
-                      Open Video SEO
-                    </ButtonLink>
-                  ) : null}
-                </div>
-
-                {renderPlaylistControls(selectedVideo, { emphasizeAssigned: true, enabled: canManageSelectedPlaylists })}
-                    </>
-                  );
-                })()}
-              </div>
-            </aside>
-          ) : null}
-
-          {nextCursor ? (
-            <div className="xl:col-span-2">
-              <div className="rounded-card border border-border bg-surface px-4 py-3 text-center">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void loadBucket(bucket, { append: true })}
-                  disabled={isLoadingMore}
-                  className="rounded-input border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface"
-                >
-                  {isLoadingMore ? 'Loading…' : 'Load more'}
-                </Button>
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <ModerationWallView
+          bucket={bucket}
+          displayItems={displayItems}
+          isLoadingMore={isLoadingMore}
+          loadBucket={(nextBucket, options) => void loadBucket(nextBucket, options)}
+          nextCursor={nextCursor}
+          onSelectVideo={setSelectedVideoId}
+          onThumbnailUpdated={handleThumbnailUpdated}
+          playlistAssignments={playlistAssignments}
+          renderModerationActions={renderModerationActions}
+          renderPlaylistControls={renderPlaylistControls}
+          selectedVideo={selectedVideo}
+          surface={surface}
+        />
       ) : (
-        <div className="overflow-hidden rounded-card border border-border bg-surface">
-          <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-bg text-xs uppercase tracking-micro text-text-muted">
-              <tr>
-                <th scope="col" className="px-4 py-3 text-left">Preview</th>
-                <th scope="col" className="px-4 py-3 text-left">State</th>
-                <th scope="col" className="px-4 py-3 text-left">Prompt</th>
-                <th scope="col" className="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {displayItems.map((video) => {
-                const isFailed = isFailedVideo(video);
-                const normalizedVideoUrl = video.videoUrl ? normalizeMediaUrl(video.videoUrl) ?? video.videoUrl : undefined;
-                const normalizedThumbUrl = video.thumbUrl ? normalizeMediaUrl(video.thumbUrl) ?? video.thumbUrl : undefined;
-                const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
-                const hasVideoPreview = Boolean(normalizedVideoUrl);
-                const posterUrl = hasThumbPreview ? normalizedThumbUrl : undefined;
-                const canOpenWatchPage = surface === 'video' && !isFailed && video.isPublishedOnSite;
-                const canManagePlaylists = surface === 'video' && !isFailed;
-
-                return (
-                  <tr key={video.id} className={clsx(isPending && 'opacity-90')}>
-                    <td className="px-4 py-4">
-                      <div className="relative h-24 w-40 overflow-hidden rounded-card border border-hairline bg-black">
-                        {hasVideoPreview ? (
-                          <video
-                            src={normalizedVideoUrl}
-                            poster={posterUrl}
-                            className="absolute inset-0 h-full w-full object-cover"
-                            muted
-                            loop
-                            playsInline
-                            autoPlay
-                            preload="metadata"
-                          />
-                        ) : hasThumbPreview && normalizedThumbUrl ? (
-                          <Image src={normalizedThumbUrl} alt="Thumbnail" fill className="object-cover" sizes="160px" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="space-y-2 text-xs text-text-secondary">
-                        <div className="flex flex-wrap gap-2">
-                          <PublicationPill state={video.publicationState} />
-                          <StatePill tone={video.isPublishedOnSite ? 'ok' : 'warn'}>{getPublicationLabel(video)}</StatePill>
-                          {video.hasLegacyMismatch ? <StatePill tone="warn">Legacy mismatch</StatePill> : null}
-                          {isFailed ? <StatePill tone="warn">Issue</StatePill> : null}
-                          {video.seoWatch ? <StatePill tone="neutral">Google Video rollout</StatePill> : null}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="font-semibold text-text-primary">{video.engineLabel}</span>
-                          <span>Duration: {video.durationSec}s</span>
-                          <span>Aspect: {video.aspectRatio ?? 'auto'}</span>
-                          <span>Created: {formatDate(video.createdAt)}</span>
-                          {video.updatedAt ? <span>Updated: {formatDate(video.updatedAt)}</span> : null}
-                          <span>User: {video.userId ?? '—'}</span>
-                          {video.status ? <span>Status: {video.status}</span> : null}
-                          {video.message ? <span className="text-warning">Runtime message: {video.message}</span> : null}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 align-top text-xs text-text-secondary">
-                      <p className="max-w-xs whitespace-pre-line">{video.prompt}</p>
-                    </td>
-                    <td className="px-4 py-4 align-top">
-                      <div className="flex min-w-[18rem] flex-col gap-3">
-                        <div className="flex flex-wrap gap-2">{renderModerationActions(video)}</div>
-                        <div>{renderPlaylistControls(video, { enabled: canManagePlaylists })}</div>
-                        <div className="flex flex-wrap gap-2">
-                          {canOpenWatchPage ? (
-                            <ButtonLink href={`/video/${encodeURIComponent(video.id)}`} variant="outline" size="sm" prefetch={false}>
-                              Watch page
-                            </ButtonLink>
-                          ) : null}
-                          <ButtonLink href={`/admin/jobs?jobId=${encodeURIComponent(video.id)}`} variant="outline" size="sm" prefetch={false}>
-                            Job audit
-                          </ButtonLink>
-                          {video.seoWatch ? (
-                            <ButtonLink href="/admin/video-seo" variant="outline" size="sm" prefetch={false}>
-                              Video SEO
-                            </ButtonLink>
-                          ) : null}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {nextCursor ? (
-            <div className="border-t border-border bg-surface px-4 py-3 text-center">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => void loadBucket(bucket, { append: true })}
-                disabled={isLoadingMore}
-                className="rounded-input border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface"
-              >
-                {isLoadingMore ? 'Loading…' : 'Load more'}
-              </Button>
-            </div>
-          ) : null}
-        </div>
+        <ModerationTableView
+          bucket={bucket}
+          displayItems={displayItems}
+          isLoadingMore={isLoadingMore}
+          isPending={isPending}
+          loadBucket={(nextBucket, options) => void loadBucket(nextBucket, options)}
+          nextCursor={nextCursor}
+          renderModerationActions={renderModerationActions}
+          renderPlaylistControls={renderPlaylistControls}
+          surface={surface}
+        />
       )}
     </div>
   );
