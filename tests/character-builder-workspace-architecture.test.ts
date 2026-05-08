@@ -9,6 +9,7 @@ const copyPath = join(root, 'frontend/src/components/tools/character-builder/_li
 const typesPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-types.ts');
 const helpersPath = join(root, 'frontend/src/components/tools/character-builder/_lib/character-builder-helpers.ts');
 const componentsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-workspace-components.tsx');
+const buildLookSectionPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-build-look-section.tsx');
 const choiceCardsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-choice-cards.tsx');
 const generateDockPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-generate-dock.tsx');
 const formControlsPath = join(root, 'frontend/src/components/tools/character-builder/_components/character-builder-form-controls.tsx');
@@ -36,6 +37,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(typesPath), 'character builder local contracts should live in a colocated type module');
   assert.ok(existsSync(helpersPath), 'character builder helper logic should live in a colocated helper module');
   assert.ok(existsSync(componentsPath), 'character builder UI component barrel should live in a colocated component module');
+  assert.ok(existsSync(buildLookSectionPath), 'build look section composition should live in a focused component module');
   assert.ok(existsSync(choiceCardsPath), 'choice card components should live in a focused component module');
   assert.ok(existsSync(generateDockPath), 'generate dock components should live in a focused component module');
   assert.ok(existsSync(formControlsPath), 'form controls should live in a focused component module');
@@ -57,6 +59,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(traitActionsHookPath), 'trait actions should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
+  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-build-look-section'/, 'workspace should import build look section component');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-start-section'/, 'workspace should import start section component');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
@@ -121,9 +124,14 @@ test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /<OutputPreviewCard/, 'output mode selection belongs in CharacterBuilderStartSection');
   assert.doesNotMatch(workspaceSource, /<ReferenceSlot/, 'reference slot composition belongs in CharacterBuilderStartSection');
   assert.doesNotMatch(workspaceSource, /copy\.references\.addInspiration/, 'style inspiration empty slot belongs in CharacterBuilderStartSection');
+  assert.doesNotMatch(workspaceSource, /<BuildLookCarouselCard/, 'build look carousel belongs in CharacterBuilderBuildLookSection');
+  assert.doesNotMatch(workspaceSource, /<CharacterBuilderStickyDock/, 'generate dock composition belongs in CharacterBuilderBuildLookSection');
+  assert.doesNotMatch(workspaceSource, /AUTO_TRAIT_KEYS/, 'advanced auto trait controls belong in CharacterBuilderBuildLookSection');
+  assert.doesNotMatch(workspaceSource, /normalizeCharacterFormatMode/, 'quality and format coupling belongs in CharacterBuilderBuildLookSection');
+  assert.doesNotMatch(workspaceSource, /copy\.sections\.moreControls/, 'advanced controls JSX belongs in CharacterBuilderBuildLookSection');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 970, `CharacterBuilderWorkspace should stay below 970 lines after start section extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 520, `CharacterBuilderWorkspace should stay below 520 lines after build look extraction, got ${lineCount}`);
 });
 
 test('character builder helper modules expose the expected workspace contract', () => {
@@ -131,6 +139,7 @@ test('character builder helper modules expose the expected workspace contract', 
   const typesSource = readFileSync(typesPath, 'utf8');
   const helpersSource = readFileSync(helpersPath, 'utf8');
   const componentsSource = readFileSync(componentsPath, 'utf8');
+  const buildLookSectionSource = readFileSync(buildLookSectionPath, 'utf8');
   const choiceCardsSource = readFileSync(choiceCardsPath, 'utf8');
   const generateDockSource = readFileSync(generateDockPath, 'utf8');
   const formControlsSource = readFileSync(formControlsPath, 'utf8');
@@ -218,6 +227,10 @@ test('character builder helper modules expose the expected workspace contract', 
   }
 
   assert.match(generateDockSource, /export function CharacterBuilderStickyDock/, 'CharacterBuilderStickyDock should be exported');
+  assert.match(buildLookSectionSource, /export function CharacterBuilderBuildLookSection/, 'build look section should be exported');
+  assert.match(buildLookSectionSource, /BuildLookCarouselCard/, 'build look section should own section navigation');
+  assert.match(buildLookSectionSource, /CharacterBuilderStickyDock/, 'build look section should own generate dock composition');
+  assert.match(buildLookSectionSource, /AUTO_TRAIT_KEYS/, 'build look section should own advanced auto trait controls');
   assert.match(startSectionSource, /export function CharacterBuilderStartSection/, 'CharacterBuilderStartSection should be exported');
   assert.match(startSectionSource, /OutputPreviewCard/, 'start section should own output mode selection');
   assert.match(startSectionSource, /ReferenceSlot/, 'start section should own reference slot composition');
