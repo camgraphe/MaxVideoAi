@@ -8,6 +8,7 @@ const formattersPath = 'frontend/app/(core)/admin/insights/_lib/insights-formatt
 const navigationPath = 'frontend/app/(core)/admin/insights/_lib/insights-navigation.ts';
 const typesPath = 'frontend/app/(core)/admin/insights/_lib/insights-types.ts';
 const panelsPath = 'frontend/app/(core)/admin/insights/_components/InsightsPanels.tsx';
+const chartSurfacesPath = 'frontend/app/(core)/admin/insights/_components/InsightsChartSurfaces.tsx';
 
 test('admin insights page stays a route orchestrator', () => {
   assert.equal(existsSync(pagePath), true);
@@ -16,6 +17,7 @@ test('admin insights page stays a route orchestrator', () => {
   assert.equal(existsSync(navigationPath), true);
   assert.equal(existsSync(typesPath), true);
   assert.equal(existsSync(panelsPath), true);
+  assert.equal(existsSync(chartSurfacesPath), true);
 
   const pageSource = readFileSync(pagePath, 'utf8');
   const pageLines = pageSource.split('\n').length;
@@ -25,6 +27,7 @@ test('admin insights page stays a route orchestrator', () => {
   assert.match(pageSource, /from '\.\/_lib\/insights-helpers';/);
   assert.match(pageSource, /from '\.\/_lib\/insights-navigation';/);
   assert.match(pageSource, /from '\.\/_components\/InsightsPanels';/);
+  assert.match(pageSource, /from '\.\/_components\/InsightsChartSurfaces';/);
   assert.match(pageSource, /fetchAdminMetrics\(/);
   assert.match(pageSource, /fetchAdminMetricsComparison\(/);
   assert.match(pageSource, /requireAdmin\(\)/);
@@ -68,11 +71,22 @@ test('admin insights panels own route-local JSX surfaces', () => {
   const panelsSource = readFileSync(panelsPath, 'utf8');
 
   assert.ok(statSync(panelsPath).size > 0);
-  assert.match(panelsSource, /export function ComparisonChart/);
   assert.match(panelsSource, /export function RevenueBoardTable/);
   assert.match(panelsSource, /export function HealthPanel/);
   assert.match(panelsSource, /export function InsightsControls/);
   assert.match(panelsSource, /export function DailyLedgerTable/);
   assert.match(panelsSource, /from '\.\.\/_lib\/insights-formatters';/);
   assert.match(panelsSource, /from '\.\.\/_lib\/insights-navigation';/);
+  assert.match(panelsSource, /from '\.\/InsightsChartSurfaces';/);
+  assert.doesNotMatch(panelsSource, /buildChartTicks/);
+  assert.doesNotMatch(panelsSource, /export function ComparisonChart/);
+});
+
+test('admin insights chart surfaces own chart primitives', () => {
+  const chartSurfacesSource = readFileSync(chartSurfacesPath, 'utf8');
+
+  assert.match(chartSurfacesSource, /export function ComparisonChart/);
+  assert.match(chartSurfacesSource, /export function ShareBar/);
+  assert.match(chartSurfacesSource, /export function EmptyStateCard/);
+  assert.match(chartSurfacesSource, /buildChartTicks/);
 });
