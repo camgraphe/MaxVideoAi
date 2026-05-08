@@ -1,4 +1,3 @@
-import { ApiError, ValidationError } from '@fal-ai/client';
 import { randomUUID } from 'crypto';
 import { listFalEngines } from '@/config/falEngines';
 import type {
@@ -7,7 +6,7 @@ import type {
   ImageGenerationResponse,
 } from '@/types/image-generation';
 import { getFalClient } from '@/lib/fal-client';
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import type { PricingSnapshot } from '@/types/engines';
@@ -53,6 +52,7 @@ import {
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
+import { persistFailedImageGeneration } from './image-generation-failure';
 import {
   buildCharacterReferencePrompt,
   extractImages,
@@ -61,7 +61,6 @@ import {
 } from './image-provider-payload';
 import {
   buildReceiptSnapshot,
-  recordRefundReceipt,
   type PendingReceipt,
 } from './image-generation-receipts';
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
@@ -746,98 +745,31 @@ export async function executeImageGeneration({
     } satisfies ImageGenerationResponse;
   } catch (error) {
     console.error('[images] Fal generation failed', error);
-    const providerStatus = error instanceof ApiError && typeof error.status === 'number' ? error.status : null;
-    const providerBody = error instanceof ApiError ? error.body : null;
-    const providerErrors =
-      error instanceof ValidationError
-        ? error.fieldErrors
-            .map((entry) => {
-              const loc = Array.isArray(entry.loc) ? entry.loc.filter((part) => part !== 'body') : [];
-              const path = loc.length ? loc.join('.') : null;
-              const msg = typeof entry.msg === 'string' ? entry.msg.trim() : '';
-              if (!msg) return null;
-              return path ? `${path}: ${msg}` : msg;
-            })
-            .filter((entry): entry is string => Boolean(entry))
-        : [];
-    const messageBase = error instanceof Error && error.message ? error.message : 'Fal request failed';
-    const message =
-      providerErrors.length > 0
-        ? providerErrors.slice(0, 3).join(' · ')
-        : providerStatus === 422 && messageBase === 'Unprocessable Entity'
-          ? 'Fal rejected the input (422). Check that your reference image URLs are reachable and valid image files.'
-          : messageBase;
-
-    try {
-      await query(
-        `UPDATE app_jobs
-         SET status = 'failed',
-             progress = 0,
-             message = $2,
-             provider_job_id = COALESCE($3, provider_job_id),
-             provisional = FALSE,
-             updated_at = NOW(),
-             payment_status = 'refunded_wallet'
-         WHERE job_id = $1`,
-        [jobId, message, providerJobId ?? null]
-      );
-    } catch (updateError) {
-      console.warn('[images] failed to update failed job', updateError);
-    }
-
-    try {
-      const hosts = combinedImageUrls
-        .map((url) => {
-          try {
-            return new URL(url).host;
-          } catch {
-            return null;
-          }
-        })
-        .filter((host): host is string => Boolean(host));
-      const uniqueHosts = Array.from(new Set(hosts));
-
-      await query(
-        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-        [
-          jobId,
-          providerMode,
-          providerJobId ?? null,
-          engine.id,
-          'failed',
-          JSON.stringify({
-            request: {
-              mode,
-              numImages,
-              resolution,
-              ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
-              ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
-              ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
-              ...(outputFormat ? { output_format: outputFormat } : {}),
-              ...(quality ? { quality } : {}),
-              ...(maskUrl ? { mask_url: maskUrl } : {}),
-              ...(enableWebSearch ? { enable_web_search: true } : {}),
-              ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
-              ...(limitGenerations ? { limit_generations: true } : {}),
-              referenceImageCount: combinedImageUrls.length,
-              referenceImageHosts: uniqueHosts,
-              falModelId: modeConfig.falModelId,
-            },
-            error: {
-              status: providerStatus,
-              message,
-              body: providerBody,
-            },
-            pricing: { totalCents: pricing.totalCents, currency: pricing.currency },
-          }),
-        ]
-      );
-    } catch (logError) {
-      console.warn('[images] failed to record fal queue log', logError);
-    }
-
-    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
+    const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
+      characterReferenceCount: characterReferences.length,
+      enableWebSearch,
+      engineId: engine.id,
+      error,
+      falModelId: modeConfig.falModelId,
+      jobId,
+      limitGenerations,
+      maskUrl,
+      mode,
+      normalizedSeed,
+      numImages,
+      outputFormat,
+      pendingReceipt,
+      priceOnlyReceipts,
+      pricing,
+      providerJobId: providerJobId ?? null,
+      providerMode,
+      quality,
+      referenceImageUrls: combinedImageUrls,
+      refundDescription,
+      resolvedAspectRatio,
+      resolution,
+      thinkingLevel,
+    });
 
     fail(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
       engineId: engineEntry.id,

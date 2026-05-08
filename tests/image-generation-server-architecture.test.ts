@@ -11,6 +11,7 @@ const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
 const completionPath = join(root, 'frontend/src/server/images/image-generation-completion.ts');
+const failurePath = join(root, 'frontend/src/server/images/image-generation-failure.ts');
 const receiptsPath = join(root, 'frontend/src/server/images/image-generation-receipts.ts');
 const settingsSnapshotPath = join(root, 'frontend/src/server/images/image-generation-settings-snapshot.ts');
 
@@ -21,6 +22,7 @@ const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
 const completionSource = readFileSync(completionPath, 'utf8');
+const failureSource = readFileSync(failurePath, 'utf8');
 const receiptsSource = readFileSync(receiptsPath, 'utf8');
 const settingsSnapshotSource = readFileSync(settingsSnapshotPath, 'utf8');
 
@@ -31,6 +33,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
   assert.ok(existsSync(providerPayloadPath), 'provider payload parsing should live in a focused module');
   assert.ok(existsSync(completionPath), 'image generation completion persistence should live in a focused module');
+  assert.ok(existsSync(failurePath), 'image generation failure persistence should live in a focused module');
   assert.ok(existsSync(receiptsPath), 'image generation receipt helpers should live in a focused module');
   assert.ok(existsSync(settingsSnapshotPath), 'image settings snapshot helpers should live in a focused module');
   assert.match(executorSource, /from '\.\/existing-image-job-response'/);
@@ -39,6 +42,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.match(executorSource, /from '\.\/image-generation-error'/);
   assert.match(executorSource, /from '\.\/image-provider-payload'/);
   assert.match(executorSource, /from '\.\/image-generation-completion'/);
+  assert.match(executorSource, /from '\.\/image-generation-failure'/);
   assert.match(executorSource, /from '\.\/image-generation-receipts'/);
   assert.match(executorSource, /from '\.\/image-generation-settings-snapshot'/);
   assert.match(executorSource, /export \{ buildResponseFromExistingJob \} from '\.\/existing-image-job-response'/);
@@ -68,9 +72,13 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /upsertLegacyJobOutputs/, 'completed output persistence belongs in image-generation-completion.ts');
   assert.doesNotMatch(executorSource, /ensureReusableAsset/, 'reusable character asset persistence belongs in image-generation-completion.ts');
   assert.doesNotMatch(executorSource, /status = 'completed'/, 'completed job update belongs in image-generation-completion.ts');
+  assert.doesNotMatch(executorSource, /ApiError/, 'provider failure classification belongs in image-generation-failure.ts');
+  assert.doesNotMatch(executorSource, /ValidationError/, 'provider validation error parsing belongs in image-generation-failure.ts');
+  assert.doesNotMatch(executorSource, /status = 'failed'/, 'failed job update belongs in image-generation-failure.ts');
+  assert.doesNotMatch(executorSource, /referenceImageHosts/, 'failed provider log metadata belongs in image-generation-failure.ts');
 
   const lineCount = executorSource.split('\n').length;
-  assert.ok(lineCount <= 860, `image generation executor should stay below 860 lines after completion extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 790, `image generation executor should stay below 790 lines after failure extraction, got ${lineCount}`);
 });
 
 test('existing image job response module exposes the expected contract', () => {
@@ -99,6 +107,11 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(completionSource, /upsertLegacyJobOutputs/);
   assert.match(completionSource, /ensureReusableAsset/);
   assert.match(completionSource, /status = 'completed'/);
+  assert.match(failureSource, /export async function persistFailedImageGeneration/);
+  assert.match(failureSource, /ApiError/);
+  assert.match(failureSource, /ValidationError/);
+  assert.match(failureSource, /recordRefundReceipt/);
+  assert.match(failureSource, /status = 'failed'/);
   assert.match(receiptsSource, /export type PendingReceipt/);
   assert.match(receiptsSource, /export function buildReceiptSnapshot/);
   assert.match(receiptsSource, /export async function recordRefundReceipt/);
