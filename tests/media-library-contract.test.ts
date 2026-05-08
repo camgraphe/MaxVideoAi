@@ -292,6 +292,10 @@ test('history cards use thumbnails and explicit card actions', () => {
     path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
     'utf8'
   );
+  const mediaSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCardMedia.tsx'),
+    'utf8'
+  );
   const jobsSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/jobs/_hooks/useJobsPageController.ts'),
     'utf8'
@@ -301,8 +305,8 @@ test('history cards use thumbnails and explicit card actions', () => {
     'utf8'
   );
 
-  assert.match(cardSource, /const\s+thumbSrc\s*=\s*preview\?\.thumbUrl/);
-  assert.match(cardSource, /src=\{thumbSrc\}/);
+  assert.match(mediaSource, /const\s+thumbSrc\s*=\s*preview\?\.thumbUrl/);
+  assert.match(mediaSource, /src=\{thumbSrc\}/);
   assert.match(cardSource, /openLabel\?:\s*string/);
   assert.match(cardSource, /actionMenuLabel\?:\s*string/);
   assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
@@ -317,6 +321,10 @@ test('history cards use thumbnails and explicit card actions', () => {
 test('history can save renders to library from cards and job details', () => {
   const cardSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+  const cardTypesSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/grouped-job-card-types.ts'),
     'utf8'
   );
   const jobsSource = fs.readFileSync(
@@ -336,7 +344,7 @@ test('history can save renders to library from cards and job details', () => {
     'utf8'
   );
 
-  assert.match(cardSource, /\|\s*'save-to-library'/);
+  assert.match(cardTypesSource, /\|\s*'save-to-library'/);
   assert.match(cardSource, /showLibraryCta\?:\s*boolean/);
   assert.match(cardSource, /<Plus\s+className=/);
   assert.match(cardSource, /handleAction\('save-to-library'\)/);

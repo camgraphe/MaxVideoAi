@@ -2,27 +2,39 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
-import type { VideoGroup, ResultProvider } from '@/types/video-groups';
+import type { VideoGroup } from '@/types/video-groups';
 import { saveImageToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
-import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
-import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { copyTextToClipboard } from '@/lib/clipboard';
-import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
 import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
 import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
-
-type GalleryVariant = 'desktop' | 'mobile';
+import { GalleryRailCards } from './GalleryRailCards';
+import { GalleryRailSnackbar, type SnackbarState } from './GalleryRailSnackbar';
+import { GalleryRailCuratedBanner, GalleryRailErrorBanner, GalleryRailHeader } from './GalleryRailStatus';
+import {
+  DEFAULT_GALLERY_COPY,
+  DEFAULT_GROUP_PROVIDER,
+  INITIAL_EAGER_PREVIEW_COUNT,
+  filterGalleryFeedJobs,
+  resolveAspectRatioLabel,
+  resolveBackgroundWarmPreviewLimit,
+  resolveDisplayedActiveGroup,
+  resolveMediaUrl,
+  type GalleryCopy,
+  type GalleryFeedType,
+  type GalleryVariant,
+} from './gallery-rail-utils';
+import { useGalleryRailScrollbar } from './useGalleryRailScrollbar';
 
 export interface GalleryFeedState {
   visibleGroups: GroupSummary[];
@@ -32,7 +44,7 @@ export interface GalleryFeedState {
 export interface GalleryRailProps {
   engine: EngineCaps;
   engineRegistry?: EngineCaps[];
-  feedType?: 'video' | 'image';
+  feedType?: GalleryFeedType;
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => void;
@@ -41,82 +53,8 @@ export interface GalleryRailProps {
   variant?: GalleryVariant;
 }
 
-interface SnackbarAction {
-  label: string;
-  onClick: () => void;
-  variant?: 'primary' | 'ghost';
-}
-
-interface SnackbarState {
-  message: string;
-  actions?: SnackbarAction[];
-  duration?: number;
-}
-
-const DEFAULT_GALLERY_COPY = {
-  title: 'Latest renders',
-  viewAll: 'View all',
-  curated: 'Starter samples curated by the MaxVideo team are shown until you generate your own videos.',
-  error: 'Failed to load latest renders. Please retry.',
-  retry: 'Retry',
-  imageCta: 'Generate images',
-  snackbar: {
-    samples: 'Sample clips cannot be removed.',
-    removed: 'Removed from gallery.',
-    failed: 'Unable to remove from gallery.',
-    saved: 'Saved to library.',
-    saveFailed: 'Unable to save to library.',
-    copied: 'Link copied.',
-    copyFailed: 'Unable to copy link.',
-    noMedia: 'No media available.',
-  },
-} as const;
-
-type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
-const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
-const INITIAL_EAGER_PREVIEW_COUNT = 0;
-const DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT = 2;
 const BACKGROUND_WARM_START_DELAY_MS = 200;
 const BACKGROUND_WARM_STEP_DELAY_MS = 900;
-
-type NavigatorWithConnection = Navigator & {
-  connection?: {
-    effectiveType?: string;
-    saveData?: boolean;
-  };
-};
-
-function resolveBackgroundWarmPreviewLimit(variant: GalleryVariant): number {
-  if (variant !== 'desktop') return 0;
-  if (typeof navigator === 'undefined') return DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT;
-  const connection = (navigator as NavigatorWithConnection).connection;
-  if (connection?.saveData) return 0;
-  const effectiveType = connection?.effectiveType;
-  if (effectiveType === 'slow-2g' || effectiveType === '2g') return 1;
-  if (effectiveType === '3g') return 1;
-  return DESKTOP_BACKGROUND_WARM_PREVIEW_LIMIT;
-}
-
-function resolveDisplayedActiveGroup(
-  feedType: 'video' | 'image',
-  activeGroup: GroupSummary,
-  historicalGroup?: GroupSummary
-): GroupSummary {
-  if (!historicalGroup) return activeGroup;
-  if (feedType !== 'image') return historicalGroup;
-
-  const expectedCount = Math.max(1, Math.min(4, activeGroup.count || historicalGroup.count || 1));
-  const resolvedCount = countResolvedVisualSlots(historicalGroup);
-  if (resolvedCount >= expectedCount) {
-    return historicalGroup;
-  }
-
-  if (resolvedCount > 0) {
-    return mergeImageProgressGroup(activeGroup, historicalGroup);
-  }
-
-  return activeGroup;
-}
 
 export function GalleryRail({
   engine,
@@ -149,8 +87,7 @@ export function GalleryRail({
   }, [feedType]);
 
   const surfaceSafeJobs = useMemo(() => {
-    if (feedType !== 'video') return jobs;
-    return jobs.filter((job) => job.surface !== 'audio');
+    return filterGalleryFeedJobs(feedType, jobs);
   }, [feedType, jobs]);
   const filteredJobs = useMemo(() => {
     if (!jobFilter) return surfaceSafeJobs;
@@ -270,17 +207,25 @@ export function GalleryRail({
 
   const lastPage = data?.[data.length - 1];
   const hasMore = Boolean(lastPage?.nextCursor);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
-  const [railProgress, setRailProgress] = useState(0);
-  const [showRail, setShowRail] = useState(false);
-  const [railTrackHeight, setRailTrackHeight] = useState(200);
-  const railTrackRef = useRef<HTMLDivElement>(null);
-  const railDragPointerId = useRef<number | null>(null);
   const isDesktopVariant = variant === 'desktop';
-  const railThumbHeight = 24;
-  const railTrackOffset = 12;
+  const isInitialLoading = hasMounted && isLoading && filteredJobs.length === 0;
+  const isFetchingMore = hasMounted && isValidating && filteredJobs.length > 0;
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
+  const {
+    handleRailPointerDown,
+    handleRailPointerMove,
+    handleRailPointerUp,
+    railThumbHeight,
+    railThumbOffset,
+    railTrackHeight,
+    railTrackRef,
+    scrollContainerRef,
+    showRail,
+  } = useGalleryRailScrollbar({
+    isDesktopVariant,
+    refreshKey: `${isFetchingMore}:${isInitialLoading}:${renderedGroups.length}`,
+  });
 
   useEffect(() => {
     setHasMounted(true);
@@ -296,66 +241,6 @@ export function GalleryRail({
 
   const closeSnackbar = useCallback(() => setSnackbar(null), []);
   const closeViewer = useCallback(() => setViewerGroup(null), []);
-
-  const resolveAspectRatioLabel = useCallback((group: GroupSummary) => {
-    const ratio = group.hero.aspectRatio ?? group.previews.find((preview) => preview.aspectRatio)?.aspectRatio ?? null;
-    if (!ratio) return null;
-    if (ratio.toLowerCase() === 'auto') return 'Auto';
-    return ratio;
-  }, []);
-
-  const resolveImageOriginalUrl = useCallback((group: GroupSummary) => {
-    const resolveFromMember = (member = group.hero) => {
-      const job = member.job;
-      if (!job || !Array.isArray(job.renderIds) || !job.renderIds.length) {
-        return null;
-      }
-      const renderIds = job.renderIds.filter((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value));
-      if (!renderIds.length) {
-        return null;
-      }
-      if (typeof job.heroRenderId === 'string' && /^https?:\/\//i.test(job.heroRenderId)) {
-        return job.heroRenderId;
-      }
-      const match = member.id.match(/-image-(\d+)$/);
-      if (match) {
-        const index = Number(match[1]) - 1;
-        if (Number.isInteger(index) && index >= 0 && index < renderIds.length) {
-          return renderIds[index];
-        }
-      }
-      return renderIds[0] ?? null;
-    };
-
-    return (
-      resolveFromMember(group.hero) ??
-      group.members.map((member) => resolveFromMember(member)).find((value): value is string => typeof value === 'string' && value.length > 0) ??
-      group.hero.thumbUrl ??
-      group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
-      null
-    );
-  }, []);
-
-  const resolveMediaUrl = useCallback(
-    (group: GroupSummary, preferImage: boolean) => {
-      if (preferImage) {
-        return (
-          resolveImageOriginalUrl(group) ??
-          group.hero.videoUrl ??
-          group.previews.find((preview) => preview.videoUrl)?.videoUrl ??
-          null
-        );
-      }
-      return (
-        group.hero.videoUrl ??
-        group.previews.find((preview) => preview.videoUrl)?.videoUrl ??
-        group.hero.thumbUrl ??
-        group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
-        null
-      );
-    },
-    [resolveImageOriginalUrl]
-  );
 
   const handleCardOpen = useCallback(
     (group: GroupSummary) => {
@@ -395,7 +280,7 @@ export function GalleryRail({
       }
       triggerAppDownload(candidateUrl, suggestDownloadFilename(candidateUrl, feedType === 'image' ? 'gallery-image' : 'gallery-video'));
     },
-    [copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
+    [copy.snackbar.noMedia, feedType, summaryIndex]
   );
 
   const handleCardCopy = useCallback(
@@ -410,7 +295,7 @@ export function GalleryRail({
         setSnackbar({ message: copied ? copy.snackbar.copied : copy.snackbar.copyFailed, duration: copied ? 2000 : 2400 });
       });
     },
-    [copy.snackbar.copied, copy.snackbar.copyFailed, copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
+    [copy.snackbar.copied, copy.snackbar.copyFailed, copy.snackbar.noMedia, feedType, summaryIndex]
   );
 
   const handleCardSaveImage = useCallback(
@@ -429,7 +314,7 @@ export function GalleryRail({
         .then(() => setSnackbar({ message: copy.snackbar.saved, duration: 2000 }))
         .catch(() => setSnackbar({ message: copy.snackbar.saveFailed, duration: 2400 }));
     },
-    [copy.snackbar.noMedia, copy.snackbar.saveFailed, copy.snackbar.saved, resolveMediaUrl, summaryIndex]
+    [copy.snackbar.noMedia, copy.snackbar.saveFailed, copy.snackbar.saved, summaryIndex]
   );
 
   const handleCardAction = useCallback(
@@ -485,63 +370,6 @@ export function GalleryRail({
     void mutate();
   }, [mutate]);
 
-  const updateRailFromPointer = useCallback(
-    (clientY: number) => {
-      const track = railTrackRef.current;
-      const scroller = scrollContainerRef.current;
-      if (!track || !scroller) return;
-      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
-      if (maxScroll <= 0) return;
-      const rect = track.getBoundingClientRect();
-      const trackRange = Math.max(1, railTrackHeight - railThumbHeight);
-      const offset = clientY - rect.top - railThumbHeight / 2;
-      const clamped = Math.min(Math.max(offset, 0), trackRange);
-      scroller.scrollTop = (clamped / trackRange) * maxScroll;
-    },
-    [railThumbHeight, railTrackHeight]
-  );
-
-  const handleRailPointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      if (event.button !== 0) return;
-      railDragPointerId.current = event.pointerId;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      updateRailFromPointer(event.clientY);
-      event.preventDefault();
-    },
-    [updateRailFromPointer]
-  );
-
-  const handleRailPointerMove = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      if (railDragPointerId.current !== event.pointerId) return;
-      updateRailFromPointer(event.clientY);
-      event.preventDefault();
-    },
-    [updateRailFromPointer]
-  );
-
-  const handleRailPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    if (railDragPointerId.current !== event.pointerId) return;
-    railDragPointerId.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
-  }, []);
-
-  const updateRailProgress = useCallback(() => {
-    const element = scrollContainerRef.current;
-    if (!element) return;
-    const maxScroll = element.scrollHeight - element.clientHeight;
-    if (!isDesktopVariant || maxScroll <= 4) {
-      setShowRail(false);
-      setRailProgress(0);
-      return;
-    }
-    const nextTrackHeight = Math.max(120, element.clientHeight - railTrackOffset * 2);
-    setRailTrackHeight((prev) => (prev === nextTrackHeight ? prev : nextTrackHeight));
-    setShowRail(true);
-    setRailProgress(element.scrollTop / maxScroll);
-  }, [isDesktopVariant, railTrackOffset]);
-
   useEffect(() => {
     onFeedStateChange?.({ visibleGroups: renderedGroups, sampleOnly });
   }, [onFeedStateChange, renderedGroups, sampleOnly]);
@@ -571,112 +399,22 @@ export function GalleryRail({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [hasMore, isDesktopVariant, loadMore]);
-
-  useEffect(() => {
-    const element = scrollContainerRef.current;
-    if (!element) return undefined;
-
-    updateRailProgress();
-
-    const handleScroll = () => updateRailProgress();
-    element.addEventListener('scroll', handleScroll, { passive: true });
-
-    let resizeObserver: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => updateRailProgress());
-      resizeObserver.observe(element);
-    }
-
-    window.addEventListener('resize', updateRailProgress);
-
-    return () => {
-      element.removeEventListener('scroll', handleScroll);
-      resizeObserver?.disconnect();
-      window.removeEventListener('resize', updateRailProgress);
-    };
-  }, [updateRailProgress]);
-
-  const isInitialLoading = hasMounted && isLoading && filteredJobs.length === 0;
-  const isFetchingMore = hasMounted && isValidating && filteredJobs.length > 0;
-  const railThumbOffset = railProgress * (railTrackHeight - railThumbHeight);
-
-  useEffect(() => {
-    updateRailProgress();
-  }, [isFetchingMore, isInitialLoading, renderedGroups.length, updateRailProgress]);
+  }, [hasMore, isDesktopVariant, loadMore, scrollContainerRef]);
 
   const cards = (
-    <>
-      {renderedGroups.map((group, index) => {
-        const engineId = group.hero.engineId;
-        const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
-        return (
-          <GroupedJobCard
-            key={group.id}
-            group={group}
-            engine={engineEntry ?? undefined}
-            onOpen={handleCardOpen}
-            onAction={handleCardAction}
-            allowRemove={false}
-            metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
-            menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
-            openLabel={feedType === 'video' ? 'Preview' : undefined}
-            showOpenOverlay={false}
-            eagerPreview={feedType === 'video' && index < backgroundWarmCount}
-            warmOnVisible={false}
-          />
-        );
-      })}
-      {(isInitialLoading || isFetchingMore) &&
-        Array.from({ length: isInitialLoading ? 4 : 2 }).map((_, index) => (
-          <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-            <div className="relative overflow-hidden rounded-card">
-              <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                <div className="skeleton absolute inset-0" />
-              </div>
-            </div>
-            <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
-              <div className="h-3 w-24 rounded-full bg-skeleton" />
-            </div>
-          </div>
-        ))}
-      <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
-    </>
+    <GalleryRailCards
+      backgroundWarmCount={backgroundWarmCount}
+      engineMap={engineMap}
+      feedType={feedType}
+      groups={renderedGroups}
+      isFetchingMore={isFetchingMore}
+      isInitialLoading={isInitialLoading}
+      onCardAction={handleCardAction}
+      onCardOpen={handleCardOpen}
+      resolveAspectRatioLabel={resolveAspectRatioLabel}
+      sentinelRef={sentinelRef}
+    />
   );
-
-  const header = (
-    <header className="flex flex-wrap items-center justify-between gap-2">
-      <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
-      <ButtonLink
-        href="/jobs"
-        prefetch={false}
-        variant="ghost"
-        size="sm"
-        className="rounded-input border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted hover:text-text-secondary"
-      >
-        {copy.viewAll}
-      </ButtonLink>
-    </header>
-  );
-
-  const curatedBanner = hasMounted && hasCuratedJobs ? (
-    <div className="rounded-card border border-hairline bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
-  ) : null;
-
-  const errorBanner = hasMounted && error ? (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-warning-border bg-warning-bg px-3 py-2 text-[12px] text-warning">
-      <span role="alert">{copy.error}</span>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={retry}
-        className="rounded-input border-warning-border bg-surface-glass-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-warning hover:bg-surface"
-      >
-        {copy.retry}
-      </Button>
-    </div>
-  ) : null;
 
   const body = (
     <div className={clsx('relative', isDesktopVariant ? 'flex-1 min-h-0' : '')}>
@@ -712,11 +450,11 @@ export function GalleryRail({
 
   const content = (
     <>
-      {header}
-      {curatedBanner}
-      {errorBanner}
+      <GalleryRailHeader title={copy.title} viewAll={copy.viewAll} />
+      <GalleryRailCuratedBanner copy={copy.curated} show={hasMounted && hasCuratedJobs} />
+      <GalleryRailErrorBanner copy={copy.error} retryLabel={copy.retry} show={hasMounted && Boolean(error)} onRetry={retry} />
       {body}
-      <Snackbar state={snackbar} onClose={closeSnackbar} />
+      <GalleryRailSnackbar state={snackbar} onClose={closeSnackbar} />
     </>
   );
 
@@ -733,60 +471,5 @@ export function GalleryRail({
       )}
       {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={closeViewer} /> : null}
     </>
-  );
-}
-function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: () => void }) {
-  useEffect(() => {
-    if (!state?.duration) return undefined;
-    const timeout = window.setTimeout(onClose, state.duration);
-    return () => window.clearTimeout(timeout);
-  }, [state, onClose]);
-
-  useEffect(() => {
-    if (!state) return undefined;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [state, onClose]);
-
-  if (!state) return null;
-
-  const actions = state.actions ?? [];
-
-  return createPortal(
-    <div className="fixed inset-x-0 bottom-6 z-[9998] flex justify-center px-4">
-      <div className="inline-flex max-w-xl flex-wrap items-center gap-4 rounded-card border border-surface-on-media-15 bg-surface-on-media-dark-80 px-4 py-3 text-[13px] text-on-inverse shadow-lg backdrop-blur">
-        <span>{state.message}</span>
-        {actions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {actions.map((action) => (
-              <Button
-                key={action.label}
-                type="button"
-                onClick={() => {
-                  onClose();
-                  action.onClick();
-                }}
-                variant="outline"
-                size="sm"
-                className={clsx(
-                  'rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro',
-                  action.variant === 'primary'
-                    ? 'border-transparent bg-brand text-on-brand hover:bg-brandHover'
-                    : 'border border-surface-on-media-30 bg-transparent text-on-inverse hover:bg-surface-on-media-10'
-                )}
-              >
-                {action.label}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
   );
 }

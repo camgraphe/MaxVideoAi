@@ -3,206 +3,21 @@
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
 import { ChevronDown, Maximize2, Plus } from 'lucide-react';
-import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
-import { AudioWaveformThumb } from '@/components/ui/AudioWaveformThumb';
-import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { isPlaceholderMediaUrl } from '@/lib/media';
+import { GroupedJobCardMenu } from './GroupedJobCardMenu';
+import { shouldWarmVisiblePreview } from './GroupedJobCardMedia';
+import { GroupedJobCardPreviewGrid } from './GroupedJobCardPreviewGrid';
+import type { GroupedJobAction, GroupedJobMenuVariant } from './grouped-job-card-types';
 
-export type GroupedJobAction =
-  | 'open'
-  | 'view'
-  | 'download'
-  | 'copy'
-  | 'continue'
-  | 'refine'
-  | 'branch'
-  | 'compare'
-  | 'remove'
-  | 'save-image'
-  | 'save-to-library';
-
-const GROUPED_JOB_THUMB_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px';
-
-type NavigatorWithConnection = Navigator & {
-  connection?: {
-    effectiveType?: string;
-    saveData?: boolean;
-  };
-};
-
-function shouldWarmVisiblePreview(): boolean {
-  if (typeof navigator === 'undefined') return true;
-  const connection = (navigator as NavigatorWithConnection).connection;
-  if (connection?.saveData) return false;
-  const effectiveType = connection?.effectiveType;
-  return effectiveType !== 'slow-2g' && effectiveType !== '2g';
-}
-
-function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const baseClass = clsx('h-full w-full pointer-events-none', className);
-  if (src.startsWith('data:')) {
-    return <img src={src} alt={alt} className={baseClass} />;
-  }
-  return <Image src={src} alt={alt} fill className={baseClass} sizes={GROUPED_JOB_THUMB_SIZES} />;
-}
-
-export function GroupPreviewMedia({
-  preview,
-  audioUrl,
-  audioLabel,
-  shouldPlay,
-  shouldWarm,
-  fit = 'contain',
-}: {
-  preview: GroupSummary['previews'][number] | undefined;
-  audioUrl?: string | null;
-  audioLabel?: string | null;
-  shouldPlay: boolean;
-  shouldWarm: boolean;
-  fit?: 'contain' | 'cover';
-}) {
-  const displayVideoUrl = preview?.previewVideoUrl ?? preview?.videoUrl ?? null;
-  const hasOptimizedPreview = Boolean(preview?.previewVideoUrl);
-  const hasVideo = Boolean(displayVideoUrl);
-  const hasAudioOnly = Boolean(audioUrl) && !hasVideo;
-  const thumbSrc = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const videoReadyRef = useRef(false);
-  const [videoReady, setVideoReady] = useState(false);
-
-  useEffect(() => {
-    if (!hasVideo) return;
-    videoReadyRef.current = false;
-    setVideoReady(false);
-  }, [hasVideo, displayVideoUrl]);
-
-  const markVideoReady = useCallback(() => {
-    if (videoReadyRef.current) return;
-    videoReadyRef.current = true;
-    setVideoReady(true);
-  }, []);
-
-  const playPreviewVideo = useCallback(() => {
-    const element = videoRef.current;
-    if (!element) return;
-    element.preload = 'auto';
-    if (
-      element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
-      (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)
-    ) {
-      element.load();
-    }
-    if (element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-      return;
-    }
-    const playPromise = element.play();
-    if (playPromise) {
-      playPromise.catch(() => {
-        /* ignore autoplay rejection */
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!hasVideo) return;
-    const element = videoRef.current;
-    if (!element) return;
-    if (shouldPlay) {
-      playPreviewVideo();
-    } else {
-      element.pause();
-      if (
-        shouldWarm &&
-        hasOptimizedPreview &&
-        (element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
-          (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA))
-      ) {
-        element.preload = 'auto';
-        element.load();
-      }
-    }
-  }, [hasVideo, hasOptimizedPreview, playPreviewVideo, displayVideoUrl, shouldPlay, shouldWarm]);
-
-  const handleCanPlay = () => {
-    markVideoReady();
-    if (shouldPlay) {
-      playPreviewVideo();
-    }
-  };
-
-  const handleLoadedData = () => {
-    markVideoReady();
-    if (shouldPlay) {
-      playPreviewVideo();
-    }
-  };
-
-  if (hasVideo && displayVideoUrl) {
-    const poster = thumbSrc ?? undefined;
-    return (
-      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
-        {thumbSrc ? (
-          <ThumbImage
-            src={thumbSrc}
-            alt=""
-            className={clsx(
-              'absolute inset-0 transition-opacity duration-150 ease-out',
-              fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain',
-              shouldPlay && videoReady ? 'opacity-0' : 'opacity-100'
-            )}
-          />
-        ) : null}
-        <video
-          ref={videoRef}
-          src={displayVideoUrl}
-          poster={poster}
-          className={clsx(
-            'absolute inset-0 h-full w-full pointer-events-none transition-opacity duration-150 ease-out',
-            fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain',
-            videoReady ? 'opacity-100' : 'opacity-0'
-          )}
-          muted
-          playsInline
-          autoPlay={shouldPlay}
-          loop
-          preload={shouldPlay || (shouldWarm && hasOptimizedPreview) ? 'auto' : 'none'}
-          onLoadedData={handleLoadedData}
-          onCanPlay={handleCanPlay}
-        />
-      </div>
-    );
-  }
-  if (hasAudioOnly) {
-    return (
-      <AudioWaveformThumb
-        seed={audioUrl ?? preview?.id ?? 'audio-preview'}
-        thumbSrc={thumbSrc}
-        label={audioLabel}
-        active={shouldPlay}
-      />
-    );
-  }
-  if (thumbSrc) {
-    return (
-      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
-        <ThumbImage
-          src={thumbSrc}
-          alt=""
-          className={fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain'}
-        />
-      </div>
-    );
-  }
-  return null;
-}
+export type { GroupedJobAction } from './grouped-job-card-types';
+export { GroupPreviewMedia } from './GroupedJobCardMedia';
 
 export interface GroupedJobCardProps {
   group: GroupSummary;
@@ -211,7 +26,7 @@ export interface GroupedJobCardProps {
   onAction?: (group: GroupSummary, action: GroupedJobAction) => void;
   metaLabel?: string | null;
   actionMenu?: boolean;
-  menuVariant?: 'full' | 'compact' | 'gallery' | 'gallery-image';
+  menuVariant?: GroupedJobMenuVariant;
   allowRemove?: boolean;
   isImageGroup?: boolean;
   savingToLibrary?: boolean;
@@ -318,9 +133,6 @@ export function GroupedJobCard({
   }, [previewCount]);
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
-  const showAdvancedMenuActions = menuVariant === 'full';
-  const showGalleryActions = menuVariant === 'gallery';
-  const showGalleryImageActions = menuVariant === 'gallery-image';
   const showCompactMenuButton = menuVariant === 'compact';
 
   const handleAction = (action: GroupedJobAction) => {
@@ -396,66 +208,15 @@ export function GroupedJobCard({
         }}
       >
         <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <div
-            className={clsx(
-              'absolute inset-0 grid bg-placeholder',
-              previewGridClass,
-              isSinglePreview ? 'p-0' : 'gap-1 p-1'
-            )}
-          >
-            {Array.from({ length: previewCount }).map((_, index) => {
-              const preview = previews[index];
-              const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
-              const memberStatus = member?.status ?? 'completed';
-              const memberAudioUrl = member?.audioUrl ?? member?.job?.audioUrl ?? null;
-              const previewThumb = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
-              const previewHasMedia = Boolean(preview?.previewVideoUrl || preview?.videoUrl || previewThumb || memberAudioUrl);
-              const isCompleted =
-                memberStatus === 'completed' ||
-                (previewHasMedia && memberStatus !== 'pending' && memberStatus !== 'failed');
-              const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
-              return (
-                <div
-                  key={previewKey}
-                  className={clsx(
-                    'relative flex items-center justify-center overflow-hidden bg-[var(--surface-2)]',
-                    isSinglePreview ? 'rounded-none' : 'rounded-card'
-                  )}
-                >
-                  <div className="absolute inset-0">
-                    {isCompleted ? (
-                      <GroupPreviewMedia
-                        preview={preview}
-                        audioUrl={memberAudioUrl}
-                        audioLabel={preview?.previewVideoUrl || preview?.videoUrl ? null : 'Audio'}
-                        shouldPlay={hovered}
-                        shouldWarm={isPreviewWarm || hovered}
-                      />
-                    ) : previewThumb ? (
-                      <Image
-                        src={previewThumb}
-                        alt=""
-                        fill
-                        className="pointer-events-none object-contain"
-                        sizes={GROUPED_JOB_THUMB_SIZES}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
-                  {!isCompleted && member ? (
-                    <ProcessingOverlay
-                      className="absolute inset-0"
-                      state={memberStatus === 'failed' ? 'error' : 'pending'}
-                      message={member.message}
-                      tone="light"
-                      tileIndex={index + 1}
-                      tileCount={previewCount}
-                    />
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+          <GroupedJobCardPreviewGrid
+            group={group}
+            hovered={hovered}
+            isPreviewWarm={isPreviewWarm}
+            isSinglePreview={isSinglePreview}
+            previewCount={previewCount}
+            previewGridClass={previewGridClass}
+            previews={previews}
+          />
         </div>
         {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
         {group.count > 1 ? (
@@ -564,177 +325,23 @@ export function GroupedJobCard({
         </div>
       </div>
 
-      {showMenu && menuOpen && (
-        <div
-          ref={menuRef}
-          className="absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-surface p-2 text-sm text-text-secondary shadow-card"
-        >
-          {showGalleryActions ? (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('open')}
-                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Preview</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleRemake}
-                disabled={!onOpen}
-                className={clsx(
-                  'mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left',
-                  onOpen ? '' : 'cursor-not-allowed opacity-60'
-                )}
-              >
-                <span>Remake</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('download')}
-                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Download</span>
-              </Button>
-            </>
-          ) : showGalleryImageActions ? (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('open')}
-                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Open</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('save-image')}
-                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Add to Library</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('download')}
-                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Download</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('copy')}
-                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>Copy link</span>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAction('open')}
-                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
-              >
-                <span>{openLabel}</span>
-                <span className="text-[11px] text-text-muted">↵</span>
-              </Button>
-              {recreateHref ? (
-                <ButtonLink
-                  href={recreateHref}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMenuOpen(false)}
-                  className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-                >
-                  <span>{recreateLabel}</span>
-                </ButtonLink>
-              ) : null}
-              {showAdvancedMenuActions ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleAction('continue')}
-                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-                  >
-                    <span>Continue (Hero)</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleAction('refine')}
-                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-                  >
-                    <span>Refine (Hero)</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleAction('branch')}
-                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-                  >
-                    <span>Branch</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleAction('compare')}
-                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
-                  >
-                    <span>Compare</span>
-                  </Button>
-                </>
-              ) : null}
-            </>
-          )}
-          {isImageGroup && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleAction('save-image')}
-              className={clsx(
-                'mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left',
-                savingToLibrary ? 'opacity-60' : ''
-              )}
-              disabled={savingToLibrary}
-            >
-              <span>{savingToLibrary ? 'Saving…' : 'Add to Library'}</span>
-            </Button>
-          )}
-          {allowRemove && group.count <= 1 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleAction('remove')}
-              className="mt-2 w-full justify-between rounded-input px-2 py-1.5 text-left text-error hover:bg-error-bg"
-            >
-              <span>Remove</span>
-            </Button>
-          )}
-        </div>
-      )}
+      {showMenu && menuOpen ? (
+        <GroupedJobCardMenu
+          allowRemove={allowRemove}
+          closeMenu={() => setMenuOpen(false)}
+          group={group}
+          handleAction={handleAction}
+          handleRemake={handleRemake}
+          isImageGroup={isImageGroup}
+          menuRef={menuRef}
+          menuVariant={menuVariant}
+          onOpen={onOpen}
+          openLabel={openLabel}
+          recreateHref={recreateHref}
+          recreateLabel={recreateLabel}
+          savingToLibrary={savingToLibrary}
+        />
+      ) : null}
     </Card>
   );
 }

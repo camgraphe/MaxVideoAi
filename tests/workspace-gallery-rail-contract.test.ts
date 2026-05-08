@@ -8,18 +8,26 @@ test('workspace video rail opens renders in the composite preview, not the group
     path.join(process.cwd(), 'frontend/components/GalleryRail.tsx'),
     'utf8'
   );
+  const railCardsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GalleryRailCards.tsx'),
+    'utf8'
+  );
   const cardSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+  const cardMenuSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCardMenu.tsx'),
     'utf8'
   );
 
   assert.match(cardSource, /showOpenOverlay\?:\s*boolean/);
   assert.match(cardSource, /showOpenOverlay\s*&&\s*onOpen/);
-  assert.match(cardSource, /onClick=\{\(\)\s*=>\s*handleAction\('open'\)\}/);
-  assert.doesNotMatch(cardSource, /showGalleryActions[\s\S]*onClick=\{\(\)\s*=>\s*handleAction\('view'\)\}/);
+  assert.match(cardMenuSource, /onClick=\{\(\)\s*=>\s*handleAction\('open'\)\}/);
+  assert.doesNotMatch(cardMenuSource, /showGalleryActions[\s\S]*onClick=\{\(\)\s*=>\s*handleAction\('view'\)\}/);
 
-  assert.match(railSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
-  assert.match(railSource, /showOpenOverlay=\{false\}/);
+  assert.match(railCardsSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
+  assert.match(railCardsSource, /showOpenOverlay=\{false\}/);
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
 
