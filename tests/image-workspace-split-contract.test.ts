@@ -10,13 +10,21 @@ const composerPersistenceHookPath = path.join(imageDir, '_hooks/useImageComposer
 const queryHydrationHookPath = path.join(imageDir, '_hooks/useImageWorkspaceQueryHydration.ts');
 const generationRunnerHookPath = path.join(imageDir, '_hooks/useImageGenerationRunner.ts');
 const gallerySelectionHookPath = path.join(imageDir, '_hooks/useImageGallerySelection.ts');
+const displayStateHookPath = path.join(imageDir, '_hooks/useImageWorkspaceDisplayState.ts');
+const referenceAssetsHookPath = path.join(imageDir, '_hooks/useImageWorkspaceReferenceAssets.tsx');
+const viewerHookPath = path.join(imageDir, '_hooks/useImageWorkspaceViewer.ts');
 const composerSurfacePath = path.join(imageDir, '_components/ImageWorkspaceComposerSurface.tsx');
+const galleryRailPath = path.join(imageDir, '_components/ImageWorkspaceGalleryRail.tsx');
 
 const splitFiles = [
   '_components/ImageAuthGateModal.tsx',
   '_components/ImageLibraryModal.tsx',
+  '_components/ImageWorkspaceGalleryRail.tsx',
   '_components/ImageWorkspaceComposerSurface.tsx',
   '_hooks/useImageComposerPersistence.ts',
+  '_hooks/useImageWorkspaceDisplayState.ts',
+  '_hooks/useImageWorkspaceReferenceAssets.tsx',
+  '_hooks/useImageWorkspaceViewer.ts',
   '_hooks/useImageWorkspaceHistory.ts',
   '_hooks/useImageWorkspacePricing.ts',
   '_hooks/useImageWorkspaceDesktopLayout.ts',
@@ -41,7 +49,11 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const queryHydrationHookSource = readFileSync(queryHydrationHookPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
   const gallerySelectionHookSource = readFileSync(gallerySelectionHookPath, 'utf8');
+  const displayStateHookSource = readFileSync(displayStateHookPath, 'utf8');
+  const referenceAssetsHookSource = readFileSync(referenceAssetsHookPath, 'utf8');
+  const viewerHookSource = readFileSync(viewerHookPath, 'utf8');
   const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
+  const galleryRailSource = readFileSync(galleryRailPath, 'utf8');
 
   for (const file of splitFiles) {
     statSync(path.join(imageDir, file));
@@ -50,7 +62,11 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_components\/ImageLibraryModal'/);
   assert.match(source, /from '\.\/_components\/ImageAuthGateModal'/);
   assert.match(source, /from '\.\/_components\/ImageWorkspaceComposerSurface'/);
+  assert.match(source, /from '\.\/_components\/ImageWorkspaceGalleryRail'/);
   assert.match(source, /from '\.\/_hooks\/useImageComposerPersistence'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDisplayState'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceReferenceAssets'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceViewer'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceHistory'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
@@ -82,6 +98,11 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.doesNotMatch(source, /const previewUrls =/, 'fallback gallery image derivation belongs in useImageGallerySelection');
   assert.doesNotMatch(source, /findImageEngine/, 'gallery engine default selection belongs in useImageGallerySelection');
   assert.doesNotMatch(source, /authFetch/, 'gallery API snapshot lookup belongs in useImageGallerySelection');
+  assert.doesNotMatch(source, /buildVideoGroupFromImageRun/, 'history entry viewer grouping belongs in useImageWorkspaceViewer');
+  assert.doesNotMatch(source, /saveImageToLibrary/, 'viewer save actions belong in useImageWorkspaceViewer');
+  assert.doesNotMatch(source, /reference_images: displayedReferenceSlots/, 'composer reference asset mapping belongs in useImageWorkspaceReferenceAssets');
+  assert.doesNotMatch(source, /resolvedCopy\.composer\.characterButton/, 'character reference header action belongs in useImageWorkspaceReferenceAssets');
+  assert.doesNotMatch(source, /<GalleryRail\b/, 'gallery rail wrappers belong in ImageWorkspaceGalleryRail');
   assert.doesNotMatch(source, /<Composer\b/, 'composer JSX belongs in ImageWorkspaceComposerSurface');
   assert.doesNotMatch(source, /<ImageCompositePreviewDock\b/, 'preview dock JSX belongs in ImageWorkspaceComposerSurface');
   assert.doesNotMatch(source, /<ImageSettingsBar\b/, 'settings bar JSX belongs in ImageWorkspaceComposerSurface');
@@ -115,7 +136,18 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(gallerySelectionHookSource, /getAspectRatioOptions/);
   assert.match(gallerySelectionHookSource, /authFetch/);
   assert.match(gallerySelectionHookSource, /const previewUrls =/);
+  assert.match(displayStateHookSource, /export function useImageWorkspaceDisplayState/);
+  assert.match(displayStateHookSource, /compositePreviewEntry/);
+  assert.match(displayStateHookSource, /estimatedCostAmount/);
+  assert.match(referenceAssetsHookSource, /export function useImageWorkspaceReferenceAssets/);
+  assert.match(referenceAssetsHookSource, /reference_images/);
+  assert.match(referenceAssetsHookSource, /openCharacterLibrary/);
+  assert.match(viewerHookSource, /export function useImageWorkspaceViewer/);
+  assert.match(viewerHookSource, /buildVideoGroupFromImageRun/);
+  assert.match(viewerHookSource, /saveImageToLibrary/);
+  assert.match(galleryRailSource, /export function ImageWorkspaceGalleryRail/);
+  assert.match(galleryRailSource, /<GalleryRail\b/);
 
   const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 700, `ImageWorkspace should stay below 700 lines after composer surface extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 590, `ImageWorkspace should stay below 590 lines after display/reference/viewer extraction, got ${lineCount}`);
 });

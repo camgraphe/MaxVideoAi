@@ -12,9 +12,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
-  type ClipboardEvent as ReactClipboardEvent,
-  type DragEvent as ReactDragEvent,
 } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -33,6 +30,7 @@ import { AngleImageLibraryModal } from './angle/_components/angle-image-library-
 import { AngleOutputPanel } from './angle/_components/angle-output-panel';
 import { AngleRecentJobModal } from './angle/_components/angle-recent-job-modal';
 import { useAngleGenerationRunner } from './angle/_hooks/useAngleGenerationRunner';
+import { useAngleSourceImageHandlers } from './angle/_hooks/useAngleSourceImageHandlers';
 import { DEFAULT_ANGLE_COPY, type AngleCopy } from './angle/_lib/angle-workspace-copy';
 import {
   ANGLE_GUEST_EXAMPLE_SOURCE_URL,
@@ -44,11 +42,9 @@ import {
   getAngleBillingProductKey,
   isAuthRequiredError,
   parsePersistedAngleToolState,
-  uploadImage,
 } from './angle/_lib/angle-workspace-helpers';
 import type {
   BillingProductResponse,
-  LibraryAsset,
   PersistedAngleToolState,
   RecentAngleJobEntry,
   UploadedImage,
@@ -259,139 +255,27 @@ export default function AngleToolPage() {
     }
   }, [activeRecentJob?.outputs, activeRecentOutputIndex]);
 
-  const handleSourceFile = async (file: File | null) => {
-    if (!file) return;
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    const localPreviewUrl = URL.createObjectURL(file);
-    setUploading(true);
-    setError(null);
-
-    try {
-      const uploaded = await uploadImage(file, copy);
-      setSourceImage((previous) => {
-        cleanupSourcePreview(previous);
-        return {
-          ...uploaded,
-          previewUrl: localPreviewUrl,
-          source: 'upload',
-        };
-      });
-      setResult(null);
-      setSelectedOutputIndex(0);
-    } catch (uploadError) {
-      cleanupSourcePreview({ url: '', previewUrl: localPreviewUrl });
-      setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    event.target.value = '';
-    await handleSourceFile(file);
-  };
-
-  const handleSourceUrl = (url: string, source: UploadedImage['source']) => {
-    const trimmed = url.trim();
-    if (!/^https?:\/\//i.test(trimmed)) {
-      setError(copy.invalidUrl);
-      return;
-    }
-    setError(null);
-    setSourceImage((previous) => {
-      cleanupSourcePreview(previous);
-      return {
-        id: crypto.randomUUID(),
-        url: trimmed,
-        previewUrl: trimmed,
-        name: trimmed.split('/').pop() ?? copy.referenceName,
-        source,
-      };
-    });
-    setResult(null);
-    setSelectedOutputIndex(0);
-  };
-
-  const handleSourceDrop = (event: ReactDragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setSourceDragActive(false);
-    const files = event.dataTransfer.files;
-    if (files && files.length) {
-      void handleSourceFile(files[0]);
-      return;
-    }
-    const uri = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
-    if (uri && /^https?:\/\//i.test(uri.trim())) {
-      handleSourceUrl(uri, 'paste');
-    }
-  };
-
-  const handleSourcePaste = (event: ReactClipboardEvent<HTMLDivElement>) => {
-    const clipboard = event.clipboardData;
-    if (!clipboard) return;
-    const items = clipboard.items;
-    for (let i = 0; i < items.length; i += 1) {
-      const item = items[i];
-      if (item.kind === 'file' && item.type.startsWith('image/')) {
-        event.preventDefault();
-        const file = item.getAsFile();
-        void handleSourceFile(file);
-        return;
-      }
-    }
-    const text = clipboard.getData('text/plain');
-    if (text && /^https?:\/\//i.test(text.trim())) {
-      event.preventDefault();
-      handleSourceUrl(text, 'paste');
-    }
-  };
-
-  const handleLibrarySelect = (asset: LibraryAsset) => {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    setSourceImage((previous) => {
-      cleanupSourcePreview(previous);
-      return {
-        id: asset.id,
-        url: asset.url,
-        previewUrl: asset.url,
-        width: asset.width,
-        height: asset.height,
-        name: asset.url.split('/').pop() ?? copy.libraryImageName,
-        source: 'library',
-      };
-    });
-    setResult(null);
-    setSelectedOutputIndex(0);
-    setError(null);
-    setLibraryModalOpen(false);
-  };
-
-  const handleRemoveSource = () => {
-    setSourceImage((previous) => {
-      cleanupSourcePreview(previous);
-      return null;
-    });
-    setResult(null);
-    setSelectedOutputIndex(0);
-    if (!user) {
-      setGuestExampleDismissed(true);
-    }
-  };
-
-  const handleUploadRequest = () => {
-    if (!user) {
-      openAuthGate();
-      return;
-    }
-    fileInputRef.current?.click();
-  };
+  const {
+    handleFileSelect,
+    handleLibrarySelect,
+    handleRemoveSource,
+    handleSourceDrop,
+    handleSourcePaste,
+    handleUploadRequest,
+  } = useAngleSourceImageHandlers({
+    copy,
+    fileInputRef,
+    onAuthRequired: openAuthGate,
+    setError,
+    setGuestExampleDismissed,
+    setLibraryModalOpen,
+    setResult,
+    setSelectedOutputIndex,
+    setSourceDragActive,
+    setSourceImage,
+    setUploading,
+    userPresent: Boolean(user),
+  });
 
   const handleGenerate = useAngleGenerationRunner({
     copy,
