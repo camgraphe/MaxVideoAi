@@ -25,6 +25,8 @@ type WalletTopUpCheckoutSessionParams = Omit<
   payment_method_options?: CheckoutPaymentMethodOptions;
 };
 
+const WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS = 31 * 60;
+
 export const WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES = [
   'AC',
   'AD',
@@ -335,6 +337,7 @@ export function buildWalletTopUpCheckoutSessionParams({
   const params: WalletTopUpCheckoutSessionParams = {
     mode: 'payment',
     locale,
+    expires_at: Math.floor(Date.now() / 1000) + WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS,
     billing_address_collection: 'auto',
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },

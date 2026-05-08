@@ -130,7 +130,7 @@ export function WalletExpressCheckout({
           paymentMethodOrder: ['apple_pay', 'google_pay', 'paypal', 'link'],
           paymentMethods: {
             applePay: 'always',
-            googlePay: 'always',
+            googlePay: 'auto',
             paypal: 'auto',
             link: 'auto',
             amazonPay: 'never',

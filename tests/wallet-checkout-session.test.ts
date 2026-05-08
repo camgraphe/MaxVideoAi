@@ -24,10 +24,15 @@ function buildParams(overrides: Partial<Parameters<typeof buildWalletTopUpChecko
 }
 
 test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', () => {
+  const before = Math.floor(Date.now() / 1000);
   const params = buildParams();
+  const after = Math.floor(Date.now() / 1000);
 
   assert.equal(params.mode, 'payment');
   assert.equal(params.payment_method_types, undefined);
+  assert.equal(typeof params.expires_at, 'number');
+  assert.ok(params.expires_at >= before + 30 * 60);
+  assert.ok(params.expires_at <= after + 31 * 60);
   assert.equal(params.success_url, 'https://maxvideoai.com/billing?status=success');
   assert.equal(params.cancel_url, 'https://maxvideoai.com/billing?status=cancelled');
   assert.equal(params.ui_mode, undefined);
