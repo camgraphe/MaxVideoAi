@@ -1,0 +1,26 @@
+export type AppJobRow = {
+  job_id: string;
+  user_id: string | null;
+  engine_id: string;
+  engine_label: string | null;
+  payment_status: string | null;
+  pricing_snapshot: unknown;
+  vendor_account_id: string | null;
+  currency: string | null;
+  final_price_cents: number | string | null;
+  duration_sec: number | null;
+  status: string;
+  progress: number;
+  video_url: string | null;
+  preview_video_url: string | null;
+  keyframe_urls: unknown;
+  thumb_url: string | null;
+  aspect_ratio: string | null;
+  preview_frame: string | null;
+  message: string | null;
+  has_audio: boolean | null;
+  render_ids: unknown;
+  hero_render_id: string | null;
+  created_at: string;
+  settings_snapshot: unknown;
+};
