@@ -23,6 +23,8 @@ type CheckoutSessionResult =
   | { type: 'rate_limited'; payload: unknown; retryAfterSeconds: number }
   | { type: 'error'; error: string };
 
+const EXPRESS_CHECKOUT_READY_TIMEOUT_MS = 10_000;
+
 type WalletExpressCheckoutProps = {
   amountCents: number;
   chargeCurrency: string;
@@ -78,7 +80,15 @@ export function WalletExpressCheckout({
 
   useEffect(() => {
     let cancelled = false;
+    let readyTimedOut = false;
+    let readyTimeoutId: number | null = null;
     let expressElement: StripeCheckoutExpressCheckoutElement | null = null;
+
+    function clearExpressCheckoutReadyTimeout() {
+      if (readyTimeoutId === null) return;
+      window.clearTimeout(readyTimeoutId);
+      readyTimeoutId = null;
+    }
 
     async function mountExpressCheckout() {
       if (!sessionUserId || !stripePromise || !mountRef.current) {
@@ -90,6 +100,16 @@ export function WalletExpressCheckout({
       setStatus('loading');
       setMessage(null);
       confirmStartedRef.current = false;
+      readyTimedOut = false;
+      clearExpressCheckoutReadyTimeout();
+      readyTimeoutId = window.setTimeout(() => {
+        if (cancelled) return;
+        readyTimedOut = true;
+        expressElement?.destroy();
+        expressElement = null;
+        setStatus('unavailable');
+        setMessage(labels.expressUnavailable);
+      }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
         amountCents,
@@ -105,7 +125,9 @@ export function WalletExpressCheckout({
             ? { type: 'success' as const, clientSecret: cachedCheckoutSession.clientSecret, sessionId: cachedCheckoutSession.sessionId }
             : await getCheckoutSessionResult(requestKey);
 
+        if (readyTimedOut) return;
         if (checkoutSessionResult.type !== 'success') {
+          clearExpressCheckoutReadyTimeout();
           if (checkoutSessionResult.type === 'captcha_required') {
             setStatus('unavailable');
             setMessage(null);
@@ -122,7 +144,7 @@ export function WalletExpressCheckout({
 
         const stripe = (await stripePromise) as StripeWithCheckoutElements | null;
         const initCheckout = stripe?.initCheckout ?? stripe?.initCheckoutElementsSdk;
-        if (!stripe || !initCheckout || !mountRef.current || cancelled) {
+        if (!stripe || !initCheckout || !mountRef.current || cancelled || readyTimedOut) {
           throw new Error('stripe_checkout_elements_unavailable');
         }
 
@@ -143,14 +165,16 @@ export function WalletExpressCheckout({
         } as Parameters<StripeCheckout['createExpressCheckoutElement']>[0]);
 
         expressElement.on('ready', (event: StripeExpressCheckoutElementReadyEvent) => {
-          if (cancelled) return;
+          if (cancelled || readyTimedOut) return;
+          clearExpressCheckoutReadyTimeout();
           const methods = event.availablePaymentMethods;
           const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
           setStatus(hasAnyMethod ? 'ready' : 'unavailable');
           setMessage(hasAnyMethod ? null : labels.expressUnavailable);
         });
         expressElement.on('loaderror', (event) => {
-          if (cancelled) return;
+          if (cancelled || readyTimedOut) return;
+          clearExpressCheckoutReadyTimeout();
           setStatus('error');
           setMessage(event.error?.message ?? labels.expressError);
         });
@@ -193,12 +217,13 @@ export function WalletExpressCheckout({
 
         expressElement.mount(mountRef.current);
         const loadActionsResult = await loadActionsPromise;
-        if (cancelled) return;
+        if (cancelled || readyTimedOut) return;
         if (loadActionsResult.type !== 'success') {
           throw new Error(loadActionsResult.error.message);
         }
       } catch (error) {
-        if (cancelled) return;
+        clearExpressCheckoutReadyTimeout();
+        if (cancelled || readyTimedOut) return;
         const reason = error instanceof Error ? error.message : 'express_checkout_failed';
         console.warn('[billing] express checkout unavailable', reason);
         setStatus('error');
@@ -279,6 +304,7 @@ export function WalletExpressCheckout({
     void mountExpressCheckout();
     return () => {
       cancelled = true;
+      clearExpressCheckoutReadyTimeout();
       expressElement?.destroy();
     };
   }, [
