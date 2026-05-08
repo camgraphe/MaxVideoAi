@@ -12,6 +12,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import type { JobsCopy } from '../_lib/jobs-copy';
+import type { JobsPageSection, JobsSectionKey } from '../_lib/jobs-page-types';
 import { resolveClientJobSurface, resolveWorkspaceJobHref } from '../_lib/jobs-page-helpers';
 import { CollapsedGroupRail, CollapsedGroupRailSkeleton } from './jobs-collapsed-rail';
 import { renderSkeletonCards } from './jobs-skeleton-cards';
@@ -22,22 +23,6 @@ const GroupViewerModal = dynamic(
   () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
   { ssr: false }
 );
-
-export type JobsSectionKey = 'video' | 'audio' | 'image' | 'character' | 'angle' | 'upscale';
-
-export interface JobsPageSection {
-  key: JobsSectionKey;
-  title: string;
-  empty: string;
-  groups: GroupSummary[];
-  hasMore: boolean;
-  isInitialLoading: boolean;
-  isValidating: boolean;
-  error: unknown;
-  forceImageGroup: boolean;
-  onRetry: () => void;
-  onLoadMore: () => void;
-}
 
 export function JobsPageShell({
   copy,

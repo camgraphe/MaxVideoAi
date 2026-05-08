@@ -293,7 +293,7 @@ test('history cards use thumbnails and explicit card actions', () => {
     'utf8'
   );
   const jobsSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(core)/jobs/page.tsx'),
+    path.join(process.cwd(), 'frontend/app/(core)/jobs/_hooks/useJobsPageController.ts'),
     'utf8'
   );
   const jobsShellSource = fs.readFileSync(
@@ -320,7 +320,7 @@ test('history can save renders to library from cards and job details', () => {
     'utf8'
   );
   const jobsSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(core)/jobs/page.tsx'),
+    path.join(process.cwd(), 'frontend/app/(core)/jobs/_hooks/useJobsPageController.ts'),
     'utf8'
   );
   const jobsShellSource = fs.readFileSync(
