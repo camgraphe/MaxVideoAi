@@ -10,7 +10,6 @@ import { getPlatformFeeCents } from '@/lib/pricing';
 import { getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
-import { isStorageConfigured, recordUserAsset, uploadImageToStorage } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
@@ -39,6 +38,7 @@ import {
   parseAngleRequestId,
   toAngleValidationMessage,
 } from './angle-request-utils';
+import { persistAngleOutputs } from './angle-output-persistence';
 
 const TOOL_EVENT_NAME = 'tool_angle_generate';
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
@@ -303,121 +303,6 @@ async function insertToolEvent(params: {
   } catch (error) {
     console.warn('[tools/angle] failed to persist event log', error);
   }
-}
-
-async function persistAngleOutput(params: {
-  output: AngleToolOutput;
-  outputIndex: number;
-  userId: string;
-  jobId: string;
-  providerJobId?: string | null;
-  engineId: AngleToolEngineId;
-  engineLabel: string;
-}): Promise<AngleToolOutput> {
-  const { output, outputIndex, userId, jobId, providerJobId, engineId, engineLabel } = params;
-  if (!isStorageConfigured() || !output.url) {
-    return output;
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12_000);
-    let response: Response;
-    try {
-      response = await fetch(output.url, { signal: controller.signal });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (!response.ok) {
-      throw new Error(`fetch failed (${response.status})`);
-    }
-
-    const mimeHeader = response.headers.get('content-type') ?? '';
-    const mime =
-      typeof output.mimeType === 'string' && output.mimeType.startsWith('image/')
-        ? output.mimeType
-        : mimeHeader.startsWith('image/')
-          ? mimeHeader
-          : 'image/png';
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (!buffer.length) {
-      throw new Error('empty image');
-    }
-
-    const upload = await uploadImageToStorage({
-      data: buffer,
-      mime,
-      userId,
-      prefix: 'angle',
-      fileName: `angle-${engineId}-${outputIndex + 1}.${mime.split('/')[1] || 'png'}`,
-    });
-
-    const assetId = await recordUserAsset({
-      userId,
-      url: upload.url,
-      mime: upload.mime,
-      width: upload.width ?? output.width ?? null,
-      height: upload.height ?? output.height ?? null,
-      size: upload.size,
-      source: 'angle',
-      metadata: {
-        originUrl: output.url,
-        jobId,
-        providerJobId: providerJobId ?? null,
-        tool: 'angle',
-        label: 'angle',
-        engineId,
-        engineLabel,
-        outputIndex,
-      },
-    });
-
-    return {
-      ...output,
-      url: upload.url,
-      width: upload.width ?? output.width ?? null,
-      height: upload.height ?? output.height ?? null,
-      mimeType: upload.mime,
-      originUrl: output.url,
-      assetId,
-      source: 'angle',
-      persisted: true,
-    };
-  } catch (error) {
-    console.warn('[tools/angle] failed to persist output', {
-      engineId,
-      jobId,
-      outputIndex,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return output;
-  }
-}
-
-async function persistAngleOutputs(params: {
-  outputs: AngleToolOutput[];
-  userId: string;
-  jobId: string;
-  providerJobId?: string | null;
-  engineId: AngleToolEngineId;
-  engineLabel: string;
-}): Promise<AngleToolOutput[]> {
-  const { outputs, userId, jobId, providerJobId, engineId, engineLabel } = params;
-  return Promise.all(
-    outputs.map((output, index) =>
-      persistAngleOutput({
-        output,
-        outputIndex: index,
-        userId,
-        jobId,
-        providerJobId,
-        engineId,
-        engineLabel,
-      })
-    )
-  );
 }
 
 export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolResponse> {
