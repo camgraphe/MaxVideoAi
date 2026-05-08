@@ -5,26 +5,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   AudioLines,
-  CheckCircle2,
   ChevronDown,
   Clock3,
-  Coins,
-  FileVideo,
   Gauge,
   Languages,
   Mic2,
   Play,
   SlidersHorizontal,
   Sparkles,
-  Upload,
-  Video,
 } from 'lucide-react';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
@@ -57,7 +52,10 @@ import {
   type AudioVoiceProfile,
 } from '@/lib/audio-generation';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
+import { AudioGenerationDock } from './_components/audio-generation-dock';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
+import { AudioSourceVideoSection } from './_components/audio-source-video-section';
+import { AudioVoiceSection } from './_components/audio-voice-section';
 import { AudioModePicker, AudioSelectControl, ToggleRow } from './_components/audio-workspace-controls';
 import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
 import { useAudioGenerationRunner } from './_hooks/useAudioGenerationRunner';
@@ -605,6 +603,12 @@ export default function AudioWorkspace() {
             duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
           })
         : copy.pricing.missingOptions;
+  const activeProgress =
+    activeJob?.status === 'running' || activeJob?.status === 'pending'
+      ? activeJob.progress
+      : null;
+  const dockDurationLabel = estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-';
+  const dockPriceLabel = quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-';
 
   if (authLoading) {
     return <div className="flex-1" />;
@@ -664,71 +668,16 @@ export default function AudioWorkspace() {
             </section>
 
             {(sourceVideoRequired || sourceVideo) ? (
-              <section className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[9px] bg-brand-soft text-brand">
-                      <UIIcon icon={FileVideo} size={22} />
-                    </span>
-                    <div className="min-w-0">
-                      <h2 className="text-sm font-semibold text-text-primary">{copy.source.title}</h2>
-                      <p className="mt-1 text-sm text-text-secondary">
-                        {sourceVideoRequired ? copy.source.required : copy.source.optional}
-                      </p>
-                      {sourceVideo ? (
-                        <p className="mt-2 truncate text-sm font-semibold text-text-primary">
-                          {sourceVideo.label}
-                          <span className="ml-2 text-xs font-medium text-text-muted">
-                            {sourceVideo.durationSec ? formatAudioDurationLabel(sourceVideo.durationSec) : copy.source.durationPending}
-                          </span>
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={isUploadingSource}
-                      onClick={() => sourceInputRef.current?.click()}
-                    >
-                      <UIIcon icon={Upload} size={16} />
-                      {isUploadingSource ? copy.source.uploading : copy.source.upload}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setGeneratedPickerOpen(true)}>
-                      <UIIcon icon={Video} size={16} />
-                      {copy.source.useGenerated}
-                    </Button>
-                    {sourceVideo ? (
-                      <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
-                        {copy.source.clear}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-                <input
-                  ref={sourceInputRef}
-                  type="file"
-                  accept="video/*"
-                  className="sr-only"
-                  onChange={(event) => {
-                    void handleSourceFileSelect(event.target.files);
-                  }}
-                />
-                {sourceVideo ? (
-                  <div className="mt-3 flex items-center gap-3 rounded-[10px] border border-hairline bg-bg px-3 py-2">
-                    <div className="h-12 w-20 overflow-hidden rounded-[8px] border border-hairline bg-surface">
-                      <video src={sourceVideo.url} poster={sourceVideo.thumbUrl ?? undefined} className="h-full w-full object-cover" muted playsInline preload="metadata" />
-                    </div>
-                    <p className="min-w-0 flex-1 truncate text-xs text-text-secondary">
-                      {sourceVideo.aspectRatio ? `${sourceVideo.aspectRatio} · ` : ''}
-                      {sourceVideo.durationSec ? formatAudioDurationLabel(sourceVideo.durationSec) : copy.source.durationPending}
-                    </p>
-                    <CheckCircle2 className="h-5 w-5 text-success" aria-hidden />
-                  </div>
-                ) : null}
-              </section>
+              <AudioSourceVideoSection
+                copy={copy}
+                inputRef={sourceInputRef}
+                isUploading={isUploadingSource}
+                onClear={handleClearSourceVideo}
+                onFileSelect={handleSourceFileSelect}
+                onOpenGeneratedPicker={() => setGeneratedPickerOpen(true)}
+                required={sourceVideoRequired}
+                sourceVideo={sourceVideo}
+              />
             ) : null}
 
             <section className="rounded-[12px] border border-hairline bg-surface shadow-card">
@@ -761,61 +710,14 @@ export default function AudioWorkspace() {
 
             <section className="grid gap-4 lg:grid-cols-2">
               {showVoiceFields ? (
-                <div className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-base font-semibold text-text-primary">{copy.controls.voice}</p>
-                      <p className="mt-1 text-sm text-text-secondary">{copy.controls.selectedVoice}</p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm">
-                      {copy.controls.chooseVoice}
-                    </Button>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center gap-3 rounded-[10px] border border-hairline bg-bg px-3 py-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand">
-                          <UIIcon icon={Play} size={16} />
-                        </span>
-                      <span className="min-w-0 flex-1 truncate text-sm text-text-secondary">{copy.controls.selectedVoice}</span>
-                        <AudioLines className="h-4 w-4 text-brand" aria-hidden />
-                      </div>
-                    <div className="rounded-[10px] border border-hairline bg-bg px-3 py-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-text-primary">{copy.controls.voiceSample}</p>
-                          <p className="mt-1 truncate text-xs text-text-secondary">
-                            {voiceSample ? voiceSample.name : copy.controls.uploadVoiceSampleHint}
-                          </p>
-                        </div>
-                        {voiceSample ? (
-                          <Button type="button" variant="ghost" size="sm" onClick={() => setVoiceSample(null)}>
-                            {copy.source.clear}
-                          </Button>
-                        ) : null}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-3 w-full justify-center"
-                        disabled={isUploadingVoice}
-                        onClick={() => voiceInputRef.current?.click()}
-                      >
-                        <UIIcon icon={Upload} size={16} />
-                        {isUploadingVoice ? copy.source.uploading : copy.controls.uploadVoiceSample}
-                      </Button>
-                      <input
-                        ref={voiceInputRef}
-                        type="file"
-                        accept="audio/*"
-                        className="sr-only"
-                        onChange={(event) => {
-                          void handleVoiceFileSelect(event.target.files);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <AudioVoiceSection
+                  copy={copy}
+                  inputRef={voiceInputRef}
+                  isUploading={isUploadingVoice}
+                  onClear={() => setVoiceSample(null)}
+                  onFileSelect={handleVoiceFileSelect}
+                  voiceSample={voiceSample}
+                />
               ) : null}
 
               <div className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card lg:col-span-2">
@@ -950,58 +852,16 @@ export default function AudioWorkspace() {
             </div>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-hairline bg-bg px-4 py-3 shadow-[0_-18px_44px_rgba(15,23,42,0.08)] md:left-[188px] lg:px-7 xl:right-[332px]">
-            <div className="mx-auto flex w-full max-w-[980px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
-                      <UIIcon icon={Clock3} size={19} />
-                    </span>
-                    <div>
-                      <p className="text-xs text-text-muted">{copy.pricing.durationEyebrow}</p>
-                    <p className="text-sm font-semibold text-text-primary">
-                      ~ {estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-'}
-                    </p>
-                    </div>
-                  </div>
-                <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
-                      <UIIcon icon={Coins} size={19} />
-                    </span>
-                    <div>
-                      <p className="text-xs text-text-muted">{copy.pricing.eyebrow}</p>
-                    <p className="text-sm font-semibold text-text-primary">
-                        {quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-'}
-                      </p>
-                    </div>
-                  </div>
-                {activeJob?.status === 'running' || activeJob?.status === 'pending' ? (
-                  <div className="rounded-[9px] border border-brand/25 bg-brand-soft px-3 py-2 text-sm font-semibold text-brand">
-                    {activeJob.progress}%
-                  </div>
-                ) : null}
-                </div>
-
-              <div className="flex flex-col gap-2 sm:min-w-[360px] sm:flex-row sm:items-center sm:justify-end">
-                <p className="text-sm text-text-secondary sm:text-right">{generationHint}</p>
-                <div className="flex w-full shrink-0 sm:w-auto">
-                  <Button
-                    type="button"
-                    size="lg"
-                    onClick={handleGenerate}
-                    disabled={!canGenerate}
-                    className="min-w-0 flex-1 rounded-r-none sm:min-w-[210px]"
-                  >
-                      <UIIcon icon={AudioLines} size={18} />
-                      {isGenerating ? copy.pricing.generating : copy.pricing.generate}
-                    </Button>
-                    <Button type="button" size="lg" disabled={!canGenerate} className="rounded-l-none border-l border-white/25 px-3">
-                      <ChevronDown className="h-4 w-4" aria-hidden />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-          </div>
+          <AudioGenerationDock
+            activeProgress={activeProgress}
+            canGenerate={canGenerate}
+            copy={copy}
+            durationLabel={dockDurationLabel}
+            generationHint={generationHint}
+            isGenerating={isGenerating}
+            onGenerate={handleGenerate}
+            priceLabel={dockPriceLabel}
+          />
         </main>
       </div>
 
