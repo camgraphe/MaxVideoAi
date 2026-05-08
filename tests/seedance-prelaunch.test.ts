@@ -202,7 +202,7 @@ test('Seedance 2 marketing copy distinguishes standard 1080p from Fast 720p', ()
 test('Public marketing media fetchers stay visibility-safe for pinned and prompt-based Seedance surfaces', () => {
   const videosSource = fs.readFileSync(path.join(process.cwd(), 'frontend/server/videos.ts'), 'utf8');
   const compareSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx'),
+    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts'),
     'utf8'
   );
   const modelSource = fs.readFileSync(

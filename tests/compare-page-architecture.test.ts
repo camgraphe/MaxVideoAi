@@ -36,6 +36,22 @@ const copySource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-copy.ts',
   'utf8'
 );
+const relatedLinksSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-related-links.ts',
+  'utf8'
+);
+const routeDataSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-route-data.ts',
+  'utf8'
+);
+const schemaSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-schema.ts',
+  'utf8'
+);
+const showdownsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts',
+  'utf8'
+);
 const specRowsSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-spec-rows.ts',
   'utf8'
@@ -49,16 +65,20 @@ const generateCardSource = readFileSync(
   'utf8'
 );
 
-test('comparison detail page delegates copy, helper, and media responsibilities', () => {
+test('comparison detail page delegates copy, data, schema, and media responsibilities', () => {
   const lineCount = pageSource.split('\n').length;
 
-  assert.ok(lineCount <= 500, `comparison page should stay under 500 lines after section extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 300, `comparison page should stay under 300 lines after orchestration extraction, got ${lineCount}`);
   assert.ok(pageSource.includes("from './_lib/compare-page-helpers'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-overrides'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-faq'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-metadata'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-related-links'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-route-data'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-schema'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-scorecard'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-spec-rows'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-showdowns'"));
   assert.ok(pageSource.includes("from './_components/CompareDetailContent'"));
   assert.doesNotMatch(pageSource, /const COMPARE_PAGE_OVERRIDES/);
   assert.doesNotMatch(pageSource, /type ComparePageCopy =/);
@@ -66,6 +86,14 @@ test('comparison detail page delegates copy, helper, and media responsibilities'
   assert.doesNotMatch(pageSource, /const comparisonMetrics = \[/);
   assert.doesNotMatch(pageSource, /<section className=/);
   assert.doesNotMatch(pageSource, /buildSeoMetadata/);
+  assert.doesNotMatch(pageSource, /getPublicVideosByIds/);
+  assert.doesNotMatch(pageSource, /getLatestPublicVideoByPromptAndEngine/);
+  assert.doesNotMatch(pageSource, /SHOWDOWN_OVERRIDES/);
+  assert.doesNotMatch(pageSource, /RELATED_COMPARISONS/);
+  assert.doesNotMatch(pageSource, /fetchEngineAverageDurations/);
+  assert.doesNotMatch(pageSource, /loadEngineScores/);
+  assert.doesNotMatch(pageSource, /BreadcrumbList/);
+  assert.doesNotMatch(pageSource, /'@type': 'WebPage'/);
 });
 
 test('comparison detail helpers own routing, pricing, specs, and localized overrides', () => {
@@ -91,6 +119,14 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(metadataSource, /export async function buildComparePageMetadata/);
   assert.match(metadataSource, /buildSeoMetadata/);
   assert.match(copySource, /export function buildCompareDetailLabels/);
+  assert.match(copySource, /export function buildCompareDetailPageText/);
+  assert.match(relatedLinksSource, /export function buildRelatedComparisonLinks/);
+  assert.match(routeDataSource, /export async function buildCompareRouteData/);
+  assert.match(schemaSource, /export function buildCompareBreadcrumbJsonLd/);
+  assert.match(schemaSource, /export function buildCompareWebPageJsonLd/);
+  assert.match(showdownsSource, /export async function buildCompareShowdownSlots/);
+  assert.match(showdownsSource, /getPublicVideosByIds/);
+  assert.match(showdownsSource, /getLatestPublicVideoByPromptAndEngine/);
   assert.match(specRowsSource, /export function buildCompareSpecRows/);
   assert.match(detailContentSource, /export function CompareDetailContent/);
   assert.match(generateCardSource, /export function CompareGenerateCard/);

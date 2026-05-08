@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { CompareShowdown } from '@/config/compare-showdowns';
 
 export interface Params {
   locale?: AppLocale;
@@ -128,3 +129,5 @@ export type ShowdownEntry = {
   left: ShowdownSide;
   right: ShowdownSide;
 };
+
+export type CompareShowdownSlot = CompareShowdown & { left: ShowdownSide; right: ShowdownSide };

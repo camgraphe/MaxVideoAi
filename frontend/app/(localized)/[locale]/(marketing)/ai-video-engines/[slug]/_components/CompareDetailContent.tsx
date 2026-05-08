@@ -5,7 +5,6 @@ import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import type { SelectOption } from '@/components/ui/SelectMenu';
-import type { CompareShowdown } from '@/config/compare-showdowns';
 import { getImageAlt } from '@/lib/image-alt';
 import { CompareEngineSelector } from '../CompareEngineSelector.client';
 import { CompareScoreboard } from '../CompareScoreboard.client';
@@ -13,6 +12,7 @@ import { CopyPromptButton } from '../CopyPromptButton.client';
 import type { CompareDetailLabels, ComparePageCopy } from '../_lib/compare-page-copy';
 import type { CompareFaqItem } from '../_lib/compare-page-faq';
 import type { ComparePageOverride } from '../_lib/compare-page-overrides';
+import type { RelatedComparisonLink } from '../_lib/compare-page-related-links';
 import type { CompareMetric, CompareSummaryRow } from '../_lib/compare-page-scorecard';
 import {
   deriveCompareStrengths,
@@ -31,18 +31,11 @@ import {
   replaceCriteriaCount,
   stripAudioReferencesForSilentPair,
 } from '../_lib/compare-page-helpers';
-import type { EngineCatalogEntry, ShowdownSide } from '../_lib/compare-page-types';
+import type { CompareShowdownSlot, EngineCatalogEntry } from '../_lib/compare-page-types';
 import type { CompareSpecRow } from '../_lib/compare-page-spec-rows';
 import { CompareGenerateCard } from './CompareGenerateCard';
 import { renderShowdownMedia } from './CompareShowdownMedia';
 import { renderSpecValue } from './CompareSpecValue';
-
-export type CompareShowdownSlot = CompareShowdown & { left: ShowdownSide; right: ShowdownSide };
-
-type RelatedComparisonLink = {
-  href: { pathname: string; params: { slug: string } };
-  label: string;
-};
 
 type CompareDetailContentProps = {
   activeLocale: AppLocale;
