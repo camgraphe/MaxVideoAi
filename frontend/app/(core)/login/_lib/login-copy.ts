@@ -11,5 +11,6 @@ export const AUTH_COPY = {
 } as const;
 
 export type Locale = keyof typeof AUTH_COPY;
+export type AuthCopy = (typeof AUTH_COPY)[Locale];
 
 export const LOCALE_OPTIONS: Locale[] = ['en', 'fr', 'es'];
