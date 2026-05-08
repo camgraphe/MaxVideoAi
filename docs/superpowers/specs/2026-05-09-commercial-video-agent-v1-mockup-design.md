@@ -2,20 +2,21 @@
 
 ## Goal
 
-Create a simple, premium app tool for a first Commercial Video Agent. The V1 product creates one Seedance 2.0 commercial video up to 15 seconds. It should feel lighter than the current full workspace: a public chat on the left, a video preview/result on the right, and a compact pricing settings strip above them.
+Create a simple, premium app surface for the first Video Agents product family. The V1 product creates one Seedance 2.0 commercial video up to 15 seconds. It should feel lighter than the current full workspace: a public chat on the left, a video preview/result on the right, and a compact pricing settings strip above them.
 
 The page should sell and operate one clear workflow:
 
 > Tell the agent what you want to promote. It asks only the missing questions, checks whether the request is possible, converts the request into a Seedance 2.0 prompt internally, then generates the video.
 
-This is not a standalone one-off page. It is the first instance of a reusable Video Agent structure that can later support AI Video Agent Seedance, AI Video Agent Kling, AI Video Agent Veo, and intent-specific commercial agents.
+This is not a standalone one-off page and not part of the secondary Tools area. It is the first instance of a top-level Video Agents family, parallel to Generate Video and Generate Image, that can later support AI Video Agent Seedance, AI Video Agent Kling, AI Video Agent Veo, and intent-specific commercial agents.
 
 ## Product Decisions
 
 - V1 uses Seedance 2.0 only. Do not expose a Fast model toggle in the first UI.
 - The implementation should still model the selected engine as configuration, not hardcoded UI state, so future agents can expose Seedance, Kling, Veo, or other engine families.
-- The feature must integrate as an app tool, following the existing `/app/tools/*` pattern rather than becoming a detached marketing page.
-- Public SEO/product pages for "AI Video Agent Seedance", "AI Video Agent Kling", and similar pages should route into this app tool with a preset agent or engine later.
+- The feature must integrate as a first-class app family, not under `/app/tools/*`.
+- The app entry should live under a top-level workspace route such as `/app/video-agents`, with `Commercial Video Agent` as the first preset.
+- Public SEO/product pages for "AI Video Agent Seedance", "AI Video Agent Kling", and similar pages should route into this Video Agents family with a preset agent or engine later.
 - The agent entrypoint is the chat, not a separate "Start agent" button in the settings strip.
 - The initial chat agent is public and can explain the product, limits, and required inputs.
 - Paid or credit-consuming work starts only after the user confirms from inside the chat flow.
@@ -25,9 +26,15 @@ This is not a standalone one-off page. It is the first instance of a reusable Vi
 - Regeneration is the correction path when the result does not fit.
 - Image references should use the app's existing asset/upload/library patterns. Do not design a disconnected upload flow that bypasses workspace media rules.
 
-## Video Agent Product Structure
+## Video Agents Product Structure
 
-The Commercial Video Agent is an intent-level agent. It should sit under the broader Video Agents product family:
+Video Agents should become a primary app family alongside:
+
+- Generate Video: direct model prompting and manual controls.
+- Generate Image: direct image generation/editing.
+- Video Agents: guided, agent-driven video creation for users who start from an intent rather than a finished prompt.
+
+The Commercial Video Agent is the first intent-level preset under the broader Video Agents family:
 
 - `Commercial Video Agent`: user intent is a business/commercial video.
 - `Seedance Video Agent`: engine-specific agent preset using Seedance capabilities.
@@ -42,7 +49,7 @@ For V1, the visible product can be "Commercial Video Agent", powered by Seedance
 - `generationMode`: t2v or i2v depending on reference image presence
 - `pricingSettings`: duration, aspect ratio, resolution, audio
 
-This keeps the page simple while preserving the future structure for engine selection and SEO entrypoints.
+This keeps the V1 page simple while preserving the future structure for engine selection and SEO entrypoints.
 
 ## Page Structure
 
@@ -98,11 +105,11 @@ Keep the surrounding whitespace generous. Avoid rails, nested cards, multi-panel
 
 ### Initial Public State
 
-The agent can answer what the tool does and guide the user. It should not create the final generation prompt yet.
+The agent can answer what the Video Agents family does and guide the user. It should not create the final generation prompt yet.
 
 Example behavior:
 
-- explain that the tool creates one Seedance 2.0 commercial video
+- explain that this Video Agent creates one Seedance 2.0 commercial video
 - explain the 15 second limit
 - explain that duration, format, resolution, and audio influence the price
 - ask the user what they want to promote
@@ -125,7 +132,7 @@ Required or useful fields:
 
 Reference image behavior:
 
-- allow upload from the tool
+- allow upload from the Video Agents surface
 - allow selecting an existing image from the app library when available
 - show the selected reference as part of the chat context
 - keep the user-facing language as "product reference" rather than "Seedance i2v input"
@@ -242,19 +249,20 @@ Visual requirements:
 
 When implementation starts, keep the page route as an orchestrator and split the feature locally:
 
-- route entry: `frontend/app/(core)/(workspace)/app/tools/commercial-video/page.tsx`
-- reusable workspace component: `frontend/src/components/tools/CommercialVideoAgentWorkspace.tsx`
-- route-local or feature-local chat component: `CommercialVideoAgentChat.tsx`
-- route-local or feature-local preview component: `CommercialVideoPreview.tsx`
-- route-local or feature-local settings strip: `CommercialVideoSettingsStrip.tsx`
-- flow hook: `useCommercialVideoAgentFlow.ts`
-- copy helper: `commercial-video-agent-copy.ts`
-- state/config helper: `commercial-video-agent-state.ts`
-- agent config helper: `video-agent-config.ts`
+- family entry: `frontend/app/(core)/(workspace)/app/video-agents/page.tsx`
+- optional preset route later: `frontend/app/(core)/(workspace)/app/video-agents/commercial/page.tsx`
+- route-local workspace component: `frontend/app/(core)/(workspace)/app/video-agents/VideoAgentsWorkspace.tsx`
+- route-local chat component: `frontend/app/(core)/(workspace)/app/video-agents/_components/VideoAgentChat.tsx`
+- route-local preview component: `frontend/app/(core)/(workspace)/app/video-agents/_components/VideoAgentPreview.tsx`
+- route-local settings strip: `frontend/app/(core)/(workspace)/app/video-agents/_components/VideoAgentSettingsStrip.tsx`
+- flow hook: `frontend/app/(core)/(workspace)/app/video-agents/_hooks/useVideoAgentFlow.ts`
+- copy helper: `frontend/app/(core)/(workspace)/app/video-agents/_lib/video-agent-copy.ts`
+- state/config helper: `frontend/app/(core)/(workspace)/app/video-agents/_lib/video-agent-state.ts`
+- agent config helper: `frontend/app/(core)/(workspace)/app/video-agents/_lib/video-agent-config.ts`
 
 Server-side agent orchestration should live behind a route handler and should call the existing Seedance generation path rather than duplicating generation logic.
 
-The tool should reuse existing app concerns where possible:
+The Video Agents family should reuse existing app concerns where possible:
 
 - auth and wallet gates
 - pricing estimate logic
@@ -267,7 +275,7 @@ The tool should reuse existing app concerns where possible:
 
 - No unresolved placeholders remain.
 - V1 scope is a single Seedance 2.0 video, not a full studio.
-- The feature is specified as an app tool and future Video Agent family member, not a detached page.
+- The feature is specified as a first-class Video Agents app family, not a `/tools` feature and not a detached page.
 - The chat is the launch surface; no separate Start Agent button is required.
 - The user does not approve storyboard or prompt in V1.
 - Reference image handling is tied to existing app/library patterns.
