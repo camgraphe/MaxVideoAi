@@ -17,7 +17,7 @@ import {
   type ClipboardEvent as ReactClipboardEvent,
   type DragEvent as ReactDragEvent,
 } from 'react';
-import { ArrowLeft, Download, Images, Loader2, Plus, Upload, WandSparkles, X } from 'lucide-react';
+import { ArrowLeft, Images, Loader2, Upload, WandSparkles, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -30,9 +30,11 @@ import { resolveAngleEngineForParams } from '@/lib/tools-angle';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
+import { AngleAuthGateModal } from './angle/_components/angle-auth-gate-modal';
 import { AngleImageLibraryModal } from './angle/_components/angle-image-library-modal';
 import { AngleOrbitSelector } from './angle/_components/angle-orbit-selector';
 import { AngleOutputMosaic } from './angle/_components/angle-output-mosaic';
+import { AngleRecentJobModal } from './angle/_components/angle-recent-job-modal';
 import { useAngleGenerationRunner } from './angle/_hooks/useAngleGenerationRunner';
 import { DEFAULT_ANGLE_COPY, type AngleCopy } from './angle/_lib/angle-workspace-copy';
 import {
@@ -153,7 +155,6 @@ export default function AngleToolPage() {
     () => recentAngleJobs.find((entry) => entry.jobId === activeRecentJobId) ?? null,
     [activeRecentJobId, recentAngleJobs]
   );
-  const activeRecentOutput = activeRecentJob?.outputs[activeRecentOutputIndex] ?? activeRecentJob?.outputs[0] ?? null;
 
   useEffect(() => {
     return () => {
@@ -872,141 +873,28 @@ export default function AngleToolPage() {
           </div>
         </main>
       </div>
-      {activeRecentJob ? (
-        <div
-          className="fixed inset-0 z-[10040] flex items-center justify-center bg-surface-on-media-dark-60 px-4 py-6"
-          role="dialog"
-          aria-modal="true"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setActiveRecentJobId(null);
-            }
-          }}
-        >
-          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-modal border border-border bg-surface shadow-float">
-            <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.angleJob}</p>
-                <h3 className="mt-1 text-lg font-semibold text-text-primary">{activeRecentJob.engineLabel}</h3>
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={() => setActiveRecentJobId(null)}>
-                {copy.close}
-              </Button>
-            </div>
-            <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-5">
-              {activeRecentJob.outputs.length > 1 ? (
-                <>
-                  <AngleOutputMosaic
-                    outputs={activeRecentJob.outputs}
-                    selectedIndex={activeRecentOutputIndex}
-                    onSelect={setActiveRecentOutputIndex}
-                    onDownload={(url) => triggerAppDownload(url, suggestDownloadFilename(url, `angle-job-${Date.now()}`))}
-                    onAddToLibrary={(url) => handleAddOutputToLibrary(url, activeRecentJob.jobId)}
-                    libraryDisabled={Boolean(savingOutputUrl)}
-                    singleRow
-                    copy={copy}
-                  />
-                  {activeRecentOutput ? (
-                    <div className="relative overflow-hidden rounded-card border border-border bg-bg">
-                      <img src={activeRecentOutput.url} alt="" className="max-h-[48vh] w-full object-contain" />
-                      <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                        <button
-                          type="button"
-                          title={copy.addToLibrary}
-                          onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
-                          disabled={Boolean(savingOutputUrl)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          title={copy.download}
-                          onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : activeRecentOutput ? (
-                <div className="relative overflow-hidden rounded-card border border-border bg-bg">
-                  <img src={activeRecentOutput.url} alt="" className="max-h-[60vh] w-full object-contain" />
-                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                    <button
-                      type="button"
-                      title={copy.addToLibrary}
-                      onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
-                      disabled={Boolean(savingOutputUrl)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      title={copy.download}
-                      onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-              <div className="flex items-center justify-between gap-3 text-sm text-text-secondary">
-                <span>{new Date(activeRecentJob.createdAt).toLocaleString(locale)}</span>
-                <Link href="/jobs" className="font-medium text-brand hover:underline">
-                  {copy.openJobs}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <AngleRecentJobModal
+        copy={copy}
+        job={activeRecentJob}
+        locale={locale}
+        onAddToLibrary={handleAddOutputToLibrary}
+        onClose={() => setActiveRecentJobId(null)}
+        onOutputIndexChange={setActiveRecentOutputIndex}
+        outputIndex={activeRecentOutputIndex}
+        savingOutputUrl={savingOutputUrl}
+      />
       <AngleImageLibraryModal
         open={libraryModalOpen}
         onClose={() => setLibraryModalOpen(false)}
         onSelect={handleLibrarySelect}
         copy={copy}
       />
-      {authModalOpen ? (
-        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6">
-          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
-          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h2 className="text-base font-semibold text-text-primary">{copy.authGate.title}</h2>
-                <p className="mt-2 text-sm text-text-secondary">{copy.authGate.body}</p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setAuthModalOpen(false)}
-                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
-                aria-label={copy.authGate.close}
-              >
-                {copy.authGate.close}
-              </Button>
-            </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
-                {copy.authGate.primary}
-              </ButtonLink>
-              <ButtonLink
-                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
-                variant="outline"
-                size="sm"
-                className="px-4"
-              >
-                {copy.authGate.secondary}
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <AngleAuthGateModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        loginRedirectTarget={loginRedirectTarget}
+        copy={copy}
+      />
     </div>
   );
 }
