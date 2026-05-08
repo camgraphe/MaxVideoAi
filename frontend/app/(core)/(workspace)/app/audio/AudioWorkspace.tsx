@@ -5,14 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   AudioLines,
-  ChevronDown,
-  Clock3,
-  Gauge,
-  Languages,
-  Mic2,
-  Play,
-  SlidersHorizontal,
-  Sparkles,
 } from 'lucide-react';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -54,9 +46,10 @@ import {
 import AudioLatestRendersRail from './AudioLatestRendersRail';
 import { AudioGenerationDock } from './_components/audio-generation-dock';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
+import { AudioOptionsSection } from './_components/audio-options-section';
 import { AudioSourceVideoSection } from './_components/audio-source-video-section';
 import { AudioVoiceSection } from './_components/audio-voice-section';
-import { AudioModePicker, AudioSelectControl, ToggleRow } from './_components/audio-workspace-controls';
+import { AudioModePicker } from './_components/audio-workspace-controls';
 import { useAudioActiveJobPolling } from './_hooks/useAudioActiveJobPolling';
 import { useAudioGenerationRunner } from './_hooks/useAudioGenerationRunner';
 import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
@@ -75,7 +68,6 @@ import {
   formatCurrency,
   inferOutputKind,
   probeVideoDuration,
-  resolveProviderLabel,
   resolveUiErrorMessage,
   uploadAsset,
 } from './_lib/audio-workspace-helpers';
@@ -720,127 +712,42 @@ export default function AudioWorkspace() {
                 />
               ) : null}
 
-              <div className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card lg:col-span-2">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  {showMood ? (
-                    <AudioSelectControl
-                      label={copy.controls.mood}
-                      value={mood}
-                      options={moodOptions}
-                      icon={Sparkles}
-                      onChange={(next) => {
-                        const nextMood = coerceAudioMood(next) ?? DEFAULT_MOOD;
-                        setMood(nextMood);
-                      }}
-                    />
-                  ) : null}
-                  {showVoiceGender ? (
-                    <AudioSelectControl
-                      label={copy.controls.voiceType}
-                      value={voiceGender}
-                      options={voiceGenderOptions}
-                      icon={Mic2}
-                      onChange={(next) => {
-                        const nextGender = coerceAudioVoiceGender(String(next)) ?? DEFAULT_VOICE_GENDER;
-                        setVoiceGender(nextGender);
-                      }}
-                    />
-                  ) : null}
-                  {showVoiceFields ? (
-                    <AudioSelectControl
-                      label={copy.controls.voice}
-                      value={voiceProfile}
-                      options={voiceProfileOptions}
-                      icon={AudioLines}
-                      onChange={(next) => {
-                        setVoiceProfile(coerceAudioVoiceProfile(String(next)) ?? DEFAULT_VOICE_PROFILE);
-                      }}
-                    />
-                  ) : null}
-                  {showVoiceFields ? (
-                    <AudioSelectControl
-                      label={copy.controls.delivery}
-                      value={voiceDelivery}
-                      options={voiceDeliveryOptions}
-                      icon={Play}
-                      onChange={(next) => {
-                        const nextDelivery = coerceAudioVoiceDelivery(String(next)) ?? DEFAULT_VOICE_DELIVERY;
-                        setVoiceDelivery(nextDelivery);
-                      }}
-                    />
-                  ) : null}
-                  {showIntensity ? (
-                    <AudioSelectControl
-                      label={copy.controls.intensity}
-                      value={intensity}
-                      options={intensityOptions}
-                      icon={Gauge}
-                      onChange={(next) => {
-                        const nextIntensity = coerceAudioIntensity(next) ?? DEFAULT_INTENSITY;
-                        setIntensity(nextIntensity);
-                      }}
-                    />
-                  ) : null}
-                  {showVoiceFields ? (
-                    <AudioSelectControl
-                      label={copy.controls.language}
-                      value={language}
-                      options={languageOptions}
-                      icon={Languages}
-                      onChange={(next) => {
-                        const nextLanguage = coerceAudioLanguage(String(next)) ?? DEFAULT_LANGUAGE;
-                        setLanguage(nextLanguage);
-                      }}
-                    />
-                  ) : null}
-                  {showManualDuration ? (
-                    <AudioSelectControl
-                      label={copy.controls.duration}
-                      value={manualDurationSec}
-                      options={durationOptions}
-                      icon={Clock3}
-                      onChange={(next) => {
-                        const numericDuration = Number(next);
-                        if (durationOptions.some((option) => option.value === numericDuration)) {
-                          setManualDurationSec(numericDuration);
-                        }
-                      }}
-                    />
-                  ) : null}
-                </div>
-
-                <details className="group mt-4 rounded-[10px] border border-hairline bg-bg">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary">
-                      <UIIcon icon={SlidersHorizontal} size={16} />
-                      {copy.controls.advanced.title}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-text-muted transition group-open:rotate-180" aria-hidden />
-                  </summary>
-                  <div className="grid gap-3 border-t border-hairline p-4 md:grid-cols-2">
-                    {showMusicToggle ? (
-                      <ToggleRow
-                        label={copy.controls.musicToggle.label}
-                        description={copy.controls.musicToggle.description}
-                        checked={musicEnabled}
-                        onChange={setMusicEnabled}
-                      />
-                    ) : null}
-                    {showExportToggle ? (
-                      <ToggleRow
-                        label={copy.controls.exportToggle.label}
-                        description={copy.controls.exportToggle.description}
-                        checked={exportAudioFile}
-                        onChange={setExportAudioFile}
-                      />
-                    ) : null}
-                    <div className="rounded-[10px] border border-hairline bg-surface px-4 py-3">
-                      <p className="text-sm font-semibold text-text-primary">{copy.controls.providerStack}</p>
-                      <p className="mt-1 text-sm text-text-secondary">{resolveProviderLabel(copy, pack)}</p>
-                    </div>
-                  </div>
-                </details>
-              </div>
+              <AudioOptionsSection
+                copy={copy}
+                durationOptions={durationOptions}
+                exportAudioFile={exportAudioFile}
+                intensity={intensity}
+                intensityOptions={intensityOptions}
+                language={language}
+                languageOptions={languageOptions}
+                manualDurationSec={manualDurationSec}
+                mood={mood}
+                moodOptions={moodOptions}
+                musicEnabled={musicEnabled}
+                onExportAudioFileChange={setExportAudioFile}
+                onIntensityChange={setIntensity}
+                onLanguageChange={setLanguage}
+                onManualDurationChange={setManualDurationSec}
+                onMoodChange={setMood}
+                onMusicEnabledChange={setMusicEnabled}
+                onVoiceDeliveryChange={setVoiceDelivery}
+                onVoiceGenderChange={setVoiceGender}
+                onVoiceProfileChange={setVoiceProfile}
+                pack={pack}
+                showExportToggle={showExportToggle}
+                showIntensity={showIntensity}
+                showManualDuration={showManualDuration}
+                showMood={showMood}
+                showMusicToggle={showMusicToggle}
+                showVoiceFields={showVoiceFields}
+                showVoiceGender={showVoiceGender}
+                voiceDelivery={voiceDelivery}
+                voiceDeliveryOptions={voiceDeliveryOptions}
+                voiceGender={voiceGender}
+                voiceGenderOptions={voiceGenderOptions}
+                voiceProfile={voiceProfile}
+                voiceProfileOptions={voiceProfileOptions}
+              />
             </section>
 
             <div className="xl:hidden">
