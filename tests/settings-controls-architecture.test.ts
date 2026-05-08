@@ -9,6 +9,7 @@ const partsPath = join(root, 'frontend/components/settings-controls/settings-con
 const durationPath = join(root, 'frontend/components/settings-controls/settings-control-duration.ts');
 const copyPath = join(root, 'frontend/components/settings-controls/settings-control-copy.ts');
 const genericFieldsPath = join(root, 'frontend/components/settings-controls/settings-control-generic-fields.tsx');
+const engineAdvancedPath = join(root, 'frontend/components/settings-controls/settings-control-engine-advanced.tsx');
 const typesPath = join(root, 'frontend/components/settings-controls/settings-control-types.ts');
 const stateHookPath = join(root, 'frontend/components/settings-controls/useSettingsControlState.ts');
 
@@ -17,6 +18,7 @@ const partsSource = readFileSync(partsPath, 'utf8');
 const durationSource = readFileSync(durationPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const genericFieldsSource = readFileSync(genericFieldsPath, 'utf8');
+const engineAdvancedSource = readFileSync(engineAdvancedPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
 const stateHookSource = readFileSync(stateHookPath, 'utf8');
 
@@ -25,6 +27,7 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.ok(existsSync(durationPath), 'settings duration helpers should live in a focused module');
   assert.ok(existsSync(copyPath), 'settings controls copy should live in a focused module');
   assert.ok(existsSync(genericFieldsPath), 'generic advanced fields should live in a focused module');
+  assert.ok(existsSync(engineAdvancedPath), 'engine-specific advanced controls should live in a focused module');
   assert.ok(existsSync(typesPath), 'settings controls props contract should live in a focused module');
   assert.ok(existsSync(stateHookPath), 'settings control derived state should live in a focused hook');
 
@@ -32,6 +35,7 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-duration'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-copy'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
+  assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-engine-advanced'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-types'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/useSettingsControlState'/);
 });
@@ -45,6 +49,8 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /function mergeControlsCopy\(/, 'copy merging belongs in settings-control-copy.ts');
   assert.doesNotMatch(controlsSource, /function renderGenericAdvancedField/, 'generic field rendering belongs in settings-control-generic-fields.tsx');
   assert.doesNotMatch(controlsSource, /<select[\s\S]*field\.values/, 'generic enum field rendering belongs in settings-control-generic-fields.tsx');
+  assert.doesNotMatch(controlsSource, /Voice IDs \(CSV\)/, 'Kling voice controls belong in settings-control-engine-advanced.tsx');
+  assert.doesNotMatch(controlsSource, /Camera fixed/, 'Seedance engine controls belong in settings-control-engine-advanced.tsx');
   assert.doesNotMatch(controlsSource, /interface Props/, 'settings controls prop contract belongs in settings-control-types.ts');
   assert.doesNotMatch(controlsSource, /EngineInputField/, 'advanced field prop typing belongs in settings-control-types.ts');
   assert.doesNotMatch(controlsSource, /useEffect\(/, 'derived option syncing belongs in useSettingsControlState');
@@ -52,7 +58,7 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /const resolutionOptions =/, 'resolution option derivation belongs in useSettingsControlState');
 
   const lineCount = controlsSource.split('\n').length;
-  assert.ok(lineCount <= 950, `SettingsControls should stay below 950 lines after state hook extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 760, `SettingsControls should stay below 760 lines after engine advanced extraction, got ${lineCount}`);
 });
 
 test('settings control helper modules expose the expected contract', () => {
@@ -66,6 +72,10 @@ test('settings control helper modules expose the expected contract', () => {
   assert.match(genericFieldsSource, /export function SettingsGenericAdvancedFields/);
   assert.match(genericFieldsSource, /field\.type === 'enum'/);
   assert.match(genericFieldsSource, /field\.type === 'number'/);
+  assert.match(engineAdvancedSource, /export function SettingsKlingV3Controls/);
+  assert.match(engineAdvancedSource, /export function SettingsSeedanceAdvancedControls/);
+  assert.match(engineAdvancedSource, /Voice IDs \(CSV\)/);
+  assert.match(engineAdvancedSource, /Camera fixed/);
   assert.match(typesSource, /export interface SettingsControlsProps/);
   assert.match(typesSource, /EngineInputField/);
   assert.match(stateHookSource, /export function useSettingsControlState/);
