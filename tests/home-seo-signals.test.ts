@@ -3,7 +3,10 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
-const homeSectionsSource = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
+const homeSectionsSource = [
+  readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
+].join('\n');
 type HomeMessages = {
   home?: {
     meta?: { title?: string; description?: string };
@@ -88,10 +91,7 @@ test('homepage FAQ targets search-intent questions and shares the same items wit
 
 test('homepage renders existing workflow SEO terms as visible HTML content', () => {
   const workflowTitles = englishMessages.home?.seoContent?.generateWays?.items?.map((item) => item.title);
-  const workflowSource = homeSectionsSource.slice(
-    homeSectionsSource.indexOf('const WORKFLOW_BASICS_COPY'),
-    homeSectionsSource.indexOf('export function ProviderEngineStrip')
-  );
+  const workflowSource = readFileSync('frontend/components/marketing/home/HomeWorkflowSeoSummary.tsx', 'utf8');
 
   assert.deepEqual(workflowTitles, ['Text-to-Video AI', 'Image-to-Video AI', 'Video-to-Video AI']);
   assert.match(homeSource, /WorkflowSeoSummary/);

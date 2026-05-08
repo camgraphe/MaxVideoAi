@@ -4,7 +4,10 @@ import { test } from 'node:test';
 
 const tokensSource = readFileSync('frontend/src/styles/tokens.css', 'utf8');
 const globalsSource = readFileSync('frontend/app/globals.css', 'utf8');
-const homeSource = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
+const homeSource = [
+  readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
+  readFileSync('frontend/components/marketing/home/HomeConversionSections.tsx', 'utf8'),
+].join('\n');
 const heroShowcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 const navSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const buttonSource = readFileSync('frontend/components/ui/Button.tsx', 'utf8');
