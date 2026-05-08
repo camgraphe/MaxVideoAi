@@ -1,10 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { ChevronDown, Moon, Sun, Wallet } from 'lucide-react';
+import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -13,10 +12,12 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
+import { HeaderAccountMenu } from '@/components/header/HeaderAccountMenu';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
+import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
+import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
 import {
   getGuestMobileNavItems,
-  GUEST_MOBILE_NAV_ICONS,
   normalizeMarketingLinks,
   resolveLocalizedHref,
 } from '@/components/header/header-nav-helpers';
@@ -394,47 +395,15 @@ export function HeaderBar() {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-text-muted sm:gap-3">
-          <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
-            <Link
-              href="/billing"
-              prefetch={false}
-              className="flex h-10 items-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:gap-2 lg:px-3"
-              aria-describedby={walletPromptOpen ? walletPromptId : undefined}
-              onFocus={openWalletPrompt}
-              onBlur={scheduleWalletPromptClose}
-            >
-              <UIIcon icon={Wallet} size={16} className="text-text-primary" />
-              <span className="text-xs font-semibold tracking-normal text-text-primary sm:text-sm">
-                {wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...'}
-              </span>
-            </Link>
-            {walletPromptOpen ? (
-              <div
-                id={walletPromptId}
-                role="status"
-                className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
-                onMouseEnter={openWalletPrompt}
-                onMouseLeave={scheduleWalletPromptClose}
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                  {t('workspace.header.walletTopUp.label', 'Top up available')}
-                </p>
-                <p className="mt-1 text-sm text-text-primary">
-                  {t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
-                </p>
-                <ButtonLink
-                  href="/billing"
-                  prefetch={false}
-                  size="sm"
-                  className="mt-3 w-full shadow-card"
-                  onFocus={openWalletPrompt}
-                  onBlur={scheduleWalletPromptClose}
-                >
-                  {t('workspace.header.walletTopUp.cta', 'Top up now')}
-                </ButtonLink>
-              </div>
-            ) : null}
-          </div>
+          <HeaderWalletStatus
+            authResolved={authResolved}
+            promptId={walletPromptId}
+            t={t}
+            wallet={wallet}
+            walletPromptOpen={walletPromptOpen}
+            onOpenPrompt={openWalletPrompt}
+            onSchedulePromptClose={scheduleWalletPromptClose}
+          />
           <div className="hidden items-center gap-1 md:flex">
             <AppLanguageToggle />
             <Button
@@ -451,83 +420,19 @@ export function HeaderBar() {
             </Button>
           </div>
           {email ? (
-            <div className="relative">
-              <Button
-                ref={avatarRef}
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="h-10 w-10 min-h-0 rounded-full border border-hairline bg-surface-2 p-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
-                aria-haspopup="menu"
-                aria-expanded={accountMenuOpen}
-              >
-                {initials}
-                <span className="absolute -bottom-0.5 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center text-[10px] text-text-muted opacity-40">
-                  <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
-                    <path d="m2.2 4.6 3.8 3.8 3.8-3.8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              </Button>
-              {accountMenuOpen && (
-                <div
-                  ref={menuRef}
-                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-primary shadow-card"
-                  role="menu"
-                >
-                  <div className="mb-3 rounded-input bg-bg px-3 py-2">
-                    <p className="text-xs uppercase tracking-micro text-text-muted">
-                      {t('workspace.header.signedIn', 'Signed in')}
-                    </p>
-                    <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
-                  </div>
-                  <nav className="mb-2 flex flex-col gap-1" aria-label={t('workspace.header.primaryNav', 'Primary navigation')}>
-                    {NAV_ITEMS.map((item) => {
-                      const label = t(`workspace.sidebar.links.${item.id}`, item.label);
-                      const badgeLabel = item.badge
-                        ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
-                        : null;
-                      return (
-                        <Link
-                          key={item.id}
-                          href={item.href}
-                          role="menuitem"
-                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={() => setAccountMenuOpen(false)}
-                        >
-                          <span>{label}</span>
-                          {badgeLabel ? (
-                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-primary">
-                              {badgeLabel}
-                            </span>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
-                    {isAdmin ? (
-                      <Link
-                        href="/admin"
-                        role="menuitem"
-                        className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        onClick={handleAdminNavigation}
-                      >
-                        <span>Admin</span>
-                      </Link>
-                    ) : null}
-                  </nav>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-between px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-2"
-                    onClick={handleSignOut}
-                  >
-                    {t('workspace.header.signOut', 'Sign out')}
-                    <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
-                  </Button>
-                </div>
-              )}
-            </div>
+            <HeaderAccountMenu
+              accountMenuOpen={accountMenuOpen}
+              avatarRef={avatarRef}
+              email={email}
+              initials={initials}
+              isAdmin={isAdmin}
+              menuRef={menuRef}
+              t={t}
+              onAdminNavigation={handleAdminNavigation}
+              onCloseAccountMenu={() => setAccountMenuOpen(false)}
+              onSignOut={handleSignOut}
+              onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
+            />
           ) : authResolved ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
               <ButtonLink
@@ -554,206 +459,26 @@ export function HeaderBar() {
         </div>
       </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6">
-          <div className="mx-auto flex max-w-sm items-center justify-end">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface p-2 text-text-primary"
-              aria-label={t('workspace.header.mobileClose', 'Close menu')}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <line x1="6" y1="6" x2="18" y2="18" />
-                <line x1="18" y1="6" x2="6" y2="18" />
-              </svg>
-            </Button>
-          </div>
-          <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
-            <div className="flex justify-end gap-2">
-              <AppLanguageToggle />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-                aria-label={themeToggleLabel}
-                onClick={toggleTheme}
-              >
-                <span className="inline-flex h-4 w-4 items-center justify-center">
-                  <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
-                </span>
-              </Button>
-            </div>
-            <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
-              {!isAuthenticated ? (
-                <div className="rounded-[28px] border border-hairline bg-surface px-4 py-4 shadow-card">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Workspace</p>
-                      <p className="mt-1 text-sm font-medium text-text-primary">Open the app without dead ends.</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {guestMobileNavItems.map((item) => {
-                      const Icon = GUEST_MOBILE_NAV_ICONS[item.id as keyof typeof GUEST_MOBILE_NAV_ICONS];
-                      const label = t(`workspace.sidebar.links.${item.id}`, item.label);
-                      const currentPath = pathname ?? '';
-                      const isActive =
-                        item.id === 'generate'
-                          ? currentPath === item.href
-                          : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
-                      return (
-                        <Link
-                          key={item.id}
-                          href={item.href}
-                          prefetch={false}
-                          className={clsx(
-                            'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            isActive
-                              ? 'border-border bg-surface-2 text-text-primary'
-                              : 'border-hairline bg-bg text-text-primary hover:bg-surface-2'
-                          )}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-hairline bg-surface text-text-primary">
-                            <UIIcon icon={Icon} size={18} />
-                          </span>
-                          <span>{label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-              {marketingLinks.map((item) => {
-                const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
-                const label = t(`nav.linkLabels.${item.key}`, item.key);
-                if (!dropdown) {
-                  const href = item.href;
-                  const currentPath = pathname ?? '';
-                  const isActive = currentPath === href || currentPath.startsWith(`${href}/`);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      prefetch={false}
-                      className={clsx(
-                        'rounded-2xl border border-hairline px-4 py-3',
-                        isActive ? 'bg-surface-2 text-text-primary' : 'bg-surface'
-                      )}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {label}
-                    </Link>
-                  );
-                }
-                const panelId = `mobile-${item.key}-panel`;
-                const isOpen = Boolean(mobileDropdownOpen[item.key]);
-                const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
-                return (
-                  <div key={item.href} className="rounded-2xl border border-hairline bg-surface px-4 py-3">
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between text-left text-sm font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      aria-expanded={isOpen}
-                      aria-controls={panelId}
-                      onClick={() =>
-                        setMobileDropdownOpen((prev) => ({
-                          ...prev,
-                          [item.key]: !prev[item.key],
-                        }))
-                      }
-                    >
-                      <span>{label}</span>
-                      <UIIcon
-                        icon={ChevronDown}
-                        size={14}
-                        strokeWidth={1.6}
-                        className={clsx('text-text-muted transition-transform', isOpen ? 'rotate-180' : undefined)}
-                      />
-                    </button>
-                    {isOpen ? (
-                      <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
-                        <Link
-                          href={resolveLocalizedHref(dropdown.allHref)}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {allLabel}
-                        </Link>
-                        {dropdown.items.map((entry) => {
-                          const href = resolveLocalizedHref(entry.href);
-                          return (
-                            <Link
-                              key={entry.key}
-                              href={href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            >
-                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
-                            </Link>
-                          );
-                        })}
-                        {dropdown.sections?.map((section) => {
-                          const sectionLabel = section.titleKey
-                            ? t(section.titleKey, section.titleFallback ?? section.key)
-                            : (section.titleFallback ?? label);
-
-                          return (
-                            <div key={section.key} className="mt-2 border-t border-hairline pt-2">
-                              {!section.hideTitle && sectionLabel ? (
-                                <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                  {sectionLabel}
-                                </p>
-                              ) : null}
-                              {section.items.map((entry) => {
-                                const href = resolveLocalizedHref(entry.href);
-                                return (
-                                  <Link
-                                    key={entry.key}
-                                    href={href}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className={clsx(
-                                      'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                                      entry.emphasized ? 'font-semibold text-text-primary' : undefined
-                                    )}
-                                  >
-                                    {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </nav>
-            {isAuthenticated ? null : (
-              <div className="stack-gap-sm">
-                <Link
-                  href="/login?next=/app"
-                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {loginLabel}
-                </Link>
-                <Link
-                  href="/app"
-                  prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {ctaLabel}
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+        <HeaderMobileMenu
+          ctaLabel={ctaLabel}
+          guestMobileNavItems={guestMobileNavItems}
+          isAuthenticated={isAuthenticated}
+          loginLabel={loginLabel}
+          marketingLinks={marketingLinks}
+          mobileDropdownOpen={mobileDropdownOpen}
+          pathname={pathname}
+          t={t}
+          theme={theme}
+          themeToggleLabel={themeToggleLabel}
+          onClose={() => setMobileMenuOpen(false)}
+          onToggleDropdown={(key) =>
+            setMobileDropdownOpen((prev) => ({
+              ...prev,
+              [key]: !prev[key],
+            }))
+          }
+          onToggleTheme={toggleTheme}
+        />
       ) : null}
       <ReconsentPrompt enabled={authResolved && isAuthenticated} />
     </>

@@ -10,6 +10,7 @@ import {
 } from '../frontend/config/navigation.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
+const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
 
 const bestForUseCaseLinks = [
@@ -76,8 +77,8 @@ test('marketing top navigation stays clean while Best-For links live inside drop
     ]
   );
 
-  assert.match(marketingNavSource, /entry\.emphasized/);
-  assert.match(marketingNavSource, /font-semibold text-text-primary/);
+  assert.match(marketingDesktopNavSource, /entry\.emphasized/);
+  assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
 test('localized marketing dropdown sections avoid English fallbacks', () => {

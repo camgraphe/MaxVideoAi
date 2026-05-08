@@ -2,254 +2,21 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { CONSENT_COOKIE_NAME, createDefaultConsent, mergeConsent, parseConsent, serializeConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
-import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
+import { createDefaultConsent, mergeConsent, parseConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
 import { Button } from '@/components/ui/Button';
-
-type BannerState =
-  | { ready: false }
-  | {
-      ready: true;
-      version: string;
-      consent: ConsentRecord | null;
-    };
-
-type FetchState = 'idle' | 'saving';
-
-const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 395; // ~13 months
-const DEFAULT_CHOICES: Record<ConsentCategory, boolean> = {
-  analytics: false,
-  ads: false,
-};
-
-const PUBLIC_GOOGLE_CONSENT_MODE = (process.env.NEXT_PUBLIC_GOOGLE_CONSENT_MODE ?? 'auto').toLowerCase();
-const ANALYTICS_STORAGE_KEY = 'mv-consent-analytics';
-const ANALYTICS_GRANTED_VALUE = 'granted';
-const OPEN_PREFERENCES_EVENT = 'consent:open-preferences';
-
-type CookieBannerLocale = 'en' | 'fr' | 'es';
-
-const COOKIE_BANNER_COPY: Record<
-  CookieBannerLocale,
-  {
-    title: string;
-    body: string;
-    actions: {
-      acceptAll: string;
-      rejectAll: string;
-      manageChoices: string;
-      hideChoices: string;
-      savePreferences: string;
-      saving: string;
-    };
-    preferences: {
-      title: string;
-      analytics: { title: string; body: string };
-      ads: { title: string; body: string };
-    };
-    errors: {
-      loadVersion: string;
-      save: string;
-    };
-  }
-> = {
-  en: {
-    title: 'Cookies & Privacy',
-    body:
-      "We use essential cookies to run the site. With your consent, we'll enable analytics to improve the product and advertising tags for campaign measurement. You can change your choices anytime.",
-    actions: {
-      acceptAll: 'Accept all',
-      rejectAll: 'Reject all',
-      manageChoices: 'Manage choices',
-      hideChoices: 'Hide choices',
-      savePreferences: 'Save preferences',
-      saving: 'Saving…',
-    },
-    preferences: {
-      title: 'Preferences',
-      analytics: {
-        title: 'Analytics cookies',
-        body: 'Help us measure usage and improve features.',
-      },
-      ads: {
-        title: 'Advertising cookies',
-        body: 'Measure campaigns and improve relevance.',
-      },
-    },
-    errors: {
-      loadVersion: 'Failed to load cookie policy version',
-      save: 'Unable to store your preferences.',
-    },
-  },
-  fr: {
-    title: 'Cookies et confidentialité',
-    body:
-      'Nous utilisons des cookies essentiels pour faire fonctionner le site. Avec votre accord, nous activerons les analytics pour améliorer le produit et les balises publicitaires pour mesurer les campagnes. Vous pouvez modifier vos choix à tout moment.',
-    actions: {
-      acceptAll: 'Tout accepter',
-      rejectAll: 'Tout refuser',
-      manageChoices: 'Gérer mes choix',
-      hideChoices: 'Masquer les choix',
-      savePreferences: 'Enregistrer les préférences',
-      saving: 'Enregistrement…',
-    },
-    preferences: {
-      title: 'Préférences',
-      analytics: {
-        title: 'Cookies analytiques',
-        body: 'Aidez-nous à mesurer l’usage et à améliorer les fonctionnalités.',
-      },
-      ads: {
-        title: 'Cookies publicitaires',
-        body: 'Mesurez les campagnes et améliorez leur pertinence.',
-      },
-    },
-    errors: {
-      loadVersion: 'Impossible de charger la version de la politique cookies',
-      save: 'Impossible d’enregistrer vos préférences.',
-    },
-  },
-  es: {
-    title: 'Cookies y privacidad',
-    body:
-      'Usamos cookies esenciales para que el sitio funcione. Con tu consentimiento, activaremos analytics para mejorar el producto y etiquetas publicitarias para medir campañas. Puedes cambiar tus elecciones en cualquier momento.',
-    actions: {
-      acceptAll: 'Aceptar todo',
-      rejectAll: 'Rechazar todo',
-      manageChoices: 'Gestionar elecciones',
-      hideChoices: 'Ocultar elecciones',
-      savePreferences: 'Guardar preferencias',
-      saving: 'Guardando…',
-    },
-    preferences: {
-      title: 'Preferencias',
-      analytics: {
-        title: 'Cookies analíticas',
-        body: 'Ayúdanos a medir el uso y mejorar las funciones.',
-      },
-      ads: {
-        title: 'Cookies publicitarias',
-        body: 'Mide campañas y mejora la relevancia.',
-      },
-    },
-    errors: {
-      loadVersion: 'No se pudo cargar la versión de la política de cookies',
-      save: 'No se pudieron guardar tus preferencias.',
-    },
-  },
-};
-
-function resolveCookieBannerLocale(pathname: string | null): CookieBannerLocale {
-  if (typeof document !== 'undefined') {
-    const cookies = document.cookie ? document.cookie.split(';') : [];
-    for (const entry of cookies) {
-      const [rawKey, ...rest] = entry.trim().split('=');
-      const key = rawKey.trim();
-      if (key !== 'NEXT_LOCALE' && key !== 'mv-locale') continue;
-      const value = decodeURIComponent(rest.join('=')).trim();
-      if (value === 'fr' || value === 'es' || value === 'en') {
-        return value;
-      }
-    }
-  }
-  if (pathname?.startsWith('/fr')) return 'fr';
-  if (pathname?.startsWith('/es')) return 'es';
-  return 'en';
-}
-
-function readCookie(): string | null {
-  if (typeof document === 'undefined') return null;
-  const cookies = document.cookie ? document.cookie.split(';') : [];
-  for (const entry of cookies) {
-    const [key, ...rest] = entry.trim().split('=');
-    if (key === CONSENT_COOKIE_NAME) {
-      return decodeURIComponent(rest.join('='));
-    }
-  }
-  return null;
-}
-
-function writeCookie(record: ConsentRecord) {
-  if (typeof document === 'undefined') return;
-  const payload = encodeURIComponent(serializeConsent(record));
-  document.cookie = `${CONSENT_COOKIE_NAME}=${payload}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
-}
-
-function broadcastConsent(record: ConsentRecord) {
-  if (typeof window === 'undefined') return;
-  window.dispatchEvent(
-    new CustomEvent('consent:updated', {
-      detail: {
-        version: record.version,
-        categories: record.categories,
-        timestamp: record.timestamp,
-      },
-    })
-  );
-}
-
-function setLocalAnalyticsFlag(granted: boolean) {
-  if (typeof window === 'undefined') return;
-  try {
-    if (granted) {
-      window.localStorage.setItem(ANALYTICS_STORAGE_KEY, ANALYTICS_GRANTED_VALUE);
-    } else {
-      window.localStorage.removeItem(ANALYTICS_STORAGE_KEY);
-    }
-  } catch {
-    // ignore storage errors
-  }
-}
-
-function updateGoogleConsent(categories: ConsentRecord['categories']) {
-  if (typeof window === 'undefined') return;
-  if (PUBLIC_GOOGLE_CONSENT_MODE === 'false' || PUBLIC_GOOGLE_CONSENT_MODE === 'off') {
-    return;
-  }
-
-  const consentUpdate = {
-    ad_storage: categories.ads ? 'granted' : 'denied',
-    ad_user_data: categories.ads ? 'granted' : 'denied',
-    ad_personalization: categories.ads ? 'granted' : 'denied',
-    analytics_storage: categories.analytics ? 'granted' : 'denied',
-  };
-
-  const helpers = window as typeof window & {
-    gtag?: (...args: unknown[]) => void;
-    gtagConsentUpdate?: (payload: Record<string, string>) => void;
-    dataLayer?: Array<Record<string, unknown>>;
-  };
-
-  if (typeof helpers.gtagConsentUpdate === 'function') {
-    helpers.gtagConsentUpdate(consentUpdate);
-    return;
-  }
-
-  if (typeof helpers.gtag === 'function') {
-    helpers.gtag('consent', 'update', consentUpdate);
-    return;
-  }
-
-  if (Array.isArray(helpers.dataLayer)) {
-    helpers.dataLayer.push({
-      event: 'consent_update',
-      ...consentUpdate,
-    });
-  }
-}
-
-async function persistToServer(categories: ConsentRecord['categories']) {
-  try {
-    await fetch('/api/legal/cookies', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ categories }),
-    });
-  } catch (error) {
-    console.warn('[cookie-consent] failed to persist to server', error);
-  }
-}
+import { CookiePreferencesPanel } from '@/components/legal/CookiePreferencesPanel';
+import { COOKIE_BANNER_COPY, resolveCookieBannerLocale } from '@/components/legal/cookie-banner-copy';
+import {
+  applyStoredConsentEffects,
+  clearLocalAnalyticsFlag,
+  DEFAULT_CHOICES,
+  OPEN_PREFERENCES_EVENT,
+  persistCookieConsent,
+  readConsentCookie,
+  writeConsentCookie,
+  type BannerState,
+  type FetchState,
+} from '@/components/legal/cookie-banner-client';
 
 export function CookieBanner() {
   const pathname = usePathname();
@@ -269,7 +36,6 @@ export function CookieBanner() {
 
   const consent = state.ready ? state.consent : null;
   const version = state.ready ? state.version : null;
-
   const hasMadeChoice = state.ready && consent !== null && consent.version === version;
 
   const closePreferences = useCallback(
@@ -290,6 +56,11 @@ export function CookieBanner() {
     [consent]
   );
 
+  const applyPersistedConsent = useCallback((nextConsent: ConsentRecord, nextVersion: string) => {
+    setState({ ready: true, version: nextVersion, consent: nextConsent });
+    applyStoredConsentEffects(nextConsent);
+  }, []);
+
   const bootstrap = useCallback(async () => {
     try {
       const res = await fetch('/api/legal/cookies/version', { cache: 'no-store' });
@@ -297,43 +68,32 @@ export function CookieBanner() {
       if (!res.ok || !json?.ok || typeof json.version !== 'string') {
         throw new Error(json?.error ?? copy.errors.loadVersion);
       }
-      const stored = parseConsent(readCookie());
+      const stored = parseConsent(readConsentCookie());
       if (stored && stored.version === json.version) {
-        setState({ ready: true, version: json.version, consent: stored });
-        broadcastConsent(stored);
-        setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
-        setLocalAnalyticsFlag(Boolean(stored.categories.analytics));
-        setClarityConsent(Boolean(stored.categories.analytics));
-        updateGoogleConsent(stored.categories);
+        applyPersistedConsent(stored, json.version);
       } else {
         setState({ ready: true, version: json.version, consent: null });
-        setLocalAnalyticsFlag(false);
+        clearLocalAnalyticsFlag();
       }
     } catch (err) {
       console.warn('[cookie-consent] bootstrap failed', err);
       const fallbackVersion = '2025-10-26';
-      const stored = parseConsent(readCookie());
+      const stored = parseConsent(readConsentCookie());
       if (stored && stored.version === fallbackVersion) {
-        setState({ ready: true, version: fallbackVersion, consent: stored });
-        broadcastConsent(stored);
-        setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
-        setLocalAnalyticsFlag(Boolean(stored.categories.analytics));
-        setClarityConsent(Boolean(stored.categories.analytics));
-        updateGoogleConsent(stored.categories);
+        applyPersistedConsent(stored, fallbackVersion);
       } else {
         setState({ ready: true, version: fallbackVersion, consent: null });
-        setLocalAnalyticsFlag(false);
+        clearLocalAnalyticsFlag();
       }
     }
-  }, [copy.errors.loadVersion]);
+  }, [applyPersistedConsent, copy.errors.loadVersion]);
 
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
 
   useEffect(() => {
-    if (!state.ready) return;
-    if (!showPreferences) return;
+    if (!state.ready || !showPreferences) return;
     setDraft(consent ? { ...consent.categories } : { ...DEFAULT_CHOICES });
   }, [consent, showPreferences, state.ready]);
 
@@ -372,37 +132,19 @@ export function CookieBanner() {
           timestamp: Date.now(),
           categories,
         });
-        writeCookie(next);
+        writeConsentCookie(next);
         setState({ ready: true, version, consent: next });
-        broadcastConsent(next);
-        setAnalyticsConsentCookie(Boolean(next.categories.analytics));
-        setLocalAnalyticsFlag(Boolean(next.categories.analytics));
-        setClarityConsent(Boolean(next.categories.analytics));
-        updateGoogleConsent(next.categories);
-        await persistToServer(next.categories);
+        applyStoredConsentEffects(next);
+        await persistCookieConsent(next.categories);
         setShowPreferences(false);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : copy.errors.save
-        );
+        setError(err instanceof Error ? err.message : copy.errors.save);
       } finally {
         setFetchState('idle');
       }
     },
     [consent, copy.errors.save, version]
   );
-
-  const handleAcceptAll = () => {
-    void applyConsent({ analytics: true, ads: true }, 'banner');
-  };
-
-  const handleRejectAll = () => {
-    void applyConsent({ analytics: false, ads: false }, 'banner');
-  };
-
-  const handleSavePreferences = () => {
-    void applyConsent(draft, 'preferences');
-  };
 
   const toggleCategory = (category: ConsentCategory) => {
     setDraft((current) => ({
@@ -423,65 +165,17 @@ export function CookieBanner() {
   };
 
   const preferencesPanel = (
-    <div
-      id={preferencesPanelId}
-      role="region"
-      aria-labelledby={preferencesTitleId}
-      className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-3 sm:p-4"
-    >
-      <p id={preferencesTitleId} className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-        {copy.preferences.title}
-      </p>
-      <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
-        <span id={analyticsLabelId}>
-          {copy.preferences.analytics.title}
-          <span className="block text-xs text-text-muted">{copy.preferences.analytics.body}</span>
-        </span>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => toggleCategory('analytics')}
-          className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
-          role="switch"
-          aria-checked={draft.analytics}
-          aria-labelledby={analyticsLabelId}
-        >
-          <span
-            className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
-          />
-        </Button>
-      </div>
-      <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
-        <span id={adsLabelId}>
-          {copy.preferences.ads.title}
-          <span className="block text-xs text-text-muted">{copy.preferences.ads.body}</span>
-        </span>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => toggleCategory('ads')}
-          className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
-          role="switch"
-          aria-checked={draft.ads}
-          aria-labelledby={adsLabelId}
-        >
-          <span
-            className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
-          />
-        </Button>
-      </div>
-      <Button
-        type="button"
-        size="sm"
-        onClick={handleSavePreferences}
-        disabled={fetchState === 'saving'}
-        className="w-full px-3 py-2 text-sm"
-      >
-        {fetchState === 'saving' ? copy.actions.saving : copy.actions.savePreferences}
-      </Button>
-    </div>
+    <CookiePreferencesPanel
+      adsLabelId={adsLabelId}
+      analyticsLabelId={analyticsLabelId}
+      copy={copy}
+      draft={draft}
+      fetchState={fetchState}
+      panelId={preferencesPanelId}
+      titleId={preferencesTitleId}
+      onSavePreferences={() => void applyConsent(draft, 'preferences')}
+      onToggleCategory={toggleCategory}
+    />
   );
 
   if (!state.ready || isAdminRoute) {
@@ -507,7 +201,7 @@ export function CookieBanner() {
               <Button
                 type="button"
                 size="sm"
-                onClick={handleAcceptAll}
+                onClick={() => void applyConsent({ analytics: true, ads: true }, 'banner')}
                 disabled={fetchState === 'saving'}
                 className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
               >
@@ -517,18 +211,18 @@ export function CookieBanner() {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={handleRejectAll}
+                onClick={() => void applyConsent({ analytics: false, ads: false }, 'banner')}
                 disabled={fetchState === 'saving'}
                 className="border-border px-3 py-1.5 text-xs text-text-primary hover:bg-surface-hover sm:px-4 sm:py-2 sm:text-sm"
               >
                 {copy.actions.rejectAll}
               </Button>
               <Button
+                ref={manageChoicesButtonRef}
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={handleManageChoicesToggle}
-                ref={manageChoicesButtonRef}
                 aria-expanded={showPreferences}
                 aria-controls={preferencesPanelId}
                 className="min-h-0 h-auto p-0 text-xs font-semibold text-brand underline underline-offset-4 hover:text-brandHover sm:text-sm"

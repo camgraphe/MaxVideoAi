@@ -4,17 +4,19 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { MarketingAccountMenu } from '@/components/marketing/MarketingAccountMenu';
+import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav';
+import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
-import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
+import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 
 type MarketingNavProps = {
   initialEmail?: string | null;
@@ -309,124 +311,14 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
             />
             <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
           </Link>
-          <nav aria-label="Primary" className="hidden items-center gap-5 text-sm font-medium text-text-secondary lg:flex xl:gap-7">
-            {links.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
-              const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
-              const label = t(`nav.linkLabels.${item.key}`, item.key);
-              if (!dropdown) {
-                return (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    className={clsx(
-                      'whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                      isActive ? 'text-text-primary' : undefined
-                    )}
-                  >
-                    {label}
-                  </Link>
-                );
-              }
-              const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
-              const isOpen = desktopDropdownOpen === item.key;
-              const hasSections = Boolean(dropdown.sections?.length);
-              return (
-                <div
-                  key={item.key}
-                  className="relative"
-                  onMouseEnter={() => setDesktopDropdownOpen(item.key)}
-                  onMouseLeave={() => closeDesktopDropdown()}
-                  onFocus={() => setDesktopDropdownOpen(item.key)}
-                  onBlur={(event) => {
-                    const next = event.relatedTarget as Node | null;
-                    if (!event.currentTarget.contains(next)) {
-                      closeDesktopDropdown();
-                    }
-                  }}
-                >
-                  <Link
-                    href={item.href}
-                    aria-haspopup="menu"
-                    className={clsx(
-                      'inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                      isActive ? 'text-text-primary' : undefined
-                    )}
-                    onClick={() => closeDesktopDropdown(200)}
-                  >
-                    <span>{label}</span>
-                    <UIIcon icon={ChevronDown} size={14} strokeWidth={1.6} className="text-text-muted" />
-                  </Link>
-                  <div
-                    className={clsx(
-                      'absolute left-0 top-full z-20 pt-2 transition duration-150',
-                      isOpen ? 'visible opacity-100' : 'invisible opacity-0'
-                    )}
-                  >
-                    <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
-                      <div className={clsx('grid gap-3', hasSections ? 'min-w-[520px] grid-cols-[1fr_1fr]' : 'min-w-0 grid-cols-1')}>
-                        <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
-                          <Link
-                            href={dropdown.allHref}
-                            className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            role="menuitem"
-                            onClick={() => closeDesktopDropdown(200)}
-                          >
-                            {allLabel}
-                          </Link>
-                          {dropdown.items.map((entry) => (
-                            <Link
-                              key={entry.key}
-                              href={entry.href}
-                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              role="menuitem"
-                              onClick={() => closeDesktopDropdown(200)}
-                            >
-                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
-                            </Link>
-                          ))}
-                        </nav>
-                        {dropdown.sections?.map((section) => {
-                          const sectionLabel = section.titleKey
-                            ? t(section.titleKey, section.titleFallback ?? section.key)
-                            : (section.titleFallback ?? label);
-
-                          return (
-                            <nav
-                              key={section.key}
-                              className="flex flex-col gap-1 border-l border-hairline pl-3"
-                              role="menu"
-                              aria-label={sectionLabel}
-                            >
-                              {!section.hideTitle && sectionLabel ? (
-                                <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                  {sectionLabel}
-                                </p>
-                              ) : null}
-                              {section.items.map((entry) => (
-                                <Link
-                                  key={entry.key}
-                                  href={entry.href}
-                                  className={clsx(
-                                    'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                                    entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
-                                  )}
-                                  role="menuitem"
-                                  onClick={() => closeDesktopDropdown(200)}
-                                >
-                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
-                                </Link>
-                              ))}
-                            </nav>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </nav>
+          <MarketingDesktopNav
+            desktopDropdownOpen={desktopDropdownOpen}
+            links={links}
+            pathname={pathname}
+            t={t}
+            onCloseDesktopDropdown={closeDesktopDropdown}
+            onOpenDesktopDropdown={setDesktopDropdownOpen}
+          />
         </div>
         <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
           <div className="hidden items-center gap-1 md:flex">
@@ -454,81 +346,19 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
                 <span className="sm:hidden">{generateLabelMobile}</span>
                 <span className="hidden sm:inline">{generateLabel}</span>
               </Link>
-              <div className="relative">
-                <Button
-                  ref={avatarRef}
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setAccountMenuOpen((prev) => !prev)}
-                  className="min-h-0 h-10 w-10 rounded-full border border-hairline bg-surface-2 text-sm font-semibold text-text-primary shadow-card hover:bg-surface-3"
-                  aria-haspopup="menu"
-                  aria-expanded={accountMenuOpen}
-                >
-                  {initials}
-                </Button>
-                {accountMenuOpen && (
-                  <div
-                    ref={menuRef}
-                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-primary shadow-card"
-                    role="menu"
-                  >
-                    <div className="mb-3 rounded-input bg-bg px-3 py-2">
-                      <p className="text-xs uppercase tracking-micro text-text-muted">
-                        {t('workspace.header.signedIn', 'Signed in')}
-                      </p>
-                      <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
-                    </div>
-                    <nav
-                      className="mb-2 flex flex-col gap-1"
-                      aria-label={t('workspace.header.primaryNav', 'Primary navigation')}
-                    >
-                      {NAV_ITEMS.map((item) => {
-                        const label = t(`workspace.sidebar.links.${item.id}`, item.label);
-                        const badgeLabel = item.badge
-                          ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
-                          : null;
-                        return (
-                          <Link
-                            key={item.id}
-                            href={item.href}
-                            prefetch={false}
-                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            onClick={() => setAccountMenuOpen(false)}
-                          >
-                            <span>{label}</span>
-                            {badgeLabel ? (
-                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-primary">
-                                {badgeLabel}
-                              </span>
-                            ) : null}
-                          </Link>
-                        );
-                      })}
-                      {isAdmin ? (
-                        <Link
-                          href="/admin"
-                          prefetch={false}
-                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={handleAdminNavigation}
-                        >
-                          <span>Admin</span>
-                        </Link>
-                      ) : null}
-                    </nav>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-2"
-                      onClick={() => signOut({ closeAccountMenu: true })}
-                    >
-                      {t('workspace.header.signOut', 'Sign out')}
-                      <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <MarketingAccountMenu
+                accountMenuOpen={accountMenuOpen}
+                avatarRef={avatarRef}
+                email={email ?? ''}
+                initials={initials}
+                isAdmin={isAdmin}
+                menuRef={menuRef}
+                t={t}
+                onAdminNavigation={handleAdminNavigation}
+                onCloseAccountMenu={() => setAccountMenuOpen(false)}
+                onSignOut={() => signOut({ closeAccountMenu: true })}
+                onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
+              />
             </>
           ) : (
             <>
@@ -561,185 +391,27 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
       </div>
     </header>
       {mobileMenuOpen ? (
-        <div className={clsx('fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6', isHomePage && 'home-monochrome')}>
-          <div className="mx-auto flex max-w-sm items-center justify-end">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface p-2 text-text-primary"
-              aria-label={t('nav.mobileClose', 'Close menu')}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <line x1="6" y1="6" x2="18" y2="18" />
-                <line x1="18" y1="6" x2="6" y2="18" />
-              </svg>
-            </Button>
-          </div>
-          <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
-            <div className="flex justify-end gap-2">
-              <LanguageToggle variant="icon" />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-                onClick={toggleTheme}
-              >
-                <span className="inline-flex h-4 w-4 items-center justify-center">
-                  <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
-                </span>
-              </Button>
-            </div>
-            <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
-              {links.map((item) => {
-                const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
-                const label = t(`nav.linkLabels.${item.key}`, item.key);
-                if (!dropdown) {
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={clsx(
-                        'rounded-2xl border border-hairline px-4 py-3',
-                        pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-surface'
-                      )}
-                    >
-                      {label}
-                    </Link>
-                  );
-                }
-                const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
-                const panelId = `mobile-${item.key}-panel`;
-                const isOpen = Boolean(mobileDropdownOpen[item.key]);
-                return (
-                  <div key={item.key} className="rounded-2xl border border-hairline bg-surface px-4 py-3">
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between text-left text-sm font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      aria-expanded={isOpen}
-                      aria-controls={panelId}
-                      onClick={() =>
-                        setMobileDropdownOpen((prev) => ({
-                          ...prev,
-                          [item.key]: !prev[item.key],
-                        }))
-                      }
-                    >
-                      <span>{label}</span>
-                      <UIIcon
-                        icon={ChevronDown}
-                        size={14}
-                        strokeWidth={1.6}
-                        className={clsx('text-text-muted transition-transform', isOpen ? 'rotate-180' : undefined)}
-                      />
-                    </button>
-                    {isOpen ? (
-                      <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
-                        <Link
-                          href={dropdown.allHref}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {allLabel}
-                        </Link>
-                        {dropdown.items.map((entry) => (
-                          <Link
-                            key={entry.key}
-                            href={entry.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
-                          </Link>
-                        ))}
-                        {dropdown.sections?.map((section) => {
-                          const sectionLabel = section.titleKey
-                            ? t(section.titleKey, section.titleFallback ?? section.key)
-                            : (section.titleFallback ?? label);
-
-                          return (
-                            <div key={section.key} className="mt-2 border-t border-hairline pt-2">
-                              {!section.hideTitle && sectionLabel ? (
-                                <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                  {sectionLabel}
-                                </p>
-                              ) : null}
-                              {section.items.map((entry) => (
-                                <Link
-                                  key={entry.key}
-                                  href={entry.href}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className={clsx(
-                                    'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                                    entry.emphasized ? 'font-semibold text-text-primary' : undefined
-                                  )}
-                                >
-                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
-                                </Link>
-                              ))}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </nav>
-            {isAuthenticated ? (
-              <div className="stack-gap-sm">
-                <Link
-                  href="/app"
-                  prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card dark:bg-white dark:text-[#030712] dark:shadow-[0_14px_32px_rgba(255,255,255,0.14)] dark:hover:bg-slate-100"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {generateLabel}
-                </Link>
-                      <Button
-                        type="button"
-                        size="md"
-                        variant="outline"
-                        className="w-full rounded-2xl border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
-                        onClick={() => signOut({ closeMobileMenu: true })}
-                      >
-                        {t('workspace.header.signOut', 'Sign out')}
-                      </Button>
-              </div>
-            ) : (
-              <div className="stack-gap-sm">
-                <Link
-                  href="/login?next=/app"
-                  prefetch={false}
-                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-analytics-event="cta_click"
-                  data-analytics-cta-name="marketing_nav_login"
-                  data-analytics-cta-location="marketing_nav_mobile"
-                  data-analytics-target-family="auth"
-                >
-                  {login}
-                </Link>
-                <Link
-                  href="/app"
-                  prefetch={false}
-                  className="block rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-center text-base font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-analytics-event="cta_click"
-                  data-analytics-cta-name="marketing_nav_start_app"
-                  data-analytics-cta-location="marketing_nav_mobile"
-                  data-analytics-target-family="workspace"
-                >
-                  {cta}
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+        <MarketingMobileMenu
+          cta={cta ?? 'Generate'}
+          generateLabel={generateLabel ?? 'Generate'}
+          isAuthenticated={isAuthenticated}
+          isHomePage={isHomePage}
+          links={links}
+          login={login ?? 'Log in'}
+          mobileDropdownOpen={mobileDropdownOpen}
+          pathname={pathname}
+          t={t}
+          theme={theme}
+          onClose={() => setMobileMenuOpen(false)}
+          onSignOut={() => signOut({ closeMobileMenu: true })}
+          onToggleDropdown={(key) =>
+            setMobileDropdownOpen((prev) => ({
+              ...prev,
+              [key]: !prev[key],
+            }))
+          }
+          onToggleTheme={toggleTheme}
+        />
       ) : null}
     </>
   );
