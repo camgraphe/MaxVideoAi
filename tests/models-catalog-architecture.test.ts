@@ -6,6 +6,8 @@ import test from 'node:test';
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts');
+const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-copy.ts');
+const valueCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-value-copy.ts');
 const sectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-sections.ts');
 const heroPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogHero.tsx');
 const gallerySectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogGallerySection.tsx');
@@ -13,6 +15,8 @@ const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketi
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
+const copySource = readFileSync(copyPath, 'utf8');
+const valueCopySource = readFileSync(valueCopyPath, 'utf8');
 const sectionsSource = readFileSync(sectionsPath, 'utf8');
 const heroSource = readFileSync(heroPath, 'utf8');
 const gallerySectionSource = readFileSync(gallerySectionPath, 'utf8');
@@ -21,6 +25,8 @@ const jsonLdScriptsSource = readFileSync(jsonLdScriptsPath, 'utf8');
 test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(pagePath), 'models catalog route component should exist');
   assert.ok(existsSync(utilsPath), 'models catalog helper module should exist');
+  assert.ok(existsSync(copyPath), 'models catalog localized copy module should exist');
+  assert.ok(existsSync(valueCopyPath), 'models catalog value copy module should exist');
   assert.ok(existsSync(sectionsPath), 'models catalog section data module should exist');
   assert.ok(existsSync(heroPath), 'models catalog hero should live in a route-local component');
   assert.ok(existsSync(gallerySectionPath), 'models catalog gallery section should live in a route-local component');
@@ -49,19 +55,35 @@ test('models catalog route delegates catalog helper logic', () => {
 
   const lineCount = pageSource.split('\n').length;
   assert.ok(lineCount <= 760, `ModelsCatalogPage should stay below 760 lines after hero extraction, got ${lineCount}`);
+
+  const utilsLineCount = utilsSource.split('\n').length;
+  assert.ok(utilsLineCount <= 500, `models-catalog-utils should stay below 500 lines after copy split, got ${utilsLineCount}`);
 });
 
 test('models catalog helper module exposes the route contract', () => {
+  assert.match(utilsSource, /from '\.\/models-catalog-copy'/, 'utils should re-export localized page copy');
+  assert.match(utilsSource, /from '\.\/models-catalog-value-copy'/, 'utils should re-export value sentence copy');
+
   for (const exportName of [
     'MODELS_HERO_IMAGE_URL',
     'MODELS_SCOPE_NAV_LABELS',
     'MODELS_SLUG_MAP',
     'DEFAULT_ENGINE_TYPE_LABELS',
-    'DEFAULT_SCORE_LABEL_MAP',
+  ]) {
+    assert.match(copySource, new RegExp(`export const ${exportName}`), `${exportName} should be exported from copy module`);
+  }
+
+  for (const exportName of [
     'DEFAULT_VALUE_SENTENCE_BY_LOCALE',
     'MODEL_CARD_DESCRIPTION_OVERRIDES',
-    'SCORE_LABEL_KEYS',
     'USE_CASE_MAP',
+  ]) {
+    assert.match(valueCopySource, new RegExp(`export const ${exportName}`), `${exportName} should be exported from value copy module`);
+  }
+
+  for (const exportName of [
+    'DEFAULT_SCORE_LABEL_MAP',
+    'SCORE_LABEL_KEYS',
   ]) {
     assert.match(utilsSource, new RegExp(`export const ${exportName}`), `${exportName} should be exported`);
   }
@@ -70,6 +92,11 @@ test('models catalog helper module exposes the route contract', () => {
     'getModelsScopeEnglishPath',
     'getModelsScopePath',
     'getScopeDefaults',
+  ]) {
+    assert.match(copySource, new RegExp(`export function ${exportName}`), `${exportName} should be exported from copy module`);
+  }
+
+  for (const exportName of [
     'loadEngineKeySpecs',
     'loadEngineScores',
     'getCatalogBySlug',
@@ -88,9 +115,12 @@ test('models catalog helper module exposes the route contract', () => {
     assert.match(utilsSource, new RegExp(`export (async )?function ${exportName}`), `${exportName} should be exported`);
   }
 
-  assert.match(utilsSource, /export type ModelsPageScope/, 'ModelsPageScope should be exported');
+  assert.match(utilsSource, /export type \{ ModelsPageScope, ScopePageDefaults \} from '\.\/models-catalog-copy';/, 'utils should re-export copy types');
+  assert.match(copySource, /export type ModelsPageScope/, 'ModelsPageScope should be owned by copy module');
   assert.match(utilsSource, /export type EngineScore/, 'EngineScore should be exported');
-  assert.match(utilsSource, /export type ScopePageDefaults/, 'ScopePageDefaults should be exported');
+  assert.match(copySource, /export type ScopePageDefaults/, 'ScopePageDefaults should be owned by copy module');
+  assert.match(copySource, /const MODELS_SCOPE_DEFAULTS/, 'copy module should own localized scope defaults');
+  assert.match(valueCopySource, /export const USE_CASE_MAP/, 'value copy module should own model use-case copy');
 
   for (const exportName of [
     'buildModelsOutcomeTiles',
