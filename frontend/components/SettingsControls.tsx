@@ -2,8 +2,7 @@
 
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject, Ref } from 'react';
-import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
+import type { MutableRefObject } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -12,65 +11,9 @@ import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/settings-
 import { matchesDurationOptionValue, parseDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
 import { SettingsGenericAdvancedFields } from '@/components/settings-controls/settings-control-generic-fields';
 import { FieldGroup, RangeWithInput } from '@/components/settings-controls/settings-control-parts';
+import type { SettingsControlsProps } from '@/components/settings-controls/settings-control-types';
 
 export { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/settings-controls/settings-control-copy';
-
-interface Props {
-  engine: EngineCaps;
-  caps?: CapabilityCaps;
-  durationSec: number;
-  durationOption?: number | string | null;
-  onDurationChange: (value: number | string) => void;
-  numFrames?: number | null;
-  onNumFramesChange?: (value: number) => void;
-  resolution: string;
-  onResolutionChange: (value: string) => void;
-  aspectRatio: string;
-  onAspectRatioChange: (value: string) => void;
-  fps: number;
-  onFpsChange: (value: number) => void;
-  mode: Mode;
-  iterations?: number;
-  onIterationsChange?: (value: number) => void;
-  seedLocked?: boolean;
-  onSeedLockedChange?: (value: boolean) => void;
-  showLoopControl?: boolean;
-  loopEnabled?: boolean;
-  onLoopChange?: (value: boolean) => void;
-  showAudioControl?: boolean;
-  audioEnabled?: boolean;
-  onAudioChange?: (value: boolean) => void;
-  audioControlDisabled?: boolean;
-  audioControlNote?: string;
-  focusRefs?: {
-    duration?: Ref<HTMLElement>;
-    resolution?: Ref<HTMLDivElement>;
-  };
-  showExtendControl?: boolean;
-  cfgScale?: number | null;
-  onCfgScaleChange?: (value: number) => void;
-  durationManaged?: boolean;
-  durationManagedLabel?: string;
-  showKlingV3Controls?: boolean;
-  showKlingV3VoiceControls?: boolean;
-  klingShotType?: 'customize' | 'intelligent';
-  onKlingShotTypeChange?: (value: 'customize' | 'intelligent') => void;
-  voiceIdsValue?: string;
-  onVoiceIdsChange?: (value: string) => void;
-  voiceControlActive?: boolean;
-  showSeedanceControls?: boolean;
-  seedValue?: string;
-  onSeedChange?: (value: string) => void;
-  cameraFixed?: boolean;
-  onCameraFixedChange?: (value: boolean) => void;
-  safetyChecker?: boolean;
-  onSafetyCheckerChange?: (value: boolean) => void;
-  showSafetyCheckerControl?: boolean;
-  advancedFields?: Array<{ field: EngineInputField; required: boolean }>;
-  advancedFieldValues?: Record<string, unknown>;
-  onAdvancedFieldChange?: (field: EngineInputField, value: string) => void;
-  variant?: 'full' | 'advanced';
-}
 
 export function SettingsControls({
   engine,
@@ -122,7 +65,7 @@ export function SettingsControls({
   advancedFieldValues = {},
   onAdvancedFieldChange,
   variant = 'full',
-}: Props) {
+}: SettingsControlsProps) {
   const { t } = useI18n();
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
     | Partial<typeof DEFAULT_CONTROLS_COPY>
