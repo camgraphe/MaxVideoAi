@@ -72,6 +72,10 @@ const nextConfig = {
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
     qualities: [52, 70, 72, 75, 80],
+    localPatterns: [
+      { pathname: '/assets/**' },
+      { pathname: '/assets/tools/character-builder-workspace.png', search: '?hero=1' },
+    ],
     remotePatterns: [
       { protocol: 'https', hostname: 'videohub-uploads-us.s3.amazonaws.com' },
       { protocol: 'https', hostname: 'media.maxvideoai.com' },
