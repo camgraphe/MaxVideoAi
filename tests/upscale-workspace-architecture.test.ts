@@ -15,6 +15,7 @@ const previewStateHookPath = join(root, 'frontend/src/components/tools/upscale/_
 const recentJobsHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleRecentJobs.ts');
 const sourceMediaHookPath = join(root, 'frontend/src/components/tools/upscale/_hooks/useUpscaleSourceMedia.ts');
 const controlsPath = join(root, 'frontend/src/components/tools/upscale/_components/upscale-workspace-controls.tsx');
+const inputPanelsPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleInputPanels.tsx');
 const heroSummaryCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleHeroSummaryCard.tsx');
 const previewCardPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscalePreviewCard.tsx');
 const recentRailPath = join(root, 'frontend/src/components/tools/upscale/_components/UpscaleRecentRail.tsx');
@@ -32,6 +33,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(recentJobsHookPath), 'upscale recent jobs orchestration should live in a colocated hook');
   assert.ok(existsSync(sourceMediaHookPath), 'upscale source media orchestration should live in a colocated hook');
   assert.ok(existsSync(controlsPath), 'upscale workspace controls should live in colocated components');
+  assert.ok(existsSync(inputPanelsPath), 'upscale input panels should live in colocated components');
   assert.ok(existsSync(heroSummaryCardPath), 'upscale hero summary should live in a colocated component');
   assert.ok(existsSync(previewCardPath), 'upscale preview card should live in a colocated component');
   assert.ok(existsSync(recentRailPath), 'upscale recent rail should live in a colocated component');
@@ -45,7 +47,7 @@ test('upscale workspace delegates copy, local types, and helper logic', () => {
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscalePreviewState'/, 'workspace should import preview state hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleRecentJobs'/, 'workspace should import recent jobs hook');
   assert.match(workspaceSource, /from '\.\/upscale\/_hooks\/useUpscaleSourceMedia'/, 'workspace should import source media hook');
-  assert.match(workspaceSource, /from '\.\/upscale\/_components\/upscale-workspace-controls'/, 'workspace should import workspace controls');
+  assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleInputPanels'/, 'workspace should import input panels');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleHeroSummaryCard'/, 'workspace should import hero summary card');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscalePreviewCard'/, 'workspace should import preview card');
   assert.match(workspaceSource, /from '\.\/upscale\/_components\/UpscaleRecentRail'/, 'workspace should import recent rail');
@@ -83,9 +85,13 @@ test('upscale workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /recentGroups\.slice/, 'recent rail rendering belongs in UpscaleRecentRail');
   assert.doesNotMatch(workspaceSource, /Reuse finished assets/, 'recent rail copy belongs in UpscaleRecentRail');
   assert.doesNotMatch(workspaceSource, /<GroupedJobCard/, 'recent job cards belong in UpscaleRecentRail');
+  assert.doesNotMatch(workspaceSource, /Source asset/, 'source panel JSX belongs in UpscaleInputPanels');
+  assert.doesNotMatch(workspaceSource, /Drop file here/, 'upload dropzone JSX belongs in UpscaleInputPanels');
+  assert.doesNotMatch(workspaceSource, /Choose how you want to enhance/, 'recipe panel JSX belongs in UpscaleInputPanels');
+  assert.doesNotMatch(workspaceSource, /<SelectMenu/, 'recipe selectors belong in UpscaleInputPanels');
 
   const lineCount = workspaceSource.split('\n').length;
-  assert.ok(lineCount <= 790, `UpscaleWorkspace should stay below 790 lines after recent rail extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 670, `UpscaleWorkspace should stay below 670 lines after input panel extraction, got ${lineCount}`);
 });
 
 test('upscale helper modules expose the expected workspace contract', () => {
@@ -99,6 +105,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   const recentJobsHookSource = readFileSync(recentJobsHookPath, 'utf8');
   const sourceMediaHookSource = readFileSync(sourceMediaHookPath, 'utf8');
   const controlsSource = readFileSync(controlsPath, 'utf8');
+  const inputPanelsSource = readFileSync(inputPanelsPath, 'utf8');
   const heroSummaryCardSource = readFileSync(heroSummaryCardPath, 'utf8');
   const previewCardSource = readFileSync(previewCardPath, 'utf8');
   const recentRailSource = readFileSync(recentRailPath, 'utf8');
@@ -155,6 +162,10 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(sourceMediaHookSource, /new window\.Image/, 'source media hook should hydrate image dimensions');
   assert.match(controlsSource, /export function Label/, 'workspace label component should be exported');
   assert.match(controlsSource, /export function SegmentButton/, 'workspace segment button should be exported');
+  assert.match(inputPanelsSource, /export function UpscaleSourcePanel/, 'source panel should be exported');
+  assert.match(inputPanelsSource, /export function UpscaleRecipePanel/, 'recipe panel should be exported');
+  assert.match(inputPanelsSource, /SegmentButton/, 'input panels should own media type controls');
+  assert.match(inputPanelsSource, /SelectMenu/, 'input panels should own recipe selectors');
   assert.match(heroSummaryCardSource, /export function UpscaleHeroSummaryCard/, 'hero summary card should be exported');
   assert.match(heroSummaryCardSource, /WandSparkles/, 'hero summary card should own its action icon');
   assert.match(previewCardSource, /export function UpscalePreviewCard/, 'preview card should be exported');
