@@ -12,7 +12,10 @@ const heroShowcaseSource = readFileSync('frontend/components/marketing/home/Hero
 const navSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const buttonSource = readFileSync('frontend/components/ui/Button.tsx', 'utf8');
 const toolsHubSource = readFileSync('frontend/src/components/tools/ToolsMarketingHubPage.tsx', 'utf8');
-const pricingPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx', 'utf8');
+const pricingPageSource = [
+  readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx', 'utf8'),
+  readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingHeroSection.tsx', 'utf8'),
+].join('\n');
 const blogPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/page.tsx', 'utf8');
 const comparePageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx', 'utf8');
 
