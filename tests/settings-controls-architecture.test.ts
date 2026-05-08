@@ -7,17 +7,25 @@ const root = process.cwd();
 const controlsPath = join(root, 'frontend/components/SettingsControls.tsx');
 const partsPath = join(root, 'frontend/components/settings-controls/settings-control-parts.tsx');
 const durationPath = join(root, 'frontend/components/settings-controls/settings-control-duration.ts');
+const copyPath = join(root, 'frontend/components/settings-controls/settings-control-copy.ts');
+const genericFieldsPath = join(root, 'frontend/components/settings-controls/settings-control-generic-fields.tsx');
 
 const controlsSource = readFileSync(controlsPath, 'utf8');
 const partsSource = readFileSync(partsPath, 'utf8');
 const durationSource = readFileSync(durationPath, 'utf8');
+const copySource = readFileSync(copyPath, 'utf8');
+const genericFieldsSource = readFileSync(genericFieldsPath, 'utf8');
 
 test('settings controls delegates reusable control parts and duration helpers', () => {
   assert.ok(existsSync(partsPath), 'settings control subcomponents should live in a focused module');
   assert.ok(existsSync(durationPath), 'settings duration helpers should live in a focused module');
+  assert.ok(existsSync(copyPath), 'settings controls copy should live in a focused module');
+  assert.ok(existsSync(genericFieldsPath), 'generic advanced fields should live in a focused module');
 
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-duration'/);
+  assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-copy'/);
+  assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
 });
 
 test('settings controls does not regain extracted ownership', () => {
@@ -25,9 +33,13 @@ test('settings controls does not regain extracted ownership', () => {
   assert.doesNotMatch(controlsSource, /function RangeWithInput\(/, 'RangeWithInput belongs in settings-control-parts.tsx');
   assert.doesNotMatch(controlsSource, /function parseDurationOptionValue\(/, 'duration parsing belongs in settings-control-duration.ts');
   assert.doesNotMatch(controlsSource, /type DurationOptionMeta =/, 'duration option contracts belong in settings-control-duration.ts');
+  assert.doesNotMatch(controlsSource, /const DEFAULT_CONTROLS_COPY =/, 'default copy belongs in settings-control-copy.ts');
+  assert.doesNotMatch(controlsSource, /function mergeControlsCopy\(/, 'copy merging belongs in settings-control-copy.ts');
+  assert.doesNotMatch(controlsSource, /function renderGenericAdvancedField/, 'generic field rendering belongs in settings-control-generic-fields.tsx');
+  assert.doesNotMatch(controlsSource, /<select[\s\S]*field\.values/, 'generic enum field rendering belongs in settings-control-generic-fields.tsx');
 
   const lineCount = controlsSource.split('\n').length;
-  assert.ok(lineCount <= 1205, `SettingsControls should stay below 1205 lines after subcomponent extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1065, `SettingsControls should stay below 1065 lines after copy and generic field extraction, got ${lineCount}`);
 });
 
 test('settings control helper modules expose the expected contract', () => {
@@ -36,4 +48,9 @@ test('settings control helper modules expose the expected contract', () => {
   assert.match(durationSource, /export type DurationOptionMeta/);
   assert.match(durationSource, /export function parseDurationOptionValue/);
   assert.match(durationSource, /export function matchesDurationOptionValue/);
+  assert.match(copySource, /export const DEFAULT_CONTROLS_COPY/);
+  assert.match(copySource, /export function mergeControlsCopy/);
+  assert.match(genericFieldsSource, /export function SettingsGenericAdvancedFields/);
+  assert.match(genericFieldsSource, /field\.type === 'enum'/);
+  assert.match(genericFieldsSource, /field\.type === 'number'/);
 });
