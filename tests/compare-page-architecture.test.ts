@@ -16,6 +16,10 @@ const faqSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts',
   'utf8'
 );
+const metadataSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-metadata.ts',
+  'utf8'
+);
 const scorecardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-scorecard.ts',
   'utf8'
@@ -28,10 +32,11 @@ const generateCardSource = readFileSync(
 test('comparison detail page delegates copy, helper, and media responsibilities', () => {
   const lineCount = pageSource.split('\n').length;
 
-  assert.ok(lineCount < 1300, `comparison page should stay under 1300 lines after split, got ${lineCount}`);
+  assert.ok(lineCount <= 1100, `comparison page should stay under 1100 lines after metadata split, got ${lineCount}`);
   assert.ok(pageSource.includes("from './_lib/compare-page-helpers'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-overrides'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-faq'"));
+  assert.ok(pageSource.includes("from './_lib/compare-page-metadata'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-scorecard'"));
   assert.ok(pageSource.includes("from './_components/CompareGenerateCard'"));
   assert.ok(pageSource.includes("from './_components/CompareShowdownMedia'"));
@@ -40,6 +45,7 @@ test('comparison detail page delegates copy, helper, and media responsibilities'
   assert.doesNotMatch(pageSource, /type ComparePageCopy =/);
   assert.doesNotMatch(pageSource, /const generatedFaqItems =/);
   assert.doesNotMatch(pageSource, /const comparisonMetrics = \[/);
+  assert.doesNotMatch(pageSource, /buildSeoMetadata/);
 });
 
 test('comparison detail helpers own routing, pricing, specs, and localized overrides', () => {
@@ -56,5 +62,7 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(scorecardSource, /export function buildComparisonMetrics/);
   assert.match(scorecardSource, /export function buildCompareSummaryRows/);
   assert.match(scorecardSource, /export function deriveCompareStrengths/);
+  assert.match(metadataSource, /export async function buildComparePageMetadata/);
+  assert.match(metadataSource, /buildSeoMetadata/);
   assert.match(generateCardSource, /export function CompareGenerateCard/);
 });
