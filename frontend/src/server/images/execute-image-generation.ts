@@ -2,7 +2,6 @@ import { ApiError, ValidationError } from '@fal-ai/client';
 import { randomUUID } from 'crypto';
 import { listFalEngines } from '@/config/falEngines';
 import type {
-  CharacterReferenceSelection,
   ImageGenerationMode,
   ImageGenerationRequest,
   ImageGenerationResponse,
@@ -62,6 +61,12 @@ import {
   parseRequestId,
   sanitizeCharacterReferences,
 } from './image-provider-payload';
+import {
+  buildReceiptSnapshot,
+  recordRefundReceipt,
+  type PendingReceipt,
+} from './image-generation-receipts';
+import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
@@ -69,20 +74,6 @@ export { ImageGenerationExecutionError } from './image-generation-error';
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
-type PendingReceipt = {
-  userId: string;
-  amountCents: number;
-  currency: string;
-  description: string;
-  jobId: string;
-  surface: JobSurface;
-  billingProductKey: BillingProductKey | null;
-  snapshot: unknown;
-  applicationFeeCents: number | null;
-  vendorAccountId: string | null;
-  stripePaymentIntentId?: string | null;
-  stripeChargeId?: string | null;
-};
 
 type ExecuteImageGenerationOptions = {
   userId: string;
@@ -118,137 +109,6 @@ function normalizeMode(value: unknown, fallback: ImageGenerationMode = 't2i'): I
   if (value === 'generate') return 't2i';
   if (value === 'edit') return 'i2i';
   return fallback;
-}
-
-function buildReceiptSnapshot(pricing: PricingSnapshot): Record<string, unknown> {
-  const snapshot: Record<string, unknown> = {
-    totalCents: pricing.totalCents,
-    currency: pricing.currency,
-  };
-
-  const discountCandidate = (pricing as {
-    discount?: { amountCents?: number; percentApplied?: number; label?: string };
-  }).discount;
-  if (discountCandidate && typeof discountCandidate.amountCents === 'number' && discountCandidate.amountCents > 0) {
-    snapshot.discount = {
-      amountCents: discountCandidate.amountCents,
-      percentApplied: discountCandidate.percentApplied ?? null,
-      label: discountCandidate.label ?? null,
-    };
-  }
-
-  const taxesCandidate = (pricing as { taxes?: Array<{ amountCents?: number; label?: string }> }).taxes;
-  if (Array.isArray(taxesCandidate)) {
-    const taxes = taxesCandidate
-      .filter((tax) => tax && typeof tax.amountCents === 'number' && tax.amountCents > 0)
-      .map((tax) => ({
-        amountCents: tax.amountCents!,
-        label: tax.label ?? null,
-      }));
-    if (taxes.length) {
-      snapshot.taxes = taxes;
-    }
-  }
-
-  return snapshot;
-}
-
-async function recordRefundReceipt(receipt: PendingReceipt, label: string, priceOnly: boolean) {
-  try {
-    await query(
-      `INSERT INTO app_receipts (
-         user_id,
-         type,
-         amount_cents,
-         currency,
-         description,
-         job_id,
-         surface,
-         billing_product_key,
-         pricing_snapshot,
-         application_fee_cents,
-         vendor_account_id,
-         stripe_payment_intent_id,
-         stripe_charge_id,
-         platform_revenue_cents,
-         destination_acct
-       )
-       VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
-       ON CONFLICT DO NOTHING`,
-      [
-        receipt.userId,
-        receipt.amountCents,
-        receipt.currency,
-        label,
-        receipt.jobId,
-        receipt.surface,
-        receipt.billingProductKey,
-        JSON.stringify(receipt.snapshot),
-        priceOnly ? null : 0,
-        priceOnly ? null : receipt.vendorAccountId,
-        receipt.stripePaymentIntentId ?? null,
-        receipt.stripeChargeId ?? null,
-        priceOnly ? null : 0,
-        priceOnly ? null : receipt.vendorAccountId,
-      ]
-    );
-  } catch (error) {
-    console.warn('[images] failed to record refund receipt', error);
-  }
-}
-
-function buildDefaultSettingsSnapshot(args: {
-  surface: JobSurface;
-  engineEntry: ImageEngineEntry;
-  mode: ImageGenerationMode;
-  prompt: string;
-  numImages: number;
-  resolvedAspectRatio: string | null;
-  resolution: string;
-  customImageSize: GptImage2ImageSize | null;
-  normalizedSeed: number | null;
-  outputFormat: string | null;
-  quality: string | null;
-  maskUrl: string | null;
-  enableWebSearch: boolean;
-  thinkingLevel: string | null;
-  limitGenerations: boolean;
-  imageUrls: string[];
-  characterReferences: CharacterReferenceSelection[];
-  membershipTier?: string;
-  visibility: 'public' | 'private';
-  indexable: boolean;
-}): unknown {
-  return {
-    schemaVersion: 1,
-    surface: args.surface,
-    engineId: args.engineEntry.id,
-    engineLabel: args.engineEntry.marketingName,
-    inputMode: args.mode,
-    prompt: args.prompt,
-    core: {
-      numImages: args.numImages,
-      aspectRatio: args.resolvedAspectRatio ?? null,
-      resolution: args.resolution,
-      customImageSize: args.customImageSize,
-      seed: args.normalizedSeed,
-      outputFormat: args.outputFormat,
-      quality: args.quality,
-      maskUrl: args.maskUrl,
-      enableWebSearch: args.enableWebSearch,
-      thinkingLevel: args.thinkingLevel,
-      limitGenerations: args.limitGenerations,
-    },
-    refs: {
-      imageUrls: args.imageUrls,
-      characterReferences: args.characterReferences,
-    },
-    meta: {
-      memberTier: args.membershipTier ?? null,
-      visibility: args.visibility,
-      indexable: args.indexable,
-    },
-  };
 }
 
 function fail(
