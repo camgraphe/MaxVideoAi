@@ -2,34 +2,38 @@ import Image from 'next/image';
 import {
   BadgeCheck,
   BadgeDollarSign,
-  Atom,
-  AudioWaveform,
   BarChart3,
   Box,
   Clock,
   CircleDollarSign,
-  Clapperboard,
   ClipboardList,
-  Film,
   ImageIcon,
-  Images,
   Layers3,
-  Mic2,
   RefreshCcw,
-  RotateCw,
   Scale,
-  SlidersHorizontal,
   Sparkles,
-  SplitSquareHorizontal,
   Type,
   Video,
-  type LucideIcon,
 } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { HeroVideoShowcase, type HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
+import {
+  BEST_FOR_CARD_VISUALS,
+  COMPARISON_CARD_MEDIA,
+  HERO_ENGINE_MEDIA,
+  HERO_VIDEO_CHIPS,
+  HERO_VIDEO_MODE_LABELS,
+  HERO_VIDEO_ORDER,
+  HOME_HERO_IMAGE_URL,
+  KLING_3_PRO_HERO_RENDER,
+  PROOF_ICONS,
+  REFERENCE_WORKFLOW_VISUALS,
+  TOOLBOX_VISUALS,
+  TOOL_ICONS,
+} from '@/components/marketing/home/home-redesign-visuals';
 import type {
   ComparisonCard,
   FaqItem,
@@ -40,11 +44,11 @@ import type {
   SectionCopy,
   ShotTypeCard,
   ToolCard,
-  ToolIconKey,
   TrustCard,
-  WorkflowSeoSummaryCopy,
   WorkflowStep,
 } from '@/components/marketing/home/home-redesign-types';
+
+export { WorkflowSeoSummary } from '@/components/marketing/home/HomeWorkflowSeoSummary';
 
 export type {
   ComparisonCard,
@@ -65,174 +69,6 @@ function isWorkspaceHref(href: LocalizedLinkHref): boolean {
   const pathname = typeof href === 'string' ? href : 'pathname' in href && typeof href.pathname === 'string' ? href.pathname : '';
   return pathname === '/app' || pathname.startsWith('/app?') || pathname.startsWith('/app/');
 }
-
-const TOOL_ICONS: Record<ToolIconKey, LucideIcon> = {
-  text: Film,
-  image: Images,
-  video: Clapperboard,
-  generateImage: Sparkles,
-  character: Layers3,
-  angle: RotateCw,
-  extend: SplitSquareHorizontal,
-  retake: RefreshCcw,
-  audio: Mic2,
-  compare: SlidersHorizontal,
-};
-
-const TOOLBOX_VISUALS: Record<string, string> = {
-  'text-to-video':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a89d8b58-3c6b-4de6-bf1d-88982b2a33da.jpg',
-  'image-to-video':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b527318e-2b66-4da2-8ac3-e82155c9806b.jpg',
-  'video-to-video':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/84413a86-180e-4b46-81f8-0459fb0e905f.jpg',
-  'generate-image':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/3bfdfcb2-3c20-4b84-9fd5-e3645810d45a.jpg',
-  'character-builder':
-    'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d9851ed8-4db8-4f0c-a547-39d972bd9b64.webp',
-  'angle-tool':
-    'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/c82407ca-701a-447a-878f-491338658cd0.webp',
-  upscale:
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/06c83b77-46aa-4aff-b687-dbeeb6bcbf22.jpg',
-  'compare-engines':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/de3b13d9-e5b0-4c09-993e-89039642f9fa.jpg',
-};
-
-const REFERENCE_WORKFLOW_VISUALS = [
-  '/assets/marketing/reference-workflow-source-image.webp',
-  '/assets/marketing/reference-workflow-character-consistency.webp',
-  '/assets/marketing/reference-workflow-angle-composition.webp',
-  '/assets/marketing/reference-workflow-final-video.webp',
-] as const;
-
-const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-pro', 'happy-horse-1-0'] as const;
-const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
-const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
-  'kling-3-pro': 'image-to-video',
-  'seedance-2-0': 'image-to-video',
-  'veo-3-1-lite': 'image-to-video',
-  'ltx-2-3-pro': 'audio-to-video',
-  'happy-horse-1-0': 'reference-to-video',
-};
-const HERO_VIDEO_CHIPS: Record<string, string[]> = {
-  'kling-3-pro': ['Cinematic', 'Camera move'],
-  'seedance-2-0': ['Cinematic', 'Realism'],
-  'veo-3-1-lite': ['Realistic', 'Premium'],
-  'ltx-2-3-pro': ['Audio', 'Retake'],
-  'happy-horse-1-0': ['Lip-sync', 'Unified'],
-};
-
-const PROOF_ICONS: Record<string, LucideIcon> = {
-  engines: Atom,
-  providers: Box,
-  textToVideo: Type,
-  imageToVideo: ImageIcon,
-  videoToVideo: Video,
-  audio: AudioWaveform,
-  fourK: BadgeCheck,
-  successfulGenerations: BarChart3,
-};
-
-const KLING_3_PRO_HERO_RENDER = {
-  posterSrc:
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/01245e62-6bb2-4d5d-89c6-c60923a004ad.jpg',
-  videoSrc:
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7b1f1c7b-f7f0-473e-9610-82723604b690.mp4',
-  resolution: '16:9',
-  duration: '0:12',
-  estimateValue: '$2.63',
-  estimateMeta: '12s generation',
-} as const;
-
-const HERO_ENGINE_MEDIA: Record<
-  string,
-  {
-    posterSrc: string;
-    videoSrc?: string;
-    resolution: string;
-    duration: string;
-    estimateValue?: string;
-    estimateMeta?: string;
-    price?: string;
-  }
-> = {
-  'kling-3-pro': {
-    ...KLING_3_PRO_HERO_RENDER,
-  },
-  'seedance-2-0': {
-    posterSrc: '/hero/showcase-seedance-2-0.webp',
-    resolution: '16:9',
-    duration: '0:05',
-  },
-  'veo-3-1': {
-    posterSrc: '/hero/showcase-veo-3-1.webp',
-    resolution: '16:9',
-    duration: '0:05',
-  },
-  'veo-3-1-lite': {
-    posterSrc: '/hero/showcase-veo-3-1.webp',
-    resolution: '16:9',
-    duration: '0:05',
-  },
-  'ltx-2-3-pro': {
-    posterSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/983f1a91-97d7-40bf-b857-3c5fdbfa6162.jpg',
-    videoSrc: 'https://media.maxvideoai.com/renders/marketing/4334436e-af77-48ff-a9df-fd6bf7f140db.mp4',
-    resolution: '16:9',
-    duration: '0:10',
-    estimateValue: '$0.78',
-    estimateMeta: '10s generation',
-  },
-  'happy-horse-1-0': {
-    posterSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a3182fc5-e993-4a3b-9b5a-805997bd3e68.jpg',
-    videoSrc: 'https://media.maxvideoai.com/renders/marketing/f808f22b-c463-421f-b5dc-ec6c898ece40.mp4',
-    resolution: '16:9',
-    duration: '0:10',
-    estimateValue: '$1.82',
-    estimateMeta: '10s generation',
-    price: '$0.18/sec',
-  },
-  'sora-2': {
-    posterSrc: '/hero/showcase-sora-2.webp',
-    resolution: '16:9',
-    duration: '0:05',
-  },
-};
-
-const BEST_FOR_CARD_VISUALS: Record<string, { imageSrc: string; icon: LucideIcon }> = {
-  'cinematic-realism': { imageSrc: '/hero/best-for-cinematic-realism.webp', icon: Clapperboard },
-  'image-to-video': { imageSrc: '/hero/best-for-image-to-video.webp', icon: ImageIcon },
-  'fast-drafts': { imageSrc: '/hero/best-for-fast-drafts-city.webp', icon: Sparkles },
-  ads: { imageSrc: '/hero/best-for-product-ads.webp', icon: BadgeDollarSign },
-};
-
-const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt: string }> = {
-  'seedance-upgrade': {
-    imageSrc: '/hero/best-for-cinematic-realism.webp',
-    imageAlt: 'Cinematic AI video comparison preview for Seedance models.',
-  },
-  'ltx-legacy-fast': {
-    imageSrc: '/hero/best-for-fast-drafts-city.webp',
-    imageAlt: 'Fast draft AI video comparison preview for LTX models.',
-  },
-  'ltx-seedance': {
-    imageSrc: '/hero/showcase-seedance-2-0.webp',
-    imageAlt: 'AI video comparison preview between LTX and Seedance.',
-  },
-  'ltx-veo': {
-    imageSrc: '/hero/best-for-image-to-video.webp',
-    imageAlt: 'AI video comparison preview between LTX and Veo.',
-  },
-  'kling-ltx': {
-    imageSrc: '/hero/showcase-kling-3-pro.webp',
-    imageAlt: 'Camera motion AI video comparison preview between Kling and LTX.',
-  },
-  'sora-standard-pro': {
-    imageSrc: '/hero/showcase-sora-2.webp',
-    imageAlt: 'AI video comparison preview for Sora models.',
-  },
-};
 
 function SectionHeader({
   eyebrow,
@@ -1216,106 +1052,6 @@ export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; ca
               </Link>
             ))}
           </nav>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-type WorkflowBasicsLocale = 'en' | 'fr' | 'es';
-
-const WORKFLOW_BASICS_COPY: Record<
-  WorkflowBasicsLocale,
-  {
-    title: string;
-    paragraph: string;
-    cards: Array<{ title: string; body: string }>;
-  }
-> = {
-  en: {
-    title: 'AI video generator basics',
-    paragraph:
-      'MaxVideoAI is a pay-as-you-go AI video generator for creating videos from text, images, or existing clips. Compare leading models, preview real examples, and see the cost before you generate.',
-    cards: [
-      { title: 'Text-to-video', body: 'Generate scenes from prompts.' },
-      { title: 'Image-to-video', body: 'Animate a still image.' },
-      { title: 'Video-to-video', body: 'Transform existing footage.' },
-    ],
-  },
-  fr: {
-    title: 'Bases du générateur de vidéos IA',
-    paragraph:
-      'MaxVideoAI est un générateur de vidéos IA à l’usage pour créer depuis du texte, des images ou des clips existants. Comparez les modèles, consultez des exemples réels et voyez le coût avant de générer.',
-    cards: [
-      { title: 'Texte-vers-vidéo', body: 'Générez des scènes depuis des prompts.' },
-      { title: 'Image-vers-vidéo', body: 'Animez une image fixe.' },
-      { title: 'Vidéo-vers-vidéo', body: 'Transformez une vidéo existante.' },
-    ],
-  },
-  es: {
-    title: 'Conceptos básicos del generador de video IA',
-    paragraph:
-      'MaxVideoAI es un generador de video IA de pago por uso para crear desde texto, imágenes o clips existentes. Compara modelos, revisa ejemplos reales y ve el coste antes de generar.',
-    cards: [
-      { title: 'Texto a video', body: 'Genera escenas desde prompts.' },
-      { title: 'Imagen a video', body: 'Anima una imagen fija.' },
-      { title: 'Video a video', body: 'Transforma metraje existente.' },
-    ],
-  },
-};
-
-function resolveWorkflowBasicsLocale(copy: WorkflowSeoSummaryCopy): WorkflowBasicsLocale {
-  const text = [copy.heroParagraph, copy.definition?.title, copy.definition?.body, copy.generateWays?.title].filter(Boolean).join(' ').toLowerCase();
-
-  if (text.includes('générateur') || text.includes('générez')) return 'fr';
-  if (text.includes('generador') || text.includes('genera videos')) return 'es';
-  return 'en';
-}
-
-export function WorkflowSeoSummary({ copy }: { copy: WorkflowSeoSummaryCopy }) {
-  const workflowItems = copy.generateWays?.items ?? [];
-  const hasDefinition = Boolean(copy.definition?.title || copy.definition?.body || copy.heroParagraph);
-  const locale = resolveWorkflowBasicsLocale(copy);
-  const basicsCopy = WORKFLOW_BASICS_COPY[locale];
-  const cardIcons = [
-    { icon: Type, className: 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-200' },
-    { icon: ImageIcon, className: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-200' },
-    { icon: Video, className: 'bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-200' },
-  ] as const;
-
-  if (!hasDefinition && workflowItems.length === 0) return null;
-
-  return (
-    <section className="dark-section-neon border-y border-hairline bg-surface py-6 sm:py-8">
-      <div className="container-page max-w-[1280px]">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-8">
-          <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-3 sm:grid-cols-[52px_minmax(0,1fr)] sm:items-start sm:gap-4">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-bg text-text-primary shadow-sm dark:bg-white/[0.04] dark:text-white/88 sm:h-12 sm:w-12">
-              <UIIcon icon={Sparkles} size={20} strokeWidth={1.9} />
-            </span>
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">{basicsCopy.title}</h2>
-              <p className="mt-2 max-w-[620px] text-sm leading-6 text-text-secondary">{basicsCopy.paragraph}</p>
-            </div>
-          </div>
-          {workflowItems.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {workflowItems.slice(0, 3).map((item, index) => {
-                const summary = basicsCopy.cards[index] ?? { title: item.title.replace(/\s+AI$/i, ''), body: item.body };
-                const iconConfig = cardIcons[index] ?? cardIcons[0];
-
-                return (
-                  <article key={item.title} className="min-w-0 rounded-[12px] border border-hairline bg-bg/85 p-2.5 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.45)] dark-neon-panel dark:bg-white/[0.035] sm:rounded-[14px] sm:p-3">
-                    <span className={`inline-flex h-8 w-8 items-center justify-center rounded-[10px] sm:h-9 sm:w-9 ${iconConfig.className}`}>
-                      <UIIcon icon={iconConfig.icon} size={18} strokeWidth={1.85} />
-                    </span>
-                    <h3 className="mt-2 break-words text-[11px] font-semibold leading-4 text-text-primary sm:mt-3 sm:text-sm sm:leading-5">{summary.title}</h3>
-                    <p className="mt-1 text-[10px] leading-4 text-text-secondary sm:mt-1.5 sm:text-sm sm:leading-5">{summary.body}</p>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
         </div>
       </div>
     </section>
