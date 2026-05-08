@@ -7,29 +7,42 @@ const root = process.cwd();
 const executorPath = join(root, 'frontend/src/server/images/execute-image-generation.ts');
 const existingJobResponsePath = join(root, 'frontend/src/server/images/existing-image-job-response.ts');
 const referenceNormalizationPath = join(root, 'frontend/src/server/images/image-reference-normalization.ts');
+const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
+const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 
 const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
 const referenceNormalizationSource = readFileSync(referenceNormalizationPath, 'utf8');
+const initialJobSource = readFileSync(initialJobPath, 'utf8');
+const errorSource = readFileSync(errorPath, 'utf8');
 
-test('image generation executor delegates existing job response rebuilding', () => {
+test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');
   assert.ok(existsSync(referenceNormalizationPath), 'image reference normalization should live in a focused module');
+  assert.ok(existsSync(initialJobPath), 'atomic initial image job creation should live in a focused module');
+  assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
   assert.match(executorSource, /from '\.\/existing-image-job-response'/);
   assert.match(executorSource, /from '\.\/image-reference-normalization'/);
+  assert.match(executorSource, /from '\.\/image-initial-job'/);
+  assert.match(executorSource, /from '\.\/image-generation-error'/);
   assert.match(executorSource, /export \{ buildResponseFromExistingJob \} from '\.\/existing-image-job-response'/);
+  assert.match(executorSource, /export \{ ImageGenerationExecutionError \} from '\.\/image-generation-error'/);
 });
 
-test('image generation executor does not regain existing job response ownership', () => {
+test('image generation executor does not regain extracted server ownership', () => {
   assert.doesNotMatch(executorSource, /function buildImagesFromExistingJob\(/, 'stored render parsing belongs in existing-image-job-response.ts');
   assert.doesNotMatch(executorSource, /function parseResolutionFromSettingsSnapshot\(/, 'settings snapshot resolution parsing belongs in existing-image-job-response.ts');
   assert.doesNotMatch(executorSource, /parseStoredImageRenders/, 'stored render parsing belongs in existing-image-job-response.ts');
   assert.doesNotMatch(executorSource, /function pickNormalizedReferenceMime\(/, 'reference mime selection belongs in image-reference-normalization.ts');
   assert.doesNotMatch(executorSource, /function isReferenceImageSupported\(/, 'reference format checks belong in image-reference-normalization.ts');
   assert.doesNotMatch(executorSource, /async function normalizeReferenceImageForEngine\(/, 'reference normalization belongs in image-reference-normalization.ts');
+  assert.doesNotMatch(executorSource, /withDbTransaction/, 'initial job transaction belongs in image-initial-job.ts');
+  assert.doesNotMatch(executorSource, /reserveWalletChargeInExecutor/, 'wallet reservation belongs in image-initial-job.ts');
+  assert.doesNotMatch(executorSource, /async function insertProvisionalImageJob\(/, 'provisional job insert belongs in image-initial-job.ts');
+  assert.doesNotMatch(executorSource, /export class ImageGenerationExecutionError/, 'execution error contract belongs in image-generation-error.ts');
 
   const lineCount = executorSource.split('\n').length;
-  assert.ok(lineCount <= 1620, `image generation executor should stay below 1620 lines after reference normalization extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 1220, `image generation executor should stay below 1220 lines after initial job extraction, got ${lineCount}`);
 });
 
 test('existing image job response module exposes the expected contract', () => {
@@ -42,4 +55,10 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(referenceNormalizationSource, /export function isReferenceImageSupported/);
   assert.match(referenceNormalizationSource, /export function pickNormalizedReferenceMime/);
   assert.match(referenceNormalizationSource, /export async function normalizeReferenceImageForEngine/);
+  assert.match(initialJobSource, /export const PLACEHOLDER_THUMB/);
+  assert.match(initialJobSource, /export async function createAtomicInitialImageJob/);
+  assert.match(initialJobSource, /async function insertProvisionalImageJob/);
+  assert.match(initialJobSource, /withDbTransaction/);
+  assert.match(initialJobSource, /reserveWalletChargeInExecutor/);
+  assert.match(errorSource, /export class ImageGenerationExecutionError/);
 });
