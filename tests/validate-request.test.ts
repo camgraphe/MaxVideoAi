@@ -1,10 +1,36 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
+const root = process.cwd();
+const validatePath = join(root, 'frontend/app/api/generate/_lib/validate.ts');
+const mediaInputsPath = join(root, 'frontend/app/api/generate/_lib/validate-media-inputs.ts');
+const typesPath = join(root, 'frontend/app/api/generate/_lib/validate-types.ts');
 const OK = { ok: true } as const;
+
+test('generate request validation delegates media mode rules', () => {
+  assert.equal(existsSync(mediaInputsPath), true);
+  assert.equal(existsSync(typesPath), true);
+
+  const validateSource = readFileSync(validatePath, 'utf8');
+  const mediaInputsSource = readFileSync(mediaInputsPath, 'utf8');
+  const typesSource = readFileSync(typesPath, 'utf8');
+
+  assert.match(validateSource, /from '\.\/validate-media-inputs'/);
+  assert.match(validateSource, /validateModeMediaInputs/);
+  assert.doesNotMatch(validateSource, /function validateKlingElements/);
+  assert.doesNotMatch(validateSource, /const ENGINE_REF2V_LIMITS/);
+  assert.match(mediaInputsSource, /function validateKlingElements/);
+  assert.match(mediaInputsSource, /const ENGINE_REF2V_LIMITS/);
+  assert.match(typesSource, /export type ValidationResult/);
+
+  const lineCount = validateSource.split('\n').length;
+  assert.ok(lineCount <= 300, `validate.ts should stay below 300 lines after media-rule extraction, got ${lineCount}`);
+});
 
 test('Pika 2.2 rejects duration under 5 seconds', () => {
   const result = validateRequest('pika-text-to-video', 't2v', {

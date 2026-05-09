@@ -1,11 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isDatabaseConfigured, query } from '@/lib/db';
-import { randomUUID } from 'crypto';
-import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
-import { ensureBillingSchema } from '@/lib/schema';
-import type { Mode } from '@/types/engines';
+import { query } from '@/lib/db';
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
 import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
@@ -20,30 +16,18 @@ import { buildFinalGenerateResponse } from './_lib/final-response';
 import { resolveGenerateBillingPreflight } from './_lib/billing-preflight';
 import { buildGenerateValidationPayload } from './_lib/validation-payload';
 import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
-import { buildGenerateRequestOptions, isVideoMode } from './_lib/request-options';
+import { buildGenerateRequestOptions } from './_lib/request-options';
 import { resolveGenerateUserGate } from './_lib/auth-idempotency';
 import { submitFalGenerateTask } from './_lib/fal-submission';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
   VideoInitialJobError,
-  type PaymentMode,
 } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
-import { AdminAuthError, requireAdmin } from '@/server/admin';
-import {
-  BYTEPLUS_MODELARK_PROVIDER,
-  isSeedanceBytePlusModeAllowed,
-  isSeedanceFastBytePlusModeAllowed,
-  isBytePlusModelArkEnabled,
-  isBytePlusSeedanceFastEngine,
-  seedanceBytePlusAdminOnly,
-  seedanceFastBytePlusAdminOnly,
-  shouldRoutePublicSeedanceToBytePlus,
-  shouldRoutePublicSeedanceFastToBytePlus,
-} from '@/server/video-providers/byteplus-modelark';
+import { resolveGenerateRouteContext } from './_lib/route-context';
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
@@ -57,73 +41,23 @@ export async function POST(req: NextRequest) {
     });
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
-  const requestedEngineId = String(body.engineId || '');
-  const publicEngine = await getConfiguredEngine(requestedEngineId);
-  const engine =
-    publicEngine ??
-    (isBytePlusSeedanceFastEngine(requestedEngineId)
-      ? await getConfiguredEngineIncludingHidden(requestedEngineId)
-      : undefined);
-  if (!engine) {
-    const disabledEngine = await getConfiguredEngine(requestedEngineId, true);
-    if (disabledEngine) {
-      console.info('[api/generate] runtime lock active; generation blocked', { engineId: requestedEngineId });
-      return NextResponse.json({ ok: false, error: 'Engine unavailable' }, { status: 400 });
-    }
-    return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
+  const routeContext = await resolveGenerateRouteContext({ body, req });
+  if (!routeContext.ok) {
+    return NextResponse.json(routeContext.body, { status: routeContext.status });
   }
+  const {
+    engine,
+    isBytePlusV1a,
+    isPublicSeedanceBytePlus,
+    jobId,
+    mode,
+    payment,
+    providerKey,
+  } = routeContext.context;
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
-  const isPublicSeedanceBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
-  const isPublicSeedanceFastBytePlus = shouldRoutePublicSeedanceFastToBytePlus(engine.id);
-  const isBytePlusV1a =
-    isBytePlusSeedanceFastEngine(engine.id) || isPublicSeedanceFastBytePlus || isPublicSeedanceBytePlus;
-  const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
-
-  if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
-    return NextResponse.json({ ok: false, error: 'Engine unavailable' }, { status: 404 });
-  }
-
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch {
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
-  }
-
-  const bytePlusRequiresAdmin = isBytePlusV1a && (isPublicSeedanceBytePlus ? seedanceBytePlusAdminOnly() : seedanceFastBytePlusAdminOnly());
-  if (bytePlusRequiresAdmin) {
-    try {
-      await requireAdmin(req);
-    } catch (error) {
-      if (error instanceof AdminAuthError) {
-        return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
-      }
-      console.error('[api/generate] failed to check BytePlus admin access', error);
-      return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
-    }
-  }
-
-  const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
-  const jobId = requestedJobId ?? `job_${randomUUID()}`;
   metricState.jobId = jobId;
-  const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
-  const mode: Mode = isVideoMode(rawMode)
-    ? rawMode
-    : engine.modes.includes('t2v')
-      ? 't2v'
-      : engine.modes[0] ?? 't2v';
   metricState.mode = mode;
-
-  const bytePlusModeAllowed = isPublicSeedanceBytePlus
-    ? isSeedanceBytePlusModeAllowed(mode)
-    : isSeedanceFastBytePlusModeAllowed(mode);
-  if (isBytePlusV1a && !bytePlusModeAllowed) {
-    return NextResponse.json({ ok: false, error: 'This Seedance route only supports the configured modes.' }, { status: 400 });
-  }
 
   const requestOptionsResult = buildGenerateRequestOptions({
     body,
@@ -181,10 +115,6 @@ export async function POST(req: NextRequest) {
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
 
-  const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
-    typeof body.payment === 'object' && body.payment
-      ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
-      : {};
   const userGate = await resolveGenerateUserGate({ req, body });
   if (userGate.kind === 'response') {
     if (userGate.metric) {
