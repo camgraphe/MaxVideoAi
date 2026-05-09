@@ -3,17 +3,13 @@ import { ApiError, ValidationError } from '@fal-ai/client';
 import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
 import { query } from '@/lib/db';
 import { getFalClient } from '@/lib/fal-client';
-import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { getPlatformFeeCents } from '@/lib/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
 import {
-  UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   clampUpscaleFactor,
-  estimateImageUpscaleCostUsd,
-  estimateVideoUpscaleCostUsd,
   resolveUpscaleMode,
   resolveUpscaleOutputFormat,
   resolveUpscaleTargetResolution,
@@ -22,13 +18,11 @@ import type {
   UpscaleToolRequest,
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
-import type { PricingSnapshot } from '@/types/engines';
 import {
   UPSCALE_SURFACE,
   buildUpscaleFalInput,
   buildUpscalePromptSummary,
   buildUpscaleSettingsSnapshot,
-  cloneUpscalePricingWithDynamicTotal,
   extractUpscaleActualCostUsd,
   extractUpscaleOutput,
   parseUpscaleRequestId,
@@ -38,6 +32,7 @@ import {
 import { UPSCALE_PLACEHOLDER_THUMB, UPSCALE_TOOL_EVENT_NAME } from './upscale-constants';
 import { UpscaleToolError } from './upscale-errors';
 export { UpscaleToolError } from './upscale-errors';
+import { resolveUpscalePricingContext } from './upscale-pricing-context';
 import {
   createAtomicInitialUpscaleJob,
   insertUpscaleToolEvent,
@@ -101,65 +96,14 @@ export async function runUpscaleToolBase(
       code: 'video_metadata_required',
     });
   }
-  let pricing: PricingSnapshot;
-  let pricingEstimate: { megapixels?: number | null; frames?: number | null; durationSec?: number | null } = {};
-  try {
-    pricing = await computeBillingProductSnapshot({
-      productKey: billingProductKey,
-      quantity: 1,
-      engineId: engine.id,
-    });
-
-    if (mediaType === 'video' && videoMetadata) {
-      const estimate = estimateVideoUpscaleCostUsd({
-        engineId: engine.id,
-        width: videoMetadata.width,
-        height: videoMetadata.height,
-        durationSec: videoMetadata.durationSec,
-        fps: videoMetadata.fps,
-        targetResolution,
-        factor: upscaleFactor,
-      });
-      pricingEstimate = {
-        megapixels: estimate.outputMegapixels,
-        frames: estimate.frames,
-        durationSec: videoMetadata.durationSec,
-      };
-      const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
-      pricing = cloneUpscalePricingWithDynamicTotal(pricing, dynamicCents, {
-        surface: UPSCALE_SURFACE,
-        billingProductKey,
-        providerEstimateUsd: estimate.costUsd,
-        dynamicMultiplier: UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
-        videoMetadata,
-      });
-    } else {
-      const estimateCostUsd = estimateImageUpscaleCostUsd({
-        engineId: engine.id,
-        width: input.imageWidth,
-        height: input.imageHeight,
-        factor: upscaleFactor,
-      });
-      pricing.meta = {
-        ...(pricing.meta ?? {}),
-        surface: UPSCALE_SURFACE,
-        billingProductKey,
-        providerEstimateUsd: estimateCostUsd,
-      };
-      pricingEstimate = {
-        megapixels:
-          typeof input.imageWidth === 'number' && typeof input.imageHeight === 'number'
-            ? Number(((input.imageWidth * input.imageHeight * upscaleFactor * upscaleFactor) / 1_000_000).toFixed(4))
-            : null,
-      };
-    }
-  } catch (error) {
-    throw new UpscaleToolError('Unable to compute upscale pricing.', {
-      status: 500,
-      code: 'pricing_error',
-      detail: error instanceof Error ? error.message : error,
-    });
-  }
+  const { pricing, pricingEstimate } = await resolveUpscalePricingContext({
+    billingProductKey,
+    engine,
+    input,
+    targetResolution,
+    upscaleFactor,
+    videoMetadata,
+  });
 
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
   const chargedCredits = usdToCredits(chargedUsd) ?? 1;
