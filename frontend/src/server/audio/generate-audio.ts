@@ -7,12 +7,9 @@ import {
   getAudioPackConfig,
   type AudioGenerateRequestBody,
   type AudioGenerateResponse,
-  type AudioMood,
-  type AudioPackId,
 } from '@/lib/audio-generation';
-import { isDatabaseConfigured, query, withDbTransaction } from '@/lib/db';
+import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import {
   mixAudioIntoVideo,
   mixAudioTracks,
@@ -26,13 +23,25 @@ import {
   generateMusicTrack,
   generateSoundDesignTrack,
   generateStandardVoiceTrack,
-  type AudioProviderError,
 } from '@/server/audio/providers';
 import {
   AudioGenerationError,
   resolveAudioRenderDuration,
   validateAudioGenerateRequest,
 } from '@/server/audio/audio-generate-validation';
+import {
+  createInitialAudioJob,
+  loadSourceJob,
+  PLACEHOLDER_THUMB,
+  updateAudioJob,
+} from '@/server/audio/audio-generate-jobs';
+import { refundAudioCharge } from '@/server/audio/audio-generate-receipts';
+import {
+  buildPromptSummary,
+  buildProviderSnapshot,
+  isVideoBackedPack,
+  parseProviderFailures,
+} from '@/server/audio/audio-generate-snapshots';
 
 export {
   AudioGenerationError,
@@ -40,159 +49,6 @@ export {
   validateAudioGenerateRequest,
 } from '@/server/audio/audio-generate-validation';
 export type { ValidatedAudioGenerateRequest } from '@/server/audio/audio-generate-validation';
-
-const PLACEHOLDER_THUMB = '/assets/frames/thumb-16x9.svg';
-
-type SourceJobRow = {
-  job_id: string;
-  video_url: string | null;
-  thumb_url: string | null;
-  prompt: string;
-  aspect_ratio: string | null;
-};
-
-function buildPromptSummary(input: { pack: AudioPackId; prompt: string | null; mood: AudioMood | null; script: string | null }): string {
-  const base = getAudioPackConfig(input.pack).label;
-  if (input.script) {
-    return `${base} • ${input.script.slice(0, 80).trim()}`;
-  }
-  if (input.prompt) {
-    return `${base} • ${input.prompt.slice(0, 80).trim()}`;
-  }
-  if (input.mood) {
-    return `${base} • ${input.mood}`;
-  }
-  return base;
-}
-
-async function loadSourceJob(userId: string, sourceJobId: string): Promise<SourceJobRow | null> {
-  const rows = await query<SourceJobRow>(
-    `SELECT job_id, video_url, thumb_url, prompt, aspect_ratio
-       FROM app_jobs
-      WHERE job_id = $1
-        AND user_id = $2
-      LIMIT 1`,
-    [sourceJobId, userId]
-  );
-  return rows[0] ?? null;
-}
-
-async function updateAudioJob(jobId: string, patch: {
-  progress?: number;
-  status?: 'pending' | 'running' | 'completed' | 'failed';
-  message?: string | null;
-  videoUrl?: string | null;
-  audioUrl?: string | null;
-  thumbUrl?: string | null;
-  hasAudio?: boolean;
-  paymentStatus?: string;
-  settingsSnapshotJson?: string | null;
-}): Promise<void> {
-  const assignments: string[] = [];
-  const params: unknown[] = [];
-
-  if (typeof patch.progress === 'number') {
-    params.push(Math.max(0, Math.min(100, Math.round(patch.progress))));
-    assignments.push(`progress = $${params.length}`);
-  }
-  if (patch.status) {
-    params.push(patch.status);
-    assignments.push(`status = $${params.length}`);
-  }
-  if (patch.message !== undefined) {
-    params.push(patch.message);
-    assignments.push(`message = $${params.length}`);
-  }
-  if (patch.videoUrl !== undefined) {
-    params.push(patch.videoUrl);
-    assignments.push(`video_url = $${params.length}`);
-  }
-  if (patch.audioUrl !== undefined) {
-    params.push(patch.audioUrl);
-    assignments.push(`audio_url = $${params.length}`);
-  }
-  if (patch.thumbUrl !== undefined) {
-    params.push(patch.thumbUrl);
-    assignments.push(`thumb_url = $${params.length}`);
-    assignments.push(`preview_frame = $${params.length}`);
-  }
-  if (typeof patch.hasAudio === 'boolean') {
-    params.push(patch.hasAudio);
-    assignments.push(`has_audio = $${params.length}`);
-  }
-  if (patch.paymentStatus) {
-    params.push(patch.paymentStatus);
-    assignments.push(`payment_status = $${params.length}`);
-  }
-  if (patch.settingsSnapshotJson !== undefined) {
-    params.push(patch.settingsSnapshotJson);
-    assignments.push(`settings_snapshot = $${params.length}::jsonb`);
-  }
-
-  if (!assignments.length) return;
-
-  params.push(jobId);
-  await query(`UPDATE app_jobs SET ${assignments.join(', ')}, updated_at = NOW() WHERE job_id = $${params.length}`, params);
-}
-
-async function refundAudioCharge(params: {
-  userId: string;
-  jobId: string;
-  amountCents: number;
-  currency: string;
-  description: string;
-  billingProductKey: string;
-  pricingSnapshotJson: string;
-}): Promise<void> {
-  try {
-    await query(
-      `INSERT INTO app_receipts (
-         user_id,
-         type,
-         amount_cents,
-         currency,
-         description,
-         job_id,
-         surface,
-         billing_product_key,
-         pricing_snapshot,
-         application_fee_cents,
-         vendor_account_id
-       )
-       VALUES ($1, 'refund', $2, $3, $4, $5, $6, $7, $8::jsonb, 0, NULL)`,
-      [
-        params.userId,
-        params.amountCents,
-        params.currency,
-        params.description,
-        params.jobId,
-        AUDIO_SURFACE,
-        params.billingProductKey,
-        params.pricingSnapshotJson,
-      ]
-    );
-  } catch (error) {
-    console.warn('[audio] failed to record wallet refund', error);
-  }
-}
-
-function buildProviderSnapshot(base: Record<string, unknown>, providers: Record<string, unknown>) {
-  return JSON.stringify({
-    ...base,
-    providers,
-  });
-}
-
-function parseProviderFailures(error: unknown) {
-  if (error && typeof error === 'object' && 'failures' in (error as Record<string, unknown>)) {
-    return (error as AudioProviderError).failures;
-  }
-  return undefined;
-}
-
-function isVideoBackedPack(pack: AudioPackId): boolean {
-  return !getAudioPackConfig(pack).audioOnly;
-}
 
 export async function generateAudioRun(params: {
   body: AudioGenerateRequestBody;
@@ -289,89 +145,24 @@ export async function generateAudioRun(params: {
   const amountCents = pricingSnapshot.totalCents;
   const initialThumb = sourceJob?.thumb_url ?? PLACEHOLDER_THUMB;
 
-  const walletReservation = await withDbTransaction(async (executor) => {
-    const reserveResult = await reserveWalletChargeInExecutor(executor, {
-      userId: params.userId,
-      amountCents,
-      currency: pricingSnapshot.currency,
-      description: packConfig.label,
-      jobId,
-      surface: AUDIO_SURFACE,
-      billingProductKey: packConfig.billingProductKey,
-      pricingSnapshotJson,
-      applicationFeeCents: pricingSnapshot.platformFeeCents ?? pricingSnapshot.margin.amountCents,
-      vendorAccountId: pricingSnapshot.vendorAccountId ?? null,
-      stripePaymentIntentId: null,
-      stripeChargeId: null,
-    });
-
-    if (!reserveResult.ok) {
-      if (reserveResult.errorCode === 'currency_mismatch') {
-        throw new AudioGenerationError('Existing wallet balance uses a different currency.', {
-          status: 400,
-          code: 'wallet_currency_mismatch',
-        });
-      }
-      throw new AudioGenerationError('Insufficient wallet balance.', {
-        status: 402,
-        code: 'INSUFFICIENT_WALLET_FUNDS',
-      });
-    }
-
-    await executor.query(
-      `INSERT INTO app_jobs (
-         job_id,
-         user_id,
-         surface,
-         billing_product_key,
-         engine_id,
-         engine_label,
-         duration_sec,
-         prompt,
-         thumb_url,
-         video_url,
-         audio_url,
-         aspect_ratio,
-         has_audio,
-         preview_frame,
-         status,
-         progress,
-         final_price_cents,
-         pricing_snapshot,
-         settings_snapshot,
-         currency,
-         vendor_account_id,
-         payment_status,
-         visibility,
-         indexable,
-         provisional
-       )
-       VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,NULL,NULL,$10,FALSE,$11,'pending',0,$12,$13::jsonb,$14::jsonb,$15,NULL,'paid_wallet','private',FALSE,TRUE
-       )`,
-      [
-        jobId,
-        params.userId,
-        AUDIO_SURFACE,
-        packConfig.billingProductKey,
-        packConfig.engineId,
-        packConfig.label,
-        durationSec,
-        promptSummary,
-        initialThumb,
-        aspectRatio,
-        initialThumb,
-        amountCents,
-        pricingSnapshotJson,
-        JSON.stringify(initialSettingsSnapshot),
-        pricingSnapshot.currency,
-      ]
-    );
-
-    return reserveResult;
+  await createInitialAudioJob({
+    userId: params.userId,
+    jobId,
+    amountCents,
+    currency: pricingSnapshot.currency,
+    description: packConfig.label,
+    billingProductKey: packConfig.billingProductKey,
+    pricingSnapshotJson,
+    applicationFeeCents: pricingSnapshot.platformFeeCents ?? pricingSnapshot.margin.amountCents,
+    vendorAccountId: pricingSnapshot.vendorAccountId ?? null,
+    engineId: packConfig.engineId,
+    engineLabel: packConfig.label,
+    durationSec,
+    promptSummary,
+    initialThumb,
+    aspectRatio,
+    settingsSnapshotJson: JSON.stringify(initialSettingsSnapshot),
   });
-
-  void walletReservation;
 
   await updateAudioJob(jobId, {
     status: 'running',
