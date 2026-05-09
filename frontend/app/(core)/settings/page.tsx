@@ -86,7 +86,9 @@ export default function SettingsPage() {
   const rawCopy = t('workspace.settings', DEFAULT_SETTINGS_COPY);
   const copy = useMemo<SettingsCopy>(() => {
     if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_SETTINGS_COPY;
-    return deepmerge(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>);
+    return deepmerge(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>, {
+      arrayMerge: (_destination, source) => source,
+    });
   }, [rawCopy]);
   const isGuest = !user;
 
