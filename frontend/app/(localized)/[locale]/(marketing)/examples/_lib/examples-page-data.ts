@@ -249,7 +249,7 @@ export function buildExamplesMainVideoFeatureData({
     : null;
   const contentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
   const poster =
-    mainVideo?.card.heroPosterUrl ?? mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
+    mainVideo?.card.rawPosterUrl ?? mainVideo?.card.heroPosterUrl ?? mainVideo?.card.optimizedPosterUrl ?? null;
   const aspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const isPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const mimeType = getVideoMimeType(contentUrl);

@@ -154,6 +154,11 @@ test('examples page data helper owns filter, model link, and gallery projections
   assert.match(pageDataSource, /formatPromptExcerpt/, 'page data helper should own client prompt display shaping');
   assert.match(pageDataSource, /pickFirstPlayableVideo/, 'page data helper should own hero video selection');
   assert.match(pageDataSource, /buildMainVideoHeroLine/, 'page data helper should own main video hero copy shaping');
+  assert.match(
+    pageDataSource,
+    /const poster =\s*mainVideo\?\.card\.rawPosterUrl \?\? mainVideo\?\.card\.heroPosterUrl/s,
+    'main video poster should stay raw before next/image renders it'
+  );
   assert.match(pageDataSource, /export type ExamplesModelLink/, 'page data helper should export model link shape');
 });
 
