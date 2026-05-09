@@ -4,6 +4,9 @@ import test from 'node:test';
 
 const authCallbackSource = readFileSync('frontend/app/auth/callback/route.ts', 'utf8');
 const middlewareSource = readFileSync('frontend/middleware.ts', 'utf8');
+const middlewareRoutingHelpersSource = readFileSync('frontend/lib/middleware/routing-helpers.ts', 'utf8');
+const middlewareRoutingQuerySource = readFileSync('frontend/lib/middleware/routing-query.ts', 'utf8');
+const middlewareContractSource = `${middlewareSource}\n${middlewareRoutingHelpersSource}\n${middlewareRoutingQuerySource}`;
 const loginPageSource = readFileSync('frontend/app/(core)/login/page.tsx', 'utf8');
 const loginControllerSource = readFileSync('frontend/app/(core)/login/_hooks/useLoginPageController.ts', 'utf8');
 const loginAuthenticatedRedirectSource = readFileSync('frontend/app/(core)/login/_hooks/useLoginAuthenticatedRedirect.ts', 'utf8');
@@ -42,7 +45,7 @@ test('OAuth callback exchanges PKCE on the server before using the browser fallb
 
 test('login query cleanup preserves OAuth fallback state', () => {
   assert.match(
-    middlewareSource,
+    middlewareContractSource,
     /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"]\]\)/,
     'middleware must not strip OAuth state from /login callback URLs'
   );
