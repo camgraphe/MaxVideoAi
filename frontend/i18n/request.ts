@@ -1,7 +1,5 @@
-import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 import { defaultLocale, locales, type AppLocale } from '@/i18n/locales';
-import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
 import frMessages from '@/messages/fr.json';
@@ -24,14 +22,11 @@ function loadMessages(locale: AppLocale) {
 }
 
 export default getRequestConfig(async ({ locale, requestLocale }) => {
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
   const segmentLocale = await requestLocale;
 
   const resolvedLocale =
     (isAppLocale(locale) && locale) ||
     (isAppLocale(segmentLocale) && segmentLocale) ||
-    (isAppLocale(cookieLocale) && cookieLocale) ||
     defaultLocale;
 
   return {

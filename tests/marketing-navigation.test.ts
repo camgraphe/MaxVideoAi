@@ -151,6 +151,15 @@ test('default marketing routes initialize the intl request locale before renderi
   assert.match(source, /setRequestLocale\(DEFAULT_LOCALE\);/);
 });
 
+test('intl request config does not let locale cookies override unprefixed marketing routes', () => {
+  const source = readFileSync('frontend/i18n/request.ts', 'utf8');
+
+  assert.doesNotMatch(source, /next\/headers/);
+  assert.doesNotMatch(source, /LOCALE_COOKIE/);
+  assert.doesNotMatch(source, /cookieLocale/);
+  assert.match(source, /\(isAppLocale\(segmentLocale\) && segmentLocale\) \|\|\s*defaultLocale/s);
+});
+
 test('middleware avoids self-rewriting default-locale marketing routes on loopback', () => {
   const source = readFileSync('frontend/middleware.ts', 'utf8');
   const bypassBlock = source.slice(
