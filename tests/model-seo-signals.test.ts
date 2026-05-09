@@ -6,8 +6,8 @@ const modelLayoutSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx',
   'utf8',
 );
-const modelSpecsSource = readFileSync(
-  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts',
+const modelHeroSpecsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-hero-specs.ts',
   'utf8',
 );
 const modelSpecsConstantsSource = readFileSync(
@@ -23,8 +23,8 @@ test('model hero chips expose max duration and max resolution as compact crawlab
   assert.match(localizationSource, /maxResolution:\s*'Résolution max'/);
   assert.match(localizationSource, /maxDuration:\s*'Duración máx\.'/);
   assert.match(localizationSource, /maxResolution:\s*'Resolución máx\.'/);
-  assert.match(modelSpecsSource, /formatHeroLimitChip\(labels\.maxResolution, resolution\)/);
-  assert.match(modelSpecsSource, /formatHeroLimitChip\(labels\.maxDuration, duration\)/);
+  assert.match(modelHeroSpecsSource, /formatHeroLimitChip\(labels\.maxResolution, resolution\)/);
+  assert.match(modelHeroSpecsSource, /formatHeroLimitChip\(labels\.maxDuration, duration\)/);
 });
 
 test('model hero includes a short model limits line near the top of the page', () => {

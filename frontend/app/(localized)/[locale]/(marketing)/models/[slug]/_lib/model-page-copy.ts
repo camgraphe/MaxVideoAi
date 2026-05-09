@@ -1,18 +1,12 @@
-import type { FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
-import { getSuggestedOpponentSlugs } from '@/lib/compare-hub/data';
 import type { EngineLocalizedContent } from '@/lib/models/i18n';
 import { getDefaultSecondaryModelHref } from './model-page-links';
 import {
   HERO_SPEC_ICON_MAP,
-  isPending,
-  isUnsupported,
   normalizeBestUseCaseItems,
-  normalizeMaxResolution,
   type BestUseCaseItem,
   type HeroSpecChip,
   type HeroSpecIconKey,
-  type KeySpecValues,
   type LocalizedFaqEntry,
   type PromptingTab,
   type PromptingTabId,
@@ -22,224 +16,22 @@ import {
   type SpecSection,
 } from './model-page-specs';
 
-export const DEFAULT_VIDEO_TROUBLESHOOTING = [
-  'Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.',
-  'Motion looks weird → reduce movement: one camera move, slower action, fewer props.',
-  'Subject drifts off-brand → start from a reference image and lock palette + lighting.',
-  'Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.',
-  'Dialogue drifts → keep lines short and punchy; avoid long monologues.',
-];
-
-export const DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE: Record<AppLocale, string[]> = {
-  en: DEFAULT_VIDEO_TROUBLESHOOTING,
-  fr: [
-    'Résultat aléatoire / incohérent → simplifiez : sujet + action + caméra + lumière. Relancez 2–3 variantes.',
-    'Mouvement étrange → réduisez le mouvement : un seul move caméra, action plus lente, moins d’accessoires.',
-    'Le sujet dérive de la marque → partez d’une image de référence et verrouillez palette + lumière.',
-    'Texte incorrect → évitez la signalétique lisible, les micro‑labels, les petits UI. Gardez le texte hors champ.',
-    'Dialogue instable → gardez les répliques courtes et percutantes; évitez les longs monologues.',
-  ],
-  es: [
-    'Se siente aleatorio / inconsistente → simplifica: sujeto + acción + cámara + iluminación. Repite 2–3 tomas.',
-    'El movimiento se ve raro → reduce el movimiento: un solo movimiento de cámara, acción más lenta, menos props.',
-    'El sujeto se sale de la marca → empieza con una imagen de referencia y fija paleta + iluminación.',
-    'El texto sale mal → evita señalética legible, UI pequeño, micro‑labels. Mantén el texto fuera de plano.',
-    'El diálogo deriva → mantén líneas cortas y directas; evita monólogos largos.',
-  ],
-};
-
-export const DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE: Record<AppLocale, string[]> = {
-  en: DEFAULT_VIDEO_TROUBLESHOOTING.filter((item) => !item.toLowerCase().includes('dialogue')),
-  fr: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.fr.filter((item) => !item.toLowerCase().includes('dialogue')),
-  es: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.es.filter((item) => !item.toLowerCase().includes('diálogo')),
-};
-
-export function getDefaultVideoTroubleshooting(locale: AppLocale, supportsAudio: boolean): string[] {
-  if (supportsAudio) {
-    return DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING;
-  }
-  return DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE.en;
-}
-
-export const DEFAULT_VIDEO_SAFETY = [
-  'Don’t generate real people or public figures (celebrities, politicians, etc.).',
-  'No minors, sexual content, hateful content, or graphic violence.',
-  'Don’t use someone’s likeness without consent.',
-  'Some prompts and reference images may be blocked — generic characters and scenes are fine.',
-];
-
-export const DEFAULT_GENERIC_SAFETY = DEFAULT_VIDEO_SAFETY;
-
-const DEFAULT_VIDEO_SAFETY_BY_LOCALE: Record<AppLocale, string[]> = {
-  en: DEFAULT_VIDEO_SAFETY,
-  fr: [
-    'Ne générez pas de personnes réelles ni de personnalités publiques (célébrités, responsables politiques, etc.).',
-    'Pas de mineurs, contenu sexuel, contenu haineux ou violence graphique.',
-    "N'utilisez pas l'image ou la ressemblance d'une personne sans son consentement.",
-    'Certains prompts et images de référence peuvent être bloqués ; les personnages et scènes génériques sont acceptés.',
-  ],
-  es: [
-    'No generes personas reales ni figuras públicas (celebridades, políticos, etc.).',
-    'Sin menores, contenido sexual, contenido de odio ni violencia gráfica.',
-    'No uses la imagen o el parecido de una persona sin su consentimiento.',
-    'Algunos prompts e imágenes de referencia pueden bloquearse; los personajes y escenas genéricos son aceptables.',
-  ],
-};
-
-export function getDefaultGenericSafety(locale: AppLocale): string[] {
-  return DEFAULT_VIDEO_SAFETY_BY_LOCALE[locale] ?? DEFAULT_VIDEO_SAFETY_BY_LOCALE.en;
-}
-
-export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
-  const filtered = allEngines.filter((entry) => {
-    if (entry.modelSlug === currentSlug) return false;
-    const modes = entry.engine?.modes ?? [];
-    const hasVideoMode = modes.some((mode) => mode.endsWith('v'));
-    return hasVideoMode;
-  });
-  const filteredBySlug = new Map(filtered.map((entry) => [entry.modelSlug, entry]));
-
-  const selected: FalEngineEntry[] = [];
-  const usedFamilies = new Set<string>();
-  const usedSlugs = new Set<string>();
-  const registerEngine = (entry: FalEngineEntry) => {
-    if (usedSlugs.has(entry.modelSlug)) return;
-    selected.push(entry);
-    usedSlugs.add(entry.modelSlug);
-    const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
-    usedFamilies.add(familyKey);
-  };
-
-  const priorityTargets = getSuggestedOpponentSlugs(currentSlug, limit);
-  for (const targetSlug of priorityTargets) {
-    const target = filteredBySlug.get(targetSlug);
-    if (!target) continue;
-    registerEngine(target);
-    if (selected.length >= limit) return selected;
-  }
-
-  for (const entry of filtered) {
-    const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
-    if (usedFamilies.has(familyKey)) continue;
-    registerEngine(entry);
-    if (selected.length >= limit) return selected;
-  }
-
-  for (const entry of filtered) {
-    if (selected.includes(entry)) continue;
-    selected.push(entry);
-    if (selected.length >= limit) break;
-  }
-
-  return selected;
-}
-
-export function buildVideoBoundaries(values: KeySpecValues | null): string[] {
-  if (!values) {
-    return [
-      'Output is short-form. For longer edits, stitch multiple clips.',
-      'Resolution is capped on this tier.',
-      'No video input here — start from text or a single reference image.',
-      'No fixed seeds — iteration = re-run + refine.',
-    ];
-  }
-  const items: string[] = [];
-  const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration : null;
-  const resolution = values.maxResolution && !isPending(values.maxResolution) ? normalizeMaxResolution(values.maxResolution) : null;
-  if (duration) {
-    items.push(`Output is short-form (${duration}). For longer edits, stitch multiple clips.`);
-  }
-  if (resolution) {
-    items.push(`Resolution tops out at ${resolution} for this tier.`);
-  }
-  if (isUnsupported(values.videoToVideo)) {
-    items.push('No video input here — start from text or a single reference image.');
-  }
-  if (isUnsupported(values.imageToVideo)) {
-    items.push('Image-to-video is not supported on this tier.');
-  }
-  if (isUnsupported(values.audioOutput)) {
-    items.push('No native audio in this tier.');
-  }
-  if (!items.length) {
-    items.push('No fixed seeds — iteration = re-run + refine.');
-  } else if (!items.some((item) => item.toLowerCase().includes('seed'))) {
-    items.push('No fixed seeds — iteration = re-run + refine.');
-  }
-  return items;
-}
-
-export type DetailCopy = {
-  backLabel: string;
-  renderLinkLabel: string;
-  relatedModelCta: string;
-  examplesLinkLabel: string;
-  pricingLinkLabel: string;
-  overviewTitle: string;
-  overview: {
-    brand: string;
-    engineId: string;
-    slug: string;
-    logoPolicy: string;
-    platformPrice: string;
-  };
-  logoPolicies: {
-    logoAllowed: string;
-    textOnly: string;
-  };
-  promptsTitle: string;
-  faqTitle: string;
-  buttons: {
-    pricing: string;
-    launch: string;
-  };
-  breadcrumb: {
-    home: string;
-    models: string;
-  };
-};
-
-export const DEFAULT_DETAIL_COPY: DetailCopy = {
-  backLabel: '← Back to models',
-  renderLinkLabel: 'View render →',
-  relatedModelCta: 'View model →',
-  examplesLinkLabel: 'See examples',
-  pricingLinkLabel: 'Compare pricing',
-  overviewTitle: 'Overview',
-  overview: {
-    brand: 'Brand',
-    engineId: 'Engine ID',
-    slug: 'Slug',
-    logoPolicy: 'Logo policy',
-    platformPrice: 'Live pricing updates inside the Generate workspace.',
-  },
-  logoPolicies: {
-    logoAllowed: 'Logo usage permitted',
-    textOnly: 'Text-only (wordmark)',
-  },
-  promptsTitle: 'Prompt ideas',
-  faqTitle: 'FAQ',
-  buttons: {
-    pricing: 'Open Generate',
-    launch: 'Launch workspace',
-  },
-  breadcrumb: {
-    home: 'Home',
-    models: 'Models',
-  },
-};
-
-export const MODEL_OG_IMAGE_MAP: Record<string, string> = {
-  'sora-2':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
-  'sora-2-pro':
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
-  'veo-3-1': '/hero/veo-3-1-hero.jpg',
-  'veo-3-1-fast': '/hero/veo-3-1-hero.jpg',
-  'veo-3-1-lite': '/hero/veo-3-1-hero.jpg',
-  'pika-text-to-video': '/hero/pika-22.jpg',
-  'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
-};
+export {
+  DEFAULT_DETAIL_COPY,
+  DEFAULT_GENERIC_SAFETY,
+  DEFAULT_VIDEO_SAFETY,
+  DEFAULT_VIDEO_TROUBLESHOOTING,
+  DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE,
+  DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE,
+  MODEL_OG_IMAGE_MAP,
+  getDefaultGenericSafety,
+  getDefaultVideoTroubleshooting,
+} from './model-page-default-copy';
+export type { DetailCopy } from './model-page-default-copy';
+export {
+  buildVideoBoundaries,
+  pickCompareEngines,
+} from './model-page-copy-helpers';
 
 export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: AppLocale): SoraCopy {
   const custom = (localized.custom ?? {}) as Record<string, unknown>;
