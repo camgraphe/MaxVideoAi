@@ -1,97 +1,25 @@
 import { query } from '@/lib/db';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
-import { normalizeMediaUrl } from '@/lib/media';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
 import { getIndexablePlaylistSlugs } from '@/server/indexing';
 import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs, getStarterPlaylistSlug } from '@/server/playlists';
-import { normalizeJobKeyframeUrls, type JobKeyframeUrls } from '@/server/video-keyframes';
-import type { PricingSnapshot } from '@/types/engines';
+import {
+  ENGINE_GROUP_FETCH_CAP,
+  ENGINE_GROUP_FETCH_MULTIPLIER,
+  mergeUniqueGalleryVideos,
+  paginateGalleryVideos,
+  resolveExampleGroupId,
+  sortVideosByPreference,
+  type ExampleSort,
+  type ListExamplesPageOptions,
+  type ListExamplesPageResult,
+} from './videos-examples';
+import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
 
-type VideoRow = {
-  job_id: string;
-  user_id: string | null;
-  engine_id: string;
-  engine_label: string;
-  duration_sec: number;
-  prompt: string;
-  thumb_url: string;
-  video_url: string | null;
-  preview_video_url: string | null;
-  keyframe_urls: unknown;
-  aspect_ratio: string | null;
-  has_audio: boolean | null;
-  can_upscale: boolean | null;
-  created_at: string;
-  visibility: string;
-  indexable: boolean | null;
-  featured: boolean | null;
-  featured_order: number | null;
-  final_price_cents: number | null;
-  currency: string | null;
-  pricing_snapshot?: PricingSnapshot | null;
-  settings_snapshot?: unknown;
-  order_index?: number | null;
-};
-
-export type GalleryVideo = {
-  id: string;
-  userId: string | null;
-  engineId: string;
-  engineLabel: string;
-  durationSec: number;
-  prompt: string;
-  promptExcerpt: string;
-  thumbUrl?: string;
-  videoUrl?: string;
-  previewVideoUrl?: string;
-  keyframeUrls?: JobKeyframeUrls | null;
-  aspectRatio?: string;
-  createdAt: string;
-  visibility: 'public' | 'private';
-  indexable: boolean;
-  hasAudio: boolean;
-  canUpscale: boolean;
-  finalPriceCents?: number | null;
-  currency?: string | null;
-  pricingSnapshot?: PricingSnapshot;
-  settingsSnapshot?: unknown;
-  playlistOrder?: number | null;
-};
-
-function formatPromptExcerpt(prompt: string, maxLength = 160): string {
-  const trimmed = prompt.trim();
-  if (trimmed.length <= maxLength) return trimmed;
-  return `${trimmed.slice(0, maxLength - 1)}…`;
-}
-
-function mapRow(row: VideoRow): GalleryVideo {
-  return {
-    id: row.job_id,
-    userId: row.user_id ?? null,
-    engineId: row.engine_id,
-    engineLabel: row.engine_label,
-    durationSec: row.duration_sec,
-    prompt: row.prompt,
-    promptExcerpt: formatPromptExcerpt(row.prompt),
-    thumbUrl: normalizeMediaUrl(row.thumb_url) ?? undefined,
-    videoUrl: row.video_url ? normalizeMediaUrl(row.video_url) ?? undefined : undefined,
-    previewVideoUrl: row.preview_video_url ? normalizeMediaUrl(row.preview_video_url) ?? undefined : undefined,
-    keyframeUrls: normalizeJobKeyframeUrls(row.keyframe_urls),
-    aspectRatio: row.aspect_ratio ?? undefined,
-    createdAt: row.created_at,
-    visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
-    indexable: Boolean(row.indexable ?? true),
-    hasAudio: Boolean(row.has_audio ?? false),
-    canUpscale: Boolean(row.can_upscale ?? false),
-    finalPriceCents: row.final_price_cents ?? undefined,
-    currency: row.currency ?? undefined,
-    pricingSnapshot: row.pricing_snapshot ?? undefined,
-    settingsSnapshot: row.settings_snapshot ?? undefined,
-    playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,
-  };
-}
+export type { ExampleSort, ListExamplesPageOptions, ListExamplesPageResult } from './videos-examples';
+export type { GalleryVideo } from './videos-normalization';
+export { mergeUniqueGalleryVideos } from './videos-examples';
 
 export type GalleryTab = 'starter' | 'latest' | 'trending';
 
@@ -128,7 +56,7 @@ export async function getVideoById(videoId: string): Promise<GalleryVideo | null
     `${BASE_SELECT} WHERE job_id = $1 LIMIT 1`,
     [videoId]
   );
-  return rows[0] ? mapRow(rows[0]) : null;
+  return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
 export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | null> {
@@ -136,7 +64,7 @@ export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | n
     `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 AND ${PUBLIC_VIDEO_PREDICATE} LIMIT 1`,
     [videoId]
   );
-  return rows[0] ? mapRow(rows[0]) : null;
+  return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
 export async function getVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
@@ -150,7 +78,7 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
   );
   const map = new Map<string, GalleryVideo>();
   rows.forEach((row) => {
-    map.set(row.job_id, mapRow(row));
+    map.set(row.job_id, mapGalleryVideoRow(row));
   });
   return map;
 }
@@ -166,7 +94,7 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
   );
   const map = new Map<string, GalleryVideo>();
   rows.forEach((row) => {
-    map.set(row.job_id, mapRow(row));
+    map.set(row.job_id, mapGalleryVideoRow(row));
   });
   return map;
 }
@@ -182,7 +110,7 @@ export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<stri
   );
   const map = new Map<string, GalleryVideo>();
   rows.forEach((row) => {
-    map.set(row.job_id, mapRow(row));
+    map.set(row.job_id, mapGalleryVideoRow(row));
   });
   return map;
 }
@@ -201,7 +129,7 @@ export async function getLatestVideoByPromptAndEngine(
     `,
     [prompt, engineId]
   );
-  return rows[0] ? mapRow(rows[0]) : null;
+  return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
 export async function getLatestPublicVideoByPromptAndEngine(
@@ -219,7 +147,7 @@ export async function getLatestPublicVideoByPromptAndEngine(
     `,
     [prompt, engineId]
   );
-  return rows[0] ? mapRow(rows[0]) : null;
+  return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
 type PlaylistVideoQueryOptions = {
@@ -270,7 +198,7 @@ async function listPlaylistVideosWithOptions({
     `,
     params
   );
-  return rows.map(mapRow);
+  return rows.map(mapGalleryVideoRow);
 }
 
 export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
@@ -291,7 +219,7 @@ async function listLatest(limit: number): Promise<GalleryVideo[]> {
     `,
     [limit]
   );
-  return rows.map(mapRow);
+  return rows.map(mapGalleryVideoRow);
 }
 
 async function listTrending(limit: number): Promise<GalleryVideo[]> {
@@ -304,7 +232,7 @@ async function listTrending(limit: number): Promise<GalleryVideo[]> {
     `,
     [limit]
   );
-  return rows.map(mapRow);
+  return rows.map(mapGalleryVideoRow);
 }
 
 export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<GalleryVideo[]> {
@@ -323,81 +251,6 @@ export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<Ga
 
 export async function listStarterPlaylistVideos(limit: number): Promise<GalleryVideo[]> {
   return listPlaylistVideos(getStarterPlaylistSlug(), limit);
-}
-
-export type ExampleSort = 'playlist' | 'date-desc' | 'date-asc' | 'duration-desc' | 'duration-asc' | 'engine-asc';
-
-export type ListExamplesPageOptions = {
-  sort: ExampleSort;
-  limit?: number;
-  offset?: number;
-  engineGroup?: string | null;
-};
-
-export type ListExamplesPageResult = {
-  items: GalleryVideo[];
-  total: number;
-  limit: number;
-  offset: number;
-  hasMore: boolean;
-};
-
-const ENGINE_GROUP_FETCH_MULTIPLIER = 4;
-const ENGINE_GROUP_FETCH_CAP = 400;
-
-function resolveExampleGroupId(engineId: string | null | undefined): string | null {
-  if (!engineId) return null;
-  const normalized = (normalizeEngineId(engineId) ?? engineId).trim().toLowerCase();
-  if (!normalized) return null;
-  return resolveExampleCanonicalSlug(normalized) ?? normalized;
-}
-
-function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {
-  if (sort === 'playlist') {
-    return [...videos];
-  }
-  const copy = [...videos];
-  switch (sort) {
-    case 'date-asc':
-      return copy.sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
-    case 'duration-asc':
-      return copy.sort((a, b) => (a.durationSec ?? 0) - (b.durationSec ?? 0));
-    case 'duration-desc':
-      return copy.sort((a, b) => (b.durationSec ?? 0) - (a.durationSec ?? 0));
-    case 'engine-asc':
-      return copy.sort(
-        (a, b) => (a.engineLabel ?? '').localeCompare(b.engineLabel ?? '') || Date.parse(b.createdAt) - Date.parse(a.createdAt)
-      );
-    case 'date-desc':
-    default:
-      return copy.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  }
-}
-
-export function mergeUniqueGalleryVideos(...groups: GalleryVideo[][]): GalleryVideo[] {
-  const seen = new Set<string>();
-  const merged: GalleryVideo[] = [];
-  groups.forEach((videos) => {
-    videos.forEach((video) => {
-      if (seen.has(video.id)) return;
-      seen.add(video.id);
-      merged.push(video);
-    });
-  });
-  return merged;
-}
-
-function paginateGalleryVideos(videos: GalleryVideo[], limit: number, offset: number): ListExamplesPageResult {
-  const total = videos.length;
-  const start = Math.max(0, offset);
-  const items = videos.slice(start, start + limit);
-  return {
-    items,
-    total,
-    limit,
-    offset: start,
-    hasMore: start + items.length < total,
-  };
 }
 
 async function loadExampleFamilyFeed(
