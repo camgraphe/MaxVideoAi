@@ -7,9 +7,19 @@ import 'tsconfig-paths/register.js';
 loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: true });
 loadEnv({ path: path.resolve(process.cwd(), '.env'), override: false });
 
-import { query } from '../src/lib/db';
-import { ensureBillingSchema } from '../src/lib/schema';
-import { ensureJobThumbnail } from '../server/thumbnails';
+type JobRow = {
+  job_id: string;
+  user_id: string | null;
+  surface: string | null;
+  video_url: string | null;
+  audio_url: string | null;
+  preview_video_url: string | null;
+  aspect_ratio: string | null;
+  thumb_url: string | null;
+  render_ids: unknown;
+  duration_sec: number | null;
+  status: string | null;
+};
 
 async function main(): Promise<void> {
   const jobId = process.argv[2];
@@ -18,9 +28,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const { query } = await import('../src/lib/db');
+  const { ensureBillingSchema } = await import('../src/lib/schema');
+  const { upsertLegacyJobOutputs } = await import('../server/media-library');
+  const { ensureJobThumbnail } = await import('../server/thumbnails');
+
   await ensureBillingSchema();
-  const rows = await query<{ job_id: string; user_id: string | null; video_url: string | null; aspect_ratio: string | null; thumb_url: string | null }>(
-    `SELECT job_id, user_id, video_url, aspect_ratio, thumb_url
+  const rows = await query<JobRow>(
+    `SELECT job_id, user_id, surface, video_url, audio_url, preview_video_url, aspect_ratio, thumb_url, render_ids, duration_sec, status
        FROM app_jobs
       WHERE job_id = $1
       LIMIT 1`,
@@ -60,6 +75,19 @@ async function main(): Promise<void> {
      WHERE job_id = $1`,
     [jobId, newThumb]
   );
+  await upsertLegacyJobOutputs({
+    job_id: job.job_id,
+    user_id: job.user_id,
+    surface: job.surface,
+    video_url: job.video_url,
+    audio_url: job.audio_url,
+    thumb_url: newThumb,
+    preview_frame: newThumb,
+    preview_video_url: job.preview_video_url,
+    render_ids: job.render_ids,
+    duration_sec: job.duration_sec,
+    status: job.status,
+  });
 
   console.log(`Job ${jobId}: thumbnail updated to ${newThumb}`);
 }

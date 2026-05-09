@@ -502,6 +502,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   }
 
   let responseVideoUrl = normalizedVideoUrl;
+  let shouldSyncJobOutputs = false;
   if (surface !== 'audio' && job.status === 'completed' && responseVideoUrl) {
     const fastStartVideo = await ensureFastStartVideo({
       jobId,
@@ -520,6 +521,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     }
     if (fastStartVideo && fastStartVideo !== responseVideoUrl) {
       responseVideoUrl = fastStartVideo;
+      shouldSyncJobOutputs = true;
       await query(
         `UPDATE app_jobs
             SET video_url = $2,
@@ -528,6 +530,47 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         [jobId, fastStartVideo]
       ).catch((error) => {
         console.warn('[api/jobs] failed to persist fast-start video', { jobId, error });
+      });
+    }
+    if (responseVideoUrl && isPlaceholderThumbnail(normalizedThumbUrl)) {
+      const generatedThumb = await ensureJobThumbnail({
+        jobId,
+        userId: job.user_id ?? undefined,
+        videoUrl: responseVideoUrl,
+        aspectRatio: job.aspect_ratio ?? undefined,
+        existingThumbUrl: normalizedThumbUrl ?? undefined,
+        force: true,
+      });
+      if (generatedThumb) {
+        normalizedThumbUrl = normalizeMediaUrl(generatedThumb) ?? generatedThumb;
+        shouldSyncJobOutputs = true;
+        await query(
+          `UPDATE app_jobs
+              SET thumb_url = $2,
+                  preview_frame = $2,
+                  updated_at = NOW()
+            WHERE job_id = $1`,
+          [jobId, normalizedThumbUrl]
+        ).catch((error) => {
+          console.warn('[api/jobs] failed to persist generated thumbnail', { jobId, error });
+        });
+      }
+    }
+    if (shouldSyncJobOutputs) {
+      await upsertLegacyJobOutputs({
+        job_id: job.job_id,
+        user_id: job.user_id,
+        surface: job.surface,
+        video_url: responseVideoUrl,
+        audio_url: normalizedAudioUrl,
+        thumb_url: normalizedThumbUrl,
+        preview_frame: normalizedThumbUrl,
+        preview_video_url: normalizedPreviewVideoUrl,
+        render_ids: job.render_ids,
+        duration_sec: job.duration_sec,
+        status: job.status,
+      }).catch((error) => {
+        console.warn('[api/jobs] failed to sync repaired job outputs', { jobId, error });
       });
     }
   }

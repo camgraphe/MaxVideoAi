@@ -121,3 +121,17 @@ test('Fal webhook mapping module exposes the expected helper contract', () => {
   assert.match(provisionalSource, /normalizeStatus/);
   assert.match(typesSource, /export type AppJobRow =/);
 });
+
+test('Fal webhook retries thumbnail capture after stable video copy', () => {
+  const copyIndex = handlerSource.indexOf('const fastStartVideo = await ensureFastStartVideo');
+  const retryIndex = handlerSource.indexOf('finalVideoUrl !== rawVideoSource', copyIndex);
+  const persistIndex = handlerSource.indexOf('const finalThumbUrl = resolvedThumbUrl', retryIndex);
+  assert.ok(copyIndex > 0, 'webhook should copy completed provider videos before final persistence');
+  assert.ok(retryIndex > copyIndex, 'webhook should retry thumbnail capture after stable video copy');
+  assert.ok(persistIndex > retryIndex, 'webhook should retry thumbnail capture before final thumb persistence');
+
+  const retryBlock = handlerSource.slice(retryIndex, persistIndex);
+  assert.match(retryBlock, /ensureJobThumbnail/);
+  assert.match(retryBlock, /videoUrl:\s*finalVideoUrl/);
+  assert.match(retryBlock, /force:\s*true/);
+});
