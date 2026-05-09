@@ -44,6 +44,22 @@ const overrideSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts',
   'utf8'
 );
+const overrideTypesSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts',
+  'utf8'
+);
+const overrideEnSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts',
+  'utf8'
+);
+const overrideFrSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts',
+  'utf8'
+);
+const overrideEsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts',
+  'utf8'
+);
 const faqSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts',
   'utf8'
@@ -173,7 +189,15 @@ test('comparison detail helper facade delegates routing, pricing, specs, and loc
   assert.match(helperScoreUtilsSource, /export function pickFirstCapabilityDifference/);
   assert.match(helperTextSource, /export function formatTemplate/);
   assert.match(helperTextSource, /export function stripAudioReferencesForSilentPair/);
+  assert.ok(overrideSource.split('\n').length <= 40, 'compare-page-overrides.ts should stay a small facade');
   assert.match(overrideSource, /export function getComparePageOverride/);
+  assert.match(overrideSource, /from '\.\/compare-page-overrides-en'/);
+  assert.match(overrideSource, /from '\.\/compare-page-overrides-fr'/);
+  assert.match(overrideSource, /from '\.\/compare-page-overrides-es'/);
+  assert.match(overrideTypesSource, /export type ComparePageOverride/);
+  assert.match(overrideEnSource, /export const EN_COMPARE_PAGE_OVERRIDES/);
+  assert.match(overrideFrSource, /export const FR_COMPARE_PAGE_OVERRIDES/);
+  assert.match(overrideEsSource, /export const ES_COMPARE_PAGE_OVERRIDES/);
   assert.doesNotMatch(helperSource, /const LOCALIZED_BEST_FOR/);
   assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
   assert.doesNotMatch(helperSource, /computeMarketingPriceRange/);
