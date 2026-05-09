@@ -15,12 +15,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, outputs: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  const outputs = await listRecentOutputs({
-    userId,
-    kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-    surface: req.nextUrl.searchParams.get('surface'),
-    limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
-  });
+  let outputs: Awaited<ReturnType<typeof listRecentOutputs>>;
+  try {
+    outputs = await listRecentOutputs({
+      userId,
+      kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+      surface: req.nextUrl.searchParams.get('surface'),
+      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+    });
+  } catch (error) {
+    console.error('[media-library] failed to list recent outputs', error);
+    return NextResponse.json({ ok: false, outputs: [], error: 'LOAD_FAILED' }, { status: 500 });
+  }
 
   return NextResponse.json({
     ok: true,

@@ -137,9 +137,7 @@ export async function POST(req: NextRequest) {
   }
 
   const contentSha256 = createHash('sha256').update(uploadBuffer).digest('hex');
-  await ensureAssetSchema();
-
-  const existingAssets = await query<{
+  let existingAssets: Array<{
     asset_id: string;
     url: string;
     mime_type: string | null;
@@ -147,26 +145,42 @@ export async function POST(req: NextRequest) {
     height: number | null;
     size_bytes: string | number | null;
     thumb_url: string | null;
-  }>(
-    `SELECT ua.asset_id,
-            ua.url,
-            ua.mime_type,
-            ua.width,
-            ua.height,
-            ua.size_bytes,
-            COALESCE(ma.thumb_url, ua.metadata->>'thumbUrl') AS thumb_url
-     FROM user_assets ua
-     LEFT JOIN media_assets ma
-       ON ma.user_id = ua.user_id
-      AND ma.url = ua.url
-      AND ma.deleted_at IS NULL
-     WHERE ua.user_id = $1
-       AND ua.source = 'upload'
-       AND ua.metadata->>'contentSha256' = $2
-     ORDER BY ua.created_at DESC
-     LIMIT 1`,
-    [userId, contentSha256]
-  );
+  }>;
+
+  try {
+    await ensureAssetSchema();
+    existingAssets = await query<{
+      asset_id: string;
+      url: string;
+      mime_type: string | null;
+      width: number | null;
+      height: number | null;
+      size_bytes: string | number | null;
+      thumb_url: string | null;
+    }>(
+      `SELECT ua.asset_id,
+              ua.url,
+              ua.mime_type,
+              ua.width,
+              ua.height,
+              ua.size_bytes,
+              COALESCE(ma.thumb_url, ua.metadata->>'thumbUrl') AS thumb_url
+       FROM user_assets ua
+       LEFT JOIN media_assets ma
+         ON ma.user_id = ua.user_id
+        AND ma.url = ua.url
+        AND ma.deleted_at IS NULL
+       WHERE ua.user_id = $1
+         AND ua.source = 'upload'
+         AND ua.metadata->>'contentSha256' = $2
+       ORDER BY ua.created_at DESC
+       LIMIT 1`,
+      [userId, contentSha256]
+    );
+  } catch (error) {
+    console.error('[upload] failed to prepare image asset store', error);
+    return NextResponse.json({ ok: false, error: 'STORE_FAILED' }, { status: 500 });
+  }
 
   if (existingAssets.length > 0) {
     const [asset] = existingAssets;

@@ -48,9 +48,15 @@ export function useLibraryPageData({
 
   const assetsQuery = useSWR<AssetsResponse>(savedAssetsKey, assetsFetcher, {
     dedupingInterval: 60_000,
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
   });
   const recentOutputsQuery = useSWR<RecentOutputsResponse>(recentOutputsKey, recentOutputsFetcher, {
     dedupingInterval: 30_000,
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
   });
 
   const assets = useMemo(

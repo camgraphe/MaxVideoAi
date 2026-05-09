@@ -15,12 +15,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, assets: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  const assets = await listLibraryAssets({
-    userId,
-    kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-    source: req.nextUrl.searchParams.get('source'),
-    limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
-  });
+  let assets: Awaited<ReturnType<typeof listLibraryAssets>>;
+  try {
+    assets = await listLibraryAssets({
+      userId,
+      kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+      source: req.nextUrl.searchParams.get('source'),
+      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+    });
+  } catch (error) {
+    console.error('[media-library] failed to list assets', error);
+    return NextResponse.json({ ok: false, assets: [], error: 'LOAD_FAILED' }, { status: 500 });
+  }
 
   return NextResponse.json({
     ok: true,

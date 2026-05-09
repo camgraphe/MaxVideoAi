@@ -8,6 +8,13 @@ const DEFAULT_SCALE_STEP = 0.85;
 const DEFAULT_START_QUALITY = 0.9;
 const DEFAULT_MIN_QUALITY = 0.66;
 const DEFAULT_QUALITY_STEP = 0.08;
+const DEFAULT_UPLOAD_TARGET_MB = Number.parseFloat(
+  process.env.NEXT_PUBLIC_ASSET_UPLOAD_TARGET_MB ?? '4'
+);
+const DEFAULT_UPLOAD_TARGET_BYTES =
+  Number.isFinite(DEFAULT_UPLOAD_TARGET_MB) && DEFAULT_UPLOAD_TARGET_MB > 0
+    ? Math.round(DEFAULT_UPLOAD_TARGET_MB * 1024 * 1024)
+    : 4 * 1024 * 1024;
 
 type DecodeResult = {
   width: number;
@@ -19,6 +26,7 @@ type DecodeResult = {
 type PrepareImageFileOptions = {
   maxBytes: number;
   maxDimension?: number;
+  targetBytes?: number;
 };
 
 const KNOWN_IMAGE_FILE_EXTENSIONS = new Set([
@@ -137,6 +145,11 @@ export async function prepareImageFileForUpload(
   if (!isLikelyImageFile(file)) return file;
 
   const maxBytes = clampPositiveInt(options.maxBytes, 25 * 1024 * 1024);
+  const requestedTargetBytes = clampPositiveInt(
+    options.targetBytes ?? DEFAULT_UPLOAD_TARGET_BYTES,
+    DEFAULT_UPLOAD_TARGET_BYTES
+  );
+  const targetBytes = Math.min(maxBytes, requestedTargetBytes);
   const maxDimension = clampPositiveInt(
     options.maxDimension ?? DEFAULT_MAX_IMAGE_DIMENSION,
     DEFAULT_MAX_IMAGE_DIMENSION
@@ -148,8 +161,8 @@ export async function prepareImageFileForUpload(
   } catch {
     // Import should accept the widest range of images possible. If the browser
     // cannot decode the file for client-side transcoding but the original file
-    // already fits the upload cap, let the server store the original asset.
-    if (file.size <= maxBytes) {
+    // already fits the route-safe target, let the server store the original asset.
+    if (file.size <= targetBytes) {
       return file;
     }
     throw new Error('Unable to process this image in the browser before upload.');
@@ -167,7 +180,7 @@ export async function prepareImageFileForUpload(
     }
 
     if (
-      file.size <= maxBytes &&
+      file.size <= targetBytes &&
       targetWidth === decoded.width &&
       targetHeight === decoded.height
     ) {
@@ -205,7 +218,7 @@ export async function prepareImageFileForUpload(
             bestMime = mime;
           }
 
-          if (blob.size <= maxBytes) {
+          if (blob.size <= targetBytes) {
             return new File([blob], buildOutputFileName(file, mime), {
               type: mime,
               lastModified: file.lastModified,
@@ -218,10 +231,17 @@ export async function prepareImageFileForUpload(
       workingHeight = Math.max(1, Math.round(workingHeight * DEFAULT_SCALE_STEP));
     }
 
-    if (!bestBlob) return file;
+    if (!bestBlob) {
+      if (file.size <= targetBytes) return file;
+      throw new Error('Unable to reduce this image enough for upload.');
+    }
 
-    if (bestBlob.size >= file.size && file.size <= maxBytes) {
+    if (bestBlob.size >= file.size && file.size <= targetBytes) {
       return file;
+    }
+
+    if (bestBlob.size > targetBytes) {
+      throw new Error('Unable to reduce this image enough for upload.');
     }
 
     return new File([bestBlob], buildOutputFileName(file, bestMime), {

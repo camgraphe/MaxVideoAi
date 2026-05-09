@@ -25,6 +25,7 @@ Client Dropzone → `/api/uploads/image` → S3 bucket → public URL
 | `S3_UPLOAD_ACL` | Optional ACL applied on upload (default `public-read`). |
 | `S3_CACHE_CONTROL` | Cache header applied to uploaded objects (default `public, max-age=3600`). |
 | `ASSET_MAX_IMAGE_MB` | Max upload size enforced by the upload route (default 25 MB). |
+| `NEXT_PUBLIC_ASSET_UPLOAD_TARGET_MB` | Browser-side image compression target before POSTing through the app route (default 4 MB). |
 | `ASSET_HOST_ALLOWLIST` | Optional comma-separated list of additional trusted hosts. |
 | `FAL_USE_UPLOAD` | Feature flag. When `true`, falls back to Fal storage uploads (default `false`). |
 

@@ -25,6 +25,23 @@ test('library page loads media in bounded pages instead of fetching hundreds upf
   assert.doesNotMatch(clientSource, /limit=200/);
 });
 
+test('library page avoids focus revalidation flashes for media lists', () => {
+  const dataHookSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_hooks/useLibraryPageData.ts'),
+    'utf8'
+  );
+  const focusResyncSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/swr/SWRFocusResync.tsx'),
+    'utf8'
+  );
+
+  assert.match(dataHookSource, /keepPreviousData:\s*true/);
+  assert.match(dataHookSource, /revalidateOnFocus:\s*false/);
+  assert.match(dataHookSource, /shouldRetryOnError:\s*false/);
+  assert.match(focusResyncSource, /key\.startsWith\('\/api\/media-library\/'\)/);
+  assert.match(focusResyncSource, /return false/);
+});
+
 test('library video cards use thumbnails or placeholders in the grid', () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), 'frontend/components/library/AssetLibraryBrowser.tsx'),

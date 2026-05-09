@@ -144,6 +144,16 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
         'IMAGE_UPLOAD_FAILED',
         'Image upload failed. Please try re-uploading the file, use a smaller image, or export the photo again from your device.'
       ),
+    UPLOAD_FAILED: () =>
+      resolve(
+        'UPLOAD_FAILED',
+        'The upload reached the server but could not be stored. Please retry in a moment.'
+      ),
+    STORE_FAILED: () =>
+      resolve(
+        'STORE_FAILED',
+        'The upload was stored but could not be saved to your Library. Please retry in a moment.'
+      ),
     FILE_TOO_LARGE: () =>
       resolve(
         'FILE_TOO_LARGE',
@@ -164,6 +174,12 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
     return resolve(
       'INSUFFICIENT_FUNDS',
       'Insufficient balance. Please add funds to continue. Top up your wallet or update your payment method, then try again.'
+    );
+  }
+  if (status === 413) {
+    return resolve(
+      'FILE_TOO_LARGE',
+      'This file is too large to upload through the browser request. Export a smaller image and try again.'
     );
   }
   if (status === 404) {

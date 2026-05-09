@@ -25,6 +25,7 @@ function isProtectedPath(pathname: string | null): boolean {
 
 function shouldResyncKey(key: unknown): boolean {
   if (typeof key === 'string') {
+    if (key.startsWith('/api/media-library/')) return false;
     return key.startsWith('/api/') || key.startsWith('static-engines:');
   }
   if (Array.isArray(key)) {

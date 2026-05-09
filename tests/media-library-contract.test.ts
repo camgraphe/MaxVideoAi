@@ -397,6 +397,45 @@ test('upload routes persist reusable thumbnails for new image and video assets',
   assert.match(videoRoute, /asset:\s*\{[\s\S]*thumbUrl:\s*videoThumbUrl/);
 });
 
+test('image upload and library routes return stable JSON errors for storage failures', () => {
+  const imageRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/uploads/image/route.ts'),
+    'utf8'
+  );
+  const assetsRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
+    'utf8'
+  );
+  const recentRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),
+    'utf8'
+  );
+
+  assert.match(imageRoute, /failed to prepare image asset store/);
+  assert.match(imageRoute, /error:\s*'STORE_FAILED'/);
+  assert.match(assetsRoute, /failed to list assets/);
+  assert.match(assetsRoute, /error:\s*'LOAD_FAILED'/);
+  assert.match(recentRoute, /failed to list recent outputs/);
+  assert.match(recentRoute, /error:\s*'LOAD_FAILED'/);
+});
+
+test('image upload UI maps storage error codes to actionable copy', () => {
+  const errorSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/lib/error-messages.ts'),
+    'utf8'
+  );
+  const imageClientUploadSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/lib/client-image-upload.ts'),
+    'utf8'
+  );
+
+  assert.match(errorSource, /UPLOAD_FAILED:\s*\(\)\s*=>/);
+  assert.match(errorSource, /STORE_FAILED:\s*\(\)\s*=>/);
+  assert.match(errorSource, /status\s*===\s*413/);
+  assert.match(imageClientUploadSource, /NEXT_PUBLIC_ASSET_UPLOAD_TARGET_MB/);
+  assert.match(imageClientUploadSource, /targetBytes/);
+});
+
 test('thumbnail backfill targets uploaded media and legacy video assets', () => {
   const scriptPath = path.join(process.cwd(), 'frontend/scripts/backfill-upload-thumbnails.ts');
 
