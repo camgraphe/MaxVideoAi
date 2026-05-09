@@ -1,36 +1,30 @@
 'use client';
 
 import clsx from 'clsx';
-import { createPortal } from 'react-dom';
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   useId
 } from 'react';
-import type { EngineAvailability, EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps, Mode } from '@/types/engines';
 import { Card } from './Card';
 import { Chip } from './Chip';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { BrowseEnginesModal } from './engine-select/BrowseEnginesModal';
+import { EngineSelectDropdown } from './engine-select/EngineSelectDropdown';
 import { DEFAULT_ENGINE_SELECT_COPY, type EngineSelectCopy } from './engine-select/engine-select-copy';
 import {
-  compareEnginesByDefaultPriority,
   DEFAULT_MODE_OPTIONS,
-  ENGINE_LEGACY_STORAGE_KEY,
   ENGINE_VARIANT_LABEL_OVERRIDES,
-  ensureEngineRegistryMeta,
   formatAvgDuration,
-  getCachedEngineRegistryMeta,
-  getModeDisplayOrder,
   getModeLabel,
 } from './engine-select/engine-select-helpers';
-import type { DropdownPosition, EngineRegistryMeta, EngineSelectProps } from './engine-select/engine-select-types';
+import { useEngineSelectDropdownState } from './engine-select/useEngineSelectDropdownState';
+import { useEngineSelectRegistry } from './engine-select/useEngineSelectRegistry';
+import type { EngineSelectProps } from './engine-select/engine-select-types';
 
 export function EngineSelect({
   engines,
@@ -49,88 +43,23 @@ export function EngineSelect({
 }: EngineSelectProps) {
   const { t, locale } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
-  const [registryMeta, setRegistryMeta] = useState<EngineRegistryMeta | null>(() => getCachedEngineRegistryMeta());
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState<DropdownPosition | null>(null);
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [browseOpen, setBrowseOpen] = useState(false);
-  const [showLegacy, setShowLegacy] = useState(false);
-  const [legacyHydrated, setLegacyHydrated] = useState(false);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const triggerId = useId();
   const legacyToggleId = useId();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const stored = window.localStorage.getItem(ENGINE_LEGACY_STORAGE_KEY);
-      if (stored === 'true') {
-        setShowLegacy(true);
-      }
-    } catch {
-      // ignore storage failures
-    } finally {
-      setLegacyHydrated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!legacyHydrated) return;
-    try {
-      window.localStorage.setItem(ENGINE_LEGACY_STORAGE_KEY, showLegacy ? 'true' : 'false');
-    } catch {
-      // ignore storage failures
-    }
-  }, [legacyHydrated, showLegacy]);
-
-  const availableEngines = useMemo(() => {
-    const sorted = engines.slice();
-    sorted.sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta));
-    return sorted.filter((entry) => entry.availability !== 'paused');
-  }, [engines, registryMeta]);
-
-  const selectedEngine = useMemo(() => {
-    const candidate = availableEngines.find((entry) => entry.id === engineId);
-    return candidate ?? availableEngines[0] ?? engines[0];
-  }, [availableEngines, engineId, engines]);
-
-  const selectedMeta = useMemo(
-    () => (selectedEngine ? registryMeta?.meta.get(selectedEngine.id) : undefined),
-    [registryMeta, selectedEngine]
-  );
-
-  const visibleEngines = useMemo(() => {
-    return availableEngines.filter((engine) => {
-      const meta = registryMeta?.meta.get(engine.id);
-      if (!meta?.isLegacy) return true;
-      if (showLegacy) return true;
-      return engine.id === selectedEngine?.id;
-    });
-  }, [availableEngines, registryMeta, selectedEngine, showLegacy]);
-  const hasLegacyEngines = useMemo(
-    () => availableEngines.some((engine) => Boolean(registryMeta?.meta.get(engine.id)?.isLegacy)),
-    [availableEngines, registryMeta]
-  );
-  const legacyToggleLabel = copy.modal.legacyToggleLabel ?? DEFAULT_ENGINE_SELECT_COPY.modal.legacyToggleLabel;
-
-  const variantEngines = useMemo(() => {
-    if (!selectedEngine) return [];
-    const selectedVariantGroup = selectedMeta?.surfaces.app.variantGroup;
-    if (selectedVariantGroup) {
-      return availableEngines.filter(
-        (entry) => registryMeta?.meta.get(entry.id)?.surfaces.app.variantGroup === selectedVariantGroup
-      );
-    }
-    return [];
-  }, [availableEngines, registryMeta, selectedEngine, selectedMeta]);
-
-  const showVariantSelector = variantEngines.length > 1;
+  const {
+    hasLegacyEngines,
+    registryMeta,
+    selectedEngine,
+    selectedMeta,
+    setShowLegacy,
+    showLegacy,
+    showVariantSelector,
+    variantEngines,
+    visibleEngines,
+  } = useEngineSelectRegistry({ browseOpen, engineId, engines, open });
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
@@ -147,50 +76,7 @@ export function EngineSelect({
     [registryMeta]
   );
 
-  useEffect(() => {
-    if (registryMeta) return;
-    if (typeof window === 'undefined') return;
-    let active = true;
-    const timer = window.setTimeout(() => {
-      ensureEngineRegistryMeta()
-        .then((meta) => {
-          if (active) setRegistryMeta(meta);
-        })
-        .catch(() => undefined);
-    }, 1200);
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [registryMeta]);
-
-  useEffect(() => {
-    if (registryMeta) return;
-    if (!open && !browseOpen) return;
-    let active = true;
-    ensureEngineRegistryMeta()
-      .then((meta) => {
-        if (active) setRegistryMeta(meta);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [browseOpen, open, registryMeta]);
-
-  useEffect(() => {
-    const element = document.createElement('div');
-    element.dataset.engineSelectPortal = 'true';
-    document.body.appendChild(element);
-    setPortalElement(element);
-    return () => {
-      try {
-        if (element.parentNode) {
-          element.parentNode.removeChild(element);
-        }
-      } catch {}
-    };
-  }, []);
+  const legacyToggleLabel = copy.modal.legacyToggleLabel ?? DEFAULT_ENGINE_SELECT_COPY.modal.legacyToggleLabel;
 
   useEffect(() => {
     if (!selectedEngine) return;
@@ -214,130 +100,24 @@ export function EngineSelect({
 
   const showModeVariantSelector = modeVariantOptions.length > 1;
 
-  const updatePosition = useCallback(() => {
-    if (!triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
-    setPosition({
-      top: rect.bottom + 8,
-      left: rect.left,
-      width: rect.width
-    });
-  }, []);
-
-  const toggleOpen = () => {
-    setOpen((previous) => {
-      const next = !previous;
-      if (next) {
-        updatePosition();
-      } else {
-        setHighlightedIndex(-1);
-      }
-      return next;
-    });
-  };
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    updatePosition();
-
-    function handleResize() {
-      updatePosition();
-    }
-
-    window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('scroll', handleResize, { passive: true, capture: true });
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize, true);
-    };
-  }, [open, updatePosition]);
-
-  useEffect(() => {
-    if (!open) return;
-    if (!visibleEngines.length) {
-      setHighlightedIndex(-1);
-      return;
-    }
-    const currentIndex = visibleEngines.findIndex((candidate) => candidate.id === selectedEngine?.id);
-    setHighlightedIndex(currentIndex >= 0 ? currentIndex : 0);
-  }, [open, visibleEngines, selectedEngine]);
-
-  useEffect(() => {
-    if (!open) return;
-    function handlePointer(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node;
-      if (triggerRef.current?.contains(target)) return;
-      if (contentRef.current?.contains(target)) return;
-      setOpen(false);
-      setHighlightedIndex(-1);
-    }
-
-    function handleKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setOpen(false);
-        setHighlightedIndex(-1);
-        triggerRef.current?.focus();
-        return;
-      }
-
-      if (!visibleEngines.length) {
-        return;
-      }
-
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setHighlightedIndex((previous) => {
-          const next = previous + 1 >= visibleEngines.length ? 0 : previous + 1;
-          return next;
-        });
-      }
-
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setHighlightedIndex((previous) => {
-          const next = previous - 1 < 0 ? visibleEngines.length - 1 : previous - 1;
-          return next;
-        });
-      }
-
-      if (event.key === 'Enter' || event.key === ' ') {
-        if (highlightedIndex >= 0 && highlightedIndex < visibleEngines.length) {
-          event.preventDefault();
-          onEngineChange(visibleEngines[highlightedIndex].id);
-          setOpen(false);
-          setHighlightedIndex(-1);
-          triggerRef.current?.focus();
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handlePointer);
-    document.addEventListener('touchstart', handlePointer, { passive: true });
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handlePointer);
-      document.removeEventListener('touchstart', handlePointer);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [open, engines, highlightedIndex, onEngineChange, visibleEngines]);
-
-  useEffect(() => {
-    if (!open) return;
-    const item = itemRefs.current[highlightedIndex];
-    item?.focus({ preventScroll: true });
-    item?.scrollIntoView({ block: 'nearest' });
-  }, [open, highlightedIndex]);
-
-  const handleTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (!open) {
-        updatePosition();
-      }
-      setOpen(true);
-    }
-  };
+  const {
+    containerRef,
+    contentRef,
+    handleTriggerKeyDown,
+    highlightedIndex,
+    itemRefs,
+    portalElement,
+    position,
+    setHighlightedIndex,
+    toggleOpen,
+    triggerRef,
+  } = useEngineSelectDropdownState({
+    onEngineChange,
+    open,
+    selectedEngineId: selectedEngine?.id,
+    setOpen,
+    visibleEngines,
+  });
 
   if (!selectedEngine) {
     return null;
@@ -512,120 +292,43 @@ export function EngineSelect({
             </p>
           )}
 
-          {open && portalElement && position &&
-            createPortal(
-              <div
-                ref={contentRef}
-                className="fixed z-[9999]"
-                style={{ top: position.top, left: position.left, minWidth: Math.max(position.width, 280) }}
-              >
-                <div className="overflow-hidden rounded-card border border-border bg-surface shadow-float">
-                  <div className="flex items-center justify-between gap-4 border-b border-hairline px-3 py-2 text-[12px] text-text-muted">
-                    <span>Engines</span>
-                    <div className="flex items-center gap-3">
-                      {hasLegacyEngines ? (
-                        <label
-                          htmlFor={legacyToggleId}
-                          className="inline-flex items-center gap-2 whitespace-nowrap text-[11px] font-medium text-text-secondary"
-                        >
-                          <input
-                            id={legacyToggleId}
-                            type="checkbox"
-                            checked={showLegacy}
-                            onChange={(event) => setShowLegacy(event.currentTarget.checked)}
-                            className="h-4 w-4 rounded border border-border accent-brand"
-                          />
-                          <span>{legacyToggleLabel}</span>
-                        </label>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOpen(false);
-                          setHighlightedIndex(-1);
-                          setBrowseOpen(true);
-                        }}
-                        className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {copy.browse}
-                      </button>
-                    </div>
-                  </div>
-                  <ul
-                    className="max-h-72 overflow-y-auto py-1"
-                    role="listbox"
-                    aria-labelledby={triggerId}
-                    aria-activedescendant={activeOptionId}
-                  >
-                    {visibleEngines.map((engine, index) => {
-                      const active = engine.id === selectedEngine.id;
-                      const highlighted = index === highlightedIndex;
-                      const meta = registryMeta?.meta.get(engine.id);
-                      const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
-                      const availability: EngineAvailability = meta?.availability ?? engine.availability ?? 'available';
-                      const disabled = availability === 'paused';
-                      return (
-                        <li key={engine.id}>
-                          <button
-                            ref={(node) => {
-                              itemRefs.current[index] = node;
-                            }}
-                            type="button"
-                            onClick={() => {
-                              if (disabled) return;
-                              onEngineChange(engine.id);
-                              setOpen(false);
-                              setHighlightedIndex(-1);
-                              triggerRef.current?.focus();
-                            }}
-                            onMouseEnter={() => setHighlightedIndex(index)}
-                            onFocus={() => setHighlightedIndex(index)}
-                            className={clsx(
-                              'flex w-full items-start gap-4 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                              'hover:bg-surface-2',
-                              active && 'bg-surface-2',
-                              highlighted && !active && 'bg-surface-2',
-                              disabled && 'cursor-not-allowed opacity-60'
-                            )}
-                            role="option"
-                            id={`${engine.id}-option`}
-                            aria-selected={active}
-                            aria-disabled={disabled}
-                            disabled={disabled}
-                            tabIndex={-1}
-                          >
-                            <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0" />
-                            <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
-                              <div className="min-w-0 space-y-1">
-                                <p className="truncate text-sm font-medium text-text-primary">{meta?.marketingName ?? formatEngineShort(engine)}</p>
-                                <p className="truncate text-[12px] text-text-muted">
-                                  {engine.provider} - {meta?.versionLabel ?? engine.version ?? '-'}
-                                </p>
-                                <div className="flex flex-wrap gap-1 text-[10px]">
-                                  {getModeDisplayOrder(engine.id, engine.modes).map((engineMode) => (
-                                    <Chip key={engineMode} variant="outline" className="px-1.5 py-0.5 text-[10px]">
-                                      {getModeLabel(engine.id, engineMode, locale, modeLabelOverrides)}
-                                    </Chip>
-                                  ))}
-                                  {engine.isLab && (
-                                    <Chip variant="ghost" className="px-1.5 py-0.5 text-[10px]">Lab</Chip>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
-                                {avgDurationLabel && <span>{copy.avgDuration.replace('{value}', avgDurationLabel)}</span>}
-                                {engine.status && <span className="uppercase tracking-micro">{engine.status}</span>}
-                              </div>
-                            </div>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </div>,
-              portalElement
-            )}
+          {open && portalElement && position ? (
+            <EngineSelectDropdown
+              activeOptionId={activeOptionId}
+              contentRef={contentRef}
+              copy={copy}
+              formatEngineShort={formatEngineShort}
+              hasLegacyEngines={hasLegacyEngines}
+              highlightedIndex={highlightedIndex}
+              legacyToggleId={legacyToggleId}
+              legacyToggleLabel={legacyToggleLabel}
+              locale={locale}
+              modeLabelOverrides={modeLabelOverrides}
+              onBrowse={() => {
+                setOpen(false);
+                setHighlightedIndex(-1);
+                setBrowseOpen(true);
+              }}
+              onHighlight={setHighlightedIndex}
+              onItemRef={(index, node) => {
+                itemRefs.current[index] = node;
+              }}
+              onSelectEngine={(nextEngineId) => {
+                onEngineChange(nextEngineId);
+                setOpen(false);
+                setHighlightedIndex(-1);
+                triggerRef.current?.focus();
+              }}
+              onToggleLegacy={setShowLegacy}
+              portalElement={portalElement}
+              position={position}
+              registryMeta={registryMeta}
+              selectedEngine={selectedEngine}
+              showLegacy={showLegacy}
+              triggerId={triggerId}
+              visibleEngines={visibleEngines}
+            />
+          ) : null}
         </div>
 
         {shouldShowModes ? (

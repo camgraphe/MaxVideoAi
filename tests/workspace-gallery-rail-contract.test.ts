@@ -67,6 +67,10 @@ test('composite preview preserves preview urls but plays canonical video urls', 
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings.ts'),
     'utf8'
   );
+  const videoJobMediaSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-video-job-media.ts'),
+    'utf8'
+  );
   const galleryActionsHookSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions.ts'),
     'utf8'
@@ -77,8 +81,9 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   );
 
   assert.match(galleryActionsHookSource, /previewVideoUrl:\s*tile\.previewVideoUrl/);
-  assert.match(videoSettingsSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
-  assert.match(videoSettingsSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
+  assert.match(videoSettingsSource, /from '\.\/workspace-video-job-media'/);
+  assert.match(videoJobMediaSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
+  assert.match(videoJobMediaSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
   assert.match(renderGroupSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
   assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
   assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);

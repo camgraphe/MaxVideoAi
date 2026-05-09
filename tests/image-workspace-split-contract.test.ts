@@ -15,10 +15,17 @@ const referenceAssetsHookPath = path.join(imageDir, '_hooks/useImageWorkspaceRef
 const viewerHookPath = path.join(imageDir, '_hooks/useImageWorkspaceViewer.ts');
 const composerSurfacePath = path.join(imageDir, '_components/ImageWorkspaceComposerSurface.tsx');
 const galleryRailPath = path.join(imageDir, '_components/ImageWorkspaceGalleryRail.tsx');
+const runtimeModalsPath = path.join(imageDir, '_components/ImageWorkspaceRuntimeModals.tsx');
+const shellPath = path.join(imageDir, '_components/ImageWorkspaceShell.tsx');
+const emptyStatePath = path.join(imageDir, '_components/ImageWorkspaceEmptyState.tsx');
+const routeContextHookPath = path.join(imageDir, '_hooks/useImageWorkspaceRouteContext.ts');
 
 const splitFiles = [
   '_components/ImageAuthGateModal.tsx',
   '_components/ImageLibraryModal.tsx',
+  '_components/ImageWorkspaceRuntimeModals.tsx',
+  '_components/ImageWorkspaceShell.tsx',
+  '_components/ImageWorkspaceEmptyState.tsx',
   '_components/ImageWorkspaceGalleryRail.tsx',
   '_components/ImageWorkspaceComposerSurface.tsx',
   '_hooks/useImageComposerPersistence.ts',
@@ -29,6 +36,10 @@ const splitFiles = [
   '_hooks/useImageWorkspacePricing.ts',
   '_hooks/useImageWorkspaceDesktopLayout.ts',
   '_hooks/useImageWorkspaceQueryHydration.ts',
+  '_hooks/useImageWorkspaceRouteContext.ts',
+  '_hooks/useImageWorkspaceModeSync.ts',
+  '_hooks/useImageWorkspacePresetHandlers.ts',
+  '_hooks/useImageWorkspaceSelectedEngine.ts',
   '_hooks/useImageGenerationRunner.ts',
   '_hooks/useImageGallerySelection.ts',
   '_lib/image-workspace-character-references.ts',
@@ -54,15 +65,19 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const viewerHookSource = readFileSync(viewerHookPath, 'utf8');
   const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
   const galleryRailSource = readFileSync(galleryRailPath, 'utf8');
+  const runtimeModalsSource = readFileSync(runtimeModalsPath, 'utf8');
+  const shellSource = readFileSync(shellPath, 'utf8');
+  const emptyStateSource = readFileSync(emptyStatePath, 'utf8');
+  const routeContextHookSource = readFileSync(routeContextHookPath, 'utf8');
 
   for (const file of splitFiles) {
     statSync(path.join(imageDir, file));
   }
 
-  assert.match(source, /from '\.\/_components\/ImageLibraryModal'/);
-  assert.match(source, /from '\.\/_components\/ImageAuthGateModal'/);
   assert.match(source, /from '\.\/_components\/ImageWorkspaceComposerSurface'/);
-  assert.match(source, /from '\.\/_components\/ImageWorkspaceGalleryRail'/);
+  assert.match(source, /from '\.\/_components\/ImageWorkspaceRuntimeModals'/);
+  assert.match(source, /from '\.\/_components\/ImageWorkspaceShell'/);
+  assert.match(source, /from '\.\/_components\/ImageWorkspaceEmptyState'/);
   assert.match(source, /from '\.\/_hooks\/useImageComposerPersistence'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDisplayState'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceReferenceAssets'/);
@@ -71,9 +86,12 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePricing'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDesktopLayout'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceQueryHydration'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceRouteContext'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceModeSync'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspacePresetHandlers'/);
+  assert.match(source, /from '\.\/_hooks\/useImageWorkspaceSelectedEngine'/);
   assert.match(source, /from '\.\/_hooks\/useImageGenerationRunner'/);
   assert.match(source, /from '\.\/_hooks\/useImageGallerySelection'/);
-  assert.match(source, /from '\.\/_lib\/image-workspace-copy'/);
 
   assert.doesNotMatch(source, /const DEFAULT_COPY: ImageWorkspaceCopy =/);
   assert.doesNotMatch(source, /function ImageLibraryModal\(/);
@@ -147,7 +165,15 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(viewerHookSource, /saveImageToLibrary/);
   assert.match(galleryRailSource, /export function ImageWorkspaceGalleryRail/);
   assert.match(galleryRailSource, /<GalleryRail\b/);
+  assert.match(runtimeModalsSource, /export function ImageWorkspaceRuntimeModals/);
+  assert.match(runtimeModalsSource, /<ImageAuthGateModal\b/);
+  assert.match(runtimeModalsSource, /<ImageLibraryModal\b/);
+  assert.match(runtimeModalsSource, /GroupViewerModal/);
+  assert.match(shellSource, /export function ImageWorkspaceShell/);
+  assert.match(shellSource, /<ImageWorkspaceGalleryRail\b/);
+  assert.match(emptyStateSource, /export function ImageWorkspaceEmptyState/);
+  assert.match(routeContextHookSource, /mergeCopy/);
 
   const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 590, `ImageWorkspace should stay below 590 lines after display/reference/viewer extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);
 });

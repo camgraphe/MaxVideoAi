@@ -1,22 +1,11 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
-
-import clsx from 'clsx';
-import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
-import { useI18n } from '@/lib/i18n/I18nProvider';
-import { FEATURES } from '@/content/feature-flags';
-import { clampRequestedImageCount } from '@/lib/image/inputSchema';
-import {
-  parseGptImage2SizeKey,
-} from '@/lib/image/gptImage2';
-import { ImageAuthGateModal } from './_components/ImageAuthGateModal';
-import { ImageLibraryModal } from './_components/ImageLibraryModal';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
-import { ImageWorkspaceGalleryRail } from './_components/ImageWorkspaceGalleryRail';
+import { ImageWorkspaceEmptyState } from './_components/ImageWorkspaceEmptyState';
+import { ImageWorkspaceRuntimeModals } from './_components/ImageWorkspaceRuntimeModals';
+import { ImageWorkspaceShell } from './_components/ImageWorkspaceShell';
 import { useImageWorkspaceDisplayState } from './_hooks/useImageWorkspaceDisplayState';
 import { useImageGallerySelection } from './_hooks/useImageGallerySelection';
 import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
@@ -30,11 +19,10 @@ import { useImageReferenceSlots } from './_hooks/useImageReferenceSlots';
 import { useImageComposerPersistence } from './_hooks/useImageComposerPersistence';
 import { useImageWorkspaceReferenceAssets } from './_hooks/useImageWorkspaceReferenceAssets';
 import { useImageWorkspaceViewer } from './_hooks/useImageWorkspaceViewer';
-import {
-  DEFAULT_COPY,
-  mergeCopy,
-  type ImageWorkspaceCopy,
-} from './_lib/image-workspace-copy';
+import { useImageWorkspaceRouteContext } from './_hooks/useImageWorkspaceRouteContext';
+import { useImageWorkspaceModeSync } from './_hooks/useImageWorkspaceModeSync';
+import { useImageWorkspacePresetHandlers } from './_hooks/useImageWorkspacePresetHandlers';
+import { useImageWorkspaceSelectedEngine } from './_hooks/useImageWorkspaceSelectedEngine';
 import {
   type HistoryEntry,
   type ImageEngineOption,
@@ -42,29 +30,18 @@ import {
 
 export type { ImageEngineOption } from './_lib/image-workspace-types';
 
-const GroupViewerModal = dynamic(
-  () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
-  { ssr: false }
-);
-
 interface ImageWorkspaceProps {
   engines: ImageEngineOption[];
 }
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
-  const toolsEnabled = FEATURES.workflows.toolsSection;
-  const { t } = useI18n();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const rawCopy = t('workspace.image', DEFAULT_COPY);
-  const resolvedCopy = useMemo<ImageWorkspaceCopy>(() => {
-    return mergeCopy(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
-  }, [rawCopy]);
-  const loginRedirectTarget = useMemo(() => {
-    const params = searchParams?.toString() ?? '';
-    const base = pathname ?? '/app/image';
-    return params ? `${base}?${params}` : base;
-  }, [pathname, searchParams]);
+  const {
+    advancedSettingsTitle,
+    loginRedirectTarget,
+    resolvedCopy,
+    searchParams,
+    toolsEnabled,
+  } = useImageWorkspaceRouteContext();
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
@@ -93,15 +70,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     handleSaveVariantToLibrary,
     viewerGroup,
   } = useImageWorkspaceViewer();
-  const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
-  const selectedEngine = useMemo(
-    () => engines.find((engine) => engine.id === engineId) ?? engines[0],
-    [engineId, engines]
-  );
-  const autoModeFromReferences = Boolean(
-    selectedEngine && selectedEngine.modes.includes('t2i') && selectedEngine.modes.includes('i2i')
-  );
-  const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
+  const {
+    autoModeFromReferences,
+    engineCapsList,
+    selectedEngine,
+    selectedEngineCaps,
+  } = useImageWorkspaceSelectedEngine(engines, engineId);
   const {
     aspectRatioField,
     aspectRatioSelectOptions,
@@ -212,18 +186,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const referenceNoteText = resolvedCopy.composer.referenceNote;
 
-  useEffect(() => {
-    if (!selectedEngine || !autoModeFromReferences) return;
-    const desiredMode: ImageGenerationMode =
-      hasAnyReferenceSelection && selectedEngine.modes.includes('i2i')
-        ? 'i2i'
-        : selectedEngine.modes.includes('t2i')
-          ? 't2i'
-          : (selectedEngine.modes[0] as ImageGenerationMode);
-    if (mode !== desiredMode) {
-      setMode(desiredMode);
-    }
-  }, [autoModeFromReferences, hasAnyReferenceSelection, mode, selectedEngine]);
+  useImageWorkspaceModeSync({
+    autoModeFromReferences,
+    hasAnyReferenceSelection,
+    mode,
+    selectedEngine,
+    setMode,
+  });
 
   useImageComposerPersistence({
     engines,
@@ -287,18 +256,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setThinkingLevel,
   });
 
-  const setNumImagesPreset = useCallback((value: number) => {
-    setNumImages(clampRequestedImageCount(selectedEngineCaps ?? null, mode, value));
-  }, [selectedEngineCaps, mode]);
-
-  const setResolutionPreset = useCallback((value: string) => {
-    setResolution(value);
-    const parsedSize = parseGptImage2SizeKey(value);
-    if (parsedSize) {
-      setCustomImageWidth(String(parsedSize.width));
-      setCustomImageHeight(String(parsedSize.height));
-    }
-  }, []);
+  const { setNumImagesPreset, setResolutionPreset } = useImageWorkspacePresetHandlers({
+    mode,
+    selectedEngineCaps,
+    setCustomImageHeight,
+    setCustomImageWidth,
+    setNumImages,
+    setResolution,
+  });
 
   const handleRun = useImageGenerationRunner({
     aspectRatio,
@@ -385,20 +350,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     canUseWorkspace,
     genericError: resolvedCopy.errors.generic,
     previewEntry,
-    removedFromLibraryMessage: t(
-      'workspace.image.messages.removedFromLibrary',
-      DEFAULT_COPY.messages.removedFromLibrary
-    ) as string,
-    savedToLibraryMessage: t(
-      'workspace.image.messages.savedToLibrary',
-      DEFAULT_COPY.messages.savedToLibrary
-    ) as string,
+    removedFromLibraryMessage: resolvedCopy.messages.removedFromLibrary,
+    savedToLibraryMessage: resolvedCopy.messages.savedToLibrary,
     selectedPreviewImageIndex,
     setError,
     setStatusMessage,
   });
 
-  const advancedSettingsTitle = t('workspace.generate.controls.advancedTitle', 'Advanced settings') as string;
   const {
     composerReferenceAssets,
     referenceAssetFields,
@@ -416,19 +374,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   });
 
   if (!selectedEngine || !selectedEngineCaps) {
-    return (
-      <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
-        {resolvedCopy.general.emptyEngines}
-      </main>
-    );
+    return <ImageWorkspaceEmptyState message={resolvedCopy.general.emptyEngines} />;
   }
 
   return (
     <>
-      <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
-        <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
-          <main className="flex w-full flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-4 sm:p-6">
-            <ImageWorkspaceComposerSurface
+      <ImageWorkspaceShell
+        isDesktopLayout={isDesktopLayout}
+        galleryRailProps={{
+          activeGroups: pendingGroups,
+          engineCapsList,
+          isImageJob,
+          onOpenGroup: handleSelectGalleryGroup,
+          selectedEngineCaps,
+        }}
+      >
+        <ImageWorkspaceComposerSurface
               advancedSettingsTitle={advancedSettingsTitle}
               aspectRatio={aspectRatio}
               aspectRatioSelectOptions={aspectRatioSelectOptions}
@@ -511,60 +472,26 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               statusMessage={statusMessage}
               thinkingLevel={thinkingLevel}
               thinkingLevelSelectOptions={thinkingLevelSelectOptions}
-            />
-          </main>
-        </div>
-        {isDesktopLayout ? (
-          <ImageWorkspaceGalleryRail
-            activeGroups={pendingGroups}
-            engineCapsList={engineCapsList}
-            isImageJob={isImageJob}
-            onOpenGroup={handleSelectGalleryGroup}
-            selectedEngineCaps={selectedEngineCaps}
-            variant="desktop"
-          />
-        ) : null}
-      </div>
-      {!isDesktopLayout ? (
-        <ImageWorkspaceGalleryRail
-          activeGroups={pendingGroups}
-          engineCapsList={engineCapsList}
-          isImageJob={isImageJob}
-          onOpenGroup={handleSelectGalleryGroup}
-          selectedEngineCaps={selectedEngineCaps}
-          variant="mobile"
         />
-      ) : null}
-      {viewerGroup ? (
-        <GroupViewerModal
-          group={viewerGroup}
-          onClose={closeViewer}
-          onSaveToLibrary={handleSaveVariantToLibrary}
-        />
-      ) : null}
-      <ImageAuthGateModal
-        open={authModalOpen}
-        copy={resolvedCopy.authGate}
+      </ImageWorkspaceShell>
+      <ImageWorkspaceRuntimeModals
+        authModalOpen={authModalOpen}
+        characterSelectionLimit={characterSelectionLimit}
+        closeLibraryModal={closeLibraryModal}
+        closeViewer={closeViewer}
+        handleLibrarySelect={handleLibrarySelect}
+        handleSaveVariantToLibrary={handleSaveVariantToLibrary}
+        libraryModal={libraryModal}
         loginRedirectTarget={loginRedirectTarget}
-        onClose={() => setAuthModalOpen(false)}
+        resolvedCopy={resolvedCopy}
+        selectedCharacterReferences={selectedCharacterReferences}
+        setAuthModalOpen={setAuthModalOpen}
+        supportedReferenceFormats={supportedReferenceFormats}
+        supportedReferenceFormatsLabel={supportedReferenceFormatsLabel}
+        toggleCharacterReference={toggleCharacterReference}
+        toolsEnabled={toolsEnabled}
+        viewerGroup={viewerGroup}
       />
-      {libraryModal.open ? (
-        <ImageLibraryModal
-          open={libraryModal.open}
-          onClose={closeLibraryModal}
-          onSelect={handleLibrarySelect}
-          onToggleCharacter={toggleCharacterReference}
-          selectedCharacterReferences={selectedCharacterReferences}
-          characterSelectionLimit={characterSelectionLimit}
-          copy={resolvedCopy.library}
-          characterCopy={resolvedCopy.characterPicker}
-          selectionMode={libraryModal.selectionMode}
-          initialSource={libraryModal.initialSource}
-          supportedFormats={supportedReferenceFormats}
-          supportedFormatsLabel={supportedReferenceFormatsLabel}
-          toolsEnabled={toolsEnabled}
-        />
-      ) : null}
     </>
   );
 }
