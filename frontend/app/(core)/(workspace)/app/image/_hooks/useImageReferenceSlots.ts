@@ -12,12 +12,19 @@ import { getReferenceConstraints } from '@/lib/image/inputSchema';
 import { createCharacterReferenceSlot } from '../_lib/image-workspace-character-references';
 import { formatTemplate, type ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 import {
+  buildPersistableReferenceSlots,
+  cleanupSlotPreview,
+  countRegularReferenceSelections,
+  getReadyReferenceSlots,
+  getReferenceSizeSignature,
+  getSelectedCharacterReferences,
+} from '../_lib/image-reference-slot-state';
+import {
   DEFAULT_UPLOAD_LIMIT_MB,
   DEFAULT_VISIBLE_REFERENCE_SLOTS,
   MAX_REFERENCE_SLOTS,
   type ImageLibraryModalState,
   type LibraryAsset,
-  type PersistedReferenceSlot,
   type ReferenceSlotValue,
   type UploadFailure,
 } from '../_lib/image-workspace-types';
@@ -32,14 +39,6 @@ type UseImageReferenceSlotsParams = {
   supportedReferenceFormatsLabel: string;
   toolsEnabled: boolean;
 };
-
-function cleanupSlotPreview(slot: ReferenceSlotValue | null) {
-  if (slot?.previewUrl && slot.previewUrl.startsWith('blob:')) {
-    try {
-      URL.revokeObjectURL(slot.previewUrl);
-    } catch {}
-  }
-}
 
 export function useImageReferenceSlots({
   autoModeFromReferences,
@@ -84,25 +83,15 @@ export function useImageReferenceSlots({
     [baseReferenceSlotLimit, referenceSlots]
   );
   const referenceSizeSignature = useMemo(
-    () =>
-      visibleReferenceSlots
-        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
-        .map((slot) => `${slot.width ?? ''}x${slot.height ?? ''}`)
-        .join('|'),
+    () => getReferenceSizeSignature(visibleReferenceSlots),
     [visibleReferenceSlots]
   );
   const selectedCharacterReferences = useMemo(
-    () =>
-      visibleReferenceSlots.reduce<CharacterReferenceSelection[]>((acc, slot) => {
-        if (slot?.characterReference) {
-          acc.push(slot.characterReference);
-        }
-        return acc;
-      }, []),
+    () => getSelectedCharacterReferences(visibleReferenceSlots),
     [visibleReferenceSlots]
   );
   const totalRegularReferenceSelections = useMemo(
-    () => visibleReferenceSlots.filter((slot) => Boolean(slot && !slot.characterReference)).length,
+    () => countRegularReferenceSelections(visibleReferenceSlots),
     [visibleReferenceSlots]
   );
   const characterSelectionLimit = useMemo(
@@ -147,17 +136,11 @@ export function useImageReferenceSlots({
     ]
   );
   const readyReferenceUrls = useMemo(
-    () =>
-      visibleReferenceSlots
-        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
-        .map((slot) => slot.url),
+    () => getReadyReferenceSlots(visibleReferenceSlots).map((slot) => slot.url),
     [visibleReferenceSlots]
   );
   const readyReferenceSizes = useMemo(
-    () =>
-      visibleReferenceSlots
-        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
-        .map((slot) => ({ width: slot.width ?? null, height: slot.height ?? null })),
+    () => getReadyReferenceSlots(visibleReferenceSlots).map((slot) => ({ width: slot.width ?? null, height: slot.height ?? null })),
     [visibleReferenceSlots]
   );
   const combinedReferenceUrls = readyReferenceUrls;
@@ -165,32 +148,8 @@ export function useImageReferenceSlots({
     () => visibleReferenceSlots.some((slot) => Boolean(slot)),
     [visibleReferenceSlots]
   );
-  const persistableReferenceSlots = useMemo<PersistedReferenceSlot[]>(
-    () =>
-      referenceSlots.slice(0, MAX_REFERENCE_SLOTS).map((slot) => {
-        if (!slot || slot.status !== 'ready') return null;
-        const url = slot.url?.trim?.() ?? '';
-        if (!url || url.startsWith('blob:')) return null;
-        return {
-          url,
-          source: slot.source,
-          width: slot.width ?? null,
-          height: slot.height ?? null,
-          characterReference: slot.characterReference
-            ? {
-                id: slot.characterReference.id,
-                jobId: slot.characterReference.jobId,
-                imageUrl: slot.characterReference.imageUrl,
-                thumbUrl: slot.characterReference.thumbUrl ?? null,
-                prompt: slot.characterReference.prompt ?? null,
-                createdAt: slot.characterReference.createdAt ?? null,
-                engineLabel: slot.characterReference.engineLabel ?? null,
-                outputMode: slot.characterReference.outputMode ?? null,
-                action: slot.characterReference.action ?? null,
-              }
-            : null,
-        };
-      }),
+  const persistableReferenceSlots = useMemo(
+    () => buildPersistableReferenceSlots(referenceSlots.slice(0, MAX_REFERENCE_SLOTS)),
     [referenceSlots]
   );
 
