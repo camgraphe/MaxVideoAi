@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+
+const i18nDictionaryFiles = readdirSync('frontend/lib/i18n/dictionary-data')
+  .filter((file) => file.endsWith('.ts'))
+  .map((file) => `frontend/lib/i18n/dictionary-data/${file}`);
 
 const customerFacingFiles = [
   'frontend/app/(core)/legal/mentions/page.tsx',
@@ -10,6 +14,8 @@ const customerFacingFiles = [
   'frontend/app/(localized)/[locale]/(marketing)/docs/page.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/status/page.tsx',
   'frontend/lib/i18n/dictionaries.ts',
+  'frontend/lib/i18n/dictionary-types.ts',
+  ...i18nDictionaryFiles,
   'frontend/messages/en.json',
   'frontend/messages/fr.json',
   'frontend/messages/es.json',

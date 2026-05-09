@@ -5,14 +5,14 @@ import test from 'node:test';
 const scriptPath = 'scripts/audit-large-files.mjs';
 
 test('large file audit emits JSON rows sorted by size', () => {
-  const output = execFileSync('node', [scriptPath, '--json', '--min-lines', '900'], {
+  const output = execFileSync('node', [scriptPath, '--json', '--min-lines', '500'], {
     encoding: 'utf8',
   });
   const rows = JSON.parse(output) as Array<{ file: string; lines: number }>;
 
   assert.ok(rows.length > 0);
   assert.equal(rows.some((row) => row.file.startsWith('frontend/')), true);
-  assert.equal(rows.every((row) => row.lines >= 900), true);
+  assert.equal(rows.every((row) => row.lines >= 500), true);
   assert.deepEqual(
     rows.map((row) => row.lines),
     [...rows.map((row) => row.lines)].sort((a, b) => b - a)
