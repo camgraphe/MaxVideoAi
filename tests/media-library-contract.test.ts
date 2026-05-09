@@ -356,7 +356,7 @@ test('history can save renders to library from cards and job details', () => {
     'utf8'
   );
   const apiSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/lib/api.ts'),
+    path.join(process.cwd(), 'frontend/lib/api-assets.ts'),
     'utf8'
   );
 
