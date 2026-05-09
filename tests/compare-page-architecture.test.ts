@@ -60,6 +60,34 @@ const detailContentSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareDetailContent.tsx',
   'utf8'
 );
+const detailHeroSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareDetailHero.tsx',
+  'utf8'
+);
+const engineHeroCardsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareEngineHeroCards.tsx',
+  'utf8'
+);
+const scorecardSectionSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareScorecardSection.tsx',
+  'utf8'
+);
+const specsSectionSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareSpecsSection.tsx',
+  'utf8'
+);
+const showdownSectionSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareShowdownSection.tsx',
+  'utf8'
+);
+const relatedSectionSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareRelatedSection.tsx',
+  'utf8'
+);
+const faqSectionSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareFaqSection.tsx',
+  'utf8'
+);
 const generateCardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx',
   'utf8'
@@ -130,8 +158,22 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(specRowsSource, /export function buildCompareSpecRows/);
   assert.match(detailContentSource, /export function CompareDetailContent/);
   assert.match(generateCardSource, /export function CompareGenerateCard/);
-  assert.match(detailContentSource, /CompareShowdownMedia/);
-  assert.match(detailContentSource, /CompareSpecValue/);
+  assert.match(detailContentSource, /CompareDetailHero/);
+  assert.match(detailContentSource, /CompareEngineHeroCards/);
+  assert.match(detailContentSource, /CompareScorecardSection/);
+  assert.match(detailContentSource, /CompareSpecsSection/);
+  assert.match(detailContentSource, /CompareShowdownSection/);
+  assert.match(detailContentSource, /CompareFaqSection/);
+  assert.match(detailHeroSource, /export function CompareDetailHero/);
+  assert.match(engineHeroCardsSource, /export function CompareEngineHeroCards/);
+  assert.match(scorecardSectionSource, /export function CompareScorecardSection/);
+  assert.match(specsSectionSource, /export function CompareSpecsSection/);
+  assert.match(showdownSectionSource, /export function CompareShowdownSection/);
+  assert.match(relatedSectionSource, /export function CompareRelatedSection/);
+  assert.match(faqSectionSource, /export function CompareFaqSection/);
+  assert.match(showdownSectionSource, /CompareShowdownMedia/);
+  assert.match(specsSectionSource, /CompareSpecValue/);
+  assert.match(faqSectionSource, /dangerouslySetInnerHTML/);
 });
 
 test('comparison detail data and localization helpers expose focused contracts', () => {
@@ -143,4 +185,16 @@ test('comparison detail data and localization helpers expose focused contracts',
   assert.match(localizationSource, /export const LOCALIZED_SHOWDOWN_TESTS/);
   assert.match(localizationSource, /export function localizeMappedValue/);
   assert.match(localizationSource, /export function localizeBestFor/);
+});
+
+test('comparison detail content stays a visual orchestrator', () => {
+  const lineCount = detailContentSource.split('\n').length;
+
+  assert.ok(lineCount <= 230, `CompareDetailContent should stay below 230 lines after section extraction, got ${lineCount}`);
+  assert.doesNotMatch(detailContentSource, /showdownSlots\.map/);
+  assert.doesNotMatch(detailContentSource, /specRows\.map/);
+  assert.doesNotMatch(detailContentSource, /faqItems\.map/);
+  assert.doesNotMatch(detailContentSource, /dangerouslySetInnerHTML/);
+  assert.doesNotMatch(detailContentSource, /DeferredSourcePrompt/);
+  assert.doesNotMatch(detailContentSource, /CopyPromptButton/);
 });
