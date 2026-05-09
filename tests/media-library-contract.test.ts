@@ -19,10 +19,14 @@ test('media library keeps record mapping helpers outside server orchestration', 
   const libraryLines = source.trimEnd().split(/\r?\n/).length;
 
   assert.ok(fs.existsSync(recordsPath));
-  assert.ok(libraryLines <= 760, `media-library.ts has ${libraryLines} lines`);
+  assert.ok(libraryLines <= 80, `media-library.ts should stay a thin facade, got ${libraryLines} lines`);
   assert.match(source, /from '\.\/media-library-records'/);
   assert.match(source, /export\s+\{[\s\S]*buildMediaAssetInsert[\s\S]*\}\s+from '\.\/media-library-records'/);
+  assert.match(source, /from '\.\/media-library\/job-outputs'/);
+  assert.match(source, /from '\.\/media-library\/assets'/);
   assert.doesNotMatch(source, /function\s+mapAssetRow\(/);
+  assert.doesNotMatch(source, /function\s+listLibraryAssets\(/);
+  assert.doesNotMatch(source, /function\s+ensureReusableAsset\(/);
   assert.doesNotMatch(source, /function\s+normalizeString\(/);
   assert.doesNotMatch(source, /export\s+type\s+MediaKind\s*=/);
   assert.match(recordsSource, /export\s+type\s+MediaKind\s*=/);
@@ -133,7 +137,7 @@ test('builds idempotent media asset identity from source output when available',
 
 test('deduplicates canonical and legacy library rows by media URL identity', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
     'utf8'
   );
 
@@ -229,12 +233,16 @@ test('library cards use icon actions and put source navigation on the visual', (
 
 test('media assets preserve and backfill thumbnails from job outputs', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+  const resolverSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-resolvers.ts'),
     'utf8'
   );
   const migrationPath = path.join(process.cwd(), 'neon/migrations/18_media_assets_thumb_backfill.sql');
 
-  assert.match(source, /resolveReusableAssetThumbUrl/);
+  assert.match(resolverSource, /export async function resolveReusableAssetThumbUrl/);
   assert.match(source, /thumb_url\s*=\s*COALESCE\(EXCLUDED\.thumb_url,\s*media_assets\.thumb_url\)/);
   assert.ok(fs.existsSync(migrationPath));
 
@@ -247,7 +255,15 @@ test('media assets preserve and backfill thumbnails from job outputs', () => {
 
 test('video preview urls stay separate from final media urls across library contracts', () => {
   const serviceSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+  const resolverSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-resolvers.ts'),
+    'utf8'
+  );
+  const mediaSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-media.ts'),
     'utf8'
   );
   const recordsSource = fs.readFileSync(
@@ -277,9 +293,9 @@ test('video preview urls stay separate from final media urls across library cont
 
   assert.match(recordsSource, /previewUrl:\s*string\s*\|\s*null/);
   assert.match(serviceSource, /preview_url/);
-  assert.match(serviceSource, /resolveReusableAssetPreviewUrl/);
-  assert.match(serviceSource, /createRemoteVideoAssetThumbnail/);
-  assert.match(serviceSource, /createUploadVideoThumbnail/);
+  assert.match(resolverSource, /export async function resolveReusableAssetPreviewUrl/);
+  assert.match(mediaSource, /export async function createRemoteVideoAssetThumbnail/);
+  assert.match(mediaSource, /createUploadVideoThumbnail/);
   assert.match(assetsRoute, /previewUrl:\s*asset\.previewUrl/);
   assert.match(recentRoute, /previewUrl:\s*output\.previewUrl/);
   assert.match(browserSource, /activePreviewId/);
