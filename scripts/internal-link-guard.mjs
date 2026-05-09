@@ -40,6 +40,7 @@ function relativeFromRoot(absolutePath) {
 const footerPath = 'frontend/components/marketing/MarketingFooter.tsx';
 const navPath = 'frontend/components/marketing/MarketingNav.tsx';
 const appHeaderPath = 'frontend/components/HeaderBar.tsx';
+const appHeaderNavHelpersPath = 'frontend/components/header/header-nav-helpers.ts';
 const obfuscatedEmailPath = 'frontend/components/marketing/ObfuscatedEmailLink.tsx';
 const dictionariesPath = 'frontend/lib/i18n/dictionaries.ts';
 const companyPagePath = 'frontend/app/(localized)/[locale]/(marketing)/company/page.tsx';
@@ -47,6 +48,7 @@ const companyPagePath = 'frontend/app/(localized)/[locale]/(marketing)/company/p
 const footerSource = read(footerPath);
 const navSource = read(navPath);
 const appHeaderSource = read(appHeaderPath);
+const appHeaderNavHelpersSource = read(appHeaderNavHelpersPath);
 const obfuscatedEmailSource = read(obfuscatedEmailPath);
 const dictionariesSource = read(dictionariesPath);
 const companyPageSource = read(companyPagePath);
@@ -75,7 +77,11 @@ assert(
 assert(!/\{ key: 'workflows', href: '\/workflows' \}/.test(appHeaderSource), 'App header top nav must not include /workflows.');
 assert(!/\{ key: 'docs', href: '\/docs' \}/.test(appHeaderSource), 'App header top nav must not include /docs.');
 assert(/MARKETING_TOP_NAV_LINKS/.test(appHeaderSource), 'App header must use shared MARKETING_TOP_NAV_LINKS.');
-assert(/MARKETING_TOP_NAV_HREF_BY_KEY/.test(appHeaderSource), 'App header must normalize nav links with top-nav allowlist.');
+assert(/normalizeMarketingLinks/.test(appHeaderSource), 'App header must normalize nav links with the header nav helper.');
+assert(
+  /MARKETING_TOP_NAV_HREF_BY_KEY/.test(appHeaderNavHelpersSource),
+  'Header nav helper must normalize nav links with top-nav allowlist.'
+);
 
 const strategicHrefPatterns = [
   /\/models\b/,
@@ -127,6 +133,7 @@ const companyAllowedFiles = new Set([
   'frontend/lib/seo/hreflang.ts',
   'frontend/next-sitemap.config.js',
   'frontend/middleware.ts',
+  'frontend/lib/middleware/routing-query.ts',
   'frontend/scripts/qa/hreflang-check.ts',
   'frontend/scripts/qa/locale-surface-check.ts',
 ]);
