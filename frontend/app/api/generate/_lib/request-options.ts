@@ -9,28 +9,26 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
-import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
-import {
-  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-  getBytePlusSeedanceAllowedResolutions,
-} from '@/server/video-providers/byteplus-modelark';
+import { isSoraEngineId, type SoraRequest } from '@/lib/sora';
 import type { EngineCaps, Mode } from '@/types/engines';
+import { normalizeBytePlusOptions } from './request-options-byteplus';
+import {
+  normalizeGenerationElements,
+  normalizeMultiPrompt,
+  normalizeSeed,
+  normalizeStringArray,
+  trimString,
+  type GenerationElement,
+  type MultiPromptEntry,
+} from './request-option-normalizers';
+import { buildSoraRequestOptions } from './request-options-sora';
+
+export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
 
 export type VideoMode = Extract<
   Mode,
   't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'
 >;
-
-export type MultiPromptEntry = {
-  prompt: string;
-  duration: number;
-};
-
-export type GenerationElement = {
-  frontalImageUrl?: string;
-  referenceImageUrls?: string[];
-  videoUrl?: string;
-};
 
 export type GenerateRequestOptionsMetric = {
   errorCode: string;
@@ -222,7 +220,7 @@ export function buildGenerateRequestOptions(params: {
       : null;
   const renderIds =
     Array.isArray(body.renderIds) && body.renderIds.length
-      ? body.renderIds.map((value: unknown) => (typeof value === 'string' ? value : null)).filter(isPresentString)
+      ? body.renderIds.map((value: unknown) => trimString(value)).filter((value): value is string => Boolean(value))
       : null;
   const heroRenderId = trimString(body.heroRenderId);
   const message = trimString(body.message);
@@ -383,222 +381,4 @@ export function buildGenerateRequestOptions(params: {
       soraRequest,
     },
   };
-}
-
-function normalizeMultiPrompt(value: unknown): MultiPromptEntry[] | null {
-  if (!Array.isArray(value)) return null;
-  const entries = value
-    .map((entry: unknown) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const record = entry as Record<string, unknown>;
-      const promptValue = typeof record.prompt === 'string' ? record.prompt.trim() : '';
-      const durationValue =
-        typeof record.duration === 'number'
-          ? Math.round(record.duration)
-          : typeof record.duration === 'string'
-            ? Math.round(Number(record.duration.replace(/[^\d.]/g, '')))
-            : 0;
-      if (!promptValue) return null;
-      return { prompt: promptValue, duration: durationValue };
-    })
-    .filter((entry: MultiPromptEntry | null): entry is MultiPromptEntry => Boolean(entry));
-
-  return entries.length ? entries : null;
-}
-
-function normalizeSeed(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return Math.trunc(value);
-  }
-  if (typeof value === 'string' && value.trim().length && Number.isFinite(Number(value))) {
-    return Math.trunc(Number(value));
-  }
-  return null;
-}
-
-function normalizeStringArray(value: unknown): string[] {
-  const values = Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : null;
-  return values
-    ? values.map((entry: unknown) => (typeof entry === 'string' ? entry.trim() : '')).filter(isPresentString)
-    : [];
-}
-
-function normalizeGenerationElements(value: unknown): GenerationElement[] | null {
-  if (!Array.isArray(value)) return null;
-  const elements = value
-    .map((entry: unknown) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const record = entry as Record<string, unknown>;
-      const frontalImageUrl =
-        typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
-          ? record.frontalImageUrl.trim()
-          : null;
-      const referenceImageUrls = Array.isArray(record.referenceImageUrls)
-        ? record.referenceImageUrls
-            .map((item: unknown) => (typeof item === 'string' ? item.trim() : ''))
-            .filter(isPresentString)
-        : [];
-      const videoUrl =
-        typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
-      if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) return null;
-      const element: GenerationElement = {};
-      if (frontalImageUrl) element.frontalImageUrl = frontalImageUrl;
-      if (referenceImageUrls.length) element.referenceImageUrls = referenceImageUrls;
-      if (videoUrl) element.videoUrl = videoUrl;
-      return element;
-    })
-    .filter((entry: GenerationElement | null): entry is GenerationElement => Boolean(entry));
-
-  return elements.length ? elements : null;
-}
-
-function normalizeBytePlusOptions(params: {
-  engineId: string;
-  durationSec: number;
-  requestedResolution: string;
-  aspectRatio: string | null;
-}):
-  | {
-      ok: true;
-      durationSec: number;
-      resolution: string;
-      aspectRatio: string;
-    }
-  | Extract<GenerateRequestOptionsResult, { ok: false }> {
-  const normalizedDuration = Math.trunc(params.durationSec);
-  if (
-    !Number.isFinite(params.durationSec) ||
-    normalizedDuration !== params.durationSec ||
-    normalizedDuration < 5 ||
-    normalizedDuration > 15
-  ) {
-    return {
-      ok: false,
-      status: 400,
-      metric: {
-        errorCode: 'BYTEPLUS_DURATION_UNSUPPORTED',
-        meta: { durationSec: params.durationSec },
-      },
-      body: {
-        ok: false,
-        error: 'BYTEPLUS_DURATION_UNSUPPORTED',
-        message: 'This Seedance route requires an integer duration from 5 to 15 seconds.',
-      },
-    };
-  }
-  const allowedResolutions = getBytePlusSeedanceAllowedResolutions(params.engineId);
-  const bytePlusResolution = params.requestedResolution === 'auto' ? '720p' : params.requestedResolution;
-  if (!allowedResolutions.includes(bytePlusResolution as (typeof allowedResolutions)[number])) {
-    return {
-      ok: false,
-      status: 400,
-      metric: {
-        errorCode: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
-        meta: { resolution: params.requestedResolution, engineId: params.engineId },
-      },
-      body: {
-        ok: false,
-        error: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
-        message: 'This Seedance route does not support this resolution for the selected model.',
-      },
-    };
-  }
-  const bytePlusAspectRatio = !params.aspectRatio || params.aspectRatio === 'auto' ? '16:9' : params.aspectRatio;
-  if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(bytePlusAspectRatio as (typeof BYTEPLUS_SEEDANCE_ASPECT_RATIOS)[number])) {
-    return {
-      ok: false,
-      status: 400,
-      metric: {
-        errorCode: 'BYTEPLUS_RATIO_UNSUPPORTED',
-        meta: { aspectRatio: params.aspectRatio, engineId: params.engineId },
-      },
-      body: {
-        ok: false,
-        error: 'BYTEPLUS_RATIO_UNSUPPORTED',
-        message: 'This Seedance route does not support this aspect ratio.',
-      },
-    };
-  }
-  return {
-    ok: true,
-    durationSec: normalizedDuration,
-    resolution: bytePlusResolution,
-    aspectRatio: bytePlusAspectRatio,
-  };
-}
-
-function buildSoraRequestOptions(params: {
-  body: Record<string, unknown>;
-  engine: EngineCaps;
-  mode: Mode;
-  prompt: string;
-  requestedResolution: string;
-  rawAspectRatio: string | null;
-  durationSec: number;
-}):
-  | {
-      ok: true;
-      soraRequest: SoraRequest;
-    }
-  | Extract<GenerateRequestOptionsResult, { ok: false }> {
-  const variant = getSoraVariantForEngine(params.engine.id);
-  const fallbackAspect = params.mode === 'i2v' ? 'auto' : '16:9';
-  const soraDefaultResolution =
-    params.engine.resolutions.find((value) => value !== 'auto') ?? params.engine.resolutions[0] ?? '720p';
-  const candidate: Record<string, unknown> = {
-    variant,
-    mode: params.mode,
-    prompt: params.prompt,
-    resolution:
-      params.requestedResolution === 'auto' && params.mode === 't2v'
-        ? soraDefaultResolution
-        : params.requestedResolution,
-    aspect_ratio: params.rawAspectRatio ?? fallbackAspect,
-    duration: params.durationSec,
-    api_key:
-      typeof params.body.apiKey === 'string' && params.body.apiKey.trim().length ? params.body.apiKey.trim() : undefined,
-  };
-
-  if (params.mode === 'i2v') {
-    const imageUrl =
-      typeof params.body.imageUrl === 'string' && params.body.imageUrl.trim().length
-        ? params.body.imageUrl.trim()
-        : typeof params.body.image_url === 'string' && params.body.image_url.trim().length
-          ? params.body.image_url.trim()
-          : undefined;
-    if (!imageUrl) {
-      return {
-        ok: false,
-        status: 400,
-        metric: {
-          errorCode: 'IMAGE_URL_REQUIRED',
-          meta: { engineId: params.engine.id, mode: params.mode },
-        },
-        body: { ok: false, error: 'Image URL is required for Sora image-to-video' },
-      };
-    }
-    candidate.image_url = imageUrl;
-  }
-
-  try {
-    return { ok: true, soraRequest: parseSoraRequest(candidate) };
-  } catch (error) {
-    return {
-      ok: false,
-      status: 400,
-      body: {
-        ok: false,
-        error: 'Invalid Sora payload',
-        details: error instanceof Error ? error.message : undefined,
-      },
-    };
-  }
-}
-
-function trimString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length ? value.trim() : null;
-}
-
-function isPresentString(value: string | null): value is string {
-  return typeof value === 'string' && value.length > 0;
 }

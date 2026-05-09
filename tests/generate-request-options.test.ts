@@ -12,6 +12,9 @@ import type { EngineCaps } from '../frontend/types/engines';
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/request-options.ts');
+const normalizersPath = join(root, 'frontend/app/api/generate/_lib/request-option-normalizers.ts');
+const bytePlusPath = join(root, 'frontend/app/api/generate/_lib/request-options-byteplus.ts');
+const soraPath = join(root, 'frontend/app/api/generate/_lib/request-options-sora.ts');
 const routeSource = readFileSync(routePath, 'utf8');
 
 const baseEngine = {
@@ -24,6 +27,9 @@ const baseEngine = {
 
 test('generate route delegates request option normalization', () => {
   assert.ok(existsSync(helperPath), 'request option normalization should live in the generate route _lib folder');
+  assert.ok(existsSync(normalizersPath), 'request option pure normalizers should live in a focused module');
+  assert.ok(existsSync(bytePlusPath), 'BytePlus request option rules should live in a focused module');
+  assert.ok(existsSync(soraPath), 'Sora request option rules should live in a focused module');
   assert.match(routeSource, /from '\.\/_lib\/request-options'/);
   assert.doesNotMatch(routeSource, /const multiPromptRaw = Array\.isArray\(body\.multiPrompt\)/);
   assert.doesNotMatch(routeSource, /parseSoraRequest\(candidate\)/);
@@ -35,11 +41,22 @@ test('generate route delegates request option normalization', () => {
 
 test('request option helper exposes the route contract', () => {
   const helperSource = readFileSync(helperPath, 'utf8');
+  const normalizersSource = readFileSync(normalizersPath, 'utf8');
+  const bytePlusSource = readFileSync(bytePlusPath, 'utf8');
+  const soraSource = readFileSync(soraPath, 'utf8');
 
   assert.match(helperSource, /export function isVideoMode/);
   assert.match(helperSource, /export function buildGenerateRequestOptions/);
-  assert.match(helperSource, /parseSoraRequest/);
-  assert.match(helperSource, /BYTEPLUS_DURATION_UNSUPPORTED/);
+  assert.match(helperSource, /from '\.\/request-option-normalizers'/);
+  assert.match(helperSource, /from '\.\/request-options-byteplus'/);
+  assert.match(helperSource, /from '\.\/request-options-sora'/);
+  assert.match(normalizersSource, /export function normalizeMultiPrompt/);
+  assert.match(normalizersSource, /export function normalizeGenerationElements/);
+  assert.match(bytePlusSource, /BYTEPLUS_DURATION_UNSUPPORTED/);
+  assert.match(soraSource, /parseSoraRequest/);
+
+  const lineCount = helperSource.split('\n').length;
+  assert.ok(lineCount <= 400, `request-options helper should stay below 400 lines after rules extraction, got ${lineCount}`);
 });
 
 test('request option helper normalizes multi-prompt duration and render metadata', () => {
