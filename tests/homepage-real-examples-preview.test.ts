@@ -70,7 +70,10 @@ test('homepage real examples preview uses compact decision-oriented copy and CTA
 });
 
 test('homepage examples preview pins accurate recent 16:9 media for Wan, Veo, and Happy Horse', () => {
-  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
+  const homeRouteDataSource = readFileSync(
+    "frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/constants.ts",
+    'utf8'
+  );
 
   assert.match(homeRouteDataSource, /HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES/);
   assert.match(homeRouteDataSource, /job_c36e082d-cd1d-4a25-9f17-02246a878eb9/);
@@ -106,7 +109,10 @@ test('homepage examples preview keeps only real crawlable example routes', () =>
 
 test('homepage real examples component uses compact two-column rows instead of the old large gallery', () => {
   const source = readHomeSectionsSource();
-  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
+  const homeRouteDataSource = readFileSync(
+    "frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples.ts",
+    'utf8'
+  );
   const previewSource = source.slice(
     source.indexOf('export function RealExamplesPreview'),
     source.indexOf('function ComparisonScorecard')
@@ -164,7 +170,10 @@ test('homepage hero avoids initial mobile video downloads', () => {
 });
 
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
-  const homeRouteDataSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts", 'utf8');
+  const homeRouteDataSource = readFileSync(
+    "frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/hero.ts",
+    'utf8'
+  );
   const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 
   assert.match(homeRouteDataSource, /function heroModelLabel\(\)/);
