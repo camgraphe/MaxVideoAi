@@ -43,10 +43,30 @@ function combinedBriefText(brief: CommercialVideoAgentBrief): string {
   ].join(' ');
 }
 
+function affirmativeSafetyText(brief: CommercialVideoAgentBrief): string {
+  const rawWithoutAvoidClauses = brief.rawRequest.replace(
+    /\b(?:avoid|exclude|without|no|do not include|don't include)\b[^.。!?]*(?:celebrity|celebrities|likeness|copyrighted|protected ip|third-party brand|real logo|fake logo)[^.。!?]*/gi,
+    ''
+  );
+
+  return [
+    rawWithoutAvoidClauses,
+    brief.productOrOffer,
+    brief.audience,
+    brief.mainBenefit,
+    brief.scene,
+    brief.visualStyle,
+    brief.brandTone,
+    brief.cta,
+    brief.mustInclude.join(' '),
+  ].join(' ');
+}
+
 export function reviewCommercialVideoRequest(
   brief: CommercialVideoAgentBrief
 ): CommercialVideoSafetyReview {
   const text = combinedBriefText(brief);
+  const affirmativeText = affirmativeSafetyText(brief);
 
   if (SEXUAL_OR_NUDITY_PATTERN.test(text)) {
     return {
@@ -62,7 +82,7 @@ export function reviewCommercialVideoRequest(
     };
   }
 
-  if (CELEBRITY_OR_IP_PATTERN.test(text)) {
+  if (CELEBRITY_OR_IP_PATTERN.test(affirmativeText)) {
     return {
       allowed: false,
       reason: 'Request references protected IP, celebrities, or third-party brand likeness.',

@@ -116,6 +116,48 @@ test('safety blocks explicit sexual requests before prompt preparation', () => {
   assert.match(review.reason ?? '', /sexual|nudity/i);
 });
 
+test('safety does not block protective avoid instructions for celebrity likeness', () => {
+  const safeBrief = {
+    ...EMPTY_COMMERCIAL_VIDEO_AGENT_BRIEF,
+    productOrOffer: 'meal delivery app',
+    audience: 'busy young professionals',
+    marketingGoal: 'conversion' as const,
+    mainBenefit: 'save time while eating well',
+    scene: 'home entrance in the evening',
+    visualStyle: 'clean modern lifestyle commercial',
+    brandTone: 'warm and friendly',
+    cta: 'Order tonight',
+    avoid: ['fake logos', 'tiny unreadable app text', 'celebrity likeness'],
+    legalSafetyConstraints: ['no celebrity likeness'],
+    rawRequest:
+      'Create a promotional video for a meal delivery app. Avoid fake logos, tiny unreadable app text, and celebrity likeness.',
+  };
+
+  const review = reviewCommercialVideoRequest(safeBrief);
+
+  assert.equal(review.allowed, true);
+});
+
+test('safety still blocks affirmative celebrity requests', () => {
+  const unsafeBrief = {
+    ...EMPTY_COMMERCIAL_VIDEO_AGENT_BRIEF,
+    productOrOffer: 'energy drink',
+    audience: 'sports fans',
+    marketingGoal: 'conversion' as const,
+    mainBenefit: 'high energy mood',
+    scene: 'stadium',
+    visualStyle: 'cinematic commercial',
+    brandTone: 'bold',
+    cta: 'Try it',
+    rawRequest: 'Create a video with Tom Cruise drinking our energy drink.',
+  };
+
+  const review = reviewCommercialVideoRequest(unsafeBrief);
+
+  assert.equal(review.allowed, false);
+  assert.match(review.reason ?? '', /protected IP|celebrities|likeness/i);
+});
+
 test('commercial video prompt package exposes Seedance settings, scenario, reviewer output, and final prompt', () => {
   const preset = VIDEO_AGENT_PRESETS[0];
   const brief = applyCommercialIntakeMessage(
