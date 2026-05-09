@@ -6,17 +6,26 @@ import test from 'node:test';
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(core)/video/[id]/page.tsx');
 const contentPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
+const cardPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchCard.tsx');
+const relatedPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchRelatedExamples.tsx');
+const sidebarPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSidebar.tsx');
 const unavailablePath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoUnavailableState.tsx');
 const utilsPath = join(root, 'frontend/app/(core)/video/[id]/_lib/video-watch-page-utils.ts');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const contentSource = readFileSync(contentPath, 'utf8');
+const cardSource = readFileSync(cardPath, 'utf8');
+const relatedSource = readFileSync(relatedPath, 'utf8');
+const sidebarSource = readFileSync(sidebarPath, 'utf8');
 const unavailableSource = readFileSync(unavailablePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 
 test('video watch page stays a route orchestrator', () => {
   assert.ok(existsSync(pagePath), 'video watch page should exist');
   assert.ok(existsSync(contentPath), 'video watch content component should exist');
+  assert.ok(existsSync(cardPath), 'video watch card shell should exist');
+  assert.ok(existsSync(relatedPath), 'video watch related examples component should exist');
+  assert.ok(existsSync(sidebarPath), 'video watch sidebar component should exist');
   assert.ok(existsSync(unavailablePath), 'video unavailable component should exist');
   assert.ok(existsSync(utilsPath), 'video watch helper module should exist');
 
@@ -43,8 +52,18 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /WatchKeyFrames/, 'content component should own keyframe rendering');
   assert.match(contentSource, /CopyPromptButton/, 'content component should own prompt copy UI');
   assert.match(contentSource, /dangerouslySetInnerHTML/, 'content component should own JSON-LD script rendering');
-  assert.match(contentSource, /function WatchCard/, 'content component should own watch card UI');
-  assert.match(contentSource, /buildHighlightItems/, 'content component should own highlight view model');
+  assert.match(contentSource, /from '\.\/VideoWatchCard'/, 'content component should compose the watch card shell');
+  assert.match(contentSource, /from '\.\/VideoWatchRelatedExamples'/, 'content component should compose related examples');
+  assert.match(contentSource, /from '\.\/VideoWatchSidebar'/, 'content component should compose the sidebar');
+  assert.doesNotMatch(contentSource, /function WatchCard/, 'watch card UI belongs in VideoWatchCard');
+  assert.doesNotMatch(contentSource, /function buildHighlightItems/, 'highlight view model belongs in VideoWatchSidebar');
+  assert.doesNotMatch(contentSource, /Related examples/, 'related examples markup belongs in VideoWatchRelatedExamples');
+  assert.ok(contentSource.split('\n').length <= 360, `video watch content should stay below 360 lines, got ${contentSource.split('\n').length}`);
+  assert.match(cardSource, /export function VideoWatchCard/, 'watch card shell should be exported');
+  assert.match(relatedSource, /export function VideoWatchRelatedExamples/, 'related examples component should be exported');
+  assert.match(sidebarSource, /export function VideoWatchSidebar/, 'sidebar component should be exported');
+  assert.match(sidebarSource, /function buildHighlightItems/, 'sidebar should own highlight view model');
+  assert.match(sidebarSource, /function getDetailIcon/, 'sidebar should own detail icon mapping');
   assert.match(unavailableSource, /export function VideoUnavailableState/, 'unavailable component should be exported');
   assert.match(utilsSource, /export function buildMetaTitle/, 'helper module should own metadata title building');
   assert.match(utilsSource, /export function parseAspectRatio/, 'helper module should own aspect parsing');
