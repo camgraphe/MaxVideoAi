@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { buildChartTicks } from '../_lib/insights-helpers';
+import { buildChartTicks } from '../_lib/insights-series-helpers';
 import type { ChartPoint, ChartTheme } from '../_lib/insights-types';
 import { formatCompactNumber } from '../_lib/insights-formatters';
 
