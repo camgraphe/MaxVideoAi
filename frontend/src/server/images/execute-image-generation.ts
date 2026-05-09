@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import { listFalEngines } from '@/config/falEngines';
 import type {
   ImageGenerationMode,
   ImageGenerationRequest,
@@ -21,17 +20,10 @@ import {
 } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
-  formatSupportedImageFormatsLabel,
-  getSupportedImageFormats,
-} from '@/lib/image/formats';
-import {
   canonicalizeImageFieldValue,
-  clampRequestedImageCount,
   getImageFieldValues,
   getImageInputField,
-  getReferenceConstraints,
   normalizeFalImageResolution,
-  resolveRequestedAspectRatio,
   resolveRequestedResolution,
 } from '@/app/api/images/utils';
 import {
@@ -43,27 +35,21 @@ import {
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
-import {
-  getStoredAssetInfoByUrl,
-  isReferenceImageSupported,
-  normalizeReferenceImageForEngine,
-  type StoredAssetInfo,
-} from './image-reference-normalization';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
 import {
-  buildCharacterReferencePrompt,
   extractImages,
   parseRequestId,
-  sanitizeCharacterReferences,
 } from './image-provider-payload';
 import {
   buildReceiptSnapshot,
   type PendingReceipt,
 } from './image-generation-receipts';
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
+import { resolveImageGenerationRequestContext } from './image-generation-request-context';
+import { prepareImageGenerationReferences } from './image-generation-references';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
@@ -81,31 +67,8 @@ type ExecuteImageGenerationOptions = {
   billingQuantityMultiplier?: number;
 };
 
-type ImageEngineEntry = (typeof IMAGE_ENGINE_REGISTRY)[number];
-
-const IMAGE_ENGINE_REGISTRY = listFalEngines().filter((entry) => (entry.category ?? 'video') === 'image');
-const IMAGE_ENGINE_MAP = new Map(IMAGE_ENGINE_REGISTRY.map((entry) => [entry.id, entry]));
-const DEFAULT_IMAGE_ENGINE_ID = IMAGE_ENGINE_REGISTRY[0]?.id ?? null;
-
 function normalizeOptionalBoolean(value: unknown): boolean | null {
   return typeof value === 'boolean' ? value : null;
-}
-
-function getImageEngine(engineId?: string | null): ImageEngineEntry | null {
-  if (engineId && IMAGE_ENGINE_MAP.has(engineId)) {
-    return IMAGE_ENGINE_MAP.get(engineId) ?? null;
-  }
-  if (DEFAULT_IMAGE_ENGINE_ID && IMAGE_ENGINE_MAP.has(DEFAULT_IMAGE_ENGINE_ID)) {
-    return IMAGE_ENGINE_MAP.get(DEFAULT_IMAGE_ENGINE_ID) ?? null;
-  }
-  return null;
-}
-
-function normalizeMode(value: unknown, fallback: ImageGenerationMode = 't2i'): ImageGenerationMode {
-  if (value === 't2i' || value === 'i2i') return value;
-  if (value === 'generate') return 't2i';
-  if (value === 'edit') return 'i2i';
-  return fallback;
 }
 
 function fail(
@@ -138,180 +101,33 @@ export async function executeImageGeneration({
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
   }
 
-  const engineEntry = getImageEngine(body.engineId);
-  if (!engineEntry) {
-    fail('t2i', 'engine_unavailable', 'Image engine unavailable.', 503);
-  }
-
-  const engine = engineEntry.engine;
-  const fallbackMode = (engineEntry.modes[0]?.mode as ImageGenerationMode | undefined) ?? 't2i';
-  const mode = normalizeMode(body.mode, fallbackMode);
-  const modeConfig = engineEntry.modes.find((entry) => entry.mode === mode);
-  if (!modeConfig?.falModelId) {
-    fail(mode, 'mode_unsupported', 'Selected engine does not support this mode.', 400, null, {
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
-    });
-  }
-
-  const aspectRatioResult = resolveRequestedAspectRatio(
+  const {
+    engineEntry,
     engine,
     mode,
-    typeof body.aspectRatio === 'string' ? body.aspectRatio : null
-  );
-  if (!aspectRatioResult.ok) {
-    fail(
-      mode,
-      'aspect_ratio_invalid',
-      'Selected aspect ratio is not available for this engine.',
-      400,
-      { allowed: aspectRatioResult.allowed },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
-    );
-  }
-  const resolvedAspectRatio = aspectRatioResult.value || null;
+    modeConfig,
+    resolvedAspectRatio,
+    prompt,
+    numImages,
+    durationSec,
+  } = resolveImageGenerationRequestContext(body);
 
-  const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
-  if (!prompt.length) {
-    fail(mode, 'invalid_prompt', 'Prompt is required.', 400, null, {
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
-    });
-  }
-
-  const requestedImages =
-    typeof body.numImages === 'number' && Number.isFinite(body.numImages) ? Math.round(body.numImages) : 1;
-  const numImages = clampRequestedImageCount(engine, mode, requestedImages);
-
-  const rawImageUrls = Array.isArray(body.imageUrls) ? body.imageUrls : [];
-  const imageUrls = rawImageUrls
-    .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
-    .filter((entry) => entry.length);
-  let characterReferences = sanitizeCharacterReferences(body.characterReferences);
-  const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
-  let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
-  let combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
-  const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
-  const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
-  if (invalidImageUrl) {
-    fail(
-      mode,
-      'invalid_image_url',
-      'Reference images must be absolute URLs (https://...).',
-      400,
-      { url: invalidImageUrl },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
-    );
-  }
-
-  const supportedReferenceFormats = getSupportedImageFormats(engine);
-  let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
-  if (supportedReferenceFormats.length && combinedImageUrls.length) {
-    storedAssetInfoByUrl = await getStoredAssetInfoByUrl(userId, combinedImageUrls);
-    const normalizedReferenceByUrl = new Map<string, { url: string; mime: string }>();
-
-    for (const referenceUrl of [...new Set(combinedImageUrls)]) {
-      if (isReferenceImageSupported(supportedReferenceFormats, referenceUrl, storedAssetInfoByUrl)) {
-        continue;
-      }
-
-      try {
-        const normalizedReference = await normalizeReferenceImageForEngine({
-          userId,
-          url: referenceUrl,
-          supportedFormats: supportedReferenceFormats,
-          engineId: engine.id,
-        });
-        normalizedReferenceByUrl.set(referenceUrl, normalizedReference);
-        storedAssetInfoByUrl.set(normalizedReference.url, { mime: normalizedReference.mime });
-      } catch (error) {
-        const reason = error instanceof Error && error.message ? error.message : 'Unable to normalize reference image.';
-        console.warn('[images] failed to normalize reference image for engine', {
-          engineId: engine.id,
-          url: referenceUrl,
-          reason,
-        });
-        fail(
-          mode,
-          'image_normalization_failed',
-          'Reference image could not be converted to a format supported by this engine.',
-          422,
-          { allowed: supportedReferenceFormats, url: referenceUrl, reason },
-          {
-            engineId: engineEntry.id,
-            engineLabel: engineEntry.marketingName,
-          }
-        );
-      }
-    }
-
-    if (normalizedReferenceByUrl.size) {
-      characterReferences = characterReferences.map((entry) => ({
-        ...entry,
-        imageUrl: normalizedReferenceByUrl.get(entry.imageUrl)?.url ?? entry.imageUrl,
-      }));
-      normalizedImageUrls = normalizedImageUrls.map(
-        (entry) => normalizedReferenceByUrl.get(entry)?.url ?? entry
-      );
-      const currentCharacterReferenceUrls = new Set(characterReferences.map((entry) => entry.imageUrl));
-      combinedImageUrls = [
-        ...characterReferences.map((entry) => entry.imageUrl),
-        ...normalizedImageUrls.filter((url) => !currentCharacterReferenceUrls.has(url)),
-      ];
-    }
-
-    const invalidImageFormatUrl = combinedImageUrls.find(
-      (entry) => !isReferenceImageSupported(supportedReferenceFormats, entry, storedAssetInfoByUrl)
-    );
-    if (invalidImageFormatUrl) {
-      fail(
-        mode,
-        'image_format_invalid',
-        `Reference images must use ${formatSupportedImageFormatsLabel(supportedReferenceFormats)}.`,
-        400,
-        { allowed: supportedReferenceFormats, url: invalidImageFormatUrl },
-        {
-          engineId: engineEntry.id,
-          engineLabel: engineEntry.marketingName,
-        }
-      );
-    }
-  }
-
-  const referenceConstraints = getReferenceConstraints(engine, mode);
-  if (referenceConstraints.min > 0 && combinedImageUrls.length < referenceConstraints.min) {
-    const message =
-      referenceConstraints.min === 1
-        ? 'At least one reference image is required for this request.'
-        : `Provide at least ${referenceConstraints.min} reference images for this request.`;
-    fail(mode, 'missing_image_urls', message, 400, { minRequired: referenceConstraints.min }, {
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
-    });
-  }
-  if (combinedImageUrls.length > referenceConstraints.max) {
-    fail(
-      mode,
-      'too_many_image_urls',
-      `You can attach up to ${referenceConstraints.max} reference images.`,
-      400,
-      { maxAllowed: referenceConstraints.max },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
-    );
-  }
+  const {
+    characterReferences,
+    normalizedImageUrls,
+    combinedImageUrls,
+    effectivePrompt,
+    storedAssetInfoByUrl,
+  } = await prepareImageGenerationReferences({
+    userId,
+    body,
+    engineEntry,
+    mode,
+    prompt,
+  });
 
   const requestId = typeof body.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
   const jobId = requestId ?? `img_${randomUUID()}`;
-  const durationSec = numImages;
 
   const resolutionResult = resolveRequestedResolution(
     engine,
