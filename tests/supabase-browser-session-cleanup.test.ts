@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const cleanupPath = 'frontend/src/lib/supabase-auth-cleanup.ts';
 
-const browserSessionCallSites = [
+const directBrowserSessionCallSites = [
   'frontend/src/lib/authFetch.ts',
   'frontend/src/hooks/useRequireAuth.ts',
   'frontend/components/header/useHeaderAccountState.ts',
@@ -27,18 +27,24 @@ test('browser auth code centralizes stale refresh-token cleanup', () => {
   assert.match(source, /bad_code_verifier/);
 });
 
-for (const file of browserSessionCallSites) {
-  test(`${file} clears stale browser auth before retrying session work`, () => {
+for (const file of directBrowserSessionCallSites) {
+  test(`${file} uses the browser Supabase session directly`, () => {
     const source = readFileSync(file, 'utf8');
+    assert.doesNotMatch(
+      source,
+      /readBrowserSession/,
+      `${file} should not depend on the stale auth cleanup wrapper for routine session reads`
+    );
     assert.match(
       source,
-      /clearStaleBrowserAuthState|readBrowserSession|authFetch/,
-      `${file} should use the shared stale auth cleanup helper`
+      /supabase\.auth\.getSession\(\)|authFetch/,
+      `${file} should keep using the browser Supabase session or authenticated API facade`
     );
   });
 }
 
-test('marketing auth snapshot does not refresh stale sessions on public pages', () => {
-  assert.doesNotMatch(marketingAuthSource, /supabase\.auth\.getUser\(\)/);
-  assert.match(marketingAuthSource, /return \{ email: null, isAdmin: false \};/);
+test('marketing auth snapshot reads the cookie session on the server', () => {
+  assert.match(marketingAuthSource, /createSupabaseServerClient/);
+  assert.match(marketingAuthSource, /supabase\.auth\.getUser\(\)/);
+  assert.match(marketingAuthSource, /isUserAdmin\(userId\)/);
 });

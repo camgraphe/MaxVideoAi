@@ -15,8 +15,6 @@ import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
-  readBrowserSession,
-  refreshBrowserSession,
 } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
@@ -47,7 +45,9 @@ async function refreshSessionOnce(): Promise<Session | null> {
   if (refreshPromise) {
     return refreshPromise;
   }
-  refreshPromise = refreshBrowserSession()
+  refreshPromise = getSupabaseClient()
+    .then((supabase) => supabase.auth.refreshSession())
+    .then(({ data }) => data.session ?? null)
     .catch(() => null)
     .finally(() => {
       refreshPromise = null;
@@ -165,8 +165,9 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
           return;
         }
         const supabase = await getSupabaseClient();
-        let nextSession = await withTimeout(readBrowserSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
+        const sessionResult = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
         if (cancelledRef.current) return;
+        let nextSession = sessionResult.data.session ?? null;
         if (!nextSession) {
           if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
             markLoggedOut();
@@ -253,8 +254,9 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
             markLoggedOut();
             return;
           }
-          const recoveredSession = await readBrowserSession().catch(() => null);
+          const sessionResult = await supabase.auth.getSession().catch(() => null);
           if (cancelledRef.current) return;
+          const recoveredSession = sessionResult?.data?.session ?? null;
           if (recoveredSession?.user) {
             applySession(recoveredSession);
             return;

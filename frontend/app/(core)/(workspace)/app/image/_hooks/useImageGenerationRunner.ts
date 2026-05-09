@@ -5,7 +5,6 @@ import { runImageGeneration } from '@/lib/api';
 import { getDefaultAspectRatio } from '@/lib/image/inputSchema';
 import { validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { readLastKnownUserId } from '@/lib/last-known';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import type {
   CharacterReferenceSelection,
@@ -116,8 +115,9 @@ export function useImageGenerationRunner({
         setAuthModalOpen(true);
         return;
       }
-      const session = await readBrowserSession();
-      if (!session?.access_token) {
+      const { supabase } = await import('@/lib/supabaseClient');
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.access_token) {
         setAuthModalOpen(true);
         return;
       }

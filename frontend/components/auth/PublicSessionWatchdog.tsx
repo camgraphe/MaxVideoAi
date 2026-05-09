@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
+import { supabase } from '@/lib/supabaseClient';
 
 const REFRESH_THROTTLE_MS = 2000;
 
@@ -21,8 +21,8 @@ export function PublicSessionWatchdog() {
       if (now - lastAttemptRef.current < REFRESH_THROTTLE_MS) return;
       lastAttemptRef.current = now;
 
-      const session = await readBrowserSession();
-      if (session?.user) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
         notifyAccountRefresh();
       }
     };

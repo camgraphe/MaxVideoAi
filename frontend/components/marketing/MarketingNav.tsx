@@ -15,7 +15,6 @@ import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav'
 import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 
 type MarketingNavProps = {
@@ -124,12 +123,13 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     let unsubscribeAuth: (() => void) | null = null;
 
     void import('@/lib/supabaseClient')
-      .then(async ({ supabase }) => ({ supabase, session: await readBrowserSession() }))
-      .then(async ({ supabase, session }) => {
+      .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
+      .then(async ({ supabase, data }) => {
         if (logoutIntentActive) {
           await supabase.auth.signOut().catch(() => undefined);
           return;
         }
+        const session = data.session ?? null;
         applySession(session);
         if (!mounted) return;
         void fetchAccountState(session?.access_token);

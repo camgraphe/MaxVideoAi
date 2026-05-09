@@ -3,7 +3,6 @@ import useSWRInfinite from 'swr/infinite';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
 import { readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import {
   clearMissingStatusRetries,
@@ -123,9 +122,10 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         setCacheKey('anonymous');
         return;
       }
-      const session = await readBrowserSession();
+      const supabase = await getSupabaseClient();
+      const { data } = await supabase.auth.getSession();
       if (cancelled) return;
-      const userId = session?.user?.id ?? null;
+      const userId = data.session?.user?.id ?? null;
       if (userId) {
         lastKnownUserIdRef.current = userId;
         writeLastKnownUserId(userId);

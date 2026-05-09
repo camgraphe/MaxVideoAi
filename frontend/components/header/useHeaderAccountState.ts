@@ -8,7 +8,6 @@ import {
   writeLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 
 type HeaderWalletState = { balance: number } | null;
@@ -73,7 +72,9 @@ export function useHeaderAccountState() {
       }
     };
     const handleInvalidate = async () => {
-      const session = await readBrowserSession();
+      const supabase = await getSupabaseClient();
+      const { data } = await supabase.auth.getSession();
+      const session = data.session ?? null;
       const userId = session?.user?.id ?? null;
       if (userId) {
         writeLastKnownUserId(userId);
@@ -99,8 +100,9 @@ export function useHeaderAccountState() {
     void getSupabaseClient()
       .then(async (supabase) => {
         if (!mounted) return;
-        const session = await readBrowserSession();
+        const { data } = await supabase.auth.getSession();
         if (!mounted) return;
+        const session = data.session ?? null;
         const userId = session?.user?.id ?? null;
         if (userId) {
           writeLastKnownUserId(userId);

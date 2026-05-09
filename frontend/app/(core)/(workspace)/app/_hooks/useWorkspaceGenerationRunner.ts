@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import type {
   EngineCaps,
   EngineModeUiCaps,
@@ -184,8 +183,9 @@ export function useWorkspaceGenerationRunner({
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
-    const session = await readBrowserSession();
-    const token = session?.access_token ?? null;
+    const { supabase } = await import('@/lib/supabaseClient');
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token ?? null;
     if (!token) {
       setAuthModalOpen(true);
       return;

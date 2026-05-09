@@ -145,7 +145,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(queryHydrationHookSource, /applyImageSettingsSnapshot/);
   assert.match(generationRunnerHookSource, /export function useImageGenerationRunner/);
   assert.match(generationRunnerHookSource, /runImageGeneration/);
-  assert.match(generationRunnerHookSource, /readBrowserSession/);
+  assert.match(generationRunnerHookSource, /supabase\.auth\.getSession\(\)/);
   assert.match(generationRunnerHookSource, /from '\.\.\/_lib\/image-workspace-history'/);
   assert.match(generationRunnerHookSource, /buildPendingGroup/);
   assert.match(generationRunnerHookSource, /buildCompletedGroup/);
