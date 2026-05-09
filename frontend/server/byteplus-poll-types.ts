@@ -1,0 +1,21 @@
+export type BytePlusPendingJob = {
+  job_id: string;
+  user_id: string | null;
+  engine_id: string;
+  engine_label: string;
+  provider_job_id: string;
+  status: string;
+  duration_sec: number;
+  thumb_url: string | null;
+  preview_video_url: string | null;
+  keyframe_urls: unknown;
+  aspect_ratio: string | null;
+  has_audio: boolean | null;
+  final_price_cents: number | null;
+  pricing_snapshot: unknown;
+  settings_snapshot: unknown;
+  currency: string | null;
+  payment_status: string | null;
+  updated_at: string;
+  created_at: string;
+};

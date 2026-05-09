@@ -1,65 +1,57 @@
 import { ENV } from '@/lib/env';
-import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
-import type { AspectRatio, EngineCaps, EngineInputField, Mode, Resolution } from '@/types/engines';
+import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import type { EngineCaps, EngineInputField, Mode, Resolution } from '@/types/engines';
+import {
+  BYTEPLUS_MODELARK_PROVIDER,
+  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
+  BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL,
+  BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_FAST_ENGINE_ID,
+  BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
+  BYTEPLUS_SEEDANCE_MODES,
+  BYTEPLUS_SEEDANCE_RESOLUTIONS,
+  PUBLIC_SEEDANCE_ENGINE_ID,
+  PUBLIC_SEEDANCE_FAST_ENGINE_ID,
+} from './byteplus-modelark-constants';
+import { BytePlusModelArkError } from './byteplus-modelark-error';
+import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
+import {
+  firstString,
+  normalizeBytePlusTask,
+  parseJsonResponse,
+  scrubBytePlusError,
+} from './byteplus-modelark-response';
 
-export const BYTEPLUS_MODELARK_PROVIDER = 'byteplus_modelark';
-export const PUBLIC_SEEDANCE_ENGINE_ID = 'seedance-2-0';
-export const PUBLIC_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast';
-export const BYTEPLUS_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast-byteplus';
-export const BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-260128';
-export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
-export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
-export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'];
-export const BYTEPLUS_SEEDANCE_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
-export const BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS: Resolution[] = ['480p', '720p'];
-export const BYTEPLUS_SEEDANCE_ASPECT_RATIOS: AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
-export const BYTEPLUS_SEEDANCE_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
-
-type BytePlusContentItem =
-  | { type: 'text'; text: string }
-  | {
-      type: 'image_url';
-      image_url: { url: string };
-      role: 'reference_image';
-    }
-  | {
-      type: 'video_url';
-      video_url: { url: string };
-      role: 'reference_video';
-    }
-  | {
-      type: 'audio_url';
-      audio_url: { url: string };
-      role: 'reference_audio';
-    };
-
-export type BytePlusSeedanceFastPayload = {
-  model: string;
-  content: BytePlusContentItem[];
-  resolution: '480p' | '720p' | '1080p';
-  ratio: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
-  duration: number;
-  generate_audio: boolean;
-  watermark: false;
-};
-
-export type BytePlusSeedancePayload = BytePlusSeedanceFastPayload;
-
-type BytePlusTaskResponse = Record<string, unknown>;
-
-export class BytePlusModelArkError extends Error {
-  status: number | null;
-  code: string | null;
-  providerMessage: string | null;
-
-  constructor(message: string, options: { status?: number | null; code?: string | null; providerMessage?: string | null } = {}) {
-    super(message);
-    this.name = 'BytePlusModelArkError';
-    this.status = options.status ?? null;
-    this.code = options.code ?? null;
-    this.providerMessage = options.providerMessage ?? null;
-  }
-}
+export {
+  BYTEPLUS_MODELARK_PROVIDER,
+  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
+  BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL,
+  BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_FAST_ENGINE_ID,
+  BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
+  BYTEPLUS_SEEDANCE_MODES,
+  BYTEPLUS_SEEDANCE_RESOLUTIONS,
+  PUBLIC_SEEDANCE_ENGINE_ID,
+  PUBLIC_SEEDANCE_FAST_ENGINE_ID,
+} from './byteplus-modelark-constants';
+export { BytePlusModelArkError } from './byteplus-modelark-error';
+export {
+  buildBytePlusSeedanceFastPayload,
+  buildBytePlusSeedancePayload,
+} from './byteplus-modelark-payload';
+export type {
+  BytePlusSeedanceFastPayload,
+  BytePlusSeedancePayload,
+} from './byteplus-modelark-payload';
+export {
+  getBytePlusUserSafeErrorMessage,
+  normalizeBytePlusTask,
+  scrubBytePlusError,
+} from './byteplus-modelark-response';
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
@@ -74,16 +66,6 @@ function splitCsvEnv(value: string | undefined): string[] {
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
-}
-
-function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
-  return Array.from(
-    new Set(
-      (values ?? [])
-        .map((value) => (typeof value === 'string' ? value.trim() : ''))
-        .filter(Boolean)
-    )
-  );
 }
 
 function allowedBytePlusModes(value: string | undefined): Mode[] {
@@ -304,263 +286,6 @@ export function getBytePlusArkConfig() {
     seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   };
-}
-
-export function buildBytePlusSeedancePayload(params: {
-  modelId: string;
-  prompt: string;
-  durationSec: number;
-  mode?: Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'>;
-  imageUrl?: string | null;
-  endImageUrl?: string | null;
-  referenceImageUrls?: string[];
-  referenceVideoUrls?: string[];
-  referenceAudioUrls?: string[];
-  resolution?: string | null;
-  ratio?: string | null;
-  generateAudio?: boolean;
-  allowedResolutions?: Resolution[];
-}): BytePlusSeedancePayload {
-  const prompt = params.prompt.trim();
-  const duration = Math.trunc(params.durationSec);
-  const mode = params.mode ?? 't2v';
-  const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
-  const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
-  const referenceImageUrls = uniqueNonEmptyUrls(params.referenceImageUrls);
-  const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
-  const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
-  const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
-  const requestedResolution = (typeof params.resolution === 'string' && params.resolution.trim()
-    ? params.resolution.trim()
-    : '720p') as Resolution;
-  const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
-  if (!prompt) {
-    throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
-  }
-  if (!BYTEPLUS_SEEDANCE_MODES.includes(mode)) {
-    throw new BytePlusModelArkError('BytePlus Seedance supports only configured T2V, I2V, reference, video edit, and extension modes.', {
-      code: 'BYTEPLUS_MODE_UNSUPPORTED',
-    });
-  }
-  if (mode === 'i2v' && !imageUrl) {
-    throw new BytePlusModelArkError('Image URL is required for BytePlus Seedance image-to-video.', {
-      code: 'IMAGE_URL_REQUIRED',
-    });
-  }
-  if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length + referenceAudioUrls.length === 0) {
-    throw new BytePlusModelArkError('At least one reference image, video, or audio URL is required for BytePlus Seedance reference-to-video.', {
-      code: 'REFERENCE_URL_REQUIRED',
-    });
-  }
-  if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length === 0) {
-    throw new BytePlusModelArkError('At least one reference image or video URL is required for BytePlus Seedance reference-to-video.', {
-      code: 'REFERENCE_MEDIA_REQUIRED',
-    });
-  }
-  if ((mode === 'v2v' || mode === 'extend') && referenceVideoUrls.length === 0) {
-    throw new BytePlusModelArkError('At least one source video URL is required for BytePlus Seedance video edit and extension modes.', {
-      code: 'VIDEO_URL_REQUIRED',
-    });
-  }
-  if (!Number.isFinite(duration) || duration < 5 || duration > 15) {
-    throw new BytePlusModelArkError('BytePlus Seedance duration must be between 5 and 15 seconds.', {
-      code: 'BYTEPLUS_DURATION_UNSUPPORTED',
-    });
-  }
-  if (!params.modelId.trim()) {
-    throw new BytePlusModelArkError('BytePlus Seedance model id is not configured.', {
-      code: 'BYTEPLUS_MODEL_MISSING',
-    });
-  }
-  if (!allowedResolutions.includes(requestedResolution)) {
-    throw new BytePlusModelArkError('BytePlus Seedance resolution is not supported by this model.', {
-      code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
-    });
-  }
-  if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(requestedRatio)) {
-    throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
-      code: 'BYTEPLUS_RATIO_UNSUPPORTED',
-    });
-  }
-
-  const text =
-    mode === 'i2v' && endImageUrl
-      ? `Use Image 1 as the opening frame and Image 2 as the final frame. ${prompt}`
-      : mode === 'i2v'
-        ? `Use Image 1 as the opening frame. ${prompt}`
-        : prompt;
-  const content: BytePlusContentItem[] = [{ type: 'text', text }];
-  if (mode === 'i2v') {
-    content.push({
-      type: 'image_url',
-      image_url: { url: imageUrl },
-      role: 'reference_image',
-    });
-    if (endImageUrl) {
-      content.push({
-        type: 'image_url',
-        image_url: { url: endImageUrl },
-        role: 'reference_image',
-      });
-    }
-  }
-  if (mode === 'ref2v' || mode === 'v2v' || mode === 'extend') {
-    for (const url of referenceImageUrls) {
-      content.push({
-        type: 'image_url',
-        image_url: { url },
-        role: 'reference_image',
-      });
-    }
-    for (const url of referenceVideoUrls) {
-      content.push({
-        type: 'video_url',
-        video_url: { url },
-        role: 'reference_video',
-      });
-    }
-    for (const url of referenceAudioUrls) {
-      content.push({
-        type: 'audio_url',
-        audio_url: { url },
-        role: 'reference_audio',
-      });
-    }
-  }
-
-  return {
-    model: params.modelId.trim(),
-    content,
-    resolution: requestedResolution as BytePlusSeedancePayload['resolution'],
-    ratio: requestedRatio as BytePlusSeedancePayload['ratio'],
-    duration,
-    generate_audio: params.generateAudio === true,
-    watermark: false,
-  };
-}
-
-export function buildBytePlusSeedanceFastPayload(params: Parameters<typeof buildBytePlusSeedancePayload>[0]): BytePlusSeedanceFastPayload {
-  return buildBytePlusSeedancePayload(params);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function firstString(value: unknown, keys: string[]): string | null {
-  if (!isRecord(value)) return null;
-  for (const key of keys) {
-    const candidate = value[key];
-    if (typeof candidate === 'string' && candidate.trim().length) {
-      return candidate.trim();
-    }
-  }
-  return null;
-}
-
-function firstRecord(value: unknown, keys: string[]): Record<string, unknown> | null {
-  if (!isRecord(value)) return null;
-  for (const key of keys) {
-    const candidate = value[key];
-    if (isRecord(candidate)) return candidate;
-  }
-  return null;
-}
-
-function extractUsage(value: unknown): NormalizedVideoProviderUsage | null {
-  const content = firstRecord(value, ['content', 'result', 'output', 'data']);
-  const usage = firstRecord(value, ['usage']) ?? firstRecord(content, ['usage']);
-  if (!usage) return null;
-  const totalRaw = usage.total_tokens ?? usage.totalTokens;
-  const completionRaw = usage.completion_tokens ?? usage.completionTokens;
-  const totalTokens = typeof totalRaw === 'number' && Number.isFinite(totalRaw) ? totalRaw : null;
-  const completionTokens = typeof completionRaw === 'number' && Number.isFinite(completionRaw) ? completionRaw : null;
-  return totalTokens == null && completionTokens == null ? null : { totalTokens, completionTokens };
-}
-
-function extractVideoUrl(value: unknown): string | null {
-  const content = firstRecord(value, ['content', 'result', 'output', 'data']);
-  const direct = firstString(value, ['video_url', 'videoUrl', 'url']);
-  if (direct) return direct;
-  const contentDirect = firstString(content, ['video_url', 'videoUrl', 'url']);
-  if (contentDirect) return contentDirect;
-  const video = firstRecord(content, ['video']) ?? firstRecord(value, ['video']);
-  return firstString(video, ['url', 'video_url', 'videoUrl']);
-}
-
-function extractErrorMessage(value: unknown): string | null {
-  const error = firstRecord(value, ['error']);
-  return (
-    firstString(error, ['message', 'msg', 'detail']) ??
-    firstString(value, ['message', 'error_message', 'errorMessage']) ??
-    null
-  );
-}
-
-export function normalizeBytePlusTask(task: unknown): NormalizedVideoProviderTask {
-  const root = firstRecord(task, ['data', 'task']) ?? task;
-  const providerJobId = firstString(root, ['id', 'task_id', 'taskId']) ?? '';
-  const rawStatus = firstString(root, ['status', 'state'])?.toLowerCase() ?? null;
-  const status =
-    rawStatus === 'succeeded' || rawStatus === 'success'
-      ? 'completed'
-      : rawStatus === 'failed' || rawStatus === 'expired' || rawStatus === 'cancelled' || rawStatus === 'canceled'
-        ? 'failed'
-        : rawStatus === 'running' || rawStatus === 'processing' || rawStatus === 'in_progress'
-          ? 'running'
-          : 'queued';
-
-  return {
-    providerJobId,
-    status,
-    rawStatus,
-    videoUrl: extractVideoUrl(root) ?? extractVideoUrl(task),
-    message: extractErrorMessage(root) ?? extractErrorMessage(task),
-    usage: extractUsage(root) ?? extractUsage(task),
-    raw: task,
-  };
-}
-
-export function scrubBytePlusError(error: unknown): string {
-  const nestedError = isRecord(error) && isRecord(error.error) ? error.error : null;
-  const raw =
-    error instanceof Error
-      ? error.message
-      : isRecord(error) && typeof error.message === 'string'
-        ? error.message
-        : nestedError && typeof nestedError.message === 'string'
-          ? nestedError.message
-        : typeof error === 'string'
-          ? error
-          : 'BytePlus ModelArk request failed.';
-  return raw
-    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [redacted]')
-    .replace(/ark-[A-Za-z0-9._~+/=-]+/gi, '[redacted-api-key]')
-    .replace(/([?&](?:X-Amz-Signature|Signature|Expires|X-Amz-Credential)=)[^&\s]+/gi, '$1[redacted]');
-}
-
-export function getBytePlusUserSafeErrorMessage(providerMessage: string): string {
-  const normalized = providerMessage.toLowerCase();
-  if (
-    normalized.includes('real person') ||
-    normalized.includes('private information') ||
-    normalized.includes('sensitive') ||
-    normalized.includes('policy')
-  ) {
-    return 'The render service rejected one of the input images. Try an image without identifiable people or private content.';
-  }
-  return 'The render could not start. Please retry later.';
-}
-
-async function parseJsonResponse(response: Response): Promise<BytePlusTaskResponse> {
-  const text = await response.text();
-  if (!text.trim()) return {};
-  try {
-    const parsed = JSON.parse(text);
-    return isRecord(parsed) ? parsed : { value: parsed };
-  } catch {
-    return { message: text };
-  }
 }
 
 export class BytePlusModelArkClient {

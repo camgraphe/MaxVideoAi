@@ -389,7 +389,7 @@ assert.equal(
 
 assert.equal(
   getBytePlusUserSafeErrorMessage('The request failed because the input image may contain real person. Request id: abc'),
-  'BytePlus rejected one of the input images. Try an image without identifiable people or private content.'
+  'The render service rejected one of the input images. Try an image without identifiable people or private content.'
 );
 
 assert.deepEqual(
