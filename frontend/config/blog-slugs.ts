@@ -18,7 +18,7 @@ export const BLOG_SLUGS_BY_CANONICAL = {
   },
   'compare-ai-video-engines': {
     en: 'compare-ai-video-engines',
-    fr: 'comment-comparer-les-mod\u00e8les-video-dia-sora-vs-veo-vs-pika',
+    fr: 'comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
     es: 'como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika',
   },
   'how-to-create-consistent-ai-characters': {

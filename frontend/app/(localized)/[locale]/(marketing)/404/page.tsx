@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { Link } from '@/i18n/navigation';
 import { NotFoundContent } from '@/components/NotFoundContent';
 import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { resolveDictionary } from '@/lib/i18n/server';
 
 type Localized404PageProps = {
@@ -25,9 +25,8 @@ export default async function Localized404Page(props: Localized404PageProps) {
 
   return (
     <NotFoundContent
-      linkComponent={Link}
-      homeHref={{ pathname: '/' }}
-      modelsHref={{ pathname: '/models' }}
+      homeHref={localizePathFromEnglish(params.locale, '/')}
+      modelsHref={localizePathFromEnglish(params.locale, '/models')}
       title={copy.title}
       body={copy.body}
       homeLabel={copy.homeLabel}

@@ -31,6 +31,18 @@ test('blog language switch resolves localized article slugs across locales', () 
   );
 });
 
+test('French compare article keeps its crawlable ASCII slug aligned', () => {
+  const slug = 'comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika';
+  const source = readFileSync(
+    path.join(process.cwd(), 'content', 'fr', 'blog', `${slug}.mdx`),
+    'utf8'
+  );
+
+  assert.equal(BLOG_SLUGS_BY_CANONICAL['compare-ai-video-engines'].fr, slug);
+  assert.equal(readFrontMatterValue(source, 'slug'), slug);
+  assert.equal(readFrontMatterValue(source, 'canonical'), `https://maxvideoai.com/fr/blog/${slug}`);
+});
+
 test('blog slug switch map covers every localized blog frontmatter slug', () => {
   for (const locale of locales) {
     const dir = path.join(process.cwd(), 'content', locale, 'blog');

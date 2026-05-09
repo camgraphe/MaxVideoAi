@@ -160,6 +160,19 @@ test('intl request config does not let locale cookies override unprefixed market
   assert.match(source, /\(isAppLocale\(segmentLocale\) && segmentLocale\) \|\|\s*defaultLocale/s);
 });
 
+test('404 pages use plain localized hrefs without requiring an intl link provider', () => {
+  const globalNotFoundSource = readFileSync('frontend/app/not-found.tsx', 'utf8');
+  const localizedNotFoundSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/404/page.tsx', 'utf8');
+
+  for (const source of [globalNotFoundSource, localizedNotFoundSource]) {
+    assert.doesNotMatch(source, /@\/i18n\/navigation/);
+    assert.doesNotMatch(source, /linkComponent=\{Link\}/);
+    assert.match(source, /localizePathFromEnglish/);
+    assert.match(source, /homeHref=\{localizePathFromEnglish\([^,]+, '\/'\)\}/);
+    assert.match(source, /modelsHref=\{localizePathFromEnglish\([^,]+, '\/models'\)\}/);
+  }
+});
+
 test('middleware avoids self-rewriting default-locale marketing routes on loopback', () => {
   const source = readFileSync('frontend/middleware.ts', 'utf8');
   const bypassBlock = source.slice(

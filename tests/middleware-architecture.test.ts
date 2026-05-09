@@ -57,3 +57,15 @@ test('middleware routing helpers own locale, query, redirect, and response utili
   assert.match(querySource, /export function normalizePublicQueryParams/);
   assert.match(querySource, /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"]\]\)/);
 });
+
+test('middleware preserves legacy French compare blog redirects', () => {
+  const marketingSource = readFileSync(routingMarketingPath, 'utf8');
+
+  assert.match(marketingSource, /comment-comparer-les-modèles-video-dia-sora-vs-veo-vs-pika/);
+  assert.match(marketingSource, /comment-comparer-les-mod%c3%a8les-video-dia-sora-vs-veo-vs-pika/);
+  assert.match(marketingSource, /comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika/);
+  assert.match(
+    marketingSource,
+    /'\/fr\/blog\/comment-comparer-les-modèles-video-dia-sora-vs-veo-vs-pika':\s*'\/blog\/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika'/
+  );
+});

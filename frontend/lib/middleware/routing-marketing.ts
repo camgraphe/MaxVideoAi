@@ -91,6 +91,14 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
     '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
   '/es/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika':
     '/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika',
+  '/fr/blog/comment-comparer-les-modèles-video-dia-sora-vs-veo-vs-pika':
+    '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
+  '/fr/blog/comment-comparer-les-mod%c3%a8les-video-dia-sora-vs-veo-vs-pika':
+    '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
+  '/blog/comment-comparer-les-modèles-video-dia-sora-vs-veo-vs-pika':
+    '/fr/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
+  '/blog/comment-comparer-les-mod%c3%a8les-video-dia-sora-vs-veo-vs-pika':
+    '/fr/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
   '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika': '/blog/compare-ai-video-engines',
   '/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika': '/blog/compare-ai-video-engines',
   // Sora 2 sequenced prompts
