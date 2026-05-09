@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import {
   AudioWaveform,
+  Bot,
   Check,
   Clapperboard,
   Home,
@@ -37,6 +38,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
   { id: 'generate-audio', label: 'Generate Audio', badge: null, icon: 'generate-audio', href: '/app/audio' },
+  { id: 'video-agents', label: 'Video Agents', badge: null, icon: 'video-agents', href: '/app/video-agents' },
   ...(FEATURES.workflows.toolsSection
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
@@ -51,6 +53,7 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   generate: Clapperboard,
   'generate-image': Images,
   'generate-audio': AudioWaveform,
+  'video-agents': Bot,
   tools: Wrench,
   library: LibraryBig,
   jobs: ListChecks,

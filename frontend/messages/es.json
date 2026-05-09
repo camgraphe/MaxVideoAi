@@ -3027,6 +3027,7 @@
         "generate": "Generar video",
         "generate-image": "Generar imagen",
         "generate-audio": "Generar audio",
+        "video-agents": "Video Agents",
         "jobs": "Historial",
         "tools": "Herramientas",
         "library": "Biblioteca",

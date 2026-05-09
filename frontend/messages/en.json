@@ -3000,6 +3000,7 @@
         "generate": "Generate Video",
         "generate-image": "Generate Image",
         "generate-audio": "Generate Audio",
+        "video-agents": "Video Agents",
         "tools": "Tools",
         "library": "Library",
         "jobs": "History",
