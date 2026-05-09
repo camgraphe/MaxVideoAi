@@ -332,6 +332,24 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       }
     }
   }
+  if (
+    finalVideoUrl &&
+    !isImageEngine &&
+    isPlaceholderThumbnail(resolvedThumbUrl) &&
+    finalVideoUrl !== rawVideoSource
+  ) {
+    const generatedThumb = await ensureJobThumbnail({
+      jobId: job.job_id,
+      userId: job.user_id ?? undefined,
+      videoUrl: finalVideoUrl,
+      aspectRatio: job.aspect_ratio ?? undefined,
+      existingThumbUrl: resolvedThumbUrl ?? undefined,
+      force: true,
+    });
+    if (generatedThumb) {
+      resolvedThumbUrl = generatedThumb;
+    }
+  }
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
   const isMediaMissing = !finalVideoUrl && !hasImageMedia;

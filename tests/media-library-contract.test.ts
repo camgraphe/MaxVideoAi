@@ -196,6 +196,24 @@ test('job detail route exposes PATCH for persistent hide', () => {
   assert.match(source, /hidden\s*=\s*\$|SET\s+hidden\s*=/i);
 });
 
+test('job detail route repairs completed video thumbnails and syncs outputs', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/jobs/[jobId]/route.ts'),
+    'utf8'
+  );
+  const repairStart = source.indexOf('let responseVideoUrl = normalizedVideoUrl');
+  const repairEnd = source.indexOf('return json({', repairStart);
+  const repairBlock = source.slice(repairStart, repairEnd);
+
+  assert.match(repairBlock, /ensureFastStartVideo/);
+  assert.match(repairBlock, /isPlaceholderThumbnail\(normalizedThumbUrl\)/);
+  assert.match(repairBlock, /ensureJobThumbnail/);
+  assert.match(repairBlock, /UPDATE app_jobs[\s\S]*thumb_url = \$2[\s\S]*preview_frame = \$2/);
+  assert.match(repairBlock, /upsertLegacyJobOutputs/);
+  assert.match(repairBlock, /video_url:\s*responseVideoUrl/);
+  assert.match(repairBlock, /thumb_url:\s*normalizedThumbUrl/);
+});
+
 test('ensure route treats job-linked saves as generated assets by default', () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/media-library/ensure/route.ts'),
@@ -447,4 +465,17 @@ test('thumbnail backfill targets uploaded media and legacy video assets', () => 
   assert.match(source, /createUploadImageThumbnail/);
   assert.match(source, /UPDATE\s+media_assets/i);
   assert.match(source, /UPDATE\s+user_assets/i);
+});
+
+test('single-job thumbnail regeneration keeps legacy outputs in sync', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/scripts/regenerate-thumbnail.ts'),
+    'utf8'
+  );
+
+  assert.match(source, /upsertLegacyJobOutputs/);
+  assert.match(source, /await import\('\.\.\/server\/thumbnails'\)/);
+  assert.match(source, /preview_frame = \$2/);
+  assert.match(source, /thumb_url:\s*newThumb/);
+  assert.match(source, /preview_frame:\s*newThumb/);
 });
