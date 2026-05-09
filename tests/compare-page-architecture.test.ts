@@ -8,6 +8,30 @@ const helperSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-helpers.ts',
   'utf8'
 );
+const helperTextSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-text.ts',
+  'utf8'
+);
+const helperRoutingSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts',
+  'utf8'
+);
+const helperEngineFormattingSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-engine-formatting.ts',
+  'utf8'
+);
+const helperPricingSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts',
+  'utf8'
+);
+const helperSpecValuesSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-spec-values.ts',
+  'utf8'
+);
+const helperScoreUtilsSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-score-utils.ts',
+  'utf8'
+);
 const loaderSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-data-loaders.ts',
   'utf8'
@@ -124,18 +148,36 @@ test('comparison detail page delegates copy, data, schema, and media responsibil
   assert.doesNotMatch(pageSource, /'@type': 'WebPage'/);
 });
 
-test('comparison detail helpers own routing, pricing, specs, and localized overrides', () => {
+test('comparison detail helper facade delegates routing, pricing, specs, and localized overrides', () => {
   const helperLineCount = helperSource.split('\n').length;
 
-  assert.ok(helperLineCount <= 760, `compare-page-helpers.ts should stay below 760 lines after helper extraction, got ${helperLineCount}`);
-  assert.match(helperSource, /export function getCanonicalCompareSlug/);
+  assert.ok(helperLineCount <= 80, `compare-page-helpers.ts should stay a facade below 80 lines, got ${helperLineCount}`);
   assert.match(helperSource, /from '\.\/compare-page-data-loaders'/);
   assert.match(helperSource, /from '\.\/compare-page-localization'/);
-  assert.match(helperSource, /export async function resolvePricingDisplay/);
-  assert.match(helperSource, /export function buildSpecValues/);
+  assert.match(helperSource, /from '\.\/compare-page-routing'/);
+  assert.match(helperSource, /from '\.\/compare-page-pricing'/);
+  assert.match(helperSource, /from '\.\/compare-page-spec-values'/);
+  assert.match(helperSource, /from '\.\/compare-page-score-utils'/);
+  assert.match(helperSource, /from '\.\/compare-page-engine-formatting'/);
+  assert.match(helperSource, /from '\.\/compare-page-text'/);
+  assert.match(helperRoutingSource, /export function getCanonicalCompareSlug/);
+  assert.match(helperRoutingSource, /export function resolveExcludedCompareRedirect/);
+  assert.match(helperPricingSource, /export async function resolvePricingDisplay/);
+  assert.match(helperPricingSource, /export function computePricingScore/);
+  assert.match(helperSpecValuesSource, /export function buildSpecValues/);
+  assert.match(helperSpecValuesSource, /export function localizeSpecDetailValue/);
+  assert.match(helperEngineFormattingSource, /export function formatEngineName/);
+  assert.match(helperEngineFormattingSource, /export function formatSpeedChip/);
+  assert.match(helperEngineFormattingSource, /export type EngineAccent/);
+  assert.match(helperScoreUtilsSource, /export function computePairScores/);
+  assert.match(helperScoreUtilsSource, /export function pickFirstCapabilityDifference/);
+  assert.match(helperTextSource, /export function formatTemplate/);
+  assert.match(helperTextSource, /export function stripAudioReferencesForSilentPair/);
   assert.match(overrideSource, /export function getComparePageOverride/);
   assert.doesNotMatch(helperSource, /const LOCALIZED_BEST_FOR/);
   assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
+  assert.doesNotMatch(helperSource, /computeMarketingPriceRange/);
+  assert.doesNotMatch(helperSource, /canonicalizeFalModelSlug/);
 });
 
 test('comparison detail split helpers own FAQ, scorecard, and generate card responsibilities', () => {
