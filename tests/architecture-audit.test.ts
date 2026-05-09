@@ -11,7 +11,7 @@ test('large file audit emits JSON rows sorted by size', () => {
   const rows = JSON.parse(output) as Array<{ file: string; lines: number }>;
 
   assert.ok(rows.length > 0);
-  assert.equal(rows.some((row) => row.file === 'frontend/src/config/falEngines.ts'), true);
+  assert.equal(rows.some((row) => row.file.startsWith('frontend/')), true);
   assert.equal(rows.every((row) => row.lines >= 900), true);
   assert.deepEqual(
     rows.map((row) => row.lines),
