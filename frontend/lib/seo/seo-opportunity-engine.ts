@@ -14,6 +14,9 @@ import {
   isStrategicIntent,
   normalizeSeoQuery,
 } from './seo-intents';
+import { stripOrigin } from './seo-url';
+
+export { stripOrigin } from './seo-url';
 
 const MIN_CLUSTER_IMPRESSIONS = 50;
 const MIN_STRATEGIC_IMPRESSIONS = 20;
@@ -83,16 +86,6 @@ export function summarizeRows(rows: GscPerformanceRow[]) {
     ctr: impressions ? clicks / impressions : 0,
     averagePosition,
   };
-}
-
-export function stripOrigin(url: string | null): string {
-  if (!url) return 'No target URL';
-  try {
-    const parsed = new URL(url);
-    return `${parsed.pathname}${parsed.search}`;
-  } catch {
-    return url;
-  }
 }
 
 function detectIssueTypes(cluster: SeoQueryCluster): StrategicSeoIssueType[];

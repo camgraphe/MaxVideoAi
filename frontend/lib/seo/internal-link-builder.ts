@@ -1,15 +1,10 @@
 import type { GscPerformanceRow } from './gsc-analysis';
 import type {
   CtrDoctorItem,
-  InternalLinkRecommendationType,
   InternalLinkSuggestion,
   MissingContentItem,
   SeoActionPriority,
-  SeoIntentType,
-  SeoPageType,
   SeoQueryCluster,
-  SeoSourceMetrics,
-  StrategicSeoFamily,
   StrategicSeoOpportunity,
 } from './internal-seo-types';
 import { classifyMissingContentIntent } from './missing-content';
@@ -17,13 +12,36 @@ import {
   getBusinessPriorityWeight,
   getSeoFamilyDictionary,
   getSeoFamilyStatus,
-  normalizeSeoQuery,
 } from './seo-intents';
 import { clusterGscQueries, stripOrigin } from './seo-opportunity-engine';
+import {
+  buildExamplesToModelAnchor,
+  buildHubAnchor,
+  buildModelToExamplesAnchor,
+  formatMetrics,
+  humanizeModelSlug,
+  inferModelSlug,
+  isExpectedExistingLinkPattern,
+  isLinkableIntent,
+  isModelPageIntent,
+  isPromptOrExamplesIntent,
+  isStrategicInternalLinkFamily,
+  normalizePath,
+  priorityRank,
+  signalKey,
+  stableId,
+} from './internal-link-builder-helpers';
+import { formatInternalLinkMarkdown } from './internal-link-builder-format';
+
+export {
+  formatInternalLinkMarkdown,
+  formatInternalLinkSectionMarkdown,
+  labelizeInternalLinkType,
+  labelizePageType,
+} from './internal-link-builder-format';
 
 const MIN_LINK_IMPRESSIONS = 25;
 const MAX_SUGGESTIONS = 80;
-const STRATEGIC_FAMILIES = new Set(['Seedance', 'Kling', 'Veo', 'LTX']);
 
 type BuildInternalLinkOptions = {
   rows: GscPerformanceRow[];
@@ -55,62 +73,6 @@ export function buildInternalLinkSuggestions(options: BuildInternalLinkOptions):
   )
     .sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority) || b.score - a.score)
     .slice(0, MAX_SUGGESTIONS);
-}
-
-export function formatInternalLinkMarkdown(item: InternalLinkSuggestion): string {
-  return [
-    'Title:',
-    `Add or verify internal link from ${item.sourceUrl} to ${item.targetUrl}`,
-    '',
-    'Source:',
-    `GSC query cluster: ${item.representativeQueries.map((query) => `"${query}"`).join(', ')}`,
-    `Metrics: ${formatMetrics(item.currentMetrics)}`,
-    '',
-    'Recommended link:',
-    `Source page: ${item.sourceUrl}`,
-    `Target page: ${item.targetUrl}`,
-    `Anchor text: ${item.suggestedAnchor}`,
-    '',
-    'Reason:',
-    item.reason,
-    '',
-    'Implementation note:',
-    item.verifyExistingLinkFirst
-      ? 'Verify whether this internal link already exists first. If it exists with clear anchor text, refine only if needed instead of adding a duplicate link.'
-      : 'Add the link where it naturally helps users move between related MaxVideoAI pages.',
-    '',
-    'Acceptance criteria:',
-    ...item.acceptanceCriteria.map((criterion) => `- ${criterion}`),
-  ].join('\n');
-}
-
-export function formatInternalLinkSectionMarkdown(items: InternalLinkSuggestion[]): string {
-  if (!items.length) {
-    return ['# Internal Link Suggestions', '', 'No internal link suggestions generated for this snapshot.'].join('\n');
-  }
-
-  return [
-    '# Internal Link Suggestions',
-    '',
-    `Generated suggestions: ${items.length}`,
-    '',
-    ...items.map((item, index) => [`## ${index + 1}. ${item.sourceUrl} -> ${item.targetUrl}`, '', formatInternalLinkMarkdown(item)].join('\n')),
-  ].join('\n\n');
-}
-
-export function labelizeInternalLinkType(value: InternalLinkRecommendationType) {
-  if (value === 'family_hub_to_model') return 'Family hub to model';
-  if (value === 'model_to_examples') return 'Model to examples';
-  if (value === 'compare_to_model') return 'Compare to model';
-  if (value === 'examples_to_model') return 'Examples to model';
-  if (value === 'pricing_to_model') return 'Pricing to model';
-  return 'Hub to opportunity';
-}
-
-export function labelizePageType(value: SeoPageType) {
-  return value
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function buildSignalContext(options: BuildInternalLinkOptions) {
@@ -221,7 +183,7 @@ function buildClusterLinkDrafts(cluster: SeoQueryCluster): LinkDraft[] {
     }
   }
 
-  if (modelPath && modelSlug && STRATEGIC_FAMILIES.has(cluster.modelFamily) && cluster.metrics.impressions >= 90 && isLinkableIntent(cluster.intent)) {
+  if (modelPath && modelSlug && isStrategicInternalLinkFamily(cluster.modelFamily) && cluster.metrics.impressions >= 90 && isLinkableIntent(cluster.intent)) {
     const sourceUrl = isPromptOrExamplesIntent(cluster.intent) ? '/examples' : '/models';
     drafts.push({
       recommendationType: 'hub_to_opportunity',
@@ -329,137 +291,6 @@ function scoreToPriority(score: number): SeoActionPriority {
   return 'low';
 }
 
-function inferModelSlug(
-  cluster: SeoQueryCluster,
-  familyEntry: ReturnType<typeof getSeoFamilyDictionary>[number] | undefined
-) {
-  const targetPath = normalizePath(stripOrigin(cluster.targetUrl));
-  if (targetPath.startsWith('/models/')) return targetPath.split('/').filter(Boolean)[1] ?? null;
-  if (!familyEntry) return null;
-
-  const haystack = normalizeSeoQuery(`${cluster.representativeQueries.join(' ')} ${targetPath}`);
-  const modelSlug = familyEntry.modelSlugs
-    .slice()
-    .sort((a, b) => b.length - a.length)
-    .find((slug) => aliasInHaystack(slug, haystack) || aliasInHaystack(humanizeModelSlug(slug), haystack));
-
-  return preferCurrentModelSlug(modelSlug ?? null, familyEntry);
-}
-
-function preferCurrentModelSlug(
-  candidateSlug: string | null,
-  familyEntry: ReturnType<typeof getSeoFamilyDictionary>[number]
-) {
-  const currentSlugs = familyEntry.currentModelSlugs.length
-    ? familyEntry.currentModelSlugs
-    : familyEntry.defaultModelSlug
-      ? [familyEntry.defaultModelSlug]
-      : [];
-  if (!candidateSlug) return currentSlugs[0] ?? familyEntry.defaultModelSlug;
-  if (currentSlugs.includes(candidateSlug)) return candidateSlug;
-
-  const defaultSlug = familyEntry.defaultModelSlug;
-  if (defaultSlug && currentSlugs.includes(defaultSlug) && defaultSlug.startsWith(candidateSlug)) {
-    return defaultSlug;
-  }
-
-  return currentSlugs.find((slug) => slug.startsWith(candidateSlug)) ?? candidateSlug;
-}
-
-function buildExamplesToModelAnchor(cluster: SeoQueryCluster, family: StrategicSeoFamily, modelSlug: string) {
-  const modelName = chooseModelName(cluster, modelSlug);
-  if (cluster.intent === 'prompt_examples' || cluster.intent === 'prompt_guide') return `${modelName} prompt examples and specs`;
-  if (cluster.intent === 'examples') return `${modelName} examples and specs`;
-  return `${family} model specs`;
-}
-
-function buildModelToExamplesAnchor(cluster: SeoQueryCluster, family: StrategicSeoFamily, modelSlug: string) {
-  const modelName = chooseModelName(cluster, modelSlug);
-  if (cluster.intent === 'prompt_examples' || cluster.intent === 'prompt_guide') return `${modelName} prompt examples`;
-  if (cluster.intent === 'examples') return `${modelName} examples`;
-  return `${family} examples`;
-}
-
-function buildHubAnchor(cluster: SeoQueryCluster, modelSlug: string) {
-  const modelName = chooseModelName(cluster, modelSlug);
-  if (cluster.intent === 'prompt_examples' || cluster.intent === 'prompt_guide') return `${modelName} prompt examples`;
-  if (cluster.intent === 'comparison') return `${modelName} comparison`;
-  if (cluster.intent === 'pricing' || cluster.intent === 'pricing_specs') return `${modelName} pricing and specs`;
-  return `${modelName} model details`;
-}
-
-function chooseModelName(cluster: SeoQueryCluster, modelSlug: string) {
-  const queryText = cluster.representativeQueries.join(' ');
-  const versionMatch = queryText.match(/\b(?:ltx|seedance|veo|kling|pika|wan|sora|happy horse|hailuo|minimax|luma|ray)\s+(?:v)?\d+(?:[.\s-]\d+){0,2}(?:\s+(?:fast|lite|pro|standard|flash))?\b/i);
-  if (versionMatch) return titleize(versionMatch[0]);
-  return humanizeModelSlug(modelSlug);
-}
-
-function humanizeModelSlug(slug: string) {
-  return slug
-    .split('-')
-    .map((part) => {
-      if (/^\d+$/.test(part)) return part;
-      if (part === 'ltx') return 'LTX';
-      if (part === 'veo') return 'Veo';
-      if (part === 'wan') return 'Wan';
-      if (part === 'pika') return 'Pika';
-      if (part === 'sora') return 'Sora';
-      if (part === 'kling') return 'Kling';
-      if (part === 'seedance') return 'Seedance';
-      if (part === 'minimax') return 'MiniMax';
-      if (part === 'hailuo') return 'Hailuo';
-      if (part === 'luma') return 'Luma';
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    })
-    .join(' ')
-    .replace(/\b2 3\b/g, '2.3')
-    .replace(/\b3 1\b/g, '3.1')
-    .replace(/\b2 0\b/g, '2.0')
-    .replace(/\b1 5\b/g, '1.5')
-    .replace(/\b1 0\b/g, '1.0');
-}
-
-function isPromptOrExamplesIntent(intent: SeoIntentType) {
-  return intent === 'prompt_examples' || intent === 'prompt_guide' || intent === 'examples';
-}
-
-function isModelPageIntent(intent: SeoIntentType) {
-  return isPromptOrExamplesIntent(intent) || intent === 'model_page' || intent === 'pricing_specs' || intent === 'specs';
-}
-
-function isLinkableIntent(intent: SeoIntentType) {
-  return (
-    isPromptOrExamplesIntent(intent) ||
-    intent === 'comparison' ||
-    intent === 'pricing' ||
-    intent === 'pricing_specs' ||
-    intent === 'pay_as_you_go' ||
-    intent === 'specs' ||
-    intent === 'max_length' ||
-    intent === 'image_to_video' ||
-    intent === 'text_to_video' ||
-    intent === 'model_page'
-  );
-}
-
-function isExpectedExistingLinkPattern(draft: LinkDraft) {
-  if (draft.recommendationType === 'compare_to_model' && draft.sourceType === 'compare_page') return true;
-  if (draft.recommendationType === 'model_to_examples' && draft.sourceType === 'model_page') return true;
-  if (
-    (draft.recommendationType === 'examples_to_model' || draft.recommendationType === 'hub_to_opportunity') &&
-    (draft.sourceType === 'family_examples' || draft.sourceType === 'examples_hub' || draft.sourceType === 'models_hub') &&
-    getSeoFamilyDictionary().some(
-      (entry) =>
-        entry.label === draft.family &&
-        entry.currentModelSlugs.includes(draft.targetUrl.replace('/models/', ''))
-    )
-  ) {
-    return true;
-  }
-  return false;
-}
-
 function dedupeSuggestions(items: InternalLinkSuggestion[]) {
   const best = new Map<string, InternalLinkSuggestion>();
   for (const item of items) {
@@ -506,53 +337,4 @@ function buildAcceptanceCriteria(item: LinkDraft) {
     criteria.push('Model and examples pages reinforce each other without turning either page into a link list');
   }
   return criteria;
-}
-
-function normalizePath(value: string | null) {
-  if (!value || value === 'No target URL') return '';
-  return value.split('?')[0].replace(/\/$/, '') || '/';
-}
-
-function aliasInHaystack(alias: string, haystack: string) {
-  const normalized = normalizeSeoQuery(alias);
-  if (!normalized) return false;
-  const escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\ /g, '[\\s./-]+');
-  return new RegExp(`(^|[\\s/.-])${escaped}($|[\\s/.-])`, 'i').test(haystack);
-}
-
-function titleize(value: string) {
-  return value
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-    .replace(/\bLtx\b/g, 'LTX');
-}
-
-function signalKey(targetUrl: string | null, cluster: string) {
-  return `${normalizePath(stripOrigin(targetUrl))}|${normalizeSeoQuery(cluster)}`;
-}
-
-function formatMetrics(metrics: SeoSourceMetrics) {
-  return [
-    `${metrics.clicks} clicks`,
-    `${metrics.impressions} impressions`,
-    `${(metrics.ctr * 100).toFixed(2)}% CTR`,
-    `avg position ${metrics.averagePosition.toFixed(1)}`,
-  ].join(', ');
-}
-
-function priorityRank(priority: SeoActionPriority) {
-  if (priority === 'critical') return 1;
-  if (priority === 'high') return 2;
-  if (priority === 'medium') return 3;
-  return 4;
-}
-
-function stableId(value: string) {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash << 5) - hash + value.charCodeAt(index);
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(36);
 }
