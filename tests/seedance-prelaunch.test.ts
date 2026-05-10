@@ -229,17 +229,17 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
   assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-0'));
 
   assert.deepEqual(
-    MARKETING_NAV_MODELS.slice(0, 6).map((item) => item.key),
-    ['seedance-2-0', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'wan-2-6', 'kling-3-pro']
+    MARKETING_NAV_MODELS.map((item) => item.key),
+    ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'kling-3-pro', 'kling-3-4k']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
-      'seedance-1-5-pro-vs-seedance-2-0',
-      'ltx-2-vs-ltx-2-3-fast',
-      'ltx-2-3-fast-vs-seedance-2-0',
-      'ltx-2-3-fast-vs-veo-3-1',
-      'kling-3-pro-vs-ltx-2-3-pro',
+      'seedance-2-0-vs-veo-3-1',
+      'kling-3-pro-vs-veo-3-1',
+      'ltx-2-3-pro-vs-veo-3-1',
+      'seedance-2-0-vs-seedance-2-0-fast',
+      'ltx-2-3-fast-vs-ltx-2-3-pro',
     ]
   );
   assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
@@ -258,13 +258,13 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu keeps the Veo family expanded with a dedicated Lite slot', () => {
+test('Header model menu promotes Seedance Fast while keeping the Veo family expanded', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
     'seedance-2-0',
+    'seedance-2-0-fast',
     'ltx-2-3-fast',
     'veo-3-1',
     'veo-3-1-lite',
-    'wan-2-6',
     'kling-3-pro',
     'kling-3-4k',
   ]);

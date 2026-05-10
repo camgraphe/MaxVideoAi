@@ -181,8 +181,10 @@
           "seedance1_5pro_vs_seedance2_0": "Seedance 1.5 Pro vs Seedance 2.0",
           "ltx2_vs_ltx23fast": "LTX 2 vs LTX 2.3 Fast",
           "ltx23fast_vs_veo3_1": "LTX 2.3 Fast vs Veo 3.1",
+          "ltx23fast_vs_seedance2_0": "LTX 2.3 Fast vs Seedance 2.0",
           "kling3pro_vs_ltx23pro": "Kling 3 Pro vs LTX 2.3 Pro",
           "seedance2_0_vs_veo3_1": "Seedance 2.0 vs Veo 3.1",
+          "seedance2_0_vs_seedance2_0fast": "Seedance 2.0 vs Seedance 2.0 Fast",
           "seedance2_0_vs_kling3pro": "Seedance 2.0 vs Kling 3 Pro",
           "seedance2_0_vs_sora2": "Seedance 2.0 vs Sora 2",
           "seedance2_0_fast_vs_veo3_1_fast": "Seedance 2.0 Fast vs Veo 3.1 Fast",
@@ -192,6 +194,7 @@
           "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
           "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
           "ltx23fast_vs_ltx23pro": "LTX 2.3 Fast vs Pro",
+          "ltx23pro_vs_veo3_1": "LTX 2.3 Pro vs Veo 3.1",
           "ltx2_vs_veo3_1": "LTX 2 vs Veo 3.1",
           "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
           "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"

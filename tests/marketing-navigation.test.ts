@@ -137,6 +137,22 @@ test('marketing footer separates Best-For use cases from popular comparisons', (
   assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
 });
 
+test('marketing footer preserves crawl equity for ranking comparison targets', () => {
+  const source = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
+  const comparisonItemsBlock = source.slice(source.indexOf('const comparisonItems'), source.indexOf('const comparisonLinks'));
+  const rankingComparisonTargets = [
+    ['seedance-1-5-pro', 'seedance-2-0'],
+    ['ltx-2', 'ltx-2-3-fast'],
+    ['ltx-2-3-fast', 'seedance-2-0'],
+    ['ltx-2-3-fast', 'veo-3-1'],
+    ['kling-3-pro', 'ltx-2-3-pro'],
+  ] as const;
+
+  for (const [left, right] of rankingComparisonTargets) {
+    assert.match(comparisonItemsBlock, new RegExp(`left: '${left}'[\\s\\S]+right: '${right}'`));
+  }
+});
+
 test('marketing nav keeps logged-out state after an explicit workspace logout intent', () => {
   assert.match(marketingNavSource, /import \{ consumeLogoutIntent, setLogoutIntent \} from '@\/lib\/logout-intent';/);
   assert.match(marketingNavSource, /const logoutIntentActive = consumeLogoutIntent\(\);/);

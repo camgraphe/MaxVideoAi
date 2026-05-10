@@ -82,6 +82,12 @@ export function MarketingFooter() {
     },
     {
       left: 'ltx-2-3-fast',
+      right: 'seedance-2-0',
+      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_seedance2_0',
+      fallback: 'LTX 2.3 Fast vs Seedance 2.0',
+    },
+    {
+      left: 'ltx-2-3-fast',
       right: 'veo-3-1',
       labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_veo3_1',
       fallback: 'LTX 2.3 Fast vs Veo 3.1',
@@ -91,6 +97,36 @@ export function MarketingFooter() {
       right: 'ltx-2-3-pro',
       labelKey: 'footer.sections.comparisons.items.kling3pro_vs_ltx23pro',
       fallback: 'Kling 3 Pro vs LTX 2.3 Pro',
+    },
+    {
+      left: 'seedance-2-0',
+      right: 'veo-3-1',
+      labelKey: 'footer.sections.comparisons.items.seedance2_0_vs_veo3_1',
+      fallback: 'Seedance 2.0 vs Veo 3.1',
+    },
+    {
+      left: 'kling-3-pro',
+      right: 'veo-3-1',
+      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_veo3_1',
+      fallback: 'Kling 3 Pro vs Veo 3.1',
+    },
+    {
+      left: 'ltx-2-3-pro',
+      right: 'veo-3-1',
+      labelKey: 'footer.sections.comparisons.items.ltx23pro_vs_veo3_1',
+      fallback: 'LTX 2.3 Pro vs Veo 3.1',
+    },
+    {
+      left: 'seedance-2-0',
+      right: 'seedance-2-0-fast',
+      labelKey: 'footer.sections.comparisons.items.seedance2_0_vs_seedance2_0fast',
+      fallback: 'Seedance 2.0 vs Seedance 2.0 Fast',
+    },
+    {
+      left: 'ltx-2-3-fast',
+      right: 'ltx-2-3-pro',
+      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_ltx23pro',
+      fallback: 'LTX 2.3 Fast vs Pro',
     },
   ];
   const comparisonLinks: FooterLink[] = [

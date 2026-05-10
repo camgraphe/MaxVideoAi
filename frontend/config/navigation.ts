@@ -84,10 +84,10 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 
 const MODEL_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
+  { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
-  { slug: 'wan-2-6', label: 'Wan 2.6' },
   { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
   { slug: 'kling-3-4k', label: 'Kling 3 4K' },
 ];
@@ -114,11 +114,11 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
   }));
 
 const COMPARE_MENU: LabeledSlug[] = [
-  { slug: 'seedance-1-5-pro-vs-seedance-2-0', label: 'Seedance 1.5 vs 2.0' },
-  { slug: 'ltx-2-vs-ltx-2-3-fast', label: 'LTX 2 vs 2.3 Fast' },
-  { slug: 'ltx-2-3-fast-vs-seedance-2-0', label: 'LTX 2.3 Fast vs Seedance 2.0' },
-  { slug: 'ltx-2-3-fast-vs-veo-3-1', label: 'LTX 2.3 Fast vs Veo 3.1' },
-  { slug: 'kling-3-pro-vs-ltx-2-3-pro', label: 'Kling 3 Pro vs LTX 2.3 Pro' },
+  { slug: 'seedance-2-0-vs-veo-3-1', label: 'Seedance 2.0 vs Veo 3.1' },
+  { slug: 'kling-3-pro-vs-veo-3-1', label: 'Kling 3 Pro vs Veo 3.1' },
+  { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
+  { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
+  { slug: 'ltx-2-3-fast-vs-ltx-2-3-pro', label: 'LTX 2.3 Fast vs Pro' },
 ];
 
 const BEST_FOR_USE_CASES: Array<LabeledSlug & { key: string }> = [
