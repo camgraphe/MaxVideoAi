@@ -34,6 +34,7 @@ const DEFAULT_MAX_DIMENSION = 720;
 const DOWNLOAD_TIMEOUT_MS = 60_000;
 const KEYFRAME_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 const REQUIRED_KEYS: Array<keyof JobKeyframeUrls> = ['start', 'middle', 'end'];
+const EVEN_DIMENSION_SCALE_FILTER = 'scale=trunc(iw/2)*2:trunc(ih/2)*2';
 
 let ffmpegPathResolved = false;
 let resolvedFfmpegPath: string | null = null;
@@ -117,7 +118,7 @@ async function runKeyframeFfmpeg(ffmpegPath: string, inputPath: string, outputPa
         '-frames:v',
         '1',
         '-vf',
-        `scale=${dimension}:${dimension}:force_original_aspect_ratio=decrease:force_divisible_by=2`,
+        `scale=${dimension}:${dimension}:force_original_aspect_ratio=decrease,${EVEN_DIMENSION_SCALE_FILTER}`,
         '-q:v',
         '3',
         outputPath,

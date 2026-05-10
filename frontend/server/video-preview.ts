@@ -22,6 +22,7 @@ const DEFAULT_MAX_DIMENSION = 480;
 const DEFAULT_FPS = 12;
 const DOWNLOAD_TIMEOUT_MS = 60_000;
 const PREVIEW_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+const EVEN_DIMENSION_SCALE_FILTER = 'scale=trunc(iw/2)*2:trunc(ih/2)*2';
 
 let ffmpegPathResolved = false;
 let resolvedFfmpegPath: string | null = null;
@@ -82,7 +83,7 @@ async function runPreviewFfmpeg(ffmpegPath: string, inputPath: string, outputPat
   const dimension = String(getPreviewMaxDimension());
   const fps = String(getPreviewFps());
   const duration = getPreviewDurationSeconds().toFixed(2);
-  const filter = `scale=${dimension}:${dimension}:force_original_aspect_ratio=decrease:force_divisible_by=2,fps=${fps}`;
+  const filter = `scale=${dimension}:${dimension}:force_original_aspect_ratio=decrease,${EVEN_DIMENSION_SCALE_FILTER},fps=${fps}`;
   await new Promise<void>((resolve, reject) => {
     execFile(
       ffmpegPath,
