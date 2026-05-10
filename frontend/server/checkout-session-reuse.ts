@@ -1,9 +1,10 @@
 import type Stripe from 'stripe';
 import { query } from '@/lib/db';
 
-const EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS = 5 * 60;
+export const EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS = 30 * 60;
 
 type CheckoutSessionReuseRow = {
+  id: number | string;
   stripe_checkout_session_id: string | null;
 };
 
@@ -46,9 +47,9 @@ export async function findReusableExpressCheckoutSession(
     currency: string;
     userId: string;
   }
-): Promise<{ clientSecret: string; id: string } | null> {
+): Promise<{ checkoutAttemptId: number; clientSecret: string; id: string } | null> {
   const rows = await query<CheckoutSessionReuseRow>(
-    `SELECT stripe_checkout_session_id
+    `SELECT id, stripe_checkout_session_id
        FROM checkout_attempts
       WHERE user_id = $1
         AND amount_cents = $2
@@ -78,7 +79,7 @@ export async function findReusableExpressCheckoutSession(
           status: session.status,
         })
       ) {
-        return { clientSecret: session.client_secret as string, id: session.id };
+        return { checkoutAttemptId: Number(row.id), clientSecret: session.client_secret as string, id: session.id };
       }
     } catch (error) {
       console.warn('[payments] failed to inspect reusable express checkout session', {

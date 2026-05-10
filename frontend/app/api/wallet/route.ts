@@ -468,6 +468,7 @@ export async function POST(req: NextRequest) {
         });
         return NextResponse.json({
           id: reusableSession.id,
+          checkoutAttemptId: reusableSession.checkoutAttemptId,
           clientSecret: reusableSession.clientSecret,
           client_secret: reusableSession.clientSecret,
           reused: true,
@@ -574,8 +575,9 @@ export async function POST(req: NextRequest) {
       settlementCurrency: resolvedCurrencyUpper,
       topupTier: sessionMetadata.topup_tier_id ?? 'custom',
     });
-    const successUrl = `${origin}/billing?status=success&${topupRedirectParams.toString()}`;
-    const cancelUrl = `${origin}/billing?status=cancelled&${topupRedirectParams.toString()}`;
+    const redirectQuery = `${topupRedirectParams.toString()}&checkoutSessionId={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${origin}/billing?status=success&${redirectQuery}`;
+    const cancelUrl = `${origin}/billing?status=cancelled&${redirectQuery}`;
 
     const paymentIntentMetadata: Record<string, string> = {
       ...sessionMetadata,
@@ -667,12 +669,13 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({
         id: session.id,
+        checkoutAttemptId: checkoutGuard.attemptId,
         clientSecret: session.client_secret,
         client_secret: session.client_secret,
       });
     }
 
-    return NextResponse.json({ id: session.id, url: session.url });
+    return NextResponse.json({ id: session.id, checkoutAttemptId: checkoutGuard.attemptId, url: session.url });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Stripe error creating checkout session';
     if (checkoutAttemptId) {

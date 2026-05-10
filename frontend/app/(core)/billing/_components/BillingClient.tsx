@@ -21,6 +21,7 @@ import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
 import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
+import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
@@ -177,6 +178,7 @@ export function BillingClient() {
     const amountParam = url.searchParams.get('amount');
     const amountCentsParam = url.searchParams.get('amountCents');
     const currencyParam = url.searchParams.get('currency');
+    const checkoutSessionIdParam = url.searchParams.get('checkoutSessionId');
     const parsedAmountCents = amountCentsParam
       ? Math.max(0, Math.round(Number(amountCentsParam)))
       : amountParam
@@ -196,9 +198,25 @@ export function BillingClient() {
       if (status === 'success') {
         const value = amountParam ? Number(amountParam) : undefined;
         triggerGoogleAdsConversion(value, currencyParam ?? undefined);
+        if (checkoutSessionIdParam) {
+          recordCheckoutInteractionEvent({
+            amountCents: parsedAmountCents,
+            eventName: 'hosted_checkout_success_return',
+            mode: 'hosted',
+            stripeCheckoutSessionId: checkoutSessionIdParam,
+          });
+        }
       }
       if (status === 'cancelled') {
         triggerTopupCancelled(parsedAmountCents, parsedCurrency);
+        if (checkoutSessionIdParam) {
+          recordCheckoutInteractionEvent({
+            amountCents: parsedAmountCents,
+            eventName: 'hosted_checkout_cancelled_return',
+            mode: 'hosted',
+            stripeCheckoutSessionId: checkoutSessionIdParam,
+          });
+        }
       }
       if (status) {
         url.searchParams.delete('status');
@@ -207,6 +225,7 @@ export function BillingClient() {
         if (currencyParam) url.searchParams.delete('currency');
         url.searchParams.delete('settlementCurrency');
         url.searchParams.delete('topupTier');
+        url.searchParams.delete('checkoutSessionId');
         window.history.replaceState({}, '', url.toString());
       }
       return () => window.clearTimeout(timeout);
@@ -222,6 +241,15 @@ export function BillingClient() {
     if (isTopupStarting) return;
     setIsTopupStarting(true);
     setCheckoutCaptchaError(null);
+    recordCheckoutInteractionEvent({
+      amountCents,
+      eventName: 'hosted_checkout_requested',
+      mode: 'hosted',
+      metadata: {
+        currency: normalizedChargeCurrency,
+        locale,
+      },
+    });
     const token = session?.access_token ?? null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
@@ -253,6 +281,10 @@ export function BillingClient() {
         throw new Error(payload?.error ?? 'checkout_session_failed');
       }
       const checkoutUrl = typeof payload?.url === 'string' ? payload.url : null;
+      const checkoutAttemptId = Number(payload?.checkoutAttemptId);
+      const normalizedCheckoutAttemptId =
+        Number.isFinite(checkoutAttemptId) && checkoutAttemptId > 0 ? checkoutAttemptId : null;
+      const stripeCheckoutSessionId = typeof payload?.id === 'string' ? payload.id : null;
       const hasCheckoutTarget = Boolean(checkoutUrl || payload?.id);
       if (!hasCheckoutTarget) {
         throw new Error('missing_checkout_target');
@@ -260,6 +292,17 @@ export function BillingClient() {
       setCheckoutCaptchaRequired(false);
       setCheckoutCaptchaToken(null);
       triggerTopupStarted(amountCents, normalizedChargeCurrency);
+      recordCheckoutInteractionEvent({
+        amountCents,
+        checkoutAttemptId: normalizedCheckoutAttemptId,
+        eventName: 'hosted_checkout_redirecting',
+        mode: 'hosted',
+        stripeCheckoutSessionId,
+        metadata: {
+          currency: normalizedChargeCurrency,
+          redirectMethod: checkoutUrl ? 'url' : 'stripe_js',
+        },
+      });
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
         return;
@@ -385,7 +428,18 @@ export function BillingClient() {
                 locale={locale}
                 normalizedChargeCurrency={normalizedChargeCurrency}
                 onCustomAmountInputChange={onCustomAmountInputChange}
-                onExpressReveal={() => setExpressRequested(true)}
+                onExpressReveal={() => {
+                  recordCheckoutInteractionEvent({
+                    amountCents: selectedTopupCents,
+                    eventName: 'express_checkout_revealed',
+                    mode: 'express_checkout',
+                    metadata: {
+                      currency: normalizedChargeCurrency,
+                      locale,
+                    },
+                  });
+                  setExpressRequested(true);
+                }}
                 onOpenCustomAmountEditor={openCustomAmountEditor}
                 onPresetSelected={handlePresetSelected}
                 quoteError={quoteError}

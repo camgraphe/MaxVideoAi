@@ -48,6 +48,37 @@ export async function ensureBillingUserAdminSchema(): Promise<void> {
         WHERE stripe_checkout_session_id IS NOT NULL;
     `);
 
+    await query(`
+      CREATE TABLE IF NOT EXISTS checkout_interaction_events (
+        id BIGSERIAL PRIMARY KEY,
+        checkout_attempt_id BIGINT REFERENCES checkout_attempts(id) ON DELETE SET NULL,
+        user_id TEXT NOT NULL,
+        stripe_checkout_session_id TEXT,
+        event_name TEXT NOT NULL,
+        mode TEXT CHECK (mode IN ('hosted','express_checkout')),
+        amount_cents INTEGER CHECK (amount_cents IS NULL OR amount_cents >= 0),
+        metadata JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS checkout_interaction_events_attempt_created_idx
+        ON checkout_interaction_events (checkout_attempt_id, created_at DESC)
+        WHERE checkout_attempt_id IS NOT NULL;
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS checkout_interaction_events_session_created_idx
+        ON checkout_interaction_events (stripe_checkout_session_id, created_at DESC)
+        WHERE stripe_checkout_session_id IS NOT NULL;
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS checkout_interaction_events_user_created_idx
+        ON checkout_interaction_events (user_id, created_at DESC);
+    `);
+
     try {
       await query(`CREATE TYPE user_role AS ENUM ('admin', 'user');`);
     } catch (error) {

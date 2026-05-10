@@ -10,6 +10,7 @@ import type {
 } from '@stripe/stripe-js';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
+import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { buildWalletExpressCheckoutRequestKey } from '../_lib/express-checkout-session-cache';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
@@ -18,7 +19,7 @@ type StripeWithCheckoutElements = Stripe & {
 };
 
 type CheckoutSessionResult =
-  | { type: 'success'; clientSecret: string; sessionId: string | null }
+  | { type: 'success'; checkoutAttemptId: number | null; clientSecret: string; sessionId: string | null }
   | { type: 'captcha_required'; payload: unknown }
   | { type: 'rate_limited'; payload: unknown; retryAfterSeconds: number }
   | { type: 'error'; error: string };
@@ -72,7 +73,12 @@ export function WalletExpressCheckout({
     onPaymentFailed,
     onPaymentStarted,
   });
-  const checkoutSessionCacheRef = useRef<{ clientSecret: string; key: string; sessionId: string | null } | null>(null);
+  const checkoutSessionCacheRef = useRef<{
+    checkoutAttemptId: number | null;
+    clientSecret: string;
+    key: string;
+    sessionId: string | null;
+  } | null>(null);
   const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
@@ -117,6 +123,8 @@ export function WalletExpressCheckout({
       confirmStartedRef.current = false;
       readyTimedOut = false;
       clearExpressCheckoutReadyTimeout();
+      let activeCheckoutAttemptId: number | null = null;
+      let activeSessionId: string | null = null;
       readyTimeoutId = window.setTimeout(() => {
         if (cancelled) return;
         readyTimedOut = true;
@@ -124,6 +132,17 @@ export function WalletExpressCheckout({
         expressElement = null;
         setStatus('unavailable');
         setMessage(labelsRef.current.expressUnavailable);
+        recordCheckoutInteractionEvent({
+          amountCents,
+          checkoutAttemptId: activeCheckoutAttemptId,
+          eventName: 'express_checkout_unavailable',
+          mode: 'express_checkout',
+          stripeCheckoutSessionId: activeSessionId,
+          metadata: {
+            currency: normalizedChargeCurrency,
+            reason: 'ready_timeout',
+          },
+        });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
@@ -137,7 +156,12 @@ export function WalletExpressCheckout({
         const cachedCheckoutSession = checkoutSessionCacheRef.current;
         const checkoutSessionResult =
           cachedCheckoutSession?.key === requestKey
-            ? { type: 'success' as const, clientSecret: cachedCheckoutSession.clientSecret, sessionId: cachedCheckoutSession.sessionId }
+            ? {
+                type: 'success' as const,
+                checkoutAttemptId: cachedCheckoutSession.checkoutAttemptId,
+                clientSecret: cachedCheckoutSession.clientSecret,
+                sessionId: cachedCheckoutSession.sessionId,
+              }
             : await getCheckoutSessionResult(requestKey);
 
         if (readyTimedOut) return;
@@ -156,6 +180,18 @@ export function WalletExpressCheckout({
           }
           throw new Error(checkoutSessionResult.error);
         }
+        activeCheckoutAttemptId = checkoutSessionResult.checkoutAttemptId;
+        activeSessionId = checkoutSessionResult.sessionId;
+        recordCheckoutInteractionEvent({
+          amountCents,
+          checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+          eventName: 'express_checkout_session_ready',
+          mode: 'express_checkout',
+          stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+          metadata: {
+            currency: normalizedChargeCurrency,
+          },
+        });
 
         const stripe = (await stripePromise) as StripeWithCheckoutElements | null;
         const initCheckout = stripe?.initCheckout ?? stripe?.initCheckoutElementsSdk;
@@ -186,20 +222,56 @@ export function WalletExpressCheckout({
           const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
           setStatus(hasAnyMethod ? 'ready' : 'unavailable');
           setMessage(hasAnyMethod ? null : labelsRef.current.expressUnavailable);
+          recordCheckoutInteractionEvent({
+            amountCents,
+            checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+            eventName: hasAnyMethod ? 'express_checkout_ready' : 'express_checkout_unavailable',
+            mode: 'express_checkout',
+            stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+            metadata: {
+              availablePaymentMethods: methods ? Object.keys(methods).filter((key) => Boolean(methods[key as keyof typeof methods])) : [],
+              currency: normalizedChargeCurrency,
+              reason: hasAnyMethod ? 'ready' : 'no_available_methods',
+            },
+          });
         });
         expressElement.on('loaderror', (event) => {
           if (cancelled || readyTimedOut) return;
           clearExpressCheckoutReadyTimeout();
           setStatus('error');
           setMessage(event.error?.message ?? labelsRef.current.expressError);
+          recordCheckoutInteractionEvent({
+            amountCents,
+            checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+            eventName: 'express_checkout_loaderror',
+            mode: 'express_checkout',
+            stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+            metadata: {
+              errorMessage: event.error?.message ?? null,
+            },
+          });
         });
         expressElement.on('cancel', () => {
           if (confirmStartedRef.current) return;
           setMessage(labelsRef.current.expressClosed);
+          recordCheckoutInteractionEvent({
+            amountCents,
+            checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+            eventName: 'express_checkout_cancelled',
+            mode: 'express_checkout',
+            stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+          });
         });
         expressElement.on('confirm', async (event) => {
           confirmStartedRef.current = true;
           handlersRef.current.onPaymentStarted(amountCents);
+          recordCheckoutInteractionEvent({
+            amountCents,
+            checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+            eventName: 'express_checkout_confirm_started',
+            mode: 'express_checkout',
+            stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+          });
           try {
             const loadActionsResult = await loadActionsPromise;
             if (loadActionsResult.type !== 'success') {
@@ -211,6 +283,16 @@ export function WalletExpressCheckout({
             if (result.type === 'error') {
               event.paymentFailed({ reason: 'fail', message: result.error.message });
               handlersRef.current.onPaymentFailed(amountCents, result.error.message);
+              recordCheckoutInteractionEvent({
+                amountCents,
+                checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+                eventName: 'express_checkout_confirm_failed',
+                mode: 'express_checkout',
+                stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+                metadata: {
+                  errorMessage: result.error.message,
+                },
+              });
               return;
             }
             const params = new URLSearchParams({
@@ -220,6 +302,13 @@ export function WalletExpressCheckout({
               currency: 'USD',
               settlementCurrency: normalizedChargeCurrency,
             });
+            recordCheckoutInteractionEvent({
+              amountCents,
+              checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+              eventName: 'express_checkout_confirm_succeeded',
+              mode: 'express_checkout',
+              stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+            });
             window.location.href = `/billing?${params.toString()}`;
           } catch (error) {
             const reason = error instanceof Error ? error.message : 'express_checkout_failed';
@@ -227,6 +316,16 @@ export function WalletExpressCheckout({
             handlersRef.current.onPaymentFailed(amountCents, reason);
             setStatus('error');
             setMessage(labelsRef.current.expressError);
+            recordCheckoutInteractionEvent({
+              amountCents,
+              checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
+              eventName: 'express_checkout_confirm_failed',
+              mode: 'express_checkout',
+              stripeCheckoutSessionId: checkoutSessionResult.sessionId,
+              metadata: {
+                errorMessage: reason,
+              },
+            });
           }
         });
 
@@ -243,6 +342,16 @@ export function WalletExpressCheckout({
         console.warn('[billing] express checkout unavailable', reason);
         setStatus('error');
         setMessage(labelsRef.current.expressError);
+        recordCheckoutInteractionEvent({
+          amountCents,
+          checkoutAttemptId: activeCheckoutAttemptId,
+          eventName: 'express_checkout_unavailable',
+          mode: 'express_checkout',
+          stripeCheckoutSessionId: activeSessionId,
+          metadata: {
+            errorMessage: reason,
+          },
+        });
       }
     }
 
@@ -261,6 +370,7 @@ export function WalletExpressCheckout({
       if (result.type === 'success') {
         checkoutSessionCacheRef.current = {
           key: requestKey,
+          checkoutAttemptId: result.checkoutAttemptId,
           clientSecret: result.clientSecret,
           sessionId: result.sessionId,
         };
@@ -311,6 +421,10 @@ export function WalletExpressCheckout({
       }
       return {
         type: 'success',
+        checkoutAttemptId:
+          typeof payload?.checkoutAttemptId === 'number' && Number.isFinite(payload.checkoutAttemptId)
+            ? payload.checkoutAttemptId
+            : null,
         clientSecret,
         sessionId: typeof payload?.id === 'string' ? payload.id : null,
       };

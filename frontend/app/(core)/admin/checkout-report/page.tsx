@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import {
+  type CheckoutAbandonmentSignal,
   type CheckoutReportRange,
   type CheckoutReportStatus,
   fetchCheckoutReport,
@@ -60,6 +61,15 @@ const STATUS_META: Record<CheckoutReportStatus, { label: string; className: stri
   challenged: { label: 'Challenged', className: 'border-brand/25 bg-brand/10 text-brand' },
   open: { label: 'Open', className: 'border-border bg-surface text-text-secondary' },
   failed: { label: 'Failed', className: 'border-error-border bg-error-bg text-error' },
+};
+
+const SIGNAL_META: Record<CheckoutAbandonmentSignal, { label: string; className: string }> = {
+  none: { label: 'No event', className: 'border-border bg-surface text-text-muted' },
+  passive_open: { label: 'Passive open', className: 'border-warning-border bg-warning-bg text-warning' },
+  user_cancelled: { label: 'User cancelled', className: 'border-border bg-surface text-text-secondary' },
+  payment_started_no_receipt: { label: 'Started, no receipt', className: 'border-error-border bg-error-bg text-error' },
+  technical_error: { label: 'Technical error', className: 'border-error-border bg-error-bg text-error' },
+  redirected_no_receipt: { label: 'Redirected, no receipt', className: 'border-warning-border bg-warning-bg text-warning' },
 };
 
 export default async function CheckoutReportPage(props: PageProps) {
@@ -129,14 +139,16 @@ export default async function CheckoutReportPage(props: PageProps) {
       >
         {report.recent.length ? (
           <div className="overflow-x-auto">
-            <table className="min-w-[920px] w-full text-left text-sm">
+            <table className="min-w-[1060px] w-full text-left text-sm">
               <thead className="border-b border-hairline text-xs uppercase tracking-micro text-text-muted">
                 <tr>
                   <th className="px-3 py-3 font-semibold">Time</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
+                  <th className="px-3 py-3 font-semibold">Signal</th>
                   <th className="px-3 py-3 font-semibold">Mode</th>
                   <th className="px-3 py-3 font-semibold">Amount</th>
                   <th className="px-3 py-3 font-semibold">Reason</th>
+                  <th className="px-3 py-3 font-semibold">Events</th>
                   <th className="px-3 py-3 font-semibold">User</th>
                   <th className="px-3 py-3 font-semibold">Session</th>
                 </tr>
@@ -146,9 +158,11 @@ export default async function CheckoutReportPage(props: PageProps) {
                   <tr key={attempt.id} className="align-top text-text-secondary">
                     <td className="px-3 py-3 whitespace-nowrap">{formatDateTime(attempt.createdAt)}</td>
                     <td className="px-3 py-3"><StatusPill status={attempt.status} /></td>
+                    <td className="px-3 py-3"><SignalPill signal={attempt.abandonmentSignal} /></td>
                     <td className="px-3 py-3">{attempt.mode === 'express_checkout' ? 'Fast pay' : 'Hosted'}</td>
                     <td className="px-3 py-3 font-semibold text-text-primary">{formatAmount(attempt.amountCents)}</td>
                     <td className="px-3 py-3">{formatReason(attempt.reason ?? attempt.outcome)}</td>
+                    <td className="px-3 py-3 text-xs">{formatEventTrail(attempt.events.map((event) => event.eventName))}</td>
                     <td className="px-3 py-3 font-mono text-xs">{truncateId(attempt.userId)}</td>
                     <td className="px-3 py-3 font-mono text-xs">{attempt.stripeCheckoutSessionId ? truncateId(attempt.stripeCheckoutSessionId) : '—'}</td>
                   </tr>
@@ -286,6 +300,11 @@ function StatusPill({ status }: { status: CheckoutReportStatus }) {
   return <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</span>;
 }
 
+function SignalPill({ signal }: { signal: CheckoutAbandonmentSignal }) {
+  const meta = SIGNAL_META[signal];
+  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</span>;
+}
+
 function buildReportCards(report: Awaited<ReturnType<typeof fetchCheckoutReport>>): ReportCard[] {
   return [
     { label: 'Total', value: formatNumber(report.summary.total), helper: `${formatNumber(report.summary.distinctUsers)} users · ${formatNumber(report.summary.distinctIps)} IP hashes`, tone: 'slate', icon: Gauge },
@@ -335,6 +354,11 @@ function formatReason(value: string) {
   return value
     .replaceAll('_', ' ')
     .replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
+function formatEventTrail(events: string[]) {
+  if (!events.length) return '—';
+  return events.slice(-3).map(formatReason).join(' → ');
 }
 
 function truncateId(value: string) {

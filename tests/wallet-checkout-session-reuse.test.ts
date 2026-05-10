@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict';
 
-import { isReusableStripeCheckoutSession } from '../frontend/server/checkout-session-reuse';
+import {
+  EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS,
+  isReusableStripeCheckoutSession,
+} from '../frontend/server/checkout-session-reuse';
 
 const now = 1_800_000;
+
+assert.equal(
+  EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS,
+  30 * 60,
+  'Express Checkout should reuse sessions for most of the 31-minute Checkout Session TTL'
+);
 
 assert.equal(
   isReusableStripeCheckoutSession({
