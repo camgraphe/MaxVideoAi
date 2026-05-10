@@ -20,6 +20,10 @@ test('examples hero video keeps mobile rendering poster-first instead of autopla
   assert.match(examplesHeroVideoSource, /preload="none"/);
 });
 
+test('examples hero video avoids fetching the raw poster in addition to the optimized overlay', () => {
+  assert.doesNotMatch(examplesHeroVideoSource, /<video[\s\S]*poster=\{poster \?\? undefined\}/);
+});
+
 test('examples model landing hero links do not prefetch RSC routes during initial render', () => {
   assert.match(examplesPageViewSource, /<ExamplesMainVideoFeature/);
   assert.match(

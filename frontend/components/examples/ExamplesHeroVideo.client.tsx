@@ -149,7 +149,6 @@ export function ExamplesHeroVideo({
         controls={controls}
         preload="none"
         playsInline
-        poster={poster ?? undefined}
         aria-label={ariaLabel}
         aria-hidden={ariaHidden || undefined}
       >
