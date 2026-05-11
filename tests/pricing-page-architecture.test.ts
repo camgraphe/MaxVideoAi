@@ -30,6 +30,7 @@ const creditsRefundsPath = join(
   'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingCreditsRefundsSection.tsx'
 );
 const faqPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingRefundsFaqSection.tsx');
+const hubCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubCopy.ts');
 const hubDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts');
 const catalogPath = join(root, 'frontend/config/engine-catalog.json');
 const englishMessagesPath = join(root, 'frontend/messages/en.json');
@@ -41,6 +42,7 @@ const popularChecksSource = existsSync(popularChecksPath) ? readFileSync(popular
 const otherSurfacesSource = existsSync(otherSurfacesPath) ? readFileSync(otherSurfacesPath, 'utf8') : '';
 const creditsRefundsSource = existsSync(creditsRefundsPath) ? readFileSync(creditsRefundsPath, 'utf8') : '';
 const faqSource = readFileSync(faqPath, 'utf8');
+const hubCopySource = readFileSync(hubCopyPath, 'utf8');
 const hubDataSource = readFileSync(hubDataPath, 'utf8');
 const englishMessages = JSON.parse(readFileSync(englishMessagesPath, 'utf8')) as {
   pricing?: {
@@ -58,6 +60,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.ok(existsSync(otherSurfacesPath), 'image/audio/tool pricing should live in a route-local component');
   assert.ok(existsSync(creditsRefundsPath), 'credits/refunds explanation should live in a route-local component');
   assert.ok(existsSync(faqPath), 'pricing FAQ should live in a route-local component');
+  assert.ok(existsSync(hubCopyPath), 'pricing hub copy should live in a route-local lib module');
   assert.ok(existsSync(hubDataPath), 'pricing matrix data should live in a route-local lib module');
 
   assert.match(pageSource, /from '\.\/_components\/PricingHeroSection'/);
@@ -67,6 +70,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingOtherSurfacesSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingCreditsRefundsSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingRefundsFaqSection'/);
+  assert.match(pageSource, /locale=\{locale\}/);
   assert.match(pageSource, /from '\.\/_lib\/pricingHubData'/);
   assert.match(pageSource, /export default async function PricingPage/);
 });
@@ -171,26 +175,37 @@ test('pricing matrix data is generated from the catalog with scenario total pres
 
 test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(videoMatrixSource, /export function PricingVideoMatrixSection/);
+  assert.match(videoMatrixSource, /getPricingHubCopy/);
   assert.match(videoMatrixSource, /EngineIcon/);
-  assert.match(videoMatrixSource, /AI video prices by engine/);
-  assert.match(videoMatrixSource, /Compare preset MaxVideoAI total prices/);
-  assert.match(videoMatrixSource, /Compare by scenario/);
-  assert.match(videoMatrixSource, /Recommended video engines/);
-  assert.match(videoMatrixSource, /Previous-generation and budget routes/);
+  assert.match(hubCopySource, /AI video prices by engine/);
+  assert.match(hubCopySource, /Prix vidéo IA par moteur/);
+  assert.match(hubCopySource, /Compare preset MaxVideoAI total prices/);
+  assert.match(hubCopySource, /Comparez les prix totaux MaxVideoAI/);
+  assert.match(hubCopySource, /Compare by scenario/);
+  assert.match(hubCopySource, /Comparer par scénario/);
+  assert.match(hubCopySource, /Recommended video engines/);
+  assert.match(hubCopySource, /Moteurs vidéo recommandés/);
+  assert.match(hubCopySource, /Previous-generation and budget routes/);
   assert.match(hubDataSource, /5s 720p/);
   assert.match(hubDataSource, /8s 1080p/);
   assert.match(hubDataSource, /10s 1080p/);
   assert.match(hubDataSource, /10s 1080p \+ audio/);
   assert.match(hubDataSource, /4K route/);
-  assert.match(videoMatrixSource, /Limits/);
-  assert.match(videoMatrixSource, /Actions/);
-  assert.match(videoMatrixSource, /Video/);
-  assert.match(videoMatrixSource, /Tools & Upscale/);
-  assert.match(videoMatrixSource, /Cheapest/);
+  assert.match(hubCopySource, /Limits/);
+  assert.match(hubCopySource, /Limites/);
+  assert.match(hubCopySource, /Actions/);
+  assert.match(hubCopySource, /Video/);
+  assert.match(hubCopySource, /Vidéo/);
+  assert.match(hubCopySource, /Tools & Upscale/);
+  assert.match(hubCopySource, /Outils & upscale/);
+  assert.match(hubCopySource, /Cheapest/);
+  assert.match(hubCopySource, /Moins cher/);
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
-  assert.match(videoMatrixSource, /Live price/);
-  assert.match(videoMatrixSource, /Prices are current MaxVideoAI display prices for preset scenarios/);
+  assert.match(hubCopySource, /Live price/);
+  assert.match(hubCopySource, /Prix live/);
+  assert.match(hubCopySource, /Prices are current MaxVideoAI display prices for preset scenarios/);
+  assert.match(hubCopySource, /Les prix sont les prix affichés MaxVideoAI/);
   assert.doesNotMatch(videoMatrixSource, /engineName\.slice/);
   assert.doesNotMatch(videoMatrixSource, /from \$/i);
   assert.doesNotMatch(videoMatrixSource, /per output second/);
@@ -202,30 +217,48 @@ test('video matrix renders exact scenario columns and compact links', () => {
 
 test('popular checks and non-video pricing surfaces are compact matrices', () => {
   assert.match(popularChecksSource, /export function PricingPopularChecksSection/);
-  assert.match(popularChecksSource, /Popular price checks/);
-  assert.match(hubDataSource, /5s 720p video/);
-  assert.match(hubDataSource, /8s 1080p premium video/);
-  assert.match(hubDataSource, /10s 1080p video/);
-  assert.match(hubDataSource, /10s 1080p \+ audio/);
-  assert.match(hubDataSource, /30s voice-over/);
-  assert.match(hubDataSource, /4K upscale/);
+  assert.match(popularChecksSource, /getPricingHubCopy/);
+  assert.match(hubCopySource, /Popular price checks/);
+  assert.match(hubCopySource, /Vérifications de prix fréquentes/);
+  assert.match(hubCopySource, /5s 720p video/);
+  assert.match(hubCopySource, /Vidéo 5 s 720p/);
+  assert.match(hubCopySource, /8s 1080p premium video/);
+  assert.match(hubCopySource, /Vidéo premium 8 s 1080p/);
+  assert.match(hubCopySource, /10s 1080p video/);
+  assert.match(hubCopySource, /Vidéo 10 s 1080p/);
+  assert.match(hubCopySource, /10s 1080p \+ audio/);
+  assert.match(hubCopySource, /10 s 1080p \+ audio/);
+  assert.match(hubCopySource, /30s voice-over/);
+  assert.match(hubCopySource, /Voix off 30 s/);
+  assert.match(hubCopySource, /4K upscale/);
+  assert.match(hubCopySource, /Upscale 4K/);
 
   assert.match(otherSurfacesSource, /export function PricingOtherSurfacesSection/);
-  assert.match(otherSurfacesSource, /Image, audio and tool pricing/);
-  assert.match(otherSurfacesSource, /Image generation pricing/);
-  assert.match(otherSurfacesSource, /Audio pricing/);
-  assert.match(otherSurfacesSource, /Prep tools and upscale pricing/);
-  assert.match(hubDataSource, /GPT Image 2/);
-  assert.match(hubDataSource, /Character Builder/);
+  assert.match(otherSurfacesSource, /getPricingHubCopy/);
+  assert.match(hubCopySource, /Image, audio and tool pricing/);
+  assert.match(hubCopySource, /Prix image, audio et outils/);
+  assert.match(hubCopySource, /Image generation pricing/);
+  assert.match(hubCopySource, /Prix génération d’images/);
+  assert.match(hubCopySource, /Audio pricing/);
+  assert.match(hubCopySource, /Prix audio/);
+  assert.match(hubCopySource, /Prep tools and upscale pricing/);
+  assert.match(hubCopySource, /Prix outils de préparation et upscale/);
+  assert.match(hubCopySource, /GPT Image 2/);
+  assert.match(hubCopySource, /Character Builder/);
   assert.doesNotMatch(otherSurfacesSource, /'use client'/);
 });
 
 test('credits and refunds stay compact below pricing matrices', () => {
   assert.match(creditsRefundsSource, /export function PricingCreditsRefundsSection/);
-  assert.match(creditsRefundsSource, /Credits, live quotes and refunds/);
-  assert.match(creditsRefundsSource, /Pay-as-you-go credits/);
-  assert.match(creditsRefundsSource, /Exact price before launch/);
-  assert.match(creditsRefundsSource, /Failed generations refunded/);
+  assert.match(creditsRefundsSource, /getPricingHubCopy/);
+  assert.match(hubCopySource, /Credits, live quotes and refunds/);
+  assert.match(hubCopySource, /Crédits, devis live et remboursements/);
+  assert.match(hubCopySource, /Pay-as-you-go credits/);
+  assert.match(hubCopySource, /Crédits à l’usage/);
+  assert.match(hubCopySource, /Exact price before launch/);
+  assert.match(hubCopySource, /Prix exact avant lancement/);
+  assert.match(hubCopySource, /Failed generations refunded/);
+  assert.match(hubCopySource, /Échecs remboursés/);
   assert.doesNotMatch(creditsRefundsSource, /'use client'/);
 });
 

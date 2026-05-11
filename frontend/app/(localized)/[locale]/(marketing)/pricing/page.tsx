@@ -106,10 +106,10 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
 
       <div className="container-page max-w-[1280px] py-8 sm:py-10">
         <div className="stack-gap-lg">
-          <PricingVideoMatrixSection video={pricingHub.video} />
-          <PricingPopularChecksSection checks={pricingHub.popularChecks} />
-          <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} />
-          <PricingCreditsRefundsSection />
+          <PricingVideoMatrixSection video={pricingHub.video} locale={locale} />
+          <PricingPopularChecksSection checks={pricingHub.popularChecks} locale={locale} />
+          <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} locale={locale} />
+          <PricingCreditsRefundsSection locale={locale} />
           <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
         </div>
       </div>

@@ -3,16 +3,16 @@ import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 import type { EngineCaps, EnginePricingDetails, Resolution } from '@/types/engines';
-import { CHARACTER_FORMAT_OPTIONS, CHARACTER_QUALITY_OPTIONS } from '@/lib/character-builder';
+import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import { buildAudioPricingSnapshot, type AudioPackId, type AudioVoiceMode } from '@/lib/audio-generation';
 import { resolveGptImage2PricingTier, type GptImage2Quality } from '@/lib/image/gptImage2';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { formatCurrencyForLocale } from './pricingPageContent';
+import { getPricingHubCopy } from './pricingHubCopy';
 
 const FALLBACK_CURRENCY = 'USD';
-const LIVE_QUOTE_LABEL = 'Live quote';
 
 const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
@@ -178,13 +178,14 @@ export type PricingHubData = {
 type AudioRateMode = 'default' | 'audio_off';
 
 function formatPrice(locale: AppLocale, cents: number | null | undefined, currency = FALLBACK_CURRENCY) {
-  if (typeof cents !== 'number' || !Number.isFinite(cents)) return LIVE_QUOTE_LABEL;
+  if (typeof cents !== 'number' || !Number.isFinite(cents)) return getPricingHubCopy(locale).liveQuote;
   return formatCurrencyForLocale(locale, currency, cents / 100);
 }
 
 function formatRateDisplay(locale: AppLocale, cents: number | null | undefined, currency = FALLBACK_CURRENCY) {
   const price = formatPrice(locale, cents, currency);
-  return price === LIVE_QUOTE_LABEL ? price : `${price}/s`;
+  const copy = getPricingHubCopy(locale);
+  return price === copy.liveQuote ? price : copy.quote.perSecond(price);
 }
 
 function anchorFromSlug(slug: string) {
@@ -244,7 +245,8 @@ function getEngineMaxDurationSec(entry: FalEngineEntry) {
   return entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
 }
 
-function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number | null) {
+function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number | null, locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
   if (requestedDurationSec == null) return { supported: true, durationSec: null, note: null as string | null };
   const options = collectDurationOptions(entry);
   if (options.length) {
@@ -257,18 +259,18 @@ function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: num
       Math.abs(option - requestedDurationSec) < Math.abs(best - requestedDurationSec) ? option : best
     );
     if (maxOption < requestedDurationSec) {
-      return { supported: false, durationSec: closest, note: `max ${maxOption}s` };
+      return { supported: false, durationSec: closest, note: copy.quote.maxDuration(maxOption) };
     }
     if (minOption > requestedDurationSec) {
-      return { supported: false, durationSec: closest, note: `min ${minOption}s` };
+      return { supported: false, durationSec: closest, note: copy.quote.minDuration(minOption) };
     }
-    return { supported: false, durationSec: closest, note: `${options.slice(0, 3).join('/')}s only` };
+    return { supported: false, durationSec: closest, note: copy.quote.durationsOnly(options.slice(0, 3)) };
   }
   const maxDurationSec = getEngineMaxDurationSec(entry);
   if (requestedDurationSec <= maxDurationSec) {
     return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
   }
-  return { supported: false, durationSec: maxDurationSec, note: `max ${maxDurationSec}s` };
+  return { supported: false, durationSec: maxDurationSec, note: copy.quote.maxDuration(maxDurationSec) };
 }
 
 function chooseFourKDuration(entry: FalEngineEntry) {
@@ -286,17 +288,19 @@ function chooseFourKDuration(entry: FalEngineEntry) {
   return maxDurationSec > 0 ? maxDurationSec : null;
 }
 
-function formatDurationLabel(entry: FalEngineEntry) {
+function formatDurationLabel(entry: FalEngineEntry, locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
   const options = collectDurationOptions(entry);
   const maxDurationSec = getEngineMaxDurationSec(entry);
   if (options.length) {
-    if (options.length <= 3) return options.map((option) => `${option}s`).join(' / ');
-    return `Up to ${Math.max(...options)}s`;
+    if (options.length <= 3) return options.map((option) => copy.quote.fourKNote(option).replace(' 4K', '')).join(' / ');
+    return copy.quote.maxDuration(Math.max(...options)).replace(/^max /, locale === 'en' ? 'Up to ' : 'Jusqu’à ');
   }
-  return `Up to ${maxDurationSec}s`;
+  return copy.quote.maxDuration(maxDurationSec).replace(/^max /, locale === 'en' ? 'Up to ' : 'Jusqu’à ');
 }
 
-function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string) {
+function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string, locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
   const normalizedRequested = requestedResolution.toLowerCase();
   const resolutions = engine.resolutions.map(String);
   const exactResolution = resolutions.find((resolution) => resolution.toLowerCase() === normalizedRequested);
@@ -313,7 +317,10 @@ function resolveResolutionSupport(engine: EngineCaps, requestedResolution: strin
         : resolutions.find((resolution) => resolution.toLowerCase() === '720p') ??
           resolutions.find((resolution) => resolution.toLowerCase() === '768p');
   const closest = preferredClosest ?? resolutions[0] ?? requestedResolution;
-  const note = resolutions.length === 1 ? `${closest} only` : `${requestedResolution} unavailable`;
+  const note =
+    resolutions.length === 1
+      ? copy.quote.resolutionOnly(closest)
+      : copy.quote.resolutionUnavailable(requestedResolution);
   return { supported: false, resolution: closest, note };
 }
 
@@ -402,13 +409,14 @@ function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPricePreset) 
 }
 
 export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, locale: AppLocale): PresetQuote {
+  const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
-  const resolution = resolveResolutionSupport(engine, preset.resolution);
+  const resolution = resolveResolutionSupport(engine, preset.resolution, locale);
   const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
   const audioMode: AudioRateMode = preset.audio ? 'default' : supportsAudioOff(engine) ? 'audio_off' : 'default';
   const canExactAudio = preset.audio ? engine.audio : true;
   const requestedDurationSec = resolvePresetDuration(entry, preset);
-  const duration = resolveDurationSupport(entry, requestedDurationSec);
+  const duration = resolveDurationSupport(entry, requestedDurationSec, locale);
   const exact = resolution.supported && duration.supported && canExactAudio && requestedDurationSec != null;
 
   const exactCents =
@@ -419,8 +427,11 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
     if (exactCents == null || duration.durationSec == null) {
       return {
         status: 'live_quote',
-        display: LIVE_QUOTE_LABEL,
-        note: preset.id === '4k-route' ? `${duration.durationSec ?? ''}s 4K`.trim() : undefined,
+        display: copy.liveQuote,
+        note:
+          preset.id === '4k-route' && duration.durationSec != null
+            ? copy.quote.fourKNote(duration.durationSec)
+            : undefined,
         sortValue: Number.POSITIVE_INFINITY,
       };
     }
@@ -431,16 +442,20 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
       display: formatPrice(locale, exactCents, currency),
       note:
         preset.id === '4k-route'
-          ? `${duration.durationSec}s 4K`
+          ? copy.quote.fourKNote(duration.durationSec)
           : !preset.audio && engine.audio && !supportsAudioOff(engine)
-            ? 'audio incl.'
+            ? copy.quote.audioIncluded
             : undefined,
       rateDisplay: formatRateDisplay(locale, rateCents, currency),
       sortValue: exactCents ?? Number.POSITIVE_INFINITY,
     };
   }
 
-  const note = !canExactAudio ? 'audio unavailable' : !duration.supported ? duration.note : resolution.note ?? 'unsupported';
+  const note = !canExactAudio
+    ? copy.quote.audioUnavailable
+    : !duration.supported
+      ? duration.note
+      : resolution.note ?? copy.quote.unsupported;
   return {
     status: 'unsupported',
     display: '—',
@@ -449,31 +464,33 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
   };
 }
 
-function buildVideoLinks(entry: FalEngineEntry): PricingHubLink[] {
+function buildVideoLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {
+  const copy = getPricingHubCopy(locale);
   const links: PricingHubLink[] = [];
   if (entry.surfaces.modelPage.indexable) {
-    links.push({ label: 'Model', href: `/models/${entry.modelSlug}` });
+    links.push({ label: copy.links.model, href: `/models/${entry.modelSlug}` });
   }
   if (entry.surfaces.examples.includeInFamilyResolver && entry.family) {
-    links.push({ label: 'Examples', href: `/examples/${entry.family}` });
+    links.push({ label: copy.links.examples, href: `/examples/${entry.family}` });
   }
   const compareSlug = entry.surfaces.compare.suggestOpponents?.[0] ?? entry.surfaces.compare.publishedPairs?.[0];
   if (entry.surfaces.compare.includeInHub && compareSlug) {
-    links.push({ label: 'Compare', href: `/ai-video-engines/${entry.modelSlug}-vs-${compareSlug}` });
+    links.push({ label: copy.links.compare, href: `/ai-video-engines/${entry.modelSlug}-vs-${compareSlug}` });
   }
-  links.push({ label: 'Live price', href: `/app?engine=${encodeURIComponent(entry.modelSlug)}` });
+  links.push({ label: copy.links.livePrice, href: `/app?engine=${encodeURIComponent(entry.modelSlug)}` });
   return links;
 }
 
-function buildVideoNotes(entry: FalEngineEntry) {
+function buildVideoNotes(entry: FalEngineEntry, locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
   const notes = new Set<string>();
-  if (engine.audio) notes.add(supportsAudioOff(engine) ? 'audio opt.' : 'audio incl.');
-  else notes.add('silent');
+  if (engine.audio) notes.add(supportsAudioOff(engine) ? copy.quote.audioOptional : copy.quote.audioIncluded);
+  else notes.add(copy.quote.silent);
   if (engine.resolutions.length === 1 && engine.resolutions[0].toLowerCase() === '4k') notes.add('4K');
   if (engine.modes.includes('t2v')) notes.add('T2V');
   if (engine.modes.includes('i2v') || engine.modes.includes('ref2v')) notes.add('I2V');
-  if (engine.latencyTier === 'fast') notes.add('fast');
+  if (engine.latencyTier === 'fast') notes.add(copy.quote.fast);
   return [...notes].slice(0, 5);
 }
 
@@ -491,13 +508,19 @@ function isPricingHighlightEligible(entry: FalEngineEntry) {
   return !isLegacyPricingEngine(entry) && !PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS.has(identity);
 }
 
-function buildLimitsLabel(entry: FalEngineEntry) {
-  const maxDuration = formatDurationLabel(entry);
+function buildLimitsLabel(entry: FalEngineEntry, locale: AppLocale) {
+  const maxDuration = formatDurationLabel(entry, locale);
   const resolutions = entry.engine.resolutions
     .map(String)
     .map((resolution) => (resolution.toLowerCase() === '4k' ? '4K' : resolution))
     .join(' / ');
   return `${maxDuration} · ${resolutions}`;
+}
+
+function formatPricingEngineName(entry: FalEngineEntry) {
+  return (entry.marketingName || entry.engine.label)
+    .replace(/^MiniMax\s+(?=Hailuo\b)/i, '')
+    .replace(/\s+Text\s*&\s*Image\s+to\s+Video$/i, '');
 }
 
 function getPricingDisplayRank(entry: FalEngineEntry) {
@@ -551,18 +574,18 @@ function buildVideoPricingRows(locale: AppLocale) {
         id: entry.id ?? entry.engine.id ?? entry.modelSlug,
         anchorId: anchorFromSlug(entry.modelSlug),
         family: entry.family ?? entry.provider,
-        engineName: entry.marketingName || entry.engine.label,
+        engineName: formatPricingEngineName(entry),
         engineIcon: {
           id: entry.engine.id || entry.id,
-          label: entry.marketingName || entry.engine.label,
+          label: formatPricingEngineName(entry),
           brandId: entry.brandId ?? entry.engine.brandId ?? undefined,
         },
         variant: entry.versionLabel ?? entry.engine.variant ?? null,
         pricingGroup,
         highlightEligible,
-        limitsLabel: buildLimitsLabel(entry),
-        notes: buildVideoNotes(entry),
-        links: buildVideoLinks(entry),
+        limitsLabel: buildLimitsLabel(entry, locale),
+        notes: buildVideoNotes(entry, locale),
+        links: buildVideoLinks(entry, locale),
         quotes,
         sortValue:
           (pricingGroup === 'legacy' ? 1 : 0) * 1_000_000_000 +
@@ -588,7 +611,8 @@ function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId)
   );
 }
 
-function buildVideoHighlights(rows: VideoPricingRow[]): VideoPricingHighlight[] {
+function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): VideoPricingHighlight[] {
+  const copy = getPricingHubCopy(locale);
   const eligibleRows = rows.filter((row) => row.highlightEligible);
   const bestDraft = cheapestExactRow(eligibleRows, '5s-720p');
   const cheapest8s = cheapestExactRow(eligibleRows, '8s-1080p');
@@ -598,33 +622,33 @@ function buildVideoHighlights(rows: VideoPricingRow[]): VideoPricingHighlight[] 
   const currentGenCount = eligibleRows.length;
   return [
     {
-      label: 'Best-value current-gen 5s 720p',
-      value: bestDraft ? `${bestDraft.row.engineName} · ${bestDraft.quote.display}` : LIVE_QUOTE_LABEL,
+      label: copy.video.highlights.bestDraft,
+      value: bestDraft ? `${bestDraft.row.engineName} · ${bestDraft.quote.display}` : copy.liveQuote,
       href: bestDraft ? `#${bestDraft.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest current-gen 8s 1080p',
-      value: cheapest8s ? `${cheapest8s.row.engineName} · ${cheapest8s.quote.display}` : LIVE_QUOTE_LABEL,
+      label: copy.video.highlights.cheapest8s,
+      value: cheapest8s ? `${cheapest8s.row.engineName} · ${cheapest8s.quote.display}` : copy.liveQuote,
       href: cheapest8s ? `#${cheapest8s.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest current-gen 10s 1080p',
-      value: cheapest10s ? `${cheapest10s.row.engineName} · ${cheapest10s.quote.display}` : LIVE_QUOTE_LABEL,
+      label: copy.video.highlights.cheapest10s,
+      value: cheapest10s ? `${cheapest10s.row.engineName} · ${cheapest10s.quote.display}` : copy.liveQuote,
       href: cheapest10s ? `#${cheapest10s.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest current-gen 10s 1080p + audio',
-      value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : LIVE_QUOTE_LABEL,
+      label: copy.video.highlights.cheapestAudio,
+      value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : copy.liveQuote,
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },
     {
-      label: '4K route available',
-      value: fourKRoute ? `${fourKRoute.row.engineName} · ${fourKRoute.quote.display}` : 'No exact route',
+      label: copy.video.highlights.fourKRoute,
+      value: fourKRoute ? `${fourKRoute.row.engineName} · ${fourKRoute.quote.display}` : copy.noExactRoute,
       href: fourKRoute ? `#${fourKRoute.row.anchorId}` : undefined,
     },
     {
-      label: 'Current-gen engines available',
-      value: `${currentGenCount} engines`,
+      label: copy.video.highlights.currentGenCount,
+      value: copy.video.highlights.currentGenValue(currentGenCount),
     },
   ];
 }
@@ -639,20 +663,22 @@ function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImag
   return typeof base === 'number' ? applyDisplayedPriceMarginCents(base) : null;
 }
 
-function buildImageLinks(entry: FalEngineEntry): PricingHubLink[] {
+function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {
+  const copy = getPricingHubCopy(locale);
   const links: PricingHubLink[] = [];
-  if (entry.surfaces.modelPage.indexable) links.push({ label: 'Model', href: `/models/${entry.modelSlug}` });
-  links.push({ label: 'Image app', href: '/app/image' });
-  if (entry.modelSlug === 'gpt-image-2') links.push({ label: 'GPT Image 2', href: '/models/gpt-image-2' });
+  if (entry.surfaces.modelPage.indexable) links.push({ label: copy.links.model, href: `/models/${entry.modelSlug}` });
+  links.push({ label: copy.links.imageApp, href: '/app/image' });
+  if (entry.modelSlug === 'gpt-image-2') links.push({ label: copy.links.gptImage2, href: '/models/gpt-image-2' });
   return links;
 }
 
-function formatImageSizeSummary(resolutions: string[]) {
+function formatImageSizeSummary(resolutions: string[], locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
   const normalized = resolutions.map((resolution) => resolution.toLowerCase());
   const labels = new Set<string>();
-  if (normalized.some((resolution) => resolution.includes('square') || resolution.includes('1:1'))) labels.add('Square');
-  if (normalized.some((resolution) => resolution.includes('portrait') || resolution.includes('9:16'))) labels.add('Portrait');
-  if (normalized.some((resolution) => resolution.includes('landscape') || resolution.includes('16:9'))) labels.add('Landscape');
+  if (normalized.some((resolution) => resolution.includes('square') || resolution.includes('1:1'))) labels.add(copy.quote.square);
+  if (normalized.some((resolution) => resolution.includes('portrait') || resolution.includes('9:16'))) labels.add(copy.quote.portrait);
+  if (normalized.some((resolution) => resolution.includes('landscape') || resolution.includes('16:9'))) labels.add(copy.quote.landscape);
   if (normalized.includes('1k') || normalized.some((resolution) => resolution.includes('1024'))) labels.add('1K');
   if (normalized.includes('2k') || normalized.some((resolution) => resolution.includes('2048'))) labels.add('2K');
   if (
@@ -663,7 +689,7 @@ function formatImageSizeSummary(resolutions: string[]) {
     labels.add('4K');
   }
   if (!labels.size && resolutions.length) return resolutions.slice(0, 3).join(' · ');
-  return labels.size ? [...labels].join(' · ') : 'App presets';
+  return labels.size ? [...labels].join(' · ') : copy.quote.appPresets;
 }
 
 function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
@@ -694,9 +720,9 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
         engine: entry.marketingName || engine.label,
         standardImage: formatPrice(locale, flatImageCents(engine, standardResolution, 'medium')),
         highQualityImage: formatPrice(locale, flatImageCents(engine, highResolution, 'high')),
-        reference: engine.modes.includes('i2i') ? 'Supported' : '—',
-        sizes: formatImageSizeSummary(resolutions),
-        links: buildImageLinks(entry),
+        reference: engine.modes.includes('i2i') ? getPricingHubCopy(locale).quote.supported : '—',
+        sizes: formatImageSizeSummary(resolutions, locale),
+        links: buildImageLinks(entry, locale),
       };
     })
     .sort((a, b) => a.engine.localeCompare(b.engine));
@@ -714,12 +740,13 @@ function audioPrice(locale: AppLocale, pack: AudioPackId, durationSec: number, v
 }
 
 function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
-  const appLink = [{ label: 'Audio app', href: '/app/audio' }];
+  const copy = getPricingHubCopy(locale);
+  const appLink = [{ label: copy.links.audioApp, href: '/app/audio' }];
   return [
     {
       id: 'audio-music-only',
       anchorId: 'audio-music-only-pricing',
-      mode: 'Music Only · MiniMax Music 2.6 / Stable Audio 2.5',
+      mode: `${copy.audioModes.musicOnly} · MiniMax Music 2.6 / Stable Audio 2.5`,
       thirtySeconds: audioPrice(locale, 'music_only', 30),
       sixtySeconds: audioPrice(locale, 'music_only', 60),
       oneTwentySeconds: audioPrice(locale, 'music_only', 120),
@@ -729,17 +756,17 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     {
       id: 'audio-voice-only',
       anchorId: 'audio-voice-over-pricing',
-      mode: 'Voice Over Only · Gemini 3.1 Flash TTS',
+      mode: `${copy.audioModes.voiceOnly} · Gemini 3.1 Flash TTS`,
       thirtySeconds: audioPrice(locale, 'voice_only', 30),
       sixtySeconds: audioPrice(locale, 'voice_only', 60),
       oneTwentySeconds: audioPrice(locale, 'voice_only', 120),
-      voiceClone: 'Optional',
+      voiceClone: copy.quote.optional,
       links: appLink,
     },
     {
       id: 'audio-cinematic',
       anchorId: 'audio-cinematic-pricing',
-      mode: 'Cinematic · Mirelo SFX + music',
+      mode: `${copy.audioModes.cinematic} · Mirelo SFX + ${copy.audioModes.musicOnly.toLowerCase()}`,
       thirtySeconds: audioPrice(locale, 'cinematic', 30),
       sixtySeconds: audioPrice(locale, 'cinematic', 60),
       oneTwentySeconds: audioPrice(locale, 'cinematic', 120),
@@ -749,29 +776,28 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     {
       id: 'audio-cinematic-voice',
       anchorId: 'audio-cinematic-voice-pricing',
-      mode: 'Cinematic + Voice · Mirelo SFX + Gemini 3.1 Flash TTS',
+      mode: `${copy.audioModes.cinematicVoice} · Mirelo SFX + Gemini 3.1 Flash TTS`,
       thirtySeconds: audioPrice(locale, 'cinematic_voice', 30),
       sixtySeconds: audioPrice(locale, 'cinematic_voice', 60),
       oneTwentySeconds: audioPrice(locale, 'cinematic_voice', 120),
-      voiceClone: 'Optional',
+      voiceClone: copy.quote.optional,
       links: appLink,
     },
     {
       id: 'audio-voice-clone',
       anchorId: 'minimax-voice-clone-pricing',
-      mode: 'MiniMax Voice Clone',
+      mode: copy.audioModes.voiceClone,
       thirtySeconds: audioPrice(locale, 'voice_only', 30, 'clone'),
       sixtySeconds: audioPrice(locale, 'voice_only', 60, 'clone'),
       oneTwentySeconds: audioPrice(locale, 'voice_only', 120, 'clone'),
-      voiceClone: 'Sample required',
+      voiceClone: copy.quote.sampleRequired,
       links: appLink,
     },
   ];
 }
 
 function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
-  const draftQuality = CHARACTER_QUALITY_OPTIONS.find((option) => option.id === 'draft');
-  const finalQuality = CHARACTER_QUALITY_OPTIONS.find((option) => option.id === 'final');
+  const copy = getPricingHubCopy(locale);
   const fourKFormat = CHARACTER_FORMAT_OPTIONS.find((option) => option.id === '4k');
   const angleEngines = listAngleToolEngines();
   const upscaleImageEngines = listUpscaleToolEngines('image');
@@ -787,73 +813,73 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
     {
       id: 'character-builder-draft',
       anchorId: 'character-builder-pricing',
-      tool: `Character Builder ${draftQuality?.label ?? 'Draft'}`,
+      tool: copy.tools.characterBuilderDraft,
       standardOutput: formatPrice(locale, 8),
       proOutput: `${fourKFormat?.label ?? '4K'}: ${formatPrice(locale, 24)}`,
-      bestUsedBefore: 'Image-to-video references',
+      bestUsedBefore: copy.tools.imageToVideoReferences,
       links: [
-        { label: 'Tool', href: '/tools/character-builder' },
-        { label: 'Live price', href: '/app/tools/character-builder' },
+        { label: copy.links.tool, href: '/tools/character-builder' },
+        { label: copy.links.livePrice, href: '/app/tools/character-builder' },
       ],
     },
     {
       id: 'character-builder-final',
       anchorId: 'character-builder-final-pricing',
-      tool: `Character Builder ${finalQuality?.label ?? 'Final'}`,
+      tool: copy.tools.characterBuilderFinal,
       standardOutput: formatPrice(locale, 15),
       proOutput: `${fourKFormat?.label ?? '4K'}: ${formatPrice(locale, 30)}`,
-      bestUsedBefore: 'Final character references',
+      bestUsedBefore: copy.tools.finalCharacterReferences,
       links: [
-        { label: 'Tool', href: '/tools/character-builder' },
-        { label: 'Live price', href: '/app/tools/character-builder' },
+        { label: copy.links.tool, href: '/tools/character-builder' },
+        { label: copy.links.livePrice, href: '/app/tools/character-builder' },
       ],
     },
     {
       id: 'change-camera-angle',
       anchorId: 'change-camera-angle-pricing',
-      tool: 'Change Camera Angle',
+      tool: copy.tools.changeCameraAngle,
       standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatPrice(locale, 4)}`,
       proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatPrice(locale, 7)}`,
-      bestUsedBefore: 'Image-to-video setup',
+      bestUsedBefore: copy.tools.imageToVideoSetup,
       links: [
-        { label: 'Tool', href: '/tools/angle' },
-        { label: 'Live price', href: '/app/tools' },
+        { label: copy.links.tool, href: '/tools/angle' },
+        { label: copy.links.livePrice, href: '/app/tools' },
       ],
     },
     {
       id: 'generate-best-angles',
       anchorId: 'generate-best-angles-pricing',
-      tool: 'Generate 4 best angles',
+      tool: copy.tools.generateBestAngles,
       standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatPrice(locale, 24)}`,
       proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatPrice(locale, 40)}`,
-      bestUsedBefore: 'Storyboard coverage',
+      bestUsedBefore: copy.tools.storyboardCoverage,
       links: [
-        { label: 'Tool', href: '/tools/angle' },
-        { label: 'Live price', href: '/app/tools' },
+        { label: copy.links.tool, href: '/tools/angle' },
+        { label: copy.links.livePrice, href: '/app/tools' },
       ],
     },
     {
       id: 'image-upscale',
       anchorId: 'upscale-pricing',
-      tool: 'Image Upscale',
+      tool: copy.tools.imageUpscale,
       standardOutput: `${seedvrImage?.label ?? '2x'}: ${formatPrice(locale, 4)}`,
       proOutput: `${topazImage?.label ?? '4x'}: ${formatPrice(locale, 12)}`,
-      bestUsedBefore: 'Image-to-video source cleanup',
+      bestUsedBefore: copy.tools.imageToVideoSourceCleanup,
       links: [
-        { label: 'Tool', href: '/tools/upscale' },
-        { label: 'Live price', href: '/app/tools' },
+        { label: copy.links.tool, href: '/tools/upscale' },
+        { label: copy.links.livePrice, href: '/app/tools' },
       ],
     },
     {
       id: 'video-upscale',
       anchorId: 'video-upscale-pricing',
-      tool: 'Video Upscale',
+      tool: copy.tools.videoUpscale,
       standardOutput: `${seedvrVideo?.label ?? '1080p'}: ${formatPrice(locale, 25)}`,
       proOutput: `${topazVideo?.label ?? '4K'}: ${formatPrice(locale, 80)}`,
-      bestUsedBefore: 'Final export',
+      bestUsedBefore: copy.tools.finalExport,
       links: [
-        { label: 'Tool', href: '/tools/upscale' },
-        { label: 'Live price', href: '/app/tools' },
+        { label: copy.links.tool, href: '/tools/upscale' },
+        { label: copy.links.livePrice, href: '/app/tools' },
       ],
     },
   ];
@@ -866,6 +892,7 @@ function buildPopularChecks(
   audioRows: AudioPricingRow[],
   toolRows: ToolPricingRow[]
 ): PopularPriceCheckRow[] {
+  const copy = getPricingHubCopy(locale);
   const currentRows = videoRows.filter((row) => row.highlightEligible);
   const rowFor = (presetId: VideoPricePresetId) => cheapestExactRow(currentRows, presetId);
   const draft720 = rowFor('5s-720p');
@@ -878,52 +905,52 @@ function buildPopularChecks(
   return [
     {
       id: '5s-720p-video',
-      priceCheck: '5s 720p video',
-      engine: draft720?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: draft720?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: draft720 ? `#${draft720.row.anchorId}` : '/app' },
+      priceCheck: copy.popularChecks.rows.draft720,
+      engine: draft720?.row.engineName ?? copy.liveQuote,
+      price: draft720?.quote.display ?? copy.liveQuote,
+      link: { label: copy.links.viewRow, href: draft720 ? `#${draft720.row.anchorId}` : '/app' },
     },
     {
       id: '8s-1080p-premium-video',
-      priceCheck: '8s 1080p premium video',
-      engine: premium8s?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: premium8s?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: premium8s ? `#${premium8s.row.anchorId}` : '/app' },
+      priceCheck: copy.popularChecks.rows.premium8s,
+      engine: premium8s?.row.engineName ?? copy.liveQuote,
+      price: premium8s?.quote.display ?? copy.liveQuote,
+      link: { label: copy.links.viewRow, href: premium8s ? `#${premium8s.row.anchorId}` : '/app' },
     },
     {
       id: '10s-1080p-video',
-      priceCheck: '10s 1080p video',
-      engine: video1080?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: video1080?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: video1080 ? `#${video1080.row.anchorId}` : '/app' },
+      priceCheck: copy.popularChecks.rows.video1080,
+      engine: video1080?.row.engineName ?? copy.liveQuote,
+      price: video1080?.quote.display ?? copy.liveQuote,
+      link: { label: copy.links.viewRow, href: video1080 ? `#${video1080.row.anchorId}` : '/app' },
     },
     {
       id: '10s-1080p-audio-video',
-      priceCheck: '10s 1080p + audio',
-      engine: audio1080?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: audio1080?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: audio1080 ? `#${audio1080.row.anchorId}` : '/app' },
+      priceCheck: copy.popularChecks.rows.audio1080,
+      engine: audio1080?.row.engineName ?? copy.liveQuote,
+      price: audio1080?.quote.display ?? copy.liveQuote,
+      link: { label: copy.links.viewRow, href: audio1080 ? `#${audio1080.row.anchorId}` : '/app' },
     },
     {
       id: 'one-image-generation',
-      priceCheck: '1 image generation',
-      engine: imageRow?.engine ?? LIVE_QUOTE_LABEL,
-      price: imageRow?.standardImage ?? LIVE_QUOTE_LABEL,
-      link: { label: 'Image pricing', href: imageRow ? `#${imageRow.anchorId}` : '/app/image' },
+      priceCheck: copy.popularChecks.rows.image,
+      engine: imageRow?.engine ?? copy.liveQuote,
+      price: imageRow?.standardImage ?? copy.liveQuote,
+      link: { label: copy.links.imagePricing, href: imageRow ? `#${imageRow.anchorId}` : '/app/image' },
     },
     {
       id: '30s-voice-over',
-      priceCheck: '30s voice-over',
-      engine: voiceRow?.mode ?? 'Voice Over Only',
+      priceCheck: copy.popularChecks.rows.voiceOver,
+      engine: voiceRow?.mode ?? copy.audioModes.voiceOnly,
       price: voiceRow?.thirtySeconds ?? audioPrice(locale, 'voice_only', 30),
-      link: { label: 'Audio pricing', href: '#audio-pricing' },
+      link: { label: copy.links.audioPricing, href: '#audio-pricing' },
     },
     {
       id: '4k-upscale',
-      priceCheck: '4K upscale',
-      engine: upscaleRow?.tool ?? 'Video Upscale',
-      price: upscaleRow?.proOutput ?? LIVE_QUOTE_LABEL,
-      link: { label: 'Tool pricing', href: '#tool-pricing' },
+      priceCheck: copy.popularChecks.rows.upscale4k,
+      engine: upscaleRow?.tool ?? copy.tools.videoUpscale,
+      price: upscaleRow?.proOutput ?? copy.liveQuote,
+      link: { label: copy.links.toolPricing, href: '#tool-pricing' },
     },
   ];
 }
@@ -938,7 +965,7 @@ export function buildPricingHubData(locale: AppLocale): PricingHubData {
     video: {
       presets: VIDEO_PRICE_PRESETS,
       rows: videoRows,
-      highlights: buildVideoHighlights(videoRows),
+      highlights: buildVideoHighlights(videoRows, locale),
     },
     popularChecks: buildPopularChecks(locale, videoRows, imageRows, audioRows, toolRows),
     otherSurfaces: {
