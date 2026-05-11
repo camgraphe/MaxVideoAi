@@ -13,7 +13,7 @@ type MembershipRow = {
   discount_percent: string | number;
 };
 
-const DEFAULT_TIERS: MembershipTierConfig[] = [
+export const DEFAULT_MEMBERSHIP_TIERS: MembershipTierConfig[] = [
   { tier: 'member', spendThresholdCents: 0, discountPercent: 0 },
   { tier: 'plus', spendThresholdCents: 5_000, discountPercent: 0.05 },
   { tier: 'pro', spendThresholdCents: 20_000, discountPercent: 0.1 },
@@ -50,7 +50,7 @@ async function loadTiers(): Promise<MembershipTierConfig[]> {
   }
 
   if (!isDatabaseConfigured()) {
-    cachedTiers = DEFAULT_TIERS;
+    cachedTiers = DEFAULT_MEMBERSHIP_TIERS;
     cacheLoadedAt = Date.now();
     return cachedTiers;
   }
@@ -61,11 +61,11 @@ async function loadTiers(): Promise<MembershipTierConfig[]> {
       `SELECT tier, spend_threshold_cents, discount_percent
        FROM app_membership_tiers`
     );
-    const tiers = rows.length ? rows.map(normaliseRow) : DEFAULT_TIERS;
+    const tiers = rows.length ? rows.map(normaliseRow) : DEFAULT_MEMBERSHIP_TIERS;
     cachedTiers = sortTiers(tiers);
   } catch (error) {
     console.warn('[membership] failed to load tiers, using defaults', error);
-    cachedTiers = DEFAULT_TIERS;
+    cachedTiers = DEFAULT_MEMBERSHIP_TIERS;
   }
 
   cacheLoadedAt = Date.now();

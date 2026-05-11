@@ -24,6 +24,23 @@ function computeMarkSize(size: number, scale: number, framed: boolean) {
   return Math.max(14, Math.round(size * framedScale));
 }
 
+function isRenderableImageSrc(src: string | undefined) {
+  const value = src?.trim();
+  return Boolean(value && value.toLowerCase() !== 'image' && (value.startsWith('/') || /^https?:\/\//i.test(value)));
+}
+
+function resolveRenderableBrandMark(mark: ReturnType<typeof getPartnerBrandMark>) {
+  if (!mark) return undefined;
+  const light = isRenderableImageSrc(mark.light.src) ? mark.light : null;
+  const dark = isRenderableImageSrc(mark.dark.src) ? mark.dark : null;
+  const fallback = light ?? dark;
+  if (!fallback) return undefined;
+  return {
+    light: light ?? fallback,
+    dark: dark ?? fallback,
+  };
+}
+
 export function EngineIcon({
   engine,
   label,
@@ -33,10 +50,11 @@ export function EngineIcon({
   framed = true,
 }: EngineIconProps) {
   const explicitLabel = label ?? engine?.label ?? 'Engine';
-  const brandMark = getPartnerBrandMark({
+  const resolvedBrandMark = getPartnerBrandMark({
     id: engine?.id ?? null,
     brandId: engine?.brandId ?? null,
   });
+  const brandMark = resolveRenderableBrandMark(resolvedBrandMark);
   const pictogram = getEnginePictogram(
     {
       id: engine?.id ?? null,
@@ -50,6 +68,7 @@ export function EngineIcon({
   const fontSize = computeFontSize(size);
   const markScale = brandMark?.light.scale ?? brandMark?.dark.scale ?? 0.64;
   const markSize = computeMarkSize(size, markScale, framed);
+  const hasDistinctDarkMark = Boolean(brandMark && brandMark.dark.src !== brandMark.light.src);
 
   return (
     <div
@@ -82,7 +101,7 @@ export function EngineIcon({
             src={brandMark.light.src}
             alt=""
             aria-hidden="true"
-            className="block select-none object-contain dark:hidden"
+            className={clsx('block select-none object-contain', hasDistinctDarkMark && 'dark:hidden')}
             width={markSize}
             height={markSize}
             sizes={`${markSize}px`}
@@ -93,21 +112,23 @@ export function EngineIcon({
               objectFit: brandMark.light.fit ?? 'contain',
             }}
           />
-          <Image
-            src={brandMark.dark.src}
-            alt=""
-            aria-hidden="true"
-            className="hidden select-none object-contain dark:block"
-            width={markSize}
-            height={markSize}
-            sizes={`${markSize}px`}
-            draggable={false}
-            style={{
-              width: markSize,
-              height: markSize,
-              objectFit: brandMark.dark.fit ?? 'contain',
-            }}
-          />
+          {hasDistinctDarkMark ? (
+            <Image
+              src={brandMark.dark.src}
+              alt=""
+              aria-hidden="true"
+              className="hidden select-none object-contain dark:block"
+              width={markSize}
+              height={markSize}
+              sizes={`${markSize}px`}
+              draggable={false}
+              style={{
+                width: markSize,
+                height: markSize,
+                objectFit: brandMark.dark.fit ?? 'contain',
+              }}
+            />
+          ) : null}
         </>
       ) : (
         <span>{pictogram.code}</span>

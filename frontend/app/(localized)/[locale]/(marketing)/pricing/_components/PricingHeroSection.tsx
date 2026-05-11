@@ -1,90 +1,71 @@
+import { ArrowDown, ArrowUpRight, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
-
-type PricingHeroLink = {
-  after?: string;
-  before?: string;
-  label?: string;
-};
 
 type PricingHeroSectionProps = {
-  compareBlogHref: string;
-  heroAccentLine: string | null;
-  heroBodyLines: string[];
-  heroEyebrow: string;
-  heroHeadline: string;
-  heroLink: PricingHeroLink | null;
+  badges?: string[];
+  calculatorHref?: string;
+  calculatorLabel?: string;
+  compareHref?: string;
+  compareLabel?: string;
+  eyebrow?: string;
+  subtitle?: string;
+  supportingLine?: string;
+  title?: string;
 };
 
-function isNoSubscriptionCopy(line: string) {
-  const normalized = line.toLowerCase();
-  return (
-    normalized.includes('no subscription') ||
-    normalized.includes('lock-in') ||
-    normalized.includes('abonnement') ||
-    normalized.includes('engagement') ||
-    normalized.includes('suscripción') ||
-    normalized.includes('permanencia')
-  );
-}
+const DEFAULT_BADGES = ['No subscription', 'Guest preview', 'Starter credits from $10', 'Refunds on failed generations'];
 
 export function PricingHeroSection({
-  compareBlogHref,
-  heroAccentLine,
-  heroBodyLines,
-  heroEyebrow,
-  heroHeadline,
-  heroLink,
+  badges = DEFAULT_BADGES,
+  calculatorHref = '/app',
+  calculatorLabel = 'Open app for live pricing before you generate',
+  compareHref = '#video-pricing',
+  compareLabel = 'Compare prices below',
+  eyebrow = 'MaxVideoAI Pricing',
+  subtitle = 'Compare video, image, audio and tool costs before you generate.',
+  supportingLine = 'Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.',
+  title = 'AI Video Pricing Comparison',
 }: PricingHeroSectionProps) {
   return (
-    <header className="relative min-h-[520px] overflow-hidden border-b border-hairline bg-bg">
-      <MarketingHeroImage
-        src="/assets/pricing/pricing-hero-reference.webp"
-        darkSrc="/assets/pricing/pricing-hero-reference-dark.webp"
-        className="opacity-55 dark:opacity-70"
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.93)_0%,rgba(255,255,255,0.76)_34%,rgba(247,249,253,0.36)_68%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg to-transparent" />
-      <div className="container-page relative flex min-h-[520px] max-w-[1220px] items-center justify-center pb-24 pt-14 text-center">
-        <div className="mx-auto flex max-w-[760px] flex-col items-center gap-4">
-          <span className="inline-flex items-center rounded-pill border border-hairline bg-white/72 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#356BE8] shadow-sm backdrop-blur dark:bg-white/10">
-            {heroEyebrow}
-          </span>
-          <h1 className="text-4xl font-semibold leading-[1.04] tracking-tight text-text-primary sm:text-6xl">
-            {heroHeadline}
-            {heroAccentLine ? (
-              <>
-                <br />
-                <span className="text-text-secondary">{heroAccentLine}</span>
-              </>
-            ) : null}
+    <header className="relative min-h-[260px] border-b border-hairline bg-bg">
+      <div className="container-page grid min-h-[260px] max-w-[1220px] items-center gap-6 py-8 sm:py-10 lg:grid-cols-[1fr_auto]">
+        <div className="max-w-[780px]">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-micro text-text-muted">{eyebrow}</p>
+          <h1 className="text-[32px] font-semibold leading-[1.08] tracking-normal text-text-primary sm:text-[40px]">
+            {title}
           </h1>
-          <div className="flex flex-col items-center gap-3 text-base leading-7 text-text-secondary">
-            {heroBodyLines.map((line) =>
-              isNoSubscriptionCopy(line) ? (
-                <p
-                  key={line}
-                  className="rounded-[14px] border border-hairline bg-white/76 px-5 py-3 text-lg font-semibold tracking-tight text-text-primary shadow-card backdrop-blur sm:text-xl dark:bg-white/10"
-                >
-                  {line}
-                </p>
-              ) : (
-                <p key={line}>{line}</p>
-              )
-            )}
-          </div>
-          {heroLink ? (
-            <p className="text-sm leading-6 text-text-secondary">
-              {heroLink.before}
-              <Link
-                href={compareBlogHref}
-                className="font-semibold text-text-primary underline decoration-text-muted/30 underline-offset-4 hover:decoration-text-primary"
+          <p className="mt-3 max-w-[680px] text-base leading-7 text-text-secondary sm:text-lg">{subtitle}</p>
+          <p className="mt-1 max-w-[740px] text-sm leading-6 text-text-muted">{supportingLine}</p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {badges.map((badge) => (
+              <span
+                key={badge}
+                className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-hairline bg-surface px-2.5 text-[11px] font-semibold text-text-secondary"
               >
-                {heroLink.label ?? 'AI video comparison'}
-              </Link>
-              {heroLink.after}
-            </p>
-          ) : null}
+                <Sparkles className="h-3 w-3" strokeWidth={1.8} />
+                {badge}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex w-full flex-col gap-3 lg:w-[320px] lg:items-stretch">
+          <Link
+            href={calculatorHref}
+            prefetch={false}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-text-primary px-5 text-sm font-semibold text-bg shadow-card transition hover:bg-text-primary/90"
+          >
+            {calculatorLabel}
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} />
+          </Link>
+          <Link
+            href={compareHref}
+            className="inline-flex min-h-10 items-center justify-center gap-2 text-sm font-semibold text-[#1F5EFF] transition hover:underline"
+          >
+            {compareLabel}
+            <ArrowDown className="h-4 w-4" strokeWidth={1.8} />
+          </Link>
         </div>
       </div>
     </header>

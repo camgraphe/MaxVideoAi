@@ -1518,8 +1518,18 @@
   },
   "pricing": {
     "hero": {
-      "title": "Tarifs vidéo IA : prix avant génération.",
-      "subtitle": "Démarrez avec 10 $ de crédits.\nSans abonnement, sans engagement.",
+      "eyebrow": "Tarifs MaxVideoAI",
+      "title": "Comparatif des prix vidéo IA",
+      "subtitle": "Comparez les coûts vidéo, image, audio et outils avant de générer.",
+      "supportingLine": "Paiement à l’usage. Voyez le prix exact dans l’app avant de lancer. Les générations échouées sont remboursées.",
+      "primaryCta": "Ouvrir l’app pour le prix en direct avant de générer",
+      "secondaryCta": "Comparer les prix ci-dessous",
+      "badges": [
+        "Sans abonnement",
+        "Prévisualisation invité",
+        "Crédits dès 10 $",
+        "Remboursement des générations échouées"
+      ],
       "link": {
         "before": "Comparez les tarifs des modèles dans notre ",
         "label": "comparatif vidéo IA",
@@ -1527,9 +1537,9 @@
       }
     },
     "calculator": {
-      "title": "Prévisualiser les prix dans l’app",
-      "description": "Ouvrez le studio pour voir le prix exact avant de lancer une vidéo.",
-      "cta": "Ouvrir le studio"
+      "title": "Besoin du prix exact en direct ?",
+      "description": "Ouvrez le calculateur dans l’app en invité pour chiffrer le modèle, la durée, la résolution et l’audio exacts avant de lancer le rendu.",
+      "cta": "Ouvrir l’app pour le prix en direct avant de générer"
     },
     "liveLabel": "En ligne",
     "comingSoonLabel": "À venir",
@@ -1627,15 +1637,15 @@
           }
         },
         {
-          "title": "Narratif Sora 2 (voice-over)",
-          "engine": "Sora 2",
-          "duration": "12 s",
+          "title": "Dialogue / narratif",
+          "engine": "Wan 2.6",
+          "duration": "10 s",
           "resolution": "1280×720",
-          "audio": "Inclus",
-          "note": "Remboursement automatique en cas d’échec.",
+          "audio": "Optionnel",
+          "note": "Base narrative prévisible avec prix affiché avant génération.",
           "pricingScenario": {
-            "engineId": "sora-2",
-            "durationSec": 12,
+            "engineId": "wan-2-6",
+            "durationSec": 10,
             "resolution": "720p",
             "memberTier": "member"
           }
@@ -1645,11 +1655,11 @@
     "priceFactors": {
       "title": "Ce qui influence le prix",
       "points": [
-        "La durée évolue linéairement (4 s / 8 s / 12 s).",
-        "La résolution augmente le coût en 1080p vs 720p.",
+        "La durée dépend du modèle (4 s / 6 s / 8 s / 10 s / 15 s).",
+        "La résolution change le prix sur les modèles avec niveaux 720p, 1080p, 1440p ou 4K.",
         "Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le modèle et le type d’entrée.",
-        "L’audio ajoute une légère prime sur les modèles compatibles.",
-        "Le niveau du modèle (Sora/Veo/Pika/MiniMax) fixe le tarif de base."
+        "L’audio peut être inclus, optionnel ou absent selon la famille de modèles.",
+        "Le niveau du modèle (Veo, LTX, Kling, Seedance, Pika, Wan) fixe le tarif de base."
       ]
     },
     "teams": {
@@ -1704,30 +1714,63 @@
       ]
     },
     "faq": {
-      "title": "FAQ express",
+      "title": "FAQ tarifs",
+      "subtitle": "Réponses courtes sur les prix live, les crédits, les remboursements et la disponibilité des modèles.",
       "entries": [
         {
-          "question": "Comment fonctionnent les crédits ?",
-          "answer": "Les crédits de démarrage ajoutent 10 $ à votre portefeuille. Dépensez-les librement et rechargez quand vous en avez besoin."
+          "question": "Comment le prix d’une vidéo IA est-il calculé ?",
+          "answer": "Le prix dépend du moteur, de la durée, de la résolution, de l’audio et du workflow. Le tableau compare des prix totaux sur des scénarios courants, et l’app affiche le devis exact avant génération."
         },
         {
-          "question": "Expirent-ils ?",
-          "answer": "Aucune expiration. Les soldes se reportent de mois en mois et se synchronisent pour chaque coéquipier autorisé."
+          "question": "Quel moteur vidéo IA est le moins cher ?",
+          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon 5 s 720p, un clip premium 8 s 1080p, une vidéo 10 s 1080p et une sortie 4K peuvent avoir des gagnants différents. Le tableau met d’abord en avant les moteurs de génération actuelle et liste séparément les routes budget plus anciennes quand elles existent."
         },
         {
-          "question": "Que se passe-t-il si un rendu échoue ?",
-          "answer": "Les rendus échoués sont remboursés automatiquement en quelques minutes. Vous ne payez que lorsque le rendu aboutit."
+          "question": "Quel moteur est le moins cher pour une vidéo 10 s 1080p ?",
+          "answer": "Consultez la colonne 10 s 1080p du tableau vidéo. Les moteurs qui ne prennent pas en charge exactement 10 s 1080p sont marqués clairement au lieu d’être forcés dans une fausse comparaison."
         },
         {
-          "question": "Quelles sont les remises membres ?",
-          "answer": "Dépensez 50 $ sur 30 jours et économisez 5 %, 200 $ pour économiser 10 %. Les réductions s’appliquent automatiquement à chaque génération éligible."
+          "question": "Pourquoi y a-t-il une colonne 8 s 1080p ?",
+          "answer": "Certains moteurs importants, dont les routes Veo, sont limités à des durées plus courtes comme 4 s, 6 s ou 8 s. La colonne 8 s permet de les comparer sans prétendre qu’ils prennent en charge 10 s."
+        },
+        {
+          "question": "Pourquoi la 4K est-elle séparée ?",
+          "answer": "Certaines routes sont conçues pour une sortie 4K et ne doivent pas être comparées comme des moteurs 1080p standards. La colonne 4K affiche le prix natif ou dédié quand il est disponible."
+        },
+        {
+          "question": "Puis-je voir le prix exact avant de générer ?",
+          "answer": "Oui. Ouvrez l’app pour voir le prix en direct avant de générer. Vous pouvez prévisualiser le prix exact en invité avant de lancer un rendu."
+        },
+        {
+          "question": "Les générations échouées coûtent-elles des crédits ?",
+          "answer": "Non. Les générations échouées sont remboursées automatiquement. Les crédits ne sont débités que lorsqu’une génération se termine avec succès."
+        },
+        {
+          "question": "Faut-il un abonnement ?",
+          "answer": "Non. MaxVideoAI fonctionne avec des crédits pay-as-you-go. Vous pouvez comparer les prix, choisir le bon moteur par projet et générer sans abonnement obligatoire."
+        },
+        {
+          "question": "Pourquoi certains moteurs moins chers ne sont-ils pas mis en avant ?",
+          "answer": "Certaines routes de génération précédente peuvent être moins chères pour de simples tests, mais MaxVideoAI met d’abord en avant les moteurs de génération actuelle, généralement meilleurs pour les nouveaux projets. Les routes budget plus anciennes restent listées séparément quand elles sont disponibles."
+        },
+        {
+          "question": "Les images, l’audio et les outils sont-ils tarifés comme la vidéo ?",
+          "answer": "Non. La vidéo, l’image, l’audio et les outils suivent des règles différentes. L’image est souvent facturée par image, l’audio par durée ou mode, et les outils par type de sortie ou résolution."
+        },
+        {
+          "question": "Pourquoi le tableau affiche-t-il des prix totaux plutôt qu’un coût par seconde ?",
+          "answer": "La plupart des utilisateurs comparent le coût complet d’un rendu, pas un tarif brut à la seconde. MaxVideoAI affiche des prix totaux sur des scénarios courants comme 8 s 1080p, 10 s 1080p et la sortie 4K. Les tarifs à la seconde ou provider peuvent varier selon le moteur, la durée, la résolution et les arrondis, et l’app affiche le devis exact avant génération."
+        },
+        {
+          "question": "À quelle fréquence les prix changent-ils ?",
+          "answer": "Les prix peuvent changer quand les fournisseurs mettent à jour leurs tarifs ou quand MaxVideoAI ajoute de nouveaux moteurs. Cette page affiche des comparaisons actuelles, tandis que l’app affiche toujours le devis en direct avant génération."
         }
       ]
     },
     "supplementalFaq": [
       {
-        "question": "Puis-je utiliser Sora 2 en Europe ?",
-        "answer": "L’accès direct reste sur invitation. MaxVideoAI propose un accès payant à Sora 2 depuis l’Europe via son espace."
+        "question": "Que faire si je cherche le prix de Sora ?",
+        "answer": "Utilisez la section alternatives à Sora pour comparer les modèles actuellement disponibles sur MaxVideoAI par coût, durée et qualité."
       },
       {
         "question": "Les vidéos comportent-elles un filigrane ?",
@@ -1741,8 +1784,8 @@
     "priceChipSuffix": "Prix avant génération.",
     "priceChipPrefix": "Ce rendu",
     "meta": {
-      "title": "Tarifs vidéo IA — Paiement à l’usage | MaxVideoAI",
-      "description": "Voyez le prix avant de générer. Comparez les coûts (Sora, Veo, Kling, Pika). Paiement uniquement si la génération réussit — sans abonnement. Prix par clip."
+      "title": "Comparatif prix vidéo IA : Veo, LTX, Kling, Seedance et plus | MaxVideoAI",
+      "description": "Comparez les prix vidéo IA par moteur, durée, résolution et audio. Voyez des prix 720p, 1080p et 4K, puis ouvrez l’app pour le prix en direct."
     }
   },
   "workflows": {
