@@ -129,7 +129,10 @@
         "label": "Séries d'images"
       },
       {
-        "label": "Images fixes"
+        "label": "Entrée multi-image"
+      },
+      {
+        "label": "2K/3K/4K"
       },
       {
         "label": "BytePlus ModelArk"
@@ -140,10 +143,31 @@
     "heroDesc2": "C'est utile quand un run Seedance a besoin d'une source plus intentionnelle qu'un prompt seul ou une image externe non préparée.",
     "heroHighlights": [
       "Modèle image autonome||Utilisez Seedream pour générer et éditer des images fixes même sans vidéo ensuite.",
-      "Sortie image batch||Générez des séries storyboard, comic, produit ou marque quand un prompt doit produire des images liées.",
+      "Sortie image batch||Utilisez sequential_image_generation=auto pour générer des séries storyboard, comic, produit ou marque quand un prompt doit produire des images liées.",
+      "Entrée multi-image||Fusionnez sujet, style et références de scène depuis 2-10 images sources quand l'image fixe doit être plus contrôlée.",
       "Préparation de référence||Créez des images sources plus propres avant animation Seedance.",
       "Éditer avant le mouvement||Ajustez produit, fond, tenue et lumière avant l'image-to-video.",
       "Compagnon Seedance||Envoyez l'image retenue vers Seedance 2.0 ou Seedance 2.0 Fast si le mouvement est l'étape suivante."
+    ],
+    "specSections": [
+      {
+        "title": "Workflows BytePlus pris en charge",
+        "intro": "Le tutoriel officiel BytePlus ModelArk Seedream 4.0-5.0 documente Seedream 5.0 Lite pour les entrées texte, image unique et multi-image.",
+        "items": [
+          "Text-to-image : créer une image fixe depuis un prompt avec contrôles 2K, 3K ou 4K.",
+          "Image-to-image : nettoyer ou éditer une image source tout en préservant les détails importants.",
+          "Entrée multi-image : fusionner sujet, style ou éléments de scène à partir de 2-10 images de référence.",
+          "Sortie batch : utiliser sequential_image_generation=auto pour créer des séries liées pour storyboards, comics, visuels produit ou systèmes de marque."
+        ]
+      },
+      {
+        "title": "Limites et facturation",
+        "items": [
+          "Les images de référence plus les sorties demandées doivent rester dans une limite de 15 images au total.",
+          "MaxVideoAI facture Seedream par images générées avec succès ; les sorties manquantes ou échouées ne doivent pas être comptées comme images complétées.",
+          "Les contrôles exposent la résolution de base, le ratio, le format de fichier et le watermark quand ils sont pris en charge."
+        ]
+      }
     ],
     "whatTitle": "Workflow de référence",
     "whatIntro1": "Démarrez dans l'Image Lab, créez ou éditez l'image fixe dans Seedream, puis vérifiez si la frame est assez claire pour le mouvement.",
@@ -161,13 +185,15 @@
     "strengths": [
       "Créer des frames produit, personnage et décor propres avant animation.",
       "Générer des séries d'images liées pour storyboards, comics, variations produit et systèmes de marque.",
+      "Utiliser des entrées texte, image unique ou multi-image pour créer, éditer et fusionner des images.",
       "Utiliser l'édition pour réduire le bruit visuel d'images existantes.",
       "Garder un sujet clair par frame quand la sortie doit devenir une entrée image-to-video.",
       "Reprendre le même vocabulaire de sujet, lumière et style en passant de Seedream à Seedance."
     ],
     "boundaries": [
       "Images fixes uniquement.",
-      "Les requêtes batch doivent rester dans les limites fournisseur pour références plus images générées.",
+      "Les requêtes multi-image doivent utiliser 2-10 références.",
+      "Les requêtes batch doivent garder références plus images générées dans une limite de 15 images au total.",
       "Seedance évalue toujours chaque image source et prompt.",
       "Une référence plus propre peut améliorer la cohérence, mais le traitement final et la qualité restent liés au run Seedance.",
       "N'utilisez pas Seedream pour préparer du contenu contraire aux règles de sécurité de MaxVideoAI ou du fournisseur."
@@ -194,6 +220,7 @@
       "Préparer l'image d'abord sépare les décisions de qualité visuelle des décisions de mouvement."
     ],
     "promptingGuideLabel": "En savoir plus",
+    "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
     "relatedItems": [
       {
         "brand": "bytedance",

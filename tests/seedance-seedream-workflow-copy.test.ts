@@ -46,3 +46,16 @@ test('Seedance localized pages mention and link Seedream as an optional referenc
     }
   }
 });
+
+test('Seedream localized model pages include official BytePlus workflow limits', () => {
+  for (const locale of locales) {
+    const seedream = readModel(locale, 'seedream');
+    const copy = compactText(seedream);
+
+    assert.match(copy, /docs\.byteplus\.com\/en\/docs\/modelark\/1824121/i, `${locale} Seedream copy should link the official BytePlus tutorial`);
+    assert.match(copy, /sequential_image_generation/i, `${locale} Seedream copy should name the official batch mode parameter`);
+    assert.match(copy, /2-10/, `${locale} Seedream copy should mention the multi-reference input range`);
+    assert.match(copy, /15/, `${locale} Seedream copy should mention the total reference plus output limit`);
+    assert.match(copy, /successfully generated|générées avec succès|generadas correctamente/i, `${locale} Seedream copy should explain successful-image billing`);
+  }
+});

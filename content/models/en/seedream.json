@@ -129,7 +129,10 @@
         "label": "Image sets"
       },
       {
-        "label": "Still images"
+        "label": "Multi-image input"
+      },
+      {
+        "label": "2K/3K/4K"
       },
       {
         "label": "BytePlus ModelArk"
@@ -140,10 +143,31 @@
     "heroDesc2": "It is useful when a Seedance run needs a more deliberate source image than a loose prompt or an unprepared external upload.",
     "heroHighlights": [
       "Standalone image model||Use Seedream for still generation and edits even when no video run follows.",
-      "Batch image output||Generate storyboard, comic, product, or brand visual sets when one prompt needs related images.",
+      "Batch image output||Use sequential_image_generation=auto to generate storyboard, comic, product, or brand visual sets when one prompt needs related images.",
+      "Multi-image input||Blend subject, style, and scene references from 2-10 source images when the still needs controlled source material.",
       "Reference preparation||Create cleaner, more controlled source images before Seedance animation.",
       "Edit before motion||Refine products, backgrounds, wardrobe, and lighting before image-to-video.",
       "Seedance companion||Send the selected still into Seedance 2.0 or Seedance 2.0 Fast when motion is the next step."
+    ],
+    "specSections": [
+      {
+        "title": "BytePlus workflow support",
+        "intro": "The official BytePlus ModelArk Seedream 4.0-5.0 tutorial documents Seedream 5.0 Lite for text, single-image, and multi-image inputs.",
+        "items": [
+          "Text-to-image: create a still image from a prompt with 2K, 3K, or 4K output controls.",
+          "Image-to-image: clean or edit an existing source image while preserving important visual details.",
+          "Multi-image input: blend subject, style, or scene elements from 2-10 reference images.",
+          "Batch image output: set sequential_image_generation=auto to create related image sets for storyboards, comics, product visuals, or brand systems."
+        ]
+      },
+      {
+        "title": "Limits and billing behavior",
+        "items": [
+          "Reference images plus requested outputs must stay within 15 total images.",
+          "MaxVideoAI prices Seedream by successfully generated image; failed or missing outputs should not be charged as completed images.",
+          "Output controls expose base resolution, aspect ratio, file format, and watermark options where supported."
+        ]
+      }
     ],
     "whatTitle": "Reference workflow",
     "whatIntro1": "Start in the Image Lab, create or edit the still in Seedream, then review whether the frame is clear enough for motion.",
@@ -161,13 +185,15 @@
     "strengths": [
       "Generate clean product, character, and environment frames before animation.",
       "Generate related image sets for storyboards, comics, product variations, and brand systems.",
+      "Use text, single-image, or multi-image inputs for creation, editing, and image fusion.",
       "Use edit mode to reduce visual noise in existing source images.",
       "Keep one clear subject per frame when the output will become image-to-video input.",
       "Use the same language for subject, lighting, and style when moving from Seedream to Seedance."
     ],
     "boundaries": [
       "Still images only.",
-      "Batch requests must stay within the provider image-set limits for references plus generated outputs.",
+      "Multi-image requests should use 2-10 references.",
+      "Batch requests must keep references plus generated outputs within 15 total images.",
       "Seedance still evaluates each source image and prompt.",
       "A cleaner reference image may improve consistency, but final animation handling and output quality still depend on the Seedance run.",
       "Do not use Seedream to prepare content that violates MaxVideoAI or provider safety rules."
@@ -194,6 +220,7 @@
       "Drafting the still first helps separate image quality decisions from motion decisions."
     ],
     "promptingGuideLabel": "Learn more",
+    "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
     "relatedItems": [
       {
         "brand": "bytedance",
