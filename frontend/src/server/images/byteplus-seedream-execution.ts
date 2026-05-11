@@ -23,9 +23,10 @@ import {
 } from './byteplus-seedream-response';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
-import type { PendingReceipt } from './image-generation-receipts';
+import { recordRefundReceipt, type PendingReceipt } from './image-generation-receipts';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { copyGeneratedImagesToStorage } from './image-output-storage';
+import { resolveBytePlusSeedreamOutputPricing } from './byteplus-seedream-pricing';
 
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 const BYTEPLUS_PROVIDER_MODE = BYTEPLUS_SEEDREAM_PROVIDER;
@@ -120,6 +121,12 @@ export async function executeBytePlusSeedreamGeneration(params: {
         detail: providerResponse,
       });
     }
+    const outputPricing = resolveBytePlusSeedreamOutputPricing({
+      generatedImages: images.length,
+      priceOnlyReceipts: params.priceOnlyReceipts,
+      pricing: params.pricing,
+      requestedImages: params.numImages,
+    });
 
     const normalizedImages = images.map((image) => ({
       ...image,
@@ -158,8 +165,8 @@ export async function executeBytePlusSeedreamGeneration(params: {
       normalizedSeed: params.normalizedSeed,
       numImages: params.numImages,
       outputFormat: params.outputFormat,
-      pricing: params.pricing,
-      pricingSnapshotJson: params.pricingSnapshotJson,
+      pricing: outputPricing.adjustedPricing,
+      pricingSnapshotJson: outputPricing.adjustedPricingSnapshotJson,
       providerJobId,
       providerMode: BYTEPLUS_PROVIDER_MODE,
       quality: params.quality,
@@ -170,6 +177,29 @@ export async function executeBytePlusSeedreamGeneration(params: {
       vendorAccountId: params.vendorAccountId,
       visibility: params.visibility,
     });
+    if (outputPricing.partialRefundCents > 0) {
+      const imageLabel = outputPricing.missingImages === 1 ? 'image' : 'images';
+      await recordRefundReceipt(
+        {
+          ...params.pendingReceipt,
+          amountCents: outputPricing.partialRefundCents,
+          description: `Partial refund ${params.engine.label} - ${outputPricing.missingImages} ${imageLabel} not generated`,
+          snapshot: {
+            ...(typeof params.pendingReceipt.snapshot === 'object' && params.pendingReceipt.snapshot !== null
+              ? params.pendingReceipt.snapshot
+              : {}),
+            adjustedTotalCents: outputPricing.adjustedPricing.totalCents,
+            generatedImages: images.length,
+            missingImages: outputPricing.missingImages,
+            originalRequestedImages: params.numImages,
+            originalTotalCents: params.pricing.totalCents,
+            partialRefundCents: outputPricing.partialRefundCents,
+          },
+        },
+        `Partial refund ${params.engine.label} - ${outputPricing.missingImages} ${imageLabel} not generated`,
+        params.priceOnlyReceipts
+      );
+    }
 
     return {
       ok: true,
@@ -182,7 +212,7 @@ export async function executeBytePlusSeedreamGeneration(params: {
       engineId: params.engineEntry.id,
       engineLabel: params.engineEntry.marketingName,
       durationMs: undefined,
-      pricing: params.pricing,
+      pricing: outputPricing.adjustedPricing,
       paymentStatus: 'paid_wallet',
       thumbUrl: heroThumb,
       aspectRatio: params.resolvedAspectRatio,

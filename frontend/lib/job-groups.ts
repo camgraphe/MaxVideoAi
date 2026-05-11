@@ -138,7 +138,7 @@ function buildSingleGroup(job: Job): GroupSummary {
         : Array.isArray(job.renderIds)
           ? job.renderIds.filter(Boolean).length
           : 1;
-  const count = Math.max(1, Math.min(4, iterationCount || 1));
+  const count = Math.max(1, iterationCount || 1);
   const splitMode = count > 1 ? 'quad' : 'single';
 
   return {
@@ -162,6 +162,17 @@ function buildSingleGroup(job: Job): GroupSummary {
     ],
     members: [member],
   };
+}
+
+function sumUniqueJobPrices(members: GroupMemberSummary[]): number {
+  const pricesByJob = new Map<string, number>();
+  members.forEach((member) => {
+    if (typeof member.priceCents !== 'number') return;
+    const key = member.jobId ?? member.id;
+    if (pricesByJob.has(key)) return;
+    pricesByJob.set(key, member.priceCents);
+  });
+  return Array.from(pricesByJob.values()).reduce((sum, price) => sum + price, 0);
 }
 
 interface GroupSummaryOptions {
@@ -264,14 +275,13 @@ export function groupJobsIntoSummaries(
 
     const hero = pickHero(bucket, members);
     const currency = hero.currency ?? members.find((member) => member.currency)?.currency ?? null;
-    const totalPrice = members.reduce<number>((sum, member) => {
-      return sum + (typeof member.priceCents === 'number' ? member.priceCents : 0);
-    }, 0);
+    const totalPrice = sumUniqueJobPrices(members);
     const observedCount = Math.max(bucket.iterationCountHint, members.length);
-    const count = Math.max(1, Math.min(4, observedCount));
+    const count = Math.max(1, observedCount);
+    const previewCount = Math.max(1, Math.min(4, count));
     const splitMode = count > 1 ? 'quad' : 'single';
 
-    const previews = members.slice(0, count).map((member) => {
+    const previews = members.slice(0, previewCount).map((member) => {
       const thumb = member.thumbUrl ?? null;
       const video = member.videoUrl ?? null;
       const previewVideo = member.previewVideoUrl ?? null;

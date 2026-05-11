@@ -8,6 +8,7 @@ export type BytePlusSeedreamPayload = {
   size: string;
   output_format?: 'jpeg' | 'png';
   response_format: 'url';
+  stream?: boolean;
   watermark: boolean;
   image?: string | string[];
   sequential_image_generation?: 'auto';
@@ -105,6 +106,7 @@ export function buildBytePlusSeedreamPayload(params: {
     ...(image ? { image } : {}),
     ...(sequentialImageGeneration
       ? {
+          stream: true,
           sequential_image_generation: 'auto' as const,
           sequential_image_generation_options: { max_images: outputImageCount },
         }

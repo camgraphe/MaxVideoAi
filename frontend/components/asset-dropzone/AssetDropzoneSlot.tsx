@@ -182,6 +182,7 @@ export function AssetDropzoneSlot({
         onChange={(event) => {
           onInputChange(event, slotIndex);
         }}
+        suppressHydrationWarning
       />
       {asset ? (
         <>

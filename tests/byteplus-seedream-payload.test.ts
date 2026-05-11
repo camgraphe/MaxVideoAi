@@ -114,6 +114,7 @@ test('enables Seedream sequential image generation for batch requests', () => {
 
   assert.equal(payload.sequential_image_generation, 'auto');
   assert.deepEqual(payload.sequential_image_generation_options, { max_images: 4 });
+  assert.equal(payload.stream, true);
 });
 
 test('rejects Seedream batch requests above the provider image-set limit', () => {

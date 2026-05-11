@@ -107,6 +107,13 @@ export function useImageWorkspaceHistory({
     });
     return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
   }, [localHistory, remoteHistory]);
+  const hasUnresolvedPendingGroups = useMemo(
+    () =>
+      pendingGroups.some((group) =>
+        group.members.some((member) => member.status !== 'completed' && member.status !== 'failed')
+      ),
+    [pendingGroups]
+  );
 
   useEffect(() => {
     if (!remoteResolvedGroupMap.size) return;
@@ -135,18 +142,15 @@ export function useImageWorkspaceHistory({
   }, [remoteResolvedGroupMap]);
 
   useEffect(() => {
-    if (!pendingGroups.length) return;
+    if (!hasUnresolvedPendingGroups) return;
+    void mutateJobs();
     const intervalId = window.setInterval(() => {
       void mutateJobs();
-    }, 2000);
-    const timeoutId = window.setTimeout(() => {
-      window.clearInterval(intervalId);
-    }, 30000);
+    }, 3000);
     return () => {
       window.clearInterval(intervalId);
-      window.clearTimeout(timeoutId);
     };
-  }, [mutateJobs, pendingGroups]);
+  }, [hasUnresolvedPendingGroups, mutateJobs]);
 
   return {
     historyEntries,

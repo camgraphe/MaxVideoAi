@@ -10,6 +10,7 @@ test('extracts image URLs from BytePlus Seedream response data', () => {
       {
         url: 'https://example.com/generated.png',
         revised_prompt: 'Clean product reference image',
+        size: '2048x2048',
       },
     ],
   });
@@ -19,8 +20,8 @@ test('extracts image URLs from BytePlus Seedream response data', () => {
       url: 'https://example.com/generated.png',
       seed: null,
       mimeType: null,
-      width: null,
-      height: null,
+      width: 2048,
+      height: 2048,
     },
   ]);
 });
@@ -32,4 +33,3 @@ test('returns an empty list when BytePlus response contains no images', () => {
 test('parses BytePlus request id from response metadata', () => {
   assert.equal(parseBytePlusSeedreamRequestId({ id: 'img_req_123' }), 'img_req_123');
 });
-

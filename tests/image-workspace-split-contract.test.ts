@@ -10,6 +10,7 @@ const composerPersistenceHookPath = path.join(imageDir, '_hooks/useImageComposer
 const queryHydrationHookPath = path.join(imageDir, '_hooks/useImageWorkspaceQueryHydration.ts');
 const generationRunnerHookPath = path.join(imageDir, '_hooks/useImageGenerationRunner.ts');
 const gallerySelectionHookPath = path.join(imageDir, '_hooks/useImageGallerySelection.ts');
+const historyHookPath = path.join(imageDir, '_hooks/useImageWorkspaceHistory.ts');
 const displayStateHookPath = path.join(imageDir, '_hooks/useImageWorkspaceDisplayState.ts');
 const referenceAssetsHookPath = path.join(imageDir, '_hooks/useImageWorkspaceReferenceAssets.tsx');
 const viewerHookPath = path.join(imageDir, '_hooks/useImageWorkspaceViewer.ts');
@@ -62,6 +63,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const queryHydrationHookSource = readFileSync(queryHydrationHookPath, 'utf8');
   const generationRunnerHookSource = readFileSync(generationRunnerHookPath, 'utf8');
   const gallerySelectionHookSource = readFileSync(gallerySelectionHookPath, 'utf8');
+  const historyHookSource = readFileSync(historyHookPath, 'utf8');
   const displayStateHookSource = readFileSync(displayStateHookPath, 'utf8');
   const referenceAssetsHookSource = readFileSync(referenceAssetsHookPath, 'utf8');
   const viewerHookSource = readFileSync(viewerHookPath, 'utf8');
@@ -96,6 +98,11 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_hooks\/useImageReferenceAwareImageCounts'/);
   assert.match(source, /from '\.\/_hooks\/useImageGenerationRunner'/);
   assert.match(source, /from '\.\/_hooks\/useImageGallerySelection'/);
+  assert.match(
+    source,
+    /onOpenHistoryEntry:\s*handleOpenHistoryEntry/,
+    'gallery rail open action should reuse the image viewer modal opener'
+  );
 
   assert.doesNotMatch(source, /const DEFAULT_COPY: ImageWorkspaceCopy =/);
   assert.doesNotMatch(source, /function ImageLibraryModal\(/);
@@ -158,6 +165,13 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(gallerySelectionHookSource, /getAspectRatioOptions/);
   assert.match(gallerySelectionHookSource, /authFetch/);
   assert.match(gallerySelectionHookSource, /const previewUrls =/);
+  assert.match(gallerySelectionHookSource, /onOpenHistoryEntry\?\.\(/);
+  assert.match(historyHookSource, /hasUnresolvedPendingGroups/);
+  assert.doesNotMatch(
+    historyHookSource,
+    /setTimeout\(\(\) => \{\s*window\.clearInterval\(intervalId\);\s*\},\s*30000\)/,
+    'image workspace pending polling must not stop before long-running Seedream batches finish'
+  );
   assert.match(displayStateHookSource, /export function useImageWorkspaceDisplayState/);
   assert.match(displayStateHookSource, /compositePreviewEntry/);
   assert.match(displayStateHookSource, /estimatedCostAmount/);

@@ -74,3 +74,39 @@ test('single image jobs ignore placeholder thumbs when a real render exists', ()
   assert.equal(group.previews[0]?.thumbUrl, 'https://cdn.example.com/full-placeholder-fallback.png');
   assert.equal(group.hero.status, 'completed');
 });
+
+test('multi-image groups keep the real image count while previewing at most four tiles', () => {
+  const renderIds = Array.from(
+    { length: 6 },
+    (_, index) => `https://cdn.example.com/full-batch-${index + 1}.png`
+  );
+  const renderThumbUrls = Array.from(
+    { length: 6 },
+    (_, index) => `https://cdn.example.com/thumb-batch-${index + 1}.webp`
+  );
+  const jobs: Job[] = [
+    {
+      jobId: 'img-job-batch',
+      engineLabel: 'Seedream',
+      durationSec: 2,
+      prompt: 'A themed image set',
+      createdAt: '2026-05-11T13:39:01.000Z',
+      engineId: 'seedream',
+      status: 'completed',
+      finalPriceCents: 32,
+      currency: 'USD',
+      iterationCount: 6,
+      renderIds,
+      renderThumbUrls,
+    },
+  ];
+
+  const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
+
+  assert.equal(groups.length, 1);
+  const [group] = groups;
+  assert.equal(group.count, 6);
+  assert.equal(group.members.length, 6);
+  assert.equal(group.previews.length, 4);
+  assert.equal(group.totalPriceCents, 32);
+});

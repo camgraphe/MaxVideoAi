@@ -156,9 +156,10 @@ function getObjectKeySizeBytes(key: string): number {
   return Buffer.byteLength(key, 'utf8');
 }
 
-function buildObjectKey(params: { prefix?: string; userId?: string | null; leafName: string }): string {
+export function buildObjectKey(params: { prefix?: string; userId?: string | null; leafName: string }): string {
   const { prefix, userId, leafName } = params;
-  const key = [prefix || 'uploads', userId ?? 'anonymous', leafName]
+  const prefixSegments = (prefix || 'uploads').split('/').map((segment) => sanitizeSegment(segment));
+  const key = [...prefixSegments, userId ?? 'anonymous', leafName]
     .map((segment) => sanitizeSegment(segment))
     .filter((segment) => segment.length > 0)
     .join('/');

@@ -62,3 +62,107 @@ test('throws a sanitized BytePlus error on non-2xx responses', async () => {
     /BytePlus Seedream generation failed/
   );
 });
+
+test('parses BytePlus Seedream streaming image responses', async () => {
+  const response = await callBytePlusSeedream(
+    {
+      baseUrl: 'https://ark.ap-southeast.bytepluses.com/api/v3',
+      apiKey: 'test-key',
+      payload: {
+        model: 'seedream-5-0-260128',
+        prompt: 'Create four coherent storyboard frames',
+        size: '2K',
+        response_format: 'url',
+        watermark: false,
+        stream: true,
+      },
+    },
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            const encoder = new TextEncoder();
+            controller.enqueue(
+              encoder.encode(
+                'event: image_generation.partial_succeeded\n' +
+                  'data: {"id":"img_req_stream","data":[{"url":"https://example.com/generated-1.png"}]}\n\n'
+              )
+            );
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'text/event-stream' } }
+      )
+  );
+
+  assert.deepEqual(response, {
+    id: 'img_req_stream',
+    data: [{ url: 'https://example.com/generated-1.png' }],
+  });
+});
+
+test('collects BytePlus Seedream image URLs from streamed partial events', async () => {
+  const response = await callBytePlusSeedream(
+    {
+      baseUrl: 'https://ark.ap-southeast.bytepluses.com/api/v3',
+      apiKey: 'test-key',
+      payload: {
+        model: 'seedream-5-0-260128',
+        prompt: 'Create two coherent storyboard frames',
+        size: '2K',
+        response_format: 'url',
+        watermark: false,
+        stream: true,
+      },
+    },
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            const encoder = new TextEncoder();
+            controller.enqueue(
+              encoder.encode(
+                'event: image_generation.partial_succeeded\n' +
+                  'data: {"type":"image_generation.partial_succeeded","image_index":0,"url":"https://example.com/generated-1.jpeg","size":"2048x2048"}\n\n'
+              )
+            );
+            controller.enqueue(
+              encoder.encode(
+                'event: image_generation.partial_succeeded\n' +
+                  'data: {"type":"image_generation.partial_succeeded","image_index":1,"url":"https://example.com/generated-2.jpeg","size":"2048x2048"}\n\n'
+              )
+            );
+            controller.enqueue(
+              encoder.encode(
+                'event: image_generation.completed\n' +
+                  'data: {"type":"image_generation.completed","usage":{"generated_images":2}}\n\n' +
+                  'data: [DONE]\n\n'
+              )
+            );
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'text/event-stream' } }
+      )
+  );
+
+  assert.deepEqual(response, {
+    type: 'image_generation.completed',
+    usage: { generated_images: 2 },
+    data: [
+      {
+        type: 'image_generation.partial_succeeded',
+        image_index: 0,
+        url: 'https://example.com/generated-1.jpeg',
+        size: '2048x2048',
+      },
+      {
+        type: 'image_generation.partial_succeeded',
+        image_index: 1,
+        url: 'https://example.com/generated-2.jpeg',
+        size: '2048x2048',
+      },
+    ],
+  });
+});

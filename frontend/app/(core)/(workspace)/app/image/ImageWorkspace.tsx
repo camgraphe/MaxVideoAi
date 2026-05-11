@@ -302,6 +302,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     applyImageSettingsSnapshot,
     engines,
     historyEntries,
+    onOpenHistoryEntry: handleOpenHistoryEntry,
     setAspectRatio,
     setEngineId,
     setLocalHistory,

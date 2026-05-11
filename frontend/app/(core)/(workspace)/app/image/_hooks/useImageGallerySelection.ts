@@ -13,6 +13,7 @@ export function useImageGallerySelection({
   applyImageSettingsSnapshot,
   engines,
   historyEntries,
+  onOpenHistoryEntry,
   setAspectRatio,
   setEngineId,
   setLocalHistory,
@@ -24,6 +25,7 @@ export function useImageGallerySelection({
   applyImageSettingsSnapshot: (snapshot: unknown) => void;
   engines: ImageEngineOption[];
   historyEntries: HistoryEntry[];
+  onOpenHistoryEntry?: (entry: HistoryEntry) => void;
   setAspectRatio: (value: string | null) => void;
   setEngineId: (value: string) => void;
   setLocalHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
@@ -90,6 +92,7 @@ export function useImageGallerySelection({
         setSelectedPreviewImageIndex(index >= 0 ? index : 0);
         applyEntryDefaults(match);
         fetchSnapshot(match.jobId ?? heroJobId);
+        onOpenHistoryEntry?.(match);
         return;
       }
 
@@ -139,11 +142,13 @@ export function useImageGallerySelection({
       setSelectedPreviewImageIndex(fallbackIndex >= 0 ? fallbackIndex : 0);
       applyEntryDefaults(entry);
       fetchSnapshot(entry.jobId ?? heroJobId);
+      onOpenHistoryEntry?.(entry);
     },
     [
       applyImageSettingsSnapshot,
       engines,
       historyEntries,
+      onOpenHistoryEntry,
       setAspectRatio,
       setEngineId,
       setLocalHistory,

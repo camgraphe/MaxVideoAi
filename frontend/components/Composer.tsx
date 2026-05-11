@@ -333,6 +333,7 @@ export function Composer({
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
                 ref={textareaRef}
+                suppressHydrationWarning
               />
             )}
 

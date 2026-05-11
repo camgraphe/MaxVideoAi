@@ -91,8 +91,6 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
   const metadata = useMemo(() => {
     if (!group) return [];
     const details: Array<{ label: string; value: string }> = [];
-    const providerLabel = group.provider === 'fal' ? 'Live (fal)' : 'Test';
-    details.push({ label: 'Provider', value: providerLabel });
     if (group.paramsSnapshot?.engineLabel) {
       details.push({ label: 'Engine', value: String(group.paramsSnapshot.engineLabel) });
     }
