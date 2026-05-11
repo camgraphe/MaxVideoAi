@@ -19,6 +19,7 @@ type EngineCatalogEntry = {
 };
 
 const root = process.cwd();
+const rootLayoutPath = join(root, 'frontend/app/layout.tsx');
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx');
 const heroPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingHeroSection.tsx');
 const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingJsonLdScripts.tsx');
@@ -35,6 +36,7 @@ const hubDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pr
 const catalogPath = join(root, 'frontend/config/engine-catalog.json');
 const englishMessagesPath = join(root, 'frontend/messages/en.json');
 
+const rootLayoutSource = readFileSync(rootLayoutPath, 'utf8');
 const pageSource = readFileSync(pagePath, 'utf8');
 const heroSource = readFileSync(heroPath, 'utf8');
 const videoMatrixSource = existsSync(videoMatrixPath) ? readFileSync(videoMatrixPath, 'utf8') : '';
@@ -105,6 +107,8 @@ test('pricing page does not regain calculator-first or long model-section owners
 test('hero is compact and uses the requested CTA copy', () => {
   assert.match(heroSource, /export function PricingHeroSection/);
   assert.match(heroSource, /MaxVideoAI Pricing/);
+  assert.match(heroSource, /AI Video Pricing Comparison/);
+  assert.match(heroSource, /eyebrow/);
   assert.match(heroSource, /Open app for live pricing before you generate/);
   assert.match(heroSource, /Compare prices below/);
   assert.match(heroSource, /No subscription/);
@@ -131,8 +135,13 @@ test('pricing matrix data is generated from the catalog with scenario total pres
   assert.match(hubDataSource, /5s 720p/);
   assert.match(hubDataSource, /8s 1080p/);
   assert.match(hubDataSource, /10s 1080p/);
-  assert.match(hubDataSource, /10s 1080p \+ audio/);
-  assert.match(hubDataSource, /4K route/);
+  assert.match(hubDataSource, /10s \+ audio/);
+  assert.match(hubDataSource, /4K output/);
+  assert.match(hubDataSource, /buildCapsLabel/);
+  assert.match(hubDataSource, /buildLocalizedMarketingHref/);
+  assert.match(hubDataSource, /buildSlugMap\('models'\)/);
+  assert.match(hubDataSource, /buildSlugMap\('gallery'\)/);
+  assert.match(hubDataSource, /buildSlugMap\('compare'\)/);
   assert.match(hubDataSource, /listFalEngines/);
   assert.match(hubDataSource, /supportsVideoGeneration/);
   assert.match(hubDataSource, /buildImagePricingRows/);
@@ -189,10 +198,11 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubDataSource, /5s 720p/);
   assert.match(hubDataSource, /8s 1080p/);
   assert.match(hubDataSource, /10s 1080p/);
-  assert.match(hubDataSource, /10s 1080p \+ audio/);
-  assert.match(hubDataSource, /4K route/);
-  assert.match(hubCopySource, /Limits/);
-  assert.match(hubCopySource, /Limites/);
+  assert.match(hubDataSource, /10s \+ audio/);
+  assert.match(hubDataSource, /4K output/);
+  assert.match(hubCopySource, /Caps/);
+  assert.doesNotMatch(hubCopySource, /Limits/);
+  assert.doesNotMatch(hubCopySource, /Limites/);
   assert.match(hubCopySource, /Actions/);
   assert.match(hubCopySource, /Video/);
   assert.match(hubCopySource, /Vidéo/);
@@ -203,7 +213,11 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
   assert.match(hubCopySource, /Live price/);
+  assert.match(hubCopySource, /More/);
   assert.match(hubCopySource, /Prix live/);
+  assert.match(hubCopySource, /Plus/);
+  assert.match(hubCopySource, /Cheapest 4K output/);
+  assert.match(hubCopySource, /Dedicated 4K engine/);
   assert.match(hubCopySource, /Prices are current MaxVideoAI display prices for preset scenarios/);
   assert.match(hubCopySource, /Les prix sont les prix affichés MaxVideoAI/);
   assert.doesNotMatch(videoMatrixSource, /engineName\.slice/);
@@ -211,6 +225,7 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.doesNotMatch(videoMatrixSource, /per output second/);
   assert.doesNotMatch(hubDataSource, /720p \/ sec/);
   assert.doesNotMatch(hubDataSource, /1080p \/ sec/);
+  assert.doesNotMatch(hubCopySource, /Cheapest available engine/);
   assert.doesNotMatch(videoMatrixSource, /'use client'/);
   assert.doesNotMatch(videoMatrixSource, /LazyPriceEstimator/);
 });
@@ -239,11 +254,15 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(hubCopySource, /Prix image, audio et outils/);
   assert.match(hubCopySource, /Image generation pricing/);
   assert.match(hubCopySource, /Prix génération d’images/);
+  assert.match(otherSurfacesSource, /id="image-pricing" className="scroll-mt-24/);
+  assert.match(otherSurfacesSource, /id="audio-pricing" className="scroll-mt-24/);
+  assert.match(otherSurfacesSource, /id="tool-pricing" className="scroll-mt-24/);
   assert.match(hubCopySource, /Audio pricing/);
   assert.match(hubCopySource, /Prix audio/);
   assert.match(hubCopySource, /Prep tools and upscale pricing/);
   assert.match(hubCopySource, /Prix outils de préparation et upscale/);
-  assert.match(hubCopySource, /GPT Image 2/);
+  assert.match(hubDataSource, /resolveGptImage2PricingTier/);
+  assert.doesNotMatch(hubDataSource, /copy\.links\.gptImage2/, 'GPT Image 2 row should not duplicate its model link');
   assert.match(hubCopySource, /Character Builder/);
   assert.doesNotMatch(otherSurfacesSource, /'use client'/);
 });
@@ -285,6 +304,7 @@ test('pricing metadata and FAQ target comparison intent first', () => {
     'Do I need a subscription?',
     'Why are some cheaper engines not highlighted first?',
     'Are image, audio and tools priced the same as video?',
+    'Why does the table show total prices instead of cost per second?',
     'How often do prices change?',
   ]);
   assert.match(faqSource, /Pricing FAQ/);
@@ -301,4 +321,9 @@ test('pricing metadata and FAQ target comparison intent first', () => {
   );
   assert.doesNotMatch(faqSource, /md:grid-cols-2/);
   assert.doesNotMatch(faqSource, /<dl/);
+});
+
+test('marketing shell is not forced no-store from the root layout', () => {
+  assert.match(pageSource, /export const revalidate = 600/);
+  assert.doesNotMatch(rootLayoutSource, /unstable_noStore|noStore\(\)/);
 });

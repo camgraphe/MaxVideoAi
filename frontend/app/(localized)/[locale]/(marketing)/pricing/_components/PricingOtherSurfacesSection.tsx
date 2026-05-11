@@ -31,7 +31,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
         </p>
       </div>
 
-      <div id="image-pricing" className="rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:p-6">
+      <div id="image-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
         <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.imageTitle}</h3>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-[940px] text-left text-sm">
@@ -63,7 +63,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
         </div>
       </div>
 
-      <div id="audio-pricing" className="rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:p-6">
+      <div id="audio-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
         <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.audioTitle}</h3>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-[860px] text-left text-sm">
@@ -95,7 +95,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
         </div>
       </div>
 
-      <div id="tool-pricing" className="rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:p-6">
+      <div id="tool-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
         <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.toolTitle}</h3>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-[820px] text-left text-sm">

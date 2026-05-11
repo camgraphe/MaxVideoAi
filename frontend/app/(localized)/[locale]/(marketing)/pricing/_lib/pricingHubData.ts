@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { localePathnames } from '@/i18n/locales';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
@@ -9,6 +10,7 @@ import { resolveGptImage2PricingTier, type GptImage2Quality } from '@/lib/image/
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
 
@@ -39,6 +41,11 @@ const PRICING_DISPLAY_MODEL_RANK = new Map<string, number>(
 const PRICING_DISPLAY_FAMILY_RANK = new Map<string, number>(
   PRICING_DISPLAY_FAMILY_ORDER.map((family, index) => [family, index] as const)
 );
+const LOCALIZED_BASE_SLUGS: Record<Extract<LocalizedSlugKey, 'models' | 'gallery' | 'compare'>, Record<AppLocale, string>> = {
+  models: buildSlugMap('models'),
+  gallery: buildSlugMap('gallery'),
+  compare: buildSlugMap('compare'),
+};
 
 export const VIDEO_PRICE_PRESETS = [
   { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
@@ -46,13 +53,13 @@ export const VIDEO_PRICE_PRESETS = [
   { id: '10s-1080p', label: '10s 1080p', subLabel: 'Standard', resolution: '1080p', durationSec: 10, audio: false },
   {
     id: '10s-1080p-audio',
-    label: '10s 1080p + audio',
-    subLabel: 'Audio',
+    label: '10s + audio',
+    subLabel: 'Narrative',
     resolution: '1080p',
     durationSec: 10,
     audio: true,
   },
-  { id: '4k-route', label: '4K route', subLabel: 'Native', resolution: '4k', durationSec: null, audio: false },
+  { id: '4k-route', label: '4K output', subLabel: 'Native / route', resolution: '4k', durationSec: null, audio: false },
 ] as const;
 
 export type VideoPricePreset = (typeof VIDEO_PRICE_PRESETS)[number];
@@ -188,6 +195,10 @@ function formatRateDisplay(locale: AppLocale, cents: number | null | undefined, 
   return price === copy.liveQuote ? price : copy.quote.perSecond(price);
 }
 
+function formatCompactSeconds(locale: AppLocale, seconds: number) {
+  return locale === 'en' ? `${seconds}s` : `${seconds} s`;
+}
+
 function anchorFromSlug(slug: string) {
   return `${slug
     .trim()
@@ -286,17 +297,6 @@ function chooseFourKDuration(entry: FalEngineEntry) {
   if (maxDurationSec >= 8) return 8;
   if (maxDurationSec >= 5) return 5;
   return maxDurationSec > 0 ? maxDurationSec : null;
-}
-
-function formatDurationLabel(entry: FalEngineEntry, locale: AppLocale) {
-  const copy = getPricingHubCopy(locale);
-  const options = collectDurationOptions(entry);
-  const maxDurationSec = getEngineMaxDurationSec(entry);
-  if (options.length) {
-    if (options.length <= 3) return options.map((option) => copy.quote.fourKNote(option).replace(' 4K', '')).join(' / ');
-    return copy.quote.maxDuration(Math.max(...options)).replace(/^max /, locale === 'en' ? 'Up to ' : 'Jusqu’à ');
-  }
-  return copy.quote.maxDuration(maxDurationSec).replace(/^max /, locale === 'en' ? 'Up to ' : 'Jusqu’à ');
 }
 
 function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string, locale: AppLocale) {
@@ -464,18 +464,27 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
   };
 }
 
+function buildLocalizedMarketingHref(locale: AppLocale, key: keyof typeof LOCALIZED_BASE_SLUGS, slug?: string) {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const segment = LOCALIZED_BASE_SLUGS[key][locale] ?? LOCALIZED_BASE_SLUGS[key].en;
+  return `${prefix}/${segment}${slug ? `/${slug}` : ''}`.replace(/\/{2,}/g, '/');
+}
+
 function buildVideoLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {
   const copy = getPricingHubCopy(locale);
   const links: PricingHubLink[] = [];
   if (entry.surfaces.modelPage.indexable) {
-    links.push({ label: copy.links.model, href: `/models/${entry.modelSlug}` });
+    links.push({ label: copy.links.model, href: buildLocalizedMarketingHref(locale, 'models', entry.modelSlug) });
   }
   if (entry.surfaces.examples.includeInFamilyResolver && entry.family) {
-    links.push({ label: copy.links.examples, href: `/examples/${entry.family}` });
+    links.push({ label: copy.links.examples, href: buildLocalizedMarketingHref(locale, 'gallery', entry.family) });
   }
   const compareSlug = entry.surfaces.compare.suggestOpponents?.[0] ?? entry.surfaces.compare.publishedPairs?.[0];
   if (entry.surfaces.compare.includeInHub && compareSlug) {
-    links.push({ label: copy.links.compare, href: `/ai-video-engines/${entry.modelSlug}-vs-${compareSlug}` });
+    links.push({
+      label: copy.links.compare,
+      href: buildLocalizedMarketingHref(locale, 'compare', `${entry.modelSlug}-vs-${compareSlug}`),
+    });
   }
   links.push({ label: copy.links.livePrice, href: `/app?engine=${encodeURIComponent(entry.modelSlug)}` });
   return links;
@@ -494,6 +503,40 @@ function buildVideoNotes(entry: FalEngineEntry, locale: AppLocale) {
   return [...notes].slice(0, 5);
 }
 
+function formatDurationCap(entry: FalEngineEntry, locale: AppLocale) {
+  const options = collectDurationOptions(entry);
+  const seconds = options.length ? Math.max(...options) : getEngineMaxDurationSec(entry);
+  return formatCompactSeconds(locale, seconds);
+}
+
+function getMaxResolutionLabel(resolutions: string[]) {
+  const normalized = resolutions.map((resolution) => resolution.toLowerCase());
+  const priority = ['4k', '1440p', '1080p', '768p', '720p', '512p', '480p'];
+  const match = priority.find((resolution) => normalized.includes(resolution));
+  if (match) return match === '4k' ? '4K' : match;
+  const fallback = resolutions[resolutions.length - 1] ?? '';
+  return fallback.toLowerCase() === '4k' ? '4K' : fallback;
+}
+
+function buildCapsLabel(entry: FalEngineEntry, locale: AppLocale) {
+  const copy = getPricingHubCopy(locale);
+  const engine = entry.engine;
+  const resolutions = engine.resolutions.map(String);
+  const onlyFourK = resolutions.length === 1 && resolutions[0].toLowerCase() === '4k';
+  const modes = [
+    engine.modes.includes('t2v') ? 'T2V' : null,
+    engine.modes.includes('i2v') || engine.modes.includes('ref2v') ? 'I2V' : null,
+  ].filter(Boolean);
+  const tokens = [
+    formatDurationCap(entry, locale),
+    getMaxResolutionLabel(resolutions),
+    onlyFourK ? copy.quote.dedicated : engine.audio ? (supportsAudioOff(engine) ? copy.quote.audioOptional : copy.quote.audio) : copy.quote.silent,
+    modes.length ? modes.join('/') : null,
+    engine.latencyTier === 'fast' ? copy.quote.fast : null,
+  ].filter((token): token is string => Boolean(token));
+  return tokens.slice(0, 5).join(' · ');
+}
+
 function getEntryPricingIdentity(entry: FalEngineEntry) {
   return entry.modelSlug || entry.id || entry.engine.id;
 }
@@ -506,15 +549,6 @@ function isLegacyPricingEngine(entry: FalEngineEntry) {
 function isPricingHighlightEligible(entry: FalEngineEntry) {
   const identity = getEntryPricingIdentity(entry);
   return !isLegacyPricingEngine(entry) && !PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS.has(identity);
-}
-
-function buildLimitsLabel(entry: FalEngineEntry, locale: AppLocale) {
-  const maxDuration = formatDurationLabel(entry, locale);
-  const resolutions = entry.engine.resolutions
-    .map(String)
-    .map((resolution) => (resolution.toLowerCase() === '4k' ? '4K' : resolution))
-    .join(' / ');
-  return `${maxDuration} · ${resolutions}`;
 }
 
 function formatPricingEngineName(entry: FalEngineEntry) {
@@ -583,7 +617,7 @@ function buildVideoPricingRows(locale: AppLocale) {
         variant: entry.versionLabel ?? entry.engine.variant ?? null,
         pricingGroup,
         highlightEligible,
-        limitsLabel: buildLimitsLabel(entry, locale),
+        limitsLabel: buildCapsLabel(entry, locale),
         notes: buildVideoNotes(entry, locale),
         links: buildVideoLinks(entry, locale),
         quotes,
@@ -618,7 +652,11 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
   const cheapest8s = cheapestExactRow(eligibleRows, '8s-1080p');
   const cheapest10s = cheapestExactRow(eligibleRows, '10s-1080p');
   const cheapestAudio = cheapestExactRow(eligibleRows, '10s-1080p-audio');
-  const fourKRoute = cheapestExactRow(eligibleRows, '4k-route');
+  const cheapest4k = cheapestExactRow(eligibleRows, '4k-route');
+  const dedicated4k = cheapestExactRow(
+    eligibleRows.filter((row) => row.limitsLabel.toLowerCase().includes(copy.quote.dedicated.toLowerCase()) || row.engineName.toLowerCase().includes('4k')),
+    '4k-route'
+  );
   const currentGenCount = eligibleRows.length;
   return [
     {
@@ -642,9 +680,14 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },
     {
-      label: copy.video.highlights.fourKRoute,
-      value: fourKRoute ? `${fourKRoute.row.engineName} · ${fourKRoute.quote.display}` : copy.noExactRoute,
-      href: fourKRoute ? `#${fourKRoute.row.anchorId}` : undefined,
+      label: copy.video.highlights.cheapest4k,
+      value: cheapest4k ? `${cheapest4k.row.engineName} · ${cheapest4k.quote.display}` : copy.noExactRoute,
+      href: cheapest4k ? `#${cheapest4k.row.anchorId}` : undefined,
+    },
+    {
+      label: copy.video.highlights.dedicated4k,
+      value: dedicated4k ? `${dedicated4k.row.engineName} · ${dedicated4k.quote.display}` : copy.noExactRoute,
+      href: dedicated4k ? `#${dedicated4k.row.anchorId}` : undefined,
     },
     {
       label: copy.video.highlights.currentGenCount,
@@ -666,9 +709,10 @@ function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImag
 function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {
   const copy = getPricingHubCopy(locale);
   const links: PricingHubLink[] = [];
-  if (entry.surfaces.modelPage.indexable) links.push({ label: copy.links.model, href: `/models/${entry.modelSlug}` });
+  if (entry.surfaces.modelPage.indexable) {
+    links.push({ label: copy.links.model, href: buildLocalizedMarketingHref(locale, 'models', entry.modelSlug) });
+  }
   links.push({ label: copy.links.imageApp, href: '/app/image' });
-  if (entry.modelSlug === 'gpt-image-2') links.push({ label: copy.links.gptImage2, href: '/models/gpt-image-2' });
   return links;
 }
 

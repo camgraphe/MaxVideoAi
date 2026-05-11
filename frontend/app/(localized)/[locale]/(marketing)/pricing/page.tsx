@@ -43,7 +43,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const content = dictionary.pricing;
   const pricingHub = buildPricingHubData(locale);
   const faq = content.faq;
-  const faqEntries = (faq.entries ?? []).slice(0, 11);
+  const faqEntries = (faq.entries ?? []).slice(0, 12);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
   const breadcrumbLabels = getBreadcrumbLabels(locale);
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -99,12 +99,13 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         calculatorLabel={content.hero.primaryCta}
         compareHref="#video-pricing"
         compareLabel={content.hero.secondaryCta}
+        eyebrow={content.hero.eyebrow}
         subtitle={content.hero.subtitle}
         supportingLine={content.hero.supportingLine}
         title={content.hero.title}
       />
 
-      <div className="container-page max-w-[1280px] py-8 sm:py-10">
+      <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">
           <PricingVideoMatrixSection video={pricingHub.video} locale={locale} />
           <PricingPopularChecksSection checks={pricingHub.popularChecks} locale={locale} />

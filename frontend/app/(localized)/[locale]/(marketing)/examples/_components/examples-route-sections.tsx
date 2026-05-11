@@ -26,6 +26,7 @@ type ExamplesModelLink = {
 type ExamplesModelLinksSectionProps = {
   currentModelPagesLabel: string;
   isModelLanding: boolean;
+  locale: AppLocale;
   modelLinks: ExamplesModelLink[];
   modelPagesLabel: string;
   pricingLinkLabel: string;
@@ -36,6 +37,35 @@ type ExamplesModelLinksSectionProps = {
   supportedOlderVersionLabel: string;
   usesCurrentAndSupportedBlocks: boolean;
 };
+
+function resolveExamplesPricingCallout(selectedEngine: string | null, locale: AppLocale, pricingPath: string) {
+  const normalized = selectedEngine?.toLowerCase() ?? '';
+  if (normalized === 'ltx') {
+    return {
+      href: `${pricingPath}#ltx-2-3-fast-pricing`,
+      title: locale === 'fr' ? 'Tarifs LTX 2.3' : locale === 'es' ? 'Precios de LTX 2.3' : 'LTX 2.3 pricing',
+      body:
+        locale === 'fr'
+          ? 'Comparez les coûts LTX 2.3 Fast et Pro pour 8 s, 10 s, 1080p et les routes 4K.'
+          : locale === 'es'
+            ? 'Compara costes de LTX 2.3 Fast y Pro para 8 s, 10 s, 1080p y rutas 4K.'
+            : 'Compare LTX 2.3 Fast and Pro costs for 8s, 10s, 1080p and 4K routes.',
+    };
+  }
+  if (normalized === 'kling') {
+    return {
+      href: `${pricingPath}#kling-3-pro-pricing`,
+      title: locale === 'fr' ? 'Tarifs Kling' : locale === 'es' ? 'Precios de Kling' : 'Kling pricing',
+      body:
+        locale === 'fr'
+          ? 'Comparez les prix Kling 3 Standard, Kling 3 Pro et Kling 3 4K par durée, audio et résolution.'
+          : locale === 'es'
+            ? 'Compara precios de Kling 3 Standard, Kling 3 Pro y Kling 3 4K por duración, audio y resolución.'
+            : 'Compare Kling 3 Standard, Kling 3 Pro and Kling 3 4K pricing by duration, audio and resolution.',
+    };
+  }
+  return null;
+}
 
 type ExamplesModelLandingCardsSectionProps = {
   sections:
@@ -107,6 +137,7 @@ export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: Example
 export function ExamplesModelLinksSection({
   currentModelPagesLabel,
   isModelLanding,
+  locale,
   modelLinks,
   modelPagesLabel,
   pricingLinkLabel,
@@ -118,6 +149,7 @@ export function ExamplesModelLinksSection({
   usesCurrentAndSupportedBlocks,
 }: ExamplesModelLinksSectionProps) {
   if (!isModelLanding || !selectedEngine || !modelLinks.length) return null;
+  const pricingCallout = resolveExamplesPricingCallout(selectedEngine, locale, pricingPath);
 
   return (
     <section className="mx-auto max-w-5xl">
@@ -145,6 +177,17 @@ export function ExamplesModelLinksSection({
                 {model.label}
               </Link>
             ))}
+          </div>
+        ) : null}
+        {pricingCallout ? (
+          <div className="flex w-full flex-col gap-2 rounded-[10px] border border-hairline bg-surface/75 px-4 py-3 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              <span className="block text-sm font-semibold text-text-primary">{pricingCallout.title}</span>
+              <span className="mt-1 block text-xs leading-5 text-text-secondary">{pricingCallout.body}</span>
+            </span>
+            <Link href={pricingCallout.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
+              {pricingLinkLabel}
+            </Link>
           </div>
         ) : null}
       </div>

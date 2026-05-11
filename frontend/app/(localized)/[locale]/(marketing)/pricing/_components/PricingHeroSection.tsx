@@ -7,6 +7,7 @@ type PricingHeroSectionProps = {
   calculatorLabel?: string;
   compareHref?: string;
   compareLabel?: string;
+  eyebrow?: string;
   subtitle?: string;
   supportingLine?: string;
   title?: string;
@@ -20,14 +21,16 @@ export function PricingHeroSection({
   calculatorLabel = 'Open app for live pricing before you generate',
   compareHref = '#video-pricing',
   compareLabel = 'Compare prices below',
+  eyebrow = 'MaxVideoAI Pricing',
   subtitle = 'Compare video, image, audio and tool costs before you generate.',
   supportingLine = 'Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.',
-  title = 'MaxVideoAI Pricing',
+  title = 'AI Video Pricing Comparison',
 }: PricingHeroSectionProps) {
   return (
     <header className="relative min-h-[260px] border-b border-hairline bg-bg">
       <div className="container-page grid min-h-[260px] max-w-[1220px] items-center gap-6 py-8 sm:py-10 lg:grid-cols-[1fr_auto]">
         <div className="max-w-[780px]">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-micro text-text-muted">{eyebrow}</p>
           <h1 className="text-[32px] font-semibold leading-[1.08] tracking-normal text-text-primary sm:text-[40px]">
             {title}
           </h1>

@@ -8,8 +8,10 @@ type PricingHubCopy = {
     audioIncluded: string;
     audioOptional: string;
     audioUnavailable: string;
+    audio: string;
     unsupported: string;
     silent: string;
+    dedicated: string;
     fast: string;
     supported: string;
     optional: string;
@@ -31,6 +33,7 @@ type PricingHubCopy = {
     examples: string;
     compare: string;
     livePrice: string;
+    more: string;
     imageApp: string;
     audioApp: string;
     tool: string;
@@ -38,7 +41,6 @@ type PricingHubCopy = {
     imagePricing: string;
     audioPricing: string;
     toolPricing: string;
-    gptImage2: string;
   };
   video: {
     ariaTabs: string;
@@ -48,7 +50,7 @@ type PricingHubCopy = {
     cheapestCurrentGen: string;
     tableHeaders: {
       engine: string;
-      limits: string;
+      caps: string;
       actions: string;
     };
     tabs: {
@@ -76,7 +78,8 @@ type PricingHubCopy = {
       cheapest8s: string;
       cheapest10s: string;
       cheapestAudio: string;
-      fourKRoute: string;
+      cheapest4k: string;
+      dedicated4k: string;
       currentGenCount: string;
       currentGenValue: (count: number) => string;
     };
@@ -173,8 +176,10 @@ const en: PricingHubCopy = {
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opt.',
     audioUnavailable: 'audio unavailable',
+    audio: 'audio',
     unsupported: 'unsupported',
     silent: 'silent',
+    dedicated: 'dedicated',
     fast: 'fast',
     supported: 'Supported',
     optional: 'Optional',
@@ -196,6 +201,7 @@ const en: PricingHubCopy = {
     examples: 'Examples',
     compare: 'Compare',
     livePrice: 'Live price',
+    more: 'More',
     imageApp: 'Image app',
     audioApp: 'Audio app',
     tool: 'Tool',
@@ -203,7 +209,6 @@ const en: PricingHubCopy = {
     imagePricing: 'Image pricing',
     audioPricing: 'Audio pricing',
     toolPricing: 'Tool pricing',
-    gptImage2: 'GPT Image 2',
   },
   video: {
     ariaTabs: 'Pricing surfaces',
@@ -212,14 +217,14 @@ const en: PricingHubCopy = {
       'Compare preset MaxVideoAI total prices for common video scenarios. Unsupported combinations are marked clearly. Open the app for the exact live quote before generation.',
     currencyLabel: 'USD credits',
     cheapestCurrentGen: 'Cheapest current-gen',
-    tableHeaders: { engine: 'Engine / Variant', limits: 'Limits', actions: 'Actions' },
+    tableHeaders: { engine: 'Engine', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Video', image: 'Image', audio: 'Audio', tools: 'Tools & Upscale' },
     presetSubLabels: {
       '5s-720p': 'Draft',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
-      '10s-1080p-audio': 'Audio',
-      '4k-route': 'Native',
+      '10s-1080p-audio': 'Narrative',
+      '4k-route': 'Native / route',
     },
     mobile: {
       title: 'Compare by scenario',
@@ -239,7 +244,8 @@ const en: PricingHubCopy = {
       cheapest8s: 'Cheapest current-gen 8s 1080p',
       cheapest10s: 'Cheapest current-gen 10s 1080p',
       cheapestAudio: 'Cheapest current-gen 10s 1080p + audio',
-      fourKRoute: '4K route available',
+      cheapest4k: 'Cheapest 4K output',
+      dedicated4k: 'Dedicated 4K engine',
       currentGenCount: 'Current-gen engines available',
       currentGenValue: (count) => `${count} engines`,
     },
@@ -250,7 +256,7 @@ const en: PricingHubCopy = {
     title: 'Popular price checks',
     columns: {
       priceCheck: 'Price check',
-      cheapestEngine: 'Cheapest available engine',
+      cheapestEngine: 'Cheapest current-gen option',
       typicalPrice: 'Typical exact price',
       link: 'Link',
     },
@@ -345,8 +351,10 @@ const fr: PricingHubCopy = {
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opt.',
     audioUnavailable: 'audio indisponible',
+    audio: 'audio',
     unsupported: 'non pris en charge',
     silent: 'silencieux',
+    dedicated: 'dédié',
     fast: 'rapide',
     supported: 'Pris en charge',
     optional: 'Optionnel',
@@ -369,6 +377,7 @@ const fr: PricingHubCopy = {
     examples: 'Exemples',
     compare: 'Comparer',
     livePrice: 'Prix live',
+    more: 'Plus',
     imageApp: 'App image',
     audioApp: 'App audio',
     tool: 'Outil',
@@ -385,14 +394,14 @@ const fr: PricingHubCopy = {
       'Comparez les prix totaux MaxVideoAI pour des scénarios vidéo courants. Les combinaisons non disponibles sont indiquées clairement. Ouvrez l’app pour le devis exact avant génération.',
     currencyLabel: 'Crédits USD',
     cheapestCurrentGen: 'Moins cher génération actuelle',
-    tableHeaders: { engine: 'Moteur / variante', limits: 'Limites', actions: 'Actions' },
+    tableHeaders: { engine: 'Moteur', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Vidéo', image: 'Image', audio: 'Audio', tools: 'Outils & upscale' },
     presetSubLabels: {
       '5s-720p': 'Brouillon',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
-      '10s-1080p-audio': 'Audio',
-      '4k-route': 'Natif',
+      '10s-1080p-audio': 'Narratif',
+      '4k-route': 'Natif / route',
     },
     mobile: {
       title: 'Comparer par scénario',
@@ -412,7 +421,8 @@ const fr: PricingHubCopy = {
       cheapest8s: 'Moins cher actuel 8 s 1080p',
       cheapest10s: 'Moins cher actuel 10 s 1080p',
       cheapestAudio: 'Moins cher actuel 10 s 1080p + audio',
-      fourKRoute: 'Route 4K disponible',
+      cheapest4k: 'Sortie 4K la moins chère',
+      dedicated4k: 'Moteur 4K dédié',
       currentGenCount: 'Moteurs actuels disponibles',
       currentGenValue: (count) => `${count} moteurs`,
     },
@@ -423,7 +433,7 @@ const fr: PricingHubCopy = {
     title: 'Vérifications de prix fréquentes',
     columns: {
       priceCheck: 'Scénario',
-      cheapestEngine: 'Moteur le moins cher',
+      cheapestEngine: 'Option actuelle la moins chère',
       typicalPrice: 'Prix exact typique',
       link: 'Lien',
     },
@@ -518,8 +528,10 @@ const es: PricingHubCopy = {
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opc.',
     audioUnavailable: 'audio no disponible',
+    audio: 'audio',
     unsupported: 'no admitido',
     silent: 'silencioso',
+    dedicated: 'dedicado',
     fast: 'rápido',
     supported: 'Compatible',
     optional: 'Opcional',
@@ -542,6 +554,7 @@ const es: PricingHubCopy = {
     examples: 'Ejemplos',
     compare: 'Comparar',
     livePrice: 'Precio vivo',
+    more: 'Más',
     imageApp: 'App imagen',
     audioApp: 'App audio',
     tool: 'Herramienta',
@@ -558,14 +571,14 @@ const es: PricingHubCopy = {
       'Compara precios totales de MaxVideoAI para escenarios de video comunes. Las combinaciones no disponibles se marcan claramente. Abre la app para ver el precio exacto antes de generar.',
     currencyLabel: 'Créditos USD',
     cheapestCurrentGen: 'Más barato generación actual',
-    tableHeaders: { engine: 'Motor / variante', limits: 'Límites', actions: 'Acciones' },
+    tableHeaders: { engine: 'Motor', caps: 'Caps', actions: 'Acciones' },
     tabs: { video: 'Video', image: 'Imagen', audio: 'Audio', tools: 'Herramientas & upscale' },
     presetSubLabels: {
       '5s-720p': 'Borrador',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Estándar',
-      '10s-1080p-audio': 'Audio',
-      '4k-route': 'Nativo',
+      '10s-1080p-audio': 'Narrativo',
+      '4k-route': 'Nativo / ruta',
     },
     mobile: {
       title: 'Comparar por escenario',
@@ -585,7 +598,8 @@ const es: PricingHubCopy = {
       cheapest8s: 'Más barato actual 8 s 1080p',
       cheapest10s: 'Más barato actual 10 s 1080p',
       cheapestAudio: 'Más barato actual 10 s 1080p + audio',
-      fourKRoute: 'Ruta 4K disponible',
+      cheapest4k: 'Salida 4K más barata',
+      dedicated4k: 'Motor 4K dedicado',
       currentGenCount: 'Motores actuales disponibles',
       currentGenValue: (count) => `${count} motores`,
     },
@@ -596,7 +610,7 @@ const es: PricingHubCopy = {
     title: 'Consultas de precio frecuentes',
     columns: {
       priceCheck: 'Escenario',
-      cheapestEngine: 'Motor más barato',
+      cheapestEngine: 'Opción actual más barata',
       typicalPrice: 'Precio exacto típico',
       link: 'Enlace',
     },

@@ -17,6 +17,7 @@ import { ModelSpecsSection } from './ModelSpecsSection';
 import { ModelTipsSection } from './ModelTipsSection';
 import { ModelExamplesSection } from './ModelExamplesSection';
 import { ModelCompareSection } from './ModelCompareSection';
+import { ModelPricingCallout } from './ModelPricingCallout';
 import {
   DEFAULT_DETAIL_COPY,
   buildVideoBoundaries,
@@ -63,6 +64,7 @@ import {
   type SoraCopy,
 } from '../_lib/model-page-specs';
 import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
+import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 
 export function MarketingModelPageLayout({
@@ -272,6 +274,7 @@ export function MarketingModelPageLayout({
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
+  const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -400,6 +403,8 @@ export function MarketingModelPageLayout({
           locale={locale}
           statusLabels={statusLabels}
         />
+
+        <ModelPricingCallout callout={pricingCallout} />
 
         {isImageEngine && copy.microCta ? (
           <div className="flex justify-center">

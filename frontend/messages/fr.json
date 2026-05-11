@@ -1518,7 +1518,8 @@
   },
   "pricing": {
     "hero": {
-      "title": "Tarifs MaxVideoAI",
+      "eyebrow": "Tarifs MaxVideoAI",
+      "title": "Comparatif des prix vidéo IA",
       "subtitle": "Comparez les coûts vidéo, image, audio et outils avant de générer.",
       "supportingLine": "Paiement à l’usage. Voyez le prix exact dans l’app avant de lancer. Les générations échouées sont remboursées.",
       "primaryCta": "Ouvrir l’app pour le prix en direct avant de générer",
@@ -1722,7 +1723,7 @@
         },
         {
           "question": "Quel moteur vidéo IA est le moins cher ?",
-          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon 5 s 720p, un clip premium 8 s 1080p, une vidéo 10 s 1080p et une route 4K peuvent avoir des gagnants différents. Le tableau met d’abord en avant les moteurs de génération actuelle et liste séparément les routes budget plus anciennes quand elles existent."
+          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon 5 s 720p, un clip premium 8 s 1080p, une vidéo 10 s 1080p et une sortie 4K peuvent avoir des gagnants différents. Le tableau met d’abord en avant les moteurs de génération actuelle et liste séparément les routes budget plus anciennes quand elles existent."
         },
         {
           "question": "Quel moteur est le moins cher pour une vidéo 10 s 1080p ?",
@@ -1755,6 +1756,10 @@
         {
           "question": "Les images, l’audio et les outils sont-ils tarifés comme la vidéo ?",
           "answer": "Non. La vidéo, l’image, l’audio et les outils suivent des règles différentes. L’image est souvent facturée par image, l’audio par durée ou mode, et les outils par type de sortie ou résolution."
+        },
+        {
+          "question": "Pourquoi le tableau affiche-t-il des prix totaux plutôt qu’un coût par seconde ?",
+          "answer": "La plupart des utilisateurs comparent le coût complet d’un rendu, pas un tarif brut à la seconde. MaxVideoAI affiche des prix totaux sur des scénarios courants comme 8 s 1080p, 10 s 1080p et la sortie 4K. Les tarifs à la seconde ou provider peuvent varier selon le moteur, la durée, la résolution et les arrondis, et l’app affiche le devis exact avant génération."
         },
         {
           "question": "À quelle fréquence les prix changent-ils ?",

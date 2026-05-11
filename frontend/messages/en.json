@@ -1414,7 +1414,8 @@
   },
   "pricing": {
     "hero": {
-      "title": "MaxVideoAI Pricing",
+      "eyebrow": "MaxVideoAI Pricing",
+      "title": "AI Video Pricing Comparison",
       "subtitle": "Compare video, image, audio and tool costs before you generate.",
       "supportingLine": "Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.",
       "primaryCta": "Open app for live pricing before you generate",
@@ -1614,7 +1615,7 @@
         },
         {
           "question": "Which AI video engine is cheapest?",
-          "answer": "The cheapest engine depends on the scenario. A 5s 720p draft, an 8s 1080p premium clip, a 10s 1080p video and a 4K route can all have different winners. The table highlights current-generation options first and lists older budget routes separately when available."
+          "answer": "The cheapest engine depends on the scenario. A 5s 720p draft, an 8s 1080p premium clip, a 10s 1080p video and 4K output can all have different winners. The table highlights current-generation options first and lists older budget routes separately when available."
         },
         {
           "question": "Which engine is cheapest for 10s 1080p video?",
@@ -1647,6 +1648,10 @@
         {
           "question": "Are image, audio and tools priced the same as video?",
           "answer": "No. Video, image, audio and tools use different pricing rules. Image generation is usually priced per image, audio by duration or mode, and tools by output type or resolution."
+        },
+        {
+          "question": "Why does the table show total prices instead of cost per second?",
+          "answer": "Most users compare the full cost of a render, not raw per-second rates. MaxVideoAI shows preset total prices for common scenarios such as 8s 1080p, 10s 1080p and 4K output. Per-second or provider-level rates can vary by engine, duration, resolution and rounding, and the app shows the exact live quote before generation."
         },
         {
           "question": "How often do prices change?",

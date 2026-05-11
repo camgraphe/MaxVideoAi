@@ -215,6 +215,8 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(routeSectionsSource, /export function ExamplesIntroHero/, 'intro hero section should be exported');
   assert.match(routeSectionsSource, /export function ExamplesNextStepsSection/, 'next steps section should be exported');
   assert.match(routeSectionsSource, /export function ExamplesModelLinksSection/, 'model links section should be exported');
+  assert.match(routeSectionsSource, /resolveExamplesPricingCallout/, 'model landing links should own compact pricing callouts');
+  assert.match(routeSectionsSource, /ltx-2-3-fast-pricing|kling-3-pro-pricing/, 'examples pricing callouts should target stable pricing anchors');
   assert.match(routeSectionsSource, /export function ExamplesModelLandingCardsSection/, 'model landing cards section should be exported');
   assert.match(routeSectionsSource, /export function ExamplesGallerySection/, 'gallery section should be exported');
   assert.match(routeSectionsSource, /export function ExamplesPaginationNav/, 'pagination nav should be exported');

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
-import { unstable_noStore as noStore } from 'next/cache';
 import './globals.css';
 import { GtmLazyLoader } from '@/components/analytics/GtmLazyLoader';
 import { SupabaseHashSessionHandler } from '@/components/auth/SupabaseHashSessionHandler';
@@ -30,7 +29,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  noStore();
   const locale = await resolveLocale();
   const themeTokens = await getThemeTokensSettingCached();
   const themeStyle = buildThemeTokensStyle(themeTokens);

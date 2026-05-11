@@ -1517,7 +1517,8 @@
   },
   "pricing": {
     "hero": {
-      "title": "Precios de MaxVideoAI",
+      "eyebrow": "Precios de MaxVideoAI",
+      "title": "Comparación de precios de video IA",
       "subtitle": "Compara costes de video, imagen, audio y herramientas antes de generar.",
       "supportingLine": "Pago por uso. Ve el precio exacto en la app antes de lanzar. Las generaciones fallidas se reembolsan.",
       "primaryCta": "Abrir la app para ver el precio en vivo antes de generar",
@@ -1721,7 +1722,7 @@
         },
         {
           "question": "¿Qué motor de video IA es más barato?",
-          "answer": "El motor más barato depende del escenario. Un borrador 5 s 720p, un clip premium 8 s 1080p, un video 10 s 1080p y una ruta 4K pueden tener ganadores distintos. La tabla destaca primero las opciones de generación actual y lista aparte las rutas budget más antiguas cuando existen."
+          "answer": "El motor más barato depende del escenario. Un borrador 5 s 720p, un clip premium 8 s 1080p, un video 10 s 1080p y salida 4K pueden tener ganadores distintos. La tabla destaca primero las opciones de generación actual y lista aparte las rutas budget más antiguas cuando existen."
         },
         {
           "question": "¿Qué motor es más barato para video 10 s 1080p?",
@@ -1754,6 +1755,10 @@
         {
           "question": "¿Imagen, audio y herramientas se cobran igual que video?",
           "answer": "No. Video, imagen, audio y herramientas usan reglas de precio distintas. La imagen suele cobrarse por imagen, el audio por duración o modo, y las herramientas por tipo de salida o resolución."
+        },
+        {
+          "question": "¿Por qué la tabla muestra precios totales en vez de coste por segundo?",
+          "answer": "La mayoría de usuarios compara el coste completo de un render, no tarifas brutas por segundo. MaxVideoAI muestra precios totales para escenarios comunes como 8 s 1080p, 10 s 1080p y salida 4K. Las tarifas por segundo o de proveedor pueden variar según motor, duración, resolución y redondeos, y la app muestra el presupuesto exacto antes de generar."
         },
         {
           "question": "¿Con qué frecuencia cambian los precios?",

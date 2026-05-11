@@ -75,6 +75,7 @@ export const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE
 export const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const MODEL_SLUG_MAP = buildSlugMap('models');
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
+const PRICING_SLUG_MAP = buildSlugMap('pricing');
 export const DEFAULT_SORT: ExampleSort = 'playlist';
 export const EXAMPLES_PAGE_SIZE = 60;
 export const HUB_INITIAL_DESKTOP_GALLERY_BATCH = 8;
@@ -132,7 +133,8 @@ export function buildCompareHref(locale: AppLocale, slug: string): string {
 
 export function buildPricingHref(locale: AppLocale): string {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  return `${prefix}/pricing`.replace(/\/{2,}/g, '/');
+  const segment = PRICING_SLUG_MAP[locale] ?? PRICING_SLUG_MAP.en ?? 'pricing';
+  return `${prefix}/${segment}`.replace(/\/{2,}/g, '/');
 }
 
 export function formatModelSlugLabel(slug: string): string {

@@ -31,6 +31,7 @@ const highlightStyles = [
   { icon: Volume2, tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200' },
   { icon: Gem, tone: 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-200' },
   { icon: Grid2X2, tone: 'bg-blue-50 text-[#356BE8] dark:bg-blue-400/10 dark:text-blue-200' },
+  { icon: Grid2X2, tone: 'bg-blue-50 text-[#356BE8] dark:bg-blue-400/10 dark:text-blue-200' },
 ] as const;
 
 const quoteStatusRank: Record<PresetQuote['status'], number> = {
@@ -66,20 +67,23 @@ function PriceCell({
   quote: PresetQuote;
 }) {
   if (quote.status === 'exact') {
+    const isHighlighted = quote.isCheapest && canHighlight;
     return (
-      <div className="flex min-h-9 flex-col items-end justify-center gap-0.5">
+      <div
+        className={`inline-flex min-h-8 flex-col items-end justify-center gap-0.5 rounded-[6px] px-1.5 ${
+          isHighlighted ? 'bg-emerald-50/80 dark:bg-emerald-400/10' : ''
+        }`}
+        title={isHighlighted ? cheapestLabel : quote.rateDisplay}
+      >
         <span
           className={`text-[13px] font-semibold tabular-nums ${
-            quote.isCheapest && canHighlight ? 'text-emerald-700 dark:text-emerald-200' : 'text-text-primary'
+            isHighlighted ? 'text-emerald-700 dark:text-emerald-200' : 'text-text-primary'
           }`}
         >
+          {isHighlighted ? <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" /> : null}
           {quote.display}
         </span>
-        {quote.isCheapest && canHighlight ? (
-          <span className="text-[10px] font-semibold uppercase tracking-normal text-emerald-700 dark:text-emerald-200">
-            {cheapestLabel}
-          </span>
-        ) : quote.note ? (
+        {quote.note && !isHighlighted ? (
           <span className="text-[10px] leading-4 text-text-muted">{quote.note}</span>
         ) : null}
       </div>
@@ -103,18 +107,47 @@ function PriceCell({
   );
 }
 
-function InlineLinks({ links, livePriceLabel }: { links: PricingHubLink[]; livePriceLabel: string }) {
+function InlineLinks({
+  links,
+  livePriceLabel,
+  moreLabel,
+}: {
+  links: PricingHubLink[];
+  livePriceLabel: string;
+  moreLabel: string;
+}) {
+  const liveLink = links.find((link) => link.label === livePriceLabel) ?? links[links.length - 1];
+  const secondaryLinks = links.filter((link) => link !== liveLink);
   return (
-    <div className="flex flex-nowrap items-center gap-x-2 whitespace-nowrap text-xs font-semibold">
-      {links.map((link, index) => (
-        <span key={`${link.label}-${link.href}`} className="inline-flex items-center gap-2">
-          {index > 0 ? <span className="text-text-muted">·</span> : null}
-          <Link href={link.href} prefetch={false} className="inline-flex items-center gap-1 text-[#1F5EFF] hover:underline">
-            {link.label}
-            {link.label === livePriceLabel ? <ExternalLink className="h-3 w-3" strokeWidth={1.8} /> : null}
-          </Link>
-        </span>
-      ))}
+    <div className="relative flex flex-nowrap items-center gap-x-1.5 whitespace-nowrap text-[11px] font-semibold">
+      {liveLink ? (
+        <Link href={liveLink.href} prefetch={false} className="inline-flex items-center gap-1 text-[#1F5EFF] hover:underline">
+          {livePriceLabel}
+          <ExternalLink className="h-3 w-3" strokeWidth={1.8} />
+        </Link>
+      ) : null}
+      {secondaryLinks.length ? (
+        <>
+          <span className="text-text-muted">·</span>
+          <details className="group relative inline-block">
+            <summary className="cursor-pointer list-none text-text-muted transition hover:text-text-primary [&::-webkit-details-marker]:hidden">
+              {moreLabel}
+            </summary>
+            <span className="absolute right-0 top-full z-30 mt-1 hidden min-w-28 flex-col gap-1 rounded-[8px] border border-hairline bg-surface p-2 text-left shadow-card group-open:flex">
+              {secondaryLinks.map((link) => (
+                <Link
+                  key={`${link.label}-${link.href}`}
+                  href={link.href}
+                  prefetch={false}
+                  className="text-text-secondary hover:text-[#1F5EFF] hover:underline"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </span>
+          </details>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -235,13 +268,13 @@ function RowGroup({
     <>
       <tr>
         <td colSpan={video.presets.length + 3} className="border-b border-hairline bg-bg px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-normal text-text-primary">{title}</span>
+          <span className="text-xs font-semibold tracking-normal text-text-primary">{title}</span>
           <span className="ml-2 text-xs text-text-muted">{description}</span>
         </td>
       </tr>
       {rows.map((row) => (
-        <tr key={row.id} id={row.anchorId} className="h-[52px] scroll-mt-24">
-          <th className="sticky left-0 z-10 border-b border-hairline bg-surface px-3 py-2 text-left align-middle">
+        <tr key={row.id} id={row.anchorId} className="h-[50px] scroll-mt-24">
+          <th className="sticky left-0 z-10 border-b border-hairline bg-surface px-3 py-1.5 text-left align-middle">
             <div className="flex items-center gap-2.5">
               <EngineIcon engine={row.engineIcon} label={row.engineName} size={24} rounded="xl" className="rounded-[6px]" />
               <span className="min-w-0">
@@ -251,7 +284,7 @@ function RowGroup({
             </div>
           </th>
           {video.presets.map((preset) => (
-            <td key={preset.id} className="border-b border-hairline px-3 py-2 text-right align-middle">
+            <td key={preset.id} className="border-b border-hairline px-2 py-1.5 text-right align-middle">
               <PriceCell
                 quote={row.quotes[preset.id]}
                 canHighlight={row.highlightEligible}
@@ -260,14 +293,11 @@ function RowGroup({
               />
             </td>
           ))}
-          <td className="border-b border-hairline px-3 py-2 align-middle text-xs text-text-secondary">
-            <span className="block max-w-[220px] truncate">
-              {row.limitsLabel}
-              <span className="text-text-muted"> · {row.notes.join(' · ')}</span>
-            </span>
+          <td className="border-b border-hairline px-3 py-1.5 align-middle text-[11px] text-text-secondary">
+            <span className="block max-w-[180px] truncate" title={row.limitsLabel}>{row.limitsLabel}</span>
           </td>
-          <td className="border-b border-hairline px-3 py-2 align-middle">
-            <InlineLinks links={row.links} livePriceLabel={copy.links.livePrice} />
+          <td className="border-b border-hairline px-3 py-1.5 align-middle">
+            <InlineLinks links={row.links} livePriceLabel={copy.links.livePrice} moreLabel={copy.links.more} />
           </td>
         </tr>
       ))}
@@ -287,20 +317,20 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
   ] as const;
 
   return (
-    <section id="video-pricing" className="space-y-3">
+    <section id="video-pricing" className="scroll-mt-24 space-y-3 sm:scroll-mt-28">
       <div>
-        <div className="grid auto-rows-fr items-stretch gap-2 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid auto-rows-fr items-stretch gap-2 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
           {video.highlights.map((highlight, index) => {
             const style = highlightStyles[index] ?? highlightStyles[0];
             const Icon = style.icon;
             const body = (
-              <div className="flex h-full min-h-[86px] items-center gap-3 rounded-[8px] border border-hairline bg-surface p-3 shadow-card">
-                <span className={`flex h-10 w-10 flex-none items-center justify-center rounded-full ${style.tone}`}>
-                  <Icon className="h-5 w-5" strokeWidth={1.9} />
+              <div className="flex h-full min-h-[76px] items-center gap-3 rounded-[8px] border border-hairline bg-surface px-3 py-2.5 shadow-card">
+                <span className={`flex h-9 w-9 flex-none items-center justify-center rounded-full ${style.tone}`}>
+                  <Icon className="h-4 w-4" strokeWidth={1.9} />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[11px] font-semibold text-text-muted">{highlight.label}</span>
-                  <span className="mt-1 block truncate text-sm font-semibold leading-5 text-text-primary">{highlight.value}</span>
+                  <span className="mt-1 block text-[13px] font-semibold leading-4 text-text-primary">{highlight.value}</span>
                 </span>
               </div>
             );
@@ -362,23 +392,22 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
         </div>
       </div>
 
-      <MobileScenarioLeaderboard video={video} locale={locale} />
-
-      <div id="full-video-pricing-table" className="overflow-x-auto">
-        <table className="min-w-[1180px] border-separate border-spacing-0 text-left text-sm">
+      <div className="flex flex-col">
+      <div id="full-video-pricing-table" className="order-2 scroll-mt-24 overflow-x-auto md:order-1">
+        <table className="min-w-[1220px] border-separate border-spacing-0 text-left text-sm">
           <thead className="sticky top-0 z-20 bg-surface">
             <tr className="text-xs font-semibold text-text-muted">
-              <th className="sticky left-0 z-30 w-[250px] border-b border-hairline bg-surface px-3 py-3">
+              <th className="sticky left-0 z-30 w-[250px] border-b border-hairline bg-surface px-3 py-2.5">
                 {copy.video.tableHeaders.engine}
               </th>
               {video.presets.map((preset) => (
-                <th key={preset.id} className="w-[132px] border-b border-hairline px-3 py-3 text-right">
+                <th key={preset.id} className="w-[118px] border-b border-hairline px-2 py-2.5 text-right">
                   <span className="block text-text-primary">{preset.label}</span>
                   <span className="block font-medium">{copy.video.presetSubLabels[preset.id] ?? preset.subLabel}</span>
                 </th>
               ))}
-              <th className="w-[240px] border-b border-hairline px-3 py-3">{copy.video.tableHeaders.limits}</th>
-              <th className="w-[210px] border-b border-hairline px-3 py-3">{copy.video.tableHeaders.actions}</th>
+              <th className="w-[190px] border-b border-hairline px-3 py-2.5">{copy.video.tableHeaders.caps}</th>
+              <th className="w-[140px] border-b border-hairline px-3 py-2.5">{copy.video.tableHeaders.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -400,6 +429,10 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
             ) : null}
           </tbody>
         </table>
+      </div>
+      <div className="order-1 md:order-2">
+        <MobileScenarioLeaderboard video={video} locale={locale} />
+      </div>
       </div>
 
       <p className="border-t border-hairline px-4 py-3 text-xs leading-5 text-text-muted sm:px-5">
