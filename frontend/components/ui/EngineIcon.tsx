@@ -25,7 +25,20 @@ function computeMarkSize(size: number, scale: number, framed: boolean) {
 }
 
 function isRenderableImageSrc(src: string | undefined) {
-  return Boolean(src && (src.startsWith('/') || /^https?:\/\//i.test(src)));
+  const value = src?.trim();
+  return Boolean(value && value.toLowerCase() !== 'image' && (value.startsWith('/') || /^https?:\/\//i.test(value)));
+}
+
+function resolveRenderableBrandMark(mark: ReturnType<typeof getPartnerBrandMark>) {
+  if (!mark) return undefined;
+  const light = isRenderableImageSrc(mark.light.src) ? mark.light : null;
+  const dark = isRenderableImageSrc(mark.dark.src) ? mark.dark : null;
+  const fallback = light ?? dark;
+  if (!fallback) return undefined;
+  return {
+    light: light ?? fallback,
+    dark: dark ?? fallback,
+  };
 }
 
 export function EngineIcon({
@@ -41,12 +54,7 @@ export function EngineIcon({
     id: engine?.id ?? null,
     brandId: engine?.brandId ?? null,
   });
-  const brandMark =
-    resolvedBrandMark &&
-    isRenderableImageSrc(resolvedBrandMark.light.src) &&
-    isRenderableImageSrc(resolvedBrandMark.dark.src)
-      ? resolvedBrandMark
-      : undefined;
+  const brandMark = resolveRenderableBrandMark(resolvedBrandMark);
   const pictogram = getEnginePictogram(
     {
       id: engine?.id ?? null,

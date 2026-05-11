@@ -265,12 +265,16 @@ function RowGroup({
 }) {
   const copy = getPricingHubCopy(locale);
   return (
-    <>
+    <tbody>
       <tr>
-        <td colSpan={video.presets.length + 3} className="border-b border-hairline bg-bg px-4 py-2">
+        <th
+          colSpan={video.presets.length + 3}
+          scope="colgroup"
+          className="border-b border-hairline bg-bg px-4 py-2 text-left"
+        >
           <span className="text-xs font-semibold tracking-normal text-text-primary">{title}</span>
           <span className="ml-2 text-xs text-text-muted">{description}</span>
-        </td>
+        </th>
       </tr>
       {rows.map((row) => (
         <tr key={row.id} id={row.anchorId} className="h-[50px] scroll-mt-24">
@@ -301,7 +305,7 @@ function RowGroup({
           </td>
         </tr>
       ))}
-    </>
+    </tbody>
   );
 }
 
@@ -410,24 +414,22 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
               <th className="w-[140px] border-b border-hairline px-3 py-2.5">{copy.video.tableHeaders.actions}</th>
             </tr>
           </thead>
-          <tbody>
+          <RowGroup
+            locale={locale}
+            title={copy.video.groups.recommendedTitle}
+            description={copy.video.groups.recommendedDescription}
+            rows={recommendedRows}
+            video={video}
+          />
+          {legacyRows.length ? (
             <RowGroup
               locale={locale}
-              title={copy.video.groups.recommendedTitle}
-              description={copy.video.groups.recommendedDescription}
-              rows={recommendedRows}
+              title={copy.video.groups.legacyTitle}
+              description={copy.video.groups.legacyDescription}
+              rows={legacyRows}
               video={video}
             />
-            {legacyRows.length ? (
-              <RowGroup
-                locale={locale}
-                title={copy.video.groups.legacyTitle}
-                description={copy.video.groups.legacyDescription}
-                rows={legacyRows}
-                video={video}
-              />
-            ) : null}
-          </tbody>
+          ) : null}
         </table>
       </div>
       <div className="order-1 md:order-2">

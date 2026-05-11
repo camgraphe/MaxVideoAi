@@ -31,6 +31,7 @@ const creditsRefundsPath = join(
   'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingCreditsRefundsSection.tsx'
 );
 const faqPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingRefundsFaqSection.tsx');
+const engineIconPath = join(root, 'frontend/components/ui/EngineIcon.tsx');
 const hubCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubCopy.ts');
 const hubDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts');
 const catalogPath = join(root, 'frontend/config/engine-catalog.json');
@@ -44,6 +45,7 @@ const popularChecksSource = existsSync(popularChecksPath) ? readFileSync(popular
 const otherSurfacesSource = existsSync(otherSurfacesPath) ? readFileSync(otherSurfacesPath, 'utf8') : '';
 const creditsRefundsSource = existsSync(creditsRefundsPath) ? readFileSync(creditsRefundsPath, 'utf8') : '';
 const faqSource = readFileSync(faqPath, 'utf8');
+const engineIconSource = readFileSync(engineIconPath, 'utf8');
 const hubCopySource = readFileSync(hubCopyPath, 'utf8');
 const hubDataSource = readFileSync(hubDataPath, 'utf8');
 const englishMessages = JSON.parse(readFileSync(englishMessagesPath, 'utf8')) as {
@@ -139,9 +141,12 @@ test('pricing matrix data is generated from the catalog with scenario total pres
   assert.match(hubDataSource, /4K output/);
   assert.match(hubDataSource, /buildCapsLabel/);
   assert.match(hubDataSource, /buildLocalizedMarketingHref/);
+  assert.match(hubDataSource, /buildPricingAnchorHref/);
   assert.match(hubDataSource, /buildSlugMap\('models'\)/);
   assert.match(hubDataSource, /buildSlugMap\('gallery'\)/);
   assert.match(hubDataSource, /buildSlugMap\('compare'\)/);
+  assert.match(hubDataSource, /buildSlugMap\('pricing'\)/);
+  assert.match(hubDataSource, /formatResolutionLabel/);
   assert.match(hubDataSource, /listFalEngines/);
   assert.match(hubDataSource, /supportsVideoGeneration/);
   assert.match(hubDataSource, /buildImagePricingRows/);
@@ -200,6 +205,8 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubDataSource, /10s 1080p/);
   assert.match(hubDataSource, /10s \+ audio/);
   assert.match(hubDataSource, /4K output/);
+  assert.match(hubCopySource, /Prices shown in USD credits\./);
+  assert.match(hubCopySource, /Prix affichés en crédits USD\./);
   assert.match(hubCopySource, /Caps/);
   assert.doesNotMatch(hubCopySource, /Limits/);
   assert.doesNotMatch(hubCopySource, /Limites/);
@@ -209,9 +216,13 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubCopySource, /Tools & Upscale/);
   assert.match(hubCopySource, /Outils & upscale/);
   assert.match(hubCopySource, /Cheapest/);
+  assert.match(hubCopySource, /Cheapest current-gen 5s 720p/);
+  assert.doesNotMatch(hubCopySource, /Best-value current-gen 5s 720p/);
   assert.match(hubCopySource, /Moins cher/);
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
+  assert.match(videoMatrixSource, /scope="colgroup"/);
+  assert.match(videoMatrixSource, /<tbody>/);
   assert.match(hubCopySource, /Live price/);
   assert.match(hubCopySource, /More/);
   assert.match(hubCopySource, /Prix live/);
@@ -226,6 +237,13 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.doesNotMatch(hubDataSource, /720p \/ sec/);
   assert.doesNotMatch(hubDataSource, /1080p \/ sec/);
   assert.doesNotMatch(hubCopySource, /Cheapest available engine/);
+  assert.match(hubCopySource, /no audio/);
+  assert.match(hubCopySource, /no \$\{resolution\}/);
+  assert.doesNotMatch(hubCopySource, /unavailable`/);
+  assert.doesNotMatch(hubCopySource, /indisponible`/);
+  assert.doesNotMatch(hubCopySource, /no disponible`/);
+  assert.doesNotMatch(hubCopySource, /durationsOnly: \(seconds\) => .*only/);
+  assert.match(hubDataSource, /exactRank \* 1_000_000 \+\s*pricedRank \* 100 \+\s*displayRank/s);
   assert.doesNotMatch(videoMatrixSource, /'use client'/);
   assert.doesNotMatch(videoMatrixSource, /LazyPriceEstimator/);
 });
@@ -247,6 +265,11 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(hubCopySource, /Voix off 30 s/);
   assert.match(hubCopySource, /4K upscale/);
   assert.match(hubCopySource, /Upscale 4K/);
+  assert.match(popularChecksSource, /<a href=\{check\.link\.href\}/);
+  assert.doesNotMatch(popularChecksSource, /<Link href=\{check\.link\.href\}/);
+  assert.match(hubDataSource, /buildPricingAnchorHref\(locale, 'image-pricing'\)/);
+  assert.match(hubDataSource, /buildPricingAnchorHref\(locale, 'audio-pricing'\)/);
+  assert.match(hubDataSource, /buildPricingAnchorHref\(locale, 'upscale-pricing'\)/);
 
   assert.match(otherSurfacesSource, /export function PricingOtherSurfacesSection/);
   assert.match(otherSurfacesSource, /getPricingHubCopy/);
@@ -278,7 +301,17 @@ test('credits and refunds stay compact below pricing matrices', () => {
   assert.match(hubCopySource, /Prix exact avant lancement/);
   assert.match(hubCopySource, /Failed generations refunded/);
   assert.match(hubCopySource, /Échecs remboursés/);
+  assert.match(hubCopySource, /Apple Pay/);
+  assert.match(hubCopySource, /Google Pay/);
+  assert.match(hubCopySource, /Stripe/);
+  assert.match(creditsRefundsSource, /CreditCard/);
   assert.doesNotMatch(creditsRefundsSource, /'use client'/);
+});
+
+test('engine icons reject broken image placeholders', () => {
+  assert.match(engineIconSource, /value\.toLowerCase\(\) !== 'image'/);
+  assert.match(engineIconSource, /resolveRenderableBrandMark/);
+  assert.match(engineIconSource, /const fallback = light \?\? dark/);
 });
 
 test('pricing metadata and FAQ target comparison intent first', () => {

@@ -1,5 +1,4 @@
 import type { AppLocale } from '@/i18n/locales';
-import { Link } from '@/i18n/navigation';
 import type { PopularPriceCheckRow } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 
@@ -27,9 +26,9 @@ export function PricingPopularChecksSection({ checks, locale }: { checks: Popula
                   {check.price}
                 </td>
                 <td className="py-3 pl-4">
-                  <Link href={check.link.href} prefetch={false} className="text-xs font-semibold text-[#356BE8] hover:underline">
+                  <a href={check.link.href} className="text-xs font-semibold text-[#356BE8] hover:underline">
                     {check.link.label}
-                  </Link>
+                  </a>
                 </td>
               </tr>
             ))}

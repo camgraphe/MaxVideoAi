@@ -1,8 +1,8 @@
-import { BadgeDollarSign, Eye, RotateCcw } from 'lucide-react';
+import { BadgeDollarSign, CreditCard, Eye, RotateCcw } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 
-const creditCardIcons = [BadgeDollarSign, Eye, RotateCcw] as const;
+const creditCardIcons = [BadgeDollarSign, Eye, RotateCcw, CreditCard] as const;
 
 export function PricingCreditsRefundsSection({ locale }: { locale: AppLocale }) {
   const copy = getPricingHubCopy(locale);
@@ -14,7 +14,7 @@ export function PricingCreditsRefundsSection({ locale }: { locale: AppLocale }) 
           <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">{copy.creditsRefunds.intro}</p>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {copy.creditsRefunds.cards.map((card, index) => {
           const Icon = creditCardIcons[index] ?? BadgeDollarSign;
           return (
