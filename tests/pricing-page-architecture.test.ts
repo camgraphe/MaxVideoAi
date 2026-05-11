@@ -25,6 +25,10 @@ const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pri
 const videoMatrixPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingVideoMatrixSection.tsx');
 const popularChecksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingPopularChecksSection.tsx');
 const otherSurfacesPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingOtherSurfacesSection.tsx');
+const creditsRefundsPath = join(
+  root,
+  'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingCreditsRefundsSection.tsx'
+);
 const faqPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingRefundsFaqSection.tsx');
 const hubDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts');
 const catalogPath = join(root, 'frontend/config/engine-catalog.json');
@@ -35,12 +39,13 @@ const heroSource = readFileSync(heroPath, 'utf8');
 const videoMatrixSource = existsSync(videoMatrixPath) ? readFileSync(videoMatrixPath, 'utf8') : '';
 const popularChecksSource = existsSync(popularChecksPath) ? readFileSync(popularChecksPath, 'utf8') : '';
 const otherSurfacesSource = existsSync(otherSurfacesPath) ? readFileSync(otherSurfacesPath, 'utf8') : '';
+const creditsRefundsSource = existsSync(creditsRefundsPath) ? readFileSync(creditsRefundsPath, 'utf8') : '';
 const faqSource = readFileSync(faqPath, 'utf8');
 const hubDataSource = readFileSync(hubDataPath, 'utf8');
 const englishMessages = JSON.parse(readFileSync(englishMessagesPath, 'utf8')) as {
   pricing?: {
     meta?: { title?: string; description?: string };
-    faq?: { entries?: Array<{ question?: string; answer?: string }> };
+    faq?: { title?: string; subtitle?: string; entries?: Array<{ question?: string; answer?: string }> };
   };
 };
 const engineCatalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as EngineCatalogEntry[];
@@ -51,6 +56,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.ok(existsSync(videoMatrixPath), 'video pricing matrix should live in a route-local component');
   assert.ok(existsSync(popularChecksPath), 'popular price checks should live in a route-local component');
   assert.ok(existsSync(otherSurfacesPath), 'image/audio/tool pricing should live in a route-local component');
+  assert.ok(existsSync(creditsRefundsPath), 'credits/refunds explanation should live in a route-local component');
   assert.ok(existsSync(faqPath), 'pricing FAQ should live in a route-local component');
   assert.ok(existsSync(hubDataPath), 'pricing matrix data should live in a route-local lib module');
 
@@ -59,6 +65,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingVideoMatrixSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingPopularChecksSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingOtherSurfacesSection'/);
+  assert.match(pageSource, /from '\.\/_components\/PricingCreditsRefundsSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingRefundsFaqSection'/);
   assert.match(pageSource, /from '\.\/_lib\/pricingHubData'/);
   assert.match(pageSource, /export default async function PricingPage/);
@@ -79,11 +86,13 @@ test('pricing page does not regain calculator-first or long model-section owners
   const videoIndex = pageSource.indexOf('<PricingVideoMatrixSection');
   const checksIndex = pageSource.indexOf('<PricingPopularChecksSection');
   const surfacesIndex = pageSource.indexOf('<PricingOtherSurfacesSection');
+  const creditsIndex = pageSource.indexOf('<PricingCreditsRefundsSection');
   const faqIndex = pageSource.indexOf('<PricingRefundsFaqSection');
   assert.ok(videoIndex >= 0, 'video matrix should render');
   assert.ok(checksIndex > videoIndex, 'popular checks should follow the video matrix');
   assert.ok(surfacesIndex > checksIndex, 'image/audio/tool matrices should follow popular checks');
-  assert.ok(faqIndex > surfacesIndex, 'FAQ should remain below the pricing matrices');
+  assert.ok(creditsIndex > surfacesIndex, 'credits/refunds should follow non-video pricing matrices');
+  assert.ok(faqIndex > creditsIndex, 'FAQ should remain below the pricing matrices');
 
   const lineCount = pageSource.split('\n').length;
   assert.ok(lineCount <= 260, `pricing page should stay compact after refactor, got ${lineCount} lines`);
@@ -102,10 +111,24 @@ test('hero is compact and uses the requested CTA copy', () => {
   assert.doesNotMatch(heroSource, /MarketingHeroImage/);
 });
 
-test('pricing matrix data is generated from the catalog with per-second rate presets', () => {
-  assert.match(hubDataSource, /VIDEO_RATE_PRESETS/);
-  assert.match(hubDataSource, /getPresetRateQuote/);
-  assert.match(hubDataSource, /1080p \/ sec \+ audio/);
+test('pricing matrix data is generated from the catalog with scenario total presets', () => {
+  assert.match(hubDataSource, /VIDEO_PRICE_PRESETS/);
+  assert.match(hubDataSource, /getPresetQuote/);
+  assert.match(hubDataSource, /DEFAULT_VIDEO_PRICE_PRESET_ID/);
+  assert.match(hubDataSource, /engineIcon/);
+  assert.match(hubDataSource, /PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS/);
+  assert.match(hubDataSource, /PREVIOUS_GENERATION_PRICING_ENGINE_IDS/);
+  assert.match(hubDataSource, /seedance-1-5-pro/);
+  assert.match(hubDataSource, /pika-text-to-video/);
+  assert.match(hubDataSource, /PRICING_DISPLAY_MODEL_ORDER/);
+  assert.match(hubDataSource, /PRICING_DISPLAY_FAMILY_ORDER/);
+  assert.match(hubDataSource, /getPricingDisplayRank/);
+  assert.match(hubDataSource, /'seedance-2-0'[\s\S]*'kling-3-pro'[\s\S]*'veo-3-1'[\s\S]*'happy-horse-1-0'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-2-6'[\s\S]*'minimax-hailuo-02-text'[\s\S]*'luma-ray-2'/);
+  assert.match(hubDataSource, /5s 720p/);
+  assert.match(hubDataSource, /8s 1080p/);
+  assert.match(hubDataSource, /10s 1080p/);
+  assert.match(hubDataSource, /10s 1080p \+ audio/);
+  assert.match(hubDataSource, /4K route/);
   assert.match(hubDataSource, /listFalEngines/);
   assert.match(hubDataSource, /supportsVideoGeneration/);
   assert.match(hubDataSource, /buildImagePricingRows/);
@@ -116,6 +139,8 @@ test('pricing matrix data is generated from the catalog with per-second rate pre
   assert.doesNotMatch(hubDataSource, /listPricingRules/);
   assert.doesNotMatch(hubDataSource, /listEnginePricingOverrides/);
   assert.doesNotMatch(hubDataSource, /computePricingSnapshot/);
+  assert.doesNotMatch(hubDataSource, /VIDEO_RATE_PRESETS/);
+  assert.doesNotMatch(hubDataSource, /getPresetRateQuote/);
 
   const publicVideoEngines = Object.values(engineCatalog).filter((entry) => {
     const surfaces = entry.surfaces ?? {};
@@ -146,23 +171,31 @@ test('pricing matrix data is generated from the catalog with per-second rate pre
 
 test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(videoMatrixSource, /export function PricingVideoMatrixSection/);
+  assert.match(videoMatrixSource, /EngineIcon/);
   assert.match(videoMatrixSource, /AI video prices by engine/);
-  assert.match(videoMatrixSource, /Compare normalized MaxVideoAI display rates per output second/);
-  assert.match(hubDataSource, /720p \/ sec/);
-  assert.match(hubDataSource, /1080p \/ sec/);
-  assert.match(hubDataSource, /1080p \/ sec \+ audio/);
-  assert.doesNotMatch(hubDataSource, /5s 720p/);
-  assert.doesNotMatch(hubDataSource, /10s 720p/);
-  assert.doesNotMatch(hubDataSource, /10s 1080p/);
-  assert.match(videoMatrixSource, /Max duration/);
+  assert.match(videoMatrixSource, /Compare preset MaxVideoAI total prices/);
+  assert.match(videoMatrixSource, /Compare by scenario/);
+  assert.match(videoMatrixSource, /Recommended video engines/);
+  assert.match(videoMatrixSource, /Previous-generation and budget routes/);
+  assert.match(hubDataSource, /5s 720p/);
+  assert.match(hubDataSource, /8s 1080p/);
+  assert.match(hubDataSource, /10s 1080p/);
+  assert.match(hubDataSource, /10s 1080p \+ audio/);
+  assert.match(hubDataSource, /4K route/);
+  assert.match(videoMatrixSource, /Limits/);
+  assert.match(videoMatrixSource, /Actions/);
   assert.match(videoMatrixSource, /Video/);
   assert.match(videoMatrixSource, /Tools & Upscale/);
   assert.match(videoMatrixSource, /Cheapest/);
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
   assert.match(videoMatrixSource, /Live price/);
-  assert.match(videoMatrixSource, /Rates are current MaxVideoAI display prices per output second/);
+  assert.match(videoMatrixSource, /Prices are current MaxVideoAI display prices for preset scenarios/);
+  assert.doesNotMatch(videoMatrixSource, /engineName\.slice/);
   assert.doesNotMatch(videoMatrixSource, /from \$/i);
+  assert.doesNotMatch(videoMatrixSource, /per output second/);
+  assert.doesNotMatch(hubDataSource, /720p \/ sec/);
+  assert.doesNotMatch(hubDataSource, /1080p \/ sec/);
   assert.doesNotMatch(videoMatrixSource, /'use client'/);
   assert.doesNotMatch(videoMatrixSource, /LazyPriceEstimator/);
 });
@@ -170,9 +203,10 @@ test('video matrix renders exact scenario columns and compact links', () => {
 test('popular checks and non-video pricing surfaces are compact matrices', () => {
   assert.match(popularChecksSource, /export function PricingPopularChecksSection/);
   assert.match(popularChecksSource, /Popular price checks/);
-  assert.match(hubDataSource, /720p video second/);
-  assert.match(hubDataSource, /1080p video second/);
-  assert.match(hubDataSource, /1080p with audio second/);
+  assert.match(hubDataSource, /5s 720p video/);
+  assert.match(hubDataSource, /8s 1080p premium video/);
+  assert.match(hubDataSource, /10s 1080p video/);
+  assert.match(hubDataSource, /10s 1080p \+ audio/);
   assert.match(hubDataSource, /30s voice-over/);
   assert.match(hubDataSource, /4K upscale/);
 
@@ -181,9 +215,18 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(otherSurfacesSource, /Image generation pricing/);
   assert.match(otherSurfacesSource, /Audio pricing/);
   assert.match(otherSurfacesSource, /Prep tools and upscale pricing/);
-  assert.match(otherSurfacesSource, /GPT Image 2/);
-  assert.match(otherSurfacesSource, /Character Builder/);
+  assert.match(hubDataSource, /GPT Image 2/);
+  assert.match(hubDataSource, /Character Builder/);
   assert.doesNotMatch(otherSurfacesSource, /'use client'/);
+});
+
+test('credits and refunds stay compact below pricing matrices', () => {
+  assert.match(creditsRefundsSource, /export function PricingCreditsRefundsSection/);
+  assert.match(creditsRefundsSource, /Credits, live quotes and refunds/);
+  assert.match(creditsRefundsSource, /Pay-as-you-go credits/);
+  assert.match(creditsRefundsSource, /Exact price before launch/);
+  assert.match(creditsRefundsSource, /Failed generations refunded/);
+  assert.doesNotMatch(creditsRefundsSource, /'use client'/);
 });
 
 test('pricing metadata and FAQ target comparison intent first', () => {
@@ -196,18 +239,33 @@ test('pricing metadata and FAQ target comparison intent first', () => {
   );
   assert.equal(
     pricing?.meta?.description,
-    'Compare AI video prices by engine, per-second rate, resolution and audio. See 720p and 1080p rates, then open the app for live pricing.'
+    'Compare AI video prices by engine, duration, resolution and audio. See preset prices for 720p, 1080p and 4K, then open the app for live pricing.'
   );
   assert.deepEqual(faqQuestions, [
     'How is AI video pricing calculated?',
     'Which AI video engine is cheapest?',
-    'Which engine is cheapest for 1080p video?',
+    'Which engine is cheapest for 10s 1080p video?',
+    'Why is there an 8s 1080p column?',
+    'Why is 4K shown separately?',
     'Can I see the exact price before generating?',
     'Do failed generations cost credits?',
     'Do I need a subscription?',
-    'Why are some engines unavailable for 1080p or audio?',
+    'Why are some cheaper engines not highlighted first?',
     'Are image, audio and tools priced the same as video?',
     'How often do prices change?',
   ]);
   assert.match(faqSource, /Pricing FAQ/);
+  assert.match(faqSource, /dark-section-neon/);
+  assert.match(faqSource, /mx-auto w-full max-w-\[900px\]/);
+  assert.match(faqSource, /group w-full rounded-card/);
+  assert.match(faqSource, /<details/);
+  assert.match(faqSource, /<summary/);
+  assert.match(faqSource, /summary className="flex w-full/);
+  assert.match(faqSource, /group-open:rotate-45/);
+  assert.equal(
+    pricing?.faq?.subtitle,
+    'Short answers about live quotes, credits, refunds and engine availability.'
+  );
+  assert.doesNotMatch(faqSource, /md:grid-cols-2/);
+  assert.doesNotMatch(faqSource, /<dl/);
 });

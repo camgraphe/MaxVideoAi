@@ -1713,18 +1713,27 @@
     },
     "faq": {
       "title": "FAQ de precios",
+      "subtitle": "Respuestas breves sobre precios en vivo, créditos, reembolsos y disponibilidad de motores.",
       "entries": [
         {
           "question": "¿Cómo se calcula el precio de video IA?",
-          "answer": "El precio depende del motor, la duración, la resolución, el audio y el workflow. Algunos motores cobran por segundo, otros por video, token, resolución o tipo de salida. La tabla muestra comparaciones predefinidas y la app muestra el presupuesto exacto antes de generar."
+          "answer": "El precio depende del motor, la duración, la resolución, el audio y el workflow. La tabla muestra precios totales para escenarios comunes, y la app muestra el presupuesto exacto antes de generar."
         },
         {
           "question": "¿Qué motor de video IA es más barato?",
-          "answer": "El motor más barato depende del escenario. Un borrador 720p puede ser más barato en un motor, mientras que un clip 1080p con audio puede ser más barato en otro. Usa la tabla para comparar tarifas normalizadas por segundo según resolución y audio."
+          "answer": "El motor más barato depende del escenario. Un borrador 5 s 720p, un clip premium 8 s 1080p, un video 10 s 1080p y una ruta 4K pueden tener ganadores distintos. La tabla destaca primero las opciones de generación actual y lista aparte las rutas budget más antiguas cuando existen."
         },
         {
-          "question": "¿Qué motor es más barato para video 1080p?",
-          "answer": "Consulta la columna 1080p por segundo de la tabla de video. Los motores que no admiten 1080p se marcan claramente en lugar de forzarse en una comparación falsa."
+          "question": "¿Qué motor es más barato para video 10 s 1080p?",
+          "answer": "Consulta la columna 10 s 1080p de la tabla de video. Los motores que no admiten exactamente 10 s 1080p se marcan claramente en lugar de forzarse en una comparación falsa."
+        },
+        {
+          "question": "¿Por qué hay una columna 8 s 1080p?",
+          "answer": "Algunos motores importantes, incluidas las rutas Veo, están limitados a duraciones más cortas como 4 s, 6 s u 8 s. La columna 8 s permite compararlos sin fingir que admiten 10 s."
+        },
+        {
+          "question": "¿Por qué 4K aparece por separado?",
+          "answer": "Algunas rutas están diseñadas para salida 4K y no deben compararse como si fueran motores 1080p estándar. La columna 4K muestra el precio nativo o dedicado cuando está disponible."
         },
         {
           "question": "¿Puedo ver el precio exacto antes de generar?",
@@ -1736,11 +1745,11 @@
         },
         {
           "question": "¿Necesito una suscripción?",
-          "answer": "No. MaxVideoAI usa créditos pay-as-you-go. Puedes empezar con créditos, comparar precios y elegir el motor adecuado para cada trabajo sin suscripción obligatoria."
+          "answer": "No. MaxVideoAI usa créditos pay-as-you-go. Puedes comparar precios, elegir el motor adecuado para cada trabajo y generar sin suscripción obligatoria."
         },
         {
-          "question": "¿Por qué algunos motores no están disponibles para 1080p o audio?",
-          "answer": "Cada proveedor admite distintas duraciones, resoluciones, relaciones de aspecto y opciones de audio. La tabla marca combinaciones no admitidas para comparar disponibilidad real en lugar de precios estimados."
+          "question": "¿Por qué algunos motores más baratos no aparecen destacados primero?",
+          "answer": "Algunas rutas de generación anterior pueden ser más baratas para pruebas simples, pero MaxVideoAI destaca primero los motores de generación actual porque suelen ser mejores para proyectos nuevos. Las rutas budget más antiguas siguen listadas aparte cuando están disponibles."
         },
         {
           "question": "¿Imagen, audio y herramientas se cobran igual que video?",
@@ -1770,7 +1779,7 @@
     "priceChipPrefix": "Esta generación",
     "meta": {
       "title": "Comparación de precios de video IA: Veo, LTX, Kling, Seedance y más | MaxVideoAI",
-      "description": "Compara precios de video IA por motor, tarifa por segundo, resolución y audio. Ve tarifas 720p y 1080p, luego abre la app para el precio en vivo."
+      "description": "Compara precios de video IA por motor, duración, resolución y audio. Ve precios 720p, 1080p y 4K, luego abre la app para el precio en vivo."
     }
   },
   "workflows": {

@@ -1606,18 +1606,27 @@
     },
     "faq": {
       "title": "Pricing FAQ",
+      "subtitle": "Short answers about live quotes, credits, refunds and engine availability.",
       "entries": [
         {
           "question": "How is AI video pricing calculated?",
-          "answer": "AI video pricing depends on the engine, duration, resolution, audio setting and workflow. Some engines price by second, while others price by video, token, resolution or output type. The pricing table shows preset comparisons, and the app shows the exact live quote before generation."
+          "answer": "AI video pricing depends on the engine, duration, resolution, audio setting and workflow. The comparison table shows preset total prices for common scenarios, and the app shows the exact live quote before generation."
         },
         {
           "question": "Which AI video engine is cheapest?",
-          "answer": "The cheapest engine depends on the scenario. A 720p draft may be cheaper on one engine, while a 1080p clip with audio may be cheaper on another. Use the comparison table to compare normalized per-second rates by resolution and audio."
+          "answer": "The cheapest engine depends on the scenario. A 5s 720p draft, an 8s 1080p premium clip, a 10s 1080p video and a 4K route can all have different winners. The table highlights current-generation options first and lists older budget routes separately when available."
         },
         {
-          "question": "Which engine is cheapest for 1080p video?",
-          "answer": "Check the 1080p per-second column in the video pricing table. Engines that do not support 1080p are marked clearly instead of being forced into a fake comparison."
+          "question": "Which engine is cheapest for 10s 1080p video?",
+          "answer": "Check the 10s 1080p column in the video pricing table. Engines that do not support exact 10s 1080p are marked clearly instead of being forced into a fake comparison."
+        },
+        {
+          "question": "Why is there an 8s 1080p column?",
+          "answer": "Some major engines, including Veo routes, are limited to shorter durations such as 4s, 6s or 8s. The 8s column makes those engines comparable without pretending they support 10s."
+        },
+        {
+          "question": "Why is 4K shown separately?",
+          "answer": "Some routes are built for 4K output and should not be compared as if they were standard 1080p engines. The 4K column shows native or dedicated 4K pricing when available."
         },
         {
           "question": "Can I see the exact price before generating?",
@@ -1629,11 +1638,11 @@
         },
         {
           "question": "Do I need a subscription?",
-          "answer": "No. MaxVideoAI uses pay-as-you-go credits. You can start with credits, compare prices, and choose the right engine per job without a required subscription."
+          "answer": "No. MaxVideoAI uses pay-as-you-go credits. You can compare prices, choose the right engine per job and generate without a required subscription."
         },
         {
-          "question": "Why are some engines unavailable for 1080p or audio?",
-          "answer": "Each provider supports different durations, resolutions, aspect ratios and audio options. The table marks unsupported combinations so you can compare real availability instead of guessed prices."
+          "question": "Why are some cheaper engines not highlighted first?",
+          "answer": "Some previous-generation routes may be cheaper for simple tests, but MaxVideoAI highlights current-generation engines first because they are usually better choices for new projects. Older budget routes are still listed separately when available."
         },
         {
           "question": "Are image, audio and tools priced the same as video?",
@@ -1663,7 +1672,7 @@
     "priceChipPrefix": "This render",
     "meta": {
       "title": "AI Video Pricing Comparison: Veo, LTX, Kling, Seedance & More | MaxVideoAI",
-      "description": "Compare AI video prices by engine, per-second rate, resolution and audio. See 720p and 1080p rates, then open the app for live pricing."
+      "description": "Compare AI video prices by engine, duration, resolution and audio. See preset prices for 720p, 1080p and 4K, then open the app for live pricing."
     }
   },
   "workflows": {

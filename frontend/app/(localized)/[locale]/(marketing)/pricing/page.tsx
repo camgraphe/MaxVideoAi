@@ -8,6 +8,7 @@ import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { PricingCreditsRefundsSection } from './_components/PricingCreditsRefundsSection';
 import { PricingHeroSection } from './_components/PricingHeroSection';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
 import { PricingOtherSurfacesSection } from './_components/PricingOtherSurfacesSection';
@@ -42,7 +43,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const content = dictionary.pricing;
   const pricingHub = buildPricingHubData(locale);
   const faq = content.faq;
-  const faqEntries = (faq.entries ?? []).slice(0, 9);
+  const faqEntries = (faq.entries ?? []).slice(0, 11);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
   const breadcrumbLabels = getBreadcrumbLabels(locale);
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -108,6 +109,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
           <PricingVideoMatrixSection video={pricingHub.video} />
           <PricingPopularChecksSection checks={pricingHub.popularChecks} />
           <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} />
+          <PricingCreditsRefundsSection />
           <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
         </div>
       </div>

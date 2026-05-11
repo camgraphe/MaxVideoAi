@@ -24,7 +24,8 @@ export function PricingOtherSurfacesSection({ data }: { data: OtherSurfacePricin
           Image, audio and tool pricing
         </h2>
         <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">
-          Compact MaxVideoAI price references for GPT Image 2, Character Builder, audio modes, angle tools and upscale.
+          Compact MaxVideoAI price references for image generation, audio generation, character prep, angle tools and
+          upscale.
         </p>
       </div>
 

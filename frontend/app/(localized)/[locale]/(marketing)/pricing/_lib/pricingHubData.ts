@@ -14,14 +14,62 @@ import { formatCurrencyForLocale } from './pricingPageContent';
 const FALLBACK_CURRENCY = 'USD';
 const LIVE_QUOTE_LABEL = 'Live quote';
 
-export const VIDEO_RATE_PRESETS = [
-  { id: '720p-sec', label: '720p / sec', subLabel: 'Draft', resolution: '720p', audio: false },
-  { id: '1080p-sec', label: '1080p / sec', subLabel: 'Standard', resolution: '1080p', audio: false },
-  { id: '1080p-audio-sec', label: '1080p / sec + audio', subLabel: 'Audio', resolution: '1080p', audio: true },
+const PRICING_DISPLAY_MODEL_ORDER = [
+  'seedance-2-0',
+  'seedance-2-0-fast',
+  'kling-3-pro',
+  'kling-3-4k',
+  'kling-3-standard',
+  'veo-3-1',
+  'veo-3-1-lite',
+  'veo-3-1-fast',
+  'happy-horse-1-0',
+  'ltx-2-3-fast',
+  'ltx-2-3-pro',
+  'wan-2-6',
+  'minimax-hailuo-02-text',
+  'luma-ray-2',
+  'luma-ray-2-flash',
 ] as const;
 
-export type VideoRatePreset = (typeof VIDEO_RATE_PRESETS)[number];
-export type VideoRatePresetId = VideoRatePreset['id'];
+const PRICING_DISPLAY_FAMILY_ORDER = ['seedance', 'kling', 'veo', 'happy-horse', 'ltx', 'wan', 'hailuo', 'luma'] as const;
+const PRICING_DISPLAY_MODEL_RANK = new Map<string, number>(
+  PRICING_DISPLAY_MODEL_ORDER.map((slug, index) => [slug, index] as const)
+);
+const PRICING_DISPLAY_FAMILY_RANK = new Map<string, number>(
+  PRICING_DISPLAY_FAMILY_ORDER.map((family, index) => [family, index] as const)
+);
+
+export const VIDEO_PRICE_PRESETS = [
+  { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
+  { id: '8s-1080p', label: '8s 1080p', subLabel: 'Premium', resolution: '1080p', durationSec: 8, audio: false },
+  { id: '10s-1080p', label: '10s 1080p', subLabel: 'Standard', resolution: '1080p', durationSec: 10, audio: false },
+  {
+    id: '10s-1080p-audio',
+    label: '10s 1080p + audio',
+    subLabel: 'Audio',
+    resolution: '1080p',
+    durationSec: 10,
+    audio: true,
+  },
+  { id: '4k-route', label: '4K route', subLabel: 'Native', resolution: '4k', durationSec: null, audio: false },
+] as const;
+
+export type VideoPricePreset = (typeof VIDEO_PRICE_PRESETS)[number];
+export type VideoPricePresetId = VideoPricePreset['id'];
+
+export const DEFAULT_VIDEO_PRICE_PRESET_ID: VideoPricePresetId = '10s-1080p';
+
+const PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS = new Set(['seedance-1-5-pro']);
+const PREVIOUS_GENERATION_PRICING_ENGINE_IDS = new Set([
+  'seedance-1-5-pro',
+  'ltx-2',
+  'ltx-2-fast',
+  'kling-2-5-turbo',
+  'kling-2-6-pro',
+  'pika-text-to-video',
+  'wan-2-5',
+]);
 
 export type PricingHubLink = {
   href: string;
@@ -29,10 +77,11 @@ export type PricingHubLink = {
 };
 
 export type PresetQuote = {
-  status: 'exact' | 'unsupported' | 'closest';
+  status: 'exact' | 'unsupported' | 'closest' | 'live_quote';
   amountCents?: number;
   display?: string;
   note?: string;
+  rateDisplay?: string;
   closest?: {
     label: string;
     amountCents: number;
@@ -46,12 +95,19 @@ export type VideoPricingRow = {
   id: string;
   anchorId: string;
   family: string;
+  engineIcon: {
+    id: string;
+    label: string;
+    brandId?: string;
+  };
   engineName: string;
   variant: string | null;
+  pricingGroup: 'recommended' | 'legacy';
+  highlightEligible: boolean;
   notes: string[];
   links: PricingHubLink[];
-  maxDurationLabel: string;
-  quotes: Record<VideoRatePresetId, PresetQuote>;
+  limitsLabel: string;
+  quotes: Record<VideoPricePresetId, PresetQuote>;
   sortValue: number;
 };
 
@@ -62,7 +118,7 @@ export type VideoPricingHighlight = {
 };
 
 export type VideoPricingMatrixData = {
-  presets: readonly VideoRatePreset[];
+  presets: readonly VideoPricePreset[];
   rows: VideoPricingRow[];
   highlights: VideoPricingHighlight[];
 };
@@ -126,7 +182,7 @@ function formatPrice(locale: AppLocale, cents: number | null | undefined, curren
   return formatCurrencyForLocale(locale, currency, cents / 100);
 }
 
-function formatRate(locale: AppLocale, cents: number | null | undefined, currency = FALLBACK_CURRENCY) {
+function formatRateDisplay(locale: AppLocale, cents: number | null | undefined, currency = FALLBACK_CURRENCY) {
   const price = formatPrice(locale, cents, currency);
   return price === LIVE_QUOTE_LABEL ? price : `${price}/s`;
 }
@@ -184,9 +240,55 @@ function collectDurationOptions(entry: FalEngineEntry) {
   return [...durations].sort((a, b) => a - b);
 }
 
+function getEngineMaxDurationSec(entry: FalEngineEntry) {
+  return entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
+}
+
+function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number | null) {
+  if (requestedDurationSec == null) return { supported: true, durationSec: null, note: null as string | null };
+  const options = collectDurationOptions(entry);
+  if (options.length) {
+    if (options.includes(requestedDurationSec)) {
+      return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
+    }
+    const maxOption = Math.max(...options);
+    const minOption = Math.min(...options);
+    const closest = options.reduce((best, option) =>
+      Math.abs(option - requestedDurationSec) < Math.abs(best - requestedDurationSec) ? option : best
+    );
+    if (maxOption < requestedDurationSec) {
+      return { supported: false, durationSec: closest, note: `max ${maxOption}s` };
+    }
+    if (minOption > requestedDurationSec) {
+      return { supported: false, durationSec: closest, note: `min ${minOption}s` };
+    }
+    return { supported: false, durationSec: closest, note: `${options.slice(0, 3).join('/')}s only` };
+  }
+  const maxDurationSec = getEngineMaxDurationSec(entry);
+  if (requestedDurationSec <= maxDurationSec) {
+    return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
+  }
+  return { supported: false, durationSec: maxDurationSec, note: `max ${maxDurationSec}s` };
+}
+
+function chooseFourKDuration(entry: FalEngineEntry) {
+  const options = collectDurationOptions(entry);
+  const preferred = [10, 8, 5];
+  const exactPreferred = preferred.find((duration) => options.includes(duration));
+  if (exactPreferred != null) return exactPreferred;
+  if (options.length) {
+    return options.find((duration) => duration >= 5) ?? options[0] ?? null;
+  }
+  const maxDurationSec = getEngineMaxDurationSec(entry);
+  if (maxDurationSec >= 10) return 10;
+  if (maxDurationSec >= 8) return 8;
+  if (maxDurationSec >= 5) return 5;
+  return maxDurationSec > 0 ? maxDurationSec : null;
+}
+
 function formatDurationLabel(entry: FalEngineEntry) {
   const options = collectDurationOptions(entry);
-  const maxDurationSec = entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
+  const maxDurationSec = getEngineMaxDurationSec(entry);
   if (options.length) {
     if (options.length <= 3) return options.map((option) => `${option}s`).join(' / ');
     return `Up to ${Math.max(...options)}s`;
@@ -195,21 +297,23 @@ function formatDurationLabel(entry: FalEngineEntry) {
 }
 
 function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string) {
+  const normalizedRequested = requestedResolution.toLowerCase();
   const resolutions = engine.resolutions.map(String);
-  if (resolutions.includes(requestedResolution)) {
-    return { supported: true, resolution: requestedResolution, note: null as string | null };
+  const exactResolution = resolutions.find((resolution) => resolution.toLowerCase() === normalizedRequested);
+  if (exactResolution) {
+    return { supported: true, resolution: exactResolution, note: null as string | null };
   }
   const preferredClosest =
-    requestedResolution === '720p'
-      ? resolutions.find((resolution) => resolution === '1080p') ?? resolutions.find((resolution) => resolution === '768P')
-      : resolutions.find((resolution) => resolution === '720p') ?? resolutions.find((resolution) => resolution === '768P');
+    normalizedRequested === '720p'
+      ? resolutions.find((resolution) => resolution.toLowerCase() === '1080p') ??
+        resolutions.find((resolution) => resolution.toLowerCase() === '768p')
+      : normalizedRequested === '4k'
+        ? resolutions.find((resolution) => resolution.toLowerCase() === '1440p') ??
+          resolutions.find((resolution) => resolution.toLowerCase() === '1080p')
+        : resolutions.find((resolution) => resolution.toLowerCase() === '720p') ??
+          resolutions.find((resolution) => resolution.toLowerCase() === '768p');
   const closest = preferredClosest ?? resolutions[0] ?? requestedResolution;
-  const note =
-    resolutions.length === 1
-      ? `${closest} only`
-      : requestedResolution === '720p' && closest === '1080p'
-        ? '1080p route'
-        : `${closest} closest`;
+  const note = resolutions.length === 1 ? `${closest} only` : `${requestedResolution} unavailable`;
   return { supported: false, resolution: closest, note };
 }
 
@@ -253,54 +357,94 @@ function readPerSecondRateCents(engine: EngineCaps, resolution: string, audioMod
   return Math.max(0, baseRate + readAudioDelta(pricingDetails, resolution, audioMode));
 }
 
-function displayedPerSecondRateCents(engine: EngineCaps, resolution: string, audioMode: AudioRateMode = 'default') {
-  const rate = readPerSecondRateCents(engine, resolution, audioMode);
-  return rate == null ? null : rate * 1.3;
+function readScenarioVendorCents(
+  engine: EngineCaps,
+  resolution: string,
+  durationSec: number,
+  audioMode: AudioRateMode = 'default'
+) {
+  const pricingDetails = engine.pricingDetails;
+  if (pricingDetails && isSeedance2TokenPricing(pricingDetails)) {
+    try {
+      const quote = computeSeedance2TokenQuote({
+        details: pricingDetails,
+        durationSec,
+        resolution: resolution as Resolution,
+        aspectRatio: pricingDetails.tokenPricing.defaultAspectRatio,
+      });
+      return quote.vendorCostUsd * 100;
+    } catch {
+      return null;
+    }
+  }
+
+  const perSecondRate = readPerSecondRateCents(engine, resolution, audioMode);
+  return perSecondRate == null ? null : perSecondRate * durationSec;
+}
+
+function displayedScenarioCents(
+  engine: EngineCaps,
+  resolution: string,
+  durationSec: number,
+  audioMode: AudioRateMode = 'default'
+) {
+  const vendorCents = readScenarioVendorCents(engine, resolution, durationSec, audioMode);
+  return vendorCents == null ? null : applyDisplayedPriceMarginCents(vendorCents);
 }
 
 function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
 
-export function getPresetRateQuote(entry: FalEngineEntry, preset: VideoRatePreset, locale: AppLocale): PresetQuote {
+function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPricePreset) {
+  if (preset.id === '4k-route') return chooseFourKDuration(entry);
+  return preset.durationSec;
+}
+
+export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, locale: AppLocale): PresetQuote {
   const engine = entry.engine;
   const resolution = resolveResolutionSupport(engine, preset.resolution);
   const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
   const audioMode: AudioRateMode = preset.audio ? 'default' : supportsAudioOff(engine) ? 'audio_off' : 'default';
   const canExactAudio = preset.audio ? engine.audio : true;
-  const exact = resolution.supported && canExactAudio;
+  const requestedDurationSec = resolvePresetDuration(entry, preset);
+  const duration = resolveDurationSupport(entry, requestedDurationSec);
+  const exact = resolution.supported && duration.supported && canExactAudio && requestedDurationSec != null;
 
-  const exactCents = exact ? displayedPerSecondRateCents(engine, preset.resolution, audioMode) : null;
+  const exactCents =
+    exact && duration.durationSec != null
+      ? displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
+      : null;
   if (exact) {
+    if (exactCents == null || duration.durationSec == null) {
+      return {
+        status: 'live_quote',
+        display: LIVE_QUOTE_LABEL,
+        note: preset.id === '4k-route' ? `${duration.durationSec ?? ''}s 4K`.trim() : undefined,
+        sortValue: Number.POSITIVE_INFINITY,
+      };
+    }
+    const rateCents = duration.durationSec > 0 ? exactCents / duration.durationSec : null;
     return {
       status: 'exact',
       amountCents: exactCents ?? undefined,
-      display: formatRate(locale, exactCents, currency),
-      note: !preset.audio && engine.audio && !supportsAudioOff(engine) ? 'audio included' : undefined,
+      display: formatPrice(locale, exactCents, currency),
+      note:
+        preset.id === '4k-route'
+          ? `${duration.durationSec}s 4K`
+          : !preset.audio && engine.audio && !supportsAudioOff(engine)
+            ? 'audio incl.'
+            : undefined,
+      rateDisplay: formatRateDisplay(locale, rateCents, currency),
       sortValue: exactCents ?? Number.POSITIVE_INFINITY,
     };
   }
 
-  const closestCents = displayedPerSecondRateCents(engine, resolution.resolution, audioMode);
-  const note = !canExactAudio ? 'audio unavailable' : resolution.note ?? 'unsupported';
-  if (closestCents != null && (resolution.resolution !== preset.resolution || !canExactAudio)) {
-    return {
-      status: 'closest',
-      display: '—',
-      note,
-      closest: {
-        label: note,
-        amountCents: closestCents,
-        display: formatRate(locale, closestCents, currency),
-      },
-      sortValue: Number.POSITIVE_INFINITY,
-    };
-  }
-
+  const note = !canExactAudio ? 'audio unavailable' : !duration.supported ? duration.note : resolution.note ?? 'unsupported';
   return {
     status: 'unsupported',
     display: '—',
-    note,
+    note: note ?? undefined,
     sortValue: Number.POSITIVE_INFINITY,
   };
 }
@@ -324,21 +468,54 @@ function buildVideoLinks(entry: FalEngineEntry): PricingHubLink[] {
 function buildVideoNotes(entry: FalEngineEntry) {
   const engine = entry.engine;
   const notes = new Set<string>();
-  if (engine.audio) notes.add(supportsAudioOff(engine) ? 'Audio optional' : 'Audio included');
-  else notes.add('Silent only');
-  if (engine.maxDurationSec < 10) notes.add(`Max ${engine.maxDurationSec}s`);
-  if (engine.resolutions.length === 1 && engine.resolutions[0] === '4k') notes.add('4K route');
-  if (engine.modes.includes('i2v') || engine.modes.includes('ref2v')) notes.add('Image-to-video');
-  if (engine.modes.includes('t2v') && (engine.modes.includes('i2v') || engine.modes.includes('ref2v'))) notes.add('Text + image');
-  if (engine.latencyTier === 'fast') notes.add('Fast draft');
-  return [...notes].slice(0, 4);
+  if (engine.audio) notes.add(supportsAudioOff(engine) ? 'audio opt.' : 'audio incl.');
+  else notes.add('silent');
+  if (engine.resolutions.length === 1 && engine.resolutions[0].toLowerCase() === '4k') notes.add('4K');
+  if (engine.modes.includes('t2v')) notes.add('T2V');
+  if (engine.modes.includes('i2v') || engine.modes.includes('ref2v')) notes.add('I2V');
+  if (engine.latencyTier === 'fast') notes.add('fast');
+  return [...notes].slice(0, 5);
+}
+
+function getEntryPricingIdentity(entry: FalEngineEntry) {
+  return entry.modelSlug || entry.id || entry.engine.id;
+}
+
+function isLegacyPricingEngine(entry: FalEngineEntry) {
+  const identity = getEntryPricingIdentity(entry);
+  return Boolean(entry.isLegacy) || PREVIOUS_GENERATION_PRICING_ENGINE_IDS.has(identity);
+}
+
+function isPricingHighlightEligible(entry: FalEngineEntry) {
+  const identity = getEntryPricingIdentity(entry);
+  return !isLegacyPricingEngine(entry) && !PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS.has(identity);
+}
+
+function buildLimitsLabel(entry: FalEngineEntry) {
+  const maxDuration = formatDurationLabel(entry);
+  const resolutions = entry.engine.resolutions
+    .map(String)
+    .map((resolution) => (resolution.toLowerCase() === '4k' ? '4K' : resolution))
+    .join(' / ');
+  return `${maxDuration} · ${resolutions}`;
+}
+
+function getPricingDisplayRank(entry: FalEngineEntry) {
+  const modelRank = PRICING_DISPLAY_MODEL_RANK.get(entry.modelSlug);
+  if (modelRank != null) return modelRank;
+  const familyRank = PRICING_DISPLAY_FAMILY_RANK.get(entry.family ?? entry.provider);
+  if (familyRank != null) return PRICING_DISPLAY_MODEL_ORDER.length + familyRank * 100;
+  return 9_000;
 }
 
 function markCheapestQuotes(rows: VideoPricingRow[]) {
-  VIDEO_RATE_PRESETS.forEach((preset) => {
+  VIDEO_PRICE_PRESETS.forEach((preset) => {
     const exactQuotes = rows
       .map((row) => ({ row, quote: row.quotes[preset.id] }))
-      .filter((item) => item.quote.status === 'exact' && typeof item.quote.amountCents === 'number');
+      .filter(
+        (item) =>
+          item.row.highlightEligible && item.quote.status === 'exact' && typeof item.quote.amountCents === 'number'
+      );
     const cheapest = exactQuotes.reduce(
       (best, item) => (!best || item.quote.amountCents! < best.quote.amountCents! ? item : best),
       null as { row: VideoPricingRow; quote: PresetQuote } | null
@@ -355,22 +532,43 @@ function buildVideoPricingRows(locale: AppLocale) {
     .filter((entry) => supportsVideoGeneration(entry) && isPublicMarketingEntry(entry))
     .map((entry): VideoPricingRow => {
       const quotes = Object.fromEntries(
-        VIDEO_RATE_PRESETS.map((preset) => [preset.id, getPresetRateQuote(entry, preset, locale)])
-      ) as Record<VideoRatePresetId, PresetQuote>;
-      const defaultQuote = quotes['1080p-sec'];
-      const exactRank = defaultQuote.status === 'exact' ? 0 : defaultQuote.status === 'closest' ? 1 : 2;
-      const pricedRank = typeof defaultQuote.amountCents === 'number' ? defaultQuote.amountCents : Number.MAX_SAFE_INTEGER;
+        VIDEO_PRICE_PRESETS.map((preset) => [preset.id, getPresetQuote(entry, preset, locale)])
+      ) as Record<VideoPricePresetId, PresetQuote>;
+      const defaultQuote = quotes[DEFAULT_VIDEO_PRICE_PRESET_ID];
+      const exactRank =
+        defaultQuote.status === 'exact'
+          ? 0
+          : defaultQuote.status === 'closest'
+            ? 1
+            : defaultQuote.status === 'live_quote'
+              ? 2
+              : 3;
+      const pricedRank = typeof defaultQuote.amountCents === 'number' ? defaultQuote.amountCents : 99_999;
+      const pricingGroup = isLegacyPricingEngine(entry) ? 'legacy' : 'recommended';
+      const highlightEligible = isPricingHighlightEligible(entry);
+      const displayRank = getPricingDisplayRank(entry);
       return {
-        id: entry.id,
+        id: entry.id ?? entry.engine.id ?? entry.modelSlug,
         anchorId: anchorFromSlug(entry.modelSlug),
         family: entry.family ?? entry.provider,
         engineName: entry.marketingName || entry.engine.label,
+        engineIcon: {
+          id: entry.engine.id || entry.id,
+          label: entry.marketingName || entry.engine.label,
+          brandId: entry.brandId ?? entry.engine.brandId ?? undefined,
+        },
         variant: entry.versionLabel ?? entry.engine.variant ?? null,
-        maxDurationLabel: formatDurationLabel(entry),
+        pricingGroup,
+        highlightEligible,
+        limitsLabel: buildLimitsLabel(entry),
         notes: buildVideoNotes(entry),
         links: buildVideoLinks(entry),
         quotes,
-        sortValue: exactRank * 10_000_000 + pricedRank,
+        sortValue:
+          (pricingGroup === 'legacy' ? 1 : 0) * 1_000_000_000 +
+          displayRank * 1_000_000 +
+          exactRank * 100_000 +
+          pricedRank,
       };
     })
     .sort((a, b) => a.sortValue - b.sortValue || a.engineName.localeCompare(b.engineName));
@@ -378,7 +576,7 @@ function buildVideoPricingRows(locale: AppLocale) {
   return markCheapestQuotes(rows);
 }
 
-function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoRatePresetId) {
+function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId) {
   return rows.reduce(
     (best, row) => {
       const quote = row.quotes[presetId];
@@ -390,48 +588,43 @@ function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoRatePresetId) 
   );
 }
 
-function highestExactRow(rows: VideoPricingRow[], presetId: VideoRatePresetId) {
-  return rows.reduce(
-    (best, row) => {
-      const quote = row.quotes[presetId];
-      if (quote.status !== 'exact' || typeof quote.amountCents !== 'number') return best;
-      if (!best || quote.amountCents > best.quote.amountCents!) return { row, quote };
-      return best;
-    },
-    null as { row: VideoPricingRow; quote: PresetQuote } | null
-  );
-}
-
 function buildVideoHighlights(rows: VideoPricingRow[]): VideoPricingHighlight[] {
-  const cheapest1080 = cheapestExactRow(rows, '1080p-sec');
-  const cheapestAudio = cheapestExactRow(rows, '1080p-audio-sec');
-  const cheapestDraft = cheapestExactRow(rows, '720p-sec');
-  const premium1080 = highestExactRow(rows, '1080p-sec');
-  const available1080Count = rows.filter((row) => row.quotes['1080p-sec'].status === 'exact').length;
+  const eligibleRows = rows.filter((row) => row.highlightEligible);
+  const bestDraft = cheapestExactRow(eligibleRows, '5s-720p');
+  const cheapest8s = cheapestExactRow(eligibleRows, '8s-1080p');
+  const cheapest10s = cheapestExactRow(eligibleRows, '10s-1080p');
+  const cheapestAudio = cheapestExactRow(eligibleRows, '10s-1080p-audio');
+  const fourKRoute = cheapestExactRow(eligibleRows, '4k-route');
+  const currentGenCount = eligibleRows.length;
   return [
     {
-      label: 'Cheapest 1080p/sec',
-      value: cheapest1080 ? `${cheapest1080.row.engineName} · ${cheapest1080.quote.display}` : LIVE_QUOTE_LABEL,
-      href: cheapest1080 ? `#${cheapest1080.row.anchorId}` : undefined,
+      label: 'Best-value current-gen 5s 720p',
+      value: bestDraft ? `${bestDraft.row.engineName} · ${bestDraft.quote.display}` : LIVE_QUOTE_LABEL,
+      href: bestDraft ? `#${bestDraft.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest 1080p/sec + audio',
+      label: 'Cheapest current-gen 8s 1080p',
+      value: cheapest8s ? `${cheapest8s.row.engineName} · ${cheapest8s.quote.display}` : LIVE_QUOTE_LABEL,
+      href: cheapest8s ? `#${cheapest8s.row.anchorId}` : undefined,
+    },
+    {
+      label: 'Cheapest current-gen 10s 1080p',
+      value: cheapest10s ? `${cheapest10s.row.engineName} · ${cheapest10s.quote.display}` : LIVE_QUOTE_LABEL,
+      href: cheapest10s ? `#${cheapest10s.row.anchorId}` : undefined,
+    },
+    {
+      label: 'Cheapest current-gen 10s 1080p + audio',
       value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : LIVE_QUOTE_LABEL,
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest 720p/sec draft',
-      value: cheapestDraft ? `${cheapestDraft.row.engineName} · ${cheapestDraft.quote.display}` : LIVE_QUOTE_LABEL,
-      href: cheapestDraft ? `#${cheapestDraft.row.anchorId}` : undefined,
+      label: '4K route available',
+      value: fourKRoute ? `${fourKRoute.row.engineName} · ${fourKRoute.quote.display}` : 'No exact route',
+      href: fourKRoute ? `#${fourKRoute.row.anchorId}` : undefined,
     },
     {
-      label: 'Premium 1080p/sec',
-      value: premium1080 ? `${premium1080.row.engineName} · ${premium1080.quote.display}` : LIVE_QUOTE_LABEL,
-      href: premium1080 ? `#${premium1080.row.anchorId}` : undefined,
-    },
-    {
-      label: '1080p available',
-      value: `${available1080Count} engines`,
+      label: 'Current-gen engines available',
+      value: `${currentGenCount} engines`,
     },
   ];
 }
@@ -452,6 +645,25 @@ function buildImageLinks(entry: FalEngineEntry): PricingHubLink[] {
   links.push({ label: 'Image app', href: '/app/image' });
   if (entry.modelSlug === 'gpt-image-2') links.push({ label: 'GPT Image 2', href: '/models/gpt-image-2' });
   return links;
+}
+
+function formatImageSizeSummary(resolutions: string[]) {
+  const normalized = resolutions.map((resolution) => resolution.toLowerCase());
+  const labels = new Set<string>();
+  if (normalized.some((resolution) => resolution.includes('square') || resolution.includes('1:1'))) labels.add('Square');
+  if (normalized.some((resolution) => resolution.includes('portrait') || resolution.includes('9:16'))) labels.add('Portrait');
+  if (normalized.some((resolution) => resolution.includes('landscape') || resolution.includes('16:9'))) labels.add('Landscape');
+  if (normalized.includes('1k') || normalized.some((resolution) => resolution.includes('1024'))) labels.add('1K');
+  if (normalized.includes('2k') || normalized.some((resolution) => resolution.includes('2048'))) labels.add('2K');
+  if (
+    normalized.includes('4k') ||
+    normalized.includes('4K'.toLowerCase()) ||
+    normalized.some((resolution) => resolution.includes('4096'))
+  ) {
+    labels.add('4K');
+  }
+  if (!labels.size && resolutions.length) return resolutions.slice(0, 3).join(' · ');
+  return labels.size ? [...labels].join(' · ') : 'App presets';
 }
 
 function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
@@ -483,7 +695,7 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
         standardImage: formatPrice(locale, flatImageCents(engine, standardResolution, 'medium')),
         highQualityImage: formatPrice(locale, flatImageCents(engine, highResolution, 'high')),
         reference: engine.modes.includes('i2i') ? 'Supported' : '—',
-        sizes: resolutions.slice(0, 5).join(', ') || 'App presets',
+        sizes: formatImageSizeSummary(resolutions),
         links: buildImageLinks(entry),
       };
     })
@@ -654,31 +866,40 @@ function buildPopularChecks(
   audioRows: AudioPricingRow[],
   toolRows: ToolPricingRow[]
 ): PopularPriceCheckRow[] {
-  const rowFor = (presetId: VideoRatePresetId) => cheapestExactRow(videoRows, presetId);
-  const draft720 = rowFor('720p-sec');
-  const rate1080 = rowFor('1080p-sec');
-  const audio1080 = rowFor('1080p-audio-sec');
+  const currentRows = videoRows.filter((row) => row.highlightEligible);
+  const rowFor = (presetId: VideoPricePresetId) => cheapestExactRow(currentRows, presetId);
+  const draft720 = rowFor('5s-720p');
+  const premium8s = rowFor('8s-1080p');
+  const video1080 = rowFor('10s-1080p');
+  const audio1080 = rowFor('10s-1080p-audio');
   const imageRow = imageRows[0];
   const voiceRow = audioRows.find((row) => row.id === 'audio-voice-only');
   const upscaleRow = toolRows.find((row) => row.id === 'video-upscale');
   return [
     {
-      id: '720p-video-second',
-      priceCheck: '720p video second',
+      id: '5s-720p-video',
+      priceCheck: '5s 720p video',
       engine: draft720?.row.engineName ?? LIVE_QUOTE_LABEL,
       price: draft720?.quote.display ?? LIVE_QUOTE_LABEL,
       link: { label: 'View row', href: draft720 ? `#${draft720.row.anchorId}` : '/app' },
     },
     {
-      id: '1080p-video-second',
-      priceCheck: '1080p video second',
-      engine: rate1080?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: rate1080?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: rate1080 ? `#${rate1080.row.anchorId}` : '/app' },
+      id: '8s-1080p-premium-video',
+      priceCheck: '8s 1080p premium video',
+      engine: premium8s?.row.engineName ?? LIVE_QUOTE_LABEL,
+      price: premium8s?.quote.display ?? LIVE_QUOTE_LABEL,
+      link: { label: 'View row', href: premium8s ? `#${premium8s.row.anchorId}` : '/app' },
     },
     {
-      id: '1080p-audio-video-second',
-      priceCheck: '1080p with audio second',
+      id: '10s-1080p-video',
+      priceCheck: '10s 1080p video',
+      engine: video1080?.row.engineName ?? LIVE_QUOTE_LABEL,
+      price: video1080?.quote.display ?? LIVE_QUOTE_LABEL,
+      link: { label: 'View row', href: video1080 ? `#${video1080.row.anchorId}` : '/app' },
+    },
+    {
+      id: '10s-1080p-audio-video',
+      priceCheck: '10s 1080p + audio',
       engine: audio1080?.row.engineName ?? LIVE_QUOTE_LABEL,
       price: audio1080?.quote.display ?? LIVE_QUOTE_LABEL,
       link: { label: 'View row', href: audio1080 ? `#${audio1080.row.anchorId}` : '/app' },
@@ -715,7 +936,7 @@ export function buildPricingHubData(locale: AppLocale): PricingHubData {
 
   return {
     video: {
-      presets: VIDEO_RATE_PRESETS,
+      presets: VIDEO_PRICE_PRESETS,
       rows: videoRows,
       highlights: buildVideoHighlights(videoRows),
     },
