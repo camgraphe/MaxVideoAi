@@ -57,6 +57,8 @@ export interface ImageWorkspaceCopy {
     thinkingLevelHint: string;
     limitGenerationsLabel: string;
     limitGenerationsHint: string;
+    watermarkLabel: string;
+    watermarkHint: string;
     toggleEnabled: string;
     toggleDisabled: string;
     estimatedCost: string;
@@ -222,6 +224,8 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     thinkingLevelHint: 'Increase reasoning depth when the engine supports it.',
     limitGenerationsLabel: 'Limit generations',
     limitGenerationsHint: 'Reduce extra exploratory generations when supported.',
+    watermarkLabel: 'AI watermark',
+    watermarkHint: 'Add the provider watermark when supported.',
     toggleEnabled: 'Enabled',
     toggleDisabled: 'Disabled',
     estimatedCost: 'Estimated cost: {amount}',

@@ -21,6 +21,10 @@
         "href": "/examples/seedance"
       },
       {
+        "label": "Prepare references with Seedream",
+        "href": "/models/seedream"
+      },
+      {
         "label": "See Seedance 2.0 Fast",
         "href": "/models/seedance-2-0-fast"
       },
@@ -124,6 +128,7 @@
     "items": [
       "Keep prompts structured shot-by-shot when you want the strongest multi-shot continuity.",
       "Use multimodal references to lock wardrobe, props, pacing, and ambience across beats.",
+      "Use Seedream 5.0 Lite when you want to create or clean a reference image before starting an image-to-video run.",
       "Use the optional end image in i2v when you need a guided last frame.",
       "Move to Seedance 2.0 Fast when you need cheaper draft passes before final renders.",
       "Generate shows the active route and the final quote before you submit."
@@ -293,6 +298,13 @@
     "demoTitle": "Demo prompt — Seedance 2.0",
     "demoPromptLabel": "Prompt",
     "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedream 5.0 Lite",
+        "description": "Create or clean a still image in Seedream before using it as a more controlled reference for Seedance image-to-video.",
+        "modelSlug": "seedream",
+        "ctaLabel": "Prepare references with Seedream ->"
+      },
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",

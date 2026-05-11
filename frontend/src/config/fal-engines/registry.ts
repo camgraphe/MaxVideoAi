@@ -27,6 +27,7 @@ import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
 import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
 import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
+import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
 
 export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...PIKA_FAL_ENGINE_REGISTRY,
@@ -57,4 +58,5 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...NANO_BANANA_PRO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_2_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_FAL_ENGINE_REGISTRY,
+  ...SEEDREAM_FAL_ENGINE_REGISTRY,
 ];

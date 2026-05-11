@@ -21,6 +21,7 @@ import {
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
   canonicalizeImageFieldValue,
+  getImageFieldDefaultBoolean,
   getImageFieldValues,
   getImageInputField,
   normalizeFalImageResolution,
@@ -50,6 +51,7 @@ import {
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
 import { resolveImageGenerationRequestContext } from './image-generation-request-context';
 import { prepareImageGenerationReferences } from './image-generation-references';
+import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
@@ -262,6 +264,10 @@ export async function executeImageGeneration({
   const limitGenerations =
     Boolean(getImageInputField(engine, 'limit_generations', mode)) &&
     normalizeOptionalBoolean(body.limitGenerations) === true;
+  const watermarkField = getImageInputField(engine, 'watermark', mode);
+  const watermark =
+    Boolean(watermarkField) &&
+    (normalizeOptionalBoolean(body.watermark) ?? getImageFieldDefaultBoolean(engine, 'watermark', mode) ?? false);
 
   let pricing: PricingSnapshot;
   const membershipTier = typeof body.membershipTier === 'string' && body.membershipTier.trim().length
@@ -319,6 +325,7 @@ export async function executeImageGeneration({
       ...(enableWebSearch ? { enableWebSearch } : {}),
       ...(thinkingLevel ? { thinkingLevel } : {}),
       ...(limitGenerations ? { limitGenerations } : {}),
+      ...(watermark ? { watermark } : {}),
     },
   };
 
@@ -352,6 +359,7 @@ export async function executeImageGeneration({
         enableWebSearch,
         thinkingLevel,
         limitGenerations,
+        watermark,
         imageUrls: normalizedImageUrls,
         characterReferences,
         membershipTier,
@@ -440,6 +448,40 @@ export async function executeImageGeneration({
   const falClient = getFalClient();
   const providerMode = getResultProviderMode();
   let providerJobId: string | undefined;
+
+  if (engine.id === 'seedream' && engine.providerMeta?.provider === 'byteplus_modelark') {
+    return executeBytePlusSeedreamGeneration({
+      billingProductKey,
+      characterReferenceCount: characterReferences.length,
+      combinedImageUrls,
+      costBreakdownJson,
+      effectivePrompt,
+      engine,
+      engineEntry,
+      indexable,
+      jobId,
+      jobSurface,
+      limitGenerations,
+      maskUrl,
+      mode,
+      normalizedSeed,
+      numImages,
+      outputFormat,
+      pendingReceipt,
+      priceOnlyReceipts,
+      pricing,
+      pricingSnapshotJson,
+      quality,
+      refundDescription,
+      resolvedAspectRatio,
+      resolution,
+      thinkingLevel,
+      userId,
+      vendorAccountId,
+      visibility,
+      watermark,
+    });
+  }
 
   try {
     const resolvedReferenceUrls =

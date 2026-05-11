@@ -25,6 +25,7 @@ export const USE_CASE_MAP: Record<string, string> = {
   'ltx-2-fast': 'rapid testing and quick iteration',
   'minimax-hailuo-02-text': 'budget-friendly concept tests',
   'gpt-image-2': 'text-heavy stills, product photography, and controlled edits',
+  seedream: 'clean reference images for Seedance animation and product visuals',
   'nano-banana': 'storyboards and still-first workflows',
   'nano-banana-pro': 'campaign stills and typography-focused edits',
   'nano-banana-2': 'grounded stills and wide-format image edits',
@@ -70,6 +71,8 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Idéal pour des images riches en texte, des packshots produit, des mockups UI et des edits guides par reference.',
     'nano-banana-2': 'Idéal pour des images fixes guidées et des retouches grand format, avec des performances fiables.',
     'nano-banana-pro': 'Idéal pour des visuels de campagne et des retouches typographiques, avec des performances fiables.',
+    seedream:
+      'Idéal pour créer des références propres avant Seedance, des packshots produit et des visuels publicitaires contrôlés.',
   },
 };
 
@@ -103,4 +106,3 @@ export const DEFAULT_VALUE_CONJUNCTION: Record<AppLocale, string> = {
   fr: 'et',
   es: 'y',
 };
-

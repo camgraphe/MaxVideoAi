@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { resolveStableMediaUrl } from '@/lib/media';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 
 interface GroupViewerModalProps {
@@ -58,7 +59,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
         videoUrl: video,
         previewUrl: item.previewUrl,
         audioUrl: audio,
-        imageUrl: !video && !audio ? item.url : undefined,
+        imageUrl: !video && !audio ? resolveStableMediaUrl(item.url, thumb) ?? item.url : undefined,
         thumbUrl: thumb,
         aspectRatio: item.aspect,
         status,

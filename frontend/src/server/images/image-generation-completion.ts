@@ -110,6 +110,7 @@ export async function persistCompletedImageGeneration(params: {
   await query(
     `UPDATE app_jobs
      SET thumb_url = $2,
+         preview_frame = $2,
          video_url = $3,
          status = 'completed',
          progress = 100,

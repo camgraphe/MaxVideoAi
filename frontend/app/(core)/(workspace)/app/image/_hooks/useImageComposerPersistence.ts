@@ -51,6 +51,7 @@ type UseImageComposerPersistenceParams = {
   enableWebSearch: boolean;
   thinkingLevel: string | null;
   limitGenerations: boolean;
+  watermark: boolean;
   persistableReferenceSlots: PersistedReferenceSlot[];
   setEngineId: Dispatch<SetStateAction<string>>;
   setMode: Dispatch<SetStateAction<ImageGenerationMode>>;
@@ -67,6 +68,7 @@ type UseImageComposerPersistenceParams = {
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
   setLimitGenerations: Dispatch<SetStateAction<boolean>>;
+  setWatermark: Dispatch<SetStateAction<boolean>>;
   setReferenceSlots: Dispatch<SetStateAction<Array<ReferenceSlotValue | null>>>;
 };
 
@@ -87,6 +89,7 @@ export function useImageComposerPersistence({
   enableWebSearch,
   thinkingLevel,
   limitGenerations,
+  watermark,
   persistableReferenceSlots,
   setEngineId,
   setMode,
@@ -103,6 +106,7 @@ export function useImageComposerPersistence({
   setEnableWebSearch,
   setThinkingLevel,
   setLimitGenerations,
+  setWatermark,
   setReferenceSlots,
 }: UseImageComposerPersistenceParams) {
   const hasHydratedStorageRef = useRef(false);
@@ -194,6 +198,7 @@ export function useImageComposerPersistence({
             ? parsed.limitGenerations
             : false
         );
+        setWatermark(getImageInputField(engineMatch.engineCaps, 'watermark', nextMode) ? parsed.watermark : false);
       }
 
       if (parsed.referenceSlots.length || (parsed.characterReferences?.length ?? 0) > 0) {
@@ -244,6 +249,7 @@ export function useImageComposerPersistence({
     setResolution,
     setSeed,
     setThinkingLevel,
+    setWatermark,
   ]);
 
   useEffect(() => {
@@ -265,6 +271,7 @@ export function useImageComposerPersistence({
       enableWebSearch,
       thinkingLevel,
       limitGenerations,
+      watermark,
       referenceSlots: persistableReferenceSlots,
     };
     if (!payload.engineId) return;
@@ -311,5 +318,6 @@ export function useImageComposerPersistence({
     seed,
     storageHydrated,
     thinkingLevel,
+    watermark,
   ]);
 }

@@ -34,6 +34,7 @@ export interface ImageGenerationRequest {
   enableWebSearch?: boolean;
   thinkingLevel?: 'minimal' | 'high';
   limitGenerations?: boolean;
+  watermark?: boolean;
   engineId?: string;
   membershipTier?: string;
   jobId?: string;

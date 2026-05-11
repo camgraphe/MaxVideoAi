@@ -42,6 +42,7 @@ interface UseImageGenerationRunnerParams {
   hasQualityField: boolean;
   hasSeedField: boolean;
   hasThinkingLevelField: boolean;
+  hasWatermarkField: boolean;
   limitGenerations: boolean;
   maskUrl: string;
   mode: ImageGenerationMode;
@@ -66,6 +67,7 @@ interface UseImageGenerationRunnerParams {
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   thinkingLevel: string | null;
+  watermark: boolean;
 }
 
 export function useImageGenerationRunner({
@@ -82,6 +84,7 @@ export function useImageGenerationRunner({
   hasQualityField,
   hasSeedField,
   hasThinkingLevelField,
+  hasWatermarkField,
   limitGenerations,
   maskUrl,
   mode,
@@ -106,6 +109,7 @@ export function useImageGenerationRunner({
   setSelectedPreviewImageIndex,
   setStatusMessage,
   thinkingLevel,
+  watermark,
 }: UseImageGenerationRunnerParams) {
   return useCallback(
     async (event?: FormEvent<HTMLFormElement> | null) => {
@@ -192,6 +196,7 @@ export function useImageGenerationRunner({
             ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
             : undefined,
           limitGenerations: hasLimitGenerationsField ? limitGenerations : undefined,
+          watermark: hasWatermarkField ? watermark : undefined,
         });
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
@@ -253,6 +258,7 @@ export function useImageGenerationRunner({
       hasQualityField,
       hasSeedField,
       hasThinkingLevelField,
+      hasWatermarkField,
       limitGenerations,
       maskUrl,
       mode,
@@ -280,6 +286,7 @@ export function useImageGenerationRunner({
       setSelectedPreviewImageIndex,
       setStatusMessage,
       thinkingLevel,
+      watermark,
     ]
   );
 }

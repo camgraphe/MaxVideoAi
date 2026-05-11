@@ -3,6 +3,7 @@ import useSWR from 'swr';
 import { saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import { resolveStableMediaUrl } from '@/lib/media';
 import type {
   AssetsResponse,
   HistoryEntry,
@@ -33,7 +34,8 @@ export function useImagePreviewActions({
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const selectedPreviewUrl = previewEntry?.images?.[selectedPreviewImageIndex]?.url ?? null;
+  const selectedPreviewImage = previewEntry?.images?.[selectedPreviewImageIndex];
+  const selectedPreviewUrl = resolveStableMediaUrl(selectedPreviewImage?.url, selectedPreviewImage?.thumbUrl);
   const savedAssetLookupKey =
     canUseWorkspace && selectedPreviewUrl
       ? `/api/user-assets?limit=1&source=generated&originUrl=${encodeURIComponent(selectedPreviewUrl)}`

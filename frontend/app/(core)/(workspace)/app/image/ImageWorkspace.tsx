@@ -23,10 +23,7 @@ import { useImageWorkspaceRouteContext } from './_hooks/useImageWorkspaceRouteCo
 import { useImageWorkspaceModeSync } from './_hooks/useImageWorkspaceModeSync';
 import { useImageWorkspacePresetHandlers } from './_hooks/useImageWorkspacePresetHandlers';
 import { useImageWorkspaceSelectedEngine } from './_hooks/useImageWorkspaceSelectedEngine';
-import {
-  type HistoryEntry,
-  type ImageEngineOption,
-} from './_lib/image-workspace-types';
+import { type HistoryEntry, type ImageEngineOption } from './_lib/image-workspace-types';
 
 export type { ImageEngineOption } from './_lib/image-workspace-types';
 
@@ -35,13 +32,8 @@ interface ImageWorkspaceProps {
 }
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
-  const {
-    advancedSettingsTitle,
-    loginRedirectTarget,
-    resolvedCopy,
-    searchParams,
-    toolsEnabled,
-  } = useImageWorkspaceRouteContext();
+  const { advancedSettingsTitle, loginRedirectTarget, resolvedCopy, searchParams, toolsEnabled } =
+    useImageWorkspaceRouteContext();
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
@@ -57,6 +49,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
   const [limitGenerations, setLimitGenerations] = useState(false);
+  const [watermark, setWatermark] = useState(false);
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
@@ -64,18 +57,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const {
-    closeViewer,
-    handleOpenHistoryEntry,
-    handleSaveVariantToLibrary,
-    viewerGroup,
-  } = useImageWorkspaceViewer();
-  const {
-    autoModeFromReferences,
-    engineCapsList,
-    selectedEngine,
-    selectedEngineCaps,
-  } = useImageWorkspaceSelectedEngine(engines, engineId);
+  const { closeViewer, handleOpenHistoryEntry, handleSaveVariantToLibrary, viewerGroup } = useImageWorkspaceViewer();
+  const { autoModeFromReferences, engineCapsList, selectedEngine, selectedEngineCaps } =
+    useImageWorkspaceSelectedEngine(engines, engineId);
   const {
     aspectRatioField,
     aspectRatioSelectOptions,
@@ -105,6 +89,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     supportedReferenceFormatsLabel,
     thinkingLevelField,
     thinkingLevelSelectOptions,
+    watermarkField,
+    showWatermarkControl,
   } = useImageSettingsFields({
     mode,
     resolution,
@@ -122,6 +108,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setResolution,
     setSeed,
     setThinkingLevel,
+    setWatermark,
   });
   const {
     canCollapseReferenceSlots,
@@ -161,10 +148,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     supportedReferenceFormatsLabel,
     toolsEnabled,
   });
-  const {
-    pricingError,
-    pricingSnapshot,
-  } = useImageWorkspacePricing({
+  const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
     customImageHeight,
     customImageWidth,
     enableWebSearch,
@@ -176,13 +160,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     resolution,
     selectedEngineId: selectedEngine?.id,
   });
-  const {
-    historyEntries,
-    isImageJob,
-    mutateJobs,
-    pendingGroups,
-    setPendingGroups,
-  } = useImageWorkspaceHistory({ engines, localHistory });
+  const { historyEntries, isImageJob, mutateJobs, pendingGroups, setPendingGroups } = useImageWorkspaceHistory({
+    engines,
+    localHistory,
+  });
 
   const referenceNoteText = resolvedCopy.composer.referenceNote;
 
@@ -211,6 +192,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     enableWebSearch,
     thinkingLevel,
     limitGenerations,
+    watermark,
     persistableReferenceSlots,
     setEngineId,
     setMode,
@@ -227,6 +209,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setEnableWebSearch,
     setThinkingLevel,
     setLimitGenerations,
+    setWatermark,
     setReferenceSlots,
   });
 
@@ -254,6 +237,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setSelectedPreviewImageIndex,
     setStatusMessage,
     setThinkingLevel,
+    setWatermark,
   });
 
   const { setNumImagesPreset, setResolutionPreset } = useImageWorkspacePresetHandlers({
@@ -279,6 +263,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     hasQualityField: Boolean(qualityField),
     hasSeedField: Boolean(seedField),
     hasThinkingLevelField: Boolean(thinkingLevelField),
+    hasWatermarkField: Boolean(watermarkField),
     limitGenerations,
     maskUrl,
     mode,
@@ -303,6 +288,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setSelectedPreviewImageIndex,
     setStatusMessage,
     thinkingLevel,
+    watermark,
   });
 
   const handleSelectGalleryGroup = useImageGallerySelection({
@@ -357,10 +343,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setStatusMessage,
   });
 
-  const {
-    composerReferenceAssets,
-    referenceAssetFields,
-  } = useImageWorkspaceReferenceAssets({
+  const { composerReferenceAssets, referenceAssetFields } = useImageWorkspaceReferenceAssets({
     displayedReferenceSlotCount,
     displayedReferenceSlots,
     mode,
@@ -472,6 +455,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               statusMessage={statusMessage}
               thinkingLevel={thinkingLevel}
               thinkingLevelSelectOptions={thinkingLevelSelectOptions}
+              watermark={watermark}
+              setWatermark={setWatermark}
+              showWatermarkControl={showWatermarkControl}
         />
       </ImageWorkspaceShell>
       <ImageWorkspaceRuntimeModals

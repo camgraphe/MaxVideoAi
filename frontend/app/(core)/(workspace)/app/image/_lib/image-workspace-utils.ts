@@ -8,6 +8,8 @@ export function formatImageSizeLabel(value: string): string {
   const normalized = value.trim().toLowerCase();
   const labels: Record<string, string> = {
     auto: 'Auto',
+    '2k': '2K',
+    '3k': '3K',
     square: 'Square',
     square_hd: 'Square HD',
     portrait_4_3: 'Portrait 4:3',

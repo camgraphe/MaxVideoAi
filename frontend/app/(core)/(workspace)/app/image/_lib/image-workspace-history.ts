@@ -120,7 +120,7 @@ export function buildCompletedGroup({
     durationSec: 0,
     priceCents: totalPriceCents ?? null,
     currency: currency ?? null,
-    thumbUrl: image.url,
+    thumbUrl: image.thumbUrl ?? image.url,
     aspectRatio,
     prompt,
     status: 'completed',
@@ -140,7 +140,7 @@ export function buildCompletedGroup({
     hero: members[0],
     previews: images.map((image, index) => ({
       id: `${id}-preview-${index + 1}`,
-      thumbUrl: image.url,
+      thumbUrl: image.thumbUrl ?? image.url,
       videoUrl: null,
       aspectRatio,
       source: 'render',

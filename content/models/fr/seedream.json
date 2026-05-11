@@ -1,0 +1,194 @@
+{
+  "marketingName": "Seedream 5.0 Lite",
+  "versionLabel": "5.0 Lite",
+  "seo": {
+    "title": "Seedream 5.0 Lite | Génération et édition d'image BytePlus | MaxVideoAI",
+    "description": "Créez et éditez des images fixes avec Seedream 5.0 Lite dans MaxVideoAI. Utilisez BytePlus ModelArk pour préparer des concepts, packshots et images de référence avant Seedance."
+  },
+  "overview": "Seedream 5.0 Lite est un modèle BytePlus ModelArk de génération et d'édition d'image. Il sert à créer des images fixes propres, des concepts produit, des frames personnage et des sources visuelles plus contrôlées avant un workflow image-to-video dans Seedance 2.0 ou Seedance 2.0 Fast.",
+  "pricingNotes": "Seedream 5.0 Lite est facturé par image générée avec succès côté BytePlus ModelArk. MaxVideoAI affiche le prix du compte avant génération.",
+  "hero": {
+    "title": "Seedream 5.0 Lite - génération et édition d'image BytePlus",
+    "intro": "Utilisez Seedream 5.0 Lite comme modèle image autonome pour la création text-to-image, le nettoyage image-to-image et les images de référence avant d'animer les frames retenues dans Seedance.",
+    "badge": "Text -> Image · Image -> Image · BytePlus ModelArk · Workflow référence",
+    "ctaPrimary": {
+      "label": "Lancer Seedream",
+      "href": "/app/image?engine=seedream"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ouvrir l'Image Lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Animer avec Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Tester avec Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d'usage",
+    "items": [
+      {
+        "title": "Frames de référence propres avant animation image-to-video",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Packshots avec arrière-plan et lumière contrôlés",
+        "icon": "product"
+      },
+      {
+        "title": "Concepts personnage, tenue et accessoire pour storyboard",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Éditions d'image qui réduisent le bruit visuel avant tests de mouvement",
+        "icon": "layers"
+      }
+    ]
+  },
+  "promptStructure": {
+    "title": "Mini-guide prompt",
+    "quote": "[Sujet] + [composition] + [lumière] + [style] + [ce qu'il faut préserver ou changer] + [objectif de référence Seedance].",
+    "description": "Seedream répond mieux à un brief d'image fixe concret. Décrivez sujet, cadrage, matières, lumière et éléments à garder stables si l'image doit devenir une référence Seedance.",
+    "steps": [
+      "Définir le sujet et la composition",
+      "Ajouter lumière, décor et matières",
+      "Préciser ce qui doit rester propre pour l'animation",
+      "Pour une édition, séparer ce qui reste de ce qui change",
+      "Choisir la meilleure image fixe avant Seedance"
+    ]
+  },
+  "tips": {
+    "title": "Notes de workflow référence",
+    "items": [
+      "Utilisez Seedream pour créer des images sources plus propres et contrôlées avant animation.",
+      "Gardez un sujet lisible et évitez les arrière-plans surchargés quand l'image doit passer en image-to-video.",
+      "Pour un produit animé, stabilisez d'abord packaging, reflets et angle héros dans Seedream.",
+      "Seedream peut améliorer la cohérence et réduire les frictions par rapport à des images externes aléatoires, mais Seedance évalue toujours chaque prompt et image source."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Frame de référence produit",
+      "prompt": "Image studio premium d'un mug de voyage noir mat sur socle graphite propre, rim light douce, zone logo lisible, arrière-plan épuré, angle héros centré pour une animation image-to-video."
+    },
+    {
+      "title": "Concept tenue personnage",
+      "prompt": "Image de référence plein pied d'un coursier en veste de pluie, pose neutre, silhouette nette, détails de tenue cohérents, lumière urbaine couverte, conçue comme frame de départ Seedance."
+    },
+    {
+      "title": "Édition prête pour animation",
+      "prompt": "Nettoyer cette image produit pour l'animation : préserver la forme du flacon et la hiérarchie de l'étiquette, retirer les reflets gênants, simplifier le fond, garder une lumière studio naturelle."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Qu'est-ce que Seedream 5.0 Lite ?",
+      "a": "Seedream 5.0 Lite est un modèle BytePlus ModelArk de génération et d'édition d'image disponible dans MaxVideoAI pour créer des images fixes et préparer des références."
+    },
+    {
+      "q": "Comment Seedream se relie à Seedance ?",
+      "a": "Seedream est un compagnon recommandé pour créer une image de référence avant Seedance 2.0 ou Seedance 2.0 Fast. Créez ou nettoyez d'abord l'image fixe, puis utilisez la frame retenue comme point de départ image-to-video."
+    },
+    {
+      "q": "Seedream promet-il les résultats Seedance ?",
+      "a": "Non. Seedream aide à créer des sources plus propres, mais Seedance évalue toujours chaque prompt et image source selon son propre workflow et ses règles de sécurité."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "BytePlus ModelArk - Seedream 5.0 Lite",
+    "heroSupportLine": "Idéal pour images fixes propres, retouches et frames sources avant mouvement Seedance.",
+    "heroSpecChips": [
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Images fixes"
+      },
+      {
+        "label": "BytePlus ModelArk"
+      }
+    ],
+    "whyTitle": "Pourquoi Seedream complète Seedance",
+    "heroDesc1": "Seedream ajoute une étape image fixe avant animation : créer le packshot, la frame personnage ou le décor, puis n'animer que l'image qui vaut le test.",
+    "heroDesc2": "C'est utile quand un run Seedance a besoin d'une source plus intentionnelle qu'un prompt seul ou une image externe non préparée.",
+    "heroHighlights": [
+      "Modèle image autonome||Utilisez Seedream pour générer et éditer des images fixes même sans vidéo ensuite.",
+      "Préparation de référence||Créez des images sources plus propres avant animation Seedance.",
+      "Éditer avant le mouvement||Ajustez produit, fond, tenue et lumière avant l'image-to-video.",
+      "Compagnon Seedance||Envoyez l'image retenue vers Seedance 2.0 ou Seedance 2.0 Fast si le mouvement est l'étape suivante."
+    ],
+    "whatTitle": "Workflow de référence",
+    "whatIntro1": "Démarrez dans l'Image Lab, créez ou éditez l'image fixe dans Seedream, puis vérifiez si la frame est assez claire pour le mouvement.",
+    "whatIntro2": "Utilisez Seedance 2.0 pour une animation finale plus soignée ou Seedance 2.0 Fast pour des tests rapides.",
+    "whatFlowTitle": "Seedream -> Seedance",
+    "whatFlowSteps": [
+      "Créer ou éditer une image fixe avec Seedream",
+      "Vérifier la lisibilité du sujet, la simplicité du fond et la cohérence de lumière",
+      "Enregistrer la meilleure frame comme référence d'animation",
+      "Utiliser Seedance 2.0 Fast pour tester le mouvement",
+      "Utiliser Seedance 2.0 quand la frame validée mérite une vidéo finale plus soignée"
+    ],
+    "tipsTitle": "Conseils et limites",
+    "tipsIntro": "Traitez Seedream comme l'étape de craft image. Il peut produire de meilleures sources, mais ne remplace pas les contrôles de prompt et de sécurité de Seedance.",
+    "strengths": [
+      "Créer des frames produit, personnage et décor propres avant animation.",
+      "Utiliser l'édition pour réduire le bruit visuel d'images existantes.",
+      "Garder un sujet clair par frame quand la sortie doit devenir une entrée image-to-video.",
+      "Reprendre le même vocabulaire de sujet, lumière et style en passant de Seedream à Seedance."
+    ],
+    "boundaries": [
+      "Images fixes uniquement.",
+      "Seedance évalue toujours chaque image source et prompt.",
+      "Une référence plus propre peut améliorer la cohérence, mais le traitement final et la qualité restent liés au run Seedance.",
+      "N'utilisez pas Seedream pour préparer du contenu contraire aux règles de sécurité de MaxVideoAI ou du fournisseur."
+    ],
+    "safetyTitle": "Sécurité et ressemblance",
+    "safetyRules": [
+      "Pas de contenu sexuel ni impliquant des mineurs.",
+      "Pas de demandes haineuses, harcelantes ou de violence graphique.",
+      "Ne pas imiter une personne réelle ou publique sans consentement.",
+      "Ne pas inclure de données personnelles privées ou documents sensibles."
+    ],
+    "promptingTitle": "Écrire un bon prompt Seedream",
+    "promptingIntro": "Écrivez l'image fixe comme si c'était la première frame d'un plan : sujet, composition, lumière et contraintes d'abord.",
+    "promptingTip": "Astuce : si l'image part ensuite dans Seedance, mentionnez l'objectif de mouvement sans demander à Seedream d'animer.",
+    "promptingGlobalPrinciples": [
+      "Un objectif visuel clair par image.",
+      "Pour les edits, dire ce qui reste avant ce qui change.",
+      "Simplifier le fond quand l'image servira de référence vidéo."
+    ],
+    "promptingEngineWhy": [
+      "Les images fixes contrôlées donnent un départ plus clair aux modèles image-to-video.",
+      "Les références produit et personnage s'animent mieux quand silhouette, lumière et accessoires sont déjà stables.",
+      "Préparer l'image d'abord sépare les décisions de qualité visuelle des décisions de mouvement."
+    ],
+    "promptingGuideLabel": "En savoir plus",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Animez une image Seedream retenue avec la route Seedance standard quand vous voulez un résultat image-to-video plus soigné.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Animer avec Seedance 2.0 ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Utilisez Fast pour des brouillons de mouvement plus rapides après la création d'une image de référence propre dans Seedream.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "Tester avec Seedance 2.0 Fast ->"
+      }
+    ]
+  }
+}

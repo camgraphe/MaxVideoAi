@@ -1,21 +1,20 @@
 [
   {
-    "engineId": "sora-2",
-    "modelSlug": "sora-2",
-    "marketingName": "OpenAI Sora 2",
-    "provider": "OpenAI",
-    "brandId": "openai",
-    "family": "sora",
+    "engineId": "pika-text-to-video",
+    "modelSlug": "pika-text-to-video",
+    "marketingName": "Pika 2.2 Text & Image to Video",
+    "provider": "Pika",
+    "brandId": "pika",
+    "family": "pika",
     "familyExamplesPage": {
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "sora-2-pro",
-        "sora-2"
+        "pika-text-to-video"
       ],
       "currentModelSlugs": []
     },
-    "versionLabel": "2",
+    "versionLabel": "2.2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -29,9 +28,9 @@
       },
       "compare": {
         "suggestOpponents": [
-          "veo-3-1",
-          "kling-3-pro",
-          "seedance-2-0"
+          "seedance-2-0",
+          "minimax-hailuo-02-text",
+          "ltx-2-fast"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -46,9 +45,9 @@
           "luma-ray-2",
           "luma-ray-2-flash",
           "minimax-hailuo-02-text",
-          "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
+          "sora-2",
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
@@ -60,9 +59,7 @@
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 0,
-        "variantGroup": "sora",
-        "variantLabel": "Standard"
+        "discoveryRank": 5
       },
       "pricing": {
         "includeInEstimator": true
@@ -70,10 +67,10 @@
     },
     "surfacesSource": "default",
     "engine": {
-      "id": "sora-2",
-      "label": "OpenAI Sora 2",
-      "provider": "OpenAI",
-      "version": "2",
+      "id": "pika-text-to-video",
+      "label": "Pika 2.2 Text & Image to Video",
+      "provider": "Pika",
+      "version": "2.2",
       "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
@@ -82,26 +79,40 @@
         "t2v",
         "i2v"
       ],
-      "maxDurationSec": 12,
+      "maxDurationSec": 10,
       "resolutions": [
-        "720p"
+        "720p",
+        "1080p"
       ],
       "aspectRatios": [
-        "auto",
         "16:9",
-        "9:16"
+        "9:16",
+        "1:1",
+        "4:5",
+        "5:4",
+        "3:2",
+        "2:3"
       ],
       "fps": [
         24
       ],
-      "audio": true,
+      "audio": false,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
-      "params": {},
+      "params": {
+        "cfg_scale": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
       "inputLimits": {
-        "imageMaxMB": 50
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -109,46 +120,12 @@
             "id": "prompt",
             "type": "text",
             "label": "Prompt"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration",
-            "values": [
-              "4",
-              "8",
-              "12"
-            ],
-            "default": "4",
-            "min": 4,
-            "max": 12
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "auto",
-              "16:9",
-              "9:16"
-            ],
-            "default": "auto"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p"
-            ],
-            "default": "720p"
           },
           {
             "id": "image_url",
             "type": "image",
-            "label": "Image input",
+            "label": "Start image",
+            "description": "Use one still image as the starting frame for the shot.",
             "modes": [
               "i2v"
             ],
@@ -160,242 +137,18 @@
             "source": "either"
           }
         ],
-        "constraints": {
-          "supportedFormats": [
-            "png",
-            "jpeg",
-            "jpg",
-            "webp",
-            "gif",
-            "avif"
-          ]
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 10,
-          "byResolution": {
-            "720p": 10
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.1,
-        "currency": "USD",
-        "notes": "$0.10/s via managed provider routing (720p guidance)"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "openai",
-        "modelSlug": "fal-ai/sora-2/text-to-video"
-      },
-      "availability": "available",
-      "brandId": "openai"
-    },
-    "modes": [
-      {
-        "mode": "t2v",
-        "falModelId": "fal-ai/sora-2/text-to-video",
-        "ui": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              4,
-              8,
-              12
-            ],
-            "default": 4
-          },
-          "resolution": [
-            "720p"
-          ],
-          "aspectRatio": [
-            "16:9",
-            "9:16"
-          ],
-          "audioToggle": false
-        }
-      },
-      {
-        "mode": "i2v",
-        "falModelId": "fal-ai/sora-2/image-to-video",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              4,
-              8,
-              12
-            ],
-            "default": 4
-          },
-          "resolution": [
-            "720p"
-          ],
-          "aspectRatio": [
-            "auto",
-            "16:9",
-            "9:16"
-          ],
-          "acceptsImageFormats": [
-            "png",
-            "jpeg",
-            "jpg",
-            "webp",
-            "gif",
-            "avif"
-          ],
-          "audioToggle": false
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
-      }
-    },
-    "bestFor": "Cinematic shots"
-  },
-  {
-    "engineId": "sora-2-pro",
-    "modelSlug": "sora-2-pro",
-    "marketingName": "OpenAI Sora 2 Pro",
-    "provider": "OpenAI",
-    "brandId": "openai",
-    "family": "sora",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "sora-2-pro",
-        "sora-2"
-      ],
-      "currentModelSlugs": []
-    },
-    "versionLabel": "Pro",
-    "availability": "available",
-    "logoPolicy": "logoAllowed",
-    "surfaces": {
-      "modelPage": {
-        "indexable": true,
-        "includeInSitemap": true
-      },
-      "examples": {
-        "includeInFamilyResolver": true,
-        "includeInFamilyCopy": true
-      },
-      "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [
-          "kling-2-5-turbo",
-          "kling-2-6-pro",
-          "kling-3-4k",
-          "kling-3-pro",
-          "kling-3-standard",
-          "ltx-2",
-          "ltx-2-3-fast",
-          "ltx-2-3-pro",
-          "ltx-2-fast",
-          "luma-ray-2",
-          "luma-ray-2-flash",
-          "minimax-hailuo-02-text",
-          "pika-text-to-video",
-          "seedance-1-5-pro",
-          "seedance-2-0",
-          "sora-2",
-          "veo-3-1",
-          "veo-3-1-fast",
-          "veo-3-1-lite",
-          "wan-2-5",
-          "wan-2-6"
-        ],
-        "includeInHub": true
-      },
-      "app": {
-        "enabled": true,
-        "discoveryRank": 1,
-        "variantGroup": "sora",
-        "variantLabel": "Pro"
-      },
-      "pricing": {
-        "includeInEstimator": true
-      }
-    },
-    "surfacesSource": "default",
-    "engine": {
-      "id": "sora-2-pro",
-      "label": "OpenAI Sora 2 Pro",
-      "provider": "OpenAI",
-      "version": "Pro",
-      "status": "live",
-      "latencyTier": "standard",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v",
-        "ref2v"
-      ],
-      "maxDurationSec": 12,
-      "resolutions": [
-        "720p",
-        "1080p",
-        "auto"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "auto"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 75
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          }
-        ],
         "optional": [
           {
-            "id": "duration",
+            "id": "duration_seconds",
             "type": "enum",
-            "label": "Duration",
+            "label": "Duration (seconds)",
             "values": [
-              "4",
-              "8",
-              "12"
+              "5",
+              "10"
             ],
-            "default": "4",
-            "min": 4,
-            "max": 12
+            "default": "5",
+            "min": 5,
+            "max": 10
           },
           {
             "id": "aspect_ratio",
@@ -404,7 +157,11 @@
             "values": [
               "16:9",
               "9:16",
-              "auto"
+              "1:1",
+              "4:5",
+              "5:4",
+              "3:2",
+              "2:3"
             ],
             "default": "16:9"
           },
@@ -414,31 +171,26 @@
             "label": "Resolution",
             "values": [
               "720p",
-              "1080p",
-              "auto"
+              "1080p"
             ],
-            "default": "1080p"
+            "default": "720p"
           },
           {
-            "id": "image_url",
-            "type": "image",
-            "label": "Image input",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
           }
         ],
         "constraints": {
           "supportedFormats": [
-            "png",
-            "jpeg",
             "jpg",
+            "jpeg",
+            "png",
             "webp",
             "gif",
             "avif"
@@ -448,44 +200,46 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 30,
+          "default": 4,
           "byResolution": {
-            "720p": 30,
-            "1080p": 50,
-            "auto": 30
+            "720p": 4,
+            "1080p": 9
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.3,
+        "base": 0.04,
+        "byResolution": {
+          "720p": 0.04,
+          "1080p": 0.09
+        },
         "currency": "USD",
-        "notes": "$0.30/s at 720p, $0.50/s at 1080p"
+        "notes": "$0.20 per 5s / $0.40 per 10s at 720p, $0.45 per 5s / $0.90 per 10s at 1080p"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "openai",
-        "modelSlug": "fal-ai/sora-2/text-to-video/pro"
+        "provider": "pika",
+        "modelSlug": "fal-ai/pika/v2.2/text-to-video"
       },
       "availability": "available",
-      "brandId": "openai"
+      "brandId": "pika"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "fal-ai/sora-2/text-to-video/pro",
+        "falModelId": "fal-ai/pika/v2.2/text-to-video",
         "ui": {
           "modes": [
             "t2v"
           ],
           "duration": {
             "options": [
-              4,
-              8,
-              12
+              5,
+              10
             ],
-            "default": 4
+            "default": 5
           },
           "resolution": [
             "720p",
@@ -493,54 +247,59 @@
           ],
           "aspectRatio": [
             "16:9",
-            "9:16"
+            "9:16",
+            "1:1",
+            "4:5",
+            "5:4",
+            "3:2",
+            "2:3"
           ],
-          "audioToggle": true,
-          "notes": "Audio is enabled by default for lip-sync and ambience. Disable it if you only need silent motion."
+          "audioToggle": false
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/sora-2/image-to-video/pro",
+        "falModelId": "fal-ai/pika/v2.2/image-to-video",
         "ui": {
           "modes": [
             "i2v"
           ],
           "duration": {
             "options": [
-              4,
-              8,
-              12
+              5,
+              10
             ],
-            "default": 4
+            "default": 5
           },
           "resolution": [
-            "auto",
             "720p",
             "1080p"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
-            "9:16"
+            "9:16",
+            "1:1",
+            "4:5",
+            "5:4",
+            "3:2",
+            "2:3"
           ],
           "acceptsImageFormats": [
-            "png",
-            "jpeg",
             "jpg",
+            "jpeg",
+            "png",
             "webp",
             "gif",
             "avif"
           ],
-          "maxUploadMB": 75,
-          "audioToggle": true,
-          "notes": "Upload a detailed still to preserve subject fidelity. Pro keeps dialogue in sync from the reference frame."
+          "maxUploadMB": 25,
+          "audioToggle": false
         }
       }
     ],
     "features": {
       "audio": {
-        "value": true
+        "value": false
       },
       "motionControls": {
         "value": false
@@ -552,7 +311,7 @@
         "value": false
       }
     },
-    "bestFor": "Studio-grade Sora renders"
+    "bestFor": "Prompts or image loops"
   },
   {
     "engineId": "veo-3-1",
@@ -2824,21 +2583,22 @@
     "bestFor": "Fast cinematic drafts with modify and reframe"
   },
   {
-    "engineId": "pika-text-to-video",
-    "modelSlug": "pika-text-to-video",
-    "marketingName": "Pika 2.2 Text & Image to Video",
-    "provider": "Pika",
-    "brandId": "pika",
-    "family": "pika",
+    "engineId": "sora-2",
+    "modelSlug": "sora-2",
+    "marketingName": "OpenAI Sora 2",
+    "provider": "OpenAI",
+    "brandId": "openai",
+    "family": "sora",
     "familyExamplesPage": {
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "pika-text-to-video"
+        "sora-2-pro",
+        "sora-2"
       ],
       "currentModelSlugs": []
     },
-    "versionLabel": "2.2",
+    "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -2852,9 +2612,9 @@
       },
       "compare": {
         "suggestOpponents": [
-          "seedance-2-0",
-          "minimax-hailuo-02-text",
-          "ltx-2-fast"
+          "veo-3-1",
+          "kling-3-pro",
+          "seedance-2-0"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -2869,9 +2629,9 @@
           "luma-ray-2",
           "luma-ray-2-flash",
           "minimax-hailuo-02-text",
+          "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
-          "sora-2",
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
@@ -2883,7 +2643,9 @@
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 5
+        "discoveryRank": 0,
+        "variantGroup": "sora",
+        "variantLabel": "Standard"
       },
       "pricing": {
         "includeInEstimator": true
@@ -2891,10 +2653,10 @@
     },
     "surfacesSource": "default",
     "engine": {
-      "id": "pika-text-to-video",
-      "label": "Pika 2.2 Text & Image to Video",
-      "provider": "Pika",
-      "version": "2.2",
+      "id": "sora-2",
+      "label": "OpenAI Sora 2",
+      "provider": "OpenAI",
+      "version": "2",
       "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
@@ -2903,40 +2665,26 @@
         "t2v",
         "i2v"
       ],
-      "maxDurationSec": 10,
+      "maxDurationSec": 12,
       "resolutions": [
-        "720p",
-        "1080p"
+        "720p"
       ],
       "aspectRatios": [
+        "auto",
         "16:9",
-        "9:16",
-        "1:1",
-        "4:5",
-        "5:4",
-        "3:2",
-        "2:3"
+        "9:16"
       ],
       "fps": [
         24
       ],
-      "audio": false,
+      "audio": true,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
-      "params": {
-        "cfg_scale": {
-          "min": 0,
-          "max": 1,
-          "default": 0.5,
-          "step": 0.05
-        }
-      },
+      "params": {},
       "inputLimits": {
-        "imageMaxMB": 25,
-        "promptMaxChars": 2500,
-        "promptMaxCharsSource": "observed"
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
@@ -2944,12 +2692,46 @@
             "id": "prompt",
             "type": "text",
             "label": "Prompt"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "4",
+              "8",
+              "12"
+            ],
+            "default": "4",
+            "min": 4,
+            "max": 12
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "auto",
+              "16:9",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p"
+            ],
+            "default": "720p"
           },
           {
             "id": "image_url",
             "type": "image",
-            "label": "Start image",
-            "description": "Use one still image as the starting frame for the shot.",
+            "label": "Image input",
             "modes": [
               "i2v"
             ],
@@ -2961,60 +2743,11 @@
             "source": "either"
           }
         ],
-        "optional": [
-          {
-            "id": "duration_seconds",
-            "type": "enum",
-            "label": "Duration (seconds)",
-            "values": [
-              "5",
-              "10"
-            ],
-            "default": "5",
-            "min": 5,
-            "max": 10
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9",
-              "9:16",
-              "1:1",
-              "4:5",
-              "5:4",
-              "3:2",
-              "2:3"
-            ],
-            "default": "16:9"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
-          },
-          {
-            "id": "negative_prompt",
-            "type": "text",
-            "label": "Negative prompt"
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
-          }
-        ],
         "constraints": {
           "supportedFormats": [
-            "jpg",
-            "jpeg",
             "png",
+            "jpeg",
+            "jpg",
             "webp",
             "gif",
             "avif"
@@ -3024,106 +2757,91 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 4,
+          "default": 10,
           "byResolution": {
-            "720p": 4,
-            "1080p": 9
+            "720p": 10
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.04,
-        "byResolution": {
-          "720p": 0.04,
-          "1080p": 0.09
-        },
+        "base": 0.1,
         "currency": "USD",
-        "notes": "$0.20 per 5s / $0.40 per 10s at 720p, $0.45 per 5s / $0.90 per 10s at 1080p"
+        "notes": "$0.10/s via managed provider routing (720p guidance)"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "pika",
-        "modelSlug": "fal-ai/pika/v2.2/text-to-video"
+        "provider": "openai",
+        "modelSlug": "fal-ai/sora-2/text-to-video"
       },
       "availability": "available",
-      "brandId": "pika"
+      "brandId": "openai"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "fal-ai/pika/v2.2/text-to-video",
+        "falModelId": "fal-ai/sora-2/text-to-video",
         "ui": {
           "modes": [
             "t2v"
           ],
           "duration": {
             "options": [
-              5,
-              10
+              4,
+              8,
+              12
             ],
-            "default": 5
+            "default": 4
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "720p"
           ],
           "aspectRatio": [
             "16:9",
-            "9:16",
-            "1:1",
-            "4:5",
-            "5:4",
-            "3:2",
-            "2:3"
+            "9:16"
           ],
           "audioToggle": false
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/pika/v2.2/image-to-video",
+        "falModelId": "fal-ai/sora-2/image-to-video",
         "ui": {
           "modes": [
             "i2v"
           ],
           "duration": {
             "options": [
-              5,
-              10
+              4,
+              8,
+              12
             ],
-            "default": 5
+            "default": 4
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "720p"
           ],
           "aspectRatio": [
+            "auto",
             "16:9",
-            "9:16",
-            "1:1",
-            "4:5",
-            "5:4",
-            "3:2",
-            "2:3"
+            "9:16"
           ],
           "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
             "png",
+            "jpeg",
+            "jpg",
             "webp",
             "gif",
             "avif"
           ],
-          "maxUploadMB": 25,
           "audioToggle": false
         }
       }
     ],
     "features": {
       "audio": {
-        "value": false
+        "value": true
       },
       "motionControls": {
         "value": false
@@ -3135,7 +2853,289 @@
         "value": false
       }
     },
-    "bestFor": "Prompts or image loops"
+    "bestFor": "Cinematic shots"
+  },
+  {
+    "engineId": "sora-2-pro",
+    "modelSlug": "sora-2-pro",
+    "marketingName": "OpenAI Sora 2 Pro",
+    "provider": "OpenAI",
+    "brandId": "openai",
+    "family": "sora",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "sora-2-pro",
+        "sora-2"
+      ],
+      "currentModelSlugs": []
+    },
+    "versionLabel": "Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-4k",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 1,
+        "variantGroup": "sora",
+        "variantLabel": "Pro"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
+    "engine": {
+      "id": "sora-2-pro",
+      "label": "OpenAI Sora 2 Pro",
+      "provider": "OpenAI",
+      "version": "Pro",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 12,
+      "resolutions": [
+        "720p",
+        "1080p",
+        "auto"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "auto"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 75
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "4",
+              "8",
+              "12"
+            ],
+            "default": "4",
+            "min": 4,
+            "max": 12
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "auto"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p",
+              "auto"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Image input",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp",
+            "gif",
+            "avif"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 30,
+          "byResolution": {
+            "720p": 30,
+            "1080p": 50,
+            "auto": 30
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.3,
+        "currency": "USD",
+        "notes": "$0.30/s at 720p, $0.50/s at 1080p"
+      },
+      "updatedAt": "2025-02-14T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "openai",
+        "modelSlug": "fal-ai/sora-2/text-to-video/pro"
+      },
+      "availability": "available",
+      "brandId": "openai"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/sora-2/text-to-video/pro",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              8,
+              12
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Audio is enabled by default for lip-sync and ambience. Disable it if you only need silent motion."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/sora-2/image-to-video/pro",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              8,
+              12
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "auto",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp",
+            "gif",
+            "avif"
+          ],
+          "maxUploadMB": 75,
+          "audioToggle": true,
+          "notes": "Upload a detailed still to preserve subject fidelity. Pro keeps dialogue in sync from the reference frame."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Studio-grade Sora renders"
   },
   {
     "engineId": "kling-2-5-turbo",
@@ -5979,6 +5979,7 @@
             "id": "image_url",
             "type": "image",
             "label": "Start image",
+            "description": "Upload a reference image, or create one first with Seedream for better composition and consistency.",
             "modes": [
               "i2v"
             ],
@@ -6056,7 +6057,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional reference stills for identity, styling, and continuity. Supports up to 9 images and 12 total files across all reference inputs.",
+            "description": "Optional reference stills for identity, styling, and continuity. Create clean references with Seedream first for better composition and consistency.",
             "modes": [
               "ref2v"
             ],
@@ -6518,6 +6519,7 @@
             "id": "image_url",
             "type": "image",
             "label": "Start image",
+            "description": "Upload a reference image, or create one first with Seedream for better composition and consistency.",
             "modes": [
               "i2v"
             ],
@@ -6600,7 +6602,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional still references for draft continuity checks. Supports up to 9 images and 12 total files across all reference inputs.",
+            "description": "Optional still references for draft continuity checks. Create clean references with Seedream first for better composition and consistency.",
             "modes": [
               "ref2v"
             ],
@@ -7923,21 +7925,27 @@
     "bestFor": "General purpose video"
   },
   {
-    "engineId": "minimax-hailuo-02-text",
-    "modelSlug": "minimax-hailuo-02-text",
-    "marketingName": "MiniMax Hailuo 02 Standard",
-    "provider": "MiniMax",
-    "brandId": "minimax",
-    "family": "hailuo",
+    "engineId": "ltx-2-fast",
+    "modelSlug": "ltx-2-fast",
+    "marketingName": "LTX Video 2.0 Fast",
+    "provider": "Lightricks",
+    "brandId": "lightricks",
+    "family": "ltx",
     "familyExamplesPage": {
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "minimax-hailuo-02-text"
+        "ltx-2-3-pro",
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
     },
-    "versionLabel": "Standard",
+    "versionLabel": "Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -7950,7 +7958,11 @@
         "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
+        "suggestOpponents": [
+          "veo-3-1-fast",
+          "wan-2-5",
+          "ltx-2-3-fast"
+        ],
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
@@ -7960,9 +7972,9 @@
           "ltx-2",
           "ltx-2-3-fast",
           "ltx-2-3-pro",
-          "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
@@ -7977,8 +7989,7 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true,
-        "discoveryRank": 6
+        "enabled": true
       },
       "pricing": {
         "includeInEstimator": true
@@ -7986,39 +7997,39 @@
     },
     "surfacesSource": "default",
     "engine": {
-      "id": "minimax-hailuo-02-text",
-      "label": "MiniMax Hailuo 02 Standard",
-      "provider": "MiniMax",
-      "version": "Standard",
+      "id": "ltx-2-fast",
+      "label": "LTX Video 2.0 Fast",
+      "provider": "Lightricks",
+      "version": "2.0 Fast",
       "status": "live",
-      "latencyTier": "standard",
+      "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
       "modes": [
         "t2v",
         "i2v"
       ],
-      "maxDurationSec": 10,
+      "maxDurationSec": 20,
       "resolutions": [
-        "512P",
-        "768P"
+        "1080p",
+        "1440p",
+        "4k"
       ],
       "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
+        "16:9"
       ],
       "fps": [
-        25
+        25,
+        50
       ],
-      "audio": false,
+      "audio": true,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 25
       },
       "inputSchema": {
         "required": [
@@ -8046,48 +8057,58 @@
           {
             "id": "duration",
             "type": "enum",
-            "label": "Duration",
+            "label": "Duration (seconds)",
             "values": [
               "6",
-              "10"
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20"
             ],
-            "default": "6",
-            "min": 6,
-            "max": 10
+            "default": "6"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9"
+            ],
+            "default": "16:9"
           },
           {
             "id": "resolution",
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "512P",
-              "768P"
+              "1080p",
+              "1440p",
+              "4k"
             ],
-            "default": "768P"
+            "default": "1080p"
           },
           {
-            "id": "prompt_optimizer",
+            "id": "fps",
             "type": "enum",
-            "label": "Prompt optimiser",
+            "label": "Frames per second",
             "values": [
-              "on",
-              "off"
+              "25",
+              "50"
             ],
-            "default": "on",
-            "modes": [
-              "t2v"
-            ]
+            "default": "25"
           },
           {
-            "id": "end_image_url",
-            "type": "image",
-            "label": "End frame (optional)",
-            "modes": [
-              "i2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "either"
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
           }
         ],
         "constraints": {
@@ -8095,41 +8116,45 @@
             "jpg",
             "jpeg",
             "png",
-            "webp",
-            "gif",
-            "avif"
+            "webp"
           ]
         }
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 4.5,
+          "default": 4,
           "byResolution": {
-            "512P": 4,
-            "768P": 4.5
+            "1080p": 4,
+            "1440p": 8,
+            "4k": 16
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.045,
+        "base": 0.04,
+        "byResolution": {
+          "1080p": 0.04,
+          "1440p": 0.08,
+          "4k": 0.16
+        },
         "currency": "USD",
-        "notes": "$0.045/s standard tier"
+        "notes": "$0.26 per 5s @1080p, $0.52 @1440p, $1.04 @4K"
       },
-      "updatedAt": "2025-02-14T00:00:00Z",
+      "updatedAt": "2025-03-05T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "minimax",
-        "modelSlug": "fal-ai/minimax/hailuo-02/standard/text-to-video"
+        "provider": "lightricks",
+        "modelSlug": "fal-ai/ltx-2/text-to-video/fast"
       },
       "availability": "available",
-      "brandId": "minimax"
+      "brandId": "lightricks"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "fal-ai/minimax/hailuo-02/standard/text-to-video",
+        "falModelId": "fal-ai/ltx-2/text-to-video/fast",
         "ui": {
           "modes": [
             "t2v"
@@ -8137,27 +8162,31 @@
           "duration": {
             "options": [
               6,
-              10
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20
             ],
             "default": 6
           },
           "resolution": [
-            "512P",
-            "768P"
+            "1080p",
+            "1440p",
+            "4k"
           ],
           "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
+            "16:9"
           ],
-          "fps": 25,
-          "audioToggle": false,
-          "notes": "Enable the prompt optimiser toggle for longer scripts."
+          "audioToggle": true,
+          "notes": "Native audio is on by default; 12–20s runs require 1080p at 25fps."
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/minimax/hailuo-02/standard/image-to-video",
+        "falModelId": "fal-ai/ltx-2/image-to-video/fast",
         "ui": {
           "modes": [
             "i2v"
@@ -8165,37 +8194,39 @@
           "duration": {
             "options": [
               6,
-              10
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20
             ],
             "default": 6
           },
           "resolution": [
-            "512P",
-            "768P"
+            "1080p",
+            "1440p",
+            "4k"
           ],
           "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
+            "16:9"
           ],
-          "fps": 25,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
             "png",
-            "webp",
-            "gif",
-            "avif"
+            "webp"
           ],
-          "maxUploadMB": 20,
-          "audioToggle": false,
-          "notes": "Upload an optional end frame if you need the shot to land on a specific still."
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Upload one reference still; 12–20s runs require 1080p at 25fps."
         }
       }
     ],
     "features": {
       "audio": {
-        "value": false
+        "value": true
       },
       "motionControls": {
         "value": false
@@ -8207,7 +8238,304 @@
         "value": false
       }
     },
-    "bestFor": "Stylised text or image motion"
+    "bestFor": "Rapid social clips"
+  },
+  {
+    "engineId": "ltx-2",
+    "modelSlug": "ltx-2",
+    "marketingName": "LTX Video 2.0 Pro",
+    "provider": "Lightricks",
+    "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
+      ],
+      "currentModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
+    "versionLabel": "Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-4k",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
+    "engine": {
+      "id": "ltx-2",
+      "label": "LTX Video 2.0 Pro",
+      "provider": "Lightricks",
+      "version": "2.0 Pro",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "1080p",
+        "1440p",
+        "4k"
+      ],
+      "aspectRatios": [
+        "16:9"
+      ],
+      "fps": [
+        25,
+        50
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "6",
+              "8",
+              "10"
+            ],
+            "default": "6"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "1080p",
+              "1440p",
+              "4k"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "fps",
+            "type": "enum",
+            "label": "Frames per second",
+            "values": [
+              "25",
+              "50"
+            ],
+            "default": "25"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 6,
+          "byResolution": {
+            "1080p": 6,
+            "1440p": 12,
+            "4k": 24
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.06,
+        "byResolution": {
+          "1080p": 0.06,
+          "1440p": 0.12,
+          "4k": 0.24
+        },
+        "currency": "USD",
+        "notes": "$0.39 per 5s @1080p, $0.78 @1440p, $1.56 @4K"
+      },
+      "updatedAt": "2025-03-05T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "lightricks",
+        "modelSlug": "fal-ai/ltx-2/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "lightricks"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/ltx-2/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              6,
+              8,
+              10
+            ],
+            "default": 6
+          },
+          "resolution": [
+            "1080p",
+            "1440p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "audioToggle": true,
+          "notes": "Higher fidelity, audio on by default; toggle off for silent renders."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/ltx-2/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              6,
+              8,
+              10
+            ],
+            "default": 6
+          },
+          "resolution": [
+            "1080p",
+            "1440p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Upload a crisp still; Pro maintains lip-sync and ambience."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Premium product stories"
   },
   {
     "engineId": "ltx-2-3-fast",
@@ -9134,343 +9462,21 @@
     }
   },
   {
-    "engineId": "ltx-2-fast",
-    "modelSlug": "ltx-2-fast",
-    "marketingName": "LTX Video 2.0 Fast",
-    "provider": "Lightricks",
-    "brandId": "lightricks",
-    "family": "ltx",
+    "engineId": "minimax-hailuo-02-text",
+    "modelSlug": "minimax-hailuo-02-text",
+    "marketingName": "MiniMax Hailuo 02 Standard",
+    "provider": "MiniMax",
+    "brandId": "minimax",
+    "family": "hailuo",
     "familyExamplesPage": {
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast",
-        "ltx-2",
-        "ltx-2-fast"
+        "minimax-hailuo-02-text"
       ],
-      "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
-      ]
+      "currentModelSlugs": []
     },
-    "versionLabel": "Fast",
-    "availability": "available",
-    "logoPolicy": "logoAllowed",
-    "surfaces": {
-      "modelPage": {
-        "indexable": true,
-        "includeInSitemap": true
-      },
-      "examples": {
-        "includeInFamilyResolver": true,
-        "includeInFamilyCopy": true
-      },
-      "compare": {
-        "suggestOpponents": [
-          "veo-3-1-fast",
-          "wan-2-5",
-          "ltx-2-3-fast"
-        ],
-        "publishedPairs": [
-          "kling-2-5-turbo",
-          "kling-2-6-pro",
-          "kling-3-4k",
-          "kling-3-pro",
-          "kling-3-standard",
-          "ltx-2",
-          "ltx-2-3-fast",
-          "ltx-2-3-pro",
-          "luma-ray-2",
-          "luma-ray-2-flash",
-          "minimax-hailuo-02-text",
-          "pika-text-to-video",
-          "seedance-1-5-pro",
-          "seedance-2-0",
-          "sora-2",
-          "sora-2-pro",
-          "veo-3-1",
-          "veo-3-1-fast",
-          "veo-3-1-lite",
-          "wan-2-5",
-          "wan-2-6"
-        ],
-        "includeInHub": true
-      },
-      "app": {
-        "enabled": true
-      },
-      "pricing": {
-        "includeInEstimator": true
-      }
-    },
-    "surfacesSource": "default",
-    "engine": {
-      "id": "ltx-2-fast",
-      "label": "LTX Video 2.0 Fast",
-      "provider": "Lightricks",
-      "version": "2.0 Fast",
-      "status": "live",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v"
-      ],
-      "maxDurationSec": 20,
-      "resolutions": [
-        "1080p",
-        "1440p",
-        "4k"
-      ],
-      "aspectRatios": [
-        "16:9"
-      ],
-      "fps": [
-        25,
-        50
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 25
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          },
-          {
-            "id": "image_url",
-            "type": "image",
-            "label": "Reference image",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration (seconds)",
-            "values": [
-              "6",
-              "8",
-              "10",
-              "12",
-              "14",
-              "16",
-              "18",
-              "20"
-            ],
-            "default": "6"
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9"
-            ],
-            "default": "16:9"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "1080p",
-              "1440p",
-              "4k"
-            ],
-            "default": "1080p"
-          },
-          {
-            "id": "fps",
-            "type": "enum",
-            "label": "Frames per second",
-            "values": [
-              "25",
-              "50"
-            ],
-            "default": "25"
-          },
-          {
-            "id": "negative_prompt",
-            "type": "text",
-            "label": "Negative prompt"
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
-          }
-        ],
-        "constraints": {
-          "supportedFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ]
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 4,
-          "byResolution": {
-            "1080p": 4,
-            "1440p": 8,
-            "4k": 16
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.04,
-        "byResolution": {
-          "1080p": 0.04,
-          "1440p": 0.08,
-          "4k": 0.16
-        },
-        "currency": "USD",
-        "notes": "$0.26 per 5s @1080p, $0.52 @1440p, $1.04 @4K"
-      },
-      "updatedAt": "2025-03-05T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "lightricks",
-        "modelSlug": "fal-ai/ltx-2/text-to-video/fast"
-      },
-      "availability": "available",
-      "brandId": "lightricks"
-    },
-    "modes": [
-      {
-        "mode": "t2v",
-        "falModelId": "fal-ai/ltx-2/text-to-video/fast",
-        "ui": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              6,
-              8,
-              10,
-              12,
-              14,
-              16,
-              18,
-              20
-            ],
-            "default": 6
-          },
-          "resolution": [
-            "1080p",
-            "1440p",
-            "4k"
-          ],
-          "aspectRatio": [
-            "16:9"
-          ],
-          "audioToggle": true,
-          "notes": "Native audio is on by default; 12–20s runs require 1080p at 25fps."
-        }
-      },
-      {
-        "mode": "i2v",
-        "falModelId": "fal-ai/ltx-2/image-to-video/fast",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              6,
-              8,
-              10,
-              12,
-              14,
-              16,
-              18,
-              20
-            ],
-            "default": 6
-          },
-          "resolution": [
-            "1080p",
-            "1440p",
-            "4k"
-          ],
-          "aspectRatio": [
-            "16:9"
-          ],
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ],
-          "maxUploadMB": 25,
-          "audioToggle": true,
-          "notes": "Upload one reference still; 12–20s runs require 1080p at 25fps."
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
-      }
-    },
-    "bestFor": "Rapid social clips"
-  },
-  {
-    "engineId": "ltx-2",
-    "modelSlug": "ltx-2",
-    "marketingName": "LTX Video 2.0 Pro",
-    "provider": "Lightricks",
-    "brandId": "lightricks",
-    "family": "ltx",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast",
-        "ltx-2",
-        "ltx-2-fast"
-      ],
-      "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
-      ]
-    },
-    "versionLabel": "Pro",
+    "versionLabel": "Standard",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -9490,12 +9496,12 @@
           "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
+          "ltx-2",
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
-          "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
@@ -9510,7 +9516,8 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true
+        "enabled": true,
+        "discoveryRank": 6
       },
       "pricing": {
         "includeInEstimator": true
@@ -9518,10 +9525,10 @@
     },
     "surfacesSource": "default",
     "engine": {
-      "id": "ltx-2",
-      "label": "LTX Video 2.0 Pro",
-      "provider": "Lightricks",
-      "version": "2.0 Pro",
+      "id": "minimax-hailuo-02-text",
+      "label": "MiniMax Hailuo 02 Standard",
+      "provider": "MiniMax",
+      "version": "Standard",
       "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
@@ -9532,25 +9539,25 @@
       ],
       "maxDurationSec": 10,
       "resolutions": [
-        "1080p",
-        "1440p",
-        "4k"
+        "512P",
+        "768P"
       ],
       "aspectRatios": [
-        "16:9"
+        "16:9",
+        "9:16",
+        "1:1"
       ],
       "fps": [
-        25,
-        50
+        25
       ],
-      "audio": true,
+      "audio": false,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 20
       },
       "inputSchema": {
         "required": [
@@ -9578,53 +9585,48 @@
           {
             "id": "duration",
             "type": "enum",
-            "label": "Duration (seconds)",
+            "label": "Duration",
             "values": [
               "6",
-              "8",
               "10"
             ],
-            "default": "6"
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9"
-            ],
-            "default": "16:9"
+            "default": "6",
+            "min": 6,
+            "max": 10
           },
           {
             "id": "resolution",
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "1080p",
-              "1440p",
-              "4k"
+              "512P",
+              "768P"
             ],
-            "default": "1080p"
+            "default": "768P"
           },
           {
-            "id": "fps",
+            "id": "prompt_optimizer",
             "type": "enum",
-            "label": "Frames per second",
+            "label": "Prompt optimiser",
             "values": [
-              "25",
-              "50"
+              "on",
+              "off"
             ],
-            "default": "25"
+            "default": "on",
+            "modes": [
+              "t2v"
+            ]
           },
           {
-            "id": "negative_prompt",
-            "type": "text",
-            "label": "Negative prompt"
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
           }
         ],
         "constraints": {
@@ -9632,45 +9634,41 @@
             "jpg",
             "jpeg",
             "png",
-            "webp"
+            "webp",
+            "gif",
+            "avif"
           ]
         }
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 6,
+          "default": 4.5,
           "byResolution": {
-            "1080p": 6,
-            "1440p": 12,
-            "4k": 24
+            "512P": 4,
+            "768P": 4.5
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.06,
-        "byResolution": {
-          "1080p": 0.06,
-          "1440p": 0.12,
-          "4k": 0.24
-        },
+        "base": 0.045,
         "currency": "USD",
-        "notes": "$0.39 per 5s @1080p, $0.78 @1440p, $1.56 @4K"
+        "notes": "$0.045/s standard tier"
       },
-      "updatedAt": "2025-03-05T00:00:00Z",
+      "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "lightricks",
-        "modelSlug": "fal-ai/ltx-2/text-to-video"
+        "provider": "minimax",
+        "modelSlug": "fal-ai/minimax/hailuo-02/standard/text-to-video"
       },
       "availability": "available",
-      "brandId": "lightricks"
+      "brandId": "minimax"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "fal-ai/ltx-2/text-to-video",
+        "falModelId": "fal-ai/minimax/hailuo-02/standard/text-to-video",
         "ui": {
           "modes": [
             "t2v"
@@ -9678,26 +9676,27 @@
           "duration": {
             "options": [
               6,
-              8,
               10
             ],
             "default": 6
           },
           "resolution": [
-            "1080p",
-            "1440p",
-            "4k"
+            "512P",
+            "768P"
           ],
           "aspectRatio": [
-            "16:9"
+            "16:9",
+            "9:16",
+            "1:1"
           ],
-          "audioToggle": true,
-          "notes": "Higher fidelity, audio on by default; toggle off for silent renders."
+          "fps": 25,
+          "audioToggle": false,
+          "notes": "Enable the prompt optimiser toggle for longer scripts."
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/ltx-2/image-to-video",
+        "falModelId": "fal-ai/minimax/hailuo-02/standard/image-to-video",
         "ui": {
           "modes": [
             "i2v"
@@ -9705,34 +9704,37 @@
           "duration": {
             "options": [
               6,
-              8,
               10
             ],
             "default": 6
           },
           "resolution": [
-            "1080p",
-            "1440p",
-            "4k"
+            "512P",
+            "768P"
           ],
           "aspectRatio": [
-            "16:9"
+            "16:9",
+            "9:16",
+            "1:1"
           ],
+          "fps": 25,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
             "png",
-            "webp"
+            "webp",
+            "gif",
+            "avif"
           ],
-          "maxUploadMB": 25,
-          "audioToggle": true,
-          "notes": "Upload a crisp still; Pro maintains lip-sync and ambience."
+          "maxUploadMB": 20,
+          "audioToggle": false,
+          "notes": "Upload an optional end frame if you need the shot to land on a specific still."
         }
       }
     ],
     "features": {
       "audio": {
-        "value": true
+        "value": false
       },
       "motionControls": {
         "value": false
@@ -9744,7 +9746,7 @@
         "value": false
       }
     },
-    "bestFor": "Premium product stories"
+    "bestFor": "Stylised text or image motion"
   },
   {
     "engineId": "nano-banana",
@@ -11008,6 +11010,312 @@
           ],
           "maxUploadMB": 25,
           "notes": "Upload references for fine-grained edits; optional mask URL and quality controls map to the provider edit endpoint."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "seedream",
+    "modelSlug": "seedream",
+    "marketingName": "Seedream",
+    "provider": "BytePlus",
+    "brandId": "bytedance",
+    "family": "seedream",
+    "familyExamplesPage": null,
+    "versionLabel": "5.0 Lite",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 8,
+        "variantGroup": "seedream",
+        "variantLabel": "5.0 Lite"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "reference image before Seedance"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "seedream",
+      "label": "Seedream",
+      "provider": "BytePlus",
+      "version": "5.0 Lite",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 4,
+      "resolutions": [
+        "2K",
+        "3K",
+        "4K",
+        "2048x2048",
+        "2304x1728",
+        "1728x2304",
+        "2848x1600",
+        "1600x2848",
+        "2496x1664",
+        "1664x2496",
+        "3136x1344",
+        "3072x3072",
+        "3456x2592",
+        "2592x3456",
+        "4096x2304",
+        "2304x4096",
+        "2496x3744",
+        "3744x2496",
+        "4704x2016",
+        "4096x4096",
+        "3520x4704",
+        "4704x3520",
+        "5504x3040",
+        "3040x5504",
+        "3328x4992",
+        "4992x3328",
+        "6240x2656"
+      ],
+      "aspectRatios": [
+        "auto",
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16",
+        "3:2",
+        "2:3",
+        "21:9"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the reference image, product still, character, or scene you want Seedream to create."
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 1,
+            "step": 1,
+            "default": 1,
+            "description": "Seedream 5.0 Lite returns one image per standard request."
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Ratio",
+            "values": [
+              "auto",
+              "1:1",
+              "4:3",
+              "3:4",
+              "16:9",
+              "9:16",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "auto",
+            "description": "Choose auto, or map the selected Seedream resolution to a BytePlus recommended width and height."
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Add up to 14 source images for Seedream edit mode.",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 14,
+            "source": "either"
+          },
+          {
+            "id": "resolution",
+            "engineParam": "size",
+            "type": "enum",
+            "label": "Image size",
+            "values": [
+              "2K",
+              "3K",
+              "4K"
+            ],
+            "default": "2K",
+            "description": "BytePlus Seedream base output resolution. Pair with Ratio for exact recommended dimensions."
+          },
+          {
+            "id": "output_format",
+            "engineParam": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "jpeg",
+              "png"
+            ],
+            "default": "jpeg",
+            "description": "Choose the Seedream output file format."
+          },
+          {
+            "id": "watermark",
+            "engineParam": "watermark",
+            "type": "boolean",
+            "label": "AI watermark",
+            "default": false,
+            "description": "Add BytePlus AI-generated watermark text to the image."
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxImageSizeMB": 10
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 4
+        },
+        "flatCents": {
+          "default": 4
+        }
+      },
+      "pricing": {
+        "unit": "image",
+        "base": 0.035,
+        "currency": "USD",
+        "notes": "BytePlus lists Seedream 5.0 Lite at $0.035 per successfully generated image; MaxVideoAI customer pricing may include platform margin."
+      },
+      "updatedAt": "2026-05-11T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "seedream-5-0-260128"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "byteplus/seedream-5-0-lite",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "2K",
+            "3K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "notes": "Generate clean concept, product, character, and reference images before video animation."
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "byteplus/seedream-5-0-lite",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "2K",
+            "3K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxUploadMB": 10,
+          "notes": "Edit with up to 14 source images for more controlled visual references."
         }
       }
     ],

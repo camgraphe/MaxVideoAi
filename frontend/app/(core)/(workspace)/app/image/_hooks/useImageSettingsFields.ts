@@ -43,6 +43,7 @@ type UseImageSettingsFieldsParams = {
   setResolution: Dispatch<SetStateAction<string | null>>;
   setSeed: Dispatch<SetStateAction<string>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
+  setWatermark: Dispatch<SetStateAction<boolean>>;
 };
 
 export function useImageSettingsFields({
@@ -62,6 +63,7 @@ export function useImageSettingsFields({
   setResolution,
   setSeed,
   setThinkingLevel,
+  setWatermark,
 }: UseImageSettingsFieldsParams) {
   const imageCountField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'num_images', mode),
@@ -139,6 +141,10 @@ export function useImageSettingsFields({
   );
   const limitGenerationsField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'limit_generations', mode),
+    [selectedEngineCaps, mode]
+  );
+  const watermarkField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'watermark', mode),
     [selectedEngineCaps, mode]
   );
 
@@ -293,6 +299,15 @@ export function useImageSettingsFields({
     setLimitGenerations((previous) => previous ?? defaultValue ?? false);
   }, [limitGenerationsField, selectedEngineCaps, mode, setLimitGenerations]);
 
+  useEffect(() => {
+    if (!watermarkField) {
+      setWatermark(false);
+      return;
+    }
+    const defaultValue = getImageFieldDefaultBoolean(selectedEngineCaps ?? null, 'watermark', mode);
+    setWatermark((previous) => previous ?? defaultValue ?? false);
+  }, [watermarkField, selectedEngineCaps, mode, setWatermark]);
+
   const imageCountOptions = useMemo(
     () => {
       const options = Array.from(
@@ -372,6 +387,7 @@ export function useImageSettingsFields({
   const showEnableWebSearchControl = Boolean(enableWebSearchField);
   const showThinkingLevelControl = Boolean(thinkingLevelField) && thinkingLevelSelectOptions.length > 0;
   const showLimitGenerationsControl = Boolean(limitGenerationsField);
+  const showWatermarkControl = Boolean(watermarkField);
 
   return {
     aspectRatioField,
@@ -412,5 +428,7 @@ export function useImageSettingsFields({
     thinkingLevelField,
     thinkingLevelOptions,
     thinkingLevelSelectOptions,
+    watermarkField,
+    showWatermarkControl,
   };
 }

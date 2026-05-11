@@ -10,7 +10,7 @@ export const MODELS_SLUG_MAP = buildSlugMap('models');
 export const TROPHY_COMPARISONS = compareConfig.trophyComparisons as string[];
 export const RELATED_COMPARISONS =
   (compareConfig as { relatedComparisons?: Record<string, string[]> }).relatedComparisons ?? {};
-export const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
+export const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'seedream']);
 export const SHOWDOWNS =
   (compareConfig as { showdowns?: Record<string, Array<ShowdownEntry | null>> }).showdowns ?? {};
 export const SHOWDOWN_OVERRIDES =

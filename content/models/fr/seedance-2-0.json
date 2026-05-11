@@ -21,6 +21,10 @@
         "href": "/examples/seedance"
       },
       {
+        "label": "Préparer des références avec Seedream",
+        "href": "/models/seedream"
+      },
+      {
         "label": "Voir Seedance 2.0 Fast",
         "href": "/models/seedance-2-0-fast"
       },
@@ -292,6 +296,13 @@
     "demoTitle": "Prompt de démonstration — Seedance 2.0",
     "demoPromptLabel": "Prompt",
     "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedream 5.0 Lite",
+        "description": "Créez ou nettoyez une image fixe dans Seedream avant de l'utiliser comme référence plus contrôlée pour l'image-to-video Seedance.",
+        "modelSlug": "seedream",
+        "ctaLabel": "Préparer des références avec Seedream ->"
+      },
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",

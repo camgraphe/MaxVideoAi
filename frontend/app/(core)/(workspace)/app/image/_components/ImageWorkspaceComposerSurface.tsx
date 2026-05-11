@@ -88,6 +88,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   setSeed: (value: string) => void;
   setSelectedPreviewImageIndex: (value: number) => void;
   setThinkingLevel: (value: string | null) => void;
+  setWatermark: (value: boolean) => void;
   showAspectRatioControl: boolean;
   showCustomImageSizeControl: boolean;
   showEnableWebSearchControl: boolean;
@@ -99,9 +100,11 @@ interface ImageWorkspaceComposerSurfaceProps {
   showResolutionControl: boolean;
   showSeedControl: boolean;
   showThinkingLevelControl: boolean;
+  showWatermarkControl: boolean;
   statusMessage: string | null;
   thinkingLevel: string | null;
   thinkingLevelSelectOptions: ControlOption[];
+  watermark: boolean;
 }
 
 export function ImageWorkspaceComposerSurface({
@@ -173,6 +176,7 @@ export function ImageWorkspaceComposerSurface({
   setSeed,
   setSelectedPreviewImageIndex,
   setThinkingLevel,
+  setWatermark,
   showAspectRatioControl,
   showCustomImageSizeControl,
   showEnableWebSearchControl,
@@ -184,9 +188,11 @@ export function ImageWorkspaceComposerSurface({
   showResolutionControl,
   showSeedControl,
   showThinkingLevelControl,
+  showWatermarkControl,
   statusMessage,
   thinkingLevel,
   thinkingLevelSelectOptions,
+  watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
   return (
     <div className="stack-gap-lg">
@@ -409,6 +415,16 @@ export function ImageWorkspaceComposerSurface({
                         value: limitGenerations,
                         options: booleanSelectOptions,
                         onChange: setLimitGenerations,
+                      }
+                    : undefined
+                }
+                watermark={
+                  showWatermarkControl
+                    ? {
+                        label: resolvedCopy.composer.watermarkLabel,
+                        value: watermark,
+                        options: booleanSelectOptions,
+                        onChange: setWatermark,
                       }
                     : undefined
                 }

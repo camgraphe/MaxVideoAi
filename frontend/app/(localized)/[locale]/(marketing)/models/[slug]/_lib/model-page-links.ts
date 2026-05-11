@@ -8,7 +8,7 @@ export const SITE = SITE_ORIGIN.replace(/\/$/, '');
 
 export const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 export const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
-export const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
+export const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'seedream']);
 
 export const CANONICAL_ONLY_COMPARE_SLUGS = new Set([
   'pika-text-to-video-vs-sora-2-pro',
@@ -137,4 +137,3 @@ export function toAbsoluteUrl(url?: string | null): string {
   if (url.startsWith('/')) return `${SITE}${url}`;
   return `${SITE}/${url}`;
 }
-

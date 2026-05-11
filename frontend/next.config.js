@@ -90,6 +90,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
       { protocol: 'https', hostname: '*.fal.media' },
       { protocol: 'https', hostname: 'fal.media' },
+      { protocol: 'https', hostname: '**.volces.com', pathname: '/seedream-5-0/**' },
     ],
   },
   modularizeImports: {

@@ -55,8 +55,22 @@ export async function persistFailedImageGeneration(params: {
     thinkingLevel,
   } = params;
 
-  const providerStatus = error instanceof ApiError && typeof error.status === 'number' ? error.status : null;
-  const providerBody = error instanceof ApiError ? error.body : null;
+  const genericProviderError =
+    error && typeof error === 'object'
+      ? (error as { status?: unknown; detail?: unknown; body?: unknown })
+      : null;
+  const providerStatus =
+    error instanceof ApiError && typeof error.status === 'number'
+      ? error.status
+      : typeof genericProviderError?.status === 'number'
+        ? genericProviderError.status
+        : null;
+  const providerBody =
+    error instanceof ApiError
+      ? error.body
+      : genericProviderError && 'detail' in genericProviderError
+        ? genericProviderError.detail
+        : genericProviderError?.body ?? null;
   const providerErrors =
     error instanceof ValidationError
       ? error.fieldErrors

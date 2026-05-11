@@ -39,6 +39,7 @@ const moduleNames = [
   'nano-banana-pro.ts',
   'nano-banana-2.ts',
   'gpt-image-2.ts',
+  'seedream.ts',
 ];
 
 const facadeSource = readFileSync(facadePath, 'utf8');
@@ -94,6 +95,7 @@ test('Fal engine catalog data is split into provider-family modules', () => {
     'NANO_BANANA_PRO_FAL_ENGINE_REGISTRY',
     'NANO_BANANA_2_FAL_ENGINE_REGISTRY',
     'GPT_IMAGE_2_FAL_ENGINE_REGISTRY',
+    'SEEDREAM_FAL_ENGINE_REGISTRY',
   ].forEach((exportName) => {
     assert.match(registrySource, new RegExp(`import \\{ ${exportName} \\}`));
     assert.match(registrySource, new RegExp(`\\.\\.\\.${exportName}`));

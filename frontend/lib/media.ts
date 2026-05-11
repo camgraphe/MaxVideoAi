@@ -54,6 +54,23 @@ export function isPlaceholderMediaUrl(value?: string | null): boolean {
   );
 }
 
+export function isTemporaryProviderMediaUrl(value?: string | null): boolean {
+  const normalized = normalizeMediaUrl(value);
+  if (!normalized || !/^https?:\/\//i.test(normalized)) return false;
+  try {
+    const url = new URL(normalized);
+    const host = url.hostname.toLowerCase();
+    if (!host.endsWith('volces.com')) return false;
+    return (
+      url.pathname.includes('/seedream-5-0/') ||
+      url.searchParams.has('X-Tos-Expires') ||
+      url.searchParams.has('X-Tos-Signature')
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function resolvePreferredMediaUrl(...candidates: Array<string | null | undefined>): string | null {
   let fallback: string | null = null;
   for (const candidate of candidates) {
@@ -67,4 +84,19 @@ export function resolvePreferredMediaUrl(...candidates: Array<string | null | un
     }
   }
   return fallback;
+}
+
+export function resolveStableMediaUrl(
+  primary?: string | null,
+  stableFallback?: string | null
+): string | null {
+  const primaryUrl = normalizeMediaUrl(primary);
+  const fallbackUrl = normalizeMediaUrl(stableFallback);
+  if (primaryUrl && !isPlaceholderMediaUrl(primaryUrl) && !isTemporaryProviderMediaUrl(primaryUrl)) {
+    return primaryUrl;
+  }
+  if (fallbackUrl && !isPlaceholderMediaUrl(fallbackUrl)) {
+    return fallbackUrl;
+  }
+  return primaryUrl && !isPlaceholderMediaUrl(primaryUrl) ? primaryUrl : null;
 }

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { saveImageToLibrary } from '@/lib/api';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
+import { resolveStableMediaUrl } from '@/lib/media';
 import type { VideoGroup } from '@/types/video-groups';
 import type { HistoryEntry } from '../_lib/image-workspace-types';
 
@@ -20,7 +21,7 @@ export function useImageWorkspaceViewer() {
       engineId: entry.engineId,
       aspectRatio: entry.aspectRatio ?? null,
       images: entry.images.map((image) => ({
-        url: image.url,
+        url: resolveStableMediaUrl(image.url, image.thumbUrl) ?? image.url,
         thumbUrl: image.thumbUrl ?? null,
         width: image.width ?? null,
         height: image.height ?? null,

@@ -21,6 +21,10 @@
         "href": "/models/seedance-2-0"
       },
       {
+        "label": "Prepare references with Seedream",
+        "href": "/models/seedream"
+      },
+      {
         "label": "View Seedance AI video examples",
         "href": "/examples/seedance"
       },
@@ -111,6 +115,7 @@
     "title": "Production notes",
     "items": [
       "Use Fast for speed, then switch to standard Seedance 2.0 for premium finals.",
+      "Use Seedream 5.0 Lite first when a draft needs a cleaner reference image before image-to-video.",
       "Use the optional end image in i2v when you want a guided last frame during draft passes.",
       "Keep prompts short and tactical: one beat, one move, one reason to compare.",
       "Use the compare hub to judge Seedance Fast against Veo Fast and LTX Fast, not against every model at once.",
@@ -268,6 +273,13 @@
     "demoTitle": "Demo prompt — Seedance 2.0 Fast",
     "demoPromptLabel": "Prompt",
     "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedream 5.0 Lite",
+        "description": "Generate or clean a still image in Seedream before using Seedance 2.0 Fast for quick motion drafts.",
+        "modelSlug": "seedream",
+        "ctaLabel": "Prepare references with Seedream ->"
+      },
       {
         "brand": "bytedance",
         "title": "Seedance 2.0",

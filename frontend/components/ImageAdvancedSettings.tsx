@@ -53,6 +53,12 @@ interface ImageAdvancedSettingsProps {
     options: ControlOption[];
     onChange: (value: boolean) => void;
   };
+  watermark?: {
+    label: string;
+    value: boolean;
+    options: ControlOption[];
+    onChange: (value: boolean) => void;
+  };
 }
 
 function AdvancedSelect({
@@ -88,11 +94,12 @@ export function ImageAdvancedSettings({
   enableWebSearch,
   thinkingLevel,
   limitGenerations,
+  watermark,
 }: ImageAdvancedSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const hasContent = useMemo(
-    () => Boolean(seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations),
-    [customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel]
+    () => Boolean(seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations || watermark),
+    [customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
   );
 
   if (!hasContent) return null;
@@ -203,6 +210,14 @@ export function ImageAdvancedSettings({
               value={limitGenerations.value}
               options={limitGenerations.options}
               onChange={(value) => limitGenerations.onChange(Boolean(value))}
+            />
+          ) : null}
+          {watermark ? (
+            <AdvancedSelect
+              label={watermark.label}
+              value={watermark.value}
+              options={watermark.options}
+              onChange={(value) => watermark.onChange(Boolean(value))}
             />
           ) : null}
         </div>

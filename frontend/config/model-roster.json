@@ -64,6 +64,22 @@
     }
   },
   {
+    "engineId": "seedream",
+    "marketingName": "Seedream",
+    "brandId": "bytedance",
+    "modelSlug": "seedream",
+    "family": "seedream",
+    "versionLabel": "5.0 Lite",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "nano-banana",
     "marketingName": "Nano Banana (Image Generation)",
     "brandId": "google",

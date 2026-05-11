@@ -80,7 +80,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Identifica modelos para generar imágenes fijas sin referencias de entrada.'
               : 'Shortlist models for still generation without source references.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Film,
       },
       {
@@ -91,7 +91,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Comprueba qué modelos manejan mejor las referencias y la edición con varias imágenes.'
               : 'Check which models best support references and multi-image edits.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Clapperboard,
       },
       {
@@ -102,7 +102,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Revisa ratios amplios, extremos y formatos de archivo disponibles.'
               : 'Review wide and extreme aspect ratios plus available file formats.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Sparkles,
       },
       {
@@ -113,7 +113,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Comprueba cuántas imágenes de referencia acepta cada modelo en edit.'
               : 'Check how many reference images each model accepts for edit runs.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Timer,
       },
       {
@@ -124,7 +124,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Compara drafts, finales y costes extra como grounding web.'
               : 'Compare draft, final, and add-on costs such as web grounding.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Wand2,
       },
       {
@@ -135,7 +135,7 @@ export function buildModelsOutcomeTiles({
             : activeLocale === 'es'
               ? 'Abre las fichas de modelo para prompts, recomendaciones y restricciones detalladas.'
               : 'Open model profiles for prompts, tips, and detailed constraints.',
-        engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+        engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
         icon: Copy,
       },
     ];
@@ -161,7 +161,7 @@ export function buildModelsOutcomeTiles({
           : activeLocale === 'es'
             ? 'Abre el hub de imagen para imágenes fijas, ediciones y flujos guiados por referencias.'
             : 'Open the image hub for stills, edits, and reference-led workflows.',
-      engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
+      engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
       icon: Clapperboard,
     },
     {

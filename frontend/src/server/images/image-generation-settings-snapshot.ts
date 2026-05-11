@@ -22,6 +22,7 @@ export function buildDefaultSettingsSnapshot(args: {
   enableWebSearch: boolean;
   thinkingLevel: string | null;
   limitGenerations: boolean;
+  watermark: boolean;
   imageUrls: string[];
   characterReferences: CharacterReferenceSelection[];
   membershipTier?: string;
@@ -47,6 +48,7 @@ export function buildDefaultSettingsSnapshot(args: {
       enableWebSearch: args.enableWebSearch,
       thinkingLevel: args.thinkingLevel,
       limitGenerations: args.limitGenerations,
+      watermark: args.watermark,
     },
     refs: {
       imageUrls: args.imageUrls,

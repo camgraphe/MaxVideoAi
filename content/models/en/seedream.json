@@ -1,0 +1,194 @@
+{
+  "marketingName": "Seedream 5.0 Lite",
+  "versionLabel": "5.0 Lite",
+  "seo": {
+    "title": "Seedream 5.0 Lite | BytePlus Image Generation & Editing | MaxVideoAI",
+    "description": "Create and edit still images with Seedream 5.0 Lite in MaxVideoAI. Use BytePlus ModelArk image generation for clean concepts, product frames, and reference images before Seedance animation."
+  },
+  "overview": "Seedream 5.0 Lite is a BytePlus ModelArk image generation and editing model for creating clean stills, product concepts, character frames, and source images that can become stronger references before Seedance 2.0 or Seedance 2.0 Fast image-to-video work.",
+  "pricingNotes": "Seedream 5.0 Lite is priced per successfully generated image by BytePlus ModelArk. MaxVideoAI shows the active account price before generation.",
+  "hero": {
+    "title": "Seedream 5.0 Lite - BytePlus image generation and editing",
+    "intro": "Use Seedream 5.0 Lite as a standalone image model for text-to-image creation, image-to-image cleanup, and controlled reference stills before animating selected frames in Seedance.",
+    "badge": "Text -> Image · Image -> Image · BytePlus ModelArk · Reference-first workflow",
+    "ctaPrimary": {
+      "label": "Launch Seedream",
+      "href": "/app/image?engine=seedream"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Open the image lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Animate with Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Draft with Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Clean reference frames before image-to-video animation",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Product stills with controlled backgrounds and lighting",
+        "icon": "product"
+      },
+      {
+        "title": "Character, wardrobe, and prop concepts for storyboards",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Image edits that remove noise before motion tests",
+        "icon": "layers"
+      }
+    ]
+  },
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "[Subject] + [composition] + [lighting] + [style] + [what to preserve or change] + [Seedance reference goal].",
+    "description": "Seedream works best when the still image brief is concrete. Describe the subject, frame, materials, lighting, and what must stay stable if the image will become a Seedance reference.",
+    "steps": [
+      "Define the subject and composition",
+      "Add lighting, environment, and material details",
+      "State what should stay clean for future animation",
+      "For edits, separate preserve instructions from changes",
+      "Choose the strongest still before moving into Seedance"
+    ]
+  },
+  "tips": {
+    "title": "Reference workflow notes",
+    "items": [
+      "Use Seedream to create cleaner, more controlled source images before animation.",
+      "Keep the subject readable and avoid overloaded backgrounds when the frame will feed image-to-video.",
+      "For product motion, use Seedream to settle packaging, reflections, and hero angle first.",
+      "Seedream may improve consistency and reduce friction compared with random external images, but Seedance still evaluates each prompt and source image."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Product reference frame",
+      "prompt": "Premium studio still of a matte black travel mug on a clean graphite plinth, soft rim light, readable logo area, uncluttered background, centered hero angle for later image-to-video animation."
+    },
+    {
+      "title": "Character wardrobe concept",
+      "prompt": "Full-body reference image of a courier in a rain jacket, neutral stance, clear silhouette, consistent wardrobe details, overcast city light, designed as a clean Seedance starting frame."
+    },
+    {
+      "title": "Edit for animation readiness",
+      "prompt": "Clean this product image for animation: preserve the bottle shape and label hierarchy, remove distracting reflections, simplify the background, keep natural studio lighting."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What is Seedream 5.0 Lite?",
+      "a": "Seedream 5.0 Lite is a BytePlus ModelArk image generation and editing model available in MaxVideoAI for still-image creation and reference preparation."
+    },
+    {
+      "q": "How does Seedream connect to Seedance?",
+      "a": "Seedream is a recommended reference-image companion before Seedance 2.0 or Seedance 2.0 Fast. Create or clean a still image first, then use the selected frame as a stronger starting point for image-to-video."
+    },
+    {
+      "q": "Does Seedream promise Seedance results?",
+      "a": "No. Seedream can help create cleaner source images, but Seedance still evaluates each prompt and source image under its own workflow and safety rules."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "BytePlus ModelArk - Seedream 5.0 Lite",
+    "heroSupportLine": "Best for clean still images, image edits, and source frames before Seedance motion.",
+    "heroSpecChips": [
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Still images"
+      },
+      {
+        "label": "BytePlus ModelArk"
+      }
+    ],
+    "whyTitle": "Why Seedream fits the Seedance workflow",
+    "heroDesc1": "Seedream gives creators a focused still-image step before animation: generate the product shot, character frame, or environment plate first, then animate only the frame worth testing.",
+    "heroDesc2": "It is useful when a Seedance run needs a more deliberate source image than a loose prompt or an unprepared external upload.",
+    "heroHighlights": [
+      "Standalone image model||Use Seedream for still generation and edits even when no video run follows.",
+      "Reference preparation||Create cleaner, more controlled source images before Seedance animation.",
+      "Edit before motion||Refine products, backgrounds, wardrobe, and lighting before image-to-video.",
+      "Seedance companion||Send the selected still into Seedance 2.0 or Seedance 2.0 Fast when motion is the next step."
+    ],
+    "whatTitle": "Reference workflow",
+    "whatIntro1": "Start in the Image Lab, create or edit the still in Seedream, then review whether the frame is clear enough for motion.",
+    "whatIntro2": "Use Seedance 2.0 for polished final animation or Seedance 2.0 Fast for quicker draft checks.",
+    "whatFlowTitle": "Seedream -> Seedance",
+    "whatFlowSteps": [
+      "Create or edit a still image with Seedream",
+      "Check subject clarity, background simplicity, and lighting consistency",
+      "Save the best frame as the animation reference",
+      "Use Seedance 2.0 Fast for draft motion checks",
+      "Use Seedance 2.0 when the approved frame needs a more polished final video"
+    ],
+    "tipsTitle": "Tips and limits",
+    "tipsIntro": "Treat Seedream as the still-image craft step. It can produce better source material, but it does not replace Seedance prompt and policy checks.",
+    "strengths": [
+      "Generate clean product, character, and environment frames before animation.",
+      "Use edit mode to reduce visual noise in existing source images.",
+      "Keep one clear subject per frame when the output will become image-to-video input.",
+      "Use the same language for subject, lighting, and style when moving from Seedream to Seedance."
+    ],
+    "boundaries": [
+      "Still images only.",
+      "Seedance still evaluates each source image and prompt.",
+      "A cleaner reference image may improve consistency, but final animation handling and output quality still depend on the Seedance run.",
+      "Do not use Seedream to prepare content that violates MaxVideoAI or provider safety rules."
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing, or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent.",
+      "Do not include private personal data or sensitive documents."
+    ],
+    "promptingTitle": "How to write a strong Seedream prompt",
+    "promptingIntro": "Write the still image as if it were the first frame of a shot: subject, composition, lighting, and constraints first.",
+    "promptingTip": "Tip: if the image is going into Seedance, mention the future motion goal without asking Seedream to animate it.",
+    "promptingGlobalPrinciples": [
+      "Use one clean visual goal per image.",
+      "For edits, say what to preserve before what to change.",
+      "Keep the background simple when the still will become a video reference."
+    ],
+    "promptingEngineWhy": [
+      "Controlled stills give image-to-video models clearer starting material.",
+      "Product and character references are easier to animate when silhouette, lighting, and props are already stable.",
+      "Drafting the still first helps separate image quality decisions from motion decisions."
+    ],
+    "promptingGuideLabel": "Learn more",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Animate a selected Seedream still with the standard Seedance route when you need a more polished image-to-video result.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Animate with Seedance 2.0 ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Use Fast for quicker motion drafts after Seedream has produced a clean reference image.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "Draft with Seedance 2.0 Fast ->"
+      }
+    ]
+  }
+}

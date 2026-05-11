@@ -1,4 +1,5 @@
 import type { VideoGroup, VideoItem, VideoAspect, ResultProvider } from '@/types/video-groups';
+import { resolveStableMediaUrl } from '@/lib/media';
 
 type ImageVariant = {
   url: string;
@@ -56,18 +57,21 @@ export function buildVideoGroupFromImageRun(run: ImageRunDescriptor): VideoGroup
   const createdAtIso =
     typeof run.createdAt === 'number' ? new Date(run.createdAt).toISOString() : new Date(run.createdAt).toISOString();
 
-  const items: VideoItem[] = run.images.map((image, index) => ({
-    id: `${run.id}-img-${index}`,
-    url: image.url,
-    thumb: image.thumbUrl ?? image.url,
-    aspect: inferAspect(image.width, image.height, run.aspectRatio),
-    jobId: run.jobId ?? run.id,
-    engineId: run.engineId ?? undefined,
-    meta: {
-      mediaType: 'image',
-      status: 'completed',
-    },
-  }));
+  const items: VideoItem[] = run.images.map((image, index) => {
+    const stableUrl = resolveStableMediaUrl(image.url, image.thumbUrl) ?? image.url;
+    return {
+      id: `${run.id}-img-${index}`,
+      url: stableUrl,
+      thumb: image.thumbUrl ?? stableUrl,
+      aspect: inferAspect(image.width, image.height, run.aspectRatio),
+      jobId: run.jobId ?? run.id,
+      engineId: run.engineId ?? undefined,
+      meta: {
+        mediaType: 'image',
+        status: 'completed',
+      },
+    };
+  });
 
   const layout = (() => {
     if (items.length >= 4) return 'x4';

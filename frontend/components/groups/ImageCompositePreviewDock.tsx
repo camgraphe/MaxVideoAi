@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { resolveCssAspectRatio } from '@/lib/aspect';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { resolveStableMediaUrl } from '@/lib/media';
 
 type PreviewImage = {
   url: string;
@@ -78,7 +79,8 @@ export function ImageCompositePreviewDock({
   const images = entry?.images ?? [];
   const safeIndex = Math.min(Math.max(0, selectedIndex), Math.max(0, images.length - 1));
   const selected = images.length ? images[safeIndex] : null;
-  const selectedPreviewUrl = selected?.url ?? selected?.thumbUrl ?? null;
+  const selectedPreviewUrl = selected?.thumbUrl ?? selected?.url ?? null;
+  const selectedActionUrl = resolveStableMediaUrl(selected?.url, selected?.thumbUrl);
   const aspectRatioCss = resolveCssAspectRatio({
     value: entry?.aspectRatio ?? null,
     width: selected?.width ?? null,
@@ -87,9 +89,9 @@ export function ImageCompositePreviewDock({
   });
 
   const canOpenModal = Boolean(entry && images.length && onOpenModal);
-  const canDownload = Boolean(selected?.url && onDownload);
-  const canCopy = Boolean(selected?.url && onCopyLink);
-  const canAddToLibrary = Boolean(selected?.url && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
+  const canDownload = Boolean(selectedActionUrl && onDownload);
+  const canCopy = Boolean(selectedActionUrl && onCopyLink);
+  const canAddToLibrary = Boolean(selectedActionUrl && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
   const canRemoveFromLibrary = Boolean(onRemoveFromLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && isInLibrary;
 
   const headerTitle = showTitle ? (
@@ -124,7 +126,7 @@ export function ImageCompositePreviewDock({
             type="button"
             size="sm"
             variant="ghost"
-            onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
+            onClick={() => (selectedActionUrl && onAddToLibrary ? onAddToLibrary(selectedActionUrl) : undefined)}
             disabled={!canAddToLibrary}
             className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
             aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
@@ -141,7 +143,7 @@ export function ImageCompositePreviewDock({
           type="button"
           size="sm"
           variant="ghost"
-          onClick={() => (selected?.url && onDownload ? onDownload(selected.url) : undefined)}
+          onClick={() => (selectedActionUrl && onDownload ? onDownload(selectedActionUrl) : undefined)}
           disabled={!canDownload}
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={downloadLabel}
@@ -157,7 +159,7 @@ export function ImageCompositePreviewDock({
           type="button"
           size="sm"
           variant="ghost"
-          onClick={() => (selected?.url && onCopyLink ? onCopyLink(selected.url) : undefined)}
+          onClick={() => (selectedActionUrl && onCopyLink ? onCopyLink(selectedActionUrl) : undefined)}
           disabled={!canCopy}
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={copyLabel}
@@ -265,7 +267,7 @@ export function ImageCompositePreviewDock({
           </div>
         ) : null}
 
-        {copiedUrl && selected?.url && copiedUrl === selected.url ? (
+        {copiedUrl && selectedActionUrl && copiedUrl === selectedActionUrl ? (
           <p className="mt-3 text-xs text-text-muted">{copiedLabel}</p>
         ) : null}
       </div>

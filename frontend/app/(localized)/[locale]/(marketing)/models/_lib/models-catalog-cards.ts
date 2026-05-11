@@ -90,6 +90,7 @@ const MODELS_CATALOG_PRIORITY_ORDER = [
   'ltx-2',
   'minimax-hailuo-02-text',
   'gpt-image-2',
+  'seedream',
   'nano-banana-2',
   'nano-banana-pro',
   'nano-banana',
@@ -242,7 +243,7 @@ export async function buildModelsCatalogCards({
     const capabilities = capabilityKeywordsList
       .filter((cap) => cap !== 'Lip sync' && cap !== 'Audio')
       .slice(0, 5) as string[];
-    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(
+    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'seedream'].includes(
       engine.modelSlug
     );
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;

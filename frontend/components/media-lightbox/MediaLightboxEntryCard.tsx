@@ -22,6 +22,7 @@ import {
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { resolveStableMediaUrl } from '@/lib/media';
 import {
   formatEntryDate,
   formatPromptPreview,
@@ -164,7 +165,8 @@ export function MediaLightboxEntryCard({
   const audioUrl = entry.audioUrl ?? undefined;
   const imageUrl = entry.imageUrl ?? undefined;
   const thumbUrl = entry.thumbUrl ?? undefined;
-  const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.imageUrl ?? entry.thumbUrl ?? null;
+  const stableImageUrl = resolveStableMediaUrl(entry.imageUrl, entry.thumbUrl);
+  const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? stableImageUrl ?? entry.thumbUrl ?? null;
   const isProcessing = entry.status === 'pending';
   const progressLabel =
     typeof entry.progress === 'number'
@@ -270,8 +272,8 @@ export function MediaLightboxEntryCard({
                   <audio controls src={audioUrl} className="w-full" />
                 </div>
               </div>
-            ) : imageUrl || thumbUrl ? (
-              <Image src={imageUrl ?? thumbUrl ?? ''} alt="" fill className="object-contain" sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)" />
+            ) : stableImageUrl || imageUrl || thumbUrl ? (
+              <Image src={stableImageUrl ?? imageUrl ?? thumbUrl ?? ''} alt="" fill className="object-contain" sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
                 Preview unavailable

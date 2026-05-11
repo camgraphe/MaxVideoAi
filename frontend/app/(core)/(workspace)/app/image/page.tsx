@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import ImageWorkspace, { type ImageEngineOption } from './ImageWorkspace';
+import { sortImageWorkspaceEngineOptions } from './_lib/image-workspace-engine-options';
 
 export const metadata: Metadata = {
   title: 'Generate Images – MaxVideoAI Workspace',
@@ -23,39 +24,41 @@ export default async function ImageGeneratePage() {
     notFound();
   }
 
-  const engines: ImageEngineOption[] = imageEntries.map((entry) => {
-    const pricing = entry.engine.pricing;
-    const fallbackPrice =
-      typeof pricing?.base === 'number' && pricing.base > 0
-        ? pricing.base
-        : typeof entry.engine.pricingDetails?.flatCents?.default === 'number'
-          ? entry.engine.pricingDetails.flatCents.default / 100
-          : 0.039;
-    const currency = pricing?.currency ?? entry.engine.pricingDetails?.currency ?? 'USD';
-    const prompts = entry.prompts
-      .filter((prompt) => prompt.mode === 't2i' || prompt.mode === 'i2i')
-      .map((prompt) => ({
-        title: prompt.title,
-        prompt: prompt.prompt,
-        notes: prompt.notes,
-        mode: prompt.mode as ImageGenerationMode,
-      }));
-    const modes = entry.modes
-      .map((modeConfig) => modeConfig.mode)
-      .filter((mode): mode is ImageGenerationMode => mode === 't2i' || mode === 'i2i');
+  const engines: ImageEngineOption[] = sortImageWorkspaceEngineOptions(
+    imageEntries.map((entry) => {
+      const pricing = entry.engine.pricing;
+      const fallbackPrice =
+        typeof pricing?.base === 'number' && pricing.base > 0
+          ? pricing.base
+          : typeof entry.engine.pricingDetails?.flatCents?.default === 'number'
+            ? entry.engine.pricingDetails.flatCents.default / 100
+            : 0.039;
+      const currency = pricing?.currency ?? entry.engine.pricingDetails?.currency ?? 'USD';
+      const prompts = entry.prompts
+        .filter((prompt) => prompt.mode === 't2i' || prompt.mode === 'i2i')
+        .map((prompt) => ({
+          title: prompt.title,
+          prompt: prompt.prompt,
+          notes: prompt.notes,
+          mode: prompt.mode as ImageGenerationMode,
+        }));
+      const modes = entry.modes
+        .map((modeConfig) => modeConfig.mode)
+        .filter((mode): mode is ImageGenerationMode => mode === 't2i' || mode === 'i2i');
 
-    return {
-      id: entry.id,
-      name: entry.marketingName,
-      description: entry.seoText ?? entry.seo.description,
-      pricePerImage: fallbackPrice,
-      currency,
-      prompts,
-      modes,
-      engineCaps: entry.engine,
-      aliases: getEngineAliases(entry),
-    };
-  });
+      return {
+        id: entry.id,
+        name: entry.marketingName,
+        description: entry.seoText ?? entry.seo.description,
+        pricePerImage: fallbackPrice,
+        currency,
+        prompts,
+        modes,
+        engineCaps: entry.engine,
+        aliases: getEngineAliases(entry),
+      };
+    })
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">

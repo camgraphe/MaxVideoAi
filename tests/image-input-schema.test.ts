@@ -24,6 +24,12 @@ function getGptImage2Engine() {
   return engine;
 }
 
+function getSeedreamEngine() {
+  const engine = listFalEngines().find((entry) => entry.id === 'seedream')?.engine;
+  assert.ok(engine);
+  return engine;
+}
+
 test('Nano Banana 2 resolves generic aspect ratios including auto and 4:1', () => {
   const engine = getNanoBanana2Engine();
 
@@ -102,4 +108,23 @@ test('GPT Image 2 keeps mask URL scoped to edit mode and clamps references', () 
   assert.equal(editRefs.min, 1);
   assert.equal(editRefs.max, 4);
   assert.equal(editRefs.requires, true);
+});
+
+test('Seedream resolves BytePlus sizes and edit references', () => {
+  const engine = getSeedreamEngine();
+
+  const textSize = resolveRequestedResolution(engine, 't2i', '2k');
+  const editSize = resolveRequestedResolution(engine, 'i2i', '4K');
+  const refs = getReferenceConstraints(engine, 'i2i');
+  const aspectRatio = resolveRequestedAspectRatio(engine, 't2i', '21:9');
+
+  assert.equal(textSize.ok, true);
+  assert.equal(textSize.ok && textSize.resolution, '2K');
+  assert.equal(editSize.ok, true);
+  assert.equal(editSize.ok && editSize.resolution, '4K');
+  assert.equal(aspectRatio.ok, true);
+  assert.equal(aspectRatio.ok && aspectRatio.value, '21:9');
+  assert.equal(refs.min, 1);
+  assert.equal(refs.max, 14);
+  assert.equal(refs.requires, true);
 });

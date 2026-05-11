@@ -58,6 +58,7 @@ interface UseImageWorkspaceQueryHydrationParams {
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
+  setWatermark: Dispatch<SetStateAction<boolean>>;
 }
 
 export function useImageWorkspaceQueryHydration({
@@ -84,6 +85,7 @@ export function useImageWorkspaceQueryHydration({
   setSelectedPreviewImageIndex,
   setStatusMessage,
   setThinkingLevel,
+  setWatermark,
 }: UseImageWorkspaceQueryHydrationParams) {
   const hydratedJobRef = useRef<string | null>(null);
 
@@ -182,6 +184,7 @@ export function useImageWorkspaceQueryHydration({
       const enableWebSearchRaw = core.enableWebSearch === true;
       const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
       const limitGenerationsRaw = core.limitGenerations === true;
+      const watermarkRaw = core.watermark === true;
       if (engineMatch) {
         const resolvedMode =
           snapshotMode && engineMatch.modes.includes(snapshotMode) ? snapshotMode : engineMatch.modes[0] ?? 't2i';
@@ -243,6 +246,7 @@ export function useImageWorkspaceQueryHydration({
             ? limitGenerationsRaw
             : false
         );
+        setWatermark(getImageInputField(engineMatch.engineCaps, 'watermark', resolvedMode) ? watermarkRaw : false);
       } else {
         setResolution(resolutionRaw);
         const restoredCustomSize = customImageSizeRawParsed ?? parseGptImage2SizeKey(resolutionRaw);
@@ -256,6 +260,7 @@ export function useImageWorkspaceQueryHydration({
         setEnableWebSearch(enableWebSearchRaw);
         setThinkingLevel(thinkingLevelRaw);
         setLimitGenerations(limitGenerationsRaw);
+        setWatermark(watermarkRaw);
       }
 
       const refs = record.refs && typeof record.refs === 'object' ? (record.refs as Record<string, unknown>) : {};
@@ -309,6 +314,7 @@ export function useImageWorkspaceQueryHydration({
       setSelectedPreviewEntryId,
       setSelectedPreviewImageIndex,
       setThinkingLevel,
+      setWatermark,
     ]
   );
 

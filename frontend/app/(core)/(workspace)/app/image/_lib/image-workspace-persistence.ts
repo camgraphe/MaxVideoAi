@@ -42,6 +42,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
     const enableWebSearch = raw.enableWebSearch === true;
     const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
     const limitGenerations = raw.limitGenerations === true;
+    const watermark = raw.watermark === true;
     const referenceSlotsRaw = Array.isArray(raw.referenceSlots) ? raw.referenceSlots : [];
     const referenceSlots = referenceSlotsRaw
       .slice(0, MAX_REFERENCE_SLOTS)
@@ -93,6 +94,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       enableWebSearch,
       thinkingLevel,
       limitGenerations,
+      watermark,
       referenceSlots,
       characterReferences,
     };
