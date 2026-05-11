@@ -36,7 +36,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
     items: [
       {
         question: 'Puis-je cloner ces exemples directement ?',
-        answer: 'Oui. Ouvrez un exemple et réutilisez son prompt et ses réglages dans votre studio.',
+        answer: 'Oui. Ouvrez un exemple, puis réutilisez son prompt et ses réglages dans votre studio.',
       },
       {
         question: 'Les exemples couvrent-ils les flux texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA ?',
@@ -44,19 +44,19 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: 'Le prix est-il affiché pour chaque exemple ?',
-        answer: 'Oui, un prix par clip est affiché pour comparer le coût avant de relancer.',
+        answer: 'Oui. Un prix par clip est affiché pour comparer les coûts avant de relancer.',
       },
       {
-        question: 'Pourquoi deux runs diffèrent avec le même prompt ?',
-        answer: 'Le comportement varie selon le mode, les réglages et le contexte de rendu.',
+        question: 'Pourquoi un même prompt donne-t-il deux résultats différents ?',
+        answer: 'Le résultat peut varier selon le mode, les réglages et le contexte de génération.',
       },
       {
         question: 'Où comparer les caractéristiques et limites des modèles ?',
-        answer: 'Utilisez les pages modèles pour les caractéristiques et limites, et la page comparatif pour choisir selon l’usage.',
+        answer: 'Utilisez les pages Modèles pour les caractéristiques et limites, et la page Comparatifs pour choisir selon l’usage.',
       },
       {
         question: 'Comment choisir le bon modèle pour ce plan ?',
-        answer: 'Partir du niveau qualité/coût vu en exemples puis valider via un test court au format cible.',
+        answer: 'Partez du niveau qualité/coût observé dans les exemples, puis validez avec un test court au format cible.',
       },
     ],
   },
@@ -64,28 +64,28 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
     title: 'FAQ de ejemplos',
     items: [
       {
-        question: '¿Puedo clonar estos ejemplos directamente?',
-        answer: 'Sí. Abre un ejemplo y reutiliza su prompt y ajustes en tu workspace.',
+        question: '¿Puedo reutilizar estos ejemplos directamente?',
+        answer: 'Sí. Abre un ejemplo y reutiliza su prompt y ajustes en tu espacio de trabajo.',
       },
       {
-        question: '¿Los ejemplos incluyen workflows de text-to-video AI, image-to-video AI y video-to-video AI?',
-        answer: 'Sí. La galería cubre text-to-video AI, image-to-video AI y algunos workflows de video-to-video AI cuando los modelos subyacentes los admiten.',
+        question: '¿Los ejemplos incluyen flujos de texto a video, imagen a video y video a video?',
+        answer: 'Sí. La galería cubre flujos de texto a video, imagen a video y algunos casos de video a video cuando los modelos subyacentes los admiten.',
       },
       {
         question: '¿Se muestra el precio por ejemplo?',
-        answer: 'Sí, el precio por clip se muestra para comparar coste antes de generar.',
+        answer: 'Sí. El precio por clip se muestra para comparar el precio antes de generar.',
       },
       {
-        question: '¿Por qué dos ejecuciones cambian con el mismo prompt?',
-        answer: 'El comportamiento varía por modo, ajustes y contexto de cola incluso con el mismo prompt.',
+        question: '¿Por qué dos resultados cambian con el mismo prompt?',
+        answer: 'El resultado puede variar según el modo, los ajustes y el contexto de generación.',
       },
       {
-        question: '¿Dónde comparo specs y límites por modelo?',
-        answer: 'Usa las páginas de modelos para ver características y límites, y la página comparativa para decidir según el objetivo.',
+        question: '¿Dónde comparo especificaciones y límites por modelo?',
+        answer: 'Usa las fichas de modelo para ver especificaciones y límites, y la página comparativa para decidir según el objetivo.',
       },
       {
-        question: '¿Cómo elijo el motor correcto para esta toma?',
-        answer: 'Compara calidad y coste en ejemplos y valida con una prueba corta en tu formato objetivo.',
+        question: '¿Cómo elijo el modelo correcto para esta toma?',
+        answer: 'Compara calidad y precio en ejemplos y valida con una prueba corta en tu formato objetivo.',
       },
     ],
   },

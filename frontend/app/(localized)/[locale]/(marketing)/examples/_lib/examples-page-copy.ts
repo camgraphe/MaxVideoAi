@@ -14,7 +14,7 @@ export type ExamplesNextStepLink = {
 };
 
 export function getExamplesBrowseByModelLabel(locale: AppLocale) {
-  return locale === 'fr' ? 'Parcourir par marque' : locale === 'es' ? 'Explorar por marca' : 'Browse by brand';
+  return locale === 'fr' ? 'Parcourir par marque' : locale === 'es' ? 'Explorar por modelo' : 'Browse by brand';
 }
 
 export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: PaginationDictionary = {}) {
@@ -60,10 +60,10 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
 
 export function getExamplesLongDescription(locale: AppLocale) {
   if (locale === 'fr') {
-    return "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez cette page pour comparer des schémas texte-vers-vidéo IA, image-vers-vidéo IA et certains flux vidéo-vers-vidéo IA, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode.";
+    return 'Parcourez des exemples vidéo IA par famille de modèles, avec prompt, réglages, durée et prix par clip. Comparez les workflows texte-vers-vidéo, image-vers-vidéo et certains flux vidéo-vers-vidéo, puis ouvrez les fiches modèles pour les specs, limites et détails de mode.';
   }
   if (locale === 'es') {
-    return 'Explora ejemplos de video con IA por marca, con prompt, ajustes, duración y precio por clip. Usa esta página para comparar patrones de text-to-video AI, image-to-video AI y algunos workflows de video-to-video AI, y abre las páginas de modelos para ver especificaciones, límites y detalles por modo.';
+    return 'Explora ejemplos de video IA por modelo, con prompt, ajustes, duración y precio por clip. Usa esta página para comparar flujos de texto a video, imagen a video y algunos casos de video a video, y abre las fichas de modelo para ver especificaciones, límites y detalles de cada modo.';
   }
   return 'Browse AI video examples by model, including prompt, settings, duration, and price per clip. Use this hub to compare text-to-video AI, image-to-video AI, and selected video-to-video AI patterns across brands, then open model pages for specs, limits, and mode details.';
 }
@@ -74,7 +74,7 @@ export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding:
     return ['Prompts Kling AI a reutiliser', 'Schemas image-vers-video', 'Reglages et choix du modele'];
   }
   if (locale === 'es') {
-    return ['Prompts de Kling AI para reutilizar', 'Patrones image-to-video', 'Ajustes y eleccion del modelo'];
+    return ['Prompts de Kling AI para reutilizar', 'Patrones de imagen a video', 'Ajustes y eleccion del modelo'];
   }
   return ['Kling AI prompts to reuse', 'Image-to-video prompt patterns', 'Settings and model fit'];
 }

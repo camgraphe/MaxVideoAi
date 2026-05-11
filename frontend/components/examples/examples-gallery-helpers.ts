@@ -11,7 +11,7 @@ export const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT 
 
 export function buildWatchAnchorText(locale: string, video: ExampleGalleryVideo): string {
   const ratio = video.aspectRatio ?? 'Auto';
-  const duration = `${video.durationSec}s`;
+  const duration = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
   if (locale === 'fr') {
     return `Voir l'exemple video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
   }

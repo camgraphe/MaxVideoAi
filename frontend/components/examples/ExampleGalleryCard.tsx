@@ -106,9 +106,10 @@ export function ExampleGalleryCard({
 
   const posterSrc = video.rawPosterUrl ?? null;
   const watchAnchorText = buildWatchAnchorText(locale, video);
-  const playingLabel = locale === 'fr' ? 'Lecture' : locale === 'es' ? 'Reproduciendo' : 'Playing';
+  const playingLabel = locale === 'fr' ? 'Lecture' : locale === 'es' ? 'En reproducción' : 'Playing';
   const recreateLabel =
     locale === 'fr' ? 'Recréer ce plan' : locale === 'es' ? 'Recrear esta toma' : 'Recreate this shot';
+  const durationLabel = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
 
   return (
     <div
@@ -175,7 +176,7 @@ export function ExampleGalleryCard({
             fallbackClassName="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm"
           />
           <p className="text-[10px] text-text-secondary sm:text-[11px]">
-            {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? `· ${playingLabel}` : ''}
+            {video.aspectRatio ?? 'Auto'} · {durationLabel} {videoReady ? `· ${playingLabel}` : ''}
           </p>
           {showRecreateLink && video.recreateHref ? (
             <div className="pt-1">

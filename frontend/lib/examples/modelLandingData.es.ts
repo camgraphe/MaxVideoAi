@@ -4,20 +4,20 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   sora: {
     subtitle: 'Ejemplos de Sora pensados para un acabado cinematográfico, prompts reutilizables y ajustes realmente útiles.',
     intro:
-      'Esta página reúne ejemplos reales de Sora para clonar y ajustar en producción. La idea es ayudarte a repetir resultados con más consistencia usando prompts, duraciones y formatos que ya demostraron funcionar.',
+      'Esta página reúne ejemplos reales de Sora para reutilizar y ajustar en producción. La idea es ayudarte a repetir resultados con más consistencia usando prompts, duraciones y formatos que ya demostraron funcionar.',
     promptPatterns:
       'Define primero la intención de la toma, luego la cámara, el movimiento y la iluminación. Los prompts cortos, estructurados y bien jerarquizados suelen responder mejor.',
     strengthsLimits:
       'Sora suele destacar por su coherencia cinematográfica y por un movimiento más pulido. Los límites dependen del modo y del contexto de render.',
     pricingNotes:
-      'El precio cambia según la duración, la resolución y las opciones activas. Revisa el costo por clip antes de escalar.',
+      'El precio cambia según la duración, la resolución y las opciones activas. Revisa el precio por clip antes de escalar.',
     faq: [
       {
         question: '¿Qué prompts funcionan mejor en Sora?',
         answer: 'Prompts estructurados con sujeto, cámara y movimiento claramente separados.',
       },
       {
-        question: '¿Puedo clonar estos ejemplos de Sora en el workspace?',
+        question: '¿Puedo reutilizar estos ejemplos de Sora en el espacio de trabajo?',
         answer: 'Sí, están diseñados para reutilizarse y adaptarse rápidamente.',
       },
       {
@@ -33,20 +33,20 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     heroTitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video',
     subtitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video en la familia Veo actual.',
     intro:
-      'Consulta ejemplos de Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite con prompts, ajustes reutilizables y patrones image-to-video, y luego abre las paginas de modelo para ver specs, limites y precios. Usa esta pagina para estudiar la estructura del prompt, los patrones de text-to-video AI y los ajustes image-to-video propios de cada modelo antes de abrir la pagina Veo correspondiente.',
+      'Consulta ejemplos de Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite con prompts, ajustes reutilizables y patrones imagen a video, y luego abre las fichas de modelo para ver especificaciones, límites y precios. Usa esta página para estudiar la estructura del prompt, los patrones de texto a video y los ajustes imagen a video propios de cada modelo antes de abrir la página Veo correspondiente.',
     summary:
-      'Veo 3.1 lidera esta pagina para ejemplos, prompts, ajustes y patrones image-to-video, con Veo 3.1 Fast y Veo 3.1 Lite visibles como variantes Veo actuales para iteracion mas rapida y borradores con audio a menor coste.',
+      'Veo 3.1 lidera esta página para ejemplos, prompts, ajustes y patrones imagen a video, con Veo 3.1 Fast y Veo 3.1 Lite visibles como variantes Veo actuales para iteración más rápida y borradores con audio a menor precio.',
     promptPatterns:
-      'Empieza por el objetivo de la toma y luego concreta la camara, el ambiente y las restricciones de referencia utiles para image-to-video. Los ejemplos de Veo 3.1 funcionan mejor cuando la estructura del prompt se mantiene estable.',
+      'Empieza por el objetivo de la toma y luego concreta la cámara, el ambiente y las restricciones de referencia útiles para imagen a video. Los ejemplos de Veo 3.1 funcionan mejor cuando la estructura del prompt se mantiene estable.',
     strengthsLimits:
-      'Veo suele ofrecer buen control de encuadre y movimiento en runs cortos de text-to-video e image-to-video. Las capacidades varian segun el modo activo y el tipo de entrada.',
+      'Veo suele ofrecer buen control de encuadre y movimiento en runs cortos de texto a video e imagen a video. Las capacidades varían según el modo activo y el tipo de entrada.',
     pricingNotes:
       'Compara costos con presets iguales en duración y resolución para obtener una lectura más limpia.',
     faq: [
       {
-        question: '¿Como deberia usar Veo 3 para image-to-video?',
+        question: '¿Cómo debería usar Veo 3 para imagen a video?',
         answer:
-          'Parte de un still fuerte, define un solo objetivo de movimiento y mantén una direccion de camara explicita. Los workflows de Veo 3.1 en image-to-video suelen funcionar mejor cuando el prompt extiende la imagen fuente en lugar de reemplazarla por completo.',
+          'Parte de una imagen fuerte, define un solo objetivo de movimiento y mantén una dirección de cámara explícita. Los flujos de Veo 3.1 en imagen a video suelen funcionar mejor cuando el prompt extiende la imagen fuente en lugar de reemplazarla por completo.',
       },
       {
         question: '¿Que modelo Veo 3 deberia usar para probar prompts?',
@@ -54,9 +54,9 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
           'Empieza con Veo 3.1 Fast o Veo 3.1 Lite cuando quieras borradores mas baratos y pruebas de prompt mas rapidas, y pasa a Veo 3.1 cuando necesites una salida cinematica mas pulida y mejor control guiado por referencias.',
       },
       {
-        question: '¿Estos ejemplos de Veo 3.1 sirven como base para prompts de text-to-video AI?',
+        question: '¿Estos ejemplos de Veo 3.1 sirven como base para prompts de texto a video?',
         answer:
-          'Si. Utilizalos como base de text-to-video AI manteniendo el mismo sujeto, objetivo de movimiento, direccion de camara y formato, y cambia solo una variable del prompt cada vez.',
+          'Sí. Utilízalos como base de texto a video manteniendo el mismo sujeto, objetivo de movimiento, dirección de cámara y formato, y cambia solo una variable del prompt cada vez.',
       },
     ],
   },
@@ -91,7 +91,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   wan: {
     subtitle: 'Ejemplos de Wan pensados para secuencias estructuradas, transiciones limpias y continuidad guiada.',
     intro:
-      'Los ejemplos de Wan de esta página están pensados para secuencias cortas con beats claros y transiciones controladas. Funcionan como punto de partida operativo antes de clonar en producción, sobre todo cuando el ritmo importa tanto como el acabado final.',
+      'Los ejemplos de Wan de esta página están pensados para secuencias cortas con beats claros y transiciones controladas. Funcionan como punto de partida operativo antes de reutilizar en producción, sobre todo cuando el ritmo importa tanto como el acabado final.',
     promptPatterns:
       'Usa prompts en 2 o 3 beats: arranque, acción y cierre. Las transiciones explícitas suelen mejorar la estabilidad.',
     strengthsLimits:
@@ -231,20 +231,20 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: '¿Qué modelo LTX debería usar: LTX 2.3 Pro o LTX 2.3 Fast?',
         answer:
-          'Usa LTX 2.3 Pro cuando quieras la mejor calidad actual de LTX y workflows más avanzados como audio, Extend y Retake. Usa LTX 2.3 Fast cuando quieras pruebas de prompts más rápidas, más baratas y con más margen para iterar borradores largos.',
+          'Usa LTX 2.3 Pro cuando quieras la mejor calidad actual de LTX y flujos más avanzados como audio, Extend y Retake. Usa LTX 2.3 Fast cuando quieras pruebas de prompts más rápidas, más baratas y con más margen para iterar borradores largos.',
       },
     ],
   },
   pika: {
     subtitle: 'Ejemplos de Pika pensados para loops cortos, un estilo social marcado y una edición ágil.',
     intro:
-      'Esta página de Pika se centra en formatos cortos y estilizados. Permite clonar patrones de movimiento ya probados y ajustar sujeto y estilo sin rehacer toda la configuración.',
+      'Esta página de Pika se centra en formatos cortos y estilizados. Permite reutilizar patrones de movimiento ya probados y ajustar sujeto y estilo sin rehacer toda la configuración.',
     promptPatterns:
       'Empieza por el estilo, suma la acción principal y cierra con una instrucción breve de cámara.',
     strengthsLimits:
       'Pika suele funcionar bien para loops rápidos y piezas muy pensadas para redes. Evita prompts sobrecargados para reducir la inestabilidad.',
     pricingNotes:
-      'El coste es más predecible con duraciones cortas y presets constantes.',
+      'El precio es más predecible con duraciones cortas y presets constantes.',
     faq: [
       {
         question: '¿Cómo reutilizo bien un ejemplo de Pika?',

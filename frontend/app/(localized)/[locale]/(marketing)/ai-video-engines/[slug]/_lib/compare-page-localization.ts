@@ -25,7 +25,7 @@ const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
     'Stylised text or image motion': 'Animation stylisée de texte ou d’image',
   },
   es: {
-    'Ads and B-roll': 'Anuncios y planos B-roll',
+    'Ads and B-roll': 'Anuncios y tomas de apoyo (B-roll)',
     'Budget Veo drafts': 'Borradores Veo de bajo coste',
     'Cinematic dialogue': 'Diálogo cinematográfico',
     'Cinematic motion with camera lock': 'Movimiento cinematográfico con cámara bloqueada',
@@ -35,7 +35,7 @@ const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
     'Fast cinematic drafts with modify and reframe': 'Borradores cinematográficos rápidos con modify y reframe',
     'Fast iterations': 'Iteraciones rápidas',
     'Flagship multi-shot video with native audio and references':
-      'Video multi-shot premium con audio nativo y referencias',
+      'Video multi-planos con audio nativo y referencias',
     'General purpose video': 'Video de uso general',
     'Grounded stills and wide-format image edits': 'Imágenes fijas realistas y ediciones panorámicas',
     'Multi-shot cinematic control': 'Control cinematográfico multi-shot',

@@ -257,7 +257,7 @@ export function buildLocalizedExampleLabel(
   durationSec?: number | null
 ): string {
   const ratio = aspectRatio ?? 'Auto';
-  const duration = typeof durationSec === 'number' ? `${durationSec}s` : null;
+  const duration = typeof durationSec === 'number' ? (locale === 'es' ? `${durationSec} s` : `${durationSec}s`) : null;
   if (locale === 'fr') {
     return duration ? `Exemple ${modelLabel} · ${ratio} · ${duration}` : `Exemple ${modelLabel} · ${ratio}`;
   }

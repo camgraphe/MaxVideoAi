@@ -246,8 +246,8 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     clearStartEndToUseReferences: 'Quita la imagen inicial o final para usar los archivos de referencia de Seedance.',
     addReferenceMediaBeforeAudio: 'Añade al menos una imagen o un video de referencia antes de usar audio de referencia.',
     addSourceVideo: (modeLabel) => `Añade un video fuente antes de ejecutar ${modeLabel}.`,
-    workflowOptionsTitle: 'Opciones del workflow',
-    workflowOptionsSubtitle: 'Ajustes específicos de este workflow.',
+    workflowOptionsTitle: 'Opciones del flujo de trabajo',
+    workflowOptionsSubtitle: 'Ajustes específicos de este flujo de trabajo.',
     selectOption: 'Selecciona una opción',
     defaultOption: 'Predeterminado',
   },
@@ -260,13 +260,13 @@ const MODEL_CARD_USE_CASES: Record<UiLocale, Record<string, string>> = {
     'ltx-2-3-fast': 'quick LTX 2.3 iterations for text and image video',
   },
   fr: {
-    'gpt-image-2': 'images riches en texte, packshots produit et edits controles',
-    'ltx-2-3': 'workflows vidéo LTX tout-en-un avec audio, extend et retake',
+    'gpt-image-2': 'images riches en texte, packshots produit et retouches contrôlées',
+    'ltx-2-3': 'workflows LTX tout-en-un avec audio, retakes, contrôle fort et tarifs compétitifs en texte et image-vers-vidéo',
     'ltx-2-3-fast': 'itérations LTX 2.3 rapides pour la génération texte et image vers vidéo',
   },
   es: {
-    'gpt-image-2': 'imagenes con texto, producto y edits controlados',
-    'ltx-2-3': 'workflows de video LTX todo en uno con audio, extend y retake',
+    'gpt-image-2': 'imágenes con texto, producto y ediciones controladas',
+    'ltx-2-3': 'flujos LTX todo en uno con audio, retakes, control fuerte y precios competitivos en texto e imagen a video',
     'ltx-2-3-fast': 'iteraciones rápidas de LTX 2.3 para texto e imagen a video',
   },
 };

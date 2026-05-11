@@ -2,15 +2,15 @@ import type { BestForCtaCopy, HubCopy } from './ai-video-engines-copy-types';
 
 export const ES_HUB_COPY: HubCopy = {
     hero: {
-      eyebrow: 'Comparar motores',
-      title: 'Comparar motores de video con IA',
+      eyebrow: 'Comparar modelos',
+      title: 'Comparar modelos de video con IA',
       intro:
-        'Elige dos motores y abre una comparativa lado a lado con un clic. Usa este hub para revisar matchups útiles, filtrar por límites clave y validar precios antes de generar. Cubre texto a video, imagen a video y video a video, y te guía al motor más adecuado para tu toma.',
+        'Elige dos modelos y abre una comparativa lado a lado con un clic. Usa este espacio para revisar comparativas útiles, filtrar por límites clave y validar precios antes de generar. Cubre texto a video, imagen a video y video a video, y te guía al modelo más adecuado para tu toma.',
       compareNow: {
-        left: 'Motor A',
-        right: 'Motor B',
-        compare: 'Comparar motores',
-        searchPlaceholder: 'Buscar motor...',
+        left: 'Modelo A',
+        right: 'Modelo B',
+        compare: 'Comparar modelos',
+        searchPlaceholder: 'Buscar modelo...',
         noResults: 'Sin resultados',
         strengthsLabel: 'Fortalezas',
         strengthsFallback: 'Uso general de video',
@@ -23,18 +23,18 @@ export const ES_HUB_COPY: HubCopy = {
     },
     sections: {
       popularTitle: 'Comparativas populares',
-      popularIntro: 'Selección balanceada de matchups solicitados entre las principales familias de motores.',
+      popularIntro: 'Selección de comparativas solicitadas entre las principales familias de modelos.',
       useCasesTitle: 'Comparar por objetivo',
       useCasesIntro: 'Elige un objetivo y abre una comparativa recomendada.',
-      enginesTitle: 'Elegir motores para comparar',
+      enginesTitle: 'Elegir modelos para comparar',
       enginesIntro: 'Solo especificaciones útiles para comparar. El detalle completo queda en cada página de modelo.',
-      enginesToggle: 'Mostrar catálogo de motores ({count})',
+      enginesToggle: 'Mostrar catálogo de modelos ({count})',
       enginesToggleHintClosed: 'Abrir lista',
       enginesToggleHintOpen: 'Ocultar lista',
       allComparisonsTitle: 'Todas las comparativas',
       allComparisonsIntro:
-        'Primero verás comparativas estratégicas, luego podrás buscar en el catálogo canónico completo. ¿Necesitas cumplimiento? Revisa nuestras notas.',
-      faqTitle: 'FAQ de comparativas de motores de video con IA',
+        'Primero verás comparativas destacadas, luego podrás buscar en el catálogo completo. ¿Necesitas información de cumplimiento? Revisa nuestras notas.',
+      faqTitle: 'FAQ de comparativas de modelos de video con IA',
       complianceLabel: 'Ver notas de cumplimiento',
       quickStartLabel: 'Acceso rápido',
       prelaunchSpotlightLabel: 'Enfoque de prelanzamiento',
@@ -42,31 +42,31 @@ export const ES_HUB_COPY: HubCopy = {
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
-        'Los chips interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
+        'Los filtros interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
     },
     tagLabels: {
       audio: 'Audio',
       cinematic: 'Cinemático',
       quality: 'Mejor calidad',
       long: 'Larga duración',
-      ads: 'Ads',
+      ads: 'ANUNCIOS',
       product: 'Producto',
-      value: 'Mejor costo',
+      value: 'Mejor precio',
       general: 'General',
       i2v: 'Imagen a video',
-      social: 'Social',
+      social: 'REDES SOCIALES',
       fast: 'Rápido',
-      storyboards: 'Storyboards',
+      storyboards: 'GUIONES VISUALES',
     },
     useCaseLabels: {
       cinematic: 'Cinemático',
-      ads: 'Ads',
-      social: 'Social',
+      ads: 'Anuncios y tomas de apoyo (B-roll)',
+      social: 'REDES SOCIALES',
       product: 'Producto',
-      storyboards: 'Storyboards',
+      storyboards: 'GUIONES VISUALES',
       audio: 'Audio',
       'no-audio': 'Sin audio',
-      'best-value': 'Mejor costo',
+      'best-value': 'Mejor precio',
       'best-quality': 'Mejor calidad',
       'text-to-video': 'Texto a video',
       'image-to-video': 'Imagen a video',
@@ -120,7 +120,7 @@ export const ES_HUB_COPY: HubCopy = {
         model: 'Página del modelo',
         compare: 'Comparar vs',
       },
-      empty: 'No hay motores para estos filtros.',
+      empty: 'No hay modelos para estos filtros.',
     },
     listLabels: {
       searchPlaceholder: 'Buscar comparativas...',
@@ -129,30 +129,30 @@ export const ES_HUB_COPY: HubCopy = {
     },
     faq: [
       {
-        question: '¿Cómo comparo dos motores rápidamente?',
+        question: '¿Cómo comparo dos modelos rápidamente?',
         answer:
-          'Usa el widget Comparar de la parte superior, elige Motor A y Motor B, y haz clic en Comparar para abrir la página canónica. Usa el mismo prompt (o un prompt de texto simple) en ambos modelos de IA para comparar consistencia de movimiento y fidelidad al prompt antes de generar.',
+          'Usa el widget Comparar de la parte superior, elige Modelo A y Modelo B, y haz clic en Comparar para abrir la página canónica. Usa el mismo prompt (o un prompt de texto simple) en ambos modelos de IA para comparar consistencia de movimiento y fidelidad al prompt antes de generar.',
       },
       {
         question: '¿Por qué cambian las fortalezas entre comparativas?',
         answer:
-          'Cada modelo equilibra distinto velocidad, fidelidad al prompt, realismo de movimiento, duración y audio. Estas compensaciones explican por qué comparar el modelo de video con IA antes de generar videos ahorra tiempo y costo.',
+          'Cada modelo equilibra distinto velocidad, fidelidad al prompt, realismo de movimiento, duración y audio. Estas compensaciones explican por qué comparar el modelo de video con IA antes de generar videos ahorra tiempo y precio.',
       },
       {
-        question: '¿Se pueden comparar motores de texto a video e imagen a video?',
+        question: '¿Se pueden comparar modelos de texto a video e imagen a video?',
         answer:
-          'Sí. El hub incluye matchups mixtos para comparar motores orientados a texto, imagen o ambos. Sí - también puedes incluir motores de video a video cuando estén disponibles.',
+          'Sí. El espacio incluye comparativas mixtas para comparar modelos orientados a texto, imagen o ambos. Sí - también puedes incluir modelos de video a video cuando estén disponibles.',
       },
       {
-        question: '¿Cómo elegir entre dos motores muy parecidos?',
+        question: '¿Cómo elegir entre dos modelos muy parecidos?',
         answer:
-          'Empieza con los chips de objetivo y valida con una prueba lado a lado. Si hay empate, ejecuta el mismo prompt de texto simple (o la misma imagen de referencia) y prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega para tu formato final.',
+          'Empieza con los filtros de objetivo y valida con una prueba lado a lado. Si hay empate, usa el mismo prompt de texto simple (o la misma imagen de referencia) y prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega para tu formato final.',
       },
     ],
   };
 
 export const ES_BEST_FOR_CTA: BestForCtaCopy = {
-    title: '¿Necesitas una recomendación en lugar de un duelo?',
-    body: 'Abre las guías Mejor para y elige por objetivo: cine, referencias, anuncios, UGC, 4K y secuencias multi-shot.',
+    title: '¿Prefieres una recomendación en lugar de comparar?',
+    body: 'Abre las guías Mejor para y elige según tu objetivo: cine, referencias, anuncios, UGC, 4K y secuencias multi-planos.',
     label: 'Ver guías Mejor para',
   };

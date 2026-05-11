@@ -163,7 +163,7 @@ export function buildUsecaseMistakes(locale: AppLocale, usecaseSlug: string, cri
       `Elegir un motor para ${label} sin comprobar ${primary.toLowerCase()}.`,
       `Añadir demasiadas referencias cuando ${secondary.toLowerCase()} debería ser la prioridad.`,
       `Pasar directo al modelo premium antes de validar ${tertiary.toLowerCase()}.`,
-      'Olvidar revisar el coste antes de generar.',
+      'Olvidar revisar el precio antes de generar.',
       'Comparar solo fichas de modelos sin abrir ejemplos reales para este objetivo.',
     ];
   }

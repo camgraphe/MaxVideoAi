@@ -146,9 +146,9 @@ export function buildModelsOutcomeTiles({
       title: activeLocale === 'fr' ? 'Modèles vidéo' : activeLocale === 'es' ? 'Modelos de video' : 'Video models',
       description:
         activeLocale === 'fr'
-          ? 'Passez aux modèles vidéo pour le rendu, le comparateur et les workflows de mouvement.'
+          ? 'Passez aux modèles vidéo : génération, comparaison et mouvement.'
           : activeLocale === 'es'
-            ? 'Pasa a motores de video para renderizar, comparar y piloter tus flujos de movimiento.'
+            ? 'Pasa a modelos de video para generar, comparar y gestionar tus flujos de movimiento.'
             : 'Jump to the video hub for rendering, compare pages, and motion workflows.',
       engines: ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
       icon: Film,
@@ -159,7 +159,7 @@ export function buildModelsOutcomeTiles({
         activeLocale === 'fr'
           ? "Ouvrez le hub image pour les images fixes, les retouches et les workflows guidés par références."
           : activeLocale === 'es'
-            ? 'Abre el hub de imagen para imágenes fijas, ediciones y flujos guiados por referencias.'
+            ? 'Abre el espacio de imagen para imágenes fijas, ediciones y flujos guiados por referencias.'
             : 'Open the image hub for stills, edits, and reference-led workflows.',
       engines: ['seedream', 'gpt-image-2', 'nano-banana-2'],
       icon: Clapperboard,
@@ -176,12 +176,12 @@ export function buildModelsOutcomeTiles({
       icon: Sparkles,
     },
     {
-      title: activeLocale === 'fr' ? 'Prix par workflow' : activeLocale === 'es' ? 'Precio por workflow' : 'Pricing by workflow',
+      title: activeLocale === 'fr' ? 'Prix par workflow' : activeLocale === 'es' ? 'Precio por flujo de trabajo' : 'Pricing by workflow',
       description:
         activeLocale === 'fr'
-          ? 'Séparez les modèles facturés à la seconde des modèles facturés à l’image.'
+          ? 'Distinguez les modèles facturés à la seconde de ceux facturés à l’image.'
           : activeLocale === 'es'
-            ? 'Separa motores cobrados por segundo de modelos cobrados por imagen.'
+            ? 'Separa modelos facturados por segundo de los facturados por imagen.'
             : 'Separate per-second video engines from per-image still models.',
       engines: ['seedance-2-0', 'ltx-2-3-fast', 'nano-banana-2'],
       icon: Wand2,
@@ -190,9 +190,9 @@ export function buildModelsOutcomeTiles({
       title: activeLocale === 'fr' ? 'Références et prompts' : activeLocale === 'es' ? 'Referencias y prompts' : 'References and prompts',
       description:
         activeLocale === 'fr'
-          ? 'Ouvrez les fiches modèle pour les prompts, limitations et conseils opérationnels.'
+          ? 'Ouvrez les fiches modèles pour consulter les prompts, les limitations et les conseils d’usage.'
           : activeLocale === 'es'
-            ? 'Abre las fichas de modelo para prompts, limitaciones y consejos operativos.'
+            ? 'Abre las fichas de modelo para prompts, límites y consejos de uso.'
             : 'Open model profiles for prompts, limitations, and operational guidance.',
       engines: ['seedance-2-0', 'kling-3-pro', 'nano-banana-2'],
       icon: Copy,

@@ -216,7 +216,7 @@ export const DETAIL_COPY: Record<
     allGuides: 'Ver todas las guías',
     score: 'Puntuación',
     overall: 'Mejor opción',
-    criteriaNote: 'Las puntuaciones combinan calidad, control, consistencia y eficiencia de costo.',
+    criteriaNote: 'Las puntuaciones combinan calidad, control, consistencia y eficiencia de precio.',
     compareShortlist: 'Comparar la shortlist',
     compareDescription: 'Páginas lado a lado útiles para validar compromisos antes de elegir modelo.',
     contentComing: 'Contenido próximamente.',
@@ -285,7 +285,7 @@ export const USECASE_CRITERIA: Record<string, Record<AppLocale, string[]>> = {
   'fast-drafts': {
     en: ['Iteration speed', 'Low-cost variants', 'Enough control for review'],
     fr: ['Vitesse d’itération', 'Variantes à coût réduit', 'Contrôle suffisant pour valider'],
-    es: ['Velocidad de iteración', 'Variantes de bajo costo', 'Control suficiente para revisar'],
+    es: ['Velocidad de iteración', 'Variantes de bajo precio', 'Control suficiente para revisar'],
   },
   'stylized-anime': {
     en: ['Stylized motion', 'Illustration coherence', 'Non-photoreal flexibility'],
@@ -298,12 +298,12 @@ export const USECASE_CHIPS: Record<string, Record<AppLocale, string[]>> = {
   'image-to-video': {
     en: ['Image fidelity', 'Motion control', 'Subject lock', 'Reference frames', 'Cost control'],
     fr: ['Fidélité image', 'Contrôle du mouvement', 'Sujet verrouillé', 'Frames de référence', 'Contrôle du coût'],
-    es: ['Fidelidad de imagen', 'Control de movimiento', 'Sujeto estable', 'Frames de referencia', 'Control de costo'],
+    es: ['Fidelidad de imagen', 'Control de movimiento', 'Sujeto estable', 'Frames de referencia', 'Control de precio'],
   },
   'cinematic-realism': {
     en: ['Camera language', 'Lighting', 'Motion physics', 'Visual polish', 'Cost control'],
     fr: ['Langage caméra', 'Lumière', 'Physique du mouvement', 'Rendu visuel', 'Contrôle du coût'],
-    es: ['Lenguaje de cámara', 'Iluminación', 'Física del movimiento', 'Pulido visual', 'Control de costo'],
+    es: ['Lenguaje de cámara', 'Iluminación', 'Física del movimiento', 'Pulido visual', 'Control de precio'],
   },
   'character-reference': {
     en: ['Identity lock', 'Wardrobe', 'Props', 'Shot continuity', 'Input limits'],
@@ -323,7 +323,7 @@ export const USECASE_CHIPS: Record<string, Record<AppLocale, string[]>> = {
   '4k-video': {
     en: ['Native 4K', 'Detail retention', 'Upscale path', 'Final delivery', 'Cost control'],
     fr: ['4K native', 'Détails conservés', 'Chemin upscale', 'Livraison finale', 'Contrôle du coût'],
-    es: ['4K nativo', 'Retención de detalle', 'Ruta de upscale', 'Entrega final', 'Control de costo'],
+    es: ['4K nativo', 'Retención de detalle', 'Ruta de upscale', 'Entrega final', 'Control de precio'],
   },
   ads: {
     en: ['Product clarity', 'Offer framing', 'Visual polish', 'Variant testing', 'Review speed'],
@@ -348,7 +348,7 @@ export const USECASE_CHIPS: Record<string, Record<AppLocale, string[]>> = {
   'fast-drafts': {
     en: ['Speed', 'Low cost', 'Rough timing', 'Variant testing', 'Review loop'],
     fr: ['Vitesse', 'Coût bas', 'Timing brouillon', 'Tests de variantes', 'Boucle de review'],
-    es: ['Velocidad', 'Bajo costo', 'Timing preliminar', 'Pruebas de variantes', 'Ciclo de revisión'],
+    es: ['Velocidad', 'Bajo precio', 'Timing preliminar', 'Pruebas de variantes', 'Ciclo de revisión'],
   },
   'stylized-anime': {
     en: ['Line quality', 'Style consistency', 'Color blocks', 'Stylized motion', 'Creative tests'],
@@ -360,7 +360,7 @@ export const USECASE_CHIPS: Record<string, Record<AppLocale, string[]>> = {
 export const DECISION_CRITERIA_FILLERS: Record<AppLocale, string[]> = {
   en: ['Cost efficiency and speed', 'Reliability and consistency'],
   fr: ['Efficacité coût et vitesse', 'Fiabilité et cohérence'],
-  es: ['Eficiencia de costo y velocidad', 'Fiabilidad y consistencia'],
+  es: ['Eficiencia de precio y velocidad', 'Fiabilidad y consistencia'],
 };
 
 export const USECASE_MISTAKE_FALLBACKS: Record<AppLocale, string[]> = {
@@ -383,6 +383,6 @@ export const USECASE_MISTAKE_FALLBACKS: Record<AppLocale, string[]> = {
     'Ignorar referencias, style frames o límites de entrada.',
     'Complicar demasiado el primer prompt.',
     'Saltar los borradores e ir directo a premium.',
-    'No revisar el costo antes de generar.',
+    'No revisar el precio antes de generar.',
   ],
 };

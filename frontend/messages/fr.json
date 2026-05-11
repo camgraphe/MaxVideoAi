@@ -589,7 +589,7 @@
       "shotTypes": {
         "title": "Le bon modèle pour chaque usage.",
         "subtitle": "Explorez quelques choix créatifs à fort impact, ou ouvrez l’espace Meilleur pour complet pour tous les workflows.",
-        "eyebrow": "Meilleur pour",
+        "eyebrow": "“Meilleur pour”",
         "cta": "Voir tous les guides Meilleur pour",
         "hubCtaTitle": "Voir tous les guides Meilleur pour",
         "hubCtaBody": "Parcourez tous les cas d’usage et trouvez le bon modèle pour chaque projet.",
@@ -599,7 +599,7 @@
           {
             "slug": "cinematic-realism",
             "title": "Réalisme cinématographique",
-            "body": "Comparez lumière, mouvement caméra et direction artistique par modèle.",
+            "body": "Comparez lumière, mouvement caméra et direction artistique",
             "cta": "Ouvrir le guide cinéma"
           },
           {
@@ -617,7 +617,7 @@
           {
             "slug": "ads",
             "title": "Publicités produit",
-            "body": "Présélectionnez les modèles pour pubs produit, paid social et assets de campagne.",
+            "body": "Présélectionnez les modèles pour pubs, social et campagne.",
             "cta": "Ouvrir le guide pubs"
           }
         ]
@@ -2086,7 +2086,7 @@
         "subtitle": "Passez en revue les capacités, limites et prix des modèles vidéo et image avant de générer.",
         "bullets": [
           "Ouvrez chaque modèle pour consulter ses specs complètes, ses limites et ses indications de prix.",
-          "Utilisez les hubs vidéo et image pour identifier rapidement les modèles les plus pertinents."
+          "Parcourez les espaces vidéo et image pour trouver rapidement les modèles les plus pertinents."
         ],
         "compareLabel": "Activer le mode Compare"
       },
@@ -2113,7 +2113,7 @@
         "tiles": [
           {
             "title": "Modèles vidéo",
-            "description": "Ouvrez le hub vidéo pour les workflows de rendu, les comparatifs et les modèles orientés mouvement."
+            "description": "Passez aux modèles vidéo : génération, comparaison et mouvement."
           },
           {
             "title": "Modèles image",
@@ -2125,21 +2125,21 @@
           },
           {
             "title": "Prix par workflow",
-            "description": "Séparez les modèles facturés à la seconde des modèles facturés à l’image."
+            "description": "Distinguez les modèles facturés à la seconde de ceux facturés à l’image."
           },
           {
             "title": "Pages modèle et repères",
-            "description": "Ouvrez chaque fiche pour les prompts, les notes utiles et les limites détaillées."
+            "description": "Ouvrez les fiches modèles pour consulter les prompts, les limitations et les conseils d’usage."
           }
         ]
       },
       "reliability": {
         "title": "Contrôles utiles avant lancement",
-        "subtitle": "Validez le type de média, les contraintes de sortie et la logique de facturation avant de choisir un workflow.",
+        "subtitle": "Validez le type de média, les contraintes de sortie et la facturation avant de choisir un workflow.",
         "items": [
           {
             "title": "Type de média",
-            "body": "Séparez les modèles vidéo des modèles image avant d’évaluer specs et coûts."
+            "body": "Séparez les modèles vidéo et image avant d’évaluer les specs et les coûts."
           },
           {
             "title": "Limites et formats",
@@ -2147,25 +2147,25 @@
           },
           {
             "title": "Logique de prix",
-            "body": "Vérifiez si la facturation est à la seconde, à l’image, par résolution ou via add-ons."
+            "body": "Vérifiez si la facturation se fait à la seconde, à l’image, par résolution ou via des options."
           }
         ],
         "faq": [
           {
-            "question": "Faut-il commencer par le hub vidéo ou le hub image ?",
+            "question": "Faut-il commencer par l’espace vidéo ou l’espace image ?",
             "answer": "Utilisez l’espace vidéo pour les workflows de mouvement et les pages de comparaison. Utilisez l’espace image pour les images fixes, les retouches, les limites de références et les prix par image."
           },
           {
-            "question": "Tous les modèles du catalogue sont-ils des modèles vidéo ?",
-            "answer": "Non. Le catalogue couvre désormais les modèles vidéo et image, et d’autres catégories média pourront avoir leur espace dédié."
+            "question": "Tous les modèles du catalogue sont-ils vidéo ?",
+            "answer": "Non. Le catalogue couvre les modèles vidéo et image, et d’autres catégories média pourront avoir leur espace dédié."
           },
           {
             "question": "Comment interpréter les prix sur cette page ?",
-            "answer": "Les modèles vidéo sont souvent facturés à la seconde, tandis que les modèles image sont facturés à l’image ou selon la taille de sortie. Ouvrez la fiche modèle pour le schéma exact."
+            "answer": "Les modèles vidéo sont souvent facturés à la seconde, tandis que les modèles image sont facturés à l’image ou selon la taille de sortie. Ouvrez la fiche modèle pour connaître le détail exact."
           },
           {
             "question": "Où comparer les modèles vidéo côte à côte ?",
-            "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur cet espace comparatif."
+            "answer": "Utilisez le comparatif vidéo pour les comparaisons côte à côte. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur cet espace comparatif."
           }
         ]
       },
@@ -5052,8 +5052,8 @@
       },
       "hero": {
         "badge": "Outils MaxVideoAI",
-        "title": "Préparez des références réutilisables avant l'image-vers-vidéo",
-        "body": "Ces outils interviennent avant la génération : verrouillez le personnage, ajustez l’angle, puis réutilisez des repères visuels plus solides dans Image, l’image-vers-vidéo et l’espace modèles de MaxVideoAI.",
+        "title": "Préparez vos références avant l’image-vers-vidéo.",
+        "body": "Ces outils préparent la génération : verrouillez le personnage, ajustez l’angle, puis réutilisez des repères visuels solides dans Image, Image-vers-vidéo et les fiches modèles MaxVideoAI.",
         "primaryCta": "Personnages IA cohérents",
         "secondaryCta": "Changer l'angle de caméra"
       },
@@ -5089,7 +5089,7 @@
       },
       "bestStartingPoints": {
         "eyebrow": "Meilleurs points d'entrée",
-        "title": "Construisez le bon input visuel pour la suite",
+        "title": "Préparez le bon visuel pour la suite",
         "body": "Utilisez ces entrées quand il vous faut une image source, une référence personnage réutilisable ou un meilleur angle avant la vidéo.",
         "modelHubCta": "Parcourir le hub de modèles",
         "cards": {
@@ -5108,7 +5108,7 @@
           "angle": {
             "eyebrow": "Angle",
             "title": "Changez l'angle depuis une image",
-            "body": "Gardez le frame de départ et générez le point de vue qui convient à l'étape suivante.",
+            "body": "Gardez l’angle de départ et générez le point de vue adapté à la suite.",
             "cta": "Ouvrir Angle"
           },
           "upscale": {

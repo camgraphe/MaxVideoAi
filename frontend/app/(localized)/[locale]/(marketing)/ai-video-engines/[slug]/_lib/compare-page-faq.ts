@@ -158,10 +158,10 @@ export function buildCompareFaqItems({
         }
       : activeLocale === 'es'
         ? {
-            a1: '{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página compara entrega 4K nativa, costo de iteración, specs clave y los datos anteriores.',
-            a2: 'Depende de tu flujo de trabajo. Usa el scorecard y las specs para decidir si el plano necesita entrega 4K nativa o una ruta de iteración de menor costo, luego abre cada perfil para los detalles completos.',
+            a1: '{left} y {right} son modelos de generación de video IA disponibles en MaxVideoAI. Esta página compara entrega 4K nativa, precio de iteración, especificaciones clave y los datos anteriores.',
+            a2: 'Depende de tu flujo de trabajo. Usa el scorecard y las especificaciones para decidir si el plano necesita entrega 4K nativa o una ruta de iteración de menor precio, luego abre cada perfil para los detalles completos.',
             q10: '¿Por qué pueden diferir los resultados entre estas rutas?',
-            a10: 'Incluso con instrucciones similares, los modelos interpretan las restricciones y los ajustes de forma distinta. Para Kling 3 4K, compara primero las specs y la escala de costo, luego renderiza en 4K nativo solo los planos aprobados.',
+            a10: 'Incluso con instrucciones similares, los modelos interpretan las restricciones y los ajustes de forma distinta. Para Kling 3 4K, compara primero las especificaciones y la escala de precio, luego renderiza en 4K nativo solo los planos aprobados.',
           }
         : {
             a1: '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares native 4K delivery, iteration cost, key specs, and performance data shown above.',

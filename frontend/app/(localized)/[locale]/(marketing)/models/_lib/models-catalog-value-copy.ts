@@ -40,39 +40,57 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
     'kling-3-standard':
       'Idéal pour créer des séquences cinématiques multi-plans, avec contrôle vocal et un rendu fidèle à vos instructions.',
     'kling-3-pro':
-      'Idéal pour des séquences cinématiques multi-plans avec contrôle vocal, audio natif, lip-sync précis et forte contrôlabilité, en texte-vers-vidéo comme en image-vers-vidéo.',
+      'Idéal pour des séquences ciné multi-plans, avec contrôle vocal, audio natif, lip-sync précis et forte contrôlabilité, en texte-vers-vidéo comme en image-vers-vidéo.',
     'kling-3-4k':
-      'Idéal pour les masters finaux en 4K native : sorties premium, grands écrans et rendus approuvés après validation en Standard ou Pro.',
+      'Idéal pour les masters 4K natifs : sorties premium et grands écrans, après validation en Standard ou Pro.',
     'veo-3-1':
       'Idéal pour créer des plans pub maîtrisés : références, contrôle final et extension, avec un rendu fidèle et synchronisé.',
     'veo-3-1-fast':
       'Idéal pour produire vite des cuts pub : image de départ, contrôle final et extension, avec un excellent rapport vitesse/coût.',
     'ltx-2-3-fast':
       'Idéal pour des itérations rapides avec LTX 2.3, en texte-vers-vidéo et image-vers-vidéo, avec une excellente vitesse, stabilité et des tarifs compétitifs.',
+    'ltx-2-3-pro':
+      'Workflows LTX tout-en-un avec audio, retakes, contrôle fort et tarifs compétitifs en texte et image-vers-vidéo',
     'sora-2':
-      'Idéal pour des scènes cinématiques et la continuité des personnages, avec une forte fidélité humaine et des tarifs compétitifs, en texte-vers-vidéo, image-vers-vidéo et lip-sync.',
+      'Idéal pour des scènes cinématiques et la continuité personnage, avec forte fidélité humaine et tarifs compétitifs, en texte-vers-vidéo comme en image-vers-vidéo.',
     'sora-2-pro':
       'Idéal pour des plans cinématiques premium et des scènes hero, avec une forte fidélité humaine et une qualité visuelle élevée, en texte-vers-vidéo et image-vers-vidéo.',
     'seedance-1-5-pro':
-      'Idéal pour des mouvements cinématiques avec verrouillage caméra, avec audio natif, lip-sync précis et des tarifs compétitifs, en texte-vers-vidéo comme en image-vers-vidéo.',
+      'Idéal pour des mouvements cinématiques avec caméra verrouillée, audio natif, lip-sync précis et tarifs compétitifs, en texte et image-vers-vidéo.',
     'veo-3-1-lite':
       'Idéal pour des tests Veo économiques, avec image de départ et contrôle début/fin, excellente rapidité et stabilité.',
     'luma-ray-2':
-      'Idéal pour des générations cinématiques à partir d’une vidéo source, avec modification et recadrage, offrant une forte contrôlabilité et une haute qualité visuelle.',
+      'Idéal pour des générations cinématiques à partir d’une vidéo source, avec modification, recadrage, forte contrôlabilité et haute qualité visuelle.',
     'luma-ray-2-flash':
-      'Idéal pour des tests cinématiques rapides à partir d’une vidéo source, avec modification et recadrage, rapides, stables et économiques.',
+      'Idéal pour des tests cinématiques à partir d’une vidéo source, avec modification, recadrage, stabilité et coûts maîtrisés.',
     'pika-text-to-video':
-      'Idéal pour des clips social stylisés, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
+      'Idéal pour des clips social stylisés, rapides, stables et économiques, avec contrôle début/fin en texte-vers-vidéo et image-vers-vidéo.',
     'wan-2-6':
       'Idéal pour des prompts structurés et des transitions propres, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo.',
     'minimax-hailuo-02-text':
       'Idéal pour des tests de concepts économiques, rapides et stables, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
     'gpt-image-2':
-      'Idéal pour des images riches en texte, des packshots produit, des mockups UI et des edits guides par reference.',
+      'Idéal pour des images riches en texte, des packshots produit, des mockups UI et des retouches guidées par référence.',
+    'happy-horse-1-0':
+      'Idéal pour le texte-vers-vidéo, l’image-vers-vidéo et la vidéo-vers-vidéo, avec audio natif, lip-sync précis et forte contrôlabilité.',
     'nano-banana-2': 'Idéal pour des images fixes guidées et des retouches grand format, avec des performances fiables.',
     'nano-banana-pro': 'Idéal pour des visuels de campagne et des retouches typographiques, avec des performances fiables.',
     seedream:
       'Idéal pour créer des références propres avant Seedance, des packshots produit et des visuels publicitaires contrôlés.',
+  },
+  es: {
+    'seedance-2-0':
+      'Ideal para videos multi-planos premium, con audio nativo y mayor realismo de movimiento, con fuerte audio y lip sync, y alta calidad visual.',
+    'seedance-2-0-fast':
+      'Ideal para borradores rápidos con Seedance, para planificación de planos e iteración creativa, con velocidad y estabilidad.',
+    'kling-3-standard':
+      'Ideal para secuencias cinematográficas multi-planos con control de voz y mayor control.',
+    'kling-3-pro':
+      'Ideal para secuencias cinematográficas multi-planos con control de voz y mayor control.',
+    'kling-3-4k':
+      'Ideal para entregas finales en 4K nativo, salidas premium y grandes pantallas.',
+    'veo-3-1':
+      'Ideal para tomas publicitarias con referencias, control del último frame y extensión.',
   },
 };
 
@@ -80,7 +98,7 @@ const DEFAULT_VALUE_SENTENCE = 'Best for {useCase} with strong {strengths} in {c
 export const DEFAULT_VALUE_SENTENCE_BY_LOCALE: Record<AppLocale, string> = {
   en: DEFAULT_VALUE_SENTENCE,
   fr: 'Idéal pour {useCase} avec de bons résultats sur {strengths} dans les workflows {capabilities}.',
-  es: 'Ideal para {useCase} con buen nivel en {strengths} dentro de workflows {capabilities}.',
+  es: 'Ideal para {useCase} con buen nivel en {strengths} dentro de flujos de {capabilities}.',
 };
 export const DEFAULT_CAPABILITY_KEYWORDS: Record<string, string> = {
   T2V: 'text-to-video',

@@ -183,20 +183,20 @@ export function localizeSpecDetailValue(
         : normalized;
   }
   if (lower === 'reframe workflow') {
-    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'flujo reframe' : normalized;
   }
   if (lower === 'modify / reframe workflows') {
     return locale === 'fr'
       ? 'workflows modify / reframe'
       : locale === 'es'
-        ? 'workflows modify / reframe'
+        ? 'flujos modify / reframe'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {
     return locale === 'fr'
       ? 'workflows extension / retake'
       : locale === 'es'
-        ? 'workflows de extensión / retake'
+        ? 'flujos de extensión / retake'
         : normalized;
   }
   if (lower === 'no (maxvideoai)') {
