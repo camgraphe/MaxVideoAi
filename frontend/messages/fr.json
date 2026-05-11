@@ -1526,7 +1526,8 @@
       "badges": [
         "Sans abonnement",
         "Prévisualisation invité",
-        "Crédits dès 10 $"
+        "Crédits dès 10 $",
+        "Remboursement des générations échouées"
       ],
       "link": {
         "before": "Comparez les tarifs des modèles dans notre ",
@@ -1720,11 +1721,11 @@
         },
         {
           "question": "Quel moteur vidéo IA est le moins cher ?",
-          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon court en 720p peut être moins cher sur un moteur, tandis qu’un clip 10 s en 1080p avec audio peut l’être sur un autre. Utilisez le tableau pour comparer les prix exacts par durée et résolution."
+          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon 720p peut être moins cher sur un moteur, tandis qu’un clip 1080p avec audio peut l’être sur un autre. Utilisez le tableau pour comparer les tarifs normalisés à la seconde par résolution et audio."
         },
         {
-          "question": "Quel moteur est le moins cher pour une vidéo 10 s en 1080p ?",
-          "answer": "Consultez la colonne 10s 1080p du tableau vidéo. Les moteurs qui ne prennent pas en charge exactement 10 s en 1080p sont marqués clairement au lieu d’être forcés dans une fausse comparaison."
+          "question": "Quel moteur est le moins cher pour une vidéo 1080p ?",
+          "answer": "Consultez la colonne 1080p par seconde du tableau vidéo. Les moteurs qui ne prennent pas en charge le 1080p sont marqués clairement au lieu d’être forcés dans une fausse comparaison."
         },
         {
           "question": "Puis-je voir le prix exact avant de générer ?",
@@ -1739,7 +1740,7 @@
           "answer": "Non. MaxVideoAI fonctionne avec des crédits pay-as-you-go. Vous pouvez démarrer avec des crédits, comparer les prix et choisir le bon moteur par projet sans abonnement obligatoire."
         },
         {
-          "question": "Pourquoi certains moteurs sont-ils indisponibles en 10 s, 1080p ou audio ?",
+          "question": "Pourquoi certains moteurs sont-ils indisponibles en 1080p ou audio ?",
           "answer": "Chaque fournisseur prend en charge des durées, résolutions, ratios et options audio différents. Le tableau marque les combinaisons non prises en charge pour comparer la disponibilité réelle plutôt que des prix estimés."
         },
         {
@@ -1770,7 +1771,7 @@
     "priceChipPrefix": "Ce rendu",
     "meta": {
       "title": "Comparatif prix vidéo IA : Veo, LTX, Kling, Seedance et plus | MaxVideoAI",
-      "description": "Comparez les prix vidéo IA par moteur, durée, résolution et audio. Voyez les coûts 720p, 1080p et 10 s, puis ouvrez l’app pour le prix en direct."
+      "description": "Comparez les prix vidéo IA par moteur, tarif à la seconde, résolution et audio. Voyez les tarifs 720p et 1080p, puis ouvrez l’app pour le prix en direct."
     }
   },
   "workflows": {

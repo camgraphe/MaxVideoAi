@@ -102,10 +102,10 @@ test('hero is compact and uses the requested CTA copy', () => {
   assert.doesNotMatch(heroSource, /MarketingHeroImage/);
 });
 
-test('pricing matrix data is generated from the catalog with scenario presets', () => {
-  assert.match(hubDataSource, /VIDEO_PRICE_PRESETS/);
-  assert.match(hubDataSource, /getPresetQuote/);
-  assert.match(hubDataSource, /10s 1080p \+ audio/);
+test('pricing matrix data is generated from the catalog with per-second rate presets', () => {
+  assert.match(hubDataSource, /VIDEO_RATE_PRESETS/);
+  assert.match(hubDataSource, /getPresetRateQuote/);
+  assert.match(hubDataSource, /1080p \/ sec \+ audio/);
   assert.match(hubDataSource, /listFalEngines/);
   assert.match(hubDataSource, /supportsVideoGeneration/);
   assert.match(hubDataSource, /buildImagePricingRows/);
@@ -147,17 +147,21 @@ test('pricing matrix data is generated from the catalog with scenario presets', 
 test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(videoMatrixSource, /export function PricingVideoMatrixSection/);
   assert.match(videoMatrixSource, /AI video prices by engine/);
-  assert.match(videoMatrixSource, /Compare preset MaxVideoAI prices for common video scenarios/);
-  assert.match(hubDataSource, /5s 720p/);
-  assert.match(hubDataSource, /10s 720p/);
-  assert.match(hubDataSource, /5s 1080p/);
-  assert.match(hubDataSource, /10s 1080p/);
-  assert.match(hubDataSource, /10s 1080p \+ audio/);
+  assert.match(videoMatrixSource, /Compare normalized MaxVideoAI display rates per output second/);
+  assert.match(hubDataSource, /720p \/ sec/);
+  assert.match(hubDataSource, /1080p \/ sec/);
+  assert.match(hubDataSource, /1080p \/ sec \+ audio/);
+  assert.doesNotMatch(hubDataSource, /5s 720p/);
+  assert.doesNotMatch(hubDataSource, /10s 720p/);
+  assert.doesNotMatch(hubDataSource, /10s 1080p/);
+  assert.match(videoMatrixSource, /Max duration/);
+  assert.match(videoMatrixSource, /Video/);
+  assert.match(videoMatrixSource, /Tools & Upscale/);
   assert.match(videoMatrixSource, /Cheapest/);
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
   assert.match(videoMatrixSource, /Live price/);
-  assert.match(videoMatrixSource, /Prices are current MaxVideoAI display prices for preset scenarios/);
+  assert.match(videoMatrixSource, /Rates are current MaxVideoAI display prices per output second/);
   assert.doesNotMatch(videoMatrixSource, /from \$/i);
   assert.doesNotMatch(videoMatrixSource, /'use client'/);
   assert.doesNotMatch(videoMatrixSource, /LazyPriceEstimator/);
@@ -166,8 +170,9 @@ test('video matrix renders exact scenario columns and compact links', () => {
 test('popular checks and non-video pricing surfaces are compact matrices', () => {
   assert.match(popularChecksSource, /export function PricingPopularChecksSection/);
   assert.match(popularChecksSource, /Popular price checks/);
-  assert.match(hubDataSource, /5s 720p video/);
-  assert.match(hubDataSource, /10s 1080p with audio/);
+  assert.match(hubDataSource, /720p video second/);
+  assert.match(hubDataSource, /1080p video second/);
+  assert.match(hubDataSource, /1080p with audio second/);
   assert.match(hubDataSource, /30s voice-over/);
   assert.match(hubDataSource, /4K upscale/);
 
@@ -191,16 +196,16 @@ test('pricing metadata and FAQ target comparison intent first', () => {
   );
   assert.equal(
     pricing?.meta?.description,
-    'Compare AI video prices by engine, duration, resolution and audio. See 720p, 1080p and 10s costs, then open the app for live pricing.'
+    'Compare AI video prices by engine, per-second rate, resolution and audio. See 720p and 1080p rates, then open the app for live pricing.'
   );
   assert.deepEqual(faqQuestions, [
     'How is AI video pricing calculated?',
     'Which AI video engine is cheapest?',
-    'Which engine is cheapest for 10s 1080p video?',
+    'Which engine is cheapest for 1080p video?',
     'Can I see the exact price before generating?',
     'Do failed generations cost credits?',
     'Do I need a subscription?',
-    'Why are some engines unavailable for 10s, 1080p or audio?',
+    'Why are some engines unavailable for 1080p or audio?',
     'Are image, audio and tools priced the same as video?',
     'How often do prices change?',
   ]);

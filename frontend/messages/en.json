@@ -1422,7 +1422,8 @@
       "badges": [
         "No subscription",
         "Guest preview",
-        "Starter credits from $10"
+        "Starter credits from $10",
+        "Refunds on failed generations"
       ],
       "link": {
         "before": "See how pricing compares across engines in our ",
@@ -1612,11 +1613,11 @@
         },
         {
           "question": "Which AI video engine is cheapest?",
-          "answer": "The cheapest engine depends on the scenario. A short 720p draft may be cheaper on one engine, while a 10s 1080p clip with audio may be cheaper on another. Use the comparison table to compare exact preset prices by duration and resolution."
+          "answer": "The cheapest engine depends on the scenario. A 720p draft may be cheaper on one engine, while a 1080p clip with audio may be cheaper on another. Use the comparison table to compare normalized per-second rates by resolution and audio."
         },
         {
-          "question": "Which engine is cheapest for 10s 1080p video?",
-          "answer": "Check the 10s 1080p column in the video pricing table. Engines that do not support exact 10s 1080p are marked clearly instead of being forced into a fake comparison."
+          "question": "Which engine is cheapest for 1080p video?",
+          "answer": "Check the 1080p per-second column in the video pricing table. Engines that do not support 1080p are marked clearly instead of being forced into a fake comparison."
         },
         {
           "question": "Can I see the exact price before generating?",
@@ -1631,7 +1632,7 @@
           "answer": "No. MaxVideoAI uses pay-as-you-go credits. You can start with credits, compare prices, and choose the right engine per job without a required subscription."
         },
         {
-          "question": "Why are some engines unavailable for 10s, 1080p or audio?",
+          "question": "Why are some engines unavailable for 1080p or audio?",
           "answer": "Each provider supports different durations, resolutions, aspect ratios and audio options. The table marks unsupported combinations so you can compare real availability instead of guessed prices."
         },
         {
@@ -1662,7 +1663,7 @@
     "priceChipPrefix": "This render",
     "meta": {
       "title": "AI Video Pricing Comparison: Veo, LTX, Kling, Seedance & More | MaxVideoAI",
-      "description": "Compare AI video prices by engine, duration, resolution and audio. See 720p, 1080p and 10s costs, then open the app for live pricing."
+      "description": "Compare AI video prices by engine, per-second rate, resolution and audio. See 720p and 1080p rates, then open the app for live pricing."
     }
   },
   "workflows": {

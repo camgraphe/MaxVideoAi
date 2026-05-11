@@ -14,16 +14,14 @@ import { formatCurrencyForLocale } from './pricingPageContent';
 const FALLBACK_CURRENCY = 'USD';
 const LIVE_QUOTE_LABEL = 'Live quote';
 
-export const VIDEO_PRICE_PRESETS = [
-  { id: '5s-720p', label: '5s 720p', durationSec: 5, resolution: '720p', audio: false },
-  { id: '10s-720p', label: '10s 720p', durationSec: 10, resolution: '720p', audio: false },
-  { id: '5s-1080p', label: '5s 1080p', durationSec: 5, resolution: '1080p', audio: false },
-  { id: '10s-1080p', label: '10s 1080p', durationSec: 10, resolution: '1080p', audio: false },
-  { id: '10s-1080p-audio', label: '10s 1080p + audio', durationSec: 10, resolution: '1080p', audio: true },
+export const VIDEO_RATE_PRESETS = [
+  { id: '720p-sec', label: '720p / sec', subLabel: 'Draft', resolution: '720p', audio: false },
+  { id: '1080p-sec', label: '1080p / sec', subLabel: 'Standard', resolution: '1080p', audio: false },
+  { id: '1080p-audio-sec', label: '1080p / sec + audio', subLabel: 'Audio', resolution: '1080p', audio: true },
 ] as const;
 
-export type VideoPricePreset = (typeof VIDEO_PRICE_PRESETS)[number];
-export type VideoPricePresetId = VideoPricePreset['id'];
+export type VideoRatePreset = (typeof VIDEO_RATE_PRESETS)[number];
+export type VideoRatePresetId = VideoRatePreset['id'];
 
 export type PricingHubLink = {
   href: string;
@@ -52,7 +50,8 @@ export type VideoPricingRow = {
   variant: string | null;
   notes: string[];
   links: PricingHubLink[];
-  quotes: Record<VideoPricePresetId, PresetQuote>;
+  maxDurationLabel: string;
+  quotes: Record<VideoRatePresetId, PresetQuote>;
   sortValue: number;
 };
 
@@ -63,7 +62,7 @@ export type VideoPricingHighlight = {
 };
 
 export type VideoPricingMatrixData = {
-  presets: readonly VideoPricePreset[];
+  presets: readonly VideoRatePreset[];
   rows: VideoPricingRow[];
   highlights: VideoPricingHighlight[];
 };
@@ -127,6 +126,11 @@ function formatPrice(locale: AppLocale, cents: number | null | undefined, curren
   return formatCurrencyForLocale(locale, currency, cents / 100);
 }
 
+function formatRate(locale: AppLocale, cents: number | null | undefined, currency = FALLBACK_CURRENCY) {
+  const price = formatPrice(locale, cents, currency);
+  return price === LIVE_QUOTE_LABEL ? price : `${price}/s`;
+}
+
 function anchorFromSlug(slug: string) {
   return `${slug
     .trim()
@@ -180,22 +184,14 @@ function collectDurationOptions(entry: FalEngineEntry) {
   return [...durations].sort((a, b) => a - b);
 }
 
-function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number) {
+function formatDurationLabel(entry: FalEngineEntry) {
   const options = collectDurationOptions(entry);
   const maxDurationSec = entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
   if (options.length) {
-    if (options.includes(requestedDurationSec)) {
-      return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
-    }
-    const lowerOrEqual = options.filter((option) => option <= requestedDurationSec);
-    const closest = lowerOrEqual.length ? lowerOrEqual[lowerOrEqual.length - 1]! : options[0]!;
-    const suffix = closest < requestedDurationSec ? 'max' : 'available';
-    return { supported: false, durationSec: closest, note: `${closest}s ${suffix}` };
+    if (options.length <= 3) return options.map((option) => `${option}s`).join(' / ');
+    return `Up to ${Math.max(...options)}s`;
   }
-  if (requestedDurationSec <= maxDurationSec) {
-    return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
-  }
-  return { supported: false, durationSec: maxDurationSec, note: `${maxDurationSec}s max` };
+  return `Up to ${maxDurationSec}s`;
 }
 
 function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string) {
@@ -257,53 +253,37 @@ function readPerSecondRateCents(engine: EngineCaps, resolution: string, audioMod
   return Math.max(0, baseRate + readAudioDelta(pricingDetails, resolution, audioMode));
 }
 
-function displayedClipCents(
-  engine: EngineCaps,
-  durationSec: number,
-  resolution: string,
-  audioMode: AudioRateMode = 'default'
-) {
-  const pricingDetails = engine.pricingDetails;
-  if (pricingDetails && isSeedance2TokenPricing(pricingDetails)) {
-    const quote = computeSeedance2TokenQuote({
-      details: pricingDetails,
-      durationSec,
-      resolution: resolution as Resolution,
-      aspectRatio: pricingDetails.tokenPricing.defaultAspectRatio,
-    });
-    return applyDisplayedPriceMarginCents(quote.vendorCostUsd * 100);
-  }
+function displayedPerSecondRateCents(engine: EngineCaps, resolution: string, audioMode: AudioRateMode = 'default') {
   const rate = readPerSecondRateCents(engine, resolution, audioMode);
-  return rate == null ? null : applyDisplayedPriceMarginCents(rate * durationSec);
+  return rate == null ? null : rate * 1.3;
 }
 
 function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
 
-export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, locale: AppLocale): PresetQuote {
+export function getPresetRateQuote(entry: FalEngineEntry, preset: VideoRatePreset, locale: AppLocale): PresetQuote {
   const engine = entry.engine;
-  const duration = resolveDurationSupport(entry, preset.durationSec);
   const resolution = resolveResolutionSupport(engine, preset.resolution);
   const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
   const audioMode: AudioRateMode = preset.audio ? 'default' : supportsAudioOff(engine) ? 'audio_off' : 'default';
   const canExactAudio = preset.audio ? engine.audio : true;
-  const exact = duration.supported && resolution.supported && canExactAudio;
+  const exact = resolution.supported && canExactAudio;
 
-  const exactCents = exact ? displayedClipCents(engine, preset.durationSec, preset.resolution, audioMode) : null;
+  const exactCents = exact ? displayedPerSecondRateCents(engine, preset.resolution, audioMode) : null;
   if (exact) {
     return {
       status: 'exact',
       amountCents: exactCents ?? undefined,
-      display: formatPrice(locale, exactCents, currency),
+      display: formatRate(locale, exactCents, currency),
       note: !preset.audio && engine.audio && !supportsAudioOff(engine) ? 'audio included' : undefined,
       sortValue: exactCents ?? Number.POSITIVE_INFINITY,
     };
   }
 
-  const closestCents = displayedClipCents(engine, duration.durationSec, resolution.resolution, audioMode);
-  const note = !canExactAudio ? 'audio unavailable' : duration.note ?? resolution.note ?? 'unsupported';
-  if (closestCents != null && (duration.durationSec !== preset.durationSec || resolution.resolution !== preset.resolution || !canExactAudio)) {
+  const closestCents = displayedPerSecondRateCents(engine, resolution.resolution, audioMode);
+  const note = !canExactAudio ? 'audio unavailable' : resolution.note ?? 'unsupported';
+  if (closestCents != null && (resolution.resolution !== preset.resolution || !canExactAudio)) {
     return {
       status: 'closest',
       display: '—',
@@ -311,7 +291,7 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
       closest: {
         label: note,
         amountCents: closestCents,
-        display: formatPrice(locale, closestCents, currency),
+        display: formatRate(locale, closestCents, currency),
       },
       sortValue: Number.POSITIVE_INFINITY,
     };
@@ -355,7 +335,7 @@ function buildVideoNotes(entry: FalEngineEntry) {
 }
 
 function markCheapestQuotes(rows: VideoPricingRow[]) {
-  VIDEO_PRICE_PRESETS.forEach((preset) => {
+  VIDEO_RATE_PRESETS.forEach((preset) => {
     const exactQuotes = rows
       .map((row) => ({ row, quote: row.quotes[preset.id] }))
       .filter((item) => item.quote.status === 'exact' && typeof item.quote.amountCents === 'number');
@@ -375,9 +355,9 @@ function buildVideoPricingRows(locale: AppLocale) {
     .filter((entry) => supportsVideoGeneration(entry) && isPublicMarketingEntry(entry))
     .map((entry): VideoPricingRow => {
       const quotes = Object.fromEntries(
-        VIDEO_PRICE_PRESETS.map((preset) => [preset.id, getPresetQuote(entry, preset, locale)])
-      ) as Record<VideoPricePresetId, PresetQuote>;
-      const defaultQuote = quotes['10s-1080p'];
+        VIDEO_RATE_PRESETS.map((preset) => [preset.id, getPresetRateQuote(entry, preset, locale)])
+      ) as Record<VideoRatePresetId, PresetQuote>;
+      const defaultQuote = quotes['1080p-sec'];
       const exactRank = defaultQuote.status === 'exact' ? 0 : defaultQuote.status === 'closest' ? 1 : 2;
       const pricedRank = typeof defaultQuote.amountCents === 'number' ? defaultQuote.amountCents : Number.MAX_SAFE_INTEGER;
       return {
@@ -386,6 +366,7 @@ function buildVideoPricingRows(locale: AppLocale) {
         family: entry.family ?? entry.provider,
         engineName: entry.marketingName || entry.engine.label,
         variant: entry.versionLabel ?? entry.engine.variant ?? null,
+        maxDurationLabel: formatDurationLabel(entry),
         notes: buildVideoNotes(entry),
         links: buildVideoLinks(entry),
         quotes,
@@ -397,7 +378,7 @@ function buildVideoPricingRows(locale: AppLocale) {
   return markCheapestQuotes(rows);
 }
 
-function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId) {
+function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoRatePresetId) {
   return rows.reduce(
     (best, row) => {
       const quote = row.quotes[presetId];
@@ -409,7 +390,7 @@ function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId)
   );
 }
 
-function highestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId) {
+function highestExactRow(rows: VideoPricingRow[], presetId: VideoRatePresetId) {
   return rows.reduce(
     (best, row) => {
       const quote = row.quotes[presetId];
@@ -422,34 +403,34 @@ function highestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId) 
 }
 
 function buildVideoHighlights(rows: VideoPricingRow[]): VideoPricingHighlight[] {
-  const cheapest1080 = cheapestExactRow(rows, '10s-1080p');
-  const cheapestAudio = cheapestExactRow(rows, '10s-1080p-audio');
-  const cheapestDraft = cheapestExactRow(rows, '5s-720p');
-  const premium1080 = highestExactRow(rows, '10s-1080p');
-  const available1080Count = rows.filter((row) => row.quotes['10s-1080p'].status === 'exact').length;
+  const cheapest1080 = cheapestExactRow(rows, '1080p-sec');
+  const cheapestAudio = cheapestExactRow(rows, '1080p-audio-sec');
+  const cheapestDraft = cheapestExactRow(rows, '720p-sec');
+  const premium1080 = highestExactRow(rows, '1080p-sec');
+  const available1080Count = rows.filter((row) => row.quotes['1080p-sec'].status === 'exact').length;
   return [
     {
-      label: 'Cheapest 10s 1080p',
+      label: 'Cheapest 1080p/sec',
       value: cheapest1080 ? `${cheapest1080.row.engineName} · ${cheapest1080.quote.display}` : LIVE_QUOTE_LABEL,
       href: cheapest1080 ? `#${cheapest1080.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest 10s 1080p with audio',
+      label: 'Cheapest 1080p/sec + audio',
       value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : LIVE_QUOTE_LABEL,
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },
     {
-      label: 'Cheapest 5s 720p draft',
+      label: 'Cheapest 720p/sec draft',
       value: cheapestDraft ? `${cheapestDraft.row.engineName} · ${cheapestDraft.quote.display}` : LIVE_QUOTE_LABEL,
       href: cheapestDraft ? `#${cheapestDraft.row.anchorId}` : undefined,
     },
     {
-      label: 'Premium 10s 1080p',
+      label: 'Premium 1080p/sec',
       value: premium1080 ? `${premium1080.row.engineName} · ${premium1080.quote.display}` : LIVE_QUOTE_LABEL,
       href: premium1080 ? `#${premium1080.row.anchorId}` : undefined,
     },
     {
-      label: '10s 1080p available',
+      label: '1080p available',
       value: `${available1080Count} engines`,
     },
   ];
@@ -673,34 +654,34 @@ function buildPopularChecks(
   audioRows: AudioPricingRow[],
   toolRows: ToolPricingRow[]
 ): PopularPriceCheckRow[] {
-  const rowFor = (presetId: VideoPricePresetId) => cheapestExactRow(videoRows, presetId);
-  const five720 = rowFor('5s-720p');
-  const ten1080 = rowFor('10s-1080p');
-  const tenAudio = rowFor('10s-1080p-audio');
+  const rowFor = (presetId: VideoRatePresetId) => cheapestExactRow(videoRows, presetId);
+  const draft720 = rowFor('720p-sec');
+  const rate1080 = rowFor('1080p-sec');
+  const audio1080 = rowFor('1080p-audio-sec');
   const imageRow = imageRows[0];
   const voiceRow = audioRows.find((row) => row.id === 'audio-voice-only');
   const upscaleRow = toolRows.find((row) => row.id === 'video-upscale');
   return [
     {
-      id: '5s-720p-video',
-      priceCheck: '5s 720p video',
-      engine: five720?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: five720?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: five720 ? `#${five720.row.anchorId}` : '/app' },
+      id: '720p-video-second',
+      priceCheck: '720p video second',
+      engine: draft720?.row.engineName ?? LIVE_QUOTE_LABEL,
+      price: draft720?.quote.display ?? LIVE_QUOTE_LABEL,
+      link: { label: 'View row', href: draft720 ? `#${draft720.row.anchorId}` : '/app' },
     },
     {
-      id: '10s-1080p-video',
-      priceCheck: '10s 1080p video',
-      engine: ten1080?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: ten1080?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: ten1080 ? `#${ten1080.row.anchorId}` : '/app' },
+      id: '1080p-video-second',
+      priceCheck: '1080p video second',
+      engine: rate1080?.row.engineName ?? LIVE_QUOTE_LABEL,
+      price: rate1080?.quote.display ?? LIVE_QUOTE_LABEL,
+      link: { label: 'View row', href: rate1080 ? `#${rate1080.row.anchorId}` : '/app' },
     },
     {
-      id: '10s-1080p-audio-video',
-      priceCheck: '10s 1080p with audio',
-      engine: tenAudio?.row.engineName ?? LIVE_QUOTE_LABEL,
-      price: tenAudio?.quote.display ?? LIVE_QUOTE_LABEL,
-      link: { label: 'View row', href: tenAudio ? `#${tenAudio.row.anchorId}` : '/app' },
+      id: '1080p-audio-video-second',
+      priceCheck: '1080p with audio second',
+      engine: audio1080?.row.engineName ?? LIVE_QUOTE_LABEL,
+      price: audio1080?.quote.display ?? LIVE_QUOTE_LABEL,
+      link: { label: 'View row', href: audio1080 ? `#${audio1080.row.anchorId}` : '/app' },
     },
     {
       id: 'one-image-generation',
@@ -734,7 +715,7 @@ export function buildPricingHubData(locale: AppLocale): PricingHubData {
 
   return {
     video: {
-      presets: VIDEO_PRICE_PRESETS,
+      presets: VIDEO_RATE_PRESETS,
       rows: videoRows,
       highlights: buildVideoHighlights(videoRows),
     },

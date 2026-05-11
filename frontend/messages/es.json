@@ -1525,7 +1525,8 @@
       "badges": [
         "Sin suscripción",
         "Vista previa invitado",
-        "Créditos desde $10"
+        "Créditos desde $10",
+        "Reembolso de generaciones fallidas"
       ],
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
@@ -1719,11 +1720,11 @@
         },
         {
           "question": "¿Qué motor de video IA es más barato?",
-          "answer": "El motor más barato depende del escenario. Un borrador corto en 720p puede ser más barato en un motor, mientras que un clip de 10 s en 1080p con audio puede ser más barato en otro. Usa la tabla para comparar precios exactos por duración y resolución."
+          "answer": "El motor más barato depende del escenario. Un borrador 720p puede ser más barato en un motor, mientras que un clip 1080p con audio puede ser más barato en otro. Usa la tabla para comparar tarifas normalizadas por segundo según resolución y audio."
         },
         {
-          "question": "¿Qué motor es más barato para video 10 s en 1080p?",
-          "answer": "Consulta la columna 10s 1080p de la tabla de video. Los motores que no admiten exactamente 10 s en 1080p se marcan claramente en lugar de forzarse en una comparación falsa."
+          "question": "¿Qué motor es más barato para video 1080p?",
+          "answer": "Consulta la columna 1080p por segundo de la tabla de video. Los motores que no admiten 1080p se marcan claramente en lugar de forzarse en una comparación falsa."
         },
         {
           "question": "¿Puedo ver el precio exacto antes de generar?",
@@ -1738,7 +1739,7 @@
           "answer": "No. MaxVideoAI usa créditos pay-as-you-go. Puedes empezar con créditos, comparar precios y elegir el motor adecuado para cada trabajo sin suscripción obligatoria."
         },
         {
-          "question": "¿Por qué algunos motores no están disponibles para 10 s, 1080p o audio?",
+          "question": "¿Por qué algunos motores no están disponibles para 1080p o audio?",
           "answer": "Cada proveedor admite distintas duraciones, resoluciones, relaciones de aspecto y opciones de audio. La tabla marca combinaciones no admitidas para comparar disponibilidad real en lugar de precios estimados."
         },
         {
@@ -1769,7 +1770,7 @@
     "priceChipPrefix": "Esta generación",
     "meta": {
       "title": "Comparación de precios de video IA: Veo, LTX, Kling, Seedance y más | MaxVideoAI",
-      "description": "Compara precios de video IA por motor, duración, resolución y audio. Ve costes 720p, 1080p y 10 s, luego abre la app para el precio en vivo."
+      "description": "Compara precios de video IA por motor, tarifa por segundo, resolución y audio. Ve tarifas 720p y 1080p, luego abre la app para el precio en vivo."
     }
   },
   "workflows": {
