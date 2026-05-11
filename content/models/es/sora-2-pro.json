@@ -289,11 +289,7 @@
     },
     {
       "label": "Resolución",
-      "body": "Salida 1792×1024",
-      "link": {
-        "label": "Docs MaxVideoAI",
-        "href": "https://docs.maxvideoai.com/engines/sora-2-pro"
-      }
+      "body": "Salida 1792×1024"
     },
     {
       "label": "Audio",
@@ -304,7 +300,7 @@
       "body": "Prompts de texto, imágenes de referencia o storyboards frame‑accurate",
       "link": {
         "label": "Tutorial storyboard",
-        "href": "https://blog.maxvideoai.com/storyboard-sora-pro"
+        "href": "/es/blog/indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca"
       }
     },
     {
