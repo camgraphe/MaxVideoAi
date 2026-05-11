@@ -1414,8 +1414,16 @@
   },
   "pricing": {
     "hero": {
-      "title": "AI Video Pricing: Price before you generate.",
-      "subtitle": "Start with Starter Credits ($10).\nNo subscription. No lock-in.",
+      "title": "MaxVideoAI Pricing",
+      "subtitle": "Compare video, image, audio and tool costs before you generate.",
+      "supportingLine": "Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.",
+      "primaryCta": "Open app for live pricing before you generate",
+      "secondaryCta": "Compare prices below",
+      "badges": [
+        "No subscription",
+        "Guest preview",
+        "Starter credits from $10"
+      ],
       "link": {
         "before": "See how pricing compares across engines in our ",
         "label": "AI video comparison",
@@ -1423,9 +1431,9 @@
       }
     },
     "calculator": {
-      "title": "Preview prices in the app",
-      "description": "Open the workspace to see the exact price before you create a video.",
-      "cta": "Open workspace"
+      "title": "Need the exact live price?",
+      "description": "Open the app calculator as a guest to price the exact model, duration, resolution and audio settings before you render.",
+      "cta": "Open app for live pricing before you generate"
     },
     "liveLabel": "Live",
     "comingSoonLabel": "Coming soon",
@@ -1523,15 +1531,15 @@
           }
         },
         {
-          "title": "Sora 2 narrative (voice-over)",
-          "engine": "Sora 2",
-          "duration": "12s",
+          "title": "Dialogue / narrative",
+          "engine": "Wan 2.6",
+          "duration": "10s",
           "resolution": "1280×720",
-          "audio": "Included",
-          "note": "Automatic refund on fail.",
+          "audio": "Optional",
+          "note": "Predictable narrative baseline with price before generation.",
           "pricingScenario": {
-            "engineId": "sora-2",
-            "durationSec": 12,
+            "engineId": "wan-2-6",
+            "durationSec": 10,
             "resolution": "720p",
             "memberTier": "member"
           }
@@ -1541,11 +1549,11 @@
     "priceFactors": {
       "title": "What affects price",
       "points": [
-        "Duration scales linearly (4s / 8s / 12s).",
-        "Resolution increases cost at 1080p vs 720p.",
+        "Duration scales by model (4s / 6s / 8s / 10s / 15s).",
+        "Resolution changes the price on models with 720p, 1080p, 1440p, or 4K tiers.",
         "Text-to-video AI, image-to-video AI, and video-to-video AI routes can price differently depending on the engine and input type.",
-        "Audio adds a small premium on supported engines.",
-        "Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate."
+        "Audio can be included, optional, or silent depending on the model family.",
+        "Engine tier (Veo, LTX, Kling, Seedance, Pika, Wan) sets the base rate."
       ]
     },
     "teams": {
@@ -1596,30 +1604,50 @@
       ]
     },
     "faq": {
-      "title": "Micro-FAQ",
+      "title": "Pricing FAQ",
       "entries": [
         {
-          "question": "How do credits work?",
-          "answer": "Starter Credits load $10 into your wallet. Spend them like cash and top up whenever you need more runs."
+          "question": "How is AI video pricing calculated?",
+          "answer": "AI video pricing depends on the engine, duration, resolution, audio setting and workflow. Some engines price by second, while others price by video, token, resolution or output type. The pricing table shows preset comparisons, and the app shows the exact live quote before generation."
         },
         {
-          "question": "Do they expire?",
-          "answer": "No expiry. Balances roll forward month to month and sync across every teammate with access."
+          "question": "Which AI video engine is cheapest?",
+          "answer": "The cheapest engine depends on the scenario. A short 720p draft may be cheaper on one engine, while a 10s 1080p clip with audio may be cheaper on another. Use the comparison table to compare exact preset prices by duration and resolution."
         },
         {
-          "question": "What if a generation fails?",
-          "answer": "Failed generations auto-refund within minutes. You only pay when the job completes successfully."
+          "question": "Which engine is cheapest for 10s 1080p video?",
+          "answer": "Check the 10s 1080p column in the video pricing table. Engines that do not support exact 10s 1080p are marked clearly instead of being forced into a fake comparison."
         },
         {
-          "question": "What are member discounts?",
-          "answer": "Spend $50 in 30 days to save 5%, $200 to save 10%. Savings apply automatically to every eligible run."
+          "question": "Can I see the exact price before generating?",
+          "answer": "Yes. Open the app for live pricing before you generate. You can preview the exact price as a guest before launching a render."
+        },
+        {
+          "question": "Do failed generations cost credits?",
+          "answer": "No. Failed generations are refunded automatically. Credits are charged only when a generation completes successfully."
+        },
+        {
+          "question": "Do I need a subscription?",
+          "answer": "No. MaxVideoAI uses pay-as-you-go credits. You can start with credits, compare prices, and choose the right engine per job without a required subscription."
+        },
+        {
+          "question": "Why are some engines unavailable for 10s, 1080p or audio?",
+          "answer": "Each provider supports different durations, resolutions, aspect ratios and audio options. The table marks unsupported combinations so you can compare real availability instead of guessed prices."
+        },
+        {
+          "question": "Are image, audio and tools priced the same as video?",
+          "answer": "No. Video, image, audio and tools use different pricing rules. Image generation is usually priced per image, audio by duration or mode, and tools by output type or resolution."
+        },
+        {
+          "question": "How often do prices change?",
+          "answer": "Prices may change when providers update rates or when MaxVideoAI adds new engines. The pricing page shows current preset comparisons, while the app always shows the live quote before generation."
         }
       ]
     },
     "supplementalFaq": [
       {
-        "question": "Can I use Sora 2 in Europe?",
-        "answer": "Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub."
+        "question": "What if I am looking for Sora pricing?",
+        "answer": "Use the Sora alternatives section to compare currently available MaxVideoAI models by cost, duration and quality before you generate."
       },
       {
         "question": "Do videos have watermarks?",
@@ -1633,8 +1661,8 @@
     "priceChipSuffix": "Price before you generate.",
     "priceChipPrefix": "This render",
     "meta": {
-      "title": "AI Video Pricing — Pay-As-You-Go | MaxVideoAI",
-      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful generations — no subscription. Pricing shown per clip."
+      "title": "AI Video Pricing Comparison: Veo, LTX, Kling, Seedance & More | MaxVideoAI",
+      "description": "Compare AI video prices by engine, duration, resolution and audio. See 720p, 1080p and 10s costs, then open the app for live pricing."
     }
   },
   "workflows": {
