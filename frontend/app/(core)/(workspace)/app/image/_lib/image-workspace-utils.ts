@@ -4,6 +4,12 @@ import {
 } from '@/lib/image/gptImage2';
 import type { ImageEngineOption } from './image-workspace-types';
 
+type ImageCountControlOption = {
+  value: string | number | boolean;
+  label: string;
+  disabled?: boolean;
+};
+
 export function formatImageSizeLabel(value: string): string {
   const normalized = value.trim().toLowerCase();
   const labels: Record<string, string> = {
@@ -62,4 +68,52 @@ export function findImageEngine(engines: ImageEngineOption[], engineId: string):
     engines.find((entry) => (entry.aliases ?? []).some((alias) => normalizeEngineToken(alias) === token)) ??
     null
   );
+}
+
+export function resolveSeedreamMaxOutputImages(referenceCount: number): number {
+  const safeReferenceCount = Number.isFinite(referenceCount) ? Math.max(0, Math.floor(referenceCount)) : 0;
+  return Math.max(1, 15 - safeReferenceCount);
+}
+
+function getNumericImageCountOption(value: ImageCountControlOption['value']): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.round(value);
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.round(parsed) : null;
+  }
+  return null;
+}
+
+export function buildImageCountOptionsWithinMax({
+  options,
+  max,
+  labelForCount,
+}: {
+  options: ImageCountControlOption[];
+  max: number;
+  labelForCount: (count: number) => string;
+}): ImageCountControlOption[] {
+  const safeMax = Math.max(1, Math.floor(max));
+  const byCount = new Map<number, ImageCountControlOption>();
+
+  options.forEach((option) => {
+    const count = getNumericImageCountOption(option.value);
+    if (count == null || count < 1 || count > safeMax) {
+      return;
+    }
+    byCount.set(count, option);
+  });
+
+  if (!byCount.has(safeMax)) {
+    byCount.set(safeMax, {
+      value: safeMax,
+      label: labelForCount(safeMax),
+    });
+  }
+
+  return Array.from(byCount.entries())
+    .sort(([left], [right]) => left - right)
+    .map(([, option]) => option);
 }

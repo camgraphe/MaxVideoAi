@@ -18,7 +18,10 @@ import { DEFAULT_ENGINE_SELECT_COPY, type EngineSelectCopy } from './engine-sele
 import {
   compareEnginesByDefaultPriority,
   DEFAULT_MODE_OPTIONS,
+  engineMatchesBrowseResolution,
   formatAvgDuration,
+  getBrowseEngineResolutionValues,
+  getBrowseResolutionOptions,
   getModeDisplayOrder,
   getModeLabel,
 } from './engine-select-helpers';
@@ -99,38 +102,7 @@ export function BrowseEnginesModal({
   }, [onClose]);
 
   const resolutions = useMemo<Resolution[]>(() => {
-    const set = new Set<Resolution>();
-    legacyFilteredEngines.forEach((engine) => {
-      engine.resolutions?.forEach((resolution) => set.add(resolution));
-    });
-
-    const resolutionRank = (value: Resolution) => {
-      const raw = value.toString().toLowerCase();
-      const explicit: Record<string, number> = {
-        auto: -1,
-        portrait_hd: 720,
-        landscape_hd: 720,
-        square_hd: 720,
-      };
-
-      if (raw in explicit) return explicit[raw];
-      if (raw.endsWith('k')) {
-        const numeric = Number(raw.replace('k', ''));
-        return Number.isFinite(numeric) ? numeric * 1000 : 0;
-      }
-
-      const match = raw.match(/(\d+)\s*p/);
-      if (match) return Number(match[1]);
-      const fallback = Number(raw.replace(/[^\d.]/g, ''));
-      return Number.isFinite(fallback) ? fallback : 0;
-    };
-
-    return Array.from(set).sort((a, b) => {
-      const aRank = resolutionRank(a);
-      const bRank = resolutionRank(b);
-      if (aRank !== bRank) return bRank - aRank;
-      return a.localeCompare(b);
-    });
+    return getBrowseResolutionOptions(legacyFilteredEngines);
   }, [legacyFilteredEngines]);
 
   const searchValue = searchTerm.trim().toLowerCase();
@@ -141,7 +113,7 @@ export function BrowseEnginesModal({
       .slice()
       .filter((engine) => {
         if (modeFilter !== 'all' && !engine.modes.includes(modeFilter)) return false;
-        if (resolutionFilter !== 'all' && !engine.resolutions.includes(resolutionFilter)) return false;
+        if (resolutionFilter !== 'all' && !engineMatchesBrowseResolution(engine, resolutionFilter)) return false;
 
         const meta = engineMeta?.get(engine.id);
         if (!searchValue) return true;
@@ -298,6 +270,8 @@ export function BrowseEnginesModal({
               const examplesHref = modelSlug && allowExamples ? getExamplesHref(modelSlug) : null;
               const showModelLink = Boolean(modelHref);
               const showExamplesLink = Boolean(examplesHref);
+              const browseResolutionValues = getBrowseEngineResolutionValues(engine);
+              const browseResolutionLabel = formatResolutionList(engine.id, browseResolutionValues).join(' / ');
 
               return (
                 <Card
@@ -351,7 +325,7 @@ export function BrowseEnginesModal({
                           .join(' / ')}
                       </span>
                       <span>
-                        Max {engine.maxDurationSec}s / Res {formatResolutionList(engine.id, engine.resolutions).join(' / ')}
+                        Max {engine.maxDurationSec}s{browseResolutionLabel ? ` / Res ${browseResolutionLabel}` : ''}
                       </span>
                     </div>
                   </div>

@@ -1,13 +1,12 @@
 'use client';
 
-import type { Dispatch, FormEvent, SetStateAction } from 'react';
+import type { FormEvent } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
-import { Button } from '@/components/ui/Button';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
@@ -24,7 +23,6 @@ interface ImageWorkspaceComposerSurfaceProps {
   aspectRatio: string | null;
   aspectRatioSelectOptions: ControlOption[];
   booleanSelectOptions: ControlOption[];
-  canCollapseReferenceSlots: boolean;
   composerError: string | null;
   composerReferenceAssets: Record<string, (ComposerAttachment | null)[]>;
   compositePreviewEntry: ImageCompositePreviewEntry | null;
@@ -62,7 +60,6 @@ interface ImageWorkspaceComposerSurfaceProps {
   quality: string | null;
   qualitySelectOptions: ControlOption[];
   referenceAssetFields: AssetFieldConfig[];
-  referenceToggleLabel: string;
   resolution: string | null;
   resolutionSelectOptions: ControlOption[];
   resolvedCopy: ImageWorkspaceCopy;
@@ -70,7 +67,6 @@ interface ImageWorkspaceComposerSurfaceProps {
   selectedEngineCaps: EngineCaps;
   selectedEngineId: string;
   selectedPreviewImageIndex: number;
-  setAreReferenceSlotsExpanded: Dispatch<SetStateAction<boolean>>;
   setAspectRatio: (value: string | null) => void;
   setCustomImageHeight: (value: string) => void;
   setCustomImageWidth: (value: string) => void;
@@ -112,7 +108,6 @@ export function ImageWorkspaceComposerSurface({
   aspectRatio,
   aspectRatioSelectOptions,
   booleanSelectOptions,
-  canCollapseReferenceSlots,
   composerError,
   composerReferenceAssets,
   compositePreviewEntry,
@@ -150,7 +145,6 @@ export function ImageWorkspaceComposerSurface({
   quality,
   qualitySelectOptions,
   referenceAssetFields,
-  referenceToggleLabel,
   resolution,
   resolutionSelectOptions,
   resolvedCopy,
@@ -158,7 +152,6 @@ export function ImageWorkspaceComposerSurface({
   selectedEngineCaps,
   selectedEngineId,
   selectedPreviewImageIndex,
-  setAreReferenceSlotsExpanded,
   setAspectRatio,
   setCustomImageHeight,
   setCustomImageWidth,
@@ -334,21 +327,6 @@ export function ImageWorkspaceComposerSurface({
           }}
           generateLabel={resolvedCopy.runButton.idle}
           generateLoadingLabel={resolvedCopy.runButton.running}
-          afterAssets={
-            canCollapseReferenceSlots ? (
-              <div className="flex justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAreReferenceSlotsExpanded((previous) => !previous)}
-                  className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
-                >
-                  {referenceToggleLabel}
-                </Button>
-              </div>
-            ) : null
-          }
           extraFields={
             <div className="space-y-6">
               <ImageAdvancedSettings

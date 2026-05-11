@@ -345,21 +345,24 @@ test('Unified Seedance workspace switches mode from attached assets and blocks t
   assert.equal(getSeedanceAssetState(audioOnlyAssets).hasReferenceMedia, false);
 });
 
-test('Progressive asset slots start at three and reveal the next slot when the visible limit is filled', () => {
-  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 0 }), 3);
+test('Progressive asset slots show existing assets plus one empty slot', () => {
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 0 }), 1);
   assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 2 }), 3);
   assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 3 }), 4);
   assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 8 }), 9);
-  assert.equal(getVisibleAssetSlotCount({ maxCount: 3, filledCount: 0 }), 3);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 1, filledCount: 0 }), 1);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 1, filledCount: 1 }), 1);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 3, filledCount: 0 }), 1);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 3, minCount: 2, filledCount: 0 }), 2);
   assert.deepEqual(
     getVisibleAssetSlots({ assets: [], maxCount: 9 }).map((slot) => slot.slotIndex),
-    [0, 1, 2]
+    [0]
   );
   assert.deepEqual(
     getVisibleAssetSlots({ assets: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], maxCount: 9 }).map((slot) => slot.slotIndex),
     [0, 1, 2, 3]
   );
-  assert.equal(getVisibleAssetSlots({ assets: Array.from({ length: 9 }, () => null), maxCount: 9 }).length, 3);
+  assert.equal(getVisibleAssetSlots({ assets: Array.from({ length: 9 }, () => null), maxCount: 9 }).length, 1);
 });
 
 test('Unified Happy Horse workspace infers R2V and V2V from reference slots', () => {

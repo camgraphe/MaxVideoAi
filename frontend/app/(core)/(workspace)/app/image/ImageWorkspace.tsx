@@ -23,6 +23,7 @@ import { useImageWorkspaceRouteContext } from './_hooks/useImageWorkspaceRouteCo
 import { useImageWorkspaceModeSync } from './_hooks/useImageWorkspaceModeSync';
 import { useImageWorkspacePresetHandlers } from './_hooks/useImageWorkspacePresetHandlers';
 import { useImageWorkspaceSelectedEngine } from './_hooks/useImageWorkspaceSelectedEngine';
+import { useImageReferenceAwareImageCounts } from './_hooks/useImageReferenceAwareImageCounts';
 import { type HistoryEntry, type ImageEngineOption } from './_lib/image-workspace-types';
 
 export type { ImageEngineOption } from './_lib/image-workspace-types';
@@ -111,7 +112,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setWatermark,
   });
   const {
-    canCollapseReferenceSlots,
     characterSelectionLimit,
     closeLibraryModal,
     combinedReferenceUrls,
@@ -132,9 +132,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     referenceMinRequired,
     referenceSizeSignature,
     referenceSlotLimit,
-    referenceToggleLabel,
+    selectedReferenceCount,
     selectedCharacterReferences,
-    setAreReferenceSlotsExpanded,
     setReferenceSlots,
     supportsCharacterReferences,
     toggleCharacterReference,
@@ -247,6 +246,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setCustomImageWidth,
     setNumImages,
     setResolution,
+  });
+  const { effectiveImageCountOptions, setReferenceAwareNumImagesPreset } = useImageReferenceAwareImageCounts({
+    imageCountOptions,
+    referenceCount: selectedReferenceCount,
+    resolvedCopy,
+    selectedEngineId: selectedEngine?.id,
+    setNumImages,
+    setNumImagesPreset,
   });
 
   const handleRun = useImageGenerationRunner({
@@ -377,7 +384,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               aspectRatio={aspectRatio}
               aspectRatioSelectOptions={aspectRatioSelectOptions}
               booleanSelectOptions={booleanSelectOptions}
-              canCollapseReferenceSlots={canCollapseReferenceSlots}
               composerError={composerError}
               composerReferenceAssets={composerReferenceAssets}
               compositePreviewEntry={compositePreviewEntry}
@@ -397,7 +403,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               handleRemoveFromLibrary={handleRemoveFromLibrary}
               handleRemoveReferenceSlot={handleRemoveReferenceSlot}
               handleRun={handleRun}
-              imageCountOptions={imageCountOptions}
+              imageCountOptions={effectiveImageCountOptions}
               inProgressMessage={inProgressMessage}
               isInLibrary={isInLibrary}
               isRemovingFromLibrary={isRemovingFromLibrary}
@@ -415,7 +421,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               quality={quality}
               qualitySelectOptions={qualitySelectOptions}
               referenceAssetFields={referenceAssetFields}
-              referenceToggleLabel={referenceToggleLabel}
               resolution={resolution}
               resolutionSelectOptions={resolutionSelectOptions}
               resolvedCopy={resolvedCopy}
@@ -423,7 +428,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               selectedEngineCaps={selectedEngineCaps}
               selectedEngineId={selectedEngine.id}
               selectedPreviewImageIndex={selectedPreviewImageIndex}
-              setAreReferenceSlotsExpanded={setAreReferenceSlotsExpanded}
               setAspectRatio={setAspectRatio}
               setCustomImageHeight={setCustomImageHeight}
               setCustomImageWidth={setCustomImageWidth}
@@ -433,7 +437,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               setLimitGenerations={setLimitGenerations}
               setMaskUrl={setMaskUrl}
               setMode={setMode}
-              setNumImagesPreset={setNumImagesPreset}
+              setNumImagesPreset={setReferenceAwareNumImagesPreset}
               setOutputFormat={setOutputFormat}
               setPrompt={setPrompt}
               setQuality={setQuality}

@@ -70,8 +70,6 @@ export interface ImageWorkspaceCopy {
     characterNote: string;
     characterHiddenNotice: string;
     characterLimitNotice: string;
-    referenceExpand: string;
-    referenceCollapse: string;
     referenceSlotLabel: string;
     referenceSlotHint: string;
     referenceSlotNameFallback: string;
@@ -238,8 +236,6 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     characterNote: 'Pick generated characters to use as identity anchors.',
     characterHiddenNotice: 'Selected characters are saved and will be reused when you switch back to a compatible engine.',
     characterLimitNotice: 'Only the first {count} character reference{suffix} will be used with this engine.',
-    referenceExpand: 'Show {count} more slots',
-    referenceCollapse: 'Hide extra slots',
     referenceSlotLabel: 'Slot {index}',
     referenceSlotHint: 'Drop image, click to upload, paste, or choose from your library.',
     referenceSlotNameFallback: 'Image',

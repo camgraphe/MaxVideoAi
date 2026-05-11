@@ -125,6 +125,6 @@ test('Seedream resolves BytePlus sizes and edit references', () => {
   assert.equal(aspectRatio.ok, true);
   assert.equal(aspectRatio.ok && aspectRatio.value, '21:9');
   assert.equal(refs.min, 1);
-  assert.equal(refs.max, 14);
+  assert.equal(refs.max, 10);
   assert.equal(refs.requires, true);
 });

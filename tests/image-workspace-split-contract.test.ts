@@ -19,6 +19,7 @@ const runtimeModalsPath = path.join(imageDir, '_components/ImageWorkspaceRuntime
 const shellPath = path.join(imageDir, '_components/ImageWorkspaceShell.tsx');
 const emptyStatePath = path.join(imageDir, '_components/ImageWorkspaceEmptyState.tsx');
 const routeContextHookPath = path.join(imageDir, '_hooks/useImageWorkspaceRouteContext.ts');
+const referenceAwareCountsHookPath = path.join(imageDir, '_hooks/useImageReferenceAwareImageCounts.ts');
 
 const splitFiles = [
   '_components/ImageAuthGateModal.tsx',
@@ -40,6 +41,7 @@ const splitFiles = [
   '_hooks/useImageWorkspaceModeSync.ts',
   '_hooks/useImageWorkspacePresetHandlers.ts',
   '_hooks/useImageWorkspaceSelectedEngine.ts',
+  '_hooks/useImageReferenceAwareImageCounts.ts',
   '_hooks/useImageGenerationRunner.ts',
   '_hooks/useImageGallerySelection.ts',
   '_lib/image-workspace-character-references.ts',
@@ -69,6 +71,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const shellSource = readFileSync(shellPath, 'utf8');
   const emptyStateSource = readFileSync(emptyStatePath, 'utf8');
   const routeContextHookSource = readFileSync(routeContextHookPath, 'utf8');
+  const referenceAwareCountsHookSource = readFileSync(referenceAwareCountsHookPath, 'utf8');
 
   for (const file of splitFiles) {
     statSync(path.join(imageDir, file));
@@ -90,6 +93,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceModeSync'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspacePresetHandlers'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceSelectedEngine'/);
+  assert.match(source, /from '\.\/_hooks\/useImageReferenceAwareImageCounts'/);
   assert.match(source, /from '\.\/_hooks\/useImageGenerationRunner'/);
   assert.match(source, /from '\.\/_hooks\/useImageGallerySelection'/);
 
@@ -173,6 +177,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(shellSource, /<ImageWorkspaceGalleryRail\b/);
   assert.match(emptyStateSource, /export function ImageWorkspaceEmptyState/);
   assert.match(routeContextHookSource, /mergeCopy/);
+  assert.match(referenceAwareCountsHookSource, /resolveSeedreamMaxOutputImages/);
+  assert.match(referenceAwareCountsHookSource, /buildImageCountOptionsWithinMax/);
 
   const lineCount = source.split('\n').length;
   assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);

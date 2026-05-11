@@ -45,7 +45,12 @@ test('Seedream 5.0 Lite is registered as a public BytePlus image model', () => {
     entry.engine.inputSchema?.optional?.find((field) => field.id === 'aspect_ratio')?.values
   );
   assert.equal(entry.engine.inputLimits.imageMaxMB, 10);
-  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'image_urls')?.maxCount, 14);
+  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.max, 15);
+  assert.match(
+    entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.description ?? '',
+    /sequential_image_generation/i
+  );
+  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'image_urls')?.maxCount, 10);
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'output_format')?.values, [
     'jpeg',
     'png',

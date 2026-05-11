@@ -5,12 +5,12 @@
     "title": "Seedream 5.0 Lite | Generación y edición de imagen BytePlus | MaxVideoAI",
     "description": "Crea y edita imágenes fijas con Seedream 5.0 Lite en MaxVideoAI. Usa BytePlus ModelArk para preparar conceptos, producto e imágenes de referencia antes de Seedance."
   },
-  "overview": "Seedream 5.0 Lite es un modelo de generación y edición de imagen de BytePlus ModelArk. Sirve para crear stills limpios, conceptos de producto, frames de personaje e imágenes fuente más controladas antes de un workflow image-to-video en Seedance 2.0 o Seedance 2.0 Fast.",
-  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente en BytePlus ModelArk. MaxVideoAI muestra el precio activo de la cuenta antes de generar.",
+  "overview": "Seedream 5.0 Lite es un modelo de generación y edición de imagen de BytePlus ModelArk. Sirve para crear stills limpios, conceptos de producto, frames de personaje, series de imágenes coherentes e imágenes fuente más controladas antes de un workflow image-to-video en Seedance 2.0 o Seedance 2.0 Fast.",
+  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente en BytePlus ModelArk, también en series de imágenes. MaxVideoAI muestra el precio activo de la cuenta antes de generar.",
   "hero": {
     "title": "Seedream 5.0 Lite - generación y edición de imagen BytePlus",
-    "intro": "Usa Seedream 5.0 Lite como modelo de imagen independiente para text-to-image, limpieza image-to-image y referencias visuales antes de animar los frames elegidos en Seedance.",
-    "badge": "Text -> Image · Image -> Image · BytePlus ModelArk · Workflow de referencia",
+    "intro": "Usa Seedream 5.0 Lite como modelo de imagen independiente para text-to-image, limpieza image-to-image, series de imágenes y referencias visuales antes de animar los frames elegidos en Seedance.",
+    "badge": "Text -> Image · Image -> Image · Series de imágenes · BytePlus ModelArk",
     "ctaPrimary": {
       "label": "Abrir Seedream",
       "href": "/app/image?engine=seedream"
@@ -46,6 +46,10 @@
         "icon": "storyboard"
       },
       {
+        "title": "Series para storyboard, comic y visuales de marca con una dirección común",
+        "icon": "storyboard"
+      },
+      {
         "title": "Ediciones de imagen que reducen ruido visual antes de probar movimiento",
         "icon": "layers"
       }
@@ -58,6 +62,7 @@
     "steps": [
       "Definir sujeto y composición",
       "Agregar luz, entorno y materiales",
+      "En series de imágenes, indicar el número y el tema común",
       "Indicar qué debe quedar limpio para animación",
       "En ediciones, separar lo que se conserva de lo que cambia",
       "Elegir el mejor still antes de pasar a Seedance"
@@ -84,6 +89,10 @@
     {
       "title": "Edición lista para animación",
       "prompt": "Limpiar esta imagen de producto para animación: conservar forma de botella y jerarquía de etiqueta, quitar reflejos que distraen, simplificar el fondo, mantener luz de estudio natural."
+    },
+    {
+      "title": "Serie de visuales de marca",
+      "prompt": "Generar seis visuales coherentes para el lanzamiento de una marca premium de antifaz para dormir: mismo color de producto, luz suave de mañana, dormitorio minimalista, una imagen hero de producto, una de textura, una lifestyle, una de packaging, un recorte para social ad y una referencia Seedance."
     }
   ],
   "faqs": [
@@ -94,6 +103,10 @@
     {
       "q": "¿Cómo se conecta Seedream con Seedance?",
       "a": "Seedream es un compañero recomendado para crear una imagen de referencia antes de Seedance 2.0 o Seedance 2.0 Fast. Primero crea o limpia el still y luego usa el frame elegido como punto de partida image-to-video."
+    },
+    {
+      "q": "¿Seedream puede generar series de imágenes?",
+      "a": "Sí. Cuando pides más de una imagen, MaxVideoAI envía sequential_image_generation como auto a BytePlus con un número máximo de imágenes. Es útil para storyboards, comics, series de producto y visuales de marca."
     },
     {
       "q": "¿Seedream promete los resultados de Seedance?",
@@ -113,6 +126,9 @@
         "icon": "imageToVideo"
       },
       {
+        "label": "Series de imágenes"
+      },
+      {
         "label": "Imágenes fijas"
       },
       {
@@ -124,6 +140,7 @@
     "heroDesc2": "Es útil cuando un run de Seedance necesita una fuente más intencional que un prompt suelto o una imagen externa sin preparar.",
     "heroHighlights": [
       "Modelo de imagen independiente||Usa Seedream para generar y editar stills incluso si no habrá video después.",
+      "Salida batch de imagen||Genera series storyboard, comic, producto o marca cuando un prompt necesita imágenes relacionadas.",
       "Preparación de referencia||Crea imágenes fuente más limpias y controladas antes de animar en Seedance.",
       "Editar antes del movimiento||Ajusta producto, fondo, vestuario e iluminación antes de image-to-video.",
       "Compañero de Seedance||Envía el still elegido a Seedance 2.0 o Seedance 2.0 Fast cuando el movimiento sea el siguiente paso."
@@ -143,12 +160,14 @@
     "tipsIntro": "Trata Seedream como el paso de trabajo visual sobre la imagen. Puede producir mejores fuentes, pero no reemplaza las comprobaciones de prompt y seguridad de Seedance.",
     "strengths": [
       "Crear frames limpios de producto, personaje y entorno antes de animar.",
+      "Generar series de imágenes relacionadas para storyboards, comics, variaciones de producto y sistemas de marca.",
       "Usar edición para reducir ruido visual en imágenes existentes.",
       "Mantener un sujeto claro por frame cuando la salida vaya a ser entrada image-to-video.",
       "Usar el mismo lenguaje de sujeto, luz y estilo al pasar de Seedream a Seedance."
     ],
     "boundaries": [
       "Solo imágenes fijas.",
+      "Las solicitudes batch deben respetar los límites del proveedor para referencias más imágenes generadas.",
       "Seedance sigue evaluando cada imagen fuente y prompt.",
       "Una referencia más limpia puede mejorar consistencia, pero el tratamiento final y la calidad dependen del run de Seedance.",
       "No uses Seedream para preparar contenido contrario a las reglas de seguridad de MaxVideoAI o del proveedor."
@@ -165,6 +184,7 @@
     "promptingTip": "Consejo: si la imagen pasará a Seedance, menciona el objetivo de movimiento futuro sin pedir a Seedream que la anime.",
     "promptingGlobalPrinciples": [
       "Un objetivo visual claro por imagen.",
+      "En una serie, definir secuencia, número y reglas visuales compartidas.",
       "En ediciones, decir qué preservar antes de qué cambiar.",
       "Simplificar el fondo cuando la imagen será referencia de video."
     ],

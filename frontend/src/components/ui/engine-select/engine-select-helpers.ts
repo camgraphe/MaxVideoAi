@@ -1,5 +1,5 @@
 import type { FalEngineEntry } from '@/config/falEngines';
-import type { EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps, Mode, Resolution } from '@/types/engines';
 import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { EngineRegistryMeta } from './engine-select-types';
@@ -47,6 +47,20 @@ const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
 export const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 export const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'extend', 'a2v', 'retake', 'r2v'];
+
+const SEEDREAM_BROWSE_RESOLUTIONS: Resolution[] = ['2K', '3K', '4K'];
+const NON_RESOLUTION_BROWSE_VALUES = new Set([
+  'auto',
+  'custom',
+  'square',
+  'square_hd',
+  'portrait_4_3',
+  'portrait_16_9',
+  'landscape_4_3',
+  'landscape_16_9',
+  'portrait_hd',
+  'landscape_hd',
+]);
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
   lumaRay2: {
@@ -122,6 +136,85 @@ export function formatAvgDuration(value: number | null | undefined): string | nu
   const seconds = value / 1000;
   const precision = seconds < 10 ? 1 : 0;
   return `${seconds.toFixed(precision)}s`;
+}
+
+function isSeedreamEngine(engine: Pick<EngineCaps, 'id'>): boolean {
+  return engine.id === 'seedream';
+}
+
+function normalizeBrowseResolutionValue(value: Resolution): Resolution | null {
+  const trimmed = value.toString().trim();
+  if (!trimmed) return null;
+  const raw = trimmed.toLowerCase();
+  if (NON_RESOLUTION_BROWSE_VALUES.has(raw)) return null;
+  if (/^\d+x\d+$/i.test(raw)) return null;
+
+  const kMatch = raw.match(/^(\d+(?:\.\d+)?)k$/);
+  if (kMatch) return `${kMatch[1]}K` as Resolution;
+
+  const pMatch = raw.match(/^(\d+)p$/);
+  if (pMatch) return `${pMatch[1]}p` as Resolution;
+
+  const upperPMatch = trimmed.match(/^(\d+)P$/);
+  if (upperPMatch) return trimmed as Resolution;
+
+  return trimmed as Resolution;
+}
+
+function resolutionRank(value: Resolution) {
+  const raw = value.toString().toLowerCase();
+  if (raw.endsWith('k')) {
+    const numeric = Number(raw.replace('k', ''));
+    return Number.isFinite(numeric) ? numeric * 1000 : 0;
+  }
+
+  const match = raw.match(/(\d+)\s*p/);
+  if (match) return Number(match[1]);
+  const fallback = Number(raw.replace(/[^\d.]/g, ''));
+  return Number.isFinite(fallback) ? fallback : 0;
+}
+
+function sortResolutionsByRank(values: Resolution[]): Resolution[] {
+  return values.slice().sort((a, b) => {
+    const aRank = resolutionRank(a);
+    const bRank = resolutionRank(b);
+    if (aRank !== bRank) return bRank - aRank;
+    return a.localeCompare(b);
+  });
+}
+
+export function getBrowseEngineResolutionValues(engine: EngineCaps): Resolution[] {
+  if (isSeedreamEngine(engine)) {
+    const available = new Set(engine.resolutions ?? []);
+    return SEEDREAM_BROWSE_RESOLUTIONS.filter((resolution) => available.has(resolution));
+  }
+  const values: Resolution[] = [];
+  const seen = new Set<string>();
+  (engine.resolutions ?? []).forEach((resolution) => {
+    const normalized = normalizeBrowseResolutionValue(resolution);
+    if (!normalized) return;
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    values.push(normalized);
+  });
+  return values;
+}
+
+export function getBrowseResolutionOptions(engines: EngineCaps[]): Resolution[] {
+  const set = new Set<Resolution>();
+  engines.forEach((engine) => {
+    getBrowseEngineResolutionValues(engine).forEach((resolution) => set.add(resolution));
+  });
+  return sortResolutionsByRank(Array.from(set));
+}
+
+export function engineMatchesBrowseResolution(engine: EngineCaps, resolution: Resolution): boolean {
+  const normalizedFilter = normalizeBrowseResolutionValue(resolution);
+  if (!normalizedFilter) return false;
+  return getBrowseEngineResolutionValues(engine).some(
+    (engineResolution) => engineResolution.toLowerCase() === normalizedFilter.toLowerCase()
+  );
 }
 
 function getEngineDiscoveryRank(engineId: string, registryMeta: EngineRegistryMeta | null): number {

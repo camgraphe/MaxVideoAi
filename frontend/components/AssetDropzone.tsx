@@ -308,6 +308,7 @@ export function AssetDropzone({
     displaySlots.length === 1 &&
     displaySlots[0]?.asset != null &&
     displaySlots[0].asset?.kind !== 'audio';
+  const remainingSlotCount = isCollectionField ? Math.max(0, maxCount - filledAssetCount) : 0;
   const multiSlotGridClass = isCollectionField
     ? displaySlots.length <= 1
       ? 'grid-cols-1'
@@ -429,6 +430,11 @@ export function AssetDropzone({
             );
           })}
         </div>
+        {isCollectionField ? (
+          <p className="text-[11px] leading-none text-text-muted dark:text-white/45">
+            {assetCopy.slotsRemaining(remainingSlotCount)}
+          </p>
+        ) : null}
       </div>
     </div>
   );

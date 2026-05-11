@@ -102,17 +102,67 @@ test('rejects Seedream edit mode without reference images', () => {
   );
 });
 
-test('rejects Seedream requests above one image because the provider does not support n', () => {
+test('enables Seedream sequential image generation for batch requests', () => {
+  const payload = buildBytePlusSeedreamPayload({
+    modelId: 'seedream-5-0-260128',
+    prompt: 'Create four coherent storyboard frames',
+    mode: 't2i',
+    numImages: 4,
+    size: '2K',
+    responseFormat: 'url',
+  });
+
+  assert.equal(payload.sequential_image_generation, 'auto');
+  assert.deepEqual(payload.sequential_image_generation_options, { max_images: 4 });
+});
+
+test('rejects Seedream batch requests above the provider image-set limit', () => {
   assert.throws(
     () =>
       buildBytePlusSeedreamPayload({
         modelId: 'seedream-5-0-260128',
-        prompt: 'Create options',
+        prompt: 'Create too many frames',
         mode: 't2i',
-        numImages: 2,
+        numImages: 16,
         size: '2K',
         responseFormat: 'url',
       }),
-    /one image/i
+    /up to 15/i
+  );
+});
+
+test('rejects Seedream image sets when references plus requested outputs exceed 15', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedreamPayload({
+        modelId: 'seedream-5-0-260128',
+        prompt: 'Create storyboard variations',
+        mode: 'i2i',
+        imageUrls: [
+          'https://cdn.example.com/ref-1.png',
+          'https://cdn.example.com/ref-2.png',
+          'https://cdn.example.com/ref-3.png',
+        ],
+        numImages: 13,
+        size: '2K',
+        responseFormat: 'url',
+      }),
+    /reference images plus generated images/i
+  );
+});
+
+test('rejects Seedream requests above the provider reference image limit', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedreamPayload({
+        modelId: 'seedream-5-0-260128',
+        prompt: 'Fuse too many references',
+        mode: 'i2i',
+        imageUrls: Array.from({ length: 11 }, (_, index) => `https://cdn.example.com/ref-${index + 1}.png`),
+        numImages: 1,
+        size: '2K',
+        responseFormat: 'url',
+      }),
+    /up to 10 reference images/i
   );
 });

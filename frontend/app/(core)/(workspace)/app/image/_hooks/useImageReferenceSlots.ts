@@ -21,7 +21,6 @@ import {
 } from '../_lib/image-reference-slot-state';
 import {
   DEFAULT_UPLOAD_LIMIT_MB,
-  DEFAULT_VISIBLE_REFERENCE_SLOTS,
   MAX_REFERENCE_SLOTS,
   type ImageLibraryModalState,
   type LibraryAsset,
@@ -53,7 +52,6 @@ export function useImageReferenceSlots({
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
-  const [areReferenceSlotsExpanded, setAreReferenceSlotsExpanded] = useState(false);
   const [libraryModal, setLibraryModal] = useState<ImageLibraryModalState>({
     open: false,
     slotIndex: null,
@@ -102,38 +100,15 @@ export function useImageReferenceSlots({
     [baseReferenceSlotLimit, supportsCharacterReferences, totalRegularReferenceSelections]
   );
   const referenceSlotLimit = baseReferenceSlotLimit;
-  const canCollapseReferenceSlots = referenceSlotLimit > DEFAULT_VISIBLE_REFERENCE_SLOTS;
-  const displayedReferenceSlotCount =
-    canCollapseReferenceSlots && !areReferenceSlotsExpanded
-      ? DEFAULT_VISIBLE_REFERENCE_SLOTS
-      : referenceSlotLimit;
-  const displayedReferenceSlots = useMemo(
-    () => visibleReferenceSlots.slice(0, displayedReferenceSlotCount),
-    [displayedReferenceSlotCount, visibleReferenceSlots]
-  );
-  const collapsedReferenceSlotCount = Math.max(referenceSlotLimit - displayedReferenceSlotCount, 0);
-  const hasCollapsedReferenceContent = useMemo(
-    () =>
-      referenceSlots
-        .slice(DEFAULT_VISIBLE_REFERENCE_SLOTS, referenceSlotLimit)
-        .some((slot) => Boolean(slot)),
-    [referenceSlotLimit, referenceSlots]
+  const displayedReferenceSlotCount = referenceSlotLimit;
+  const displayedReferenceSlots = visibleReferenceSlots;
+  const selectedReferenceCount = useMemo(
+    () => visibleReferenceSlots.filter((slot) => Boolean(slot)).length,
+    [visibleReferenceSlots]
   );
   const referenceHelperText = useMemo(
     () => formatTemplate(resolvedCopy.composer.referenceHelper, { count: referenceSlotLimit }),
     [referenceSlotLimit, resolvedCopy.composer.referenceHelper]
-  );
-  const referenceToggleLabel = useMemo(
-    () =>
-      areReferenceSlotsExpanded
-        ? resolvedCopy.composer.referenceCollapse
-        : formatTemplate(resolvedCopy.composer.referenceExpand, { count: collapsedReferenceSlotCount }),
-    [
-      areReferenceSlotsExpanded,
-      collapsedReferenceSlotCount,
-      resolvedCopy.composer.referenceCollapse,
-      resolvedCopy.composer.referenceExpand,
-    ]
   );
   const readyReferenceUrls = useMemo(
     () => getReadyReferenceSlots(visibleReferenceSlots).map((slot) => slot.url),
@@ -167,18 +142,6 @@ export function useImageReferenceSlots({
       return mutated ? next : previous;
     });
   }, [baseReferenceSlotLimit]);
-
-  useEffect(() => {
-    if (!canCollapseReferenceSlots && areReferenceSlotsExpanded) {
-      setAreReferenceSlotsExpanded(false);
-    }
-  }, [areReferenceSlotsExpanded, canCollapseReferenceSlots]);
-
-  useEffect(() => {
-    if (!areReferenceSlotsExpanded && hasCollapsedReferenceContent) {
-      setAreReferenceSlotsExpanded(true);
-    }
-  }, [areReferenceSlotsExpanded, hasCollapsedReferenceContent]);
 
   const showUnsupportedFormatError = useCallback(() => {
     setError(
@@ -386,9 +349,6 @@ export function useImageReferenceSlots({
         return;
       }
       const index = slotIndex;
-      if (index >= DEFAULT_VISIBLE_REFERENCE_SLOTS && canCollapseReferenceSlots) {
-        setAreReferenceSlotsExpanded(true);
-      }
       setReferenceSlots((previous) => {
         const next = previous.slice();
         cleanupSlotPreview(next[index]);
@@ -406,7 +366,6 @@ export function useImageReferenceSlots({
       closeLibraryModal();
     },
     [
-      canCollapseReferenceSlots,
       closeLibraryModal,
       isSupportedReferenceAsset,
       libraryModal.slotIndex,
@@ -442,9 +401,6 @@ export function useImageReferenceSlots({
       if (nextIndex >= referenceSlotLimit) {
         return;
       }
-      if (nextIndex >= DEFAULT_VISIBLE_REFERENCE_SLOTS && canCollapseReferenceSlots) {
-        setAreReferenceSlotsExpanded(true);
-      }
       setReferenceSlots((previous) => {
         const next = previous.slice();
         cleanupSlotPreview(next[nextIndex]);
@@ -453,7 +409,6 @@ export function useImageReferenceSlots({
       });
     },
     [
-      canCollapseReferenceSlots,
       characterSelectionLimit,
       libraryModal.slotIndex,
       referenceSlotLimit,
@@ -465,7 +420,6 @@ export function useImageReferenceSlots({
   );
 
   return {
-    canCollapseReferenceSlots,
     characterSelectionLimit,
     closeLibraryModal,
     combinedReferenceUrls,
@@ -486,9 +440,8 @@ export function useImageReferenceSlots({
     referenceMinRequired,
     referenceSizeSignature,
     referenceSlotLimit,
-    referenceToggleLabel,
+    selectedReferenceCount,
     selectedCharacterReferences,
-    setAreReferenceSlotsExpanded,
     setReferenceSlots,
     supportsCharacterReferences,
     toggleCharacterReference,

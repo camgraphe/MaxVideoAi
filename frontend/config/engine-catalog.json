@@ -11078,7 +11078,7 @@
         "t2i",
         "i2i"
       ],
-      "maxDurationSec": 4,
+      "maxDurationSec": 15,
       "resolutions": [
         "2K",
         "3K",
@@ -11146,10 +11146,10 @@
             "type": "number",
             "label": "Images",
             "min": 1,
-            "max": 1,
+            "max": 15,
             "step": 1,
             "default": 1,
-            "description": "Seedream 5.0 Lite returns one image per standard request."
+            "description": "Request up to 15 generated images. Requests above one image enable BytePlus sequential_image_generation automatically."
           },
           {
             "id": "aspect_ratio",
@@ -11173,7 +11173,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images",
-            "description": "Add up to 14 source images for Seedream edit mode.",
+            "description": "Add up to 10 source images for Seedream edit mode. References plus generated images must stay within 15 total images.",
             "modes": [
               "i2i"
             ],
@@ -11181,7 +11181,7 @@
               "i2i"
             ],
             "minCount": 1,
-            "maxCount": 14,
+            "maxCount": 10,
             "source": "either"
           },
           {
@@ -11315,7 +11315,7 @@
             "gif"
           ],
           "maxUploadMB": 10,
-          "notes": "Edit with up to 14 source images for more controlled visual references."
+          "notes": "Edit with up to 10 source images for more controlled visual references."
         }
       }
     ],

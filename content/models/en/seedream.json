@@ -5,12 +5,12 @@
     "title": "Seedream 5.0 Lite | BytePlus Image Generation & Editing | MaxVideoAI",
     "description": "Create and edit still images with Seedream 5.0 Lite in MaxVideoAI. Use BytePlus ModelArk image generation for clean concepts, product frames, and reference images before Seedance animation."
   },
-  "overview": "Seedream 5.0 Lite is a BytePlus ModelArk image generation and editing model for creating clean stills, product concepts, character frames, and source images that can become stronger references before Seedance 2.0 or Seedance 2.0 Fast image-to-video work.",
-  "pricingNotes": "Seedream 5.0 Lite is priced per successfully generated image by BytePlus ModelArk. MaxVideoAI shows the active account price before generation.",
+  "overview": "Seedream 5.0 Lite is a BytePlus ModelArk image generation and editing model for creating clean stills, product concepts, character frames, thematic image sets, and source images that can become stronger references before Seedance 2.0 or Seedance 2.0 Fast image-to-video work.",
+  "pricingNotes": "Seedream 5.0 Lite is priced per successfully generated image by BytePlus ModelArk, including batch image sets. MaxVideoAI shows the active account price before generation.",
   "hero": {
     "title": "Seedream 5.0 Lite - BytePlus image generation and editing",
-    "intro": "Use Seedream 5.0 Lite as a standalone image model for text-to-image creation, image-to-image cleanup, and controlled reference stills before animating selected frames in Seedance.",
-    "badge": "Text -> Image · Image -> Image · BytePlus ModelArk · Reference-first workflow",
+    "intro": "Use Seedream 5.0 Lite as a standalone image model for text-to-image creation, image-to-image cleanup, batch image sets, and controlled reference stills before animating selected frames in Seedance.",
+    "badge": "Text -> Image · Image -> Image · Batch image sets · BytePlus ModelArk",
     "ctaPrimary": {
       "label": "Launch Seedream",
       "href": "/app/image?engine=seedream"
@@ -46,6 +46,10 @@
         "icon": "storyboard"
       },
       {
+        "title": "Storyboard, comic, and brand visual sets with a shared direction",
+        "icon": "storyboard"
+      },
+      {
         "title": "Image edits that remove noise before motion tests",
         "icon": "layers"
       }
@@ -58,6 +62,7 @@
     "steps": [
       "Define the subject and composition",
       "Add lighting, environment, and material details",
+      "For image sets, state the desired count and shared theme",
       "State what should stay clean for future animation",
       "For edits, separate preserve instructions from changes",
       "Choose the strongest still before moving into Seedance"
@@ -84,6 +89,10 @@
     {
       "title": "Edit for animation readiness",
       "prompt": "Clean this product image for animation: preserve the bottle shape and label hierarchy, remove distracting reflections, simplify the background, keep natural studio lighting."
+    },
+    {
+      "title": "Batch brand visual set",
+      "prompt": "Generate six coherent launch visuals for a premium sleep mask brand: same product color, calm morning light, minimal bedroom styling, one image for hero product, one for texture detail, one for lifestyle use, one for packaging, one for social ad crop, one for Seedance reference."
     }
   ],
   "faqs": [
@@ -94,6 +103,10 @@
     {
       "q": "How does Seedream connect to Seedance?",
       "a": "Seedream is a recommended reference-image companion before Seedance 2.0 or Seedance 2.0 Fast. Create or clean a still image first, then use the selected frame as a stronger starting point for image-to-video."
+    },
+    {
+      "q": "Can Seedream generate batch image sets?",
+      "a": "Yes. When you request more than one image, MaxVideoAI sends BytePlus sequential_image_generation as auto with a max image count. This is useful for storyboards, comics, product series, and brand visuals."
     },
     {
       "q": "Does Seedream promise Seedance results?",
@@ -113,6 +126,9 @@
         "icon": "imageToVideo"
       },
       {
+        "label": "Image sets"
+      },
+      {
         "label": "Still images"
       },
       {
@@ -124,6 +140,7 @@
     "heroDesc2": "It is useful when a Seedance run needs a more deliberate source image than a loose prompt or an unprepared external upload.",
     "heroHighlights": [
       "Standalone image model||Use Seedream for still generation and edits even when no video run follows.",
+      "Batch image output||Generate storyboard, comic, product, or brand visual sets when one prompt needs related images.",
       "Reference preparation||Create cleaner, more controlled source images before Seedance animation.",
       "Edit before motion||Refine products, backgrounds, wardrobe, and lighting before image-to-video.",
       "Seedance companion||Send the selected still into Seedance 2.0 or Seedance 2.0 Fast when motion is the next step."
@@ -143,12 +160,14 @@
     "tipsIntro": "Treat Seedream as the still-image craft step. It can produce better source material, but it does not replace Seedance prompt and policy checks.",
     "strengths": [
       "Generate clean product, character, and environment frames before animation.",
+      "Generate related image sets for storyboards, comics, product variations, and brand systems.",
       "Use edit mode to reduce visual noise in existing source images.",
       "Keep one clear subject per frame when the output will become image-to-video input.",
       "Use the same language for subject, lighting, and style when moving from Seedream to Seedance."
     ],
     "boundaries": [
       "Still images only.",
+      "Batch requests must stay within the provider image-set limits for references plus generated outputs.",
       "Seedance still evaluates each source image and prompt.",
       "A cleaner reference image may improve consistency, but final animation handling and output quality still depend on the Seedance run.",
       "Do not use Seedream to prepare content that violates MaxVideoAI or provider safety rules."
@@ -165,6 +184,7 @@
     "promptingTip": "Tip: if the image is going into Seedance, mention the future motion goal without asking Seedream to animate it.",
     "promptingGlobalPrinciples": [
       "Use one clean visual goal per image.",
+      "For image sets, name the sequence, count, and shared visual rules.",
       "For edits, say what to preserve before what to change.",
       "Keep the background simple when the still will become a video reference."
     ],

@@ -10,6 +10,7 @@ export type AssetDropzoneCopy = {
   videoLengthFollowsAudio: string;
   upToFiles: (count: number) => string;
   atLeastFiles: (count: number) => string;
+  slotsRemaining: (count: number) => string;
   primaryImageFallback: string;
   additionalReferencesFallback: string;
   frameFallback: string;
@@ -61,6 +62,11 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     videoLengthFollowsAudio: 'Video length follows audio length',
     upToFiles: (count) => `Up to ${count} files`,
     atLeastFiles: (count) => `At least ${count} files`,
+    slotsRemaining: (count) => {
+      if (count <= 0) return 'No slots remaining';
+      if (count === 1) return '1 slot remaining';
+      return `${count} slots remaining`;
+    },
     primaryImageFallback: 'Primary reference image',
     additionalReferencesFallback: 'Additional references',
     frameFallback: 'Frame',
@@ -110,6 +116,11 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     videoLengthFollowsAudio: "La durée vidéo suit la durée de l'audio",
     upToFiles: (count) => `Jusqu'à ${count} fichiers`,
     atLeastFiles: (count) => `Au moins ${count} fichiers`,
+    slotsRemaining: (count) => {
+      if (count <= 0) return 'Plus aucun slot disponible';
+      if (count === 1) return 'Encore 1 slot disponible';
+      return `Encore ${count} slots disponibles`;
+    },
     primaryImageFallback: 'Image de référence principale',
     additionalReferencesFallback: 'Références additionnelles',
     frameFallback: 'Frame',
@@ -159,6 +170,11 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     videoLengthFollowsAudio: 'La duración del video sigue la duración del audio',
     upToFiles: (count) => `Hasta ${count} archivos`,
     atLeastFiles: (count) => `Al menos ${count} archivos`,
+    slotsRemaining: (count) => {
+      if (count <= 0) return 'No quedan slots';
+      if (count === 1) return 'Queda 1 slot';
+      return `Quedan ${count} slots`;
+    },
     primaryImageFallback: 'Imagen de referencia principal',
     additionalReferencesFallback: 'Referencias adicionales',
     frameFallback: 'Frame',

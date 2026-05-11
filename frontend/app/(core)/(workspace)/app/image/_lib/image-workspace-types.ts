@@ -10,7 +10,6 @@ import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import { MAX_REFERENCE_IMAGES } from '@/lib/image/inputSchema';
 
 export const MAX_REFERENCE_SLOTS = MAX_REFERENCE_IMAGES;
-export const DEFAULT_VISIBLE_REFERENCE_SLOTS = 4;
 export const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
 export const DESKTOP_RAIL_MIN_WIDTH = 1088;
 export const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))

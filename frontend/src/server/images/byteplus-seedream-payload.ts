@@ -10,7 +10,14 @@ export type BytePlusSeedreamPayload = {
   response_format: 'url';
   watermark: boolean;
   image?: string | string[];
+  sequential_image_generation?: 'auto';
+  sequential_image_generation_options?: {
+    max_images: number;
+  };
 };
+
+const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
+const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
 
 function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
   return Array.from(
@@ -59,20 +66,34 @@ export function buildBytePlusSeedreamPayload(params: {
       status: 400,
     });
   }
-  if (imageUrls.length > 14) {
-    throw new BytePlusSeedreamError('Seedream supports up to 14 reference images.', {
+  if (imageUrls.length > SEEDREAM_MAX_REFERENCE_IMAGES) {
+    throw new BytePlusSeedreamError('Seedream supports up to 10 reference images.', {
       code: 'REFERENCE_IMAGE_LIMIT',
       status: 400,
-      detail: { max: 14 },
+      detail: { max: SEEDREAM_MAX_REFERENCE_IMAGES },
     });
   }
-  if (params.numImages > 1) {
-    throw new BytePlusSeedreamError('Seedream standard image requests support one image per request.', {
+  const outputImageCount = Math.max(1, Math.round(params.numImages));
+  if (outputImageCount > SEEDREAM_MAX_IMAGE_SET_IMAGES) {
+    throw new BytePlusSeedreamError('Seedream image sets support up to 15 generated images.', {
       code: 'IMAGE_COUNT_LIMIT',
       status: 400,
-      detail: { max: 1 },
+      detail: { max: SEEDREAM_MAX_IMAGE_SET_IMAGES },
     });
   }
+  if (imageUrls.length + outputImageCount > SEEDREAM_MAX_IMAGE_SET_IMAGES) {
+    throw new BytePlusSeedreamError('Seedream reference images plus generated images must be 15 or fewer.', {
+      code: 'IMAGE_SET_TOTAL_LIMIT',
+      status: 400,
+      detail: {
+        maxTotal: SEEDREAM_MAX_IMAGE_SET_IMAGES,
+        referenceImages: imageUrls.length,
+        requestedImages: outputImageCount,
+      },
+    });
+  }
+
+  const sequentialImageGeneration = outputImageCount > 1;
 
   return {
     model,
@@ -82,5 +103,11 @@ export function buildBytePlusSeedreamPayload(params: {
     response_format: params.responseFormat,
     watermark: params.watermark === true,
     ...(image ? { image } : {}),
+    ...(sequentialImageGeneration
+      ? {
+          sequential_image_generation: 'auto' as const,
+          sequential_image_generation_options: { max_images: outputImageCount },
+        }
+      : {}),
   };
 }
