@@ -291,19 +291,18 @@ export function MarketingModelPageLayout({
   const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
-    galleryVideos.slice(0, 6).map((video, index) => ({
-      id: video.id,
-      alt: getImageAlt({
-        kind: 'renderThumb',
-        engine: video.engineLabel,
-        label: engine.modelSlug === 'seedance-2-0' ? `${heroTitle} example` : video.promptFull ?? video.prompt,
-        prompt: engine.modelSlug === 'seedance-2-0' ? `${heroTitle} example` : video.promptFull ?? video.prompt,
+    galleryVideos.slice(0, 6).map((video, index) => {
+      const prompt = video.promptFull ?? video.prompt;
+      const tag = inferRenderTag(prompt, locale);
+      const label = engine.modelSlug === 'seedance-2-0' ? `${heroTitle} ${tag ? `${tag} ` : ''}example ${index + 1}` : prompt;
+      return {
+        id: video.id,
+        alt: getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label, prompt: label, locale }),
+        tag,
+        index,
         locale,
-      }),
-      tag: inferRenderTag(video.promptFull ?? video.prompt, locale),
-      index,
-      locale,
-    }))
+      };
+    })
   );
   const hasTextSection = true;
   const hasTipsSection =
