@@ -25,6 +25,28 @@ type ModelExamplesSectionProps = {
   galleryCtaHref: LocalizedLinkHref;
 };
 
+function getExampleMetadata(video: ExampleGalleryVideo, locale: AppLocale) {
+  const duration = locale === 'es' || locale === 'fr' ? `${video.durationSec} s` : `${video.durationSec}s`;
+  const audio = video.hasAudio
+    ? locale === 'fr'
+      ? 'audio on'
+      : locale === 'es'
+        ? 'audio activado'
+        : 'audio on'
+    : locale === 'fr'
+      ? 'audio off'
+      : locale === 'es'
+        ? 'audio desactivado'
+        : 'audio off';
+  return [video.aspectRatio ?? 'Auto', duration, audio].join(' · ');
+}
+
+function getRenderLinkLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Voir le rendu';
+  if (locale === 'es') return 'Ver render';
+  return 'View render';
+}
+
 export function ModelExamplesSection({
   hideExamplesSection,
   textAnchorId,
@@ -42,6 +64,8 @@ export function ModelExamplesSection({
   if (hideExamplesSection || (!galleryVideos.length && !hasFallbackGalleryCopy)) {
     return null;
   }
+
+  const renderLinkLabel = getRenderLinkLabel(locale);
 
   return (
     <section id={textAnchorId} className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN}`}>
@@ -91,13 +115,18 @@ export function ModelExamplesSection({
                       </Link>
                       <div className="space-y-1 px-4 py-3">
                         <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                          {video.engineLabel} · {video.durationSec}s
+                          {getExampleMetadata(video, locale)}
                         </p>
-                        {video.recreateHref && copy.recreateLabel ? (
-                          <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
-                            {copy.recreateLabel}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <TextLink href={video.href} className="text-[11px]" linkComponent={Link}>
+                            {renderLinkLabel}
                           </TextLink>
-                        ) : null}
+                          {video.recreateHref && copy.recreateLabel ? (
+                            <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
+                              {copy.recreateLabel}
+                            </TextLink>
+                          ) : null}
+                        </div>
                       </div>
                     </article>
                   ))}

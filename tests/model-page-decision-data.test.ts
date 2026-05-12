@@ -44,6 +44,23 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
     en.decisionCards.map((card) => card.title),
     ['Seedance 2.0 or Fast?', 'Upgrading from Seedance 1.5?', 'Need prompt examples?']
   );
+  assert.deepEqual(
+    en.referenceWorkflows.map((workflow) => workflow.title),
+    ['Text-to-video', 'Image-to-video', 'Reference roles', 'Timeline beats']
+  );
+  assert.equal(en.referenceWorkflows.length, 4);
+  assert.equal(fr.referenceWorkflows.length, 4);
+  assert.equal(es.referenceWorkflows.length, 4);
+  assert.ok(fr.referenceWorkflows.every((workflow) => workflow.title.trim().length > 0));
+  assert.ok(es.referenceWorkflows.every((workflow) => workflow.title.trim().length > 0));
+  assert.notDeepEqual(
+    fr.referenceWorkflows.map((workflow) => workflow.title),
+    en.referenceWorkflows.map((workflow) => workflow.title)
+  );
+  assert.notDeepEqual(
+    es.referenceWorkflows.map((workflow) => workflow.title),
+    en.referenceWorkflows.map((workflow) => workflow.title)
+  );
   assert.equal(en.meta.title, 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI');
   assert.equal(
     en.meta.description,

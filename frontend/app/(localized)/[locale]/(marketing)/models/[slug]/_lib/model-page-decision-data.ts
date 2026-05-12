@@ -23,6 +23,11 @@ export type ModelDecisionCard = {
   cta: ModelDecisionLink;
 };
 
+export type ModelDecisionReferenceWorkflow = {
+  title: string;
+  body: string;
+};
+
 export type ModelDecisionData = {
   hero: {
     eyebrow: string;
@@ -42,6 +47,7 @@ export type ModelDecisionData = {
   };
   features: ModelDecisionFeature[];
   decisionCards: ModelDecisionCard[];
+  referenceWorkflows: ModelDecisionReferenceWorkflow[];
   pricing: {
     title: string;
     subtitle: string;
@@ -151,6 +157,24 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
         cta: { label: 'Open Prompt Lab', href: '#image-to-video' },
       },
     ],
+    referenceWorkflows: [
+      {
+        title: 'Text-to-video',
+        body: 'Start with subject, action, camera, style and audio cues in one clean brief.',
+      },
+      {
+        title: 'Image-to-video',
+        body: 'Use a start image to lock character, product, composition or environment.',
+      },
+      {
+        title: 'Reference roles',
+        body: 'Give each supported reference one job so identity, motion and mood do not fight each other.',
+      },
+      {
+        title: 'Timeline beats',
+        body: 'Use short timestamps and transition verbs when you need internal cuts or a sequence.',
+      },
+    ],
     pricingCopy: {
       title: 'Seedance 2.0 pricing at a glance',
       subtitle: 'Preset total prices - see the exact live price in the app before you generate.',
@@ -215,6 +239,24 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
         title: 'Besoin d exemples de prompts ?',
         body: 'Commencez avec des modeles texte-vers-video, image-vers-video, references et multi-plans.',
         cta: { label: 'Ouvrir le Prompt Lab', href: '#image-to-video' },
+      },
+    ],
+    referenceWorkflows: [
+      {
+        title: 'Texte-vers-video',
+        body: 'Commencez par sujet, action, camera, style et indications audio dans un brief clair.',
+      },
+      {
+        title: 'Image-vers-video',
+        body: 'Utilisez une image de depart pour fixer personnage, produit, composition ou environnement.',
+      },
+      {
+        title: 'Roles des references',
+        body: 'Donnez un role a chaque reference prise en charge pour eviter les conflits entre identite, mouvement et ambiance.',
+      },
+      {
+        title: 'Temps forts',
+        body: 'Utilisez des timestamps courts et des verbes de transition pour des coupes internes ou une sequence.',
       },
     ],
     pricingCopy: {
@@ -283,6 +325,24 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
         cta: { label: 'Abrir Prompt Lab', href: '#image-to-video' },
       },
     ],
+    referenceWorkflows: [
+      {
+        title: 'Texto a video',
+        body: 'Empieza con sujeto, accion, camara, estilo y pistas de audio en un brief limpio.',
+      },
+      {
+        title: 'Imagen a video',
+        body: 'Usa una imagen inicial para fijar personaje, producto, composicion o entorno.',
+      },
+      {
+        title: 'Roles de referencia',
+        body: 'Da una tarea a cada referencia compatible para que identidad, movimiento y ambiente no compitan.',
+      },
+      {
+        title: 'Momentos de timeline',
+        body: 'Usa timestamps cortos y verbos de transicion cuando necesites cortes internos o una secuencia.',
+      },
+    ],
     pricingCopy: {
       title: 'Precios de Seedance 2.0 de un vistazo',
       subtitle: 'Precios totales por escenario - ve el precio exacto en la app antes de generar.',
@@ -315,6 +375,7 @@ export function buildModelDecisionData({
     media: copy.media,
     features: copy.features,
     decisionCards: copy.decisionCards,
+    referenceWorkflows: copy.referenceWorkflows,
     meta: copy.meta,
     pricing: {
       title: copy.pricingCopy.title,

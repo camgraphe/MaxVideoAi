@@ -283,10 +283,7 @@ export function MarketingModelPageLayout({
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
-  const mediaAltContexts = {
-    hero: 'hero',
-    demo: 'demo',
-  };
+  const mediaAltContexts = { hero: 'hero', demo: 'demo' };
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
@@ -299,8 +296,8 @@ export function MarketingModelPageLayout({
       alt: getImageAlt({
         kind: 'renderThumb',
         engine: video.engineLabel,
-        label: video.promptFull ?? video.prompt,
-        prompt: video.promptFull ?? video.prompt,
+        label: engine.modelSlug === 'seedance-2-0' ? `${heroTitle} example` : video.promptFull ?? video.prompt,
+        prompt: engine.modelSlug === 'seedance-2-0' ? `${heroTitle} example` : video.promptFull ?? video.prompt,
         locale,
       }),
       tag: inferRenderTag(video.promptFull ?? video.prompt, locale),
@@ -457,6 +454,7 @@ export function MarketingModelPageLayout({
           audioBadgeLabel={audioBadgeLabel}
           mediaAltContexts={mediaAltContexts}
           useDemoMediaPrompt={useDemoMediaPrompt}
+          decisionReferenceWorkflows={decisionData?.referenceWorkflows}
         />
         <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
         <ModelTipsSection
