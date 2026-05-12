@@ -70,6 +70,7 @@ import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
 import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildModelDecisionData } from '../_lib/model-page-decision-data';
+import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 
 export function MarketingModelPageLayout({
   engine,
@@ -319,14 +320,12 @@ export function MarketingModelPageLayout({
     { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
     { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
     { id: 'tips', label: sectionLabels.tips, visible: hasTipsSection },
-    {
-      id: compareAnchorId,
-      label: sectionLabels.compare,
-      visible: hasCompareSection,
-    },
+    { id: compareAnchorId, label: sectionLabels.compare, visible: hasCompareSection },
     { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
     { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ].filter((item) => item.visible);
+  const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasFaqSection });
+  const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
     description: pageDescription,
@@ -351,24 +350,12 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
-        <div className="stack-gap-lg gap-0">
+      <main className={['container-page model-page pb-0 pt-5 sm:pt-7', decisionData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+        <div className={decisionData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {decisionData ? (
             <>
-              <ModelDecisionHeroSection
-                decision={decisionData}
-                modelsPathname={modelsPathname}
-                backLabel={backLabel}
-                localizeModelsPath={localizeModelsPath}
-                resolvedBreadcrumb={resolvedBreadcrumb}
-                breadcrumbModelLabel={breadcrumbModelLabel}
-                heroMedia={heroMedia}
-                locale={locale}
-                audioBadgeLabel={audioBadgeLabel}
-                mediaAltContext={mediaAltContexts.hero}
-              />
+              <ModelDecisionHeroSection decision={decisionData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
               <ModelDecisionPricingCard pricing={decisionData.pricing} />
-              <ModelDecisionCardsSection cards={decisionData.decisionCards} />
             </>
           ) : (
             <ModelHeroSection
@@ -410,7 +397,7 @@ export function MarketingModelPageLayout({
               heroHighlights={heroHighlights}
             />
           )}
-        <ModelPageToc items={tocItems} />
+        <ModelPageToc items={decisionData ? decisionTocItems : tocItems} variant={decisionData ? 'pill' : 'default'} overviewLabel={decisionTocOverviewLabel} />
         <ModelSpecsSection
           hasSpecs={hasSpecs}
           specTitle={specTitle}
@@ -420,6 +407,7 @@ export function MarketingModelPageLayout({
           isImageEngine={isImageEngine}
           locale={locale}
           statusLabels={statusLabels}
+          variant={decisionData ? 'decision' : 'default'}
         />
         {!decisionData && pricingCallout ? <ModelPricingCallout callout={pricingCallout} /> : null}
         {isImageEngine && copy.microCta ? (
@@ -441,7 +429,9 @@ export function MarketingModelPageLayout({
           locale={locale}
           examplesLinkHref={examplesLinkHref}
           galleryCtaHref={galleryCtaHref}
+          variant={decisionData ? 'decision' : 'default'}
         />
+        {decisionData ? <ModelDecisionCardsSection cards={decisionData.decisionCards} /> : null}
 
         <ModelPromptingSection
           imageAnchorId={imageAnchorId}
@@ -454,6 +444,7 @@ export function MarketingModelPageLayout({
           mediaAltContexts={mediaAltContexts}
           useDemoMediaPrompt={useDemoMediaPrompt}
           decisionReferenceWorkflows={decisionData?.referenceWorkflows}
+          variant={decisionData ? 'decision' : 'default'}
         />
         <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
         <ModelTipsSection
@@ -464,6 +455,7 @@ export function MarketingModelPageLayout({
           boundaries={boundaries}
           tipsCardLabels={tipsCardLabels}
           troubleshootingTitle={troubleshootingTitle}
+          variant={decisionData ? 'decision' : 'default'}
         />
         <ModelCompareSection
           hasCompareSection={hasCompareSection}
@@ -478,6 +470,7 @@ export function MarketingModelPageLayout({
           localizeComparePath={localizeComparePath}
           locale={locale}
           heroTitle={heroTitle}
+          variant={decisionData ? 'decision' : 'default'}
         />
         <ModelSafetyFaqSection
           copy={copy}
@@ -488,6 +481,7 @@ export function MarketingModelPageLayout({
           locale={locale}
           isSoraPrompting={isSoraPrompting}
           faqJsonLdEntries={faqJsonLdEntries}
+          variant={decisionData ? 'decision' : 'default'}
         />
         </div>
       </main>

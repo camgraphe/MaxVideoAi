@@ -1,7 +1,28 @@
 import type { AppLocale } from '@/i18n/locales';
 import { SpecDetailsGrid } from '@/components/marketing/SpecDetailsGrid.client';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { Check } from 'lucide-react';
+import {
+  BadgeDollarSign,
+  Box,
+  Camera,
+  Check,
+  ChevronDown,
+  Clock3,
+  Crop,
+  ExternalLink,
+  FileVideo,
+  Film,
+  Gauge,
+  Image as ImageIcon,
+  Images,
+  Monitor,
+  ShieldCheck,
+  Sparkles,
+  Type,
+  Video,
+  Volume2,
+  Waves,
+} from 'lucide-react';
 import {
   FULL_BLEED_SECTION,
   SECTION_BG_B,
@@ -9,6 +30,7 @@ import {
   SECTION_SCROLL_MARGIN,
   isSupported,
   localizeSpecStatus,
+  type KeySpecKey,
   type KeySpecRow,
   type SpecSection,
 } from '../_lib/model-page-specs';
@@ -22,7 +44,179 @@ type ModelSpecsSectionProps = {
   isImageEngine: boolean;
   locale: AppLocale;
   statusLabels: { supported: string };
+  variant?: 'default' | 'decision';
 };
+
+const SPEC_ICON_META: Record<KeySpecKey, { icon: typeof Check; tone: string }> = {
+  pricePerImage: { icon: BadgeDollarSign, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  pricePerSecond: { icon: BadgeDollarSign, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  releaseDate: { icon: Clock3, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  textToImage: { icon: Type, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  imageToImage: { icon: Images, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  textToVideo: { icon: Type, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  imageToVideo: { icon: ImageIcon, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  videoToVideo: { icon: Video, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  firstLastFrame: { icon: Images, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  referenceImageStyle: { icon: ImageIcon, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  referenceVideo: { icon: Film, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  maxResolution: { icon: Monitor, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  maxDuration: { icon: Clock3, tone: 'bg-orange-50 text-orange-600 dark:bg-orange-500/12 dark:text-orange-300' },
+  aspectRatios: { icon: Crop, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  fpsOptions: { icon: Gauge, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  outputFormats: { icon: FileVideo, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
+  audioOutput: { icon: Waves, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  nativeAudioGeneration: { icon: Volume2, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  lipSync: { icon: Volume2, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
+  cameraMotionControls: { icon: Camera, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
+  watermark: { icon: ShieldCheck, tone: 'bg-orange-50 text-orange-600 dark:bg-orange-500/12 dark:text-orange-300' },
+};
+
+function getFullSpecsLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Voir toutes les specs';
+  if (locale === 'es') return 'Ver specs completas';
+  return 'View full specs';
+}
+
+function getDetailsLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Details';
+  if (locale === 'es') return 'Detalles';
+  return 'Details';
+}
+
+function getDecisionSpecFallbackNote(locale: AppLocale) {
+  if (locale === 'fr') return 'Les limites qui structurent vos rendus.';
+  if (locale === 'es') return 'Los limites que definen tus renders.';
+  return 'The limits that shape your renders.';
+}
+
+function renderDecisionSpecValue(row: KeySpecRow, locale: AppLocale, supportedLabel: string) {
+  if (row.valueLines?.length) {
+    return (
+      <span className="flex flex-col gap-0.5">
+        {row.valueLines.map((line) => (
+          <span key={line}>{localizeSpecStatus(line, locale)}</span>
+        ))}
+      </span>
+    );
+  }
+
+  if (isSupported(row.value)) {
+    return (
+      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-300">
+        <UIIcon icon={Check} size={15} className="text-emerald-600 dark:text-emerald-300" />
+        <span className="sr-only">{supportedLabel}</span>
+      </span>
+    );
+  }
+
+  return localizeSpecStatus(row.value, locale);
+}
+
+function ModelDecisionSpecsPanel({
+  specTitle,
+  specNote,
+  keySpecRows,
+  specSectionsToShow,
+  locale,
+  statusLabels,
+}: Omit<ModelSpecsSectionProps, 'hasSpecs' | 'isImageEngine' | 'variant'>) {
+  const detailsLabel = getDetailsLabel(locale);
+
+  return (
+    <section id="specs" className={SECTION_SCROLL_MARGIN}>
+      <div className="rounded-[28px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72 dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="!text-left text-[1.7rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white">
+              {specTitle ?? 'Specs'}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {specNote ?? getDecisionSpecFallbackNote(locale)}
+            </p>
+          </div>
+          <a
+            href="#specs"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            <span>{getFullSpecsLabel(locale)}</span>
+            <UIIcon icon={ExternalLink} size={14} />
+          </a>
+        </div>
+
+        {keySpecRows.length ? (
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {keySpecRows.map((row) => {
+              const meta = SPEC_ICON_META[row.key] ?? { icon: Sparkles, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' };
+              return (
+                <article
+                  key={row.id}
+                  className="min-h-[88px] rounded-xl border border-slate-200 bg-white/78 p-3.5 shadow-[0_12px_38px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045]"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${meta.tone}`}>
+                      <UIIcon icon={meta.icon} size={20} strokeWidth={1.85} />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="!text-left text-[0.82rem] font-semibold leading-snug text-slate-950 dark:text-white">
+                        {row.label}
+                      </h3>
+                      <div className="mt-1 text-[0.82rem] leading-5 text-slate-600 dark:text-slate-300">
+                        {renderDecisionSpecValue(row, locale, statusLabels.supported)}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {specSectionsToShow.length ? (
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            {specSectionsToShow.slice(0, 2).map((section, index) => {
+              const Icon = index === 0 ? Sparkles : Box;
+              return (
+                <article
+                  key={section.title}
+                  className="rounded-xl border border-slate-200 bg-white/78 p-4 shadow-[0_12px_38px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045]"
+                >
+                  <details className="group">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                      <div className="flex min-w-0 gap-3">
+                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300">
+                          <UIIcon icon={Icon} size={20} strokeWidth={1.85} />
+                        </span>
+                        <div>
+                          <h3 className="!text-left text-base font-semibold leading-tight text-slate-950 dark:text-white">
+                            {section.title}
+                          </h3>
+                          {section.intro ? (
+                            <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600 dark:text-slate-300">
+                              {section.intro}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-300">
+                        {detailsLabel}
+                        <UIIcon icon={ChevronDown} size={14} className="transition group-open:rotate-180" />
+                      </span>
+                    </summary>
+                    <ul className="mt-3 list-disc space-y-1.5 pl-[3.25rem] text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      {section.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
 
 export function ModelSpecsSection({
   hasSpecs,
@@ -33,8 +227,26 @@ export function ModelSpecsSection({
   isImageEngine,
   locale,
   statusLabels,
+  variant = 'default',
 }: ModelSpecsSectionProps) {
-  return hasSpecs ? (
+  if (!hasSpecs) {
+    return null;
+  }
+
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionSpecsPanel
+        specTitle={specTitle}
+        specNote={specNote}
+        keySpecRows={keySpecRows}
+        specSectionsToShow={specSectionsToShow}
+        locale={locale}
+        statusLabels={statusLabels}
+      />
+    );
+  }
+
+  return (
           <section
             id="specs"
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
@@ -109,5 +321,5 @@ export function ModelSpecsSection({
               )
             ) : null}
           </section>
-  ) : null;
+  );
 }

@@ -85,11 +85,11 @@ test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => 
 
   assert.deepEqual(
     scenarios.map((scenario) => scenario.id),
-    ['5s-720p', '8s-1080p', '10s-1080p', '10s-1080p-audio', 'max-duration']
+    ['5s-480p', '8s-720p', '10s-1080p', '10s-1080p-audio', 'max-duration']
   );
   assert.deepEqual(
     scenarios.map((scenario) => scenario.value),
-    ['$1.97', '$7.08', '$8.84', '$8.84', '15s']
+    ['$0.88', '$3.15', '$8.84', '$8.84', '15s']
   );
   assert.match(scenarios.at(-1)?.note ?? '', /1080p/);
 });

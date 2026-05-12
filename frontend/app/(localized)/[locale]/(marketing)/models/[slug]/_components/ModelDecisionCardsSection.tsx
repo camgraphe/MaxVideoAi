@@ -25,7 +25,7 @@ export function ModelDecisionCardsSection({ cards }: ModelDecisionCardsSectionPr
                 <UIIcon icon={Icon} size={21} strokeWidth={1.9} />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-semibold leading-tight text-text-primary">{card.title}</h2>
+                <h2 className="!text-left text-xl font-semibold leading-tight text-text-primary">{card.title}</h2>
                 <p className="text-sm leading-6 text-text-secondary">{card.body}</p>
               </div>
             </div>

@@ -9,6 +9,7 @@ import {
   type SoraCopy,
 } from '../_lib/model-page-specs';
 import { MediaPreview } from './MediaPreview';
+import { ModelDecisionPromptingSection } from './ModelDecisionPromptingSection';
 
 type ModelPromptingSectionProps = {
   imageAnchorId: string;
@@ -21,6 +22,7 @@ type ModelPromptingSectionProps = {
   mediaAltContexts: { demo: string };
   useDemoMediaPrompt: boolean;
   decisionReferenceWorkflows?: Array<{ title: string; body: string }>;
+  variant?: 'default' | 'decision';
 };
 
 export function ModelPromptingSection({
@@ -34,7 +36,19 @@ export function ModelPromptingSection({
   mediaAltContexts,
   useDemoMediaPrompt,
   decisionReferenceWorkflows,
+  variant = 'default',
 }: ModelPromptingSectionProps) {
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionPromptingSection
+        imageAnchorId={imageAnchorId}
+        copy={copy}
+        demoMedia={demoMedia}
+        locale={locale}
+      />
+    );
+  }
+
   const referenceWorkflows = decisionReferenceWorkflows ?? [];
   return (
         <section

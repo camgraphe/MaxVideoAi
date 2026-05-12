@@ -13,8 +13,14 @@ const pricingCalloutSectionPath = join(root, 'frontend/app/(localized)/[locale]/
 const decisionDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts');
 const decisionPricingPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts');
 const decisionHeroSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionHeroSection.tsx');
+const decisionMediaCardPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionMediaCard.tsx');
 const decisionPricingCardPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPricingCard.tsx');
 const decisionCardsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCardsSection.tsx');
+const decisionPromptingSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx');
+const decisionPromptTabsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx');
+const decisionTipsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionTipsSection.tsx');
+const decisionCompareSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCompareSection.tsx');
+const decisionSafetyFaqSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionSafetyFaqSection.tsx');
 
 const readSource = (path: string) => readFileSync(path, 'utf8');
 const lineCount = (source: string) => source.split('\n').length;
@@ -58,8 +64,14 @@ test('model page layout delegates Seedance decision page ownership', () => {
     decisionDataPath,
     decisionPricingPath,
     decisionHeroSectionPath,
+    decisionMediaCardPath,
     decisionPricingCardPath,
     decisionCardsSectionPath,
+    decisionPromptingSectionPath,
+    decisionPromptTabsPath,
+    decisionTipsSectionPath,
+    decisionCompareSectionPath,
+    decisionSafetyFaqSectionPath,
   ]) {
     assert.ok(existsSync(path), `${path} should exist`);
   }
@@ -68,8 +80,14 @@ test('model page layout delegates Seedance decision page ownership', () => {
   const decisionDataSource = readSource(decisionDataPath);
   const decisionPricingSource = readSource(decisionPricingPath);
   const decisionHeroSource = readSource(decisionHeroSectionPath);
+  const decisionMediaCardSource = readSource(decisionMediaCardPath);
   const decisionPricingCardSource = readSource(decisionPricingCardPath);
   const decisionCardsSource = readSource(decisionCardsSectionPath);
+  const decisionPromptingSource = readSource(decisionPromptingSectionPath);
+  const decisionPromptTabsSource = readSource(decisionPromptTabsPath);
+  const decisionTipsSource = readSource(decisionTipsSectionPath);
+  const decisionCompareSource = readSource(decisionCompareSectionPath);
+  const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
 
   assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate Seedance decision data building');
   assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the decision hero for Seedance 2.0');
@@ -81,12 +99,14 @@ test('model page layout delegates Seedance decision page ownership', () => {
   assert.match(decisionDataSource, /modelSlug !== 'seedance-2-0'/, 'decision data should own the Seedance 2.0 route guard');
   assert.match(decisionDataSource, /decisionCards/, 'decision data should own decision card copy');
   assert.match(decisionPricingSource, /getPresetQuote/, 'decision pricing should reuse pricing page quote formatting');
-  assert.match(decisionPricingSource, /VIDEO_PRICE_PRESETS/, 'decision pricing should reuse pricing page presets');
+  assert.match(decisionPricingSource, /DECISION_PRICE_PRESETS/, 'decision pricing should own model-page scenario presets');
 
   assert.match(decisionHeroSource, /export function ModelDecisionHeroSection/, 'decision hero should export the section component');
-  assert.match(decisionHeroSource, /lg:grid-cols-\[minmax\(0,1fr\)_minmax\(360px,0\.86fr\)\]/, 'decision hero should own the two-column hero grid');
-  assert.match(decisionHeroSource, /<MediaPreview/, 'decision hero should render media via MediaPreview');
+  assert.match(decisionHeroSource, /lg:grid-cols-\[minmax\(420px,0\.86fr\)_minmax\(560px,1\.14fr\)\]/, 'decision hero should own the mockup two-column hero grid');
+  assert.match(decisionHeroSource, /<ModelDecisionMediaCard/, 'decision hero should render the decision media card');
   assert.match(decisionHeroSource, /decision\.features\.map/, 'decision hero should own the feature strip');
+  assert.match(decisionMediaCardSource, /ModelHeroMedia/, 'decision media card should own the overlay video preview');
+  assert.match(decisionMediaCardSource, /renderLinkLabel/, 'decision media card should own the render link overlay');
 
   assert.match(decisionPricingCardSource, /export function ModelDecisionPricingCard/, 'pricing card should export the pricing component');
   assert.match(decisionPricingCardSource, /pricing\.scenarios\.map/, 'pricing card should own scenario pricing markup');
@@ -95,6 +115,13 @@ test('model page layout delegates Seedance decision page ownership', () => {
   assert.match(decisionCardsSource, /export function ModelDecisionCardsSection/, 'cards section should export the decision cards component');
   assert.match(decisionCardsSource, /cards\.map/, 'cards section should map decisionCards');
   assert.match(decisionCardsSource, /UIIcon/, 'cards section should render lucide icons through UIIcon');
+
+  assert.match(decisionPromptingSource, /ModelDecisionPromptTabs/, 'decision prompting should delegate interactive tabs');
+  assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
+  assert.match(decisionPromptTabsSource, /navigator\.clipboard\.writeText|ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
+  assert.match(decisionTipsSource, /Tips and boundaries|tipsTitle/, 'decision tips should own the visual tips layout');
+  assert.match(decisionCompareSource, /focusVsConfig|COMPARE_EXCLUDED_SLUGS/, 'decision compare should own focused and related comparison layouts');
+  assert.match(decisionSafetyFaqSource, /FAQSchema/, 'decision safety FAQ should preserve FAQ schema ownership');
 
   assert.doesNotMatch(layoutSource, /Seedance 2\.0 or Fast\?/, 'layout should not own Seedance decision copy');
 });

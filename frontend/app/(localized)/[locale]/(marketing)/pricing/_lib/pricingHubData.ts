@@ -51,6 +51,15 @@ const LOCALIZED_BASE_SLUGS: Record<
   pricing: buildSlugMap('pricing'),
 };
 
+export type VideoPriceScenario = {
+  id: string;
+  label: string;
+  subLabel: string;
+  resolution: Resolution;
+  durationSec: number | null;
+  audio: boolean;
+};
+
 export const VIDEO_PRICE_PRESETS = [
   { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
   { id: '8s-1080p', label: '8s 1080p', subLabel: 'Premium', resolution: '1080p', durationSec: 8, audio: false },
@@ -64,7 +73,7 @@ export const VIDEO_PRICE_PRESETS = [
     audio: true,
   },
   { id: '4k-route', label: '4K output', subLabel: 'Native / route', resolution: '4k', durationSec: null, audio: false },
-] as const;
+] as const satisfies readonly VideoPriceScenario[];
 
 export type VideoPricePreset = (typeof VIDEO_PRICE_PRESETS)[number];
 export type VideoPricePresetId = VideoPricePreset['id'];
@@ -411,12 +420,12 @@ function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
 
-function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPricePreset) {
+function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPriceScenario) {
   if (preset.id === '4k-route') return chooseFourKDuration(entry);
   return preset.durationSec;
 }
 
-export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, locale: AppLocale): PresetQuote {
+export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale): PresetQuote {
   const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
   const resolution = resolveResolutionSupport(engine, preset.resolution, locale);
