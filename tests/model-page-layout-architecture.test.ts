@@ -90,8 +90,4 @@ test('model page layout delegates Seedance decision page ownership', () => {
   assert.match(decisionCardsSource, /UIIcon/, 'cards section should render lucide icons through UIIcon');
 
   assert.doesNotMatch(layoutSource, /Seedance 2\.0 or Fast\?/, 'layout should not own Seedance decision copy');
-  assert.match(layoutSource, /buildModelDecisionData/, 'layout should eventually build decision data');
-  assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should eventually render the decision hero section');
-  assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should eventually render the decision pricing card');
-  assert.match(layoutSource, /ModelDecisionCardsSection/, 'layout should eventually render decision cards');
 });

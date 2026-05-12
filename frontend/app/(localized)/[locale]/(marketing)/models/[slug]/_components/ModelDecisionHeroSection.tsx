@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, ChevronRight, Clock3, Film, Layers3, Mic2, PlayCircle, Sparkles, WalletCards } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clock3, Film, Layers3, Mic2, PlayCircle, Sparkles, WalletCards } from 'lucide-react';
 
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
