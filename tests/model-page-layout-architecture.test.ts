@@ -71,6 +71,13 @@ test('model page layout delegates Seedance decision page ownership', () => {
   const decisionPricingCardSource = readSource(decisionPricingCardPath);
   const decisionCardsSource = readSource(decisionCardsSectionPath);
 
+  assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate Seedance decision data building');
+  assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the decision hero for Seedance 2.0');
+  assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should render the decision pricing card for Seedance 2.0');
+  assert.match(layoutSource, /ModelDecisionCardsSection/, 'layout should render the decision cards for Seedance 2.0');
+  assert.match(layoutSource, /decisionData\s*\?/, 'layout should conditionally use the decision page experience');
+  assert.match(layoutSource, /!decisionData\s*&&\s*pricingCallout/, 'layout should keep legacy pricing callouts out of decision pages');
+
   assert.match(decisionDataSource, /modelSlug !== 'seedance-2-0'/, 'decision data should own the Seedance 2.0 route guard');
   assert.match(decisionDataSource, /decisionCards/, 'decision data should own decision card copy');
   assert.match(decisionPricingSource, /getPresetQuote/, 'decision pricing should reuse pricing page quote formatting');

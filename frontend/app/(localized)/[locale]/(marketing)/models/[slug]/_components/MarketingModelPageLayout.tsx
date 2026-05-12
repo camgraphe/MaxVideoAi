@@ -18,6 +18,9 @@ import { ModelTipsSection } from './ModelTipsSection';
 import { ModelExamplesSection } from './ModelExamplesSection';
 import { ModelCompareSection } from './ModelCompareSection';
 import { ModelPricingCallout } from './ModelPricingCallout';
+import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
+import { ModelDecisionPricingCard } from './ModelDecisionPricingCard';
+import { ModelDecisionCardsSection } from './ModelDecisionCardsSection';
 import {
   DEFAULT_DETAIL_COPY,
   buildVideoBoundaries,
@@ -66,6 +69,7 @@ import {
 import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
 import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
+import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 
 export function MarketingModelPageLayout({
   engine,
@@ -275,6 +279,7 @@ export function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
+  const decisionData = buildModelDecisionData({ engine, locale });
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -352,47 +357,64 @@ export function MarketingModelPageLayout({
       ))}
       <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
         <div className="stack-gap-lg gap-0">
-          <ModelHeroSection
-            modelsPathname={modelsPathname}
-            backLabel={backLabel}
-            localizeModelsPath={localizeModelsPath}
-            resolvedBreadcrumb={resolvedBreadcrumb}
-            breadcrumbModelLabel={breadcrumbModelLabel}
-            heroEyebrow={heroEyebrow}
-            heroTitle={heroTitle}
-            heroSubtitle={heroSubtitle}
-            heroSupportLine={heroSupportLine}
-            heroSpecChips={heroSpecChips}
-            heroBadge={heroBadge}
-            heroLimitsLine={heroLimitsLine}
-            showHeroDescriptions={showHeroDescriptions}
-            heroDesc1={heroDesc1}
-            heroDesc2={heroDesc2}
-            resolvedPrimaryCta={resolvedPrimaryCta}
-            normalizedPrimaryCtaHref={normalizedPrimaryCtaHref}
-            secondaryCta={secondaryCta}
-            localizedSecondaryCtaHref={localizedSecondaryCtaHref}
-            heroQuickLinks={heroQuickLinks}
-            pricingLinkHref={pricingLinkHref}
-            pricingLinkLabel={pricingLinkLabel}
-            heroTrustLine={heroTrustLine}
-            isEsLocale={isEsLocale}
-            howToLatamTitle={howToLatamTitle}
-            howToLatamSteps={howToLatamSteps}
-            heroMedia={heroMedia}
-            locale={locale}
-            audioBadgeLabel={audioBadgeLabel}
-            heroMetaLines={heroMetaLines}
-            mediaAltContexts={mediaAltContexts}
-            bestUseCaseItems={bestUseCaseItems}
-            bestUseCases={bestUseCases}
-            bestUseCasesTitle={copy.bestUseCasesTitle}
-            whyTitle={copy.whyTitle}
-            heroHighlights={heroHighlights}
-          />
-
+          {decisionData ? (
+            <>
+              <ModelDecisionHeroSection
+                decision={decisionData}
+                modelsPathname={modelsPathname}
+                backLabel={backLabel}
+                localizeModelsPath={localizeModelsPath}
+                resolvedBreadcrumb={resolvedBreadcrumb}
+                breadcrumbModelLabel={breadcrumbModelLabel}
+                heroMedia={heroMedia}
+                locale={locale}
+                audioBadgeLabel={audioBadgeLabel}
+                mediaAltContext={mediaAltContexts.hero}
+              />
+              <ModelDecisionPricingCard pricing={decisionData.pricing} />
+              <ModelDecisionCardsSection cards={decisionData.decisionCards} />
+            </>
+          ) : (
+            <ModelHeroSection
+              modelsPathname={modelsPathname}
+              backLabel={backLabel}
+              localizeModelsPath={localizeModelsPath}
+              resolvedBreadcrumb={resolvedBreadcrumb}
+              breadcrumbModelLabel={breadcrumbModelLabel}
+              heroEyebrow={heroEyebrow}
+              heroTitle={heroTitle}
+              heroSubtitle={heroSubtitle}
+              heroSupportLine={heroSupportLine}
+              heroSpecChips={heroSpecChips}
+              heroBadge={heroBadge}
+              heroLimitsLine={heroLimitsLine}
+              showHeroDescriptions={showHeroDescriptions}
+              heroDesc1={heroDesc1}
+              heroDesc2={heroDesc2}
+              resolvedPrimaryCta={resolvedPrimaryCta}
+              normalizedPrimaryCtaHref={normalizedPrimaryCtaHref}
+              secondaryCta={secondaryCta}
+              localizedSecondaryCtaHref={localizedSecondaryCtaHref}
+              heroQuickLinks={heroQuickLinks}
+              pricingLinkHref={pricingLinkHref}
+              pricingLinkLabel={pricingLinkLabel}
+              heroTrustLine={heroTrustLine}
+              isEsLocale={isEsLocale}
+              howToLatamTitle={howToLatamTitle}
+              howToLatamSteps={howToLatamSteps}
+              heroMedia={heroMedia}
+              locale={locale}
+              audioBadgeLabel={audioBadgeLabel}
+              heroMetaLines={heroMetaLines}
+              mediaAltContexts={mediaAltContexts}
+              bestUseCaseItems={bestUseCaseItems}
+              bestUseCases={bestUseCases}
+              bestUseCasesTitle={copy.bestUseCasesTitle}
+              whyTitle={copy.whyTitle}
+              heroHighlights={heroHighlights}
+            />
+          )}
         <ModelPageToc items={tocItems} />
-
         <ModelSpecsSection
           hasSpecs={hasSpecs}
           specTitle={specTitle}
@@ -403,9 +425,7 @@ export function MarketingModelPageLayout({
           locale={locale}
           statusLabels={statusLabels}
         />
-
-        <ModelPricingCallout callout={pricingCallout} />
-
+        {!decisionData && pricingCallout ? <ModelPricingCallout callout={pricingCallout} /> : null}
         {isImageEngine && copy.microCta ? (
           <div className="flex justify-center">
             <Link
@@ -416,8 +436,6 @@ export function MarketingModelPageLayout({
             </Link>
           </div>
         ) : null}
-
-
         <ModelExamplesSection
           hideExamplesSection={hideExamplesSection}
           textAnchorId={textAnchorId}
@@ -440,9 +458,7 @@ export function MarketingModelPageLayout({
           mediaAltContexts={mediaAltContexts}
           useDemoMediaPrompt={useDemoMediaPrompt}
         />
-
         <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
-
         <ModelTipsSection
           hasTipsSection={hasTipsSection}
           copy={copy}
@@ -452,7 +468,6 @@ export function MarketingModelPageLayout({
           tipsCardLabels={tipsCardLabels}
           troubleshootingTitle={troubleshootingTitle}
         />
-
         <ModelCompareSection
           hasCompareSection={hasCompareSection}
           compareAnchorId={compareAnchorId}
@@ -467,7 +482,6 @@ export function MarketingModelPageLayout({
           locale={locale}
           heroTitle={heroTitle}
         />
-
         <ModelSafetyFaqSection
           copy={copy}
           safetyRules={safetyRules}

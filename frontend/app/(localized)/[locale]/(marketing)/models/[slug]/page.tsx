@@ -16,6 +16,7 @@ import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
 } from './_lib/model-page-links';
+import { buildModelDecisionData } from './_lib/model-page-decision-data';
 import {
   buildPricePerImageLabel,
   buildPricePerImageRows,
@@ -82,11 +83,13 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
 
   const canonicalSlug = engine.modelSlug ?? slug;
   const localized = await getEngineLocalized(canonicalSlug, locale);
+  const decisionData = buildModelDecisionData({ engine, locale });
   const detailSlugMap = buildDetailSlugMap(canonicalSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
-  const title = localized.seo.title ?? fallbackTitle;
+  const title = decisionData?.meta.title ?? localized.seo.title ?? fallbackTitle;
   const description =
+    decisionData?.meta.description ??
     localized.seo.description ??
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
