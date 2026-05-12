@@ -14,7 +14,7 @@ export type ModelDecisionPricingScenario = {
   note: string;
 };
 
-const SCENARIO_PRESET_IDS: VideoPricePresetId[] = ['5s-720p', '8s-1080p', '10s-1080p', '10s-1080p-audio'];
+const SCENARIO_PRESET_IDS = ['5s-720p', '8s-1080p', '10s-1080p', '10s-1080p-audio'] as const satisfies readonly VideoPricePresetId[];
 
 const SCENARIO_COPY: Record<
   AppLocale,
