@@ -122,7 +122,7 @@ export function MediaPreview({
         {metaLines.length ? (
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-text-secondary">
             {metaLines.map((line) => (
-              <li key={line.label} className="flex items-center gap-1">
+              <li key={`${line.label}-${line.value}`} className="flex items-center gap-1">
                 <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
                   {line.label}
                 </span>
