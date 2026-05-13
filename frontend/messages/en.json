@@ -1940,7 +1940,7 @@
         "versionLabel": "v2.6 Pro"
       },
       "title": "AI Video & Image Models: Specs, Limits & Pricing | MaxVideoAI",
-      "description": "Compare AI video and image models by price, max duration, resolution, audio support, input modes, and use case. Browse Seedance, Kling, Veo, Sora, LTX and more."
+      "description": "Compare AI video and image models by price, max duration, resolution, audio support, input modes, examples, and workflow before generating on MaxVideoAI."
     },
     "note": "",
     "detail": {
@@ -1975,17 +1975,17 @@
     "listing": {
       "decision": {
         "eyebrow": "AI video & image model directory",
-        "heroTitle": "Compare AI models before you generate",
+        "heroTitle": "Compare AI video & image models before you generate",
         "heroSubtitle": "Browse video, image, audio, and preparation models. Compare pricing, max duration, resolution, audio support, input modes, and strengths before choosing the right model.",
         "primaryCta": "Browse models",
         "secondaryCta": "Compare engines",
         "topPicksTitle": "Recommended starting points",
         "topPicksViewAll": "View all recommendations",
-        "useCasesTitle": "Choose by what you want to create",
+        "useCasesTitle": "Choose the right model for your workflow",
         "useCasesViewAll": "View all use cases",
         "bestLabel": "Best",
-        "recommendedTitle": "Recommended AI video models",
-        "recommendedSubtitle": "Start with these models if you want strong quality, control, speed, or value before browsing the full catalog.",
+        "recommendedTitle": "Recommended starting points",
+        "recommendedSubtitle": "Start here if you want a quick shortlist before comparing every model by price, duration, resolution, and supported inputs.",
         "recommendedSeeAll": "See all models",
         "recommendedFromLabel": "From",
         "recommendedDurationLabel": "Up to",
@@ -1993,10 +1993,10 @@
         "allModelsTitle": "Browse AI engines by type",
         "allModelsSubtitle": "Start with video generation, then switch to image generation or audio and lip sync without mixing engine families.",
         "popularComparisonsTitle": "Not sure which AI video model to choose?",
-        "popularComparisonsSubtitle": "Compare the most searched model pairs side by side.",
+        "popularComparisonsSubtitle": "Compare popular model pairs side by side before generating.",
         "compareHubLabel": "Compare hub",
         "pricingLimitsTitle": "Compare pricing, duration, and output limits",
-        "pricingLimitsBody": "Video models are usually priced per second, while image models are priced per image or output size. Use the cards below to compare starting price, max duration, resolution, audio support, and input modes before generating.",
+        "pricingLimitsBody": "Video models are usually priced per second, while image models are priced per image or output size. Use the cards to compare starting price, max duration, resolution, audio support, and input modes before generating.",
         "faqTitle": "AI model specs, pricing, and examples FAQ"
       },
       "hero": {
@@ -2137,7 +2137,7 @@
           }
         },
         "mode": {
-          "label": "Mode",
+          "label": "Input mode",
           "options": {
             "all": "All",
             "t2v": "T2V",

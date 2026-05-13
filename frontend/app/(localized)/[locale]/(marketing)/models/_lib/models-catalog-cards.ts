@@ -46,10 +46,28 @@ import {
 
 const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
   'seedance-2-0': 'Best for premium multi-shot AI video with native audio, lip sync, and realistic motion.',
-  'kling-3-pro': 'Best for controllable cinematic sequences, prompt adherence, image-to-video, and lip sync workflows.',
-  'ltx-2-3-fast': 'Best for fast AI video drafts, low-cost prompt testing, and longer clips up to 20 seconds.',
-  'pika-text-to-video':
-    'Best for stylized social clips and quick text-to-video tests. Check max duration, input modes, and pricing before launch.',
+  'seedance-2-0-fast': 'Best for quick drafts, lower-cost iterations, shot planning, and native audio tests.',
+  'kling-3-pro': 'Best for cinematic control, image-to-video, prompt adherence, and voice-led sequences.',
+  'kling-3-standard': 'Best for controlled multi-shot scenes, native audio, lip sync, and lower-cost Kling workflows.',
+  'kling-3-4k': 'Best for final 4K renders, visual quality, controlled motion, and premium delivery.',
+  'veo-3-1': 'Best for ad-ready shots, references, first/last-frame control, and extend workflows.',
+  'veo-3-1-fast': 'Best for faster Veo drafts, ad cuts, start-image workflows, and last-frame control.',
+  'veo-3-1-lite': 'Best for budget Veo drafts, image-to-video tests, and first/last-frame workflows.',
+  'ltx-2-3-pro': 'Best for all-in-one LTX workflows, retakes, audio, video-to-video, and 4K output.',
+  'ltx-2-3-fast': 'Best for low-cost drafts, longer clips, fast prompt tests, and 4K workflows.',
+  'sora-2': 'Best for cinematic scenes, character continuity, human fidelity, and native audio.',
+  'sora-2-pro': 'Best for studio-grade hero shots, premium character scenes, and higher-resolution output.',
+  'seedance-1-5-pro': 'Best for affordable cinematic motion, camera-locked shots, and first/last-frame control.',
+  'luma-ray-2': 'Best for cinematic generation, source-video modify, reframe workflows, and visual quality.',
+  'luma-ray-2-flash': 'Best for fast cinematic drafts, quick source-video tests, and lower-cost Luma workflows.',
+  'pika-text-to-video': 'Best for stylized social clips, quick text-to-video tests, and simple image-to-video workflows.',
+  'wan-2-6': 'Best for structured prompts, clean transitions, video-to-video, lip sync, and native audio.',
+  'minimax-hailuo-02-text': 'Best for budget-friendly concept tests, first/last-frame control, and fast prompt iteration.',
+  'happy-horse-1-0': 'Best for text-and-image-to-video workflows with audio, lip sync, and controllable motion.',
+  'gpt-image-2': 'Best for text-heavy stills, product photography, controlled edits, and reference images.',
+  seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
+  'nano-banana-2': 'Best for grounded stills, wide-format edits, and image references for video workflows.',
+  'nano-banana-pro': 'Best for campaign stills, typography-focused edits, and polished product visuals.',
 };
 
 export type ModelsCatalogGalleryCopy = ModelsGalleryCopy & {

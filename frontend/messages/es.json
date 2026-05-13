@@ -2047,7 +2047,7 @@
         "versionLabel": "v2.6 Pro"
       },
       "title": "Modelos IA de video e imagen: specs, límites y precios | MaxVideoAI",
-      "description": "Compara modelos IA de video e imagen por precio, duración máxima, resolución, audio, modos de entrada y caso de uso. Explora Seedance, Kling, Veo, Sora, LTX y más."
+      "description": "Compara modelos IA de video e imagen por precio, duración máxima, resolución, audio, modos de entrada, ejemplos y workflow antes de generar en MaxVideoAI."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
@@ -2082,17 +2082,17 @@
     "listing": {
       "decision": {
         "eyebrow": "Directorio de modelos IA de video e imagen",
-        "heroTitle": "Compara modelos IA antes de generar",
+        "heroTitle": "Compara modelos IA de video e imagen antes de generar",
         "heroSubtitle": "Explora modelos de video, imagen, audio y preparacion. Compara precio, duracion maxima, resolucion, audio, modos de entrada y fortalezas antes de elegir el modelo correcto.",
         "primaryCta": "Explorar modelos",
         "secondaryCta": "Comparar motores",
         "topPicksTitle": "Puntos de partida recomendados",
         "topPicksViewAll": "Ver todas las recomendaciones",
-        "useCasesTitle": "Elige segun lo que quieres crear",
+        "useCasesTitle": "Elige el modelo correcto para tu workflow",
         "useCasesViewAll": "Ver todos los casos de uso",
         "bestLabel": "Mejor",
-        "recommendedTitle": "Modelos de video IA recomendados",
-        "recommendedSubtitle": "Empieza con estos modelos si buscas calidad, control, velocidad o valor antes de explorar todo el catalogo.",
+        "recommendedTitle": "Puntos de partida recomendados",
+        "recommendedSubtitle": "Empieza aqui si quieres una shortlist rapida antes de comparar cada modelo por precio, duracion, resolucion y entradas soportadas.",
         "recommendedSeeAll": "Ver todos los modelos",
         "recommendedFromLabel": "Desde",
         "recommendedDurationLabel": "Hasta",
@@ -2100,7 +2100,7 @@
         "allModelsTitle": "Explora engines IA por tipo",
         "allModelsSubtitle": "Empieza con generacion de video, luego cambia a imagen o audio y lip sync sin mezclar familias de engines.",
         "popularComparisonsTitle": "No sabes que modelo de video IA elegir?",
-        "popularComparisonsSubtitle": "Compara lado a lado los pares de modelos mas buscados.",
+        "popularComparisonsSubtitle": "Compara pares de modelos populares lado a lado antes de generar.",
         "compareHubLabel": "Hub comparativo",
         "pricingLimitsTitle": "Compara precio, duracion y limites de salida",
         "pricingLimitsBody": "Los modelos de video suelen cobrarse por segundo, mientras los modelos de imagen se cobran por imagen o tamano de salida. Usa las tarjetas para comparar precio inicial, duracion maxima, resolucion, audio y modos de entrada antes de generar.",
@@ -2244,7 +2244,7 @@
           }
         },
         "mode": {
-          "label": "Modo",
+          "label": "Modo de entrada",
           "options": {
             "all": "Todos",
             "t2v": "T2V",

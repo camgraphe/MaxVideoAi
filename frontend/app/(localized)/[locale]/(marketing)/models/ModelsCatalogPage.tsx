@@ -172,7 +172,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const heroAccentParts = splitHeroAccentTitle(heroTitleParts.accent);
   const galleryVisibleFilters: Array<'sort' | 'mode' | 'format' | 'duration' | 'price' | 'age'> =
     scope === 'all'
-      ? ['sort', 'format', 'mode', 'price']
+      ? ['sort', 'format', 'mode', 'price', 'age']
       : scope === 'image'
         ? ['sort', 'format', 'price', 'age']
         : ['sort', 'format', 'mode', 'price', 'duration', 'age'];

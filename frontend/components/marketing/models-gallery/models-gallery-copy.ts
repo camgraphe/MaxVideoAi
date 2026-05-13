@@ -65,7 +65,7 @@ export const DEFAULT_MODELS_GALLERY_COPY: Required<ModelsGalleryCopy> = {
       },
     },
     mode: {
-      label: 'Mode',
+      label: 'Input mode',
       options: {
         all: 'All',
         t2v: 'T2V',
@@ -196,7 +196,7 @@ export function resolveModelsGalleryCopy(copy?: ModelsGalleryCopy): ResolvedMode
     filterClearLabel: filtersCopy.clear ?? DEFAULT_MODELS_GALLERY_COPY.filters.clear ?? 'Clear filters',
     filterLabels: {
       sort: sortCopy.label ?? 'Sort by',
-      mode: modeCopy.label ?? 'Mode',
+      mode: modeCopy.label ?? 'Input mode',
       format: formatCopy.label ?? 'Format',
       duration: durationCopy.label ?? 'Duration',
       price: priceCopy.label ?? 'Price',

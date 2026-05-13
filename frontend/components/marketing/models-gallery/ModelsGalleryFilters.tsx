@@ -82,7 +82,7 @@ export function ModelsGalleryFilters({
 
   return (
     <div
-      className="mt-0 flex flex-col gap-4 rounded-[8px] border border-hairline bg-surface-glass-95 px-3 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.07),0_4px_14px_rgba(15,23,42,0.035)] backdrop-blur dark:bg-surface-glass-80 sm:px-4"
+      className="relative z-30 mt-0 flex flex-col gap-4 rounded-[8px] border border-hairline bg-surface-glass-95 px-3 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.07),0_4px_14px_rgba(15,23,42,0.035)] backdrop-blur dark:bg-surface-glass-80 sm:px-4"
       id="models-compare-toggle"
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

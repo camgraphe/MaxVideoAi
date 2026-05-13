@@ -7,7 +7,6 @@ import {
   Film,
   Gauge,
   ImageIcon,
-  ListChecks,
   Mic2,
   ShieldCheck,
   SlidersHorizontal,
@@ -130,16 +129,15 @@ function textByLocale<T>(locale: AppLocale, values: Record<AppLocale | 'en', T>)
 
 function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
   const labels = textByLocale(locale, {
-    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Video & image models', 'Audio & lip sync'],
-    fr: ['Prix avant rendu', "Paiement a l'usage", 'Specs a jour', 'Modeles video & image', 'Audio & lip sync'],
-    es: ['Precio antes de renderizar', 'Pago por uso', 'Specs actualizadas', 'Modelos video e imagen', 'Audio & lip sync'],
+    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Video, image & audio'],
+    fr: ['Prix avant rendu', "Paiement a l'usage", 'Specs a jour', 'Video, image & audio'],
+    es: ['Precio antes de renderizar', 'Pago por uso', 'Specs actualizadas', 'Video, imagen y audio'],
   });
   return [
     { label: labels[0], icon: BadgeDollarSign },
     { label: labels[1], icon: Gauge },
     { label: labels[2], icon: ShieldCheck },
     { label: labels[3], icon: Sparkles },
-    { label: labels[4], icon: Mic2 },
   ];
 }
 
@@ -149,19 +147,19 @@ function buildTopPickCopy(locale: AppLocale) {
       'seedance-2-0': { reason: 'Best native audio', detail: 'Native audio, lip sync, realistic motion' },
       'kling-3-pro': { reason: 'Best control', detail: 'Cinematic sequences and prompt control' },
       'seedance-2-0-fast': { reason: 'Best fast drafts', detail: 'Quick iterations and lower-cost tests' },
-      'ltx-2-3-fast': { reason: 'Best value / long clips', detail: 'Fast drafts, 20s max duration, low cost' },
+      'ltx-2-3-fast': { reason: 'Best value / long clips', detail: 'Low-cost drafts, 20s clips, 4K output' },
     },
     fr: {
       'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, lip sync, mouvement realiste' },
       'kling-3-pro': { reason: 'Meilleur controle', detail: 'Sequences cine et controle du prompt' },
       'seedance-2-0-fast': { reason: 'Meilleurs drafts rapides', detail: 'Iterations rapides et tests moins chers' },
-      'ltx-2-3-fast': { reason: 'Meilleure valeur / longs clips', detail: 'Drafts rapides, duree 20s, cout bas' },
+      'ltx-2-3-fast': { reason: 'Meilleure valeur / longs clips', detail: 'Drafts bas cout, clips 20s, sortie 4K' },
     },
     es: {
       'seedance-2-0': { reason: 'Mejor audio nativo', detail: 'Audio nativo, lip sync y movimiento realista' },
       'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias cinematicas y control de prompt' },
       'seedance-2-0-fast': { reason: 'Mejores borradores rapidos', detail: 'Iteraciones rapidas y pruebas de menor costo' },
-      'ltx-2-3-fast': { reason: 'Mejor valor / clips largos', detail: 'Borradores rapidos, 20s max, bajo costo' },
+      'ltx-2-3-fast': { reason: 'Mejor valor / clips largos', detail: 'Borradores de bajo costo, clips 20s, salida 4K' },
     },
   });
 }
@@ -173,30 +171,30 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
       ['native-audio', 'Native audio & lip sync', 'Dialogue and ambience', 'Seedance 2.0'],
       ['fast-drafts', 'Fast drafts', 'Quick iterations', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Image-to-video', 'Bring images to life', 'Seedance 2.0'],
-      ['prompt-examples', 'Prompt examples', 'Reuse tested prompts', 'LTX, Kling, Veo'],
-      ['max-duration', 'Max duration & limits', 'Duration, resolution, formats', 'Compare specs'],
-      ['best-value', 'Best value', 'Lower-cost iteration', 'LTX 2.3 Fast'],
+      ['product-ads', 'Product ads', 'Ad-ready clips and references', 'Veo 3.1'],
       ['prompt-control', 'Prompt control', 'Strong adherence', 'Kling 3 Pro'],
+      ['longest-duration', 'Longest duration', 'Longer clips and output limits', 'LTX 2.3 Fast'],
+      ['best-value', 'Best value', 'Lower-cost iteration', 'LTX 2.3 Fast'],
     ],
     fr: [
       ['cinematic-video', 'Video cinematographique', 'Mouvement et scenes cine', 'Kling 3 Pro'],
-      ['native-audio', 'Audio natif & lip sync', 'Dialogue et ambiance', 'Seedance 2.0'],
+      ['native-audio', 'Audio natif & lip sync', 'Dialogue, ambiance et voix', 'Seedance 2.0'],
       ['fast-drafts', 'Drafts rapides', 'Iterations rapides', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Image-to-video', 'Animer des images', 'Seedance 2.0'],
-      ['prompt-examples', 'Exemples de prompts', 'Reutiliser des prompts testes', 'LTX, Kling, Veo'],
-      ['max-duration', 'Duree max & limites', 'Duree, resolution, formats', 'Comparer les specs'],
-      ['best-value', 'Meilleure valeur', 'Iteration moins chere', 'LTX 2.3 Fast'],
+      ['product-ads', 'Pubs produit', 'Clips et references prets pour ads', 'Veo 3.1'],
       ['prompt-control', 'Controle du prompt', 'Forte adherence', 'Kling 3 Pro'],
+      ['longest-duration', 'Duree la plus longue', 'Clips plus longs et limites de sortie', 'LTX 2.3 Fast'],
+      ['best-value', 'Meilleure valeur', 'Iteration moins chere', 'LTX 2.3 Fast'],
     ],
     es: [
       ['cinematic-video', 'Video cinematografico', 'Movimiento y escenas cine', 'Kling 3 Pro'],
-      ['native-audio', 'Audio nativo & lip sync', 'Dialogo y ambiente', 'Seedance 2.0'],
+      ['native-audio', 'Audio nativo & lip sync', 'Dialogo, ambiente y voz', 'Seedance 2.0'],
       ['fast-drafts', 'Borradores rapidos', 'Iteraciones rapidas', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Imagen a video', 'Anima imagenes', 'Seedance 2.0'],
-      ['prompt-examples', 'Ejemplos de prompts', 'Reutiliza prompts probados', 'LTX, Kling, Veo'],
-      ['max-duration', 'Duracion max & limites', 'Duracion, resolucion, formatos', 'Comparar specs'],
-      ['best-value', 'Mejor valor', 'Iteracion de menor costo', 'LTX 2.3 Fast'],
+      ['product-ads', 'Anuncios de producto', 'Clips y referencias listos para ads', 'Veo 3.1'],
       ['prompt-control', 'Control del prompt', 'Alta adherencia', 'Kling 3 Pro'],
+      ['longest-duration', 'Mayor duracion', 'Clips mas largos y limites de salida', 'LTX 2.3 Fast'],
+      ['best-value', 'Mejor valor', 'Iteracion de menor costo', 'LTX 2.3 Fast'],
     ],
   });
   const hrefs: LocalizedLinkHref[] = [
@@ -204,12 +202,12 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
     '/ai-video-engines/best-for/lipsync-dialogue',
     '/ai-video-engines/best-for/fast-drafts',
     '/ai-video-engines/best-for/image-to-video',
-    '/examples',
-    '#pricing-limits',
-    '/ai-video-engines/best-for/fast-drafts',
+    '/ai-video-engines/best-for/ads',
     '/ai-video-engines/best-for/multi-shot-video',
+    '#models-grid',
+    '/ai-video-engines/best-for/fast-drafts',
   ];
-  const icons = [Film, Mic2, Bolt, ImageIcon, ListChecks, Clock3, Gauge, SlidersHorizontal];
+  const icons = [Film, Mic2, Bolt, ImageIcon, Camera, SlidersHorizontal, Clock3, Gauge];
   return copy.map(([id, title, subtitle, best], index) => ({
     id,
     title,
@@ -253,7 +251,7 @@ function buildDecisionFaqItems(locale: AppLocale): Array<{ question: string; ans
       {
         question: 'Which models support native audio or lip sync?',
         answer:
-          'Seedance, Kling, Veo, Sora, LTX and other models may support audio or lip sync depending on the exact version. Check each model card for Audio, Lip sync, T2V, I2V, V2V and First/Last support.',
+          'Seedance, Kling, Veo, Sora, LTX, Wan, and other models may support audio or lip sync depending on the exact version. Check each model card for Audio, Lip sync, T2V, I2V, V2V, and First/Last support.',
       },
       {
         question: 'How is AI video pricing calculated?',
@@ -263,12 +261,12 @@ function buildDecisionFaqItems(locale: AppLocale): Array<{ question: string; ans
       {
         question: 'What is the maximum duration for AI video models?',
         answer:
-          'Max duration varies by model. Some models are limited to 8-15 seconds, while others may support longer clips. Use the duration filter or compare cards to find the right model.',
+          'Max duration varies by model. Some models are limited to 8-15 seconds, while others support longer clips. Use the duration filter or compare cards to find the right model.',
       },
       {
         question: 'Where can I find prompt examples?',
         answer:
-          'Use the examples pages for model-specific prompts and outputs, including LTX, Kling, Seedance, Veo, Wan and Sora examples.',
+          'Use the examples pages for model-specific prompts and outputs, including LTX, Kling, Seedance, Veo, Wan, Sora, and Pika examples.',
       },
       {
         question: 'What is the difference between video models and image models?',
