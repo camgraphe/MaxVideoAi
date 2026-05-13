@@ -377,7 +377,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--brand-gradient)] px-4 py-2 text-xs font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[48px] sm:rounded-input sm:px-6 sm:py-3 sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_start_app"
                 data-analytics-cta-location="marketing_nav_desktop"
