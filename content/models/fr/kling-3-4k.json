@@ -6,7 +6,7 @@
     "description": "Utilisez Kling 3 4K sur MaxVideoAI pour des rendus texte-vers-video et image-vers-video en 4K natif, avec clips de 3 a 15 s et audio natif.",
     "image": "/hero/kling-3-4k-hero.jpg"
   },
-  "overview": "Kling 3 4K est la route Kling IA en 4K natif pour les rendus finaux, les prompts texte-vers-video, les references image-vers-video, le controle multi-prompt par plans et l'audio natif sans etape d'upscale separee.",
+  "overview": "Kling 3 4K est la route Kling IA en 4K natif pour les rendus finaux, les prompts texte-vers-video, les references image-vers-video, le controle multi-prompt par plans et l'audio natif.",
   "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,55 $/s pour la sortie 4K native. Gardez cette route pour les rendus finaux validés.",
   "hero": {
     "title": "Kling 3 4K - generation video 4K native",
@@ -60,7 +60,7 @@
   "technicalOverview": [
     {
       "label": "Details",
-      "body": "Kling 3 4K utilise les endpoints fal en 4K natif : traitez-le comme une route de livraison, pas comme le modele le moins cher pour explorer."
+      "body": "Kling 3 4K utilise la route 4K native active : traitez-le comme une route de livraison, pas comme le modele le moins cher pour explorer."
     },
     {
       "label": "Duree",
@@ -80,7 +80,7 @@
     },
     {
       "label": "Audio",
-      "body": "Audio natif activable ou desactivable ; fal liste le meme tarif 4K dans les deux cas"
+      "body": "Audio natif activable ou desactivable ; la route active affiche actuellement le meme tarif 4K dans les deux cas"
     }
   ],
   "promptStructure": {
@@ -117,8 +117,8 @@
   "faqTitle": "FAQ - Kling 3 4K dans MaxVideoAI",
   "faqs": [
     {
-      "q": "Kling 3 4K est-il un upscale ?",
-      "a": "Non. Kling 3 4K utilise des endpoints 4K natifs : la video est generee directement en 4K au lieu d'etre agrandie depuis un rendu 1080p."
+      "q": "Kling 3 4K génère-t-il une sortie 4K native ?",
+      "a": "Oui. Utilisez-le quand le plan est prêt pour un rendu de livraison 4K natif après validation à moindre coût."
     },
     {
       "q": "Quand utiliser Kling 3 4K ?",

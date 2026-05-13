@@ -122,7 +122,7 @@
       "Use start and end images only when the transition target is clear; otherwise keep Image-to-Video on a single start frame.",
       "Use Extend when the shot is already good and you only need more lead-in or tail-out.",
       "Use Retake when one section is wrong but the rest of the clip should stay intact.",
-      "Keep 4K for final passes; iterate at lower cost first, then upscale your winner workflow."
+      "Keep 4K for final passes; iterate at lower cost first, then rerun the approved setup at higher resolution."
     ]
   },
   "compareLink": {
@@ -159,7 +159,7 @@
     },
     {
       "q": "Does LTX 2.3 Fast include Audio-to-Video, Extend or Retake?",
-      "a": "No. LTX 2.3 Fast is limited to text-to-video and image-to-video in the current public Fal routing."
+      "a": "No. LTX 2.3 Fast is limited to text-to-video and image-to-video in the current MaxVideoAI route."
     }
   ],
   "custom": {
@@ -199,7 +199,7 @@
       "Fits modern content formats||Landscape and vertical generate modes make it easier to plan both hero and social variants."
     ],
     "specTitle": "Real Specs - LTX 2.3 Pro in MaxVideoAI",
-    "specNote": "These specs describe the live public Fal routing exposed in MaxVideoAI today, not a theoretical future feature list.",
+    "specNote": "These specs describe the active MaxVideoAI route today, not a theoretical future feature list.",
     "specSections": [
       {
         "title": "Generate workflows",
@@ -224,7 +224,7 @@
     ],
     "whatTitle": "How LTX 2.3 Pro works in MaxVideoAI",
     "whatIntro1": "Choose LTX 2.3 Pro, then stay in Generate Video for standard text/image flows or switch to Extend Video / Retake Video when you need source-video editing. Audio-to-Video is selected automatically when an audio source is present.",
-    "whatIntro2": "This structure keeps the page focused on one engine while still exposing the real Fal workflows behind it.",
+    "whatIntro2": "This structure keeps the page focused on one engine while still reflecting the real route options exposed in the app.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Pick LTX 2.3 Pro as the engine.",
@@ -234,7 +234,7 @@
       "Review the live price before generation, then iterate only on the workflow that matters."
     ],
     "galleryTitle": "LTX 2.3 Pro examples",
-    "galleryIntro": "Representative LTX 2.3 Pro examples and placeholders used on this branch for layout and prompt coverage.",
+    "galleryIntro": "Representative LTX 2.3 Pro examples for reviewing audio-led motion, extension, retake and higher-resolution production workflows.",
     "galleryAllCta": "View all LTX 2.3 Pro examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",

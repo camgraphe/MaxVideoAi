@@ -4,7 +4,7 @@
   "seo": {
     "title": "LTX 2.3 Pro | Modelo de video IA, specs y precios | MaxVideoAI",
     "description": "Usa LTX 2.3 Pro en MaxVideoAI para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake, con specs y precios visibles antes de renderizar.",
-    "image": "/assets/placeholders/preview-16x9.png"
+    "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
   "overview": "LTX 2.3 Pro es el modelo LTX actual en MaxVideoAI para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake.",
   "hero": {
@@ -122,7 +122,7 @@
       "Usa imagen inicial e imagen final solo cuando el objetivo de la transición esté claro; si no, deja Imagen a video con una sola imagen inicial.",
       "Usa Extend cuando la toma ya funciona y solo necesita más entrada o salida.",
       "Usa Retake cuando falla una sola sección pero el resto del clip debe seguir intacto.",
-      "Reserva 4K para las pasadas finales; itera primero con menor coste y luego relanza el workflow ganador."
+      "Reserva 4K para las pasadas finales; itera primero con menor coste y luego relanza la configuración aprobada en mayor resolución."
     ]
   },
   "compareLink": {
@@ -159,7 +159,7 @@
     },
     {
       "q": "¿LTX 2.3 Fast incluye Audio a video, Extend o Retake?",
-      "a": "No. LTX 2.3 Fast está limitado a texto a video e imagen a video en el routing público actual de Fal."
+      "a": "No. LTX 2.3 Fast está limitado a texto a video e imagen a video en la ruta actual de MaxVideoAI."
     }
   ],
   "custom": {
@@ -199,7 +199,7 @@
       "Encaja con los formatos actuales||Los modos horizontal y vertical facilitan planificar variantes hero y social."
     ],
     "specTitle": "Specs reales - LTX 2.3 Pro en MaxVideoAI",
-    "specNote": "Estas specs describen el routing público activo de Fal expuesto hoy en MaxVideoAI, no una lista teórica de funciones futuras.",
+    "specNote": "Estas specs describen la ruta activa expuesta hoy en MaxVideoAI, no una lista teórica de funciones futuras.",
     "specSections": [
       {
         "title": "Workflows de generación",
@@ -224,7 +224,7 @@
     ],
     "whatTitle": "Cómo funciona LTX 2.3 Pro en MaxVideoAI",
     "whatIntro1": "Elige LTX 2.3 Pro, quédate en Generate Video para los flujos estándar de texto / imagen o cambia a Extend Video / Retake Video cuando necesites editar un video fuente. Audio a video se selecciona automáticamente cuando hay una fuente de audio presente.",
-    "whatIntro2": "Esta estructura mantiene la página centrada en un solo motor mientras expone los workflows reales de Fal por detrás.",
+    "whatIntro2": "Esta estructura mantiene la página centrada en un solo motor mientras refleja las opciones reales disponibles en la app.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Elige LTX 2.3 Pro como motor.",
@@ -234,7 +234,7 @@
       "Revisa el precio en vivo antes de generar y luego itera solo sobre el workflow que realmente importa."
     ],
     "galleryTitle": "Ejemplos de LTX 2.3 Pro",
-    "galleryIntro": "Por ahora se usan placeholders locales en esta rama de desarrollo. Sustitúyelos por renders finales aprobados de LTX 2.3 Pro antes del lanzamiento a producción.",
+    "galleryIntro": "Ejemplos representativos de LTX 2.3 Pro para revisar generación guiada por audio, extensión, retake y pasadas de producción en mayor resolución.",
     "galleryAllCta": "Ver todos los ejemplos de LTX 2.3 Pro ->",
     "recreateLabel": "Recrear esta toma ->",
     "tipsTitle": "Fortalezas prácticas y límites",

@@ -167,7 +167,7 @@
       "Contrôle de l’image de fin pour des finitions propres||Utilisez une image de fin optionnelle pour mieux atterrir les transitions, match cuts et reveals produit"
     ],
     "specTitle": "Specs réelles — Kling 3 Standard dans MaxVideoAI",
-    "specNote": "Les specs reflètent le routage Fal en production.",
+    "specNote": "Les specs reflètent la route MaxVideoAI active en production.",
     "specSections": [
       {
         "title": "Multi‑shot prêt storyboard",
@@ -191,8 +191,6 @@
       }
     ],
     "promptingTitle": "Comment écrire un bon prompt Kling 3 Standard",
-    "promptingGuideLabel": "Guide de prompting Kling 3.0",
-    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
     "promptingIntro": "Kling 3 Standard fonctionne mieux avec une direction par plans : cadrage clair, une action par plan, mouvement explicite et (si audio activé) dialogue court + peu de cues sonores.",
     "promptingGlobalPrinciples": [
       "Pensez en plans, pas en clips : une action par plan est plus simple à exécuter proprement.",

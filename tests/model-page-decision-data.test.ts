@@ -238,6 +238,40 @@ test('Seedream returns reference-prep decision data for still preparation', () =
   assert.doesNotMatch(visibleDecisionText(es), /direct video generation|generate videos|text-to-video|image-to-video/i);
 });
 
+test('second-wave model templates return distinct decision data without overclaims', () => {
+  const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
+  const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
+  const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
+  const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
+  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3'), locale: 'en' });
+
+  assert.ok(veoFast);
+  assert.ok(veoLite);
+  assert.ok(klingStandard);
+  assert.ok(kling4k);
+  assert.ok(ltxPro);
+
+  assert.match(visibleDecisionText(veoFast), /draft|Fast|optional audio|first-last/i);
+  assert.match(visibleDecisionText(veoFast), /Extend/i);
+  assert.equal(veoFast.hero.primaryCta.href, '/app?engine=veo-3-1-fast');
+
+  assert.match(visibleDecisionText(veoLite), /lower-cost|audio included|Lite/i);
+  assert.doesNotMatch(visibleDecisionText(veoLite), /Extend/i);
+  assert.equal(veoLite.hero.primaryCta.href, '/app?engine=veo-3-1-lite');
+
+  assert.match(visibleDecisionText(klingStandard), /storyboard|1080p|draft/i);
+  assert.doesNotMatch(visibleDecisionText(klingStandard), /4K|Omni|voice IDs|Elements/i);
+  assert.equal(klingStandard.hero.primaryCta.href, '/app?engine=kling-3-standard');
+
+  assert.match(visibleDecisionText(kling4k), /native 4K|delivery/i);
+  assert.doesNotMatch(visibleDecisionText(kling4k), /upscale|upscal/i);
+  assert.equal(kling4k.hero.primaryCta.href, '/app?engine=kling-3-4k');
+
+  assert.match(visibleDecisionText(ltxPro), /audio-to-video|Extend|Retake|4K/i);
+  assert.equal(ltxPro.hero.primaryCta.href, '/app?engine=ltx-2-3');
+  assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);
+});
+
 test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => {
   const seedance = getEngine('seedance-2-0');
   const template = getModelPageTemplateConfig('seedance-2-0');
@@ -332,6 +366,56 @@ test('migrated model pricing scenarios return configured IDs and helper values',
     );
     assert.equal(scenarios.every((scenario) => scenario.value.trim().length > 0 && scenario.value !== '—'), true);
     assert.equal(scenarios.every((scenario) => scenario.label.trim().length > 0), true);
+  }
+});
+
+test('second-wave model pricing scenarios reuse pricing page helper values', () => {
+  const expectations = [
+    ['veo-3-1-fast', ['4s-720p', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
+    ['veo-3-1-lite', ['4s-720p-audio', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
+    ['kling-3-standard', ['5s-1080p', '8s-1080p-audio', '15s-1080p-audio', 'max-duration']],
+    ['kling-3-4k', ['5s-4k', '10s-4k', '15s-4k', 'max-duration']],
+    ['ltx-2-3-pro', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],
+  ] as const;
+
+  for (const [slug, expectedIds] of expectations) {
+    const engine = getEngine(slug === 'ltx-2-3-pro' ? 'ltx-2-3' : slug);
+    const template = getModelPageTemplateConfig(slug);
+    assert.ok(template);
+
+    const scenarios = buildModelDecisionPricingScenarios(engine, 'en', template.pricing.presets);
+    const helperValues = template.pricing.presets.map((preset) => {
+      if ('seconds' in preset && typeof preset.seconds === 'number' && typeof preset.resolution === 'string') {
+        return getPresetQuote(
+          engine,
+          {
+            id: preset.id,
+            label: `${preset.seconds}s ${preset.resolution}`,
+            subLabel: preset.labelKey,
+            resolution: preset.resolution,
+            durationSec: preset.seconds,
+            audio: preset.audio ?? false,
+          },
+          'en'
+        ).display;
+      }
+
+      if ('fixedValueKey' in preset && preset.fixedValueKey === 'maxDurationValue') {
+        return `${engine.engine.pricingDetails?.maxDurationSec ?? engine.engine.maxDurationSec}s`;
+      }
+
+      return null;
+    });
+
+    assert.deepEqual(
+      scenarios.map((scenario) => scenario.id),
+      expectedIds
+    );
+    assert.deepEqual(
+      scenarios.map((scenario) => scenario.value),
+      helperValues
+    );
+    assert.equal(scenarios.every((scenario) => scenario.value.trim().length > 0 && scenario.value !== '—'), true);
   }
 });
 

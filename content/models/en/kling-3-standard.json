@@ -167,7 +167,7 @@
       "End-frame control for cleaner finishes||Use an optional end frame to land transitions, match cuts, and product reveals more predictably"
     ],
     "specTitle": "Real Specs – Kling 3 Standard in MaxVideoAI",
-    "specNote": "Specs reflect the live Fal routing today.",
+    "specNote": "Specs reflect the active MaxVideoAI route today.",
     "specSections": [
       {
         "title": "Storyboard-ready multi-shot",
@@ -191,8 +191,6 @@
       }
     ],
     "promptingTitle": "How to Write a Great Kling 3 Standard Prompt",
-    "promptingGuideLabel": "Kling 3.0 Prompting Guide",
-    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
     "promptingIntro": "Kling 3 Standard performs best with shot-based direction: clear framing, one action per shot, explicit motion, and (if audio is on) short dialogue plus minimal sound cues.",
     "promptingGlobalPrinciples": [
       "Think in shots, not clips: one action per shot is easier to execute cleanly.",

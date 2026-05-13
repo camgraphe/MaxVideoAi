@@ -167,7 +167,7 @@
       "Control de frame final para mejores cierres||Usa un frame final opcional para aterrizar transiciones, match cuts y reveals de producto"
     ],
     "specTitle": "Especificaciones reales — Kling 3 Standard en MaxVideoAI",
-    "specNote": "Las specs reflejan el routing de Fal en producción.",
+    "specNote": "Las specs reflejan la ruta activa de MaxVideoAI en producción.",
     "specSections": [
       {
         "title": "Multi‑shot listo para storyboard",
@@ -191,8 +191,6 @@
       }
     ],
     "promptingTitle": "Cómo escribir un gran prompt de Kling 3 Standard",
-    "promptingGuideLabel": "Guía de prompting Kling 3.0",
-    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
     "promptingIntro": "Kling 3 Standard rinde mejor con dirección por planos: encuadre claro, una acción por plano, movimiento explícito y (si el audio está activo) diálogo corto + pocas pistas de sonido.",
     "promptingGlobalPrinciples": [
       "Piensa en planos, no en clips: una acción por plano es más fácil de ejecutar limpiamente.",

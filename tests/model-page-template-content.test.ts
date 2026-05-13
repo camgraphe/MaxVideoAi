@@ -13,7 +13,12 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-2-0-fast',
   'ltx-2-3-fast',
   'veo-3-1',
+  'veo-3-1-fast',
+  'veo-3-1-lite',
   'kling-3-pro',
+  'kling-3-standard',
+  'kling-3-4k',
+  'ltx-2-3-pro',
   'seedream',
 ] as const;
 
@@ -21,7 +26,7 @@ const LOCALES = ['en', 'fr', 'es'] as const;
 const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
-  const engine = listFalEngines().find((candidate) => candidate.id === slug);
+  const engine = listFalEngines().find((candidate) => candidate.id === slug || candidate.modelSlug === slug);
   assert.ok(engine, `Missing engine ${slug}`);
   return engine;
 }
@@ -176,13 +181,23 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
   const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale: 'en' });
+  const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
+  const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
   const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale: 'en' });
+  const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
+  const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
+  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
   const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
   assert.ok(veo);
+  assert.ok(veoFast);
+  assert.ok(veoLite);
   assert.ok(kling);
+  assert.ok(klingStandard);
+  assert.ok(kling4k);
+  assert.ok(ltxPro);
   assert.ok(seedream);
 
   assert.equal(seedance.meta.title, 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI');
@@ -195,7 +210,12 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
 
   const routeTitles = new Map([
     ['veo-3-1', veo.meta.title],
+    ['veo-3-1-fast', veoFast.meta.title],
+    ['veo-3-1-lite', veoLite.meta.title],
     ['kling-3-pro', kling.meta.title],
+    ['kling-3-standard', klingStandard.meta.title],
+    ['kling-3-4k', kling4k.meta.title],
+    ['ltx-2-3-pro', ltxPro.meta.title],
     ['seedream', seedream.meta.title],
   ]);
   assert.equal(new Set(routeTitles.values()).size, routeTitles.size, 'priority migrated title tags should be distinct');
@@ -208,10 +228,12 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
+  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
 
   assert.ok(seedanceFast);
   assert.ok(seedance);
   assert.ok(ltxFast);
+  assert.ok(ltxPro);
 
   assert.doesNotMatch(
     visibleDecisionText(seedanceFast),
@@ -221,21 +243,40 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.match(visibleDecisionText(seedance), /native audio/i);
   assert.match(visibleDecisionText(seedance), /multi-shot/i);
   assert.doesNotMatch(visibleDecisionText(ltxFast), /audio-to-video|retake|extend/i);
+  assert.match(visibleDecisionText(ltxPro), /audio-to-video|retake|extend/i);
+  assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);
 
   for (const locale of LOCALES) {
     const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale });
+    const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale });
     const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale });
+    const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale });
+    const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale });
     const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale });
 
     assert.ok(veo);
+    assert.ok(veoLite);
     assert.ok(kling);
+    assert.ok(klingStandard);
+    assert.ok(kling4k);
     assert.ok(seedream);
 
     assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
+    assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
     assert.doesNotMatch(
       visibleDecisionText(kling),
       /4K|Omni|voice IDs|Elements/i,
       `Kling 3 Pro ${locale} copy should not claim unavailable routes`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(klingStandard),
+      /4K|Omni|voice IDs|Elements/i,
+      `Kling 3 Standard ${locale} copy should not claim unavailable routes`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(kling4k),
+      /upscale|upscal/i,
+      `Kling 3 4K ${locale} copy should frame native 4K without upscale language`
     );
     assert.doesNotMatch(
       visibleDecisionText(seedream),

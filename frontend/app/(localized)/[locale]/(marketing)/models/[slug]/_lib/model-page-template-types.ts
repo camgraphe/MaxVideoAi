@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { Resolution } from '@/types/engines';
 
 export type ModelPageTemplateIntent = 'production' | 'draft' | 'reference-prep' | 'specialized';
 
@@ -22,7 +23,7 @@ type BaseModelPagePricingPreset = {
 
 export type ModelPageVideoPricingPreset = BaseModelPagePricingPreset & {
   seconds: number;
-  resolution: '480p' | '720p' | '1080p';
+  resolution: Extract<Resolution, '480p' | '720p' | '1080p' | '1440p' | '4k'>;
   audio?: boolean;
   fixedValueKey?: never;
   imageResolution?: never;

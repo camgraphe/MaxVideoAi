@@ -68,12 +68,17 @@ test('template registry enables Seedance production and draft model templates', 
     ['10s-1080p', 'max-duration']
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
+    'kling-3-4k',
     'kling-3-pro',
+    'kling-3-standard',
     'ltx-2-3-fast',
+    'ltx-2-3-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
     'seedream',
     'veo-3-1',
+    'veo-3-1-fast',
+    'veo-3-1-lite',
   ]);
 });
 
@@ -99,6 +104,43 @@ test('priority production and reference-prep models have distinct template inten
     assert.equal(config.hero.primaryCtaHref, primaryCtaHref);
     assert.equal(config.pricing.anchorHref, `/pricing#${slug}-pricing`);
   }
+});
+
+test('second-wave templates preserve model intent and app engine routes', () => {
+  const expectations = [
+    ['veo-3-1-fast', 'draft', '/app?engine=veo-3-1-fast'],
+    ['veo-3-1-lite', 'draft', '/app?engine=veo-3-1-lite'],
+    ['kling-3-standard', 'draft', '/app?engine=kling-3-standard'],
+    ['kling-3-4k', 'production', '/app?engine=kling-3-4k'],
+    ['ltx-2-3-pro', 'production', '/app?engine=ltx-2-3'],
+  ] as const;
+
+  for (const [slug, intent, primaryCtaHref] of expectations) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should be migrated to the template`);
+    assert.equal(config.intent, intent);
+    assert.equal(config.hero.primaryCtaHref, primaryCtaHref);
+    assert.equal(config.pricing.anchorHref, `/pricing#${slug}-pricing`);
+    assert.equal(config.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  }
+});
+
+test('second-wave templates avoid cross-route overclaims', () => {
+  const veoLite = getModelPageTemplateConfig('veo-3-1-lite');
+  const klingStandard = getModelPageTemplateConfig('kling-3-standard');
+  const kling4k = getModelPageTemplateConfig('kling-3-4k');
+  const ltxPro = getModelPageTemplateConfig('ltx-2-3-pro');
+
+  assert.ok(veoLite);
+  assert.ok(klingStandard);
+  assert.ok(kling4k);
+  assert.ok(ltxPro);
+
+  assert.equal(veoLite.pricing.presets.every((preset) => !preset.id.includes('extend')), true);
+  assert.equal(klingStandard.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
+  assert.equal(kling4k.pricing.presets.some((preset) => preset.resolution === '4k'), true);
+  assert.equal(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3');
+  assert.notEqual(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3-pro');
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

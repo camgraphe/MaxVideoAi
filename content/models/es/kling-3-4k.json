@@ -6,7 +6,7 @@
     "description": "Usa Kling 3 4K en MaxVideoAI para renders texto-a-video e imagen-a-video en 4K nativo, con clips de 3 a 15 s y audio nativo.",
     "image": "/hero/kling-3-4k-hero.jpg"
   },
-  "overview": "Kling 3 4K es la ruta Kling AI de 4K nativo para renders finales, prompts texto-a-video, referencias imagen-a-video, control multi-prompt por planos y audio nativo sin un paso separado de upscale.",
+  "overview": "Kling 3 4K es la ruta Kling AI de 4K nativo para renders finales, prompts texto-a-video, referencias imagen-a-video, control multi-prompt por planos y audio nativo.",
   "pricingNotes": "Las estimaciones mostradas a miembros incluyen el margen de MaxVideoAI: aprox. 0,55 $/s para salida 4K nativa. Usa esta ruta para renders finales aprobados.",
   "hero": {
     "title": "Kling 3 4K - generacion de video 4K nativa",
@@ -60,7 +60,7 @@
   "technicalOverview": [
     {
       "label": "Detalles",
-      "body": "Kling 3 4K usa endpoints fal de 4K nativo, asi que conviene tratarlo como una ruta de entrega y no como el modelo mas barato para explorar."
+      "body": "Kling 3 4K usa la ruta activa de 4K nativo, asi que conviene tratarlo como una ruta de entrega y no como el modelo mas barato para explorar."
     },
     {
       "label": "Duracion",
@@ -80,7 +80,7 @@
     },
     {
       "label": "Audio",
-      "body": "Audio nativo activable o desactivable; fal lista la misma tarifa 4K en ambos casos"
+      "body": "Audio nativo activable o desactivable; la ruta activa muestra actualmente la misma tarifa 4K en ambos casos"
     }
   ],
   "promptStructure": {
@@ -117,8 +117,8 @@
   "faqTitle": "FAQ - Kling 3 4K en MaxVideoAI",
   "faqs": [
     {
-      "q": "¿Kling 3 4K es un upscale?",
-      "a": "No. Kling 3 4K usa endpoints 4K nativos, asi que el video se genera directamente en 4K en vez de ampliarse desde un render 1080p."
+      "q": "¿Kling 3 4K genera salida 4K nativa?",
+      "a": "Sí. Úsalo cuando la toma ya esté lista para un render de entrega 4K nativo después de validar a menor coste."
     },
     {
       "q": "¿Cuando usar Kling 3 4K?",

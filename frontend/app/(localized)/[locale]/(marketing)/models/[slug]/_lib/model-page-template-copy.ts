@@ -4,6 +4,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 
 import type { ModelDecisionData } from './model-page-decision-data';
 import { buildCanonicalComparePath, COMPARE_BASE_PATH_MAP } from './model-page-links';
+import { ADDITIONAL_TEMPLATE_COPY } from './model-page-template-copy-additional';
 
 export type CopyWithoutPricingScenarios = Omit<ModelDecisionData, 'pricing'> & {
   pricingCopy: Omit<ModelDecisionData['pricing'], 'cta' | 'scenarios'> & {
@@ -1382,6 +1383,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
 };
 
 export const COPY_BY_MODEL_SLUG: Record<string, Record<AppLocale, LocalizedCopyWithoutPricingScenarios>> = {
+  ...ADDITIONAL_TEMPLATE_COPY,
   'veo-3-1': VEO_31_COPY,
   'kling-3-pro': KLING_3_PRO_COPY,
   'seedance-2-0': SEEDANCE_20_COPY,
