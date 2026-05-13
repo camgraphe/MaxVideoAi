@@ -7,8 +7,11 @@ import type { EngineCaps, EnginePricingDetails, Resolution } from '@/types/engin
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import { buildAudioPricingSnapshot, type AudioPackId, type AudioVoiceMode } from '@/lib/audio-generation';
 import { resolveGptImage2PricingTier, type GptImage2Quality } from '@/lib/image/gptImage2';
+import { getLumaRay2DurationInfo, getLumaRay2ResolutionInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
+import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
@@ -423,6 +426,27 @@ function displayedScenarioCents(
   return vendorCents == null ? null : applyDisplayedPriceMarginCents(vendorCents);
 }
 
+function displayedLumaRay2ScenarioCents(engine: EngineCaps, resolution: string, durationSec: number) {
+  if (!isLumaRay2EngineId(engine.id)) return null;
+
+  const baseUsd = Number(getLumaRay2BasePriceEnv(engine.id));
+  const durationInfo = getLumaRay2DurationInfo(durationSec);
+  const resolutionInfo = getLumaRay2ResolutionInfo(resolution);
+
+  if (!Number.isFinite(baseUsd) || baseUsd <= 0 || !durationInfo || !resolutionInfo) {
+    return null;
+  }
+
+  const quote = calculateLumaRay2Price({
+    engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
+    baseUsd,
+    duration: durationInfo.label,
+    resolution: resolutionInfo.value,
+  });
+
+  return applyDisplayedPriceMarginCents(quote.totalUsd * 100);
+}
+
 function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
@@ -445,7 +469,8 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 
   const exactCents =
     exact && duration.durationSec != null
-      ? displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
+      ? displayedLumaRay2ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
+        displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
       : null;
   if (exact) {
     if (exactCents == null || duration.durationSec == null) {

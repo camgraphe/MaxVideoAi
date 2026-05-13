@@ -14,7 +14,7 @@ import { getImagePresetQuote, getPresetQuote } from '../frontend/app/(localized)
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 function getEngine(engineId: string) {
-  const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+  const entry = listFalEngines().find((candidate) => candidate.id === engineId || candidate.modelSlug === engineId);
   assert.ok(entry, `Missing engine ${engineId}`);
   return entry;
 }
@@ -203,6 +203,147 @@ test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3'
   assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
   assert.doesNotMatch(visibleDecisionText(fast), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
   assert.match(es.hero.subtitle, /Borradores 16:9 rápidos/);
+});
+
+test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => {
+  const luma = getEngine('luma-ray-2');
+  const flash = getEngine('luma-ray-2-flash');
+  const en = buildModelDecisionData({ engine: luma, locale: 'en' });
+  const fast = buildModelDecisionData({ engine: flash, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: luma, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: flash, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fast);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Luma Ray 2');
+  assert.match(en.hero.subtitle, /Premium cinematic shots/);
+  assert.match(en.hero.subtitle, /Modify/);
+  assert.match(en.hero.subtitle, /Reframe/);
+  assert.equal(en.hero.primaryCta.href, '/app?engine=lumaRay2');
+  assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
+  assert.deepEqual(
+    en.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
+  );
+  assert.equal(en.pricing.scenarios.every((scenario) => scenario.value !== '—'), true);
+  assert.doesNotMatch(visibleDecisionText(en), /audio native|lower-cost iteration|draft speed/i);
+  assert.match(fr.hero.subtitle, /Plans cinématographiques premium/);
+
+  assert.equal(fast.hero.title, 'Luma Ray 2 Flash');
+  assert.match(fast.hero.subtitle, /Fast Luma drafts/);
+  assert.match(fast.hero.subtitle, /lower-cost iteration/);
+  assert.equal(fast.hero.primaryCta.href, '/app?engine=lumaRay2_flash');
+  assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
+  assert.notEqual(fast.meta.title, en.meta.title);
+  assert.doesNotMatch(visibleDecisionText(fast), /premium cinematic generation workflow|delivery-ready Luma variants/i);
+  assert.match(es.hero.subtitle, /Borradores Luma rápidos/);
+});
+
+test('remaining video templates preserve Happy Horse, Hailuo, and Pika route intent', () => {
+  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
+  const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
+  const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
+  const frHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'fr' });
+  const esPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'es' });
+
+  assert.ok(happyHorse);
+  assert.ok(hailuo);
+  assert.ok(pika);
+  assert.ok(frHailuo);
+  assert.ok(esPika);
+
+  assert.equal(happyHorse.hero.title, 'Happy Horse 1.0');
+  assert.match(happyHorse.hero.subtitle, /Native audio/);
+  assert.match(happyHorse.hero.subtitle, /R2V references/);
+  assert.equal(happyHorse.hero.primaryCta.href, '/app?engine=happy-horse-1-0');
+  assert.equal(happyHorse.hero.quickLinks[2]?.href, '#prompting');
+  assert.deepEqual(
+    happyHorse.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
+  );
+  assert.doesNotMatch(visibleDecisionText(happyHorse), /silent storyboard|budget motion drafts|stylized social loops/i);
+
+  assert.equal(hailuo.hero.title, 'MiniMax Hailuo 02');
+  assert.match(hailuo.hero.subtitle, /Budget motion drafts/);
+  assert.match(hailuo.hero.subtitle, /silent storyboard clips/);
+  assert.equal(hailuo.hero.primaryCta.href, '/app?engine=minimax-hailuo-02-text');
+  assert.equal(hailuo.hero.quickLinks[2]?.href, '#prompting');
+  assert.deepEqual(
+    hailuo.pricing.scenarios.map((scenario) => scenario.id),
+    ['6s-512p', '10s-768p', 'max-duration']
+  );
+  assert.doesNotMatch(visibleDecisionText(hailuo), /native audio|lip-sync|R2V references|negative prompts/i);
+  assert.match(frHailuo.hero.subtitle, /Brouillons mouvement économiques/);
+
+  assert.equal(pika.hero.title, 'Pika 2.2');
+  assert.match(pika.hero.subtitle, /Stylized short clips/);
+  assert.match(pika.hero.subtitle, /seeds/);
+  assert.equal(pika.hero.primaryCta.href, '/app?engine=pika-text-to-video');
+  assert.equal(pika.hero.quickLinks[2]?.href, '#prompting');
+  assert.deepEqual(
+    pika.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']
+  );
+  assert.doesNotMatch(visibleDecisionText(pika), /native audio|lip-sync|R2V references|physics-aware tests/i);
+  assert.match(esPika.hero.subtitle, /Clips cortos estilizados/);
+});
+
+test('image templates preserve GPT Image 2 and Nano Banana route intent', () => {
+  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  const nano = buildModelDecisionData({ engine: getEngine('nano-banana'), locale: 'en' });
+  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  const frNano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'fr' });
+  const esNanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'es' });
+
+  assert.ok(gptImage);
+  assert.ok(nano);
+  assert.ok(nano2);
+  assert.ok(nanoPro);
+  assert.ok(frNano2);
+  assert.ok(esNanoPro);
+
+  assert.equal(gptImage.hero.title, 'GPT Image 2');
+  assert.match(gptImage.hero.subtitle, /readable text/);
+  assert.match(gptImage.hero.subtitle, /controlled edits/);
+  assert.equal(gptImage.hero.primaryCta.href, '/app/image?engine=gpt-image-2');
+  assert.equal(gptImage.hero.quickLinks[2]?.href, '#prompting');
+  assert.deepEqual(
+    gptImage.pricing.scenarios.map((scenario) => scenario.id),
+    ['1024x768-high', '3840x2160-high', '4x-1024x768-medium']
+  );
+
+  assert.equal(nano.hero.title, 'Nano Banana');
+  assert.match(nano.hero.subtitle, /Fast still drafts/);
+  assert.match(nano.hero.subtitle, /batch image variants/);
+  assert.equal(nano.hero.primaryCta.href, '/app/image?engine=nano-banana');
+  assert.deepEqual(
+    nano.pricing.scenarios.map((scenario) => scenario.id),
+    ['single-square', '4x-square', '8x-square']
+  );
+
+  assert.equal(nano2.hero.title, 'Nano Banana 2');
+  assert.match(nano2.hero.subtitle, /Grounded image generation/);
+  assert.match(nano2.hero.subtitle, /wide aspect ratios/);
+  assert.equal(nano2.hero.primaryCta.href, '/app/image?engine=nano-banana-2');
+  assert.deepEqual(
+    nano2.pricing.scenarios.map((scenario) => scenario.id),
+    ['0-5k-image', '1k-image', '4k-image', '4x-1k-image']
+  );
+  assert.match(frNano2.hero.subtitle, /Génération d’images guidée/);
+
+  assert.equal(nanoPro.hero.title, 'Nano Banana Pro');
+  assert.match(nanoPro.hero.subtitle, /4K campaign stills/);
+  assert.match(nanoPro.hero.subtitle, /typography-focused edits/);
+  assert.equal(nanoPro.hero.primaryCta.href, '/app/image?engine=nano-banana-pro');
+  assert.deepEqual(
+    nanoPro.pricing.scenarios.map((scenario) => scenario.id),
+    ['2k-image', '4k-image', '4x-2k-image']
+  );
+  assert.match(esNanoPro.hero.subtitle, /Stills de campaña 4K/);
 });
 
 test('Veo 3.1 returns production decision data without unsupported 4K claims', () => {
@@ -513,6 +654,15 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
     ['ltx-2-3-pro', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],
     ['wan-2-5', ['5s-480p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
     ['wan-2-6', ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
+    ['luma-ray-2', ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
+    ['luma-ray-2-flash', ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
+    ['happy-horse-1-0', ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']],
+    ['minimax-hailuo-02-text', ['6s-512p', '10s-768p', 'max-duration']],
+    ['pika-text-to-video', ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']],
+    ['gpt-image-2', ['1024x768-high', '3840x2160-high', '4x-1024x768-medium']],
+    ['nano-banana', ['single-square', '4x-square', '8x-square']],
+    ['nano-banana-2', ['0-5k-image', '1k-image', '4k-image', '4x-1k-image']],
+    ['nano-banana-pro', ['2k-image', '4k-image', '4x-2k-image']],
   ] as const;
 
   for (const [slug, expectedIds] of expectations) {
@@ -532,6 +682,19 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
             resolution: preset.resolution,
             durationSec: preset.seconds,
             audio: preset.audio ?? false,
+          },
+          'en'
+        ).display;
+      }
+
+      if ('imageResolution' in preset && typeof preset.imageResolution === 'string') {
+        return getImagePresetQuote(
+          engine,
+          {
+            id: preset.id,
+            resolution: preset.imageResolution,
+            quality: preset.imageQuality,
+            quantity: preset.quantity,
           },
           'en'
         ).display;

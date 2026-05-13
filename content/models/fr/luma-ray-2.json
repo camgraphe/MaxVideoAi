@@ -13,7 +13,7 @@
     "badge": "T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Generer avec Luma Ray 2",
-      "href": "/app?engine=luma-ray-2"
+      "href": "/app?engine=lumaRay2"
     },
     "secondaryLinks": [
       {

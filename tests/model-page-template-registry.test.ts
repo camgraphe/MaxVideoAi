@@ -44,27 +44,72 @@ test('template registry enables Seedance production and draft model templates', 
   const ltx2 = getModelPageTemplateConfig('ltx-2');
   const ltx2Fast = getModelPageTemplateConfig('ltx-2-fast');
   const ltxFast = getModelPageTemplateConfig('ltx-2-3-fast');
+  const luma = getModelPageTemplateConfig('luma-ray-2');
+  const lumaFlash = getModelPageTemplateConfig('luma-ray-2-flash');
+  const happyHorse = getModelPageTemplateConfig('happy-horse-1-0');
+  const hailuo = getModelPageTemplateConfig('minimax-hailuo-02-text');
+  const pika = getModelPageTemplateConfig('pika-text-to-video');
+  const gptImage = getModelPageTemplateConfig('gpt-image-2');
+  const nano = getModelPageTemplateConfig('nano-banana');
+  const nano2 = getModelPageTemplateConfig('nano-banana-2');
+  const nanoPro = getModelPageTemplateConfig('nano-banana-pro');
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
   assert.ok(ltx2);
   assert.ok(ltx2Fast);
   assert.ok(ltxFast);
+  assert.ok(luma);
+  assert.ok(lumaFlash);
+  assert.ok(happyHorse);
+  assert.ok(hailuo);
+  assert.ok(pika);
+  assert.ok(gptImage);
+  assert.ok(nano);
+  assert.ok(nano2);
+  assert.ok(nanoPro);
   assert.equal(seedance.intent, 'production');
   assert.equal(seedanceFast.intent, 'draft');
   assert.equal(ltx2.intent, 'specialized');
   assert.equal(ltx2Fast.intent, 'draft');
   assert.equal(ltxFast.intent, 'draft');
+  assert.equal(luma.intent, 'production');
+  assert.equal(lumaFlash.intent, 'draft');
+  assert.equal(happyHorse.intent, 'production');
+  assert.equal(hailuo.intent, 'draft');
+  assert.equal(pika.intent, 'draft');
+  assert.equal(gptImage.intent, 'specialized');
+  assert.equal(nano.intent, 'draft');
+  assert.equal(nano2.intent, 'production');
+  assert.equal(nanoPro.intent, 'specialized');
   assert.equal(seedance.hero.primaryCtaHref, '/app?engine=seedance-2-0');
   assert.equal(seedanceFast.hero.primaryCtaHref, '/app?engine=seedance-2-0-fast');
   assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
   assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
   assert.equal(ltxFast.hero.primaryCtaHref, '/app?engine=ltx-2-3-fast');
+  assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
+  assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
+  assert.equal(happyHorse.hero.primaryCtaHref, '/app?engine=happy-horse-1-0');
+  assert.equal(hailuo.hero.primaryCtaHref, '/app?engine=minimax-hailuo-02-text');
+  assert.equal(pika.hero.primaryCtaHref, '/app?engine=pika-text-to-video');
+  assert.equal(gptImage.hero.primaryCtaHref, '/app/image?engine=gpt-image-2');
+  assert.equal(nano.hero.primaryCtaHref, '/app/image?engine=nano-banana');
+  assert.equal(nano2.hero.primaryCtaHref, '/app/image?engine=nano-banana-2');
+  assert.equal(nanoPro.hero.primaryCtaHref, '/app/image?engine=nano-banana-pro');
   assert.equal(seedance.pricing.anchorHref, '/pricing#seedance-2-0-pricing');
   assert.equal(seedanceFast.pricing.anchorHref, '/pricing#seedance-2-0-fast-pricing');
   assert.equal(ltx2.pricing.anchorHref, '/pricing#ltx-2-pricing');
   assert.equal(ltx2Fast.pricing.anchorHref, '/pricing#ltx-2-fast-pricing');
   assert.equal(ltxFast.pricing.anchorHref, '/pricing#ltx-2-3-fast-pricing');
+  assert.equal(luma.pricing.anchorHref, '/pricing#luma-ray-2-pricing');
+  assert.equal(lumaFlash.pricing.anchorHref, '/pricing#luma-ray-2-flash-pricing');
+  assert.equal(happyHorse.pricing.anchorHref, '/pricing#happy-horse-1-0-pricing');
+  assert.equal(hailuo.pricing.anchorHref, '/pricing#minimax-hailuo-02-text-pricing');
+  assert.equal(pika.pricing.anchorHref, '/pricing#pika-text-to-video-pricing');
+  assert.equal(gptImage.pricing.anchorHref, '/pricing#gpt-image-2-pricing');
+  assert.equal(nano.pricing.anchorHref, '/pricing#nano-banana-pricing');
+  assert.equal(nano2.pricing.anchorHref, '/pricing#nano-banana-2-pricing');
+  assert.equal(nanoPro.pricing.anchorHref, '/pricing#nano-banana-pro-pricing');
   assert.deepEqual(
     seedance.pricing.presets.map((preset) => preset.id),
     ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
@@ -85,7 +130,45 @@ test('template registry enables Seedance production and draft model templates', 
     ltxFast.pricing.presets.map((preset) => preset.id),
     ['10s-1080p', 'max-duration']
   );
+  assert.deepEqual(
+    luma.pricing.presets.map((preset) => preset.id),
+    ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    lumaFlash.pricing.presets.map((preset) => preset.id),
+    ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    happyHorse.pricing.presets.map((preset) => preset.id),
+    ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
+  );
+  assert.deepEqual(
+    hailuo.pricing.presets.map((preset) => preset.id),
+    ['6s-512p', '10s-768p', 'max-duration']
+  );
+  assert.deepEqual(
+    pika.pricing.presets.map((preset) => preset.id),
+    ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    gptImage.pricing.presets.map((preset) => preset.id),
+    ['1024x768-high', '3840x2160-high', '4x-1024x768-medium']
+  );
+  assert.deepEqual(
+    nano.pricing.presets.map((preset) => preset.id),
+    ['single-square', '4x-square', '8x-square']
+  );
+  assert.deepEqual(
+    nano2.pricing.presets.map((preset) => preset.id),
+    ['0-5k-image', '1k-image', '4k-image', '4x-1k-image']
+  );
+  assert.deepEqual(
+    nanoPro.pricing.presets.map((preset) => preset.id),
+    ['2k-image', '4k-image', '4x-2k-image']
+  );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
+    'gpt-image-2',
+    'happy-horse-1-0',
     'kling-2-5-turbo',
     'kling-2-6-pro',
     'kling-3-4k',
@@ -95,6 +178,13 @@ test('template registry enables Seedance production and draft model templates', 
     'ltx-2-3-fast',
     'ltx-2-3-pro',
     'ltx-2-fast',
+    'luma-ray-2',
+    'luma-ray-2-flash',
+    'minimax-hailuo-02-text',
+    'nano-banana',
+    'nano-banana-2',
+    'nano-banana-pro',
+    'pika-text-to-video',
     'seedance-1-5-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
@@ -275,6 +365,24 @@ test('Wan templates separate reference-video route from shorter audio drafts', (
     wan26.pricing.presets.map((preset) => preset.id),
     ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']
   );
+});
+
+test('Luma Ray 2 templates separate premium final route from fast draft route', () => {
+  const luma = getModelPageTemplateConfig('luma-ray-2');
+  const lumaFlash = getModelPageTemplateConfig('luma-ray-2-flash');
+
+  assert.ok(luma);
+  assert.ok(lumaFlash);
+  assert.equal(luma.intent, 'production');
+  assert.equal(lumaFlash.intent, 'draft');
+  assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
+  assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
+  assert.equal(luma.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(lumaFlash.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(luma.pricing.presets.every((preset) => preset.resolution !== '480p'), true);
+  assert.equal(lumaFlash.pricing.presets.every((preset) => preset.resolution !== '480p'), true);
+  assert.equal(luma.pricing.presets.some((preset) => preset.resolution === '1080p'), true);
+  assert.equal(lumaFlash.pricing.presets.some((preset) => preset.resolution === '1080p'), true);
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

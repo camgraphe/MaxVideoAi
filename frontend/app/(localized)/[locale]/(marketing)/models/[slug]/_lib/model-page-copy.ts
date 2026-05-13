@@ -44,6 +44,12 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
     const value = getValue(key);
     return typeof value === 'string' && value.trim().length ? value : null;
   };
+  const getRecreateLabel = (): string | null => {
+    const value = getString('recreateLabel');
+    if (locale === 'fr' && (!value || /^Recreate\b/i.test(value))) return 'Recréer ce rendu →';
+    if (locale === 'es' && (!value || /^Recreate\b/i.test(value))) return 'Recrear este resultado →';
+    return value;
+  };
   const getBoolean = (key: string): boolean => getValue(key) === true;
   const getStringArray = (key: string): string[] => {
     const value = getValue(key);
@@ -263,7 +269,7 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
     galleryIntro: getString('galleryIntro'),
     gallerySceneCta: getString('gallerySceneCta'),
     galleryAllCta: getString('galleryAllCta'),
-    recreateLabel: getString('recreateLabel'),
+    recreateLabel: getRecreateLabel(),
     promptingTitle,
     promptingIntro,
     promptingTip,

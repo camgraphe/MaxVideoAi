@@ -407,7 +407,7 @@ export function MarketingModelPageLayout({
               copy,
               supportsNativeAudio,
               demoMedia,
-              engineSlug,
+              engineSlug: engine.id,
               locale,
               audioBadgeLabel,
               mediaAltContexts,

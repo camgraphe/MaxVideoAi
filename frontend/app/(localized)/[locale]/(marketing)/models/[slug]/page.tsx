@@ -183,7 +183,7 @@ async function renderMarketingModelPage({
         engine.brandId,
         localizedContent.marketingName ?? engine.marketingName,
         engine.modelSlug,
-        engine.modelSlug,
+        engine.id,
         backPath
       )
     );
@@ -203,7 +203,7 @@ async function renderMarketingModelPage({
           engine.brandId,
           localizedContent.marketingName ?? engine.marketingName,
           engine.modelSlug,
-          engine.modelSlug,
+          engine.id,
           backPath
         ),
       ];
@@ -251,8 +251,8 @@ async function renderMarketingModelPage({
       'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
   }
   const galleryCtaHref = heroMedia?.id
-    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
-    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
+    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
+    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}`;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPriceInSpecs = true;

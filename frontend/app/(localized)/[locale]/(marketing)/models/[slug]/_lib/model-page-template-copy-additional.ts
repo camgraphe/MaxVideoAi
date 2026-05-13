@@ -2979,14 +2979,1895 @@ const WAN_25_COPY: LocalizedTemplateCopy = {
   },
 };
 
+const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA PREMIUM VIDEO ROUTE',
+      title: 'Luma Ray 2',
+      subtitle: 'Premium cinematic shots with image-to-video, Modify, Reframe and delivery-ready Luma variants.',
+      subtitleHighlights: ['Premium cinematic shots', 'Modify', 'Reframe'],
+      paragraph:
+        'Use Luma Ray 2 when a shot is past draft territory: generate cinematic clips, animate approved stills, modify strong source footage, then reframe the final for social or delivery formats.',
+      primaryCta: { label: 'Generate with Luma Ray 2', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+      quickLinks: [
+        { label: 'Compare vs Flash', href: compareHref('en', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'View pricing', href: pricingHref('en', 'luma-ray-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Ray 2 example',
+      description: 'Premium cinematic generation workflow',
+      renderLabel: 'View render',
+      badges: ['Modify + Reframe', '9s', '1080p'],
+      altContext: 'cinematic Luma Ray 2 video example',
+    },
+    features: [
+      { title: 'Premium Luma tier', body: 'Use Ray 2 for higher-confidence finals after draft direction is clear.', tone: 'quality' },
+      { title: 'Text or image start', body: 'Generate from a prompt or animate one still with optional end-frame guidance.', tone: 'reference' },
+      { title: 'Modify source clips', body: 'Keep the blocking and timing that already work while changing look or detail.', tone: 'continuity' },
+      { title: 'Reframe delivery cuts', body: 'Turn an approved source clip into vertical, square or wide delivery variants.', tone: 'reference' },
+      { title: '5s or 9s generate', body: 'Choose short controlled generation runs up to 1080p.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Ray 2 or Ray 2 Flash?',
+        body: 'Use Ray 2 for premium finals. Use Flash for faster, lower-cost draft passes before you commit to the final Luma route.',
+        cta: { label: 'Compare Ray 2 vs Flash', href: compareHref('en', 'luma-ray-2', 'luma-ray-2-flash') },
+      },
+      {
+        title: 'Modifying existing footage?',
+        body: 'Use Modify when the camera path already works, or Reframe when the approved master needs a new aspect ratio.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Choosing a premium route?',
+        body: 'Compare Ray 2 with Veo when you need a clear tradeoff between Luma edits and Google generation routes.',
+        cta: { label: 'Compare Ray 2 vs Veo Fast', href: compareHref('en', 'luma-ray-2', 'veo-3-1-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Write a compact subject, camera, lighting and motion brief for a new cinematic shot.' },
+      { title: 'Image-to-video', body: 'Use one start image to anchor composition, product shape or identity before adding motion.' },
+      { title: 'End frame', body: 'Add a closing image only when the landing pose or final composition matters.' },
+      { title: 'Modify', body: 'Upload a source video, name what must stay, name what changes, then choose an adherence strength.' },
+      { title: 'Reframe', body: 'Prioritize the subject and delivery format instead of rewriting the whole scene.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Ray 2 pricing at a glance',
+      subtitle: 'Preset Ray 2 generate totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2: Pricing, Modify, Reframe & Examples | MaxVideoAI',
+      description:
+        'Explore Luma Ray 2 pricing, examples, cinematic text-to-video and image-to-video, source-video Modify, Reframe workflows and Ray 2 vs Flash comparison.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA PREMIUM VIDEO',
+      title: 'Luma Ray 2',
+      subtitle: 'Plans cinématographiques premium avec image-to-video, Modify, Reframe et variantes prêtes à livrer.',
+      subtitleHighlights: ['Plans cinématographiques premium', 'Modify', 'Reframe'],
+      paragraph:
+        'Utilisez Luma Ray 2 quand le plan dépasse le stade du brouillon : générer des clips cinématographiques, animer une image validée, modifier une bonne source vidéo, puis recadrer le rendu final pour les formats de livraison.',
+      primaryCta: { label: 'Générer avec Luma Ray 2', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+      quickLinks: [
+        { label: 'Comparer vs Flash', href: compareHref('fr', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Ray 2',
+      description: 'Workflow de génération cinématographique premium',
+      renderLabel: 'Voir le rendu',
+      badges: ['Modify + Reframe', '9 s', '1080p'],
+      altContext: 'exemple vidéo cinématographique Luma Ray 2',
+    },
+    features: [
+      { title: 'Tier Luma premium', body: 'Gardez Ray 2 pour les rendus finaux quand la direction créative est claire.', tone: 'quality' },
+      { title: 'Départ texte ou image', body: 'Générez depuis un prompt ou animez une image avec fin optionnelle.', tone: 'reference' },
+      { title: 'Modifier une source', body: 'Conservez un timing qui marche déjà tout en changeant le look ou le détail.', tone: 'continuity' },
+      { title: 'Recadrer pour livrer', body: 'Déclinez un master validé en formats vertical, carré ou large.', tone: 'reference' },
+      { title: 'Génération 5 ou 9 s', body: 'Travaillez sur des plans courts et contrôlés jusqu’à 1080p.', tone: 'duration' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Ray 2 ou Ray 2 Flash ?',
+        body: 'Utilisez Ray 2 pour les rendus premium. Utilisez Flash pour les brouillons rapides et moins coûteux avant la passe finale.',
+        cta: { label: 'Comparer Ray 2 vs Flash', href: compareHref('fr', 'luma-ray-2', 'luma-ray-2-flash') },
+      },
+      {
+        title: 'Vous modifiez une vidéo existante ?',
+        body: 'Utilisez Modify si le mouvement caméra fonctionne déjà, ou Reframe si le master validé doit changer de format.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Choisir une route premium ?',
+        body: 'Comparez Ray 2 et Veo pour arbitrer entre les outils d’édition Luma et les routes de génération Google.',
+        cta: { label: 'Comparer Ray 2 vs Veo Fast', href: compareHref('fr', 'luma-ray-2', 'veo-3-1-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Rédigez un brief court : sujet, caméra, lumière et mouvement du plan.' },
+      { title: 'Image-to-video', body: 'Ancrez composition, produit ou identité avec une image de départ.' },
+      { title: 'Image de fin', body: 'Ajoutez une fin uniquement si la pose ou la composition d’arrivée compte.' },
+      { title: 'Modify', body: 'Chargez une source vidéo, indiquez ce qui doit rester, ce qui change, puis choisissez la force.' },
+      { title: 'Reframe', body: 'Priorisez le sujet et le format de livraison sans réécrire toute la scène.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Ray 2 en un coup d’œil',
+      subtitle: 'Prix totaux de génération Ray 2 — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2 : tarifs, Modify, Reframe et exemples | MaxVideoAI',
+      description:
+        'Explorez les tarifs Luma Ray 2, exemples, text-to-video et image-to-video cinématographiques, Modify, Reframe et comparaison Ray 2 vs Flash.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA PREMIUM VIDEO',
+      title: 'Luma Ray 2',
+      subtitle: 'Tomas cinematográficas premium con imagen a video, Modify, Reframe y variantes listas para entrega.',
+      subtitleHighlights: ['Tomas cinematográficas premium', 'Modify', 'Reframe'],
+      paragraph:
+        'Usa Luma Ray 2 cuando la toma ya pasó la etapa de borrador: genera clips cinematográficos, anima stills aprobados, modifica buen material fuente y reencuadra el render final para formatos de entrega.',
+      primaryCta: { label: 'Generar con Luma Ray 2', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+      quickLinks: [
+        { label: 'Comparar con Flash', href: compareHref('es', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-ray-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Ray 2',
+      description: 'Flujo cinematográfico premium',
+      renderLabel: 'Ver render',
+      badges: ['Modify + Reframe', '9 s', '1080p'],
+      altContext: 'ejemplo de video cinematográfico con Luma Ray 2',
+    },
+    features: [
+      { title: 'Tier premium Luma', body: 'Usa Ray 2 para finales con más confianza cuando la dirección ya está clara.', tone: 'quality' },
+      { title: 'Inicio con texto o imagen', body: 'Genera desde prompt o anima un still con cuadro final opcional.', tone: 'reference' },
+      { title: 'Modificar clips fuente', body: 'Conserva timing y bloqueo que funcionan mientras cambias look o detalle.', tone: 'continuity' },
+      { title: 'Reframe para entrega', body: 'Convierte un master aprobado en formatos verticales, cuadrados o widescreen.', tone: 'reference' },
+      { title: 'Genera 5 o 9 s', body: 'Trabaja tomas cortas y controladas hasta 1080p.', tone: 'duration' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Ray 2 o Ray 2 Flash?',
+        body: 'Usa Ray 2 para finales premium. Usa Flash para borradores más rápidos y económicos antes de pasar a la ruta final.',
+        cta: { label: 'Comparar Ray 2 vs Flash', href: compareHref('es', 'luma-ray-2', 'luma-ray-2-flash') },
+      },
+      {
+        title: '¿Modificas material existente?',
+        body: 'Usa Modify cuando la cámara ya funciona, o Reframe cuando el master aprobado necesita otro formato.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Eliges una ruta premium?',
+        body: 'Compara Ray 2 con Veo para decidir entre edición Luma y rutas de generación Google.',
+        cta: { label: 'Comparar Ray 2 vs Veo Fast', href: compareHref('es', 'luma-ray-2', 'veo-3-1-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Escribe un brief compacto: sujeto, cámara, luz y movimiento de la toma.' },
+      { title: 'Imagen a video', body: 'Ancla composición, producto o identidad con una imagen inicial.' },
+      { title: 'Cuadro final', body: 'Agrega un cierre solo si importan la pose o composición de llegada.' },
+      { title: 'Modify', body: 'Sube un video fuente, define qué se conserva, qué cambia y elige la fuerza.' },
+      { title: 'Reframe', body: 'Prioriza el sujeto y el formato de entrega sin reescribir toda la escena.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Ray 2 de un vistazo',
+      subtitle: 'Totales de generación Ray 2. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2: precios, Modify, Reframe y ejemplos | MaxVideoAI',
+      description:
+        'Explora precios de Luma Ray 2, ejemplos, texto a video e imagen a video cinematográficos, Modify, Reframe y comparación Ray 2 vs Flash.',
+    },
+  },
+};
+
+const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA FAST DRAFT ROUTE',
+      title: 'Luma Ray 2 Flash',
+      subtitle: 'Fast Luma drafts for image-to-video tests, Modify and Reframe tests, and lower-cost iteration.',
+      subtitleHighlights: ['Fast Luma drafts', 'Modify and Reframe tests', 'lower-cost iteration'],
+      paragraph:
+        'Use Luma Ray 2 Flash when you need the same Luma workflow surface at draft speed: test prompts, animate stills, explore modify strengths and validate crops before moving winners to Ray 2.',
+      primaryCta: { label: 'Draft with Luma Ray 2 Flash', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+      quickLinks: [
+        { label: 'Compare vs Ray 2', href: compareHref('en', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'View pricing', href: pricingHref('en', 'luma-ray-2-flash-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Ray 2 Flash example',
+      description: 'Fast Luma draft workflow',
+      renderLabel: 'View draft',
+      badges: ['Fast route', 'Draft pass', '1080p'],
+      altContext: 'fast Luma Ray 2 Flash draft example',
+    },
+    features: [
+      { title: 'Fast Luma drafts', body: 'Move quickly through concepts before the premium Ray 2 pass.', tone: 'duration' },
+      { title: 'Image-to-video tests', body: 'Animate stills to check motion, framing and landing before final spend.', tone: 'reference' },
+      { title: 'Modify passes', body: 'Try adherence, flex and reimagine strengths on source clips.', tone: 'continuity' },
+      { title: 'Reframe variants', body: 'Test vertical, square or wide crops before locking delivery formats.', tone: 'reference' },
+      { title: 'Up to 1080p', body: 'Choose 540p, 720p or 1080p for draft generation.', tone: 'quality' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Flash or Ray 2?',
+        body: 'Use Flash for draft passes, crop tests and modify exploration. Use Ray 2 when the selected workflow needs premium polish.',
+        cta: {
+          label: 'Compare Flash vs Ray 2',
+          href: compareHref('en', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+        },
+      },
+      {
+        title: 'Testing edits or crops?',
+        body: 'Use Modify for source-video look changes and Reframe for social crops while the creative is still moving.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Choosing a fast draft route?',
+        body: 'Compare Flash with LTX Fast when iteration speed, crop testing and draft economics matter most.',
+        cta: { label: 'Compare Flash vs LTX Fast', href: compareHref('en', 'luma-ray-2-flash', 'ltx-2-3-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Keep the draft prompt compact: one subject, one move, one mood and one format.' },
+      { title: 'Image-to-video', body: 'Use a still to lock composition while Flash tests motion and pacing.' },
+      { title: 'End frame', body: 'Add an end image only when the draft needs a specific landing composition.' },
+      { title: 'Modify', body: 'Explore source-video look changes before committing the winning direction to Ray 2.' },
+      { title: 'Reframe', body: 'Validate mobile, square or wide crops while the source clip is still being approved.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Ray 2 Flash draft pricing',
+      subtitle: 'Preset draft totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2 Flash: Pricing, Drafts & Examples | MaxVideoAI',
+      description:
+        'Use Luma Ray 2 Flash for faster Luma drafts, image-to-video tests, Modify passes, Reframe variants and lower-cost iteration before Ray 2 finals.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA FAST POUR BROUILLONS',
+      title: 'Luma Ray 2 Flash',
+      subtitle: 'Brouillons Luma rapides pour tests image-to-video, Modify, Reframe et itérations moins coûteuses.',
+      subtitleHighlights: ['Brouillons Luma rapides', 'Modify, Reframe', 'itérations moins coûteuses'],
+      paragraph:
+        'Utilisez Luma Ray 2 Flash pour garder le même socle Luma à vitesse brouillon : tester des prompts, animer des images, explorer les forces Modify et valider des recadrages avant de passer les meilleurs choix dans Ray 2.',
+      primaryCta: { label: 'Créer un brouillon Luma Flash', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+      quickLinks: [
+        { label: 'Comparer vs Ray 2', href: compareHref('fr', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-2-flash-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Ray 2 Flash',
+      description: 'Workflow de brouillon Luma rapide',
+      renderLabel: 'Voir le brouillon',
+      badges: ['Fast', 'Brouillon', '1080p'],
+      altContext: 'exemple de brouillon rapide Luma Ray 2 Flash',
+    },
+    features: [
+      { title: 'Brouillons Luma rapides', body: 'Avancez vite dans les concepts avant la passe premium Ray 2.', tone: 'duration' },
+      { title: 'Tests image-to-video', body: 'Animez des images pour vérifier mouvement, cadrage et arrivée.', tone: 'reference' },
+      { title: 'Passes Modify', body: 'Testez les forces adhere, flex et reimagine sur une source vidéo.', tone: 'continuity' },
+      { title: 'Variantes Reframe', body: 'Validez crops verticaux, carrés ou larges avant la livraison.', tone: 'reference' },
+      { title: 'Jusqu’à 1080p', body: 'Choisissez 540p, 720p ou 1080p pour les générations brouillon.', tone: 'quality' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Flash ou Ray 2 ?',
+        body: 'Utilisez Flash pour les brouillons, tests de crop et exploration Modify. Passez à Ray 2 pour la version premium.',
+        cta: {
+          label: 'Comparer Flash vs Ray 2',
+          href: compareHref('fr', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+        },
+      },
+      {
+        title: 'Vous testez edits ou crops ?',
+        body: 'Utilisez Modify pour changer le look d’une source vidéo et Reframe pour les formats sociaux en phase de test.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Choisir une route rapide ?',
+        body: 'Comparez Flash et LTX Fast quand vitesse d’itération, tests de crop et coût brouillon comptent le plus.',
+        cta: { label: 'Comparer Flash vs LTX Fast', href: compareHref('fr', 'luma-ray-2-flash', 'ltx-2-3-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Gardez un prompt court : un sujet, un mouvement, une ambiance, un format.' },
+      { title: 'Image-to-video', body: 'Utilisez une image pour verrouiller la composition pendant que Flash teste le mouvement.' },
+      { title: 'Image de fin', body: 'Ajoutez une fin seulement si le brouillon doit atterrir sur une composition précise.' },
+      { title: 'Modify', body: 'Explorez les changements de look sur source vidéo avant la passe Ray 2.' },
+      { title: 'Reframe', body: 'Validez crops mobile, carré ou large pendant que le clip source est encore en validation.' },
+    ],
+    pricingCopy: {
+      title: 'Prix des brouillons Luma Ray 2 Flash',
+      subtitle: 'Prix totaux de brouillon — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2 Flash : tarifs, brouillons et exemples | MaxVideoAI',
+      description:
+        'Utilisez Luma Ray 2 Flash pour des brouillons Luma rapides, tests image-to-video, passes Modify, variantes Reframe et itérations moins coûteuses avant Ray 2.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA FAST PARA BORRADORES',
+      title: 'Luma Ray 2 Flash',
+      subtitle: 'Borradores Luma rápidos para pruebas de imagen a video, Modify, Reframe e iteración de menor coste.',
+      subtitleHighlights: ['Borradores Luma rápidos', 'Modify, Reframe', 'iteración de menor coste'],
+      paragraph:
+        'Usa Luma Ray 2 Flash cuando necesitas el mismo flujo Luma a velocidad de borrador: probar prompts, animar stills, explorar fuerzas de Modify y validar crops antes de pasar ganadores a Ray 2.',
+      primaryCta: { label: 'Crear borrador con Luma Flash', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+      quickLinks: [
+        { label: 'Comparar con Ray 2', href: compareHref('es', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-ray-2-flash-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Ray 2 Flash',
+      description: 'Flujo rápido de borrador Luma',
+      renderLabel: 'Ver borrador',
+      badges: ['Fast', 'Borrador', '1080p'],
+      altContext: 'ejemplo de borrador rápido con Luma Ray 2 Flash',
+    },
+    features: [
+      { title: 'Borradores Luma rápidos', body: 'Avanza rápido por conceptos antes de la pasada premium Ray 2.', tone: 'duration' },
+      { title: 'Pruebas imagen a video', body: 'Anima stills para revisar movimiento, encuadre y llegada.', tone: 'reference' },
+      { title: 'Pasadas Modify', body: 'Prueba fuerzas adhere, flex y reimagine sobre clips fuente.', tone: 'continuity' },
+      { title: 'Variantes Reframe', body: 'Valida crops verticales, cuadrados o widescreen antes de entregar.', tone: 'reference' },
+      { title: 'Hasta 1080p', body: 'Elige 540p, 720p o 1080p para generación de borradores.', tone: 'quality' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Flash o Ray 2?',
+        body: 'Usa Flash para borradores, pruebas de crop y exploración Modify. Usa Ray 2 cuando el flujo elegido necesita acabado premium.',
+        cta: {
+          label: 'Comparar Flash vs Ray 2',
+          href: compareHref('es', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+        },
+      },
+      {
+        title: '¿Pruebas ediciones o crops?',
+        body: 'Usa Modify para cambios de look sobre video fuente y Reframe para crops sociales mientras la pieza sigue en revisión.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Eliges una ruta rápida?',
+        body: 'Compara Flash con LTX Fast cuando importan velocidad, pruebas de crop y economía de borrador.',
+        cta: { label: 'Comparar Flash vs LTX Fast', href: compareHref('es', 'luma-ray-2-flash', 'ltx-2-3-fast') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Mantén el prompt compacto: un sujeto, un movimiento, un mood y un formato.' },
+      { title: 'Imagen a video', body: 'Usa un still para fijar composición mientras Flash prueba movimiento y pacing.' },
+      { title: 'Cuadro final', body: 'Agrega cierre solo cuando el borrador debe aterrizar en una composición específica.' },
+      { title: 'Modify', body: 'Explora cambios de look en video fuente antes de pasar la dirección ganadora a Ray 2.' },
+      { title: 'Reframe', body: 'Valida crops móviles, cuadrados o widescreen mientras el clip fuente se aprueba.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de borradores Luma Ray 2 Flash',
+      subtitle: 'Totales de borrador. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 2 Flash: precios, borradores y ejemplos | MaxVideoAI',
+      description:
+        'Usa Luma Ray 2 Flash para borradores Luma rápidos, pruebas de imagen a video, pasadas Modify, variantes Reframe e iteración de menor coste antes de Ray 2.',
+    },
+  },
+};
+
+const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'UNIFIED AUDIO VIDEO ROUTE',
+      title: 'Happy Horse 1.0',
+      subtitle: 'Native audio, lip-sync, R2V references and video editing inside one unified AI video route.',
+      subtitleHighlights: ['Native audio', 'lip-sync', 'R2V references'],
+      paragraph:
+        'Use Happy Horse 1.0 when a shot needs audio and edit control in the same route: text-to-video, image-to-video, R2V references and video-to-video adjustments for production experiments.',
+      primaryCta: { label: 'Generate with Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'happy-horse') },
+      quickLinks: [
+        { label: 'Compare vs Seedance', href: compareHref('en', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'View pricing', href: pricingHref('en', 'happy-horse-1-0-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Happy Horse 1.0 example',
+      description: 'Native-audio reference-guided video route',
+      renderLabel: 'View render',
+      badges: ['Native audio', 'R2V', '1080p'],
+      altContext: 'Happy Horse 1.0 native audio reference-guided video example',
+    },
+    features: [
+      { title: 'Native audio', body: 'Generate dialogue, ambience and SFX with the render when the route supports it.', tone: 'audio' },
+      { title: 'Text or image', body: 'Start from a scene brief or a still image to lock subject and composition.', tone: 'reference' },
+      { title: 'R2V references', body: 'Use multiple references to guide identity, motion, style or scene details.', tone: 'continuity' },
+      { title: 'Video edit', body: 'Modify an existing clip when you need a controlled visual adjustment.', tone: 'quality' },
+      { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolution before generation.', tone: 'quality' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Happy Horse or Seedance?',
+        body: 'Use Happy Horse when native audio, lip-sync and route flexibility matter. Use Seedance 2.0 for current Seedance production continuity.',
+        cta: { label: 'Compare Happy Horse vs Seedance', href: compareHref('en', 'happy-horse-1-0', 'seedance-2-0') },
+      },
+      {
+        title: 'Working from references?',
+        body: 'Assign each file one job: identity, wardrobe, movement, environment or audio mood.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need another audio-native route?',
+        body: 'Compare with Veo when you are choosing between cinematic Google output and a flexible audio-video workflow.',
+        cta: { label: 'Compare Happy Horse vs Veo', href: compareHref('en', 'happy-horse-1-0', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Write the subject, action, camera, style and audio beats in a compact brief.' },
+      { title: 'Image-to-video', body: 'Use a still image to anchor subject, product, wardrobe or composition.' },
+      { title: 'R2V references', body: 'Give each reference one role so identity, movement and environment do not conflict.' },
+      { title: 'Video edit', body: 'Use source video when the job is to change look, pacing or detail without starting over.' },
+      { title: 'Audio handling', body: 'Keep dialogue short and tie SFX to visible actions for cleaner synchronized output.' },
+    ],
+    pricingCopy: {
+      title: 'Happy Horse 1.0 pricing at a glance',
+      subtitle: 'Preset native-audio totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.0: Pricing, Native Audio & R2V Examples | MaxVideoAI',
+      description:
+        'Explore Happy Horse 1.0 pricing, native audio, lip-sync, R2V references, image-to-video and video editing workflows on MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE VIDÉO AUDIO UNIFIÉE',
+      title: 'Happy Horse 1.0',
+      subtitle: 'Audio natif, lip-sync, références R2V et montage vidéo dans une même route IA.',
+      subtitleHighlights: ['Audio natif', 'lip-sync', 'références R2V'],
+      paragraph:
+        'Utilisez Happy Horse 1.0 quand un plan doit réunir audio et contrôle d’édition : texte-vidéo, image-vidéo, références R2V et ajustements vidéo-vidéo pour vos essais de production.',
+      primaryCta: { label: 'Générer avec Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'happy-horse') },
+      quickLinks: [
+        { label: 'Comparer vs Seedance', href: compareHref('fr', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'happy-horse-1-0-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Happy Horse 1.0',
+      description: 'Route vidéo guidée par références avec audio natif',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio natif', 'R2V', '1080p'],
+      altContext: 'exemple vidéo Happy Horse 1.0 avec audio natif et références',
+    },
+    features: [
+      { title: 'Audio natif', body: 'Générez dialogue, ambiance et SFX avec le rendu quand la route le permet.', tone: 'audio' },
+      { title: 'Texte ou image', body: 'Partez d’un brief ou d’une image pour verrouiller sujet et composition.', tone: 'reference' },
+      { title: 'Références R2V', body: 'Utilisez plusieurs références pour guider identité, mouvement, style ou décor.', tone: 'continuity' },
+      { title: 'Édition vidéo', body: 'Modifiez un clip existant pour un ajustement visuel plus contrôlé.', tone: 'quality' },
+      { title: '720p ou 1080p', body: 'Choisissez la résolution exposée dans MaxVideoAI avant génération.', tone: 'quality' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Happy Horse ou Seedance ?',
+        body: 'Choisissez Happy Horse pour audio natif, lip-sync et flexibilité de route. Gardez Seedance 2.0 pour la continuité de production Seedance.',
+        cta: { label: 'Comparer Happy Horse vs Seedance', href: compareHref('fr', 'happy-horse-1-0', 'seedance-2-0') },
+      },
+      {
+        title: 'Travail avec références ?',
+        body: 'Donnez un rôle clair à chaque fichier : identité, tenue, mouvement, environnement ou humeur audio.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin d’une autre route audio ?',
+        body: 'Comparez avec Veo si vous hésitez entre rendu Google cinématographique et workflow audio-vidéo flexible.',
+        cta: { label: 'Comparer Happy Horse vs Veo', href: compareHref('fr', 'happy-horse-1-0', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Structurez sujet, action, caméra, style et beats audio dans un brief court.' },
+      { title: 'Image-to-video', body: 'Utilisez une image pour ancrer sujet, produit, tenue ou composition.' },
+      { title: 'Références R2V', body: 'Attribuez un rôle par référence pour éviter les conflits entre identité, mouvement et décor.' },
+      { title: 'Édition vidéo', body: 'Utilisez une source vidéo quand il faut changer look, rythme ou détail sans repartir de zéro.' },
+      { title: 'Gestion audio', body: 'Gardez les dialogues courts et liez les SFX aux actions visibles.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Happy Horse 1.0 en un coup d’œil',
+      subtitle: 'Prix totaux avec audio natif — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.0 : tarifs, audio natif et exemples R2V | MaxVideoAI',
+      description:
+        'Explorez Happy Horse 1.0 : prix, audio natif, lip-sync, références R2V, image-to-video et édition vidéo sur MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA UNIFICADA DE VIDEO CON AUDIO',
+      title: 'Happy Horse 1.0',
+      subtitle: 'Audio nativo, lip-sync, referencias R2V y edición de video dentro de una sola ruta IA.',
+      subtitleHighlights: ['Audio nativo', 'lip-sync', 'referencias R2V'],
+      paragraph:
+        'Usa Happy Horse 1.0 cuando un plano necesita audio y control de edición en la misma ruta: texto a video, imagen a video, referencias R2V y ajustes de video a video para pruebas de producción.',
+      primaryCta: { label: 'Generar con Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'happy-horse') },
+      quickLinks: [
+        { label: 'Comparar vs Seedance', href: compareHref('es', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'Ver precios', href: pricingHref('es', 'happy-horse-1-0-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Happy Horse 1.0',
+      description: 'Ruta con audio nativo guiada por referencias',
+      renderLabel: 'Ver resultado',
+      badges: ['Audio nativo', 'R2V', '1080p'],
+      altContext: 'ejemplo de Happy Horse 1.0 con audio nativo y referencias',
+    },
+    features: [
+      { title: 'Audio nativo', body: 'Genera diálogo, ambiente y SFX con el render cuando la ruta lo permite.', tone: 'audio' },
+      { title: 'Texto o imagen', body: 'Empieza con un brief o una imagen para fijar sujeto y composición.', tone: 'reference' },
+      { title: 'Referencias R2V', body: 'Usa varias referencias para guiar identidad, movimiento, estilo o escena.', tone: 'continuity' },
+      { title: 'Edición de video', body: 'Modifica un clip existente cuando necesitas un ajuste visual controlado.', tone: 'quality' },
+      { title: '720p o 1080p', body: 'Elige la resolución disponible en MaxVideoAI antes de generar.', tone: 'quality' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Happy Horse o Seedance?',
+        body: 'Usa Happy Horse para audio nativo, lip-sync y flexibilidad de ruta. Usa Seedance 2.0 para continuidad de producción Seedance.',
+        cta: { label: 'Comparar Happy Horse vs Seedance', href: compareHref('es', 'happy-horse-1-0', 'seedance-2-0') },
+      },
+      {
+        title: '¿Trabajas con referencias?',
+        body: 'Dale una función clara a cada archivo: identidad, vestuario, movimiento, entorno o mood de audio.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas otra ruta con audio?',
+        body: 'Compara con Veo si estás eligiendo entre salida cinematográfica de Google y un flujo audio-video flexible.',
+        cta: { label: 'Comparar Happy Horse vs Veo', href: compareHref('es', 'happy-horse-1-0', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Define sujeto, acción, cámara, estilo y beats de audio en un brief compacto.' },
+      { title: 'Imagen a video', body: 'Usa una imagen para fijar sujeto, producto, vestuario o composición.' },
+      { title: 'Referencias R2V', body: 'Asigna un rol por referencia para evitar choques entre identidad, movimiento y entorno.' },
+      { title: 'Edición de video', body: 'Usa video fuente cuando el trabajo es cambiar look, ritmo o detalle sin empezar de cero.' },
+      { title: 'Manejo de audio', body: 'Mantén diálogo corto y conecta SFX con acciones visibles para una sincronía más limpia.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Happy Horse 1.0 de un vistazo',
+      subtitle: 'Totales con audio nativo. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.0: precios, audio nativo y ejemplos R2V | MaxVideoAI',
+      description:
+        'Explora Happy Horse 1.0: precios, audio nativo, lip-sync, referencias R2V, imagen a video y edición de video en MaxVideoAI.',
+    },
+  },
+};
+
+const MINIMAX_HAILUO_02_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'BUDGET MOTION DRAFT ROUTE',
+      title: 'MiniMax Hailuo 02',
+      subtitle: 'Budget motion drafts for physics-aware tests, start/end frame checks and silent storyboard clips.',
+      subtitleHighlights: ['Budget motion drafts', 'physics-aware tests', 'silent storyboard clips'],
+      paragraph:
+        'Use Hailuo 02 for low-cost 6 to 10 second motion tests at 512P or 768P before moving winners into higher-resolution or audio-capable production routes.',
+      primaryCta: { label: 'Draft with Hailuo 02', href: '/app?engine=minimax-hailuo-02-text' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'hailuo') },
+      quickLinks: [
+        { label: 'Compare vs Pika', href: compareHref('en', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+        { label: 'View pricing', href: pricingHref('en', 'minimax-hailuo-02-text-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Hailuo 02 example',
+      description: 'Silent motion draft for timing and physics',
+      renderLabel: 'View draft',
+      badges: ['Silent', '10s', '768P'],
+      altContext: 'MiniMax Hailuo 02 silent motion draft example',
+    },
+    features: [
+      { title: 'Budget drafts', body: 'Test motion ideas before spending on final-quality routes.', tone: 'price' },
+      { title: 'Physics tests', body: 'Check object movement, collisions and body motion in short clips.', tone: 'continuity' },
+      { title: 'Text or image', body: 'Start from a prompt or a still image depending on how locked the shot is.', tone: 'reference' },
+      { title: '512P or 768P', body: 'Use lower-resolution outputs for fast review loops.', tone: 'quality' },
+      { title: '6s or 10s', body: 'Choose compact durations for timing and storyboard validation.', tone: 'duration' },
+      { title: 'Silent output', body: 'Plan music, voiceover and SFX in a later production pass.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: 'Hailuo or Pika?',
+        body: 'Use Hailuo for budget motion and physics checks. Use Pika when stylized social loops and seed variants matter more.',
+        cta: { label: 'Compare Hailuo vs Pika', href: compareHref('en', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+      },
+      {
+        title: 'Testing the landing frame?',
+        body: 'Use image-to-video and end-frame planning when the final pose or composition matters.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need sound or 1080p?',
+        body: 'Compare with Kling 2.6 Pro when you need stronger output quality, audio support or production-ready renders.',
+        cta: { label: 'Compare Hailuo vs Kling', href: compareHref('en', 'minimax-hailuo-02-text', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Keep the test narrow: one subject, one action and one camera move.' },
+      { title: 'Image-to-video', body: 'Use a start image when composition or product shape should stay stable.' },
+      { title: 'End frame', body: 'Plan the landing pose with a clear final composition when available.' },
+      { title: 'Prompt optimizer', body: 'Use optimization for quick drafts, then tighten the wording after you see motion behavior.' },
+      { title: 'Upgrade path', body: 'Send approved movement to a higher-resolution or audio-capable engine for finals.' },
+    ],
+    pricingCopy: {
+      title: 'MiniMax Hailuo 02 pricing at a glance',
+      subtitle: 'Preset draft totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 768P',
+    },
+    meta: {
+      title: 'MiniMax Hailuo 02: Pricing, Motion Drafts & Examples | MaxVideoAI',
+      description:
+        'Explore MiniMax Hailuo 02 pricing, budget motion drafts, physics-aware tests, image-to-video starts and silent storyboard examples on MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE BROUILLON MOUVEMENT',
+      title: 'MiniMax Hailuo 02',
+      subtitle: 'Brouillons mouvement économiques pour tests physiques, image de fin et clips storyboard silencieux.',
+      subtitleHighlights: ['Brouillons mouvement économiques', 'tests physiques', 'clips storyboard silencieux'],
+      paragraph:
+        'Utilisez Hailuo 02 pour tester à coût réduit des mouvements de 6 à 10 secondes en 512P ou 768P, avant de passer les meilleures pistes sur une route plus haute résolution ou avec audio.',
+      primaryCta: { label: 'Créer un brouillon Hailuo 02', href: '/app?engine=minimax-hailuo-02-text' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'hailuo') },
+      quickLinks: [
+        { label: 'Comparer vs Pika', href: compareHref('fr', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'minimax-hailuo-02-text-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Hailuo 02',
+      description: 'Brouillon silencieux pour rythme et physique',
+      renderLabel: 'Voir le brouillon',
+      badges: ['Silencieux', '10 s', '768P'],
+      altContext: 'exemple de brouillon mouvement silencieux avec MiniMax Hailuo 02',
+    },
+    features: [
+      { title: 'Brouillons économiques', body: 'Testez les idées de mouvement avant les routes finales plus coûteuses.', tone: 'price' },
+      { title: 'Tests physiques', body: 'Vérifiez mouvements d’objets, collisions et gestuelle sur des clips courts.', tone: 'continuity' },
+      { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image selon le niveau de verrouillage du plan.', tone: 'reference' },
+      { title: '512P ou 768P', body: 'Gardez des sorties légères pour les boucles de revue rapides.', tone: 'quality' },
+      { title: '6 s ou 10 s', body: 'Choisissez des durées compactes pour valider timing et storyboard.', tone: 'duration' },
+      { title: 'Sortie silencieuse', body: 'Préparez musique, voix et SFX dans une passe de production suivante.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: 'Hailuo ou Pika ?',
+        body: 'Utilisez Hailuo pour le mouvement et la physique à petit budget. Utilisez Pika pour des loops sociaux stylisés et variantes par seed.',
+        cta: { label: 'Comparer Hailuo vs Pika', href: compareHref('fr', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+      },
+      {
+        title: 'Vous testez l’image de fin ?',
+        body: 'Utilisez image-to-video et une fin claire quand la pose ou la composition finale compte.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin d’audio ou de 1080p ?',
+        body: 'Comparez avec Kling 2.6 Pro si vous cherchez plus de qualité, du son ou une sortie prête pour production.',
+        cta: { label: 'Comparer Hailuo vs Kling', href: compareHref('fr', 'minimax-hailuo-02-text', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Gardez le test serré : un sujet, une action, un mouvement caméra.' },
+      { title: 'Image-to-video', body: 'Utilisez une image de départ quand composition ou forme produit doit rester stable.' },
+      { title: 'Image de fin', body: 'Préparez une pose finale claire lorsque la composition d’arrivée compte.' },
+      { title: 'Optimisation du prompt', body: 'Servez-vous de l’optimisation pour brouillonner vite, puis resserrez après avoir vu le mouvement.' },
+      { title: 'Passage final', body: 'Envoyez le mouvement validé vers une route plus haute résolution ou avec audio.' },
+    ],
+    pricingCopy: {
+      title: 'Prix MiniMax Hailuo 02 en un coup d’œil',
+      subtitle: 'Prix totaux de brouillon — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 768P',
+    },
+    meta: {
+      title: 'MiniMax Hailuo 02 : tarifs, brouillons mouvement et exemples | MaxVideoAI',
+      description:
+        'Explorez MiniMax Hailuo 02 : prix, brouillons mouvement économiques, tests physiques, image-to-video et exemples storyboard silencieux sur MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA ECONÓMICA DE MOVIMIENTO',
+      title: 'MiniMax Hailuo 02',
+      subtitle: 'Borradores de movimiento económicos para pruebas físicas, cuadros finales y clips storyboard sin audio.',
+      subtitleHighlights: ['Borradores de movimiento económicos', 'pruebas físicas', 'clips storyboard sin audio'],
+      paragraph:
+        'Usa Hailuo 02 para pruebas de movimiento de 6 a 10 segundos en 512P o 768P antes de pasar los ganadores a rutas de mayor resolución o con audio.',
+      primaryCta: { label: 'Crear borrador con Hailuo 02', href: '/app?engine=minimax-hailuo-02-text' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'hailuo') },
+      quickLinks: [
+        { label: 'Comparar vs Pika', href: compareHref('es', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+        { label: 'Ver precios', href: pricingHref('es', 'minimax-hailuo-02-text-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Hailuo 02',
+      description: 'Borrador silencioso para ritmo y física',
+      renderLabel: 'Ver borrador',
+      badges: ['Sin audio', '10s', '768P'],
+      altContext: 'ejemplo de borrador de movimiento sin audio con MiniMax Hailuo 02',
+    },
+    features: [
+      { title: 'Borradores económicos', body: 'Prueba ideas de movimiento antes de pagar rutas finales.', tone: 'price' },
+      { title: 'Pruebas físicas', body: 'Revisa movimiento de objetos, colisiones y gestos en clips cortos.', tone: 'continuity' },
+      { title: 'Texto o imagen', body: 'Empieza con prompt o imagen según qué tan cerrado esté el plano.', tone: 'reference' },
+      { title: '512P o 768P', body: 'Usa salidas ligeras para ciclos rápidos de revisión.', tone: 'quality' },
+      { title: '6s o 10s', body: 'Elige duraciones compactas para validar timing y storyboard.', tone: 'duration' },
+      { title: 'Salida sin audio', body: 'Resuelve música, voz y SFX en una pasada posterior.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Hailuo o Pika?',
+        body: 'Usa Hailuo para movimiento y física con bajo costo. Usa Pika cuando importan loops sociales estilizados y variantes por seed.',
+        cta: { label: 'Comparar Hailuo vs Pika', href: compareHref('es', 'minimax-hailuo-02-text', 'pika-text-to-video') },
+      },
+      {
+        title: '¿Pruebas el cuadro final?',
+        body: 'Usa imagen a video y una llegada clara cuando la pose o composición final importa.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas audio o 1080p?',
+        body: 'Compara con Kling 2.6 Pro cuando necesitas más calidad, audio o renders listos para producción.',
+        cta: { label: 'Comparar Hailuo vs Kling', href: compareHref('es', 'minimax-hailuo-02-text', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Mantén la prueba enfocada: un sujeto, una acción y un movimiento de cámara.' },
+      { title: 'Imagen a video', body: 'Usa una imagen inicial cuando composición o forma del producto debe mantenerse estable.' },
+      { title: 'Cuadro final', body: 'Define la pose de llegada cuando la composición final cuenta.' },
+      { title: 'Optimizador de prompt', body: 'Úsalo para iterar rápido, luego ajusta el texto después de ver el comportamiento del movimiento.' },
+      { title: 'Ruta de salida', body: 'Lleva el movimiento aprobado a un motor con mayor resolución o audio para finales.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de MiniMax Hailuo 02 de un vistazo',
+      subtitle: 'Totales de borrador. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 768P',
+    },
+    meta: {
+      title: 'MiniMax Hailuo 02: precios, borradores y ejemplos | MaxVideoAI',
+      description:
+        'Explora MiniMax Hailuo 02: precios, borradores de movimiento económicos, pruebas físicas, imagen a video y ejemplos storyboard sin audio en MaxVideoAI.',
+    },
+  },
+};
+
+const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'STYLIZED SHORT CLIP ROUTE',
+      title: 'Pika 2.2',
+      subtitle: 'Stylized short clips with image-to-video starts, seeds, negative prompts and social loops.',
+      subtitleHighlights: ['Stylized short clips', 'image-to-video starts', 'social loops'],
+      paragraph:
+        'Use Pika 2.2 for silent stylized animation, prompt variants and short social clips when the creative direction is anime, comic, pixel, toon or playful 3D.',
+      primaryCta: { label: 'Generate with Pika 2.2', href: '/app?engine=pika-text-to-video' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'pika') },
+      quickLinks: [
+        { label: 'Compare vs Hailuo', href: compareHref('en', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+        { label: 'View pricing', href: pricingHref('en', 'pika-text-to-video-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Pika 2.2 example',
+      description: 'Stylized silent social clip',
+      renderLabel: 'View render',
+      badges: ['Silent', '10s', '1080p'],
+      altContext: 'Pika 2.2 stylized short video example',
+    },
+    features: [
+      { title: 'Stylized motion', body: 'Create anime, comic, pixel, toon or playful 3D movement.', tone: 'quality' },
+      { title: 'Text or image', body: 'Start from a prompt or image when composition should be anchored.', tone: 'reference' },
+      { title: 'Seeds', body: 'Reuse seed-driven variants when a style direction starts working.', tone: 'continuity' },
+      { title: 'Negative prompts', body: 'Exclude unwanted visual traits while testing a stylized direction.', tone: 'reference' },
+      { title: '5s or 10s', body: 'Keep clips compact for loops, social edits and motion tests.', tone: 'duration' },
+      { title: 'Silent output', body: 'Add music, voice and SFX after the visual pass.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: 'Pika or Hailuo?',
+        body: 'Use Pika for stylized social loops and seed variants. Use Hailuo 02 for lower-cost physics and motion checks.',
+        cta: { label: 'Compare Pika vs Hailuo', href: compareHref('en', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+      },
+      {
+        title: 'Building a stylized prompt?',
+        body: 'Lock subject, style, action and exclusions before testing variants with seeds.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need photoreal people or audio?',
+        body: 'Compare with Kling 2.6 Pro when realism, built-in sound or broader production controls matter more.',
+        cta: { label: 'Compare Pika vs Kling', href: compareHref('en', 'pika-text-to-video', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Write subject, action, style family and what to avoid in one compact prompt.' },
+      { title: 'Image-to-video', body: 'Use a start image when the character, product or composition should stay recognizable.' },
+      { title: 'Seed variants', body: 'Keep a useful seed and iterate prompts around the same visual lane.' },
+      { title: 'Negative prompt', body: 'List distracting artifacts, unwanted styles or text elements to avoid.' },
+      { title: 'Audio handoff', body: 'Plan music and SFX outside Pika after the visual loop is approved.' },
+    ],
+    pricingCopy: {
+      title: 'Pika 2.2 pricing at a glance',
+      subtitle: 'Preset stylized clip totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Pika 2.2: Pricing, Stylized Clips & Examples | MaxVideoAI',
+      description:
+        'Explore Pika 2.2 pricing, stylized silent clips, image-to-video starts, seeds, negative prompts and short social video examples on MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE CLIPS COURTS STYLISÉS',
+      title: 'Pika 2.2',
+      subtitle: 'Clips courts stylisés avec départ image-to-video, seeds, prompts négatifs et boucles sociales.',
+      subtitleHighlights: ['Clips courts stylisés', 'départ image-to-video', 'boucles sociales'],
+      paragraph:
+        'Utilisez Pika 2.2 pour des animations silencieuses stylisées, des variantes de prompts et des clips sociaux courts quand la direction créative est anime, BD, pixel, cartoon ou 3D playful.',
+      primaryCta: { label: 'Générer avec Pika 2.2', href: '/app?engine=pika-text-to-video' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'pika') },
+      quickLinks: [
+        { label: 'Comparer vs Hailuo', href: compareHref('fr', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'pika-text-to-video-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Pika 2.2',
+      description: 'Clip social stylisé silencieux',
+      renderLabel: 'Voir le rendu',
+      badges: ['Silencieux', '10 s', '1080p'],
+      altContext: 'exemple de clip vidéo court stylisé avec Pika 2.2',
+    },
+    features: [
+      { title: 'Mouvement stylisé', body: 'Créez du mouvement anime, BD, pixel, cartoon ou 3D playful.', tone: 'quality' },
+      { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image quand la composition doit rester ancrée.', tone: 'reference' },
+      { title: 'Seeds', body: 'Réutilisez les variantes par seed quand une direction visuelle fonctionne.', tone: 'continuity' },
+      { title: 'Prompts négatifs', body: 'Écartez les traits visuels indésirables pendant vos tests stylisés.', tone: 'reference' },
+      { title: '5 s ou 10 s', body: 'Gardez des clips compacts pour loops, edits sociaux et tests de mouvement.', tone: 'duration' },
+      { title: 'Sortie silencieuse', body: 'Ajoutez musique, voix et SFX après validation visuelle.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: 'Pika ou Hailuo ?',
+        body: 'Utilisez Pika pour des boucles sociales stylisées et variantes par seed. Utilisez Hailuo 02 pour les tests mouvement/physique à coût réduit.',
+        cta: { label: 'Comparer Pika vs Hailuo', href: compareHref('fr', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+      },
+      {
+        title: 'Construire un prompt stylisé ?',
+        body: 'Verrouillez sujet, style, action et exclusions avant de tester des variantes par seed.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin de réalisme ou d’audio ?',
+        body: 'Comparez avec Kling 2.6 Pro si réalisme, son intégré ou contrôles de production sont prioritaires.',
+        cta: { label: 'Comparer Pika vs Kling', href: compareHref('fr', 'pika-text-to-video', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Écrivez sujet, action, famille de style et exclusions dans un prompt compact.' },
+      { title: 'Image-to-video', body: 'Utilisez une image de départ quand personnage, produit ou composition doit rester reconnaissable.' },
+      { title: 'Variantes par seed', body: 'Gardez un seed utile et itérez les prompts dans la même voie visuelle.' },
+      { title: 'Prompt négatif', body: 'Listez artefacts, styles ou éléments texte à éviter.' },
+      { title: 'Passage audio', body: 'Préparez musique et SFX hors Pika une fois la boucle visuelle validée.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Pika 2.2 en un coup d’œil',
+      subtitle: 'Prix totaux de clips stylisés — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Pika 2.2 : tarifs, clips stylisés et exemples | MaxVideoAI',
+      description:
+        'Explorez Pika 2.2 : prix, clips silencieux stylisés, image-to-video, seeds, prompts négatifs et exemples de vidéos sociales sur MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA DE CLIPS CORTOS ESTILIZADOS',
+      title: 'Pika 2.2',
+      subtitle: 'Clips cortos estilizados con imagen a video, seeds, prompts negativos y loops sociales.',
+      subtitleHighlights: ['Clips cortos estilizados', 'imagen a video', 'loops sociales'],
+      paragraph:
+        'Usa Pika 2.2 para animación estilizada sin audio, variantes de prompt y clips sociales cortos cuando la dirección es anime, cómic, pixel, toon o 3D lúdico.',
+      primaryCta: { label: 'Generar con Pika 2.2', href: '/app?engine=pika-text-to-video' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'pika') },
+      quickLinks: [
+        { label: 'Comparar vs Hailuo', href: compareHref('es', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+        { label: 'Ver precios', href: pricingHref('es', 'pika-text-to-video-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Pika 2.2',
+      description: 'Clip social estilizado sin audio',
+      renderLabel: 'Ver resultado',
+      badges: ['Sin audio', '10s', '1080p'],
+      altContext: 'ejemplo de clip corto estilizado con Pika 2.2',
+    },
+    features: [
+      { title: 'Movimiento estilizado', body: 'Crea movimiento anime, cómic, pixel, toon o 3D lúdico.', tone: 'quality' },
+      { title: 'Texto o imagen', body: 'Empieza con prompt o imagen cuando la composición debe quedar anclada.', tone: 'reference' },
+      { title: 'Seeds', body: 'Reutiliza variantes por seed cuando una dirección visual empieza a funcionar.', tone: 'continuity' },
+      { title: 'Prompts negativos', body: 'Excluye rasgos visuales no deseados mientras pruebas una dirección estilizada.', tone: 'reference' },
+      { title: '5s o 10s', body: 'Mantén clips compactos para loops, ediciones sociales y pruebas de movimiento.', tone: 'duration' },
+      { title: 'Salida sin audio', body: 'Agrega música, voz y SFX después de aprobar la parte visual.', tone: 'audio' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Pika o Hailuo?',
+        body: 'Usa Pika para loops sociales estilizados y variantes por seed. Usa Hailuo 02 para física y movimiento de bajo costo.',
+        cta: { label: 'Comparar Pika vs Hailuo', href: compareHref('es', 'pika-text-to-video', 'minimax-hailuo-02-text') },
+      },
+      {
+        title: '¿Armas un prompt estilizado?',
+        body: 'Fija sujeto, estilo, acción y exclusiones antes de probar variantes con seeds.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas realismo o audio?',
+        body: 'Compara con Kling 2.6 Pro cuando pesan más el realismo, el sonido integrado o los controles de producción.',
+        cta: { label: 'Comparar Pika vs Kling', href: compareHref('es', 'pika-text-to-video', 'kling-2-6-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Escribe sujeto, acción, familia visual y exclusiones en un prompt compacto.' },
+      { title: 'Imagen a video', body: 'Usa una imagen inicial cuando personaje, producto o composición debe reconocerse.' },
+      { title: 'Variantes por seed', body: 'Conserva un seed útil e itera prompts dentro de la misma línea visual.' },
+      { title: 'Prompt negativo', body: 'Lista artefactos, estilos o texto no deseado para evitarlos.' },
+      { title: 'Entrega de audio', body: 'Planea música y SFX fuera de Pika después de aprobar el loop visual.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Pika 2.2 de un vistazo',
+      subtitle: 'Totales de clips estilizados. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Pika 2.2: precios, clips estilizados y ejemplos | MaxVideoAI',
+      description:
+        'Explora Pika 2.2: precios, clips estilizados sin audio, imagen a video, seeds, prompts negativos y ejemplos de video social en MaxVideoAI.',
+    },
+  },
+};
+
+const GPT_IMAGE_2_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'OPENAI IMAGE GENERATION MODEL',
+      title: 'GPT Image 2',
+      subtitle: 'Quality-first image generation for readable text, product stills and controlled edits.',
+      subtitleHighlights: ['readable text', 'product stills', 'controlled edits'],
+      paragraph:
+        'Use GPT Image 2 when the still needs precise text, product-label fidelity, quality controls, custom sizes or mask-guided edits from reference images.',
+      primaryCta: { label: 'Generate with GPT Image 2', href: '/app/image?engine=gpt-image-2' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'gpt-image-2-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=gpt-image-2' },
+        { label: 'View pricing', href: pricingHref('en', 'gpt-image-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'GPT Image 2 example',
+      description: 'Text-heavy product still and controlled edit workflow',
+      renderLabel: 'View image',
+      badges: ['Text', 'Edits', '4K size'],
+      altContext: 'GPT Image 2 product still with readable text',
+    },
+    features: [
+      { title: 'Readable text', body: 'Useful for packaging, labels, UI-style layouts and editorial graphics.', tone: 'quality' },
+      { title: 'Product stills', body: 'Build catalog-style shots with controlled lighting and composition.', tone: 'reference' },
+      { title: 'Image edits', body: 'Upload references for prompt-led edits, with optional mask control.', tone: 'continuity' },
+      { title: 'Custom sizes', body: 'Use presets or custom dimensions up to the exposed route limits.', tone: 'quality' },
+      { title: 'Quality levels', body: 'Choose low, medium or high depending on cost and fidelity.', tone: 'price' },
+      { title: 'Batch output', body: 'Generate up to 4 images when exploring variants.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: 'GPT Image 2 or Nano Banana 2?',
+        body: 'Use GPT Image 2 for text-heavy stills and controlled edits. Use Nano Banana 2 for broader ratios and grounded Google image workflows.',
+        cta: { label: 'View Nano Banana 2', href: modelsHref('en', 'nano-banana-2') },
+      },
+      {
+        title: 'Working on product text?',
+        body: 'Write the exact label hierarchy, lighting, camera angle and edit constraints before generating.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Preparing video references?',
+        body: 'Pair clean GPT Image 2 stills with video models when you need controlled product or typography references.',
+        cta: { label: 'Explore Seedream reference prep', href: modelsHref('en', 'seedream') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Specify subject, exact text, layout, lighting, lens and output size.' },
+      { title: 'Image edit', body: 'Upload the source image and describe what should change and what must stay locked.' },
+      { title: 'Mask-guided edit', body: 'Use a mask only when an edit should be constrained to a specific region.' },
+      { title: 'Quality choice', body: 'Draft lower, then switch to high when typography or product detail matters.' },
+      { title: 'Batch variants', body: 'Generate multiple images for composition exploration before selecting a final.' },
+    ],
+    pricingCopy: {
+      title: 'GPT Image 2 pricing at a glance',
+      subtitle: 'Preset image totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 4 images',
+    },
+    meta: {
+      title: 'GPT Image 2: Pricing, Text Rendering & Editing | MaxVideoAI',
+      description:
+        'Explore GPT Image 2 pricing, readable text rendering, product stills, custom image sizes, reference edits and mask-guided image workflows on MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE IMAGE OPENAI',
+      title: 'GPT Image 2',
+      subtitle: 'Génération d’images orientée qualité pour texte lisible, packshots produit et retouches contrôlées.',
+      subtitleHighlights: ['texte lisible', 'packshots produit', 'retouches contrôlées'],
+      paragraph:
+        'Utilisez GPT Image 2 quand l’image doit préserver du texte, des détails produit, des réglages qualité, des tailles personnalisées ou des retouches guidées par masque.',
+      primaryCta: { label: 'Générer avec GPT Image 2', href: '/app/image?engine=gpt-image-2' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'gpt-image-2-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=gpt-image-2' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'gpt-image-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple GPT Image 2',
+      description: 'Packshot avec texte et retouche contrôlée',
+      renderLabel: 'Voir l’image',
+      badges: ['Texte', 'Retouches', 'Format 4K'],
+      altContext: 'packshot GPT Image 2 avec texte lisible',
+    },
+    features: [
+      { title: 'Texte lisible', body: 'Utile pour packaging, labels, maquettes UI et visuels éditoriaux.', tone: 'quality' },
+      { title: 'Packshots produit', body: 'Créez des images catalogue avec lumière et composition maîtrisées.', tone: 'reference' },
+      { title: 'Retouches image', body: 'Chargez des références pour des modifications pilotées par prompt.', tone: 'continuity' },
+      { title: 'Tailles personnalisées', body: 'Utilisez presets ou dimensions custom dans les limites exposées.', tone: 'quality' },
+      { title: 'Niveaux qualité', body: 'Choisissez low, medium ou high selon coût et fidélité.', tone: 'price' },
+      { title: 'Variantes', body: 'Générez jusqu’à 4 images pour explorer plusieurs compositions.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: 'GPT Image 2 ou Nano Banana 2 ?',
+        body: 'Prenez GPT Image 2 pour texte et retouches contrôlées. Prenez Nano Banana 2 pour ratios plus larges et workflows Google guidés.',
+        cta: { label: 'Voir Nano Banana 2', href: modelsHref('fr', 'nano-banana-2') },
+      },
+      {
+        title: 'Travail sur texte produit ?',
+        body: 'Décrivez hiérarchie de label, lumière, angle caméra et contraintes de retouche avant génération.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Préparer des références vidéo ?',
+        body: 'Associez des stills propres GPT Image 2 aux modèles vidéo pour verrouiller produit ou typographie.',
+        cta: { label: 'Explorer Seedream', href: modelsHref('fr', 'seedream') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Précisez sujet, texte exact, layout, lumière, optique et taille de sortie.' },
+      { title: 'Retouche image', body: 'Chargez l’image source et dites ce qui change, et ce qui reste verrouillé.' },
+      { title: 'Masque', body: 'Utilisez un masque seulement quand la retouche doit rester dans une zone précise.' },
+      { title: 'Choix qualité', body: 'Brouillonnez plus bas, puis passez en high pour typographie ou détail produit.' },
+      { title: 'Variantes', body: 'Générez plusieurs images pour explorer la composition avant sélection.' },
+    ],
+    pricingCopy: {
+      title: 'Prix GPT Image 2 en un coup d’œil',
+      subtitle: 'Prix totaux par scénario image — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 4 images',
+    },
+    meta: {
+      title: 'GPT Image 2 : tarifs, texte lisible et retouche | MaxVideoAI',
+      description:
+        'Explorez GPT Image 2 : prix, texte lisible, packshots produit, tailles personnalisées, retouches par références et masques dans MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO DE IMAGEN OPENAI',
+      title: 'GPT Image 2',
+      subtitle: 'Generación de imagen enfocada en calidad para texto legible, producto y ediciones controladas.',
+      subtitleHighlights: ['texto legible', 'producto', 'ediciones controladas'],
+      paragraph:
+        'Usa GPT Image 2 cuando el still necesita texto preciso, fidelidad de producto, controles de calidad, tamaños personalizados o ediciones guiadas por máscara.',
+      primaryCta: { label: 'Generar con GPT Image 2', href: '/app/image?engine=gpt-image-2' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'gpt-image-2-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=gpt-image-2' },
+        { label: 'Ver precios', href: pricingHref('es', 'gpt-image-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo GPT Image 2',
+      description: 'Imagen de producto con texto y edición controlada',
+      renderLabel: 'Ver imagen',
+      badges: ['Texto', 'Edición', 'Tamaño 4K'],
+      altContext: 'imagen de producto GPT Image 2 con texto legible',
+    },
+    features: [
+      { title: 'Texto legible', body: 'Útil para packaging, etiquetas, layouts tipo UI y gráficos editoriales.', tone: 'quality' },
+      { title: 'Producto', body: 'Crea stills de catálogo con iluminación y composición controladas.', tone: 'reference' },
+      { title: 'Edición de imagen', body: 'Sube referencias para cambios guiados por prompt y máscara opcional.', tone: 'continuity' },
+      { title: 'Tamaños custom', body: 'Usa presets o dimensiones personalizadas dentro de los límites expuestos.', tone: 'quality' },
+      { title: 'Niveles de calidad', body: 'Elige low, medium o high según costo y fidelidad.', tone: 'price' },
+      { title: 'Variantes', body: 'Genera hasta 4 imágenes para explorar composiciones.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: '¿GPT Image 2 o Nano Banana 2?',
+        body: 'Usa GPT Image 2 para texto y edición controlada. Usa Nano Banana 2 para ratios amplios y flujos Google con grounding.',
+        cta: { label: 'Ver Nano Banana 2', href: modelsHref('es', 'nano-banana-2') },
+      },
+      {
+        title: '¿Trabajas texto de producto?',
+        body: 'Define jerarquía del label, luz, ángulo de cámara y restricciones de edición antes de generar.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Preparas referencias para video?',
+        body: 'Combina stills limpios de GPT Image 2 con modelos de video para controlar producto o tipografía.',
+        cta: { label: 'Explorar Seedream', href: modelsHref('es', 'seedream') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a imagen', body: 'Especifica sujeto, texto exacto, layout, luz, lente y tamaño de salida.' },
+      { title: 'Edición de imagen', body: 'Sube la fuente y explica qué cambia y qué debe quedarse fijo.' },
+      { title: 'Máscara', body: 'Usa máscara solo cuando la edición debe limitarse a una zona concreta.' },
+      { title: 'Calidad', body: 'Borrador en calidad baja o media; usa high para texto o detalle de producto.' },
+      { title: 'Variantes', body: 'Genera varias imágenes para explorar composición antes de elegir.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de GPT Image 2 de un vistazo',
+      subtitle: 'Totales por escenario de imagen. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 4 imágenes',
+    },
+    meta: {
+      title: 'GPT Image 2: precios, texto legible y edición | MaxVideoAI',
+      description:
+        'Explora GPT Image 2: precios, texto legible, producto, tamaños personalizados, ediciones con referencias y máscaras en MaxVideoAI.',
+    },
+  },
+};
+
+const NANO_BANANA_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'GOOGLE FAST IMAGE ROUTE',
+      title: 'Nano Banana',
+      subtitle: 'Fast still drafts, reference edits and batch image variants for lightweight visual exploration.',
+      subtitleHighlights: ['Fast still drafts', 'reference edits', 'batch image variants'],
+      paragraph:
+        'Use Nano Banana as the low-friction Google image route for quick still concepts, simple reference edits and multi-image batches before moving finals to Pro or Nano Banana 2.',
+      primaryCta: { label: 'Generate with Nano Banana', href: '/app/image?engine=nano-banana' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'nano-banana-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=nano-banana' },
+        { label: 'View pricing', href: pricingHref('en', 'nano-banana-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Nano Banana example',
+      description: 'Fast still concept and edit route',
+      renderLabel: 'View image',
+      badges: ['Fast', 'Batch', 'Edit'],
+      altContext: 'Nano Banana fast still image example',
+    },
+    features: [
+      { title: 'Fast still drafts', body: 'Explore image ideas quickly before investing in final routes.', tone: 'price' },
+      { title: 'Reference edits', body: 'Upload 1-4 images for prompt-led edits and remixes.', tone: 'reference' },
+      { title: 'Batch variants', body: 'Generate multiple outputs from one prompt for visual exploration.', tone: 'duration' },
+      { title: 'Broad ratios', body: 'Use common social, square, portrait and wide aspect ratios.', tone: 'quality' },
+      { title: 'Low unit cost', body: 'Good for early moodboards and storyboard stills.', tone: 'price' },
+      { title: 'Image workspace', body: 'Use the same MaxVideoAI wallet, prompts and history as the rest of the app.', tone: 'continuity' },
+    ],
+    decisionCards: [
+      {
+        title: 'Nano Banana or Nano Banana 2?',
+        body: 'Use Nano Banana for cheaper fast batches. Use Nano Banana 2 for grounding, wider ratios and stronger edit controls.',
+        cta: { label: 'View Nano Banana 2', href: modelsHref('en', 'nano-banana-2') },
+      },
+      {
+        title: 'Batching quick variants?',
+        body: 'Keep prompts short, change one visual variable at a time and batch several outputs.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need higher-res campaign stills?',
+        body: 'Move selected directions into Nano Banana Pro when text polish, campaign finish or higher-res output matters.',
+        cta: { label: 'View Nano Banana Pro', href: modelsHref('en', 'nano-banana-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Describe the subject, style, aspect ratio and one clear composition target.' },
+      { title: 'Image edit', body: 'Upload a reference and state what changes while preserving structure.' },
+      { title: 'Batch variants', body: 'Run several images when exploring moodboards, thumbnails or storyboard stills.' },
+      { title: 'Aspect ratio', body: 'Pick the delivery ratio before prompting so composition matches the final crop.' },
+      { title: 'Upgrade path', body: 'Send winners to Nano Banana 2 or Pro when the still needs grounding or 4K polish.' },
+    ],
+    pricingCopy: {
+      title: 'Nano Banana pricing at a glance',
+      subtitle: 'Preset image totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 8 images',
+    },
+    meta: {
+      title: 'Nano Banana: Pricing, Fast Image Drafts & Edits | MaxVideoAI',
+      description:
+        'Explore Nano Banana pricing, fast still drafts, reference image edits, batch variants and lightweight Google image workflows on MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE IMAGE GOOGLE RAPIDE',
+      title: 'Nano Banana',
+      subtitle: 'Brouillons image rapides, retouches par référence et variantes en lot pour explorer vite.',
+      subtitleHighlights: ['Brouillons image rapides', 'retouches par référence', 'variantes en lot'],
+      paragraph:
+        'Utilisez Nano Banana comme route Google légère pour concepts rapides, retouches simples par référence et lots d’images avant de finaliser dans Pro ou Nano Banana 2.',
+      primaryCta: { label: 'Générer avec Nano Banana', href: '/app/image?engine=nano-banana' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=nano-banana' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Nano Banana',
+      description: 'Concept image rapide et route de retouche',
+      renderLabel: 'Voir l’image',
+      badges: ['Rapide', 'Lot', 'Retouche'],
+      altContext: 'exemple image rapide Nano Banana',
+    },
+    features: [
+      { title: 'Brouillons rapides', body: 'Explorez des idées visuelles avant les routes finales.', tone: 'price' },
+      { title: 'Retouches référence', body: 'Chargez 1 à 4 images pour remixer ou éditer.', tone: 'reference' },
+      { title: 'Variantes en lot', body: 'Générez plusieurs sorties depuis un prompt.', tone: 'duration' },
+      { title: 'Formats courants', body: 'Utilisez ratios sociaux, carré, portrait ou large.', tone: 'quality' },
+      { title: 'Coût léger', body: 'Adapté aux moodboards et stills de storyboard.', tone: 'price' },
+      { title: 'Workspace image', body: 'Même wallet, prompts et historique que le reste de MaxVideoAI.', tone: 'continuity' },
+    ],
+    decisionCards: [
+      {
+        title: 'Nano Banana ou Nano Banana 2 ?',
+        body: 'Gardez Nano Banana pour les lots rapides moins chers. Passez à Nano Banana 2 pour grounding, ratios larges et contrôles plus forts.',
+        cta: { label: 'Voir Nano Banana 2', href: modelsHref('fr', 'nano-banana-2') },
+      },
+      {
+        title: 'Besoin de variantes rapides ?',
+        body: 'Gardez un prompt court, changez une variable visuelle à la fois et lancez plusieurs sorties.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin de visuels 4K ?',
+        body: 'Passez les directions retenues dans Nano Banana Pro pour texte plus propre, finition campagne ou sortie 4K.',
+        cta: { label: 'Voir Nano Banana Pro', href: modelsHref('fr', 'nano-banana-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Décrivez sujet, style, ratio et composition cible.' },
+      { title: 'Retouche image', body: 'Chargez une référence et dites ce qui change tout en gardant la structure.' },
+      { title: 'Variantes', body: 'Lancez plusieurs images pour moodboards, miniatures ou storyboards.' },
+      { title: 'Ratio', body: 'Choisissez le format de livraison avant le prompt.' },
+      { title: 'Passage final', body: 'Envoyez les pistes gagnantes vers Nano Banana 2 ou Pro.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Nano Banana en un coup d’œil',
+      subtitle: 'Prix totaux par scénario image — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 8 images',
+    },
+    meta: {
+      title: 'Nano Banana : tarifs, brouillons image rapides et retouches | MaxVideoAI',
+      description:
+        'Explorez Nano Banana : prix, brouillons image rapides, retouches par références, variantes en lot et workflows Google légers dans MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA GOOGLE DE IMAGEN RÁPIDA',
+      title: 'Nano Banana',
+      subtitle: 'Borradores rápidos de imagen, ediciones con referencia y variantes en lote para explorar visuales.',
+      subtitleHighlights: ['Borradores rápidos de imagen', 'ediciones con referencia', 'variantes en lote'],
+      paragraph:
+        'Usa Nano Banana como ruta Google ligera para conceptos rápidos, ediciones simples con referencia y lotes de imágenes antes de pasar finales a Pro o Nano Banana 2.',
+      primaryCta: { label: 'Generar con Nano Banana', href: '/app/image?engine=nano-banana' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'nano-banana-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=nano-banana' },
+        { label: 'Ver precios', href: pricingHref('es', 'nano-banana-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Nano Banana',
+      description: 'Concepto rápido y ruta de edición',
+      renderLabel: 'Ver imagen',
+      badges: ['Rápido', 'Lote', 'Edición'],
+      altContext: 'ejemplo de imagen rápida con Nano Banana',
+    },
+    features: [
+      { title: 'Borradores rápidos', body: 'Explora ideas visuales antes de invertir en rutas finales.', tone: 'price' },
+      { title: 'Ediciones con referencia', body: 'Sube 1 a 4 imágenes para remix o edición.', tone: 'reference' },
+      { title: 'Variantes en lote', body: 'Genera varias salidas desde un mismo prompt.', tone: 'duration' },
+      { title: 'Ratios comunes', body: 'Usa formatos sociales, cuadrado, retrato o wide.', tone: 'quality' },
+      { title: 'Costo ligero', body: 'Bueno para moodboards y stills de storyboard.', tone: 'price' },
+      { title: 'Workspace de imagen', body: 'Mismo wallet, prompts e historial que el resto de MaxVideoAI.', tone: 'continuity' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Nano Banana o Nano Banana 2?',
+        body: 'Usa Nano Banana para lotes rápidos y baratos. Usa Nano Banana 2 para grounding, ratios amplios y mejores controles.',
+        cta: { label: 'Ver Nano Banana 2', href: modelsHref('es', 'nano-banana-2') },
+      },
+      {
+        title: '¿Necesitas variantes rápidas?',
+        body: 'Mantén el prompt corto, cambia una variable visual por vez y genera varias salidas.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas piezas 4K?',
+        body: 'Pasa las direcciones elegidas a Nano Banana Pro para texto más limpio, acabado de campaña o salida 4K.',
+        cta: { label: 'Ver Nano Banana Pro', href: modelsHref('es', 'nano-banana-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a imagen', body: 'Describe sujeto, estilo, ratio y composición objetivo.' },
+      { title: 'Edición de imagen', body: 'Sube una referencia y explica qué cambia y qué se conserva.' },
+      { title: 'Variantes', body: 'Genera varias imágenes para moodboards, miniaturas o storyboard.' },
+      { title: 'Ratio', body: 'Elige el formato final antes de escribir el prompt.' },
+      { title: 'Ruta final', body: 'Lleva las mejores opciones a Nano Banana 2 o Pro.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Nano Banana de un vistazo',
+      subtitle: 'Totales por escenario de imagen. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 8 imágenes',
+    },
+    meta: {
+      title: 'Nano Banana: precios, borradores rápidos y edición | MaxVideoAI',
+      description:
+        'Explora Nano Banana: precios, borradores rápidos de imagen, ediciones con referencia, variantes en lote y flujos Google ligeros en MaxVideoAI.',
+    },
+  },
+};
+
+const NANO_BANANA_2_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'GOOGLE GROUNDED IMAGE MODEL',
+      title: 'Nano Banana 2',
+      subtitle: 'Grounded image generation, wide aspect ratios and multi-reference edits for production-ready stills.',
+      subtitleHighlights: ['Grounded image generation', 'wide aspect ratios', 'multi-reference edits'],
+      paragraph:
+        'Use Nano Banana 2 when you need 0.5K to 4K stills, optional web grounding, wider aspect ratios and larger reference sets for controlled image generation or edits.',
+      primaryCta: { label: 'Generate with Nano Banana 2', href: '/app/image?engine=nano-banana-2' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'nano-banana-2-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=nano-banana-2' },
+        { label: 'View pricing', href: pricingHref('en', 'nano-banana-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Nano Banana 2 example',
+      description: 'Grounded still generation and edit workflow',
+      renderLabel: 'View image',
+      badges: ['Grounded', '4K', 'References'],
+      altContext: 'Nano Banana 2 grounded image generation example',
+    },
+    features: [
+      { title: 'Grounded prompts', body: 'Use optional web grounding when current visual context matters.', tone: 'reference' },
+      { title: '0.5K to 4K', body: 'Draft cheaply, then move selected stills up to higher resolution.', tone: 'quality' },
+      { title: 'Wide ratios', body: 'Support common, panoramic and extreme aspect ratios.', tone: 'duration' },
+      { title: 'Multi-reference edits', body: 'Use larger reference sets for product, moodboard or layout consistency.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Reuse a seed to iterate around the same composition.', tone: 'reference' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Nano Banana 2 or Pro?',
+        body: 'Use Nano Banana 2 for grounding, ratios and cost control. Use Pro when stronger text polish and campaign delivery matter more.',
+        cta: { label: 'View Nano Banana Pro', href: modelsHref('en', 'nano-banana-pro') },
+      },
+      {
+        title: 'Using web grounding?',
+        body: 'Only enable web search when the brief needs current visual context; keep owned brand references explicit.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need text-heavy OpenAI stills?',
+        body: 'Compare your brief with GPT Image 2 when label accuracy and controlled mask edits are the primary job.',
+        cta: { label: 'View GPT Image 2', href: modelsHref('en', 'gpt-image-2') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Set subject, ratio, resolution, style and whether the prompt needs grounding.' },
+      { title: 'Image edit', body: 'Use references to preserve product shape, layout, materials or palette.' },
+      { title: 'Web grounding', body: 'Enable only when current context improves the image brief.' },
+      { title: 'Extreme ratios', body: 'Design the composition for panoramic or vertical formats before generating.' },
+      { title: 'Resolution ladder', body: 'Use 0.5K or 1K for drafts, then 2K or 4K for selected finals.' },
+    ],
+    pricingCopy: {
+      title: 'Nano Banana 2 pricing at a glance',
+      subtitle: 'Preset image totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 4K',
+    },
+    meta: {
+      title: 'Nano Banana 2: Pricing, Grounded Images & Editing | MaxVideoAI',
+      description:
+        'Explore Nano Banana 2 pricing, grounded image generation, 0.5K to 4K outputs, wide aspect ratios, multi-reference edits and web-grounded prompts.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE IMAGE GOOGLE GUIDÉ',
+      title: 'Nano Banana 2',
+      subtitle: 'Génération d’images guidée, ratios larges et retouches multi-références pour des stills de production.',
+      subtitleHighlights: ['Génération d’images guidée', 'ratios larges', 'retouches multi-références'],
+      paragraph:
+        'Utilisez Nano Banana 2 pour des stills 0.5K à 4K, grounding web optionnel, ratios étendus et jeux de références plus larges pour générer ou éditer avec contrôle.',
+      primaryCta: { label: 'Générer avec Nano Banana 2', href: '/app/image?engine=nano-banana-2' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-2-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=nano-banana-2' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Nano Banana 2',
+      description: 'Génération guidée et retouche image',
+      renderLabel: 'Voir l’image',
+      badges: ['Guidé', '4K', 'Références'],
+      altContext: 'exemple de génération image guidée avec Nano Banana 2',
+    },
+    features: [
+      { title: 'Prompts guidés', body: 'Activez le grounding web quand le contexte visuel actuel compte.', tone: 'reference' },
+      { title: '0.5K à 4K', body: 'Brouillonnez à bas coût puis montez les pistes retenues.', tone: 'quality' },
+      { title: 'Ratios larges', body: 'Formats courants, panoramiques et extrêmes.', tone: 'duration' },
+      { title: 'Multi-références', body: 'Utilisez plus de références pour produit, moodboard ou layout.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Réutilisez un seed pour itérer autour d’une composition.', tone: 'reference' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Nano Banana 2 ou Pro ?',
+        body: 'Prenez Nano Banana 2 pour grounding, ratios et coût maîtrisé. Prenez Pro pour un texte plus propre et une livraison campagne.',
+        cta: { label: 'Voir Nano Banana Pro', href: modelsHref('fr', 'nano-banana-pro') },
+      },
+      {
+        title: 'Utiliser le grounding web ?',
+        body: 'Activez la recherche web seulement si le brief dépend d’un contexte visuel récent; gardez vos références de marque explicites.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin de texte OpenAI ?',
+        body: 'Regardez GPT Image 2 quand précision des labels et retouches par masque sont prioritaires.',
+        cta: { label: 'Voir GPT Image 2', href: modelsHref('fr', 'gpt-image-2') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Définissez sujet, ratio, résolution, style et besoin éventuel de grounding.' },
+      { title: 'Retouche image', body: 'Utilisez les références pour préserver forme produit, layout, matière ou palette.' },
+      { title: 'Grounding web', body: 'Activez-le seulement si le contexte actuel améliore le brief.' },
+      { title: 'Ratios extrêmes', body: 'Pensez la composition pour panoramique ou vertical avant génération.' },
+      { title: 'Échelle résolution', body: '0.5K ou 1K pour brouillons, puis 2K ou 4K pour les finales.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Nano Banana 2 en un coup d’œil',
+      subtitle: 'Prix totaux par scénario image — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 4K',
+    },
+    meta: {
+      title: 'Nano Banana 2 : tarifs, images guidées et retouche | MaxVideoAI',
+      description:
+        'Explorez Nano Banana 2 : prix, génération guidée, sorties 0.5K à 4K, ratios larges, retouches multi-références et grounding web.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO GOOGLE DE IMAGEN GUIADA',
+      title: 'Nano Banana 2',
+      subtitle: 'Generación de imagen guiada, ratios amplios y ediciones multi-referencia para stills de producción.',
+      subtitleHighlights: ['Generación de imagen guiada', 'ratios amplios', 'ediciones multi-referencia'],
+      paragraph:
+        'Usa Nano Banana 2 para stills de 0.5K a 4K, grounding web opcional, ratios amplios y sets de referencia más grandes para generar o editar con control.',
+      primaryCta: { label: 'Generar con Nano Banana 2', href: '/app/image?engine=nano-banana-2' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'nano-banana-2-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=nano-banana-2' },
+        { label: 'Ver precios', href: pricingHref('es', 'nano-banana-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Nano Banana 2',
+      description: 'Generación guiada y edición de imagen',
+      renderLabel: 'Ver imagen',
+      badges: ['Guiado', '4K', 'Referencias'],
+      altContext: 'ejemplo de generación de imagen guiada con Nano Banana 2',
+    },
+    features: [
+      { title: 'Prompts guiados', body: 'Activa web grounding cuando el contexto visual actual importa.', tone: 'reference' },
+      { title: '0.5K a 4K', body: 'Borrador barato y subida de resolución para finales seleccionados.', tone: 'quality' },
+      { title: 'Ratios amplios', body: 'Formatos comunes, panorámicos y extremos.', tone: 'duration' },
+      { title: 'Multi-referencia', body: 'Usa más referencias para producto, moodboard o layout.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Reutiliza un seed para iterar sobre la misma composición.', tone: 'reference' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Nano Banana 2 o Pro?',
+        body: 'Usa Nano Banana 2 para grounding, ratios y control de costo. Usa Pro cuando pesan texto más limpio y entrega de campaña.',
+        cta: { label: 'Ver Nano Banana Pro', href: modelsHref('es', 'nano-banana-pro') },
+      },
+      {
+        title: '¿Usas web grounding?',
+        body: 'Activa búsqueda web solo si el brief necesita contexto visual reciente; mantén explícitas tus referencias de marca.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas texto con OpenAI?',
+        body: 'Revisa GPT Image 2 cuando la precisión de labels y las ediciones con máscara son el trabajo principal.',
+        cta: { label: 'Ver GPT Image 2', href: modelsHref('es', 'gpt-image-2') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a imagen', body: 'Define sujeto, ratio, resolución, estilo y si hace falta grounding.' },
+      { title: 'Edición de imagen', body: 'Usa referencias para preservar forma de producto, layout, materiales o paleta.' },
+      { title: 'Web grounding', body: 'Actívalo solo cuando el contexto actual mejore el brief.' },
+      { title: 'Ratios extremos', body: 'Diseña la composición para panorámico o vertical antes de generar.' },
+      { title: 'Escalera de resolución', body: '0.5K o 1K para borradores; 2K o 4K para finales.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Nano Banana 2 de un vistazo',
+      subtitle: 'Totales por escenario de imagen. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 4K',
+    },
+    meta: {
+      title: 'Nano Banana 2: precios, imágenes guiadas y edición | MaxVideoAI',
+      description:
+        'Explora Nano Banana 2: precios, generación guiada, salidas 0.5K a 4K, ratios amplios, ediciones multi-referencia y web grounding.',
+    },
+  },
+};
+
+const NANO_BANANA_PRO_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'GOOGLE PRO IMAGE MODEL',
+      title: 'Nano Banana Pro',
+      subtitle: '4K campaign stills, typography-focused edits and multi-image references for polished visual assets.',
+      subtitleHighlights: ['4K campaign stills', 'typography-focused edits', 'multi-image references'],
+      paragraph:
+        'Use Nano Banana Pro when a still needs stronger typography, campaign polish, 2K/4K delivery and reference-led edits for brand, product or launch visuals.',
+      primaryCta: { label: 'Generate with Nano Banana Pro', href: '/app/image?engine=nano-banana-pro' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'nano-banana-pro-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=nano-banana-pro' },
+        { label: 'View pricing', href: pricingHref('en', 'nano-banana-pro-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Nano Banana Pro example',
+      description: '4K campaign still and typography workflow',
+      renderLabel: 'View image',
+      badges: ['2K/4K', 'Typography', 'References'],
+      altContext: 'Nano Banana Pro campaign image with typography',
+    },
+    features: [
+      { title: '4K campaign stills', body: 'Render higher-resolution stills for launch and client-facing assets.', tone: 'quality' },
+      { title: 'Typography focus', body: 'Use explicit text hierarchy and layout cues for readable campaign graphics.', tone: 'reference' },
+      { title: 'Reference edits', body: 'Upload references for wardrobe, product, layout or style continuity.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Lock randomness while iterating on the same framing.', tone: 'reference' },
+      { title: '2K first', body: 'Draft at 2K before paying for 4K finals.', tone: 'price' },
+      { title: 'Image workspace', body: 'Generate and edit still assets without leaving MaxVideoAI.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: 'Pro or Nano Banana 2?',
+        body: 'Use Pro for 4K campaign polish and typography. Use Nano Banana 2 for grounding, wider ratios and lower-cost drafts.',
+        cta: { label: 'View Nano Banana 2', href: modelsHref('en', 'nano-banana-2') },
+      },
+      {
+        title: 'Working with typography?',
+        body: 'Name the exact copy, hierarchy, spacing and surface where the text should appear.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need cheaper quick variants?',
+        body: 'Use Nano Banana for lightweight batches before moving a selected direction into Pro.',
+        cta: { label: 'View Nano Banana', href: modelsHref('en', 'nano-banana') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Campaign still', body: 'Define product, layout, copy, lighting and delivery resolution in one prompt.' },
+      { title: 'Reference edit', body: 'Upload refs for product identity, wardrobe, background, palette or typography direction.' },
+      { title: '2K to 4K', body: 'Validate composition at 2K, then rerun at 4K for final assets.' },
+      { title: 'Seed iteration', body: 'Reuse seed and adjust only one prompt variable per pass.' },
+      { title: 'Brand safety', body: 'Use owned marks and original characters; avoid protected IP and celebrity likeness.' },
+    ],
+    pricingCopy: {
+      title: 'Nano Banana Pro pricing at a glance',
+      subtitle: 'Preset image totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 4K',
+    },
+    meta: {
+      title: 'Nano Banana Pro: Pricing, 4K Images & Typography | MaxVideoAI',
+      description:
+        'Explore Nano Banana Pro pricing, 2K and 4K campaign stills, typography-focused image generation, reference edits and brand asset workflows.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE IMAGE GOOGLE PRO',
+      title: 'Nano Banana Pro',
+      subtitle: 'Visuels campagne 4K, retouches orientées typographie et références multiples pour assets finalisés.',
+      subtitleHighlights: ['Visuels campagne 4K', 'retouches orientées typographie', 'références multiples'],
+      paragraph:
+        'Utilisez Nano Banana Pro quand une image doit porter une typographie plus fiable, une finition campagne, une sortie 2K/4K et des retouches guidées par références.',
+      primaryCta: { label: 'Générer avec Nano Banana Pro', href: '/app/image?engine=nano-banana-pro' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-pro-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=nano-banana-pro' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'nano-banana-pro-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Nano Banana Pro',
+      description: 'Visuel 4K et workflow typographie',
+      renderLabel: 'Voir l’image',
+      badges: ['2K/4K', 'Typographie', 'Références'],
+      altContext: 'image campagne Nano Banana Pro avec typographie',
+    },
+    features: [
+      { title: 'Visuels 4K', body: 'Rendez des stills haute résolution pour lancements et assets client.', tone: 'quality' },
+      { title: 'Typographie', body: 'Décrivez hiérarchie de texte, placement et layout.', tone: 'reference' },
+      { title: 'Retouches référence', body: 'Chargez des refs pour produit, tenue, décor ou style.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Verrouillez l’aléatoire pendant les itérations.', tone: 'reference' },
+      { title: '2K d’abord', body: 'Validez en 2K avant de payer une finale 4K.', tone: 'price' },
+      { title: 'Workspace image', body: 'Générez et éditez vos assets dans MaxVideoAI.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: 'Pro ou Nano Banana 2 ?',
+        body: 'Prenez Pro pour la finition 4K et la typographie. Prenez Nano Banana 2 pour grounding, ratios larges et brouillons moins chers.',
+        cta: { label: 'Voir Nano Banana 2', href: modelsHref('fr', 'nano-banana-2') },
+      },
+      {
+        title: 'Travail typographique ?',
+        body: 'Nommez le texte exact, sa hiérarchie, son espacement et le support où il apparaît.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin de variantes moins chères ?',
+        body: 'Utilisez Nano Banana pour les lots rapides avant de finaliser une piste dans Pro.',
+        cta: { label: 'Voir Nano Banana', href: modelsHref('fr', 'nano-banana') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Visuel campagne', body: 'Définissez produit, layout, texte, lumière et résolution de livraison.' },
+      { title: 'Retouche référence', body: 'Chargez des refs pour identité produit, tenue, décor, palette ou typo.' },
+      { title: '2K vers 4K', body: 'Validez la composition en 2K, puis relancez en 4K.' },
+      { title: 'Itération par seed', body: 'Réutilisez le seed et changez une seule variable par passe.' },
+      { title: 'Sécurité marque', body: 'Utilisez vos propres marques et personnages; évitez IP protégée et célébrités.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Nano Banana Pro en un coup d’œil',
+      subtitle: 'Prix totaux par scénario image — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 4K',
+    },
+    meta: {
+      title: 'Nano Banana Pro : tarifs, images 4K et typographie | MaxVideoAI',
+      description:
+        'Explorez Nano Banana Pro : prix, visuels campagne 2K/4K, génération typographique, retouches par références et workflows brand assets.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO GOOGLE PRO DE IMAGEN',
+      title: 'Nano Banana Pro',
+      subtitle: 'Stills de campaña 4K, ediciones enfocadas en tipografía y multi-referencia para assets pulidos.',
+      subtitleHighlights: ['Stills de campaña 4K', 'ediciones enfocadas en tipografía', 'multi-referencia'],
+      paragraph:
+        'Usa Nano Banana Pro cuando una imagen necesita tipografía más fuerte, acabado de campaña, entrega 2K/4K y ediciones guiadas por referencias.',
+      primaryCta: { label: 'Generar con Nano Banana Pro', href: '/app/image?engine=nano-banana-pro' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'nano-banana-pro-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=nano-banana-pro' },
+        { label: 'Ver precios', href: pricingHref('es', 'nano-banana-pro-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Nano Banana Pro',
+      description: 'Still 4K y flujo de tipografía',
+      renderLabel: 'Ver imagen',
+      badges: ['2K/4K', 'Tipografía', 'Referencias'],
+      altContext: 'imagen de campaña Nano Banana Pro con tipografía',
+    },
+    features: [
+      { title: 'Stills 4K', body: 'Renderiza imágenes de mayor resolución para lanzamientos y assets de cliente.', tone: 'quality' },
+      { title: 'Tipografía', body: 'Define jerarquía de texto, ubicación y layout.', tone: 'reference' },
+      { title: 'Ediciones con referencia', body: 'Sube refs para producto, vestuario, fondo o estilo.', tone: 'continuity' },
+      { title: 'Seeds', body: 'Fija el azar mientras iteras sobre el mismo encuadre.', tone: 'reference' },
+      { title: 'Primero 2K', body: 'Valida en 2K antes de pagar una final 4K.', tone: 'price' },
+      { title: 'Workspace de imagen', body: 'Genera y edita assets dentro de MaxVideoAI.', tone: 'duration' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Pro o Nano Banana 2?',
+        body: 'Usa Pro para acabado 4K y tipografía. Usa Nano Banana 2 para grounding, ratios amplios y borradores más baratos.',
+        cta: { label: 'Ver Nano Banana 2', href: modelsHref('es', 'nano-banana-2') },
+      },
+      {
+        title: '¿Trabajas con tipografía?',
+        body: 'Nombra el texto exacto, jerarquía, espaciado y superficie donde debe aparecer.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas variantes más baratas?',
+        body: 'Usa Nano Banana para lotes rápidos antes de mover una dirección seleccionada a Pro.',
+        cta: { label: 'Ver Nano Banana', href: modelsHref('es', 'nano-banana') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Still de campaña', body: 'Define producto, layout, texto, luz y resolución de entrega.' },
+      { title: 'Edición con referencia', body: 'Sube refs para identidad de producto, vestuario, fondo, paleta o tipografía.' },
+      { title: '2K a 4K', body: 'Valida composición en 2K y relanza en 4K para finales.' },
+      { title: 'Iteración por seed', body: 'Reutiliza seed y cambia solo una variable por pasada.' },
+      { title: 'Seguridad de marca', body: 'Usa marcas propias y personajes originales; evita IP protegida y celebridades.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Nano Banana Pro de un vistazo',
+      subtitle: 'Totales por escenario de imagen. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 4K',
+    },
+    meta: {
+      title: 'Nano Banana Pro: precios, imágenes 4K y tipografía | MaxVideoAI',
+      description:
+        'Explora Nano Banana Pro: precios, stills 2K/4K de campaña, tipografía, ediciones con referencia y workflows de assets de marca.',
+    },
+  },
+};
+
 export const ADDITIONAL_TEMPLATE_COPY = {
+  'gpt-image-2': GPT_IMAGE_2_COPY,
+  'happy-horse-1-0': HAPPY_HORSE_10_COPY,
   'kling-2-5-turbo': KLING_25_TURBO_COPY,
   'kling-2-6-pro': KLING_26_PRO_COPY,
   'kling-3-4k': KLING_3_4K_COPY,
   'kling-3-standard': KLING_3_STANDARD_COPY,
+  'luma-ray-2': LUMA_RAY_2_COPY,
+  'luma-ray-2-flash': LUMA_RAY_2_FLASH_COPY,
   'ltx-2': LTX_2_COPY,
   'ltx-2-fast': LTX_2_FAST_COPY,
   'ltx-2-3-pro': LTX_23_PRO_COPY,
+  'minimax-hailuo-02-text': MINIMAX_HAILUO_02_COPY,
+  'nano-banana': NANO_BANANA_COPY,
+  'nano-banana-2': NANO_BANANA_2_COPY,
+  'nano-banana-pro': NANO_BANANA_PRO_COPY,
+  'pika-text-to-video': PIKA_TEXT_TO_VIDEO_COPY,
   'seedance-1-5-pro': SEEDANCE_15_PRO_COPY,
   'sora-2': SORA_2_COPY,
   'sora-2-pro': SORA_2_PRO_COPY,

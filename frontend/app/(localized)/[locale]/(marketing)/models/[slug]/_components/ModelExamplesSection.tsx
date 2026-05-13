@@ -62,26 +62,35 @@ function getViewAllExamplesLabel(locale: AppLocale) {
   return 'View all examples';
 }
 
-function getNoExamplesForFilterLabel(locale: AppLocale) {
-  if (locale === 'fr') return 'Aucun exemple Seedance 2.0 ne correspond encore à ce filtre.';
-  if (locale === 'es') return 'Todavía no hay ejemplos de Seedance 2.0 para este filtro.';
-  return 'No Seedance 2.0 examples match this filter yet.';
+function resolveExamplesModelName(copy: SoraCopy) {
+  const rawTitle = copy.heroTitle ?? copy.galleryTitle ?? '';
+  const cleanedTitle = rawTitle
+    .replace(/\s+(?:examples|exemples|ejemplos)\b.*$/i, '')
+    .replace(/\s+-\s+.*$/i, '')
+    .trim();
+  return cleanedTitle || 'this model';
 }
 
-function getFallbackExamplesTitle(locale: AppLocale) {
-  if (locale === 'fr') return 'Exemples Seedance 2.0';
-  if (locale === 'es') return 'Ejemplos de Seedance 2.0';
-  return 'Seedance 2.0 examples';
+function getNoExamplesForFilterLabel(locale: AppLocale, modelName: string) {
+  if (locale === 'fr') return `Aucun exemple ${modelName} ne correspond encore à ce filtre.`;
+  if (locale === 'es') return `Todavía no hay ejemplos de ${modelName} para este filtro.`;
+  return `No ${modelName} examples match this filter yet.`;
 }
 
-function getFallbackExamplesIntro(locale: AppLocale) {
+function getFallbackExamplesTitle(locale: AppLocale, modelName: string) {
+  if (locale === 'fr') return `Exemples ${modelName}`;
+  if (locale === 'es') return `Ejemplos de ${modelName}`;
+  return `${modelName} examples`;
+}
+
+function getFallbackExamplesIntro(locale: AppLocale, modelName: string) {
   if (locale === 'fr') {
-    return 'Explorez des rendus de la communauté et voyez comment Seedance 2.0 gère le mouvement, la continuité et l’audio natif.';
+    return `Explorez des rendus de la communauté et voyez comment ${modelName} se comporte dans des workflows MaxVideoAI.`;
   }
   if (locale === 'es') {
-    return 'Explora resultados de la comunidad y mira cómo Seedance 2.0 maneja movimiento, continuidad y audio nativo.';
+    return `Explora resultados de la comunidad y mira cómo ${modelName} funciona en flujos de MaxVideoAI.`;
   }
-  return 'Explore real outputs from the community and see how Seedance 2.0 handles motion, continuity and native audio.';
+  return `Explore real community outputs and see how ${modelName} performs inside MaxVideoAI workflows.`;
 }
 
 function getDecisionExampleFilters(locale: AppLocale): DecisionExampleFilter[] {
@@ -115,7 +124,7 @@ function getDecisionExampleFilters(locale: AppLocale): DecisionExampleFilter[] {
   ];
 }
 
-function getDecisionExampleProofItems(locale: AppLocale): Array<{
+function getDecisionExampleProofItems(locale: AppLocale, modelName: string): Array<{
   title: string;
   body: string;
   icon: LucideIcon;
@@ -123,7 +132,7 @@ function getDecisionExampleProofItems(locale: AppLocale): Array<{
 }> {
   if (locale === 'fr') {
     return [
-      { title: 'Rendus communautaires', body: 'Voyez ce qui est possible avec Seedance 2.0.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Rendus communautaires', body: `Voyez ce qui est possible avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Recréer un plan', body: 'Ouvrez l’app en un clic et réutilisez la configuration.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Audio natif', body: 'Dialogue, ambiance et SFX générés en synchro.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Continuité multi-plans', body: 'Gardez personnages, style et scène cohérents.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
@@ -133,7 +142,7 @@ function getDecisionExampleProofItems(locale: AppLocale): Array<{
 
   if (locale === 'es') {
     return [
-      { title: 'Resultados reales', body: 'Mira qué es posible con Seedance 2.0.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Resultados reales', body: `Mira qué es posible con ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Recrear una toma', body: 'Abre la app con un clic y reutiliza la configuración.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Audio nativo', body: 'Diálogo, ambiente y efectos de sonido generados en sincronía.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Continuidad entre tomas', body: 'Mantiene personajes, estilo y escena consistentes.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
@@ -142,7 +151,7 @@ function getDecisionExampleProofItems(locale: AppLocale): Array<{
   }
 
   return [
-    { title: 'Real community renders', body: "See what's possible with Seedance 2.0.", icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+    { title: 'Real community renders', body: `See what's possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
     { title: 'Recreate any shot', body: 'Jump into the app with one click and reuse the setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
     { title: 'Native audio', body: 'Dialogue, ambience and SFX generated in sync.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
     { title: 'Multi-shot continuity', body: 'Keep characters, style and scene consistency across sequences.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
@@ -157,16 +166,18 @@ function getDecisionExampleCategory(video: ExampleGalleryVideo, locale: AppLocal
   return locale === 'fr' ? 'Render' : locale === 'es' ? 'Render' : 'Render';
 }
 
-function getCuratedDecisionExampleTitle(index: number, fallback: string, locale: AppLocale) {
+function getCuratedDecisionExampleTitle(index: number, fallback: string, locale: AppLocale, useCuratedLabels: boolean) {
+  if (!useCuratedLabels) return fallback;
   const labels: Record<AppLocale, string[]> = {
-    en: ['Parkour rooftop run', 'Trading desk intensity', 'Clothing try-on moment', 'Warm kitchen reunion'],
-    fr: ['Parkour sur toit', 'Intensité en salle de trading', 'Essayage de vêtement', 'Retrouvailles en cuisine'],
-    es: ['Parkour en azotea', 'Intensidad mesa de trading', 'Prueba de ropa', 'Reencuentro en cocina'],
+    en: ['Parkour rooftop run', 'Trading desk intensity', 'Clothing try-on moment', 'Narrative reunion'],
+    fr: ['Parkour sur toit', 'Intensité en salle de trading', 'Essayage de vêtement', 'Retrouvailles narratives'],
+    es: ['Parkour en azotea', 'Intensidad mesa de trading', 'Prueba de ropa', 'Reencuentro narrativo'],
   };
   return labels[locale]?.[index] ?? fallback;
 }
 
-function getCuratedDecisionExampleCategory(index: number, fallback: string, locale: AppLocale) {
+function getCuratedDecisionExampleCategory(index: number, fallback: string, locale: AppLocale, useCuratedLabels: boolean) {
+  if (!useCuratedLabels) return fallback;
   const labels: Record<AppLocale, string[]> = {
     en: ['Cinematic · Action', 'Corporate · Tech', 'Lifestyle · Product', 'Narrative · Romance'],
     fr: ['Cinématique · Action', 'Corporate · Tech', 'Lifestyle · Produit', 'Narratif · Romance'],
@@ -233,10 +244,13 @@ function buildDecisionExampleItems({
   locale: AppLocale;
   copy: SoraCopy;
 }): DecisionExampleGalleryItem[] {
+  const modelName = resolveExamplesModelName(copy);
+  const useCuratedLabels = /seedance/i.test(modelName);
+
   return galleryVideos.slice(0, 4).map((video, index) => {
     const fallbackTitle = deriveShortPromptLabel(video.promptFull ?? video.prompt, locale);
-    const shortTitle = getCuratedDecisionExampleTitle(index, fallbackTitle, locale);
-    const category = getCuratedDecisionExampleCategory(index, getDecisionExampleCategory(video, locale), locale);
+    const shortTitle = getCuratedDecisionExampleTitle(index, fallbackTitle, locale, useCuratedLabels);
+    const category = getCuratedDecisionExampleCategory(index, getDecisionExampleCategory(video, locale), locale, useCuratedLabels);
     const aspectRatio = getDisplayAspectRatio(video);
     const posterUrl = video.optimizedPosterUrl ?? video.rawPosterUrl ?? '';
     return {
@@ -271,9 +285,10 @@ function ModelDecisionExamplesPanel({
   examplesLinkHref,
 }: Omit<ModelExamplesSectionProps, 'hideExamplesSection' | 'galleryCtaHref' | 'variant'>) {
   const renderLinkLabel = getRenderLinkLabel(locale);
-  const proofItems = getDecisionExampleProofItems(locale);
-  const title = copy.galleryTitle ?? getFallbackExamplesTitle(locale);
-  const intro = copy.galleryIntro ?? getFallbackExamplesIntro(locale);
+  const modelName = resolveExamplesModelName(copy);
+  const proofItems = getDecisionExampleProofItems(locale, modelName);
+  const title = copy.galleryTitle ?? getFallbackExamplesTitle(locale, modelName);
+  const intro = copy.galleryIntro ?? getFallbackExamplesIntro(locale, modelName);
   const galleryItems = buildDecisionExampleItems({ galleryVideos, galleryPreviewAlts, locale, copy });
   const filters = getAvailableDecisionExampleFilters(locale, galleryItems);
 
@@ -288,7 +303,7 @@ function ModelDecisionExamplesPanel({
           examplesLinkHref={examplesLinkHref}
           viewAllLabel={getViewAllExamplesLabel(locale)}
           renderLinkLabel={renderLinkLabel}
-          emptyLabel={getNoExamplesForFilterLabel(locale)}
+          emptyLabel={getNoExamplesForFilterLabel(locale, modelName)}
         />
 
         <div className="mt-4 grid grid-cols-2 rounded-xl border border-slate-200 bg-white/70 dark:border-white/10 dark:bg-white/[0.035] lg:grid-cols-5">
