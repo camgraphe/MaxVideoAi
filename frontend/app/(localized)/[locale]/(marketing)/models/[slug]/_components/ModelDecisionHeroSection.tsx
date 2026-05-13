@@ -190,7 +190,7 @@ export function ModelDecisionHeroSection({
               locale={locale}
               audioBadgeLabel={audioBadgeLabel}
               renderLinkLabel={decision.media.renderLabel}
-              altContext={mediaAltContext || decision.media.altContext}
+              altContext={decision.media.altContext || mediaAltContext}
             />
           </div>
         </div>

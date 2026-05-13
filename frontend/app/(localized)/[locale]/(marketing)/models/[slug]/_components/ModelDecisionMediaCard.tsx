@@ -21,9 +21,10 @@ type ModelDecisionMediaCardProps = {
 };
 
 function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
-  if (locale === 'fr') return `Seedance 2.0 ${altContext || 'apercu video'}`;
-  if (locale === 'es') return `Seedance 2.0 ${altContext || 'vista previa de video'}`;
-  return `Seedance 2.0 ${altContext || 'video preview'}`;
+  if (altContext.trim()) return altContext;
+  if (locale === 'fr') return 'Apercu video du modele';
+  if (locale === 'es') return 'Vista previa de video del modelo';
+  return 'Model video preview';
 }
 
 export function ModelDecisionMediaCard({

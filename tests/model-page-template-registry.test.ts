@@ -41,19 +41,29 @@ test('model page template config separates SEO intent from shared layout slots',
 test('template registry enables Seedance production and draft model templates', () => {
   const seedance = getModelPageTemplateConfig('seedance-2-0');
   const seedanceFast = getModelPageTemplateConfig('seedance-2-0-fast');
+  const ltx2 = getModelPageTemplateConfig('ltx-2');
+  const ltx2Fast = getModelPageTemplateConfig('ltx-2-fast');
   const ltxFast = getModelPageTemplateConfig('ltx-2-3-fast');
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
+  assert.ok(ltx2);
+  assert.ok(ltx2Fast);
   assert.ok(ltxFast);
   assert.equal(seedance.intent, 'production');
   assert.equal(seedanceFast.intent, 'draft');
+  assert.equal(ltx2.intent, 'specialized');
+  assert.equal(ltx2Fast.intent, 'draft');
   assert.equal(ltxFast.intent, 'draft');
   assert.equal(seedance.hero.primaryCtaHref, '/app?engine=seedance-2-0');
   assert.equal(seedanceFast.hero.primaryCtaHref, '/app?engine=seedance-2-0-fast');
+  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
+  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
   assert.equal(ltxFast.hero.primaryCtaHref, '/app?engine=ltx-2-3-fast');
   assert.equal(seedance.pricing.anchorHref, '/pricing#seedance-2-0-pricing');
   assert.equal(seedanceFast.pricing.anchorHref, '/pricing#seedance-2-0-fast-pricing');
+  assert.equal(ltx2.pricing.anchorHref, '/pricing#ltx-2-pricing');
+  assert.equal(ltx2Fast.pricing.anchorHref, '/pricing#ltx-2-fast-pricing');
   assert.equal(ltxFast.pricing.anchorHref, '/pricing#ltx-2-3-fast-pricing');
   assert.deepEqual(
     seedance.pricing.presets.map((preset) => preset.id),
@@ -62,6 +72,14 @@ test('template registry enables Seedance production and draft model templates', 
   assert.deepEqual(
     seedanceFast.pricing.presets.map((preset) => preset.id),
     ['5s-480p', '8s-720p', '10s-720p', 'max-duration']
+  );
+  assert.deepEqual(
+    ltx2.pricing.presets.map((preset) => preset.id),
+    ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']
+  );
+  assert.deepEqual(
+    ltx2Fast.pricing.presets.map((preset) => preset.id),
+    ['6s-1080p-audio', '10s-1080p-audio', '20s-1080p-audio', '10s-4k-audio', 'max-duration']
   );
   assert.deepEqual(
     ltxFast.pricing.presets.map((preset) => preset.id),
@@ -73,8 +91,10 @@ test('template registry enables Seedance production and draft model templates', 
     'kling-3-4k',
     'kling-3-pro',
     'kling-3-standard',
+    'ltx-2',
     'ltx-2-3-fast',
     'ltx-2-3-pro',
+    'ltx-2-fast',
     'seedance-1-5-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
@@ -148,6 +168,23 @@ test('second-wave templates avoid cross-route overclaims', () => {
   assert.equal(kling4k.pricing.presets.some((preset) => preset.resolution === '4k'), true);
   assert.equal(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3');
   assert.notEqual(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3-pro');
+});
+
+test('LTX 2 legacy templates stay distinct from current LTX 2.3 routes', () => {
+  const ltx2 = getModelPageTemplateConfig('ltx-2');
+  const ltx2Fast = getModelPageTemplateConfig('ltx-2-fast');
+
+  assert.ok(ltx2);
+  assert.ok(ltx2Fast);
+  assert.equal(ltx2.intent, 'specialized');
+  assert.equal(ltx2Fast.intent, 'draft');
+  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
+  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
+  assert.equal(ltx2.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(ltx2Fast.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(ltx2.pricing.presets.every((preset) => preset.resolution !== '720p'), true);
+  assert.equal(ltx2Fast.pricing.presets.some((preset) => preset.seconds === 20), true);
+  assert.equal(ltx2Fast.pricing.presets.some((preset) => preset.resolution === '4k'), true);
 });
 
 test('Sora templates preserve standard and Pro route intent', () => {

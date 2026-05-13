@@ -12,6 +12,8 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
+  'ltx-2',
+  'ltx-2-fast',
   'ltx-2-3-fast',
   'veo-3-1',
   'veo-3-1-fast',
@@ -196,6 +198,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale: 'en' });
   const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
   const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
+  const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
+  const ltx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
   const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
   const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
@@ -214,6 +218,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(kling);
   assert.ok(klingStandard);
   assert.ok(kling4k);
+  assert.ok(ltx2);
+  assert.ok(ltx2Fast);
   assert.ok(ltxPro);
   assert.ok(seedream);
   assert.ok(sora);
@@ -238,6 +244,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['kling-3-pro', kling.meta.title],
     ['kling-3-standard', klingStandard.meta.title],
     ['kling-3-4k', kling4k.meta.title],
+    ['ltx-2', ltx2.meta.title],
+    ['ltx-2-fast', ltx2Fast.meta.title],
     ['ltx-2-3-pro', ltxPro.meta.title],
     ['seedream', seedream.meta.title],
     ['seedance-1-5-pro', seedance15.meta.title],
@@ -251,6 +259,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(kling25.meta.title, /Pricing|Silent Drafts/i);
   assert.match(kling26.meta.title, /Pricing|Audio|Examples/i);
   assert.match(kling.meta.title, /Pricing|Control|15s/i);
+  assert.match(ltx2.meta.title, /Pricing|4K Clips/i);
+  assert.match(ltx2Fast.meta.title, /Pricing|20s Drafts/i);
   assert.match(seedream.meta.title, /Image Pricing|Reference Prep/i);
   assert.match(seedance15.meta.title, /Pricing|Camera Fixed/i);
   assert.match(sora.meta.title, /Pricing|Native Audio|Examples/i);
@@ -267,6 +277,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
   const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
+  const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
+  const ltx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale: 'en' });
   const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
   const kling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
@@ -279,6 +291,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.ok(seedanceFast);
   assert.ok(seedance15);
   assert.ok(seedance);
+  assert.ok(ltx2);
+  assert.ok(ltx2Fast);
   assert.ok(ltxFast);
   assert.ok(ltxPro);
   assert.ok(kling25);
@@ -305,6 +319,10 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.doesNotMatch(visibleDecisionText(ltxFast), /audio-to-video|retake|extend/i);
   assert.match(visibleDecisionText(ltxPro), /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);
+  assert.match(visibleDecisionText(ltx2), /supported older Pro LTX route|16:9 clips/i);
+  assert.match(visibleDecisionText(ltx2Fast), /supported older fast LTX route|20s timing checks/i);
+  assert.doesNotMatch(visibleDecisionText(ltx2), /audio-to-video|retake|extend|vertical\/social|9:16/i);
+  assert.doesNotMatch(visibleDecisionText(ltx2Fast), /audio-to-video|retake|extend|vertical\/social|9:16/i);
   assert.match(visibleDecisionText(kling25), /silent|look-dev|negative prompt/i);
   assert.doesNotMatch(visibleDecisionText(kling25), /native audio|Audio on|4K|Elements|15s|voice IDs/i);
   assert.match(visibleDecisionText(kling26), /supported older Kling route|native audio|1080p/i);
@@ -340,6 +358,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const localizedSoraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale });
     const localizedWan25 = buildModelDecisionData({ engine: getEngine('wan-2-5'), locale });
     const localizedWan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale });
+    const localizedLtx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale });
+    const localizedLtx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale });
 
     assert.ok(veo);
     assert.ok(veoLite);
@@ -353,6 +373,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(localizedSoraPro);
     assert.ok(localizedWan25);
     assert.ok(localizedWan26);
+    assert.ok(localizedLtx2);
+    assert.ok(localizedLtx2Fast);
 
     assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
     assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
@@ -405,6 +427,16 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       visibleDecisionText(localizedWan26),
       /15s|15 s|reference-to-video/i,
       `Wan 2.6 ${locale} copy should own the 15s/reference-video intent`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedLtx2),
+      /audio-to-video|retake|extend|vertical\/social|9:16/i,
+      `LTX 2 ${locale} copy should not claim current LTX 2.3 production or format capabilities`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedLtx2Fast),
+      /audio-to-video|retake|extend|vertical\/social|9:16/i,
+      `LTX 2 Fast ${locale} copy should not claim current LTX 2.3 fast capabilities`
     );
   }
 });

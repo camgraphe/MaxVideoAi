@@ -45,7 +45,7 @@ export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardPr
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {pricing.scenarios.map((scenario) => {
-            const featured = scenario.id === '10s-1080p';
+            const featured = scenario.id === '10s-1080p' || Boolean(scenario.badge);
             const Icon = SCENARIO_ICONS[scenario.id] ?? Gauge;
             return (
               <article

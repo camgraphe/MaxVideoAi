@@ -1081,6 +1081,455 @@ const LTX_23_PRO_COPY: LocalizedTemplateCopy = {
   },
 };
 
+const LTX_2_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'SUPPORTED LTX 2 PRO ROUTE',
+      title: 'LTX 2',
+      subtitle:
+        'High-fidelity 16:9 clips for text-to-video or image-to-video, with 1080p to 4K checks on the supported older LTX route.',
+      subtitleHighlights: ['High-fidelity 16:9 clips', 'text-to-video or image-to-video', '1080p to 4K checks'],
+      paragraph:
+        'Use LTX 2 when you need the supported older Pro LTX route for short 6-10s 16:9 clips, image starts, negative prompts, seed control and high-res checks. Use LTX 2.3 Pro for the current production workflow.',
+      primaryCta: { label: 'Generate with LTX 2', href: '/app?engine=ltx-2' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'ltx') },
+      quickLinks: [
+        { label: 'View LTX 2.3 Pro', href: modelsHref('en', 'ltx-2-3-pro') },
+        { label: 'View pricing', href: pricingHref('en', 'ltx-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'LTX 2 example',
+      description: 'High-fidelity 16:9 render',
+      renderLabel: 'View render',
+      badges: ['Audio on', '10s', '16:9'],
+      altContext: 'LTX 2 high-fidelity 16:9 video render',
+    },
+    features: [
+      { title: '16:9 fidelity', body: 'Use LTX 2 for short landscape clips that need a clean premium look.', tone: 'quality' },
+      { title: 'Text or image start', body: 'Start from a prompt or a single still reference for image-to-video.', tone: 'reference' },
+      { title: '1080p to 4K', body: 'Check approved prompts at higher resolutions when the shot needs detail.', tone: 'quality' },
+      { title: '25 or 50 fps', body: 'Choose the frame-rate option exposed by the MaxVideoAI route.', tone: 'duration' },
+      { title: 'Max 10s', body: 'Keep this older route focused on concise one-beat renders.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'LTX 2 or LTX 2.3 Pro?',
+        body: 'Use LTX 2 for older high-fidelity 16:9 clips. Use LTX 2.3 Pro when you want the current LTX production route and broader workflow surface.',
+        cta: { label: 'View LTX 2.3 Pro', href: modelsHref('en', 'ltx-2-3-pro') },
+      },
+      {
+        title: 'Need a faster LTX draft?',
+        body: 'Use LTX 2 Fast for longer low-cost 16:9 draft loops before deciding whether a shot deserves a higher-fidelity pass.',
+        cta: { label: 'View LTX 2 Fast', href: modelsHref('en', 'ltx-2-fast') },
+      },
+      {
+        title: 'Comparing premium engines?',
+        body: 'Compare LTX 2 with Veo 3.1 when choosing between older LTX high-res checks and current premium short-video routes.',
+        cta: { label: 'Compare LTX 2 vs Veo 3.1', href: compareHref('en', 'ltx-2', 'veo-3-1') },
+      },
+      {
+        title: 'Need prompt examples?',
+        body: 'Start with a compact subject, action, camera and negative prompt structure before spending on high-res checks.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Write one subject, one visible action, one camera move and the intended finish.' },
+      { title: 'Start image', body: 'Use one clean still when product shape, framing or identity must stay stable.' },
+      { title: 'Negative prompt', body: 'Block visual artifacts or unwanted style cues instead of adding more positive instructions.' },
+      { title: 'Seed check', body: 'Reuse seed control when you need comparable variants from the same creative direction.' },
+      { title: 'High-res pass', body: 'Move from 1080p checks to 1440p or 4K only after the motion direction is approved.' },
+    ],
+    pricingCopy: {
+      title: 'LTX 2 pricing at a glance',
+      subtitle: 'Preset supported-route totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: '6-10s route; up to 4K',
+    },
+    meta: {
+      title: 'LTX 2: Pricing, 4K Clips & Examples | MaxVideoAI',
+      description:
+        'Use LTX 2 for supported older LTX high-fidelity 16:9 clips, text-to-video, image-to-video, 1080p to 4K checks, pricing and examples.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LTX 2 PRO ENCORE PRISE EN CHARGE',
+      title: 'LTX 2',
+      subtitle:
+        'Clips 16:9 haute fidélité en text-to-video ou image-to-video, avec checks 1080p à 4K sur l’ancienne route LTX prise en charge.',
+      subtitleHighlights: ['Clips 16:9 haute fidélité', 'text-to-video ou image-to-video', 'checks 1080p à 4K'],
+      paragraph:
+        'Utilisez LTX 2 pour l’ancienne route Pro LTX encore prise en charge : clips 16:9 courts de 6 à 10 s, image de départ, negative prompt, seed et vérifications haute résolution. Gardez LTX 2.3 Pro pour le workflow production actuel.',
+      primaryCta: { label: 'Générer avec LTX 2', href: '/app?engine=ltx-2' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'ltx') },
+      quickLinks: [
+        { label: 'Voir LTX 2.3 Pro', href: modelsHref('fr', 'ltx-2-3-pro') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'ltx-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple LTX 2',
+      description: 'Rendu 16:9 haute fidélité',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio activé', '10 s', '16:9'],
+      altContext: 'rendu video 16:9 haute fidelite avec LTX 2',
+    },
+    features: [
+      { title: 'Fidélité 16:9', body: 'Réservez LTX 2 aux plans paysage courts avec un rendu premium propre.', tone: 'quality' },
+      { title: 'Texte ou image source', body: 'Démarrez depuis un prompt ou une image fixe unique pour l’image-to-video.', tone: 'reference' },
+      { title: '1080p à 4K', body: 'Passez en haute résolution quand le mouvement du plan est déjà validé.', tone: 'quality' },
+      { title: '25 ou 50 fps', body: 'Choisissez l’option de frame rate exposée dans MaxVideoAI.', tone: 'duration' },
+      { title: 'Max 10 s', body: 'Gardez cette route plus ancienne sur des rendus courts en un beat.', tone: 'duration' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'LTX 2 ou LTX 2.3 Pro ?',
+        body: 'Utilisez LTX 2 pour des clips 16:9 haute fidélité sur l’ancienne route. Passez à LTX 2.3 Pro pour la route LTX production actuelle.',
+        cta: { label: 'Voir LTX 2.3 Pro', href: modelsHref('fr', 'ltx-2-3-pro') },
+      },
+      {
+        title: 'Besoin d’un draft LTX plus rapide ?',
+        body: 'Utilisez LTX 2 Fast pour des boucles 16:9 plus longues et moins chères avant de relancer un plan en meilleure fidélité.',
+        cta: { label: 'Voir LTX 2 Fast', href: modelsHref('fr', 'ltx-2-fast') },
+      },
+      {
+        title: 'Vous comparez des moteurs premium ?',
+        body: 'Comparez LTX 2 et Veo 3.1 entre checks haute résolution LTX plus anciens et routes premium actuelles.',
+        cta: { label: 'Comparer LTX 2 vs Veo 3.1', href: compareHref('fr', 'ltx-2', 'veo-3-1') },
+      },
+      {
+        title: 'Besoin d’exemples de prompts ?',
+        body: 'Partez d’une structure courte : sujet, action, caméra et negative prompt avant de payer un check haute résolution.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Décrivez un sujet, une action visible, un mouvement caméra et le rendu attendu.' },
+      { title: 'Image de départ', body: 'Utilisez une image nette quand produit, cadrage ou identité doivent rester stables.' },
+      { title: 'Negative prompt', body: 'Bloquez les artefacts ou styles indésirables au lieu d’empiler des consignes positives.' },
+      { title: 'Seed', body: 'Réutilisez le seed pour comparer des variantes issues de la même direction créative.' },
+      { title: 'Passe haute résolution', body: 'Montez en 1440p ou 4K seulement après validation du mouvement.' },
+    ],
+    pricingCopy: {
+      title: 'Prix LTX 2 en un coup d’œil',
+      subtitle: 'Totaux pour cette route prise en charge — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Route 6-10 s ; jusqu’à 4K',
+    },
+    meta: {
+      title: 'LTX 2 : tarifs, clips 4K et exemples | MaxVideoAI',
+      description:
+        'Utilisez LTX 2 pour des clips 16:9 haute fidélité encore pris en charge, text-to-video, image-to-video, checks 1080p à 4K, tarifs et exemples.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LTX 2 PRO AUN COMPATIBLE',
+      title: 'LTX 2',
+      subtitle:
+        'Clips 16:9 de alta fidelidad para texto a video o imagen a video, con checks de 1080p a 4K en la ruta LTX anterior compatible.',
+      subtitleHighlights: ['Clips 16:9 de alta fidelidad', 'texto a video o imagen a video', 'checks de 1080p a 4K'],
+      paragraph:
+        'Usa LTX 2 cuando necesites la ruta Pro anterior de LTX: clips 16:9 cortos de 6 a 10 s, imagen inicial, negative prompt, seed y revisiones en alta resolución. Usa LTX 2.3 Pro para el flujo de producción actual.',
+      primaryCta: { label: 'Generar con LTX 2', href: '/app?engine=ltx-2' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'ltx') },
+      quickLinks: [
+        { label: 'Ver LTX 2.3 Pro', href: modelsHref('es', 'ltx-2-3-pro') },
+        { label: 'Ver precios', href: pricingHref('es', 'ltx-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo LTX 2',
+      description: 'Render 16:9 de alta fidelidad',
+      renderLabel: 'Ver render',
+      badges: ['Audio activo', '10 s', '16:9'],
+      altContext: 'render de video 16:9 de alta fidelidad con LTX 2',
+    },
+    features: [
+      { title: 'Fidelidad 16:9', body: 'Usa LTX 2 para clips landscape cortos con look premium limpio.', tone: 'quality' },
+      { title: 'Texto o imagen inicial', body: 'Empieza desde un prompt o una imagen fija para imagen a video.', tone: 'reference' },
+      { title: '1080p a 4K', body: 'Sube resolución cuando la dirección de movimiento ya está aprobada.', tone: 'quality' },
+      { title: '25 o 50 fps', body: 'Elige la opción de frame rate disponible en la ruta de MaxVideoAI.', tone: 'duration' },
+      { title: 'Máx. 10 s', body: 'Mantén esta ruta anterior enfocada en renders cortos de un beat.', tone: 'duration' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿LTX 2 o LTX 2.3 Pro?',
+        body: 'Usa LTX 2 para clips 16:9 de alta fidelidad en la ruta anterior. Usa LTX 2.3 Pro cuando necesitas la ruta LTX de producción actual.',
+        cta: { label: 'Ver LTX 2.3 Pro', href: modelsHref('es', 'ltx-2-3-pro') },
+      },
+      {
+        title: '¿Necesitas un borrador LTX más rápido?',
+        body: 'Usa LTX 2 Fast para loops 16:9 más largos y de menor coste antes de decidir si la toma merece una pasada con más fidelidad.',
+        cta: { label: 'Ver LTX 2 Fast', href: modelsHref('es', 'ltx-2-fast') },
+      },
+      {
+        title: '¿Comparas motores premium?',
+        body: 'Compara LTX 2 con Veo 3.1 al elegir entre checks antiguos de alta resolución y rutas premium actuales.',
+        cta: { label: 'Comparar LTX 2 vs Veo 3.1', href: compareHref('es', 'ltx-2', 'veo-3-1') },
+      },
+      {
+        title: '¿Necesitas ejemplos de prompts?',
+        body: 'Empieza con una estructura corta: sujeto, acción, cámara y negative prompt antes de pagar checks en alta resolución.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Describe un sujeto, una acción visible, un movimiento de cámara y el acabado esperado.' },
+      { title: 'Imagen inicial', body: 'Usa una imagen limpia cuando producto, encuadre o identidad deban mantenerse estables.' },
+      { title: 'Negative prompt', body: 'Bloquea artefactos o estilos no deseados sin sumar demasiadas instrucciones positivas.' },
+      { title: 'Seed', body: 'Reutiliza seed para comparar variantes dentro de la misma dirección creativa.' },
+      { title: 'Pasada en alta resolución', body: 'Pasa a 1440p o 4K solo cuando el movimiento ya esté aprobado.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de LTX 2 de un vistazo',
+      subtitle: 'Totales para esta ruta compatible. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Ruta de 6-10 s; hasta 4K',
+    },
+    meta: {
+      title: 'LTX 2: precios, clips 4K y ejemplos | MaxVideoAI',
+      description:
+        'Usa LTX 2 para clips 16:9 de alta fidelidad aún compatibles, texto a video, imagen a video, checks de 1080p a 4K, precios y ejemplos.',
+    },
+  },
+};
+
+const LTX_2_FAST_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'SUPPORTED LTX 2 FAST ROUTE',
+      title: 'LTX 2 Fast',
+      subtitle: 'Fast 16:9 drafts up to 20s for text or image starts, audio-ready review passes, and 1080p to 4K checks.',
+      subtitleHighlights: ['Fast 16:9 drafts', 'up to 20s', '1080p to 4K checks'],
+      paragraph:
+        'Use LTX 2 Fast for the supported older fast LTX route when you need low-cost 16:9 drafts, longer 20s timing checks, image starts and high-res review options. Use LTX 2.3 Fast for the current fast LTX workflow.',
+      primaryCta: { label: 'Draft with LTX 2 Fast', href: '/app?engine=ltx-2-fast' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'ltx') },
+      quickLinks: [
+        { label: 'View LTX 2.3 Fast', href: modelsHref('en', 'ltx-2-3-fast') },
+        { label: 'View pricing', href: pricingHref('en', 'ltx-2-fast-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'LTX 2 Fast example',
+      description: 'Fast 16:9 draft loop',
+      renderLabel: 'View draft',
+      badges: ['Fast route', '20s max', '16:9'],
+      altContext: 'LTX 2 Fast 16:9 draft video render',
+    },
+    features: [
+      { title: 'Fast 16:9 drafts', body: 'Move quickly through older LTX timing and composition checks.', tone: 'duration' },
+      { title: 'Text or image start', body: 'Use a prompt or one still to test product, subject or scene setup.', tone: 'reference' },
+      { title: 'Up to 20s', body: 'Use longer 1080p/25 fps loops when pacing matters more than polish.', tone: 'duration' },
+      { title: '1080p to 4K', body: 'Shorter checks can still use high-res review settings.', tone: 'quality' },
+      { title: 'Audio-ready', body: 'Use the audio-enabled route for timing and review passes.', tone: 'audio' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'LTX 2 Fast or LTX 2.3 Fast?',
+        body: 'Use LTX 2 Fast for supported older 16:9 draft loops. Use LTX 2.3 Fast for the current fast LTX route and broader format coverage.',
+        cta: { label: 'View LTX 2.3 Fast', href: modelsHref('en', 'ltx-2-3-fast') },
+      },
+      {
+        title: 'Need higher fidelity?',
+        body: 'Move approved draft directions into LTX 2 or LTX 2.3 Pro when the shot needs a more polished pass.',
+        cta: { label: 'View LTX 2', href: modelsHref('en', 'ltx-2') },
+      },
+      {
+        title: 'Comparing fast value routes?',
+        body: 'Compare LTX 2 Fast with Wan 2.5 when choosing between longer 16:9 LTX loops and lower-cost audio checks.',
+        cta: { label: 'Compare LTX 2 Fast vs Wan 2.5', href: compareHref('en', 'ltx-2-fast', 'wan-2-5') },
+      },
+      {
+        title: 'Need prompt examples?',
+        body: 'Use short draft prompts with one motion beat, one camera move and a clear review goal.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Draft prompt', body: 'Keep one subject, one motion idea and one camera move so the fast route stays readable.' },
+      { title: 'Image start', body: 'Use one still to lock the product, character or environment before testing motion.' },
+      { title: 'Long loop', body: 'Use 12-20s only for 1080p timing checks where pacing matters more than detail.' },
+      { title: 'High-res short check', body: 'Use 1440p or 4K on shorter clips when you need to inspect detail.' },
+      { title: 'Upgrade path', body: 'Move winning directions into LTX 2.3 Fast or Pro depending on the current workflow needed.' },
+    ],
+    pricingCopy: {
+      title: 'LTX 2 Fast draft pricing',
+      subtitle: 'Preset draft totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: '20s at 1080p / 25 fps',
+    },
+    meta: {
+      title: 'LTX 2 Fast: Pricing, 20s Drafts & Examples | MaxVideoAI',
+      description:
+        'Use LTX 2 Fast for supported older LTX 16:9 drafts, 20s timing checks, text-to-video, image-to-video, high-res review options and pricing.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LTX 2 FAST ENCORE PRISE EN CHARGE',
+      title: 'LTX 2 Fast',
+      subtitle:
+        'Drafts 16:9 rapides jusqu’à 20 s pour texte ou image de départ, revues avec audio et checks 1080p à 4K.',
+      subtitleHighlights: ['Drafts 16:9 rapides', 'jusqu’à 20 s', 'checks 1080p à 4K'],
+      paragraph:
+        'Utilisez LTX 2 Fast pour l’ancienne route fast LTX encore prise en charge : drafts 16:9 moins chers, tests de timing jusqu’à 20 s, image de départ et options haute résolution. Utilisez LTX 2.3 Fast pour le workflow fast LTX actuel.',
+      primaryCta: { label: 'Drafter avec LTX 2 Fast', href: '/app?engine=ltx-2-fast' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'ltx') },
+      quickLinks: [
+        { label: 'Voir LTX 2.3 Fast', href: modelsHref('fr', 'ltx-2-3-fast') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'ltx-2-fast-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple LTX 2 Fast',
+      description: 'Boucle draft 16:9 rapide',
+      renderLabel: 'Voir le brouillon',
+      badges: ['Fast', '20 s max', '16:9'],
+      altContext: 'rendu video draft 16:9 avec LTX 2 Fast',
+    },
+    features: [
+      { title: 'Drafts 16:9 rapides', body: 'Avancez vite sur timing et composition dans l’ancien workflow LTX.', tone: 'duration' },
+      { title: 'Texte ou image source', body: 'Testez produit, sujet ou décor depuis un prompt ou une image fixe.', tone: 'reference' },
+      { title: 'Jusqu’à 20 s', body: 'Utilisez les boucles 1080p/25 fps quand le pacing compte plus que le polish.', tone: 'duration' },
+      { title: '1080p à 4K', body: 'Les tests plus courts peuvent aussi servir à vérifier le détail.', tone: 'quality' },
+      { title: 'Audio-ready', body: 'Gardez le son actif quand le timing ou la revue en a besoin.', tone: 'audio' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'LTX 2 Fast ou LTX 2.3 Fast ?',
+        body: 'Utilisez LTX 2 Fast pour d’anciens drafts 16:9 encore pris en charge. Choisissez LTX 2.3 Fast pour la route fast actuelle et plus de formats.',
+        cta: { label: 'Voir LTX 2.3 Fast', href: modelsHref('fr', 'ltx-2-3-fast') },
+      },
+      {
+        title: 'Besoin de plus de fidélité ?',
+        body: 'Déplacez les directions validées vers LTX 2 ou LTX 2.3 Pro quand le plan mérite une passe plus propre.',
+        cta: { label: 'Voir LTX 2', href: modelsHref('fr', 'ltx-2') },
+      },
+      {
+        title: 'Vous comparez des routes fast ?',
+        body: 'Comparez LTX 2 Fast et Wan 2.5 entre boucles LTX 16:9 plus longues et checks audio moins chers.',
+        cta: { label: 'Comparer LTX 2 Fast vs Wan 2.5', href: compareHref('fr', 'ltx-2-fast', 'wan-2-5') },
+      },
+      {
+        title: 'Besoin d’exemples de prompts ?',
+        body: 'Utilisez des prompts courts avec un beat de mouvement, une caméra et un objectif de revue clair.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de draft', body: 'Gardez un sujet, une idée de mouvement et un mouvement caméra pour rester lisible.' },
+      { title: 'Image de départ', body: 'Utilisez une image pour verrouiller produit, personnage ou environnement.' },
+      { title: 'Boucle longue', body: 'Réservez 12-20 s aux tests 1080p où le rythme compte plus que le détail.' },
+      { title: 'Check court haute résolution', body: 'Passez en 1440p ou 4K sur les clips courts quand il faut inspecter le détail.' },
+      { title: 'Montée de gamme', body: 'Envoyez les directions gagnantes vers LTX 2.3 Fast ou Pro selon le workflow actuel recherché.' },
+    ],
+    pricingCopy: {
+      title: 'Prix des drafts LTX 2 Fast',
+      subtitle: 'Totaux de brouillon par scénario — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: '20 s en 1080p / 25 fps',
+    },
+    meta: {
+      title: 'LTX 2 Fast : tarifs, drafts 20 s et exemples | MaxVideoAI',
+      description:
+        'Utilisez LTX 2 Fast pour des drafts 16:9 encore pris en charge, tests de timing 20 s, text-to-video, image-to-video, checks haute résolution et tarifs.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LTX 2 FAST AUN COMPATIBLE',
+      title: 'LTX 2 Fast',
+      subtitle:
+        'Borradores 16:9 rápidos de hasta 20 s para texto o imagen inicial, pases de revisión con audio y checks de 1080p a 4K.',
+      subtitleHighlights: ['Borradores 16:9 rápidos', 'hasta 20 s', 'checks de 1080p a 4K'],
+      paragraph:
+        'Usa LTX 2 Fast para la ruta fast anterior de LTX cuando necesitas borradores 16:9 de menor coste, checks de timing de hasta 20 s, imagen inicial y opciones de revisión en alta resolución. Usa LTX 2.3 Fast para el flujo fast actual.',
+      primaryCta: { label: 'Hacer draft con LTX 2 Fast', href: '/app?engine=ltx-2-fast' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'ltx') },
+      quickLinks: [
+        { label: 'Ver LTX 2.3 Fast', href: modelsHref('es', 'ltx-2-3-fast') },
+        { label: 'Ver precios', href: pricingHref('es', 'ltx-2-fast-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo LTX 2 Fast',
+      description: 'Loop de borrador 16:9 rápido',
+      renderLabel: 'Ver borrador',
+      badges: ['Fast', '20 s max', '16:9'],
+      altContext: 'render de borrador 16:9 con LTX 2 Fast',
+    },
+    features: [
+      { title: 'Borradores 16:9 rápidos', body: 'Avanza rápido en timing y composición dentro del workflow LTX anterior.', tone: 'duration' },
+      { title: 'Texto o imagen inicial', body: 'Prueba producto, sujeto o escena desde un prompt o una imagen fija.', tone: 'reference' },
+      { title: 'Hasta 20 s', body: 'Usa loops 1080p/25 fps cuando el pacing importa más que el acabado.', tone: 'duration' },
+      { title: '1080p a 4K', body: 'Los checks cortos también sirven para revisar detalle en alta resolución.', tone: 'quality' },
+      { title: 'Listo para audio', body: 'Usa la ruta con audio cuando el timing o la revisión lo requieran.', tone: 'audio' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿LTX 2 Fast o LTX 2.3 Fast?',
+        body: 'Usa LTX 2 Fast para loops 16:9 anteriores aún compatibles. Usa LTX 2.3 Fast para la ruta fast actual y mayor cobertura de formatos.',
+        cta: { label: 'Ver LTX 2.3 Fast', href: modelsHref('es', 'ltx-2-3-fast') },
+      },
+      {
+        title: '¿Necesitas más fidelidad?',
+        body: 'Lleva las direcciones aprobadas a LTX 2 o LTX 2.3 Pro cuando la toma necesite una pasada más pulida.',
+        cta: { label: 'Ver LTX 2', href: modelsHref('es', 'ltx-2') },
+      },
+      {
+        title: '¿Comparas rutas fast de valor?',
+        body: 'Compara LTX 2 Fast con Wan 2.5 al elegir entre loops 16:9 más largos y checks con audio de menor coste.',
+        cta: { label: 'Comparar LTX 2 Fast vs Wan 2.5', href: compareHref('es', 'ltx-2-fast', 'wan-2-5') },
+      },
+      {
+        title: '¿Necesitas ejemplos de prompts?',
+        body: 'Usa prompts cortos con un beat de movimiento, una cámara y un objetivo claro de revisión.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de borrador', body: 'Mantén un sujeto, una idea de movimiento y un movimiento de cámara para que la ruta fast sea legible.' },
+      { title: 'Imagen inicial', body: 'Usa una imagen para fijar producto, personaje o entorno antes de probar movimiento.' },
+      { title: 'Loop largo', body: 'Reserva 12-20 s para checks 1080p donde el ritmo pesa más que el detalle.' },
+      { title: 'Check corto en alta resolución', body: 'Usa 1440p o 4K en clips más cortos cuando necesitas inspeccionar detalle.' },
+      { title: 'Ruta de mejora', body: 'Lleva las mejores direcciones a LTX 2.3 Fast o Pro según el workflow actual que necesites.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de drafts LTX 2 Fast',
+      subtitle: 'Totales de borrador por escenario. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: '20 s en 1080p / 25 fps',
+    },
+    meta: {
+      title: 'LTX 2 Fast: precios, borradores 20 s y ejemplos | MaxVideoAI',
+      description:
+        'Usa LTX 2 Fast para borradores 16:9 aún compatibles, checks de timing de 20 s, texto a video, imagen a video, revisión en alta resolución y precios.',
+    },
+  },
+};
+
 const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
@@ -2535,6 +2984,8 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-2-6-pro': KLING_26_PRO_COPY,
   'kling-3-4k': KLING_3_4K_COPY,
   'kling-3-standard': KLING_3_STANDARD_COPY,
+  'ltx-2': LTX_2_COPY,
+  'ltx-2-fast': LTX_2_FAST_COPY,
   'ltx-2-3-pro': LTX_23_PRO_COPY,
   'seedance-1-5-pro': SEEDANCE_15_PRO_COPY,
   'sora-2': SORA_2_COPY,

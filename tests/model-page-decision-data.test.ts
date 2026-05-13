@@ -174,6 +174,37 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   assert.deepEqual(es.hero.subtitleHighlights, ['exploración visual', 'pruebas de prompts', 'borradores verticales/sociales']);
 });
 
+test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3', () => {
+  const ltx2 = getEngine('ltx-2');
+  const ltx2Fast = getEngine('ltx-2-fast');
+  const en = buildModelDecisionData({ engine: ltx2, locale: 'en' });
+  const fast = buildModelDecisionData({ engine: ltx2Fast, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: ltx2, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: ltx2Fast, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fast);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'LTX 2');
+  assert.match(en.hero.subtitle, /High-fidelity 16:9 clips/);
+  assert.match(en.hero.subtitle, /1080p to 4K checks/);
+  assert.equal(en.hero.primaryCta.href, '/app?engine=ltx-2');
+  assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en.decisionCards[1]?.cta.href, '/models/ltx-2-fast');
+  assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
+  assert.match(fr.hero.subtitle, /Clips 16:9 haute fidélité/);
+
+  assert.equal(fast.hero.title, 'LTX 2 Fast');
+  assert.match(fast.hero.subtitle, /Fast 16:9 drafts/);
+  assert.match(fast.hero.subtitle, /up to 20s/);
+  assert.equal(fast.hero.primaryCta.href, '/app?engine=ltx-2-fast');
+  assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
+  assert.doesNotMatch(visibleDecisionText(fast), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
+  assert.match(es.hero.subtitle, /Borradores 16:9 rápidos/);
+});
+
 test('Veo 3.1 returns production decision data without unsupported 4K claims', () => {
   const veo = getEngine('veo-3-1');
   const en = buildModelDecisionData({ engine: veo, locale: 'en' });
@@ -474,6 +505,11 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
     ['kling-2-6-pro', ['5s-1080p', '5s-1080p-audio', '10s-1080p-audio', 'max-duration']],
     ['kling-3-standard', ['5s-1080p', '8s-1080p-audio', '15s-1080p-audio', 'max-duration']],
     ['kling-3-4k', ['5s-4k', '10s-4k', '15s-4k', 'max-duration']],
+    ['ltx-2', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],
+    [
+      'ltx-2-fast',
+      ['6s-1080p-audio', '10s-1080p-audio', '20s-1080p-audio', '10s-4k-audio', 'max-duration'],
+    ],
     ['ltx-2-3-pro', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],
     ['wan-2-5', ['5s-480p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
     ['wan-2-6', ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
