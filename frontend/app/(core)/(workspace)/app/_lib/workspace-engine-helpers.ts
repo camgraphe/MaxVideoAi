@@ -129,7 +129,7 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
     return available.length ? available : undefined;
   }
   if (engine.id === 'veo-3-1-fast') {
-    const order: Mode[] = ['extend'];
+    const order: Mode[] = ['ref2v', 'extend'];
     const available = order.filter((value) => engine.modes.includes(value));
     return available.length ? available : undefined;
   }
@@ -181,7 +181,7 @@ export function buildComposerModeToggles({
         : selectedEngine.id === 'veo-3-1'
           ? (['ref2v', 'extend'] as const)
           : selectedEngine.id === 'veo-3-1-fast'
-            ? (['extend'] as const)
+            ? (['ref2v', 'extend'] as const)
             : selectedEngine.id === 'veo-3-1-lite'
               ? ([] as const)
               : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)

@@ -212,6 +212,38 @@ test('Veo 3.1 REF2V requires reference images', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Veo 3.1 Fast REF2V requires 1-4 reference images', () => {
+  const missing = validateRequest('veo-3-1-fast', 'ref2v', {
+    prompt: 'Keep the campaign subject consistent',
+    duration: '8s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.error?.field, 'image_urls');
+
+  const valid = validateRequest('veo-3-1-fast', 'ref2v', {
+    prompt: 'Keep the campaign subject consistent',
+    image_urls: ['https://example.com/ref-1.png', 'https://example.com/ref-2.png'],
+    duration: '8s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+    generate_audio: true,
+  });
+  assert.deepEqual(valid, OK);
+
+  const tooMany = validateRequest('veo-3-1-fast', 'ref2v', {
+    prompt: 'Keep the campaign subject consistent',
+    image_urls: Array.from({ length: 5 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
+    duration: '8s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(tooMany.ok, false);
+  assert.equal(tooMany.error?.field, 'image_urls');
+  assert.deepEqual(tooMany.error?.allowed, [1, 4]);
+});
+
 test('Seedance 2.0 REF2V accepts Fal-style multimodal references and keeps audio gated behind image/video refs', () => {
   const promptOnly = validateRequest('seedance-2-0', 'ref2v', {
     prompt: 'Keep the same hero and outfit',
@@ -642,6 +674,29 @@ test('Veo 3.1 Lite registry exposes the unified lite mode mapping', () => {
   assert.equal(veoLite?.modes.some((mode) => mode.mode === 'ref2v'), false);
   assert.equal(veoLite?.modes.some((mode) => mode.mode === 'extend'), false);
   assert.equal(veoLite?.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), false);
+});
+
+test('Veo 3.1 Fast registry exposes unified reference-to-video mapping', () => {
+  const registry = listFalEngines();
+  const veoFast = registry.find((entry) => entry.id === 'veo-3-1-fast');
+
+  assert.ok(veoFast);
+  assert.equal(veoFast?.engine.modes.includes('ref2v'), true);
+  assert.equal(
+    veoFast?.modes.find((mode) => mode.mode === 'ref2v')?.falModelId,
+    'fal-ai/veo3.1/fast/reference-to-video'
+  );
+  assert.equal(
+    veoFast?.engine.inputSchema?.required?.some(
+      (field) =>
+        field.id === 'image_urls' &&
+        field.modes?.includes('ref2v') &&
+        field.requiredInModes?.includes('ref2v') &&
+        field.minCount === 1 &&
+        field.maxCount === 4
+    ),
+    true
+  );
 });
 
 test('Luma Ray 2 registry keeps the two public models with generate, modify, and reframe workflows', () => {

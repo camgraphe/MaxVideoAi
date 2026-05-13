@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildFalInputs, buildFalRequestParts } from '../frontend/app/api/generate/_lib/fal-request';
+import { resolveFalModelSlug } from '../frontend/src/lib/fal-model-helpers';
+import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
 
 const root = process.cwd();
@@ -213,4 +215,36 @@ test('Fal request helper uses first frame URL for first-last-frame payloads', ()
   assert.equal(result.falPayload.fps, undefined);
   assert.equal(result.falInputSummary.hasFirstFrame, true);
   assert.equal(result.falInputSummary.hasLastFrame, true);
+});
+
+test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls only', () => {
+  const payload = {
+    engineId: 'veo-3-1-fast',
+    prompt: 'Keep wardrobe, identity, and product silhouette consistent.',
+    mode: 'ref2v',
+    durationOption: '8s',
+    resolution: '1080p',
+    aspectRatio: '16:9',
+    audio: true,
+    imageUrl: 'https://cdn.maxvideoai.com/start-should-not-be-sent.png',
+    referenceImages: [
+      'https://cdn.maxvideoai.com/ref-1.png',
+      'https://cdn.maxvideoai.com/ref-2.png',
+    ],
+  };
+
+  const model = resolveFalModelSlug(payload, 'fal-ai/veo3.1/fast');
+  assert.equal(model, 'fal-ai/veo3.1/fast/reference-to-video');
+
+  const result = buildFalGenerationRequest(payload, model ?? '');
+  assert.equal(result.model, 'fal-ai/veo3.1/fast/reference-to-video');
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.deepEqual(result.requestBody.image_urls, [
+    'https://cdn.maxvideoai.com/ref-1.png',
+    'https://cdn.maxvideoai.com/ref-2.png',
+  ]);
+  assert.equal(result.requestBody.duration, '8s');
+  assert.equal(result.requestBody.resolution, '1080p');
+  assert.equal(result.requestBody.aspect_ratio, '16:9');
+  assert.equal(result.requestBody.generate_audio, true);
 });

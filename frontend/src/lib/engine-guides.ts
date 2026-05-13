@@ -25,8 +25,8 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'veo-3-1-fast': {
     description:
-      'Veo 3.1 Fast now handles quick prompts, image-to-video, first/last transitions, and extend runs with optional audio.',
-    badges: ['Text prompts', 'First/Last', 'Audio option'],
+      'Veo 3.1 Fast now handles quick prompts, image-to-video, 8s reference mode with 1-4 stills, first/last transitions, and extend runs with optional audio.',
+    badges: ['Text prompts', 'Reference mode', 'Audio option'],
   },
   'veo-3-1-lite': {
     description:

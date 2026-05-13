@@ -15,6 +15,8 @@ import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/work
 import type { GenerationAttachmentPayload } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
 import type { WorkspaceInputSchemaSummary } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
+import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { getEngineModeOptions } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 const textField = (id: string, label: string): EngineInputField => ({ id, label, type: 'text' });
 const imageField = (id: string, label: string, minCount?: number): EngineInputField => ({
@@ -278,4 +280,11 @@ test('workspace generate payload resolves provider-specific options', () => {
   assert.equal(result.payload.imageUrl, 'https://cdn.example.com/start.png');
   assert.deepEqual(result.payload.referenceImages, ['https://cdn.example.com/ref.png']);
   assert.deepEqual(result.payload.extraInputValues, { style: 'cinematic' });
+});
+
+test('workspace exposes Veo 3.1 Fast reference and extend manual modes', () => {
+  const veoFast = listFalEngines().find((entry) => entry.id === 'veo-3-1-fast')?.engine;
+
+  assert.ok(veoFast);
+  assert.deepEqual(getEngineModeOptions(veoFast), ['ref2v', 'extend']);
 });
