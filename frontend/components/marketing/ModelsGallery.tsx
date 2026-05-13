@@ -254,7 +254,7 @@ export function ModelsGallery({
         onSortChange={setSelectedSort}
       />
 
-      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
         {sortedCards.slice(0, visibleCount).map((card) => (
           <ModelCard
             key={card.id}

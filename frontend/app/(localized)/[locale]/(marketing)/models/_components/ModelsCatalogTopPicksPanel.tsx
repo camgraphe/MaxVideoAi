@@ -10,10 +10,10 @@ type ModelsCatalogTopPicksPanelProps = {
 };
 
 const TOP_PICK_ICON_CLASSES = [
-  'bg-violet-100 text-violet-700 dark:bg-violet-400/14 dark:text-violet-200',
-  'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/14 dark:text-emerald-200',
-  'bg-sky-100 text-sky-700 dark:bg-sky-400/14 dark:text-sky-200',
-  'bg-amber-100 text-amber-700 dark:bg-amber-400/14 dark:text-amber-200',
+  'bg-violet-100 text-violet-700 dark:bg-violet-400/15 dark:text-violet-100',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-100',
+  'bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-100',
+  'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-100',
 ] as const;
 
 export function ModelsCatalogTopPicksPanel({ title, viewAllLabel, items }: ModelsCatalogTopPicksPanelProps) {
@@ -29,7 +29,7 @@ export function ModelsCatalogTopPicksPanel({ title, viewAllLabel, items }: Model
             className="flex min-h-[62px] items-center gap-2.5 rounded-[8px] border border-hairline bg-bg/80 p-2.5 transition hover:border-text-muted hover:bg-surface-2"
           >
             <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] ${
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] dark:ring-1 dark:ring-white/10 ${
                 TOP_PICK_ICON_CLASSES[index % TOP_PICK_ICON_CLASSES.length]
               }`}
             >

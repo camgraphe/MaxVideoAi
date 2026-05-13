@@ -101,7 +101,11 @@ export function EngineIcon({
             src={brandMark.light.src}
             alt=""
             aria-hidden="true"
-            className={clsx('block select-none object-contain', hasDistinctDarkMark && 'dark:hidden')}
+            className={clsx(
+              'block select-none object-contain',
+              hasDistinctDarkMark && 'dark:hidden',
+              !framed && !hasDistinctDarkMark && 'dark:brightness-0 dark:invert'
+            )}
             width={markSize}
             height={markSize}
             sizes={`${markSize}px`}

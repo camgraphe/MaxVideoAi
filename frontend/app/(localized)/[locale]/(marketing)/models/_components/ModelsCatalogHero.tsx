@@ -2,13 +2,11 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
-import type { AppLocale } from '@/i18n/locales';
 import { MODELS_HERO_IMAGE_URL } from '../_lib/models-catalog-utils';
 import type { ModelsCatalogDecisionBadge, ModelsCatalogTopPick } from '../_lib/models-catalog-decision-data';
 import { ModelsCatalogTopPicksPanel } from './ModelsCatalogTopPicksPanel';
 
 type ModelsCatalogHeroProps = {
-  activeLocale: AppLocale;
   badges: ModelsCatalogDecisionBadge[];
   eyebrow: string;
   heroAccentParts: {
@@ -22,19 +20,12 @@ type ModelsCatalogHeroProps = {
   };
   primaryCtaLabel: string;
   secondaryCtaLabel: string;
-  scopeTabs: Array<{
-    active: boolean;
-    href: string;
-    id: string;
-    label: string;
-  }>;
   topPicks: ModelsCatalogTopPick[];
   topPicksTitle: string;
   topPicksViewAllLabel: string;
 };
 
 export function ModelsCatalogHero({
-  activeLocale,
   badges,
   eyebrow,
   heroAccentParts,
@@ -42,7 +33,6 @@ export function ModelsCatalogHero({
   heroTitleParts,
   primaryCtaLabel,
   secondaryCtaLabel,
-  scopeTabs,
   topPicks,
   topPicksTitle,
   topPicksViewAllLabel,
@@ -110,26 +100,6 @@ export function ModelsCatalogHero({
                 </span>
               ))}
             </div>
-
-            <nav
-              aria-label={activeLocale === 'fr' ? 'Vues du catalogue modeles' : activeLocale === 'es' ? 'Vistas del catalogo de modelos' : 'Model catalog views'}
-              className="mt-6 flex flex-wrap gap-2"
-            >
-              {scopeTabs.map((tab) => (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-micro shadow-sm transition ${
-                    tab.active
-                      ? 'border-text-primary bg-text-primary text-bg'
-                      : 'border-hairline bg-surface/88 text-text-secondary backdrop-blur hover:border-text-muted hover:text-text-primary'
-                  }`}
-                  aria-current={tab.active ? 'page' : undefined}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </nav>
           </div>
 
           {topPicks.length ? (

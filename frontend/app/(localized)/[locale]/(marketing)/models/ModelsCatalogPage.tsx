@@ -6,7 +6,6 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import {
-  MODELS_SCOPE_NAV_LABELS,
   MODELS_SLUG_MAP,
   getModelsScopeEnglishPath,
   getModelsScopePath,
@@ -107,7 +106,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const { locale, dictionary } = await resolveDictionary();
   const activeLocale = locale as AppLocale;
   const scopeDefaults = getScopeDefaults(scope, activeLocale);
-  const scopeLabels = MODELS_SCOPE_NAV_LABELS[activeLocale];
   const breadcrumbLabels = getBreadcrumbLabels(activeLocale);
   const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
   const modelsBasePath = `${localePrefix}/${MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models'}`.replace(
@@ -172,12 +170,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
 
   const heroTitleParts = splitModelsHeroTitle(heroTitle);
   const heroAccentParts = splitHeroAccentTitle(heroTitleParts.accent);
-  const scopeTabs = (['all', 'video', 'image'] as const).map((value) => ({
-    id: value,
-    label: scopeLabels[value],
-    href: value === 'all' ? '/models' : `/models/${value}`,
-    active: scope === value,
-  }));
   const galleryVisibleFilters: Array<'sort' | 'mode' | 'format' | 'duration' | 'price' | 'age'> =
     scope === 'all'
       ? ['sort', 'format', 'mode', 'price']
@@ -223,7 +215,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   return (
     <main className="bg-bg text-text-primary">
       <ModelsCatalogHero
-        activeLocale={activeLocale}
         badges={decisionData.badges}
         eyebrow={decisionCopy.eyebrow ?? scopeDefaults.breadcrumbCurrent ?? 'AI model directory'}
         heroAccentParts={heroAccentParts}
@@ -231,7 +222,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
         heroTitleParts={heroTitleParts}
         primaryCtaLabel={decisionCopy.primaryCta ?? 'Browse models'}
         secondaryCtaLabel={decisionCopy.secondaryCta ?? 'Compare engines'}
-        scopeTabs={scopeTabs}
         topPicks={decisionData.topPicks}
         topPicksTitle={decisionCopy.topPicksTitle ?? 'Recommended starting points'}
         topPicksViewAllLabel={decisionCopy.topPicksViewAll ?? 'View all recommendations'}
