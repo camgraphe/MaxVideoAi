@@ -10,7 +10,7 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'fl2v', 'extend'],
+  modes: ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'],
   maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['auto', '9:16', '16:9', '1:1'],
@@ -40,6 +40,17 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
         requiredInModes: ['i2v'],
         minCount: 1,
         maxCount: 1,
+        source: 'either',
+      },
+      {
+        id: 'image_urls',
+        type: 'image',
+        label: 'Reference images',
+        description: 'Attach 1-4 stills to preserve identity, styling, wardrobe, or product details.',
+        modes: ['ref2v'],
+        requiredInModes: ['ref2v'],
+        minCount: 1,
+        maxCount: 4,
         source: 'either',
       },
       {
@@ -212,6 +223,20 @@ export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         },
       },
       {
+        mode: 'ref2v',
+        falModelId: 'fal-ai/veo3.1/fast/reference-to-video',
+        ui: {
+          modes: ['ref2v'],
+          duration: { options: ['8s'], default: '8s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16'],
+          audioToggle: true,
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 8,
+          notes: 'Attach multiple stills to keep identity, styling, and products consistent in a faster Veo pass.',
+        },
+      },
+      {
         mode: 'fl2v',
         falModelId: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
         ui: {
@@ -239,14 +264,14 @@ export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/veo3.1/fast',
     seo: {
-      title: 'Veo 3.1 Fast – Text, Start Image, Last Frame & Extend Video',
+      title: 'Veo 3.1 Fast - Text, References, Last Frame & Extend Video',
       description:
-        'Use Veo 3.1 Fast for affordable text prompts, start-image animation, optional last-frame control, and extend workflows with optional native audio inside one unified MaxVideoAI model page.',
+        'Use Veo 3.1 Fast for affordable text prompts, start-image animation, multi-reference guidance, optional last-frame control, and extend workflows with optional native audio inside one unified MaxVideoAI model page.',
       canonicalPath: '/models/veo-3-1-fast',
     },
-    type: 'Text, start image, last frame, extend',
+    type: 'Text, start image, references, last frame, extend',
     seoText:
-      'Veo 3.1 Fast keeps quick prompt iteration, single start-image animation, optional last-frame control, and extend-video workflows inside one lower-cost DeepMind route with optional audio.',
+      'Veo 3.1 Fast keeps quick prompt iteration, single start-image animation, multi-reference guidance, optional last-frame control, and extend-video workflows inside one lower-cost DeepMind route with optional audio.',
     demoUrl: '/hero/veo3.mp4',
     media: {
       videoUrl: '/hero/veo3.mp4',
@@ -266,6 +291,12 @@ export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         notes: 'Upload a single start image and enable audio for subtle ambience or leave it off for silent loops.',
       },
       {
+        title: 'Reference fidelity shot',
+        prompt: 'Eight second tracking shot of the hero walking through neon city streets, keep wardrobe, face, and product details from the reference stills, cinematic lighting.',
+        mode: 'ref2v',
+        notes: 'Attach 1-4 stills via Reference images to lock identity while staying on the Fast route.',
+      },
+      {
         title: 'Storyboard bridge',
         prompt: 'Animate between a rough opening storyboard panel and a polished final composition, camera pushes forward, preserve character blocking and reveal timing.',
         mode: 'fl2v',
@@ -278,9 +309,9 @@ export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         answer: 'Yes. MaxVideoAI syncs routing with Google DeepMind updates so motion tuning stays current without manual work.',
       },
       {
-        question: 'Does Veo 3.1 Fast support first and last frames?',
+        question: 'Can I use more than one image with Veo 3.1 Fast?',
         answer:
-          'Yes. In Generate Video, upload a start image and add a Last frame when you want to steer the ending.',
+          'Yes. Use Reference mode for multiple stills, Generate Video with a single start image, or add a Last frame when you need to steer the ending.',
       },
     ],
     pricingHint: {

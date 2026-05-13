@@ -18,14 +18,13 @@ import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
 import type { Mode } from '@/types/engines';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
-import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
 import {
   buildWalletTopUpCheckoutSessionParams,
-  isStripeCheckoutCardRestrictionError,
-  shouldBlockAmexForWalletTopUp,
+  normalizeWalletTopUpAmountCents,
 } from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
@@ -42,26 +41,21 @@ const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 const STRIPE_API_VERSION = '2023-10-16';
-const STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION = '2025-03-31.basil' as Stripe.LatestApiVersion;
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
 const CHECKOUT_COPY_BY_LOCALE: Record<
   AppLocale,
   {
     productName: string;
-    taxLocationMessage: string;
   }
 > = {
   en: {
     productName: 'Wallet top-up',
-    taxLocationMessage: 'Used only to confirm tax location for this digital wallet top-up.',
   },
   fr: {
     productName: 'Recharge portefeuille',
-    taxLocationMessage: 'Utilisee uniquement pour confirmer la localisation fiscale de cette recharge digitale.',
   },
   es: {
     productName: 'Recarga de billetera',
-    taxLocationMessage: 'Se usa solo para confirmar la ubicacion fiscal de esta recarga digital.',
   },
 };
 
@@ -111,20 +105,10 @@ function resolveCheckoutLocale(req: NextRequest, bodyLocale: unknown): AppLocale
   return defaultLocale;
 }
 
-function envFlagEnabled(value: string | undefined): boolean {
-  const normalized = value?.trim().toLowerCase();
-  return normalized === 'true' || normalized === '1';
-}
-
-async function resolveAuthenticatedUser(): Promise<string | null> {
+async function resolveAuthenticatedUser(req: NextRequest): Promise<string | null> {
   try {
-    const supabase = await createSupabaseRouteClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user?.id) {
-      return user.id;
-    }
+    const { userId } = await getRouteAuthContext(req);
+    return userId;
   } catch {
     // ignore helper errors and fall back
   }
@@ -144,7 +128,7 @@ async function hasCompletedWalletTopUp(userId: string): Promise<boolean> {
 }
 
 export async function GET(req: NextRequest) {
-  const userId = await resolveAuthenticatedUser();
+  const userId = await resolveAuthenticatedUser(req);
   if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
 
   const databaseConfigured = Boolean(process.env.DATABASE_URL);
@@ -229,7 +213,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await resolveAuthenticatedUser();
+  const userId = await resolveAuthenticatedUser(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {
@@ -250,7 +234,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const amountCents = Math.max(1000, Number(body.amountCents ?? 0));
+  const amountCents = normalizeWalletTopUpAmountCents(body.amountCents);
+  if (amountCents === null) {
+    return NextResponse.json({ error: 'Invalid top-up amount' }, { status: 400 });
+  }
   const requestMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
   const isExpressCheckoutTopUp = requestMode === 'express_checkout' || requestMode === 'checkout_elements';
   const checkoutLocale = resolveCheckoutLocale(req, body.locale);
@@ -287,12 +274,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const stripeApiVersion =
-    requestMode === 'direct'
-      ? STRIPE_API_VERSION
-      : isExpressCheckoutTopUp
-        ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION
-        : STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION;
+  const stripeApiVersion = isExpressCheckoutTopUp ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION : STRIPE_API_VERSION;
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, {
     apiVersion: stripeApiVersion,
   });
@@ -479,10 +461,6 @@ export async function POST(req: NextRequest) {
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
     const tier = findTopupTier({ usdAmountCents: amountCents });
-    const blockAmexCards = shouldBlockAmexForWalletTopUp({
-      blockAmexFeatureEnabled: envFlagEnabled(ENV.STRIPE_BLOCK_AMEX),
-      hasCompletedTopUp,
-    });
     const captchaToken = typeof body.captchaToken === 'string' ? body.captchaToken : null;
     const checkoutGuard = await evaluateWalletCheckoutGuard({
       userId,
@@ -539,7 +517,6 @@ export async function POST(req: NextRequest) {
       currency_source: currencyResolution.source,
       checkout_ui_mode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
       first_wallet_topup: String(isFirstTopUp),
-      amex_block_required: String(blockAmexCards),
       checkout_attempt_id: String(checkoutGuard.attemptId),
       checkout_guard_reason: checkoutGuard.reason,
       checkout_captcha_passed: String(checkoutGuard.captchaPassed),
@@ -582,7 +559,6 @@ export async function POST(req: NextRequest) {
     const paymentIntentMetadata: Record<string, string> = {
       ...sessionMetadata,
     };
-    const checkoutParamBlockAmexCards = blockAmexCards && !isExpressCheckoutTopUp;
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
       currency: resolvedCurrencyLower,
       settlementAmountCents,
@@ -592,7 +568,6 @@ export async function POST(req: NextRequest) {
       returnUrl: successUrl,
       locale: checkoutLocale,
       productName: checkoutCopy.productName,
-      taxLocationMessage: checkoutCopy.taxLocationMessage,
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
@@ -600,49 +575,10 @@ export async function POST(req: NextRequest) {
       customerUpdate: {
         address: 'auto',
         name: 'auto',
-        shipping: 'auto',
       },
-      blockAmexCards: checkoutParamBlockAmexCards,
     });
 
-    let session: Stripe.Checkout.Session;
-    try {
-      session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
-    } catch (error) {
-      if (!checkoutParamBlockAmexCards || !isStripeCheckoutCardRestrictionError(error)) {
-        throw error;
-      }
-      const stripeError = error as { type?: string; code?: string; param?: string; requestId?: string; message?: string };
-      console.warn('[payments][high-priority] Stripe rejected Checkout card brand restrictions; retrying top-up without Amex block.', {
-        checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
-        stripeType: stripeError.type ?? null,
-        stripeCode: stripeError.code ?? null,
-        stripeParam: stripeError.param ?? null,
-        stripeRequestId: stripeError.requestId ?? null,
-      });
-      const fallbackSessionParams = buildWalletTopUpCheckoutSessionParams({
-        currency: resolvedCurrencyLower,
-        settlementAmountCents,
-        checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
-        successUrl,
-        cancelUrl,
-        returnUrl: successUrl,
-        locale: checkoutLocale,
-        productName: checkoutCopy.productName,
-        taxLocationMessage: checkoutCopy.taxLocationMessage,
-        sessionMetadata,
-        paymentIntentMetadata,
-        productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
-        customer: stripeCustomerId,
-        customerUpdate: {
-          address: 'auto',
-          name: 'auto',
-          shipping: 'auto',
-        },
-        blockAmexCards: false,
-      });
-      session = await stripe.checkout.sessions.create(fallbackSessionParams as Stripe.Checkout.SessionCreateParams);
-    }
+    const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
 
     await markCheckoutAttemptSessionCreated(checkoutGuard.attemptId, session.id).catch((error) => {
       console.warn('[checkout-guard] failed to mark checkout session created', error);

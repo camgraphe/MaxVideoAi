@@ -879,6 +879,7 @@
       "modes": [
         "t2v",
         "i2v",
+        "ref2v",
         "fl2v",
         "extend"
       ],
@@ -925,6 +926,21 @@
             ],
             "minCount": 1,
             "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Attach 1-4 stills to preserve identity, styling, wardrobe, or product details.",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 4,
             "source": "either"
           },
           {
@@ -1162,6 +1178,38 @@
           ],
           "maxUploadMB": 12,
           "notes": "Animate one still quickly while keeping Veo Fast native audio optional."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "fal-ai/veo3.1/fast/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "8s"
+            ],
+            "default": "8s"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 8,
+          "notes": "Attach multiple stills to keep identity, styling, and products consistent in a faster Veo pass."
         }
       },
       {

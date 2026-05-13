@@ -26,3 +26,9 @@ assert.doesNotMatch(
   /labels\.|onCaptchaRequired|onPaymentFailed|onPaymentStarted/,
   'Express Checkout mount effect should not depend on unstable labels or callbacks'
 );
+
+assert.match(
+  source,
+  /params\.set\('checkoutSessionId', checkoutSessionResult\.sessionId\)/,
+  'Express Checkout success redirects should keep the Stripe Checkout Session id for funnel reporting'
+);
