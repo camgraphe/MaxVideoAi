@@ -16,6 +16,8 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'veo-3-1',
   'veo-3-1-fast',
   'veo-3-1-lite',
+  'kling-2-5-turbo',
+  'kling-2-6-pro',
   'kling-3-pro',
   'kling-3-standard',
   'kling-3-4k',
@@ -187,6 +189,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale: 'en' });
   const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
   const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
+  const kling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
+  const kling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
   const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale: 'en' });
   const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
   const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
@@ -201,6 +205,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(veo);
   assert.ok(veoFast);
   assert.ok(veoLite);
+  assert.ok(kling25);
+  assert.ok(kling26);
   assert.ok(kling);
   assert.ok(klingStandard);
   assert.ok(kling4k);
@@ -221,6 +227,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['veo-3-1', veo.meta.title],
     ['veo-3-1-fast', veoFast.meta.title],
     ['veo-3-1-lite', veoLite.meta.title],
+    ['kling-2-5-turbo', kling25.meta.title],
+    ['kling-2-6-pro', kling26.meta.title],
     ['kling-3-pro', kling.meta.title],
     ['kling-3-standard', klingStandard.meta.title],
     ['kling-3-4k', kling4k.meta.title],
@@ -232,6 +240,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   ]);
   assert.equal(new Set(routeTitles.values()).size, routeTitles.size, 'priority migrated title tags should be distinct');
   assert.match(veo.meta.title, /Pricing|References|Native Audio/i);
+  assert.match(kling25.meta.title, /Pricing|Silent Drafts/i);
+  assert.match(kling26.meta.title, /Pricing|Audio|Examples/i);
   assert.match(kling.meta.title, /Pricing|Control|15s/i);
   assert.match(seedream.meta.title, /Image Pricing|Reference Prep/i);
   assert.match(seedance15.meta.title, /Pricing|Camera Fixed/i);
@@ -247,6 +257,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
+  const kling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
+  const kling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
   const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
   const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
 
@@ -255,6 +267,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.ok(seedance);
   assert.ok(ltxFast);
   assert.ok(ltxPro);
+  assert.ok(kling25);
+  assert.ok(kling26);
   assert.ok(sora);
   assert.ok(soraPro);
 
@@ -275,6 +289,10 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.doesNotMatch(visibleDecisionText(ltxFast), /audio-to-video|retake|extend/i);
   assert.match(visibleDecisionText(ltxPro), /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);
+  assert.match(visibleDecisionText(kling25), /silent|look-dev|negative prompt/i);
+  assert.doesNotMatch(visibleDecisionText(kling25), /native audio|Audio on|4K|Elements|15s|voice IDs/i);
+  assert.match(visibleDecisionText(kling26), /supported older Kling route|native audio|1080p/i);
+  assert.doesNotMatch(visibleDecisionText(kling26), /4K|Elements|15s|voice IDs/i);
   assert.doesNotMatch(
     visibleDecisionText(sora),
     /1080p delivery|higher-resolution finals|Pro route/i,
@@ -289,6 +307,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   for (const locale of LOCALES) {
     const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale });
     const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale });
+    const localizedKling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale });
+    const localizedKling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale });
     const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale });
     const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale });
     const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale });
@@ -298,6 +318,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
 
     assert.ok(veo);
     assert.ok(veoLite);
+    assert.ok(localizedKling25);
+    assert.ok(localizedKling26);
     assert.ok(kling);
     assert.ok(klingStandard);
     assert.ok(kling4k);
@@ -307,6 +329,16 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
 
     assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
     assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
+    assert.doesNotMatch(
+      visibleDecisionText(localizedKling25),
+      /native audio|Audio on|Audio activ|Audio nativo|4K|Omni|voice IDs|Elements/i,
+      `Kling 2.5 Turbo ${locale} copy should stay silent legacy draft focused`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedKling26),
+      /4K|Omni|voice IDs|Elements|15s/i,
+      `Kling 2.6 Pro ${locale} copy should not claim Kling 3 or unavailable routes`
+    );
     assert.doesNotMatch(
       visibleDecisionText(kling),
       /4K|Omni|voice IDs|Elements/i,

@@ -17,6 +17,7 @@ type ModelPromptingSectionProps = {
   copy: SoraCopy;
   supportsNativeAudio: boolean;
   demoMedia: FeaturedMedia | null;
+  engineSlug: string;
   locale: AppLocale;
   audioBadgeLabel: string;
   mediaAltContexts: { demo: string };
@@ -31,6 +32,7 @@ export function ModelPromptingSection({
   copy,
   supportsNativeAudio,
   demoMedia,
+  engineSlug,
   locale,
   audioBadgeLabel,
   mediaAltContexts,
@@ -44,6 +46,7 @@ export function ModelPromptingSection({
         imageAnchorId={imageAnchorId}
         copy={copy}
         demoMedia={demoMedia}
+        engineSlug={engineSlug}
         locale={locale}
         referenceWorkflows={decisionReferenceWorkflows ?? []}
       />

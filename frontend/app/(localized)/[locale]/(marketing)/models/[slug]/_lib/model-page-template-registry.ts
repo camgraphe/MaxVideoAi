@@ -1,4 +1,6 @@
 import type { ModelPageTemplateConfig } from './model-page-template-types';
+import { kling25TurboTemplateConfig } from './model-page-templates/kling-2-5-turbo';
+import { kling26ProTemplateConfig } from './model-page-templates/kling-2-6-pro';
 import { kling34kTemplateConfig } from './model-page-templates/kling-3-4k';
 import { kling3ProTemplateConfig } from './model-page-templates/kling-3-pro';
 import { kling3StandardTemplateConfig } from './model-page-templates/kling-3-standard';
@@ -15,6 +17,8 @@ import { veo31TemplateConfig } from './model-page-templates/veo-3-1';
 import { veo31LiteTemplateConfig } from './model-page-templates/veo-3-1-lite';
 
 const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
+  [kling25TurboTemplateConfig.slug]: kling25TurboTemplateConfig,
+  [kling26ProTemplateConfig.slug]: kling26ProTemplateConfig,
   [kling34kTemplateConfig.slug]: kling34kTemplateConfig,
   [kling3ProTemplateConfig.slug]: kling3ProTemplateConfig,
   [kling3StandardTemplateConfig.slug]: kling3StandardTemplateConfig,

@@ -68,6 +68,8 @@ test('template registry enables Seedance production and draft model templates', 
     ['10s-1080p', 'max-duration']
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
+    'kling-2-5-turbo',
+    'kling-2-6-pro',
     'kling-3-4k',
     'kling-3-pro',
     'kling-3-standard',
@@ -184,6 +186,32 @@ test('Seedance 1.5 Pro template preserves supported legacy route intent', () => 
     seedance15.pricing.presets.map((preset) => preset.id),
     ['5s-480p-audio', '8s-720p-audio', '10s-1080p-audio', 'max-duration']
   );
+});
+
+test('Kling legacy templates preserve supported older route intent', () => {
+  const kling25 = getModelPageTemplateConfig('kling-2-5-turbo');
+  const kling26 = getModelPageTemplateConfig('kling-2-6-pro');
+
+  assert.ok(kling25);
+  assert.ok(kling26);
+  assert.equal(kling25.intent, 'draft');
+  assert.equal(kling26.intent, 'specialized');
+  assert.equal(kling25.hero.primaryCtaHref, '/app?engine=kling-2-5-turbo');
+  assert.equal(kling26.hero.primaryCtaHref, '/app?engine=kling-2-6-pro');
+  assert.equal(kling25.pricing.anchorHref, '/pricing#kling-2-5-turbo-pricing');
+  assert.equal(kling26.pricing.anchorHref, '/pricing#kling-2-6-pro-pricing');
+  assert.equal(kling25.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(kling26.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.deepEqual(
+    kling25.pricing.presets.map((preset) => preset.id),
+    ['5s-1080p', '10s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    kling26.pricing.presets.map((preset) => preset.id),
+    ['5s-1080p', '5s-1080p-audio', '10s-1080p-audio', 'max-duration']
+  );
+  assert.equal(kling25.pricing.presets.every((preset) => !preset.id.includes('audio')), true);
+  assert.equal(kling26.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

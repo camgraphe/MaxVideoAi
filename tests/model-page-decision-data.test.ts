@@ -217,6 +217,55 @@ test('Kling 3 Pro returns production decision data without unavailable route cla
   assert.doesNotMatch(visibleDecisionText(es), /4K|Omni|voice IDs|Elements/i);
 });
 
+test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () => {
+  const kling25 = getEngine('kling-2-5-turbo');
+  const kling26 = getEngine('kling-2-6-pro');
+  const en25 = buildModelDecisionData({ engine: kling25, locale: 'en' });
+  const fr25 = buildModelDecisionData({ engine: kling25, locale: 'fr' });
+  const es25 = buildModelDecisionData({ engine: kling25, locale: 'es' });
+  const en26 = buildModelDecisionData({ engine: kling26, locale: 'en' });
+  const fr26 = buildModelDecisionData({ engine: kling26, locale: 'fr' });
+  const es26 = buildModelDecisionData({ engine: kling26, locale: 'es' });
+
+  assert.ok(en25);
+  assert.ok(fr25);
+  assert.ok(es25);
+  assert.ok(en26);
+  assert.ok(fr26);
+  assert.ok(es26);
+
+  assert.equal(en25.hero.title, 'Kling 2.5 Turbo');
+  assert.match(en25.hero.subtitle, /Silent 1080p drafts/);
+  assert.match(visibleDecisionText(en25), /silent|look-dev|negative prompt/i);
+  assert.doesNotMatch(visibleDecisionText(en25), /native audio|Audio on|4K|Elements|voice IDs|15s/i);
+  assert.deepEqual(en25.hero.subtitleHighlights, [
+    'Silent 1080p drafts',
+    'text or image starts',
+    'negative prompt control',
+  ]);
+  assert.equal(en25.hero.primaryCta.href, '/app?engine=kling-2-5-turbo');
+  assert.equal(en25.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en25.decisionCards[2]?.cta.href, '#prompting');
+  assert.match(fr25.hero.subtitle, /Drafts muets 1080p/);
+  assert.match(es25.hero.subtitle, /Borradores silenciosos 1080p/);
+
+  assert.equal(en26.hero.title, 'Kling 2.6 Pro');
+  assert.match(en26.hero.subtitle, /Native audio/);
+  assert.match(en26.hero.subtitle, /1080p short clips/);
+  assert.match(visibleDecisionText(en26), /supported older Kling route/i);
+  assert.doesNotMatch(visibleDecisionText(en26), /4K|Elements|voice IDs|15s/i);
+  assert.deepEqual(en26.hero.subtitleHighlights, [
+    'Native audio',
+    '1080p short clips',
+    'text-to-video or image-to-video',
+  ]);
+  assert.equal(en26.hero.primaryCta.href, '/app?engine=kling-2-6-pro');
+  assert.equal(en26.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en26.decisionCards[1]?.cta.href, '#prompting');
+  assert.match(fr26.hero.subtitle, /Audio natif/);
+  assert.match(es26.hero.subtitle, /Audio nativo/);
+});
+
 test('Seedream returns reference-prep decision data for still preparation', () => {
   const seedream = getEngine('seedream');
   const en = buildModelDecisionData({ engine: seedream, locale: 'en' });
@@ -373,6 +422,8 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
   const expectations = [
     ['veo-3-1-fast', ['4s-720p', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
     ['veo-3-1-lite', ['4s-720p-audio', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
+    ['kling-2-5-turbo', ['5s-1080p', '10s-1080p', 'max-duration']],
+    ['kling-2-6-pro', ['5s-1080p', '5s-1080p-audio', '10s-1080p-audio', 'max-duration']],
     ['kling-3-standard', ['5s-1080p', '8s-1080p-audio', '15s-1080p-audio', 'max-duration']],
     ['kling-3-4k', ['5s-4k', '10s-4k', '15s-4k', 'max-duration']],
     ['ltx-2-3-pro', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],

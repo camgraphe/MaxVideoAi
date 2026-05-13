@@ -15,6 +15,7 @@ type ModelDecisionPromptTabsProps = {
   tabs: PromptingTab[];
   locale: AppLocale;
   exampleHref: string | null;
+  engineSlug: string;
 };
 
 const TAB_ICONS = [FileText, Box, Camera, Sparkles] as const;
@@ -58,7 +59,7 @@ function splitPromptCopy(value: string) {
   };
 }
 
-export function ModelDecisionPromptTabs({ tabs, locale, exampleHref }: ModelDecisionPromptTabsProps) {
+export function ModelDecisionPromptTabs({ tabs, locale, exampleHref, engineSlug }: ModelDecisionPromptTabsProps) {
   const [activeId, setActiveId] = useState(() => tabs[0]?.id ?? 'quick');
   const activeTab = tabs.find((tab) => tab.id === activeId) ?? tabs[0] ?? null;
   const labels = getCopy(locale);
@@ -130,7 +131,7 @@ export function ModelDecisionPromptTabs({ tabs, locale, exampleHref }: ModelDeci
               </Link>
             ) : null}
             <Link
-              href="/app?engine=seedance-2-0"
+              href={`/app?engine=${encodeURIComponent(engineSlug)}`}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
             >
               <UIIcon icon={Clock3} size={15} />

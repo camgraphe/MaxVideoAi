@@ -144,6 +144,12 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptingSource, /How Seedance 2\.0 uses references|referencesTitle/, 'decision prompting should render the reference workflow section');
   assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
   assert.match(decisionPromptTabsSource, /navigator\.clipboard\.writeText|ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
+  assert.match(decisionPromptTabsSource, /encodeURIComponent\(engineSlug\)/, 'decision prompt tabs should route Use Prompt to the active engine');
+  assert.doesNotMatch(
+    decisionPromptTabsSource,
+    /href="\/app\?engine=seedance-2-0"/,
+    'decision prompt tabs should not hardcode Seedance for every template page'
+  );
   assert.match(decisionTipsSource, /Tips and boundaries|tipsTitle/, 'decision tips should own the visual tips layout');
   assert.match(decisionCompareSource, /focusVsConfig|COMPARE_EXCLUDED_SLUGS/, 'decision compare should own focused and related comparison layouts');
   assert.match(decisionCompareSource, /getCardTitle/, 'decision compare should allow non-versus prep cards such as Seedream');

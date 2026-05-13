@@ -28,6 +28,7 @@ type ModelDecisionPromptingSectionProps = {
   imageAnchorId: string;
   copy: SoraCopy;
   demoMedia: FeaturedMedia | null;
+  engineSlug: string;
   locale: AppLocale;
   referenceWorkflows: Array<{ title: string; body: string }>;
 };
@@ -136,6 +137,7 @@ export function ModelDecisionPromptingSection({
   imageAnchorId,
   copy,
   demoMedia,
+  engineSlug,
   locale,
   referenceWorkflows,
 }: ModelDecisionPromptingSectionProps) {
@@ -214,7 +216,12 @@ export function ModelDecisionPromptingSection({
         ) : null}
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]">
-          <ModelDecisionPromptTabs tabs={copy.promptingTabs} locale={locale} exampleHref={demoMedia?.href ?? null} />
+          <ModelDecisionPromptTabs
+            tabs={copy.promptingTabs}
+            locale={locale}
+            exampleHref={demoMedia?.href ?? null}
+            engineSlug={engineSlug}
+          />
 
           <div className="space-y-4 lg:pt-14">
             <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:bg-white/[0.045]">
