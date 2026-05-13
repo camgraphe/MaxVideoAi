@@ -4,7 +4,7 @@
   "seo": {
     "title": "LTX 2.3 Fast | Modèle vidéo IA, specs, prix et durée max | MaxVideoAI",
     "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues, la tarification actuelle, la durée max et les différences clés face à LTX 2.3 Pro.",
-    "image": "/assets/placeholders/preview-16x9.png"
+    "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
   "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide avant de faire monter les sorties retenues vers LTX 2.3 Pro.",
   "hero": {
@@ -232,7 +232,7 @@
       "Vérifiez le prix live et utilisez Fast pour l’itération large avant de faire monter les gagnants."
     ],
     "galleryTitle": "Exemples LTX 2.3 Fast",
-    "galleryIntro": "Des placeholders locaux sont utilisés pour le moment sur cette branche de dev. Remplacez-les par les rendus LTX 2.3 Fast approuvés avant la mise en production.",
+    "galleryIntro": "Exemples LTX 2.3 Fast représentatifs pour revoir la structure des prompts, le rythme des brouillons et la préparation image-vers-vidéo avant de générer.",
     "galleryAllCta": "Voir tous les exemples LTX 2.3 Fast ->",
     "recreateLabel": "Recréer ce plan ->",
     "tipsTitle": "Forces pratiques et limites",

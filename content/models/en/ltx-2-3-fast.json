@@ -232,7 +232,7 @@
       "Check the live price and use Fast for broad iteration before upgrading winners."
     ],
     "galleryTitle": "LTX 2.3 Fast examples",
-    "galleryIntro": "Representative LTX 2.3 Fast examples and placeholders used on this branch for layout and prompt coverage.",
+    "galleryIntro": "Representative LTX 2.3 Fast examples for reviewing prompt structure, draft pacing and image-to-video setup before generating.",
     "galleryAllCta": "View all LTX 2.3 Fast examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",

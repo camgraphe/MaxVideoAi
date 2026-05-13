@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
@@ -15,6 +18,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
 ] as const;
 
 const LOCALES = ['en', 'fr', 'es'] as const;
+const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
   const engine = listFalEngines().find((candidate) => candidate.id === slug);
@@ -138,6 +142,31 @@ test('migrated template prompt links keep users on the Prompt Lab section', () =
       assert.ok(
         [...promptQuickLinks, ...promptCardCtas].every((link) => link.href === '#prompting'),
         `${slug}/${locale} prompt links should stay anchored to #prompting`
+      );
+    }
+  }
+});
+
+test('migrated localized model content avoids placeholder media copy', () => {
+  for (const slug of MIGRATED_TEMPLATE_SLUGS) {
+    for (const locale of LOCALES) {
+      const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
+      const content = JSON.parse(readFileSync(contentPath, 'utf8')) as {
+        seo?: { image?: string };
+        custom?: { galleryIntro?: string };
+      };
+      const seoImage = content.seo?.image ?? '';
+      const galleryIntro = content.custom?.galleryIntro ?? '';
+
+      assert.doesNotMatch(
+        seoImage,
+        /\/assets\/placeholders\/|placeholder/i,
+        `${slug}/${locale} SEO image should not point to placeholder media`
+      );
+      assert.doesNotMatch(
+        galleryIntro,
+        /placeholder/i,
+        `${slug}/${locale} gallery intro should not expose branch placeholder copy`
       );
     }
   }
