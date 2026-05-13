@@ -7,7 +7,6 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
-import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -26,6 +25,7 @@ import {
 import {
   pickDemoMedia,
   pickHeroMedia,
+  normalizeMediaUrl,
   toFeaturedMedia,
   toGalleryCard,
   type FeaturedMedia,
@@ -228,11 +228,8 @@ async function renderMarketingModelPage({
       engine.type === 'image'
         ? `${modelName} demo still from MaxVideoAI`
         : `${modelName} demo clip from MaxVideoAI`,
-    videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
-    posterUrl:
-      engine.media?.imagePath ??
-      buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 75 }) ??
-      null,
+    videoUrl: engine.type === 'image' ? null : (normalizeMediaUrl(engine.media?.videoUrl) ?? normalizeMediaUrl(engine.demoUrl)),
+    posterUrl: normalizeMediaUrl(engine.media?.imagePath),
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
     href: null,

@@ -34,6 +34,7 @@ import {
   type KeySpecRow,
   type SpecSection,
 } from '../_lib/model-page-specs';
+import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 
 type ModelSpecsSectionProps = {
   hasSpecs: boolean;
@@ -48,27 +49,27 @@ type ModelSpecsSectionProps = {
 };
 
 const SPEC_ICON_META: Record<KeySpecKey, { icon: typeof Check; tone: string }> = {
-  pricePerImage: { icon: BadgeDollarSign, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  pricePerSecond: { icon: BadgeDollarSign, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  releaseDate: { icon: Clock3, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  textToImage: { icon: Type, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  imageToImage: { icon: Images, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  textToVideo: { icon: Type, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  imageToVideo: { icon: ImageIcon, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  videoToVideo: { icon: Video, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  firstLastFrame: { icon: Images, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  referenceImageStyle: { icon: ImageIcon, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  referenceVideo: { icon: Film, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  maxResolution: { icon: Monitor, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  maxDuration: { icon: Clock3, tone: 'bg-orange-50 text-orange-600 dark:bg-orange-500/12 dark:text-orange-300' },
-  aspectRatios: { icon: Crop, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  fpsOptions: { icon: Gauge, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  outputFormats: { icon: FileVideo, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' },
-  audioOutput: { icon: Waves, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  nativeAudioGeneration: { icon: Volume2, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  lipSync: { icon: Volume2, tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300' },
-  cameraMotionControls: { icon: Camera, tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300' },
-  watermark: { icon: ShieldCheck, tone: 'bg-orange-50 text-orange-600 dark:bg-orange-500/12 dark:text-orange-300' },
+  pricePerImage: { icon: BadgeDollarSign, tone: MODEL_PAGE_ICON_WRAP },
+  pricePerSecond: { icon: BadgeDollarSign, tone: MODEL_PAGE_ICON_WRAP },
+  releaseDate: { icon: Clock3, tone: MODEL_PAGE_ICON_WRAP },
+  textToImage: { icon: Type, tone: MODEL_PAGE_ICON_WRAP },
+  imageToImage: { icon: Images, tone: MODEL_PAGE_ICON_WRAP },
+  textToVideo: { icon: Type, tone: MODEL_PAGE_ICON_WRAP },
+  imageToVideo: { icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+  videoToVideo: { icon: Video, tone: MODEL_PAGE_ICON_WRAP },
+  firstLastFrame: { icon: Images, tone: MODEL_PAGE_ICON_WRAP },
+  referenceImageStyle: { icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+  referenceVideo: { icon: Film, tone: MODEL_PAGE_ICON_WRAP },
+  maxResolution: { icon: Monitor, tone: MODEL_PAGE_ICON_WRAP },
+  maxDuration: { icon: Clock3, tone: MODEL_PAGE_ICON_WRAP },
+  aspectRatios: { icon: Crop, tone: MODEL_PAGE_ICON_WRAP },
+  fpsOptions: { icon: Gauge, tone: MODEL_PAGE_ICON_WRAP },
+  outputFormats: { icon: FileVideo, tone: MODEL_PAGE_ICON_WRAP },
+  audioOutput: { icon: Waves, tone: MODEL_PAGE_ICON_WRAP },
+  nativeAudioGeneration: { icon: Volume2, tone: MODEL_PAGE_ICON_WRAP },
+  lipSync: { icon: Volume2, tone: MODEL_PAGE_ICON_WRAP },
+  cameraMotionControls: { icon: Camera, tone: MODEL_PAGE_ICON_WRAP },
+  watermark: { icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
 };
 
 function getFullSpecsLabel(locale: AppLocale) {
@@ -78,14 +79,14 @@ function getFullSpecsLabel(locale: AppLocale) {
 }
 
 function getDetailsLabel(locale: AppLocale) {
-  if (locale === 'fr') return 'Details';
+  if (locale === 'fr') return 'Détails';
   if (locale === 'es') return 'Detalles';
   return 'Details';
 }
 
 function getDecisionSpecFallbackNote(locale: AppLocale) {
   if (locale === 'fr') return 'Les limites qui structurent vos rendus.';
-  if (locale === 'es') return 'Los limites que definen tus renders.';
+  if (locale === 'es') return 'Los límites que definen tus renders.';
   return 'The limits that shape your renders.';
 }
 
@@ -102,8 +103,8 @@ function renderDecisionSpecValue(row: KeySpecRow, locale: AppLocale, supportedLa
 
   if (isSupported(row.value)) {
     return (
-      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-300">
-        <UIIcon icon={Check} size={15} className="text-emerald-600 dark:text-emerald-300" />
+      <span className={`inline-flex items-center gap-1 ${MODEL_PAGE_ICON_MUTED}`}>
+        <UIIcon icon={Check} size={15} className={MODEL_PAGE_ICON_MUTED} />
         <span className="sr-only">{supportedLabel}</span>
       </span>
     );
@@ -144,17 +145,17 @@ function ModelDecisionSpecsPanel({
         </div>
 
         {keySpecRows.length ? (
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
             {keySpecRows.map((row) => {
-              const meta = SPEC_ICON_META[row.key] ?? { icon: Sparkles, tone: 'bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300' };
+              const meta = SPEC_ICON_META[row.key] ?? { icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP };
               return (
                 <article
                   key={row.id}
-                  className="min-h-[88px] rounded-xl border border-slate-200 bg-white/78 p-3.5 shadow-[0_12px_38px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045]"
+                  className="min-h-[88px] rounded-xl border border-slate-200 bg-white/78 p-3 shadow-[0_12px_38px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045] sm:p-3.5"
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${meta.tone}`}>
-                      <UIIcon icon={meta.icon} size={20} strokeWidth={1.85} />
+                    <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${meta.tone}`}>
+                      <UIIcon icon={meta.icon} size={19} strokeWidth={1.85} className={MODEL_PAGE_ICON} />
                     </span>
                     <div className="min-w-0">
                       <h3 className="!text-left text-[0.82rem] font-semibold leading-snug text-slate-950 dark:text-white">
@@ -183,8 +184,8 @@ function ModelDecisionSpecsPanel({
                   <details className="group">
                     <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
                       <div className="flex min-w-0 gap-3">
-                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300">
-                          <UIIcon icon={Icon} size={20} strokeWidth={1.85} />
+                        <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
+                          <UIIcon icon={Icon} size={20} strokeWidth={1.85} className={MODEL_PAGE_ICON} />
                         </span>
                         <div>
                           <h3 className="!text-left text-base font-semibold leading-tight text-slate-950 dark:text-white">
@@ -283,8 +284,8 @@ export function ModelSpecsSection({
                             ))}
                           </span>
                         ) : isSupported(row.value) ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-600">
-                            <UIIcon icon={Check} size={14} className="text-emerald-600" />
+                          <span className={`inline-flex items-center gap-1 ${MODEL_PAGE_ICON_MUTED}`}>
+                            <UIIcon icon={Check} size={14} className={MODEL_PAGE_ICON_MUTED} />
                             <span className="sr-only">{statusLabels.supported}</span>
                           </span>
                         ) : (

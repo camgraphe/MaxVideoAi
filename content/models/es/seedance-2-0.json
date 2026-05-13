@@ -2,15 +2,15 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 | Modelo de video IA, precio, audio nativo y objetivos | MaxVideoAI",
-    "description": "Usa Seedance 2.0 en MaxVideoAI para video multi-shot, audio nativo, el precio actual, capacidades clave y los mejores objetivos del workflow Seedance actual."
+    "title": "Seedance 2.0 | Modelo de video IA, precios, audio nativo y ejemplos | MaxVideoAI",
+    "description": "Usa Seedance 2.0 en MaxVideoAI para video con continuidad entre tomas, audio nativo, precios actuales, capacidades clave y ejemplos del flujo Seedance actual."
   },
-  "overview": "Seedance 2.0 es el modelo de video IA de Seedance actual en MaxVideoAI para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
-  "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
+  "overview": "Seedance 2.0 es el modelo actual de video IA de Seedance en MaxVideoAI para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
+  "pricingNotes": "Seedance 2 usa precios del proveedor basados en tokens. MaxVideoAI muestra el precio aplicado y el total final antes de enviar la generación.",
   "hero": {
-    "title": "Seedance 2.0 — modelo Seedance actual para video multi-shot y audio nativo",
-    "intro": "Seedance 2.0 es el modelo de video IA de Seedance actual para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar el precio, las capacidades clave, los mejores objetivos y cuándo este workflow de video de Seedance encaja mejor que Fast o que versiones Seedance anteriores.",
-    "badge": "3 workflows · 480p/720p/1080p · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
+    "title": "Seedance 2.0 — modelo actual de Seedance para video con continuidad entre tomas y audio nativo",
+    "intro": "Seedance 2.0 es el modelo actual de video IA de Seedance para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar precios, capacidades clave, mejores usos y cuándo este flujo de video de Seedance encaja mejor que Fast o que versiones anteriores.",
+    "badge": "3 flujos · 480p/720p/1080p · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -51,14 +51,14 @@
     "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
-    "title": "Mejor para Seedance 2.0",
+    "title": "Mejores usos de Seedance 2.0",
     "items": [
       {
         "title": "Secuencias de acción con colisiones, escombros e interacciones más creíbles",
         "icon": "camera"
       },
       {
-        "title": "Anuncios multi-shot con continuidad visual de producto",
+        "title": "Anuncios con continuidad visual entre tomas",
         "icon": "product"
       },
       {
@@ -87,7 +87,7 @@
     },
     {
       "label": "Entradas",
-      "body": "Tres workflows dentro de una sola familia: text-to-video, imagen inicial + imagen final opcional en i2v y referencias de imagen/video/audio en ref2v"
+      "body": "Tres flujos dentro de una sola familia: text-to-video, imagen inicial + imagen final opcional en i2v y referencias de imagen/video/audio en ref2v"
     },
     {
       "label": "Límites de referencias",
@@ -99,7 +99,7 @@
     },
     {
       "label": "Audio",
-      "body": "Audio nativo activado por defecto y desactivable; Fal indica que el precio es el mismo con o sin audio"
+      "body": "Audio nativo activado por defecto y desactivable; MaxVideoAI muestra el presupuesto final antes de generar"
     },
     {
       "label": "Cámara y movimiento",
@@ -107,13 +107,13 @@
     },
     {
       "label": "Fuentes",
-      "body": "La página pública de Fal destaca text-to-video, image-to-video, reference-to-video y variantes Fast optimizadas dentro de la familia Seedance 2."
+      "body": "Las notas provider/model-family describen text-to-video, image-to-video, reference-to-video y variantes Fast optimizadas dentro de la familia Seedance 2."
     }
   ],
   "promptStructure": {
     "title": "Cómo escribir prompts para Seedance 2.0",
     "quote": "[Género] + [sujeto] + [escenario] + [momentos de acción] + [lenguaje de cámara] + [indicaciones de audio] + [duración auto o 4-15 s] + [estructura multi-shot].",
-    "description": "Para mayor consistencia, estructure la línea temporal por planos, defina transiciones explícitas y sincronice diálogo/SFX con acciones visibles.",
+    "description": "Para mayor consistencia, estructura la línea de tiempo por tomas, define transiciones claras y sincroniza diálogo o efectos con acciones visibles.",
     "steps": [
       "Definir el género y el sujeto principal",
       "Fijar anclas visuales (vestuario, locación, iluminación)",
@@ -122,22 +122,22 @@
       "Especificar ambiente, diálogo breve y SFX sincronizados"
     ]
   },
-  "promptingTip": "Consejo: empieza con Sujeto -> Acción -> Cámara -> Estilo, y luego elige la ruta correcta de Seedance: text-to-video puro, image-to-video con inicio/final, o reference-to-video multimodal.",
+  "promptingTip": "Consejo: empieza con Sujeto -> Acción -> Cámara -> Estilo, y luego elige el flujo correcto de Seedance: text-to-video puro, image-to-video con inicio/final, o reference-to-video multimodal.",
   "tips": {
     "title": "Notas de producción",
     "items": [
-      "Mantén una estructura plano por plano para reforzar la continuidad multi-shot.",
+      "Mantén una estructura toma por toma para reforzar la continuidad.",
       "Usa referencias multimodales para fijar vestuario, props, ritmo y ambiente.",
       "Usa la imagen final opcional en i2v cuando quieras guiar el último frame.",
-      "Pasa a Seedance 2.0 Fast cuando quieras versiones de trabajo más económicas antes de los finales.",
-      "Generate muestra la ruta activa y el precio final antes de enviar."
+      "Usa Seedance 2.0 Fast para borradores más económicos antes de generar las versiones finales.",
+      "Generate muestra el flujo activo y el precio final antes de enviar."
     ]
   },
   "demoTitle": "Demo de prompt",
   "prompts": [
     {
       "title": "Persecución de acción multi-shot",
-      "prompt": "Persecución en azoteas al atardecer en tres planos: plano 1 seguimiento amplio, plano 2 persecución cercana cámara en mano, plano 3 reveal con grúa sobre skyline. Pasos y sirenas sincronizados. Duración 15 segundos."
+      "prompt": "Persecución en azoteas al atardecer en tres planos: plano 1 seguimiento amplio, plano 2 persecución cercana cámara en mano, plano 3 revelación con grúa sobre el horizonte de la ciudad. Pasos y sirenas sincronizados. Duración 15 segundos."
     },
     {
       "title": "Thriller de espionaje continuo",
@@ -149,7 +149,7 @@
     },
     {
       "title": "Storyboard multimodal",
-      "prompt": "Use @Image1..@Image9 para estilo y personajes, @Video1..@Video3 para ritmo, y @Audio1..@Audio3 para ambiente. Entregue una salida coherente en 3 planos (auto o 4-15 s)."
+      "prompt": "Usa @Image1..@Image9 para estilo y personajes, @Video1..@Video3 para ritmo, y @Audio1..@Audio3 para ambiente. Entrega una salida coherente en 3 planos (auto o 4-15 s)."
     },
     {
       "title": "Escena de diálogo orientada a audio",
@@ -159,42 +159,42 @@
   "faqTitle": "FAQ – Seedance 2.0 en MaxVideoAI",
   "faqs": [
     {
-      "q": "¿Para qué es mejor Seedance 2.0?",
-      "a": "Seedance 2.0 funciona mejor para workflows de video IA de Seedance pulidos, anuncios multi-shot, secuencias de marca, escenas guiadas por audio y producciones con referencias donde la continuidad importa más que la velocidad de borrador."
+      "q": "¿Para qué conviene usar Seedance 2.0?",
+      "a": "Seedance 2.0 funciona mejor para videos pulidos de Seedance, anuncios con continuidad entre tomas, secuencias de marca, escenas guiadas por audio y producciones con referencias donde la continuidad importa más que generar borradores rápido."
     },
     {
       "q": "¿Seedance 2.0 incluye audio nativo?",
-      "a": "Sí. Seedance 2.0 soporta audio nativo, incluyendo diálogo, ambiente, música y efectos sonoros dentro del mismo workflow de generación."
+      "a": "Sí. Seedance 2.0 admite audio nativo, incluyendo diálogo, ambiente, música y efectos sonoros dentro del mismo flujo de generación."
     },
     {
       "q": "¿En qué se diferencia Seedance 2.0 de Seedance 2.0 Fast?",
-      "a": "Seedance 2.0 es la opción actual más fuerte para trabajo multi-shot de calidad final, audio nativo y salidas más exigentes guiadas por referencias, mientras que Seedance 2.0 Fast es mejor para borradores más baratos y comparativas de ruta más rápidas."
+      "a": "Seedance 2.0 es la opción actual más fuerte para piezas finales con continuidad entre tomas, audio nativo y salidas más exigentes guiadas por referencias, mientras que Seedance 2.0 Fast conviene más para borradores económicos y comparaciones rápidas con Fast."
     },
     {
       "q": "¿Cuándo debería usar Seedance 2.0 en lugar de Seedance 1.5 Pro?",
-      "a": "Usa Seedance 2.0 cuando necesites una continuidad multi-shot más fuerte, workflows con referencias más amplios y la ruta de producción actual de Seedance. Seedance 1.5 Pro sigue encajando en workflows anteriores más cortos y simples."
+      "a": "Usa Seedance 2.0 cuando necesites una continuidad entre tomas más fuerte, más opciones de trabajo con referencias y el flujo de producción actual de Seedance. Seedance 1.5 Pro sigue encajando en flujos anteriores más cortos y simples."
     },
     {
-      "q": "¿Seedance 2.0 es bueno para video multi-shot?",
-      "a": "Sí. Seedance 2.0 está especialmente bien orientado a salidas multi-shot, transiciones guiadas y continuidad de escena en secuencias cinematográficas cortas."
+      "q": "¿Seedance 2.0 es bueno para video con varias tomas?",
+      "a": "Sí. Seedance 2.0 está especialmente bien orientado a salidas con varias tomas, transiciones guiadas y continuidad de escena en secuencias cinematográficas cortas."
     }
   ],
   "custom": {
     "whyTitle": "Precio, audio nativo y siguientes pasos",
     "heroTrustLine": "Pago por uso en MaxVideoAI · Precio final visible antes de generar",
     "heroHighlights": [
-      "Precio y ruta actual||Usa Seedance 2.0 cuando quieras la ruta actual principal de Seedance y el precio final visible antes de generar.",
+      "Precio y flujo actual||Usa Seedance 2.0 cuando quieras el flujo principal actual de Seedance y el precio final visible antes de generar.",
       "Audio nativo||Diálogo, ambiente, música y efectos sonoros pueden mantenerse dentro del mismo flujo de generación en lugar de tratarse como una capa aparte.",
-      "Seedance 2.0 vs Seedance 2.0 Fast||Elige Seedance 2.0 para trabajo multi-shot más fuerte en calidad final, y Fast cuando la necesidad principal sea iteración de borradores y comparación de rutas.",
+      "Seedance 2.0 vs Seedance 2.0 Fast||Elige Seedance 2.0 para piezas finales con continuidad entre tomas, y Fast cuando la necesidad principal sea iterar borradores y comparar rutas.",
       "Empieza con los ejemplos de video IA de Seedance||Abre primero la página de ejemplos si quieres ver patrones de salida, bases de prompts y ajustes antes de lanzar una producción real."
     ],
-    "heroSupportLine": "Empieza con los ejemplos de video IA de Seedance, usa Seedance 2.0 para el workflow multi-shot principal con audio nativo y compáralo con Fast cuando necesites borradores más rápidos.",
+    "heroSupportLine": "Empieza con los ejemplos de video IA de Seedance, usa Seedance 2.0 para el flujo principal con audio nativo y continuidad entre tomas, y compáralo con Fast cuando necesites borradores más rápidos.",
     "specTitle": "Especificaciones",
     "specNote": "Solo se listan puntos con fuente oficial; el precio final y los detalles de ruta se revisan dentro de Generate.",
     "specSections": [
       {
         "title": "Entradas multimodales",
-        "intro": "La página pública de Fal presenta Seedance 2.0 como un modelo unificado de audio y video multimodal.",
+        "intro": "Las notas provider/model-family describen Seedance 2.0 como un modelo unificado de audio y video multimodal.",
         "items": [
           "Instrucciones de texto + referencias multimodales",
           "Hasta 9 imágenes",
@@ -205,7 +205,7 @@
       },
       {
         "title": "Salida y estructura",
-        "intro": "Fal destaca control cinematográfico, audio nativo, física más creíble, cortes multi-shot y hasta 15 segundos por generación.",
+        "intro": "Las notas provider/model-family destacan control cinematográfico, audio nativo, física más creíble, cortes multi-shot y hasta 15 segundos por generación.",
         "items": [
           "480p, 720p o 1080p",
           "Auto o 4-15 s por generación",
@@ -213,14 +213,14 @@
           "Image-to-video con imagen final opcional",
           "Transiciones naturales entre planos",
           "Audio nativo generado junto al video",
-          "Toggle de audio disponible con el mismo precio tanto si el audio está activado como si no"
+          "Opción de audio disponible con el mismo precio tanto si el audio está activado como si no"
         ]
       }
     ],
     "promptingTitle": "Prompt Lab — Seedance 2.0",
     "promptingGuideLabel": "Página oficial de Seedance 2.0",
     "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Seedance 2.0 funciona mejor cuando el brief está ordenado y el workflow es explícito. Empieza por Sujeto -> Acción -> Cámara -> Estilo, y luego decide si la toma debe ser solo con prompt, con imagen inicial/final o apoyada en referencias multimodales.",
+    "promptingIntro": "Seedance 2.0 funciona mejor cuando el brief está ordenado y el flujo es explícito. Empieza por Sujeto -> Acción -> Cámara -> Estilo, y luego decide si la toma debe salir solo del prompt, usar imagen inicial/final o apoyarse en referencias multimodales.",
     "promptingGlobalPrinciples": [
       "Redacta el brief en el orden Sujeto -> Acción -> Cámara -> Estilo.",
       "Mantén una acción legible por plano y añade timestamps si quieres cortes internos.",
@@ -229,7 +229,7 @@
       "Mantén el diálogo corto y alinea los SFX con acciones visibles."
     ],
     "promptingEngineWhy": [
-      "El text-to-video es fuerte para ideación, lenguaje de cámara cinematográfico y planificación multi-shot.",
+      "El text-to-video es fuerte para ideación, lenguaje de cámara cinematográfico y planificación con varias tomas.",
       "El image-to-video funciona mejor cuando el frame inicial permanece fijo y la imagen final define la pose o composición de llegada.",
       "El reference-to-video es la gran ventaja de Seedance para continuidad de personajes, props, ritmo y ambiente de audio.",
       "El audio nativo se mantiene más limpio cuando música, ambiente, diálogo y SFX son breves y van ligados a beats visibles."
@@ -238,7 +238,7 @@
       "quick": "Texto = generación pura desde un brief limpio.",
       "structured": "Inicio/Final = guiar el primer frame y el frame de llegada.",
       "pro": "Referencias = dar a cada imagen, video y audio un papel claro.",
-      "storyboard": "Timeline = usar timestamps cuando quieres cortes internos o estructura multi-shot."
+      "storyboard": "Línea de tiempo = usar timestamps cuando quieres cortes internos o estructura con varias tomas."
     },
     "promptingTabs": [
       {
@@ -259,15 +259,15 @@
         "id": "pro",
         "label": "Referencias",
         "title": "Prompt reference-to-video",
-        "description": "Úsalo cuando identidad, ritmo o ambiente deben quedarse bloqueados.",
-        "copy": "Intención del prompt:\n[Qué debe contar o hacer sentir la escena]\n\nReferencias de imagen:\n@Image1 = [personaje / producto héroe]\n@Image2 = [vestuario / prop / paleta]\n\nReferencias de video:\n@Video1 = [ritmo de cámara / pacing]\n@Video2 = [lógica de transición]\n\nReferencias de audio:\n@Audio1 = [ambiente]\n@Audio2 = [ritmo musical / textura de diálogo]\n\nAnclas de continuidad:\n[Lo que no debe desviarse]\n\nObjetivo de salida:\n[Toma única o secuencia de 2-3 planos + payoff final]\n\nRegla:\nCada referencia debe tener un solo trabajo. No subas varios archivos que compitan por el mismo rol."
+        "description": "Úsalo cuando necesites fijar identidad, ritmo o ambiente.",
+        "copy": "Intención del prompt:\n[Qué debe contar o hacer sentir la escena]\n\nReferencias de imagen:\n@Image1 = [personaje / producto héroe]\n@Image2 = [vestuario / prop / paleta]\n\nReferencias de video:\n@Video1 = [ritmo de cámara]\n@Video2 = [lógica de transición]\n\nReferencias de audio:\n@Audio1 = [ambiente]\n@Audio2 = [ritmo musical / textura de diálogo]\n\nAnclas de continuidad:\n[Lo que no debe desviarse]\n\nObjetivo de salida:\n[Toma única o secuencia de 2-3 planos + cierre final]\n\nRegla:\nCada referencia debe tener un solo trabajo. No subas varios archivos que compitan por el mismo rol."
       },
       {
         "id": "storyboard",
-        "label": "Timeline",
-        "title": "Prompt timeline / multi-shot",
-        "description": "Úsalo cuando una generación contiene varios beats o cortes internos.",
-        "copy": "Duración: [auto / 4-15 s]\n\nPlano 1 (0-5 s):\n[Encuadre + acción + movimiento de cámara]\n\nTransición:\n[match cut / whip pan / crash zoom / settle]\n\nPlano 2 (5-10 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 3 (10-15 s):\n[Reveal / reacción / payoff de producto / pose final]\n\nContinuidad:\n[Vestuario + props + locación + luz]\n\nPlan de audio:\n[Ambiente + 1-3 SFX temporizados + diálogo corto opcional]\n\nUsa auto solo si quieres que el modelo deduzca el ritmo por sí mismo."
+        "label": "Línea de tiempo",
+        "title": "Prompt con línea de tiempo / varias tomas",
+        "description": "Úsalo cuando una generación contiene varios momentos o cortes internos.",
+        "copy": "Duración: [auto / 4-15 s]\n\nPlano 1 (0-5 s):\n[Encuadre + acción + movimiento de cámara]\n\nTransición:\n[match cut / whip pan / crash zoom / pausa]\n\nPlano 2 (5-10 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 3 (10-15 s):\n[Revelación / reacción / cierre de producto / pose final]\n\nContinuidad:\n[Vestuario + props + locación + luz]\n\nPlan de audio:\n[Ambiente + 1-3 efectos de sonido sincronizados + diálogo corto opcional]\n\nUsa auto solo si quieres que el modelo deduzca el ritmo por sí mismo."
       }
     ],
     "tipsTitle": "Consejos y límites",
@@ -278,15 +278,15 @@
       "Útil para publicidad, acción y previsualización."
     ],
     "troubleshootingItems": [
-      "Cortes bruscos -> agregue verbos de transición + timestamps.",
-      "Deriva de continuidad -> refuerce anclas (vestuario, prop, locación).",
-      "Audio desalineado -> acorte el diálogo y alinee las indicaciones sonoras con acciones visibles.",
-      "Física poco creíble -> reduzca acciones simultáneas por plano."
+      "Cortes bruscos -> agrega verbos de transición + timestamps.",
+      "Deriva de continuidad -> refuerza anclas (vestuario, prop, locación).",
+      "Audio desalineado -> acorta el diálogo y alinea las indicaciones sonoras con acciones visibles.",
+      "Física poco creíble -> reduce acciones simultáneas por plano."
     ],
     "boundaries": [
       "Las escenas complejas mejoran cuando separas los momentos con más claridad.",
       "Los prompts con muchas referencias funcionan mejor si cada fuente tiene una función clara.",
-      "Controla la familia de rutas Fal activa antes de escalar tráfico.",
+      "Revisa el proveedor y el flujo activos antes de usarlo con clientes o automatizaciones.",
       "Usa el precio final de Generate antes de un despliegue con clientes o automatizaciones."
     ],
     "galleryTitle": "Ejemplos de Seedance 2.0",
@@ -298,17 +298,24 @@
     "relatedItems": [
       {
         "brand": "bytedance",
-        "title": "Seedream 5.0 Lite",
-        "description": "Crea o limpia una imagen fija en Seedream antes de usarla como referencia más controlada para image-to-video en Seedance.",
+        "title": "Preparar referencias con Seedream",
+        "description": "Crea o limpia una imagen fija en Seedream antes de usarla como referencia controlada para image-to-video en Seedance.",
         "modelSlug": "seedream",
-        "ctaLabel": "Preparar referencias con Seedream ->"
+        "ctaLabel": "Explorar Seedream ->"
       },
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",
         "description": "Usa la versión rápida de Seedance para borradores, revisiones de timing e iteraciones de concepto antes de llevar los finales a la versión estándar.",
         "modelSlug": "seedance-2-0-fast",
-        "ctaLabel": "Ver Seedance 2.0 Fast ->"
+        "ctaLabel": "Comparar Seedance 2.0 vs Fast ->"
+      },
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Fast",
+        "description": "Compara Seedance 2.0 con LTX 2.3 cuando elijas entre producción con audio nativo y borradores rápidos de menor costo.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Comparar Seedance 2.0 vs LTX 2.3 ->"
       },
       {
         "brand": "google-veo",
@@ -320,7 +327,7 @@
       {
         "brand": "kling",
         "title": "Kling 3 Pro",
-        "description": "Abre Kling 3 Pro si quieres más foco en la secuenciación de escenas, el control del encuadre y la lógica storyboard multi-prompt.",
+        "description": "Abre Kling 3 Pro si quieres más foco en la secuenciación de escenas, el control del encuadre y la lógica de storyboard multi-prompt.",
         "modelSlug": "kling-3-pro",
         "ctaLabel": "Comparar Seedance 2.0 vs Kling 3 Pro ->"
       }

@@ -60,7 +60,7 @@ export function MediaPreview({
   const resolvedAltText = altContext ? withAltSuffix(altText, altContext) : altText;
   const resolvedAudioBadgeLabel = audioBadgeLabel ?? (PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en).on;
   const resolvedRenderLinkLabel =
-    renderLinkLabel ?? (locale === 'fr' ? 'Voir le rendu →' : locale === 'es' ? 'Ver render →' : 'View render →');
+    renderLinkLabel ?? (locale === 'fr' ? 'Voir le rendu →' : locale === 'es' ? 'Ver resultado →' : 'View render →');
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',

@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { UIIcon } from '@/components/ui/UIIcon';
 
+import { MODEL_PAGE_ICON } from '../_lib/model-page-icon-styles';
 import type { PromptingTab } from '../_lib/model-page-specs';
 import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
@@ -22,7 +23,7 @@ function getCopy(locale: AppLocale) {
   if (locale === 'fr') {
     return {
       copyTemplate: 'Copier le template',
-      copied: 'Copie',
+      copied: 'Copié',
       example: 'EXEMPLE',
       viewRender: 'Voir le rendu exemple',
       usePrompt: 'Utiliser ce prompt',
@@ -33,7 +34,7 @@ function getCopy(locale: AppLocale) {
       copyTemplate: 'Copiar plantilla',
       copied: 'Copiado',
       example: 'EJEMPLO',
-      viewRender: 'Ver render ejemplo',
+      viewRender: 'Ver ejemplo',
       usePrompt: 'Usar este prompt',
     };
   }
@@ -111,7 +112,7 @@ export function ModelDecisionPromptTabs({ tabs, locale, exampleHref }: ModelDeci
 
         <div className="mt-4 rounded-xl border border-hairline bg-bg/80 p-4 dark:bg-slate-950/42">
           <div className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-blue-600 dark:text-blue-300">
-            <UIIcon icon={Sparkles} size={14} />
+            <UIIcon icon={Sparkles} size={14} className={MODEL_PAGE_ICON} />
             <span>{labels.example}</span>
           </div>
           <p className="text-sm leading-6 text-text-secondary">

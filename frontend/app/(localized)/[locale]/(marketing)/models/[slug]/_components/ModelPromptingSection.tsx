@@ -45,6 +45,7 @@ export function ModelPromptingSection({
         copy={copy}
         demoMedia={demoMedia}
         locale={locale}
+        referenceWorkflows={decisionReferenceWorkflows ?? []}
       />
     );
   }

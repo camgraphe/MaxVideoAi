@@ -2,6 +2,12 @@ import { AlertCircle, CheckCircle2, ShieldCheck, Wrench } from 'lucide-react';
 
 import { UIIcon } from '@/components/ui/UIIcon';
 
+import {
+  MODEL_PAGE_ICON,
+  MODEL_PAGE_ICON_MUTED,
+  MODEL_PAGE_ICON_RULE,
+  MODEL_PAGE_ICON_WRAP,
+} from '../_lib/model-page-icon-styles';
 import { SECTION_SCROLL_MARGIN, type SoraCopy } from '../_lib/model-page-specs';
 
 type TipsCardLabels = {
@@ -21,21 +27,21 @@ type ModelDecisionTipsSectionProps = {
 const CARD_META = [
   {
     icon: CheckCircle2,
-    tone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300',
-    marker: 'text-emerald-600 dark:text-emerald-300',
-    rule: 'bg-emerald-500',
+    tone: MODEL_PAGE_ICON_WRAP,
+    marker: MODEL_PAGE_ICON_MUTED,
+    rule: MODEL_PAGE_ICON_RULE,
   },
   {
     icon: Wrench,
-    tone: 'bg-orange-50 text-orange-600 dark:bg-orange-500/12 dark:text-orange-300',
-    marker: 'text-orange-600 dark:text-orange-300',
-    rule: 'bg-orange-500',
+    tone: MODEL_PAGE_ICON_WRAP,
+    marker: MODEL_PAGE_ICON_MUTED,
+    rule: MODEL_PAGE_ICON_RULE,
   },
   {
     icon: ShieldCheck,
-    tone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300',
-    marker: 'text-violet-600 dark:text-violet-300',
-    rule: 'bg-violet-500',
+    tone: MODEL_PAGE_ICON_WRAP,
+    marker: MODEL_PAGE_ICON_MUTED,
+    rule: MODEL_PAGE_ICON_RULE,
   },
 ] as const;
 
@@ -80,7 +86,7 @@ export function ModelDecisionTipsSection({
               className="min-h-[320px] rounded-xl border border-slate-200/80 bg-white/92 p-6 shadow-[0_22px_58px_-38px_rgba(15,23,42,0.34)] dark:border-white/10 dark:bg-slate-950/72"
             >
               <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${meta.tone}`}>
-                <UIIcon icon={meta.icon} size={25} strokeWidth={1.9} />
+                <UIIcon icon={meta.icon} size={25} strokeWidth={1.9} className={MODEL_PAGE_ICON} />
               </span>
               <h3 className="mt-5 !text-left text-base font-semibold text-text-primary">{group.title}</h3>
               <span className={`mt-3 block h-0.5 w-8 rounded-full ${meta.rule}`} aria-hidden />

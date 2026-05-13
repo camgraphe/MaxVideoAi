@@ -5,6 +5,10 @@ import {
   buildModelDecisionData,
   buildModelDecisionPricingScenarios,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
+import { normalizeMediaUrl } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
+import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
+import { resolveSectionLabels } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 function getEngine(engineId: string) {
@@ -38,7 +42,14 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
     en.hero.quickLinks.map((link) => link.label),
     ['Compare vs Fast', 'View pricing', 'Prompt examples']
   );
-  assert.equal(en.hero.quickLinks[2]?.href, '#image-to-video');
+  assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en.decisionCards[2]?.cta.href, '#prompting');
+  assert.equal(fr.media.badges[0], 'Audio activé');
+  assert.equal(es.media.badges[0], 'Audio activado');
+  assert.match(fr.hero.subtitle, /continuité multi-plans/);
+  assert.match(fr.hero.primaryCta.label, /Générer/);
+  assert.match(es.hero.subtitle, /continuidad entre tomas/);
+  assert.match(es.media.renderLabel, /resultado/);
   assert.equal(en.features.length, 6);
   assert.deepEqual(
     en.decisionCards.map((card) => card.title),
@@ -46,11 +57,11 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   );
   assert.deepEqual(
     en.referenceWorkflows.map((workflow) => workflow.title),
-    ['Text-to-video', 'Image-to-video', 'Reference roles', 'Timeline beats']
+    ['Text prompt', 'Image reference', 'Video reference', 'Audio reference', 'Continuity anchors']
   );
-  assert.equal(en.referenceWorkflows.length, 4);
-  assert.equal(fr.referenceWorkflows.length, 4);
-  assert.equal(es.referenceWorkflows.length, 4);
+  assert.equal(en.referenceWorkflows.length, 5);
+  assert.equal(fr.referenceWorkflows.length, 5);
+  assert.equal(es.referenceWorkflows.length, 5);
   assert.ok(fr.referenceWorkflows.every((workflow) => workflow.title.trim().length > 0));
   assert.ok(es.referenceWorkflows.every((workflow) => workflow.title.trim().length > 0));
   assert.notDeepEqual(
@@ -89,7 +100,81 @@ test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => 
   );
   assert.deepEqual(
     scenarios.map((scenario) => scenario.value),
-    ['$0.88', '$3.15', '$8.84', '$8.84', '15s']
+    ['$0.88', '$3.15', '$8.84', '$0 extra', '15s']
   );
+  assert.deepEqual(
+    scenarios.map((scenario) => scenario.label),
+    ['Entry draft', 'Standard preview', 'Common production check', 'Audio', 'Max duration']
+  );
+  assert.match(scenarios[3]?.note ?? '', /Native audio included/);
   assert.match(scenarios.at(-1)?.note ?? '', /1080p/);
+});
+
+test('Seedance 2.0 decision TOC labels the specs anchor accurately', () => {
+  const items = buildDecisionTocItems({
+    locale: 'en',
+    sectionLabels: resolveSectionLabels('en'),
+    textAnchorId: 'text-to-video',
+    imageAnchorId: 'prompting',
+    compareAnchorId: 'compare',
+    hasExamples: true,
+    hasSpecs: true,
+    hasTextSection: true,
+    hasTipsSection: true,
+    hasCompareSection: true,
+    hasSafetySection: true,
+    hasFaqSection: true,
+  });
+
+  assert.deepEqual(
+    items.map((item) => [item.id, item.label]),
+    [
+      ['decision-pricing', 'Pricing'],
+      ['text-to-video', 'Examples'],
+      ['prompting', 'Prompting'],
+      ['tips', 'Tips'],
+      ['compare', 'Compare'],
+      ['specs', 'Specs'],
+      ['safety', 'Safety'],
+      ['faq', 'FAQ'],
+    ]
+  );
+});
+
+test('model page media helper rejects broken placeholder media URLs', () => {
+  assert.equal(normalizeMediaUrl('image'), null);
+  assert.equal(normalizeMediaUrl(' video '), null);
+  assert.equal(normalizeMediaUrl('https://media.maxvideoai.com/thumb.webp'), 'https://media.maxvideoai.com/thumb.webp');
+  assert.equal(normalizeMediaUrl('/hero/seedance-2-0.jpg'), '/hero/seedance-2-0.jpg');
+});
+
+test('Seedance 2.0 schema can use decision metadata without a free price offer', () => {
+  const seedance = getEngine('seedance-2-0');
+  const decision = buildModelDecisionData({ engine: seedance, locale: 'en' });
+  assert.ok(decision);
+
+  const schemas = buildModelSchemaPayloads({
+    canonical: 'https://maxvideoai.com/models/seedance-2-0',
+    description: decision.meta.description,
+    engine: seedance,
+    heroPosterAbsolute: 'https://maxvideoai.com/hero/seedance-2-0.jpg',
+    heroTitle: decision.hero.title,
+    inLanguage: 'en-US',
+    localizedCanonical: 'https://maxvideoai.com/models/seedance-2-0',
+    localizedHomeUrl: 'https://maxvideoai.com/',
+    localizedModelsUrl: 'https://maxvideoai.com/models',
+    pageTitle: decision.meta.title,
+    resolvedBreadcrumb: {
+      home: 'Home',
+      models: 'Models',
+    },
+  }) as Array<Record<string, unknown>>;
+
+  const webPage = schemas.find((schema) => schema['@type'] === 'WebPage');
+  const product = schemas.find((schema) => schema['@type'] === 'Product');
+
+  assert.equal(webPage?.name, decision.meta.title);
+  assert.equal(webPage?.description, decision.meta.description);
+  assert.equal(product?.description, decision.meta.description);
+  assert.ok(product && !('offers' in product), 'variable pay-as-you-go model schema should not emit a price: 0 offer');
 });

@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
+import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 import type { ModelDecisionPricingScenario } from '../_lib/model-page-decision-pricing';
 
 type ModelDecisionPricingCardProps = {
@@ -16,14 +17,6 @@ const SCENARIO_ICONS: Partial<Record<ModelDecisionPricingScenario['id'], typeof 
   '10s-1080p': Gauge,
   '10s-1080p-audio': Speaker,
   'max-duration': Clock3,
-};
-
-const SCENARIO_ICON_STYLES: Partial<Record<ModelDecisionPricingScenario['id'], string>> = {
-  '5s-480p': 'bg-[#e9f9ef] text-[#17b56b] dark:bg-emerald-400/10 dark:text-emerald-300',
-  '8s-720p': 'bg-[#edf4ff] text-[#4275ff] dark:bg-blue-400/10 dark:text-blue-300',
-  '10s-1080p': 'bg-[#f0e9ff] text-[#7c4dff] dark:bg-violet-400/10 dark:text-violet-300',
-  '10s-1080p-audio': 'bg-[#e9f9ef] text-[#17b56b] dark:bg-emerald-400/10 dark:text-emerald-300',
-  'max-duration': 'bg-[#fff1e8] text-[#f97316] dark:bg-orange-400/10 dark:text-orange-300',
 };
 
 export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardProps) {
@@ -50,7 +43,7 @@ export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardPr
           </Link>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {pricing.scenarios.map((scenario) => {
             const featured = scenario.id === '10s-1080p';
             const Icon = SCENARIO_ICONS[scenario.id] ?? Gauge;
@@ -58,35 +51,35 @@ export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardPr
               <article
                 key={scenario.id}
                 className={[
-                  'relative flex min-h-[116px] flex-col justify-between overflow-hidden rounded-xl border bg-white p-4',
+                  'relative flex min-h-[116px] flex-col justify-between overflow-hidden rounded-xl border bg-white p-3.5 sm:p-4',
                   featured
-                    ? 'border-[#57d38c] shadow-[0_14px_36px_rgba(16,185,129,0.12)]'
+                    ? 'border-[#93a3ba] shadow-[0_14px_36px_rgba(15,23,42,0.08)]'
                     : 'border-[#dce4f0] shadow-[0_8px_22px_rgba(15,23,42,0.035)]',
                   'dark:border-white/10 dark:bg-white/[0.045] dark:shadow-none',
-                  featured ? 'dark:border-emerald-300/45' : '',
+                  featured ? 'dark:border-white/35' : '',
                 ].join(' ')}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="!text-left text-base font-semibold text-[#41516c] dark:text-white/80">{scenario.label}</h3>
+                  <h3 className="!text-left text-sm font-semibold leading-snug text-[#41516c] dark:text-white/80 sm:text-base">{scenario.label}</h3>
                   <div
                     className={[
-                      'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-                      SCENARIO_ICON_STYLES[scenario.id] ?? 'bg-[#edf4ff] text-[#4275ff] dark:bg-blue-400/10 dark:text-blue-300',
+                      'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10',
+                      MODEL_PAGE_ICON_WRAP,
                     ].join(' ')}
                   >
-                    <UIIcon icon={Icon} size={21} strokeWidth={1.9} />
+                    <UIIcon icon={Icon} size={20} strokeWidth={1.9} className={MODEL_PAGE_ICON} />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <p className="text-[27px] font-semibold leading-none text-[#071126] dark:text-white">{scenario.value}</p>
+                  <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
+                    <p className="text-2xl font-semibold leading-none text-[#071126] dark:text-white sm:text-[27px]">{scenario.value}</p>
                     {scenario.badge ? (
-                      <span className="rounded-full bg-[#efe7ff] px-3 py-1 text-xs font-semibold text-[#7c3cff] dark:bg-violet-300/14 dark:text-violet-200">
+                      <span className="rounded-full bg-[#071126] px-2.5 py-1 text-[0.68rem] font-semibold leading-none text-white shadow-sm dark:bg-white dark:text-[#071126] sm:px-3 sm:text-xs">
                         {scenario.badge}
                       </span>
                     ) : null}
                   </div>
-                  <p className="text-sm font-medium text-[#52627a] dark:text-white/60">{scenario.note}</p>
+                  <p className="text-xs font-medium leading-5 text-[#52627a] dark:text-white/60 sm:text-sm">{scenario.note}</p>
                 </div>
               </article>
             );

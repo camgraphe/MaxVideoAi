@@ -20,28 +20,24 @@ const DECISION_TOC_COPY: Record<
   AppLocale,
   {
     overview: string;
-    capabilities: string;
     pricing: string;
     useCases: string;
   }
 > = {
   en: {
     overview: 'On this page',
-    capabilities: 'Key capabilities',
     pricing: 'Pricing',
-    useCases: 'Best use cases',
+    useCases: 'Tips',
   },
   fr: {
     overview: 'Sur cette page',
-    capabilities: 'Capacites cles',
     pricing: 'Tarifs',
-    useCases: 'Cas d usage',
+    useCases: 'Conseils',
   },
   es: {
     overview: 'En esta pagina',
-    capabilities: 'Capacidades clave',
     pricing: 'Precios',
-    useCases: 'Mejores usos',
+    useCases: 'Consejos',
   },
 };
 
@@ -60,6 +56,7 @@ export function buildDecisionTocItems({
   hasTextSection,
   hasTipsSection,
   hasCompareSection,
+  hasSafetySection,
   hasFaqSection,
 }: {
   locale: AppLocale;
@@ -72,16 +69,18 @@ export function buildDecisionTocItems({
   hasTextSection: boolean;
   hasTipsSection: boolean;
   hasCompareSection: boolean;
+  hasSafetySection: boolean;
   hasFaqSection: boolean;
 }) {
   const copy = DECISION_TOC_COPY[locale] ?? DECISION_TOC_COPY.en;
   const items: DecisionTocItem[] = [
-    { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
-    { id: 'specs', label: copy.capabilities, visible: hasSpecs },
     { id: 'decision-pricing', label: copy.pricing, visible: true },
+    { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
     { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
     { id: 'tips', label: copy.useCases, visible: hasTipsSection },
     { id: compareAnchorId, label: sectionLabels.compare, visible: hasCompareSection },
+    { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
+    { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
     { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ];
 

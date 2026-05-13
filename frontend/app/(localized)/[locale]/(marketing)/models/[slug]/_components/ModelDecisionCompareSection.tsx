@@ -9,6 +9,7 @@ import {
   CANONICAL_ONLY_COMPARE_SLUGS,
   COMPARE_EXCLUDED_SLUGS,
 } from '../_lib/model-page-links';
+import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 import { SECTION_SCROLL_MARGIN, type RelatedItem } from '../_lib/model-page-specs';
 
 type FocusVsConfig = {
@@ -67,6 +68,18 @@ function getCardIcon(index: number) {
   return [Sparkles, Zap, CircleDot, CheckCircle2][index % 4] ?? Sparkles;
 }
 
+function getCardTitle({
+  heroTitle,
+  label,
+  modelSlug,
+}: {
+  heroTitle: string;
+  label: string;
+  modelSlug?: string | null;
+}) {
+  return modelSlug === 'seedream' ? label : `${heroTitle} vs ${label}`;
+}
+
 export function ModelDecisionCompareSection({
   hasCompareSection,
   compareAnchorId,
@@ -91,6 +104,7 @@ export function ModelDecisionCompareSection({
         modelSlug: entry.modelSlug,
         description: entry.seo?.description ?? '',
         ctaLabel: null,
+        href: null,
       }));
 
   return (
@@ -105,7 +119,7 @@ export function ModelDecisionCompareSection({
               className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-300"
             >
               <span>{focusVsConfig.ctaLabel}</span>
-              <UIIcon icon={ArrowRight} size={15} />
+              <UIIcon icon={ArrowRight} size={15} className={MODEL_PAGE_ICON_MUTED} />
             </Link>
           </div>
 
@@ -115,19 +129,15 @@ export function ModelDecisionCompareSection({
                 title: focusVsConfig.leftTitle,
                 items: focusVsConfig.leftItems,
                 icon: Zap,
-                border: 'border-emerald-300/80 dark:border-emerald-400/30',
-                bg: 'bg-emerald-50/45 dark:bg-emerald-500/8',
-                iconTone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300',
-                check: 'text-emerald-600 dark:text-emerald-300',
+                border: 'border-slate-200/90 dark:border-white/12',
+                bg: 'bg-white/80 dark:bg-white/[0.045]',
               },
               {
                 title: focusVsConfig.rightTitle,
                 items: focusVsConfig.rightItems,
                 icon: Zap,
-                border: 'border-violet-300/80 dark:border-violet-400/30',
-                bg: 'bg-violet-50/45 dark:bg-violet-500/8',
-                iconTone: 'bg-violet-50 text-violet-600 dark:bg-violet-500/12 dark:text-violet-300',
-                check: 'text-violet-600 dark:text-violet-300',
+                border: 'border-slate-200/90 dark:border-white/12',
+                bg: 'bg-white/80 dark:bg-white/[0.045]',
               },
             ].map((card) => (
               <article
@@ -135,15 +145,15 @@ export function ModelDecisionCompareSection({
                 className={`rounded-xl border ${card.border} ${card.bg} p-6 text-left shadow-[0_20px_58px_-42px_rgba(15,23,42,0.35)]`}
               >
                 <div className="flex gap-5">
-                  <span className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${card.iconTone}`}>
-                    <UIIcon icon={card.icon} size={25} />
+                  <span className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
+                    <UIIcon icon={card.icon} size={25} className={MODEL_PAGE_ICON} />
                   </span>
                   <div>
                     <h3 className="!text-left text-lg font-semibold text-text-primary">{card.title}</h3>
                     <ul className="mt-3 space-y-2.5 text-sm leading-6 text-text-secondary">
                       {card.items.map((item) => (
                         <li key={item} className="flex gap-2">
-                          <UIIcon icon={CheckCircle2} size={15} className={`mt-0.5 shrink-0 ${card.check}`} />
+                          <UIIcon icon={CheckCircle2} size={15} className={`mt-0.5 shrink-0 ${MODEL_PAGE_ICON_MUTED}`} />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -172,7 +182,9 @@ export function ModelDecisionCompareSection({
                 const canCompare =
                   !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
                 const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                const compareHref = canCompare
+                const compareHref = entry.href
+                  ? entry.href
+                  : canCompare
                   ? CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
                     ? localizeComparePath(compareSlug)
                     : localizeComparePath(compareSlug, engineSlug)
@@ -180,18 +192,19 @@ export function ModelDecisionCompareSection({
                 const ctaLabel = entry.ctaLabel ?? (canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label));
                 const description = entry.description || compareCopy.cardDescription(label);
                 const Icon = getCardIcon(index);
+                const cardTitle = getCardTitle({ heroTitle, label, modelSlug: entry.modelSlug });
                 return (
                   <article
                     key={entry.modelSlug}
                     className="rounded-xl border border-slate-200/80 bg-white/92 p-5 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.34)] transition hover:-translate-y-0.5 hover:border-blue-200 dark:border-white/10 dark:bg-slate-950/72"
                   >
                     <div className="flex gap-4">
-                      <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/12 dark:text-blue-300">
-                        <UIIcon icon={Icon} size={22} />
+                      <span className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
+                        <UIIcon icon={Icon} size={22} className={MODEL_PAGE_ICON} />
                       </span>
                       <div>
                         <h3 className="!text-left text-base font-semibold text-text-primary">
-                          {heroTitle} vs {label}
+                          {cardTitle}
                         </h3>
                         <p className="mt-2 line-clamp-3 text-sm leading-6 text-text-secondary">{description}</p>
                         <Link
@@ -199,7 +212,7 @@ export function ModelDecisionCompareSection({
                           className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-300"
                         >
                           <span>{ctaLabel}</span>
-                          <UIIcon icon={ArrowRight} size={14} />
+                          <UIIcon icon={ArrowRight} size={14} className={MODEL_PAGE_ICON_MUTED} />
                         </Link>
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
@@ -9,18 +9,9 @@ import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { serializeJsonLd } from '../../model-jsonld';
 import { ModelHeroSection } from './ModelHeroSection';
-import { ModelPageToc } from './ModelPageToc';
-import { ModelPromptingSection } from './ModelPromptingSection';
-import { ModelPrepLinksSection } from './ModelPrepLinksSection';
-import { ModelSafetyFaqSection } from './ModelSafetyFaqSection';
-import { ModelSpecsSection } from './ModelSpecsSection';
-import { ModelTipsSection } from './ModelTipsSection';
-import { ModelExamplesSection } from './ModelExamplesSection';
-import { ModelCompareSection } from './ModelCompareSection';
-import { ModelPricingCallout } from './ModelPricingCallout';
 import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
 import { ModelDecisionPricingCard } from './ModelDecisionPricingCard';
-import { ModelDecisionCardsSection } from './ModelDecisionCardsSection';
+import { ModelPageContentSections } from './ModelPageContentSections';
 import {
   DEFAULT_DETAIL_COPY,
   buildVideoBoundaries,
@@ -291,11 +282,12 @@ export function MarketingModelPageLayout({
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
+  const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => {
       const prompt = video.promptFull ?? video.prompt;
       const tag = inferRenderTag(prompt, locale);
-      const label = engine.modelSlug === 'seedance-2-0' ? `${heroTitle} ${tag ? `${tag} ` : ''}example ${index + 1}` : prompt;
+      const label = engine.modelSlug === 'seedance-2-0' ? `${heroTitle} ${tag ? `${tag} ` : ''}${exampleAltLabel} ${index + 1}` : prompt;
       return {
         id: video.id,
         alt: getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label, prompt: label, locale }),
@@ -313,7 +305,7 @@ export function MarketingModelPageLayout({
   const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
-  const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
+  const imageAnchorId = decisionData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
@@ -324,11 +316,11 @@ export function MarketingModelPageLayout({
     { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
     { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ].filter((item) => item.visible);
-  const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasFaqSection });
+  const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
-    description: pageDescription,
+    description: decisionData?.meta.description ?? pageDescription,
     engine,
     heroPosterAbsolute,
     heroTitle,
@@ -336,8 +328,11 @@ export function MarketingModelPageLayout({
     localizedCanonical,
     localizedHomeUrl,
     localizedModelsUrl,
+    pageTitle: decisionData?.meta.title,
     resolvedBreadcrumb,
   });
+  const legacyPricingCallout = !decisionData && pricingCallout ? pricingCallout : null;
+  const legacyMicroCta = !decisionData && isImageEngine ? copy.microCta : null;
 
   return (
     <>
@@ -397,92 +392,32 @@ export function MarketingModelPageLayout({
               heroHighlights={heroHighlights}
             />
           )}
-        <ModelPageToc items={decisionData ? decisionTocItems : tocItems} variant={decisionData ? 'pill' : 'default'} overviewLabel={decisionTocOverviewLabel} />
-        <ModelSpecsSection
-          hasSpecs={hasSpecs}
-          specTitle={specTitle}
-          specNote={specNote}
-          keySpecRows={keySpecRows}
-          specSectionsToShow={specSectionsToShow}
-          isImageEngine={isImageEngine}
-          locale={locale}
-          statusLabels={statusLabels}
-          variant={decisionData ? 'decision' : 'default'}
-        />
-        {!decisionData && pricingCallout ? <ModelPricingCallout callout={pricingCallout} /> : null}
-        {isImageEngine && copy.microCta ? (
-          <div className="flex justify-center">
-            <Link
-              href={normalizedPrimaryCtaHref}
-              className="text-sm font-semibold text-brand transition hover:text-brandHover"
-            >
-              {copy.microCta}
-            </Link>
-          </div>
-        ) : null}
-        <ModelExamplesSection
-          hideExamplesSection={hideExamplesSection}
-          textAnchorId={textAnchorId}
-          copy={copy}
-          galleryVideos={galleryVideos}
-          galleryPreviewAlts={galleryPreviewAlts}
-          locale={locale}
-          examplesLinkHref={examplesLinkHref}
-          galleryCtaHref={galleryCtaHref}
-          variant={decisionData ? 'decision' : 'default'}
-        />
-        {decisionData ? <ModelDecisionCardsSection cards={decisionData.decisionCards} /> : null}
-
-        <ModelPromptingSection
-          imageAnchorId={imageAnchorId}
-          isVideoEngine={isVideoEngine}
-          copy={copy}
-          supportsNativeAudio={supportsNativeAudio}
-          demoMedia={demoMedia}
-          locale={locale}
-          audioBadgeLabel={audioBadgeLabel}
-          mediaAltContexts={mediaAltContexts}
-          useDemoMediaPrompt={useDemoMediaPrompt}
-          decisionReferenceWorkflows={decisionData?.referenceWorkflows}
-          variant={decisionData ? 'decision' : 'default'}
-        />
-        <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
-        <ModelTipsSection
-          hasTipsSection={hasTipsSection}
-          copy={copy}
-          strengths={strengths}
-          troubleshootingItems={troubleshootingItems}
-          boundaries={boundaries}
-          tipsCardLabels={tipsCardLabels}
-          troubleshootingTitle={troubleshootingTitle}
-          variant={decisionData ? 'decision' : 'default'}
-        />
-        <ModelCompareSection
-          hasCompareSection={hasCompareSection}
-          compareAnchorId={compareAnchorId}
-          focusVsConfig={focusVsConfig}
-          localizeModelsPath={localizeModelsPath}
-          hasCompareGrid={hasCompareGrid}
-          compareCopy={compareCopy}
-          relatedItems={relatedItems}
-          compareEngines={compareEngines}
-          engineSlug={engineSlug}
-          localizeComparePath={localizeComparePath}
-          locale={locale}
-          heroTitle={heroTitle}
-          variant={decisionData ? 'decision' : 'default'}
-        />
-        <ModelSafetyFaqSection
-          copy={copy}
-          safetyRules={safetyRules}
-          safetyInterpretation={safetyInterpretation}
-          faqList={faqList}
-          faqTitle={faqTitle}
-          locale={locale}
-          isSoraPrompting={isSoraPrompting}
-          faqJsonLdEntries={faqJsonLdEntries}
-          variant={decisionData ? 'decision' : 'default'}
-        />
+          <ModelPageContentSections
+            isDecision={Boolean(decisionData)}
+            tocProps={{ items: decisionData ? decisionTocItems : tocItems, variant: decisionData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
+            specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels }}
+            pricingCallout={legacyPricingCallout}
+            microCta={legacyMicroCta}
+            microCtaHref={normalizedPrimaryCtaHref}
+            examplesProps={{ hideExamplesSection, textAnchorId, copy, galleryVideos, galleryPreviewAlts, locale, examplesLinkHref, galleryCtaHref }}
+            decisionCards={decisionData?.decisionCards ?? null}
+            promptingProps={{
+              imageAnchorId,
+              isVideoEngine,
+              copy,
+              supportsNativeAudio,
+              demoMedia,
+              locale,
+              audioBadgeLabel,
+              mediaAltContexts,
+              useDemoMediaPrompt,
+              decisionReferenceWorkflows: decisionData?.referenceWorkflows,
+            }}
+            prepLinksProps={{ prepLinksSection, locale }}
+            tipsProps={{ hasTipsSection, copy, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
+            compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
+            safetyFaqProps={{ copy, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
+          />
         </div>
       </main>
     </>

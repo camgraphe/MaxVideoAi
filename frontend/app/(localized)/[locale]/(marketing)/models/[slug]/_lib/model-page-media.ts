@@ -53,6 +53,16 @@ function formatFeaturedPrompt(prompt: string, preferFullPrompt = false): string 
   return formatPromptExcerpt(condensed, preferFullPrompt ? 48 : 22);
 }
 
+export function normalizeMediaUrl(src?: string | null): string | null {
+  const value = src?.trim();
+  if (!value) return null;
+  const lower = value.toLowerCase();
+  if (['image', 'video', 'thumbnail', 'poster', 'null', 'undefined'].includes(lower)) return null;
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  if (value.startsWith('/') || value.startsWith('data:') || value.startsWith('blob:')) return value;
+  return null;
+}
+
 export function toGalleryCard(
   video: GalleryVideo,
   brandId?: string,
@@ -64,6 +74,7 @@ export function toGalleryCard(
   const promptExcerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
   const videoHrefBase = `/video/${encodeURIComponent(video.id)}`;
   const videoHref = fromPath ? `${videoHrefBase}?from=${encodeURIComponent(fromPath)}` : videoHrefBase;
+  const thumbUrl = normalizeMediaUrl(video.thumbUrl);
   return {
     id: video.id,
     href: videoHref,
@@ -76,10 +87,10 @@ export function toGalleryCard(
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
-    rawPosterUrl: video.thumbUrl ?? null,
-    videoUrl: video.videoUrl ?? null,
-    previewVideoUrl: video.previewVideoUrl ?? null,
+    optimizedPosterUrl: buildOptimizedPosterUrl(thumbUrl),
+    rawPosterUrl: thumbUrl,
+    videoUrl: normalizeMediaUrl(video.videoUrl),
+    previewVideoUrl: normalizeMediaUrl(video.previewVideoUrl),
     recreateHref: `/app?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
   };
 }
@@ -91,9 +102,9 @@ export function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPr
   return {
     id: entry.id,
     prompt,
-    videoUrl: entry.videoUrl ?? null,
-    previewVideoUrl: entry.previewVideoUrl ?? null,
-    posterUrl: entry.optimizedPosterUrl ?? entry.rawPosterUrl ?? null,
+    videoUrl: normalizeMediaUrl(entry.videoUrl),
+    previewVideoUrl: normalizeMediaUrl(entry.previewVideoUrl),
+    posterUrl: normalizeMediaUrl(entry.optimizedPosterUrl) ?? normalizeMediaUrl(entry.rawPosterUrl),
     durationSec: entry.durationSec,
     hasAudio: entry.hasAudio,
     href: entry.href,
@@ -146,4 +157,3 @@ export function pickDemoMedia(
   }
   return null;
 }
-

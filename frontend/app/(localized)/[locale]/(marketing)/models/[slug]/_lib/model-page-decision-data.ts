@@ -112,7 +112,7 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
       quickLinks: [
         { label: 'Compare vs Fast', href: compareHref('en', 'seedance-2-0', 'seedance-2-0-fast') },
         { label: 'View pricing', href: pricingHref('en') },
-        { label: 'Prompt examples', href: '#image-to-video' },
+        { label: 'Prompt examples', href: '#prompting' },
       ],
     },
     media: {
@@ -154,25 +154,29 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
       {
         title: 'Need prompt examples?',
         body: 'Start with text-to-video, image-to-video, reference-guided and multi-shot prompt templates.',
-        cta: { label: 'Open Prompt Lab', href: '#image-to-video' },
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
     ],
     referenceWorkflows: [
       {
-        title: 'Text-to-video',
-        body: 'Start with subject, action, camera, style and audio cues in one clean brief.',
+        title: 'Text prompt',
+        body: 'Use the prompt for the scene brief: subject, action, camera, style and audio cues.',
       },
       {
-        title: 'Image-to-video',
-        body: 'Use a start image to lock character, product, composition or environment.',
+        title: 'Image reference',
+        body: 'Use images to guide identity, product details, style, composition or environment.',
       },
       {
-        title: 'Reference roles',
-        body: 'Give each supported reference one job so identity, motion and mood do not fight each other.',
+        title: 'Video reference',
+        body: 'Use video references for motion rhythm or camera pacing when the active route exposes them.',
       },
       {
-        title: 'Timeline beats',
-        body: 'Use short timestamps and transition verbs when you need internal cuts or a sequence.',
+        title: 'Audio reference',
+        body: 'Use audio references for rhythm, ambience or mood when the active route exposes them.',
+      },
+      {
+        title: 'Continuity anchors',
+        body: 'Repeat wardrobe, props, location, lighting and final pose so short sequences stay coherent.',
       },
     ],
     pricingCopy: {
@@ -189,39 +193,39 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
   },
   fr: {
     hero: {
-      eyebrow: 'MODELE BYTEDANCE DE GENERATION ACTUELLE',
+      eyebrow: 'MODÈLE BYTEDANCE DE GÉNÉRATION ACTUELLE',
       title: 'Seedance 2.0',
       subtitle:
-        'Audio natif, continuite multi-plans et video guidee par reference pour des publicites, lancements et contenus de marque cinematographiques.',
+        'Audio natif, continuité multi-plans et vidéo guidée par références pour des publicités, lancements et contenus de marque cinématographiques.',
       paragraph:
-        "Utilisez Seedance 2.0 quand vous voulez la route Seedance de production actuelle : meilleure continuite que les versions precedentes, audio natif dans le meme flux et references multimodales pour le texte-vers-video ou l'image-vers-video.",
-      primaryCta: { label: 'Generer avec Seedance 2.0', href: '/app?engine=seedance-2-0' },
+        "Utilisez Seedance 2.0 pour le workflow Seedance actuel : meilleure continuité que les versions précédentes, audio natif dans le même flux et références multimodales pour le text-to-video ou l’image-to-video.",
+      primaryCta: { label: 'Générer avec Seedance 2.0', href: '/app?engine=seedance-2-0' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr') },
       quickLinks: [
         { label: 'Comparer vs Fast', href: compareHref('fr', 'seedance-2-0', 'seedance-2-0-fast') },
         { label: 'Voir les tarifs', href: pricingHref('fr') },
-        { label: 'Exemples de prompts', href: '#image-to-video' },
+        { label: 'Exemples de prompts', href: '#prompting' },
       ],
     },
     media: {
       caption: 'Exemple Seedance 2.0',
-      description: 'Sequence cinematographique avec audio natif',
+      description: 'Séquence cinématographique avec audio natif',
       renderLabel: 'Voir le rendu',
-      badges: ['Audio on', '12 s', '16:9'],
-      altContext: 'scene cinematographique de course sur un toit',
+      badges: ['Audio activé', '12 s', '16:9'],
+      altContext: 'scène cinématographique de course sur un toit',
     },
     features: [
-      { title: 'Audio natif', body: 'Dialogue, ambiance et SFX generes en synchronisation.', tone: 'audio' },
-      { title: 'Continuite multi-plans', body: 'Gardez les personnages, le style et la scene coherents.', tone: 'continuity' },
-      { title: 'Guide par references', body: 'Utilisez les references prises en charge pour guider le rendu.', tone: 'reference' },
+      { title: 'Audio natif', body: 'Dialogue, ambiance et SFX générés en synchro.', tone: 'audio' },
+      { title: 'Continuité multi-plans', body: 'Gardez personnages, style et scène cohérents d’un plan à l’autre.', tone: 'continuity' },
+      { title: 'Guidé par références', body: 'Guidez le rendu avec les références prises en charge.', tone: 'reference' },
       { title: 'Max 1080p', body: 'Sortie nette pour la plupart des besoins de production.', tone: 'quality' },
-      { title: 'Max 15 s', body: "Jusqu'a 15 secondes par generation.", tone: 'duration' },
-      { title: "Paiement a l'usage", body: 'Voyez le prix exact avant de generer.', tone: 'price' },
+      { title: 'Max 15 s', body: 'Jusqu’à 15 secondes par génération.', tone: 'duration' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
     ],
     decisionCards: [
       {
         title: 'Seedance 2.0 ou Fast ?',
-        body: 'Utilisez Seedance 2.0 pour les rendus finaux, audio natif et multi-plans. Utilisez Fast pour les brouillons moins chers et les tests de rythme.',
+        body: 'Choisissez Seedance 2.0 pour les rendus finaux avec audio natif et continuité multi-plans. Passez à Fast pour les brouillons moins chers et les tests de rythme.',
         cta: {
           label: 'Comparer Seedance 2.0 vs Fast',
           href: compareHref('fr', 'seedance-2-0', 'seedance-2-0-fast'),
@@ -229,46 +233,50 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
       },
       {
         title: 'Vous venez de Seedance 1.5 ?',
-        body: 'Seedance 2.0 est la route actuelle pour une meilleure continuite multi-plans, audio natif et des workflows de reference plus larges.',
+        body: 'Seedance 2.0 est le workflow actuel pour une meilleure continuité multi-plans, l’audio natif et des références plus nombreuses.',
         cta: {
           label: 'Comparer 1.5 vs 2.0',
           href: compareHref('fr', 'seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0'),
         },
       },
       {
-        title: 'Besoin d exemples de prompts ?',
-        body: 'Commencez avec des modeles texte-vers-video, image-vers-video, references et multi-plans.',
-        cta: { label: 'Ouvrir le Prompt Lab', href: '#image-to-video' },
+        title: 'Besoin d’exemples de prompts ?',
+        body: 'Commencez avec des modèles text-to-video, image-to-video, références et multi-plans.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
     ],
     referenceWorkflows: [
       {
-        title: 'Texte-vers-video',
-        body: 'Commencez par sujet, action, camera, style et indications audio dans un brief clair.',
+        title: 'Prompt texte',
+        body: 'Utilisez le prompt pour le brief de scène : sujet, action, caméra, style et indications audio.',
       },
       {
-        title: 'Image-vers-video',
-        body: 'Utilisez une image de depart pour fixer personnage, produit, composition ou environnement.',
+        title: 'Référence image',
+        body: 'Utilisez les images pour guider l’identité, le produit, le style, la composition ou l’environnement.',
       },
       {
-        title: 'Roles des references',
-        body: 'Donnez un role a chaque reference prise en charge pour eviter les conflits entre identite, mouvement et ambiance.',
+        title: 'Référence vidéo',
+        body: 'Utilisez les vidéos pour guider le rythme du mouvement ou de la caméra quand le flux actif le permet.',
       },
       {
-        title: 'Temps forts',
-        body: 'Utilisez des timestamps courts et des verbes de transition pour des coupes internes ou une sequence.',
+        title: 'Référence audio',
+        body: 'Utilisez l’audio pour guider le rythme, l’ambiance ou l’intention émotionnelle quand le flux actif le permet.',
+      },
+      {
+        title: 'Ancrages de continuité',
+        body: 'Répétez tenue, accessoires, lieu, lumière et pose finale pour garder la séquence cohérente.',
       },
     ],
     pricingCopy: {
-      title: 'Tarifs Seedance 2.0 en un coup d oeil',
-      subtitle: "Prix totaux par scenario - voyez le prix exact dans l'app avant de generer.",
-      footnote: 'Tous les prix sont des prix affiches MaxVideoAI en credits USD pour des scenarios predefinis.',
+      title: 'Prix Seedance 2.0 en un coup d’œil',
+      subtitle: 'Prix totaux par scénario — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
     },
     meta: {
       title: 'Seedance 2.0 : tarifs, audio natif et exemples | MaxVideoAI',
       description:
-        'Explorez les tarifs Seedance 2.0, les exemples, l audio natif, la video multi-plans et les workflows guides par reference. Comparez Seedance 2.0 vs Fast et les anciennes versions.',
+        'Explorez prix, exemples, audio natif, vidéo multi-plans et workflows guidés par références. Comparez Seedance 2.0 vs Fast et les anciennes versions.',
     },
   },
   es: {
@@ -276,83 +284,87 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
       eyebrow: 'MODELO ACTUAL DE BYTEDANCE',
       title: 'Seedance 2.0',
       subtitle:
-        'Audio nativo, continuidad multi-shot y video guiado por referencias para anuncios, lanzamientos y contenido de marca cinematografico.',
+        'Audio nativo, continuidad entre tomas y video guiado por referencias para anuncios, lanzamientos y contenido de marca con acabado cinematográfico.',
       paragraph:
-        'Usa Seedance 2.0 cuando necesites la ruta Seedance de produccion actual: mas continuidad que versiones anteriores, audio nativo en el mismo flujo y referencias multimodales para texto a video o imagen a video.',
+        'Usa Seedance 2.0 cuando necesites el flujo principal actual de Seedance: mejor continuidad que versiones anteriores, audio nativo en la misma generación y referencias multimodales para texto a video o imagen a video.',
       primaryCta: { label: 'Generar con Seedance 2.0', href: '/app?engine=seedance-2-0' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es') },
       quickLinks: [
-        { label: 'Comparar vs Fast', href: compareHref('es', 'seedance-2-0', 'seedance-2-0-fast') },
+        { label: 'Comparar con Fast', href: compareHref('es', 'seedance-2-0', 'seedance-2-0-fast') },
         { label: 'Ver precios', href: pricingHref('es') },
-        { label: 'Ejemplos de prompts', href: '#image-to-video' },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
       ],
     },
     media: {
       caption: 'Ejemplo Seedance 2.0',
-      description: 'Secuencia cinematografica con audio nativo',
-      renderLabel: 'Ver render',
-      badges: ['Audio on', '12 s', '16:9'],
-      altContext: 'escena cinematografica de carrera en una azotea',
+      description: 'Secuencia cinematográfica con audio nativo',
+      renderLabel: 'Ver resultado',
+      badges: ['Audio activado', '12 s', '16:9'],
+      altContext: 'escena cinematográfica de carrera en una azotea',
     },
     features: [
-      { title: 'Audio nativo', body: 'Dialogo, ambiente y SFX generados en sincronizacion.', tone: 'audio' },
-      { title: 'Continuidad multi-shot', body: 'Mantiene personajes, estilo y escena coherentes.', tone: 'continuity' },
+      { title: 'Audio nativo', body: 'Diálogo, ambiente y efectos de sonido generados en sincronía.', tone: 'audio' },
+      { title: 'Continuidad entre tomas', body: 'Mantiene personajes, estilo y escena coherentes.', tone: 'continuity' },
       { title: 'Guiado por referencias', body: 'Usa referencias compatibles para guiar el resultado.', tone: 'reference' },
-      { title: 'Max 1080p', body: 'Salida nitida para la mayoria de necesidades de produccion.', tone: 'quality' },
-      { title: 'Max 15 s', body: 'Hasta 15 segundos por generacion.', tone: 'duration' },
+      { title: 'Max 1080p', body: 'Salida nítida para la mayoría de necesidades de producción.', tone: 'quality' },
+      { title: 'Max 15 s', body: 'Hasta 15 segundos por generación.', tone: 'duration' },
       { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: 'Seedance 2.0 o Fast?',
-        body: 'Usa Seedance 2.0 para trabajo final con audio nativo y multi-shot. Usa Fast para borradores mas baratos y pruebas de ritmo.',
+        title: '¿Seedance 2.0 o Fast?',
+        body: 'Usa Seedance 2.0 para piezas finales con audio nativo y continuidad entre tomas. Usa Fast para borradores más económicos y pruebas de ritmo.',
         cta: {
           label: 'Comparar Seedance 2.0 vs Fast',
           href: compareHref('es', 'seedance-2-0', 'seedance-2-0-fast'),
         },
       },
       {
-        title: 'Vienes de Seedance 1.5?',
-        body: 'Seedance 2.0 es la ruta actual para mas continuidad multi-shot, audio nativo y flujos con referencias mas amplios.',
+        title: '¿Vienes de Seedance 1.5?',
+        body: 'Seedance 2.0 es el flujo actual para mayor continuidad entre tomas, audio nativo y más opciones de trabajo con referencias.',
         cta: {
           label: 'Comparar 1.5 vs 2.0',
           href: compareHref('es', 'seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0'),
         },
       },
       {
-        title: 'Necesitas prompts?',
-        body: 'Empieza con plantillas de texto a video, imagen a video, referencias y multi-shot.',
-        cta: { label: 'Abrir Prompt Lab', href: '#image-to-video' },
+        title: '¿Necesitas ejemplos de prompts?',
+        body: 'Empieza con plantillas de texto a video, imagen a video, referencias y continuidad entre tomas.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
     ],
     referenceWorkflows: [
       {
-        title: 'Texto a video',
-        body: 'Empieza con sujeto, accion, camara, estilo y pistas de audio en un brief limpio.',
+        title: 'Prompt de texto',
+        body: 'Usa el prompt para el brief de escena: sujeto, acción, cámara, estilo e indicaciones de audio.',
       },
       {
-        title: 'Imagen a video',
-        body: 'Usa una imagen inicial para fijar personaje, producto, composicion o entorno.',
+        title: 'Referencia de imagen',
+        body: 'Usa imágenes para guiar identidad, producto, estilo, composición o entorno.',
       },
       {
-        title: 'Roles de referencia',
-        body: 'Da una tarea a cada referencia compatible para que identidad, movimiento y ambiente no compitan.',
+        title: 'Referencia de video',
+        body: 'Usa videos para guiar el ritmo del movimiento o de cámara cuando el flujo activo lo permita.',
       },
       {
-        title: 'Momentos de timeline',
-        body: 'Usa timestamps cortos y verbos de transicion cuando necesites cortes internos o una secuencia.',
+        title: 'Referencia de audio',
+        body: 'Usa audio para marcar ritmo, ambiente o intención emocional cuando el flujo activo lo permita.',
+      },
+      {
+        title: 'Anclas de continuidad',
+        body: 'Repite vestuario, props, ubicación, luz y pose final para mantener coherente la secuencia.',
       },
     ],
     pricingCopy: {
       title: 'Precios de Seedance 2.0 de un vistazo',
-      subtitle: 'Precios totales por escenario - ve el precio exacto en la app antes de generar.',
-      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en creditos USD para escenarios predefinidos.',
+      subtitle: 'Precios totales por escenario. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
     },
     meta: {
       title: 'Seedance 2.0: precios, audio nativo y ejemplos | MaxVideoAI',
       description:
-        'Explora precios de Seedance 2.0, ejemplos, audio nativo, video multi-shot y flujos guiados por referencias. Compara Seedance 2.0 vs Fast y versiones anteriores.',
+        'Explora precios de Seedance 2.0, ejemplos, audio nativo, video con continuidad entre tomas y flujos guiados por referencias. Compara Seedance 2.0 vs Fast y versiones anteriores.',
     },
   },
 };

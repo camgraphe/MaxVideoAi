@@ -5,9 +5,9 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { getImageAlt, withAltSuffix } from '@/lib/image-alt';
 
 import type { FeaturedMedia } from '../_lib/model-page-media';
+import { MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
 
 type ModelDecisionMediaCardProps = {
   media: FeaturedMedia;
@@ -20,6 +20,12 @@ type ModelDecisionMediaCardProps = {
   altContext: string;
 };
 
+function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
+  if (locale === 'fr') return `Seedance 2.0 ${altContext || 'apercu video'}`;
+  if (locale === 'es') return `Seedance 2.0 ${altContext || 'vista previa de video'}`;
+  return `Seedance 2.0 ${altContext || 'video preview'}`;
+}
+
 export function ModelDecisionMediaCard({
   media,
   label,
@@ -31,14 +37,7 @@ export function ModelDecisionMediaCard({
   altContext,
 }: ModelDecisionMediaCardProps) {
   const posterSrc = media.posterUrl ?? null;
-  const altText = getImageAlt({
-    kind: 'renderThumb',
-    engine: media.label ?? label,
-    label: media.prompt ?? label,
-    prompt: media.prompt ?? label,
-    locale,
-  });
-  const resolvedAltText = altContext ? withAltSuffix(altText, altContext) : altText;
+  const resolvedAltText = getDecisionMediaAlt(locale, altContext);
   const [audioBadge, durationBadge, ratioBadge] = badges;
 
   return (
@@ -80,8 +79,8 @@ export function ModelDecisionMediaCard({
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.12)_0%,rgba(8,23,45,0)_42%,rgba(8,23,45,0.62)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.20)_0%,rgba(3,7,18,0.06)_42%,rgba(3,7,18,0.72)_100%)]" />
 
         {media.hasAudio || audioBadge ? (
-          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[#142238]/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#34f5d0] shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-cyan-300/15">
-            <UIIcon icon={Volume2} size={15} strokeWidth={2} />
+          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[#142238]/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+            <UIIcon icon={Volume2} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
             {audioBadge ?? audioBadgeLabel}
           </span>
         ) : null}
@@ -99,9 +98,9 @@ export function ModelDecisionMediaCard({
           ) : null}
         </div>
 
-        <figcaption className="absolute bottom-5 left-5 max-w-[min(420px,calc(100%-160px))] rounded-xl border border-white/14 bg-[#07111f]/74 px-5 py-4 text-white shadow-[0_18px_46px_rgba(0,0,0,0.28)] backdrop-blur-md">
-          <p className="text-base font-semibold leading-tight">{label}</p>
-          <p className="mt-1 text-sm text-white/76">{description}</p>
+        <figcaption className="absolute bottom-4 left-4 max-w-[min(310px,calc(100%-150px))] rounded-[10px] border border-white/14 bg-[#07111f]/70 px-4 py-3 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] backdrop-blur-md">
+          <p className="text-sm font-semibold leading-tight">{label}</p>
+          <p className="mt-0.5 text-xs leading-5 text-white/74">{description}</p>
         </figcaption>
 
         {media.href ? (
