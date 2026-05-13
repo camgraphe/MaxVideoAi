@@ -61,7 +61,7 @@ test('model page layout stays below the route orchestration threshold', () => {
   assert.ok(lineCount(schemaSource) <= 100, `model-page-schema-payloads should stay below 100 lines, got ${lineCount(schemaSource)}`);
 });
 
-test('model page layout delegates Seedance decision page ownership', () => {
+test('model page layout delegates template page ownership', () => {
   for (const path of [
     decisionDataPath,
     decisionPricingPath,
@@ -95,21 +95,23 @@ test('model page layout delegates Seedance decision page ownership', () => {
   const decisionCompareSource = readSource(decisionCompareSectionPath);
   const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
 
-  assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate Seedance decision data building');
-  assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the decision hero for Seedance 2.0');
-  assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should render the decision pricing card for Seedance 2.0');
+  assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate template data building');
+  assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the template hero');
+  assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should render the template pricing card');
   assert.match(layoutSource, /ModelPageContentSections/, 'layout should delegate ordered model content sections');
-  assert.match(layoutSource, /decisionData\s*\?/, 'layout should conditionally use the decision page experience');
-  assert.match(layoutSource, /!decisionData\s*&&\s*pricingCallout/, 'layout should keep legacy pricing callouts out of decision pages');
+  assert.match(layoutSource, /templateData\s*\?/, 'layout should conditionally use templateData');
+  assert.match(layoutSource, /!templateData\s*&&\s*pricingCallout/, 'layout should keep legacy pricing callouts out of template pages');
 
-  assert.match(decisionDataSource, /modelSlug !== 'seedance-2-0'/, 'decision data should own the Seedance 2.0 route guard');
+  assert.match(decisionDataSource, /getModelPageTemplateConfig\(engine\.modelSlug\)/, 'decision data should use the template registry route guard');
+  assert.match(decisionDataSource, /if \(!template\) return null/, 'decision data should return null for non-template pages');
   assert.match(decisionDataSource, /decisionCards/, 'decision data should own decision card copy');
   assert.match(decisionPricingSource, /getPresetQuote/, 'decision pricing should reuse pricing page quote formatting');
-  assert.match(decisionPricingSource, /DECISION_PRICE_PRESETS/, 'decision pricing should own model-page scenario presets');
+  assert.match(decisionPricingSource, /presets: ModelPagePricingPreset\[\]/, 'decision pricing should accept template scenario presets');
+  assert.doesNotMatch(decisionPricingSource, /DECISION_PRICE_PRESETS/, 'decision pricing should not own model-page scenario presets');
   assert.match(modelPageMediaSource, /normalizeMediaUrl/, 'model page media helper should reject placeholder media URLs');
 
   assert.match(decisionHeroSource, /export function ModelDecisionHeroSection/, 'decision hero should export the section component');
-  assert.match(decisionHeroSource, /lg:grid-cols-\[minmax\(420px,0\.86fr\)_minmax\(560px,1\.14fr\)\]/, 'decision hero should own the mockup two-column hero grid');
+  assert.match(decisionHeroSource, /lg:grid-cols-\[minmax\(440px,0\.9fr\)_minmax\(0,1\.1fr\)\]/, 'decision hero should own the mockup two-column hero grid');
   assert.match(decisionHeroSource, /<ModelDecisionMediaCard/, 'decision hero should render the decision media card');
   assert.match(decisionHeroSource, /decision\.features\.map/, 'decision hero should own the feature strip');
   assert.doesNotMatch(decisionHeroSource, /<h2[^>]*>\{feature\.title\}<\/h2>/, 'feature strip labels should not create early H2 headings');

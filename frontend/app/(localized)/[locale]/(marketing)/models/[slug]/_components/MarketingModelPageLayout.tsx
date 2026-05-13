@@ -271,7 +271,7 @@ export function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
-  const decisionData = buildModelDecisionData({ engine, locale });
+  const templateData = buildModelDecisionData({ engine, locale });
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -305,7 +305,7 @@ export function MarketingModelPageLayout({
   const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
-  const imageAnchorId = decisionData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
+  const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
@@ -320,7 +320,7 @@ export function MarketingModelPageLayout({
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
-    description: decisionData?.meta.description ?? pageDescription,
+    description: templateData?.meta.description ?? pageDescription,
     engine,
     heroPosterAbsolute,
     heroTitle,
@@ -328,11 +328,11 @@ export function MarketingModelPageLayout({
     localizedCanonical,
     localizedHomeUrl,
     localizedModelsUrl,
-    pageTitle: decisionData?.meta.title,
+    pageTitle: templateData?.meta.title,
     resolvedBreadcrumb,
   });
-  const legacyPricingCallout = !decisionData && pricingCallout ? pricingCallout : null;
-  const legacyMicroCta = !decisionData && isImageEngine ? copy.microCta : null;
+  const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
+  const legacyMicroCta = !templateData && isImageEngine ? copy.microCta : null;
 
   return (
     <>
@@ -345,12 +345,12 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <main className={['container-page model-page pb-0 pt-5 sm:pt-7', decisionData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
-        <div className={decisionData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
-          {decisionData ? (
+      <main className={['container-page model-page pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+        <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
+          {templateData ? (
             <>
-              <ModelDecisionHeroSection decision={decisionData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
-              <ModelDecisionPricingCard pricing={decisionData.pricing} />
+              <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
+              <ModelDecisionPricingCard pricing={templateData.pricing} />
             </>
           ) : (
             <ModelHeroSection
@@ -393,14 +393,14 @@ export function MarketingModelPageLayout({
             />
           )}
           <ModelPageContentSections
-            isDecision={Boolean(decisionData)}
-            tocProps={{ items: decisionData ? decisionTocItems : tocItems, variant: decisionData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
+            isDecision={Boolean(templateData)}
+            tocProps={{ items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
             specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels }}
             pricingCallout={legacyPricingCallout}
             microCta={legacyMicroCta}
             microCtaHref={normalizedPrimaryCtaHref}
             examplesProps={{ hideExamplesSection, textAnchorId, copy, galleryVideos, galleryPreviewAlts, locale, examplesLinkHref, galleryCtaHref }}
-            decisionCards={decisionData?.decisionCards ?? null}
+            decisionCards={templateData?.decisionCards ?? null}
             promptingProps={{
               imageAnchorId,
               isVideoEngine,
@@ -411,7 +411,7 @@ export function MarketingModelPageLayout({
               audioBadgeLabel,
               mediaAltContexts,
               useDemoMediaPrompt,
-              decisionReferenceWorkflows: decisionData?.referenceWorkflows,
+              decisionReferenceWorkflows: templateData?.referenceWorkflows,
             }}
             prepLinksProps={{ prepLinksSection, locale }}
             tipsProps={{ hasTipsSection, copy, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
