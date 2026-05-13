@@ -12,6 +12,7 @@ const pricingCalloutsPath = join(root, 'frontend/app/(localized)/[locale]/(marke
 const pricingCalloutSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPricingCallout.tsx');
 const decisionDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts');
 const decisionPricingPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts');
+const templateCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-copy.ts');
 const modelPageMediaPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts');
 const decisionHeroSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionHeroSection.tsx');
 const decisionMediaCardPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionMediaCard.tsx');
@@ -65,6 +66,7 @@ test('model page layout delegates template page ownership', () => {
   for (const path of [
     decisionDataPath,
     decisionPricingPath,
+    templateCopyPath,
     modelPageMediaPath,
     decisionHeroSectionPath,
     decisionMediaCardPath,
@@ -83,6 +85,7 @@ test('model page layout delegates template page ownership', () => {
   const layoutSource = readSource(layoutPath);
   const decisionDataSource = readSource(decisionDataPath);
   const decisionPricingSource = readSource(decisionPricingPath);
+  const templateCopySource = readSource(templateCopyPath);
   const modelPageMediaSource = readSource(modelPageMediaPath);
   const decisionHeroSource = readSource(decisionHeroSectionPath);
   const decisionMediaCardSource = readSource(decisionMediaCardPath);
@@ -104,7 +107,16 @@ test('model page layout delegates template page ownership', () => {
 
   assert.match(decisionDataSource, /getModelPageTemplateConfig\(engine\.modelSlug\)/, 'decision data should use the template registry route guard');
   assert.match(decisionDataSource, /if \(!template\) return null/, 'decision data should return null for non-template pages');
-  assert.match(decisionDataSource, /decisionCards/, 'decision data should own decision card copy');
+  assert.match(decisionDataSource, /getModelDecisionCopy\(engine\.modelSlug,\s*locale\)/, 'decision data should delegate localized copy selection');
+  assert.doesNotMatch(
+    decisionDataSource,
+    /SEEDANCE_20_COPY|SEEDANCE_20_FAST_COPY|LTX_23_FAST_COPY|COPY_BY_MODEL_SLUG|buildSlugMap\('pricing'\)|Seedance 2\.0 or Fast\?/,
+    'decision data should not own localized template copy maps or copy-only URL helpers'
+  );
+  assert.match(templateCopySource, /COPY_BY_MODEL_SLUG/, 'template copy helper should own the model slug copy registry');
+  assert.match(templateCopySource, /getModelDecisionCopy/, 'template copy helper should expose localized copy lookup');
+  assert.match(templateCopySource, /Seedance 2\.0 or Fast\?|Fast or LTX 2\.3 Pro\?/, 'template copy helper should own model-specific decision card copy');
+  assert.match(templateCopySource, /buildSlugMap\('pricing'\)|compareHref|examplesHref/, 'template copy helper should own copy href helpers');
   assert.match(decisionPricingSource, /getPresetQuote/, 'decision pricing should reuse pricing page quote formatting');
   assert.match(decisionPricingSource, /presets: ModelPagePricingPreset\[\]/, 'decision pricing should accept template scenario presets');
   assert.doesNotMatch(decisionPricingSource, /DECISION_PRICE_PRESETS/, 'decision pricing should not own model-page scenario presets');
@@ -138,4 +150,12 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionSafetyFaqSource, /FAQSchema/, 'decision safety FAQ should preserve FAQ schema ownership');
 
   assert.doesNotMatch(layoutSource, /Seedance 2\.0 or Fast\?/, 'layout should not own Seedance decision copy');
+});
+
+test('model decision data delegates localized template copy to a route-local helper', () => {
+  const decisionDataSource = readSource(decisionDataPath);
+  const templateCopySource = readSource(templateCopyPath);
+
+  assert.ok(lineCount(decisionDataSource) <= 180, `model-page-decision-data should stay below 180 lines, got ${lineCount(decisionDataSource)}`);
+  assert.ok(lineCount(templateCopySource) > 500, `model-page-template-copy should own the larger copy tables, got ${lineCount(templateCopySource)}`);
 });
