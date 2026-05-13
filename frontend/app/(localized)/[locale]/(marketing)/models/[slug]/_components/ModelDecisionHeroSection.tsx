@@ -40,43 +40,38 @@ const HOME_CRUMB: Record<AppLocale, { label: string; href: string }> = {
   es: { label: 'Inicio', href: '/es' },
 };
 
-function renderHeroSubtitle(subtitle: string, locale: AppLocale) {
+const HERO_HIGHLIGHT_CLASSES = [
+  'text-[#2468ff] dark:text-cyan-300',
+  'text-[#2468ff] dark:text-cyan-300',
+  'text-[#2468ff] dark:text-blue-300',
+] as const;
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function renderHeroSubtitle(subtitle: string, highlights: string[]) {
   if (!subtitle.trim()) return subtitle;
 
-  if (locale === 'fr') {
-    return (
-      <>
-        <span className="text-[#2468ff] dark:text-cyan-300">Audio natif</span>
-        <span>, </span>
-        <span className="text-[#2468ff] dark:text-cyan-300">continuité multi-plans</span>
-        <span> et </span>
-        <span className="text-[#2468ff] dark:text-blue-300">vidéo guidée par références</span>
-        <span> pour des publicités, lancements et contenus de marque cinématographiques.</span>
-      </>
-    );
-  }
+  const normalizedHighlights = highlights.map((term) => term.trim()).filter(Boolean);
+  if (!normalizedHighlights.length) return subtitle;
 
-  if (locale === 'es') {
-    return (
-      <>
-        <span className="text-[#2468ff] dark:text-cyan-300">Audio nativo</span>
-        <span>, </span>
-        <span className="text-[#2468ff] dark:text-cyan-300">continuidad entre tomas</span>
-        <span> y </span>
-        <span className="text-[#2468ff] dark:text-blue-300">video guiado por referencias</span>
-        <span> para anuncios, lanzamientos y contenido de marca con acabado cinematográfico.</span>
-      </>
-    );
-  }
+  const sortedHighlights = [...normalizedHighlights].sort((left, right) => right.length - left.length);
+  const splitPattern = new RegExp(`(${sortedHighlights.map(escapeRegExp).join('|')})`, 'g');
+  const highlightIndexByTerm = new Map(normalizedHighlights.map((term, index) => [term, index]));
 
   return (
     <>
-      <span className="text-[#2468ff] dark:text-cyan-300">Native audio</span>
-      <span>, </span>
-      <span className="text-[#2468ff] dark:text-cyan-300">multi-shot continuity</span>
-      <span>, and </span>
-      <span className="text-[#2468ff] dark:text-blue-300">reference-guided</span>
-      <span> video for polished ads, launches and cinematic branded content.</span>
+      {subtitle.split(splitPattern).map((part, index) => {
+        const highlightIndex = highlightIndexByTerm.get(part);
+        if (highlightIndex == null) return part;
+
+        return (
+          <span key={`${part}-${index}`} className={HERO_HIGHLIGHT_CLASSES[highlightIndex % HERO_HIGHLIGHT_CLASSES.length]}>
+            {part}
+          </span>
+        );
+      })}
     </>
   );
 }
@@ -134,7 +129,7 @@ export function ModelDecisionHeroSection({
                   {decision.hero.title}
                 </h1>
                 <p className="max-w-3xl text-[22px] font-semibold leading-[1.28] text-[#273654] dark:text-white/90 sm:text-[25px]">
-                  {renderHeroSubtitle(decision.hero.subtitle, locale)}
+                  {renderHeroSubtitle(decision.hero.subtitle, decision.hero.subtitleHighlights)}
                 </p>
               </div>
               <p className="max-w-2xl text-[15px] leading-7 text-[#42516c] dark:text-white/70 sm:text-base">{decision.hero.paragraph}</p>

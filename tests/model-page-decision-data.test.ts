@@ -18,6 +18,22 @@ function getEngine(engineId: string) {
   return entry;
 }
 
+function visibleDecisionText(decision: NonNullable<ReturnType<typeof buildModelDecisionData>>) {
+  return JSON.stringify(
+    {
+      decisionCards: decision.decisionCards,
+      features: decision.features,
+      hero: decision.hero,
+      media: decision.media,
+      meta: decision.meta,
+      pricing: decision.pricing,
+      referenceWorkflows: decision.referenceWorkflows,
+    },
+    null,
+    2
+  );
+}
+
 test('Seedance 2.0 decision data returns localized hero, links, features, cards, and metadata', () => {
   const seedance = getEngine('seedance-2-0');
   const en = buildModelDecisionData({ engine: seedance, locale: 'en' });
@@ -32,6 +48,9 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.match(en.hero.subtitle, /Native audio/);
   assert.match(en.hero.subtitle, /multi-shot continuity/);
   assert.match(en.hero.subtitle, /reference-guided video/);
+  assert.deepEqual(en.hero.subtitleHighlights, ['Native audio', 'multi-shot continuity', 'reference-guided video']);
+  assert.deepEqual(fr.hero.subtitleHighlights, ['Audio natif', 'continuité multi-plans', 'vidéo guidée par références']);
+  assert.deepEqual(es.hero.subtitleHighlights, ['Audio nativo', 'continuidad entre tomas', 'video guiado por referencias']);
   assert.ok(en.hero.paragraph.split(/\s+/).filter(Boolean).length <= 55);
   assert.deepEqual(en.hero.primaryCta, {
     label: 'Generate with Seedance 2.0',
@@ -88,10 +107,70 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.doesNotMatch(es.hero.subtitle, /Native audio/);
 });
 
-test('Seedance 2.0 Fast does not return decision data', () => {
+test('Seedance 2.0 Fast returns draft-intent decision data distinct from Seedance 2.0', () => {
+  const seedance = getEngine('seedance-2-0');
   const fast = getEngine('seedance-2-0-fast');
+  const production = buildModelDecisionData({ engine: seedance, locale: 'en' });
+  const en = buildModelDecisionData({ engine: fast, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: fast, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: fast, locale: 'es' });
 
-  assert.equal(buildModelDecisionData({ engine: fast, locale: 'en' }), null);
+  assert.ok(production);
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Seedance 2.0 Fast');
+  assert.notEqual(en.hero.subtitle, production.hero.subtitle);
+  assert.notEqual(en.meta.title, production.meta.title);
+  assert.notEqual(en.meta.description, production.meta.description);
+  assert.match(en.hero.subtitle, /draft passes/);
+  assert.match(en.hero.subtitle, /timing tests/);
+  assert.match(en.hero.subtitle, /A\/B motion checks/);
+  assert.doesNotMatch(en.hero.subtitle, /Native audio/);
+  assert.doesNotMatch(visibleDecisionText(en), /native audio|final-quality|polished ads|cinematic branded/i);
+  assert.deepEqual(en.hero.subtitleHighlights, ['draft passes', 'timing tests', 'A/B motion checks']);
+  assert.match(en.hero.paragraph, /faster Seedance draft route/);
+  assert.match(en.meta.description, /rapid Seedance draft passes/);
+  assert.deepEqual(
+    en.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-480p', '8s-720p', '10s-720p', 'max-duration']
+  );
+  assert.match(fr.hero.subtitle, /brouillons rapides/);
+  assert.deepEqual(fr.hero.subtitleHighlights, ['brouillons rapides', 'tests de rythme', 'variantes de mouvement']);
+  assert.match(es.hero.subtitle, /borradores rápidos/);
+  assert.deepEqual(es.hero.subtitleHighlights, ['borradores rápidos', 'pruebas de ritmo', 'variantes de movimiento']);
+});
+
+test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
+  const ltx = getEngine('ltx-2-3-fast');
+  const en = buildModelDecisionData({ engine: ltx, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: ltx, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: ltx, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'LTX 2.3 Fast');
+  assert.match(en.hero.subtitle, /visual exploration/);
+  assert.match(en.hero.subtitle, /prompt testing/);
+  assert.match(en.hero.subtitle, /vertical\/social drafts/);
+  assert.deepEqual(en.hero.subtitleHighlights, ['visual exploration', 'prompt testing', 'vertical/social drafts']);
+  assert.match(en.hero.paragraph, /fast text-to-video and image-to-video/);
+  assert.doesNotMatch(en.hero.subtitle, /audio-to-video|retake|extend/i);
+  assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|retake|extend/i);
+  assert.match(en.meta.description, /fast LTX 2.3 draft loops/);
+  assert.deepEqual(
+    en.pricing.scenarios.map((scenario) => scenario.id),
+    ['10s-1080p', 'max-duration']
+  );
+  assert.match(en.pricing.scenarios.at(-1)?.note ?? '', /1080p/);
+  assert.doesNotMatch(en.pricing.scenarios.at(-1)?.note ?? '', /4K/i);
+  assert.match(fr.hero.subtitle, /exploration visuelle/);
+  assert.deepEqual(fr.hero.subtitleHighlights, ['exploration visuelle', 'tests de prompts', 'brouillons verticaux/social']);
+  assert.match(es.hero.subtitle, /exploración visual/);
+  assert.deepEqual(es.hero.subtitleHighlights, ['exploración visual', 'pruebas de prompts', 'borradores verticales/sociales']);
 });
 
 test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => {
