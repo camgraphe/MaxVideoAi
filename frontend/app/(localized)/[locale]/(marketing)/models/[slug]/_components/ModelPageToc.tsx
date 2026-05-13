@@ -34,7 +34,7 @@ export function ModelPageToc({ items, variant = 'default', overviewLabel = 'On t
   if (variant === 'pill') {
     return (
       <nav
-        className="sticky top-[var(--header-height)] z-30 -mx-4 border-b border-hairline bg-white dark:border-white/10 dark:bg-[#071126] sm:-mx-6 lg:-mx-8"
+        className={`${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-white before:bg-white dark:border-white/10 dark:bg-[#071126] dark:before:bg-[#071126]`}
         aria-label="Model page sections"
       >
         <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-5 lg:px-6">
@@ -64,7 +64,7 @@ export function ModelPageToc({ items, variant = 'default', overviewLabel = 'On t
 
   return (
     <nav
-      className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-30 border-b border-hairline bg-surface before:bg-surface`}
+      className={`${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-surface before:bg-surface`}
       aria-label="Model page sections"
     >
       <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">

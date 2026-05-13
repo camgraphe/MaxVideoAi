@@ -103,61 +103,73 @@ export function ModelDecisionExamplesGallery({
         <div className="relative mt-5">
           {visibleItems.length ? (
             <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
-              {visibleItems.map((item) => (
-                <article
-                  key={item.id}
-                  className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_14px_36px_-28px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045]"
-                >
-                  <Link href={item.href as LocalizedLinkHref} className="group relative block aspect-video overflow-hidden bg-slate-100 dark:bg-white/5">
-                    {item.posterUrl ? (
-                      <Image
-                        src={item.posterUrl}
-                        alt={item.alt}
-                        fill
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.025]"
-                        sizes="(min-width: 1280px) 300px, (min-width: 768px) 45vw, 90vw"
-                        quality={70}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        No preview
+              {visibleItems.map((item) => {
+                const isVertical = item.aspectRatio === '9:16' || item.aspectRatio === '3:4';
+                return (
+                  <article
+                    key={item.id}
+                    className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_14px_36px_-28px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-white/[0.045]"
+                  >
+                    <Link
+                      href={item.href as LocalizedLinkHref}
+                      className={[
+                        'group relative block aspect-video overflow-hidden',
+                        isVertical ? 'bg-slate-950 dark:bg-black' : 'bg-slate-100 dark:bg-white/5',
+                      ].join(' ')}
+                    >
+                      {item.posterUrl ? (
+                        <Image
+                          src={item.posterUrl}
+                          alt={item.alt}
+                          fill
+                          className={[
+                            'h-full w-full transition duration-300',
+                            isVertical ? 'object-contain' : 'object-cover group-hover:scale-[1.025]',
+                          ].join(' ')}
+                          sizes="(min-width: 1280px) 300px, (min-width: 768px) 45vw, 90vw"
+                          quality={70}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          No preview
+                        </div>
+                      )}
+                      <div className="absolute left-2 top-2 inline-flex h-6 items-center gap-1 rounded-lg bg-slate-950/82 px-2 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:left-3 sm:top-3 sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-[0.72rem]">
+                        <UIIcon icon={AudioLines} size={12} className={MODEL_PAGE_ICON_ON_DARK} />
+                        <span className="max-[380px]:sr-only">{item.audioBadgeLabel}</span>
                       </div>
-                    )}
-                    <div className="absolute left-2 top-2 inline-flex h-6 items-center gap-1 rounded-lg bg-slate-950/82 px-2 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:left-3 sm:top-3 sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-[0.72rem]">
-                      <UIIcon icon={AudioLines} size={12} className={MODEL_PAGE_ICON_ON_DARK} />
-                      <span className="max-[380px]:sr-only">{item.audioBadgeLabel}</span>
-                    </div>
-                    <div className="absolute right-2 top-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:right-3 sm:top-3 sm:px-2.5 sm:text-[0.72rem]">
-                      {item.durationLabel}
-                    </div>
-                    {item.aspectRatio ? (
-                      <div className="absolute bottom-2 right-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:bottom-3 sm:right-3 sm:px-2.5 sm:text-[0.72rem]">
-                        {item.aspectRatio}
+                      <div className="absolute right-2 top-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:right-3 sm:top-3 sm:px-2.5 sm:text-[0.72rem]">
+                        {item.durationLabel}
                       </div>
-                    ) : null}
-                  </Link>
-                  <div className="px-3 py-3 sm:px-4 sm:py-3.5">
-                    <p className="text-[0.72rem] font-medium text-slate-500 dark:text-slate-400">{item.category}</p>
-                    <h3 className="mt-1 line-clamp-1 !text-left text-sm font-semibold text-slate-950 dark:text-white">
-                      {item.title}
-                    </h3>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] font-semibold sm:gap-x-5 sm:text-[0.78rem]">
-                      <Link href={item.href as LocalizedLinkHref} className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200">
-                        {renderLinkLabel}
-                      </Link>
-                      {item.recreateHref && item.recreateLabel ? (
-                        <Link
-                          href={item.recreateHref as LocalizedLinkHref}
-                          className="inline-flex items-center gap-1 text-blue-700 transition hover:text-blue-500 dark:text-blue-200 dark:hover:text-blue-100"
-                        >
-                          <span>{item.recreateLabel.replace(/\s*(?:→|->)\s*$/, '')}</span>
-                          <UIIcon icon={ArrowRight} size={13} className={MODEL_PAGE_ICON_MUTED} />
-                        </Link>
+                      {item.aspectRatio ? (
+                        <div className="absolute bottom-2 right-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:bottom-3 sm:right-3 sm:px-2.5 sm:text-[0.72rem]">
+                          {item.aspectRatio}
+                        </div>
                       ) : null}
+                    </Link>
+                    <div className="px-3 py-3 sm:px-4 sm:py-3.5">
+                      <p className="text-[0.72rem] font-medium text-slate-500 dark:text-slate-400">{item.category}</p>
+                      <h3 className="mt-1 line-clamp-1 !text-left text-sm font-semibold text-slate-950 dark:text-white">
+                        {item.title}
+                      </h3>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] font-semibold sm:gap-x-5 sm:text-[0.78rem]">
+                        <Link href={item.href as LocalizedLinkHref} className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200">
+                          {renderLinkLabel}
+                        </Link>
+                        {item.recreateHref && item.recreateLabel ? (
+                          <Link
+                            href={item.recreateHref as LocalizedLinkHref}
+                            className="inline-flex items-center gap-1 text-blue-700 transition hover:text-blue-500 dark:text-blue-200 dark:hover:text-blue-100"
+                          >
+                            <span>{item.recreateLabel.replace(/\s*(?:→|->)\s*$/, '')}</span>
+                            <UIIcon icon={ArrowRight} size={13} className={MODEL_PAGE_ICON_MUTED} />
+                          </Link>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 px-4 py-5 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.045] dark:text-slate-300">

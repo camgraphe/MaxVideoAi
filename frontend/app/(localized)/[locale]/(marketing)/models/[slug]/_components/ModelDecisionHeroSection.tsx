@@ -98,6 +98,13 @@ export function ModelDecisionHeroSection({
   mediaAltContext,
 }: ModelDecisionHeroSectionProps) {
   const homeCrumb = HOME_CRUMB[locale] ?? HOME_CRUMB.en;
+  const isLongHeroTitle = decision.hero.title.length > 13;
+  const heroTitleClassName = [
+    'max-w-3xl font-semibold leading-[0.98] text-[#071126] dark:text-white',
+    isLongHeroTitle
+      ? 'text-[clamp(3.05rem,9vw,3.55rem)] sm:text-[clamp(3.35rem,7.2vw,3.9rem)] lg:whitespace-nowrap lg:text-[clamp(3.1rem,4.1vw,3.45rem)] xl:text-[clamp(3.15rem,4vw,3.5rem)]'
+      : 'text-5xl sm:text-6xl lg:whitespace-nowrap lg:text-[clamp(3.75rem,5.2vw,4.35rem)] xl:text-[72px]',
+  ].join(' ');
 
   return (
     <div id="top" className="space-y-7">
@@ -125,7 +132,7 @@ export function ModelDecisionHeroSection({
                 {decision.hero.eyebrow}
               </p>
               <div className="space-y-3">
-                <h1 className="max-w-3xl text-5xl font-semibold leading-[0.98] text-[#071126] dark:text-white sm:text-6xl lg:whitespace-nowrap lg:text-[clamp(3.75rem,5.2vw,4.35rem)] xl:text-[72px]">
+                <h1 className={heroTitleClassName}>
                   {decision.hero.title}
                 </h1>
                 <p className="max-w-3xl text-[22px] font-semibold leading-[1.28] text-[#273654] dark:text-white/90 sm:text-[25px]">
