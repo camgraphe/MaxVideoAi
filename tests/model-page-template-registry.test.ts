@@ -84,6 +84,8 @@ test('template registry enables Seedance production and draft model templates', 
     'veo-3-1',
     'veo-3-1-fast',
     'veo-3-1-lite',
+    'wan-2-5',
+    'wan-2-6',
   ]);
 });
 
@@ -212,6 +214,30 @@ test('Kling legacy templates preserve supported older route intent', () => {
   );
   assert.equal(kling25.pricing.presets.every((preset) => !preset.id.includes('audio')), true);
   assert.equal(kling26.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
+});
+
+test('Wan templates separate reference-video route from shorter audio drafts', () => {
+  const wan25 = getModelPageTemplateConfig('wan-2-5');
+  const wan26 = getModelPageTemplateConfig('wan-2-6');
+
+  assert.ok(wan25);
+  assert.ok(wan26);
+  assert.equal(wan25.intent, 'draft');
+  assert.equal(wan26.intent, 'production');
+  assert.equal(wan25.hero.primaryCtaHref, '/app?engine=wan-2-5');
+  assert.equal(wan26.hero.primaryCtaHref, '/app?engine=wan-2-6');
+  assert.equal(wan25.pricing.anchorHref, '/pricing#wan-2-5-pricing');
+  assert.equal(wan26.pricing.anchorHref, '/pricing#wan-2-6-pricing');
+  assert.equal(wan25.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(wan26.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.deepEqual(
+    wan25.pricing.presets.map((preset) => preset.id),
+    ['5s-480p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']
+  );
+  assert.deepEqual(
+    wan26.pricing.presets.map((preset) => preset.id),
+    ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']
+  );
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

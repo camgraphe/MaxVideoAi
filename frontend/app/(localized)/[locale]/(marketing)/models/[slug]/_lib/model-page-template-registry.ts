@@ -15,6 +15,8 @@ import { sora2TemplateConfig } from './model-page-templates/sora-2';
 import { veo31FastTemplateConfig } from './model-page-templates/veo-3-1-fast';
 import { veo31TemplateConfig } from './model-page-templates/veo-3-1';
 import { veo31LiteTemplateConfig } from './model-page-templates/veo-3-1-lite';
+import { wan25TemplateConfig } from './model-page-templates/wan-2-5';
+import { wan26TemplateConfig } from './model-page-templates/wan-2-6';
 
 const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [kling25TurboTemplateConfig.slug]: kling25TurboTemplateConfig,
@@ -33,6 +35,8 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [veo31FastTemplateConfig.slug]: veo31FastTemplateConfig,
   [veo31TemplateConfig.slug]: veo31TemplateConfig,
   [veo31LiteTemplateConfig.slug]: veo31LiteTemplateConfig,
+  [wan25TemplateConfig.slug]: wan25TemplateConfig,
+  [wan26TemplateConfig.slug]: wan26TemplateConfig,
 };
 
 export function getModelPageTemplateConfig(slug: string): ModelPageTemplateConfig | null {

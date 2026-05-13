@@ -266,6 +266,54 @@ test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () 
   assert.match(es26.hero.subtitle, /Audio nativo/);
 });
 
+test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks', () => {
+  const wan25 = getEngine('wan-2-5');
+  const wan26 = getEngine('wan-2-6');
+  const en25 = buildModelDecisionData({ engine: wan25, locale: 'en' });
+  const fr25 = buildModelDecisionData({ engine: wan25, locale: 'fr' });
+  const es25 = buildModelDecisionData({ engine: wan25, locale: 'es' });
+  const en26 = buildModelDecisionData({ engine: wan26, locale: 'en' });
+  const fr26 = buildModelDecisionData({ engine: wan26, locale: 'fr' });
+  const es26 = buildModelDecisionData({ engine: wan26, locale: 'es' });
+
+  assert.ok(en25);
+  assert.ok(fr25);
+  assert.ok(es25);
+  assert.ok(en26);
+  assert.ok(fr26);
+  assert.ok(es26);
+
+  assert.equal(en25.hero.title, 'Wan 2.5');
+  assert.match(en25.hero.subtitle, /Audio-ready 5-10s clips/);
+  assert.match(visibleDecisionText(en25), /prompt expansion|soundtrack/i);
+  assert.doesNotMatch(en25.hero.subtitle, /15s|reference-to-video/i);
+  assert.deepEqual(en25.hero.subtitleHighlights, [
+    'Audio-ready 5-10s clips',
+    'text or image starts',
+    '480p to 1080p checks',
+  ]);
+  assert.equal(en25.hero.primaryCta.href, '/app?engine=wan-2-5');
+  assert.equal(en25.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en25.decisionCards[1]?.cta.href, '#prompting');
+  assert.match(fr25.hero.subtitle, /Clips audio-ready de 5 à 10 s/);
+  assert.match(es25.hero.subtitle, /Clips con audio de 5 a 10 s/);
+
+  assert.equal(en26.hero.title, 'Wan 2.6');
+  assert.match(en26.hero.subtitle, /15s multi-shot clips/);
+  assert.match(en26.hero.subtitle, /reference-to-video consistency/);
+  assert.match(visibleDecisionText(en26), /reference videos|15 second/i);
+  assert.deepEqual(en26.hero.subtitleHighlights, [
+    '15s multi-shot clips',
+    'reference-to-video consistency',
+    'optional audio for text or image starts',
+  ]);
+  assert.equal(en26.hero.primaryCta.href, '/app?engine=wan-2-6');
+  assert.equal(en26.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en26.decisionCards[1]?.cta.href, '#prompting');
+  assert.match(fr26.hero.subtitle, /Clips multi-plans jusqu’à 15 s/);
+  assert.match(es26.hero.subtitle, /Clips multi-shot de hasta 15 s/);
+});
+
 test('Seedream returns reference-prep decision data for still preparation', () => {
   const seedream = getEngine('seedream');
   const en = buildModelDecisionData({ engine: seedream, locale: 'en' });
@@ -427,6 +475,8 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
     ['kling-3-standard', ['5s-1080p', '8s-1080p-audio', '15s-1080p-audio', 'max-duration']],
     ['kling-3-4k', ['5s-4k', '10s-4k', '15s-4k', 'max-duration']],
     ['ltx-2-3-pro', ['6s-1080p-audio', '8s-1440p-audio', '10s-4k-audio', 'max-duration']],
+    ['wan-2-5', ['5s-480p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
+    ['wan-2-6', ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
   ] as const;
 
   for (const [slug, expectedIds] of expectations) {

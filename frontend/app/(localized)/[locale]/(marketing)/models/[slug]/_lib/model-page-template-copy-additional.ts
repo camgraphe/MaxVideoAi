@@ -2116,6 +2116,420 @@ const KLING_26_PRO_COPY: LocalizedTemplateCopy = {
   },
 };
 
+const WAN_26_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'WAN MULTI-SHOT VIDEO ROUTE',
+      title: 'Wan 2.6',
+      subtitle: '15s multi-shot clips, reference-to-video consistency, and optional audio for text or image starts.',
+      subtitleHighlights: ['15s multi-shot clips', 'reference-to-video consistency', 'optional audio for text or image starts'],
+      paragraph:
+        'Use Wan 2.6 when you need the newer Wan route on MaxVideoAI: 720p or 1080p clips up to 15 seconds, text-to-video, image-to-video, reference-video guidance, multi-shot planning and optional audio for text or image workflows.',
+      primaryCta: { label: 'Generate with Wan 2.6', href: '/app?engine=wan-2-6' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'wan') },
+      quickLinks: [
+        { label: 'Compare vs Sora 2', href: compareHref('en', 'wan-2-6', 'sora-2', 'wan-2-6') },
+        { label: 'View pricing', href: pricingHref('en', 'wan-2-6-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Wan 2.6 example',
+      description: 'Multi-shot reference-guided clip',
+      renderLabel: 'View render',
+      badges: ['15s max', '1080p', 'Audio option'],
+      altContext: 'Wan 2.6 multi-shot cinematic clip',
+    },
+    features: [
+      { title: 'Multi-shot clips', body: 'Plan short sequences with cleaner internal beat structure.', tone: 'continuity' },
+      { title: 'Reference-to-video', body: 'Use supported reference videos when subject consistency matters.', tone: 'reference' },
+      { title: 'Text or image start', body: 'Generate from a prompt or anchor the first frame with one image.', tone: 'reference' },
+      { title: '720p or 1080p', body: 'Choose review or production preview resolution before generation.', tone: 'quality' },
+      { title: 'Max 15s', body: 'Use 5, 10 or 15 second durations depending on the beat.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Wan 2.6 or Wan 2.5?',
+        body: 'Use Wan 2.6 for longer 15s clips, reference-video consistency and multi-shot planning. Use Wan 2.5 for shorter audio-ready checks.',
+        cta: { label: 'Compare Wan 2.6 vs Wan 2.5', href: compareHref('en', 'wan-2-6', 'wan-2-5', 'wan-2-6') },
+      },
+      {
+        title: 'Need reference consistency?',
+        body: 'Use reference-to-video when motion rhythm, subject identity or a previous take should guide the next output.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparing premium routes?',
+        body: 'Compare Wan 2.6 with Sora 2 or Veo 3.1 when audio, consistency and cinematic polish are the decision points.',
+        cta: { label: 'Compare Wan 2.6 vs Sora 2', href: compareHref('en', 'wan-2-6', 'sora-2', 'wan-2-6') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Write subject, action, camera, style, duration and optional sound direction.' },
+      { title: 'Image start', body: 'Use one still to lock product shape, character framing or opening composition.' },
+      { title: 'Reference videos', body: 'Use one to three videos when the active route needs motion or identity consistency.' },
+      { title: 'Audio track', body: 'Attach a short track for text or image workflows when timing or mood should follow sound.' },
+      { title: 'Multi-shot beats', body: 'Use short timestamped beats when a 15 second clip needs internal structure.' },
+    ],
+    pricingCopy: {
+      title: 'Wan 2.6 pricing at a glance',
+      subtitle: 'Preset 720p/1080p totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Wan 2.6: Pricing, References & Examples | MaxVideoAI',
+      description:
+        'Explore Wan 2.6 pricing, 15s multi-shot video, text-to-video, image-to-video, reference-video workflows, optional audio and examples.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE VIDÉO WAN MULTI-PLANS',
+      title: 'Wan 2.6',
+      subtitle: 'Clips multi-plans jusqu’à 15 s, cohérence reference-to-video et audio optionnel depuis texte ou image.',
+      subtitleHighlights: ['Clips multi-plans jusqu’à 15 s', 'cohérence reference-to-video', 'audio optionnel depuis texte ou image'],
+      paragraph:
+        'Utilisez Wan 2.6 pour la route Wan plus récente dans MaxVideoAI : clips 720p ou 1080p jusqu’à 15 secondes, texte-vidéo, image-vidéo, guidage par vidéos de référence, planification multi-plans et audio optionnel.',
+      primaryCta: { label: 'Générer avec Wan 2.6', href: '/app?engine=wan-2-6' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'wan') },
+      quickLinks: [
+        { label: 'Comparer vs Sora 2', href: compareHref('fr', 'wan-2-6', 'sora-2', 'wan-2-6') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'wan-2-6-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Wan 2.6',
+      description: 'Clip multi-plans guidé par références',
+      renderLabel: 'Voir le rendu',
+      badges: ['15 s max', '1080p', 'Audio optionnel'],
+      altContext: 'clip cinématique multi-plans Wan 2.6',
+    },
+    features: [
+      { title: 'Clips multi-plans', body: 'Structurez des séquences courtes avec des beats plus lisibles.', tone: 'continuity' },
+      { title: 'Reference-to-video', body: 'Utilisez des vidéos de référence quand la cohérence du sujet compte.', tone: 'reference' },
+      { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image pour ancrer la première frame.', tone: 'reference' },
+      { title: '720p ou 1080p', body: 'Choisissez résolution de revue ou de préproduction avant génération.', tone: 'quality' },
+      { title: 'Max 15 s', body: 'Utilisez 5, 10 ou 15 secondes selon le beat.', tone: 'duration' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Wan 2.6 ou Wan 2.5 ?',
+        body: 'Utilisez Wan 2.6 pour le 15 s, la cohérence par vidéo de référence et le multi-plans. Wan 2.5 reste utile pour les checks audio courts.',
+        cta: { label: 'Comparer Wan 2.6 vs Wan 2.5', href: compareHref('fr', 'wan-2-6', 'wan-2-5', 'wan-2-6') },
+      },
+      {
+        title: 'Besoin de cohérence par référence ?',
+        body: 'Utilisez reference-to-video quand mouvement, identité ou take précédent doivent guider le résultat.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Vous comparez les routes premium ?',
+        body: 'Comparez Wan 2.6 avec Sora 2 ou Veo 3.1 quand audio, cohérence et rendu cinématique guident le choix.',
+        cta: { label: 'Comparer Wan 2.6 vs Sora 2', href: compareHref('fr', 'wan-2-6', 'sora-2', 'wan-2-6') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Indiquez sujet, action, caméra, style, durée et intention sonore optionnelle.' },
+      { title: 'Image de départ', body: 'Utilisez une image pour figer produit, personnage ou composition d’ouverture.' },
+      { title: 'Vidéos de référence', body: 'Ajoutez une à trois vidéos quand la route active doit suivre mouvement ou identité.' },
+      { title: 'Piste audio', body: 'Ajoutez une piste courte en texte ou image quand le timing doit suivre le son.' },
+      { title: 'Beats multi-plans', body: 'Utilisez des beats courts et datés quand un clip de 15 s doit rester structuré.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Wan 2.6 en un coup d’œil',
+      subtitle: 'Prix totaux 720p/1080p prédéfinis — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Wan 2.6 : tarifs, références et exemples | MaxVideoAI',
+      description:
+        'Explorez Wan 2.6 : prix, vidéo multi-plans jusqu’à 15 s, texte-vidéo, image-vidéo, vidéos de référence, audio optionnel et exemples.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA WAN MULTI-SHOT',
+      title: 'Wan 2.6',
+      subtitle: 'Clips multi-shot de hasta 15 s, consistencia reference-to-video y audio opcional desde texto o imagen.',
+      subtitleHighlights: ['Clips multi-shot de hasta 15 s', 'consistencia reference-to-video', 'audio opcional desde texto o imagen'],
+      paragraph:
+        'Usa Wan 2.6 como la ruta Wan más reciente en MaxVideoAI: clips 720p o 1080p de hasta 15 segundos, texto a video, imagen a video, guía con videos de referencia, planeación multi-shot y audio opcional.',
+      primaryCta: { label: 'Generar con Wan 2.6', href: '/app?engine=wan-2-6' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'wan') },
+      quickLinks: [
+        { label: 'Comparar con Sora 2', href: compareHref('es', 'wan-2-6', 'sora-2', 'wan-2-6') },
+        { label: 'Ver precios', href: pricingHref('es', 'wan-2-6-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Wan 2.6',
+      description: 'Clip multi-shot guiado por referencias',
+      renderLabel: 'Ver render',
+      badges: ['15 s max', '1080p', 'Audio opcional'],
+      altContext: 'clip cinematográfico multi-shot con Wan 2.6',
+    },
+    features: [
+      { title: 'Clips multi-shot', body: 'Planea secuencias cortas con estructura interna más clara.', tone: 'continuity' },
+      { title: 'Reference-to-video', body: 'Usa videos de referencia cuando importa la consistencia del sujeto.', tone: 'reference' },
+      { title: 'Texto o imagen', body: 'Genera desde prompt o ancla el primer frame con una imagen.', tone: 'reference' },
+      { title: '720p o 1080p', body: 'Elige resolución de revisión o preproducción antes de generar.', tone: 'quality' },
+      { title: 'Máx. 15 s', body: 'Usa 5, 10 o 15 segundos según el beat.', tone: 'duration' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Wan 2.6 o Wan 2.5?',
+        body: 'Usa Wan 2.6 para 15 s, consistencia con video de referencia y multi-shot. Usa Wan 2.5 para checks cortos con audio.',
+        cta: { label: 'Comparar Wan 2.6 vs Wan 2.5', href: compareHref('es', 'wan-2-6', 'wan-2-5', 'wan-2-6') },
+      },
+      {
+        title: '¿Necesitas consistencia por referencia?',
+        body: 'Usa reference-to-video cuando ritmo de movimiento, identidad o un take previo deben guiar el output.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Comparas rutas premium?',
+        body: 'Compara Wan 2.6 con Sora 2 o Veo 3.1 cuando audio, consistencia y acabado cinematográfico importan.',
+        cta: { label: 'Comparar Wan 2.6 vs Sora 2', href: compareHref('es', 'wan-2-6', 'sora-2', 'wan-2-6') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Define sujeto, acción, cámara, estilo, duración y dirección sonora opcional.' },
+      { title: 'Imagen inicial', body: 'Usa una imagen para fijar producto, personaje o composición inicial.' },
+      { title: 'Videos de referencia', body: 'Agrega uno a tres videos cuando la ruta activa debe seguir movimiento o identidad.' },
+      { title: 'Pista de audio', body: 'Adjunta una pista corta en texto o imagen cuando el timing debe seguir sonido.' },
+      { title: 'Beats multi-shot', body: 'Usa beats breves con tiempos cuando un clip de 15 s necesita estructura interna.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Wan 2.6 de un vistazo',
+      subtitle: 'Totales 720p/1080p predefinidos. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Wan 2.6: precios, referencias y ejemplos | MaxVideoAI',
+      description:
+        'Explora Wan 2.6: precios, video multi-shot hasta 15 s, texto a video, imagen a video, videos de referencia, audio opcional y ejemplos.',
+    },
+  },
+};
+
+const WAN_25_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'WAN SUPPORTED AUDIO DRAFT ROUTE',
+      title: 'Wan 2.5',
+      subtitle: 'Audio-ready 5-10s clips for text or image starts, prompt expansion, and 480p to 1080p checks.',
+      subtitleHighlights: ['Audio-ready 5-10s clips', 'text or image starts', '480p to 1080p checks'],
+      paragraph:
+        'Use Wan 2.5 when you need the supported older Wan route for short audio-ready tests: text-to-video, image-to-video, optional soundtrack upload, prompt expansion, seed control and lower-resolution draft passes.',
+      primaryCta: { label: 'Generate with Wan 2.5', href: '/app?engine=wan-2-5' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'wan') },
+      quickLinks: [
+        { label: 'Compare vs Sora 2', href: compareHref('en', 'wan-2-5', 'sora-2', 'wan-2-5') },
+        { label: 'View pricing', href: pricingHref('en', 'wan-2-5-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Wan 2.5 example',
+      description: 'Short audio-ready draft clip',
+      renderLabel: 'View render',
+      badges: ['Audio-ready', '10s max', '1080p'],
+      altContext: 'Wan 2.5 short audio-ready draft clip',
+    },
+    features: [
+      { title: 'Audio-ready tests', body: 'Use native sound or attach a short WAV/MP3 track when timing matters.', tone: 'audio' },
+      { title: 'Text or image start', body: 'Generate from a prompt or one source image for quick motion checks.', tone: 'reference' },
+      { title: '480p to 1080p', body: 'Pick lower-cost draft resolution or 1080p when the shot needs more detail.', tone: 'quality' },
+      { title: 'Prompt expansion', body: 'Use expansion when a simple brief needs more visual detail.', tone: 'continuity' },
+      { title: 'Max 10s', body: 'Keep Wan 2.5 focused on short single-beat or two-beat clips.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Wan 2.5 or Wan 2.6?',
+        body: 'Use Wan 2.5 for short audio-ready checks and lower-resolution drafts. Use Wan 2.6 when you need 15s, multi-shot or reference-video guidance.',
+        cta: { label: 'View Wan 2.6', href: modelsHref('en', 'wan-2-6') },
+      },
+      {
+        title: 'Need the soundtrack to steer timing?',
+        body: 'Attach a short audio file when rhythm or mood should guide the clip, then keep the visual prompt simple.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparing audio-native routes?',
+        body: 'Compare Wan 2.5 with Sora 2 when you are choosing between lower-cost checks and Sora-style synced outputs.',
+        cta: { label: 'Compare Wan 2.5 vs Sora 2', href: compareHref('en', 'wan-2-5', 'sora-2', 'wan-2-5') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Describe one subject, one action, one camera move and one sound direction.' },
+      { title: 'Image start', body: 'Use a single image to hold framing, product shape or character identity.' },
+      { title: 'Audio file', body: 'Attach a short soundtrack when rhythm, ambience or mood should drive the take.' },
+      { title: 'Prompt expansion', body: 'Turn expansion on for sparse briefs; turn it off when every visual detail is deliberate.' },
+      { title: 'Wan 2.6 upgrade', body: 'Move to Wan 2.6 for longer clips, multi-shot plans or reference-video consistency.' },
+    ],
+    pricingCopy: {
+      title: 'Wan 2.5 pricing at a glance',
+      subtitle: 'Preset short-clip totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Wan 2.5: Pricing, Audio Drafts & Examples | MaxVideoAI',
+      description:
+        'Use Wan 2.5 for short audio-ready AI video drafts, text-to-video, image-to-video, optional soundtrack upload, prompt expansion and pricing.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE WAN AUDIO DRAFT PRISE EN CHARGE',
+      title: 'Wan 2.5',
+      subtitle: 'Clips audio-ready de 5 à 10 s pour départs texte ou image, expansion de prompt et checks 480p à 1080p.',
+      subtitleHighlights: ['Clips audio-ready de 5 à 10 s', 'départs texte ou image', 'checks 480p à 1080p'],
+      paragraph:
+        'Utilisez Wan 2.5 quand il vous faut l’ancienne route Wan encore prise en charge pour des tests courts avec audio : texte-vidéo, image-vidéo, upload audio optionnel, expansion de prompt, seed et drafts basse résolution.',
+      primaryCta: { label: 'Générer avec Wan 2.5', href: '/app?engine=wan-2-5' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'wan') },
+      quickLinks: [
+        { label: 'Comparer vs Sora 2', href: compareHref('fr', 'wan-2-5', 'sora-2', 'wan-2-5') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'wan-2-5-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Wan 2.5',
+      description: 'Draft court audio-ready',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio-ready', '10 s max', '1080p'],
+      altContext: 'draft court Wan 2.5 avec audio',
+    },
+    features: [
+      { title: 'Tests audio-ready', body: 'Utilisez le son natif ou une piste WAV/MP3 courte quand le timing compte.', tone: 'audio' },
+      { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image source pour tester vite le mouvement.', tone: 'reference' },
+      { title: '480p à 1080p', body: 'Choisissez une résolution draft moins chère ou 1080p pour plus de détail.', tone: 'quality' },
+      { title: 'Expansion de prompt', body: 'Activez-la quand un brief simple a besoin de détails visuels.', tone: 'continuity' },
+      { title: 'Max 10 s', body: 'Gardez Wan 2.5 sur des clips courts à un ou deux beats.', tone: 'duration' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Wan 2.5 ou Wan 2.6 ?',
+        body: 'Utilisez Wan 2.5 pour des checks audio courts et des drafts basse résolution. Passez à Wan 2.6 pour 15 s, multi-plans ou référence vidéo.',
+        cta: { label: 'Voir Wan 2.6', href: modelsHref('fr', 'wan-2-6') },
+      },
+      {
+        title: 'La piste audio doit guider le timing ?',
+        body: 'Ajoutez un fichier audio court quand rythme ou ambiance doivent piloter le clip, puis gardez le prompt visuel simple.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Vous comparez des routes avec audio ?',
+        body: 'Comparez Wan 2.5 avec Sora 2 pour choisir entre checks moins coûteux et sorties synchronisées façon Sora.',
+        cta: { label: 'Comparer Wan 2.5 vs Sora 2', href: compareHref('fr', 'wan-2-5', 'sora-2', 'wan-2-5') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Décrivez un sujet, une action, un mouvement caméra et une direction sonore.' },
+      { title: 'Image de départ', body: 'Utilisez une image pour conserver cadrage, produit ou identité du personnage.' },
+      { title: 'Fichier audio', body: 'Ajoutez une piste courte quand rythme, ambiance ou mood doivent guider la prise.' },
+      { title: 'Expansion de prompt', body: 'Activez-la pour un brief pauvre ; désactivez-la quand chaque détail est volontaire.' },
+      { title: 'Passage Wan 2.6', body: 'Passez à Wan 2.6 pour clips plus longs, multi-plans ou cohérence par vidéo de référence.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Wan 2.5 en un coup d’œil',
+      subtitle: 'Prix totaux de clips courts — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Wan 2.5 : tarifs, drafts audio et exemples | MaxVideoAI',
+      description:
+        'Utilisez Wan 2.5 pour des drafts vidéo IA courts avec audio, texte-vidéo, image-vidéo, upload audio optionnel, expansion de prompt et tarifs.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA WAN AUDIO DRAFT AUN COMPATIBLE',
+      title: 'Wan 2.5',
+      subtitle: 'Clips con audio de 5 a 10 s para arranques con texto o imagen, expansión de prompt y checks de 480p a 1080p.',
+      subtitleHighlights: ['Clips con audio de 5 a 10 s', 'arranques con texto o imagen', 'checks de 480p a 1080p'],
+      paragraph:
+        'Usa Wan 2.5 cuando necesitas la ruta Wan anterior aún compatible para pruebas cortas con audio: texto a video, imagen a video, carga de audio opcional, expansión de prompt, seed y borradores en baja resolución.',
+      primaryCta: { label: 'Generar con Wan 2.5', href: '/app?engine=wan-2-5' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'wan') },
+      quickLinks: [
+        { label: 'Comparar con Sora 2', href: compareHref('es', 'wan-2-5', 'sora-2', 'wan-2-5') },
+        { label: 'Ver precios', href: pricingHref('es', 'wan-2-5-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Wan 2.5',
+      description: 'Borrador corto listo para audio',
+      renderLabel: 'Ver render',
+      badges: ['Con audio', '10 s max', '1080p'],
+      altContext: 'borrador corto con audio usando Wan 2.5',
+    },
+    features: [
+      { title: 'Pruebas con audio', body: 'Usa sonido nativo o adjunta una pista WAV/MP3 corta cuando el timing importa.', tone: 'audio' },
+      { title: 'Texto o imagen', body: 'Empieza con un prompt o una imagen fuente para probar movimiento rápido.', tone: 'reference' },
+      { title: '480p a 1080p', body: 'Elige resolución de borrador de menor coste o 1080p si necesitas más detalle.', tone: 'quality' },
+      { title: 'Expansión de prompt', body: 'Actívala cuando un brief simple necesita más detalle visual.', tone: 'continuity' },
+      { title: 'Máx. 10 s', body: 'Mantén Wan 2.5 en clips cortos de uno o dos beats.', tone: 'duration' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Wan 2.5 o Wan 2.6?',
+        body: 'Usa Wan 2.5 para checks cortos con audio y borradores de menor resolución. Usa Wan 2.6 para 15 s, multi-shot o video de referencia.',
+        cta: { label: 'Ver Wan 2.6', href: modelsHref('es', 'wan-2-6') },
+      },
+      {
+        title: '¿La pista debe marcar el ritmo?',
+        body: 'Adjunta audio corto cuando ritmo o ambiente deben guiar el clip, y deja simple el prompt visual.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Comparas rutas con audio?',
+        body: 'Compara Wan 2.5 con Sora 2 si eliges entre checks de menor coste y salidas sincronizadas estilo Sora.',
+        cta: { label: 'Comparar Wan 2.5 vs Sora 2', href: compareHref('es', 'wan-2-5', 'sora-2', 'wan-2-5') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Describe un sujeto, una acción, un movimiento de cámara y una dirección sonora.' },
+      { title: 'Imagen inicial', body: 'Usa una imagen para mantener encuadre, producto o identidad del personaje.' },
+      { title: 'Archivo de audio', body: 'Adjunta una pista corta cuando ritmo, ambiente o mood deben guiar la toma.' },
+      { title: 'Expansión de prompt', body: 'Actívala para briefs simples; apágala cuando cada detalle visual sea intencional.' },
+      { title: 'Paso a Wan 2.6', body: 'Pasa a Wan 2.6 para clips más largos, multi-shot o consistencia con video de referencia.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Wan 2.5 de un vistazo',
+      subtitle: 'Totales de clips cortos. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Wan 2.5: precios, drafts con audio y ejemplos | MaxVideoAI',
+      description:
+        'Usa Wan 2.5 para borradores cortos de video IA con audio, texto a video, imagen a video, carga de audio opcional, expansión de prompt y precios.',
+    },
+  },
+};
+
 export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-2-5-turbo': KLING_25_TURBO_COPY,
   'kling-2-6-pro': KLING_26_PRO_COPY,
@@ -2127,4 +2541,6 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'sora-2-pro': SORA_2_PRO_COPY,
   'veo-3-1-fast': VEO_31_FAST_COPY,
   'veo-3-1-lite': VEO_31_LITE_COPY,
+  'wan-2-5': WAN_25_COPY,
+  'wan-2-6': WAN_26_COPY,
 } satisfies Record<string, LocalizedTemplateCopy>;
