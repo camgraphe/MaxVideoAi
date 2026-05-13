@@ -20,7 +20,7 @@ export type ModelPagePricingPreset = {
   labelKey: string;
   noteKey?: string;
   highlightKey?: string;
-  fixedValueKey?: string;
+  fixedValueKey?: 'audioExtraValue' | 'maxDurationValue';
 };
 
 export type ModelPageTemplateQuickLink = {

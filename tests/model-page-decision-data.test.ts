@@ -5,6 +5,7 @@ import {
   buildModelDecisionData,
   buildModelDecisionPricingScenarios,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
 import { normalizeMediaUrl } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
@@ -41,6 +42,10 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.deepEqual(
     en.hero.quickLinks.map((link) => link.label),
     ['Compare vs Fast', 'View pricing', 'Prompt examples']
+  );
+  assert.deepEqual(
+    en.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
   );
   assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
   assert.equal(en.decisionCards[2]?.cta.href, '#prompting');
@@ -91,12 +96,14 @@ test('Seedance 2.0 Fast does not return decision data', () => {
 
 test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => {
   const seedance = getEngine('seedance-2-0');
+  const template = getModelPageTemplateConfig('seedance-2-0');
+  assert.ok(template);
 
-  const scenarios = buildModelDecisionPricingScenarios(seedance, 'en');
+  const scenarios = buildModelDecisionPricingScenarios(seedance, 'en', template.pricing.presets);
 
   assert.deepEqual(
     scenarios.map((scenario) => scenario.id),
-    ['5s-480p', '8s-720p', '10s-1080p', '10s-1080p-audio', 'max-duration']
+    ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
   );
   assert.deepEqual(
     scenarios.map((scenario) => scenario.value),

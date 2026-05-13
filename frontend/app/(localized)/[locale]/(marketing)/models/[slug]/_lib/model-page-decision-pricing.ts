@@ -1,31 +1,11 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
 
-import {
-  getPresetQuote,
-  type VideoPriceScenario,
-} from '../../../pricing/_lib/pricingHubData';
-import { formatCurrencyForLocale } from '../../../pricing/_lib/pricingPageContent';
-
-const DECISION_PRICE_PRESETS = [
-  { id: '5s-480p', label: '5s 480p', subLabel: 'Quick draft', resolution: '480p', durationSec: 5, audio: false },
-  { id: '8s-720p', label: '8s 720p', subLabel: 'Standard', resolution: '720p', durationSec: 8, audio: false },
-  { id: '10s-1080p', label: '10s 1080p', subLabel: 'Best balance', resolution: '1080p', durationSec: 10, audio: false },
-  {
-    id: '10s-1080p-audio',
-    label: '10s + audio',
-    subLabel: 'Native audio',
-    resolution: '1080p',
-    durationSec: 10,
-    audio: true,
-  },
-] as const satisfies readonly VideoPriceScenario[];
-
-type DecisionPricePresetId = (typeof DECISION_PRICE_PRESETS)[number]['id'];
-type DecisionPricingScenarioId = DecisionPricePresetId | 'max-duration';
+import { getPresetQuote, type VideoPriceScenario } from '../../../pricing/_lib/pricingHubData';
+import type { ModelPagePricingPreset } from './model-page-template-types';
 
 export type ModelDecisionPricingScenario = {
-  id: DecisionPricingScenarioId;
+  id: string;
   label: string;
   value: string;
   note: string;
@@ -34,28 +14,40 @@ export type ModelDecisionPricingScenario = {
 
 const SCENARIO_COPY: Record<
   AppLocale,
-  Record<DecisionPricingScenarioId, { label: string; value?: string; note: string; badge?: string }>
+  Record<string, string>
 > = {
   en: {
-    '5s-480p': { label: 'Entry draft', note: '5s · 480p' },
-    '8s-720p': { label: 'Standard preview', note: '8s · 720p' },
-    '10s-1080p': { label: 'Common production check', note: '10s · 1080p', badge: 'Most popular' },
-    '10s-1080p-audio': { label: 'Audio', value: '$0 extra', note: 'Native audio included' },
-    'max-duration': { label: 'Max duration', note: 'Up to 1080p' },
+    audio: 'Audio',
+    audioExtraValue: '$0 extra',
+    commonProductionCheck: 'Common production check',
+    entryDraft: 'Entry draft',
+    maxDuration: 'Max duration',
+    mostPopular: 'Most popular',
+    nativeAudioIncluded: 'Native audio included',
+    standardPreview: 'Standard preview',
+    upTo1080p: 'Up to 1080p',
   },
   fr: {
-    '5s-480p': { label: 'Brouillon d’entrée', note: '5 s · 480p' },
-    '8s-720p': { label: 'Aperçu standard', note: '8 s · 720p' },
-    '10s-1080p': { label: 'Contrôle production courant', note: '10 s · 1080p', badge: 'Populaire' },
-    '10s-1080p-audio': { label: 'Audio', value: '0 $ en plus', note: 'Audio natif inclus' },
-    'max-duration': { label: 'Durée max', note: 'Jusqu’à 1080p' },
+    audio: 'Audio',
+    audioExtraValue: '0 $ en plus',
+    commonProductionCheck: 'Contrôle production courant',
+    entryDraft: 'Brouillon d’entrée',
+    maxDuration: 'Durée max',
+    mostPopular: 'Populaire',
+    nativeAudioIncluded: 'Audio natif inclus',
+    standardPreview: 'Aperçu standard',
+    upTo1080p: 'Jusqu’à 1080p',
   },
   es: {
-    '5s-480p': { label: 'Borrador inicial', note: '5 s · 480p' },
-    '8s-720p': { label: 'Vista previa estándar', note: '8 s · 720p' },
-    '10s-1080p': { label: 'Revisión común de producción', note: '10 s · 1080p', badge: 'Popular' },
-    '10s-1080p-audio': { label: 'Audio', value: '0 $ extra', note: 'Audio nativo incluido' },
-    'max-duration': { label: 'Duración máxima', note: 'Hasta 1080p' },
+    audio: 'Audio',
+    audioExtraValue: '0 $ extra',
+    commonProductionCheck: 'Revisión común de producción',
+    entryDraft: 'Borrador inicial',
+    maxDuration: 'Duración máxima',
+    mostPopular: 'Popular',
+    nativeAudioIncluded: 'Audio nativo incluido',
+    standardPreview: 'Vista previa estándar',
+    upTo1080p: 'Hasta 1080p',
   },
 };
 
@@ -67,71 +59,66 @@ function getMaxDurationSeconds(entry: FalEngineEntry) {
   return entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
 }
 
-function getCurrency(entry: FalEngineEntry) {
-  return entry.engine.pricingDetails?.currency ?? entry.engine.pricing?.currency ?? 'USD';
+function getPricingLabel(locale: AppLocale, key: string) {
+  const copy = SCENARIO_COPY[locale] ?? SCENARIO_COPY.en;
+  return copy[key] ?? SCENARIO_COPY.en[key] ?? key;
 }
 
-function formatAudioExtraValue({
-  audioCents,
-  baseCents,
+function buildPricedScenarioPreset(preset: ModelPagePricingPreset): VideoPriceScenario {
+  const seconds = preset.seconds ?? 10;
+  const resolution = preset.resolution ?? '1080p';
+  return {
+    id: preset.id,
+    label: `${seconds}s ${resolution}`,
+    subLabel: preset.labelKey,
+    resolution,
+    durationSec: seconds,
+    audio: false,
+  };
+}
+
+function buildScenarioFromPreset({
   entry,
   locale,
-  zeroValue,
+  preset,
 }: {
-  audioCents?: number;
-  baseCents?: number;
   entry: FalEngineEntry;
   locale: AppLocale;
-  zeroValue?: string;
-}) {
-  if (typeof audioCents !== 'number' || typeof baseCents !== 'number') {
-    return null;
+  preset: ModelPagePricingPreset;
+}): ModelDecisionPricingScenario {
+  if (preset.fixedValueKey === 'audioExtraValue') {
+    return {
+      id: preset.id,
+      label: getPricingLabel(locale, preset.labelKey),
+      value: getPricingLabel(locale, 'audioExtraValue'),
+      note: getPricingLabel(locale, preset.noteKey ?? 'nativeAudioIncluded'),
+    };
   }
 
-  const extraCents = Math.max(0, audioCents - baseCents);
-  if (extraCents === 0) {
-    return zeroValue ?? formatCurrencyForLocale(locale, getCurrency(entry), 0);
+  if (preset.fixedValueKey === 'maxDurationValue') {
+    return {
+      id: preset.id,
+      label: getPricingLabel(locale, preset.labelKey),
+      value: formatSeconds(getMaxDurationSeconds(entry), locale),
+      note: getPricingLabel(locale, preset.noteKey ?? 'upTo1080p'),
+    };
   }
 
-  const formattedExtra = formatCurrencyForLocale(locale, getCurrency(entry), extraCents / 100);
-  return locale === 'fr' ? `${formattedExtra} en plus` : `${formattedExtra} extra`;
+  const quote = getPresetQuote(entry, buildPricedScenarioPreset(preset), locale);
+
+  return {
+    id: preset.id,
+    label: getPricingLabel(locale, preset.labelKey),
+    value: quote.display ?? '',
+    note: quote.note ?? `${formatSeconds(preset.seconds ?? 10, locale)} · ${preset.resolution ?? '1080p'}`,
+    badge: preset.highlightKey ? getPricingLabel(locale, preset.highlightKey) : undefined,
+  };
 }
 
 export function buildDecisionPricingScenarios(
   entry: FalEngineEntry,
-  locale: AppLocale
+  locale: AppLocale,
+  presets: ModelPagePricingPreset[]
 ): ModelDecisionPricingScenario[] {
-  const copy = SCENARIO_COPY[locale] ?? SCENARIO_COPY.en;
-  const baseProductionQuote = getPresetQuote(entry, DECISION_PRICE_PRESETS[2], locale);
-  const presetScenarios = DECISION_PRICE_PRESETS.map((preset) => {
-    const id = preset.id;
-    const quote = getPresetQuote(entry, preset, locale);
-    const copiedValue =
-      id === '10s-1080p-audio'
-        ? formatAudioExtraValue({
-            audioCents: quote.amountCents,
-            baseCents: baseProductionQuote.amountCents,
-            entry,
-            locale,
-            zeroValue: copy[id].value,
-          })
-        : null;
-    return {
-      id,
-      label: copy[id].label,
-      value: copiedValue ?? quote.display ?? '',
-      note: copy[id].note,
-      badge: copy[id].badge,
-    };
-  });
-  const maxDurationSec = getMaxDurationSeconds(entry);
-  return [
-    ...presetScenarios,
-    {
-      id: 'max-duration',
-      label: copy['max-duration'].label,
-      value: formatSeconds(maxDurationSec, locale),
-      note: copy['max-duration'].note,
-    },
-  ];
+  return presets.map((preset) => buildScenarioFromPreset({ entry, locale, preset }));
 }

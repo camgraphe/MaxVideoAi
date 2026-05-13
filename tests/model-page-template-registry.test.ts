@@ -49,3 +49,11 @@ test('template registry enables Seedance 2.0 and leaves Fast on legacy page unti
   );
   assert.equal(fast, null);
 });
+
+test('Seedance template pricing presets are declarative and do not hardcode provider prices', () => {
+  const seedance = getModelPageTemplateConfig('seedance-2-0');
+
+  assert.ok(seedance);
+  assert.equal(seedance.pricing.presets.some((preset) => preset.fixedValueKey === 'audioExtraValue'), true);
+  assert.equal(seedance.pricing.presets.some((preset) => preset.seconds === 15 && preset.resolution === '1080p'), false);
+});

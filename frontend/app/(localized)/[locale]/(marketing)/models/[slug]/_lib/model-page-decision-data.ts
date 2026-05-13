@@ -6,6 +6,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
 import { buildCanonicalComparePath, COMPARE_BASE_PATH_MAP } from './model-page-links';
 import { getModelPageTemplateConfig } from './model-page-template-registry';
+import type { ModelPagePricingPreset } from './model-page-template-types';
 
 export type ModelDecisionLink = {
   label: string;
@@ -370,8 +371,12 @@ const COPY: Record<AppLocale, CopyWithoutPricingScenarios> = {
   },
 };
 
-export function buildModelDecisionPricingScenarios(entry: FalEngineEntry, locale: AppLocale) {
-  return buildDecisionPricingScenarios(entry, locale);
+export function buildModelDecisionPricingScenarios(
+  entry: FalEngineEntry,
+  locale: AppLocale,
+  presets: ModelPagePricingPreset[]
+) {
+  return buildDecisionPricingScenarios(entry, locale, presets);
 }
 
 export function buildModelDecisionData({
@@ -398,7 +403,7 @@ export function buildModelDecisionData({
       subtitle: copy.pricingCopy.subtitle,
       footnote: copy.pricingCopy.footnote,
       cta: { label: copy.pricingCopy.ctaLabel, href: pricingHref(locale) },
-      scenarios: buildModelDecisionPricingScenarios(engine, locale),
+      scenarios: buildModelDecisionPricingScenarios(engine, locale, template.pricing.presets),
     },
   };
 }
