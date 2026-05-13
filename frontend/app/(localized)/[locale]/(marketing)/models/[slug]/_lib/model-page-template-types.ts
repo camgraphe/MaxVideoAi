@@ -13,15 +13,43 @@ export type ModelPageTemplateIcon =
   | 'speed'
   | 'video';
 
-export type ModelPagePricingPreset = {
+type BaseModelPagePricingPreset = {
   id: string;
-  seconds?: number;
-  resolution?: '480p' | '720p' | '1080p';
   labelKey: string;
   noteKey?: string;
   highlightKey?: string;
-  fixedValueKey?: 'audioExtraValue' | 'maxDurationValue';
 };
+
+export type ModelPageVideoPricingPreset = BaseModelPagePricingPreset & {
+  seconds: number;
+  resolution: '480p' | '720p' | '1080p';
+  audio?: boolean;
+  fixedValueKey?: never;
+  imageResolution?: never;
+};
+
+export type ModelPageFixedPricingPreset = BaseModelPagePricingPreset & {
+  fixedValueKey: 'audioExtraValue' | 'maxDurationValue';
+  seconds?: never;
+  resolution?: never;
+  audio?: never;
+  imageResolution?: never;
+};
+
+export type ModelPageImagePricingPreset = BaseModelPagePricingPreset & {
+  imageResolution: string;
+  imageQuality?: 'medium' | 'high';
+  quantity?: number;
+  fixedValueKey?: never;
+  seconds?: never;
+  resolution?: never;
+  audio?: never;
+};
+
+export type ModelPagePricingPreset =
+  | ModelPageVideoPricingPreset
+  | ModelPageFixedPricingPreset
+  | ModelPageImagePricingPreset;
 
 export type ModelPageTemplateQuickLink = {
   labelKey: string;

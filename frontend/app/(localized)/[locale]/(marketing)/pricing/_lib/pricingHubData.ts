@@ -60,6 +60,13 @@ export type VideoPriceScenario = {
   audio: boolean;
 };
 
+export type ImagePriceScenario = {
+  id: string;
+  resolution: string;
+  quality?: GptImage2Quality;
+  quantity?: number;
+};
+
 export const VIDEO_PRICE_PRESETS = [
   { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
   { id: '8s-1080p', label: '8s 1080p', subLabel: 'Premium', resolution: '1080p', durationSec: 8, audio: false },
@@ -725,6 +732,61 @@ function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImag
   const flat = engine.pricingDetails?.flatCents;
   const base = flat?.byResolution?.[resolution] ?? flat?.default ?? readResolutionRate(engine.pricingDetails, resolution);
   return typeof base === 'number' ? applyDisplayedPriceMarginCents(base) : null;
+}
+
+function formatImageQuantityNote(locale: AppLocale, quantity: number, resolution: string) {
+  const label =
+    locale === 'fr'
+      ? quantity > 1
+        ? 'images'
+        : 'image'
+      : locale === 'es'
+        ? quantity > 1
+          ? 'imágenes'
+          : 'imagen'
+        : quantity > 1
+          ? 'images'
+          : 'image';
+  return `${quantity} ${label} · ${resolution}`;
+}
+
+export function getImagePresetQuote(
+  entry: FalEngineEntry,
+  preset: ImagePriceScenario,
+  locale: AppLocale
+): PresetQuote {
+  const copy = getPricingHubCopy(locale);
+  const engine = entry.engine;
+  const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
+  const quantity = Math.max(1, Math.floor(preset.quantity ?? 1));
+
+  if (!supportsImageGeneration(entry)) {
+    return {
+      status: 'unsupported',
+      display: '—',
+      note: copy.quote.unsupported,
+      sortValue: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const perImageCents = flatImageCents(engine, preset.resolution, preset.quality ?? 'medium');
+  if (perImageCents == null) {
+    return {
+      status: 'live_quote',
+      display: copy.liveQuote,
+      note: preset.resolution,
+      sortValue: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const totalCents = perImageCents * quantity;
+  return {
+    status: 'exact',
+    amountCents: totalCents,
+    display: formatPrice(locale, totalCents, currency),
+    note: quantity > 1 ? formatImageQuantityNote(locale, quantity, preset.resolution) : preset.resolution,
+    sortValue: totalCents,
+  };
 }
 
 function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {

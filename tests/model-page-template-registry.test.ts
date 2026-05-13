@@ -67,7 +67,14 @@ test('template registry enables Seedance production and draft model templates', 
     ltxFast.pricing.presets.map((preset) => preset.id),
     ['10s-1080p', 'max-duration']
   );
-  assert.deepEqual(listModelPageTemplateSlugs().sort(), ['ltx-2-3-fast', 'seedance-2-0', 'seedance-2-0-fast']);
+  assert.deepEqual(listModelPageTemplateSlugs().sort(), [
+    'kling-3-pro',
+    'ltx-2-3-fast',
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'seedream',
+    'veo-3-1',
+  ]);
 });
 
 test('Seedance template pricing presets are declarative and do not hardcode provider prices', () => {
@@ -76,4 +83,29 @@ test('Seedance template pricing presets are declarative and do not hardcode prov
   assert.ok(seedance);
   assert.equal(seedance.pricing.presets.some((preset) => preset.fixedValueKey === 'audioExtraValue'), true);
   assert.equal(seedance.pricing.presets.some((preset) => preset.seconds === 15 && preset.resolution === '1080p'), false);
+});
+
+test('priority production and reference-prep models have distinct template intent and routes', () => {
+  const expectations = [
+    ['veo-3-1', 'production', '/app?engine=veo-3-1'],
+    ['kling-3-pro', 'production', '/app?engine=kling-3-pro'],
+    ['seedream', 'reference-prep', '/app/image?engine=seedream'],
+  ] as const;
+
+  for (const [slug, intent, primaryCtaHref] of expectations) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should be migrated to the template`);
+    assert.equal(config.intent, intent);
+    assert.equal(config.hero.primaryCtaHref, primaryCtaHref);
+    assert.equal(config.pricing.anchorHref, `/pricing#${slug}-pricing`);
+  }
+});
+
+test('template quick links avoid redirecting compare URLs', () => {
+  const veo = getModelPageTemplateConfig('veo-3-1');
+  assert.ok(veo);
+  assert.equal(
+    veo.hero.quickLinks[0]?.href,
+    '/ai-video-engines/kling-3-pro-vs-veo-3-1?order=veo-3-1'
+  );
 });

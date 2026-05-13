@@ -10,6 +10,7 @@ import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(mar
 import { normalizeMediaUrl } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 import { resolveSectionLabels } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts';
+import { getImagePresetQuote, getPresetQuote } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 function getEngine(engineId: string) {
@@ -173,6 +174,70 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   assert.deepEqual(es.hero.subtitleHighlights, ['exploración visual', 'pruebas de prompts', 'borradores verticales/sociales']);
 });
 
+test('Veo 3.1 returns production decision data without unsupported 4K claims', () => {
+  const veo = getEngine('veo-3-1');
+  const en = buildModelDecisionData({ engine: veo, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: veo, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: veo, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Veo 3.1');
+  assert.match(en.hero.subtitle, /short polished/i);
+  assert.match(en.hero.subtitle, /native audio/i);
+  assert.match(en.hero.subtitle, /reference/i);
+  assert.match(visibleDecisionText(en), /first-last|extend/i);
+  assert.equal(en.hero.primaryCta.href, '/app?engine=veo-3-1');
+  assert.equal(en.features[0]?.tone, 'quality');
+  assert.doesNotMatch(visibleDecisionText(en), /4K/i);
+  assert.doesNotMatch(visibleDecisionText(fr), /4K/i);
+  assert.doesNotMatch(visibleDecisionText(es), /4K/i);
+});
+
+test('Kling 3 Pro returns production decision data without unavailable route claims', () => {
+  const kling = getEngine('kling-3-pro');
+  const en = buildModelDecisionData({ engine: kling, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: kling, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: kling, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Kling 3 Pro');
+  assert.match(visibleDecisionText(en), /storyboard/i);
+  assert.match(visibleDecisionText(en), /control/i);
+  assert.match(visibleDecisionText(en), /native audio/i);
+  assert.match(visibleDecisionText(en), /15s|15 seconds/i);
+  assert.equal(en.hero.primaryCta.href, '/app?engine=kling-3-pro');
+  assert.doesNotMatch(visibleDecisionText(en), /4K|Omni|voice IDs|Elements/i);
+  assert.doesNotMatch(visibleDecisionText(fr), /4K|Omni|voice IDs|Elements/i);
+  assert.doesNotMatch(visibleDecisionText(es), /4K|Omni|voice IDs|Elements/i);
+});
+
+test('Seedream returns reference-prep decision data for still preparation', () => {
+  const seedream = getEngine('seedream');
+  const en = buildModelDecisionData({ engine: seedream, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: seedream, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: seedream, locale: 'es' });
+
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Seedream');
+  assert.equal(en.hero.primaryCta.href, '/app/image?engine=seedream');
+  assert.equal(en.hero.secondaryCta.href, '/models/seedance-2-0');
+  assert.match(visibleDecisionText(en), /reference prep|still/i);
+  assert.match(visibleDecisionText(en), /video/i);
+  assert.match(en.hero.subtitle, /reference/i);
+  assert.doesNotMatch(visibleDecisionText(en), /direct video generation|generate videos|text-to-video|image-to-video/i);
+  assert.doesNotMatch(visibleDecisionText(fr), /direct video generation|generate videos|text-to-video|image-to-video/i);
+  assert.doesNotMatch(visibleDecisionText(es), /direct video generation|generate videos|text-to-video|image-to-video/i);
+});
+
 test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => {
   const seedance = getEngine('seedance-2-0');
   const template = getModelPageTemplateConfig('seedance-2-0');
@@ -194,6 +259,80 @@ test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => 
   );
   assert.match(scenarios[3]?.note ?? '', /Native audio included/);
   assert.match(scenarios.at(-1)?.note ?? '', /1080p/);
+});
+
+test('migrated model pricing scenarios return configured IDs and helper values', () => {
+  const expectations = [
+    [
+      'veo-3-1',
+      ['4s-720p-audio', '6s-1080p-audio', '8s-1080p-audio', 'max-duration'],
+      ['$2.08', '$3.12', '$4.16', '8s'],
+    ],
+    [
+      'kling-3-pro',
+      ['5s-1080p-audio', '10s-1080p-audio', '15s-1080p-audio', 'max-duration'],
+      ['$1.10', '$2.19', '$3.28', '15s'],
+    ],
+    ['seedream', ['2k-image', '4k-image', 'reference-images'], ['$0.06', '$0.06', '$0.24']],
+  ] as const;
+
+  for (const [slug, expectedIds, expectedValues] of expectations) {
+    const engine = getEngine(slug);
+    const template = getModelPageTemplateConfig(slug);
+    assert.ok(template);
+
+    const scenarios = buildModelDecisionPricingScenarios(engine, 'en', template.pricing.presets);
+    const helperValues = template.pricing.presets.map((preset) => {
+      if ('imageResolution' in preset && typeof preset.imageResolution === 'string') {
+        return getImagePresetQuote(
+          engine,
+          {
+            id: preset.id,
+            resolution: preset.imageResolution,
+            quality: preset.imageQuality,
+            quantity: preset.quantity,
+          },
+          'en'
+        ).display;
+      }
+
+      if ('seconds' in preset && typeof preset.seconds === 'number' && typeof preset.resolution === 'string') {
+        return getPresetQuote(
+          engine,
+          {
+            id: preset.id,
+            label: `${preset.seconds}s ${preset.resolution}`,
+            subLabel: preset.labelKey,
+            resolution: preset.resolution,
+            durationSec: preset.seconds,
+            audio: preset.audio ?? false,
+          },
+          'en'
+        ).display;
+      }
+
+      if ('fixedValueKey' in preset && preset.fixedValueKey === 'maxDurationValue') {
+        return `${engine.engine.pricingDetails?.maxDurationSec ?? engine.engine.maxDurationSec}s`;
+      }
+
+      return null;
+    });
+
+    assert.deepEqual(
+      scenarios.map((scenario) => scenario.id),
+      expectedIds
+    );
+    assert.deepEqual(
+      scenarios.map((scenario) => scenario.value),
+      helperValues
+    );
+    assert.deepEqual(
+      scenarios.map((scenario) => scenario.value),
+      expectedValues
+    );
+    assert.equal(scenarios.every((scenario) => scenario.value.trim().length > 0 && scenario.value !== '—'), true);
+    assert.equal(scenarios.every((scenario) => scenario.label.trim().length > 0), true);
+  }
 });
 
 test('Seedance 2.0 decision TOC labels the specs anchor accurately', () => {

@@ -15,9 +15,12 @@ export type CopyWithoutPricingScenarios = Omit<ModelDecisionData, 'pricing'> & {
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
+const MODELS_SLUG_MAP = buildSlugMap('models');
 const PRICING_ANCHOR = 'seedance-2-0-pricing';
 const SEEDANCE_EXAMPLES_FAMILY_SLUG = 'seedance';
 const LTX_EXAMPLES_FAMILY_SLUG = 'ltx';
+const VEO_EXAMPLES_FAMILY_SLUG = 'veo';
+const KLING_EXAMPLES_FAMILY_SLUG = 'kling';
 
 function localizedPrefix(locale: AppLocale) {
   const pathname = localePathnames[locale];
@@ -36,6 +39,11 @@ function pricingHref(locale: AppLocale, anchorId = PRICING_ANCHOR) {
 function examplesHref(locale: AppLocale, familySlug = SEEDANCE_EXAMPLES_FAMILY_SLUG) {
   const segment = GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en;
   return localizedPath(locale, segment, `/${familySlug}`);
+}
+
+function modelsHref(locale: AppLocale, modelSlug: string) {
+  const segment = MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en;
+  return localizedPath(locale, segment, `/${modelSlug}`);
 }
 
 function compareHref(locale: AppLocale, left: string, right: string, orderSlug = left) {
@@ -750,9 +758,630 @@ const LTX_23_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
   },
 };
 
+const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
+  en: {
+    hero: {
+      eyebrow: 'GOOGLE PREMIUM VIDEO MODEL',
+      title: 'Veo 3.1',
+      subtitle: 'Short polished clips with native audio, reference-guided shots, and first-last or extend workflows.',
+      subtitleHighlights: ['short polished clips', 'native audio', 'reference-guided shots'],
+      paragraph:
+        'Use Veo 3.1 when the shot needs a premium feel in 4, 6 or 8 seconds: text prompts, start images, multi-reference stills, first-last frame transitions and extension runs are exposed in MaxVideoAI.',
+      primaryCta: { label: 'Generate with Veo 3.1', href: '/app?engine=veo-3-1' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', VEO_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Compare with Kling', href: compareHref('en', 'veo-3-1', 'kling-3-pro') },
+        { label: 'View pricing', href: pricingHref('en', 'veo-3-1-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Veo 3.1 example',
+      description: 'Polished native-audio video shot',
+      renderLabel: 'View render',
+      badges: ['Native audio', '8s', '1080p'],
+      altContext: 'premium Veo 3.1 cinematic shot with controlled motion',
+    },
+    features: [
+      { title: 'Premium short clips', body: 'Build polished 4, 6 or 8 second shots for ads, launches and narrative beats.', tone: 'quality' },
+      { title: 'Native audio', body: 'Generate synchronized ambience, dialogue or sound direction on supported routes.', tone: 'audio' },
+      { title: 'Reference stills', body: 'Use start images or multiple references to anchor identity, styling and wardrobe.', tone: 'reference' },
+      { title: 'First-last control', body: 'Bridge opening and ending frames when the final pose or product placement matters.', tone: 'continuity' },
+      { title: 'Extend route', body: 'Continue an existing Veo render without changing engines.', tone: 'duration' },
+      { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolutions before generation.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'When should you choose Veo 3.1?',
+        body: 'Choose Veo 3.1 for short polished shots where motion quality, audio and reference fidelity matter more than the lowest iteration cost.',
+        cta: { label: 'Start a Veo 3.1 render', href: '/app?engine=veo-3-1' },
+      },
+      {
+        title: 'Need reference control?',
+        body: 'Use a start image, multiple reference stills, or first-last frames when the shot has to respect a product, character or ending composition.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparing production routes?',
+        body: 'Compare Veo 3.1 with Kling 3 Pro when you are deciding between premium short polish and longer storyboard-style control.',
+        cta: { label: 'Compare Veo and Kling', href: compareHref('en', 'veo-3-1', 'kling-3-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Describe the subject, camera path, pacing, lighting and audio intention clearly.' },
+      { title: 'Start image', body: 'Use one still to define the opening composition and visual identity.' },
+      { title: 'Reference set', body: 'Attach still references when wardrobe, product details or style need to stay consistent.' },
+      { title: 'First-last frames', body: 'Provide opening and closing images to guide the transition and final landing point.' },
+      { title: 'Extend pass', body: 'Continue a Veo clip when the idea needs more time after the first render.' },
+    ],
+    pricingCopy: {
+      title: 'Veo 3.1 pricing at a glance',
+      subtitle: 'Audio-on preset totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 8s at 1080p',
+    },
+    meta: {
+      title: 'Veo 3.1: Pricing, Native Audio & References | MaxVideoAI',
+      description:
+        'Generate Veo 3.1 clips with native audio, text prompts, image references, first-last frame control and extend workflows in MaxVideoAI.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE VIDÉO PREMIUM GOOGLE',
+      title: 'Veo 3.1',
+      subtitle: 'Des clips courts finalisés avec audio natif, plans guidés par références et workflows first-last ou extend.',
+      subtitleHighlights: ['clips courts finalisés', 'audio natif', 'plans guidés par références'],
+      paragraph:
+        'Utilisez Veo 3.1 quand un plan doit avoir un rendu premium en 4, 6 ou 8 secondes : prompts texte, images de départ, références multiples, transition first-last et extension sont exposés dans MaxVideoAI.',
+      primaryCta: { label: 'Générer avec Veo 3.1', href: '/app?engine=veo-3-1' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', VEO_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Comparer avec Kling', href: compareHref('fr', 'veo-3-1', 'kling-3-pro') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'veo-3-1-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Veo 3.1',
+      description: 'Plan vidéo finalisé avec audio natif',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio natif', '8 s', '1080p'],
+      altContext: 'plan cinématographique premium Veo 3.1 avec mouvement contrôlé',
+    },
+    features: [
+      { title: 'Clips courts premium', body: 'Créez des plans de 4, 6 ou 8 secondes pour pubs, lancements et séquences narratives.', tone: 'quality' },
+      { title: 'Audio natif', body: 'Générez ambiance, dialogue ou intention sonore synchronisés sur les routes prises en charge.', tone: 'audio' },
+      { title: 'Références fixes', body: 'Utilisez images de départ ou références multiples pour ancrer identité, style et tenue.', tone: 'reference' },
+      { title: 'Contrôle first-last', body: 'Reliez image d’ouverture et image finale quand la pose ou le produit doit tomber juste.', tone: 'continuity' },
+      { title: 'Extension', body: 'Prolongez un rendu Veo existant sans changer de moteur.', tone: 'duration' },
+      { title: '720p ou 1080p', body: 'Choisissez les résolutions exposées dans MaxVideoAI avant génération.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand choisir Veo 3.1 ?',
+        body: 'Choisissez Veo 3.1 pour des plans courts et finalisés où qualité de mouvement, audio et fidélité aux références comptent plus que le coût d’itération.',
+        cta: { label: 'Lancer un rendu Veo 3.1', href: '/app?engine=veo-3-1' },
+      },
+      {
+        title: 'Besoin de contrôle par références ?',
+        body: 'Utilisez une image de départ, plusieurs références ou des images first-last quand le plan doit respecter un produit, un personnage ou une composition finale.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparer les routes production ?',
+        body: 'Comparez Veo 3.1 et Kling 3 Pro pour choisir entre finition premium courte et contrôle storyboard sur des plans plus longs.',
+        cta: { label: 'Comparer Veo et Kling', href: compareHref('fr', 'veo-3-1', 'kling-3-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Décrivez sujet, mouvement caméra, rythme, lumière et intention audio.' },
+      { title: 'Image de départ', body: 'Utilisez une image fixe pour définir composition initiale et identité visuelle.' },
+      { title: 'Jeu de références', body: 'Ajoutez des images quand tenue, détails produit ou style doivent rester cohérents.' },
+      { title: 'Images first-last', body: 'Fournissez ouverture et fin pour guider la transition et le point d’arrivée.' },
+      { title: 'Passe extend', body: 'Prolongez un clip Veo quand l’idée a besoin de temps après le premier rendu.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Veo 3.1 en un coup d’œil',
+      subtitle: 'Prix totaux avec audio activé — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 8 s en 1080p',
+    },
+    meta: {
+      title: 'Veo 3.1 : tarifs, audio natif et références | MaxVideoAI',
+      description:
+        'Générez avec Veo 3.1 : audio natif, prompts texte, images de référence, contrôle first-last et extension dans MaxVideoAI.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO DE VIDEO PREMIUM DE GOOGLE',
+      title: 'Veo 3.1',
+      subtitle: 'Clips cortos pulidos con audio nativo, tomas guiadas por referencias y flujos first-last o extend.',
+      subtitleHighlights: ['clips cortos pulidos', 'audio nativo', 'tomas guiadas por referencias'],
+      paragraph:
+        'Usa Veo 3.1 cuando una toma necesita acabado premium en 4, 6 u 8 segundos: prompts de texto, imágenes iniciales, referencias múltiples, transiciones first-last y extensión están disponibles en MaxVideoAI.',
+      primaryCta: { label: 'Generar con Veo 3.1', href: '/app?engine=veo-3-1' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', VEO_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Comparar con Kling', href: compareHref('es', 'veo-3-1', 'kling-3-pro') },
+        { label: 'Ver precios', href: pricingHref('es', 'veo-3-1-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Veo 3.1',
+      description: 'Toma de video pulida con audio nativo',
+      renderLabel: 'Ver resultado',
+      badges: ['Audio nativo', '8 s', '1080p'],
+      altContext: 'toma cinematográfica premium de Veo 3.1 con movimiento controlado',
+    },
+    features: [
+      { title: 'Clips cortos premium', body: 'Crea tomas de 4, 6 u 8 segundos para anuncios, lanzamientos y momentos narrativos.', tone: 'quality' },
+      { title: 'Audio nativo', body: 'Genera ambiente, diálogo o intención sonora sincronizada en las rutas compatibles.', tone: 'audio' },
+      { title: 'Referencias fijas', body: 'Usa imágenes iniciales o varias referencias para anclar identidad, estilo y vestuario.', tone: 'reference' },
+      { title: 'Control first-last', body: 'Conecta imagen inicial y final cuando la pose o el producto deben cerrar con precisión.', tone: 'continuity' },
+      { title: 'Extensión', body: 'Continúa un resultado de Veo sin cambiar de motor.', tone: 'duration' },
+      { title: '720p o 1080p', body: 'Elige las resoluciones expuestas en MaxVideoAI antes de generar.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Cuándo conviene Veo 3.1?',
+        body: 'Elige Veo 3.1 para tomas cortas y pulidas donde importan la calidad del movimiento, el audio y la fidelidad a referencias más que el costo de iterar.',
+        cta: { label: 'Iniciar un resultado Veo 3.1', href: '/app?engine=veo-3-1' },
+      },
+      {
+        title: '¿Necesitas control con referencias?',
+        body: 'Usa una imagen inicial, varias referencias o cuadros first-last cuando la toma debe respetar un producto, personaje o composición final.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Comparas rutas de producción?',
+        body: 'Compara Veo 3.1 con Kling 3 Pro para decidir entre acabado premium corto y control tipo storyboard en tomas más largas.',
+        cta: { label: 'Comparar Veo y Kling', href: compareHref('es', 'veo-3-1', 'kling-3-pro') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Describe sujeto, ruta de cámara, ritmo, iluminación e intención de audio.' },
+      { title: 'Imagen inicial', body: 'Usa una imagen fija para definir composición inicial e identidad visual.' },
+      { title: 'Set de referencias', body: 'Adjunta imágenes cuando vestuario, detalles de producto o estilo deben mantenerse.' },
+      { title: 'Cuadros first-last', body: 'Aporta inicio y cierre para guiar la transición y el punto final.' },
+      { title: 'Pasada extend', body: 'Continúa un clip de Veo cuando la idea necesita más tiempo después del primer resultado.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Veo 3.1 de un vistazo',
+      subtitle: 'Precios totales con audio activado. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 8 s en 1080p',
+    },
+    meta: {
+      title: 'Veo 3.1: precios, audio nativo y referencias | MaxVideoAI',
+      description:
+        'Genera con Veo 3.1: audio nativo, prompts de texto, imágenes de referencia, control first-last y extensión en MaxVideoAI.',
+    },
+  },
+};
+
+const KLING_3_PRO_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
+  en: {
+    hero: {
+      eyebrow: 'KLING PRO VIDEO MODEL',
+      title: 'Kling 3 Pro',
+      subtitle: 'Storyboard control, native audio, and 15s 1080p production clips for structured sequences.',
+      subtitleHighlights: ['storyboard control', 'native audio', '15s production clips'],
+      paragraph:
+        'Use Kling 3 Pro when you need text-to-video or image-led shots with strong narrative control: 3 to 15 seconds, 1080p output, three aspect ratios, negative prompts, CFG scale and optional end-frame guidance.',
+      primaryCta: { label: 'Generate with Kling 3 Pro', href: '/app?engine=kling-3-pro' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', KLING_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Compare with Veo', href: compareHref('en', 'kling-3-pro', 'veo-3-1') },
+        { label: 'View pricing', href: pricingHref('en', 'kling-3-pro-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Kling 3 Pro example',
+      description: 'Controlled 1080p production sequence',
+      renderLabel: 'View render',
+      badges: ['Native audio', '15s cap', '1080p'],
+      altContext: 'Kling 3 Pro cinematic sequence with storyboard-style shot control',
+    },
+    features: [
+      { title: 'Storyboard control', body: 'Structure scene beats and camera direction for narrative shots.', tone: 'continuity' },
+      { title: 'Native audio', body: 'Keep audio on for synchronized ambience and production context.', tone: 'audio' },
+      { title: '3-15 seconds', body: 'Pick the exact duration range exposed in MaxVideoAI.', tone: 'duration' },
+      { title: '1080p output', body: 'Use the dedicated 1080p route for production review and publishing prep.', tone: 'quality' },
+      { title: 'Image and end frame', body: 'Start from an image and optionally steer the ending frame.', tone: 'reference' },
+      { title: 'CFG and negative prompt', body: 'Tune prompt adherence and suppress unwanted artifacts.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'When should you choose Kling 3 Pro?',
+        body: 'Choose Kling 3 Pro for storyboard-style control, longer 15s clips, native audio and precise 1080p shots.',
+        cta: { label: 'Start a Kling 3 Pro render', href: '/app?engine=kling-3-pro' },
+      },
+      {
+        title: 'Need tighter shot direction?',
+        body: 'Use clear scene beats, a negative prompt, CFG scale and an optional end frame when the camera path needs guardrails.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparing premium routes?',
+        body: 'Compare Kling 3 Pro with Veo 3.1 when choosing between longer controlled sequences and short premium polish.',
+        cta: { label: 'Compare Kling and Veo', href: compareHref('en', 'kling-3-pro', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text sequence', body: 'Write a compact storyboard with subject, scene beats, camera and audio direction.' },
+      { title: 'Start image', body: 'Use image mode when identity, product shape or composition must start from a still.' },
+      { title: 'End frame', body: 'Add an ending image when the final pose or product placement needs to be controlled.' },
+      { title: 'Negative prompt', body: 'Call out blur, distortion, extra limbs or off-brand details to reduce unwanted output.' },
+      { title: 'CFG scale', body: 'Adjust adherence when a prompt needs either stricter control or more natural motion.' },
+    ],
+    pricingCopy: {
+      title: 'Kling 3 Pro pricing at a glance',
+      subtitle: 'Audio-on 1080p preset totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 15s at 1080p',
+    },
+    meta: {
+      title: 'Kling 3 Pro: Pricing, Native Audio & 15s Control | MaxVideoAI',
+      description:
+        'Generate Kling 3 Pro clips with storyboard control, native audio, 1080p output, 3-15s duration, negative prompts, CFG scale and optional end-frame guidance.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE VIDÉO KLING PRO',
+      title: 'Kling 3 Pro',
+      subtitle: 'Contrôle storyboard, audio natif et clips de production 1080p jusqu’à 15 s pour des séquences structurées.',
+      subtitleHighlights: ['contrôle storyboard', 'audio natif', 'clips de production 1080p jusqu’à 15 s'],
+      paragraph:
+        'Utilisez Kling 3 Pro pour des plans text-to-video ou guidés par image avec un fort contrôle narratif : 3 à 15 secondes, sortie 1080p, trois ratios, prompt négatif, CFG scale et image finale optionnelle.',
+      primaryCta: { label: 'Générer avec Kling 3 Pro', href: '/app?engine=kling-3-pro' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', KLING_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Comparer avec Veo', href: compareHref('fr', 'kling-3-pro', 'veo-3-1') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'kling-3-pro-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Kling 3 Pro',
+      description: 'Séquence de production contrôlée en 1080p',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio natif', 'Max 15 s', '1080p'],
+      altContext: 'séquence cinématographique Kling 3 Pro avec contrôle de plans façon storyboard',
+    },
+    features: [
+      { title: 'Contrôle storyboard', body: 'Structurez les beats de scène et la caméra pour des plans narratifs.', tone: 'continuity' },
+      { title: 'Audio natif', body: 'Gardez l’audio activé pour une ambiance synchronisée et un contexte de production.', tone: 'audio' },
+      { title: '3 à 15 secondes', body: 'Choisissez la plage de durée exposée dans MaxVideoAI.', tone: 'duration' },
+      { title: 'Sortie 1080p', body: 'Utilisez la route 1080p dédiée pour revue production et préparation publication.', tone: 'quality' },
+      { title: 'Image et fin optionnelle', body: 'Démarrez depuis une image et guidez éventuellement le dernier cadre.', tone: 'reference' },
+      { title: 'CFG et prompt négatif', body: 'Ajustez l’adhérence au prompt et réduisez les artefacts indésirables.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand choisir Kling 3 Pro ?',
+        body: 'Choisissez Kling 3 Pro pour le contrôle façon storyboard, les clips jusqu’à 15 s, l’audio natif et des plans 1080p précis.',
+        cta: { label: 'Lancer un rendu Kling 3 Pro', href: '/app?engine=kling-3-pro' },
+      },
+      {
+        title: 'Besoin d’une direction de plan plus stricte ?',
+        body: 'Utilisez beats de scène, prompt négatif, CFG scale et image finale optionnelle quand la caméra doit rester cadrée.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Comparer les routes premium ?',
+        body: 'Comparez Kling 3 Pro et Veo 3.1 pour choisir entre séquences plus longues et contrôlées ou finition courte premium.',
+        cta: { label: 'Comparer Kling et Veo', href: compareHref('fr', 'kling-3-pro', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Séquence texte', body: 'Rédigez un storyboard compact avec sujet, beats, caméra et direction audio.' },
+      { title: 'Image de départ', body: 'Utilisez le mode image quand identité, forme produit ou composition doivent partir d’un visuel fixe.' },
+      { title: 'Image finale', body: 'Ajoutez une image d’arrivée quand la pose ou le produit final doit être contrôlé.' },
+      { title: 'Prompt négatif', body: 'Signalez flou, distorsion, membres en trop ou détails hors marque pour réduire les erreurs.' },
+      { title: 'CFG scale', body: 'Ajustez l’adhérence quand le prompt exige plus de contrôle ou un mouvement plus naturel.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Kling 3 Pro en un coup d’œil',
+      subtitle: 'Prix totaux 1080p avec audio activé — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 15 s en 1080p',
+    },
+    meta: {
+      title: 'Kling 3 Pro : tarifs, audio natif et contrôle 15 s | MaxVideoAI',
+      description:
+        'Générez avec Kling 3 Pro : contrôle storyboard, audio natif, sortie 1080p, durée 3 à 15 s, prompt négatif, CFG scale et image finale optionnelle.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO DE VIDEO KLING PRO',
+      title: 'Kling 3 Pro',
+      subtitle: 'Control tipo storyboard, audio nativo y clips de producción 1080p de hasta 15 s para secuencias estructuradas.',
+      subtitleHighlights: ['control tipo storyboard', 'audio nativo', 'clips de producción 1080p de hasta 15 s'],
+      paragraph:
+        'Usa Kling 3 Pro para tomas de texto a video o guiadas por imagen con control narrativo fuerte: 3 a 15 segundos, salida 1080p, tres ratios, prompt negativo, CFG scale y cuadro final opcional.',
+      primaryCta: { label: 'Generar con Kling 3 Pro', href: '/app?engine=kling-3-pro' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', KLING_EXAMPLES_FAMILY_SLUG) },
+      quickLinks: [
+        { label: 'Comparar con Veo', href: compareHref('es', 'kling-3-pro', 'veo-3-1') },
+        { label: 'Ver precios', href: pricingHref('es', 'kling-3-pro-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Kling 3 Pro',
+      description: 'Secuencia de producción controlada en 1080p',
+      renderLabel: 'Ver resultado',
+      badges: ['Audio nativo', 'Máx. 15 s', '1080p'],
+      altContext: 'secuencia cinematográfica de Kling 3 Pro con control de tomas tipo storyboard',
+    },
+    features: [
+      { title: 'Control tipo storyboard', body: 'Estructura momentos de escena y cámara para tomas narrativas.', tone: 'continuity' },
+      { title: 'Audio nativo', body: 'Mantén el audio activado para ambiente sincronizado y contexto de producción.', tone: 'audio' },
+      { title: '3 a 15 segundos', body: 'Elige el rango de duración expuesto en MaxVideoAI.', tone: 'duration' },
+      { title: 'Salida 1080p', body: 'Usa la ruta dedicada 1080p para revisión de producción y preparación de publicación.', tone: 'quality' },
+      { title: 'Imagen y cuadro final', body: 'Empieza desde una imagen y guía opcionalmente el cierre.', tone: 'reference' },
+      { title: 'CFG y prompt negativo', body: 'Ajusta la fidelidad al prompt y reduce artefactos no deseados.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Cuándo conviene Kling 3 Pro?',
+        body: 'Elige Kling 3 Pro para control tipo storyboard, clips de hasta 15 s, audio nativo y tomas precisas en 1080p.',
+        cta: { label: 'Iniciar un resultado Kling 3 Pro', href: '/app?engine=kling-3-pro' },
+      },
+      {
+        title: '¿Necesitas dirección más precisa?',
+        body: 'Usa momentos de escena, prompt negativo, CFG scale y cuadro final opcional cuando la cámara necesita límites claros.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Comparas rutas premium?',
+        body: 'Compara Kling 3 Pro con Veo 3.1 para elegir entre secuencias más largas con control o acabado premium corto.',
+        cta: { label: 'Comparar Kling y Veo', href: compareHref('es', 'kling-3-pro', 'veo-3-1') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Secuencia de texto', body: 'Escribe un storyboard compacto con sujeto, momentos, cámara y dirección de audio.' },
+      { title: 'Imagen inicial', body: 'Usa modo imagen cuando identidad, forma de producto o composición deban partir de un visual fijo.' },
+      { title: 'Cuadro final', body: 'Agrega una imagen de cierre cuando la pose o el producto final deban controlarse.' },
+      { title: 'Prompt negativo', body: 'Indica desenfoque, distorsión, extremidades extra o detalles fuera de marca para reducir errores.' },
+      { title: 'CFG scale', body: 'Ajusta la adherencia cuando el prompt necesita más control o movimiento más natural.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Kling 3 Pro de un vistazo',
+      subtitle: 'Precios totales 1080p con audio activado. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 15 s en 1080p',
+    },
+    meta: {
+      title: 'Kling 3 Pro: precios, audio nativo y control 15 s | MaxVideoAI',
+      description:
+        'Genera con Kling 3 Pro: control tipo storyboard, audio nativo, salida 1080p, duración de 3 a 15 s, prompt negativo, CFG scale y cuadro final opcional.',
+    },
+  },
+};
+
+const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
+  en: {
+    hero: {
+      eyebrow: 'REFERENCE IMAGE PREP MODEL',
+      title: 'Seedream',
+      subtitle: 'Clean still references, product frames, and video reference prep before you animate in a separate model.',
+      subtitleHighlights: ['clean still references', 'product frames', 'video reference prep'],
+      paragraph:
+        'Use Seedream as an image generation and editing workspace for source stills: create product frames, character references, ad visuals and controlled image sets before sending the strongest assets to a video model.',
+      primaryCta: { label: 'Prepare references with Seedream', href: '/app/image?engine=seedream' },
+      secondaryCta: { label: 'Animate with Seedance', href: modelsHref('en', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=seedream' },
+        { label: 'View pricing', href: pricingHref('en', 'seedream-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Seedream reference example',
+      description: 'Still reference prepared for later animation',
+      renderLabel: 'View still',
+      badges: ['Image model', 'Up to 10 refs', '2K-4K'],
+      altContext: 'Seedream product reference still prepared for a later video workflow',
+    },
+    features: [
+      { title: 'Still reference prep', body: 'Create clean source images before handing assets to a video route.', tone: 'reference' },
+      { title: 'Text or image input', body: 'Start from a prompt or edit with uploaded reference images.', tone: 'reference' },
+      { title: 'Up to 10 references', body: 'Guide edits with multiple source images when details need tighter control.', tone: 'continuity' },
+      { title: '2K, 3K or 4K images', body: 'Prepare higher-resolution stills for product, character and layout review.', tone: 'quality' },
+      { title: 'Up to 15 images total', body: 'Generated and reference images share the exposed Seedream total.', tone: 'duration' },
+      { title: 'Per-image pricing', body: 'Image presets use the shared pricing helper, not video seconds.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'When should you choose Seedream?',
+        body: 'Choose Seedream when the next video pass needs cleaner product, character, style or composition references first.',
+        cta: { label: 'Open Seedream image workspace', href: '/app/image?engine=seedream' },
+      },
+      {
+        title: 'Preparing product frames?',
+        body: 'Generate stills with readable labels, clean backgrounds and stable framing before using them as source assets elsewhere.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need motion next?',
+        body: 'Seedream prepares the stills. Pick a video model after the reference set is ready.',
+        cta: { label: 'Browse video models', href: '/models' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompted still', body: 'Describe the exact product, character, scene, surface, lens and lighting for a clean source frame.' },
+      { title: 'Reference edit', body: 'Upload source images when the output must preserve identity, product geometry or brand details.' },
+      { title: 'Reference set', body: 'Create multiple stills for front, side, detail and lifestyle views before the video step.' },
+      { title: 'Size choice', body: 'Use 2K for fast prep, 3K for review, or 4K when the still needs extra detail.' },
+      { title: 'Video handoff', body: 'Send only the strongest stills into the chosen motion model once the visual direction is clear.' },
+    ],
+    pricingCopy: {
+      title: 'Seedream image pricing at a glance',
+      subtitle: 'Per-image preset totals - see the exact live price in the image workspace before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset image scenarios.',
+      ctaLabel: 'View full pricing',
+    },
+    meta: {
+      title: 'Seedream: Image Pricing & Reference Prep | MaxVideoAI',
+      description:
+        'Prepare Seedream reference images, product frames, character stills and controlled visual sets in MaxVideoAI before choosing a video model.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'MODÈLE DE PRÉPARATION D’IMAGES RÉFÉRENCES',
+      title: 'Seedream',
+      subtitle: 'Des références fixes propres, frames produit et préparation visuelle pour vidéo avant animation dans un autre modèle.',
+      subtitleHighlights: ['références fixes propres', 'frames produit', 'préparation visuelle pour vidéo'],
+      paragraph:
+        'Utilisez Seedream comme espace de génération et retouche d’images sources : créez frames produit, références personnage, visuels publicitaires et séries contrôlées avant d’envoyer les meilleurs assets vers un modèle vidéo.',
+      primaryCta: { label: 'Préparer des références avec Seedream', href: '/app/image?engine=seedream' },
+      secondaryCta: { label: 'Animer avec Seedance', href: modelsHref('fr', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=seedream' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'seedream-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple de référence Seedream',
+      description: 'Image fixe préparée pour une animation ultérieure',
+      renderLabel: 'Voir l’image',
+      badges: ['Modèle image', 'Jusqu’à 10 refs', '2K-4K'],
+      altContext: 'image référence produit Seedream préparée pour un workflow vidéo ultérieur',
+    },
+    features: [
+      { title: 'Préparation de références', body: 'Créez des images sources propres avant de les transmettre à une route vidéo.', tone: 'reference' },
+      { title: 'Prompt ou image', body: 'Partez d’un prompt ou retouchez avec des images de référence importées.', tone: 'reference' },
+      { title: 'Jusqu’à 10 références', body: 'Guidez les retouches avec plusieurs sources quand les détails doivent rester précis.', tone: 'continuity' },
+      { title: 'Images 2K, 3K ou 4K', body: 'Préparez des visuels plus définis pour produit, personnage et revue de composition.', tone: 'quality' },
+      { title: 'Jusqu’à 15 images au total', body: 'Images générées et références partagent la limite Seedream exposée.', tone: 'duration' },
+      { title: 'Prix par image', body: 'Les scénarios image utilisent le helper tarifaire partagé, pas une durée vidéo.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand choisir Seedream ?',
+        body: 'Choisissez Seedream quand la prochaine passe vidéo a d’abord besoin de références produit, personnage, style ou composition plus propres.',
+        cta: { label: 'Ouvrir l’espace image Seedream', href: '/app/image?engine=seedream' },
+      },
+      {
+        title: 'Vous préparez des frames produit ?',
+        body: 'Générez des images avec labels lisibles, arrière-plans propres et cadrage stable avant de les utiliser comme assets source.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin de mouvement ensuite ?',
+        body: 'Seedream prépare les images fixes. Choisissez un modèle vidéo une fois le jeu de références prêt.',
+        cta: { label: 'Parcourir les modèles vidéo', href: '/fr/modeles' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Image par prompt', body: 'Décrivez produit, personnage, scène, surface, optique et lumière pour obtenir une source propre.' },
+      { title: 'Retouche avec référence', body: 'Importez des images quand il faut préserver identité, géométrie produit ou détails de marque.' },
+      { title: 'Jeu de références', body: 'Créez plusieurs vues : face, profil, détail et contexte avant l’étape vidéo.' },
+      { title: 'Choix de taille', body: 'Utilisez 2K pour préparer vite, 3K pour revoir, ou 4K quand l’image demande plus de détail.' },
+      { title: 'Passage vers vidéo', body: 'N’envoyez que les meilleures images fixes vers le modèle de mouvement choisi.' },
+    ],
+    pricingCopy: {
+      title: 'Prix image Seedream en un coup d’œil',
+      subtitle: 'Prix par scénario image — prix exact affiché dans l’espace image avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios image prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+    },
+    meta: {
+      title: 'Seedream : tarifs image et préparation de références | MaxVideoAI',
+      description:
+        'Préparez avec Seedream des images de référence, frames produit, personnages fixes et séries visuelles contrôlées avant de choisir un modèle vidéo.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'MODELO PARA PREPARAR IMÁGENES DE REFERENCIA',
+      title: 'Seedream',
+      subtitle: 'Referencias fijas limpias, cuadros de producto y preparación visual para video antes de animar en otro modelo.',
+      subtitleHighlights: ['referencias fijas limpias', 'cuadros de producto', 'preparación visual para video'],
+      paragraph:
+        'Usa Seedream como espacio de generación y edición de imágenes fuente: crea cuadros de producto, referencias de personaje, visuales para anuncios y sets controlados antes de enviar los mejores recursos a un modelo de video.',
+      primaryCta: { label: 'Preparar referencias con Seedream', href: '/app/image?engine=seedream' },
+      secondaryCta: { label: 'Animar con Seedance', href: modelsHref('es', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=seedream' },
+        { label: 'Ver precios', href: pricingHref('es', 'seedream-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo de referencia Seedream',
+      description: 'Imagen fija preparada para animación posterior',
+      renderLabel: 'Ver imagen',
+      badges: ['Modelo de imagen', 'Hasta 10 refs', '2K-4K'],
+      altContext: 'imagen de referencia de producto en Seedream preparada para un flujo de video posterior',
+    },
+    features: [
+      { title: 'Preparación de referencias', body: 'Crea imágenes fuente limpias antes de pasarlas a una ruta de video.', tone: 'reference' },
+      { title: 'Texto o imagen', body: 'Empieza desde un prompt o edita con imágenes de referencia cargadas.', tone: 'reference' },
+      { title: 'Hasta 10 referencias', body: 'Guía ediciones con varias fuentes cuando los detalles necesitan más control.', tone: 'continuity' },
+      { title: 'Imágenes 2K, 3K o 4K', body: 'Prepara stills con más resolución para producto, personaje y revisión de composición.', tone: 'quality' },
+      { title: 'Hasta 15 imágenes totales', body: 'Las imágenes generadas y de referencia comparten el total expuesto de Seedream.', tone: 'duration' },
+      { title: 'Precio por imagen', body: 'Los escenarios de imagen usan el helper de precios compartido, no segundos de video.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Cuándo conviene Seedream?',
+        body: 'Elige Seedream cuando el siguiente paso de video necesita primero referencias más limpias de producto, personaje, estilo o composición.',
+        cta: { label: 'Abrir espacio de imagen Seedream', href: '/app/image?engine=seedream' },
+      },
+      {
+        title: '¿Preparas cuadros de producto?',
+        body: 'Genera imágenes con etiquetas legibles, fondos limpios y encuadre estable antes de usarlas como recursos fuente.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas movimiento después?',
+        body: 'Seedream prepara las imágenes fijas. Elige un modelo de video cuando el set de referencias esté listo.',
+        cta: { label: 'Explorar modelos de video', href: '/es/modelos' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Imagen por prompt', body: 'Describe producto, personaje, escena, superficie, lente e iluminación para una fuente limpia.' },
+      { title: 'Edición con referencia', body: 'Carga imágenes cuando debas conservar identidad, geometría de producto o detalles de marca.' },
+      { title: 'Set de referencias', body: 'Crea varias vistas: frente, perfil, detalle y contexto antes del paso de video.' },
+      { title: 'Elección de tamaño', body: 'Usa 2K para preparar rápido, 3K para revisión o 4K cuando la imagen requiera más detalle.' },
+      { title: 'Paso a video', body: 'Envía solo las mejores imágenes fijas al modelo de movimiento elegido.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de imagen Seedream de un vistazo',
+      subtitle: 'Precios por escenario de imagen. Consulta el precio exacto en el espacio de imagen antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios de imagen predefinidos.',
+      ctaLabel: 'Ver precios completos',
+    },
+    meta: {
+      title: 'Seedream: precios de imagen y preparación de referencias | MaxVideoAI',
+      description:
+        'Prepara con Seedream imágenes de referencia, cuadros de producto, personajes fijos y sets visuales controlados antes de elegir un modelo de video.',
+    },
+  },
+};
+
 export const COPY_BY_MODEL_SLUG: Record<string, Record<AppLocale, LocalizedCopyWithoutPricingScenarios>> = {
+  'veo-3-1': VEO_31_COPY,
+  'kling-3-pro': KLING_3_PRO_COPY,
   'seedance-2-0': SEEDANCE_20_COPY,
   'seedance-2-0-fast': SEEDANCE_20_FAST_COPY,
+  seedream: SEEDREAM_COPY,
   'ltx-2-3-fast': LTX_23_FAST_COPY,
 };
 
