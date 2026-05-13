@@ -302,6 +302,9 @@ export function WalletExpressCheckout({
               currency: 'USD',
               settlementCurrency: normalizedChargeCurrency,
             });
+            if (checkoutSessionResult.sessionId) {
+              params.set('checkoutSessionId', checkoutSessionResult.sessionId);
+            }
             recordCheckoutInteractionEvent({
               amountCents,
               checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,

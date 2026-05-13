@@ -4,10 +4,8 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
-  WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,
   buildWalletTopUpCheckoutSessionParams,
-  isStripeCheckoutCardRestrictionError,
-  shouldBlockAmexForWalletTopUp,
+  normalizeWalletTopUpAmountCents,
 } from '../frontend/src/lib/stripe-checkout.ts';
 
 function buildParams(overrides: Partial<Parameters<typeof buildWalletTopUpCheckoutSessionParams>[0]> = {}) {
@@ -38,9 +36,7 @@ test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', (
   assert.equal(params.ui_mode, undefined);
   assert.equal(params.return_url, undefined);
   assert.equal(params.billing_address_collection, 'auto');
-  assert.deepEqual(params.shipping_address_collection, {
-    allowed_countries: WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,
-  });
+  assert.equal(params.shipping_address_collection, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
 });
 
@@ -56,13 +52,20 @@ test('wallet top-up Checkout keeps PaymentIntent metadata', () => {
   });
 });
 
+test('wallet top-up amount normalization rejects malformed amounts before Stripe', () => {
+  assert.equal(normalizeWalletTopUpAmountCents(undefined), 1000);
+  assert.equal(normalizeWalletTopUpAmountCents(2500.4), 2500);
+  assert.equal(normalizeWalletTopUpAmountCents(500), 1000);
+  assert.equal(normalizeWalletTopUpAmountCents('not-a-number'), null);
+  assert.equal(normalizeWalletTopUpAmountCents(Number.NaN), null);
+});
+
 test('wallet top-up Checkout can attach a Stripe Customer and update supported billing fields', () => {
   const params = buildParams({
     customer: 'cus_123',
     customerUpdate: {
       address: 'auto',
       name: 'auto',
-      shipping: 'auto',
     },
   });
 
@@ -70,7 +73,6 @@ test('wallet top-up Checkout can attach a Stripe Customer and update supported b
   assert.deepEqual(params.customer_update, {
     address: 'auto',
     name: 'auto',
-    shipping: 'auto',
   });
   assert.equal('invoice_creation' in params, false);
 });
@@ -80,7 +82,6 @@ test('wallet top-up Checkout omits customer update without a Stripe Customer', (
     customerUpdate: {
       address: 'auto',
       name: 'auto',
-      shipping: 'auto',
     },
   });
 
@@ -105,64 +106,38 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.deepEqual(params.automatic_tax, { enabled: true });
 });
 
-test('wallet top-up Checkout can temporarily block American Express cards', () => {
-  const params = buildParams({ blockAmexCards: true });
-
-  assert.deepEqual((params.payment_method_options as any)?.card?.restrictions?.brands_blocked, ['american_express']);
-});
-
-test('wallet top-up blocks Amex only before the first completed top-up', () => {
-  assert.equal(
-    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: true, hasCompletedTopUp: false }),
-    true
-  );
-  assert.equal(
-    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: true, hasCompletedTopUp: true }),
-    false
-  );
-  assert.equal(
-    shouldBlockAmexForWalletTopUp({ blockAmexFeatureEnabled: false, hasCompletedTopUp: false }),
-    false
-  );
-});
-
 test('wallet top-up Checkout does not block card brands by default', () => {
   const params = buildParams();
 
   assert.equal(params.payment_method_options, undefined);
 });
 
-test('detects Stripe Checkout card restriction parameter failures', () => {
-  assert.equal(
-    isStripeCheckoutCardRestrictionError({
-      type: 'StripeInvalidRequestError',
-      param: 'payment_method_options.card.restrictions',
-      message: 'Received unknown parameter: payment_method_options.card.restrictions',
-    }),
-    true
-  );
-});
-
-test('does not treat unrelated Stripe failures as card restriction failures', () => {
-  assert.equal(
-    isStripeCheckoutCardRestrictionError({
-      type: 'StripeInvalidRequestError',
-      param: 'line_items',
-      message: 'Missing required param: line_items',
-    }),
-    false
-  );
-});
-
-test('wallet route marks first top-up Amex blocking without disabling Express Checkout', () => {
+test('wallet top-up Checkout does not contain application-level Amex blocking', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+  const checkoutSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/stripe-checkout.ts'), 'utf8');
+  const envSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/env.ts'), 'utf8');
 
   assert.match(routeSource, /async function hasCompletedWalletTopUp\(userId: string\)/);
-  assert.match(routeSource, /shouldBlockAmexForWalletTopUp\(\{\s*blockAmexFeatureEnabled:[\s\S]*?hasCompletedTopUp/s);
   assert.match(routeSource, /first_wallet_topup: String\(isFirstTopUp\)/);
-  assert.match(routeSource, /amex_block_required: String\(blockAmexCards\)/);
-  assert.match(routeSource, /const checkoutParamBlockAmexCards = blockAmexCards && !isExpressCheckoutTopUp/);
-  assert.match(routeSource, /blockAmexCards: checkoutParamBlockAmexCards/);
+  assert.doesNotMatch(routeSource, /STRIPE_BLOCK_AMEX/);
+  assert.doesNotMatch(routeSource, /shouldBlockAmexForWalletTopUp/);
+  assert.doesNotMatch(routeSource, /amex_block_required/);
+  assert.doesNotMatch(routeSource, /blockAmexCards/);
+  assert.doesNotMatch(routeSource, /brands_blocked/);
+  assert.doesNotMatch(routeSource, /STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION/);
+  assert.doesNotMatch(checkoutSource, /american_express/);
+  assert.doesNotMatch(checkoutSource, /brands_blocked/);
+  assert.doesNotMatch(checkoutSource, /blockAmexCards/);
+  assert.doesNotMatch(envSource, /STRIPE_BLOCK_AMEX/);
   assert.doesNotMatch(routeSource, /express_checkout_unavailable_for_first_topup/);
   assert.doesNotMatch(routeSource, /if \(isExpressCheckoutTopUp && blockAmexCards\)/);
+});
+
+test('wallet route honors bearer auth tokens sent by billing clients', () => {
+  const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+
+  assert.match(routeSource, /getRouteAuthContext/);
+  assert.match(routeSource, /async function resolveAuthenticatedUser\(req: NextRequest\)/);
+  assert.match(routeSource, /getRouteAuthContext\(req\)/);
+  assert.match(routeSource, /const userId = await resolveAuthenticatedUser\(req\);/);
 });
