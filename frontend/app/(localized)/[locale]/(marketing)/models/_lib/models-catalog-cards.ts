@@ -5,8 +5,12 @@ import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { isImageOnlyModel, isModelInScope } from '@/lib/models/catalog';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
-import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
+import type { ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/ModelsGallery';
 
+import {
+  buildDefaultModelCompareHref,
+  buildModelExamplesHref,
+} from './models-catalog-decision-data';
 import {
   DEFAULT_CAPABILITY_KEYWORDS,
   DEFAULT_ENGINE_TYPE_LABELS,
@@ -40,7 +44,15 @@ import {
   type ModelsPageScope,
 } from './models-catalog-utils';
 
-export type ModelsCatalogGalleryCopy = {
+const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
+  'seedance-2-0': 'Best for premium multi-shot AI video with native audio, lip sync, and realistic motion.',
+  'kling-3-pro': 'Best for controllable cinematic sequences, prompt adherence, image-to-video, and lip sync workflows.',
+  'ltx-2-3-fast': 'Best for fast AI video drafts, low-cost prompt testing, and longer clips up to 20 seconds.',
+  'pika-text-to-video':
+    'Best for stylized social clips and quick text-to-video tests. Check max duration, input modes, and pricing before launch.',
+};
+
+export type ModelsCatalogGalleryCopy = ModelsGalleryCopy & {
   scoreLabels?: Record<keyof EngineScore, string>;
   valueSentence?: {
     template?: string;
@@ -50,7 +62,7 @@ export type ModelsCatalogGalleryCopy = {
     useCases?: Record<string, string>;
     capabilityKeywords?: Record<string, string>;
   };
-  stats?: {
+  stats?: ModelsGalleryCopy['stats'] & {
     typeShort?: string;
   };
 };
@@ -248,6 +260,7 @@ export async function buildModelsCatalogCards({
     );
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
     const generatedDescription =
+      DECISION_DESCRIPTION_OVERRIDES[engine.modelSlug] ??
       descriptionOverrides[engine.modelSlug] ??
       buildValueSentence({
         slug: engine.modelSlug,
@@ -280,6 +293,8 @@ export async function buildModelsCatalogCards({
       priceNote: showPrelaunchPricePlaceholder ? getPrelaunchPricingNote(activeLocale) : null,
       priceNoteHref: null,
       href: { pathname: '/models/[slug]', params: { slug: engine.modelSlug } },
+      compareHref: buildDefaultModelCompareHref(engine.modelSlug),
+      examplesHref: buildModelExamplesHref(engine.modelSlug),
       backgroundColor: pictogram.backgroundColor,
       textColor: pictogram.textColor,
       strengths,
@@ -295,6 +310,7 @@ export async function buildModelsCatalogCards({
       audioAvailable: Boolean(audioSupported),
       compareDisabled,
       filterMeta: {
+        engineType: isImageOnly ? 'image' : 'video',
         t2v,
         i2v,
         v2v,

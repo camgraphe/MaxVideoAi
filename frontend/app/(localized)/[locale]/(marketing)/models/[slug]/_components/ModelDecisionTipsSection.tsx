@@ -17,6 +17,7 @@ type TipsCardLabels = {
 
 type ModelDecisionTipsSectionProps = {
   copy: SoraCopy;
+  modelName: string;
   strengths: string[];
   troubleshootingItems: string[];
   boundaries: string[];
@@ -45,15 +46,16 @@ const CARD_META = [
   },
 ] as const;
 
-function getTipsIntro(copy: SoraCopy) {
+function getTipsIntro(copy: SoraCopy, modelName: string) {
   return (
     copy.tipsIntro ??
-    'Best practices, common fixes, and important limitations to help you get the strongest results with Seedance 2.0.'
+    `Best practices, common fixes, and important limitations to help you get the strongest results with ${modelName}.`
   );
 }
 
 export function ModelDecisionTipsSection({
   copy,
+  modelName,
   strengths,
   troubleshootingItems,
   boundaries,
@@ -74,7 +76,7 @@ export function ModelDecisionTipsSection({
         <h2 className="!text-left text-3xl font-semibold leading-tight text-text-primary">
           {copy.tipsTitle ?? 'Tips and boundaries'}
         </h2>
-        <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{getTipsIntro(copy)}</p>
+        <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{getTipsIntro(copy, modelName)}</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">

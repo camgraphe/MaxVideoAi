@@ -1,9 +1,13 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Images, Scale } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import type { ModelGalleryCard, ModelsGalleryCopy } from './ModelsGallery';
+import type {
+  ModelGalleryCard,
+  ModelsGalleryCardActionsCopy,
+  ModelsGalleryCopy,
+} from './models-gallery/models-gallery-types';
 import {
   formatTemplate,
   getCapabilityIcon,
@@ -13,6 +17,7 @@ import {
 export function ModelCard({
   card,
   ctaLabel,
+  cardActions,
   compareMode,
   compareLabel,
   compareTooltip,
@@ -28,6 +33,7 @@ export function ModelCard({
 }: {
   card: ModelGalleryCard;
   ctaLabel: string;
+  cardActions: ModelsGalleryCardActionsCopy;
   compareMode: boolean;
   compareLabel: string;
   compareTooltip: string;
@@ -46,6 +52,13 @@ export function ModelCard({
   const accent = card.backgroundColor ?? '#6366f1';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
   const ctaText = normalizedCtaLabel.replace(/\s*→\s*$/, '');
+  const viewSpecsText = cardActions.viewSpecs || ctaText;
+  const viewSpecsAria = formatTemplate(cardActions.viewSpecsAria, { engine: card.label });
+  const compareActionAria = formatTemplate(cardActions.compareAria, { engine: card.label });
+  const examplesAria = formatTemplate(cardActions.examplesAria, { engine: card.label });
+  const canCompareCard = compareEnabled && !card.compareDisabled;
+  const showCompareAction = canCompareCard && Boolean(card.compareHref);
+  const showCompareModeAction = canCompareCard && !card.compareHref;
   const scoreValue = typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : null;
   const scoreSweep = `${Math.max(0, Math.min(360, (card.overallScore ?? 0) * 36))}deg`;
   const providerBadgeBg = `color-mix(in srgb, ${accent} 2%, white 98%)`;
@@ -103,7 +116,7 @@ export function ModelCard({
   const visibleCapabilities = capabilityItems.slice(0, 6);
   const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
     event.stopPropagation();
-    if (card.compareDisabled) return;
+    if (!canCompareCard) return;
     if (!compareMode) {
       onActivateCompare();
     }
@@ -313,8 +326,8 @@ export function ModelCard({
           )
         ) : null}
         <div className="mt-auto pt-5">
-          <div className="flex flex-wrap items-center gap-3">
-            {compareEnabled && !card.compareDisabled ? (
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {compareMode && canCompareCard ? (
               <label
                 className={`inline-flex items-center gap-3 text-sm font-medium transition ${
                   selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-white/84'
@@ -335,20 +348,53 @@ export function ModelCard({
                 </span>
                 {!hideCompare ? <span>{compareLabel}</span> : null}
               </label>
-            ) : (
-              <span className="text-sm text-slate-400 dark:text-white/35" />
-            )}
+            ) : null}
             <Link
               href={card.href}
               prefetch={false}
-              className="ml-auto inline-flex min-h-10 items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-[13px] font-semibold tracking-normal text-bg shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-text-secondary dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
-              aria-label={`${ctaText} — ${card.label}`}
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-[13px] font-semibold tracking-normal text-bg shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-text-secondary dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
+              aria-label={viewSpecsAria}
               onClick={(event) => event.stopPropagation()}
             >
-              {ctaText}
+              {viewSpecsText}
               <span className="sr-only"> — {card.label}</span>
               <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" strokeWidth={2.2} aria-hidden />
             </Link>
+            {!compareMode && showCompareAction ? (
+              <Link
+                href={card.compareHref!}
+                prefetch={false}
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-hairline bg-bg px-3 py-2 text-[13px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                aria-label={compareActionAria}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Scale className="h-4 w-4" strokeWidth={2.1} aria-hidden />
+                {cardActions.compare}
+              </Link>
+            ) : null}
+            {!compareMode && showCompareModeAction ? (
+              <button
+                type="button"
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-hairline bg-bg px-3 py-2 text-[13px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                aria-label={compareActionAria}
+                onClick={handleCompareToggle}
+              >
+                <Scale className="h-4 w-4" strokeWidth={2.1} aria-hidden />
+                {cardActions.compare}
+              </button>
+            ) : null}
+            {!compareMode && card.examplesHref ? (
+              <Link
+                href={card.examplesHref}
+                prefetch={false}
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-hairline bg-bg px-3 py-2 text-[13px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                aria-label={examplesAria}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Images className="h-4 w-4" strokeWidth={2.1} aria-hidden />
+                {cardActions.examples}
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>

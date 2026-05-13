@@ -280,8 +280,10 @@ export function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
-  const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
+  const hideExamplesSection = ['nano-banana', 'gpt-image-2'].includes(engine.modelSlug);
+  const hasFallbackGalleryCopy = Boolean(copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta);
+  const usesImageExampleFallback = engine.modelSlug === 'nano-banana-pro' || engine.modelSlug === 'nano-banana-2';
+  const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
   const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => {
@@ -345,7 +347,7 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <main className={['container-page model-page pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+      <main className={['container-page model-page overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {templateData ? (
             <>
@@ -399,7 +401,19 @@ export function MarketingModelPageLayout({
             pricingCallout={legacyPricingCallout}
             microCta={legacyMicroCta}
             microCtaHref={normalizedPrimaryCtaHref}
-            examplesProps={{ hideExamplesSection, textAnchorId, copy, galleryVideos, galleryPreviewAlts, locale, examplesLinkHref, galleryCtaHref }}
+            examplesProps={{
+              hideExamplesSection,
+              textAnchorId,
+              copy,
+              galleryVideos,
+              galleryPreviewAlts,
+              engineSlug: engine.id,
+              fallbackImageUrl: heroMedia.posterUrl ?? localizedContent.seo.image ?? null,
+              isImageEngine: usesImageExampleFallback,
+              locale,
+              examplesLinkHref,
+              galleryCtaHref,
+            }}
             decisionCards={templateData?.decisionCards ?? null}
             promptingProps={{
               imageAnchorId,
@@ -408,16 +422,18 @@ export function MarketingModelPageLayout({
               supportsNativeAudio,
               demoMedia,
               engineSlug: engine.id,
+              isImageEngine,
               locale,
+              modelName: heroTitle,
               audioBadgeLabel,
               mediaAltContexts,
               useDemoMediaPrompt,
               decisionReferenceWorkflows: templateData?.referenceWorkflows,
             }}
             prepLinksProps={{ prepLinksSection, locale }}
-            tipsProps={{ hasTipsSection, copy, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
+            tipsProps={{ hasTipsSection, copy, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
             compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
-            safetyFaqProps={{ copy, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
+            safetyFaqProps={{ copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
           />
         </div>
       </main>

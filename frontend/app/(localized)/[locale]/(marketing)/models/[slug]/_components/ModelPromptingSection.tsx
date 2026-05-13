@@ -18,7 +18,9 @@ type ModelPromptingSectionProps = {
   supportsNativeAudio: boolean;
   demoMedia: FeaturedMedia | null;
   engineSlug: string;
+  isImageEngine: boolean;
   locale: AppLocale;
+  modelName: string;
   audioBadgeLabel: string;
   mediaAltContexts: { demo: string };
   useDemoMediaPrompt: boolean;
@@ -33,7 +35,9 @@ export function ModelPromptingSection({
   supportsNativeAudio,
   demoMedia,
   engineSlug,
+  isImageEngine,
   locale,
+  modelName,
   audioBadgeLabel,
   mediaAltContexts,
   useDemoMediaPrompt,
@@ -47,7 +51,9 @@ export function ModelPromptingSection({
         copy={copy}
         demoMedia={demoMedia}
         engineSlug={engineSlug}
+        isImageEngine={isImageEngine}
         locale={locale}
+        modelName={modelName}
         referenceWorkflows={decisionReferenceWorkflows ?? []}
       />
     );

@@ -1,10 +1,14 @@
 import Image from 'next/image';
 import {
   AudioLines,
+  Image as ImageIcon,
   ShieldCheck,
   Sparkles,
+  Type,
   Users,
   Zap,
+  PenLine,
+  Maximize2,
   type LucideIcon,
 } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
@@ -37,6 +41,9 @@ type ModelExamplesSectionProps = {
   copy: SoraCopy;
   galleryVideos: ExampleGalleryVideo[];
   galleryPreviewAlts: Map<string, string>;
+  engineSlug: string;
+  fallbackImageUrl: string | null;
+  isImageEngine: boolean;
   locale: AppLocale;
   examplesLinkHref: LocalizedLinkHref;
   galleryCtaHref: LocalizedLinkHref;
@@ -93,7 +100,62 @@ function getFallbackExamplesIntro(locale: AppLocale, modelName: string) {
   return `Explore real community outputs and see how ${modelName} performs inside MaxVideoAI workflows.`;
 }
 
-function getDecisionExampleFilters(locale: AppLocale): DecisionExampleFilter[] {
+function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, engineSlug?: string): DecisionExampleFilter[] {
+  if (isImageEngine) {
+    if (engineSlug === 'nano-banana-2') {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'grounded', label: 'Guidé' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Références' },
+          { id: 'wide', label: 'Ratio large' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'grounded', label: 'Guiado' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Referencias' },
+          { id: 'wide', label: 'Ratio amplio' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'grounded', label: 'Grounded' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'reference', label: 'References' },
+        { id: 'wide', label: 'Wide ratio' },
+      ];
+    }
+    if (locale === 'fr') {
+      return [
+        { id: 'all', label: 'Tous' },
+        { id: 'campaign', label: 'Campagne' },
+        { id: 'typography', label: 'Typographie' },
+        { id: 'reference', label: 'Référence' },
+        { id: 'final', label: '4K final' },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { id: 'all', label: 'Todo' },
+        { id: 'campaign', label: 'Campaña' },
+        { id: 'typography', label: 'Tipografía' },
+        { id: 'reference', label: 'Referencia' },
+        { id: 'final', label: '4K final' },
+      ];
+    }
+    return [
+      { id: 'all', label: 'All' },
+      { id: 'campaign', label: 'Campaign' },
+      { id: 'typography', label: 'Typography' },
+      { id: 'reference', label: 'Reference edit' },
+      { id: 'final', label: '4K final' },
+    ];
+  }
+
   if (locale === 'fr') {
     return [
       { id: 'all', label: 'Tous' },
@@ -124,12 +186,40 @@ function getDecisionExampleFilters(locale: AppLocale): DecisionExampleFilter[] {
   ];
 }
 
-function getDecisionExampleProofItems(locale: AppLocale, modelName: string): Array<{
+function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isImageEngine: boolean): Array<{
   title: string;
   body: string;
   icon: LucideIcon;
   tone: string;
 }> {
+  if (isImageEngine) {
+    if (locale === 'fr') {
+      return [
+        { title: 'Exemples image', body: `Prompts stills adaptés à ${modelName}.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Typographie', body: 'Texte exact, hiérarchie et placement restent visibles.', icon: Type, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Retouches référence', body: 'Gardez produit, identité, palette ou layout.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Finales 4K', body: 'Validez en 2K puis finalisez en 4K.', icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Prêt production', body: 'Références possédées et garde-fous intégrés.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: 'Ejemplos de imagen', body: `Prompts still adaptados a ${modelName}.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Tipografía', body: 'Texto exacto, jerarquía y ubicación legibles.', icon: Type, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Ediciones con referencia', body: 'Mantén producto, identidad, paleta o layout.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Finales 4K', body: 'Valida en 2K y termina en 4K.', icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Listo para producción', body: 'Referencias propias y controles integrados.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: 'Still image examples', body: `Prompt patterns tailored to ${modelName}.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Typography control', body: 'Exact copy, hierarchy and placement stay explicit.', icon: Type, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Reference edits', body: 'Keep product identity, palette, layout or style.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+      { title: '4K finals', body: 'Validate at 2K, then finish at 4K.', icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Safe for production', body: 'Owned references and built-in guardrails.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
   if (locale === 'fr') {
     return [
       { title: 'Rendus communautaires', body: `Voyez ce qui est possible avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
@@ -214,11 +304,19 @@ function getAudioBadgeLabel(video: ExampleGalleryVideo, locale: AppLocale) {
 function getDecisionExampleTags(
   video: ExampleGalleryVideo,
   category: string,
-  aspectRatio: string | null
+  aspectRatio: string | null,
+  isImageEngine: boolean
 ): DecisionExampleFilterId[] {
   const categoryText = category.toLowerCase();
   const titleText = deriveShortPromptLabel(video.promptFull ?? video.prompt, 'en').toLowerCase();
   const tags = new Set<DecisionExampleFilterId>();
+  if (isImageEngine) {
+    if (/\b(campaign|campagne|campaña|ad|poster|launch)\b/.test(`${categoryText} ${titleText}`)) tags.add('campaign');
+    if (/\b(type|typography|typographie|tipograf)\b/.test(`${categoryText} ${titleText}`)) tags.add('typography');
+    if (/\b(reference|référence|referencia|edit|retouche|edici)/.test(`${categoryText} ${titleText}`)) tags.add('reference');
+    if (/\b(4k|final)\b/.test(`${categoryText} ${titleText}`)) tags.add('final');
+    return Array.from(tags);
+  }
   if (video.hasAudio) tags.add('audio');
   if (aspectRatio === '9:16') tags.add('vertical');
   if (/\b(action|parkour|run|running|chase|combat|sport)\b/.test(`${categoryText} ${titleText}`)) {
@@ -238,11 +336,13 @@ function buildDecisionExampleItems({
   galleryPreviewAlts,
   locale,
   copy,
+  isImageEngine,
 }: {
   galleryVideos: ExampleGalleryVideo[];
   galleryPreviewAlts: Map<string, string>;
   locale: AppLocale;
   copy: SoraCopy;
+  isImageEngine: boolean;
 }): DecisionExampleGalleryItem[] {
   const modelName = resolveExamplesModelName(copy);
   const useCuratedLabels = /seedance/i.test(modelName);
@@ -258,20 +358,94 @@ function buildDecisionExampleItems({
       href: video.href,
       posterUrl,
       alt: galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`,
-      audioBadgeLabel: getAudioBadgeLabel(video, locale),
-      durationLabel: getDurationLabel(video, locale),
+      audioBadgeLabel: isImageEngine ? null : getAudioBadgeLabel(video, locale),
+      durationLabel: isImageEngine ? null : getDurationLabel(video, locale),
       aspectRatio,
       category,
       title: shortTitle,
       recreateHref: video.recreateHref ?? null,
       recreateLabel: copy.recreateLabel ?? null,
-      tags: getDecisionExampleTags(video, category, aspectRatio),
+      tags: getDecisionExampleTags(video, category, aspectRatio, isImageEngine),
     };
   });
 }
 
-function getAvailableDecisionExampleFilters(locale: AppLocale, items: DecisionExampleGalleryItem[]) {
-  const filters = getDecisionExampleFilters(locale);
+function buildImageFallbackExampleItems({
+  copy,
+  engineSlug,
+  fallbackImageUrl,
+  locale,
+}: {
+  copy: SoraCopy;
+  engineSlug: string;
+  fallbackImageUrl: string | null;
+  locale: AppLocale;
+}): DecisionExampleGalleryItem[] {
+  const appHref = `/app/image?engine=${encodeURIComponent(engineSlug)}`;
+  const recreateLabel =
+    copy.recreateLabel ??
+    (locale === 'fr' ? 'Recréer ce still →' : locale === 'es' ? 'Recrear este still →' : 'Recreate this still →');
+  const isNanoBanana2 = engineSlug === 'nano-banana-2';
+  const examples = isNanoBanana2
+    ? locale === 'fr'
+      ? [
+          ['grounded', 'Scène produit guidée', 'Guidé · 1K', '1K', 'Image Nano Banana 2 guidée par contexte pour un lancement produit'],
+          ['edit', 'Edit produit contrôlé', 'Edit', 'Edit', 'Retouche produit Nano Banana 2 avec contraintes de conservation'],
+          ['reference', 'Edit multi-références', 'Références', 'Refs', 'Image Nano Banana 2 assemblant plusieurs références produit'],
+          ['wide', 'Still large 4K', 'Ratio large', '4K · 21:9', 'Still Nano Banana 2 en format large 4K'],
+        ]
+      : locale === 'es'
+        ? [
+            ['grounded', 'Escena de producto guiada', 'Guiado · 1K', '1K', 'Imagen Nano Banana 2 guiada por contexto para lanzamiento de producto'],
+            ['edit', 'Edit controlado de producto', 'Edit', 'Edit', 'Edición de producto Nano Banana 2 con restricciones claras'],
+            ['reference', 'Edit multi-referencia', 'Referencias', 'Refs', 'Imagen Nano Banana 2 que combina varias referencias de producto'],
+            ['wide', 'Still amplio 4K', 'Ratio amplio', '4K · 21:9', 'Still Nano Banana 2 en formato amplio 4K'],
+          ]
+        : [
+            ['grounded', 'Grounded product scene', 'Grounded · 1K', '1K', 'Nano Banana 2 grounded product launch image'],
+            ['edit', 'Controlled product edit', 'Edit', 'Edit', 'Nano Banana 2 product edit with keep-and-change constraints'],
+            ['reference', 'Multi-reference edit', 'References', 'Refs', 'Nano Banana 2 image combining multiple product references'],
+            ['wide', 'Wide-ratio 4K still', 'Wide ratio', '4K · 21:9', 'Nano Banana 2 wide 4K still image'],
+          ]
+    : locale === 'fr'
+      ? [
+          ['campaign', 'Visuel campagne 2K', 'Campagne', '2K', 'Image campagne Nano Banana Pro avec layout publicitaire'],
+          ['typography', 'Poster typographique', 'Typographie', '4K', 'Poster Nano Banana Pro avec typographie lisible'],
+          ['reference', 'Retouche référence', 'Référence', 'Edit', 'Retouche produit Nano Banana Pro guidée par référence'],
+          ['final', 'Final 2K vers 4K', 'Final 4K', '4K', 'Asset campagne Nano Banana Pro finalisé en 4K'],
+        ]
+      : locale === 'es'
+        ? [
+            ['campaign', 'Still de campaña 2K', 'Campaña', '2K', 'Imagen de campaña Nano Banana Pro con layout publicitario'],
+            ['typography', 'Póster tipográfico', 'Tipografía', '4K', 'Póster Nano Banana Pro con tipografía legible'],
+            ['reference', 'Edición con referencia', 'Referencia', 'Edit', 'Edición de producto Nano Banana Pro guiada por referencia'],
+            ['final', 'Final 2K a 4K', 'Final 4K', '4K', 'Asset de campaña Nano Banana Pro finalizado en 4K'],
+          ]
+        : [
+            ['campaign', '2K campaign still', 'Campaign', '2K', 'Nano Banana Pro campaign image with ad layout'],
+            ['typography', 'Typography poster', 'Typography', '4K', 'Nano Banana Pro poster with readable typography'],
+            ['reference', 'Reference edit', 'Reference edit', 'Edit', 'Nano Banana Pro product edit guided by references'],
+            ['final', '2K to 4K final', '4K final', '4K', 'Nano Banana Pro campaign asset finalized in 4K'],
+          ];
+
+  return examples.map(([tag, title, category, resolution, alt]) => ({
+    id: `${engineSlug}-fallback-${tag}`,
+    href: appHref,
+    posterUrl: fallbackImageUrl ?? '',
+    alt,
+    audioBadgeLabel: null,
+    durationLabel: null,
+    aspectRatio: resolution,
+    category,
+    title,
+    recreateHref: appHref,
+    recreateLabel,
+    tags: [tag as DecisionExampleFilterId],
+  }));
+}
+
+function getAvailableDecisionExampleFilters(locale: AppLocale, items: DecisionExampleGalleryItem[], isImageEngine: boolean, engineSlug?: string) {
+  const filters = getDecisionExampleFilters(locale, isImageEngine, engineSlug);
   const availableIds = new Set(items.flatMap((item) => item.tags));
   return filters.filter((filter) => filter.id === 'all' || availableIds.has(filter.id));
 }
@@ -281,16 +455,29 @@ function ModelDecisionExamplesPanel({
   copy,
   galleryVideos,
   galleryPreviewAlts,
+  engineSlug,
+  fallbackImageUrl,
+  isImageEngine,
   locale,
   examplesLinkHref,
 }: Omit<ModelExamplesSectionProps, 'hideExamplesSection' | 'galleryCtaHref' | 'variant'>) {
-  const renderLinkLabel = getRenderLinkLabel(locale);
+  const renderLinkLabel = isImageEngine
+    ? locale === 'fr'
+      ? 'Ouvrir'
+      : locale === 'es'
+        ? 'Abrir'
+        : 'Open'
+    : getRenderLinkLabel(locale);
   const modelName = resolveExamplesModelName(copy);
-  const proofItems = getDecisionExampleProofItems(locale, modelName);
+  const proofItems = getDecisionExampleProofItems(locale, modelName, isImageEngine);
   const title = copy.galleryTitle ?? getFallbackExamplesTitle(locale, modelName);
   const intro = copy.galleryIntro ?? getFallbackExamplesIntro(locale, modelName);
-  const galleryItems = buildDecisionExampleItems({ galleryVideos, galleryPreviewAlts, locale, copy });
-  const filters = getAvailableDecisionExampleFilters(locale, galleryItems);
+  const galleryItems = buildDecisionExampleItems({ galleryVideos, galleryPreviewAlts, locale, copy, isImageEngine });
+  const fallbackItems = isImageEngine
+    ? buildImageFallbackExampleItems({ copy, engineSlug, fallbackImageUrl, locale })
+    : [];
+  const items = isImageEngine && engineSlug === 'nano-banana-2' ? fallbackItems : galleryItems.length ? galleryItems : fallbackItems;
+  const filters = getAvailableDecisionExampleFilters(locale, items, isImageEngine, engineSlug);
 
   return (
     <section id={textAnchorId} className={SECTION_SCROLL_MARGIN}>
@@ -299,7 +486,7 @@ function ModelDecisionExamplesPanel({
           title={title}
           intro={intro}
           filters={filters}
-          items={galleryItems}
+          items={items}
           examplesLinkHref={examplesLinkHref}
           viewAllLabel={getViewAllExamplesLabel(locale)}
           renderLinkLabel={renderLinkLabel}
@@ -338,6 +525,9 @@ export function ModelExamplesSection({
   copy,
   galleryVideos,
   galleryPreviewAlts,
+  engineSlug,
+  fallbackImageUrl,
+  isImageEngine,
   locale,
   examplesLinkHref,
   galleryCtaHref,
@@ -347,7 +537,7 @@ export function ModelExamplesSection({
     copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta
   );
 
-  if (hideExamplesSection || (!galleryVideos.length && !hasFallbackGalleryCopy)) {
+  if (hideExamplesSection || (!galleryVideos.length && !hasFallbackGalleryCopy && !isImageEngine)) {
     return null;
   }
 
@@ -360,6 +550,9 @@ export function ModelExamplesSection({
         copy={copy}
         galleryVideos={galleryVideos}
         galleryPreviewAlts={galleryPreviewAlts}
+        engineSlug={engineSlug}
+        fallbackImageUrl={fallbackImageUrl}
+        isImageEngine={isImageEngine}
         locale={locale}
         examplesLinkHref={examplesLinkHref}
       />

@@ -17,9 +17,9 @@ export const nanoBananaProTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#nano-banana-pro-pricing',
     presets: [
-      { id: '2k-image', imageResolution: '2k', labelKey: 'stillImage' },
-      { id: '4k-image', imageResolution: '4k', labelKey: 'fourKReference', highlightKey: 'mostPopular' },
-      { id: '4x-2k-image', imageResolution: '2k', quantity: 4, labelKey: 'imageBatch' },
+      { id: '2k-image', imageResolution: '2k', labelKey: 'twoKStill' },
+      { id: '4k-image', imageResolution: '4k', labelKey: 'fourKStill', highlightKey: 'mostPopular' },
+      { id: '4x-2k-image', imageResolution: '2k', quantity: 4, labelKey: 'referenceEditSet' },
     ],
   },
   sections: {

@@ -19,8 +19,8 @@ export const nanoBanana2TemplateConfig: ModelPageTemplateConfig = {
     presets: [
       { id: '0-5k-image', imageResolution: '0.5k', labelKey: 'entryDraft' },
       { id: '1k-image', imageResolution: '1k', labelKey: 'standardPreview' },
-      { id: '4k-image', imageResolution: '4k', labelKey: 'fourKReference', highlightKey: 'mostPopular' },
-      { id: '4x-1k-image', imageResolution: '1k', quantity: 4, labelKey: 'imageBatch' },
+      { id: '4k-image', imageResolution: '4k', labelKey: 'fourKStill', highlightKey: 'mostPopular' },
+      { id: '4x-1k-image', imageResolution: '1k', quantity: 4, labelKey: 'referenceEditSet' },
     ],
   },
   sections: {

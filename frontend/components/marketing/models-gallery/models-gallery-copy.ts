@@ -1,7 +1,9 @@
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import type {
   GalleryFilterKey,
+  ModelsGalleryEngineType,
   ModelsGalleryCompareBarCopy,
+  ModelsGalleryCardActionsCopy,
   ModelsGalleryCopy,
   ModelsGalleryStatsLabels,
 } from './models-gallery-types';
@@ -25,6 +27,15 @@ const DEFAULT_COMPARE_BAR: ModelsGalleryCompareBarCopy = {
   compare: 'Compare',
 };
 
+const DEFAULT_CARD_ACTIONS: ModelsGalleryCardActionsCopy = {
+  viewSpecs: 'View specs',
+  viewSpecsAria: 'View specs for {engine}',
+  compare: 'Compare',
+  compareAria: 'Compare {engine}',
+  examples: 'Examples',
+  examplesAria: 'View examples for {engine}',
+};
+
 export const DEFAULT_MODELS_GALLERY_COPY: Required<ModelsGalleryCopy> = {
   compareLabel: 'Compare',
   compareTooltip: 'Select to compare',
@@ -32,6 +43,15 @@ export const DEFAULT_MODELS_GALLERY_COPY: Required<ModelsGalleryCopy> = {
   strengthsLabel: 'Strengths',
   stats: DEFAULT_STATS_LABELS,
   audioAvailableLabel: 'Audio available',
+  engineTabs: {
+    options: {
+      all: 'All models',
+      video: 'Video generation',
+      image: 'Image generation',
+      audio: 'Audio',
+      preparation: 'Preparation tools',
+    },
+  },
   filters: {
     sort: {
       label: 'Sort by',
@@ -96,6 +116,7 @@ export const DEFAULT_MODELS_GALLERY_COPY: Required<ModelsGalleryCopy> = {
     clear: 'Clear filters',
   },
   compareBar: DEFAULT_COMPARE_BAR,
+  cardActions: DEFAULT_CARD_ACTIONS,
   capabilityTooltips: {
     T2V: 'Text-to-video',
     I2V: 'Image-to-video',
@@ -110,11 +131,13 @@ export type ResolvedModelsGalleryCopy = {
   capabilityTooltips: Record<string, string>;
   compareAria: string;
   compareBar: ModelsGalleryCompareBarCopy;
+  cardActions: ModelsGalleryCardActionsCopy;
   compareLabel: string;
   compareTooltip: string;
   filterClearLabel: string;
   filterLabels: Record<GalleryFilterKey, string>;
   filterOptions: Record<GalleryFilterKey, SelectOption[]>;
+  engineTypeTabs: Array<{ label: string; value: ModelsGalleryEngineType }>;
   searchPlaceholder: string;
   statsLabels: ModelsGalleryStatsLabels;
   strengthsLabel: string;
@@ -144,6 +167,11 @@ export function resolveModelsGalleryCopy(copy?: ModelsGalleryCopy): ResolvedMode
   const ageCopy = mergeFilterCopy('age', filtersCopy);
   const statsOverride = copy?.stats ?? {};
   const compareBarOverride = copy?.compareBar ?? {};
+  const cardActionsOverride = copy?.cardActions ?? {};
+  const engineTabsOverride = (copy?.engineTabs?.options ?? {}) as Partial<Record<ModelsGalleryEngineType, string>>;
+  const engineTabsDefault = (DEFAULT_MODELS_GALLERY_COPY.engineTabs.options ?? {}) as Partial<
+    Record<ModelsGalleryEngineType, string>
+  >;
 
   return {
     audioAvailableLabel: copy?.audioAvailableLabel ?? DEFAULT_MODELS_GALLERY_COPY.audioAvailableLabel,
@@ -154,6 +182,14 @@ export function resolveModelsGalleryCopy(copy?: ModelsGalleryCopy): ResolvedMode
       selectTwo: compareBarOverride.selectTwo ?? DEFAULT_COMPARE_BAR.selectTwo,
       clear: compareBarOverride.clear ?? DEFAULT_COMPARE_BAR.clear,
       compare: compareBarOverride.compare ?? DEFAULT_COMPARE_BAR.compare,
+    },
+    cardActions: {
+      viewSpecs: cardActionsOverride.viewSpecs ?? DEFAULT_CARD_ACTIONS.viewSpecs,
+      viewSpecsAria: cardActionsOverride.viewSpecsAria ?? DEFAULT_CARD_ACTIONS.viewSpecsAria,
+      compare: cardActionsOverride.compare ?? DEFAULT_CARD_ACTIONS.compare,
+      compareAria: cardActionsOverride.compareAria ?? DEFAULT_CARD_ACTIONS.compareAria,
+      examples: cardActionsOverride.examples ?? DEFAULT_CARD_ACTIONS.examples,
+      examplesAria: cardActionsOverride.examplesAria ?? DEFAULT_CARD_ACTIONS.examplesAria,
     },
     compareLabel: copy?.compareLabel ?? DEFAULT_MODELS_GALLERY_COPY.compareLabel,
     compareTooltip: copy?.compareTooltip ?? DEFAULT_MODELS_GALLERY_COPY.compareTooltip,
@@ -209,6 +245,10 @@ export function resolveModelsGalleryCopy(copy?: ModelsGalleryCopy): ResolvedMode
         ['all', ageCopy.options.all],
       ]),
     },
+    engineTypeTabs: (['video', 'image', 'audio'] as const).map((value) => ({
+      value,
+      label: engineTabsOverride[value] ?? engineTabsDefault[value] ?? value,
+    })),
     searchPlaceholder: filtersCopy.searchPlaceholder ?? DEFAULT_MODELS_GALLERY_COPY.filters.searchPlaceholder ?? 'Search models...',
     statsLabels: {
       from: statsOverride.from ?? DEFAULT_STATS_LABELS.from,

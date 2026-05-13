@@ -184,6 +184,54 @@ test('migrated template app links use the active engine id, not only the SEO slu
   }
 });
 
+test('image model prompt actions route to the image workspace', () => {
+  const promptTabsSource = readFileSync(
+    join(
+      PROJECT_ROOT,
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx'
+    ),
+    'utf8'
+  );
+
+  assert.match(
+    promptTabsSource,
+    /isImageEngine\s*\?\s*'\/app\/image'\s*:\s*'\/app'/,
+    'decision Prompt Lab should route image engines to /app/image'
+  );
+});
+
+test('Nano Banana Pro uses image-specific pricing scenario labels', () => {
+  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  assert.ok(nanoPro);
+
+  assert.deepEqual(
+    nanoPro.pricing.scenarios.map((scenario) => scenario.label),
+    ['2K still', '4K still', 'Reference edit set']
+  );
+});
+
+test('Nano Banana 2 uses display pricing and still-image scenario labels', () => {
+  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  assert.ok(nano2);
+
+  assert.deepEqual(
+    nano2.pricing.scenarios.map((scenario) => [scenario.label, scenario.value]),
+    [
+      ['Entry draft', '$0.06'],
+      ['Standard preview', '$0.11'],
+      ['4K still', '$0.21'],
+      ['Reference edit set', '$0.44'],
+    ]
+  );
+
+  for (const locale of LOCALES) {
+    const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, 'nano-banana-2.json');
+    const rawContent = readFileSync(contentPath, 'utf8');
+    assert.doesNotMatch(rawContent, /\$0\.04|\$0\.08|\$0\.12|0,04 \$|0,08 \$|0,12 \$/);
+    assert.match(rawContent, /still images only|images fixes uniquement|solo para imágenes fijas/i);
+  }
+});
+
 test('migrated localized model content avoids placeholder media copy', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     for (const locale of LOCALES) {
@@ -213,6 +261,27 @@ test('migrated localized model content avoids placeholder media copy', () => {
       );
     }
   }
+});
+
+test('shared decision sections do not hardcode Seedance identity fallbacks', () => {
+  const decisionSectionPaths = [
+    'ModelDecisionPromptingSection.tsx',
+    'ModelDecisionTipsSection.tsx',
+    'ModelDecisionSafetyFaqSection.tsx',
+  ].map((file) =>
+    join(
+      PROJECT_ROOT,
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components',
+      file
+    )
+  );
+  const sharedSource = decisionSectionPaths.map((path) => readFileSync(path, 'utf8')).join('\n');
+
+  assert.doesNotMatch(
+    sharedSource,
+    /Prompt Lab — Seedance 2\.0|How Seedance 2\.0 uses references|strongest results with Seedance 2\.0|responsible creation with Seedance 2\.0|engine:\s*['"]Seedance 2\.0['"]/,
+    'shared decision components should derive identity fallback copy from the active model name'
+  );
 });
 
 test('localized model pages do not inherit English recreate labels from base content', () => {

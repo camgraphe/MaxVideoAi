@@ -15,6 +15,7 @@ type FaqEntry = {
 
 type ModelDecisionSafetyFaqSectionProps = {
   copy: SoraCopy;
+  modelName: string;
   safetyRules: string[];
   safetyInterpretation: string[];
   faqList: FaqEntry[];
@@ -24,19 +25,19 @@ type ModelDecisionSafetyFaqSectionProps = {
   safetyTitle: string;
 };
 
-function getSafetyCopy(locale: AppLocale) {
+function getSafetyCopy(locale: AppLocale, modelName: string) {
   if (locale === 'fr') {
     return {
-      body: 'Garde-fous intégrés et bonnes pratiques pour créer responsablement avec Seedance 2.0.',
+      body: `Garde-fous intégrés et bonnes pratiques pour créer responsablement avec ${modelName}.`,
     };
   }
   if (locale === 'es') {
     return {
-      body: 'Controles integrados y buenas prácticas para crear de forma responsable con Seedance 2.0.',
+      body: `Controles integrados y buenas prácticas para crear de forma responsable con ${modelName}.`,
     };
   }
   return {
-    body: 'Built-in safeguards and best practices for responsible creation with Seedance 2.0.',
+    body: `Built-in safeguards and best practices for responsible creation with ${modelName}.`,
   };
 }
 
@@ -67,6 +68,7 @@ function getDecisionSafetyRules(locale: AppLocale) {
 
 export function ModelDecisionSafetyFaqSection({
   copy,
+  modelName,
   safetyRules,
   safetyInterpretation,
   faqList,
@@ -75,7 +77,7 @@ export function ModelDecisionSafetyFaqSection({
   faqJsonLdEntries,
   safetyTitle,
 }: ModelDecisionSafetyFaqSectionProps) {
-  const safetyCopy = getSafetyCopy(locale);
+  const safetyCopy = getSafetyCopy(locale, modelName);
   const decisionSafetyRules = getDecisionSafetyRules(locale);
   const hasSafety = copy.safetyTitle || safetyRules.length || safetyInterpretation.length;
 

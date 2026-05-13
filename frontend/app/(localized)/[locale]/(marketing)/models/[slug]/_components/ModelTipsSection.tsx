@@ -15,6 +15,7 @@ type TipsCardLabels = {
 type ModelTipsSectionProps = {
   hasTipsSection: boolean;
   copy: SoraCopy;
+  modelName: string;
   strengths: string[];
   troubleshootingItems: string[];
   boundaries: string[];
@@ -26,6 +27,7 @@ type ModelTipsSectionProps = {
 export function ModelTipsSection({
   hasTipsSection,
   copy,
+  modelName,
   strengths,
   troubleshootingItems,
   boundaries,
@@ -39,6 +41,7 @@ export function ModelTipsSection({
     return (
       <ModelDecisionTipsSection
         copy={copy}
+        modelName={modelName}
         strengths={strengths}
         troubleshootingItems={troubleshootingItems}
         boundaries={boundaries}

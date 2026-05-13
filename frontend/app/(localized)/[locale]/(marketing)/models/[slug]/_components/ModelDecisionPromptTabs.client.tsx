@@ -16,6 +16,7 @@ type ModelDecisionPromptTabsProps = {
   locale: AppLocale;
   exampleHref: string | null;
   engineSlug: string;
+  isImageEngine: boolean;
 };
 
 const TAB_ICONS = [FileText, Box, Camera, Sparkles] as const;
@@ -59,11 +60,18 @@ function splitPromptCopy(value: string) {
   };
 }
 
-export function ModelDecisionPromptTabs({ tabs, locale, exampleHref, engineSlug }: ModelDecisionPromptTabsProps) {
+export function ModelDecisionPromptTabs({
+  tabs,
+  locale,
+  exampleHref,
+  engineSlug,
+  isImageEngine,
+}: ModelDecisionPromptTabsProps) {
   const [activeId, setActiveId] = useState(() => tabs[0]?.id ?? 'quick');
   const activeTab = tabs.find((tab) => tab.id === activeId) ?? tabs[0] ?? null;
   const labels = getCopy(locale);
   const activeCopy = useMemo(() => splitPromptCopy(activeTab?.copy ?? ''), [activeTab?.copy]);
+  const usePromptHref = `${isImageEngine ? '/app/image' : '/app'}?engine=${encodeURIComponent(engineSlug)}`;
 
   if (!activeTab) return null;
 
@@ -131,7 +139,7 @@ export function ModelDecisionPromptTabs({ tabs, locale, exampleHref, engineSlug 
               </Link>
             ) : null}
             <Link
-              href={`/app?engine=${encodeURIComponent(engineSlug)}`}
+              href={usePromptHref}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
             >
               <UIIcon icon={Clock3} size={15} />

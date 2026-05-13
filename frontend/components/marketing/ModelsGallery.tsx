@@ -17,9 +17,16 @@ import type {
   ModelGalleryCard,
   ModelsGalleryCompareHref,
   ModelsGalleryCopy,
+  ModelsGalleryEngineType,
 } from '@/components/marketing/models-gallery/models-gallery-types';
 
-export type { GalleryFilterKey, ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/models-gallery/models-gallery-types';
+export type {
+  GalleryFilterKey,
+  ModelGalleryCard,
+  ModelsGalleryCompareHref,
+  ModelsGalleryCopy,
+  ModelsGalleryEngineType,
+} from '@/components/marketing/models-gallery/models-gallery-types';
 
 const INITIAL_COUNT = 6;
 const LOAD_COUNT = 6;
@@ -30,12 +37,16 @@ export function ModelsGallery({
   copy,
   visibleFilters = ['sort', 'mode', 'format', 'duration', 'price', 'age'],
   allowCompare = true,
+  showEngineTypeTabs = false,
+  initialEngineType = 'all',
 }: {
   cards: ModelGalleryCard[];
   ctaLabel: string;
   copy?: ModelsGalleryCopy;
   visibleFilters?: GalleryFilterKey[];
   allowCompare?: boolean;
+  showEngineTypeTabs?: boolean;
+  initialEngineType?: ModelsGalleryEngineType;
 }) {
   const resolvedCopy = useMemo(() => resolveModelsGalleryCopy(copy), [copy]);
   const visibleFilterSet = useMemo(() => new Set<GalleryFilterKey>(visibleFilters), [visibleFilters]);
@@ -52,9 +63,18 @@ export function ModelsGallery({
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedSort, setSelectedSort] = useState('featured');
   const [selectedAge, setSelectedAge] = useState('latest');
+  const [selectedEngineType, setSelectedEngineType] = useState<ModelsGalleryEngineType>(
+    showEngineTypeTabs ? initialEngineType : 'all'
+  );
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setSelectedEngineType(showEngineTypeTabs ? initialEngineType : 'all');
+  }, [initialEngineType, showEngineTypeTabs]);
+
   const filterState: ModelsGalleryFilterState = useMemo(
     () => ({
+      selectedEngineType: showEngineTypeTabs ? selectedEngineType : 'all',
       searchQuery,
       selectedAge,
       selectedDuration,
@@ -62,7 +82,7 @@ export function ModelsGallery({
       selectedMode,
       selectedPrice,
     }),
-    [searchQuery, selectedAge, selectedDuration, selectedFormat, selectedMode, selectedPrice]
+    [searchQuery, selectedAge, selectedDuration, selectedEngineType, selectedFormat, selectedMode, selectedPrice, showEngineTypeTabs]
   );
 
   const appendCards = useCallback(
@@ -216,14 +236,17 @@ export function ModelsGallery({
         searchQuery={searchQuery}
         selectedAge={selectedAge}
         selectedDuration={selectedDuration}
+        selectedEngineType={selectedEngineType}
         selectedFormat={selectedFormat}
         selectedMode={selectedMode}
         selectedPrice={selectedPrice}
         selectedSort={selectedSort}
+        showEngineTypeTabs={showEngineTypeTabs}
         visibleFilterSet={visibleFilterSet}
         onAgeChange={setSelectedAge}
         onClearFilters={clearFilters}
         onDurationChange={setSelectedDuration}
+        onEngineTypeChange={setSelectedEngineType}
         onFormatChange={setSelectedFormat}
         onModeChange={setSelectedMode}
         onPriceChange={setSelectedPrice}
@@ -231,12 +254,13 @@ export function ModelsGallery({
         onSortChange={setSelectedSort}
       />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {sortedCards.slice(0, visibleCount).map((card) => (
           <ModelCard
             key={card.id}
             card={card}
             ctaLabel={ctaLabel}
+            cardActions={resolvedCopy.cardActions}
             compareMode={compareMode}
             compareLabel={resolvedCopy.compareLabel}
             compareTooltip={resolvedCopy.compareTooltip}

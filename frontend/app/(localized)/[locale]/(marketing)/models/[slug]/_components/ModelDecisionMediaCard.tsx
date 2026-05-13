@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { ExternalLink, Volume2 } from 'lucide-react';
+import { ExternalLink, Image as ImageIcon, Volume2 } from 'lucide-react';
 
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -40,6 +40,8 @@ export function ModelDecisionMediaCard({
   const posterSrc = media.posterUrl ?? null;
   const resolvedAltText = getDecisionMediaAlt(locale, altContext);
   const [audioBadge, durationBadge, ratioBadge] = badges;
+  const leadingBadge = audioBadge ?? (media.hasAudio ? audioBadgeLabel : null);
+  const LeadingBadgeIcon = media.hasAudio ? Volume2 : ImageIcon;
 
   return (
     <figure className="relative overflow-hidden rounded-[24px] border border-[#cfdaea] bg-[#08172d] shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:border-white/10 dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)]">
@@ -79,10 +81,10 @@ export function ModelDecisionMediaCard({
 
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.12)_0%,rgba(8,23,45,0)_42%,rgba(8,23,45,0.62)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.20)_0%,rgba(3,7,18,0.06)_42%,rgba(3,7,18,0.72)_100%)]" />
 
-        {media.hasAudio || audioBadge ? (
+        {leadingBadge ? (
           <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[#142238]/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
-            <UIIcon icon={Volume2} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
-            {audioBadge ?? audioBadgeLabel}
+            <UIIcon icon={LeadingBadgeIcon} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
+            {leadingBadge}
           </span>
         ) : null}
 

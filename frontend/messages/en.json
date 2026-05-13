@@ -1863,8 +1863,8 @@
         "after": " to start with a proven prompt."
       }
     },
-    "cardCtaLabel": "Full details →",
-    "cardAriaPrefix": "Full details",
+    "cardCtaLabel": "View specs",
+    "cardAriaPrefix": "View specs",
     "engineTypeLabels": {
       "textImage": "Text + Image to Video",
       "text": "Text to Video",
@@ -1939,8 +1939,8 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "AI Models: Specs, Limits & Pricing | MaxVideoAI",
-      "description": "Catalog of AI video and image models with specs, limits, and pricing signals. Check capabilities and constraints before generation."
+      "title": "AI Video & Image Models: Specs, Limits & Pricing | MaxVideoAI",
+      "description": "Compare AI video and image models by price, max duration, resolution, audio support, input modes, and use case. Browse Seedance, Kling, Veo, Sora, LTX and more."
     },
     "note": "",
     "detail": {
@@ -1973,6 +1973,32 @@
       "relatedModelCta": "View model →"
     },
     "listing": {
+      "decision": {
+        "eyebrow": "AI video & image model directory",
+        "heroTitle": "Compare AI models before you generate",
+        "heroSubtitle": "Browse video, image, audio, and preparation models. Compare pricing, max duration, resolution, audio support, input modes, and strengths before choosing the right model.",
+        "primaryCta": "Browse models",
+        "secondaryCta": "Compare engines",
+        "topPicksTitle": "Recommended starting points",
+        "topPicksViewAll": "View all recommendations",
+        "useCasesTitle": "Choose by what you want to create",
+        "useCasesViewAll": "View all use cases",
+        "bestLabel": "Best",
+        "recommendedTitle": "Recommended AI video models",
+        "recommendedSubtitle": "Start with these models if you want strong quality, control, speed, or value before browsing the full catalog.",
+        "recommendedSeeAll": "See all models",
+        "recommendedFromLabel": "From",
+        "recommendedDurationLabel": "Up to",
+        "recommendedResolutionLabel": "Max res.",
+        "allModelsTitle": "Browse AI engines by type",
+        "allModelsSubtitle": "Start with video generation, then switch to image generation or audio and lip sync without mixing engine families.",
+        "popularComparisonsTitle": "Not sure which AI video model to choose?",
+        "popularComparisonsSubtitle": "Compare the most searched model pairs side by side.",
+        "compareHubLabel": "Compare hub",
+        "pricingLimitsTitle": "Compare pricing, duration, and output limits",
+        "pricingLimitsBody": "Video models are usually priced per second, while image models are priced per image or output size. Use the cards below to compare starting price, max duration, resolution, audio support, and input modes before generating.",
+        "faqTitle": "AI model specs, pricing, and examples FAQ"
+      },
       "hero": {
         "title": "AI Models (All Specs, Limits & Pricing)",
         "subtitle": "Review video and image model capabilities, limits, and pricing before you generate.",
@@ -2089,6 +2115,15 @@
         "typeLong": "Type"
       },
       "audioAvailableLabel": "Audio available",
+      "engineTabs": {
+        "options": {
+          "video": "Video generation",
+          "image": "Image generation",
+          "audio": "Audio",
+          "preparation": "Preparation tools",
+          "all": "All models"
+        }
+      },
       "filters": {
         "sort": {
           "label": "Sort by",
@@ -2157,6 +2192,14 @@
         "selectTwo": "Select two engines to compare",
         "clear": "Clear",
         "compare": "Compare"
+      },
+      "cardActions": {
+        "viewSpecs": "View specs",
+        "viewSpecsAria": "View {engine} specs",
+        "compare": "Compare",
+        "compareAria": "Compare {engine} with other AI video models",
+        "examples": "Examples",
+        "examplesAria": "See {engine} prompt examples"
       },
       "capabilityTooltips": {
         "T2V": "Text-to-video",

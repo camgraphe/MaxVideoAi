@@ -12,6 +12,8 @@ export type ModelGalleryCard = {
   priceNote?: string | null;
   priceNoteHref?: string | null;
   href: LocalizedLinkHref;
+  compareHref?: ModelsGalleryCompareHref | null;
+  examplesHref?: LocalizedLinkHref | null;
   backgroundColor?: string | null;
   textColor?: string | null;
   strengths?: string[];
@@ -27,6 +29,7 @@ export type ModelGalleryCard = {
   audioAvailable?: boolean;
   compareDisabled?: boolean;
   filterMeta?: {
+    engineType?: ModelsGalleryEngineType;
     t2v?: boolean;
     i2v?: boolean;
     v2v?: boolean;
@@ -42,6 +45,7 @@ export type ModelGalleryCard = {
 };
 
 export type GalleryFilterKey = 'sort' | 'mode' | 'format' | 'duration' | 'price' | 'age';
+export type ModelsGalleryEngineType = 'all' | 'video' | 'image' | 'audio' | 'preparation';
 
 export type ModelsGalleryCopy = {
   compareLabel?: string;
@@ -58,6 +62,9 @@ export type ModelsGalleryCopy = {
     typeLong?: string;
   };
   audioAvailableLabel?: string;
+  engineTabs?: {
+    options?: Record<ModelsGalleryEngineType, string>;
+  };
   filters?: {
     sort?: { label?: string; options?: Record<string, string> };
     mode?: { label?: string; options?: Record<string, string> };
@@ -74,11 +81,20 @@ export type ModelsGalleryCopy = {
     clear?: string;
     compare?: string;
   };
+  cardActions?: {
+    viewSpecs?: string;
+    viewSpecsAria?: string;
+    compare?: string;
+    compareAria?: string;
+    examples?: string;
+    examplesAria?: string;
+  };
   capabilityTooltips?: Record<string, string>;
 };
 
 export type ModelsGalleryStatsLabels = Required<NonNullable<ModelsGalleryCopy['stats']>>;
 export type ModelsGalleryCompareBarCopy = Required<NonNullable<ModelsGalleryCopy['compareBar']>>;
+export type ModelsGalleryCardActionsCopy = Required<NonNullable<ModelsGalleryCopy['cardActions']>>;
 
 export type ModelsGalleryCompareHref = {
   pathname: '/ai-video-engines/[slug]';

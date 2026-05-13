@@ -114,7 +114,7 @@ export function formatImageResolutions(engineCaps: EngineCaps | undefined) {
   if (!resolutions.length) return 'Data pending';
   const tierLabels = resolutions
     .map((value) => String(value).trim())
-    .filter((value) => /^\d+\s*k$/i.test(value))
+    .filter((value) => /^\d+(?:\.\d+)?\s*k$/i.test(value))
     .map((value) => value.replace(/\s+/g, '').toUpperCase());
   if (tierLabels.length) return Array.from(new Set(tierLabels)).join(' / ');
   return resolutions.join(' / ');

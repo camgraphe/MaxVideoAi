@@ -1,6 +1,7 @@
-import type { ModelGalleryCard } from './models-gallery-types';
+import type { ModelGalleryCard, ModelsGalleryEngineType } from './models-gallery-types';
 
 export type ModelsGalleryFilterState = {
+  selectedEngineType: ModelsGalleryEngineType;
   searchQuery: string;
   selectedAge: string;
   selectedDuration: string;
@@ -28,7 +29,16 @@ export function filterModelGalleryCards(
   const normalizedQuery = state.searchQuery.trim().toLowerCase();
   return cards.filter((card) => {
     const meta = card.filterMeta;
-    if (!meta) return !hasActiveFilters;
+    if (!meta) return !hasActiveFilters && state.selectedEngineType === 'all';
+    if (state.selectedEngineType !== 'all') {
+      if (state.selectedEngineType === 'audio') {
+        if (!meta.audio && !meta.lipSync) return false;
+      } else if (state.selectedEngineType === 'preparation') {
+        if (meta.engineType !== 'preparation') return false;
+      } else if (meta.engineType !== state.selectedEngineType) {
+        return false;
+      }
+    }
     if (normalizedQuery) {
       const haystack = [
         card.label,

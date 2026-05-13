@@ -1971,8 +1971,8 @@
         "after": " pour démarrer avec un prompt éprouvé."
       }
     },
-    "cardCtaLabel": "Détails →",
-    "cardAriaPrefix": "Tous les détails",
+    "cardCtaLabel": "Voir les specs",
+    "cardAriaPrefix": "Voir les specs",
     "engineTypeLabels": {
       "textImage": "Texte + image vers vidéo",
       "text": "Texte vers vidéo",
@@ -2047,8 +2047,8 @@
         "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modèles IA : specs, limites et prix | MaxVideoAI",
-      "description": "Catalogue de modèles IA vidéo et image avec specs, limites et signaux de prix. Vérifiez capacités et contraintes avant génération."
+      "title": "Modèles IA vidéo & image : specs, limites et prix | MaxVideoAI",
+      "description": "Comparez les modèles IA vidéo et image par prix, durée maximale, résolution, audio, modes d'entrée et usage. Parcourez Seedance, Kling, Veo, Sora, LTX et plus."
     },
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
@@ -2081,6 +2081,32 @@
       "relatedModelCta": "Voir le modèle →"
     },
     "listing": {
+      "decision": {
+        "eyebrow": "Annuaire des modeles IA video & image",
+        "heroTitle": "Comparez les modeles IA avant de generer",
+        "heroSubtitle": "Parcourez les modeles video, image, audio et preparation. Comparez prix, duree maximale, resolution, support audio, modes d entree et forces avant de choisir le bon modele.",
+        "primaryCta": "Parcourir les modeles",
+        "secondaryCta": "Comparer les moteurs",
+        "topPicksTitle": "Points de depart recommandes",
+        "topPicksViewAll": "Voir toutes les recommandations",
+        "useCasesTitle": "Choisir selon ce que vous voulez creer",
+        "useCasesViewAll": "Voir tous les usages",
+        "bestLabel": "Meilleur",
+        "recommendedTitle": "Modeles video IA recommandes",
+        "recommendedSubtitle": "Commencez par ces modeles si vous cherchez qualite, controle, vitesse ou valeur avant de parcourir tout le catalogue.",
+        "recommendedSeeAll": "Voir tous les modeles",
+        "recommendedFromLabel": "A partir",
+        "recommendedDurationLabel": "Jusqu a",
+        "recommendedResolutionLabel": "Res. max.",
+        "allModelsTitle": "Parcourir les engines IA par type",
+        "allModelsSubtitle": "Commencez par la generation video, puis basculez vers l image ou l audio et lip sync sans melanger les familles d engines.",
+        "popularComparisonsTitle": "Vous ne savez pas quel modele video IA choisir ?",
+        "popularComparisonsSubtitle": "Comparez cote a cote les paires de modeles les plus recherchees.",
+        "compareHubLabel": "Hub comparaison",
+        "pricingLimitsTitle": "Comparer prix, duree et limites de sortie",
+        "pricingLimitsBody": "Les modeles video sont souvent factures a la seconde, tandis que les modeles image sont factures par image ou taille de sortie. Utilisez les cartes pour comparer prix de depart, duree maximale, resolution, audio et modes d entree avant de generer.",
+        "faqTitle": "FAQ specs, prix et exemples des modeles IA"
+      },
       "hero": {
         "title": "Modèles IA (Toutes les specs, limites et prix)",
         "subtitle": "Passez en revue les capacités, limites et prix des modèles vidéo et image avant de générer.",
@@ -2197,6 +2223,15 @@
         "typeLong": "Type"
       },
       "audioAvailableLabel": "Audio disponible",
+      "engineTabs": {
+        "options": {
+          "video": "Generation video",
+          "image": "Generation image",
+          "audio": "Audio",
+          "preparation": "Outils de preparation",
+          "all": "Tous les modeles"
+        }
+      },
       "filters": {
         "sort": {
           "label": "Tri",
@@ -2265,6 +2300,14 @@
         "selectTwo": "Sélectionnez deux modèles à comparer",
         "clear": "Effacer",
         "compare": "Comparer"
+      },
+      "cardActions": {
+        "viewSpecs": "Voir les specs",
+        "viewSpecsAria": "Voir les specs de {engine}",
+        "compare": "Comparer",
+        "compareAria": "Comparer {engine} avec d'autres modeles video IA",
+        "examples": "Exemples",
+        "examplesAria": "Voir des exemples de prompts {engine}"
       },
       "capabilityTooltips": {
         "T2V": "Texte→vidéo",

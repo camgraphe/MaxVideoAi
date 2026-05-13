@@ -18,6 +18,7 @@ type FaqEntry = {
 
 type ModelSafetyFaqSectionProps = {
   copy: SoraCopy;
+  modelName: string;
   safetyRules: string[];
   safetyInterpretation: string[];
   faqList: FaqEntry[];
@@ -36,6 +37,7 @@ const DEFAULT_SAFETY_TITLE_BY_LOCALE: Record<AppLocale, string> = {
 
 export function ModelSafetyFaqSection({
   copy,
+  modelName,
   safetyRules,
   safetyInterpretation,
   faqList,
@@ -51,6 +53,7 @@ export function ModelSafetyFaqSection({
     return (
       <ModelDecisionSafetyFaqSection
         copy={copy}
+        modelName={modelName}
         safetyRules={safetyRules}
         safetyInterpretation={safetyInterpretation}
         faqList={faqList}

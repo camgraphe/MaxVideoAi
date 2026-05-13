@@ -9,7 +9,20 @@ import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
 
-export type DecisionExampleFilterId = 'all' | 'cinematic' | 'product' | 'action' | 'vertical' | 'audio';
+export type DecisionExampleFilterId =
+  | 'all'
+  | 'cinematic'
+  | 'product'
+  | 'action'
+  | 'vertical'
+  | 'audio'
+  | 'campaign'
+  | 'typography'
+  | 'reference'
+  | 'final'
+  | 'grounded'
+  | 'edit'
+  | 'wide';
 
 export type DecisionExampleFilter = {
   id: DecisionExampleFilterId;
@@ -21,8 +34,8 @@ export type DecisionExampleGalleryItem = {
   href: string;
   posterUrl: string;
   alt: string;
-  audioBadgeLabel: string;
-  durationLabel: string;
+  audioBadgeLabel: string | null;
+  durationLabel: string | null;
   aspectRatio: string | null;
   category: string;
   title: string;
@@ -134,13 +147,17 @@ export function ModelDecisionExamplesGallery({
                           No preview
                         </div>
                       )}
-                      <div className="absolute left-2 top-2 inline-flex h-6 items-center gap-1 rounded-lg bg-slate-950/82 px-2 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:left-3 sm:top-3 sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-[0.72rem]">
-                        <UIIcon icon={AudioLines} size={12} className={MODEL_PAGE_ICON_ON_DARK} />
-                        <span className="max-[380px]:sr-only">{item.audioBadgeLabel}</span>
-                      </div>
-                      <div className="absolute right-2 top-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:right-3 sm:top-3 sm:px-2.5 sm:text-[0.72rem]">
-                        {item.durationLabel}
-                      </div>
+                      {item.audioBadgeLabel ? (
+                        <div className="absolute left-2 top-2 inline-flex h-6 items-center gap-1 rounded-lg bg-slate-950/82 px-2 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:left-3 sm:top-3 sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-[0.72rem]">
+                          <UIIcon icon={AudioLines} size={12} className={MODEL_PAGE_ICON_ON_DARK} />
+                          <span className="max-[380px]:sr-only">{item.audioBadgeLabel}</span>
+                        </div>
+                      ) : null}
+                      {item.durationLabel ? (
+                        <div className="absolute right-2 top-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:right-3 sm:top-3 sm:px-2.5 sm:text-[0.72rem]">
+                          {item.durationLabel}
+                        </div>
+                      ) : null}
                       {item.aspectRatio ? (
                         <div className="absolute bottom-2 right-2 rounded-lg bg-slate-950/82 px-2 py-1 text-[0.64rem] font-semibold text-white shadow-sm backdrop-blur sm:bottom-3 sm:right-3 sm:px-2.5 sm:text-[0.72rem]">
                           {item.aspectRatio}
