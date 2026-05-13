@@ -46,6 +46,11 @@ function modelsHref(locale: AppLocale, modelSlug: string) {
   return localizedPath(locale, segment, `/${modelSlug}`);
 }
 
+function modelsIndexHref(locale: AppLocale) {
+  const segment = MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en;
+  return localizedPath(locale, segment);
+}
+
 function compareHref(locale: AppLocale, left: string, right: string, orderSlug = left) {
   const compareBase = COMPARE_BASE_PATH_MAP[locale] ?? COMPARE_BASE_PATH_MAP.en;
   return `${localizedPrefix(locale)}${buildCanonicalComparePath({
@@ -971,7 +976,7 @@ const KLING_3_PRO_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       eyebrow: 'KLING PRO VIDEO MODEL',
       title: 'Kling 3 Pro',
       subtitle: 'Storyboard control, native audio, and 15s 1080p production clips for structured sequences.',
-      subtitleHighlights: ['storyboard control', 'native audio', '15s production clips'],
+      subtitleHighlights: ['storyboard control', 'native audio', '15s 1080p production clips'],
       paragraph:
         'Use Kling 3 Pro when you need text-to-video or image-led shots with strong narrative control: 3 to 15 seconds, 1080p output, three aspect ratios, negative prompts, CFG scale and optional end-frame guidance.',
       primaryCta: { label: 'Generate with Kling 3 Pro', href: '/app?engine=kling-3-pro' },
@@ -1285,7 +1290,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       {
         title: 'Besoin de mouvement ensuite ?',
         body: 'Seedream prépare les images fixes. Choisissez un modèle vidéo une fois le jeu de références prêt.',
-        cta: { label: 'Parcourir les modèles vidéo', href: '/fr/modeles' },
+        cta: { label: 'Parcourir les modèles vidéo', href: modelsIndexHref('fr') },
       },
     ],
     referenceWorkflows: [
@@ -1352,7 +1357,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       {
         title: '¿Necesitas movimiento después?',
         body: 'Seedream prepara las imágenes fijas. Elige un modelo de video cuando el set de referencias esté listo.',
-        cta: { label: 'Explorar modelos de video', href: '/es/modelos' },
+        cta: { label: 'Explorar modelos de video', href: modelsIndexHref('es') },
       },
     ],
     referenceWorkflows: [
