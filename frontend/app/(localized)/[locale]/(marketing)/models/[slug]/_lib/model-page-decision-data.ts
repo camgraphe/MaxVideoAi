@@ -5,6 +5,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
 import { buildCanonicalComparePath, COMPARE_BASE_PATH_MAP } from './model-page-links';
+import { getModelPageTemplateConfig } from './model-page-template-registry';
 
 export type ModelDecisionLink = {
   label: string;
@@ -380,7 +381,10 @@ export function buildModelDecisionData({
   engine: FalEngineEntry;
   locale: AppLocale;
 }): ModelDecisionData | null {
-  if (engine.modelSlug !== 'seedance-2-0') return null;
+  const template = getModelPageTemplateConfig(engine.modelSlug);
+
+  if (!template) return null;
+
   const copy = COPY[locale] ?? COPY.en;
   return {
     hero: copy.hero,
