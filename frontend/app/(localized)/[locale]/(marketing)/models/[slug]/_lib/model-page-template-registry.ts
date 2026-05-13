@@ -4,6 +4,7 @@ import { kling3ProTemplateConfig } from './model-page-templates/kling-3-pro';
 import { kling3StandardTemplateConfig } from './model-page-templates/kling-3-standard';
 import { ltx23ProTemplateConfig } from './model-page-templates/ltx-2-3-pro';
 import { ltx23FastTemplateConfig } from './model-page-templates/ltx-2-3-fast';
+import { seedance15ProTemplateConfig } from './model-page-templates/seedance-1-5-pro';
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
@@ -19,6 +20,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [kling3StandardTemplateConfig.slug]: kling3StandardTemplateConfig,
   [ltx23FastTemplateConfig.slug]: ltx23FastTemplateConfig,
   [ltx23ProTemplateConfig.slug]: ltx23ProTemplateConfig,
+  [seedance15ProTemplateConfig.slug]: seedance15ProTemplateConfig,
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,

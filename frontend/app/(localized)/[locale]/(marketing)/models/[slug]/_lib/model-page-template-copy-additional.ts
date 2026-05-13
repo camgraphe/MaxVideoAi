@@ -1081,6 +1081,213 @@ const LTX_23_PRO_COPY: LocalizedTemplateCopy = {
   },
 };
 
+const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'SUPPORTED SEEDANCE LEGACY PRO ROUTE',
+      title: 'Seedance 1.5 Pro',
+      subtitle: 'Camera-fixed shots, seeded variants and start/end frame control for supported older Seedance workflows.',
+      subtitleHighlights: ['Camera-fixed shots', 'seeded variants', 'start/end frame control'],
+      paragraph:
+        'Use Seedance 1.5 Pro when you need the older supported Seedance route: repeatable short clips, optional audio, seed control, camera-fixed setups and image-to-video landings. Use Seedance 2.0 for current 2.0 production work.',
+      primaryCta: { label: 'Generate with Seedance 1.5 Pro', href: '/app?engine=seedance-1-5-pro' },
+      secondaryCta: { label: 'View Seedance 2.0', href: modelsHref('en', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Compare vs Seedance 2.0', href: compareHref('en', 'seedance-1-5-pro', 'seedance-2-0') },
+        { label: 'View pricing', href: pricingHref('en', 'seedance-1-5-pro-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Seedance 1.5 Pro example',
+      description: 'Camera-fixed cinematic render',
+      renderLabel: 'View render',
+      badges: ['Audio on', '12s', '1080p'],
+      altContext: 'camera-fixed Seedance 1.5 Pro cinematic render',
+    },
+    features: [
+      { title: 'Camera fixed', body: 'Lock the shot when steadier motion matters more than dynamic camera moves.', tone: 'continuity' },
+      { title: 'Seed control', body: 'Reuse a seed for repeatable variants and A/B creative passes.', tone: 'quality' },
+      { title: 'Start/end frames', body: 'Guide image-to-video landings with an optional final frame.', tone: 'reference' },
+      { title: 'Audio on/off', body: 'Generate with native sound, or switch audio off for lower-cost silent drafts.', tone: 'audio' },
+      { title: 'Up to 1080p', body: 'Use higher resolution when the active mode exposes it in MaxVideoAI.', tone: 'quality' },
+      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Use 1.5 Pro or Seedance 2.0?',
+        body: 'Use 1.5 Pro for legacy-compatible camera-fixed and seeded tests. Use Seedance 2.0 for the current native-audio production workflow.',
+        cta: { label: 'Compare 1.5 Pro vs 2.0', href: compareHref('en', 'seedance-1-5-pro', 'seedance-2-0') },
+      },
+      {
+        title: 'Need repeatable variants?',
+        body: 'Keep one prompt structure, reuse seed control, then change only the action, timing or audio cue you are testing.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Planning final Seedance work?',
+        body: 'Move current campaign finals to Seedance 2.0 when multi-shot continuity and broader references matter more.',
+        cta: { label: 'Open Seedance 2.0', href: modelsHref('en', 'seedance-2-0') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Write one subject, one action, lighting, style and an optional audio cue.' },
+      { title: 'Camera-fixed setup', body: 'Use camera_fixed for locked-off product, city or storyboard shots.' },
+      { title: 'Image-to-video', body: 'Start from one image, then add an end frame when the landing pose matters.' },
+      { title: 'Seeded variant', body: 'Reuse the same seed to compare small prompt changes without changing the whole look.' },
+      { title: 'Upgrade path', body: 'Use Seedance 2.0 when the project needs the current 2.0 workflow.' },
+    ],
+    pricingCopy: {
+      title: 'Seedance 1.5 Pro pricing at a glance',
+      subtitle: 'Preset audio-on totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios. Audio-off routes may quote lower in the app.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p where available',
+    },
+    meta: {
+      title: 'Seedance 1.5 Pro: Pricing & Camera Fixed | MaxVideoAI',
+      description:
+        'Explore Seedance 1.5 Pro pricing, examples, camera-fixed shots, seed control, audio on/off and start/end frame workflows. Compare Seedance 1.5 Pro vs Seedance 2.0.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ANCIENNE ROUTE SEEDANCE PRO PRISE EN CHARGE',
+      title: 'Seedance 1.5 Pro',
+      subtitle: 'Plans camera-fixed, variantes avec seed et contrôle image de départ/fin pour les anciens workflows Seedance.',
+      subtitleHighlights: ['Plans camera-fixed', 'variantes avec seed', 'contrôle image de départ/fin'],
+      paragraph:
+        'Utilisez Seedance 1.5 Pro pour l’ancienne route Seedance encore prise en charge : clips courts répétables, audio optionnel, seed, camera_fixed et fins image-to-video. Passez à Seedance 2.0 pour la route actuelle.',
+      primaryCta: { label: 'Générer avec Seedance 1.5 Pro', href: '/app?engine=seedance-1-5-pro' },
+      secondaryCta: { label: 'Voir Seedance 2.0', href: modelsHref('fr', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Comparer vs Seedance 2.0', href: compareHref('fr', 'seedance-1-5-pro', 'seedance-2-0') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'seedance-1-5-pro-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Seedance 1.5 Pro',
+      description: 'Rendu cinématographique camera-fixed',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio activé', '12 s', '1080p'],
+      altContext: 'rendu cinématographique Seedance 1.5 Pro avec camera_fixed',
+    },
+    features: [
+      { title: 'Camera fixed', body: 'Verrouillez le plan quand la stabilité prime sur le mouvement caméra.', tone: 'continuity' },
+      { title: 'Contrôle seed', body: 'Réutilisez un seed pour des variantes répétables et des tests A/B.', tone: 'quality' },
+      { title: 'Images départ/fin', body: 'Guidez la fin image-to-video avec une image finale optionnelle.', tone: 'reference' },
+      { title: 'Audio on/off', body: 'Générez avec son natif ou coupez l’audio pour des brouillons moins chers.', tone: 'audio' },
+      { title: 'Jusqu’à 1080p', body: 'Utilisez la haute résolution quand le mode actif l’expose dans MaxVideoAI.', tone: 'quality' },
+      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '1.5 Pro ou Seedance 2.0 ?',
+        body: 'Utilisez 1.5 Pro pour les tests camera_fixed et seedés hérités. Utilisez Seedance 2.0 pour la production actuelle avec audio natif.',
+        cta: { label: 'Comparer 1.5 Pro vs 2.0', href: compareHref('fr', 'seedance-1-5-pro', 'seedance-2-0') },
+      },
+      {
+        title: 'Besoin de variantes répétables ?',
+        body: 'Gardez la même structure de prompt, réutilisez le seed, puis changez seulement l’action, le timing ou le son testé.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Vous préparez un rendu Seedance final ?',
+        body: 'Passez les finales de campagne vers Seedance 2.0 si la continuité multi-plans et les références larges comptent davantage.',
+        cta: { label: 'Ouvrir Seedance 2.0', href: modelsHref('fr', 'seedance-2-0') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Écrivez un sujet, une action, lumière, style et un indice audio optionnel.' },
+      { title: 'Setup camera_fixed', body: 'Utilisez camera_fixed pour les plans produit, ville ou storyboard verrouillés.' },
+      { title: 'Image-to-video', body: 'Partez d’une image et ajoutez une image finale si la pose d’arrivée compte.' },
+      { title: 'Variante seedée', body: 'Réutilisez le même seed pour comparer de petites variations sans changer tout le rendu.' },
+      { title: 'Passage en 2.0', body: 'Utilisez Seedance 2.0 quand le projet demande la route Seedance actuelle.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Seedance 1.5 Pro en un coup d’œil',
+      subtitle: 'Prix totaux avec audio — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD. Les routes audio off peuvent être moins chères dans l’app.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p selon le mode',
+    },
+    meta: {
+      title: 'Seedance 1.5 Pro : tarifs et camera fixed | MaxVideoAI',
+      description:
+        'Explorez prix Seedance 1.5 Pro, exemples, camera_fixed, seed, audio on/off et workflows image de départ/fin. Comparez Seedance 1.5 Pro vs Seedance 2.0.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA SEEDANCE PRO ANTERIOR COMPATIBLE',
+      title: 'Seedance 1.5 Pro',
+      subtitle: 'Tomas camera-fixed, variantes con seed y control de frame inicial/final para workflows Seedance anteriores.',
+      subtitleHighlights: ['Tomas camera-fixed', 'variantes con seed', 'control de frame inicial/final'],
+      paragraph:
+        'Usa Seedance 1.5 Pro cuando necesitas la ruta Seedance anterior aún compatible: clips cortos repetibles, audio opcional, seed, camera_fixed y cierres image-to-video. Usa Seedance 2.0 para la ruta actual.',
+      primaryCta: { label: 'Generar con Seedance 1.5 Pro', href: '/app?engine=seedance-1-5-pro' },
+      secondaryCta: { label: 'Ver Seedance 2.0', href: modelsHref('es', 'seedance-2-0') },
+      quickLinks: [
+        { label: 'Comparar con Seedance 2.0', href: compareHref('es', 'seedance-1-5-pro', 'seedance-2-0') },
+        { label: 'Ver precios', href: pricingHref('es', 'seedance-1-5-pro-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Seedance 1.5 Pro',
+      description: 'Render cinematográfico camera-fixed',
+      renderLabel: 'Ver render',
+      badges: ['Audio activo', '12 s', '1080p'],
+      altContext: 'render cinematográfico Seedance 1.5 Pro con camera_fixed',
+    },
+    features: [
+      { title: 'Camera fixed', body: 'Bloquea la toma cuando necesitas estabilidad más que movimiento de cámara.', tone: 'continuity' },
+      { title: 'Control de seed', body: 'Reutiliza un seed para variantes repetibles y pruebas A/B.', tone: 'quality' },
+      { title: 'Frames inicial/final', body: 'Guía el cierre image-to-video con un frame final opcional.', tone: 'reference' },
+      { title: 'Audio on/off', body: 'Genera con sonido nativo o apaga audio para borradores más baratos.', tone: 'audio' },
+      { title: 'Hasta 1080p', body: 'Usa mayor resolución cuando el modo activo la expone en MaxVideoAI.', tone: 'quality' },
+      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿1.5 Pro o Seedance 2.0?',
+        body: 'Usa 1.5 Pro para pruebas heredadas con camera_fixed y seed. Usa Seedance 2.0 para la producción actual con audio nativo.',
+        cta: { label: 'Comparar 1.5 Pro vs 2.0', href: compareHref('es', 'seedance-1-5-pro', 'seedance-2-0') },
+      },
+      {
+        title: '¿Necesitas variantes repetibles?',
+        body: 'Mantén la misma estructura de prompt, reutiliza el seed y cambia solo acción, timing o audio.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Preparas un final en Seedance?',
+        body: 'Lleva los finales de campaña a Seedance 2.0 cuando importen más la continuidad multi-shot y referencias amplias.',
+        cta: { label: 'Abrir Seedance 2.0', href: modelsHref('es', 'seedance-2-0') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Escribe un sujeto, una acción, luz, estilo y una pista de audio opcional.' },
+      { title: 'Setup camera_fixed', body: 'Usa camera_fixed para planos de producto, ciudad o storyboard bloqueados.' },
+      { title: 'Image-to-video', body: 'Parte de una imagen y añade frame final si la pose de llegada importa.' },
+      { title: 'Variante con seed', body: 'Reutiliza el mismo seed para comparar cambios pequeños sin cambiar todo el look.' },
+      { title: 'Paso a 2.0', body: 'Usa Seedance 2.0 cuando el proyecto necesita la ruta Seedance actual.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Seedance 1.5 Pro de un vistazo',
+      subtitle: 'Totales con audio. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD. Las rutas audio off pueden cotizar menos en la app.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p según el modo',
+    },
+    meta: {
+      title: 'Seedance 1.5 Pro: precios y camera fixed | MaxVideoAI',
+      description:
+        'Explora precios de Seedance 1.5 Pro, ejemplos, camera_fixed, seed, audio on/off y workflows con frame inicial/final. Compara Seedance 1.5 Pro vs Seedance 2.0.',
+    },
+  },
+};
+
 const SORA_2_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
@@ -1499,6 +1706,7 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-3-4k': KLING_3_4K_COPY,
   'kling-3-standard': KLING_3_STANDARD_COPY,
   'ltx-2-3-pro': LTX_23_PRO_COPY,
+  'seedance-1-5-pro': SEEDANCE_15_PRO_COPY,
   'sora-2': SORA_2_COPY,
   'sora-2-pro': SORA_2_PRO_COPY,
   'veo-3-1-fast': VEO_31_FAST_COPY,

@@ -9,6 +9,7 @@ import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(ma
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
+  'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
   'ltx-2-3-fast',
@@ -182,6 +183,7 @@ test('migrated localized model content avoids placeholder media copy', () => {
 test('migrated template metadata preserves non-cannibalizing route intent', () => {
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
   const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale: 'en' });
   const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
   const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
@@ -195,6 +197,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
+  assert.ok(seedance15);
   assert.ok(veo);
   assert.ok(veoFast);
   assert.ok(veoLite);
@@ -223,6 +226,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['kling-3-4k', kling4k.meta.title],
     ['ltx-2-3-pro', ltxPro.meta.title],
     ['seedream', seedream.meta.title],
+    ['seedance-1-5-pro', seedance15.meta.title],
     ['sora-2', sora.meta.title],
     ['sora-2-pro', soraPro.meta.title],
   ]);
@@ -230,6 +234,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(veo.meta.title, /Pricing|References|Native Audio/i);
   assert.match(kling.meta.title, /Pricing|Control|15s/i);
   assert.match(seedream.meta.title, /Image Pricing|Reference Prep/i);
+  assert.match(seedance15.meta.title, /Pricing|Camera Fixed/i);
   assert.match(sora.meta.title, /Pricing|Native Audio|Examples/i);
   assert.match(soraPro.meta.title, /Pricing|1080p|Examples/i);
   assert.notEqual(sora.meta.title, soraPro.meta.title);
@@ -238,6 +243,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
 
 test('migrated template visible copy avoids route cannibalization claims', () => {
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
@@ -245,6 +251,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
 
   assert.ok(seedanceFast);
+  assert.ok(seedance15);
   assert.ok(seedance);
   assert.ok(ltxFast);
   assert.ok(ltxPro);
@@ -258,6 +265,13 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.match(visibleDecisionText(seedance), /current Seedance production route/i);
   assert.match(visibleDecisionText(seedance), /native audio/i);
   assert.match(visibleDecisionText(seedance), /multi-shot/i);
+  assert.match(visibleDecisionText(seedance15), /older supported Seedance route|legacy-compatible/i);
+  assert.match(visibleDecisionText(seedance15), /camera-fixed|seed/i);
+  assert.doesNotMatch(
+    visibleDecisionText(seedance15),
+    /current Seedance production route|broader reference workflows/i,
+    'Seedance 1.5 Pro should not cannibalize Seedance 2.0 production-route copy'
+  );
   assert.doesNotMatch(visibleDecisionText(ltxFast), /audio-to-video|retake|extend/i);
   assert.match(visibleDecisionText(ltxPro), /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);

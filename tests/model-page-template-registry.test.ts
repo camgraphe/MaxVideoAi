@@ -73,6 +73,7 @@ test('template registry enables Seedance production and draft model templates', 
     'kling-3-standard',
     'ltx-2-3-fast',
     'ltx-2-3-pro',
+    'seedance-1-5-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
     'seedream',
@@ -169,6 +170,20 @@ test('Sora templates preserve standard and Pro route intent', () => {
   assert.equal(soraPro.pricing.presets.some((preset) => preset.resolution === '1080p'), true);
   assert.equal(sora.hero.quickLinks.some((link) => link.href === '#prompting'), true);
   assert.equal(soraPro.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+});
+
+test('Seedance 1.5 Pro template preserves supported legacy route intent', () => {
+  const seedance15 = getModelPageTemplateConfig('seedance-1-5-pro');
+
+  assert.ok(seedance15);
+  assert.equal(seedance15.intent, 'specialized');
+  assert.equal(seedance15.hero.primaryCtaHref, '/app?engine=seedance-1-5-pro');
+  assert.equal(seedance15.pricing.anchorHref, '/pricing#seedance-1-5-pro-pricing');
+  assert.equal(seedance15.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.deepEqual(
+    seedance15.pricing.presets.map((preset) => preset.id),
+    ['5s-480p-audio', '8s-720p-audio', '10s-1080p-audio', 'max-duration']
+  );
 });
 
 test('template quick links avoid redirecting compare URLs', () => {
