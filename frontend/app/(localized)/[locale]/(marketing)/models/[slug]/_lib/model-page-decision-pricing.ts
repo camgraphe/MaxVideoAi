@@ -45,6 +45,7 @@ const SCENARIO_COPY: Record<
     standardPreview: 'Standard preview',
     stillImage: 'Still image',
     upTo15Images: 'Up to 15 generated/reference images total',
+    upTo720p: 'Up to 720p',
     upTo1080p: 'Up to 1080p',
   },
   fr: {
@@ -71,6 +72,7 @@ const SCENARIO_COPY: Record<
     standardPreview: 'Aperçu standard',
     stillImage: 'Image fixe',
     upTo15Images: 'Jusqu’à 15 images générées/références au total',
+    upTo720p: 'Jusqu’à 720p',
     upTo1080p: 'Jusqu’à 1080p',
   },
   es: {
@@ -97,6 +99,7 @@ const SCENARIO_COPY: Record<
     standardPreview: 'Vista previa estándar',
     stillImage: 'Imagen fija',
     upTo15Images: 'Hasta 15 imágenes generadas/referencias en total',
+    upTo720p: 'Hasta 720p',
     upTo1080p: 'Hasta 1080p',
   },
 };

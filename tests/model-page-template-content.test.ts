@@ -20,6 +20,8 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'kling-3-4k',
   'ltx-2-3-pro',
   'seedream',
+  'sora-2',
+  'sora-2-pro',
 ] as const;
 
 const LOCALES = ['en', 'fr', 'es'] as const;
@@ -188,6 +190,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
   const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
+  const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
+  const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
@@ -199,6 +203,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(kling4k);
   assert.ok(ltxPro);
   assert.ok(seedream);
+  assert.ok(sora);
+  assert.ok(soraPro);
 
   assert.equal(seedance.meta.title, 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI');
   assert.equal(
@@ -217,11 +223,17 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['kling-3-4k', kling4k.meta.title],
     ['ltx-2-3-pro', ltxPro.meta.title],
     ['seedream', seedream.meta.title],
+    ['sora-2', sora.meta.title],
+    ['sora-2-pro', soraPro.meta.title],
   ]);
   assert.equal(new Set(routeTitles.values()).size, routeTitles.size, 'priority migrated title tags should be distinct');
   assert.match(veo.meta.title, /Pricing|References|Native Audio/i);
   assert.match(kling.meta.title, /Pricing|Control|15s/i);
   assert.match(seedream.meta.title, /Image Pricing|Reference Prep/i);
+  assert.match(sora.meta.title, /Pricing|Native Audio|Examples/i);
+  assert.match(soraPro.meta.title, /Pricing|1080p|Examples/i);
+  assert.notEqual(sora.meta.title, soraPro.meta.title);
+  assert.notEqual(sora.meta.description, soraPro.meta.description);
 });
 
 test('migrated template visible copy avoids route cannibalization claims', () => {
@@ -229,11 +241,15 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
+  const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
+  const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
 
   assert.ok(seedanceFast);
   assert.ok(seedance);
   assert.ok(ltxFast);
   assert.ok(ltxPro);
+  assert.ok(sora);
+  assert.ok(soraPro);
 
   assert.doesNotMatch(
     visibleDecisionText(seedanceFast),
@@ -245,6 +261,16 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.doesNotMatch(visibleDecisionText(ltxFast), /audio-to-video|retake|extend/i);
   assert.match(visibleDecisionText(ltxPro), /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(ltxPro), /\/app\?engine=ltx-2-3-pro/i);
+  assert.doesNotMatch(
+    visibleDecisionText(sora),
+    /1080p delivery|higher-resolution finals|Pro route/i,
+    'Sora 2 copy should not cannibalize Sora 2 Pro final-delivery intent'
+  );
+  assert.doesNotMatch(
+    visibleDecisionText(soraPro),
+    /fast 720p concept passes|faster 720p concept|idea machine/i,
+    'Sora 2 Pro copy should not cannibalize Sora 2 concept-pass intent'
+  );
 
   for (const locale of LOCALES) {
     const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale });
@@ -253,6 +279,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale });
     const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale });
     const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale });
+    const localizedSora = buildModelDecisionData({ engine: getEngine('sora-2'), locale });
+    const localizedSoraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale });
 
     assert.ok(veo);
     assert.ok(veoLite);
@@ -260,6 +288,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(klingStandard);
     assert.ok(kling4k);
     assert.ok(seedream);
+    assert.ok(localizedSora);
+    assert.ok(localizedSoraPro);
 
     assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
     assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
@@ -282,6 +312,16 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       visibleDecisionText(seedream),
       /direct video generation|generate videos|text-to-video|image-to-video/i,
       `Seedream ${locale} copy should not imply direct video generation`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedSora),
+      /higher-resolution finals|Pro route/i,
+      `Sora 2 ${locale} copy should stay 720p-focused`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedSoraPro),
+      /longer AI videos|long-form/i,
+      `Sora 2 Pro ${locale} copy should not claim longer or long-form output`
     );
   }
 });

@@ -76,6 +76,8 @@ test('template registry enables Seedance production and draft model templates', 
     'seedance-2-0',
     'seedance-2-0-fast',
     'seedream',
+    'sora-2',
+    'sora-2-pro',
     'veo-3-1',
     'veo-3-1-fast',
     'veo-3-1-lite',
@@ -141,6 +143,32 @@ test('second-wave templates avoid cross-route overclaims', () => {
   assert.equal(kling4k.pricing.presets.some((preset) => preset.resolution === '4k'), true);
   assert.equal(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3');
   assert.notEqual(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3-pro');
+});
+
+test('Sora templates preserve standard and Pro route intent', () => {
+  const sora = getModelPageTemplateConfig('sora-2');
+  const soraPro = getModelPageTemplateConfig('sora-2-pro');
+
+  assert.ok(sora);
+  assert.ok(soraPro);
+  assert.equal(sora.intent, 'draft');
+  assert.equal(soraPro.intent, 'production');
+  assert.equal(sora.hero.primaryCtaHref, '/app?engine=sora-2');
+  assert.equal(soraPro.hero.primaryCtaHref, '/app?engine=sora-2-pro');
+  assert.equal(sora.pricing.anchorHref, '/pricing#sora-2-pricing');
+  assert.equal(soraPro.pricing.anchorHref, '/pricing#sora-2-pro-pricing');
+  assert.deepEqual(
+    sora.pricing.presets.map((preset) => preset.id),
+    ['4s-720p', '8s-720p', '12s-720p', 'audio-included', 'max-duration']
+  );
+  assert.deepEqual(
+    soraPro.pricing.presets.map((preset) => preset.id),
+    ['4s-720p', '8s-1080p', '12s-1080p', 'audio-included', 'max-duration']
+  );
+  assert.equal(sora.pricing.presets.every((preset) => preset.resolution !== '1080p'), true);
+  assert.equal(soraPro.pricing.presets.some((preset) => preset.resolution === '1080p'), true);
+  assert.equal(sora.hero.quickLinks.some((link) => link.href === '#prompting'), true);
+  assert.equal(soraPro.hero.quickLinks.some((link) => link.href === '#prompting'), true);
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

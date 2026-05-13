@@ -7,6 +7,8 @@ import { ltx23FastTemplateConfig } from './model-page-templates/ltx-2-3-fast';
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
+import { sora2ProTemplateConfig } from './model-page-templates/sora-2-pro';
+import { sora2TemplateConfig } from './model-page-templates/sora-2';
 import { veo31FastTemplateConfig } from './model-page-templates/veo-3-1-fast';
 import { veo31TemplateConfig } from './model-page-templates/veo-3-1';
 import { veo31LiteTemplateConfig } from './model-page-templates/veo-3-1-lite';
@@ -20,6 +22,8 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,
+  [sora2TemplateConfig.slug]: sora2TemplateConfig,
+  [sora2ProTemplateConfig.slug]: sora2ProTemplateConfig,
   [veo31FastTemplateConfig.slug]: veo31FastTemplateConfig,
   [veo31TemplateConfig.slug]: veo31TemplateConfig,
   [veo31LiteTemplateConfig.slug]: veo31LiteTemplateConfig,
