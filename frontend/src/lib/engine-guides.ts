@@ -15,8 +15,8 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'sora-2-pro': {
     description:
-      'Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.',
-    badges: ['1792×1024', 'Audio native', 'Lip-sync'],
+      'Sora 2 Pro unlocks 1080p renders, synced dialogue, and image-to-video control for top-tier productions.',
+    badges: ['1080p', 'Audio native', 'Lip-sync'],
   },
   'veo-3-1': {
     description:

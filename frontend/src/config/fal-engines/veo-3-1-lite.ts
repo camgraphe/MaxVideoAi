@@ -256,7 +256,7 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['veo-3-1-fast', 'veo-3-1', 'ltx-2-fast'],
+        suggestOpponents: ['veo-3-1-fast', 'veo-3-1', 'ltx-2-3-fast'],
         includeInHub: true,
       },
       app: {

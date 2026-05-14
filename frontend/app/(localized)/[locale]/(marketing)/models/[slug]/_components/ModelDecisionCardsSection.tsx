@@ -16,7 +16,7 @@ export function ModelDecisionCardsSection({ cards }: ModelDecisionCardsSectionPr
   if (!cards.length) return null;
 
   return (
-    <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4" aria-label="Seedance decision paths">
+    <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4" aria-label="Model decision paths">
       {cards.map((card, index) => {
         const Icon = DECISION_CARD_ICONS[index] ?? Lightbulb;
         return (

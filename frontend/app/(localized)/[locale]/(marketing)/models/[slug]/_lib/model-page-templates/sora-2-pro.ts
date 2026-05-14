@@ -29,13 +29,14 @@ export const sora2ProTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#sora-2-pro-pricing',
     presets: [
-      { id: '4s-720p', seconds: 4, resolution: '720p', labelKey: 'entryDraft' },
-      { id: '8s-1080p', seconds: 8, resolution: '1080p', labelKey: 'standardPreview' },
+      { id: '4s-720p', seconds: 4, resolution: '720p', labelKey: 'entryDraft', noteKey: 'fourSeconds720p' },
+      { id: '8s-1080p', seconds: 8, resolution: '1080p', labelKey: 'standardPreview', noteKey: 'eightSeconds1080p' },
       {
         id: '12s-1080p',
         seconds: 12,
         resolution: '1080p',
         labelKey: 'finalDelivery',
+        noteKey: 'twelveSeconds1080p',
         highlightKey: 'mostPopular',
       },
       { id: 'audio-included', fixedValueKey: 'audioExtraValue', labelKey: 'audio', noteKey: 'nativeAudioIncluded' },

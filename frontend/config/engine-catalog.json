@@ -1314,7 +1314,7 @@
         "suggestOpponents": [
           "veo-3-1-fast",
           "veo-3-1",
-          "ltx-2-fast"
+          "ltx-2-3-fast"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -10477,7 +10477,7 @@
               "4k"
             ],
             "default": "1k",
-            "description": "0.5K runs at half price, 2K is 1.5x, and 4K is 2x."
+            "description": "0.5K is the entry draft tier, with 1K, 2K, and 4K available for higher-resolution stills."
           },
           {
             "id": "aspect_ratio",
@@ -10524,7 +10524,7 @@
             "type": "boolean",
             "label": "Enable web search",
             "default": false,
-            "description": "Optional web grounding adds $0.015 per request."
+            "description": "Optional web grounding is quoted before generation."
           },
           {
             "id": "thinking_level",
@@ -10594,7 +10594,7 @@
           }
         },
         "currency": "USD",
-        "notes": "$0.08 per 1K image, $0.04 at 0.5K, $0.12 at 2K, $0.16 at 4K, plus $0.015/request for web search."
+        "notes": "Raw provider pricing is converted to MaxVideoAI display pricing before the live quote is shown."
       },
       "updatedAt": "2026-03-17T00:00:00Z",
       "ttlSec": 600,

@@ -1949,10 +1949,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'OPENAI PRO VIDEO MODEL',
       title: 'Sora 2 Pro',
-      subtitle: 'Higher-resolution finals, synced audio and reference-guided image-to-video for polished short-form production.',
-      subtitleHighlights: ['Higher-resolution finals', 'synced audio', 'reference-guided image-to-video'],
+      subtitle: 'Higher-resolution finals, audio control and reference-guided image-to-video for polished short-form production.',
+      subtitleHighlights: ['Higher-resolution finals', 'audio control', 'reference-guided image-to-video'],
       paragraph:
-        'Use Sora 2 Pro when a selected Sora concept needs the Pro route: 1080p delivery, text-to-video or image-to-video generation, native sound, and more final-quality review loops inside MaxVideoAI.',
+        'Use Sora 2 Pro when a selected Sora concept needs the current Pro route: 720p or 1080p delivery, text-to-video or image-to-video generation, optional native sound, and final-quality review loops inside MaxVideoAI.',
       primaryCta: { label: 'Generate with Sora 2 Pro', href: '/app?engine=sora-2-pro' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'sora') },
       quickLinks: [
@@ -1963,10 +1963,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Sora 2 Pro example',
-      description: '1080p short-form render with synced audio',
+      description: '8s 16:9 Pro render from the live gallery',
       renderLabel: 'View render',
-      badges: ['Audio on', '12s', '1080p'],
-      altContext: 'polished Sora 2 Pro short-form render with synced audio',
+      badges: ['Audio off', '8s', '16:9'],
+      altContext: 'Sora 2 Pro CCTV construction scene',
     },
     features: [
       { title: '1080p route', body: 'Use Pro for selected shots that need cleaner delivery.', tone: 'quality' },
@@ -2005,7 +2005,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Preset Pro totals - see the exact live price in the app before you generate.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
       ctaLabel: 'View full pricing',
-      maxDurationNote: 'Up to 1080p',
+      maxDurationNote: '4/8/12s · up to 1080p',
     },
     meta: {
       title: 'Sora 2 Pro: Pricing, 1080p & Examples | MaxVideoAI',
@@ -2017,10 +2017,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'MODÈLE VIDÉO OPENAI PRO',
       title: 'Sora 2 Pro',
-      subtitle: 'Finales en plus haute résolution, audio synchronisé et image-to-video guidé par référence pour des productions courtes soignées.',
-      subtitleHighlights: ['plus haute résolution', 'audio synchronisé', 'image-to-video guidé par référence'],
+      subtitle: 'Finales en plus haute résolution, contrôle audio et image-to-video guidé par référence pour des productions courtes soignées.',
+      subtitleHighlights: ['plus haute résolution', 'contrôle audio', 'image-to-video guidé par référence'],
       paragraph:
-        'Utilisez Sora 2 Pro quand un concept Sora sélectionné doit passer en route Pro : sortie 1080p, text-to-video ou image-to-video, son natif et boucles de revue plus proches du rendu final.',
+        'Utilisez Sora 2 Pro quand un concept Sora sélectionné doit passer sur la route Pro actuelle : sortie 720p ou 1080p, text-to-video ou image-to-video, son natif optionnel et revues proches du rendu final.',
       primaryCta: { label: 'Générer avec Sora 2 Pro', href: '/app?engine=sora-2-pro' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'sora') },
       quickLinks: [
@@ -2031,10 +2031,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Sora 2 Pro',
-      description: 'Rendu court 1080p avec audio synchronisé',
+      description: 'Rendu Pro 8 s 16:9 issu de la galerie',
       renderLabel: 'Voir le rendu',
-      badges: ['Audio activé', '12 s', '1080p'],
-      altContext: 'rendu court Sora 2 Pro soigné avec audio synchronisé',
+      badges: ['Audio désactivé', '8 s', '16:9'],
+      altContext: 'scène chantier CCTV Sora 2 Pro',
     },
     features: [
       { title: 'Route 1080p', body: 'Utilisez Pro pour les plans sélectionnés qui demandent une livraison plus nette.', tone: 'quality' },
@@ -2073,7 +2073,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Prix totaux Pro — prix exact affiché dans l’app avant génération.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
-      maxDurationNote: 'Jusqu’à 1080p',
+      maxDurationNote: '4/8/12 s · jusqu’à 1080p',
     },
     meta: {
       title: 'Sora 2 Pro : tarifs, 1080p et exemples | MaxVideoAI',
@@ -2085,10 +2085,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'MODELO DE VIDEO OPENAI PRO',
       title: 'Sora 2 Pro',
-      subtitle: 'Finales en mayor resolución, audio sincronizado e imagen a video guiada por referencia para producción short-form pulida.',
-      subtitleHighlights: ['mayor resolución', 'audio sincronizado', 'imagen a video guiada por referencia'],
+      subtitle: 'Finales en mayor resolución, control de audio e imagen a video guiada por referencia para producción short-form pulida.',
+      subtitleHighlights: ['mayor resolución', 'control de audio', 'imagen a video guiada por referencia'],
       paragraph:
-        'Usa Sora 2 Pro cuando un concepto Sora elegido necesita la ruta Pro: salida 1080p, texto a video o imagen a video, sonido nativo y revisiones más cercanas a entrega final en MaxVideoAI.',
+        'Usa Sora 2 Pro cuando un concepto Sora elegido necesita la ruta Pro actual: salida 720p o 1080p, texto a video o imagen a video, sonido nativo opcional y revisiones cercanas a entrega final.',
       primaryCta: { label: 'Generar con Sora 2 Pro', href: '/app?engine=sora-2-pro' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'sora') },
       quickLinks: [
@@ -2099,10 +2099,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Sora 2 Pro',
-      description: 'Render corto 1080p con audio sincronizado',
+      description: 'Render Pro 8 s 16:9 de la galería',
       renderLabel: 'Ver render',
-      badges: ['Audio activo', '12 s', '1080p'],
-      altContext: 'render corto pulido con Sora 2 Pro y audio sincronizado',
+      badges: ['Audio desactivado', '8 s', '16:9'],
+      altContext: 'escena CCTV de construcción con Sora 2 Pro',
     },
     features: [
       { title: 'Ruta 1080p', body: 'Usa Pro para tomas seleccionadas que necesitan entrega más limpia.', tone: 'quality' },
@@ -2141,7 +2141,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Totales Pro predefinidos. Consulta el precio exacto en la app antes de generar.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
-      maxDurationNote: 'Hasta 1080p',
+      maxDurationNote: '4/8/12 s · hasta 1080p',
     },
     meta: {
       title: 'Sora 2 Pro: precios, 1080p y ejemplos | MaxVideoAI',
@@ -3037,8 +3037,8 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Luma Ray 2 pricing at a glance',
-      subtitle: 'Preset Ray 2 generate totals - see the exact live price in the app before you generate.',
-      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      subtitle: 'Preset Ray 2 generate totals by duration and resolution - see the exact live price in the app before you generate.',
+      footnote: 'Generate pricing uses preset duration/resolution tiers. Modify and Reframe are quoted live from source-clip settings.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'Up to 1080p',
     },
@@ -3105,8 +3105,8 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Prix Luma Ray 2 en un coup d’œil',
-      subtitle: 'Prix totaux de génération Ray 2 — prix exact affiché dans l’app avant génération.',
-      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      subtitle: 'Prix totaux Ray 2 par palier durée/résolution — prix exact affiché dans l’app avant génération.',
+      footnote: 'La génération suit des paliers durée/résolution. Modify et Reframe sont chiffrés en direct selon le clip source et les réglages.',
       ctaLabel: 'Voir tous les tarifs',
       maxDurationNote: 'Jusqu’à 1080p',
     },
@@ -3173,8 +3173,8 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Precios de Luma Ray 2 de un vistazo',
-      subtitle: 'Totales de generación Ray 2. Consulta el precio exacto en la app antes de generar.',
-      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      subtitle: 'Totales Ray 2 por duración y resolución. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'La generación usa niveles de duración/resolución. Modify y Reframe se cotizan en vivo según el clip fuente y los ajustes.',
       ctaLabel: 'Ver precios completos',
       maxDurationNote: 'Hasta 1080p',
     },
@@ -3191,10 +3191,10 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'LUMA FAST DRAFT ROUTE',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Fast Luma drafts for image-to-video tests, Modify and Reframe tests, and lower-cost iteration.',
-      subtitleHighlights: ['Fast Luma drafts', 'Modify and Reframe tests', 'lower-cost iteration'],
+      subtitle: 'Fast Luma drafts for start-image tests, Modify and Reframe passes, and lower-cost iteration.',
+      subtitleHighlights: ['Fast Luma drafts', 'start-image tests', 'lower-cost iteration'],
       paragraph:
-        'Use Luma Ray 2 Flash when you need the same Luma workflow surface at draft speed: test prompts, animate stills, explore modify strengths and validate crops before moving winners to Ray 2.',
+        'Use Luma Ray 2 Flash when you need the same Luma workflow family at draft speed: test prompts, animate start frames, explore modify strengths and validate crops before moving winners to Ray 2.',
       primaryCta: { label: 'Draft with Luma Ray 2 Flash', href: '/app?engine=lumaRay2_flash' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
       quickLinks: [
@@ -3212,7 +3212,7 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Fast Luma drafts', body: 'Move quickly through concepts before the premium Ray 2 pass.', tone: 'duration' },
-      { title: 'Image-to-video tests', body: 'Animate stills to check motion, framing and landing before final spend.', tone: 'reference' },
+      { title: 'Start-image tests', body: 'Animate a first frame to check motion, framing and landing before final spend.', tone: 'reference' },
       { title: 'Modify passes', body: 'Try adherence, flex and reimagine strengths on source clips.', tone: 'continuity' },
       { title: 'Reframe variants', body: 'Test vertical, square or wide crops before locking delivery formats.', tone: 'reference' },
       { title: 'Up to 1080p', body: 'Choose 540p, 720p or 1080p for draft generation.', tone: 'quality' },
@@ -3240,8 +3240,8 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     ],
     referenceWorkflows: [
       { title: 'Text-to-video', body: 'Keep the draft prompt compact: one subject, one move, one mood and one format.' },
-      { title: 'Image-to-video', body: 'Use a still to lock composition while Flash tests motion and pacing.' },
-      { title: 'End frame', body: 'Add an end image only when the draft needs a specific landing composition.' },
+      { title: 'Start image', body: 'Use a first frame to lock composition while Flash tests motion and pacing.' },
+      { title: 'Optional end frame', body: 'Add an end image only when the active image-to-video route exposes it and the draft needs a specific landing composition.' },
       { title: 'Modify', body: 'Explore source-video look changes before committing the winning direction to Ray 2.' },
       { title: 'Reframe', body: 'Validate mobile, square or wide crops while the source clip is still being approved.' },
     ],
@@ -3255,17 +3255,17 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Luma Ray 2 Flash: Pricing, Drafts & Examples | MaxVideoAI',
       description:
-        'Use Luma Ray 2 Flash for faster Luma drafts, image-to-video tests, Modify passes, Reframe variants and lower-cost iteration before Ray 2 finals.',
+        'Use Luma Ray 2 Flash for faster Luma drafts, start-image tests, Modify passes, Reframe variants and lower-cost iteration before Ray 2.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'ROUTE LUMA FAST POUR BROUILLONS',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Brouillons Luma rapides pour tests image-to-video, Modify, Reframe et itérations moins coûteuses.',
-      subtitleHighlights: ['Brouillons Luma rapides', 'Modify, Reframe', 'itérations moins coûteuses'],
+      subtitle: 'Brouillons Luma rapides pour tests avec image de départ, Modify, Reframe et itérations moins coûteuses.',
+      subtitleHighlights: ['Brouillons Luma rapides', 'tests avec image de départ', 'itérations moins coûteuses'],
       paragraph:
-        'Utilisez Luma Ray 2 Flash pour garder le même socle Luma à vitesse brouillon : tester des prompts, animer des images, explorer les forces Modify et valider des recadrages avant de passer les meilleurs choix dans Ray 2.',
+        'Utilisez Luma Ray 2 Flash pour garder la même famille de workflows Luma à vitesse brouillon : tester des prompts, animer des images de départ, explorer les forces Modify et valider des recadrages avant de passer les meilleurs choix dans Ray 2.',
       primaryCta: { label: 'Créer un brouillon Luma Flash', href: '/app?engine=lumaRay2_flash' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
       quickLinks: [
@@ -3283,7 +3283,7 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Brouillons Luma rapides', body: 'Avancez vite dans les concepts avant la passe premium Ray 2.', tone: 'duration' },
-      { title: 'Tests image-to-video', body: 'Animez des images pour vérifier mouvement, cadrage et arrivée.', tone: 'reference' },
+      { title: 'Tests image de départ', body: 'Animez une première image pour vérifier mouvement, cadrage et arrivée.', tone: 'reference' },
       { title: 'Passes Modify', body: 'Testez les forces adhere, flex et reimagine sur une source vidéo.', tone: 'continuity' },
       { title: 'Variantes Reframe', body: 'Validez crops verticaux, carrés ou larges avant la livraison.', tone: 'reference' },
       { title: 'Jusqu’à 1080p', body: 'Choisissez 540p, 720p ou 1080p pour les générations brouillon.', tone: 'quality' },
@@ -3311,8 +3311,8 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     ],
     referenceWorkflows: [
       { title: 'Text-to-video', body: 'Gardez un prompt court : un sujet, un mouvement, une ambiance, un format.' },
-      { title: 'Image-to-video', body: 'Utilisez une image pour verrouiller la composition pendant que Flash teste le mouvement.' },
-      { title: 'Image de fin', body: 'Ajoutez une fin seulement si le brouillon doit atterrir sur une composition précise.' },
+      { title: 'Image de départ', body: 'Utilisez une première image pour verrouiller la composition pendant que Flash teste le mouvement.' },
+      { title: 'Image de fin optionnelle', body: 'Ajoutez une image de fin seulement si la route image-vidéo active l’expose et que le brouillon doit atterrir sur une composition précise.' },
       { title: 'Modify', body: 'Explorez les changements de look sur source vidéo avant la passe Ray 2.' },
       { title: 'Reframe', body: 'Validez crops mobile, carré ou large pendant que le clip source est encore en validation.' },
     ],
@@ -3326,17 +3326,17 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Luma Ray 2 Flash : tarifs, brouillons et exemples | MaxVideoAI',
       description:
-        'Utilisez Luma Ray 2 Flash pour des brouillons Luma rapides, tests image-to-video, passes Modify, variantes Reframe et itérations moins coûteuses avant Ray 2.',
+        'Utilisez Luma Ray 2 Flash pour des brouillons Luma rapides, tests avec image de départ, passes Modify, variantes Reframe et itérations moins coûteuses avant Ray 2.',
     },
   },
   es: {
     hero: {
       eyebrow: 'RUTA LUMA FAST PARA BORRADORES',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Borradores Luma rápidos para pruebas de imagen a video, Modify, Reframe e iteración de menor coste.',
-      subtitleHighlights: ['Borradores Luma rápidos', 'Modify, Reframe', 'iteración de menor coste'],
+      subtitle: 'Borradores Luma rápidos para pruebas con imagen inicial, Modify, Reframe e iteración de menor coste.',
+      subtitleHighlights: ['Borradores Luma rápidos', 'pruebas con imagen inicial', 'iteración de menor coste'],
       paragraph:
-        'Usa Luma Ray 2 Flash cuando necesitas el mismo flujo Luma a velocidad de borrador: probar prompts, animar stills, explorar fuerzas de Modify y validar crops antes de pasar ganadores a Ray 2.',
+        'Usa Luma Ray 2 Flash cuando necesitas la misma familia de workflows Luma a velocidad de borrador: probar prompts, animar imágenes iniciales, explorar fuerzas de Modify y validar crops antes de pasar ganadores a Ray 2.',
       primaryCta: { label: 'Crear borrador con Luma Flash', href: '/app?engine=lumaRay2_flash' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
       quickLinks: [
@@ -3354,7 +3354,7 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Borradores Luma rápidos', body: 'Avanza rápido por conceptos antes de la pasada premium Ray 2.', tone: 'duration' },
-      { title: 'Pruebas imagen a video', body: 'Anima stills para revisar movimiento, encuadre y llegada.', tone: 'reference' },
+      { title: 'Pruebas con imagen inicial', body: 'Anima un primer frame para revisar movimiento, encuadre y llegada.', tone: 'reference' },
       { title: 'Pasadas Modify', body: 'Prueba fuerzas adhere, flex y reimagine sobre clips fuente.', tone: 'continuity' },
       { title: 'Variantes Reframe', body: 'Valida crops verticales, cuadrados o widescreen antes de entregar.', tone: 'reference' },
       { title: 'Hasta 1080p', body: 'Elige 540p, 720p o 1080p para generación de borradores.', tone: 'quality' },
@@ -3382,8 +3382,8 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     ],
     referenceWorkflows: [
       { title: 'Texto a video', body: 'Mantén el prompt compacto: un sujeto, un movimiento, un mood y un formato.' },
-      { title: 'Imagen a video', body: 'Usa un still para fijar composición mientras Flash prueba movimiento y pacing.' },
-      { title: 'Cuadro final', body: 'Agrega cierre solo cuando el borrador debe aterrizar en una composición específica.' },
+      { title: 'Imagen inicial', body: 'Usa un primer frame para fijar composición mientras Flash prueba movimiento y pacing.' },
+      { title: 'Cuadro final opcional', body: 'Agrega un cuadro final solo si la ruta imagen a video activa lo expone y el borrador debe aterrizar en una composición específica.' },
       { title: 'Modify', body: 'Explora cambios de look en video fuente antes de pasar la dirección ganadora a Ray 2.' },
       { title: 'Reframe', body: 'Valida crops móviles, cuadrados o widescreen mientras el clip fuente se aprueba.' },
     ],
@@ -3397,7 +3397,7 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Luma Ray 2 Flash: precios, borradores y ejemplos | MaxVideoAI',
       description:
-        'Usa Luma Ray 2 Flash para borradores Luma rápidos, pruebas de imagen a video, pasadas Modify, variantes Reframe e iteración de menor coste antes de Ray 2.',
+        'Usa Luma Ray 2 Flash para borradores Luma rápidos, pruebas con imagen inicial, pasadas Modify, variantes Reframe e iteración de menor coste antes de Ray 2.',
     },
   },
 };

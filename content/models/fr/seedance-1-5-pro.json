@@ -138,6 +138,14 @@
       "a": "Oui. L’audio est activé par défaut mais vous pouvez le désactiver pour un coût plus bas."
     },
     {
+      "q": "Comment utiliser le seed control ?",
+      "a": "Utilisez -1 pour explorer au hasard, puis réutilisez un seed fixe pour comparer de petits changements de prompt, camera_fixed, timing ou audio sans changer tout le rendu."
+    },
+    {
+      "q": "Seedance 1.5 Pro supporte-t-il les images de départ et de fin ?",
+      "a": "Oui en image-to-video : utilisez une image de départ et une image finale optionnelle quand la pose finale, la position produit ou l’atterrissage de transition compte."
+    },
+    {
       "q": "Quelles résolutions sont supportées ?",
       "a": "T2V supporte 480p et 720p. I2V supporte 480p, 720p et 1080p."
     },

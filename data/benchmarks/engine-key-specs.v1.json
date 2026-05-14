@@ -49,12 +49,12 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "videoToVideo": "Not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "Supported (single start image)",
         "referenceVideo": "Not supported",
-        "maxResolution": "1792×1024",
-        "maxDuration": "12s",
+        "maxResolution": "720p / 1080p",
+        "maxDuration": "4 / 8 / 12s",
         "aspectRatios": [
           "16:9",
           "9:16"
@@ -604,8 +604,8 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "firstLastFrame": "Supported (I2V start + optional end frame)",
+        "referenceImageStyle": "Supported (single start image)",
         "referenceVideo": "Not supported",
         "maxResolution": "1080p",
         "maxDuration": "12s",
@@ -622,7 +622,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Supported",
+        "lipSync": "Best effort with short dialogue",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)"
       }

@@ -91,7 +91,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Per-second; $0.05/s at 720p or $0.08/s at 1080p; pay-as-you-go wallet"
+      "body": "MaxVideoAI display pricing: $0.07/s at 720p or $0.11/s at 1080p; pay-as-you-go wallet"
     },
     {
       "label": "Render timing",
@@ -155,7 +155,7 @@
     },
     {
       "q": "How does pricing compare to Veo 3.1?",
-      "a": "Veo 3.1 Lite is cheaper per second than the other Veo tiers: $0.05/s at 720p or $0.08/s at 1080p, with audio included."
+      "a": "Veo 3.1 Lite is cheaper per second than the other Veo tiers on MaxVideoAI: $0.07/s at 720p or $0.11/s at 1080p, with audio included. Google direct API pricing may differ."
     },
     {
       "q": "Can I run Veo 3.1 Lite from Europe or LATAM?",
@@ -308,7 +308,7 @@
       },
       {
         "q": "How does pricing compare to Veo 3.1?",
-        "a": "Lite is cheaper per second: $0.05/s at 720p or $0.08/s at 1080p, with audio always included."
+        "a": "Lite is cheaper per second on MaxVideoAI: $0.07/s at 720p or $0.11/s at 1080p, with audio always included. Google direct API pricing may differ."
       },
       {
         "q": "Can I run Veo 3.1 Lite from Europe / LATAM?",
@@ -369,7 +369,7 @@
         "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-6/8s):\n[Framing + action + camera move]\n\nLook + mood:\n[Lighting + palette]\n\nSound (optional):\n[Ambience + 1 cue]"
       }
     ],
-    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideLabel": "Official Veo / Google DeepMind guide",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
     "demoTitle": "Demo: prompt pattern for Veo 3.1 Lite",
     "demoPromptLabel": "6s vertical loop (9:16, 1080p)",

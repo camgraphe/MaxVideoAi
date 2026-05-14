@@ -245,7 +245,13 @@ async function renderMarketingModelPage({
       heroMedia = toFeaturedMedia(heroCandidate) ?? heroMedia;
     }
   }
-  const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  let demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  if (engine.modelSlug === 'sora-2-pro') {
+    demoMedia = heroMedia;
+  }
+  if (engine.modelSlug === 'veo-3-1-lite') {
+    demoMedia = fallbackMedia;
+  }
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
     demoMedia.prompt =
       '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
@@ -255,7 +261,7 @@ async function renderMarketingModelPage({
     : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}`;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPriceInSpecs = true;
+  const showPriceInSpecs = engine.id !== 'lumaRay2';
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
@@ -279,7 +285,9 @@ async function renderMarketingModelPage({
   const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
   const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
   const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
-  const fallbackPriceRows: KeySpecRow[] = priceRows.length
+  const fallbackPriceRows: KeySpecRow[] = !showPriceInSpecs
+    ? []
+    : priceRows.length
     ? []
     : isImageEngine
       ? keySpecValues?.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)

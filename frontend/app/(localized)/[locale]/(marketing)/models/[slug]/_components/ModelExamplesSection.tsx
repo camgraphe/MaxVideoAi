@@ -100,6 +100,39 @@ function getFallbackExamplesIntro(locale: AppLocale, modelName: string) {
   return `Explore real community outputs and see how ${modelName} performs inside MaxVideoAI workflows.`;
 }
 
+function isLumaRay2Route(engineSlug?: string) {
+  return engineSlug === 'luma-ray-2' || engineSlug === 'lumaRay2';
+}
+
+function isLumaRay2FlashRoute(engineSlug?: string) {
+  return engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
+}
+
+function isVeoLiteRoute(engineSlug?: string) {
+  return engineSlug === 'veo-3-1-lite';
+}
+
+function isSeedanceCurrentRoute(engineSlug?: string) {
+  return engineSlug === 'seedance-2-0' || engineSlug === 'seedance-2-0-fast';
+}
+
+function isSeedance15ProRoute(engineSlug?: string) {
+  return engineSlug === 'seedance-1-5-pro';
+}
+
+function isSora2ProRoute(engineSlug?: string) {
+  return engineSlug === 'sora-2-pro';
+}
+
+function isSilentVideoDecisionEngine(engineSlug?: string) {
+  return (
+    engineSlug === 'minimax-hailuo-02-text' ||
+    engineSlug === 'pika-text-to-video' ||
+    isLumaRay2Route(engineSlug) ||
+    isLumaRay2FlashRoute(engineSlug)
+  );
+}
+
 function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, engineSlug?: string): DecisionExampleFilter[] {
   if (isImageEngine) {
     if (engineSlug === 'seedream') {
@@ -218,33 +251,36 @@ function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, en
   }
 
   if (locale === 'fr') {
-    return [
+    const filters: DecisionExampleFilter[] = [
       { id: 'all', label: 'Tous' },
       { id: 'cinematic', label: 'Cinématique' },
       { id: 'product', label: 'Produit / Pub' },
       { id: 'action', label: 'Action' },
       { id: 'vertical', label: 'Vertical' },
-      { id: 'audio', label: PRICE_AUDIO_LABELS.fr.on },
     ];
+    if (!isSilentVideoDecisionEngine(engineSlug)) filters.push({ id: 'audio', label: PRICE_AUDIO_LABELS.fr.on });
+    return filters;
   }
   if (locale === 'es') {
-    return [
+    const filters: DecisionExampleFilter[] = [
       { id: 'all', label: 'Todo' },
       { id: 'cinematic', label: 'Cinemático' },
       { id: 'product', label: 'Producto / Anuncio' },
       { id: 'action', label: 'Acción' },
       { id: 'vertical', label: 'Vertical' },
-      { id: 'audio', label: PRICE_AUDIO_LABELS.es.on },
     ];
+    if (!isSilentVideoDecisionEngine(engineSlug)) filters.push({ id: 'audio', label: PRICE_AUDIO_LABELS.es.on });
+    return filters;
   }
-  return [
+  const filters: DecisionExampleFilter[] = [
     { id: 'all', label: 'All' },
     { id: 'cinematic', label: 'Cinematic' },
     { id: 'product', label: 'Product / Ad' },
     { id: 'action', label: 'Action' },
     { id: 'vertical', label: 'Vertical' },
-    { id: 'audio', label: 'Audio on' },
   ];
+  if (!isSilentVideoDecisionEngine(engineSlug)) filters.push({ id: 'audio', label: 'Audio on' });
+  return filters;
 }
 
 function getSilentBadgeLabel(locale: AppLocale) {
@@ -287,32 +323,62 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
     ];
   }
 
-  if (engineSlug === 'minimax-hailuo-02-text' || engineSlug === 'pika-text-to-video') {
+  if (isSilentVideoDecisionEngine(engineSlug)) {
     const isPika = engineSlug === 'pika-text-to-video';
+    const isLuma = isLumaRay2Route(engineSlug);
+    const isLumaFlash = isLumaRay2FlashRoute(engineSlug);
     if (locale === 'fr') {
       return [
-        { title: isPika ? 'Boucles stylisées' : 'Rendus brouillon', body: isPika ? 'Voyez les boucles Text-to-Video silencieuses possibles avec Pika 2.2.' : 'Voyez les tests mouvement légers possibles avec Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
-        { title: 'Recréer un test', body: isPika ? 'Ouvrez l’app et réutilisez le prompt, le ratio et la durée.' : 'Ouvrez l’app et réutilisez le prompt ou l’image de départ.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
-        { title: 'Sortie silencieuse', body: isPika ? 'Aucune bande-son générée ici ; ajoutez son et voix plus tard.' : 'Pas d’audio natif sur cette route ; ajoutez son et voix plus tard.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
-        { title: isPika ? 'Seeds et négatifs' : 'Tests physiques', body: isPika ? 'Gardez une direction visuelle et bloquez texte, logos ou artefacts.' : 'Vérifiez force, collisions, tissu, eau et contact au sol.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
-        { title: isPika ? 'Social first' : 'Route de brouillon', body: isPika ? 'Pensé pour clips courts, overlays et loops à monter ensuite.' : '512P/768P ici ; passez les plans validés sur une route finale.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Boucles stylisées' : isLuma ? 'Rendus Luma premium' : isLumaFlash ? 'Brouillons Luma rapides' : 'Rendus brouillon', body: isPika ? 'Voyez les boucles Text-to-Video silencieuses possibles avec Pika 2.2.' : isLuma ? 'Comparez génération, image de départ, Modify et Reframe dans Ray 2.' : isLumaFlash ? 'Comparez vite directions, cadrages et versions Modify avant Ray 2.' : 'Voyez les tests mouvement légers possibles avec Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isLuma ? 'Recréer un rendu' : 'Recréer un test', body: isPika ? 'Ouvrez l’app et réutilisez le prompt, le ratio et la durée.' : isLuma ? 'Ouvrez l’app avec Ray 2 et réutilisez prompt, ratio et durée.' : isLumaFlash ? 'Ouvrez l’app avec Ray 2 Flash et réutilisez la recette du draft.' : 'Ouvrez l’app et réutilisez le prompt ou l’image de départ.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Sortie silencieuse', body: isPika ? 'Aucune bande-son générée ici ; ajoutez son et voix plus tard.' : isLuma ? 'Ray 2 ne génère pas d’audio natif dans cette route MaxVideoAI.' : isLumaFlash ? 'Ray 2 Flash ne génère pas d’audio natif dans cette route.' : 'Pas d’audio natif sur cette route ; ajoutez son et voix plus tard.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Seeds et négatifs' : isLuma || isLumaFlash ? 'Start image et edit' : 'Tests physiques', body: isPika ? 'Gardez une direction visuelle et bloquez texte, logos ou artefacts.' : isLuma ? 'Animez une image de départ, modifiez un clip source ou recadrez un master.' : isLumaFlash ? 'Animez une image de départ ou testez Modify/Reframe sur clip source.' : 'Vérifiez force, collisions, tissu, eau et contact au sol.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Social first' : isLuma ? 'Route finale Ray 2' : isLumaFlash ? 'Upgrade vers Ray 2' : 'Route de brouillon', body: isPika ? 'Pensé pour clips courts, overlays et loops à monter ensuite.' : isLuma ? 'Gardez Ray 2 pour les shots validés et les variantes de livraison.' : isLumaFlash ? 'Gardez Flash pour l’itération, puis finalisez les gagnants sur Ray 2.' : '512P/768P ici ; passez les plans validés sur une route finale.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
       ];
     }
     if (locale === 'es') {
       return [
-        { title: isPika ? 'Loops estilizados' : 'Renders de borrador', body: isPika ? 'Mira loops Text-to-Video sin audio posibles con Pika 2.2.' : 'Mira pruebas ligeras de movimiento posibles con Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
-        { title: 'Recrear una prueba', body: isPika ? 'Abre la app y reutiliza prompt, formato y duración.' : 'Abre la app y reutiliza prompt o imagen inicial.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
-        { title: 'Salida sin audio', body: isPika ? 'Aquí no se genera banda sonora; añade sonido y voz después.' : 'Esta ruta no tiene audio nativo; añade sonido y voz después.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
-        { title: isPika ? 'Seeds y negativos' : 'Pruebas físicas', body: isPika ? 'Mantén una dirección visual y bloquea texto, logos o artefactos.' : 'Revisa fuerza, colisiones, tela, agua y contacto con el suelo.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
-        { title: isPika ? 'Social first' : 'Ruta de borrador', body: isPika ? 'Pensado para clips cortos, overlays y loops para editar después.' : '512P/768P aquí; pasa los planos aprobados a una ruta final.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Loops estilizados' : isLuma ? 'Renders Luma premium' : isLumaFlash ? 'Borradores Luma rápidos' : 'Renders de borrador', body: isPika ? 'Mira loops Text-to-Video sin audio posibles con Pika 2.2.' : isLuma ? 'Compara generación, imagen inicial, Modify y Reframe dentro de Ray 2.' : isLumaFlash ? 'Compara rápido dirección, encuadre y versiones Modify antes de Ray 2.' : 'Mira pruebas ligeras de movimiento posibles con Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isLuma ? 'Recrear un render' : 'Recrear una prueba', body: isPika ? 'Abre la app y reutiliza prompt, formato y duración.' : isLuma ? 'Abre la app con Ray 2 y reutiliza prompt, formato y duración.' : isLumaFlash ? 'Abre la app con Ray 2 Flash y reutiliza la receta del borrador.' : 'Abre la app y reutiliza prompt o imagen inicial.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Salida sin audio', body: isPika ? 'Aquí no se genera banda sonora; añade sonido y voz después.' : isLuma ? 'Ray 2 no genera audio nativo en esta ruta de MaxVideoAI.' : isLumaFlash ? 'Ray 2 Flash no genera audio nativo en esta ruta.' : 'Esta ruta no tiene audio nativo; añade sonido y voz después.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Seeds y negativos' : isLuma || isLumaFlash ? 'Start image y edición' : 'Pruebas físicas', body: isPika ? 'Mantén una dirección visual y bloquea texto, logos o artefactos.' : isLuma ? 'Anima una imagen inicial, modifica un clip fuente o reencuadra un master.' : isLumaFlash ? 'Anima una imagen inicial o prueba Modify/Reframe sobre video fuente.' : 'Revisa fuerza, colisiones, tela, agua y contacto con el suelo.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Social first' : isLuma ? 'Ruta final Ray 2' : isLumaFlash ? 'Upgrade a Ray 2' : 'Ruta de borrador', body: isPika ? 'Pensado para clips cortos, overlays y loops para editar después.' : isLuma ? 'Usa Ray 2 para tomas aprobadas y variantes de entrega.' : isLumaFlash ? 'Usa Flash para iterar y finaliza los ganadores en Ray 2.' : '512P/768P aquí; pasa los planos aprobados a una ruta final.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
       ];
     }
     return [
-      { title: isPika ? 'Stylized loops' : 'Draft renders', body: isPika ? `See silent Text-to-Video loops possible with ${modelName}.` : `See lightweight motion tests possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
-      { title: 'Recreate a test', body: isPika ? 'Open the app and reuse the prompt, aspect ratio and duration.' : 'Open the app and reuse the prompt or start image setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
-      { title: 'Silent output', body: isPika ? 'No soundtrack is generated here; add sound and voice later.' : 'No native audio on this route; add sound and voice later.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
-      { title: isPika ? 'Seeds and negatives' : 'Physics checks', body: isPika ? 'Keep a visual lane and block text, logos or artifacts.' : 'Review force, collisions, cloth, water and ground contact.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
-      { title: isPika ? 'Social first' : 'Draft route', body: isPika ? 'Built for short clips, overlays and loops you can edit later.' : '512P/768P here; move approved shots to a final route.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isPika ? 'Stylized loops' : isLuma ? 'Premium Luma renders' : isLumaFlash ? 'Fast Luma drafts' : 'Draft renders', body: isPika ? `See silent Text-to-Video loops possible with ${modelName}.` : isLuma ? 'Compare generation, start-image motion, Modify and Reframe inside Ray 2.' : isLumaFlash ? 'Compare direction, framing and Modify variants before Ray 2.' : `See lightweight motion tests possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isLuma ? 'Recreate a render' : 'Recreate a test', body: isPika ? 'Open the app and reuse the prompt, aspect ratio and duration.' : isLuma ? 'Open Ray 2 in the app and reuse prompt, aspect ratio and duration.' : isLumaFlash ? 'Open Ray 2 Flash in the app and reuse the draft setup.' : 'Open the app and reuse the prompt or start image setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Silent output', body: isPika ? 'No soundtrack is generated here; add sound and voice later.' : isLuma ? 'Ray 2 does not generate native audio on this MaxVideoAI route.' : isLumaFlash ? 'Ray 2 Flash does not generate native audio on this route.' : 'No native audio on this route; add sound and voice later.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isPika ? 'Seeds and negatives' : isLuma || isLumaFlash ? 'Start image and edit' : 'Physics checks', body: isPika ? 'Keep a visual lane and block text, logos or artifacts.' : isLuma ? 'Animate a start frame, modify a source clip or reframe an approved master.' : isLumaFlash ? 'Animate a start frame or test Modify/Reframe from a source clip.' : 'Review force, collisions, cloth, water and ground contact.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isPika ? 'Social first' : isLuma ? 'Ray 2 final route' : isLumaFlash ? 'Upgrade to Ray 2' : 'Draft route', body: isPika ? 'Built for short clips, overlays and loops you can edit later.' : isLuma ? 'Use Ray 2 for selected shots and final delivery variants.' : isLumaFlash ? 'Use Flash for iteration, then final selected shots on Ray 2.' : '512P/768P here; move approved shots to a final route.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
+  if (isSeedance15ProRoute(engineSlug)) {
+    if (locale === 'fr') {
+      return [
+        { title: 'Rendus camera_fixed', body: `Voyez les plans verrouillés possibles avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recréer une variante', body: 'Ouvrez l’app avec le même seed, ratio et réglage caméra.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio on/off', body: 'Gardez l’audio natif ou coupez-le pour réduire le coût.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Images départ/fin', body: 'Utilisez une image initiale et une fin optionnelle en I2V.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Route legacy contrôlée', body: 'Idéal pour tests Seedance 1.5 répétables avant migration 2.0.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: 'Renders camera_fixed', body: `Mira tomas bloqueadas posibles con ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recrear una variante', body: 'Abre la app con el mismo seed, ratio y ajuste de cámara.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio on/off', body: 'Mantén audio nativo o apágalo para reducir coste.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Frames inicial/final', body: 'Usa una imagen inicial y un final opcional en I2V.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Ruta legacy controlada', body: 'Útil para pruebas Seedance 1.5 repetibles antes de migrar a 2.0.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: 'Camera-fixed renders', body: `See locked-camera shots possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Recreate a variant', body: 'Open the app with the same seed, ratio and camera setting.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Audio on/off', body: 'Keep native audio or switch it off for a lower quote.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Start/end frames', body: 'Use a start image and optional end frame in I2V.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Controlled legacy route', body: 'Useful for repeatable Seedance 1.5 tests before moving to 2.0.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
     ];
   }
 
@@ -352,8 +418,46 @@ function getDecisionExampleCategory(video: ExampleGalleryVideo, locale: AppLocal
   return locale === 'fr' ? 'Render' : locale === 'es' ? 'Render' : 'Render';
 }
 
-function getCuratedDecisionExampleTitle(index: number, fallback: string, locale: AppLocale, useCuratedLabels: boolean) {
+function getCuratedDecisionExampleTitle(
+  index: number,
+  fallback: string,
+  locale: AppLocale,
+  useCuratedLabels: boolean,
+  engineSlug?: string
+) {
   if (!useCuratedLabels) return fallback;
+  if (isLumaRay2Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Sparkling bottle hero', 'Night market motion', 'Vertical UGC reframe', 'Studio unboxing shot'],
+      fr: ['Hero boisson pétillante', 'Mouvement marché de nuit', 'Reframe UGC vertical', 'Unboxing studio'],
+      es: ['Hero de bebida espumosa', 'Movimiento mercado nocturno', 'Reframe UGC vertical', 'Unboxing en estudio'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isVeoLiteRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Ramen counter draft', 'Cyberpunk mood test', 'Romantic reunion test', 'Streetwear motion check'],
+      fr: ['Brouillon comptoir ramen', 'Test ambiance cyberpunk', 'Test retrouvailles', 'Check mouvement streetwear'],
+      es: ['Borrador barra ramen', 'Test ambiente cyberpunk', 'Test reencuentro', 'Check movimiento streetwear'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSeedance15ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Luxury perfume commercial', 'Cinematic car motion', 'Camera-fixed product shot', 'Cinematic storyboard beat'],
+      fr: ['Spot parfum premium', 'Mouvement voiture cinématique', 'Plan produit camera-fixed', 'Beat storyboard cinématique'],
+      es: ['Spot premium de perfume', 'Movimiento cinemático de auto', 'Toma de producto camera-fixed', 'Beat storyboard cinemático'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSora2ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Studio dialogue test', 'Restaurant character scene', 'Vertical character beat', 'CCTV construction scene'],
+      fr: ['Test dialogue studio', 'Scène restaurant personnage', 'Beat personnage vertical', 'Scène chantier CCTV'],
+      es: ['Prueba diálogo estudio', 'Escena de personaje en restaurante', 'Beat vertical de personaje', 'Escena CCTV de obra'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   const labels: Record<AppLocale, string[]> = {
     en: ['Parkour rooftop run', 'Trading desk intensity', 'Clothing try-on moment', 'Narrative reunion'],
     fr: ['Parkour sur toit', 'Intensité en salle de trading', 'Essayage de vêtement', 'Retrouvailles narratives'],
@@ -362,8 +466,46 @@ function getCuratedDecisionExampleTitle(index: number, fallback: string, locale:
   return labels[locale]?.[index] ?? fallback;
 }
 
-function getCuratedDecisionExampleCategory(index: number, fallback: string, locale: AppLocale, useCuratedLabels: boolean) {
+function getCuratedDecisionExampleCategory(
+  index: number,
+  fallback: string,
+  locale: AppLocale,
+  useCuratedLabels: boolean,
+  engineSlug?: string
+) {
   if (!useCuratedLabels) return fallback;
+  if (isLumaRay2Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Product · Hero', 'Cinematic · Motion', 'Vertical · Social', 'Product · Studio'],
+      fr: ['Produit · Hero', 'Cinématique · Mouvement', 'Vertical · Social', 'Produit · Studio'],
+      es: ['Producto · Hero', 'Cinemático · Movimiento', 'Vertical · Social', 'Producto · Estudio'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isVeoLiteRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Social · Food', 'Cinematic · Mood', 'Narrative · Audio', 'Fashion · Motion'],
+      fr: ['Social · Food', 'Cinématique · Mood', 'Narratif · Audio', 'Mode · Mouvement'],
+      es: ['Social · Food', 'Cinemático · Mood', 'Narrativa · Audio', 'Moda · Movimiento'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSeedance15ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Product · Beauty', 'Cinematic · Vehicle', 'Product · Camera fixed', 'Cinematic · Control test'],
+      fr: ['Produit · Beauté', 'Cinématique · Véhicule', 'Produit · Camera fixed', 'Cinématique · Test contrôle'],
+      es: ['Producto · Belleza', 'Cinemático · Vehículo', 'Producto · Camera fixed', 'Cinemático · Prueba de control'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSora2ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Dialogue · Audio', 'Narrative · Audio', 'Vertical · Character', 'Cinematic · Control test'],
+      fr: ['Dialogue · Audio', 'Narratif · Audio', 'Vertical · Personnage', 'Cinématique · Test contrôle'],
+      es: ['Diálogo · Audio', 'Narrativa · Audio', 'Vertical · Personaje', 'Cinemático · Prueba control'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   const labels: Record<AppLocale, string[]> = {
     en: ['Cinematic · Action', 'Corporate · Tech', 'Lifestyle · Product', 'Narrative · Romance'],
     fr: ['Cinématique · Action', 'Corporate · Tech', 'Lifestyle · Produit', 'Narratif · Romance'],
@@ -414,7 +556,7 @@ function getDecisionExampleTags(
     if (/\b(4k|final)\b/.test(`${categoryText} ${titleText}`)) tags.add('final');
     return Array.from(tags);
   }
-  if (video.hasAudio && engineSlug !== 'minimax-hailuo-02-text' && engineSlug !== 'pika-text-to-video') tags.add('audio');
+  if (video.hasAudio && !isSilentVideoDecisionEngine(engineSlug)) tags.add('audio');
   if (aspectRatio === '9:16') tags.add('vertical');
   if (/\b(action|parkour|run|running|chase|combat|sport)\b/.test(`${categoryText} ${titleText}`)) {
     tags.add('action');
@@ -443,21 +585,39 @@ function buildDecisionExampleItems({
   isImageEngine: boolean;
   engineSlug: string;
 }): DecisionExampleGalleryItem[] {
-  const modelName = resolveExamplesModelName(copy);
-  const useCuratedLabels = /seedance/i.test(modelName);
-  const isSilentDraftEngine = engineSlug === 'minimax-hailuo-02-text' || engineSlug === 'pika-text-to-video';
+  const useCuratedLabels =
+    isSeedanceCurrentRoute(engineSlug) ||
+    isSeedance15ProRoute(engineSlug) ||
+    isSora2ProRoute(engineSlug) ||
+    isLumaRay2Route(engineSlug) ||
+    isVeoLiteRoute(engineSlug);
+  const isSilentDraftEngine = isSilentVideoDecisionEngine(engineSlug);
 
   return galleryVideos.slice(0, 4).map((video, index) => {
     const fallbackTitle = deriveShortPromptLabel(video.promptFull ?? video.prompt, locale);
-    const shortTitle = getCuratedDecisionExampleTitle(index, fallbackTitle, locale, useCuratedLabels);
-    const category = getCuratedDecisionExampleCategory(index, getDecisionExampleCategory(video, locale), locale, useCuratedLabels);
+    const shortTitle = getCuratedDecisionExampleTitle(index, fallbackTitle, locale, useCuratedLabels, engineSlug);
+    const category = getCuratedDecisionExampleCategory(
+      index,
+      getDecisionExampleCategory(video, locale),
+      locale,
+      useCuratedLabels,
+      engineSlug
+    );
     const aspectRatio = getDisplayAspectRatio(video);
     const posterUrl = video.optimizedPosterUrl ?? video.rawPosterUrl ?? '';
     return {
       id: video.id,
       href: video.href,
       posterUrl,
-      alt: galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`,
+      alt: isLumaRay2Route(engineSlug)
+        ? `Luma Ray 2 ${shortTitle.toLowerCase()}`
+        : isSora2ProRoute(engineSlug)
+          ? `Sora 2 Pro ${shortTitle.toLowerCase()}`
+        : isVeoLiteRoute(engineSlug)
+          ? `Veo 3.1 Lite ${shortTitle.toLowerCase()}`
+          : isSeedance15ProRoute(engineSlug)
+            ? `Seedance 1.5 Pro ${shortTitle.toLowerCase()}`
+          : (galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`),
       audioBadgeLabel: isImageEngine ? null : isSilentDraftEngine ? getSilentBadgeLabel(locale) : getAudioBadgeLabel(video, locale),
       durationLabel: isImageEngine ? null : getDurationLabel(video, locale),
       aspectRatio,

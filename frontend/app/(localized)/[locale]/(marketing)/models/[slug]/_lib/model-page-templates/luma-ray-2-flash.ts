@@ -29,12 +29,13 @@ export const lumaRay2FlashTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#luma-ray-2-flash-pricing',
     presets: [
-      { id: '5s-720p', seconds: 5, resolution: '720p', labelKey: 'entryDraft' },
+      { id: '5s-540p', seconds: 5, resolution: '540p', labelKey: 'entryDraft' },
+      { id: '5s-720p', seconds: 5, resolution: '720p', labelKey: 'standardPreview' },
       {
         id: '9s-720p',
         seconds: 9,
         resolution: '720p',
-        labelKey: 'standardPreview',
+        labelKey: 'motionDraft',
         highlightKey: 'mostPopular',
       },
       { id: '9s-1080p', seconds: 9, resolution: '1080p', labelKey: 'commonProductionCheck' },

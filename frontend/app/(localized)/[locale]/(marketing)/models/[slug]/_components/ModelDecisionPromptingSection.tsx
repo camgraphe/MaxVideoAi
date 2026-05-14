@@ -139,6 +139,93 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getSora2ProDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Chat sur ciment frais',
+      action: 'Le chat traverse le chantier et les ouvriers réagissent',
+      camera: 'Angle CCTV fixe en 16:9',
+      style: 'Footage de chantier crédible, ciel couvert, texture humide',
+      audio: 'Audio désactivé pour ce rendu',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Gato sobre cemento fresco',
+      action: 'El gato cruza la obra y los trabajadores reaccionan',
+      camera: 'Ángulo CCTV fijo en 16:9',
+      style: 'Metraje de obra creíble, día nublado, textura húmeda',
+      audio: 'Audio desactivado en este render',
+    };
+  }
+  return {
+    subject: 'Cat crossing fresh cement',
+    action: 'The cat crosses the site while workers react',
+    camera: 'Fixed 16:9 CCTV angle',
+    style: 'Believable construction footage, overcast light, wet texture',
+    audio: 'Audio off for this render',
+  };
+}
+
+function getSeedance15DemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Pilote moto en rue humide',
+      action: 'La moto approche puis ralentit dans le cadre',
+      camera: 'Plan bas verrouillé camera_fixed, léger push-in',
+      style: 'Cinématique nocturne, reflets de rue mouillée',
+      audio: 'Moteur court, pluie légère, pas de dialogue',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Piloto de moto en calle mojada',
+      action: 'La moto se acerca y reduce dentro del encuadre',
+      camera: 'Plano bajo bloqueado camera_fixed, push-in leve',
+      style: 'Cinemático nocturno, reflejos de calle mojada',
+      audio: 'Motor corto, lluvia suave, sin diálogo',
+    };
+  }
+  return {
+    subject: 'Motorcycle rider on a wet street',
+    action: 'Motorcycle approaches and slows inside the frame',
+    camera: 'Low camera_fixed shot, slight push-in',
+    style: 'Night cinematic look, wet street reflections',
+    audio: 'Short engine cue, light rain, no dialogue',
+  };
+}
+
+function getSeedance15DemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Clip Seedance 1.5 Pro de 10 s en 16:9, audio activé.',
+      'Un pilote moto traverse une rue humide de nuit et ralentit dans le cadre.',
+      'camera_fixed activé : plan bas verrouillé, léger push-in, mouvement unique et lisible.',
+      'Style cinématique nocturne, reflets de rue mouillée, arrière-plan simple, pas de texte ajouté.',
+      'Audio : moteur court, pluie légère, ambiance de rue, pas de dialogue.',
+      'Seed : réutiliser le même seed pour comparer seulement lumière, timing ou intensité audio.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Clip Seedance 1.5 Pro de 10 s en 16:9, audio activado.',
+      'Un piloto de moto cruza una calle mojada de noche y reduce dentro del encuadre.',
+      'camera_fixed activado: plano bajo bloqueado, push-in leve, un solo movimiento legible.',
+      'Look cinemático nocturno, reflejos de calle mojada, fondo simple, sin texto añadido.',
+      'Audio: motor corto, lluvia suave, ambiente de calle, sin diálogo.',
+      'Seed: reutiliza el mismo seed para comparar solo luz, timing o intensidad de audio.',
+    ].join('\n');
+  }
+  return [
+    '10s Seedance 1.5 Pro clip in 16:9, audio on.',
+    'A motorcycle rider crosses a wet street at night and slows inside the frame.',
+    'camera_fixed enabled: low locked shot, slight push-in, one readable motion beat.',
+    'Night cinematic look, wet street reflections, simple background, no added text.',
+    'Audio: short engine cue, light rain, street ambience, no dialogue.',
+    'Seed: reuse the same seed when comparing only lighting, timing or audio intensity.',
+  ].join('\n');
+}
+
 function getHailuoDemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
@@ -248,6 +335,174 @@ function getPikaDemoPrompt(locale: AppLocale) {
     'Locked medium shot, bubbles rising in a repeatable loop, books floating gently.',
     'Warm 16-color palette, candlelight, chunky retro pixels, simple repeatable motion.',
     'Negative prompt: text, logos, blur, extra characters, distorted hands.',
+  ].join('\n');
+}
+
+function getLumaFlashDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Voiture sportive dans un tunnel humide',
+      action: 'Entre dans la lumière et révèle sa silhouette',
+      camera: 'Push-in court, caméra basse et stable',
+      style: 'Draft cinématique, reflets rapides, contraste propre',
+      output: 'Brouillon silencieux, prêt à comparer avec Ray 2',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Auto deportivo en túnel mojado',
+      action: 'Entra en la luz y revela la silueta',
+      camera: 'Push-in corto, cámara baja y estable',
+      style: 'Borrador cinemático, reflejos rápidos, contraste limpio',
+      output: 'Borrador sin audio, listo para comparar con Ray 2',
+    };
+  }
+  return {
+    subject: 'Sports car in a wet tunnel',
+    action: 'Enters the light and reveals its silhouette',
+    camera: 'Short push-in, low stable camera',
+    style: 'Cinematic draft, fast reflections, clean contrast',
+    output: 'Silent draft, ready to compare against Ray 2',
+  };
+}
+
+function getLumaFlashDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Brouillon Luma Ray 2 Flash de 5 s en 16:9, sortie silencieuse.',
+      'Une voiture sportive futuriste entre dans un tunnel humide et révèle sa silhouette dans une bande de lumière.',
+      'Push-in court, caméra basse stable, reflets rapides sur l’asphalte, contraste propre.',
+      'Un seul beat de mouvement, énergie teaser, pas de texte lisible, pas de logo ajouté.',
+      'Utiliser Flash pour valider direction et timing avant une passe Ray 2.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Borrador Luma Ray 2 Flash de 5 s en 16:9, salida sin audio.',
+      'Un auto deportivo futurista entra en un túnel mojado y revela su silueta en una franja de luz.',
+      'Push-in corto, cámara baja estable, reflejos rápidos sobre el asfalto, contraste limpio.',
+      'Un solo beat de movimiento, energía de teaser, sin texto legible ni logo agregado.',
+      'Usar Flash para validar dirección y timing antes de una pasada Ray 2.',
+    ].join('\n');
+  }
+  return [
+    '5s Luma Ray 2 Flash draft in 16:9, silent output.',
+    'A futuristic sports car enters a wet tunnel and reveals its silhouette in a band of light.',
+    'Short push-in, low stable camera, fast asphalt reflections, clean contrast.',
+    'One motion beat, teaser energy, no readable text, no added logo.',
+    'Use Flash to validate direction and timing before a Ray 2 pass.',
+  ].join('\n');
+}
+
+function getLumaRay2DemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Hero produit dans un café en lumière dorée',
+      action: 'La caméra glisse vers le produit puis révèle les reflets',
+      camera: 'Dolly lent, cadrage stable, profondeur de champ douce',
+      style: 'Cinématique premium, reflets contrôlés, aucune marque ajoutée',
+      output: 'Rendu silencieux Ray 2, prêt pour une passe de livraison',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Hero de producto en café con luz dorada',
+      action: 'La cámara avanza hacia el producto y revela los reflejos',
+      camera: 'Dolly lento, encuadre estable, profundidad de campo suave',
+      style: 'Cinemático premium, reflejos controlados, sin marca agregada',
+      output: 'Render Ray 2 sin audio, listo para entrega',
+    };
+  }
+  return {
+    subject: 'Product hero in a golden-hour cafe',
+    action: 'Camera glides toward the product and reveals reflections',
+    camera: 'Slow dolly, stable framing, shallow depth of field',
+    style: 'Premium cinematic look, controlled highlights, no added branding',
+    output: 'Silent Ray 2 render, ready for delivery review',
+  };
+}
+
+function getLumaRay2DemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Rendu Luma Ray 2 de 9 s en 16:9, sortie silencieuse.',
+      'Un produit premium est posé sur une table de café en lumière dorée, avec reflets propres et arrière-plan doux.',
+      'Dolly avant lent, caméra stable, mouvement unique et lisible, profondeur de champ cinématique.',
+      'Conserver le cadrage produit, éviter tout texte illisible, logo ajouté ou mouvement trop rapide.',
+      'Pour Modify/Reframe, garder le mouvement source validé et préciser uniquement ce qui change.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Render Luma Ray 2 de 9 s en 16:9, salida sin audio.',
+      'Un producto premium sobre una mesa de café con luz dorada, reflejos limpios y fondo suave.',
+      'Dolly lento hacia adelante, cámara estable, un solo movimiento claro, profundidad de campo cinemática.',
+      'Mantener el encuadre del producto, evitar texto ilegible, logos agregados o movimiento demasiado rápido.',
+      'Para Modify/Reframe, conserva el movimiento fuente aprobado y precisa solo qué cambia.',
+    ].join('\n');
+  }
+  return [
+    '9s Luma Ray 2 render in 16:9, silent output.',
+    'A premium product sits on a golden-hour cafe table with clean reflections and a soft background.',
+    'Slow forward dolly, stable camera, one readable motion beat, cinematic depth of field.',
+    'Preserve product framing, avoid unreadable text, added logos or overly fast motion.',
+    'For Modify/Reframe, keep the approved source motion and specify only what changes.',
+  ].join('\n');
+}
+
+function getVeoLiteDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Comptoir ramen de nuit',
+      action: 'Le chef dresse un bol pendant que la vapeur monte',
+      camera: 'Push-in handheld court vers le bol',
+      style: 'Lumière chaude de cuisine, rue urbaine douce',
+      audio: 'Ambiance de rue, sons de cuisine, pas de dialogue',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Barra de ramen nocturna',
+      action: 'El chef sirve un bowl mientras sube el vapor',
+      camera: 'Push-in handheld corto hacia el bowl',
+      style: 'Luz cálida de cocina, calle urbana suave',
+      audio: 'Ambiente de calle, sonidos de cocina, sin diálogo',
+    };
+  }
+  return {
+    subject: 'Late-night ramen counter',
+    action: 'Chef plates one bowl as steam rises',
+    camera: 'Short handheld push-in toward the bowl',
+    style: 'Warm kitchen light, soft urban street mood',
+    audio: 'Street ambience, kitchen sound, no dialogue',
+  };
+}
+
+function getVeoLiteDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Clip Veo 3.1 Lite de 8 s en 16:9, 720p, audio inclus.',
+      'Comptoir ramen de nuit à Tokyo, vapeur douce qui monte depuis un bol fraîchement dressé.',
+      'Le chef pose les garnitures avec un geste simple et lisible, sans action secondaire.',
+      'Push-in handheld court vers le bol, lumière chaude de cuisine, arrière-plan de rue urbain légèrement flou.',
+      'Audio : ambiance de rue, sons de cuisine discrets, pas de dialogue.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Clip Veo 3.1 Lite de 8 s en 16:9, 720p, audio incluido.',
+      'Barra de ramen nocturna en Tokio, vapor suave subiendo de un bowl recién servido.',
+      'El chef coloca toppings con un gesto simple y legible, sin acción secundaria.',
+      'Push-in handheld corto hacia el bowl, luz cálida de cocina, calle urbana suavemente desenfocada detrás.',
+      'Audio: ambiente de calle, sonidos sutiles de cocina, sin diálogo.',
+    ].join('\n');
+  }
+  return [
+    '8s Veo 3.1 Lite clip in 16:9, 720p, audio included.',
+    'A late-night ramen counter in Tokyo, soft steam rising from a freshly plated bowl.',
+    'The chef adds toppings with one clear readable motion, no extra action beats.',
+    'Short handheld push-in toward the bowl, warm kitchen light, soft urban street background.',
+    'Audio: street ambience, subtle kitchen sound, no dialogue.',
   ].join('\n');
 }
 
@@ -701,15 +956,35 @@ export function ModelDecisionPromptingSection({
   const labels = getPromptLabels(locale, modelName);
   const isHailuoDraftRoute = engineSlug === 'minimax-hailuo-02-text';
   const isPikaTextRoute = engineSlug === 'pika-text-to-video';
-  const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute;
+  const isLumaRay2Route = engineSlug === 'luma-ray-2' || engineSlug === 'lumaRay2';
+  const isLumaFlashRoute = engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
+  const isSora2ProRoute = engineSlug === 'sora-2-pro';
+  const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
+  const isSeedance15ProRoute = engineSlug === 'seedance-1-5-pro';
+  const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getDemoSummary(locale);
+  const seedance15Demo = getSeedance15DemoSummary(locale);
   const hailuoDemo = getHailuoDemoSummary(locale);
   const pikaDemo = getPikaDemoSummary(locale);
+  const lumaRay2Demo = getLumaRay2DemoSummary(locale);
+  const lumaFlashDemo = getLumaFlashDemoSummary(locale);
+  const sora2ProDemo = getSora2ProDemoSummary(locale);
+  const veoLiteDemo = getVeoLiteDemoSummary(locale);
   const demo = isHailuoDraftRoute
     ? { ...hailuoDemo, audio: hailuoDemo.output }
+    : isSeedance15ProRoute
+      ? { ...seedance15Demo, output: seedance15Demo.audio }
     : isPikaTextRoute
       ? { ...pikaDemo, audio: pikaDemo.output }
-    : { ...standardDemo, output: standardDemo.audio };
+      : isLumaRay2Route
+        ? { ...lumaRay2Demo, audio: lumaRay2Demo.output }
+      : isLumaFlashRoute
+          ? { ...lumaFlashDemo, audio: lumaFlashDemo.output }
+        : isSora2ProRoute
+          ? { ...sora2ProDemo, output: sora2ProDemo.audio }
+          : isVeoLiteRoute
+            ? { ...veoLiteDemo, output: veoLiteDemo.audio }
+            : { ...standardDemo, output: standardDemo.audio };
   const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
   const intro = copy.promptingIntro ?? '';
   const imageExamplesIntro =
@@ -759,27 +1034,65 @@ export function ModelDecisionPromptingSection({
             : locale === 'es'
               ? 'Cómo Pika 2.2 estructura un prompt Text-to-Video'
               : 'How Pika 2.2 structures Text-to-Video prompts'
-        : labels.referencesTitle;
+          : isLumaRay2Route
+            ? locale === 'fr'
+              ? 'Comment Luma Ray 2 utilise Generate, Modify et Reframe'
+              : locale === 'es'
+                ? 'Cómo Luma Ray 2 usa Generate, Modify y Reframe'
+                : 'How Luma Ray 2 uses Generate, Modify and Reframe'
+            : isLumaFlashRoute
+            ? locale === 'fr'
+              ? 'Comment Luma Ray 2 Flash utilise les images de départ et routes edit'
+              : locale === 'es'
+                ? 'Cómo Luma Ray 2 Flash usa imágenes iniciales y rutas de edición'
+                : 'How Luma Ray 2 Flash uses start frames and edit routes'
+            : isVeoLiteRoute
+              ? locale === 'fr'
+                ? 'Comment Veo 3.1 Lite utilise les images de départ'
+                : locale === 'es'
+                  ? 'Cómo Veo 3.1 Lite usa imágenes iniciales'
+                  : 'How Veo 3.1 Lite uses image references'
+            : labels.referencesTitle;
   const posterSrc = demoMedia?.posterUrl ?? null;
   const demoVideoSrc = demoMedia?.videoUrl ?? demoMedia?.previewVideoUrl ?? null;
   const demoPromptText =
     isHailuoDraftRoute
       ? getHailuoDemoPrompt(locale)
+      : isSeedance15ProRoute
+        ? getSeedance15DemoPrompt(locale)
+      : isSora2ProRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isPikaTextRoute
         ? getPikaDemoPrompt(locale)
-      : (demoMedia?.prompt ??
-        [
-          `${labels.demoSubject}: ${demo.subject}`,
-          `${labels.demoAction}: ${demo.action}`,
-          `${labels.demoCamera}: ${demo.camera}`,
-          `${labels.demoStyle}: ${demo.style}`,
-          `${labels.demoAudio}: ${demo.audio}`,
-        ].join('\n'));
+        : isLumaRay2Route
+          ? getLumaRay2DemoPrompt(locale)
+        : isLumaFlashRoute
+          ? getLumaFlashDemoPrompt(locale)
+          : isVeoLiteRoute
+            ? getVeoLiteDemoPrompt(locale)
+          : (demoMedia?.prompt ??
+              [
+                `${labels.demoSubject}: ${demo.subject}`,
+                `${labels.demoAction}: ${demo.action}`,
+                `${labels.demoCamera}: ${demo.camera}`,
+                `${labels.demoStyle}: ${demo.style}`,
+                `${labels.demoAudio}: ${demo.audio}`,
+              ].join('\n'));
   const demoDurationLabel = isHailuoDraftRoute
     ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
+    : isSeedance15ProRoute
+      ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
     : isPikaTextRoute
       ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
-      : getDuration(demoMedia, locale);
+      : isLumaRay2Route
+        ? (locale === 'fr' || locale === 'es' ? '9 s' : '9s')
+        : isLumaFlashRoute
+          ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
+          : isSora2ProRoute
+            ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+          : isVeoLiteRoute
+            ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+          : getDuration(demoMedia, locale);
   const demoAspectLabel = isSilentPromptRoute ? (isPikaTextRoute ? '1:1' : '16:9') : getAspect(demoMedia);
   const demoModeLabel = isHailuoDraftRoute
     ? locale === 'fr'
@@ -787,30 +1100,105 @@ export function ModelDecisionPromptingSection({
       : locale === 'es'
         ? 'Borrador sin audio'
         : 'Silent motion draft'
+    : isSeedance15ProRoute
+      ? locale === 'fr'
+        ? 'Prompt camera_fixed'
+        : locale === 'es'
+          ? 'Prompt camera_fixed'
+          : 'camera_fixed prompt'
+    : isSora2ProRoute
+      ? locale === 'fr'
+        ? 'Check Pro'
+        : locale === 'es'
+          ? 'Check Pro'
+          : 'Pro scene check'
     : isPikaTextRoute
       ? 'Text-to-Video'
-    : labels.textToVideo;
+      : isLumaRay2Route
+        ? locale === 'fr'
+          ? 'Workflow Ray 2'
+          : locale === 'es'
+            ? 'Workflow Ray 2'
+            : 'Ray 2 workflow'
+        : isLumaFlashRoute
+        ? locale === 'fr'
+          ? 'Brouillon Flash'
+          : locale === 'es'
+            ? 'Borrador Flash'
+            : 'Flash draft'
+        : isVeoLiteRoute
+          ? locale === 'fr'
+            ? 'Prompt Veo Lite'
+            : locale === 'es'
+              ? 'Prompt Veo Lite'
+              : 'Veo Lite prompt'
+        : labels.textToVideo;
   const demoOutputLabel = isSilentPromptRoute
     ? locale === 'fr'
       ? 'Sortie'
       : locale === 'es'
         ? 'Salida'
         : 'Output'
+    : isSora2ProRoute
+      ? labels.demoAudio
     : labels.demoAudio;
-  const demoOutputValue = isSilentPromptRoute ? demo.output : demo.audio;
+  const demoOutputValue = isSilentPromptRoute || isSora2ProRoute ? demo.output : demo.audio;
+  const demoAudioChipLabel = isSilentPromptRoute
+    ? locale === 'fr'
+      ? 'Silencieux'
+      : locale === 'es'
+        ? 'Sin audio'
+        : 'Silent'
+    : isSora2ProRoute
+      ? locale === 'fr'
+        ? 'Audio désactivé'
+        : locale === 'es'
+          ? 'Audio desactivado'
+          : 'Audio off'
+      : labels.audioOn;
   const demoAlt = isPikaTextRoute
     ? locale === 'fr'
       ? 'Loop pixel-art Pika 2.2'
       : locale === 'es'
         ? 'Loop pixel-art de Pika 2.2'
         : 'Pika 2.2 pixel-art loop'
-    : getImageAlt({
-        kind: 'renderThumb',
-        engine: modelName,
-        label: copy.demoTitle ?? `${modelName} demo render`,
-        prompt: copy.demoTitle ?? `${modelName} demo render`,
-        locale,
-      });
+    : isSeedance15ProRoute
+      ? locale === 'fr'
+        ? 'Rendu moto Seedance 1.5 Pro camera_fixed'
+        : locale === 'es'
+          ? 'Render moto Seedance 1.5 Pro camera_fixed'
+          : 'Seedance 1.5 Pro camera-fixed motorcycle render'
+    : isLumaFlashRoute
+      ? locale === 'fr'
+        ? 'Brouillon tunnel Luma Ray 2 Flash'
+        : locale === 'es'
+          ? 'Borrador de túnel Luma Ray 2 Flash'
+          : 'Luma Ray 2 Flash tunnel draft'
+      : isSora2ProRoute
+        ? locale === 'fr'
+          ? 'Scène chantier CCTV Sora 2 Pro'
+          : locale === 'es'
+            ? 'Escena CCTV de construcción con Sora 2 Pro'
+            : 'Sora 2 Pro CCTV construction scene'
+      : isLumaRay2Route
+        ? locale === 'fr'
+          ? 'Rendu produit Luma Ray 2'
+          : locale === 'es'
+            ? 'Render de producto Luma Ray 2'
+            : 'Luma Ray 2 product render'
+        : isVeoLiteRoute
+          ? locale === 'fr'
+            ? 'Exemple Veo 3.1 Lite au comptoir ramen'
+            : locale === 'es'
+              ? 'Ejemplo Veo 3.1 Lite en barra de ramen'
+              : 'Veo 3.1 Lite ramen counter example'
+      : getImageAlt({
+          kind: 'renderThumb',
+          engine: modelName,
+          label: copy.demoTitle ?? `${modelName} demo render`,
+          prompt: copy.demoTitle ?? `${modelName} demo render`,
+          locale,
+        });
 
   return (
     <section id={imageAnchorId} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
@@ -984,13 +1372,7 @@ export function ModelDecisionPromptingSection({
             </span>
             <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
               <UIIcon icon={Volume2} size={15} className={MODEL_PAGE_ICON_MUTED} />
-              {isSilentPromptRoute
-                ? locale === 'fr'
-                  ? 'Silencieux'
-                  : locale === 'es'
-                    ? 'Sin audio'
-                    : 'Silent'
-                : labels.audioOn}
+              {demoAudioChipLabel}
             </span>
           </div>
         </div>

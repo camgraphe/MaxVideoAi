@@ -135,6 +135,7 @@
   ],
   "opponentOverrides": {
     "happy-horse-1-0": ["seedance-2-0", "veo-3-1", "kling-3-pro", "sora-2-pro"],
+    "sora-2-pro": ["sora-2", "veo-3-1", "kling-3-pro"],
     "seedance-2-0": ["veo-3-1", "kling-3-pro", "ltx-2-3-pro"],
     "seedance-2-0-fast": ["veo-3-1-fast", "ltx-2-3-fast", "pika-text-to-video"],
     "sora-2": ["seedance-2-0", "veo-3-1", "kling-3-pro"],

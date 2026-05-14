@@ -1994,7 +1994,7 @@
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Sincronización labial cinematográfica con salida 1792×1024 y control de imagen→video para equipos premium.",
+        "description": "Sincronización labial cinematográfica con salida 1080p y control de imagen a video para equipos premium.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
@@ -3380,9 +3380,9 @@
             ]
           },
           "sora-2-pro": {
-            "description": "Sora 2 Pro desbloquea resoluciones mayores, diálogo sincronizado y control imagen→video para producciones premium.",
+            "description": "Sora 2 Pro desbloquea renders 1080p, diálogo sincronizado y control de imagen a video para producciones premium.",
             "badges": [
-              "1792×1024",
+              "1080p",
               "Audio nativo",
               "Lip-sync"
             ]

@@ -340,15 +340,15 @@ export function getSuggestedOpponentSlugs(engineSlug: string, maxCount = 3): str
     .forEach((engine) => add(engine.modelSlug));
 
   if (selected.length < maxCount) {
+    normalizeList(hubConfig.opponentOverrides?.[engineSlug]).forEach(add);
+  }
+
+  if (selected.length < maxCount) {
     getPublishedOpponentSlugs(current).forEach(add);
   }
 
   if (selected.length < maxCount) {
     compareCapableEngines.forEach((engine) => add(engine.modelSlug));
-  }
-
-  if (selected.length < maxCount) {
-    normalizeList(hubConfig.opponentOverrides?.[engineSlug]).forEach(add);
   }
 
   return selected.slice(0, maxCount);

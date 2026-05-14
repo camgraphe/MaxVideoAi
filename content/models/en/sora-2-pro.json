@@ -9,15 +9,15 @@
   "hero": {
     "title": "Sora 2 Pro",
     "intro": "Longer, production-ready clips from text or images — native voice + ambience with enhanced prompt control.",
-    "badge": "1792×1024 · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
+    "badge": "720p/1080p · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio optional",
     "ctaPrimary": {
       "label": "Generate with Sora 2 Pro",
       "href": "/app?engine=sora-2-pro"
     },
     "secondaryLinks": [
       {
-        "label": "Compare Seedance 2.0 vs Sora 2",
-        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
+        "label": "Compare Sora 2 vs Sora 2 Pro",
+        "href": "/ai-video-engines/sora-2-vs-sora-2-pro?order=sora-2-pro"
       },
       {
         "label": "Explore workflows",
@@ -35,7 +35,7 @@
     "heroSupportLine": "Cleaner detail, steadier motion, more reliable multi-beat continuity.",
     "heroSpecChips": [
       {
-        "label": "1792×1024",
+        "label": "720p/1080p",
         "icon": "resolution"
       },
       {
@@ -60,8 +60,8 @@
       }
     ],
     "heroTrustLine": "Pay-as-you-go · Price shown before you generate",
-    "heroDesc1": "Sora 2 Pro is the premium sibling to Sora 2. You get 720p or high-res output (up to 1792×1024), explicit audio toggle, and richer prompt chaining for multi-beat sequences—ideal for ads, trailers, and client-ready deliveries.",
-    "heroDesc2": "Prototype fast with Sora 2, then move into Sora 2 Pro to regenerate your winning shots in high-res (up to 1792×1024) with tighter control over timing, motion, and sound.",
+    "heroDesc1": "Sora 2 Pro is the premium sibling to Sora 2. The current MaxVideoAI route exposes 720p/1080p output, explicit audio control, and richer prompt chaining for multi-beat sequences.",
+    "heroDesc2": "Prototype fast with Sora 2, then move into Sora 2 Pro to regenerate your winning shots with tighter control over timing, motion, and sound.",
     "secondaryCta": "Compare Sora 2 vs Sora 2 Pro (high-res)",
     "whyTitle": "Why Sora 2 Pro is powerful",
     "heroHighlights": [
@@ -70,8 +70,8 @@
       "Stronger results with structured prompts||Shot lists and clear beats execute more reliably than “adjective soup.”",
       "Best for final takes||Use it when the concept is locked and you want the cleanest output."
     ],
-    "specTitle": "Real Specs – Sora 2 Pro in MaxVideoAI (720p / 1792×1024, 4–12s)",
-    "specNote": "Real-world specs (as available in MaxVideoAI today)",
+    "specTitle": "Real Specs – Sora 2 Pro in MaxVideoAI (720p / 1080p, 4–12s)",
+    "specNote": "Current MaxVideoAI route limits. Provider/model-family documentation may describe broader Pro capabilities outside this exposed route.",
     "specSections": [
       {
         "title": "High-fidelity control",
@@ -94,10 +94,10 @@
         ]
       }
     ],
-    "specValueProp": "Sora 2 Pro is for polished, high-res outputs (up to 1792×1024) with audio control and multi-scene continuity—ideal once your Sora 2 explorations are locked.",
+    "specValueProp": "Sora 2 Pro is for polished 720p/1080p outputs with audio control and multi-scene continuity on the current MaxVideoAI route—ideal once your Sora 2 explorations are locked.",
     "microCta": "Start generating with Sora 2 Pro →",
     "galleryTitle": "Example Gallery: Sora 2 Pro Outputs",
-    "galleryIntro": "See high-res, multi-beat clips (up to 1792×1024) rendered with Sora 2 Pro in MaxVideoAI.",
+    "galleryIntro": "See high-res, multi-beat clips rendered with Sora 2 Pro in MaxVideoAI.",
     "galleryAllCta": "View all Sora 2 Pro examples →",
     "recreateLabel": "Recreate this Pro shot →",
     "imageTitle": "Image-to-Video with Sora 2 Pro",
@@ -124,7 +124,7 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "High-res delivery (up to 1792×1024) for premium outputs",
+      "720p/1080p delivery for premium outputs on the current MaxVideoAI route",
       "Audio toggle with explicit cue handling",
       "Multi-scene chaining with better continuity",
       "Great for ads, trailers, explainers, client decks",
@@ -151,7 +151,7 @@
     "comparisonTitle": "Sora 2 vs Sora 2 Pro",
     "comparisonPoints": [
       "Prototype in Sora 2 (720p) for speed and cost efficiency.",
-      "Finalize in Sora 2 Pro (high-res up to 1792×1024) for polish, audio control, and continuity.",
+      "Finalize in Sora 2 Pro (720p/1080p on MaxVideoAI today) for polish, audio control, and continuity.",
       "Same workflow: swap engines in the same GUI when you’re ready to upscale."
     ],
     "comparisonCta": "Compare Sora 2 and Sora 2 Pro →",
@@ -167,7 +167,7 @@
       },
       {
         "q": "Should I prototype in Sora 2 first?",
-        "a": "Usually yes: explore cheap and fast in Sora 2, then regenerate your selects in Pro at high-res (up to 1792×1024) with audio control."
+        "a": "Usually yes: explore cheap and fast in Sora 2, then regenerate your selects in Pro at 720p/1080p on the current MaxVideoAI route with audio control."
       },
       {
         "q": "Can I do image-to-video with Sora 2 Pro?",
@@ -177,7 +177,7 @@
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across other engines available in MaxVideoAI.",
     "finalPara1": "Sora 2 Pro in MaxVideoAI is built for premium, client-ready outputs with control over motion, audio, and continuity.",
-    "finalPara2": "Prototype in Sora 2, then step into Sora 2 Pro when it’s time to polish and deliver in high-res (up to 1792×1024).",
+    "finalPara2": "Prototype in Sora 2, then step into Sora 2 Pro when it’s time to polish and deliver in the current higher-quality MaxVideoAI route.",
     "finalButton": "Generate with Sora 2 Pro →",
     "promptingGlobalPrinciples": [
       "1 shot = 1 camera move + 1 subject action",
@@ -233,19 +233,19 @@
         "copy": "Storyboard / shot list (same subject + same setting)\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nShot 1 (0-2s):\n[Framing + subject action + camera move]\n\nShot 2 (2-6s):\n[Framing + subject action + camera move]\n\nShot 3 (6-8/12s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n\nAudio (optional):\n[Ambience + 1-2 SFX cues or a short line]\n\nConstraints:\nNo logos. No readable text. No overlays."
       }
     ],
-    "demoTitle": "Demo: 12s high-res product film",
-    "demoPromptLabel": "Prompt – Wearable launch (16:9, audio on)",
+    "demoTitle": "Demo: 8s Pro scene continuity check",
+    "demoPromptLabel": "Prompt – CCTV construction scene (16:9, audio off)",
     "demoPrompt": [
-      "Scene 1 (4s): macro of a titanium smartwatch on a glossy turntable, soft studio light, VO: “Meet Aurum Pro.”",
-      "Scene 2 (4s): lifestyle shot of a runner checking the watch at blue hour on a rooftop, dolly-in, city ambience + light synth pulse.",
-      "Scene 3 (4s): close-up UI of the screen animating, hand interaction, match cut to product floating on black, audio swell then resolve.",
-      "Transitions: match cuts between scenes, subtle audio crossfades.",
-      "Audio: VO + ambience + light synth bed.",
-      "Format: 1792×1024, 16:9."
+      "Single CCTV-style 16:9 shot in an active construction area.",
+      "A crew has just poured a smooth wet cement layer. A cat crosses the frame at the wrong moment, leaving paw marks while workers react in the background.",
+      "Camera: fixed security-camera angle, slightly compressed lens, no dramatic push-in.",
+      "Style: believable site footage, overcast daylight, wet cement texture, practical safety cones and warning tape.",
+      "Audio: off for this render.",
+      "Format: 8s, 16:9."
     ],
     "demoNotes": [
-      "Shows camera control, audio cues, and product + lifestyle + UI consistency.",
-      "Reuse the same structure for client formats: intro, context, hero close."
+      "Matches the hero/gallery render metadata instead of reusing a generic prompt.",
+      "Use the same structure for Pro checks: one scene, one event, clear camera, clear output settings."
     ]
   },
   "bestUseCases": {
@@ -289,7 +289,7 @@
     },
     {
       "label": "Resolution",
-      "body": "Delivery 1792×1024"
+      "body": "Current route: 720p/1080p"
     },
     {
       "label": "Audio",
@@ -335,8 +335,8 @@
     ]
   },
   "compareLink": {
-    "label": "Explore Seedance 2.0 ->",
-    "href": "/models/seedance-2-0"
+    "label": "Explore Sora 2 ->",
+    "href": "/models/sora-2"
   },
   "prompts": [
     {
@@ -354,6 +354,26 @@
     {
       "q": "Does Sora 2 Pro always output audio?",
       "a": "Audio is on by default for lip-sync and sound design, but you can toggle it off in the composer if you only need visuals."
+    },
+    {
+      "q": "How is Sora 2 Pro priced in MaxVideoAI?",
+      "a": "The page shows MaxVideoAI preset totals for common Pro scenarios. The Generate workspace remains the source of truth for the exact live quote before you run a job."
+    },
+    {
+      "q": "What is the max duration for Sora 2 Pro?",
+      "a": "The current MaxVideoAI route exposes 4s, 8s and 12s generations. For longer edits, render multiple clips and stitch them in post."
+    },
+    {
+      "q": "What resolution does Sora 2 Pro support here?",
+      "a": "The current MaxVideoAI route exposes 720p and 1080p outputs. Provider/model-family docs may describe broader capabilities, but this page reflects the route available in the app."
+    },
+    {
+      "q": "Can I use image-to-video with Sora 2 Pro?",
+      "a": "Yes. Upload a still as the starting frame and describe the motion, camera and optional sound cues for the generated clip."
+    },
+    {
+      "q": "When should I use Sora 2 instead of Sora 2 Pro?",
+      "a": "Use Sora 2 for cheaper concept passes and early exploration. Use Sora 2 Pro when a selected shot needs higher-quality review, stronger polish and the Pro route."
     }
   ],
   "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."

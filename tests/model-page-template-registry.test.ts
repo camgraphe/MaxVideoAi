@@ -136,7 +136,7 @@ test('template registry enables Seedance production and draft model templates', 
   );
   assert.deepEqual(
     lumaFlash.pricing.presets.map((preset) => preset.id),
-    ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
+    ['5s-540p', '5s-720p', '9s-720p', '9s-1080p', 'max-duration']
   );
   assert.deepEqual(
     happyHorse.pricing.presets.map((preset) => preset.id),

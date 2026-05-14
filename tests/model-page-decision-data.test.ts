@@ -229,7 +229,10 @@ test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => 
     ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
   );
   assert.equal(en.pricing.scenarios.every((scenario) => scenario.value !== '—'), true);
-  assert.doesNotMatch(visibleDecisionText(en), /audio native|lower-cost iteration|draft speed/i);
+  assert.doesNotMatch(
+    visibleDecisionText(en),
+    /Seedance 2\.0|Native audio|Audio on|Dialogue, ambience|SFX generated|Armored skull|Motorcycle|Fal workflow|active Fal route|draft speed/i
+  );
   assert.match(fr.hero.subtitle, /Plans cinématographiques premium/);
 
   assert.equal(fast.hero.title, 'Luma Ray 2 Flash');
@@ -239,6 +242,10 @@ test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => 
   assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
   assert.notEqual(fast.meta.title, en.meta.title);
   assert.doesNotMatch(visibleDecisionText(fast), /premium cinematic generation workflow|delivery-ready Luma variants/i);
+  assert.doesNotMatch(
+    visibleDecisionText(fast),
+    /Seedance 2\.0|Native audio|Audio on|Dialogue, ambience|SFX generated|Fal workflow|active Fal route/i
+  );
   assert.match(es.hero.subtitle, /Borradores Luma rápidos/);
 });
 
@@ -657,7 +664,7 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
     ['wan-2-5', ['5s-480p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
     ['wan-2-6', ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
     ['luma-ray-2', ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
-    ['luma-ray-2-flash', ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
+    ['luma-ray-2-flash', ['5s-540p', '5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
     ['happy-horse-1-0', ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']],
     ['minimax-hailuo-02-text', ['6s-512p', '10s-768p', 'max-duration']],
     ['pika-text-to-video', ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']],
