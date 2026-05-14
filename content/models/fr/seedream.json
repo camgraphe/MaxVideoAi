@@ -6,7 +6,7 @@
     "description": "Créez et éditez des images fixes avec Seedream 5.0 Lite dans MaxVideoAI. Utilisez BytePlus ModelArk pour préparer des concepts, packshots et images de référence avant Seedance."
   },
   "overview": "Seedream 5.0 Lite est un modèle BytePlus ModelArk de génération et d'édition d'image. Il sert à créer des images fixes propres, des concepts produit, des frames personnage, des séries d'images cohérentes et des sources visuelles plus contrôlées avant un workflow image-to-video dans Seedance 2.0 ou Seedance 2.0 Fast.",
-  "pricingNotes": "Seedream 5.0 Lite est facturé par image générée avec succès côté BytePlus ModelArk, y compris pour les séries d'images. MaxVideoAI affiche le prix du compte avant génération.",
+  "pricingNotes": "Seedream 5.0 Lite est facturé par image générée avec succès côté BytePlus ModelArk, y compris pour les séries d'images. MaxVideoAI affiche le prix du compte avant génération. Le preset batch à 0,24 $ est un exemple de 4 images générées à 0,06 $/image, pas un prix pour 15 images.",
   "hero": {
     "title": "Seedream 5.0 Lite - génération et édition d'image BytePlus",
     "intro": "Utilisez Seedream 5.0 Lite comme modèle image autonome pour la création text-to-image, le nettoyage image-to-image, les séries d'images et les images de référence avant d'animer les frames retenues dans Seedance.",
@@ -165,7 +165,9 @@
         "items": [
           "Les images de référence plus les sorties demandées doivent rester dans une limite de 15 images au total.",
           "MaxVideoAI facture Seedream par images générées avec succès ; les sorties manquantes ou échouées ne doivent pas être comptées comme images complétées.",
-          "Les contrôles exposent la résolution de base, le ratio, le format de fichier et le watermark quand ils sont pris en charge."
+          "Les contrôles exposent la résolution de base, le ratio, le format de fichier et le watermark quand ils sont pris en charge.",
+          "Le preset batch à 0,24 $ est un exemple de 4 images générées à 0,06 $/image, pas un prix pour 15 images.",
+          "Format de sortie : choisissez jpeg ou png dans la route Image Lab active."
         ]
       }
     ],
@@ -219,7 +221,7 @@
       "Les références produit et personnage s'animent mieux quand silhouette, lumière et accessoires sont déjà stables.",
       "Préparer l'image d'abord sépare les décisions de qualité visuelle des décisions de mouvement."
     ],
-    "promptingGuideLabel": "En savoir plus",
+    "promptingGuideLabel": "Guide officiel Seedream 4.0-5.0",
     "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
     "relatedItems": [
       {

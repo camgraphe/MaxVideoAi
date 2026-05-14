@@ -28,9 +28,9 @@
       },
       "compare": {
         "suggestOpponents": [
-          "seedance-2-0",
+          "seedance-2-0-fast",
           "minimax-hailuo-02-text",
-          "ltx-2-fast"
+          "ltx-2-3-fast"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -7620,7 +7620,7 @@
         "suggestOpponents": [
           "sora-2",
           "veo-3-1",
-          "ltx-2-fast"
+          "ltx-2-3-fast"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",

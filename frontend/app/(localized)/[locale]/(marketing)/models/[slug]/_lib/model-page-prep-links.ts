@@ -18,6 +18,43 @@ const VIDEO_PREP_MODEL_SLUGS = new Set([
 ]);
 
 export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale): PrepLinksSection | null {
+  if (modelSlug === 'gpt-image-2') {
+    if (locale === 'fr') {
+      return {
+        eyebrow: 'Avant de générer',
+        title: 'Préparez la source avant le rendu GPT Image 2',
+        body: 'Si le rendu a besoin d’un produit, d’un texte ou d’un masque fiable, préparez la source avant de lancer GPT Image 2.',
+        links: [
+          { href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' },
+          { href: '/tools/angle', label: "Changer le point de vue avant l'edit" },
+          { href: '/app/image?engine=gpt-image-2', label: 'Ouvrir GPT Image 2' },
+        ],
+      };
+    }
+    if (locale === 'es') {
+      return {
+        eyebrow: 'Antes de generar',
+        title: 'Prepara la fuente antes del render GPT Image 2',
+        body: 'Si el render necesita producto, texto o máscara confiable, prepara la fuente antes de lanzar GPT Image 2.',
+        links: [
+          { href: '/tools/character-builder', label: 'Crear una referencia de personaje reutilizable' },
+          { href: '/tools/angle', label: 'Cambiar el punto de vista antes del edit' },
+          { href: '/app/image?engine=gpt-image-2', label: 'Abrir GPT Image 2' },
+        ],
+      };
+    }
+    return {
+      eyebrow: 'Before you generate',
+      title: 'Prepare the source before the GPT Image 2 render',
+      body: 'If the render needs a reliable product source, exact text or a mask, prepare that input before launching GPT Image 2.',
+      links: [
+        { href: '/tools/character-builder', label: 'Build a reusable character reference' },
+        { href: '/tools/angle', label: 'Change the viewpoint before the edit' },
+        { href: '/app/image?engine=gpt-image-2', label: 'Open GPT Image 2' },
+      ],
+    };
+  }
+
   const isNanoBananaFamily = NANO_BANANA_MODEL_SLUGS.has(modelSlug);
   const isVideoPrepModel = VIDEO_PREP_MODEL_SLUGS.has(modelSlug);
 

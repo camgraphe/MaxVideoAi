@@ -333,7 +333,7 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
+        "videoToVideo": "Reference-video guidance",
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
@@ -350,9 +350,9 @@
         "outputFormats": [
           "MP4"
         ],
-        "audioOutput": "Supported",
+        "audioOutput": "Text/Image modes only; off in Reference mode",
         "nativeAudioGeneration": "Not supported",
-        "lipSync": "Supported",
+        "lipSync": "Not exposed in MaxVideoAI route",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Dec 2025"
@@ -712,17 +712,21 @@
       ],
       "keySpecs": {
         "textToVideo": "Supported",
-        "imageToVideo": "Supported",
+        "imageToVideo": "Related image-start workflow",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Single still only; no reference-style stack",
         "referenceVideo": "Not supported",
         "maxResolution": "1080p",
         "maxDuration": "10s",
         "aspectRatios": [
           "1:1",
           "16:9",
-          "9:16"
+          "9:16",
+          "4:5",
+          "5:4",
+          "3:2",
+          "2:3"
         ],
         "fpsOptions": [
           24

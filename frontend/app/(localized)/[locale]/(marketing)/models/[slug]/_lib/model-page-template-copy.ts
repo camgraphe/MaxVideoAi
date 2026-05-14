@@ -1182,7 +1182,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
   en: {
     hero: {
       eyebrow: 'REFERENCE IMAGE PREP MODEL',
-      title: 'Seedream',
+      title: 'Seedream 5.0 Lite',
       subtitle: 'Clean still references, product frames, and video reference prep before you animate in a separate model.',
       subtitleHighlights: ['clean still references', 'product frames', 'video reference prep'],
       paragraph:
@@ -1249,7 +1249,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
   fr: {
     hero: {
       eyebrow: 'MODÈLE DE PRÉPARATION D’IMAGES RÉFÉRENCES',
-      title: 'Seedream',
+      title: 'Seedream 5.0 Lite',
       subtitle: 'Des références fixes propres, frames produit et préparation visuelle pour vidéo avant animation dans un autre modèle.',
       subtitleHighlights: ['références fixes propres', 'frames produit', 'préparation visuelle pour vidéo'],
       paragraph:
@@ -1316,7 +1316,7 @@ const SEEDREAM_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
   es: {
     hero: {
       eyebrow: 'MODELO PARA PREPARAR IMÁGENES DE REFERENCIA',
-      title: 'Seedream',
+      title: 'Seedream 5.0 Lite',
       subtitle: 'Referencias fijas limpias, cuadros de producto y preparación visual para video antes de animar en otro modelo.',
       subtitleHighlights: ['referencias fijas limpias', 'cuadros de producto', 'preparación visual para video'],
       paragraph:

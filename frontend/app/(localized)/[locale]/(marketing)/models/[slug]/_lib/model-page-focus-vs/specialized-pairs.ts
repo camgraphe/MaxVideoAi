@@ -3,9 +3,9 @@ import type { FocusVsPair } from './types';
 export const SPECIALIZED_FOCUS_VS_PAIRS: FocusVsPair[] = [
 {
     slugA: 'pika-text-to-video',
-    slugB: 'kling-2-5-turbo',
+    slugB: 'ltx-2-3-fast',
     nameA: 'Pika 2.2',
-    nameB: 'Kling 2.5 Turbo',
+    nameB: 'LTX 2.3 Fast',
     onlyFor: ['pika-text-to-video'],
     copyA: {
       en: {
@@ -35,27 +35,27 @@ export const SPECIALIZED_FOCUS_VS_PAIRS: FocusVsPair[] = [
     },
     copyB: {
       en: {
-        title: 'Use Kling 2.5 Turbo when you need:',
+        title: 'Use LTX 2.3 Fast when you need:',
         items: [
-          'More cinematic motion and physics',
-          'Camera-forward action beats',
-          'Cleaner realism for product shots',
+          'A broader draft route',
+          'Text or image workflows',
+          'Higher-resolution review options',
         ],
       },
       fr: {
-        title: 'Utilisez Kling 2.5 Turbo quand vous avez besoin :',
+        title: 'Utilisez LTX 2.3 Fast quand vous avez besoin :',
         items: [
-          'Motion et physique plus cinématiques',
-          'Beats d’action camera-forward',
-          'Réalisme plus propre pour produits',
+          'Une route brouillon plus large',
+          'Workflows texte ou image',
+          'Options de revue plus haute résolution',
         ],
       },
       es: {
-        title: 'Usa Kling 2.5 Turbo cuando necesites:',
+        title: 'Usa LTX 2.3 Fast cuando necesites:',
         items: [
-          'Motion y física más cinematográficas',
-          'Beats de acción camera-forward',
-          'Realismo más limpio para productos',
+          'Una ruta draft más amplia',
+          'Flujos desde texto o imagen',
+          'Opciones de revisión con más resolución',
         ],
       },
     },

@@ -12,6 +12,7 @@ import {
   PenLine,
   Sparkles,
   Type,
+  Users,
   Volume2,
   type LucideIcon,
 } from 'lucide-react';
@@ -138,6 +139,118 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getHailuoDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Cycliste sur chemin mouillé',
+      action: 'Traverse une flaque et ralentit',
+      camera: 'Tracking latéral bas, un push-in doux',
+      style: 'Lumière naturelle au crépuscule, décor simple',
+      output: 'Brouillon silencieux, mouvement physique uniquement',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Ciclista en camino mojado',
+      action: 'Cruza un charco y reduce velocidad',
+      camera: 'Tracking lateral bajo, un push-in suave',
+      style: 'Luz natural al atardecer, fondo simple',
+      output: 'Borrador sin audio, solo movimiento físico',
+    };
+  }
+  return {
+    subject: 'Cyclist on wet pavement',
+    action: 'Rides through a shallow puddle and slows down',
+    camera: 'Low side tracking, one smooth push-in',
+    style: 'Natural dusk light, simple background',
+    output: 'Silent draft, physics-focused motion only',
+  };
+}
+
+function getHailuoDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Brouillon Hailuo 02 silencieux de 10 s en 16:9.',
+      'Un cycliste traverse une flaque peu profonde sur un chemin en béton vide.',
+      'L’eau éclabousse vers l’extérieur et la veste réagit au mouvement.',
+      'Tracking latéral bas avec un seul push-in doux, lumière naturelle au crépuscule, décor simple.',
+      'Se concentrer sur la physique du mouvement. Pas de dialogue, pas de musique, pas de SFX.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Borrador Hailuo 02 sin audio de 10 s en 16:9.',
+      'Un ciclista cruza un charco poco profundo en un camino de concreto vacío.',
+      'El agua salpica hacia afuera y la chaqueta reacciona al movimiento.',
+      'Tracking lateral bajo con un solo push-in suave, luz natural al atardecer, fondo simple.',
+      'Enfocar la prueba en la física del movimiento. Sin diálogo, sin música, sin SFX.',
+    ].join('\n');
+  }
+  return [
+    '10s silent Hailuo 02 draft in 16:9.',
+    'A cyclist rides through a shallow puddle on an empty concrete path.',
+    'Water splashes outward and the jacket fabric reacts to the motion.',
+    'Low side tracking shot with one smooth push-in, natural dusk light, simple background.',
+    'Focus on physics-driven movement. No dialogue, no music, no SFX.',
+  ].join('\n');
+}
+
+function getPikaDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Petit magicien pixel-art',
+      action: 'Remue un chaudron lumineux en boucle',
+      camera: 'Plan moyen fixe, composition 1:1',
+      style: 'Pixel-art rétro, palette chaude, lumière de bougie',
+      output: 'Clip silencieux, sans texte ni logo',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Pequeño mago pixel-art',
+      action: 'Remueve un caldero brillante en loop',
+      camera: 'Plano medio fijo, composición 1:1',
+      style: 'Pixel-art retro, paleta cálida, luz de vela',
+      output: 'Clip sin audio, sin texto ni logos',
+    };
+  }
+  return {
+    subject: 'Tiny pixel-art wizard',
+    action: 'Stirs a glowing cauldron in a seamless loop',
+    camera: 'Locked medium shot, 1:1 composition',
+    style: 'Retro pixel art, warm palette, candlelight',
+    output: 'Silent clip, no text or logos',
+  };
+}
+
+function getPikaDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Loop Pika 2.2 Text-to-Video de 5 s en 1:1.',
+      'Un petit magicien pixel-art remue un chaudron lumineux dans une cabane cosy.',
+      'Caméra fixe en plan moyen, bulles qui montent en boucle, livres qui flottent doucement.',
+      'Palette chaude 16 couleurs, lumière de bougie, gros pixels rétro, mouvement simple et répétable.',
+      'Prompt négatif : texte, logos, flou, personnages supplémentaires, mains déformées.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Loop Pika 2.2 Text-to-Video de 5 s en 1:1.',
+      'Un pequeño mago pixel-art remueve un caldero brillante en una cabaña acogedora.',
+      'Cámara fija en plano medio, burbujas que suben en loop, libros flotando suavemente.',
+      'Paleta cálida de 16 colores, luz de vela, píxeles retro grandes, movimiento simple y repetible.',
+      'Prompt negativo: texto, logos, blur, personajes extra, manos deformes.',
+    ].join('\n');
+  }
+  return [
+    '5s Pika 2.2 Text-to-Video loop in 1:1.',
+    'A tiny pixel-art wizard stirs a glowing cauldron inside a cozy cottage.',
+    'Locked medium shot, bubbles rising in a repeatable loop, books floating gently.',
+    'Warm 16-color palette, candlelight, chunky retro pixels, simple repeatable motion.',
+    'Negative prompt: text, logos, blur, extra characters, distorted hands.',
+  ].join('\n');
+}
+
 function getDuration(media: FeaturedMedia | null, locale: AppLocale) {
   const seconds = media?.durationSec ?? 12;
   return locale === 'fr' || locale === 'es' ? `${seconds} s` : `${seconds}s`;
@@ -148,6 +261,103 @@ function getAspect(media: FeaturedMedia | null) {
 }
 
 function getImagePromptExamples(locale: AppLocale, engineSlug: string) {
+  if (engineSlug === 'seedream') {
+    if (locale === 'fr') {
+      return [
+        {
+          title: 'Still produit de référence',
+          badge: '2K still',
+          icon: ImageIcon,
+          prompt:
+            'Packshot 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, étiquette lisible, fond minimal prêt à servir de référence.',
+        },
+        {
+          title: 'Planche personnage',
+          badge: '2-10 refs',
+          icon: Users,
+          prompt:
+            'Planche de référence personnage : même visage, tenue et palette sur quatre vues propres, fond neutre, détails de veste et accessoires cohérents.',
+        },
+        {
+          title: 'Retouche image',
+          badge: 'Image edit',
+          icon: PenLine,
+          prompt:
+            'À partir de cette image produit, préserver forme, logo et proportions. Nettoyer poussières et reflets parasites, simplifier le décor, garder une lumière naturelle.',
+        },
+        {
+          title: 'Batch storyboard',
+          badge: '4 images',
+          icon: Sparkles,
+          prompt:
+            'Créer quatre images cohérentes pour storyboard de lancement : hero produit, détail matière, contexte lifestyle et frame finale. Même palette, même lumière, cadrages distincts.',
+        },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        {
+          title: 'Still de producto',
+          badge: 'Still 2K',
+          icon: ImageIcon,
+          prompt:
+            'Packshot 2K de una botella de perfume ámbar sobre acrílico blanco, luz suave de estudio, sombra limpia, etiqueta legible, fondo minimal listo como referencia.',
+        },
+        {
+          title: 'Hoja de personaje',
+          badge: '2-10 refs',
+          icon: Users,
+          prompt:
+            'Hoja de referencia de personaje: mismo rostro, outfit y paleta en cuatro vistas limpias, fondo neutro, detalles consistentes de chaqueta y accesorios.',
+        },
+        {
+          title: 'Edición de imagen',
+          badge: 'Image edit',
+          icon: PenLine,
+          prompt:
+            'Usando esta imagen de producto, conservar forma, logo y proporciones. Limpiar polvo y reflejos molestos, simplificar el entorno y mantener luz natural.',
+        },
+        {
+          title: 'Batch storyboard',
+          badge: '4 imágenes',
+          icon: Sparkles,
+          prompt:
+            'Crear cuatro imágenes coherentes para storyboard de lanzamiento: hero de producto, detalle de material, contexto lifestyle y frame final. Misma paleta, misma luz, encuadres distintos.',
+        },
+      ];
+    }
+    return [
+      {
+        title: 'Product reference still',
+        badge: '2K still',
+        icon: ImageIcon,
+        prompt:
+          '2K product still of an amber perfume bottle on white acrylic, soft studio light, clean shadow, readable label, minimal background ready for reference use.',
+      },
+      {
+        title: 'Character reference sheet',
+        badge: '2-10 refs',
+        icon: Users,
+        prompt:
+          'Character reference sheet with the same face, outfit and palette across four clean views, neutral background, consistent jacket details and accessories.',
+      },
+      {
+        title: 'Image edit cleanup',
+        badge: 'Image edit',
+        icon: PenLine,
+        prompt:
+          'Using this product image, preserve shape, logo and proportions. Clean dust and unwanted reflections, simplify the environment and keep natural lighting.',
+      },
+      {
+        title: 'Storyboard batch',
+        badge: '4 images',
+        icon: Sparkles,
+        prompt:
+          'Create four coherent launch storyboard images: product hero, material detail, lifestyle context and final frame. Same palette, same lighting, distinct compositions.',
+      },
+    ];
+  }
+
   if (engineSlug === 'nano-banana-2') {
     if (locale === 'fr') {
       return [
@@ -241,6 +451,144 @@ function getImagePromptExamples(locale: AppLocale, engineSlug: string) {
         icon: Maximize2,
         prompt:
           '4K still in 21:9 for a launch banner, product on the left, negative space on the right for text added later, soft light, photorealistic finish.',
+      },
+    ];
+  }
+  if (engineSlug === 'gpt-image-2') {
+    if (locale === 'fr') {
+      return [
+        {
+          title: 'Packshot avec label lisible',
+          badge: 'High · 1024x768',
+          icon: ImageIcon,
+          prompt:
+            'Packshot catalogue d’un sachet de café premium intitulé "SUMMIT ROAST", notes de dégustation lisibles, table en bois clair, lumière douce, cadrage propre, fond e-commerce.',
+        },
+        {
+          title: 'Poster texte exact',
+          badge: '4K text',
+          icon: Type,
+          prompt:
+            'Poster vertical 4K avec titre exact "CREATOR LAUNCH CHECKLIST", 8 modules numérotés, typographie nette, fond blanc, accents bleu nuit et cyan, marges régulières.',
+        },
+        {
+          title: 'Mockup UI',
+          badge: '1920x1080',
+          icon: Maximize2,
+          prompt:
+            'Mockup d’écran SaaS 1920x1080 pour dashboard analytics, cards blanches, navigation latérale, titres lisibles, chiffres réalistes, style produit premium.',
+        },
+        {
+          title: 'Retouche contrôlée',
+          badge: 'Image edit',
+          icon: PenLine,
+          prompt:
+            'À partir de cette image produit, conserver forme, label, proportions et reflet principal. Remplacer le fond par un studio clair, retirer poussières et reflets parasites.',
+        },
+        {
+          title: 'Edit guidé par masque',
+          badge: 'Mask URL',
+          icon: Sparkles,
+          prompt:
+            'Modifier uniquement la zone masquée : remplacer le texte secondaire par "LIMITED RESERVE", garder logo, couleur du packaging, ombre et perspective inchangés.',
+        },
+        {
+          title: 'Hero still 4K',
+          badge: '3840x2160',
+          icon: Maximize2,
+          prompt:
+            'Hero still 4K pour page produit, smartphone noir sur surface graphite, texte écran lisible, reflet contrôlé, éclairage studio premium, espace négatif à droite.',
+        },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        {
+          title: 'Still de producto legible',
+          badge: 'High · 1024x768',
+          icon: ImageIcon,
+          prompt:
+            'Foto de catálogo de una bolsa de café premium titulada "SUMMIT ROAST", notas de sabor legibles, mesa de madera clara, luz suave, encuadre limpio, fondo e-commerce.',
+        },
+        {
+          title: 'Póster con texto exacto',
+          badge: 'Texto 4K',
+          icon: Type,
+          prompt:
+            'Póster vertical 4K con título exacto "CREATOR LAUNCH CHECKLIST", 8 módulos numerados, tipografía nítida, fondo blanco, acentos azul noche y cian, márgenes regulares.',
+        },
+        {
+          title: 'Mockup UI',
+          badge: '1920x1080',
+          icon: Maximize2,
+          prompt:
+            'Mockup de pantalla SaaS 1920x1080 para dashboard de analytics, cards blancas, navegación lateral, títulos legibles, cifras realistas, estilo de producto premium.',
+        },
+        {
+          title: 'Edición controlada',
+          badge: 'Image edit',
+          icon: PenLine,
+          prompt:
+            'Usando esta imagen de producto, conservar forma, etiqueta, proporciones y reflejo principal. Cambiar el fondo a un estudio claro, quitar polvo y reflejos molestos.',
+        },
+        {
+          title: 'Edit con máscara',
+          badge: 'Mask URL',
+          icon: Sparkles,
+          prompt:
+            'Modificar solo la zona con máscara: cambiar el texto secundario a "LIMITED RESERVE", mantener logo, color del packaging, sombra y perspectiva sin cambios.',
+        },
+        {
+          title: 'Hero still 4K',
+          badge: '3840x2160',
+          icon: Maximize2,
+          prompt:
+            'Hero still 4K para página de producto, smartphone negro sobre superficie grafito, texto de pantalla legible, reflejo controlado, luz de estudio premium, espacio negativo a la derecha.',
+        },
+      ];
+    }
+    return [
+      {
+        title: 'Product still with readable label',
+        badge: 'High · 1024x768',
+        icon: ImageIcon,
+        prompt:
+          'Catalog product photo of a premium coffee bag titled "SUMMIT ROAST", readable tasting notes, light wood table, soft daylight, clean framing, e-commerce background.',
+      },
+      {
+        title: 'Exact-text poster',
+        badge: '4K text',
+        icon: Type,
+        prompt:
+          'Vertical 4K poster with exact title "CREATOR LAUNCH CHECKLIST", 8 numbered modules, crisp typography, white background, navy and cyan accents, even margins.',
+      },
+      {
+        title: 'UI mockup',
+        badge: '1920x1080',
+        icon: Maximize2,
+        prompt:
+          '1920x1080 SaaS analytics dashboard screen mockup, white cards, left navigation, readable headings, realistic metrics, premium product UI style.',
+      },
+      {
+        title: 'Controlled image edit',
+        badge: 'Image edit',
+        icon: PenLine,
+        prompt:
+          'Using this product image, preserve shape, label, proportions and main reflection. Replace the background with a bright studio, remove dust and distracting reflections.',
+      },
+      {
+        title: 'Mask-guided edit',
+        badge: 'Mask URL',
+        icon: Sparkles,
+        prompt:
+          'Modify only the masked region: replace the secondary copy with "LIMITED RESERVE", keep logo, packaging color, shadow and perspective unchanged.',
+      },
+      {
+        title: '4K hero still',
+        badge: '3840x2160',
+        icon: Maximize2,
+        prompt:
+          '4K product-page hero still, black smartphone on graphite surface, readable screen text, controlled reflection, premium studio lighting, negative space on the right.',
       },
     ];
   }
@@ -351,37 +699,118 @@ export function ModelDecisionPromptingSection({
   referenceWorkflows,
 }: ModelDecisionPromptingSectionProps) {
   const labels = getPromptLabels(locale, modelName);
-  const demo = getDemoSummary(locale);
+  const isHailuoDraftRoute = engineSlug === 'minimax-hailuo-02-text';
+  const isPikaTextRoute = engineSlug === 'pika-text-to-video';
+  const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute;
+  const standardDemo = getDemoSummary(locale);
+  const hailuoDemo = getHailuoDemoSummary(locale);
+  const pikaDemo = getPikaDemoSummary(locale);
+  const demo = isHailuoDraftRoute
+    ? { ...hailuoDemo, audio: hailuoDemo.output }
+    : isPikaTextRoute
+      ? { ...pikaDemo, audio: pikaDemo.output }
+    : { ...standardDemo, output: standardDemo.audio };
   const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
   const intro = copy.promptingIntro ?? '';
   const imageExamplesIntro =
-    engineSlug === 'nano-banana-2'
+    engineSlug === 'seedream'
+      ? locale === 'fr'
+        ? 'Prompts Seedream pour stills produit, planches personnage, retouches image et batches de storyboard.'
+        : locale === 'es'
+          ? 'Prompts de Seedream para stills de producto, hojas de personaje, edición de imagen y batches de storyboard.'
+          : 'Seedream prompts for product stills, character reference sheets, image edits and storyboard batches.'
+      : engineSlug === 'nano-banana-2'
       ? locale === 'fr'
         ? 'Exemples pour stills guidés, edits produit, multi-références et formats larges 4K.'
         : locale === 'es'
           ? 'Ejemplos para stills guiados, edits de producto, multi-referencias y formatos amplios 4K.'
           : 'Use these for grounded stills, product edits, multi-reference workflows and wide-ratio 4K images.'
+      : engineSlug === 'gpt-image-2'
+      ? locale === 'fr'
+        ? 'Prompts GPT Image 2 pour texte lisible, packshots produit, mockups UI, edits contrôlés, masques et finales 4K.'
+        : locale === 'es'
+          ? 'Prompts de GPT Image 2 para texto legible, producto, mockups UI, edits controlados, máscaras y finales 4K.'
+          : 'GPT Image 2 prompts for readable text, product stills, UI mockups, controlled edits, masks and 4K finals.'
       : labels.imageExamplesIntro;
-  const guideLabel = labels.guide;
+  const guideLabel = copy.promptingGuideLabel ?? labels.guide;
   const guideHref = copy.promptingGuideUrl ?? null;
+  const referencesTitle =
+    engineSlug === 'seedream'
+      ? locale === 'fr'
+        ? 'Comment Seedream prépare les références'
+        : locale === 'es'
+          ? 'Cómo Seedream prepara referencias'
+          : 'How Seedream prepares references'
+      : engineSlug === 'gpt-image-2'
+        ? locale === 'fr'
+          ? 'Comment GPT Image 2 utilise les sources et masques'
+          : locale === 'es'
+            ? 'Cómo GPT Image 2 usa fuentes y máscaras'
+            : 'How GPT Image 2 uses sources and masks'
+      : isHailuoDraftRoute
+        ? locale === 'fr'
+          ? 'Comment Hailuo 02 structure un test mouvement'
+          : locale === 'es'
+            ? 'Cómo Hailuo 02 estructura una prueba de movimiento'
+            : 'How Hailuo 02 structures motion tests'
+        : isPikaTextRoute
+          ? locale === 'fr'
+            ? 'Comment Pika 2.2 structure un prompt Text-to-Video'
+            : locale === 'es'
+              ? 'Cómo Pika 2.2 estructura un prompt Text-to-Video'
+              : 'How Pika 2.2 structures Text-to-Video prompts'
+        : labels.referencesTitle;
   const posterSrc = demoMedia?.posterUrl ?? null;
   const demoVideoSrc = demoMedia?.videoUrl ?? demoMedia?.previewVideoUrl ?? null;
   const demoPromptText =
-    demoMedia?.prompt ??
-    [
-      `${labels.demoSubject}: ${demo.subject}`,
-      `${labels.demoAction}: ${demo.action}`,
-      `${labels.demoCamera}: ${demo.camera}`,
-      `${labels.demoStyle}: ${demo.style}`,
-      `${labels.demoAudio}: ${demo.audio}`,
-    ].join('\n');
-  const demoAlt = getImageAlt({
-    kind: 'renderThumb',
-    engine: modelName,
-    label: copy.demoTitle ?? `${modelName} demo render`,
-    prompt: copy.demoTitle ?? `${modelName} demo render`,
-    locale,
-  });
+    isHailuoDraftRoute
+      ? getHailuoDemoPrompt(locale)
+      : isPikaTextRoute
+        ? getPikaDemoPrompt(locale)
+      : (demoMedia?.prompt ??
+        [
+          `${labels.demoSubject}: ${demo.subject}`,
+          `${labels.demoAction}: ${demo.action}`,
+          `${labels.demoCamera}: ${demo.camera}`,
+          `${labels.demoStyle}: ${demo.style}`,
+          `${labels.demoAudio}: ${demo.audio}`,
+        ].join('\n'));
+  const demoDurationLabel = isHailuoDraftRoute
+    ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
+    : isPikaTextRoute
+      ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
+      : getDuration(demoMedia, locale);
+  const demoAspectLabel = isSilentPromptRoute ? (isPikaTextRoute ? '1:1' : '16:9') : getAspect(demoMedia);
+  const demoModeLabel = isHailuoDraftRoute
+    ? locale === 'fr'
+      ? 'Brouillon silencieux'
+      : locale === 'es'
+        ? 'Borrador sin audio'
+        : 'Silent motion draft'
+    : isPikaTextRoute
+      ? 'Text-to-Video'
+    : labels.textToVideo;
+  const demoOutputLabel = isSilentPromptRoute
+    ? locale === 'fr'
+      ? 'Sortie'
+      : locale === 'es'
+        ? 'Salida'
+        : 'Output'
+    : labels.demoAudio;
+  const demoOutputValue = isSilentPromptRoute ? demo.output : demo.audio;
+  const demoAlt = isPikaTextRoute
+    ? locale === 'fr'
+      ? 'Loop pixel-art Pika 2.2'
+      : locale === 'es'
+        ? 'Loop pixel-art de Pika 2.2'
+        : 'Pika 2.2 pixel-art loop'
+    : getImageAlt({
+        kind: 'renderThumb',
+        engine: modelName,
+        label: copy.demoTitle ?? `${modelName} demo render`,
+        prompt: copy.demoTitle ?? `${modelName} demo render`,
+        locale,
+      });
 
   return (
     <section id={imageAnchorId} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
@@ -414,7 +843,7 @@ export function ModelDecisionPromptingSection({
 
         {referenceWorkflows.length ? (
           <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
-            <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{labels.referencesTitle}</h3>
+            <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{referencesTitle}</h3>
             <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
               {referenceWorkflows.map((workflow, index) => {
                 const Icon = REFERENCE_ICONS[index] ?? Sparkles;
@@ -526,14 +955,14 @@ export function ModelDecisionPromptingSection({
         <div>
           <h2 className="!text-left text-2xl font-semibold text-text-primary">{copy.demoTitle ?? `Demo prompt — ${modelName}`}</h2>
           <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/12 dark:text-blue-200">
-            {labels.textToVideo}
+            {demoModeLabel}
           </span>
           <p className="mt-4 text-sm leading-6 text-text-secondary">
             <strong>{labels.demoSubject}:</strong> {demo.subject} &nbsp;•&nbsp; <strong>{labels.demoAction}:</strong> {demo.action}
             <br />
             <strong>{labels.demoCamera}:</strong> {demo.camera} &nbsp;•&nbsp; <strong>{labels.demoStyle}:</strong> {demo.style}
             <br />
-            <strong>{labels.demoAudio}:</strong> {demo.audio}
+            <strong>{demoOutputLabel}:</strong> {demoOutputValue}
           </p>
           <details className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-sm">
             <summary className="cursor-pointer font-semibold text-text-primary">{labels.showPrompt}</summary>
@@ -547,15 +976,21 @@ export function ModelDecisionPromptingSection({
           <div className="mt-5 flex flex-wrap gap-3">
             <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
               <UIIcon icon={Clock3} size={15} />
-              {getDuration(demoMedia, locale)}
+              {demoDurationLabel}
             </span>
             <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
               <UIIcon icon={Sparkles} size={15} />
-              {getAspect(demoMedia)}
+              {demoAspectLabel}
             </span>
             <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
               <UIIcon icon={Volume2} size={15} className={MODEL_PAGE_ICON_MUTED} />
-              {labels.audioOn}
+              {isSilentPromptRoute
+                ? locale === 'fr'
+                  ? 'Silencieux'
+                  : locale === 'es'
+                    ? 'Sin audio'
+                    : 'Silent'
+                : labels.audioOn}
             </span>
           </div>
         </div>
@@ -564,8 +999,8 @@ export function ModelDecisionPromptingSection({
           posterSrc={posterSrc}
           videoSrc={demoVideoSrc}
           alt={demoAlt}
-          durationLabel={getDuration(demoMedia, locale)}
-          aspectLabel={getAspect(demoMedia)}
+          durationLabel={demoDurationLabel}
+          aspectLabel={demoAspectLabel}
           renderHref={demoMedia?.href ?? null}
           renderLabel={labels.viewFull}
         />

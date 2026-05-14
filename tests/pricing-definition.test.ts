@@ -145,6 +145,34 @@ test('Happy Horse benchmark specs mark unified native audio support', () => {
   assert.equal(happyHorse.keySpecs?.nativeAudioGeneration, 'Supported');
 });
 
+test('Wan 2.6 benchmark specs keep reference mode and audio limits explicit', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+  const wan26 = benchmarkData.specs?.find((entry) => entry.modelSlug === 'wan-2-6');
+
+  assert.ok(wan26);
+  assert.equal(wan26.keySpecs?.videoToVideo, 'Reference-video guidance');
+  assert.equal(wan26.keySpecs?.audioOutput, 'Text/Image modes only; off in Reference mode');
+  assert.equal(wan26.keySpecs?.lipSync, 'Not exposed in MaxVideoAI route');
+});
+
+test('Pika Text-to-Video benchmark specs avoid image route overclaims', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+  const pika = benchmarkData.specs?.find((entry) => entry.modelSlug === 'pika-text-to-video');
+
+  assert.ok(pika);
+  assert.equal(pika.keySpecs?.textToVideo, 'Supported');
+  assert.equal(pika.keySpecs?.imageToVideo, 'Related image-start workflow');
+  assert.equal(pika.keySpecs?.firstLastFrame, 'Not supported');
+  assert.equal(pika.keySpecs?.audioOutput, 'Not supported');
+  assert.deepEqual(pika.keySpecs?.aspectRatios, ['1:1', '16:9', '9:16', '4:5', '5:4', '3:2', '2:3']);
+});
+
 test('Happy Horse is distributed across relevant best-for pages', () => {
   const comparePath = path.join(process.cwd(), 'frontend/config/compare-config.json');
   const compareData = JSON.parse(fs.readFileSync(comparePath, 'utf8')) as {

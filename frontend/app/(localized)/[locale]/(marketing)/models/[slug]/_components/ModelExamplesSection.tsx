@@ -102,6 +102,34 @@ function getFallbackExamplesIntro(locale: AppLocale, modelName: string) {
 
 function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, engineSlug?: string): DecisionExampleFilter[] {
   if (isImageEngine) {
+    if (engineSlug === 'seedream') {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'product', label: 'Produit' },
+          { id: 'character', label: 'Personnage' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'batch', label: 'Batch' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'product', label: 'Producto' },
+          { id: 'character', label: 'Personaje' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'batch', label: 'Batch' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'product', label: 'Product still' },
+        { id: 'character', label: 'Character' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'batch', label: 'Batch' },
+      ];
+    }
+
     if (engineSlug === 'nano-banana-2') {
       if (locale === 'fr') {
         return [
@@ -127,6 +155,39 @@ function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, en
         { id: 'edit', label: 'Edit' },
         { id: 'reference', label: 'References' },
         { id: 'wide', label: 'Wide ratio' },
+      ];
+    }
+    if (engineSlug === 'gpt-image-2') {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'product', label: 'Produit' },
+          { id: 'typography', label: 'Texte' },
+          { id: 'ui', label: 'UI' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'mask', label: 'Masque' },
+          { id: 'final', label: '4K final' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'product', label: 'Producto' },
+          { id: 'typography', label: 'Texto' },
+          { id: 'ui', label: 'UI' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'mask', label: 'Máscara' },
+          { id: 'final', label: '4K final' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'product', label: 'Product' },
+        { id: 'typography', label: 'Readable text' },
+        { id: 'ui', label: 'UI mockup' },
+        { id: 'edit', label: 'Image edit' },
+        { id: 'mask', label: 'Mask edit' },
+        { id: 'final', label: '4K final' },
       ];
     }
     if (locale === 'fr') {
@@ -186,7 +247,13 @@ function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, en
   ];
 }
 
-function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isImageEngine: boolean): Array<{
+function getSilentBadgeLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Silencieux';
+  if (locale === 'es') return 'Sin audio';
+  return 'Silent';
+}
+
+function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isImageEngine: boolean, engineSlug?: string): Array<{
   title: string;
   body: string;
   icon: LucideIcon;
@@ -217,6 +284,35 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
       { title: 'Reference edits', body: 'Keep product identity, palette, layout or style.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
       { title: '4K finals', body: 'Validate at 2K, then finish at 4K.', icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Safe for production', body: 'Owned references and built-in guardrails.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
+  if (engineSlug === 'minimax-hailuo-02-text' || engineSlug === 'pika-text-to-video') {
+    const isPika = engineSlug === 'pika-text-to-video';
+    if (locale === 'fr') {
+      return [
+        { title: isPika ? 'Boucles stylisées' : 'Rendus brouillon', body: isPika ? 'Voyez les boucles Text-to-Video silencieuses possibles avec Pika 2.2.' : 'Voyez les tests mouvement légers possibles avec Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recréer un test', body: isPika ? 'Ouvrez l’app et réutilisez le prompt, le ratio et la durée.' : 'Ouvrez l’app et réutilisez le prompt ou l’image de départ.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Sortie silencieuse', body: isPika ? 'Aucune bande-son générée ici ; ajoutez son et voix plus tard.' : 'Pas d’audio natif sur cette route ; ajoutez son et voix plus tard.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Seeds et négatifs' : 'Tests physiques', body: isPika ? 'Gardez une direction visuelle et bloquez texte, logos ou artefacts.' : 'Vérifiez force, collisions, tissu, eau et contact au sol.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Social first' : 'Route de brouillon', body: isPika ? 'Pensé pour clips courts, overlays et loops à monter ensuite.' : '512P/768P ici ; passez les plans validés sur une route finale.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: isPika ? 'Loops estilizados' : 'Renders de borrador', body: isPika ? 'Mira loops Text-to-Video sin audio posibles con Pika 2.2.' : 'Mira pruebas ligeras de movimiento posibles con Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recrear una prueba', body: isPika ? 'Abre la app y reutiliza prompt, formato y duración.' : 'Abre la app y reutiliza prompt o imagen inicial.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Salida sin audio', body: isPika ? 'Aquí no se genera banda sonora; añade sonido y voz después.' : 'Esta ruta no tiene audio nativo; añade sonido y voz después.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Seeds y negativos' : 'Pruebas físicas', body: isPika ? 'Mantén una dirección visual y bloquea texto, logos o artefactos.' : 'Revisa fuerza, colisiones, tela, agua y contacto con el suelo.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isPika ? 'Social first' : 'Ruta de borrador', body: isPika ? 'Pensado para clips cortos, overlays y loops para editar después.' : '512P/768P aquí; pasa los planos aprobados a una ruta final.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: isPika ? 'Stylized loops' : 'Draft renders', body: isPika ? `See silent Text-to-Video loops possible with ${modelName}.` : `See lightweight motion tests possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Recreate a test', body: isPika ? 'Open the app and reuse the prompt, aspect ratio and duration.' : 'Open the app and reuse the prompt or start image setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Silent output', body: isPika ? 'No soundtrack is generated here; add sound and voice later.' : 'No native audio on this route; add sound and voice later.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isPika ? 'Seeds and negatives' : 'Physics checks', body: isPika ? 'Keep a visual lane and block text, logos or artifacts.' : 'Review force, collisions, cloth, water and ground contact.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+      { title: isPika ? 'Social first' : 'Draft route', body: isPika ? 'Built for short clips, overlays and loops you can edit later.' : '512P/768P here; move approved shots to a final route.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
     ];
   }
 
@@ -305,7 +401,8 @@ function getDecisionExampleTags(
   video: ExampleGalleryVideo,
   category: string,
   aspectRatio: string | null,
-  isImageEngine: boolean
+  isImageEngine: boolean,
+  engineSlug?: string
 ): DecisionExampleFilterId[] {
   const categoryText = category.toLowerCase();
   const titleText = deriveShortPromptLabel(video.promptFull ?? video.prompt, 'en').toLowerCase();
@@ -317,7 +414,7 @@ function getDecisionExampleTags(
     if (/\b(4k|final)\b/.test(`${categoryText} ${titleText}`)) tags.add('final');
     return Array.from(tags);
   }
-  if (video.hasAudio) tags.add('audio');
+  if (video.hasAudio && engineSlug !== 'minimax-hailuo-02-text' && engineSlug !== 'pika-text-to-video') tags.add('audio');
   if (aspectRatio === '9:16') tags.add('vertical');
   if (/\b(action|parkour|run|running|chase|combat|sport)\b/.test(`${categoryText} ${titleText}`)) {
     tags.add('action');
@@ -337,15 +434,18 @@ function buildDecisionExampleItems({
   locale,
   copy,
   isImageEngine,
+  engineSlug,
 }: {
   galleryVideos: ExampleGalleryVideo[];
   galleryPreviewAlts: Map<string, string>;
   locale: AppLocale;
   copy: SoraCopy;
   isImageEngine: boolean;
+  engineSlug: string;
 }): DecisionExampleGalleryItem[] {
   const modelName = resolveExamplesModelName(copy);
   const useCuratedLabels = /seedance/i.test(modelName);
+  const isSilentDraftEngine = engineSlug === 'minimax-hailuo-02-text' || engineSlug === 'pika-text-to-video';
 
   return galleryVideos.slice(0, 4).map((video, index) => {
     const fallbackTitle = deriveShortPromptLabel(video.promptFull ?? video.prompt, locale);
@@ -358,14 +458,14 @@ function buildDecisionExampleItems({
       href: video.href,
       posterUrl,
       alt: galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`,
-      audioBadgeLabel: isImageEngine ? null : getAudioBadgeLabel(video, locale),
+      audioBadgeLabel: isImageEngine ? null : isSilentDraftEngine ? getSilentBadgeLabel(locale) : getAudioBadgeLabel(video, locale),
       durationLabel: isImageEngine ? null : getDurationLabel(video, locale),
       aspectRatio,
       category,
       title: shortTitle,
       recreateHref: video.recreateHref ?? null,
       recreateLabel: copy.recreateLabel ?? null,
-      tags: getDecisionExampleTags(video, category, aspectRatio, isImageEngine),
+      tags: getDecisionExampleTags(video, category, aspectRatio, isImageEngine, engineSlug),
     };
   });
 }
@@ -386,7 +486,30 @@ function buildImageFallbackExampleItems({
     copy.recreateLabel ??
     (locale === 'fr' ? 'Recréer ce still →' : locale === 'es' ? 'Recrear este still →' : 'Recreate this still →');
   const isNanoBanana2 = engineSlug === 'nano-banana-2';
-  const examples = isNanoBanana2
+  const isSeedream = engineSlug === 'seedream';
+  const isGptImage2 = engineSlug === 'gpt-image-2';
+  const examples = isSeedream
+    ? locale === 'fr'
+      ? [
+          ['product', 'Still produit de référence', 'Produit · 2K', '2K', 'Still produit Seedream préparé comme référence propre'],
+          ['character', 'Planche personnage', 'Personnage', '2-10 refs', 'Planche Seedream avec plusieurs vues cohérentes du même personnage'],
+          ['edit', 'Retouche image propre', 'Edit', 'Image edit', 'Retouche Seedream qui préserve forme, logo et proportions'],
+          ['batch', 'Batch storyboard', 'Batch', '4 images', 'Batch Seedream de quatre images cohérentes pour storyboard'],
+        ]
+      : locale === 'es'
+        ? [
+            ['product', 'Still de producto', 'Producto · 2K', '2K', 'Still de producto Seedream preparado como referencia limpia'],
+            ['character', 'Hoja de personaje', 'Personaje', '2-10 refs', 'Hoja Seedream con varias vistas coherentes del mismo personaje'],
+            ['edit', 'Edición limpia', 'Edit', 'Image edit', 'Edición Seedream que conserva forma, logo y proporciones'],
+            ['batch', 'Batch storyboard', 'Batch', '4 imágenes', 'Batch Seedream de cuatro imágenes coherentes para storyboard'],
+          ]
+        : [
+            ['product', 'Product reference still', 'Product · 2K', '2K', 'Seedream product still prepared as a clean reference image'],
+            ['character', 'Character reference sheet', 'Character', '2-10 refs', 'Seedream sheet with consistent views of the same character'],
+            ['edit', 'Clean image edit', 'Edit', 'Image edit', 'Seedream edit preserving shape, logo and proportions'],
+            ['batch', 'Storyboard batch', 'Batch', '4 images', 'Seedream four-image storyboard batch'],
+          ]
+    : isNanoBanana2
     ? locale === 'fr'
       ? [
           ['grounded', 'Scène produit guidée', 'Guidé · 1K', '1K', 'Image Nano Banana 2 guidée par contexte pour un lancement produit'],
@@ -406,6 +529,33 @@ function buildImageFallbackExampleItems({
             ['edit', 'Controlled product edit', 'Edit', 'Edit', 'Nano Banana 2 product edit with keep-and-change constraints'],
             ['reference', 'Multi-reference edit', 'References', 'Refs', 'Nano Banana 2 image combining multiple product references'],
             ['wide', 'Wide-ratio 4K still', 'Wide ratio', '4K · 21:9', 'Nano Banana 2 wide 4K still image'],
+          ]
+    : isGptImage2
+    ? locale === 'fr'
+      ? [
+          ['product', 'Packshot produit texte', 'Produit', '1024x768 · High', 'Packshot GPT Image 2 avec label produit lisible'],
+          ['typography', 'Poster typographique', 'Texte lisible', '4K', 'Poster GPT Image 2 avec hiérarchie typographique nette'],
+          ['ui', 'Mockup UI', 'UI', '1920x1080', 'Mockup d’écran GPT Image 2 avec interface lisible'],
+          ['edit', 'Retouche produit', 'Edit image', 'Auto', 'Retouche GPT Image 2 qui préserve produit et label'],
+          ['mask', 'Edit guidé par masque', 'Masque', 'Mask URL', 'Retouche GPT Image 2 limitée à une zone masquée'],
+          ['final', 'Hero still 4K', 'Final', '3840x2160', 'Still hero GPT Image 2 en 4K avec détails produit nets'],
+        ]
+      : locale === 'es'
+        ? [
+            ['product', 'Still de producto con texto', 'Producto', '1024x768 · High', 'Still GPT Image 2 con etiqueta de producto legible'],
+            ['typography', 'Póster tipográfico', 'Texto legible', '4K', 'Póster GPT Image 2 con jerarquía tipográfica clara'],
+            ['ui', 'Mockup UI', 'UI', '1920x1080', 'Mockup de pantalla GPT Image 2 con interfaz legible'],
+            ['edit', 'Edición de producto', 'Edit de imagen', 'Auto', 'Edición GPT Image 2 que conserva producto y etiqueta'],
+            ['mask', 'Edit con máscara', 'Máscara', 'Mask URL', 'Edición GPT Image 2 limitada a una zona con máscara'],
+            ['final', 'Hero still 4K', 'Final', '3840x2160', 'Still hero GPT Image 2 en 4K con detalle de producto nítido'],
+          ]
+        : [
+            ['product', 'Product still with text', 'Product', '1024x768 · High', 'GPT Image 2 product still with readable packaging label'],
+            ['typography', 'Readable typography poster', 'Readable text', '4K', 'GPT Image 2 poster with crisp typography hierarchy'],
+            ['ui', 'UI mockup', 'UI', '1920x1080', 'GPT Image 2 app screen mockup with readable interface copy'],
+            ['edit', 'Controlled product edit', 'Image edit', 'Auto', 'GPT Image 2 edit preserving product shape and label'],
+            ['mask', 'Mask-guided edit', 'Mask edit', 'Mask URL', 'GPT Image 2 edit constrained to a masked region'],
+            ['final', '4K hero still', 'Final', '3840x2160', 'GPT Image 2 4K hero still with sharp product details'],
           ]
     : locale === 'fr'
       ? [
@@ -469,14 +619,17 @@ function ModelDecisionExamplesPanel({
         : 'Open'
     : getRenderLinkLabel(locale);
   const modelName = resolveExamplesModelName(copy);
-  const proofItems = getDecisionExampleProofItems(locale, modelName, isImageEngine);
+  const proofItems = getDecisionExampleProofItems(locale, modelName, isImageEngine, engineSlug);
   const title = copy.galleryTitle ?? getFallbackExamplesTitle(locale, modelName);
   const intro = copy.galleryIntro ?? getFallbackExamplesIntro(locale, modelName);
-  const galleryItems = buildDecisionExampleItems({ galleryVideos, galleryPreviewAlts, locale, copy, isImageEngine });
+  const galleryItems = buildDecisionExampleItems({ galleryVideos, galleryPreviewAlts, locale, copy, isImageEngine, engineSlug });
   const fallbackItems = isImageEngine
     ? buildImageFallbackExampleItems({ copy, engineSlug, fallbackImageUrl, locale })
     : [];
-  const items = isImageEngine && engineSlug === 'nano-banana-2' ? fallbackItems : galleryItems.length ? galleryItems : fallbackItems;
+  const shouldPreferFallbackItems = isImageEngine && (engineSlug === 'nano-banana-2' || engineSlug === 'seedream' || engineSlug === 'gpt-image-2');
+  const items = shouldPreferFallbackItems ? fallbackItems : galleryItems.length ? galleryItems : fallbackItems;
+  const resolvedExamplesLinkHref =
+    (engineSlug === 'seedream' || engineSlug === 'gpt-image-2') && !galleryVideos.length ? null : examplesLinkHref;
   const filters = getAvailableDecisionExampleFilters(locale, items, isImageEngine, engineSlug);
 
   return (
@@ -487,7 +640,7 @@ function ModelDecisionExamplesPanel({
           intro={intro}
           filters={filters}
           items={items}
-          examplesLinkHref={examplesLinkHref}
+          examplesLinkHref={resolvedExamplesLinkHref}
           viewAllLabel={getViewAllExamplesLabel(locale)}
           renderLinkLabel={renderLinkLabel}
           emptyLabel={getNoExamplesForFilterLabel(locale, modelName)}

@@ -27,6 +27,10 @@ function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
   return 'Model video preview';
 }
 
+function isPlayableVideoUrl(src: string | null | undefined) {
+  return Boolean(src && /\.(?:mp4|webm|mov)(?:[?#].*)?$/i.test(src));
+}
+
 export function ModelDecisionMediaCard({
   media,
   label,
@@ -42,14 +46,15 @@ export function ModelDecisionMediaCard({
   const [audioBadge, durationBadge, ratioBadge] = badges;
   const leadingBadge = audioBadge ?? (media.hasAudio ? audioBadgeLabel : null);
   const LeadingBadgeIcon = media.hasAudio ? Volume2 : ImageIcon;
+  const videoSrc = isPlayableVideoUrl(media.videoUrl) ? media.videoUrl : null;
 
   return (
     <figure className="relative overflow-hidden rounded-[24px] border border-[#cfdaea] bg-[#08172d] shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:border-white/10 dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)]">
       <div className="relative aspect-video w-full overflow-hidden">
-        {media.videoUrl ? (
+        {videoSrc ? (
           <ModelHeroMedia
             posterSrc={posterSrc}
-            videoSrc={media.videoUrl}
+            videoSrc={videoSrc}
             alt={resolvedAltText}
             sizes="(max-width: 768px) 100vw, 760px"
             autoPlayDelayMs={250}

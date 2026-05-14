@@ -17,15 +17,29 @@ export const gptImage2TemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#gpt-image-2-pricing',
     presets: [
-      { id: '1024x768-high', imageResolution: '1024x768', imageQuality: 'high', labelKey: 'stillImage' },
+      {
+        id: '1024x768-high',
+        imageResolution: '1024x768',
+        imageQuality: 'high',
+        labelKey: 'productStill',
+        noteKey: 'highResolutionStill',
+      },
       {
         id: '3840x2160-high',
         imageResolution: '3840x2160',
         imageQuality: 'high',
-        labelKey: 'fourKReference',
+        labelKey: 'fourKHeroStill',
+        noteKey: 'highResolutionStill',
         highlightKey: 'mostPopular',
       },
-      { id: '4x-1024x768-medium', imageResolution: '1024x768', imageQuality: 'medium', quantity: 4, labelKey: 'imageBatch' },
+      {
+        id: '4x-1024x768-medium',
+        imageResolution: '1024x768',
+        imageQuality: 'medium',
+        quantity: 4,
+        labelKey: 'mediumVariantSet',
+        noteKey: 'checkLiveQuote',
+      },
     ],
   },
   sections: {

@@ -2570,10 +2570,10 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'WAN MULTI-SHOT VIDEO ROUTE',
       title: 'Wan 2.6',
-      subtitle: '15s multi-shot clips, reference-to-video consistency, and optional audio for text or image starts.',
-      subtitleHighlights: ['15s multi-shot clips', 'reference-to-video consistency', 'optional audio for text or image starts'],
+      subtitle: '15s multi-shot clips, 5s/10s reference-video consistency, and optional audio for text or image starts.',
+      subtitleHighlights: ['15s multi-shot clips', '5s/10s reference-video consistency', 'optional audio for text or image starts'],
       paragraph:
-        'Use Wan 2.6 when you need the newer Wan route on MaxVideoAI: 720p or 1080p clips up to 15 seconds, text-to-video, image-to-video, reference-video guidance, multi-shot planning and optional audio for text or image workflows.',
+        'Use Wan 2.6 when you need the newer Wan route on MaxVideoAI: 720p or 1080p clips up to 15 seconds, text-to-video, image-to-video, 5s/10s reference-video guidance and optional audio for text or image workflows.',
       primaryCta: { label: 'Generate with Wan 2.6', href: '/app?engine=wan-2-6' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'wan') },
       quickLinks: [
@@ -2591,7 +2591,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Multi-shot clips', body: 'Plan short sequences with cleaner internal beat structure.', tone: 'continuity' },
-      { title: 'Reference-to-video', body: 'Use supported reference videos when subject consistency matters.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Use supported reference videos for 5s/10s consistency checks; audio is off in this mode.', tone: 'reference' },
       { title: 'Text or image start', body: 'Generate from a prompt or anchor the first frame with one image.', tone: 'reference' },
       { title: '720p or 1080p', body: 'Choose review or production preview resolution before generation.', tone: 'quality' },
       { title: 'Max 15s', body: 'Use 5, 10 or 15 second durations depending on the beat.', tone: 'duration' },
@@ -2605,7 +2605,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Need reference consistency?',
-        body: 'Use reference-to-video when motion rhythm, subject identity or a previous take should guide the next output.',
+        body: 'Use reference-to-video for 5s/10s clips when motion rhythm, subject identity or a previous take should guide the next output.',
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
@@ -2617,8 +2617,8 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Text prompt', body: 'Write subject, action, camera, style, duration and optional sound direction.' },
       { title: 'Image start', body: 'Use one still to lock product shape, character framing or opening composition.' },
-      { title: 'Reference videos', body: 'Use one to three videos when the active route needs motion or identity consistency.' },
-      { title: 'Audio track', body: 'Attach a short track for text or image workflows when timing or mood should follow sound.' },
+      { title: 'Reference videos', body: 'Use one to three videos for 5s/10s guidance when motion or identity should stay consistent.' },
+      { title: 'Audio track', body: 'Attach a short track only for text or image workflows when timing or mood should follow sound.' },
       { title: 'Multi-shot beats', body: 'Use short timestamped beats when a 15 second clip needs internal structure.' },
     ],
     pricingCopy: {
@@ -2631,17 +2631,17 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Wan 2.6: Pricing, References & Examples | MaxVideoAI',
       description:
-        'Explore Wan 2.6 pricing, 15s multi-shot video, text-to-video, image-to-video, reference-video workflows, optional audio and examples.',
+        'Explore Wan 2.6 pricing, 15s multi-shot video, text-to-video, image-to-video, 5s/10s reference-video workflows, optional audio and examples.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'ROUTE VIDÉO WAN MULTI-PLANS',
       title: 'Wan 2.6',
-      subtitle: 'Clips multi-plans jusqu’à 15 s, cohérence reference-to-video et audio optionnel depuis texte ou image.',
-      subtitleHighlights: ['Clips multi-plans jusqu’à 15 s', 'cohérence reference-to-video', 'audio optionnel depuis texte ou image'],
+      subtitle: 'Clips multi-plans jusqu’à 15 s, cohérence reference-to-video en 5s/10s et audio optionnel depuis texte ou image.',
+      subtitleHighlights: ['Clips multi-plans jusqu’à 15 s', 'cohérence reference-to-video en 5s/10s', 'audio optionnel depuis texte ou image'],
       paragraph:
-        'Utilisez Wan 2.6 pour la route Wan plus récente dans MaxVideoAI : clips 720p ou 1080p jusqu’à 15 secondes, texte-vidéo, image-vidéo, guidage par vidéos de référence, planification multi-plans et audio optionnel.',
+        'Utilisez Wan 2.6 pour la route Wan plus récente dans MaxVideoAI : clips 720p ou 1080p jusqu’à 15 secondes, texte-vidéo, image-vidéo, guidage par vidéos de référence en 5s/10s et audio optionnel depuis texte ou image.',
       primaryCta: { label: 'Générer avec Wan 2.6', href: '/app?engine=wan-2-6' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'wan') },
       quickLinks: [
@@ -2659,7 +2659,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Clips multi-plans', body: 'Structurez des séquences courtes avec des beats plus lisibles.', tone: 'continuity' },
-      { title: 'Reference-to-video', body: 'Utilisez des vidéos de référence quand la cohérence du sujet compte.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Utilisez des vidéos de référence pour des checks 5s/10s; l’audio est désactivé dans ce mode.', tone: 'reference' },
       { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image pour ancrer la première frame.', tone: 'reference' },
       { title: '720p ou 1080p', body: 'Choisissez résolution de revue ou de préproduction avant génération.', tone: 'quality' },
       { title: 'Max 15 s', body: 'Utilisez 5, 10 ou 15 secondes selon le beat.', tone: 'duration' },
@@ -2673,7 +2673,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Besoin de cohérence par référence ?',
-        body: 'Utilisez reference-to-video quand mouvement, identité ou take précédent doivent guider le résultat.',
+        body: 'Utilisez reference-to-video en 5s/10s quand mouvement, identité ou take précédent doivent guider le résultat.',
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
@@ -2685,8 +2685,8 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt texte', body: 'Indiquez sujet, action, caméra, style, durée et intention sonore optionnelle.' },
       { title: 'Image de départ', body: 'Utilisez une image pour figer produit, personnage ou composition d’ouverture.' },
-      { title: 'Vidéos de référence', body: 'Ajoutez une à trois vidéos quand la route active doit suivre mouvement ou identité.' },
-      { title: 'Piste audio', body: 'Ajoutez une piste courte en texte ou image quand le timing doit suivre le son.' },
+      { title: 'Vidéos de référence', body: 'Ajoutez une à trois vidéos pour guider mouvement ou identité sur des clips 5s/10s.' },
+      { title: 'Piste audio', body: 'Ajoutez une piste courte uniquement en texte ou image quand le timing doit suivre le son.' },
       { title: 'Beats multi-plans', body: 'Utilisez des beats courts et datés quand un clip de 15 s doit rester structuré.' },
     ],
     pricingCopy: {
@@ -2699,17 +2699,17 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Wan 2.6 : tarifs, références et exemples | MaxVideoAI',
       description:
-        'Explorez Wan 2.6 : prix, vidéo multi-plans jusqu’à 15 s, texte-vidéo, image-vidéo, vidéos de référence, audio optionnel et exemples.',
+        'Explorez Wan 2.6 : prix, vidéo multi-plans jusqu’à 15 s, texte-vidéo, image-vidéo, références 5s/10s, audio optionnel et exemples.',
     },
   },
   es: {
     hero: {
       eyebrow: 'RUTA WAN MULTI-SHOT',
       title: 'Wan 2.6',
-      subtitle: 'Clips multi-shot de hasta 15 s, consistencia reference-to-video y audio opcional desde texto o imagen.',
-      subtitleHighlights: ['Clips multi-shot de hasta 15 s', 'consistencia reference-to-video', 'audio opcional desde texto o imagen'],
+      subtitle: 'Clips multi-shot de hasta 15 s, consistencia reference-to-video en 5s/10s y audio opcional desde texto o imagen.',
+      subtitleHighlights: ['Clips multi-shot de hasta 15 s', 'consistencia reference-to-video en 5s/10s', 'audio opcional desde texto o imagen'],
       paragraph:
-        'Usa Wan 2.6 como la ruta Wan más reciente en MaxVideoAI: clips 720p o 1080p de hasta 15 segundos, texto a video, imagen a video, guía con videos de referencia, planeación multi-shot y audio opcional.',
+        'Usa Wan 2.6 como la ruta Wan más reciente en MaxVideoAI: clips 720p o 1080p de hasta 15 segundos, texto a video, imagen a video, guía con videos de referencia en 5s/10s y audio opcional desde texto o imagen.',
       primaryCta: { label: 'Generar con Wan 2.6', href: '/app?engine=wan-2-6' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'wan') },
       quickLinks: [
@@ -2727,7 +2727,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     },
     features: [
       { title: 'Clips multi-shot', body: 'Planea secuencias cortas con estructura interna más clara.', tone: 'continuity' },
-      { title: 'Reference-to-video', body: 'Usa videos de referencia cuando importa la consistencia del sujeto.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Usa videos de referencia para checks 5s/10s; el audio queda desactivado en este modo.', tone: 'reference' },
       { title: 'Texto o imagen', body: 'Genera desde prompt o ancla el primer frame con una imagen.', tone: 'reference' },
       { title: '720p o 1080p', body: 'Elige resolución de revisión o preproducción antes de generar.', tone: 'quality' },
       { title: 'Máx. 15 s', body: 'Usa 5, 10 o 15 segundos según el beat.', tone: 'duration' },
@@ -2741,7 +2741,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
       },
       {
         title: '¿Necesitas consistencia por referencia?',
-        body: 'Usa reference-to-video cuando ritmo de movimiento, identidad o un take previo deben guiar el output.',
+        body: 'Usa reference-to-video en 5s/10s cuando ritmo de movimiento, identidad o un take previo deben guiar el output.',
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
@@ -2753,8 +2753,8 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt de texto', body: 'Define sujeto, acción, cámara, estilo, duración y dirección sonora opcional.' },
       { title: 'Imagen inicial', body: 'Usa una imagen para fijar producto, personaje o composición inicial.' },
-      { title: 'Videos de referencia', body: 'Agrega uno a tres videos cuando la ruta activa debe seguir movimiento o identidad.' },
-      { title: 'Pista de audio', body: 'Adjunta una pista corta en texto o imagen cuando el timing debe seguir sonido.' },
+      { title: 'Videos de referencia', body: 'Agrega uno a tres videos para guiar movimiento o identidad en clips de 5s/10s.' },
+      { title: 'Pista de audio', body: 'Adjunta una pista corta solo en texto o imagen cuando el timing debe seguir sonido.' },
       { title: 'Beats multi-shot', body: 'Usa beats breves con tiempos cuando un clip de 15 s necesita estructura interna.' },
     ],
     pricingCopy: {
@@ -2767,7 +2767,7 @@ const WAN_26_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Wan 2.6: precios, referencias y ejemplos | MaxVideoAI',
       description:
-        'Explora Wan 2.6: precios, video multi-shot hasta 15 s, texto a video, imagen a video, videos de referencia, audio opcional y ejemplos.',
+        'Explora Wan 2.6: precios, video multi-shot hasta 15 s, texto a video, imagen a video, referencias 5s/10s, audio opcional y ejemplos.',
     },
   },
 };
@@ -3637,7 +3637,7 @@ const MINIMAX_HAILUO_02_COPY: LocalizedTemplateCopy = {
       { title: 'Budget drafts', body: 'Test motion ideas before spending on final-quality routes.', tone: 'price' },
       { title: 'Physics tests', body: 'Check object movement, collisions and body motion in short clips.', tone: 'continuity' },
       { title: 'Text or image', body: 'Start from a prompt or a still image depending on how locked the shot is.', tone: 'reference' },
-      { title: '512P or 768P', body: 'Use lower-resolution outputs for fast review loops.', tone: 'quality' },
+      { title: '512P or 768P', body: 'Draft cap on this route; use higher-resolution engines for delivery.', tone: 'quality' },
       { title: '6s or 10s', body: 'Choose compact durations for timing and storyboard validation.', tone: 'duration' },
       { title: 'Silent output', body: 'Plan music, voiceover and SFX in a later production pass.', tone: 'audio' },
     ],
@@ -3705,7 +3705,7 @@ const MINIMAX_HAILUO_02_COPY: LocalizedTemplateCopy = {
       { title: 'Brouillons économiques', body: 'Testez les idées de mouvement avant les routes finales plus coûteuses.', tone: 'price' },
       { title: 'Tests physiques', body: 'Vérifiez mouvements d’objets, collisions et gestuelle sur des clips courts.', tone: 'continuity' },
       { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image selon le niveau de verrouillage du plan.', tone: 'reference' },
-      { title: '512P ou 768P', body: 'Gardez des sorties légères pour les boucles de revue rapides.', tone: 'quality' },
+      { title: '512P ou 768P', body: 'Limite brouillon de cette route ; utilisez une route plus haute résolution pour livrer.', tone: 'quality' },
       { title: '6 s ou 10 s', body: 'Choisissez des durées compactes pour valider timing et storyboard.', tone: 'duration' },
       { title: 'Sortie silencieuse', body: 'Préparez musique, voix et SFX dans une passe de production suivante.', tone: 'audio' },
     ],
@@ -3773,7 +3773,7 @@ const MINIMAX_HAILUO_02_COPY: LocalizedTemplateCopy = {
       { title: 'Borradores económicos', body: 'Prueba ideas de movimiento antes de pagar rutas finales.', tone: 'price' },
       { title: 'Pruebas físicas', body: 'Revisa movimiento de objetos, colisiones y gestos en clips cortos.', tone: 'continuity' },
       { title: 'Texto o imagen', body: 'Empieza con prompt o imagen según qué tan cerrado esté el plano.', tone: 'reference' },
-      { title: '512P o 768P', body: 'Usa salidas ligeras para ciclos rápidos de revisión.', tone: 'quality' },
+      { title: '512P o 768P', body: 'Límite de borrador en esta ruta; usa motores de mayor resolución para entregar.', tone: 'quality' },
       { title: '6s o 10s', body: 'Elige duraciones compactas para validar timing y storyboard.', tone: 'duration' },
       { title: 'Salida sin audio', body: 'Resuelve música, voz y SFX en una pasada posterior.', tone: 'audio' },
     ],
@@ -3819,12 +3819,12 @@ const MINIMAX_HAILUO_02_COPY: LocalizedTemplateCopy = {
 const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
-      eyebrow: 'STYLIZED SHORT CLIP ROUTE',
-      title: 'Pika 2.2',
-      subtitle: 'Stylized short clips with image-to-video starts, seeds, negative prompts and social loops.',
-      subtitleHighlights: ['Stylized short clips', 'image-to-video starts', 'social loops'],
+      eyebrow: 'PIKA TEXT-TO-VIDEO ROUTE',
+      title: 'Pika 2.2 Text-to-Video',
+      subtitle: 'Text-to-Video social loops with stylized motion, seeds, negative prompts and silent 5s/10s output.',
+      subtitleHighlights: ['Text-to-Video social loops', 'stylized motion', 'silent 5s/10s output'],
       paragraph:
-        'Use Pika 2.2 for silent stylized animation, prompt variants and short social clips when the creative direction is anime, comic, pixel, toon or playful 3D.',
+        'Use Pika 2.2 for prompt-led, silent stylized animation, variant testing and short social clips when the creative direction is anime, comic, pixel, toon or playful 3D.',
       primaryCta: { label: 'Generate with Pika 2.2', href: '/app?engine=pika-text-to-video' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'pika') },
       quickLinks: [
@@ -3834,15 +3834,15 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       ],
     },
     media: {
-      caption: 'Pika 2.2 example',
+      caption: 'Pika 2.2 Text-to-Video example',
       description: 'Stylized silent social clip',
       renderLabel: 'View render',
       badges: ['Silent', '10s', '1080p'],
-      altContext: 'Pika 2.2 stylized short video example',
+      altContext: 'Pika 2.2 stylized text-to-video social loop',
     },
     features: [
+      { title: 'Text-to-Video first', body: 'Start from a compact prompt when the idea is style, action and loop timing.', tone: 'reference' },
       { title: 'Stylized motion', body: 'Create anime, comic, pixel, toon or playful 3D movement.', tone: 'quality' },
-      { title: 'Text or image', body: 'Start from a prompt or image when composition should be anchored.', tone: 'reference' },
       { title: 'Seeds', body: 'Reuse seed-driven variants when a style direction starts working.', tone: 'continuity' },
       { title: 'Negative prompts', body: 'Exclude unwanted visual traits while testing a stylized direction.', tone: 'reference' },
       { title: '5s or 10s', body: 'Keep clips compact for loops, social edits and motion tests.', tone: 'duration' },
@@ -3860,17 +3860,17 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Need photoreal people or audio?',
-        body: 'Compare with Kling 2.6 Pro when realism, built-in sound or broader production controls matter more.',
-        cta: { label: 'Compare Pika vs Kling', href: compareHref('en', 'pika-text-to-video', 'kling-2-6-pro') },
+        title: 'Need a broader draft route?',
+        body: 'Compare with LTX 2.3 Fast when you need a more general draft engine before production routes.',
+        cta: { label: 'Compare Pika vs LTX 2.3 Fast', href: compareHref('en', 'pika-text-to-video', 'ltx-2-3-fast') },
       },
     ],
     referenceWorkflows: [
       { title: 'Text-to-video', body: 'Write subject, action, style family and what to avoid in one compact prompt.' },
-      { title: 'Image-to-video', body: 'Use a start image when the character, product or composition should stay recognizable.' },
+      { title: 'Style anchors', body: 'Name the art direction, palette and loop behavior instead of relying on reference-heavy setup.' },
       { title: 'Seed variants', body: 'Keep a useful seed and iterate prompts around the same visual lane.' },
       { title: 'Negative prompt', body: 'List distracting artifacts, unwanted styles or text elements to avoid.' },
-      { title: 'Audio handoff', body: 'Plan music and SFX outside Pika after the visual loop is approved.' },
+      { title: 'Related image start', body: 'Use the related Pika image workflow only when one still must anchor composition.' },
     ],
     pricingCopy: {
       title: 'Pika 2.2 pricing at a glance',
@@ -3880,19 +3880,19 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Pika 2.2: Pricing, Stylized Clips & Examples | MaxVideoAI',
+      title: 'Pika 2.2 Text-to-Video: Pricing, Silent Loops & Examples | MaxVideoAI',
       description:
-        'Explore Pika 2.2 pricing, stylized silent clips, image-to-video starts, seeds, negative prompts and short social video examples on MaxVideoAI.',
+        'Explore Pika 2.2 Text-to-Video pricing, stylized silent clips, social loops, seeds, negative prompts and prompt examples on MaxVideoAI.',
     },
   },
   fr: {
     hero: {
-      eyebrow: 'ROUTE CLIPS COURTS STYLISÉS',
-      title: 'Pika 2.2',
-      subtitle: 'Clips courts stylisés avec départ image-to-video, seeds, prompts négatifs et boucles sociales.',
-      subtitleHighlights: ['Clips courts stylisés', 'départ image-to-video', 'boucles sociales'],
+      eyebrow: 'ROUTE PIKA TEXT-TO-VIDEO',
+      title: 'Pika 2.2 Text-to-Video',
+      subtitle: 'Boucles sociales Text-to-Video avec mouvement stylisé, seeds, prompts négatifs et sortie silencieuse 5 s/10 s.',
+      subtitleHighlights: ['Boucles sociales Text-to-Video', 'mouvement stylisé', 'sortie silencieuse 5 s/10 s'],
       paragraph:
-        'Utilisez Pika 2.2 pour des animations silencieuses stylisées, des variantes de prompts et des clips sociaux courts quand la direction créative est anime, BD, pixel, cartoon ou 3D playful.',
+        'Utilisez Pika 2.2 pour des animations silencieuses pilotées par prompt, des variantes rapides et des clips sociaux courts quand la direction créative est anime, BD, pixel, cartoon ou 3D playful.',
       primaryCta: { label: 'Générer avec Pika 2.2', href: '/app?engine=pika-text-to-video' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'pika') },
       quickLinks: [
@@ -3902,15 +3902,15 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       ],
     },
     media: {
-      caption: 'Exemple Pika 2.2',
+      caption: 'Exemple Text-to-Video Pika 2.2',
       description: 'Clip social stylisé silencieux',
       renderLabel: 'Voir le rendu',
       badges: ['Silencieux', '10 s', '1080p'],
-      altContext: 'exemple de clip vidéo court stylisé avec Pika 2.2',
+      altContext: 'boucle sociale text-to-video stylisée avec Pika 2.2',
     },
     features: [
+      { title: 'Text-to-Video d’abord', body: 'Partez d’un prompt compact quand l’idée repose sur style, action et timing de boucle.', tone: 'reference' },
       { title: 'Mouvement stylisé', body: 'Créez du mouvement anime, BD, pixel, cartoon ou 3D playful.', tone: 'quality' },
-      { title: 'Texte ou image', body: 'Partez d’un prompt ou d’une image quand la composition doit rester ancrée.', tone: 'reference' },
       { title: 'Seeds', body: 'Réutilisez les variantes par seed quand une direction visuelle fonctionne.', tone: 'continuity' },
       { title: 'Prompts négatifs', body: 'Écartez les traits visuels indésirables pendant vos tests stylisés.', tone: 'reference' },
       { title: '5 s ou 10 s', body: 'Gardez des clips compacts pour loops, edits sociaux et tests de mouvement.', tone: 'duration' },
@@ -3928,17 +3928,17 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Besoin de réalisme ou d’audio ?',
-        body: 'Comparez avec Kling 2.6 Pro si réalisme, son intégré ou contrôles de production sont prioritaires.',
-        cta: { label: 'Comparer Pika vs Kling', href: compareHref('fr', 'pika-text-to-video', 'kling-2-6-pro') },
+        title: 'Besoin d’une route brouillon plus large ?',
+        body: 'Comparez avec LTX 2.3 Fast quand vous voulez un moteur de draft plus général avant les routes de production.',
+        cta: { label: 'Comparer Pika vs LTX 2.3 Fast', href: compareHref('fr', 'pika-text-to-video', 'ltx-2-3-fast') },
       },
     ],
     referenceWorkflows: [
       { title: 'Text-to-video', body: 'Écrivez sujet, action, famille de style et exclusions dans un prompt compact.' },
-      { title: 'Image-to-video', body: 'Utilisez une image de départ quand personnage, produit ou composition doit rester reconnaissable.' },
+      { title: 'Ancres de style', body: 'Nommez direction artistique, palette et comportement de boucle plutôt qu’un setup chargé en références.' },
       { title: 'Variantes par seed', body: 'Gardez un seed utile et itérez les prompts dans la même voie visuelle.' },
       { title: 'Prompt négatif', body: 'Listez artefacts, styles ou éléments texte à éviter.' },
-      { title: 'Passage audio', body: 'Préparez musique et SFX hors Pika une fois la boucle visuelle validée.' },
+      { title: 'Départ image associé', body: 'Utilisez le workflow image Pika associé seulement si un still doit ancrer la composition.' },
     ],
     pricingCopy: {
       title: 'Prix Pika 2.2 en un coup d’œil',
@@ -3948,19 +3948,19 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Jusqu’à 1080p',
     },
     meta: {
-      title: 'Pika 2.2 : tarifs, clips stylisés et exemples | MaxVideoAI',
+      title: 'Pika 2.2 Text-to-Video : tarifs, boucles silencieuses et exemples | MaxVideoAI',
       description:
-        'Explorez Pika 2.2 : prix, clips silencieux stylisés, image-to-video, seeds, prompts négatifs et exemples de vidéos sociales sur MaxVideoAI.',
+        'Explorez Pika 2.2 Text-to-Video : tarifs, clips silencieux stylisés, boucles sociales, seeds, prompts négatifs et exemples sur MaxVideoAI.',
     },
   },
   es: {
     hero: {
-      eyebrow: 'RUTA DE CLIPS CORTOS ESTILIZADOS',
-      title: 'Pika 2.2',
-      subtitle: 'Clips cortos estilizados con imagen a video, seeds, prompts negativos y loops sociales.',
-      subtitleHighlights: ['Clips cortos estilizados', 'imagen a video', 'loops sociales'],
+      eyebrow: 'RUTA PIKA TEXT-TO-VIDEO',
+      title: 'Pika 2.2 Text-to-Video',
+      subtitle: 'Loops sociales Text-to-Video con movimiento estilizado, seeds, prompts negativos y salida sin audio de 5s/10s.',
+      subtitleHighlights: ['Loops sociales Text-to-Video', 'movimiento estilizado', 'salida sin audio de 5s/10s'],
       paragraph:
-        'Usa Pika 2.2 para animación estilizada sin audio, variantes de prompt y clips sociales cortos cuando la dirección es anime, cómic, pixel, toon o 3D lúdico.',
+        'Usa Pika 2.2 para animación estilizada sin audio guiada por prompt, variantes rápidas y clips sociales cortos cuando la dirección es anime, cómic, pixel, toon o 3D lúdico.',
       primaryCta: { label: 'Generar con Pika 2.2', href: '/app?engine=pika-text-to-video' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'pika') },
       quickLinks: [
@@ -3970,15 +3970,15 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       ],
     },
     media: {
-      caption: 'Ejemplo Pika 2.2',
+      caption: 'Ejemplo Text-to-Video Pika 2.2',
       description: 'Clip social estilizado sin audio',
       renderLabel: 'Ver resultado',
       badges: ['Sin audio', '10s', '1080p'],
-      altContext: 'ejemplo de clip corto estilizado con Pika 2.2',
+      altContext: 'loop social text-to-video estilizado con Pika 2.2',
     },
     features: [
+      { title: 'Text-to-Video primero', body: 'Empieza con un prompt compacto cuando la idea depende de estilo, acción y timing de loop.', tone: 'reference' },
       { title: 'Movimiento estilizado', body: 'Crea movimiento anime, cómic, pixel, toon o 3D lúdico.', tone: 'quality' },
-      { title: 'Texto o imagen', body: 'Empieza con prompt o imagen cuando la composición debe quedar anclada.', tone: 'reference' },
       { title: 'Seeds', body: 'Reutiliza variantes por seed cuando una dirección visual empieza a funcionar.', tone: 'continuity' },
       { title: 'Prompts negativos', body: 'Excluye rasgos visuales no deseados mientras pruebas una dirección estilizada.', tone: 'reference' },
       { title: '5s o 10s', body: 'Mantén clips compactos para loops, ediciones sociales y pruebas de movimiento.', tone: 'duration' },
@@ -3996,17 +3996,17 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
-        title: '¿Necesitas realismo o audio?',
-        body: 'Compara con Kling 2.6 Pro cuando pesan más el realismo, el sonido integrado o los controles de producción.',
-        cta: { label: 'Comparar Pika vs Kling', href: compareHref('es', 'pika-text-to-video', 'kling-2-6-pro') },
+        title: '¿Necesitas una ruta draft más amplia?',
+        body: 'Compara con LTX 2.3 Fast cuando necesitas un motor de borrador más general antes de rutas de producción.',
+        cta: { label: 'Comparar Pika vs LTX 2.3 Fast', href: compareHref('es', 'pika-text-to-video', 'ltx-2-3-fast') },
       },
     ],
     referenceWorkflows: [
       { title: 'Texto a video', body: 'Escribe sujeto, acción, familia visual y exclusiones en un prompt compacto.' },
-      { title: 'Imagen a video', body: 'Usa una imagen inicial cuando personaje, producto o composición debe reconocerse.' },
+      { title: 'Anclas de estilo', body: 'Nombra dirección artística, paleta y comportamiento del loop en vez de depender de demasiadas referencias.' },
       { title: 'Variantes por seed', body: 'Conserva un seed útil e itera prompts dentro de la misma línea visual.' },
       { title: 'Prompt negativo', body: 'Lista artefactos, estilos o texto no deseado para evitarlos.' },
-      { title: 'Entrega de audio', body: 'Planea música y SFX fuera de Pika después de aprobar el loop visual.' },
+      { title: 'Inicio con imagen relacionado', body: 'Usa el flujo de imagen de Pika solo cuando un still deba fijar la composición.' },
     ],
     pricingCopy: {
       title: 'Precios de Pika 2.2 de un vistazo',
@@ -4016,9 +4016,9 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Hasta 1080p',
     },
     meta: {
-      title: 'Pika 2.2: precios, clips estilizados y ejemplos | MaxVideoAI',
+      title: 'Pika 2.2 Text-to-Video: precios, loops silenciosos y ejemplos | MaxVideoAI',
       description:
-        'Explora Pika 2.2: precios, clips estilizados sin audio, imagen a video, seeds, prompts negativos y ejemplos de video social en MaxVideoAI.',
+        'Explora Pika 2.2 Text-to-Video: precios, clips estilizados sin audio, loops sociales, seeds, prompts negativos y ejemplos en MaxVideoAI.',
     },
   },
 };
@@ -4067,9 +4067,9 @@ const GPT_IMAGE_2_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Preparing video references?',
-        body: 'Pair clean GPT Image 2 stills with video models when you need controlled product or typography references.',
-        cta: { label: 'Explore Seedream reference prep', href: modelsHref('en', 'seedream') },
+        title: 'Need cleaner source control?',
+        body: 'Prepare the product source, mask or exact text hierarchy first, then render or edit the final still in GPT Image 2.',
+        cta: { label: 'Open GPT Image 2', href: '/app/image?engine=gpt-image-2' },
       },
     ],
     referenceWorkflows: [
@@ -4135,9 +4135,9 @@ const GPT_IMAGE_2_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Préparer des références vidéo ?',
-        body: 'Associez des stills propres GPT Image 2 aux modèles vidéo pour verrouiller produit ou typographie.',
-        cta: { label: 'Explorer Seedream', href: modelsHref('fr', 'seedream') },
+        title: 'Besoin d’un meilleur contrôle source ?',
+        body: 'Préparez le produit, le masque ou la hiérarchie texte, puis rendez ou retouchez le still final dans GPT Image 2.',
+        cta: { label: 'Ouvrir GPT Image 2', href: '/app/image?engine=gpt-image-2' },
       },
     ],
     referenceWorkflows: [
@@ -4203,9 +4203,9 @@ const GPT_IMAGE_2_COPY: LocalizedTemplateCopy = {
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
-        title: '¿Preparas referencias para video?',
-        body: 'Combina stills limpios de GPT Image 2 con modelos de video para controlar producto o tipografía.',
-        cta: { label: 'Explorar Seedream', href: modelsHref('es', 'seedream') },
+        title: '¿Necesitas más control de fuente?',
+        body: 'Prepara producto, máscara o jerarquía de texto, y luego genera o edita el still final en GPT Image 2.',
+        cta: { label: 'Abrir GPT Image 2', href: '/app/image?engine=gpt-image-2' },
       },
     ],
     referenceWorkflows: [

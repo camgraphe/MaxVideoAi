@@ -248,7 +248,7 @@ async function renderMarketingModelPage({
   const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
     demoMedia.prompt =
-      'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
+      '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
   const galleryCtaHref = heroMedia?.id
     ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`

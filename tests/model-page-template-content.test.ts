@@ -232,6 +232,57 @@ test('Nano Banana 2 uses display pricing and still-image scenario labels', () =>
   }
 });
 
+test('GPT Image 2 stays image-first with text, edit, mask, and display-pricing copy', () => {
+  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  assert.ok(gptImage);
+
+  assert.equal(gptImage.hero.title, 'GPT Image 2');
+  assert.equal(gptImage.hero.primaryCta.href, '/app/image?engine=gpt-image-2');
+  assert.deepEqual(
+    gptImage.pricing.scenarios.map((scenario) => [scenario.label, scenario.value, scenario.note]),
+    [
+      ['Product still', '$0.20', 'High-resolution still'],
+      ['4K hero still', '$0.54', 'High-resolution still'],
+      ['4 medium variants', '$0.24', 'Check live quote'],
+    ]
+  );
+  assert.doesNotMatch(
+    visibleDecisionText(gptImage),
+    /Seedance 2\.0|Text-to-video|Audio on|12s|16:9|Armored skull biker|before Nano Banana/i
+  );
+
+  for (const locale of LOCALES) {
+    const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, 'gpt-image-2.json');
+    const rawContent = readFileSync(contentPath, 'utf8');
+    assert.doesNotMatch(rawContent, /Seedance 2\.0|Armored skull biker|Text-to-video|Audio on|before Nano Banana/i);
+    assert.match(rawContent, /MaxVideoAI.*(display|affich|mostr)|cotizacion|devis|quote/i);
+    assert.match(rawContent, /mask_url|mask URL|Mask URL/i);
+  }
+});
+
+test('Seedream uses image-prep identity, official guide copy, and batch pricing context', () => {
+  const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
+  assert.ok(seedream);
+
+  assert.equal(seedream.hero.title, 'Seedream 5.0 Lite');
+  assert.deepEqual(
+    seedream.pricing.scenarios.map((scenario) => [scenario.label, scenario.value, scenario.note]),
+    [
+      ['2K image', '$0.06', 'Single generated still'],
+      ['4K image', '$0.06', 'High-resolution still'],
+      ['Reference batch', '$0.24', '4 generated images · $0.06/image'],
+    ]
+  );
+
+  for (const locale of LOCALES) {
+    const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, 'seedream.json');
+    const rawContent = readFileSync(contentPath, 'utf8');
+    assert.match(rawContent, /Seedream 4\.0-5\.0/);
+    assert.match(rawContent, /4 generated images|4 images générées|4 imágenes generadas/i);
+    assert.match(rawContent, /jpeg.*png|png.*jpeg/i);
+  }
+});
+
 test('migrated localized model content avoids placeholder media copy', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     for (const locale of LOCALES) {

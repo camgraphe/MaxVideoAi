@@ -22,7 +22,11 @@ export type DecisionExampleFilterId =
   | 'final'
   | 'grounded'
   | 'edit'
-  | 'wide';
+  | 'wide'
+  | 'character'
+  | 'batch'
+  | 'ui'
+  | 'mask';
 
 export type DecisionExampleFilter = {
   id: DecisionExampleFilterId;
@@ -49,7 +53,7 @@ type ModelDecisionExamplesGalleryProps = {
   intro: string;
   filters: DecisionExampleFilter[];
   items: DecisionExampleGalleryItem[];
-  examplesLinkHref: LocalizedLinkHref;
+  examplesLinkHref: LocalizedLinkHref | null;
   viewAllLabel: string;
   renderLinkLabel: string;
   emptyLabel: string;
@@ -102,13 +106,15 @@ export function ModelDecisionExamplesGallery({
               );
             })}
           </div>
-          <Link
-            href={examplesLinkHref}
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-          >
-            <span>{viewAllLabel}</span>
-            <UIIcon icon={ExternalLink} size={14} />
-          </Link>
+          {examplesLinkHref ? (
+            <Link
+              href={examplesLinkHref}
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              <span>{viewAllLabel}</span>
+              <UIIcon icon={ExternalLink} size={14} />
+            </Link>
+          ) : null}
         </div>
       </div>
 

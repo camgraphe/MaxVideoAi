@@ -6,7 +6,7 @@
     "description": "Crea y edita imágenes fijas con Seedream 5.0 Lite en MaxVideoAI. Usa BytePlus ModelArk para preparar conceptos, producto e imágenes de referencia antes de Seedance."
   },
   "overview": "Seedream 5.0 Lite es un modelo de generación y edición de imagen de BytePlus ModelArk. Sirve para crear stills limpios, conceptos de producto, frames de personaje, series de imágenes coherentes e imágenes fuente más controladas antes de un workflow image-to-video en Seedance 2.0 o Seedance 2.0 Fast.",
-  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente en BytePlus ModelArk, también en series de imágenes. MaxVideoAI muestra el precio activo de la cuenta antes de generar.",
+  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente en BytePlus ModelArk, también en series de imágenes. MaxVideoAI muestra el precio activo de la cuenta antes de generar. El preset batch de $0.24 es un ejemplo de 4 imágenes generadas a $0.06 por imagen, no un precio para 15 imágenes.",
   "hero": {
     "title": "Seedream 5.0 Lite - generación y edición de imagen BytePlus",
     "intro": "Usa Seedream 5.0 Lite como modelo de imagen independiente para text-to-image, limpieza image-to-image, series de imágenes y referencias visuales antes de animar los frames elegidos en Seedance.",
@@ -165,7 +165,9 @@
         "items": [
           "Las imágenes de referencia más las salidas solicitadas deben mantenerse dentro de 15 imágenes en total.",
           "MaxVideoAI factura Seedream por imágenes generadas correctamente; las salidas fallidas o ausentes no deberían contarse como imágenes completadas.",
-          "Los controles exponen resolución base, relación de aspecto, formato de archivo y watermark cuando están soportados."
+          "Los controles exponen resolución base, relación de aspecto, formato de archivo y watermark cuando están soportados.",
+          "El preset batch de $0.24 es un ejemplo de 4 imágenes generadas a $0.06 por imagen, no un precio para 15 imágenes.",
+          "Formato de salida: elige jpeg o png en la ruta activa de Image Lab."
         ]
       }
     ],
@@ -219,7 +221,7 @@
       "Las referencias de producto y personaje se animan mejor cuando silueta, luz y props ya son estables.",
       "Preparar primero la imagen separa decisiones de calidad visual de decisiones de movimiento."
     ],
-    "promptingGuideLabel": "Más información",
+    "promptingGuideLabel": "Guía oficial de Seedream 4.0-5.0",
     "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
     "relatedItems": [
       {

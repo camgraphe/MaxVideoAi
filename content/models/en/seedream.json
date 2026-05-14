@@ -6,7 +6,7 @@
     "description": "Create and edit still images with Seedream 5.0 Lite in MaxVideoAI. Use BytePlus ModelArk image generation for clean concepts, product frames, and reference images before Seedance animation."
   },
   "overview": "Seedream 5.0 Lite is a BytePlus ModelArk image generation and editing model for creating clean stills, product concepts, character frames, thematic image sets, and source images that can become stronger references before Seedance 2.0 or Seedance 2.0 Fast image-to-video work.",
-  "pricingNotes": "Seedream 5.0 Lite is priced per successfully generated image by BytePlus ModelArk, including batch image sets. MaxVideoAI shows the active account price before generation.",
+  "pricingNotes": "Seedream 5.0 Lite is priced per successfully generated image by BytePlus ModelArk, including batch image sets. MaxVideoAI shows the active account price before generation. The $0.24 batch preset is an example of 4 generated images at $0.06 per generated image, not a 15-image price.",
   "hero": {
     "title": "Seedream 5.0 Lite - BytePlus image generation and editing",
     "intro": "Use Seedream 5.0 Lite as a standalone image model for text-to-image creation, image-to-image cleanup, batch image sets, and controlled reference stills before animating selected frames in Seedance.",
@@ -165,7 +165,9 @@
         "items": [
           "Reference images plus requested outputs must stay within 15 total images.",
           "MaxVideoAI prices Seedream by successfully generated image; failed or missing outputs should not be charged as completed images.",
-          "Output controls expose base resolution, aspect ratio, file format, and watermark options where supported."
+          "Output controls expose base resolution, aspect ratio, file format, and watermark options where supported.",
+          "The $0.24 batch preset is an example of 4 generated images at $0.06 per generated image, not a 15-image price.",
+          "Output format: choose jpeg or png in the active Image Lab route."
         ]
       }
     ],
@@ -219,7 +221,7 @@
       "Product and character references are easier to animate when silhouette, lighting, and props are already stable.",
       "Drafting the still first helps separate image quality decisions from motion decisions."
     ],
-    "promptingGuideLabel": "Learn more",
+    "promptingGuideLabel": "Official Seedream 4.0-5.0 guide",
     "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
     "relatedItems": [
       {

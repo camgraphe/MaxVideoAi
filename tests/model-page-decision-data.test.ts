@@ -278,8 +278,8 @@ test('remaining video templates preserve Happy Horse, Hailuo, and Pika route int
   assert.doesNotMatch(visibleDecisionText(hailuo), /native audio|lip-sync|R2V references|negative prompts/i);
   assert.match(frHailuo.hero.subtitle, /Brouillons mouvement économiques/);
 
-  assert.equal(pika.hero.title, 'Pika 2.2');
-  assert.match(pika.hero.subtitle, /Stylized short clips/);
+  assert.equal(pika.hero.title, 'Pika 2.2 Text-to-Video');
+  assert.match(pika.hero.subtitle, /Text-to-Video social loops/);
   assert.match(pika.hero.subtitle, /seeds/);
   assert.equal(pika.hero.primaryCta.href, '/app?engine=pika-text-to-video');
   assert.equal(pika.hero.quickLinks[2]?.href, '#prompting');
@@ -287,8 +287,8 @@ test('remaining video templates preserve Happy Horse, Hailuo, and Pika route int
     pika.pricing.scenarios.map((scenario) => scenario.id),
     ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']
   );
-  assert.doesNotMatch(visibleDecisionText(pika), /native audio|lip-sync|R2V references|physics-aware tests/i);
-  assert.match(esPika.hero.subtitle, /Clips cortos estilizados/);
+  assert.doesNotMatch(visibleDecisionText(pika), /native audio|audio on|lip-sync|R2V references|physics-aware tests|image-to-video starts|Armored skull|Motorcycle/i);
+  assert.match(esPika.hero.subtitle, /Loops sociales Text-to-Video/);
 });
 
 test('image templates preserve GPT Image 2 and Nano Banana route intent', () => {
@@ -472,11 +472,13 @@ test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks'
 
   assert.equal(en26.hero.title, 'Wan 2.6');
   assert.match(en26.hero.subtitle, /15s multi-shot clips/);
-  assert.match(en26.hero.subtitle, /reference-to-video consistency/);
+  assert.match(en26.hero.subtitle, /5s\/10s reference-video consistency/);
   assert.match(visibleDecisionText(en26), /reference videos|15 second/i);
+  assert.match(visibleDecisionText(en26), /audio is off in this mode/i);
+  assert.doesNotMatch(visibleDecisionText(en26), /lip[- ]sync/i);
   assert.deepEqual(en26.hero.subtitleHighlights, [
     '15s multi-shot clips',
-    'reference-to-video consistency',
+    '5s/10s reference-video consistency',
     'optional audio for text or image starts',
   ]);
   assert.equal(en26.hero.primaryCta.href, '/app?engine=wan-2-6');
@@ -496,7 +498,7 @@ test('Seedream returns reference-prep decision data for still preparation', () =
   assert.ok(fr);
   assert.ok(es);
 
-  assert.equal(en.hero.title, 'Seedream');
+  assert.equal(en.hero.title, 'Seedream 5.0 Lite');
   assert.equal(en.hero.primaryCta.href, '/app/image?engine=seedream');
   assert.equal(en.hero.secondaryCta.href, '/models/seedance-2-0');
   assert.match(visibleDecisionText(en), /reference prep|still/i);

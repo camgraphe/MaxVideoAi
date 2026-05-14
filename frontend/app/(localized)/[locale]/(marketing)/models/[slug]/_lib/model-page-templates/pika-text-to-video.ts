@@ -4,8 +4,8 @@ export const pikaTextToVideoTemplateConfig: ModelPageTemplateConfig = {
   slug: 'pika-text-to-video',
   intent: 'draft',
   hero: {
-    eyebrow: 'PIKA STYLIZED VIDEO ROUTE',
-    subtitleHighlightTerms: ['stylized short clips', 'image-to-video starts', 'social loops'],
+    eyebrow: 'PIKA TEXT-TO-VIDEO ROUTE',
+    subtitleHighlightTerms: ['Text-to-Video social loops', 'stylized motion', 'silent 5s/10s output'],
     primaryCtaHref: '/app?engine=pika-text-to-video',
     secondaryCtaHref: '/examples/pika',
     quickLinks: [

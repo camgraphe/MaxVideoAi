@@ -181,7 +181,14 @@ export function MarketingModelPageLayout({
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=seedance-2-0';
   const secondaryCta = normalizeSecondaryCta(copy.secondaryCta);
   const secondaryCtaHref = copy.secondaryCtaHref ?? getDefaultSecondaryModelHref(engine.modelSlug);
-  const audioBadgeLabel = resolveAudioPricingLabels(locale).on;
+  const audioBadgeLabel =
+    engine.modelSlug === 'minimax-hailuo-02-text'
+      ? locale === 'fr'
+        ? 'Silencieux'
+        : locale === 'es'
+          ? 'Sin audio'
+          : 'Silent'
+      : resolveAudioPricingLabels(locale).on;
   const resolvedPrimaryCta = primaryCta;
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;
@@ -280,16 +287,26 @@ export function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['nano-banana', 'gpt-image-2'].includes(engine.modelSlug);
+  const hideExamplesSection = ['nano-banana'].includes(engine.modelSlug);
   const hasFallbackGalleryCopy = Boolean(copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta);
-  const usesImageExampleFallback = engine.modelSlug === 'nano-banana-pro' || engine.modelSlug === 'nano-banana-2';
+  const usesImageExampleFallback =
+    engine.modelSlug === 'nano-banana-pro' ||
+    engine.modelSlug === 'nano-banana-2' ||
+    engine.modelSlug === 'seedream' ||
+    engine.modelSlug === 'gpt-image-2';
   const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
   const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => {
       const prompt = video.promptFull ?? video.prompt;
       const tag = inferRenderTag(prompt, locale);
-      const label = engine.modelSlug === 'seedance-2-0' ? `${heroTitle} ${tag ? `${tag} ` : ''}${exampleAltLabel} ${index + 1}` : prompt;
+      const label =
+        engine.modelSlug === 'seedance-2-0' ||
+        engine.modelSlug === 'minimax-hailuo-02-text' ||
+        engine.modelSlug === 'wan-2-6' ||
+        engine.modelSlug === 'pika-text-to-video'
+          ? `${heroTitle} ${tag ? `${tag} ` : ''}${exampleAltLabel} ${index + 1}`
+          : prompt;
       return {
         id: video.id,
         alt: getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label, prompt: label, locale }),

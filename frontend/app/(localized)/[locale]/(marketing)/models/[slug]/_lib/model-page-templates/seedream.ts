@@ -29,12 +29,19 @@ export const seedreamTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#seedream-pricing',
     presets: [
-      { id: '2k-image', imageResolution: '2K', imageQuality: 'medium', labelKey: 'stillImage' },
+      {
+        id: '2k-image',
+        imageResolution: '2K',
+        imageQuality: 'medium',
+        labelKey: 'twoKImage',
+        noteKey: 'singleGeneratedStill',
+      },
       {
         id: '4k-image',
         imageResolution: '4K',
         imageQuality: 'high',
-        labelKey: 'fourKReference',
+        labelKey: 'fourKImage',
+        noteKey: 'highResolutionStill',
         highlightKey: 'mostPopular',
       },
       {
@@ -42,8 +49,8 @@ export const seedreamTemplateConfig: ModelPageTemplateConfig = {
         imageResolution: '2K',
         imageQuality: 'medium',
         quantity: 4,
-        labelKey: 'imageBatch',
-        noteKey: 'upTo15Images',
+        labelKey: 'referenceBatch',
+        noteKey: 'fourGeneratedImages',
       },
     ],
   },
