@@ -9,6 +9,7 @@ import {
   type SoraCopy,
 } from '../_lib/model-page-specs';
 import { MediaPreview } from './MediaPreview';
+import { ModelDecisionPromptingSection } from './ModelDecisionPromptingSection';
 
 type ModelPromptingSectionProps = {
   imageAnchorId: string;
@@ -16,10 +17,15 @@ type ModelPromptingSectionProps = {
   copy: SoraCopy;
   supportsNativeAudio: boolean;
   demoMedia: FeaturedMedia | null;
+  engineSlug: string;
+  isImageEngine: boolean;
   locale: AppLocale;
+  modelName: string;
   audioBadgeLabel: string;
   mediaAltContexts: { demo: string };
   useDemoMediaPrompt: boolean;
+  decisionReferenceWorkflows?: Array<{ title: string; body: string }>;
+  variant?: 'default' | 'decision';
 };
 
 export function ModelPromptingSection({
@@ -28,11 +34,32 @@ export function ModelPromptingSection({
   copy,
   supportsNativeAudio,
   demoMedia,
+  engineSlug,
+  isImageEngine,
   locale,
+  modelName,
   audioBadgeLabel,
   mediaAltContexts,
   useDemoMediaPrompt,
+  decisionReferenceWorkflows,
+  variant = 'default',
 }: ModelPromptingSectionProps) {
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionPromptingSection
+        imageAnchorId={imageAnchorId}
+        copy={copy}
+        demoMedia={demoMedia}
+        engineSlug={engineSlug}
+        isImageEngine={isImageEngine}
+        locale={locale}
+        modelName={modelName}
+        referenceWorkflows={decisionReferenceWorkflows ?? []}
+      />
+    );
+  }
+
+  const referenceWorkflows = decisionReferenceWorkflows ?? [];
   return (
         <section
           id={imageAnchorId}
@@ -40,6 +67,16 @@ export function ModelPromptingSection({
         >
           {isVideoEngine ? (
             <div className="stack-gap-lg">
+              {referenceWorkflows.length ? (
+                <div className="mx-auto grid w-full max-w-5xl gap-3 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+                  {referenceWorkflows.map((workflow) => (
+                    <article key={workflow.title} className="rounded-lg border border-hairline bg-surface px-4 py-3 shadow-card">
+                      <h3 className="text-sm font-semibold text-text-primary">{workflow.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-text-secondary">{workflow.body}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
                 <SoraPromptingTabs
                   title={copy.promptingTitle ?? undefined}
                   intro={copy.promptingIntro ?? undefined}

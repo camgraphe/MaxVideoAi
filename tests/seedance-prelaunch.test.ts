@@ -145,7 +145,7 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
   assert.equal(typeof fastScore.speedStability, 'number');
 });
 
-test('Seedance benchmark specs stay aligned with the live Fal-facing product surface', () => {
+test('Seedance benchmark specs stay aligned with the live MaxVideoAI product surface', () => {
   const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
   const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
     specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
@@ -158,7 +158,7 @@ test('Seedance benchmark specs stay aligned with the live Fal-facing product sur
   assert.ok(fast);
 
   assert.equal(standard.keySpecs?.videoToVideo, 'Not supported');
-  assert.equal(standard.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
+  assert.equal(standard.keySpecs?.firstLastFrame, 'Supported (1 start image + optional end image in i2v)');
   assert.equal(standard.keySpecs?.maxResolution, '1080p');
   assert.equal(standard.keySpecs?.maxDuration, '15s');
   assert.deepEqual(standard.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
@@ -167,7 +167,7 @@ test('Seedance benchmark specs stay aligned with the live Fal-facing product sur
   assert.equal(standard.keySpecs?.releaseDate ?? null, null);
 
   assert.equal(fast.keySpecs?.videoToVideo, 'Not supported');
-  assert.equal(fast.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
+  assert.equal(fast.keySpecs?.firstLastFrame, 'Supported (1 start image + optional end image in i2v)');
   assert.equal(fast.keySpecs?.maxResolution, '720p');
   assert.equal(fast.keySpecs?.maxDuration, '15s');
   assert.deepEqual(fast.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);

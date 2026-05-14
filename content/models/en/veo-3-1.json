@@ -37,8 +37,8 @@
         "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
       },
       {
-        "label": "Compare Seedance 2.0 vs Veo 3.1",
-        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+        "label": "Compare Sora 2 vs Veo 3.1",
+        "href": "/ai-video-engines/sora-2-vs-veo-3-1"
       },
       {
         "label": "Compare Kling 3 Pro vs Veo 3.1",
@@ -87,15 +87,15 @@
     },
     {
       "label": "Resolution",
-      "body": "720p or 1080p at 24 fps"
+      "body": "720p or 1080p exposed in the current MaxVideoAI route at 24 fps"
     },
     {
       "label": "Formats",
-      "body": "16:9, 9:16 or 1:1; supported across text runs, start-image shots, and start+last-frame renders"
+      "body": "16:9 and 9:16 across text, start-image and reference routes; 1:1 is exposed for text and first/last-frame runs"
     },
     {
       "label": "Inputs",
-      "body": "Text-to-video prompts; Generate Video from text or one start image; optional last-frame guidance; up to 4 reference stills; Extend from an existing video"
+      "body": "Text prompts; one start image for Image-to-Video; 1–4 reference stills for Reference-to-Video; start + last frame; Extend from one existing source video"
     },
     {
       "label": "Audio",
@@ -150,28 +150,28 @@
   ],
   "faqs": [
     {
-      "q": "What is Veo 3?",
+      "q": "What is Veo 3.1?",
       "a": "On MaxVideoAI, Veo 3.1 is the current Google AI video model for short cinematic clips, text-to-video prompts, image-to-video runs, reference-guided workflows, native audio, and extension workflows."
     },
     {
       "q": "Is Veo 3.1 available in Europe or the UK?",
-      "a": "Yes. MaxVideoAI routes Veo jobs through licensed DeepMind endpoints, so you can render from Europe, the UK and most supported regions without separate Veo contracts."
+      "a": "Yes. MaxVideoAI routes Veo jobs through supported provider endpoints, so you can render from Europe, the UK and most supported regions without separate Veo contracts."
     },
     {
       "q": "Can Veo 3.1 generate vertical videos?",
-      "a": "Yes. Veo 3.1 supports 16:9, 9:16 and 1:1. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
+      "a": "Yes. Veo 3.1 supports 16:9 and 9:16 across the main routes; 1:1 is exposed for text and first/last-frame runs. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
     },
     {
       "q": "Does Veo 3.1 support image-to-video?",
-      "a": "Yes. Google Veo 3.1 can start from a single still (Image→Video) or use 1–4 reference images to guide a Text→Video clip."
+      "a": "Yes. Google Veo 3.1 can start from a single still in Image-to-Video, use 1-4 reference stills in Reference-to-Video, or bridge a start and last frame."
     },
     {
-      "q": "How do I use Veo 3 for text-to-video?",
+      "q": "How do I use Veo 3.1 for text-to-video?",
       "a": "Start with one clear subject, one action, one camera instruction, and your target format. Veo 3.1 text-to-video prompts usually work best when movement, lighting, and audio cues are explicit."
     },
     {
       "q": "Can I go beyond 8 seconds?",
-      "a": "Base clips are 4/6/8 s. Use Extend and chain clips in timelines; treat each extension as another 4–8 s block."
+      "a": "Base clips are 4/6/8 s. Use Extend from one existing source video; confirm the final duration and resolution controls in the app before generation."
     },
     {
       "q": "How do I keep Veo 3.1 on-brand?",
@@ -228,8 +228,8 @@
       "5. Set duration (4/6/8 s), aspect ratio, and resolution (720p or 1080p).",
       "6. Compare against other engines in the same GUI."
     ],
-    "specTitle": "Real Specs – Veo 3.1 in MaxVideoAI (720p/1080p, 4–8s)",
-    "specNote": "These specs describe Veo 3.1 exactly as you can use it today via MaxVideoAI – not theoretical lab demos.",
+    "specTitle": "Real Specs - Veo 3.1 route in MaxVideoAI (720p/1080p, 4-8s)",
+    "specNote": "These specs describe the Veo 3.1 route exposed in MaxVideoAI today. 720p/1080p are MaxVideoAI route options, not a claim about every possible Veo 3.1 provider capability.",
     "specSections": [
       {
         "title": "Directable framing",
@@ -253,15 +253,15 @@
       }
     ],
     "specValueProp": "Veo 3.1 in MaxVideoAI gives you framing presets, native audio control, seeds and Extend—so it behaves like a directable camera, not a black box.",
-    "galleryTitle": "Example Gallery: Real Veo 3.1 Outputs",
+    "galleryTitle": "Real Veo 3.1 examples",
     "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",
     "galleryAllCta": "View all Veo 3.1 examples →",
     "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video Workflow with Google Veo 3.1 (+ Nano Banana)",
     "imageIntro": "Pair Google Veo 3.1 with Nano Banana to lock style and iterate on motion.",
     "imageFlow": [
-      "Generate 1–4 reference stills in Nano Banana (or import your brand stills).",
-      "Send them into Veo 3.1 as reference images in Text→Video, or start from a single still in Image→Video.",
+      "Generate 1-4 reference stills in Nano Banana (or import your brand stills).",
+      "Send them into Veo 3.1 as Reference-to-Video stills, or start from one still in Image-to-Video.",
       "Focus your prompt on motion, timing and audio: how the camera moves, how the subject moves, and how the beat should end at 4/6/8s.",
       "Regenerate with the same references to keep identity consistent."
     ],
@@ -289,7 +289,7 @@
     ],
     "boundaries": [
       "Up to 8 seconds per render; go longer by chaining clips (or Extend).",
-      "1080p max in this routing.",
+      "720p and 1080p are the resolutions exposed by this MaxVideoAI route.",
       "24 fps only.",
       "Tiny UI text and small lettering are unreliable — add in post."
     ],
@@ -310,23 +310,46 @@
       "Draft in Veo 3.1 Fast, then regenerate winners in Veo 3.1 at 1080p with native audio."
     ],
     "comparisonCta": "Compare Veo 3.1 vs Veo 3.1 Fast ->",
+    "relatedItems": [
+      {
+        "brand": "google",
+        "title": "Veo 3.1 Fast",
+        "description": "Choose Fast when you need cheaper timing tests or reference-to-video drafts; stay on Veo 3.1 when the approved shot needs premium motion, audio and 1080p polish.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Compare Veo 3.1 vs Fast →"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Choose Kling 3 Pro when longer controlled sequences and storyboard-style planning matter more than Veo’s short premium audio-ready finish.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Compare Veo 3.1 vs Kling 3 Pro →"
+      },
+      {
+        "brand": "openai",
+        "title": "Sora 2 Pro",
+        "description": "Compare Sora 2 Pro when you are deciding between OpenAI-style concept generation and Veo 3.1’s Google route for polished brand shots.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Compare Veo 3.1 vs Sora 2 Pro →"
+      }
+    ],
     "faqTitle": "FAQ – Veo 3.1 in MaxVideoAI",
     "faqs": [
       {
         "q": "Is Veo 3.1 available in Europe or the UK?",
-        "a": "Yes. MaxVideoAI routes Veo jobs through licensed DeepMind endpoints, so you can render from Europe, the UK and most supported regions without separate Veo contracts."
+        "a": "Yes. MaxVideoAI routes Veo jobs through supported provider endpoints, so you can render from Europe, the UK and most supported regions without separate Veo contracts."
       },
       {
         "q": "Can Veo 3.1 generate vertical videos?",
-        "a": "Yes. Veo 3.1 supports 16:9, 9:16 and 1:1. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
+        "a": "Yes. Veo 3.1 supports 16:9 and 9:16 across the main routes; 1:1 is exposed for text and first/last-frame runs. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
       },
       {
         "q": "Does Veo 3.1 support image-to-video?",
-        "a": "Yes. Start from a single still (Image→Video) or use 1–4 reference images to guide a Text→Video clip from the same composer."
+        "a": "Yes. Start from a single still in Image-to-Video, use 1-4 reference stills in Reference-to-Video, or bridge a start and last frame when the ending composition must land exactly."
       },
       {
         "q": "Can I extend Veo 3.1 videos beyond 8 seconds?",
-        "a": "Base clips are 4/6/8 s. Use Extend on a good shot and chain clips in timelines; treat each extension as another 4–8 s block with consistent camera and subject."
+        "a": "Base clips are 4/6/8 s. Use Extend from one existing source video; confirm the final duration and resolution controls in the app before generation."
       },
       {
         "q": "How do I keep Veo 3.1 on-brand?",
@@ -391,22 +414,22 @@
         "copy": "Current clip:\n[What already happened]\n\nNew beat:\n[What should happen next]\n\nWhat must stay continuous:\n[Subject / setting / camera rhythm / lighting]\n\nExtension rule:\nDescribe only the next action, reveal, or continuation. Do not rewrite the whole scene."
       }
     ],
-    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideLabel": "Official Veo prompt guide",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: a sequenced prompt (with native audio)",
-    "demoPromptLabel": "8s cinematic product micro-story for wireless earbuds (16:9, 1080p)",
+    "demoTitle": "Demo: wireless earbuds product micro-story",
+    "demoPromptLabel": "8s reference-guided product ad (16:9, 1080p, native audio)",
     "demoPrompt": [
-      "Shot 1 (0–3s): macro of an earbud rotating on a wooden desk, shallow DOF, warm desk lamp.",
-      "Shot 2 (3–6s): medium shot of a young pro putting the earbuds on before stepping into a lively street, soft bokeh.",
-      "Shot 3 (6–8s): close-up of the case closing beside a laptop, soft reflections on the shell.",
-      "Camera: smooth dollies between shots, handheld feel but stable.",
-      "Lighting: evening, warm interior shifting to cool street light, light film grain.",
-      "Audio: low city ambience, soft electronic music, short VO: “Block the noise, keep the focus.” No subtitles.",
-      "Negative: no brands, no on-screen text, no ultra-wide angle."
+      "Shot 1 (0-3s): macro close-up of one wireless earbud rotating on a wooden desk, shallow depth of field, warm desk lamp glow.",
+      "Shot 2 (3-6s): medium shot of a young professional putting the earbuds on before stepping into a lively city street, soft bokeh in the background.",
+      "Shot 3 (6-8s): close-up of the charging case clicking shut beside a laptop, subtle reflections on the shell.",
+      "Camera: smooth dolly moves between beats, handheld feel but stable.",
+      "Lighting: warm interior shifting to cool evening street light, light film grain.",
+      "Audio: low city ambience, soft electronic music bed, short voiceover: \"Block the noise, keep the focus.\" No subtitles.",
+      "Negative: no visible brands, no on-screen text, no ultra-wide distortion."
     ],
     "demoNotes": [
-      "Clear 3-beat structure, consistent environment, and defined cinematography.",
-      "VO fits within 8s; explicit “no subtitles” prevents text overlays."
+      "The summary, prompt and demo render all describe the same wireless-earbud product ad.",
+      "The 3-beat structure fits an 8s Veo 3.1 render with native audio enabled."
     ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [

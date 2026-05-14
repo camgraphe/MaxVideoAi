@@ -1970,8 +1970,8 @@
         "after": " para empezar con un prompt validado."
       }
     },
-    "cardCtaLabel": "Detalles →",
-    "cardAriaPrefix": "Detalles completos",
+    "cardCtaLabel": "Ver specs",
+    "cardAriaPrefix": "Ver specs",
     "engineTypeLabels": {
       "textImage": "Texto + imagen a video",
       "text": "Texto a video",
@@ -1994,7 +1994,7 @@
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Sincronización labial cinematográfica con salida 1792×1024 y control de imagen→video para equipos premium.",
+        "description": "Sincronización labial cinematográfica con salida 1080p y control de imagen a video para equipos premium.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
@@ -2046,8 +2046,8 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modelos IA: especificaciones, límites y precios | MaxVideoAI",
-      "description": "Catálogo de modelos IA de video e imagen con especificaciones, límites y señales de precio. Revisa capacidades y restricciones antes de generar."
+      "title": "Modelos IA de video e imagen: specs, límites y precios | MaxVideoAI",
+      "description": "Compara modelos IA de video e imagen por precio, duración máxima, resolución, audio, modos de entrada, ejemplos y workflow antes de generar en MaxVideoAI."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
@@ -2080,6 +2080,32 @@
       "relatedModelCta": "Ver modelo →"
     },
     "listing": {
+      "decision": {
+        "eyebrow": "Directorio de modelos IA de video e imagen",
+        "heroTitle": "Compara modelos IA de video e imagen antes de generar",
+        "heroSubtitle": "Explora modelos de video, imagen, audio y preparacion. Compara precio, duracion maxima, resolucion, audio, modos de entrada y fortalezas antes de elegir el modelo correcto.",
+        "primaryCta": "Explorar modelos",
+        "secondaryCta": "Comparar motores",
+        "topPicksTitle": "Puntos de partida recomendados",
+        "topPicksViewAll": "Ver todas las recomendaciones",
+        "useCasesTitle": "Elige el modelo correcto para tu workflow",
+        "useCasesViewAll": "Ver todos los casos de uso",
+        "bestLabel": "Mejor",
+        "recommendedTitle": "Puntos de partida recomendados",
+        "recommendedSubtitle": "Empieza aqui si quieres una shortlist rapida antes de comparar cada modelo por precio, duracion, resolucion y entradas soportadas.",
+        "recommendedSeeAll": "Ver todos los modelos",
+        "recommendedFromLabel": "Desde",
+        "recommendedDurationLabel": "Hasta",
+        "recommendedResolutionLabel": "Res. max.",
+        "allModelsTitle": "Explora engines IA por tipo",
+        "allModelsSubtitle": "Empieza con generacion de video, luego cambia a imagen o audio y lip sync sin mezclar familias de engines.",
+        "popularComparisonsTitle": "No sabes que modelo de video IA elegir?",
+        "popularComparisonsSubtitle": "Compara pares de modelos populares lado a lado antes de generar.",
+        "compareHubLabel": "Hub comparativo",
+        "pricingLimitsTitle": "Compara precio, duracion y limites de salida",
+        "pricingLimitsBody": "Los modelos de video suelen cobrarse por segundo, mientras los modelos de imagen se cobran por imagen o tamano de salida. Usa las tarjetas para comparar precio inicial, duracion maxima, resolucion, audio y modos de entrada antes de generar.",
+        "faqTitle": "FAQ de specs, precios y ejemplos de modelos IA"
+      },
       "hero": {
         "title": "Modelos IA (Todas las especificaciones, límites y precios)",
         "subtitle": "Revisa capacidades, límites y precios de modelos de video e imagen antes de generar.",
@@ -2196,6 +2222,15 @@
         "typeLong": "Tipo"
       },
       "audioAvailableLabel": "Audio disponible",
+      "engineTabs": {
+        "options": {
+          "video": "Generacion de video",
+          "image": "Generacion de imagen",
+          "audio": "Audio",
+          "preparation": "Herramientas de preparacion",
+          "all": "Todos los modelos"
+        }
+      },
       "filters": {
         "sort": {
           "label": "Ordenar",
@@ -2209,7 +2244,7 @@
           }
         },
         "mode": {
-          "label": "Modo",
+          "label": "Modo de entrada",
           "options": {
             "all": "Todos",
             "t2v": "T2V",
@@ -2264,6 +2299,14 @@
         "selectTwo": "Selecciona dos modelos para comparar",
         "clear": "Limpiar",
         "compare": "Comparar"
+      },
+      "cardActions": {
+        "viewSpecs": "Ver specs",
+        "viewSpecsAria": "Ver specs de {engine}",
+        "compare": "Comparar",
+        "compareAria": "Comparar {engine} con otros modelos de video IA",
+        "examples": "Ejemplos",
+        "examplesAria": "Ver ejemplos de prompts {engine}"
       },
       "capabilityTooltips": {
         "T2V": "Texto a video",
@@ -3337,9 +3380,9 @@
             ]
           },
           "sora-2-pro": {
-            "description": "Sora 2 Pro desbloquea resoluciones mayores, diálogo sincronizado y control imagen→video para producciones premium.",
+            "description": "Sora 2 Pro desbloquea renders 1080p, diálogo sincronizado y control de imagen a video para producciones premium.",
             "badges": [
-              "1792×1024",
+              "1080p",
               "Audio nativo",
               "Lip-sync"
             ]

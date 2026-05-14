@@ -86,7 +86,7 @@
   "faqs": [
     {
       "q": "Como funciona el precio de Nano Banana 2?",
-      "a": "El precio es por imagen: $0.04 en 0.5K, $0.08 en 1K, $0.12 en 2K y $0.16 en 4K. La web search opcional suma $0.015 por solicitud."
+      "a": "El precio es por imagen: $0.06 en 0.5K, $0.11 en 1K, $0.16 en 2K y $0.21 en 4K antes de opciones. La app muestra la cotización exacta antes de generar."
     },
     {
       "q": "Cuantas imagenes puedo generar por run?",
@@ -97,9 +97,9 @@
       "a": "Hasta 14 referencias dentro del workspace de imagen de MaxVideoAI para Nano Banana 2."
     }
   ],
-  "pricingNotes": "$0.08 por imagen en 1K. 0.5K cuesta $0.04, 2K $0.12, 4K $0.16 y la web search opcional suma $0.015 por solicitud.",
+  "pricingNotes": "El precio mostrado por MaxVideoAI empieza en $0.06 para 0.5K, $0.11 para 1K, $0.16 para 2K y $0.21 para 4K. La app muestra la cotización exacta antes de generar.",
   "custom": {
-    "heroEyebrow": "Google - Nano Banana 2",
+    "heroEyebrow": "Modelo de imagen Nano Banana 2",
     "heroSupportLine": "Ideal para stills guiados, layouts amplios y edits multi-imagen mas grandes.",
     "heroSpecChips": [
       {
@@ -175,6 +175,24 @@
       "Los sets grandes de referencias ayudan, pero los roles por referencia limpian el edit.",
       "Los prompts guiados deben seguir siendo especificos sobre la estetica objetivo."
     ],
-    "promptingGuideLabel": "Aprender mas"
+    "promptingGuideLabel": "Aprender mas",
+    "faqs": [
+      {
+        "q": "Nano Banana 2 es para imágenes fijas o video?",
+        "a": "Nano Banana 2 es solo para imágenes fijas en MaxVideoAI. Úsalo para generación texto-a-imagen y ediciones imagen-a-imagen, no para video, audio ni movimiento."
+      },
+      {
+        "q": "Cuánto cuesta Nano Banana 2?",
+        "a": "El precio mostrado por MaxVideoAI empieza en $0.06 para 0.5K, $0.11 para 1K, $0.16 para 2K y $0.21 para 4K. Las opciones se cotizan en la app antes de generar."
+      },
+      {
+        "q": "Cuándo conviene usar Nano Banana 2 en vez de Nano Banana Pro?",
+        "a": "Usa Nano Banana 2 para generación guiada, drafts de menor costo, ratios amplios y edits multi-referencia. Usa Nano Banana Pro cuando importan más la tipografía, los finales 4K de campaña y los assets listos para cliente."
+      },
+      {
+        "q": "Nano Banana 2 puede editar con varias referencias?",
+        "a": "Sí. La ruta de MaxVideoAI acepta hasta 14 imágenes de referencia en edit. Dale un rol claro a cada referencia: identidad del producto, material, paleta o composición."
+      }
+    ]
   }
 }

@@ -283,6 +283,19 @@
     "galleryAllCta": "Voir tous les exemples Kling 3 Pro →",
     "recreateLabel": "Recréer ce plan →",
     "demoTitle": "Prompt démo — Kling 3 Pro",
-    "demoPromptLabel": "Prompt"
+    "demoPromptLabel": "Prompt",
+    "safetyNote": "Garde-fous intégrés et bonnes pratiques pour une création responsable avec Kling 3 Pro.",
+    "demoPrompt": [
+      "Durée : 12 s • Ratio : 16:9 • Audio : activé • shot_type : customize",
+      "",
+      "@Element1 = présentatrice en blazer bleu marine",
+      "@Element2 = prototype transparent sur socle graphite",
+      "",
+      "Shot 1 (0-4 s) : plan moyen de @Element1 tenant @Element2, studio premium, lumière douce, caméra stable.",
+      "Shot 2 (4-8 s) : @Element1 marche vers un écran de démonstration, tracking latéral fluide, même tenue et même produit.",
+      "Shot 3 (8-12 s) : gros plan du prototype sur le socle, reflets contrôlés, caméra qui se stabilise sur la composition finale.",
+      "",
+      "Audio : <<<voice_1>>> “Here is the next generation of our platform.” Ambiance studio discrète, un seul cue sonore doux. Pas de texte, pas de logo, pas de sous-titres."
+    ]
   }
 }

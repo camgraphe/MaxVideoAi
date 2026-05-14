@@ -2,14 +2,14 @@
   "marketingName": "GPT Image 2",
   "versionLabel": "2",
   "seo": {
-    "title": "GPT Image 2 - text-to-image y edicion OpenAI | MaxVideoAI",
-    "description": "Genera y edita imagenes con GPT Image 2 en MaxVideoAI. Text-to-image, image-to-image, presets Fal image_size, tamano custom, niveles de calidad, formatos de salida y mask URL opcional.",
+    "title": "GPT Image 2 - text-to-image y edición | MaxVideoAI",
+    "description": "Genera y edita imágenes con GPT Image 2 en MaxVideoAI. Text-to-image, image-to-image, presets de tamaño, tamaño custom, niveles de calidad, formatos de salida y mask URL opcional.",
     "image": "https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png"
   },
-  "overview": "GPT Image 2 es el modelo de imagen quality-first de OpenAI dentro de MaxVideoAI. Una sola entrada en Image Lab cubre text-to-image e image-to-image, con control de Fal image_size como preset u objeto width/height, quality, numero de salidas, formato y mask URL cuando un edit debe quedar limitado a una region.",
+  "overview": "GPT Image 2 es un modelo de imagen quality-first dentro de MaxVideoAI. Una sola entrada en Image Lab cubre text-to-image e image-to-image, con presets de tamaño, width/height custom, quality, número de salidas, formato y mask URL cuando un edit debe quedar limitado a una región.",
   "hero": {
     "title": "GPT Image 2 - generacion y edits de alta calidad",
-    "intro": "Generacion OpenAI para tipografia clara, producto realista, mockups UI, infografias y edits guiados por referencia.",
+    "intro": "Generación de imágenes para tipografía clara, producto realista, mockups UI, infografías y edits guiados por referencia.",
     "badge": "Texto -> Imagen · Imagen -> Imagen · Calidad Low / Medium / High",
     "ctaPrimary": {
       "label": "Lanzar GPT Image 2",
@@ -87,20 +87,20 @@
   "faqs": [
     {
       "q": "GPT Image 2 soporta generacion y edicion?",
-      "a": "Si. MaxVideoAI expone una sola entrada GPT Image 2 con text-to-image hacia openai/gpt-image-2 e image-to-image hacia openai/gpt-image-2/edit."
+      "a": "Sí. MaxVideoAI expone GPT Image 2 como una sola entrada del Image Lab con modos Create y Edit."
     },
     {
-      "q": "Que controles Fal estan disponibles?",
-      "a": "Image Lab expone presets Fal image_size, tamanos canonicos 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440 y 3840x2160, modo Custom width/height, quality, num_images, output_format, imagenes de referencia para edits y mask_url opcional."
+      "q": "¿Qué controles de imagen están disponibles?",
+      "a": "Image Lab expone presets image_size, tamanos canonicos 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440 y 3840x2160, modo Custom width/height, quality, num_images, output_format, imagenes de referencia para edits y mask_url opcional."
     },
     {
       "q": "Cuanto cuesta GPT Image 2?",
-      "a": "El precio Fal sigue la tabla quality x tamano: 1024x768 cuesta $0.01 / $0.04 / $0.15 en Low / Medium / High; 3840x2160 cuesta $0.02 / $0.11 / $0.41 antes de reglas de cuenta MaxVideoAI."
+      "a": "El costo varía por quality e image_size, pero MaxVideoAI enseña la cotización live exacta antes de generar. Usa la tarjeta de precios y la cotización de la app como precio para cliente."
     }
   ],
-  "pricingNotes": "El pricing sigue la tabla Fal quality e image_size: 1024x768 vale $0.01 / $0.04 / $0.15 y 3840x2160 vale $0.02 / $0.11 / $0.41 en Low / Medium / High.",
+  "pricingNotes": "Los costos varían por quality e image_size. MaxVideoAI muestra el precio final antes de generar; usa la cotización de la app para estimaciones de cliente.",
   "custom": {
-    "heroEyebrow": "OpenAI - GPT Image 2",
+    "heroEyebrow": "Modelo de imagen GPT Image 2",
     "heroSupportLine": "Ideal para imagenes con texto, producto, mockups UI y edits controlados.",
     "heroSpecChips": [
       {
@@ -123,11 +123,11 @@
     ],
     "whyTitle": "Por que GPT Image 2 destaca",
     "heroDesc1": "GPT Image 2 apunta a stills de alta fidelidad donde texto, detalle de producto y adherencia al prompt importan mas que la velocidad bruta.",
-    "heroDesc2": "En MaxVideoAI funciona como Nano Banana: una entrada de modelo, dos workflows, wallet compartida, referencias reutilizables y precio live antes de ejecutar.",
+    "heroDesc2": "En MaxVideoAI funciona en Image Lab como una sola entrada para Create y Edit, con wallet compartida, referencias reutilizables, controles de calidad y precio live antes de ejecutar.",
     "heroHighlights": [
       "Texto legible||Util para posters, labels, infografias y pantallas UI con tipografia limpia.",
       "Fidelidad producto||Buen ajuste para packaging, catalogo y e-commerce con etiquetas visibles.",
-      "Controles Fal||Image size preset o width/height custom, quality, output format y mask URL se envian directamente al provider.",
+      "Controles de imagen||Image size preset o width/height custom, quality, output format y mask URL están disponibles en el Image Lab.",
       "Workflow image unificado||Cambia de Create a Edit sin salir de Image Lab."
     ],
     "whatTitle": "Como funciona GPT Image 2 aqui",

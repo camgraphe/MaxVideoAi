@@ -13,9 +13,9 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "videoToVideo": "Not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "Supported (single start image; no style-reference stack)",
         "referenceVideo": "Not supported",
         "maxResolution": "720p (1280×720 landscape; 720×1280 portrait)",
         "maxDuration": "12s",
@@ -49,12 +49,12 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "videoToVideo": "Not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "Supported (single start image)",
         "referenceVideo": "Not supported",
-        "maxResolution": "1792×1024",
-        "maxDuration": "12s",
+        "maxResolution": "720p / 1080p",
+        "maxDuration": "4 / 8 / 12s",
         "aspectRatios": [
           "16:9",
           "9:16"
@@ -86,11 +86,11 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported (extend / retake workflows)",
+        "videoToVideo": "Supported (Extend from one source video)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported (source clip for extend / retake)",
-        "maxResolution": "1080p",
+        "referenceImageStyle": "Image-to-Video: 1 start image; Reference-to-Video: 1-4 stills",
+        "referenceVideo": "Supported (one source clip for Extend)",
+        "maxResolution": "720p/1080p exposed in the MaxVideoAI route",
         "maxDuration": "8s",
         "aspectRatios": [
           "16:9",
@@ -107,7 +107,7 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)",
+        "watermark": "No visible MaxVideoAI watermark; provider/model provenance markers may apply",
         "releaseDate": "Oct 2025"
       }
     },
@@ -125,7 +125,7 @@
         "imageToVideo": "Supported",
         "videoToVideo": "Supported (extend / retake workflows)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported (single start image)",
+        "referenceImageStyle": "Image-to-Video: 1 start image; Reference mode: 1-4 stills",
         "referenceVideo": "Supported (source clip for extend / retake)",
         "maxResolution": "1080p",
         "maxDuration": "8s",
@@ -160,8 +160,8 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported (single start image)",
+        "firstLastFrame": "Supported (one start image + one last frame)",
+        "referenceImageStyle": "Start image only; no style-reference stack",
         "referenceVideo": "Not supported",
         "maxResolution": "1080p",
         "maxDuration": "8s",
@@ -180,7 +180,7 @@
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
-        "releaseDate": "Apr 2026"
+        "releaseDate": "MaxVideoAI availability: Apr 2026"
       }
     },
     {
@@ -228,8 +228,8 @@
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Not supported",
-        "maxResolution": "4K",
-        "maxDuration": "20s",
+        "maxResolution": "4K on 6-10s generate modes; workflow-specific limits for Audio/Extend/Retake",
+        "maxDuration": "20s route; standard generate presets are 6-10s",
         "aspectRatios": [
           "16:9"
         ],
@@ -263,19 +263,19 @@
         "imageToVideo": "Supported",
         "videoToVideo": "Supported (extend / retake workflows)",
         "firstLastFrame": "Supported (start + end image in I2V)",
-        "referenceImageStyle": "Supported (single start image)",
+        "referenceImageStyle": "Supported (single start image; no separate style-reference stack)",
         "referenceVideo": "Supported (source clip for extend / retake)",
-        "maxResolution": "4K",
-        "maxDuration": "20s",
+        "maxResolution": "4K on T2V/I2V generate; workflow-specific limits for Audio/Extend/Retake",
+        "maxDuration": "Generate 6–10s; Audio/Extend/Retake up to 20s",
         "aspectRatios": [
-          "16:9",
-          "9:16"
+          "16:9 generate",
+          "9:16 generate"
         ],
         "fpsOptions": [
-          "24 fps",
-          "25 fps",
-          "48 fps",
-          "50 fps"
+          "24 fps generate",
+          "25 fps generate",
+          "48 fps generate",
+          "50 fps generate"
         ],
         "outputFormats": [
           "MP4"
@@ -300,10 +300,10 @@
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
         "firstLastFrame": "Supported (start + end image in I2V)",
-        "referenceImageStyle": "Supported (single start image)",
+        "referenceImageStyle": "Supported (single start image; no separate style-reference stack)",
         "referenceVideo": "Not supported",
-        "maxResolution": "4K",
-        "maxDuration": "20s",
+        "maxResolution": "4K (6–10s); 1080p for >10s routing",
+        "maxDuration": "20s (>10s requires 1080p / 25 fps)",
         "aspectRatios": [
           "16:9",
           "9:16"
@@ -333,7 +333,7 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
+        "videoToVideo": "Reference-video guidance",
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
@@ -350,7 +350,7 @@
         "outputFormats": [
           "MP4"
         ],
-        "audioOutput": "Supported",
+        "audioOutput": "Text/Image modes only; off in Reference mode",
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
@@ -385,7 +385,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Not supported",
-        "lipSync": "Not supported",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Sep 2025"
@@ -470,10 +470,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame; Kling Elements in prompt",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -502,10 +502,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame; Kling Elements in prompt",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -534,10 +534,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "4K",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -604,10 +604,10 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "firstLastFrame": "Supported (I2V start image + optional end frame)",
+        "referenceImageStyle": "Single start image; optional end frame in I2V",
         "referenceVideo": "Not supported",
-        "maxResolution": "1080p",
+        "maxResolution": "T2V: 480p/720p; I2V: 480p/720p/1080p",
         "maxDuration": "12s",
         "aspectRatios": [
           "21:9",
@@ -623,7 +623,7 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
-        "cameraMotionControls": "Basic",
+        "cameraMotionControls": "camera_fixed + prompt-based controls",
         "watermark": "No (MaxVideoAI)"
       }
     },
@@ -638,9 +638,9 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (start + end image in i2v)",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Ref2V: up to 3 video references",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -658,7 +658,7 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "dualChannelAudio": null,
-        "lipSync": null,
+        "lipSync": "Supported",
         "pricePerSecond": null,
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",
@@ -675,9 +675,9 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (start + end image in i2v)",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Ref2V: up to 3 video references",
         "maxResolution": "720p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -695,7 +695,7 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "dualChannelAudio": null,
-        "lipSync": null,
+        "lipSync": "Supported",
         "pricePerSecond": null,
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",
@@ -712,17 +712,21 @@
       ],
       "keySpecs": {
         "textToVideo": "Supported",
-        "imageToVideo": "Supported",
+        "imageToVideo": "Related image-start workflow",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Single still only; no reference-style stack",
         "referenceVideo": "Not supported",
         "maxResolution": "1080p",
         "maxDuration": "10s",
         "aspectRatios": [
           "1:1",
           "16:9",
-          "9:16"
+          "9:16",
+          "4:5",
+          "5:4",
+          "3:2",
+          "2:3"
         ],
         "fpsOptions": [
           24

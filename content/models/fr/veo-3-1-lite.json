@@ -83,7 +83,7 @@
     },
     {
       "label": "Entrées",
-      "body": "Texte → Vidéo; Generate Video depuis une seule image de départ; guidage optionnel par dernière image"
+      "body": "Texte → Vidéo; Image-to-Video depuis une image de départ; First/Last frame avec une image d’ouverture et une image finale"
     },
     {
       "label": "Audio",
@@ -91,7 +91,7 @@
     },
     {
       "label": "Tarifs",
-      "body": "À la seconde ; 0,05 $/s en 720p ou 0,08 $/s en 1080p ; wallet pay‑as‑you‑go"
+      "body": "Prix affichés MaxVideoAI : 0,07 $/s en 720p ou 0,11 $/s en 1080p ; wallet pay‑as‑you‑go"
     },
     {
       "label": "Temps de rendu",
@@ -154,16 +154,16 @@
     },
     {
       "q": "Comment se compare le prix par rapport à Veo 3.1 ?",
-      "a": "Veo 3.1 Lite est moins cher à la seconde que les autres tiers Veo : 0,05 $/s en 720p ou 0,08 $/s en 1080p, avec audio inclus."
+      "a": "Veo 3.1 Lite est moins cher à la seconde que les autres tiers Veo sur MaxVideoAI : 0,07 $/s en 720p ou 0,11 $/s en 1080p, avec audio inclus. Les prix API Google directs peuvent différer."
     },
     {
       "q": "Puis‑je lancer Veo 3.1 Lite depuis l’Europe ou l’Amérique latine ?",
-      "a": "Oui. Même wallet/studio MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
+      "a": "Oui. Même wallet/studio MaxVideoAI et routage fournisseur géré — pas de facturation séparée."
     }
   ],
   "custom": {
     "heroDesc1": "Veo 3.1 Lite apporte le modèle cinématique de DeepMind à un prix plus bas et un turnaround plus rapide, parfait pour les tests rapides, les fins guidées et les loops sociaux.",
-    "heroDesc2": "Partez d’un brief texte court ou d’une image de départ, ajoutez une dernière image uniquement si vous devez piloter la fin, puis choisissez 4/6/8 secondes, 16:9 ou 9:16, et générez assez vite pour A/B tester plusieurs idées en une session.",
+    "heroDesc2": "Partez d’un brief texte court, d’une image de départ ou d’une paire First/Last frame, puis choisissez 4/6/8 secondes, 16:9 ou 9:16, et générez assez vite pour A/B tester plusieurs idées en une session.",
     "heroSupportLine": "Idéal pour explorer rapidement hooks, fins guidées et rythme avant de régénérer les gagnants dans Veo 3.1.",
     "whyTitle": "Pourquoi Veo 3.1 Lite est puissant",
     "heroHighlights": [
@@ -205,8 +205,8 @@
     "whatFlowTitle": "Flux MaxVideoAI :",
     "whatFlowSteps": [
       "1. Choisissez Veo 3.1 Lite comme modèle.",
-      "2. Partez du texte ou ajoutez une image de départ.",
-      "3. Ajoutez une dernière image uniquement quand vous devez piloter la fin.",
+      "2. Partez du texte, ajoutez une image de départ ou utilisez First/Last frame avec une image d’ouverture et une image finale.",
+      "3. Gardez l’entrée de référence focalisée; Lite n’est pas un stack multi-références de style.",
       "4. Réglez durée, orientation et résolution.",
       "5. Collez un prompt court et sensoriel avec vos cues d’ambiance ou de dialogue.",
       "6. Vérifiez le prix live et lancez le rendu."
@@ -240,11 +240,11 @@
     "galleryIntro": "Explorez des clips générés avec Veo 3.1 Lite en utilisant les mêmes presets que vous avez.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 Lite →",
     "recreateLabel": "Recréer ce plan →",
-    "imageTitle": "Flow image-to-video avec Google Veo 3.1 Lite",
-    "imageIntro": "Animez un still unique en loop rapide ou plan hero.",
+    "imageTitle": "Flow image et First/Last frame avec Google Veo 3.1 Lite",
+    "imageIntro": "Animez une image de départ, ou guidez l’image d’ouverture et l’image finale quand la composition d’arrivée compte.",
     "imageFlow": [
-      "Téléversez une photo lifestyle ou produit.",
-      "Choisissez Image → Vidéo, durée (4/6/8 s), format et résolution.",
+      "Téléversez une seule photo lifestyle ou produit comme image de départ.",
+      "Utilisez First/Last frame uniquement quand les compositions d’ouverture et de fin sont déjà validées.",
       "Promptez un mouvement de caméra et de sujet subtil, plus d’éventuels cues d’ambiance ou de dialogue.",
       "Générez des variantes en changeant un élément à la fois (vitesse caméra, ton VO, moment de la journée)."
     ],
@@ -307,11 +307,11 @@
       },
       {
         "q": "Comment se compare le prix par rapport à Veo 3.1 ?",
-        "a": "Lite est moins cher à la seconde : 0,05 $/s en 720p ou 0,08 $/s en 1080p, avec audio toujours inclus."
+        "a": "Lite est moins cher à la seconde sur MaxVideoAI : 0,07 $/s en 720p ou 0,11 $/s en 1080p, avec audio toujours inclus. Les prix API Google directs peuvent différer."
       },
       {
         "q": "Puis‑je lancer Veo 3.1 Lite depuis l’Europe / LATAM ?",
-        "a": "Oui. Même wallet/studio MaxVideoAI et routage DeepMind sous licence — pas de facturation séparée."
+        "a": "Oui. Même wallet/studio MaxVideoAI et routage fournisseur géré — pas de facturation séparée."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
@@ -368,20 +368,21 @@
         "copy": "Shot list (même sujet + même décor)\nDurée : [4/6/8s]\n\nShot 1 (0–2s):\n[Cadrage + action + mouvement caméra]\n\nShot 2 (2–6/8s):\n[Cadrage + action + mouvement caméra]\n\nLook + mood :\n[Lumière + palette]\n\nSon (optionnel) :\n[Ambiance + 1 cue]"
       }
     ],
-    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideLabel": "Guide officiel Veo / Google DeepMind",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
     "demoTitle": "Démo : pattern de prompt pour Veo 3.1 Lite",
-    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoPromptLabel": "Réunion d’époque 8 s (16:9, audio on)",
     "demoPrompt": [
-      "Loop 6 s en 9:16 d’une jeune femme travaillant tard à un bureau minimaliste devant une grande fenêtre, lumières de ville floues.",
-      "Caméra : légère dérive handheld gauche/droite, centrée sur le visage et le laptop.",
-      "Lumière : bleu froid extérieur + lampe chaude sur les mains.",
-      "Audio : frappe clavier douce, bruit de ville, pas de dialogue."
+      "Clip Veo 3.1 Lite de 8 s en 16:9, audio inclus.",
+      "Réunion romantique cinématique sur un grand quai de gare, énergie de drame d’époque, élégante et intemporelle.",
+      "Un jeune couple en vêtements début 1900 court l’un vers l’autre : manteau sombre et chapeau pour l’homme, longue robe beige et petite valise vintage pour la femme.",
+      "Plan large en grue qui descend lentement vers eux, sensation légère de longue focale, mouvement fluide.",
+      "Lumière douce du matin filtrée par la vapeur et la verrière, tons sépia, bruns, laiton et crème. Une seule action claire, pas de texte ou signalétique proche caméra."
     ],
     "demoNotes": [
-      "Un sujet clair et un seul environnement.",
-      "Mouvement simple qui boucle proprement.",
-      "Audio qui soutient le mood sans complexité."
+      "Une seule action émotionnelle, pas une séquence chargée.",
+      "Verrouillez les détails d’époque et le mouvement caméra dès le début.",
+      "Gardez la signalétique et les figurants au second plan."
     ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [

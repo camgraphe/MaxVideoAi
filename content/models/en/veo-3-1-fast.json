@@ -33,8 +33,8 @@
         "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
       },
       {
-        "label": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast",
-        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
+        "label": "Compare LTX 2.3 Fast vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast"
       }
     ]
   },
@@ -83,7 +83,7 @@
     },
     {
       "label": "Inputs",
-      "body": "Text → Video; Generate Video from a single start image; Reference mode from 1-4 stills; optional last-frame guidance; Extend from an existing video"
+      "body": "Text → Video; Image-to-Video starts from one image; Reference mode accepts 1-4 stills; First/Last frame uses one opening and one ending image; Extend from an existing video"
     },
     {
       "label": "Audio",
@@ -91,7 +91,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Per-second; example: audio on ≈$0.15/s, audio off ≈$0.10/s; pay-as-you-go wallet"
+      "body": "The pricing card uses MaxVideoAI scenario totals for duration, resolution and audio on/off. Specs use the same display pricing helper for audio-on and audio-off per-second rates; the exact quote appears before generation."
     },
     {
       "label": "Render timing",
@@ -100,8 +100,8 @@
   ],
   "promptStructure": {
     "title": "Text and Reference-to-Video with Google Veo 3.1 Fast",
-    "quote": "Misty forest at dawn, medium shot centered on a mossy rock. Camera slowly pushes forward as soft rays of light appear between the trees, 6 seconds, 16:9 at 1080p. Audio: gentle birds and wind, no dialogue.",
-    "description": "Keep prompts tight, single-scene and sensory. For Reference mode, attach 1-4 stills and write an 8s shot brief that preserves subject, wardrobe, product, or style cues.",
+    "quote": "8s 16:9 reference-to-video run using three campaign stills: preserve the same jacket, product color and rainy street mood while the camera tracks one step forward. Audio on: city ambience and one short VO line.",
+    "description": "Keep prompts tight, single-scene and sensory. Use one start image for Image-to-Video, attach 1-4 stills in Reference-to-Video for an 8s consistency pass, or use first/last frames when the ending composition is approved.",
     "steps": [
       "Subject + focal point (one idea for the whole clip)",
       "Environment in a single location",
@@ -109,14 +109,14 @@
       "Light and mood (daylight, neon night, warm office, etc.)",
       "Audio (optional): ambience + short VO, or say “no dialogue”",
       "Format and duration (16:9, 9:16, or 1:1 when available; 4/6/8 s)",
-      "Reference mode: attach 1-4 stills for an 8s consistency pass"
+      "Reference-to-Video: attach 1-4 stills for an 8s consistency pass; name what each reference should preserve."
     ]
   },
   "tips": {
     "title": "Tips & limits",
     "items": [
       "⚡ Use Fast as a sandbox for A/B tests and prompt tweaks",
-      "🧩 Use Reference mode with 1-4 stills when identity, wardrobe, or product continuity matters",
+      "🧩 Use one start image for Image-to-Video, or Reference mode with 1-4 stills when identity, wardrobe, or product continuity matters",
       "🧷 Add a Last frame when the opening and ending frames are already approved",
       "🎚️ Audio toggle: rough mix when on, cheaper runs when off",
       "📱 Optimize for social formats where 4–8 seconds is the story",
@@ -138,14 +138,14 @@
       "prompt": "8s 16:9 reference-to-video shot using 1-4 product and wardrobe stills, slow tracking camera through a neon street, preserve face, outfit, logo shape, and material details, subtle city ambience."
     },
     {
-      "title": "Vertical late-night desk loop",
-      "prompt": "6s 9:16 loop of a young woman working late at a minimalist desk, city lights blurred behind her. Slow handheld drift left/right, cool blue window light plus warm desk lamp, quiet typing + city hum, no dialogue."
+      "title": "Late-night desk draft",
+      "prompt": "8s 16:9 Veo 3.1 Fast draft of a presenter working late at a minimalist desk, city lights blurred through a large window. Medium close-up, slow handheld drift, cool window light plus warm desk lamp, soft typing and one short calm line."
     }
   ],
   "faqs": [
     {
       "q": "Can I use Veo 3.1 Fast for text-to-video, image-to-video, and reference testing?",
-      "a": "Yes. Veo 3.1 Fast supports quick text-to-video runs, image-to-video tests, and 8s Reference mode with 1-4 stills when you want to compare prompts, framing, identity, and timing before finaling in Veo 3.1."
+      "a": "Yes. Veo 3.1 Fast supports quick text-to-video runs, Image-to-Video from one start image, and 8s Reference mode with 1-4 stills when you want to compare prompts, framing, identity, and timing before finaling in Veo 3.1."
     },
     {
       "q": "When should I use Veo 3.1 Fast instead of Veo 3.1?",
@@ -161,7 +161,7 @@
     },
     {
       "q": "How does pricing compare to Veo 3.1?",
-      "a": "Fast runs are cheaper per second (e.g., ~$0.15/s audio on, ~$0.10/s audio off) so you can try multiple variants before upgrading."
+      "a": "Use the pricing card for preset MaxVideoAI display totals: each scenario states duration, resolution and audio on/off. Specs use the same helper for per-second display rates, and Generate shows the exact live quote before you run variants."
     },
     {
       "q": "Can I run Veo 3.1 Fast from Europe or LATAM?",
@@ -170,7 +170,7 @@
   ],
   "custom": {
     "heroDesc1": "Veo 3.1 Fast brings DeepMind’s cinematic engine to a lower price point and faster turnaround, perfect for rapid testing, reference-image consistency checks, guided endings, and social loops.",
-    "heroDesc2": "Start from a short text brief, a single start image, or 1-4 reference stills for an 8s consistency pass, add a Last frame only when you need to steer the ending, or extend an existing clip, then choose orientation, resolution, audio, and generate variants fast enough to A/B multiple ideas in one session.",
+    "heroDesc2": "Start from a short text brief, one start image for Image-to-Video, or 1-4 reference stills for an 8s consistency pass. Add a Last frame only when you need to steer the ending, or extend an existing clip, then choose orientation, resolution, audio, and generate variants fast enough to A/B multiple ideas in one session.",
     "heroSupportLine": "Best for exploring hooks, guided endings, and pacing fast before you regenerate winners in Veo 3.1.",
     "whyTitle": "Why Veo 3.1 Fast is powerful",
     "heroHighlights": [
@@ -212,7 +212,7 @@
     "whatFlowTitle": "MaxVideoAI flow:",
     "whatFlowSteps": [
       "1. Pick Veo 3.1 Fast as the engine.",
-      "2. Start from text, add a Start image, or attach 1-4 reference stills.",
+      "2. Start from text, add one Start image for Image-to-Video, or attach 1-4 reference stills in Reference mode.",
       "3. Use Reference mode for 8s identity/product consistency, or add a Last frame when you need to steer the ending.",
       "4. Set duration, orientation and resolution.",
       "5. Toggle audio on/off, then paste a tight, sensory prompt.",
@@ -228,7 +228,7 @@
           "Keep prompts short and action-driven.",
           "Generate many small variants.",
           "Test multiple openings quickly.",
-          "Attach 1-4 reference stills when you need an 8s consistency pass.",
+          "Use one start image for Image-to-Video; attach 1-4 reference stills when you need an 8s consistency pass.",
           "Promote winners to the full tier."
         ]
       },
@@ -249,9 +249,9 @@
     "galleryAllCta": "View all Veo 3.1 Fast examples →",
     "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image and Reference-to-Video Flow with Google Veo 3.1 Fast",
-    "imageIntro": "Animate a single still into a quick loop, or attach 1-4 reference stills for an 8s consistency pass.",
+    "imageIntro": "Animate one start image into a quick loop, or attach 1-4 reference stills for an 8s consistency pass.",
     "imageFlow": [
-      "Upload a lifestyle or product photo, or attach 1-4 reference stills.",
+      "Upload one lifestyle or product start image, or attach 1-4 reference stills in Reference mode.",
       "Choose Image → Video for 4/6/8 s, or Reference mode for an 8s consistency pass.",
       "Prompt subtle camera and subject motion; add light audio or keep it silent.",
       "Generate variants by changing one element at a time (camera speed, VO tone, time of day)."
@@ -303,7 +303,7 @@
     "faqs": [
       {
         "q": "Can I use reference images with Veo 3.1 Fast?",
-        "a": "Yes. Use Reference mode with 1-4 stills for an 8s run when you need stronger identity, wardrobe, product, or style continuity."
+        "a": "Yes. Use one start image for Image-to-Video, or Reference mode with 1-4 stills for an 8s run when you need stronger identity, wardrobe, product, or style continuity."
       },
       {
         "q": "When should I use Veo 3.1 Fast instead of Veo 3.1?",
@@ -319,7 +319,7 @@
       },
       {
         "q": "How does pricing compare to Veo 3.1?",
-        "a": "Fast is cheaper per second (e.g., ~$0.15/s audio on, ~$0.10/s audio off). Use it to try variants before upgrading."
+        "a": "Use the pricing card for preset MaxVideoAI display totals: each scenario states duration, resolution and audio on/off. Specs use the same helper for per-second display rates, and Generate shows the exact live quote before you run variants."
       },
       {
         "q": "Can I run Veo 3.1 Fast from Europe / LATAM?",
@@ -346,49 +346,50 @@
       "Use style anchors to keep the look stable."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
+      "quick": "Quick = fast T2V variants with audio on/off.",
+      "structured": "Structured = clearer subject, action, camera and sound cues.",
+      "pro": "Reference-to-video = 1-4 stills for identity, product or style continuity.",
+      "storyboard": "First/Last = use when both endpoint frames are already approved."
     },
     "promptingTabs": [
       {
         "id": "quick",
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [action] in [context], [camera move], [lighting/style], [optional sound cue]."
+        "description": "Use 1–2 sentences when you want fast Veo variants.",
+        "copy": "8s 16:9 Veo 3.1 Fast draft of a product founder walking through a rainy neon street, slow handheld tracking move, blue storefront reflections, audio on with city ambience and one short calm line."
       },
       {
         "id": "structured",
         "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nContext:\n[Location + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1 cue.]"
+        "title": "Structured prompt (reliable draft)",
+        "description": "Separate subject, action, camera and audio so the fast route stays readable.",
+        "copy": "Subject:\nProduct founder in a navy rain jacket, holding a compact camera bag.\n\nAction:\nWalks one step forward, looks toward the storefront, then pauses.\n\nCamera:\nMedium shot, slow handheld tracking move, 16:9, 8 seconds.\n\nLook:\nRainy neon street, blue reflections, clean commercial grade.\n\nAudio:\nCity ambience, soft footsteps, one short calm VO line."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brief:\n[Goal + vibe.]\n\nSubject:\n[Key traits + wardrobe/props.]\n\nCamera:\n[Framing + one move + lens feel.]\n\nLighting + color:\n[Key light + palette anchors.]\n\nConstraints:\nKeep it simple; avoid extra actions."
+        "label": "Reference-to-video",
+        "title": "Reference-to-video prompt (1-4 stills)",
+        "description": "Use this when attached stills should preserve identity, product, wardrobe or style.",
+        "copy": "Reference-to-video, 8s, 16:9, 1080p, audio on. Use reference 1 for face and jacket, reference 2 for the product color, reference 3 for the rainy street palette. Keep the same identity and materials while the subject takes one step forward. Slow push-in, subtle city ambience, no extra characters."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (short shot list)",
-        "description": "Keep it minimal for faster, cleaner drafts.",
-        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-6/8s):\n[Framing + action + camera move]\n\nLook + mood:\n[Lighting + palette]\n\nSound (optional):\n[Ambience + 1 cue]"
+        "label": "First/Last",
+        "title": "First/last frame prompt",
+        "description": "Use this when both opening and ending compositions are already approved.",
+        "copy": "First/last-frame Veo 3.1 Fast draft, 6s, 9:16, audio off. Start on the approved product table frame, end on the approved close-up hero frame. Smooth push-in only, keep background layout and label position stable, no new props, no text changes."
       }
     ],
     "promptingGuideLabel": "Google DeepMind",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: prompt pattern for Veo 3.1 Fast",
-    "demoPromptLabel": "6s vertical loop (9:16, 1080p)",
+    "demoTitle": "Demo: Veo 3.1 Fast desk draft",
+    "demoPromptLabel": "8s audio-on draft (16:9, 1080p)",
     "demoPrompt": [
-      "6s 9:16 loop of a young woman working late at a minimalist desk in front of a large window, city lights blurred.",
-      "Camera: slow handheld drift left/right, centered on her face and laptop.",
-      "Lighting: cool blue outside + warm lamp on hands.",
-      "Audio: soft typing, city hum, no dialogue."
+      "8s 16:9 Veo 3.1 Fast draft of a presenter working late at a minimalist desk, city lights blurred through a large window.",
+      "Camera: medium close-up with a slow handheld drift, staying on the face, hands and laptop.",
+      "Lighting: cool blue window light mixed with a warm desk lamp.",
+      "Audio: soft typing, low city hum and one short calm line."
     ],
     "demoNotes": [
       "One clear subject and one environment.",

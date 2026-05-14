@@ -1,9 +1,13 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Images, Scale } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import type { ModelGalleryCard, ModelsGalleryCopy } from './ModelsGallery';
+import type {
+  ModelGalleryCard,
+  ModelsGalleryCardActionsCopy,
+  ModelsGalleryCopy,
+} from './models-gallery/models-gallery-types';
 import {
   formatTemplate,
   getCapabilityIcon,
@@ -13,6 +17,7 @@ import {
 export function ModelCard({
   card,
   ctaLabel,
+  cardActions,
   compareMode,
   compareLabel,
   compareTooltip,
@@ -28,6 +33,7 @@ export function ModelCard({
 }: {
   card: ModelGalleryCard;
   ctaLabel: string;
+  cardActions: ModelsGalleryCardActionsCopy;
   compareMode: boolean;
   compareLabel: string;
   compareTooltip: string;
@@ -46,6 +52,13 @@ export function ModelCard({
   const accent = card.backgroundColor ?? '#6366f1';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
   const ctaText = normalizedCtaLabel.replace(/\s*→\s*$/, '');
+  const viewSpecsText = cardActions.viewSpecs || ctaText;
+  const viewSpecsAria = formatTemplate(cardActions.viewSpecsAria, { engine: card.label });
+  const compareActionAria = formatTemplate(cardActions.compareAria, { engine: card.label });
+  const examplesAria = formatTemplate(cardActions.examplesAria, { engine: card.label });
+  const canCompareCard = compareEnabled && !card.compareDisabled;
+  const showCompareAction = canCompareCard && Boolean(card.compareHref);
+  const showCompareModeAction = canCompareCard && !card.compareHref;
   const scoreValue = typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : null;
   const scoreSweep = `${Math.max(0, Math.min(360, (card.overallScore ?? 0) * 36))}deg`;
   const providerBadgeBg = `color-mix(in srgb, ${accent} 2%, white 98%)`;
@@ -103,7 +116,7 @@ export function ModelCard({
   const visibleCapabilities = capabilityItems.slice(0, 6);
   const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
     event.stopPropagation();
-    if (card.compareDisabled) return;
+    if (!canCompareCard) return;
     if (!compareMode) {
       onActivateCompare();
     }
@@ -131,7 +144,7 @@ export function ModelCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`group relative isolate flex min-h-[21rem] cursor-pointer flex-col overflow-hidden rounded-[8px] border border-hairline bg-surface bg-[image:var(--card-surface)] p-3.5 text-text-primary shadow-[0_18px_44px_rgba(15,23,42,0.055),0_4px_12px_rgba(15,23,42,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--card-border-hover)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.085),0_8px_20px_rgba(15,23,42,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--card-focus-ring)] dark:border-white/10 dark:bg-[image:var(--card-surface-dark)] dark:text-white dark:hover:border-[color:var(--card-border-hover-dark)] dark:focus-visible:ring-[color:var(--card-focus-ring-dark)] sm:min-h-[24.5rem] sm:p-6 ${
+      className={`group relative isolate flex min-h-[20rem] cursor-pointer flex-col overflow-hidden rounded-[8px] border border-hairline bg-surface bg-[image:var(--card-surface)] p-2.5 text-text-primary shadow-[0_18px_44px_rgba(15,23,42,0.055),0_4px_12px_rgba(15,23,42,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--card-border-hover)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.085),0_8px_20px_rgba(15,23,42,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--card-focus-ring)] dark:border-white/10 dark:bg-[image:var(--card-surface-dark)] dark:text-white dark:hover:border-[color:var(--card-border-hover-dark)] dark:focus-visible:ring-[color:var(--card-focus-ring-dark)] sm:min-h-[24.5rem] sm:p-6 ${
         selected ? 'ring-2 ring-emerald-500/35 border-emerald-400/60' : ''
       }`}
       style={
@@ -173,7 +186,7 @@ export function ModelCard({
         {scoreValue ? (
           <div className="absolute right-0 top-0">
             <div
-              className="relative isolate grid h-[54px] w-[54px] place-items-center rounded-full p-[2px] sm:h-[74px] sm:w-[74px]"
+              className="relative isolate grid h-[46px] w-[46px] place-items-center rounded-full p-[2px] sm:h-[74px] sm:w-[74px]"
               style={{ background: scoreRingBackground, boxShadow: scoreGlow }}
             >
               <span
@@ -184,7 +197,7 @@ export function ModelCard({
               <span className="absolute inset-[2px] z-10 rounded-full border border-hairline bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-surface" />
               <div className="relative z-20 flex flex-col items-center justify-center leading-none">
                 <div className="flex items-end gap-0.5">
-                  <span className="tabular-nums text-[17px] font-semibold tracking-normal text-text-primary dark:text-white sm:text-[24px]">
+                  <span className="tabular-nums text-[15px] font-semibold tracking-normal text-text-primary dark:text-white sm:text-[24px]">
                     {scoreValue}
                   </span>
                   <span className="mb-[2px] text-[6px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-white/58 sm:mb-[3px] sm:text-[8px] sm:tracking-[0.18em]">
@@ -198,10 +211,10 @@ export function ModelCard({
             </div>
           </div>
         ) : null}
-        <div className="min-h-7 min-w-0 pr-14 sm:min-h-8 sm:pr-24">
+        <div className="min-h-7 min-w-0 pr-11 sm:min-h-8 sm:pr-24">
           {card.provider ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-2 py-1 text-[10px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[11px]">
+              <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-1.5 py-1 text-[9px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[11px]">
                 <EngineIcon
                   engine={{ id: card.engineId ?? card.id, label: card.label, brandId: card.brandId ?? undefined }}
                   size={14}
@@ -214,12 +227,12 @@ export function ModelCard({
             </div>
           ) : null}
         </div>
-        <h3 className="mt-3 line-clamp-2 pr-10 text-balance text-[18px] font-semibold leading-[1.08] tracking-normal text-text-primary dark:text-white sm:mt-4 sm:pr-20 sm:text-[24px]">
+        <h3 className="mt-2.5 line-clamp-2 pr-8 text-balance text-[16px] font-semibold leading-[1.08] tracking-normal text-text-primary dark:text-white sm:mt-4 sm:pr-20 sm:text-[24px]">
           {card.label}
         </h3>
 
         {card.strengths?.length ? (
-          <p className="mt-4 flex items-center gap-1.5 text-[10px] leading-4 text-text-secondary dark:text-white/90 sm:mt-7 sm:gap-2 sm:text-[12px] sm:leading-5">
+          <p className="mt-3 flex items-center gap-1 text-[9px] leading-4 text-text-secondary dark:text-white/90 sm:mt-7 sm:gap-2 sm:text-[12px] sm:leading-5">
             <span
               className="h-2 w-2 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_color-mix(in_srgb,currentColor_18%,transparent),0_0_14px_currentColor] dark:border-slate-950 sm:h-2.5 sm:w-2.5"
               style={{ backgroundColor: accent, color: accent }}
@@ -233,9 +246,26 @@ export function ModelCard({
         ) : null}
 
         {card.stats ? (
-          <dl
-            className="mt-4 grid grid-cols-3 overflow-hidden rounded-[8px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] text-text-secondary shadow-[0_8px_22px_rgba(15,23,42,0.035),inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white/84 dark:shadow-none sm:mt-5 sm:rounded-[12px]"
-          >
+          <>
+            <div className="mt-3 flex flex-wrap gap-1.5 sm:hidden" aria-label="Model quick specs">
+              <span className="rounded-[7px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] px-2 py-1.5 text-[10px] font-semibold tabular-nums text-text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white dark:shadow-none">
+                <span className="sr-only">{statsLabels.from}: </span>
+                {card.stats.priceFrom ?? '-'}
+              </span>
+              <span className="rounded-[7px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] px-2 py-1.5 text-[10px] font-semibold tabular-nums text-text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white dark:shadow-none">
+                <span className="sr-only">
+                  {card.statsLabels?.duration ? statsLabels.typeLong : statsLabels.maxDurLong}:{' '}
+                </span>
+                {card.stats.maxDuration ?? '-'}
+              </span>
+              <span className="rounded-[7px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] px-2 py-1.5 text-[10px] font-semibold tabular-nums text-text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white dark:shadow-none">
+                <span className="sr-only">{statsLabels.maxResLong}: </span>
+                {card.stats.maxResolution ?? '-'}
+              </span>
+            </div>
+            <dl
+              className="mt-5 hidden grid-cols-3 overflow-hidden rounded-[12px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] text-text-secondary shadow-[0_8px_22px_rgba(15,23,42,0.035),inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white/84 dark:shadow-none sm:grid"
+            >
             <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-2 py-2.5 dark:border-r-[color:var(--spec-divider-dark)] sm:px-4 sm:py-3.5">
               <dt className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/60">
                 {statsLabels.from}
@@ -266,12 +296,13 @@ export function ModelCard({
                 {card.stats.maxResolution ?? '—'}
               </dd>
             </div>
-          </dl>
+            </dl>
+          </>
         ) : null}
 
         {visibleCapabilities.length ? (
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2.5">
-            {visibleCapabilities.map((cap) => {
+          <div className="mt-3 flex flex-wrap items-center gap-1 sm:mt-4 sm:gap-2.5">
+            {visibleCapabilities.map((cap, index) => {
               const tooltip = cap === 'Audio' ? audioAvailableLabel : capabilityTooltips[cap] ?? cap;
               const CapabilityIcon = getCapabilityIcon(cap);
               return (
@@ -279,7 +310,9 @@ export function ModelCard({
                   key={cap}
                   title={tooltip}
                   aria-label={tooltip}
-                  className="inline-flex min-h-6 items-center gap-1 rounded-[7px] border border-[color:var(--chip-border)] bg-[color:var(--chip-bg)] px-1.5 py-[0.24rem] text-[9px] font-semibold tracking-normal text-[color:var(--chip-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_1px_2px_rgba(15,23,42,0.025)] transition group-hover:border-[color:var(--card-border-hover)] dark:border-[color:var(--chip-border-dark)] dark:bg-[color:var(--chip-bg-dark)] dark:text-[color:var(--chip-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:group-hover:border-[color:var(--card-border-hover-dark)] sm:min-h-7 sm:gap-1.5 sm:rounded-[8px] sm:px-2.5 sm:py-[0.34rem] sm:text-[10px]"
+                  className={`min-h-6 items-center gap-1 rounded-[7px] border border-[color:var(--chip-border)] bg-[color:var(--chip-bg)] px-1.5 py-[0.24rem] text-[9px] font-semibold tracking-normal text-[color:var(--chip-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_1px_2px_rgba(15,23,42,0.025)] transition group-hover:border-[color:var(--card-border-hover)] dark:border-[color:var(--chip-border-dark)] dark:bg-[color:var(--chip-bg-dark)] dark:text-[color:var(--chip-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:group-hover:border-[color:var(--card-border-hover-dark)] sm:min-h-7 sm:gap-1.5 sm:rounded-[8px] sm:px-2.5 sm:py-[0.34rem] sm:text-[10px] ${
+                    index > 2 ? 'hidden sm:inline-flex' : 'inline-flex'
+                  }`}
                 >
                   <CapabilityIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2.2} aria-hidden />
                   {cap}
@@ -289,8 +322,8 @@ export function ModelCard({
           </div>
         ) : null}
 
-        <div className="mt-4 min-h-[4.3rem] sm:mt-6 sm:min-h-[5.35rem]">
-          <p className="line-clamp-4 text-[11px] font-semibold leading-[1.45] text-text-secondary dark:text-white/[0.9] sm:text-[13px] sm:leading-[1.55]">
+        <div className="mt-3 min-h-[3.35rem] sm:mt-6 sm:min-h-[5.35rem]">
+          <p className="line-clamp-3 text-[10px] font-semibold leading-[1.45] text-text-secondary dark:text-white/[0.9] sm:line-clamp-4 sm:text-[13px] sm:leading-[1.55]">
             {card.description}
           </p>
         </div>
@@ -312,9 +345,9 @@ export function ModelCard({
             </span>
           )
         ) : null}
-        <div className="mt-auto pt-5">
-          <div className="flex flex-wrap items-center gap-3">
-            {compareEnabled && !card.compareDisabled ? (
+        <div className="mt-auto pt-4 sm:pt-5">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-2">
+            {compareMode && canCompareCard ? (
               <label
                 className={`inline-flex items-center gap-3 text-sm font-medium transition ${
                   selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-white/84'
@@ -335,20 +368,53 @@ export function ModelCard({
                 </span>
                 {!hideCompare ? <span>{compareLabel}</span> : null}
               </label>
-            ) : (
-              <span className="text-sm text-slate-400 dark:text-white/35" />
-            )}
+            ) : null}
             <Link
               href={card.href}
               prefetch={false}
-              className="ml-auto inline-flex min-h-10 items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-[13px] font-semibold tracking-normal text-bg shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-text-secondary dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
-              aria-label={`${ctaText} — ${card.label}`}
+              className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-text-primary px-3 py-2 text-[12px] font-semibold tracking-normal text-bg shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-text-secondary dark:bg-white dark:text-slate-950 dark:hover:bg-white/90 sm:w-auto sm:px-3"
+              aria-label={viewSpecsAria}
               onClick={(event) => event.stopPropagation()}
             >
-              {ctaText}
+              {viewSpecsText}
               <span className="sr-only"> — {card.label}</span>
-              <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" strokeWidth={2.2} aria-hidden />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" strokeWidth={2.2} aria-hidden />
             </Link>
+            {!compareMode && showCompareAction ? (
+              <Link
+                href={card.compareHref!}
+                prefetch={false}
+                className="hidden min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline bg-bg px-2.5 py-2 text-[12px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2 sm:inline-flex"
+                aria-label={compareActionAria}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Scale className="h-3.5 w-3.5" strokeWidth={2.1} aria-hidden />
+                {cardActions.compare}
+              </Link>
+            ) : null}
+            {!compareMode && showCompareModeAction ? (
+              <button
+                type="button"
+                className="hidden min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline bg-bg px-2.5 py-2 text-[12px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2 sm:inline-flex"
+                aria-label={compareActionAria}
+                onClick={handleCompareToggle}
+              >
+                <Scale className="h-3.5 w-3.5" strokeWidth={2.1} aria-hidden />
+                {cardActions.compare}
+              </button>
+            ) : null}
+            {!compareMode && card.examplesHref ? (
+              <Link
+                href={card.examplesHref}
+                prefetch={false}
+                className="hidden min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline bg-bg px-2.5 py-2 text-[12px] font-semibold tracking-normal text-text-primary transition hover:border-text-muted hover:bg-surface-2 sm:inline-flex"
+                aria-label={examplesAria}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Images className="h-3.5 w-3.5" strokeWidth={2.1} aria-hidden />
+                {cardActions.examples}
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>

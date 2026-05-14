@@ -6,7 +6,7 @@
     "description": "Use Seedance 2.0 Fast on MaxVideoAI for faster AI video drafts, multimodal iterations, and live specs and pricing before you render."
   },
   "overview": "Seedance 2.0 Fast is the current fast Seedance AI video model for quicker draft passes, shot planning, and comparison loops before final renders.",
-  "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
+  "pricingNotes": "Seedance 2.0 Fast uses provider token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0 Fast — current fast Seedance model for draft passes and iteration",
     "intro": "Use Seedance 2.0 Fast as the faster Seedance AI video model for quicker draft passes, shot planning, timing checks, and A/B iterations before moving approved directions into Seedance 2.0.",
@@ -71,7 +71,7 @@
   "technicalOverview": [
     {
       "label": "Role in the family",
-      "body": "Optimized fast variant in the Seedance 2 family on Fal."
+      "body": "Optimized fast variant in the Seedance 2 family on MaxVideoAI."
     },
     {
       "label": "Inputs",
@@ -87,15 +87,15 @@
     },
     {
       "label": "Audio",
-      "body": "Native audio is on by default and can be disabled; Fal states the price is the same either way"
+      "body": "Native audio is on by default and can be disabled; MaxVideoAI shows the final display price before each run"
     },
     {
       "label": "Best moment to use it",
       "body": "Early exploration, shot planning, and pre-final comparison rounds"
     },
     {
-      "label": "Fal positioning",
-      "body": "Fal's public Seedance page groups Fast with the same Seedance AI video family, keeping cinematic, audio-native, and multimodal workflows in the same endpoint stack."
+      "label": "Provider/model-family notes",
+      "body": "Provider/model-family notes group Fast with the same Seedance AI video family, keeping cinematic, audio-native, and multimodal workflows in the same route family where exposed."
     }
   ],
   "promptStructure": {
@@ -144,12 +144,16 @@
       "a": "Seedance 2.0 Fast is the quicker Seedance AI video option inside the Seedance 2 family, designed for faster draft passes before you move winning directions into standard Seedance 2.0."
     },
     {
+      "q": "How much does Seedance 2.0 Fast cost?",
+      "a": "The pricing card shows preset MaxVideoAI display totals for common draft scenarios such as 5s 480p, 8s 720p, and 10s 720p. Generate remains the source of truth for the exact live quote before submission."
+    },
+    {
       "q": "Does Seedance 2.0 Fast keep text-to-video, image-to-video, and reference-to-video?",
       "a": "Yes. Seedance 2.0 Fast keeps the same core workflow family as standard Seedance 2.0: text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video."
     },
     {
       "q": "How many references does Seedance 2.0 Fast accept?",
-      "a": "Fast supports up to 9 image references, 3 video references, and 3 audio references, with 12 total files across the full ref2v run."
+      "a": "Fast supports up to 9 image references, 3 video references, and 3 audio references, with 12 total files across the full ref2v run. Audio references need at least one image or video reference in the active route."
     },
     {
       "q": "Does Seedance 2.0 Fast image-to-video support an end frame?",
@@ -157,7 +161,7 @@
     },
     {
       "q": "How long can Seedance 2.0 Fast runs be?",
-      "a": "Fal lists auto duration or explicit runs from 4 to 15 seconds for the current Seedance 2.0 Fast routes."
+      "a": "The current MaxVideoAI route exposes auto duration or explicit runs from 4 to 15 seconds for Seedance 2.0 Fast."
     },
     {
       "q": "When should I use Seedance 2.0 Fast instead of standard Seedance 2.0?",
@@ -168,7 +172,7 @@
     "whyTitle": "Why Seedance 2.0 Fast matters",
     "heroTrustLine": "Use Fast to decide quickly, then move selected shots into standard Seedance 2.0",
     "heroHighlights": [
-      "Optimized fast variant||Fal lists Fast as the optimized route inside the Seedance 2 endpoint family",
+      "Optimized fast variant||Provider/model-family notes list Fast as the optimized route inside the Seedance 2 family",
       "Same workflow family||Text-to-video, image-to-video, and reference-to-video stay available in the same Seedance 2 stack",
       "Native audio plus multimodal references||Fast still sits inside the same audio-native and multimodal Seedance family",
       "Comparison-ready||Pairs naturally against Veo 3.1 Fast and LTX 2.3 Fast",
@@ -179,7 +183,7 @@
     "specSections": [
       {
         "title": "What Fast is for",
-        "intro": "Fal positions Fast as the quicker route inside the Seedance 2 family.",
+        "intro": "Provider/model-family notes position Fast as the quicker route inside the Seedance 2 family.",
         "items": [
           "Shot planning before polished renders",
           "Rapid A/B motion checks",
@@ -201,7 +205,7 @@
       }
     ],
     "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
-    "promptingGuideLabel": "Seedance 2.0 workflow notes",
+    "promptingGuideLabel": "Seedance 2.0 Fast workflow notes",
     "promptingGuideUrl": "/models/seedance-2-0",
     "promptingIntro": "Seedance 2.0 Fast works best when each run tests one decision. Keep the brief in Subject -> Action -> Camera -> Style order, then choose the fastest route: text, start/end image, or references.",
     "promptingGlobalPrinciples": [

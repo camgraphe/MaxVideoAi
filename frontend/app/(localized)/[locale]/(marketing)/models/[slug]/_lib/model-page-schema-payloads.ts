@@ -11,6 +11,7 @@ type BuildModelSchemaPayloadsOptions = {
   localizedCanonical: string;
   localizedHomeUrl: string;
   localizedModelsUrl: string;
+  pageTitle?: string;
   resolvedBreadcrumb: {
     home: string;
     models: string;
@@ -27,8 +28,10 @@ export function buildModelSchemaPayloads({
   localizedCanonical,
   localizedHomeUrl,
   localizedModelsUrl,
+  pageTitle,
   resolvedBreadcrumb,
 }: BuildModelSchemaPayloadsOptions): object[] {
+  const schemaPageTitle = pageTitle ?? heroTitle;
   const productSchema = buildProductSchema({
     engine,
     canonical,
@@ -41,7 +44,7 @@ export function buildModelSchemaPayloads({
     {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
-      name: heroTitle,
+      name: schemaPageTitle,
       description,
       url: canonical,
       inLanguage,

@@ -33,8 +33,8 @@
         "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
       },
       {
-        "label": "Comparer Seedance 2.0 Fast vs Veo 3.1 Fast",
-        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
+        "label": "Comparer LTX 2.3 Fast vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast"
       }
     ]
   },
@@ -83,7 +83,7 @@
     },
     {
       "label": "Entrées",
-      "body": "Texte → Vidéo; Generate Video depuis une seule image de départ; mode Référence avec 1 à 4 images; guidage optionnel par dernière image; Extend à partir d’une vidéo existante"
+      "body": "Texte → Vidéo; Image-to-Video démarre depuis une seule image; le mode Référence accepte 1 à 4 images; First/Last frame utilise une image d’ouverture et une image finale; Extend à partir d’une vidéo existante"
     },
     {
       "label": "Audio",
@@ -91,7 +91,7 @@
     },
     {
       "label": "Tarifs",
-      "body": "À la seconde; exemple : audio on ≈0,15 $/s, audio off ≈0,10 $/s; wallet pay‑as‑you‑go"
+      "body": "La carte pricing utilise les totaux de scénarios MaxVideoAI avec durée, résolution et audio activé/désactivé. Les specs utilisent le même helper de prix affichés pour les taux par seconde audio on/off ; le devis exact apparaît avant génération."
     },
     {
       "label": "Temps de rendu",
@@ -100,8 +100,8 @@
   ],
   "promptStructure": {
     "title": "Texte et référence-to-video avec Google Veo 3.1 Fast",
-    "quote": "Forêt brumeuse à l’aube, plan moyen centré sur un rocher moussu. La caméra pousse lentement vers l’avant alors que des rayons de lumière traversent les arbres, 6 secondes, 16:9 en 1080p. Audio : oiseaux doux et vent, pas de dialogue.",
-    "description": "Gardez les prompts serrés, mono‑scène et sensoriels. En mode Référence, ajoutez 1 à 4 images et écrivez un brief de 8 s pour préserver sujet, tenue, produit ou style.",
+    "quote": "Run reference-to-video 8 s en 16:9 avec trois stills campagne : conserver la même veste, la couleur produit et l’ambiance rue pluvieuse pendant que la caméra avance d’un pas. Audio activé : ambiance ville et une phrase VO courte.",
+    "description": "Gardez les prompts courts, sensoriels et mono-scène. Utilisez une image de départ en Image-to-Video, ajoutez 1 à 4 stills en Reference-to-Video pour une passe de cohérence de 8 s, ou utilisez première/dernière image quand la composition finale est validée.",
     "steps": [
       "Sujet + point focal (une seule idée pour tout le clip)",
       "Environnement dans un seul lieu",
@@ -109,14 +109,14 @@
       "Lumière et mood (jour, néon, bureau chaleureux, etc.)",
       "Audio (optionnel) : ambiance + courte VO, ou dites « pas de dialogue »",
       "Format et durée (16:9, 9:16 ou 1:1 quand disponible; 4/6/8 s)",
-      "Mode Référence : ajoutez 1 à 4 images pour un pass de cohérence de 8 s"
+      "Reference-to-Video : ajoutez 1 à 4 stills pour une passe de cohérence de 8 s ; précisez ce que chaque référence doit préserver."
     ]
   },
   "tips": {
     "title": "Conseils & limites",
     "items": [
       "⚡ Utilisez Fast comme bac à sable pour A/B tests et tweaks de prompt",
-      "🧩 Utilisez le mode Référence avec 1 à 4 images quand l’identité, la tenue ou le produit doivent rester cohérents",
+      "🧩 Utilisez une image de départ en Image-to-Video, ou le mode Référence avec 1 à 4 images quand l’identité, la tenue ou le produit doivent rester cohérents",
       "🎚️ Bascule audio : mix rapide quand on, runs moins chers quand off",
       "📱 Optimisez pour le social, où 4–8 secondes font l’histoire",
       "🖼️ Focus mono‑scène; évitez les narratives multi‑lieux à ce niveau",
@@ -137,14 +137,14 @@
       "prompt": "Plan reference-to-video de 8 s en 16:9 avec 1 à 4 images produit et tenue, tracking lent dans une rue néon, préserver visage, outfit, silhouette du logo et détails de matière, ambiance de ville subtile."
     },
     {
-      "title": "Loop vertical bureau nocturne",
-      "prompt": "Loop 6 s en 9:16 d’une jeune femme travaillant tard à un bureau minimaliste, lumières de ville floues derrière. Légère dérive handheld gauche/droite, lumière bleue froide à la fenêtre + lampe chaude, frappe clavier douce + bruit de ville, pas de dialogue."
+      "title": "Brouillon bureau de nuit",
+      "prompt": "Brouillon Veo 3.1 Fast de 8 s en 16:9 : une présentatrice travaille tard dans un bureau minimaliste, lumières de ville floues derrière une grande fenêtre. Plan rapproché moyen, dérive handheld lente, lumière bleue de fenêtre plus lampe chaude, clavier discret et une phrase courte."
     }
   ],
   "faqs": [
     {
       "q": "Peut-on utiliser Veo 3.1 Fast pour tester le texte-to-video, l image-to-video et les références ?",
-      "a": "Oui. Veo 3.1 Fast permet des runs texte-to-video rapides, des tests image-to-video et un mode Référence de 8 s avec 1 à 4 images quand vous voulez comparer prompts, cadrage, identité et timing avant de finaliser dans Veo 3.1."
+      "a": "Oui. Veo 3.1 Fast permet des runs texte-to-video rapides, de l’Image-to-Video depuis une image de départ et un mode Référence de 8 s avec 1 à 4 images quand vous voulez comparer prompts, cadrage, identité et timing avant de finaliser dans Veo 3.1."
     },
     {
       "q": "Quand utiliser Veo 3.1 Fast plutôt que Veo 3.1 ?",
@@ -160,7 +160,7 @@
     },
     {
       "q": "Comment se compare le prix par rapport à Veo 3.1 ?",
-      "a": "Fast est moins cher par seconde (ex. ~0,15 $/s audio on, ~0,10 $/s audio off), idéal pour tester plusieurs variantes avant d’upgrader."
+      "a": "Utilisez la carte pricing pour les totaux affichés MaxVideoAI : chaque scénario indique durée, résolution et audio activé/désactivé. Les specs utilisent le même helper pour les taux par seconde, et Generate affiche le devis exact avant de lancer les variantes."
     },
     {
       "q": "Puis‑je lancer Veo 3.1 Fast depuis l’Europe ou l’Amérique latine ?",
@@ -169,7 +169,7 @@
   ],
   "custom": {
     "heroDesc1": "Veo 3.1 Fast apporte le modèle cinématique de DeepMind à un prix plus bas et un turnaround plus rapide, parfait pour les tests rapides, les contrôles de cohérence par images de référence, les fins guidées et les loops sociaux.",
-    "heroDesc2": "Partez d’un brief texte court, d’une image de départ ou de 1 à 4 images de référence pour un pass de cohérence de 8 s, ajoutez une dernière image uniquement si vous devez piloter la fin, ou étendez un clip existant, puis choisissez orientation, résolution, audio et générez assez vite pour A/B tester plusieurs idées en une session.",
+    "heroDesc2": "Partez d’un brief texte court, d’une image de départ pour l’Image-to-Video ou de 1 à 4 images de référence pour un pass de cohérence de 8 s. Ajoutez une dernière image uniquement si vous devez piloter la fin, ou étendez un clip existant, puis choisissez orientation, résolution, audio et générez assez vite pour A/B tester plusieurs idées en une session.",
     "heroSupportLine": "Idéal pour explorer rapidement hooks, fins guidées et rythme avant de régénérer les gagnants dans Veo 3.1.",
     "whyTitle": "Pourquoi Veo 3.1 Fast est puissant",
     "heroHighlights": [
@@ -211,7 +211,7 @@
     "whatFlowTitle": "Flux MaxVideoAI :",
     "whatFlowSteps": [
       "1. Choisissez Veo 3.1 Fast comme modèle.",
-      "2. Partez du texte, ajoutez une image de départ ou attachez 1 à 4 images de référence.",
+      "2. Partez du texte, ajoutez une image de départ pour l’Image-to-Video ou attachez 1 à 4 images de référence en mode Référence.",
       "3. Utilisez le mode Référence pour 8 s de cohérence identité/produit, ou ajoutez une dernière image quand vous devez piloter la fin.",
       "4. Réglez durée, orientation et résolution.",
       "5. Activez/désactivez l’audio, puis collez un prompt court et sensoriel.",
@@ -227,7 +227,7 @@
           "Gardez les prompts courts et orientés action.",
           "Générez beaucoup de petites variantes.",
           "Testez plusieurs ouvertures rapidement.",
-          "Ajoutez 1 à 4 images de référence quand vous avez besoin d’un pass de cohérence de 8 s.",
+          "Utilisez une image de départ en Image-to-Video ; ajoutez 1 à 4 images de référence quand vous avez besoin d’un pass de cohérence de 8 s.",
           "Promouvez les gagnants vers le niveau complet."
         ]
       },
@@ -248,9 +248,9 @@
     "galleryAllCta": "Voir tous les exemples Veo 3.1 Fast →",
     "recreateLabel": "Recréer ce plan →",
     "imageTitle": "Flow image et référence-to-video avec Google Veo 3.1 Fast",
-    "imageIntro": "Animez un still unique en loop rapide, ou attachez 1 à 4 images de référence pour un pass de cohérence de 8 s.",
+    "imageIntro": "Animez une image de départ en loop rapide, ou attachez 1 à 4 images de référence pour un pass de cohérence de 8 s.",
     "imageFlow": [
-      "Téléversez une photo lifestyle ou produit, ou attachez 1 à 4 images de référence.",
+      "Téléversez une image de départ lifestyle ou produit, ou attachez 1 à 4 images de référence en mode Référence.",
       "Choisissez Image → Vidéo pour 4/6/8 s, ou le mode Référence pour un pass de cohérence de 8 s.",
       "Promptez un mouvement de caméra et de sujet subtil; ajoutez un audio léger ou laissez silencieux.",
       "Générez des variantes en changeant un élément à la fois (vitesse caméra, ton VO, moment de la journée)."
@@ -302,7 +302,7 @@
     "faqs": [
       {
         "q": "Puis-je utiliser des images de référence avec Veo 3.1 Fast ?",
-        "a": "Oui. Utilisez le mode Référence avec 1 à 4 images pour un rendu de 8 s quand vous voulez renforcer la cohérence d’identité, tenue, produit ou style."
+        "a": "Oui. Utilisez une image de départ en Image-to-Video, ou le mode Référence avec 1 à 4 images pour un rendu de 8 s quand vous voulez renforcer la cohérence d’identité, tenue, produit ou style."
       },
       {
         "q": "Quand utiliser Veo 3.1 Fast plutôt que Veo 3.1 ?",
@@ -318,7 +318,7 @@
       },
       {
         "q": "Comment se compare le prix par rapport à Veo 3.1 ?",
-        "a": "Fast est moins cher par seconde (ex. ~0,15 $/s audio on, ~0,10 $/s audio off). Idéal pour tester avant d’upgrader."
+        "a": "Utilisez la carte pricing pour les totaux affichés MaxVideoAI : chaque scénario indique durée, résolution et audio activé/désactivé. Les specs utilisent le même helper pour les taux par seconde, et Generate affiche le devis exact avant de lancer les variantes."
       },
       {
         "q": "Puis‑je lancer Veo 3.1 Fast depuis l’Europe / LATAM ?",
@@ -345,49 +345,50 @@
       "Utilisez des ancrages de style pour stabiliser le look."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      "quick": "Quick = variantes T2V rapides avec audio activé/désactivé.",
+      "structured": "Structuré = sujet, action, caméra et son plus lisibles.",
+      "pro": "Reference-to-video = 1 à 4 stills pour continuité identité, produit ou style.",
+      "storyboard": "First/Last = quand les frames de départ et d’arrivée sont déjà validées."
     },
     "promptingTabs": [
       {
         "id": "quick",
         "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] [action] dans [contexte], [mouvement caméra], [lumière/style], [cue sonore optionnel]."
+        "title": "Prompt quick (itération rapide)",
+        "description": "Utilisez 1 à 2 phrases pour obtenir vite des variantes Veo.",
+        "copy": "Brouillon Veo 3.1 Fast de 8 s en 16:9 : fondateur produit marchant dans une rue néon pluvieuse, tracking handheld lent, reflets bleus de vitrines, audio activé avec ambiance ville et une phrase calme très courte."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nContexte :\n[Lieu + moment + 2 ancrages visuels.]\n\nCaméra :\n[Cadrage + angle + un mouvement.]\n\nLook :\n[Lumière + palette + style.]\n\nSon (optionnel) :\n[Ambiance + 1 cue.]"
+        "label": "Structuré",
+        "title": "Prompt structuré (brouillon fiable)",
+        "description": "Séparez sujet, action, caméra et audio pour garder une lecture claire.",
+        "copy": "Sujet :\nFondateur produit en veste de pluie navy, tenant un sac caméra compact.\n\nAction :\nIl avance d’un pas, regarde vers la vitrine, puis marque une pause.\n\nCaméra :\nPlan moyen, tracking handheld lent, 16:9, 8 secondes.\n\nLook :\nRue néon pluvieuse, reflets bleus, grade pub propre.\n\nAudio :\nAmbiance ville, pas discrets, une phrase VO calme très courte."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet :\n[Traits clés + tenue/props.]\n\nCaméra :\n[Cadrage + un mouvement + sensation de lens.]\n\nLumière + couleur :\n[Key light + ancrages de palette.]\n\nContraintes :\nGardez‑le simple; évitez les actions multiples."
+        "label": "Reference-to-video",
+        "title": "Prompt reference-to-video (1 à 4 stills)",
+        "description": "À utiliser quand les stills attachés doivent préserver identité, produit, tenue ou style.",
+        "copy": "Reference-to-video, 8 s, 16:9, 1080p, audio activé. Utiliser la référence 1 pour le visage et la veste, la référence 2 pour la couleur produit, la référence 3 pour la palette rue pluvieuse. Garder la même identité et les mêmes matières pendant que le sujet avance d’un pas. Push-in lent, ambiance ville subtile, aucun personnage en plus."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (shot list courte)",
-        "description": "Gardez‑le minimal pour des tests plus propres et rapides.",
-        "copy": "Shot list (même sujet + même décor)\nDurée : [4/6/8s]\n\nShot 1 (0–2s):\n[Cadrage + action + mouvement caméra]\n\nShot 2 (2–6/8s):\n[Cadrage + action + mouvement caméra]\n\nLook + mood :\n[Lumière + palette]\n\nSon (optionnel) :\n[Ambiance + 1 cue]"
+        "label": "First/Last",
+        "title": "Prompt première/dernière image",
+        "description": "À utiliser quand le début et la fin sont déjà validés.",
+        "copy": "Brouillon Veo 3.1 Fast première/dernière image, 6 s, 9:16, audio désactivé. Démarrer sur la frame table produit validée, finir sur le gros plan hero validé. Push-in fluide uniquement, garder layout, position label et décor stables, pas de nouvel accessoire, pas de changement de texte."
       }
     ],
     "promptingGuideLabel": "Google DeepMind",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Démo : pattern de prompt pour Veo 3.1 Fast",
-    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoTitle": "Démo : brouillon bureau Veo 3.1 Fast",
+    "demoPromptLabel": "Brouillon audio 8 s (16:9, 1080p)",
     "demoPrompt": [
-      "Loop 6 s en 9:16 d’une jeune femme travaillant tard à un bureau minimaliste devant une grande fenêtre, lumières de ville floues.",
-      "Caméra : légère dérive handheld gauche/droite, centrée sur le visage et le laptop.",
-      "Lumière : bleu froid extérieur + lampe chaude sur les mains.",
-      "Audio : frappe clavier douce, bruit de ville, pas de dialogue."
+      "Brouillon Veo 3.1 Fast de 8 s en 16:9 : une présentatrice travaille tard dans un bureau minimaliste, lumières de ville floues derrière une grande fenêtre.",
+      "Caméra : plan rapproché moyen avec une dérive handheld lente, cadrée sur le visage, les mains et le laptop.",
+      "Lumière : lumière bleue de fenêtre mélangée à une lampe de bureau chaude.",
+      "Audio : clavier discret, ville en fond et une phrase courte et calme."
     ],
     "demoNotes": [
       "Un sujet clair et un seul environnement.",

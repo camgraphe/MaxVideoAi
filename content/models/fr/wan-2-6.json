@@ -75,7 +75,7 @@
     },
     {
       "label": "Tarifs",
-      "body": "0,13 $/s (720p), 0,20 $/s (1080p)"
+      "body": "0,10 $/s (720p), 0,15 $/s (1080p)"
     }
   ],
   "promptStructure": {
@@ -125,6 +125,10 @@
     {
       "q": "Quelles durées sont supportées ?",
       "a": "Modes Texte et Image : 5, 10 ou 15 secondes. Mode Référence : 5 ou 10 secondes."
+    },
+    {
+      "q": "Le mode Référence peut-il utiliser 15 s ou l’audio ?",
+      "a": "Non. Dans MaxVideoAI, le mode Référence de Wan 2.6 est limité à 5 ou 10 secondes et n’utilise pas l’option URL audio. Utilisez le mode Texte ou Image pour les tests de 15 s ou guidés par audio."
     }
   ],
   "custom": {
@@ -237,6 +241,10 @@
       {
         "q": "Quelles durées sont supportées ?",
         "a": "Modes Texte et Image : 5, 10 ou 15 secondes. Mode Référence : 5 ou 10 secondes."
+      },
+      {
+        "q": "Le mode Référence peut-il utiliser 15 s ou l’audio ?",
+        "a": "Non. Dans MaxVideoAI, le mode Référence de Wan 2.6 est limité à 5 ou 10 secondes et n’utilise pas l’option URL audio. Utilisez le mode Texte ou Image pour les tests de 15 s ou guidés par audio."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",

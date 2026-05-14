@@ -4,7 +4,7 @@
   "seo": {
     "title": "LTX 2.3 Fast | Modelo de video IA, specs, precio y duración máxima | MaxVideoAI",
     "description": "Usa LTX 2.3 Fast en MaxVideoAI para generación de video más económica, loops de borrador más largos, el precio actual, la duración máxima y las diferencias clave frente a LTX 2.3 Pro.",
-    "image": "/assets/placeholders/preview-16x9.png"
+    "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
   "overview": "LTX 2.3 Fast es el modelo LTX fast actual en MaxVideoAI para generación de video más económica, loops de borrador más largos e iteración más rápida antes de mover salidas seleccionadas a LTX 2.3 Pro.",
   "hero": {
@@ -75,7 +75,7 @@
     },
     {
       "label": "Resolución",
-      "body": "1080p, 1440p o 2160p (4K)"
+      "body": "1080p, 1440p o 2160p (4K) en configuraciones compatibles de 6-10 s; por encima de 10 s la ruta usa 1080p / 25 fps"
     },
     {
       "label": "Formatos",
@@ -216,13 +216,13 @@
           "Sin modo de video guiado por audio subido.",
           "Sin workflow de extensión de video fuente.",
           "Sin workflow de retake selectivo.",
-          "Sube al estándar cuando esos controles importen."
+          "Pasa a LTX 2.3 Pro cuando esos controles importen."
         ]
       }
     ],
     "whatTitle": "Cómo funciona LTX 2.3 Fast en MaxVideoAI",
     "whatIntro1": "Elige LTX 2.3 Fast, mantente en el flujo estándar de generación y cambia entre entrada basada en texto y entrada basada en imagen añadiendo o quitando la imagen inicial.",
-    "whatIntro2": "La página evita de forma intencional los modos de edición de la versión estándar para que las opciones se mantengan coherentes con el routing Fast público.",
+    "whatIntro2": "La página evita de forma intencional los modos de edición Pro para que las opciones se mantengan coherentes con el routing Fast público.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Elige LTX 2.3 Fast como motor.",
@@ -232,7 +232,7 @@
       "Revisa el precio en vivo y usa Fast para iteración amplia antes de subir los ganadores."
     ],
     "galleryTitle": "Ejemplos de LTX 2.3 Fast",
-    "galleryIntro": "Por ahora se usan placeholders locales en esta rama de desarrollo. Sustitúyelos por renders finales aprobados de LTX 2.3 Fast antes del lanzamiento.",
+    "galleryIntro": "Ejemplos representativos de LTX 2.3 Fast para revisar estructura de prompts, ritmo de borradores y preparación de imagen a video antes de generar.",
     "galleryAllCta": "Ver todos los ejemplos de LTX 2.3 Fast ->",
     "recreateLabel": "Recrear esta toma ->",
     "tipsTitle": "Fortalezas prácticas y límites",
@@ -255,15 +255,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - test de hook vertical",
-    "demoPromptLabel": "Hook social 9:16",
+    "demoTitle": "Prompt demo - borrador cinematográfico fast",
+    "demoPromptLabel": "Check de borrador 16:9",
     "demoPrompt": [
-      "Una apertura de anuncio beauty en vertical, primer plano de un producto mientras la condensación resbala por el frasco, push-in rápido, reflejos nítidos, impacto sonoro sutil, 6 segundos."
+      "Un boxeador poderoso camina solo por un túnel oscuro hacia el ring, cuerpo atlético envuelto en una bata con capucha, hombros relajados pero peligrosos. Tracking bajo frontal, push-in lento, rim light duro, niebla sutil, rumor de público apagado y un golpe sonoro nítido, 10 segundos, 16:9."
     ],
     "demoNotes": [
-      "Diseñado para probar hooks",
-      "Primera toma clara y pista sonora",
-      "Fácil de relanzar en varias variantes"
+      "Diseñado para un check rápido de motion",
+      "Un sujeto, un movimiento y una atmósfera",
+      "Fácil de relanzar antes de una pasada Pro"
     ],
     "multishotTitle": "Beats fast más largos",
     "multishotIntro1": "Fast puede llegar más lejos que la generación estándar de LTX 2.3 Pro, lo que resulta útil para walkthroughs simples y pruebas de pacing.",

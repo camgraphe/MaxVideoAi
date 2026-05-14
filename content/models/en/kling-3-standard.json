@@ -155,7 +155,7 @@
     },
     {
       "q": "What is the difference vs Pro?",
-      "a": "Standard offers the same multi-prompt and element controls at a lower price; Pro prioritizes premium fidelity."
+      "a": "Standard includes multi-prompt structure, Elements, native audio, lip sync and voice IDs at a lower rate. Pro is the stronger pass for fidelity, stability and final-quality approvals."
     }
   ],
   "custom": {
@@ -167,7 +167,7 @@
       "End-frame control for cleaner finishes||Use an optional end frame to land transitions, match cuts, and product reveals more predictably"
     ],
     "specTitle": "Real Specs – Kling 3 Standard in MaxVideoAI",
-    "specNote": "Specs reflect the live Fal routing today.",
+    "specNote": "Specs reflect the active MaxVideoAI route today.",
     "specSections": [
       {
         "title": "Storyboard-ready multi-shot",
@@ -191,8 +191,6 @@
       }
     ],
     "promptingTitle": "How to Write a Great Kling 3 Standard Prompt",
-    "promptingGuideLabel": "Kling 3.0 Prompting Guide",
-    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
     "promptingIntro": "Kling 3 Standard performs best with shot-based direction: clear framing, one action per shot, explicit motion, and (if audio is on) short dialogue plus minimal sound cues.",
     "promptingGlobalPrinciples": [
       "Think in shots, not clips: one action per shot is easier to execute cleanly.",
@@ -268,6 +266,16 @@
     "galleryAllCta": "View all Kling 3 Standard examples →",
     "recreateLabel": "Recreate this shot →",
     "demoTitle": "Demo prompt — Kling 3 Standard",
-    "demoPromptLabel": "Prompt"
+    "demoPromptLabel": "Prompt",
+    "safetyNote": "Built-in safeguards and best practices for responsible creation with Kling 3 Standard.",
+    "demoPrompt": [
+      "Duration: 12s • Aspect: 16:9 • Audio: on",
+      "",
+      "Shot 1 (0-4s): @Element1 runner in a dark jacket waits under a neon sign, light rain, stable medium shot.",
+      "Shot 2 (4-8s): @Element1 crosses the street, smooth side tracking, blue and red reflections on wet pavement.",
+      "Shot 3 (8-12s): he slows beside a storefront, camera settles, same wardrobe and lighting anchors.",
+      "",
+      "Audio: wet street ambience, short footsteps, light breath. No text, no logos, no subtitles."
+    ]
   }
 }

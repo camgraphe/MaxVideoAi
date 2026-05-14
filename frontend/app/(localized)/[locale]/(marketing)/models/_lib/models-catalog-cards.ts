@@ -5,8 +5,12 @@ import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { isImageOnlyModel, isModelInScope } from '@/lib/models/catalog';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
-import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
+import type { ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/ModelsGallery';
 
+import {
+  buildDefaultModelCompareHref,
+  buildModelExamplesHref,
+} from './models-catalog-decision-data';
 import {
   DEFAULT_CAPABILITY_KEYWORDS,
   DEFAULT_ENGINE_TYPE_LABELS,
@@ -40,7 +44,33 @@ import {
   type ModelsPageScope,
 } from './models-catalog-utils';
 
-export type ModelsCatalogGalleryCopy = {
+const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
+  'seedance-2-0': 'Best for premium multi-shot AI video with native audio, lip sync, and realistic motion.',
+  'seedance-2-0-fast': 'Best for quick drafts, lower-cost iterations, shot planning, and native audio tests.',
+  'kling-3-pro': 'Best for cinematic control, image-to-video, prompt adherence, and voice-led sequences.',
+  'kling-3-standard': 'Best for controlled multi-shot scenes, native audio, lip sync, and lower-cost Kling workflows.',
+  'kling-3-4k': 'Best for final 4K renders, visual quality, controlled motion, and premium delivery.',
+  'veo-3-1': 'Best for ad-ready shots, references, first/last-frame control, and extend workflows.',
+  'veo-3-1-fast': 'Best for faster Veo drafts, ad cuts, start-image workflows, and last-frame control.',
+  'veo-3-1-lite': 'Best for budget Veo drafts, image-to-video tests, and first/last-frame workflows.',
+  'ltx-2-3-pro': 'Best for all-in-one LTX workflows, retakes, audio, video-to-video, and 4K output.',
+  'ltx-2-3-fast': 'Best for low-cost drafts, longer clips, fast prompt tests, and 4K workflows.',
+  'sora-2': 'Best for cinematic scenes, character continuity, human fidelity, and native audio.',
+  'sora-2-pro': 'Best for studio-grade hero shots, premium character scenes, and higher-resolution output.',
+  'seedance-1-5-pro': 'Best for affordable cinematic motion, camera-locked shots, and first/last-frame control.',
+  'luma-ray-2': 'Best for cinematic generation, source-video modify, reframe workflows, and visual quality.',
+  'luma-ray-2-flash': 'Best for fast cinematic drafts, quick source-video tests, and lower-cost Luma workflows.',
+  'pika-text-to-video': 'Best for stylized social clips, quick text-to-video tests, silent loops, and prompt variants.',
+  'wan-2-6': 'Best for structured prompts, clean transitions, reference-video guidance, and optional audio on text/image starts.',
+  'minimax-hailuo-02-text': 'Best for budget-friendly concept tests, first/last-frame control, and fast prompt iteration.',
+  'happy-horse-1-0': 'Best for text-and-image-to-video workflows with audio, lip sync, and controllable motion.',
+  'gpt-image-2': 'Best for text-heavy stills, product photography, controlled edits, and reference images.',
+  seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
+  'nano-banana-2': 'Best for grounded stills, wide-format edits, and image references for video workflows.',
+  'nano-banana-pro': 'Best for campaign stills, typography-focused edits, and polished product visuals.',
+};
+
+export type ModelsCatalogGalleryCopy = ModelsGalleryCopy & {
   scoreLabels?: Record<keyof EngineScore, string>;
   valueSentence?: {
     template?: string;
@@ -50,7 +80,7 @@ export type ModelsCatalogGalleryCopy = {
     useCases?: Record<string, string>;
     capabilityKeywords?: Record<string, string>;
   };
-  stats?: {
+  stats?: ModelsGalleryCopy['stats'] & {
     typeShort?: string;
   };
 };
@@ -248,6 +278,7 @@ export async function buildModelsCatalogCards({
     );
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
     const generatedDescription =
+      DECISION_DESCRIPTION_OVERRIDES[engine.modelSlug] ??
       descriptionOverrides[engine.modelSlug] ??
       buildValueSentence({
         slug: engine.modelSlug,
@@ -280,6 +311,8 @@ export async function buildModelsCatalogCards({
       priceNote: showPrelaunchPricePlaceholder ? getPrelaunchPricingNote(activeLocale) : null,
       priceNoteHref: null,
       href: { pathname: '/models/[slug]', params: { slug: engine.modelSlug } },
+      compareHref: buildDefaultModelCompareHref(engine.modelSlug),
+      examplesHref: buildModelExamplesHref(engine.modelSlug),
       backgroundColor: pictogram.backgroundColor,
       textColor: pictogram.textColor,
       strengths,
@@ -295,6 +328,7 @@ export async function buildModelsCatalogCards({
       audioAvailable: Boolean(audioSupported),
       compareDisabled,
       filterMeta: {
+        engineType: isImageOnly ? 'image' : 'video',
         t2v,
         i2v,
         v2v,

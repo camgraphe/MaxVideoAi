@@ -6,7 +6,7 @@
     "description": "Use Seedance 2.0 on MaxVideoAI for multi-shot video, native audio, current pricing, key capabilities, and the best use cases for current Seedance workflows."
   },
   "overview": "Seedance 2.0 is the current Seedance AI video model on MaxVideoAI for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences.",
-  "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
+  "pricingNotes": "Seedance 2 uses provider token pricing. MaxVideoAI applies the display price and shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0 — current Seedance model for multi-shot video and native audio",
     "intro": "Seedance 2.0 is the current Seedance AI video model for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences. Use this page to review pricing, key capabilities, best use cases, and when this Seedance video workflow is a better fit than Fast or older Seedance versions.",
@@ -99,7 +99,7 @@
     },
     {
       "label": "Audio",
-      "body": "Native audio is on by default and can be disabled; Fal states the price is the same either way"
+      "body": "Native audio is on by default and can be disabled; MaxVideoAI shows the final quote before generation"
     },
     {
       "label": "Camera and motion",
@@ -107,7 +107,7 @@
     },
     {
       "label": "Notes",
-      "body": "Fal's public page highlights text-to-video, image-to-video, reference-to-video, and optimized fast variants inside the Seedance 2 family."
+      "body": "Provider/model-family notes describe text-to-video, image-to-video, reference-to-video, and optimized fast variants inside the Seedance 2 family."
     }
   ],
   "promptStructure": {
@@ -195,7 +195,7 @@
     "specSections": [
       {
         "title": "Multimodal input stack",
-        "intro": "Fal's public page frames Seedance 2.0 as a unified multimodal audio-video model.",
+        "intro": "Provider/model-family notes describe Seedance 2.0 as a unified multimodal audio-video model.",
         "items": [
           "Text instructions + multimodal references",
           "Up to 9 image references",
@@ -206,7 +206,7 @@
       },
       {
         "title": "Output style and structure",
-        "intro": "Fal highlights cinematic control, native audio, realistic physics, multi-shot cuts, and up to 15 seconds per generation.",
+        "intro": "Provider/model-family notes highlight cinematic control, native audio, realistic physics, multi-shot cuts, and up to 15 seconds per generation.",
         "items": [
           "480p, 720p or 1080p",
           "Auto or 4-15s per generation",
@@ -288,7 +288,7 @@
       "Complex action stacks still benefit from simpler, clearly separated beats.",
       "Reference-heavy prompts work best when each source has one clear job.",
       "Reference audio only works when at least one image or video reference is attached.",
-      "Check the active Fal route family before scaling production traffic.",
+      "Check the active provider route before scaling production traffic.",
       "Use the final quote in Generate before client-facing rollout or automated workflows."
     ],
     "galleryTitle": "Seedance 2.0 examples",
@@ -300,17 +300,24 @@
     "relatedItems": [
       {
         "brand": "bytedance",
-        "title": "Seedream 5.0 Lite",
-        "description": "Create or clean a still image in Seedream before using it as a more controlled reference for Seedance image-to-video.",
+        "title": "Prepare references with Seedream",
+        "description": "Create or clean a still image in Seedream before using it as a controlled reference for Seedance image-to-video.",
         "modelSlug": "seedream",
-        "ctaLabel": "Prepare references with Seedream ->"
+        "ctaLabel": "Explore Seedream ->"
       },
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",
         "description": "Use the faster Seedance version for draft passes, quick timing checks, and early concept loops before you move finals into the standard version.",
         "modelSlug": "seedance-2-0-fast",
-        "ctaLabel": "See Seedance 2.0 Fast ->"
+        "ctaLabel": "Compare Seedance 2.0 vs Fast ->"
+      },
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Fast",
+        "description": "Compare Seedance 2.0 with LTX 2.3 when choosing between native-audio production work and lower-cost fast drafts.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Compare Seedance 2.0 vs LTX 2.3 ->"
       },
       {
         "brand": "google-veo",

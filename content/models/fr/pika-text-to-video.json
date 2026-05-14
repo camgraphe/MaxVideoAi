@@ -2,15 +2,15 @@
   "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 Durée max vidéo (5s/10s) — 1080p + tarifs",
-    "description": "Pika 2.2 sur MaxVideoAI : durée max vidéo 5s ou 10s (720p/1080p). Limites, prix à la seconde et exemples reproductibles — paiement à l’usage, sans abonnement.",
+    "title": "Pika 2.2 Text-to-Video : 5s/10s, 1080p et tarifs",
+    "description": "Pika 2.2 Text-to-Video sur MaxVideoAI : clips stylisés silencieux de 5s ou 10s en 720p/1080p. Tarifs, limites, prompts et exemples reproductibles.",
     "image": "/hero/pika-22.jpg"
   },
-  "overview": "Pika 2.2 dans MaxVideoAI : clips courts et silencieux (5–10 s) en 720p/1080p depuis du texte ou une seule image, en 1:1, 16:9 ou 9:16. Idéal pour des looks anime, comic, pixel et 3D ludique pensés pour les feeds sociaux.",
+  "overview": "Pika 2.2 dans MaxVideoAI : clips Text-to-Video courts, stylisés et silencieux en 720p/1080p pour des boucles sociales de 5s ou 10s. Idéal pour des looks anime, comic, pixel et 3D ludique pensés pour les feeds.",
   "hero": {
     "title": "Pika 2.2",
-    "intro": "Durée max vidéo : 5s ou 10s en 720p/1080p — texte → vidéo ou image → vidéo stylisé, pensé pour se démarquer dans le fil d’actualité.",
-    "badge": "Jusqu’à 1080p · 5–10 s · Entrée texte ou image",
+    "intro": "Durée max vidéo : 5s ou 10s en 720p/1080p — Text-to-Video stylisé, pensé pour se démarquer dans le fil.",
+    "badge": "Jusqu’à 1080p · 5–10 s · Text-to-Video · Silencieux",
     "ctaPrimary": {
       "label": "Générer avec Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparer Pika 2.2 vs MiniMax Hailuo 02 →",
-        "href": "/models/minimax-hailuo-02-text"
+        "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
       }
     ]
   },
@@ -46,7 +46,7 @@
         "icon": "layout"
       },
       {
-        "title": "Transitions type keyframe (contrôle début/fin)",
+        "title": "Boucles stylisées pilotées par prompt",
         "icon": "image"
       }
     ]
@@ -63,11 +63,11 @@
     },
     {
       "label": "Formats",
-      "body": "1:1, 16:9, 9:16"
+      "body": "1:1, 16:9, 9:16, 4:5, 5:4, 3:2, 2:3"
     },
     {
       "label": "Entrées",
-      "body": "Texte → Vidéo; Image → Vidéo depuis un seul still"
+      "body": "Text-to-Video d’abord ; utilisez le workflow image Pika associé seulement si un still doit ancrer la composition"
     },
     {
       "label": "Audio",
@@ -106,7 +106,7 @@
   },
   "compareLink": {
     "label": "Comparer Pika 2.2 vs MiniMax Hailuo 02 →",
-    "href": "/models/minimax-hailuo-02-text"
+    "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
   },
   "prompts": [
     {
@@ -137,18 +137,18 @@
     },
     {
       "q": "Quand utiliser un autre modèle ?",
-      "a": "Pour du photoréalisme ou de l’audio natif, utilisez Sora 2 ou Veo 3.1; pour des clips courts avec son, Wan 2.5."
+      "a": "Pour du photoréalisme ou du son généré, utilisez Sora 2 ou Veo 3.1; pour des clips courts avec son, Wan 2.5."
     }
   ],
   "custom": {
-    "heroDesc1": "Utilisez Pika 2.2 pour générer des clips stylisés de 5 s ou 10 s jusqu’à 1080p depuis du texte ou une seule image de référence. Voyez le prix par clip avant de lancer, puis recréez des exemples éprouvés en un clic.",
-    "heroDesc2": "Choisissez 5 ou 10 secondes, 1:1, 16:9 ou 9:16, partez d’un texte ou d’une image de référence, et obtenez un clip silencieux prêt à monter.",
+    "heroDesc1": "Utilisez Pika 2.2 pour générer des clips Text-to-Video stylisés de 5 s ou 10 s jusqu’à 1080p. Voyez le prix par clip avant de lancer, puis recréez des exemples éprouvés en un clic.",
+    "heroDesc2": "Choisissez 5 ou 10 secondes, 1:1, 16:9, 9:16, 4:5, 5:4, 3:2 ou 2:3, rédigez un prompt compact et obtenez un clip silencieux prêt à monter.",
     "heroSupportLine": "Idéal quand vous voulez un look fort rapidement : moodboards, loops, cutaways et variantes créatives ludiques.",
     "whyTitle": "Pourquoi Pika 2.2 est puissant",
     "heroHighlights": [
       "Motion stylisée immédiatement lisible||Parfait pour des looks forts (anime/comic/toon/expérimental) sans viser le photoréalisme.",
       "Contrôles de cohérence||Seed + prompt négatif pour stabiliser un look et supprimer les artefacts.",
-      "Direction type keyframe||Les workflows “first/last” ou transitions à keyframes rendent les transformations plus simples à piloter.",
+      "Variantes pilotées par prompt||Seed et prompt négatif aident à tester des boucles stylisées sans surcharger le setup.",
       "Silencieux par design (édit‑friendly)||Exports légers à sonoriser librement en post."
     ],
     "bestUseCasesTitle": "Meilleurs cas d’usage",
@@ -174,7 +174,7 @@
         "icon": "layout"
       },
       {
-        "title": "Transitions type keyframe (contrôle début/fin)",
+        "title": "Boucles stylisées pilotées par prompt",
         "icon": "image"
       }
     ],
@@ -184,7 +184,7 @@
     "whatFlowTitle": "Flux in‑app",
     "whatFlowSteps": [
       "1. Choisissez Pika 2.2 comme modèle.",
-      "2. Sélectionnez Texte → Vidéo ou Image → Vidéo.",
+      "2. Sélectionnez Text-to-Video pour cette page ; utilisez le workflow image associé seulement si un still doit ancrer la composition.",
       "3. Réglez la durée (5/10 s), le format et la résolution (720p ou 1080p).",
       "4. (Optionnel) Fixez un seed et ajoutez un prompt négatif.",
       "5. Collez un prompt dynamique orienté style.",
@@ -205,11 +205,11 @@
       },
       {
         "title": "Outils de cohérence",
-        "intro": "Seed et prompts négatifs stabilisent le look entre variantes. Les transitions type first/last sont plus faciles à piloter.",
+        "intro": "Seed et prompts négatifs stabilisent le look entre variantes. Pour une transformation, décrivez clairement l’état de départ, l’état d’arrivée et la transition dans le prompt.",
         "items": [
           "Verrouillez un seed pour itérer.",
           "Utilisez des prompts négatifs pour enlever les artefacts.",
-          "Définissez une pose de départ et d’arrivée pour les transitions.",
+          "Définissez l’état de départ, l’état d’arrivée et la transition dans le texte.",
           "Export silencieux puis sonorisez en post."
         ]
       }
@@ -219,11 +219,11 @@
     "galleryIntro": "Clips curés générés avec les mêmes réglages que dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Pika 2.2 →",
     "recreateLabel": "Recréer ce plan →",
-    "imageTitle": "Flux Image→Vidéo avec Pika 2.2 (+ Nano Banana)",
-    "imageIntro": "Verrouillez le style avec un still, puis itérez uniquement sur le mouvement et les effets.",
+    "imageTitle": "Workflow image associé avec Pika 2.2 (+ Nano Banana)",
+    "imageIntro": "Cette page est Text-to-Video d’abord. Utilisez un still seulement dans le workflow image Pika associé si la composition doit rester ancrée.",
     "imageFlow": [
       "Générez des stills de référence dans Nano Banana (pose, keyframe, illustration produit).",
-      "Chargez un still en Image → Vidéo avec Pika 2.2.",
+      "Utilisez le workflow image Pika associé avec un seul still quand il est disponible dans l’app.",
       "Décrivez le mouvement caméra, le mouvement secondaire et les effets plutôt que de restyler.",
       "Utilisez seeds et prompts négatifs pour stabiliser la composition entre itérations."
     ],
@@ -248,12 +248,12 @@
       "Mouvement loop‑friendly : choisissez une action répétée (clignement, balancement, vapeur, parallax) et gardez la caméra simple.",
       "Runs cohérents : verrouillez un seed en itérant et gardez le même wording d’un take à l’autre.",
       "Sorties plus propres : utilisez un prompt négatif court pour bloquer texte/logos et réduire les artefacts.",
-      "Le mode First/Last est idéal pour les transitions : définissez une pose de départ et une pose d’arrivée claires (transformations simples > scènes complexes)."
+      "Pour les transitions, décrivez la pose de départ, la pose d’arrivée et le verbe de transition dans le prompt (transformations simples > scènes complexes)."
     ],
     "boundaries": [
       "Format court uniquement (5–10 s dans cette config).",
       "Sortie silencieuse — ajoutez le son en post si nécessaire.",
-      "Meilleur pour motion stylisé et inserts; utilisez d’autres modèles pour photoréalisme + audio natif.",
+      "Meilleur pour motion stylisé et inserts; utilisez d’autres modèles pour photoréalisme strict ou son généré.",
       "Petit texte à l’écran peu fiable — ajoutez le copy critique en post."
     ],
     "safetyTitle": "Sécurité & personnes / ressemblance",
@@ -270,7 +270,7 @@
     "comparisonPoints": [
       "Pika 2.2 : clips courts, stylisés et silencieux en 720p/1080p pour looks animés, loops et inserts.",
       "MiniMax Hailuo 02 : tests silencieux budget avec bonne physique en 512p/768p sur des beats 6–10 s.",
-      "Sora 2 / Wan 2.5 / Veo 3.1 : à choisir quand vous avez besoin d’audio natif ou de plus de réalisme."
+      "Sora 2 / Wan 2.5 / Veo 3.1 : à choisir quand vous avez besoin de son généré ou de plus de réalisme."
     ],
     "comparisonCta": "Comparer Pika 2.2 vs MiniMax Hailuo 02 →",
     "faqTitle": "FAQ – Pika 2.2",
@@ -293,13 +293,13 @@
       },
       {
         "q": "Quand changer de modèle ?",
-        "a": "Utilisez Sora/Veo pour photoréalisme ou audio; Wan 2.5 pour des clips courts avec son; Sora 2 Pro/Veo 3.1 pour des hero shots premium."
+        "a": "Utilisez Sora/Veo pour photoréalisme ou son généré; Wan 2.5 pour des clips courts avec son; Sora 2 Pro/Veo 3.1 pour des hero shots premium."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur le reste du catalogue MaxVideoAI.",
     "finalPara1": "Pika 2.2 dans MaxVideoAI est votre cheval de bataille stylisé et silencieux pour loops rapides et animation expressive.",
-    "finalPara2": "Esquissez vos hooks ici, puis passez les gagnants à Sora ou Veo quand vous avez besoin de réalisme ou d’audio natif.",
+    "finalPara2": "Esquissez vos hooks ici, puis passez les gagnants à Sora ou Veo quand vous avez besoin de réalisme ou de son généré.",
     "finalButton": "Ouvrir Generate",
     "promptingTitle": "Comment écrire un excellent prompt Pika",
     "promptingIntro": "Pika fonctionne mieux avec des prompts stylisés, un mouvement clair et un seul move caméra.",

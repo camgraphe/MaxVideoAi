@@ -75,7 +75,7 @@
     },
     {
       "label": "Resolution",
-      "body": "1080p, 1440p or 2160p (4K)"
+      "body": "1080p, 1440p or 2160p (4K) on supported 6-10 s configurations; >10 s routes use 1080p / 25 fps"
     },
     {
       "label": "Aspect ratios",
@@ -216,13 +216,13 @@
           "No uploaded-audio-driven video mode.",
           "No source-video extension workflow.",
           "No selective retake workflow.",
-          "Move up to standard when those controls matter."
+          "Move to LTX 2.3 Pro when those controls matter."
         ]
       }
     ],
     "whatTitle": "How LTX 2.3 Fast works in MaxVideoAI",
     "whatIntro1": "Pick LTX 2.3 Fast, stay in the standard generate flow, then switch between text-driven and image-driven input by adding or removing the start image.",
-    "whatIntro2": "The page intentionally avoids standard-LTX editing modes so the options stay coherent with the public Fast routing.",
+    "whatIntro2": "The page intentionally avoids Pro editing modes so the options stay coherent with the public Fast routing.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Pick LTX 2.3 Fast as the engine.",
@@ -232,7 +232,7 @@
       "Check the live price and use Fast for broad iteration before upgrading winners."
     ],
     "galleryTitle": "LTX 2.3 Fast examples",
-    "galleryIntro": "Representative LTX 2.3 Fast examples and placeholders used on this branch for layout and prompt coverage.",
+    "galleryIntro": "Representative LTX 2.3 Fast examples for reviewing prompt structure, draft pacing and image-to-video setup before generating.",
     "galleryAllCta": "View all LTX 2.3 Fast examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",
@@ -255,15 +255,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Demo prompt - vertical hook test",
-    "demoPromptLabel": "9:16 social hook",
+    "demoTitle": "Demo prompt - fast cinematic draft",
+    "demoPromptLabel": "16:9 draft check",
     "demoPrompt": [
-      "A vertical beauty ad opener, close-up on a product as condensation slides across the bottle, fast push-in, crisp reflections, subtle impact sound, 6 seconds."
+      "A powerful boxer walks alone through a dark arena tunnel toward the ring, athletic frame wrapped in a hooded robe, shoulders relaxed but dangerous. Low front tracking shot, slow push-in, hard rim light, drifting haze, muted crowd rumble and one sharp impact cue, 10 seconds, 16:9."
     ],
     "demoNotes": [
-      "Built for hook testing",
-      "Clear first shot and sound cue",
-      "Easy to rerun in multiple variants"
+      "Built for a fast motion check",
+      "One subject, one move and one atmosphere",
+      "Easy to rerun before a Pro pass"
     ],
     "multishotTitle": "Longer fast beats",
     "multishotIntro1": "Fast can run longer than the LTX 2.3 Pro generate path, which is useful for simple walkthroughs and pacing tests.",

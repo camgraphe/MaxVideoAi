@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparar Seedance 2.0 vs Sora 2",
-        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
+        "label": "Comparar Sora 2 vs Sora 2 Pro",
+        "href": "/ai-video-engines/sora-2-vs-sora-2-pro"
       }
     ]
   },
@@ -29,7 +29,7 @@
     },
     {
       "q": "¿Sora 2 puede generar 1080p?",
-      "a": "Este nivel sale en 720p. Para mayor resolución (hasta 1792×1024), usa Sora 2 Pro."
+      "a": "La ruta actual de Sora 2 en MaxVideoAI sale en 720p. Usa Sora 2 Pro cuando la toma elegida necesite salida de revisión en 1080p."
     },
     {
       "q": "¿Sora 2 admite imagen→video?",
@@ -135,8 +135,8 @@
       "5. Ver el precio final antes de generar.",
       "6. Comparar con otros motores en la misma interfaz."
     ],
-    "specTitle": "Specs reales — OpenAI Sora 2",
-    "specNote": "Los límites que definen tus renders.",
+    "specTitle": "Specs de Sora 2 en MaxVideoAI",
+    "specNote": "Límites de la ruta actual en MaxVideoAI. Las capacidades más amplias de la familia del modelo pueden diferir de lo que esta ruta expone en la app.",
     "specSections": [
       {
         "title": "Prompting y lenguaje de plano",
@@ -194,7 +194,7 @@
       "Ideal para tomas UGC e inserts cinematográficos"
     ],
     "boundaries": [
-      "Salida en 720p — Sora 2 Pro cubre mayor resolución (hasta 1792×1024).",
+      "La ruta actual de Sora 2 en MaxVideoAI sale en 720p. Usa Sora 2 Pro para salida de revisión en 1080p.",
       "Es 4–12 s, no long‑form. Une varios clips para ediciones largas.",
       "Sin entrada de video; empieza desde texto o imagen.",
       "Sin seeds; itera afinando el prompt.",
@@ -215,18 +215,18 @@
     "comparisonPoints": [
       "Sora 2 = máquina rápida de ideas en 720p.",
       "Sora 2 Pro = más resolución y control.",
-      "Storyboards con Sora 2 y finales en Sora 2 Pro (hasta 1792×1024) con control de audio."
+      "Storyboards con Sora 2 y luego regenera las tomas elegidas en Sora 2 Pro cuando necesites salida de revisión en 1080p y más control de acabado."
     ],
     "comparisonCta": "Empieza con Sora 2 y pasa a Sora 2 Pro cuando necesites más resolución →",
     "relatedTitle": "Explorar otros modelos",
     "relatedSubtitle": "Compara precio, latencia y opciones de salida entre los demás motores.",
     "relatedItems": [
       {
-        "brand": "bytedance",
-        "title": "Seedance 2.0",
-        "description": "Abre Seedance 2.0 si quieres la nueva familia flagship para motion multi-shot, más realismo y salidas guiadas por audio nativo.",
-        "modelSlug": "seedance-2-0",
-        "ctaLabel": "Comparar Seedance 2.0 vs OpenAI Sora 2 ->"
+        "brand": "openai",
+        "title": "Sora 2 Pro",
+        "description": "Pasa los mejores conceptos de Sora 2 a Sora 2 Pro cuando la toma necesite 1080p, más control de acabado y una pasada más premium.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Comparar Sora 2 vs Sora 2 Pro →"
       },
       {
         "brand": "google-veo",
@@ -260,44 +260,44 @@
       "Los cues de audio ayudan al ritmo; describe 1–2 sonidos clave."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = continuidad. Úsalo para looks precisos y repetibles."
+      "quick": "Quick = pruebas de hook. Mantén una acción, un movimiento de cámara y una pista sonora.",
+      "structured": "Structured = consistencia. Separa acción, cámara, luz, audio y diálogo corto.",
+      "pro": "Pro = entrega controlada. Añade anclajes de continuidad y un final claro."
     },
     "promptingTitle": "Cómo escribir un gran prompt para Sora 2",
     "promptingIntro": "Sora 2 funciona mejor cuando lo describes como un operador: un plano claro, timing simple y acciones visibles.",
     "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla sujeto, acción, cámara, luz, estilo y sonido.",
-    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideLabel": "Guía oficial de prompting de Sora 2",
     "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
     "tipsIntro": "Sora es más predecible cuando el plano se mantiene simple, legible y físico.",
     "promptingTabs": [
       {
         "id": "quick",
         "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Estilo] + [Sujeto] + [Escenario] + [Luz] + [Mood / paleta]"
+        "title": "Prompt de acción rápido",
+        "description": "Úsalo para probar hooks de 4 s.",
+        "copy": "[Sujeto] hace [una acción visible] en [lugar]. Cámara: [un movimiento]. Luz: [momento / mood]. Audio: [ambiente + un SFX]."
       },
       {
         "id": "structured",
         "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga bien.",
-        "copy": "Sujeto:\n[Quién/qué + 1 acción clara o pose.]\n\nEscenario:\n[Dónde + momento + 2–3 anclajes visuales.]\n\nComposición:\n- Encuadre: [abierto / medio / cerrado]\n- Ángulo: [a la altura de los ojos / contrapicado / picado]\n- Sensación de lente: [p. ej., 35mm natural, poca profundidad de campo]\n\nLuz + paleta:\n[Luz principal + 2–3 anclajes de paleta]\n\nRestricciones de estilo:\nSin logos. Sin texto legible. Fondo limpio."
+        "title": "Prompt de video estructurado",
+        "description": "Úsalo cuando el clip necesita acción y sonido repetibles.",
+        "copy": "Sujeto:\n[Quién/qué + una acción visible]\n\nLugar:\n[Dónde + momento + 2 anclajes visuales]\n\nCámara:\n[Encuadre + ángulo + un movimiento]\n\nLuz:\n[Key light + paleta + contraste]\n\nAudio:\n[Ambiente + 1 SFX + diálogo opcional de menos de 8 palabras]\n\nRestricciones:\nSin logos. Sin texto legible. Sin personas protegidas."
       },
       {
         "id": "pro",
         "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo si necesitas un look muy preciso o continuidad fuerte.",
-        "copy": "Proyecto / intención:\n[Objetivo en una línea.]\n\nSujeto:\n[Quién/qué + vestuario/materiales + 2–3 rasgos distintivos.]\n\nLugar / set:\n[Dónde + momento + clima. Añade 3 anclajes visuales.]\n\nComposición:\n- Encuadre + ángulo\n- Sensación de lente + profundidad de campo\n- Look: [digital clean / grano film sutil / bloom suave]\n\nLuz y gradación:\n- Luz principal\n- Contraste\n- Anclajes de paleta (3–5)\n\nRestricciones:\nSin logos. Sin texto legible. Sin overlays."
+        "title": "Prompt imagen a video",
+        "description": "Úsalo cuando un still aprobado debe definir el primer frame.",
+        "copy": "Rol de la imagen inicial:\n[Qué debe mantenerse fijo: sujeto, forma del producto, vestuario o composición]\n\nMovimiento:\n[Una acción que empieza desde el still]\n\nCámara:\n[Movimiento lento / push-in / deriva handheld / plano fijo]\n\nFinal:\n[Dónde debe quedar sujeto o producto al último segundo]\n\nAudio:\n[Ambiente corto + SFX visible]\n\nEvita:\nCambiar identidad, añadir logos o introducir demasiados sujetos."
       },
       {
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Prompt storyboard (shot list secuenciada)",
         "description": "Úsalo cuando necesites continuidad multi‑beat en un solo clip.",
-        "copy": "Storyboard / shot list (mismo sujeto + mismo escenario)\nDuración: [4/8/12s] • Formato: [16:9 o 9:16]\n\nShot 1 (0–2s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nShot 2 (2–6s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nShot 3 (6–8/12s):\n[Acción final / reveal + cámara que se asienta]\n\nContinuidad:\n[Repetir anclajes: vestuario, props, luz, escenario]\n\nAudio (opcional):\n[Ambiente + 1–2 cues SFX]\n\nRestricciones:\nSin logos. Sin texto legible. Sin overlays."
+        "copy": "Storyboard / shot list (mismo sujeto + mismo lugar)\nDuración: [4/8/12s] • Formato: [16:9 o 9:16]\n\nBeat 1 (0-2s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nBeat 2 (2-6s):\n[La acción continúa sin cambiar de lugar]\n\nBeat 3 (6-8/12s):\n[Revelación final + cámara se estabiliza]\n\nContinuidad:\n[Vestuario, props, luz, fondo]\n\nAudio:\n[Ambiente + 1 SFX + diálogo corto si hace falta]\n\nRestricciones:\nSin logos. Sin texto legible. Sin personas protegidas."
       }
     ],
     "demoTitle": "Demo: prompt secuenciado",

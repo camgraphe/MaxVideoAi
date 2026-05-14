@@ -138,6 +138,14 @@
       "a": "Yes. Audio is on by default but you can toggle it off for lower cost."
     },
     {
+      "q": "How should I use seed control?",
+      "a": "Use -1 for random exploration, then reuse a fixed seed when you want to compare small prompt, camera_fixed, timing or audio changes without changing the whole look."
+    },
+    {
+      "q": "Does Seedance 1.5 Pro support start and end frames?",
+      "a": "Yes for image-to-video: use one start image and an optional end frame when the final pose, product position or transition landing matters."
+    },
+    {
       "q": "What resolutions are supported?",
       "a": "T2V supports 480p and 720p. I2V supports 480p, 720p, and 1080p."
     },

@@ -7,7 +7,6 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
-import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -16,6 +15,7 @@ import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
 } from './_lib/model-page-links';
+import { buildModelDecisionData } from './_lib/model-page-decision-data';
 import {
   buildPricePerImageLabel,
   buildPricePerImageRows,
@@ -25,6 +25,7 @@ import {
 import {
   pickDemoMedia,
   pickHeroMedia,
+  normalizeMediaUrl,
   toFeaturedMedia,
   toGalleryCard,
   type FeaturedMedia,
@@ -82,11 +83,13 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
 
   const canonicalSlug = engine.modelSlug ?? slug;
   const localized = await getEngineLocalized(canonicalSlug, locale);
+  const decisionData = buildModelDecisionData({ engine, locale });
   const detailSlugMap = buildDetailSlugMap(canonicalSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
-  const title = localized.seo.title ?? fallbackTitle;
+  const title = decisionData?.meta.title ?? localized.seo.title ?? fallbackTitle;
   const description =
+    decisionData?.meta.description ??
     localized.seo.description ??
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
@@ -171,8 +174,15 @@ async function renderMarketingModelPage({
     const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
     return normalized ? allowedEngineIds.has(normalized) : false;
   });
-  const validatedMap = await getPublicVideosByIds(soraExamples.map((video) => video.id));
-  let galleryVideos = soraExamples
+  const safeSoraExamples =
+    engine.modelSlug === 'sora-2'
+      ? soraExamples.filter((video) => {
+          const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
+          return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
+        })
+      : soraExamples;
+  const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
+  let galleryVideos = safeSoraExamples
     .filter((video) => validatedMap.has(video.id))
     .map((video) =>
       toGalleryCard(
@@ -180,8 +190,9 @@ async function renderMarketingModelPage({
         engine.brandId,
         localizedContent.marketingName ?? engine.marketingName,
         engine.modelSlug,
-        engine.modelSlug,
-        backPath
+        engine.id,
+        backPath,
+        isImageEngine ? '/app/image' : '/app'
       )
     );
 
@@ -200,8 +211,9 @@ async function renderMarketingModelPage({
           engine.brandId,
           localizedContent.marketingName ?? engine.marketingName,
           engine.modelSlug,
-          engine.modelSlug,
-          backPath
+          engine.id,
+          backPath,
+          isImageEngine ? '/app/image' : '/app'
         ),
       ];
     }
@@ -217,6 +229,22 @@ async function renderMarketingModelPage({
       return aScore - bScore;
     });
   }
+  if (engine.modelSlug === 'veo-3-1-fast') {
+    const promptOverrides = new Map<string, string>([
+      [
+        'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
+        '8s 16:9 Veo 3.1 Fast desk draft with a presenter, slow handheld drift, soft typing, city ambience, and one short calm line.',
+      ],
+      [
+        'job_3ee52c57-e023-4e98-9b45-c3ec7b60edf5',
+        'Veo 3.1 Fast portrait interview draft of a man speaking about happiness, audio on, 16:9.',
+      ],
+    ]);
+    galleryVideos = galleryVideos.map((video) => {
+      const prompt = promptOverrides.get(video.id);
+      return prompt ? { ...video, prompt, promptFull: prompt } : video;
+    });
+  }
 
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
@@ -225,11 +253,8 @@ async function renderMarketingModelPage({
       engine.type === 'image'
         ? `${modelName} demo still from MaxVideoAI`
         : `${modelName} demo clip from MaxVideoAI`,
-    videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
-    posterUrl:
-      engine.media?.imagePath ??
-      buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 75 }) ??
-      null,
+    videoUrl: engine.type === 'image' ? null : (normalizeMediaUrl(engine.media?.videoUrl) ?? normalizeMediaUrl(engine.demoUrl)),
+    posterUrl: normalizeMediaUrl(engine.media?.imagePath),
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
     href: null,
@@ -245,17 +270,20 @@ async function renderMarketingModelPage({
       heroMedia = toFeaturedMedia(heroCandidate) ?? heroMedia;
     }
   }
-  const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  let demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  if (engine.modelSlug === 'sora-2-pro') {
+    demoMedia = heroMedia;
+  }
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
     demoMedia.prompt =
-      'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
+      '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
   const galleryCtaHref = heroMedia?.id
-    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
-    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
+    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
+    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}`;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPriceInSpecs = true;
+  const showPriceInSpecs = engine.id !== 'lumaRay2';
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
@@ -279,7 +307,9 @@ async function renderMarketingModelPage({
   const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
   const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
   const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
-  const fallbackPriceRows: KeySpecRow[] = priceRows.length
+  const fallbackPriceRows: KeySpecRow[] = !showPriceInSpecs
+    ? []
+    : priceRows.length
     ? []
     : isImageEngine
       ? keySpecValues?.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)

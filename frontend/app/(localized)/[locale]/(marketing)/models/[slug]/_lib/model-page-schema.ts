@@ -15,43 +15,12 @@ const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
   alibaba: { name: 'Alibaba', url: 'https://www.alibabagroup.com' },
 };
 
-const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
-  available: 'https://schema.org/InStock',
-  limited: 'https://schema.org/LimitedAvailability',
-  waitlist: 'https://schema.org/LimitedAvailability',
-  paused: 'https://schema.org/Discontinued',
-};
-
 export function resolveProviderInfo(engine: FalEngineEntry) {
   const fallback = PARTNER_BRAND_MAP.get(engine.brandId);
   const override = PROVIDER_INFO_MAP[engine.brandId];
   return {
     name: override?.name ?? fallback?.label ?? engine.brandId,
     url: override?.url ?? fallback?.availabilityLink ?? SITE,
-  };
-}
-
-function buildOfferSchema(canonical: string, engine: FalEngineEntry) {
-  const imageModel = isImageOnlyModel(engine);
-  return {
-    '@type': 'Offer',
-    url: canonical,
-    priceCurrency: 'USD',
-    price: '0',
-    availability: AVAILABILITY_SCHEMA_MAP[engine.availability] ?? AVAILABILITY_SCHEMA_MAP.limited,
-    description: imageModel
-      ? 'Pay-as-you-go pricing (varies by provider, output size, and request options).'
-      : 'Pay-as-you-go pricing (varies by provider and duration).',
-    priceSpecification: {
-      '@type': 'UnitPriceSpecification',
-      price: 0,
-      priceCurrency: 'USD',
-      referenceQuantity: {
-        '@type': 'QuantitativeValue',
-        value: 1,
-        unitCode: imageModel ? 'C62' : 'SEC',
-      },
-    },
   };
 }
 
@@ -69,7 +38,6 @@ export function buildProductSchema({
   heroPosterAbsolute: string | null;
 }) {
   const provider = resolveProviderInfo(engine);
-  const offer = buildOfferSchema(canonical, engine);
   const category = isImageOnlyModel(engine)
     ? 'AI Image Generator'
     : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
@@ -93,7 +61,5 @@ export function buildProductSchema({
       name: provider.name,
       url: provider.url,
     },
-    offers: offer,
   };
 }
-

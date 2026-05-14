@@ -39,6 +39,13 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
   if (lower === 'single start image') {
     return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
   }
+  if (lower === 'not exposed in current maxvideoai route') {
+    return locale === 'fr'
+      ? 'Non exposé dans la route MaxVideoAI actuelle'
+      : locale === 'es'
+        ? 'No expuesto en la ruta actual de MaxVideoAI'
+        : normalized;
+  }
   if (lower === 'multi reference stills') {
     return locale === 'fr'
       ? 'plusieurs stills de référence'
@@ -65,6 +72,41 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
       ? 'image de départ + image de fin en image → vidéo'
       : locale === 'es'
         ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === '1 start image + optional end image in i2v') {
+    return locale === 'fr'
+      ? '1 image de départ + image de fin optionnelle en image → vidéo'
+      : locale === 'es'
+        ? '1 imagen inicial + imagen final opcional en imagen → video'
+        : normalized;
+  }
+  if (lower === 'ref2v: up to 9 image references; i2v: 1 start image') {
+    return locale === 'fr'
+      ? 'Ref2V : jusqu’à 9 images de référence ; I2V : 1 image de départ'
+      : locale === 'es'
+        ? 'Ref2V: hasta 9 imágenes de referencia; I2V: 1 imagen inicial'
+        : normalized;
+  }
+  if (lower === 'ref2v: up to 3 video references') {
+    return locale === 'fr'
+      ? 'Ref2V : jusqu’à 3 vidéos de référence'
+      : locale === 'es'
+        ? 'Ref2V: hasta 3 videos de referencia'
+        : normalized;
+  }
+  if (lower === 'i2v start + optional end frame') {
+    return locale === 'fr'
+      ? 'image de départ I2V + image finale optionnelle'
+      : locale === 'es'
+        ? 'imagen inicial I2V + frame final opcional'
+        : normalized;
+  }
+  if (lower === 'best effort with short dialogue') {
+    return locale === 'fr'
+      ? 'synchronisation approximative avec dialogue court'
+      : locale === 'es'
+        ? 'sincronización aproximada con diálogo corto'
         : normalized;
   }
   if (lower === 'reframe workflow') {

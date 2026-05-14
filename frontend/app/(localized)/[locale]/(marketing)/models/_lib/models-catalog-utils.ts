@@ -422,7 +422,7 @@ export function getEngineDisplayName(entry: FalEngineEntry): string {
 function sentenceCaseHeroPart(value: string) {
   const trimmed = value.trim().replace(/[.。]+$/, '');
   if (!trimmed) return trimmed;
-  return `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}.`;
+  return `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}`;
 }
 
 export function splitModelsHeroTitle(title: string) {

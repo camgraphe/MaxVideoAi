@@ -4,7 +4,7 @@
   "seo": {
     "title": "LTX 2.3 Pro | Modèle vidéo IA, specs et prix | MaxVideoAI",
     "description": "Utilisez LTX 2.3 Pro sur MaxVideoAI pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake, avec specs et prix visibles avant rendu.",
-    "image": "/assets/placeholders/preview-16x9.png"
+    "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
   "overview": "LTX 2.3 Pro est le modèle LTX actuel sur MaxVideoAI pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake.",
   "hero": {
@@ -99,7 +99,7 @@
     },
     {
       "label": "Tarification",
-      "body": "Paiement à l'usage ; le prix affiché en génération commence autour de 0,08 $/s en 1080p, 0,16 $/s en 1440p et 0,31 $/s en 4K"
+      "body": "Paiement à l’usage ; la page utilise les totaux affichés MaxVideoAI issus du helper partagé pour les scénarios Generate, et l’app donne le devis exact selon le workflow."
     }
   ],
   "promptStructure": {
@@ -122,7 +122,7 @@
       "N'utilisez image de départ et image de fin que si la cible de transition est claire ; sinon, gardez Image vers vidéo sur une seule image de départ.",
       "Utilisez Extend quand le plan est déjà bon et qu'il vous faut seulement plus d'amorce ou de sortie.",
       "Utilisez Retake quand une seule section est ratée mais que le reste du clip doit rester intact.",
-      "Gardez la 4K pour les passes finales ; itérez d'abord à moindre coût, puis relancez le workflow gagnant."
+      "Gardez la 4K pour les passes finales ; itérez d'abord à moindre coût, puis relancez le réglage validé en plus haute résolution."
     ]
   },
   "compareLink": {
@@ -159,7 +159,15 @@
     },
     {
       "q": "LTX 2.3 Fast inclut-il Audio vers vidéo, Extend ou Retake ?",
-      "a": "Non. LTX 2.3 Fast est limité à texte vers vidéo et image vers vidéo dans le routing public Fal actuel."
+      "a": "Non. LTX 2.3 Fast est limité à texte vers vidéo et image vers vidéo dans la route MaxVideoAI actuelle."
+    },
+    {
+      "q": "Combien coûte LTX 2.3 Pro ?",
+      "a": "Utilisez la carte pricing pour les totaux affichés MaxVideoAI, puis confirmez le devis exact dans Generate. Le prix varie selon workflow, durée, résolution, fps et réglages audio."
+    },
+    {
+      "q": "La 4K fonctionne-t-elle avec Audio-to-Video, Extend et Retake ?",
+      "a": "Dans la route actuelle, la 4K, le 9:16 et les contrôles fps sont surtout liés aux modes Generate Text-to-Video et Image-to-Video. Audio-to-Video, Extend et Retake peuvent avoir des limites propres au workflow."
     }
   ],
   "custom": {
@@ -199,7 +207,7 @@
       "Adapté aux formats de contenu actuels||Les modes paysage et vertical facilitent la planification des variantes hero et social."
     ],
     "specTitle": "Vraies specs - LTX 2.3 Pro dans MaxVideoAI",
-    "specNote": "Ces specs décrivent le routing public Fal actuellement exposé dans MaxVideoAI, pas une liste théorique de futures fonctionnalités.",
+    "specNote": "Ces specs décrivent la route MaxVideoAI actuellement exposée, pas une liste théorique de futures fonctionnalités.",
     "specSections": [
       {
         "title": "Workflows de génération",
@@ -224,7 +232,7 @@
     ],
     "whatTitle": "Comment fonctionne LTX 2.3 Pro dans MaxVideoAI",
     "whatIntro1": "Choisissez LTX 2.3 Pro, restez sur Generate Video pour les flux standard texte / image ou basculez sur Extend Video / Retake Video quand vous avez besoin d'éditer une vidéo source. Audio vers vidéo se sélectionne automatiquement lorsqu'une source audio est présente.",
-    "whatIntro2": "Cette structure garde la page centrée sur un seul modèle tout en exposant les vrais workflows Fal derrière l'UI.",
+    "whatIntro2": "Cette structure garde la page centrée sur un seul modèle tout en reflétant les vraies options de route exposées dans l’interface.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choisissez LTX 2.3 Pro comme modèle.",
@@ -234,7 +242,7 @@
       "Vérifiez le prix live avant génération, puis itérez uniquement sur le workflow qui compte."
     ],
     "galleryTitle": "Exemples LTX 2.3 Pro",
-    "galleryIntro": "Des placeholders locaux sont utilisés pour l'instant sur cette branche de dev. Remplacez-les par les rendus LTX 2.3 Pro finaux et validés avant la mise en production.",
+    "galleryIntro": "Exemples LTX 2.3 Pro représentatifs pour revoir génération guidée par audio, extension, retake et passes de production haute résolution.",
     "galleryAllCta": "Voir tous les exemples LTX 2.3 Pro ->",
     "recreateLabel": "Recréer ce plan ->",
     "tipsTitle": "Forces pratiques et limites",
@@ -257,15 +265,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt de démo - performance pilotée par audio",
-    "demoPromptLabel": "Clip de performance A2V",
+    "demoTitle": "Prompt de démo - révélation boussole cinématique",
+    "demoPromptLabel": "Prompt text-to-video Generate",
     "demoPrompt": [
-      "Utilisez l'extrait musical uploadé comme référence de timing pour une performance de danse mélancolique en entrepôt, avec un lent mouvement caméra latéral dans l'intro et des gros plans plus serrés et émotionnels à l'arrivée du refrain."
+      "Un aventurier robuste se tient au bord d'une falaise désertique immense à la golden hour, visage marqué par le soleil, veste en cuir usée, foulard agité par le vent. Il ouvre une ancienne boussole en laiton dans sa main, et une carte lumineuse faite de lumière et de poussière se déploie au-dessus, éclairant son visage et le sable autour de lui. La caméra commence en plan large derrière lui pour montrer les dunes infinies, puis avance lentement lorsqu'il lève la boussole, jusqu'à un gros plan dramatique sur ses yeux reflétant la carte lumineuse. Soleil chaud, poussière flottante, textures bronze, composition épique mais propre, ton d'aventure cinématique premium, simple et iconique. Vent sur les dunes, léger clic métallique de la boussole, grondement désertique bas, pas de texte, pas de logo, pas de watermark."
     ],
     "demoNotes": [
-      "L'audio définit le rythme et la structure",
-      "Le prompt ajoute le staging et la direction caméra",
-      "Une image d'ouverture optionnelle peut verrouiller la première frame"
+      "Un sujet clair et un seul beat de révélation",
+      "La caméra passe du plan d'ensemble au gros plan",
+      "Les sons soutiennent la boussole et l'atmosphère désertique"
     ],
     "multishotTitle": "Workflows de continuation et de correction",
     "multishotIntro1": "LTX 2.3 Pro est moins un modèle de génération long-form qu'un modèle de continuité quand un plan existe déjà.",
@@ -323,7 +331,7 @@
         "label": "Générer",
         "title": "Prompt de génération",
         "description": "À utiliser quand LTX crée un plan neuf depuis du texte ou une image de départ.",
-        "copy": "Sujet :\n[Qui / quoi apparaît]\n\nAction :\n[Un beat visible]\n\nCaméra :\n[Cadrage + un mouvement]\n\nLook :\n[Lumière + palette + texture]\n\nÀ utiliser quand la scène démarre de zéro."
+        "copy": "Sujet :\nAventurier du désert avec une ancienne boussole en laiton à la golden hour.\n\nAction :\nIl ouvre la boussole et une carte lumineuse faite de poussière se déploie au-dessus.\n\nCaméra :\nPlan large arrière sur les dunes, puis push-in lent jusqu'à ses yeux qui reflètent la carte.\n\nLook :\nSoleil chaud, poussière flottante, textures bronze, étalonnage premium de film d'aventure.\n\nAudio :\nVent du désert, clic métallique léger de la boussole, grondement atmosphérique bas.\n\nFormat :\n10 secondes, 16:9, pas de texte, pas de logo."
       },
       {
         "id": "structured",

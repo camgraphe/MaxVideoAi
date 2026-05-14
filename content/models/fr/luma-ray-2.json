@@ -6,14 +6,14 @@
     "description": "Utilisez Luma Ray 2 dans MaxVideoAI pour des plans cinematographiques premium, de l image-to-video, du modify sur video source et des reframes de livraison. Ray 2 cible des finals plus solides avec des generations 5s ou 9s de 540p a 1080p.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 2 est le tier de final premium de la famille Luma dans MaxVideoAI. La famille reste simple au niveau du catalogue, mais la page modele expose maintenant toute la surface publique Fal: text-to-video, image-to-video, modify et reframe.",
+  "overview": "Luma Ray 2 est le tier de final premium de la famille Luma dans MaxVideoAI. La famille reste simple au niveau du catalogue, tandis que la page modele expose la famille de workflows Luma active: text-to-video, image-to-video, modify et reframe.",
   "hero": {
     "title": "Luma Ray 2 - generation, modify et reframe sur une seule page",
     "intro": "Choisissez Ray 2 quand le plan sort de la phase draft et que vous voulez le tier Luma premium pour des plans cinematographiques, une animation still plus controlee, des modifications sur video source et des reframes de livraison sans separer le workflow sur plusieurs pages modele.",
     "badge": "T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Generer avec Luma Ray 2",
-      "href": "/app?engine=luma-ray-2"
+      "href": "/app?engine=lumaRay2"
     },
     "secondaryLinks": [
       {
@@ -79,7 +79,7 @@
     },
     {
       "label": "Options Modify",
-      "body": "Presets Fal exposes dans MaxVideoAI: adhere_1 a adhere_3, flex_1 a flex_3 et reimagine_1 a reimagine_3"
+      "body": "Presets Modify exposes dans MaxVideoAI: adhere_1 a adhere_3, flex_1 a flex_3 et reimagine_1 a reimagine_3"
     },
     {
       "label": "Options Reframe",
@@ -139,11 +139,11 @@
   "faqs": [
     {
       "q": "Quels workflows Luma Ray 2 expose dans MaxVideoAI ?",
-      "a": "Ray 2 garde toute la surface publique Fal dans une seule page modele: text-to-video, image-to-video, modify et reframe."
+      "a": "Ray 2 garde la famille de workflows Luma active dans une seule page modele: text-to-video, image-to-video, modify et reframe."
     },
     {
       "q": "Quelles options sont exposees dans Modify ?",
-      "a": "Modify utilise une video source plus un prompt optionnel et un still de reference optionnel. MaxVideoAI expose les presets Fal de adhere_1 jusqu'a reimagine_3."
+      "a": "Modify utilise une video source plus un prompt optionnel et un still de reference optionnel. MaxVideoAI expose les presets de adhere_1 jusqu'a reimagine_3."
     },
     {
       "q": "Quelles options sont exposees dans Reframe ?",
@@ -155,7 +155,7 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Luma Ray 2 n'est plus une page text-to-video reduite dans MaxVideoAI. Elle suit maintenant le meme schema workflow-first que les pages LTX et Veo les plus riches: un modele public, plusieurs vrais workflows Fal.",
+    "heroDesc1": "Luma Ray 2 n'est plus une page text-to-video reduite dans MaxVideoAI. Elle suit maintenant le meme schema workflow-first que les pages LTX et Veo les plus riches: un modele public, plusieurs workflows Luma actifs.",
     "heroDesc2": "C'est important en production. Vous pouvez generer un plan depuis un prompt, animer un still, modifier un clip source gagnant, puis reframer le master approuve pour le social sans changer de famille modele.",
     "heroSupportLine": "Ideal pour un usage cinematographique premium quand vous voulez generation et edition video source dans une meme surface Luma.",
     "heroSpecChips": [
@@ -169,12 +169,12 @@
     "whyTitle": "Pourquoi Luma Ray 2 est strategiquement utile",
     "heroHighlights": [
       "Un modele, une vraie couverture workflow||Creez de nouveaux clips, animez des stills, modifiez un footage existant et reframerez des plans approuves depuis la meme page Luma.",
-      "Modify n'est plus cache||Les presets Fal adhere, flex et reimagine sont exposes directement pour choisir a quel point l'edit s'eloigne du clip source.",
+      "Modify n'est plus cache||Les presets adhere, flex et reimagine sont exposes directement pour choisir a quel point l'edit s'eloigne du clip source.",
       "Reframe est un vrai outil de livraison||Les sorties carrees et verticales comptent quand un master approuve doit partir en paid social, mobile et commerce.",
       "Une histoire de famille plus claire||Ray 2 reste le tier premium, Ray 2 Flash reste le tier rapide, mais les deux modeles exposent maintenant la vraie surface workflow publique."
     ],
     "specTitle": "Vraies specs - Luma Ray 2 dans MaxVideoAI",
-    "specNote": "Ces specs decrivent le routing public Fal expose aujourd'hui dans MaxVideoAI, pas une surface placeholder reduite.",
+    "specNote": "Ces specs decrivent le routing Luma actif expose aujourd'hui dans MaxVideoAI, pas une surface placeholder reduite.",
     "specSections": [
       {
         "title": "Workflows generate",
@@ -199,7 +199,7 @@
     ],
     "whatTitle": "Comment Luma Ray 2 fonctionne dans MaxVideoAI",
     "whatIntro1": "Choisissez Luma Ray 2, restez sur Generate Video pour les workflows texte et image, ou passez sur Modify / Reframe quand vous travaillez a partir d'une video source importee.",
-    "whatIntro2": "Cela garde la famille simple au niveau modele tout en exposant les vrais workflows Fal la ou ils doivent etre: dans la page modele et le studio.",
+    "whatIntro2": "Cela garde la famille simple au niveau modele tout en exposant les workflows Luma actifs la ou ils doivent etre: dans la page modele et le studio.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choisissez Luma Ray 2 comme engine.",
@@ -224,7 +224,7 @@
       "Modify et Reframe dependent toujours de la qualite et de la clarte du clip source importe.",
       "Ray 2 reste le tier premium; Flash reste meilleur pour l'iteration rapide en debut de process."
     ],
-    "finalPara1": "Luma Ray 2 est la moitie premium de la nouvelle famille Luma a deux modeles, mais la page se comporte maintenant comme une vraie page workflow complete et non comme un placeholder reduit. C'est le bon compromis: lineup simple, couverture workflow Fal complete.",
+    "finalPara1": "Luma Ray 2 est la moitie premium de la nouvelle famille Luma a deux modeles, mais la page se comporte maintenant comme une vraie page workflow complete et non comme un placeholder reduit. C'est le bon compromis: lineup simple, large couverture des workflows Luma.",
     "finalButton": "Generer avec Luma Ray 2"
   }
 }

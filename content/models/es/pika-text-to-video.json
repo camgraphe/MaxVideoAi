@@ -2,15 +2,15 @@
   "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 Duración máx. de video (5s/10s) — 1080p + precio",
-    "description": "Pika 2.2 en MaxVideoAI: la duración máxima es 5s o 10s (720p/1080p). Límites, precio por segundo y ejemplos que puedes recrear—pago por uso, sin suscripción.",
+    "title": "Pika 2.2 Text-to-Video: 5s/10s, 1080p y precios",
+    "description": "Pika 2.2 Text-to-Video en MaxVideoAI: clips estilizados sin audio de 5s o 10s en 720p/1080p. Precios, límites, prompts y ejemplos recreables.",
     "image": "/hero/pika-22.jpg"
   },
-  "overview": "Pika 2.2 en MaxVideoAI: clips cortos y silenciosos (5–10 s) en 720p/1080p desde texto o una sola imagen, en 1:1, 16:9 o 9:16. Ideal para looks anime, cómic, pixel y 3D lúdico pensados para feeds sociales.",
+  "overview": "Pika 2.2 en MaxVideoAI: clips Text-to-Video cortos, estilizados y sin audio en 720p/1080p para loops sociales de 5s o 10s. Ideal para looks anime, cómic, pixel y 3D lúdico pensados para feeds.",
   "hero": {
     "title": "Pika 2.2",
-    "intro": "Duración máxima de video: 5s o 10s en 720p/1080p — texto a video o imagen a video con estilo, hecho para destacar en el feed.",
-    "badge": "Hasta 1080p · 5–10 s · Entrada de texto o imagen",
+    "intro": "Duración máxima de video: 5s o 10s en 720p/1080p — Text-to-Video estilizado, hecho para destacar en el feed.",
+    "badge": "Hasta 1080p · 5–10 s · Text-to-Video · Sin audio",
     "ctaPrimary": {
       "label": "Generar con Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
-        "href": "/models/minimax-hailuo-02-text"
+        "href": "/es/comparativa/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
       }
     ]
   },
@@ -46,7 +46,7 @@
         "icon": "layout"
       },
       {
-        "title": "Transiciones tipo keyframe (control inicio/fin)",
+        "title": "Loops de estilo guiados por prompt",
         "icon": "image"
       }
     ]
@@ -63,11 +63,11 @@
     },
     {
       "label": "Formatos",
-      "body": "1:1, 16:9, 9:16"
+      "body": "1:1, 16:9, 9:16, 4:5, 5:4, 3:2, 2:3"
     },
     {
       "label": "Entradas",
-      "body": "Texto → Video; Imagen → Video desde un solo still"
+      "body": "Text-to-Video primero; usa el flujo de imagen relacionado de Pika solo cuando un still deba fijar composición"
     },
     {
       "label": "Audio",
@@ -106,7 +106,7 @@
   },
   "compareLink": {
     "label": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
-    "href": "/models/minimax-hailuo-02-text"
+    "href": "/es/comparativa/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
   },
   "prompts": [
     {
@@ -137,18 +137,18 @@
     },
     {
       "q": "¿Cuándo usar otro motor?",
-      "a": "Para fotorrealismo o audio nativo, usa Sora 2 o Veo 3.1; para clips cortos con sonido, Wan 2.5."
+      "a": "Para fotorrealismo o sonido generado, usa Sora 2 o Veo 3.1; para clips cortos con sonido, Wan 2.5."
     }
   ],
   "custom": {
-    "heroDesc1": "Usa Pika 2.2 para generar clips estilizados de 5 s o 10 s hasta 1080p desde texto o una sola imagen de referencia. Mira el precio por clip antes de ejecutar y recrea ejemplos probados en un clic.",
-    "heroDesc2": "Elige 5 o 10 segundos, 1:1, 16:9 o 9:16, parte de texto o imagen de referencia y obtén un clip silencioso listo para edición.",
+    "heroDesc1": "Usa Pika 2.2 para generar clips Text-to-Video estilizados de 5 s o 10 s hasta 1080p. Mira el precio por clip antes de ejecutar y recrea ejemplos probados en un clic.",
+    "heroDesc2": "Elige 5 o 10 segundos, 1:1, 16:9, 9:16, 4:5, 5:4, 3:2 o 2:3, escribe un prompt compacto y obtén un clip silencioso listo para edición.",
     "heroSupportLine": "Ideal cuando quieres un look fuerte rápido: moodboards, loops, cutaways y variantes creativas lúdicas.",
     "whyTitle": "Por qué Pika 2.2 es potente",
     "heroHighlights": [
       "Motion estilizado que se lee al instante||Ideal para looks fuertes (anime/cómic/toon/experimental) sin buscar fotorealismo.",
       "Controles de consistencia||Seed + prompt negativo mantienen un look estable y suprimen artefactos.",
-      "Dirección tipo keyframe||Workflows “first/last” o transiciones con keyframes hacen más fácil dirigir transformaciones y reveals.",
+      "Variantes guiadas por prompt||Seed y prompt negativo ayudan a probar loops estilizados sin sobrecargar el setup.",
       "Silencioso por diseño (edit‑friendly)||Exports ligeros para sonorizar como quieras en post."
     ],
     "bestUseCasesTitle": "Casos de uso",
@@ -174,7 +174,7 @@
         "icon": "layout"
       },
       {
-        "title": "Transiciones tipo keyframe (control inicio/fin)",
+        "title": "Loops de estilo guiados por prompt",
         "icon": "image"
       }
     ],
@@ -184,7 +184,7 @@
     "whatFlowTitle": "Flujo en app",
     "whatFlowSteps": [
       "1. Elige Pika 2.2 como motor.",
-      "2. Selecciona Texto → Video o Imagen → Video.",
+      "2. Selecciona Text-to-Video para esta página; usa el flujo de imagen relacionado solo si un still debe fijar composición.",
       "3. Ajusta duración (5/10 s), formato y resolución (720p o 1080p).",
       "4. (Opcional) Fija un seed y añade un prompt negativo.",
       "5. Pega un prompt dinámico orientado a estilo.",
@@ -205,11 +205,11 @@
       },
       {
         "title": "Herramientas de consistencia",
-        "intro": "Seed y prompts negativos ayudan a mantener el look estable entre variantes. La guía first/last facilita transiciones.",
+        "intro": "Seed y prompts negativos ayudan a mantener el look estable entre variantes. Para transformaciones, describe con claridad el estado inicial, el estado final y la transición en el prompt.",
         "items": [
           "Bloquea un seed al iterar.",
           "Usa prompts negativos para eliminar artefactos.",
-          "Define una pose inicial y final para transiciones.",
+          "Define el estado inicial, el estado final y la transición en texto.",
           "Exporta en silencio y sonoriza en post."
         ]
       }
@@ -219,11 +219,11 @@
     "galleryIntro": "Clips curados generados con los mismos ajustes que tienes en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos Pika 2.2 →",
     "recreateLabel": "Recrear esta toma →",
-    "imageTitle": "Flujo Imagen→Video con Pika 2.2 (+ Nano Banana)",
-    "imageIntro": "Fija el estilo con un still y luego itera solo en movimiento y efectos.",
+    "imageTitle": "Flujo de imagen relacionado con Pika 2.2 (+ Nano Banana)",
+    "imageIntro": "Esta página es Text-to-Video primero. Usa un still solo en el flujo de imagen relacionado de Pika cuando la composición deba quedar anclada.",
     "imageFlow": [
       "Genera stills de referencia en Nano Banana (pose, keyframe, ilustración de producto).",
-      "Sube un still en Imagen → Video con Pika 2.2.",
+      "Usa el flujo de imagen relacionado de Pika con un solo still cuando esté disponible en la app.",
       "Describe movimiento de cámara, movimiento secundario y efectos en lugar de restyling.",
       "Usa seeds y prompts negativos para mantener la composición estable entre iteraciones."
     ],
@@ -248,12 +248,12 @@
       "Motion loop‑friendly: elige una acción repetida (parpadeo, balanceo, vapor, parallax) y mantén la cámara simple.",
       "Runs consistentes: bloquea un seed al iterar y mantén el mismo phrasing entre tomas.",
       "Salidas más limpias: usa un prompt negativo corto para bloquear texto/logos y reducir artefactos.",
-      "First/Last frame es ideal para transiciones: define una pose inicial clara y una pose final clara (transformaciones simples > escenas complejas)."
+      "Para transiciones, describe la pose inicial, la pose final y el verbo de transición en el prompt (transformaciones simples > escenas complejas)."
     ],
     "boundaries": [
       "Solo formato corto (5–10 s en esta configuración).",
       "Salida silenciosa en este tier — añade sonido en post si lo necesitas.",
-      "Mejor para motion estilizado e inserts; usa otros motores para fotoreal + audio nativo.",
+      "Mejor para motion estilizado e inserts; usa otros motores para fotorealismo estricto o sonido generado.",
       "Texto pequeño en pantalla es poco fiable — añade el copy crítico en post."
     ],
     "safetyTitle": "Seguridad y personas / semejanza",
@@ -270,7 +270,7 @@
     "comparisonPoints": [
       "Pika 2.2: clips cortos, estilizados y silenciosos en 720p/1080p para looks animados, loops e inserts.",
       "MiniMax Hailuo 02: borradores silenciosos de bajo costo con buena física en 512p/768p para beats de 6–10 s.",
-      "Sora 2 / Wan 2.5 / Veo 3.1: cambia a estos cuando necesites audio nativo o más realismo."
+      "Sora 2 / Wan 2.5 / Veo 3.1: cambia a estos cuando necesites sonido generado o más realismo."
     ],
     "comparisonCta": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
     "faqTitle": "FAQ – Pika 2.2",
@@ -293,13 +293,13 @@
       },
       {
         "q": "¿Cuándo cambiar de motor?",
-        "a": "Usa Sora/Veo para fotorealismo o audio; Wan 2.5 para clips cortos con sonido; Sora 2 Pro/Veo 3.1 para hero shots premium."
+        "a": "Usa Sora/Veo para fotorealismo o sonido generado; Wan 2.5 para clips cortos con sonido; Sora 2 Pro/Veo 3.1 para hero shots premium."
       }
     ],
     "relatedTitle": "Explorar otros modelos",
     "relatedSubtitle": "Compara precio, latencia y opciones de salida en el resto del catálogo MaxVideoAI.",
     "finalPara1": "Pika 2.2 en MaxVideoAI es tu caballo de batalla estilizado y silencioso para loops rápidos y animación expresiva.",
-    "finalPara2": "Boceta hooks aquí y luego pasa los ganadores a Sora o Veo cuando necesites realismo o audio nativo.",
+    "finalPara2": "Boceta hooks aquí y luego pasa los ganadores a Sora o Veo cuando necesites realismo o sonido generado.",
     "finalButton": "Abrir Generate",
     "promptingTitle": "Cómo escribir un gran prompt para Pika",
     "promptingIntro": "Pika funciona mejor con prompts estilizados, movimiento claro y un solo movimiento de cámara.",

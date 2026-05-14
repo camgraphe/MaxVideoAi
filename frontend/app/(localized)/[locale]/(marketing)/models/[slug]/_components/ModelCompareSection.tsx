@@ -13,6 +13,7 @@ import {
   SECTION_SCROLL_MARGIN,
   type RelatedItem,
 } from '../_lib/model-page-specs';
+import { ModelDecisionCompareSection } from './ModelDecisionCompareSection';
 
 type FocusVsConfig = {
   title: string;
@@ -48,6 +49,7 @@ type ModelCompareSectionProps = {
   localizeComparePath: (pairSlug: string, orderSlug?: string) => LocalizedLinkHref;
   locale: AppLocale;
   heroTitle: string;
+  variant?: 'default' | 'decision';
 };
 
 export function ModelCompareSection({
@@ -63,7 +65,27 @@ export function ModelCompareSection({
   localizeComparePath,
   locale,
   heroTitle,
+  variant = 'default',
 }: ModelCompareSectionProps) {
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionCompareSection
+        hasCompareSection={hasCompareSection}
+        compareAnchorId={compareAnchorId}
+        focusVsConfig={focusVsConfig}
+        localizeModelsPath={localizeModelsPath}
+        hasCompareGrid={hasCompareGrid}
+        compareCopy={compareCopy}
+        relatedItems={relatedItems}
+        compareEngines={compareEngines}
+        engineSlug={engineSlug}
+        localizeComparePath={localizeComparePath}
+        locale={locale}
+        heroTitle={heroTitle}
+      />
+    );
+  }
+
   return hasCompareSection ? (
           <section
             id={compareAnchorId}

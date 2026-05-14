@@ -10,9 +10,16 @@ const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/mode
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-copy.ts');
 const valueCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-value-copy.ts');
 const sectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-sections.ts');
+const decisionDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts');
 const heroPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogHero.tsx');
 const gallerySectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogGallerySection.tsx');
 const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogJsonLdScripts.tsx');
+const topPicksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogTopPicksPanel.tsx');
+const useCaseStripPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogUseCaseStrip.tsx');
+const recommendedPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogRecommendedSection.tsx');
+const popularComparisonsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogPopularComparisons.tsx');
+const pricingLimitsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogPricingLimitsSection.tsx');
+const decisionFaqPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogDecisionFaq.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const cardsSource = readFileSync(cardsPath, 'utf8');
@@ -20,9 +27,16 @@ const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const valueCopySource = readFileSync(valueCopyPath, 'utf8');
 const sectionsSource = readFileSync(sectionsPath, 'utf8');
+const decisionDataSource = readFileSync(decisionDataPath, 'utf8');
 const heroSource = readFileSync(heroPath, 'utf8');
 const gallerySectionSource = readFileSync(gallerySectionPath, 'utf8');
 const jsonLdScriptsSource = readFileSync(jsonLdScriptsPath, 'utf8');
+const topPicksSource = readFileSync(topPicksPath, 'utf8');
+const useCaseStripSource = readFileSync(useCaseStripPath, 'utf8');
+const recommendedSource = readFileSync(recommendedPath, 'utf8');
+const popularComparisonsSource = readFileSync(popularComparisonsPath, 'utf8');
+const pricingLimitsSource = readFileSync(pricingLimitsPath, 'utf8');
+const decisionFaqSource = readFileSync(decisionFaqPath, 'utf8');
 
 test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(pagePath), 'models catalog route component should exist');
@@ -31,16 +45,30 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(copyPath), 'models catalog localized copy module should exist');
   assert.ok(existsSync(valueCopyPath), 'models catalog value copy module should exist');
   assert.ok(existsSync(sectionsPath), 'models catalog section data module should exist');
+  assert.ok(existsSync(decisionDataPath), 'models catalog decision data should live in a route-local helper');
   assert.ok(existsSync(heroPath), 'models catalog hero should live in a route-local component');
   assert.ok(existsSync(gallerySectionPath), 'models catalog gallery section should live in a route-local component');
   assert.ok(existsSync(jsonLdScriptsPath), 'models catalog JSON-LD scripts should live in a route-local component');
+  assert.ok(existsSync(topPicksPath), 'models catalog top picks panel should live in a route-local component');
+  assert.ok(existsSync(useCaseStripPath), 'models catalog use-case strip should live in a route-local component');
+  assert.ok(existsSync(recommendedPath), 'models catalog recommended section should live in a route-local component');
+  assert.ok(existsSync(popularComparisonsPath), 'models catalog popular comparisons should live in a route-local component');
+  assert.ok(existsSync(pricingLimitsPath), 'models catalog pricing and limits section should live in a route-local component');
+  assert.ok(existsSync(decisionFaqPath), 'models catalog decision FAQ should live in a route-local component');
 
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-utils'/, 'route should import catalog helpers');
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-cards'/, 'route should import catalog card builder');
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-sections'/, 'route should import section builders');
+  assert.match(pageSource, /from '\.\/_lib\/models-catalog-decision-data'/);
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogHero'/, 'route should import the hero component');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogGallerySection'/, 'route should import the gallery section component');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogJsonLdScripts'/, 'route should import the JSON-LD script component');
+  assert.match(pageSource, /from '\.\/_components\/ModelsCatalogUseCaseStrip'/);
+  assert.match(pageSource, /from '\.\/_components\/ModelsCatalogRecommendedSection'/);
+  assert.match(pageSource, /from '\.\/_components\/ModelsCatalogPopularComparisons'/);
+  assert.match(pageSource, /from '\.\/_components\/ModelsCatalogPricingLimitsSection'/);
+  assert.match(pageSource, /from '\.\/_components\/ModelsCatalogDecisionFaq'/);
+  assert.match(heroSource, /from '\.\/ModelsCatalogTopPicksPanel'/);
   assert.match(pageSource, /export async function generateModelsMetadata/, 'route should keep metadata orchestration');
   assert.match(pageSource, /export default async function ModelsCatalogPage/, 'route should keep page orchestration');
 
@@ -58,7 +86,7 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.doesNotMatch(pageSource, /Texte→image/, 'localized outcome tiles belong in the section data module');
   assert.doesNotMatch(pageSource, /const fallbackFaqItemsByScope =/, 'fallback FAQ data belongs in the section data module');
   assert.doesNotMatch(pageSource, /const fallbackReliabilityItemsByScope =/, 'fallback reliability data belongs in the section data module');
-  assert.doesNotMatch(pageSource, /lg:min-h-\[520px\]/, 'hero layout belongs in ModelsCatalogHero.tsx');
+  assert.doesNotMatch(pageSource, /lg:min-h-\[430px\]/, 'hero layout belongs in ModelsCatalogHero.tsx');
   assert.doesNotMatch(pageSource, /id="models-grid"/, 'gallery section markup belongs in ModelsCatalogGallerySection.tsx');
   assert.doesNotMatch(pageSource, /models-breadcrumb-jsonld/, 'JSON-LD script tags belong in ModelsCatalogJsonLdScripts.tsx');
 
@@ -67,6 +95,28 @@ test('models catalog route delegates catalog helper logic', () => {
 
   const utilsLineCount = utilsSource.split('\n').length;
   assert.ok(utilsLineCount <= 500, `models-catalog-utils should stay below 500 lines after copy split, got ${utilsLineCount}`);
+});
+
+test('models catalog decision hub sections stay route-local and focused', () => {
+  assert.match(decisionDataSource, /export function buildModelsCatalogDecisionData/);
+  assert.match(topPicksSource, /export function ModelsCatalogTopPicksPanel/);
+  assert.match(useCaseStripSource, /export function ModelsCatalogUseCaseStrip/);
+  assert.match(recommendedSource, /export function ModelsCatalogRecommendedSection/);
+  assert.match(popularComparisonsSource, /export function ModelsCatalogPopularComparisons/);
+  assert.match(pricingLimitsSource, /export function ModelsCatalogPricingLimitsSection/);
+  assert.match(decisionFaqSource, /export function ModelsCatalogDecisionFaq/);
+
+  assert.match(decisionDataSource, /ltx-2-3-fast/, 'LTX 2.3 Fast should be promoted in decision data');
+  assert.match(decisionDataSource, /seedance-2-0-vs-seedance-2-0-fast/, 'popular Seedance comparison should be linked');
+  assert.match(decisionDataSource, /pricingLimits/, 'pricing and limits copy should be derived outside the page');
+  assert.doesNotMatch(pageSource, /Recommended AI video models/, 'section copy should not bloat the route orchestrator');
+
+  assert.ok(topPicksSource.split('\n').length <= 180, 'top picks panel should stay focused');
+  assert.ok(useCaseStripSource.split('\n').length <= 200, 'use-case strip should stay focused');
+  assert.ok(recommendedSource.split('\n').length <= 220, 'recommended section should stay focused');
+  assert.ok(popularComparisonsSource.split('\n').length <= 180, 'popular comparisons should stay focused');
+  assert.ok(pricingLimitsSource.split('\n').length <= 180, 'pricing limits section should stay focused');
+  assert.ok(decisionFaqSource.split('\n').length <= 180, 'decision FAQ should stay focused');
 });
 
 test('models catalog helper module exposes the route contract', () => {
@@ -150,7 +200,7 @@ test('models catalog helper module exposes the route contract', () => {
   assert.match(sectionsSource, /FALLBACK_FAQ_ITEMS_BY_SCOPE/, 'section module should own fallback FAQ data');
   assert.match(heroSource, /export function ModelsCatalogHero/, 'hero component should be exported');
   assert.match(heroSource, /MODELS_HERO_IMAGE_URL/, 'hero component should own hero image rendering');
-  assert.match(heroSource, /lg:min-h-\[520px\]/, 'hero component should own hero layout');
+  assert.match(heroSource, /lg:min-h-\[430px\]/, 'hero component should own hero layout');
   assert.match(gallerySectionSource, /export function ModelsCatalogGallerySection/, 'gallery section should be exported');
   assert.match(gallerySectionSource, /id="models-grid"/, 'gallery section should own gallery markup');
   assert.match(gallerySectionSource, /ModelsGallery/, 'gallery section should compose ModelsGallery');

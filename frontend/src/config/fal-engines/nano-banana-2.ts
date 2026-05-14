@@ -61,7 +61,7 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: ['0.5k', '1k', '2k', '4k'],
         default: '1k',
-        description: '0.5K runs at half price, 2K is 1.5x, and 4K is 2x.',
+        description: '0.5K is the entry draft tier, with 1K, 2K, and 4K available for higher-resolution stills.',
       },
       {
         id: 'aspect_ratio',
@@ -88,7 +88,7 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
         type: 'boolean',
         label: 'Enable web search',
         default: false,
-        description: 'Optional web grounding adds $0.015 per request.',
+        description: 'Optional web grounding is quoted before generation.',
       },
       {
         id: 'thinking_level',
@@ -150,7 +150,7 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
       },
     },
     currency: 'USD',
-    notes: '$0.08 per 1K image, $0.04 at 0.5K, $0.12 at 2K, $0.16 at 4K, plus $0.015/request for web search.',
+    notes: 'Raw provider pricing is converted to MaxVideoAI display pricing before the live quote is shown.',
   },
   updatedAt: '2026-03-17T00:00:00Z',
   ttlSec: 600,
@@ -175,7 +175,7 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: '$0.08 per 1K image · 0.5K $0.04 · 2K $0.12 · 4K $0.16 · web search +$0.015/request',
+    billingNote: 'MaxVideoAI display pricing starts at $0.06 for 0.5K, $0.11 for 1K, $0.16 for 2K, and $0.21 for 4K before optional settings.',
     engine: NANO_BANANA_2_ENGINE,
     modes: [
       {
@@ -243,7 +243,17 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'What resolutions does Nano Banana 2 support?',
         answer:
-          'You can render at 0.5K, 1K, 2K, and 4K. 1K is the base tier, while 0.5K is cheaper and 2K/4K cost more.',
+          'You can render still images at 0.5K, 1K, 2K, and 4K. MaxVideoAI display pricing starts at $0.06 for 0.5K, $0.11 for 1K, $0.16 for 2K, and $0.21 for 4K.',
+      },
+      {
+        question: 'Is Nano Banana 2 for still images or video?',
+        answer:
+          'Nano Banana 2 is for still images only on MaxVideoAI. It supports text-to-image generation and image-to-image edits, not video or audio renders.',
+      },
+      {
+        question: 'When should I use Nano Banana 2 instead of Nano Banana Pro?',
+        answer:
+          'Use Nano Banana 2 for grounded image generation, lower-cost draft passes, wide ratios, and multi-reference edits. Use Nano Banana Pro when typography polish and 4K campaign finals matter more.',
       },
       {
         question: 'Does Nano Banana 2 support multi-image edits?',

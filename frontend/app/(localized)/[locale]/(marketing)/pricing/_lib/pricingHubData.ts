@@ -7,8 +7,11 @@ import type { EngineCaps, EnginePricingDetails, Resolution } from '@/types/engin
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import { buildAudioPricingSnapshot, type AudioPackId, type AudioVoiceMode } from '@/lib/audio-generation';
 import { resolveGptImage2PricingTier, type GptImage2Quality } from '@/lib/image/gptImage2';
+import { getLumaRay2DurationInfo, getLumaRay2ResolutionInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
+import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
@@ -51,6 +54,22 @@ const LOCALIZED_BASE_SLUGS: Record<
   pricing: buildSlugMap('pricing'),
 };
 
+export type VideoPriceScenario = {
+  id: string;
+  label: string;
+  subLabel: string;
+  resolution: Resolution;
+  durationSec: number | null;
+  audio: boolean;
+};
+
+export type ImagePriceScenario = {
+  id: string;
+  resolution: string;
+  quality?: GptImage2Quality;
+  quantity?: number;
+};
+
 export const VIDEO_PRICE_PRESETS = [
   { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
   { id: '8s-1080p', label: '8s 1080p', subLabel: 'Premium', resolution: '1080p', durationSec: 8, audio: false },
@@ -64,7 +83,7 @@ export const VIDEO_PRICE_PRESETS = [
     audio: true,
   },
   { id: '4k-route', label: '4K output', subLabel: 'Native / route', resolution: '4k', durationSec: null, audio: false },
-] as const;
+] as const satisfies readonly VideoPriceScenario[];
 
 export type VideoPricePreset = (typeof VIDEO_PRICE_PRESETS)[number];
 export type VideoPricePresetId = VideoPricePreset['id'];
@@ -407,16 +426,37 @@ function displayedScenarioCents(
   return vendorCents == null ? null : applyDisplayedPriceMarginCents(vendorCents);
 }
 
+function displayedLumaRay2ScenarioCents(engine: EngineCaps, resolution: string, durationSec: number) {
+  if (!isLumaRay2EngineId(engine.id)) return null;
+
+  const baseUsd = Number(getLumaRay2BasePriceEnv(engine.id));
+  const durationInfo = getLumaRay2DurationInfo(durationSec);
+  const resolutionInfo = getLumaRay2ResolutionInfo(resolution);
+
+  if (!Number.isFinite(baseUsd) || baseUsd <= 0 || !durationInfo || !resolutionInfo) {
+    return null;
+  }
+
+  const quote = calculateLumaRay2Price({
+    engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
+    baseUsd,
+    duration: durationInfo.label,
+    resolution: resolutionInfo.value,
+  });
+
+  return applyDisplayedPriceMarginCents(quote.totalUsd * 100);
+}
+
 function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
 
-function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPricePreset) {
+function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPriceScenario) {
   if (preset.id === '4k-route') return chooseFourKDuration(entry);
   return preset.durationSec;
 }
 
-export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, locale: AppLocale): PresetQuote {
+export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale): PresetQuote {
   const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
   const resolution = resolveResolutionSupport(engine, preset.resolution, locale);
@@ -429,7 +469,8 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPricePreset, 
 
   const exactCents =
     exact && duration.durationSec != null
-      ? displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
+      ? displayedLumaRay2ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
+        displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
       : null;
   if (exact) {
     if (exactCents == null || duration.durationSec == null) {
@@ -716,6 +757,61 @@ function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImag
   const flat = engine.pricingDetails?.flatCents;
   const base = flat?.byResolution?.[resolution] ?? flat?.default ?? readResolutionRate(engine.pricingDetails, resolution);
   return typeof base === 'number' ? applyDisplayedPriceMarginCents(base) : null;
+}
+
+function formatImageQuantityNote(locale: AppLocale, quantity: number, resolution: string) {
+  const label =
+    locale === 'fr'
+      ? quantity > 1
+        ? 'images'
+        : 'image'
+      : locale === 'es'
+        ? quantity > 1
+          ? 'imágenes'
+          : 'imagen'
+        : quantity > 1
+          ? 'images'
+          : 'image';
+  return `${quantity} ${label} · ${resolution}`;
+}
+
+export function getImagePresetQuote(
+  entry: FalEngineEntry,
+  preset: ImagePriceScenario,
+  locale: AppLocale
+): PresetQuote {
+  const copy = getPricingHubCopy(locale);
+  const engine = entry.engine;
+  const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
+  const quantity = Math.max(1, Math.floor(preset.quantity ?? 1));
+
+  if (!supportsImageGeneration(entry)) {
+    return {
+      status: 'unsupported',
+      display: '—',
+      note: copy.quote.unsupported,
+      sortValue: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const perImageCents = flatImageCents(engine, preset.resolution, preset.quality ?? 'medium');
+  if (perImageCents == null) {
+    return {
+      status: 'live_quote',
+      display: copy.liveQuote,
+      note: preset.resolution,
+      sortValue: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const totalCents = perImageCents * quantity;
+  return {
+    status: 'exact',
+    amountCents: totalCents,
+    display: formatPrice(locale, totalCents, currency),
+    note: quantity > 1 ? formatImageQuantityNote(locale, quantity, preset.resolution) : preset.resolution,
+    sortValue: totalCents,
+  };
 }
 
 function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLink[] {

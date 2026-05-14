@@ -9,6 +9,7 @@ import {
   SECTION_SCROLL_MARGIN,
   type SoraCopy,
 } from '../_lib/model-page-specs';
+import { ModelDecisionSafetyFaqSection } from './ModelDecisionSafetyFaqSection';
 
 type FaqEntry = {
   question: string;
@@ -17,6 +18,7 @@ type FaqEntry = {
 
 type ModelSafetyFaqSectionProps = {
   copy: SoraCopy;
+  modelName: string;
   safetyRules: string[];
   safetyInterpretation: string[];
   faqList: FaqEntry[];
@@ -24,6 +26,7 @@ type ModelSafetyFaqSectionProps = {
   locale: AppLocale;
   isSoraPrompting: boolean;
   faqJsonLdEntries: FaqEntry[];
+  variant?: 'default' | 'decision';
 };
 
 const DEFAULT_SAFETY_TITLE_BY_LOCALE: Record<AppLocale, string> = {
@@ -34,6 +37,7 @@ const DEFAULT_SAFETY_TITLE_BY_LOCALE: Record<AppLocale, string> = {
 
 export function ModelSafetyFaqSection({
   copy,
+  modelName,
   safetyRules,
   safetyInterpretation,
   faqList,
@@ -41,8 +45,25 @@ export function ModelSafetyFaqSection({
   locale,
   isSoraPrompting,
   faqJsonLdEntries,
+  variant = 'default',
 }: ModelSafetyFaqSectionProps) {
   const safetyTitle = copy.safetyTitle ?? DEFAULT_SAFETY_TITLE_BY_LOCALE[locale] ?? DEFAULT_SAFETY_TITLE_BY_LOCALE.en;
+
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionSafetyFaqSection
+        copy={copy}
+        modelName={modelName}
+        safetyRules={safetyRules}
+        safetyInterpretation={safetyInterpretation}
+        faqList={faqList}
+        faqTitle={faqTitle}
+        locale={locale}
+        faqJsonLdEntries={faqJsonLdEntries}
+        safetyTitle={safetyTitle}
+      />
+    );
+  }
 
   return (
 <>

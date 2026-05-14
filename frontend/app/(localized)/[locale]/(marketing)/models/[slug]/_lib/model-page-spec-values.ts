@@ -46,7 +46,10 @@ export function resolveVideoToVideoSupport(engineCaps: EngineCaps | undefined) {
 
 export function resolveFirstLastSupport(engineCaps: EngineCaps | undefined) {
   const modes = engineCaps?.modes ?? [];
-  if (modes.includes('fl2v')) return 'Supported';
+  const fields = [...(engineCaps?.inputSchema?.required ?? []), ...(engineCaps?.inputSchema?.optional ?? [])];
+  const exposesEndFrame = fields.some((field) => field.id === 'end_image_url');
+  if (modes.includes('i2v') && exposesEndFrame) return 'Supported (start + end image in i2v)';
+  if (modes.includes('fl2v')) return 'Supported (first + last frame route)';
   if (engineCaps?.keyframes != null) return resolveStatus(engineCaps.keyframes);
   return modes.length ? 'Not supported' : 'Data pending';
 }
@@ -114,7 +117,7 @@ export function formatImageResolutions(engineCaps: EngineCaps | undefined) {
   if (!resolutions.length) return 'Data pending';
   const tierLabels = resolutions
     .map((value) => String(value).trim())
-    .filter((value) => /^\d+\s*k$/i.test(value))
+    .filter((value) => /^\d+(?:\.\d+)?\s*k$/i.test(value))
     .map((value) => value.replace(/\s+/g, '').toUpperCase());
   if (tierLabels.length) return Array.from(new Set(tierLabels)).join(' / ');
   return resolutions.join(' / ');
@@ -227,6 +230,6 @@ export function buildSpecValues(
       'cameraMotionControls',
       resolveStatus(engineCaps?.motionControls)
     ),
-    watermark: resolveKeySpecValue(specs, 'watermark', 'No (MaxVideoAI)'),
+    watermark: resolveKeySpecValue(specs, 'watermark', 'No visible MaxVideoAI watermark'),
   };
 }

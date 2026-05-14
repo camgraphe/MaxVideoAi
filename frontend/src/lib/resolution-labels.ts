@@ -1,4 +1,4 @@
-const SORA2_PRO_RESOLUTION_LABEL = '1792×1024';
+const SORA2_PRO_RESOLUTION_LABEL = '1080p';
 const SORA2_PRO_ALIASES = new Set([
   'sora-2-pro',
   'sora2pro',

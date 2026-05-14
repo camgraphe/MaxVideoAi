@@ -1,4 +1,4 @@
-import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
@@ -9,15 +9,9 @@ import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { serializeJsonLd } from '../../model-jsonld';
 import { ModelHeroSection } from './ModelHeroSection';
-import { ModelPageToc } from './ModelPageToc';
-import { ModelPromptingSection } from './ModelPromptingSection';
-import { ModelPrepLinksSection } from './ModelPrepLinksSection';
-import { ModelSafetyFaqSection } from './ModelSafetyFaqSection';
-import { ModelSpecsSection } from './ModelSpecsSection';
-import { ModelTipsSection } from './ModelTipsSection';
-import { ModelExamplesSection } from './ModelExamplesSection';
-import { ModelCompareSection } from './ModelCompareSection';
-import { ModelPricingCallout } from './ModelPricingCallout';
+import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
+import { ModelDecisionPricingCard } from './ModelDecisionPricingCard';
+import { ModelPageContentSections } from './ModelPageContentSections';
 import {
   DEFAULT_DETAIL_COPY,
   buildVideoBoundaries,
@@ -66,6 +60,8 @@ import {
 import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
 import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
+import { buildModelDecisionData } from '../_lib/model-page-decision-data';
+import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 
 export function MarketingModelPageLayout({
   engine,
@@ -185,7 +181,14 @@ export function MarketingModelPageLayout({
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=seedance-2-0';
   const secondaryCta = normalizeSecondaryCta(copy.secondaryCta);
   const secondaryCtaHref = copy.secondaryCtaHref ?? getDefaultSecondaryModelHref(engine.modelSlug);
-  const audioBadgeLabel = resolveAudioPricingLabels(locale).on;
+  const audioBadgeLabel =
+    engine.modelSlug === 'minimax-hailuo-02-text'
+      ? locale === 'fr'
+        ? 'Silencieux'
+        : locale === 'es'
+          ? 'Sin audio'
+          : 'Silent'
+      : resolveAudioPricingLabels(locale).on;
   const resolvedPrimaryCta = primaryCta;
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;
@@ -275,33 +278,44 @@ export function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
+  const templateData = buildModelDecisionData({ engine, locale });
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
-  const mediaAltContexts = {
-    hero: 'hero',
-    demo: 'demo',
-  };
+  const mediaAltContexts = { hero: 'hero', demo: 'demo' };
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
-  const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
+  const hideExamplesSection = false;
+  const hasFallbackGalleryCopy = Boolean(copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta);
+  const usesImageExampleFallback =
+    engine.modelSlug === 'nano-banana-pro' ||
+    engine.modelSlug === 'nano-banana' ||
+    engine.modelSlug === 'nano-banana-2' ||
+    engine.modelSlug === 'seedream' ||
+    engine.modelSlug === 'gpt-image-2';
+  const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
+  const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(
-    galleryVideos.slice(0, 6).map((video, index) => ({
-      id: video.id,
-      alt: getImageAlt({
-        kind: 'renderThumb',
-        engine: video.engineLabel,
-        label: video.promptFull ?? video.prompt,
-        prompt: video.promptFull ?? video.prompt,
+    galleryVideos.slice(0, 6).map((video, index) => {
+      const prompt = video.promptFull ?? video.prompt;
+      const tag = inferRenderTag(prompt, locale);
+      const label =
+        engine.modelSlug === 'seedance-2-0' ||
+        engine.modelSlug === 'minimax-hailuo-02-text' ||
+        engine.modelSlug === 'wan-2-6' ||
+        engine.modelSlug === 'pika-text-to-video'
+          ? `${heroTitle} ${tag ? `${tag} ` : ''}${exampleAltLabel} ${index + 1}`
+          : prompt;
+      return {
+        id: video.id,
+        alt: getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label, prompt: label, locale }),
+        tag,
+        index,
         locale,
-      }),
-      tag: inferRenderTag(video.promptFull ?? video.prompt, locale),
-      index,
-      locale,
-    }))
+      };
+    })
   );
   const hasTextSection = true;
   const hasTipsSection =
@@ -311,24 +325,22 @@ export function MarketingModelPageLayout({
   const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
-  const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
+  const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
     { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
     { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
     { id: 'tips', label: sectionLabels.tips, visible: hasTipsSection },
-    {
-      id: compareAnchorId,
-      label: sectionLabels.compare,
-      visible: hasCompareSection,
-    },
+    { id: compareAnchorId, label: sectionLabels.compare, visible: hasCompareSection },
     { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
     { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ].filter((item) => item.visible);
+  const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
+  const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
-    description: pageDescription,
+    description: templateData?.meta.description ?? pageDescription,
     engine,
     heroPosterAbsolute,
     heroTitle,
@@ -336,8 +348,11 @@ export function MarketingModelPageLayout({
     localizedCanonical,
     localizedHomeUrl,
     localizedModelsUrl,
+    pageTitle: templateData?.meta.title,
     resolvedBreadcrumb,
   });
+  const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
+  const legacyMicroCta = !templateData && isImageEngine ? copy.microCta : null;
 
   return (
     <>
@@ -350,134 +365,94 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
-        <div className="stack-gap-lg gap-0">
-          <ModelHeroSection
-            modelsPathname={modelsPathname}
-            backLabel={backLabel}
-            localizeModelsPath={localizeModelsPath}
-            resolvedBreadcrumb={resolvedBreadcrumb}
-            breadcrumbModelLabel={breadcrumbModelLabel}
-            heroEyebrow={heroEyebrow}
-            heroTitle={heroTitle}
-            heroSubtitle={heroSubtitle}
-            heroSupportLine={heroSupportLine}
-            heroSpecChips={heroSpecChips}
-            heroBadge={heroBadge}
-            heroLimitsLine={heroLimitsLine}
-            showHeroDescriptions={showHeroDescriptions}
-            heroDesc1={heroDesc1}
-            heroDesc2={heroDesc2}
-            resolvedPrimaryCta={resolvedPrimaryCta}
-            normalizedPrimaryCtaHref={normalizedPrimaryCtaHref}
-            secondaryCta={secondaryCta}
-            localizedSecondaryCtaHref={localizedSecondaryCtaHref}
-            heroQuickLinks={heroQuickLinks}
-            pricingLinkHref={pricingLinkHref}
-            pricingLinkLabel={pricingLinkLabel}
-            heroTrustLine={heroTrustLine}
-            isEsLocale={isEsLocale}
-            howToLatamTitle={howToLatamTitle}
-            howToLatamSteps={howToLatamSteps}
-            heroMedia={heroMedia}
-            locale={locale}
-            audioBadgeLabel={audioBadgeLabel}
-            heroMetaLines={heroMetaLines}
-            mediaAltContexts={mediaAltContexts}
-            bestUseCaseItems={bestUseCaseItems}
-            bestUseCases={bestUseCases}
-            bestUseCasesTitle={copy.bestUseCasesTitle}
-            whyTitle={copy.whyTitle}
-            heroHighlights={heroHighlights}
+      <main className={['container-page model-page overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+        <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
+          {templateData ? (
+            <>
+              <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
+              <ModelDecisionPricingCard pricing={templateData.pricing} />
+            </>
+          ) : (
+            <ModelHeroSection
+              modelsPathname={modelsPathname}
+              backLabel={backLabel}
+              localizeModelsPath={localizeModelsPath}
+              resolvedBreadcrumb={resolvedBreadcrumb}
+              breadcrumbModelLabel={breadcrumbModelLabel}
+              heroEyebrow={heroEyebrow}
+              heroTitle={heroTitle}
+              heroSubtitle={heroSubtitle}
+              heroSupportLine={heroSupportLine}
+              heroSpecChips={heroSpecChips}
+              heroBadge={heroBadge}
+              heroLimitsLine={heroLimitsLine}
+              showHeroDescriptions={showHeroDescriptions}
+              heroDesc1={heroDesc1}
+              heroDesc2={heroDesc2}
+              resolvedPrimaryCta={resolvedPrimaryCta}
+              normalizedPrimaryCtaHref={normalizedPrimaryCtaHref}
+              secondaryCta={secondaryCta}
+              localizedSecondaryCtaHref={localizedSecondaryCtaHref}
+              heroQuickLinks={heroQuickLinks}
+              pricingLinkHref={pricingLinkHref}
+              pricingLinkLabel={pricingLinkLabel}
+              heroTrustLine={heroTrustLine}
+              isEsLocale={isEsLocale}
+              howToLatamTitle={howToLatamTitle}
+              howToLatamSteps={howToLatamSteps}
+              heroMedia={heroMedia}
+              locale={locale}
+              audioBadgeLabel={audioBadgeLabel}
+              heroMetaLines={heroMetaLines}
+              mediaAltContexts={mediaAltContexts}
+              bestUseCaseItems={bestUseCaseItems}
+              bestUseCases={bestUseCases}
+              bestUseCasesTitle={copy.bestUseCasesTitle}
+              whyTitle={copy.whyTitle}
+              heroHighlights={heroHighlights}
+            />
+          )}
+          <ModelPageContentSections
+            isDecision={Boolean(templateData)}
+            tocProps={{ items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
+            specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels }}
+            pricingCallout={legacyPricingCallout}
+            microCta={legacyMicroCta}
+            microCtaHref={normalizedPrimaryCtaHref}
+            examplesProps={{
+              hideExamplesSection,
+              textAnchorId,
+              copy,
+              galleryVideos,
+              galleryPreviewAlts,
+              engineSlug: engine.id,
+              fallbackImageUrl: heroMedia.posterUrl ?? localizedContent.seo.image ?? null,
+              isImageEngine: usesImageExampleFallback,
+              locale,
+              examplesLinkHref,
+              galleryCtaHref,
+            }}
+            decisionCards={templateData?.decisionCards ?? null}
+            promptingProps={{
+              imageAnchorId,
+              isVideoEngine,
+              copy,
+              supportsNativeAudio,
+              demoMedia,
+              engineSlug: engine.id,
+              isImageEngine,
+              locale,
+              modelName: heroTitle,
+              audioBadgeLabel,
+              mediaAltContexts,
+              useDemoMediaPrompt,
+              decisionReferenceWorkflows: templateData?.referenceWorkflows,
+            }}
+            prepLinksProps={{ prepLinksSection, locale }}
+            tipsProps={{ hasTipsSection, copy, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
+            compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
+            safetyFaqProps={{ copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
           />
-
-        <ModelPageToc items={tocItems} />
-
-        <ModelSpecsSection
-          hasSpecs={hasSpecs}
-          specTitle={specTitle}
-          specNote={specNote}
-          keySpecRows={keySpecRows}
-          specSectionsToShow={specSectionsToShow}
-          isImageEngine={isImageEngine}
-          locale={locale}
-          statusLabels={statusLabels}
-        />
-
-        <ModelPricingCallout callout={pricingCallout} />
-
-        {isImageEngine && copy.microCta ? (
-          <div className="flex justify-center">
-            <Link
-              href={normalizedPrimaryCtaHref}
-              className="text-sm font-semibold text-brand transition hover:text-brandHover"
-            >
-              {copy.microCta}
-            </Link>
-          </div>
-        ) : null}
-
-
-        <ModelExamplesSection
-          hideExamplesSection={hideExamplesSection}
-          textAnchorId={textAnchorId}
-          copy={copy}
-          galleryVideos={galleryVideos}
-          galleryPreviewAlts={galleryPreviewAlts}
-          locale={locale}
-          examplesLinkHref={examplesLinkHref}
-          galleryCtaHref={galleryCtaHref}
-        />
-
-        <ModelPromptingSection
-          imageAnchorId={imageAnchorId}
-          isVideoEngine={isVideoEngine}
-          copy={copy}
-          supportsNativeAudio={supportsNativeAudio}
-          demoMedia={demoMedia}
-          locale={locale}
-          audioBadgeLabel={audioBadgeLabel}
-          mediaAltContexts={mediaAltContexts}
-          useDemoMediaPrompt={useDemoMediaPrompt}
-        />
-
-        <ModelPrepLinksSection prepLinksSection={prepLinksSection} locale={locale} />
-
-        <ModelTipsSection
-          hasTipsSection={hasTipsSection}
-          copy={copy}
-          strengths={strengths}
-          troubleshootingItems={troubleshootingItems}
-          boundaries={boundaries}
-          tipsCardLabels={tipsCardLabels}
-          troubleshootingTitle={troubleshootingTitle}
-        />
-
-        <ModelCompareSection
-          hasCompareSection={hasCompareSection}
-          compareAnchorId={compareAnchorId}
-          focusVsConfig={focusVsConfig}
-          localizeModelsPath={localizeModelsPath}
-          hasCompareGrid={hasCompareGrid}
-          compareCopy={compareCopy}
-          relatedItems={relatedItems}
-          compareEngines={compareEngines}
-          engineSlug={engineSlug}
-          localizeComparePath={localizeComparePath}
-          locale={locale}
-          heroTitle={heroTitle}
-        />
-
-        <ModelSafetyFaqSection
-          copy={copy}
-          safetyRules={safetyRules}
-          safetyInterpretation={safetyInterpretation}
-          faqList={faqList}
-          faqTitle={faqTitle}
-          locale={locale}
-          isSoraPrompting={isSoraPrompting}
-          faqJsonLdEntries={faqJsonLdEntries}
-        />
         </div>
       </main>
     </>

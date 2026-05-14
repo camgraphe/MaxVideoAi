@@ -5,6 +5,7 @@ import {
   SECTION_SCROLL_MARGIN,
   type SoraCopy,
 } from '../_lib/model-page-specs';
+import { ModelDecisionTipsSection } from './ModelDecisionTipsSection';
 
 type TipsCardLabels = {
   strengths: string;
@@ -14,23 +15,43 @@ type TipsCardLabels = {
 type ModelTipsSectionProps = {
   hasTipsSection: boolean;
   copy: SoraCopy;
+  modelName: string;
   strengths: string[];
   troubleshootingItems: string[];
   boundaries: string[];
   tipsCardLabels: TipsCardLabels;
   troubleshootingTitle: string | null;
+  variant?: 'default' | 'decision';
 };
 
 export function ModelTipsSection({
   hasTipsSection,
   copy,
+  modelName,
   strengths,
   troubleshootingItems,
   boundaries,
   tipsCardLabels,
   troubleshootingTitle,
+  variant = 'default',
 }: ModelTipsSectionProps) {
-  return hasTipsSection ? (
+  if (!hasTipsSection) return null;
+
+  if (variant === 'decision') {
+    return (
+      <ModelDecisionTipsSection
+        copy={copy}
+        modelName={modelName}
+        strengths={strengths}
+        troubleshootingItems={troubleshootingItems}
+        boundaries={boundaries}
+        tipsCardLabels={tipsCardLabels}
+        troubleshootingTitle={troubleshootingTitle}
+      />
+    );
+  }
+
+  return (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.tipsTitle ?? 'Tips & Limitations'}
@@ -87,5 +108,5 @@ export function ModelTipsSection({
               );
             })()}
           </section>
-  ) : null;
+  );
 }
