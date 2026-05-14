@@ -29,7 +29,7 @@
     },
     {
       "q": "Can Sora 2 generate 1080p videos?",
-      "a": "This tier outputs 720p. For higher resolution (up to 1792×1024), use Sora 2 Pro."
+      "a": "The current MaxVideoAI Sora 2 route outputs 720p. Use Sora 2 Pro when the selected shot needs 1080p review output."
     },
     {
       "q": "Does Sora 2 support image-to-video?",
@@ -135,8 +135,8 @@
       "5. See the final price per clip before you generate.",
       "6. Compare against other engines in the same GUI."
     ],
-    "specTitle": "Real Specs — OpenAI Sora 2",
-    "specNote": "Real-world specs (as available in MaxVideoAI today)",
+    "specTitle": "Sora 2 specs on MaxVideoAI",
+    "specNote": "Current MaxVideoAI route limits. Broader model-family capabilities may differ from what this app route exposes.",
     "specSections": [
       {
         "title": "Prompting & shot language",
@@ -194,7 +194,7 @@
       "Great for UGC-feeling footage and cinematic inserts"
     ],
     "boundaries": [
-      "Outputs are 720p — Sora 2 Pro covers higher resolution (up to 1792×1024).",
+      "The current MaxVideoAI Sora 2 route outputs 720p. Use Sora 2 Pro for 1080p review output.",
       "It’s 4–12 seconds, not long-form. Stitch multiple clips for longer edits.",
       "No video input; start from text or image.",
       "No seeds; iterate by refining the prompt and re-running.",
@@ -215,7 +215,7 @@
     "comparisonPoints": [
       "Sora 2 is your fast 720p idea machine.",
       "Sora 2 Pro is your higher-resolution, more controllable sibling.",
-      "Storyboard with Sora 2, then regenerate finals in Sora 2 Pro with high-res (up to 1792×1024) and audio control."
+      "Storyboard with Sora 2, then regenerate selected shots in Sora 2 Pro when you need 1080p review output and tighter finishing control."
     ],
     "comparisonCta": "Start with Sora 2, move to Sora 2 Pro when you’re ready for higher resolution →",
     "relatedTitle": "Explore other models",
@@ -267,7 +267,7 @@
     "promptingTitle": "How to Write a Great Sora 2 Prompt",
     "promptingIntro": "Sora 2 works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
     "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
-    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideLabel": "Official Sora 2 prompting guide",
     "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
     "tipsIntro": "Sora is most predictable when you keep the shot simple, readable, and physical.",
     "promptingTabs": [

@@ -83,7 +83,7 @@
     },
     {
       "label": "Inputs",
-      "body": "Text → Video; Generate Video from a single start image; optional last-frame guidance"
+      "body": "Text → Video; Image-to-Video from one start image; First/Last frame with one opening image and one ending image"
     },
     {
       "label": "Audio",
@@ -159,12 +159,12 @@
     },
     {
       "q": "Can I run Veo 3.1 Lite from Europe or LATAM?",
-      "a": "Yes. It uses the same MaxVideoAI wallet/workspace and licensed DeepMind routing—no separate billing needed."
+      "a": "Yes. It uses the same MaxVideoAI wallet/workspace and managed provider routing — no separate billing needed."
     }
   ],
   "custom": {
     "heroDesc1": "Veo 3.1 Lite brings DeepMind’s cinematic engine to a lower price point and faster turnaround, perfect for rapid testing, guided endings, and social loops.",
-    "heroDesc2": "Start from a short text brief or a single start image, add a Last frame only when you need to steer the ending, then pick 4/6/8 seconds, choose 16:9 or 9:16, and generate variants fast enough to A/B multiple ideas in one session.",
+    "heroDesc2": "Start from a short text brief, one start image, or a first/last frame pair, then pick 4/6/8 seconds, choose 16:9 or 9:16, and generate variants fast enough to A/B multiple ideas in one session.",
     "heroSupportLine": "Best for exploring hooks, guided endings, and pacing fast before you regenerate winners in Veo 3.1.",
     "whyTitle": "Why Veo 3.1 Lite is powerful",
     "heroHighlights": [
@@ -206,8 +206,8 @@
     "whatFlowTitle": "MaxVideoAI flow:",
     "whatFlowSteps": [
       "1. Pick Veo 3.1 Lite as the engine.",
-      "2. Start from text or add a Start image.",
-      "3. Add a Last frame only when you need to steer the ending.",
+      "2. Start from text, add one Start image, or use First/Last frame with one opening and one ending image.",
+      "3. Keep reference input focused; Lite is not a multi-style reference stack.",
       "4. Set duration, orientation and resolution.",
       "5. Paste a tight, sensory prompt with any simple ambience or dialogue cues.",
       "6. Check the live price and render."
@@ -241,11 +241,11 @@
     "galleryIntro": "Explore clips generated with Veo 3.1 Lite using the same presets you have.",
     "galleryAllCta": "View all Veo 3.1 Lite examples →",
     "recreateLabel": "Recreate this shot →",
-    "imageTitle": "Image-to-Video Flow with Google Veo 3.1 Lite",
-    "imageIntro": "Animate a single still into a quick loop or hero shot.",
+    "imageTitle": "Image and First/Last frame flow with Google Veo 3.1 Lite",
+    "imageIntro": "Animate one start image, or guide both the opening and ending frame when the landing composition matters.",
     "imageFlow": [
-      "Upload a lifestyle or product photo.",
-      "Choose Image → Video, duration (4/6/8 s), aspect ratio and resolution.",
+      "Upload one lifestyle or product photo as the start image.",
+      "Use First/Last frame only when you have both the opening and ending compositions approved.",
       "Prompt subtle camera and subject motion, plus any simple ambience or dialogue cues you need.",
       "Generate variants by changing one element at a time (camera speed, VO tone, time of day)."
     ],
@@ -312,7 +312,7 @@
       },
       {
         "q": "Can I run Veo 3.1 Lite from Europe / LATAM?",
-        "a": "Yes. Same MaxVideoAI wallet/workspace and licensed DeepMind routing—no separate billing."
+        "a": "Yes. Same MaxVideoAI wallet/workspace and managed provider routing — no separate billing."
       }
     ],
     "relatedTitle": "Explore other models",

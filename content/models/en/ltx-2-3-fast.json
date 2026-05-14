@@ -255,15 +255,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Demo prompt - vertical hook test",
-    "demoPromptLabel": "9:16 social hook",
+    "demoTitle": "Demo prompt - fast cinematic draft",
+    "demoPromptLabel": "16:9 draft check",
     "demoPrompt": [
-      "A vertical beauty ad opener, close-up on a product as condensation slides across the bottle, fast push-in, crisp reflections, subtle impact sound, 6 seconds."
+      "A powerful boxer walks alone through a dark arena tunnel toward the ring, athletic frame wrapped in a hooded robe, shoulders relaxed but dangerous. Low front tracking shot, slow push-in, hard rim light, drifting haze, muted crowd rumble and one sharp impact cue, 10 seconds, 16:9."
     ],
     "demoNotes": [
-      "Built for hook testing",
-      "Clear first shot and sound cue",
-      "Easy to rerun in multiple variants"
+      "Built for a fast motion check",
+      "One subject, one move and one atmosphere",
+      "Easy to rerun before a Pro pass"
     ],
     "multishotTitle": "Longer fast beats",
     "multishotIntro1": "Fast can run longer than the LTX 2.3 Pro generate path, which is useful for simple walkthroughs and pacing tests.",

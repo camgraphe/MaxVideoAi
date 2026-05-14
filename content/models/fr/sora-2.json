@@ -29,7 +29,7 @@
     },
     {
       "q": "Sora 2 peut-il générer du 1080p ?",
-      "a": "Ce niveau sort en 720p. Pour une résolution plus élevée (jusqu’à 1792×1024), utilisez Sora 2 Pro."
+      "a": "La route Sora 2 actuelle sur MaxVideoAI sort en 720p. Utilisez Sora 2 Pro quand le plan retenu demande une sortie de revue en 1080p."
     },
     {
       "q": "Sora 2 prend-il en charge l’image→vidéo ?",
@@ -135,8 +135,8 @@
       "5. Voir le prix final avant génération.",
       "6. Comparer aux autres modèles dans la même interface."
     ],
-    "specTitle": "Specs réelles — OpenAI Sora 2",
-    "specNote": "Les limites qui structurent vos rendus.",
+    "specTitle": "Specs Sora 2 sur MaxVideoAI",
+    "specNote": "Limites de la route MaxVideoAI actuelle. Les capacités plus larges de la famille de modèles peuvent différer de ce que cette route expose dans l’app.",
     "specSections": [
       {
         "title": "Prompting & langage de plan",
@@ -194,7 +194,7 @@
       "Idéal pour des plans UGC et inserts cinématiques"
     ],
     "boundaries": [
-      "Sorties en 720p — Sora 2 Pro couvre les résolutions supérieures (jusqu’à 1792×1024).",
+      "La route Sora 2 actuelle sur MaxVideoAI sort en 720p. Utilisez Sora 2 Pro pour une sortie de revue en 1080p.",
       "C’est 4–12 s, pas du long‑form. Assemblez plusieurs clips pour des montages longs.",
       "Pas d’entrée vidéo ; démarrez depuis texte ou image.",
       "Pas de seed ; itérez en affinant le prompt.",
@@ -215,7 +215,7 @@
     "comparisonPoints": [
       "Sora 2 = machine à idées 720p rapide.",
       "Sora 2 Pro = plus de résolution et de contrôle.",
-      "Storyboard avec Sora 2, puis finals en Sora 2 Pro (jusqu’à 1792×1024) avec contrôle audio."
+      "Storyboard avec Sora 2, puis régénérez les plans retenus en Sora 2 Pro quand il faut une sortie de revue en 1080p et un meilleur contrôle de finition."
     ],
     "comparisonCta": "Commencer avec Sora 2, passer à Sora 2 Pro quand vous voulez plus de résolution →",
     "relatedTitle": "Explorer d’autres modèles",
@@ -267,7 +267,7 @@
     "promptingTitle": "Comment écrire un excellent prompt Sora 2",
     "promptingIntro": "Sora 2 fonctionne mieux quand vous le briefez comme un chef op : un plan clair, un timing simple et des actions lisibles.",
     "promptingTip": "Astuce : durée + format sont définis dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et son.",
-    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideLabel": "Guide officiel de prompting Sora 2",
     "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
     "tipsIntro": "Sora est plus prévisible quand le plan reste simple, lisible et physique.",
     "promptingTabs": [

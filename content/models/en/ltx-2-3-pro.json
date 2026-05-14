@@ -99,7 +99,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Pay-as-you-go; displayed generate pricing starts around $0.08/s at 1080p, $0.16/s at 1440p, and $0.31/s at 4K"
+      "body": "Pay-as-you-go; the page uses shared MaxVideoAI display totals for preset generate scenarios, while the app shows the exact live quote by workflow."
     }
   ],
   "promptStructure": {
@@ -160,6 +160,14 @@
     {
       "q": "Does LTX 2.3 Fast include Audio-to-Video, Extend or Retake?",
       "a": "No. LTX 2.3 Fast is limited to text-to-video and image-to-video in the current MaxVideoAI route."
+    },
+    {
+      "q": "How much does LTX 2.3 Pro cost?",
+      "a": "Use the pricing card for preset MaxVideoAI display totals, then confirm the exact live quote in Generate. Price varies by workflow, duration, resolution, fps and audio settings."
+    },
+    {
+      "q": "Does 4K work with Audio-to-Video, Extend and Retake?",
+      "a": "4K, 9:16 and fps controls are scoped to standard Text-to-Video and Image-to-Video generate modes in the current route. Audio-to-Video, Extend and Retake can have workflow-specific limits."
     }
   ],
   "custom": {
@@ -257,15 +265,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Demo prompt - audio-led performance",
-    "demoPromptLabel": "A2V performance clip",
+    "demoTitle": "Demo prompt - desert compass reveal",
+    "demoPromptLabel": "Generate prompt",
     "demoPrompt": [
-      "Use the uploaded song preview as timing reference for a moody warehouse dance performance, with slow lateral camera movement in the intro and tighter emotional close-ups when the chorus lands."
+      "A rugged adventurer stands on the edge of a vast desert cliff at golden hour, sunburned face, worn leather jacket, scarf moving in the wind. He opens an ancient brass compass in his hand, and a glowing map made of floating light and dust unfolds above it, illuminating his face and the sand around him. The camera starts wide behind him to show the endless dunes, then pushes in slowly as he raises the compass, ending on a dramatic close view of his eyes reflecting the glowing map. Warm sun, drifting dust, rich bronze textures, epic but clean composition, premium cinematic adventure tone, simple and iconic. Wind over the dunes, faint metallic click from the compass, low atmospheric desert rumble, no text, no logos, no watermark."
     ],
     "demoNotes": [
-      "Audio defines rhythm and structure",
-      "Prompt adds staging and camera direction",
-      "Optional opening image can lock the first frame"
+      "One subject and one reveal beat",
+      "Camera path moves from establishing shot to close-up",
+      "Audio cues support the compass and desert atmosphere"
     ],
     "multishotTitle": "Continuation and pickup workflows",
     "multishotIntro1": "LTX 2.3 Pro is less about long-form generation than about keeping momentum when a shot already exists.",

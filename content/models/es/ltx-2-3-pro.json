@@ -99,7 +99,7 @@
     },
     {
       "label": "Precios",
-      "body": "Pago por uso; el precio mostrado de generación empieza alrededor de 0,08 $/s en 1080p, 0,16 $/s en 1440p y 0,31 $/s en 4K"
+      "body": "Pago por uso; la página usa totales mostrados por MaxVideoAI desde el helper compartido para escenarios Generate, y la app muestra la cotización exacta según el workflow."
     }
   ],
   "promptStructure": {
@@ -160,6 +160,14 @@
     {
       "q": "¿LTX 2.3 Fast incluye Audio a video, Extend o Retake?",
       "a": "No. LTX 2.3 Fast está limitado a texto a video e imagen a video en la ruta actual de MaxVideoAI."
+    },
+    {
+      "q": "¿Cuánto cuesta LTX 2.3 Pro?",
+      "a": "Usa la tarjeta de precios para ver totales mostrados por MaxVideoAI y confirma la cotización exacta en Generate. El precio cambia por workflow, duración, resolución, fps y ajustes de audio."
+    },
+    {
+      "q": "¿4K funciona con Audio-to-Video, Extend y Retake?",
+      "a": "En la ruta actual, 4K, 9:16 y los controles de fps se aplican principalmente a los modos Generate Text-to-Video e Image-to-Video. Audio-to-Video, Extend y Retake pueden tener límites específicos por workflow."
     }
   ],
   "custom": {
@@ -257,15 +265,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - performance guiada por audio",
-    "demoPromptLabel": "Clip de performance A2V",
+    "demoTitle": "Prompt demo - brújula en el desierto",
+    "demoPromptLabel": "Prompt Generate",
     "demoPrompt": [
-      "Usa el preview musical subido como referencia de timing para una performance de baile melancólica en un almacén, con movimiento lateral lento de cámara en la intro y primeros planos más cerrados y emocionales cuando entra el coro."
+      "Un aventurero robusto está al borde de un acantilado desértico enorme durante golden hour, rostro quemado por el sol, chaqueta de cuero gastada, pañuelo moviéndose con el viento. Abre una antigua brújula de latón en la mano, y un mapa luminoso hecho de luz y polvo se despliega encima, iluminando su rostro y la arena alrededor. La cámara empieza en un plano amplio desde atrás para mostrar las dunas infinitas, luego avanza lentamente cuando levanta la brújula y termina en un primer plano dramático de sus ojos reflejando el mapa luminoso. Sol cálido, polvo flotando, texturas bronce, composición épica pero limpia, tono de aventura cinematográfica premium, simple e icónico. Viento sobre las dunas, clic metálico sutil de la brújula, rumble atmosférico bajo del desierto, sin texto, sin logos, sin watermark."
     ],
     "demoNotes": [
-      "El audio define ritmo y estructura",
-      "El prompt añade staging y dirección de cámara",
-      "Una imagen inicial opcional puede fijar el primer frame"
+      "Un sujeto claro y un solo beat de revelación",
+      "La cámara pasa del plano general al primer plano",
+      "Los sonidos apoyan la brújula y la atmósfera del desierto"
     ],
     "multishotTitle": "Workflows de continuación y corrección",
     "multishotIntro1": "LTX 2.3 Pro es menos un motor de generación long-form que una herramienta para mantener el impulso cuando la toma ya existe.",

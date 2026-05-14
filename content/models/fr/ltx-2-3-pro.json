@@ -99,7 +99,7 @@
     },
     {
       "label": "Tarification",
-      "body": "Paiement à l'usage ; le prix affiché en génération commence autour de 0,08 $/s en 1080p, 0,16 $/s en 1440p et 0,31 $/s en 4K"
+      "body": "Paiement à l’usage ; la page utilise les totaux affichés MaxVideoAI issus du helper partagé pour les scénarios Generate, et l’app donne le devis exact selon le workflow."
     }
   ],
   "promptStructure": {
@@ -160,6 +160,14 @@
     {
       "q": "LTX 2.3 Fast inclut-il Audio vers vidéo, Extend ou Retake ?",
       "a": "Non. LTX 2.3 Fast est limité à texte vers vidéo et image vers vidéo dans la route MaxVideoAI actuelle."
+    },
+    {
+      "q": "Combien coûte LTX 2.3 Pro ?",
+      "a": "Utilisez la carte pricing pour les totaux affichés MaxVideoAI, puis confirmez le devis exact dans Generate. Le prix varie selon workflow, durée, résolution, fps et réglages audio."
+    },
+    {
+      "q": "La 4K fonctionne-t-elle avec Audio-to-Video, Extend et Retake ?",
+      "a": "Dans la route actuelle, la 4K, le 9:16 et les contrôles fps sont surtout liés aux modes Generate Text-to-Video et Image-to-Video. Audio-to-Video, Extend et Retake peuvent avoir des limites propres au workflow."
     }
   ],
   "custom": {
@@ -257,15 +265,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt de démo - performance pilotée par audio",
-    "demoPromptLabel": "Clip de performance A2V",
+    "demoTitle": "Prompt de démo - boussole dans le désert",
+    "demoPromptLabel": "Prompt Generate",
     "demoPrompt": [
-      "Utilisez l'extrait musical uploadé comme référence de timing pour une performance de danse mélancolique en entrepôt, avec un lent mouvement caméra latéral dans l'intro et des gros plans plus serrés et émotionnels à l'arrivée du refrain."
+      "Un aventurier robuste se tient au bord d'une falaise désertique immense à la golden hour, visage marqué par le soleil, veste en cuir usée, foulard agité par le vent. Il ouvre une ancienne boussole en laiton dans sa main, et une carte lumineuse faite de lumière et de poussière se déploie au-dessus, éclairant son visage et le sable autour de lui. La caméra commence en plan large derrière lui pour montrer les dunes infinies, puis avance lentement lorsqu'il lève la boussole, jusqu'à un gros plan dramatique sur ses yeux reflétant la carte lumineuse. Soleil chaud, poussière flottante, textures bronze, composition épique mais propre, ton d'aventure cinématique premium, simple et iconique. Vent sur les dunes, léger clic métallique de la boussole, grondement désertique bas, pas de texte, pas de logo, pas de watermark."
     ],
     "demoNotes": [
-      "L'audio définit le rythme et la structure",
-      "Le prompt ajoute le staging et la direction caméra",
-      "Une image d'ouverture optionnelle peut verrouiller la première frame"
+      "Un sujet clair et un seul beat de révélation",
+      "La caméra passe du plan d'ensemble au gros plan",
+      "Les sons soutiennent la boussole et l'atmosphère désertique"
     ],
     "multishotTitle": "Workflows de continuation et de correction",
     "multishotIntro1": "LTX 2.3 Pro est moins un modèle de génération long-form qu'un modèle de continuité quand un plan existe déjà.",

@@ -40,7 +40,7 @@ export const seedance15ProTemplateConfig: ModelPageTemplateConfig = {
         noteKey: 'imageToVideoRouteOnly',
         highlightKey: 'mostPopular',
       },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080pI2vOnly' },
     ],
   },
   sections: {

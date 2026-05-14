@@ -174,8 +174,15 @@ async function renderMarketingModelPage({
     const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
     return normalized ? allowedEngineIds.has(normalized) : false;
   });
-  const validatedMap = await getPublicVideosByIds(soraExamples.map((video) => video.id));
-  let galleryVideos = soraExamples
+  const safeSoraExamples =
+    engine.modelSlug === 'sora-2'
+      ? soraExamples.filter((video) => {
+          const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
+          return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
+        })
+      : soraExamples;
+  const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
+  let galleryVideos = safeSoraExamples
     .filter((video) => validatedMap.has(video.id))
     .map((video) =>
       toGalleryCard(
@@ -218,6 +225,22 @@ async function renderMarketingModelPage({
       const aScore = (isSixteenNine(a.aspectRatio) ? 0 : 2) + (a.videoUrl ? 0 : 1);
       const bScore = (isSixteenNine(b.aspectRatio) ? 0 : 2) + (b.videoUrl ? 0 : 1);
       return aScore - bScore;
+    });
+  }
+  if (engine.modelSlug === 'veo-3-1-fast') {
+    const promptOverrides = new Map<string, string>([
+      [
+        'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
+        '8s 16:9 Veo 3.1 Fast desk draft with a presenter, slow handheld drift, soft typing, city ambience, and one short calm line.',
+      ],
+      [
+        'job_3ee52c57-e023-4e98-9b45-c3ec7b60edf5',
+        'Veo 3.1 Fast portrait interview draft of a man speaking about happiness, audio on, 16:9.',
+      ],
+    ]);
+    galleryVideos = galleryVideos.map((video) => {
+      const prompt = promptOverrides.get(video.id);
+      return prompt ? { ...video, prompt, promptFull: prompt } : video;
     });
   }
 

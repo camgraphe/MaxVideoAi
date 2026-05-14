@@ -29,14 +29,29 @@ export const veo31LiteTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#veo-3-1-lite-pricing',
     presets: [
-      { id: '4s-720p-audio', seconds: 4, resolution: '720p', audio: true, labelKey: 'entryDraft' },
-      { id: '6s-720p-audio', seconds: 6, resolution: '720p', audio: true, labelKey: 'standardPreview' },
+      {
+        id: '4s-720p-audio',
+        seconds: 4,
+        resolution: '720p',
+        audio: true,
+        labelKey: 'entryDraft',
+        noteKey: 'fourSeconds720pAudioIncluded',
+      },
+      {
+        id: '6s-720p-audio',
+        seconds: 6,
+        resolution: '720p',
+        audio: true,
+        labelKey: 'standardPreview',
+        noteKey: 'sixSeconds720pAudioIncluded',
+      },
       {
         id: '8s-1080p-audio',
         seconds: 8,
         resolution: '1080p',
         audio: true,
         labelKey: 'commonProductionCheck',
+        noteKey: 'eightSeconds1080pAudioIncluded',
         highlightKey: 'mostPopular',
       },
       { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },

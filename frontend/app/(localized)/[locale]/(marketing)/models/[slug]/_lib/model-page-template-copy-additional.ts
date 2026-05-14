@@ -1559,7 +1559,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       { title: 'Seed control', body: 'Reuse a seed for repeatable variants and A/B creative passes.', tone: 'quality' },
       { title: 'Start/end frames', body: 'Guide image-to-video landings with an optional final frame.', tone: 'reference' },
       { title: 'Audio on/off', body: 'Generate with native sound, or switch audio off for lower-cost silent drafts.', tone: 'audio' },
-      { title: 'Up to 1080p', body: 'Use higher resolution when the active mode exposes it in MaxVideoAI.', tone: 'quality' },
+      { title: '1080p on I2V', body: 'Use 1080p on image-to-video checks; text-to-video stays on 480p or 720p presets.', tone: 'quality' },
       { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
     ],
     decisionCards: [
@@ -1591,7 +1591,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Preset audio-on totals - see the exact live price in the app before you generate.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios. Audio-off routes may quote lower in the app.',
       ctaLabel: 'View full pricing',
-      maxDurationNote: 'Up to 1080p where available',
+      maxDurationNote: '1080p on I2V only',
     },
     meta: {
       title: 'Seedance 1.5 Pro: Pricing & Camera Fixed | MaxVideoAI',
@@ -1627,7 +1627,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       { title: 'Contrôle seed', body: 'Réutilisez un seed pour des variantes répétables et des tests A/B.', tone: 'quality' },
       { title: 'Images départ/fin', body: 'Guidez la fin image-to-video avec une image finale optionnelle.', tone: 'reference' },
       { title: 'Audio on/off', body: 'Générez avec son natif ou coupez l’audio pour des brouillons moins chers.', tone: 'audio' },
-      { title: 'Jusqu’à 1080p', body: 'Utilisez la haute résolution quand le mode actif l’expose dans MaxVideoAI.', tone: 'quality' },
+      { title: '1080p en I2V', body: 'Utilisez le 1080p sur les checks image-to-video ; le texte-vidéo reste en presets 480p ou 720p.', tone: 'quality' },
       { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
     ],
     decisionCards: [
@@ -1659,7 +1659,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Prix totaux avec audio — prix exact affiché dans l’app avant génération.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD. Les routes audio off peuvent être moins chères dans l’app.',
       ctaLabel: 'Voir tous les tarifs',
-      maxDurationNote: 'Jusqu’à 1080p selon le mode',
+      maxDurationNote: '1080p en I2V uniquement',
     },
     meta: {
       title: 'Seedance 1.5 Pro : tarifs et camera fixed | MaxVideoAI',
@@ -1695,7 +1695,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       { title: 'Control de seed', body: 'Reutiliza un seed para variantes repetibles y pruebas A/B.', tone: 'quality' },
       { title: 'Frames inicial/final', body: 'Guía el cierre image-to-video con un frame final opcional.', tone: 'reference' },
       { title: 'Audio on/off', body: 'Genera con sonido nativo o apaga audio para borradores más baratos.', tone: 'audio' },
-      { title: 'Hasta 1080p', body: 'Usa mayor resolución cuando el modo activo la expone en MaxVideoAI.', tone: 'quality' },
+      { title: '1080p en I2V', body: 'Usa 1080p en checks image-to-video; texto a video queda en presets 480p o 720p.', tone: 'quality' },
       { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
     ],
     decisionCards: [
@@ -1727,7 +1727,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
       subtitle: 'Totales con audio. Consulta el precio exacto en la app antes de generar.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD. Las rutas audio off pueden cotizar menos en la app.',
       ctaLabel: 'Ver precios completos',
-      maxDurationNote: 'Hasta 1080p según el modo',
+      maxDurationNote: '1080p solo en I2V',
     },
     meta: {
       title: 'Seedance 1.5 Pro: precios y camera fixed | MaxVideoAI',

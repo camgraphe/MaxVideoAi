@@ -112,6 +112,10 @@ function isVeoLiteRoute(engineSlug?: string) {
   return engineSlug === 'veo-3-1-lite';
 }
 
+function isVeoFastRoute(engineSlug?: string) {
+  return engineSlug === 'veo-3-1-fast';
+}
+
 function isSeedanceCurrentRoute(engineSlug?: string) {
   return engineSlug === 'seedance-2-0' || engineSlug === 'seedance-2-0-fast';
 }
@@ -122,6 +126,14 @@ function isSeedance15ProRoute(engineSlug?: string) {
 
 function isSora2ProRoute(engineSlug?: string) {
   return engineSlug === 'sora-2-pro';
+}
+
+function isLtx23FastRoute(engineSlug?: string) {
+  return engineSlug === 'ltx-2-3-fast';
+}
+
+function isLtx23ProRoute(engineSlug?: string) {
+  return engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
 }
 
 function isSilentVideoDecisionEngine(engineSlug?: string) {
@@ -442,6 +454,14 @@ function getCuratedDecisionExampleTitle(
     };
     return labels[locale]?.[index] ?? fallback;
   }
+  if (isVeoFastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Soldier stepping into abandoned factory', 'Close-up interview shot', 'Late-night desk loop', 'Man talking about happiness'],
+      fr: ['Soldat entrant dans une usine abandonnée', 'Interview en gros plan', 'Loop bureau de nuit', 'Homme parlant de bonheur'],
+      es: ['Soldado entrando en fábrica abandonada', 'Entrevista en primer plano', 'Loop de escritorio nocturno', 'Hombre hablando de felicidad'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   if (isSeedance15ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
       en: ['Luxury perfume commercial', 'Cinematic car motion', 'Camera-fixed product shot', 'Cinematic storyboard beat'],
@@ -455,6 +475,22 @@ function getCuratedDecisionExampleTitle(
       en: ['Studio dialogue test', 'Restaurant character scene', 'Vertical character beat', 'CCTV construction scene'],
       fr: ['Test dialogue studio', 'Scène restaurant personnage', 'Beat personnage vertical', 'Scène chantier CCTV'],
       es: ['Prueba diálogo estudio', 'Escena de personaje en restaurante', 'Beat vertical de personaje', 'Escena CCTV de obra'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isLtx23FastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Boxer tunnel draft', 'Glowing tech motion', 'Space product test', 'Desert vehicle pass'],
+      fr: ['Brouillon boxer tunnel', 'Motion tech lumineux', 'Test produit spatial', 'Passe véhicule désert'],
+      es: ['Borrador boxer túnel', 'Motion tech luminoso', 'Prueba producto espacial', 'Pasada vehículo desierto'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isLtx23ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Astronaut source image test', 'Portrait motion handoff', 'Sword action retake', 'Office gag retake'],
+      fr: ['Test image source astronaute', 'Handoff motion portrait', 'Retake action épée', 'Retake gag bureau'],
+      es: ['Test imagen fuente astronauta', 'Handoff motion retrato', 'Retake acción espada', 'Retake gag oficina'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -490,6 +526,14 @@ function getCuratedDecisionExampleCategory(
     };
     return labels[locale]?.[index] ?? fallback;
   }
+  if (isVeoFastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Cinematic · Action', 'Portrait · Interview', 'Social · Desk loop', 'Portrait · Audio'],
+      fr: ['Cinématique · Action', 'Portrait · Interview', 'Social · Loop bureau', 'Portrait · Audio'],
+      es: ['Cinemático · Acción', 'Portrait · Entrevista', 'Social · Loop escritorio', 'Portrait · Audio'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   if (isSeedance15ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
       en: ['Product · Beauty', 'Cinematic · Vehicle', 'Product · Camera fixed', 'Cinematic · Control test'],
@@ -503,6 +547,22 @@ function getCuratedDecisionExampleCategory(
       en: ['Dialogue · Audio', 'Narrative · Audio', 'Vertical · Character', 'Cinematic · Control test'],
       fr: ['Dialogue · Audio', 'Narratif · Audio', 'Vertical · Personnage', 'Cinématique · Test contrôle'],
       es: ['Diálogo · Audio', 'Narrativa · Audio', 'Vertical · Personaje', 'Cinemático · Prueba control'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isLtx23FastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Cinematic · Draft', 'Corporate · Motion', 'Product · Draft', 'Cinematic · Vehicle'],
+      fr: ['Cinématique · Brouillon', 'Corporate · Motion', 'Produit · Brouillon', 'Cinématique · Véhicule'],
+      es: ['Cinemático · Borrador', 'Corporativo · Motion', 'Producto · Borrador', 'Cinemático · Vehículo'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isLtx23ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Image-to-video · Source', 'Portrait · Motion', 'Retake · Action', 'Retake · Comedy'],
+      fr: ['Image-to-video · Source', 'Portrait · Motion', 'Retake · Action', 'Retake · Comédie'],
+      es: ['Imagen a video · Fuente', 'Retrato · Motion', 'Retake · Acción', 'Retake · Comedia'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -589,7 +649,10 @@ function buildDecisionExampleItems({
     isSeedanceCurrentRoute(engineSlug) ||
     isSeedance15ProRoute(engineSlug) ||
     isSora2ProRoute(engineSlug) ||
+    isLtx23FastRoute(engineSlug) ||
+    isLtx23ProRoute(engineSlug) ||
     isLumaRay2Route(engineSlug) ||
+    isVeoFastRoute(engineSlug) ||
     isVeoLiteRoute(engineSlug);
   const isSilentDraftEngine = isSilentVideoDecisionEngine(engineSlug);
 
@@ -613,8 +676,14 @@ function buildDecisionExampleItems({
         ? `Luma Ray 2 ${shortTitle.toLowerCase()}`
         : isSora2ProRoute(engineSlug)
           ? `Sora 2 Pro ${shortTitle.toLowerCase()}`
+        : isLtx23FastRoute(engineSlug)
+          ? `LTX 2.3 Fast ${shortTitle.toLowerCase()}`
+        : isLtx23ProRoute(engineSlug)
+          ? `LTX 2.3 Pro ${shortTitle.toLowerCase()}`
         : isVeoLiteRoute(engineSlug)
           ? `Veo 3.1 Lite ${shortTitle.toLowerCase()}`
+        : isVeoFastRoute(engineSlug)
+          ? `Veo 3.1 Fast ${shortTitle.toLowerCase()}`
           : isSeedance15ProRoute(engineSlug)
             ? `Seedance 1.5 Pro ${shortTitle.toLowerCase()}`
           : (galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`),

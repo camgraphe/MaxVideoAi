@@ -83,7 +83,7 @@
     },
     {
       "label": "Entradas",
-      "body": "Texto → Video; Generate Video desde una sola imagen inicial; modo Referencia con 1 a 4 imágenes; guiado opcional con último frame; Extend desde un video existente"
+      "body": "Texto → Video; Image-to-Video parte de una sola imagen inicial; el modo Referencia acepta 1 a 4 imágenes; First/Last frame usa una imagen inicial y un frame final; Extend desde un video existente"
     },
     {
       "label": "Audio",
@@ -91,7 +91,7 @@
     },
     {
       "label": "Precio",
-      "body": "Por segundo; ejemplo: audio on ≈$0.15/s, audio off ≈$0.10/s; wallet pay‑as‑you‑go"
+      "body": "La tarifa mostrada por MaxVideoAI es aprox. $0.20/s con audio activado y $0.13/s con audio desactivado; la cotización exacta aparece antes de generar"
     },
     {
       "label": "Tiempo de render",
@@ -101,7 +101,7 @@
   "promptStructure": {
     "title": "Texto y reference-to-video con Google Veo 3.1 Fast",
     "quote": "Bosque con neblina al amanecer, plano medio centrado en una roca con musgo. La cámara avanza lentamente mientras aparecen rayos suaves entre los árboles, 6 segundos, 16:9 a 1080p. Audio: pájaros suaves y viento, sin diálogo.",
-    "description": "Mantén los prompts cortos, de una sola escena y sensoriales. En modo Referencia, añade 1 a 4 imágenes y escribe un brief de 8 s para preservar sujeto, vestuario, producto o estilo.",
+    "description": "Mantén los prompts cortos, de una sola escena y sensoriales. Usa una imagen inicial para Image-to-Video, o añade 1 a 4 imágenes en modo Referencia para un pase de consistencia de 8 s.",
     "steps": [
       "Sujeto + punto focal (una sola idea para todo el clip)",
       "Entorno en una sola ubicación",
@@ -109,14 +109,14 @@
       "Luz y mood (día, neón, oficina cálida, etc.)",
       "Audio (opcional): ambiente + VO corta, o indica “sin diálogo”",
       "Formato y duración (16:9, 9:16 o 1:1 cuando esté disponible; 4/6/8 s)",
-      "Modo Referencia: añade 1 a 4 imágenes para un pase de consistencia de 8 s"
+      "Image-to-Video: usa una imagen inicial; modo Referencia: añade 1 a 4 imágenes para un pase de consistencia de 8 s"
     ]
   },
   "tips": {
     "title": "Consejos y límites",
     "items": [
       "⚡ Usa Fast como sandbox para A/B tests y ajustes de prompt",
-      "🧩 Usa el modo Referencia con 1 a 4 imágenes cuando identidad, vestuario o producto deban mantenerse coherentes",
+      "🧩 Usa una imagen inicial para Image-to-Video, o el modo Referencia con 1 a 4 imágenes cuando identidad, vestuario o producto deban mantenerse coherentes",
       "🎚️ Conmutador de audio: mezcla rápida cuando está on, runs más baratos cuando está off",
       "📱 Optimiza para formatos sociales donde 4–8 segundos cuentan la historia",
       "🖼️ Enfoque mono‑escena; evita narrativas multi‑locación en este nivel",
@@ -137,14 +137,14 @@
       "prompt": "Plano reference-to-video de 8 s en 16:9 con 1 a 4 imágenes de producto y vestuario, tracking lento por una calle de neón, preservar rostro, outfit, forma del logo y detalles de material, ambiente urbano sutil."
     },
     {
-      "title": "Loop vertical de escritorio nocturno",
-      "prompt": "Loop 6 s 9:16 de una joven trabajando tarde en un escritorio minimalista, luces de ciudad desenfocadas detrás. Deriva handheld lenta izquierda/derecha, luz azul fría de ventana + lámpara cálida, tipeo suave + hum de ciudad, sin diálogo."
+      "title": "Borrador de escritorio nocturno",
+      "prompt": "Borrador Veo 3.1 Fast de 8 s en 16:9: una presentadora trabaja tarde en un escritorio minimalista, luces de ciudad desenfocadas detrás de una ventana grande. Plano medio corto, deriva handheld lenta, luz azul de ventana más lámpara cálida, tecleo suave y una línea corta tranquila."
     }
   ],
   "faqs": [
     {
       "q": "Puedo usar Veo 3.1 Fast para probar text-to-video, image-to-video y referencias?",
-      "a": "Si. Veo 3.1 Fast admite runs rapidos de text-to-video, pruebas de image-to-video y modo Referencia de 8 s con 1 a 4 imágenes cuando quieres comparar prompts, encuadre, identidad y timing antes de finalizarlos en Veo 3.1."
+      "a": "Sí. Veo 3.1 Fast admite runs rápidos de text-to-video, Image-to-Video desde una imagen inicial y modo Referencia de 8 s con 1 a 4 imágenes cuando quieres comparar prompts, encuadre, identidad y timing antes de finalizarlos en Veo 3.1."
     },
     {
       "q": "¿Cuándo usar Veo 3.1 Fast en lugar de Veo 3.1?",
@@ -160,7 +160,7 @@
     },
     {
       "q": "¿Cómo se compara el precio con Veo 3.1?",
-      "a": "Fast es más barato por segundo (p. ej., ~0.15 $/s audio on, ~0.10 $/s audio off). Úsalo para probar variantes antes de subir de nivel."
+      "a": "Fast es más barato por segundo que Veo 3.1. La tarifa mostrada por MaxVideoAI es aprox. $0.20/s con audio activado y $0.13/s con audio desactivado. Úsalo para probar variantes antes de subir de nivel."
     },
     {
       "q": "¿Puedo ejecutar Veo 3.1 Fast desde Europa o LATAM?",
@@ -169,7 +169,7 @@
   ],
   "custom": {
     "heroDesc1": "Veo 3.1 Fast lleva el motor cinematográfico de DeepMind a un precio menor y con turnaround más rápido, ideal para tests rápidos, controles de consistencia con imágenes de referencia, finales guiados y loops sociales.",
-    "heroDesc2": "Parte de un brief corto, una imagen inicial o 1 a 4 imágenes de referencia para un pase de consistencia de 8 s, añade un último frame solo si necesitas guiar el final, o extiende un clip existente, luego elige orientación, resolución, audio y genera clips lo bastante rápido para A/B testear varias ideas en una sesión.",
+    "heroDesc2": "Parte de un brief corto, una imagen inicial para Image-to-Video o 1 a 4 imágenes de referencia para un pase de consistencia de 8 s. Añade un último frame solo si necesitas guiar el final, o extiende un clip existente, luego elige orientación, resolución, audio y genera clips lo bastante rápido para A/B testear varias ideas en una sesión.",
     "heroSupportLine": "Ideal para explorar hooks, finales guiados y ritmo rápido antes de regenerar los ganadores en Veo 3.1.",
     "whyTitle": "Por qué Veo 3.1 Fast es potente",
     "heroHighlights": [
@@ -211,7 +211,7 @@
     "whatFlowTitle": "Flujo MaxVideoAI:",
     "whatFlowSteps": [
       "1. Elige Veo 3.1 Fast como motor.",
-      "2. Parte de texto, añade una imagen inicial o adjunta 1 a 4 imágenes de referencia.",
+      "2. Parte de texto, añade una imagen inicial para Image-to-Video o adjunta 1 a 4 imágenes de referencia en modo Referencia.",
       "3. Usa modo Referencia para 8 s de consistencia de identidad/producto, o añade un último frame cuando necesites guiar el final.",
       "4. Configura duración, orientación y resolución.",
       "5. Activa/desactiva el audio y luego pega un prompt corto y sensorial.",
@@ -227,7 +227,7 @@
           "Mantén los prompts cortos y centrados en acción.",
           "Genera muchas variantes pequeñas.",
           "Prueba múltiples aperturas rápido.",
-          "Adjunta 1 a 4 imágenes de referencia cuando necesitas un pase de consistencia de 8 s.",
+          "Usa una imagen inicial para Image-to-Video; adjunta 1 a 4 imágenes de referencia cuando necesitas un pase de consistencia de 8 s.",
           "Promueve los ganadores al tier completo."
         ]
       },
@@ -248,9 +248,9 @@
     "galleryAllCta": "Ver todos los ejemplos Veo 3.1 Fast →",
     "recreateLabel": "Recrear esta toma →",
     "imageTitle": "Flow image y reference-to-video con Google Veo 3.1 Fast",
-    "imageIntro": "Anima un solo still en un loop rápido, o adjunta 1 a 4 imágenes de referencia para un pase de consistencia de 8 s.",
+    "imageIntro": "Anima una imagen inicial en un loop rápido, o adjunta 1 a 4 imágenes de referencia para un pase de consistencia de 8 s.",
     "imageFlow": [
-      "Sube una foto lifestyle o de producto, o adjunta 1 a 4 imágenes de referencia.",
+      "Sube una imagen inicial lifestyle o de producto, o adjunta 1 a 4 imágenes de referencia en modo Referencia.",
       "Elige Imagen → Video para 4/6/8 s, o modo Referencia para un pase de consistencia de 8 s.",
       "Promptea movimiento sutil de cámara y sujeto; añade audio ligero o manténlo silencioso.",
       "Genera variantes cambiando un elemento por vez (velocidad de cámara, tono de VO, hora del día)."
@@ -302,7 +302,7 @@
     "faqs": [
       {
         "q": "¿Puedo usar imágenes de referencia con Veo 3.1 Fast?",
-        "a": "Sí. Usa modo Referencia con 1 a 4 imágenes para un render de 8 s cuando necesitas reforzar consistencia de identidad, vestuario, producto o estilo."
+        "a": "Sí. Usa una imagen inicial para Image-to-Video, o modo Referencia con 1 a 4 imágenes para un render de 8 s cuando necesitas reforzar consistencia de identidad, vestuario, producto o estilo."
       },
       {
         "q": "¿Cuándo usar Veo 3.1 Fast en lugar de Veo 3.1?",
@@ -318,7 +318,7 @@
       },
       {
         "q": "¿Cómo se compara el precio con Veo 3.1?",
-        "a": "Fast es más barato por segundo (p. ej., ~0.15 $/s audio on, ~0.10 $/s audio off). Úsalo para probar variantes antes de subir de nivel."
+        "a": "Fast es más barato por segundo que Veo 3.1. La tarifa mostrada por MaxVideoAI es aprox. $0.20/s con audio activado y $0.13/s con audio desactivado. Úsalo para probar variantes antes de subir de nivel."
       },
       {
         "q": "¿Puedo ejecutar Veo 3.1 Fast desde Europa / LATAM?",
@@ -381,13 +381,13 @@
     ],
     "promptingGuideLabel": "Google DeepMind",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: patrón de prompt para Veo 3.1 Fast",
-    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoTitle": "Demo: borrador de escritorio Veo 3.1 Fast",
+    "demoPromptLabel": "Borrador con audio 8 s (16:9, 1080p)",
     "demoPrompt": [
-      "Loop 6 s 9:16 de una joven trabajando tarde en un escritorio minimalista frente a una gran ventana, luces de ciudad desenfocadas.",
-      "Cámara: deriva handheld lenta izquierda/derecha, centrada en su rostro y el portátil.",
-      "Luz: azul frío exterior + lámpara cálida en las manos.",
-      "Audio: tipeo suave, hum de ciudad, sin diálogo."
+      "Borrador Veo 3.1 Fast de 8 s en 16:9: una presentadora trabaja tarde en un escritorio minimalista, luces de ciudad desenfocadas detrás de una ventana grande.",
+      "Cámara: plano medio corto con deriva handheld lenta, centrado en el rostro, las manos y el portátil.",
+      "Luz: luz azul de ventana mezclada con una lámpara cálida de escritorio.",
+      "Audio: tecleo suave, ciudad de fondo y una línea corta tranquila."
     ],
     "demoNotes": [
       "Un sujeto claro y un solo entorno.",

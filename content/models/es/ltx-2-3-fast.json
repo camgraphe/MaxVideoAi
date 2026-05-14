@@ -255,15 +255,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - test de hook vertical",
-    "demoPromptLabel": "Hook social 9:16",
+    "demoTitle": "Prompt demo - borrador cinematográfico fast",
+    "demoPromptLabel": "Check de borrador 16:9",
     "demoPrompt": [
-      "Una apertura de anuncio beauty en vertical, primer plano de un producto mientras la condensación resbala por el frasco, push-in rápido, reflejos nítidos, impacto sonoro sutil, 6 segundos."
+      "Un boxeador poderoso camina solo por un túnel oscuro hacia el ring, cuerpo atlético envuelto en una bata con capucha, hombros relajados pero peligrosos. Tracking bajo frontal, push-in lento, rim light duro, niebla sutil, rumor de público apagado y un golpe sonoro nítido, 10 segundos, 16:9."
     ],
     "demoNotes": [
-      "Diseñado para probar hooks",
-      "Primera toma clara y pista sonora",
-      "Fácil de relanzar en varias variantes"
+      "Diseñado para un check rápido de motion",
+      "Un sujeto, un movimiento y una atmósfera",
+      "Fácil de relanzar antes de una pasada Pro"
     ],
     "multishotTitle": "Beats fast más largos",
     "multishotIntro1": "Fast puede llegar más lejos que la generación estándar de LTX 2.3 Pro, lo que resulta útil para walkthroughs simples y pruebas de pacing.",

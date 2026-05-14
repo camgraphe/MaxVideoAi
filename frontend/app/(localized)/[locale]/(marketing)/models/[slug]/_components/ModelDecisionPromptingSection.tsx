@@ -167,6 +167,62 @@ function getSora2ProDemoSummary(locale: AppLocale) {
   };
 }
 
+function getLtx23FastDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Boxeur dans un tunnel sombre',
+      action: 'Il avance vers le ring avec une tension contrôlée',
+      camera: 'Tracking bas frontal, push-in lent',
+      style: 'Rim light dur, brume légère, arena cinématique',
+      audio: 'Rumeur de foule étouffée et impact sonore court',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Boxeador en túnel oscuro',
+      action: 'Avanza hacia el ring con tensión controlada',
+      camera: 'Tracking bajo frontal, push-in lento',
+      style: 'Rim light duro, niebla sutil, arena cinematográfica',
+      audio: 'Rumor de público apagado y golpe sonoro corto',
+    };
+  }
+  return {
+    subject: 'Boxer in a dark tunnel',
+    action: 'Walks toward the ring with controlled tension',
+    camera: 'Low front tracking, slow push-in',
+    style: 'Hard rim light, subtle haze, cinematic arena mood',
+    audio: 'Muted crowd rumble and one short impact cue',
+  };
+}
+
+function getLtx23ProDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Aventurier au bord du désert',
+      action: 'Ouvre une boussole ancienne qui révèle une carte lumineuse',
+      camera: 'Plan large arrière, puis push-in lent vers les yeux',
+      style: 'Golden hour, poussière, textures bronze, aventure premium',
+      audio: 'Vent du désert, clic métal, grondement atmosphérique',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Aventurero al borde del desierto',
+      action: 'Abre una brújula antigua que revela un mapa luminoso',
+      camera: 'Plano amplio desde atrás, luego push-in lento hacia los ojos',
+      style: 'Golden hour, polvo, texturas bronce, aventura premium',
+      audio: 'Viento del desierto, clic metálico, rumble atmosférico',
+    };
+  }
+  return {
+    subject: 'Adventurer at a desert cliff',
+    action: 'Opens an ancient compass that reveals a glowing map',
+    camera: 'Wide rear shot, then slow push-in toward the eyes',
+    style: 'Golden hour, drifting dust, bronze textures, premium adventure tone',
+    audio: 'Desert wind, metallic compass click, low atmospheric rumble',
+  };
+}
+
 function getSeedance15DemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
@@ -504,6 +560,34 @@ function getVeoLiteDemoPrompt(locale: AppLocale) {
     'Short handheld push-in toward the bowl, warm kitchen light, soft urban street background.',
     'Audio: street ambience, subtle kitchen sound, no dialogue.',
   ].join('\n');
+}
+
+function getVeoFastDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Présentatrice dans un bureau de nuit',
+      action: 'Elle relève les yeux du laptop et dit une phrase courte',
+      camera: 'Plan rapproché moyen, dérive handheld lente',
+      style: 'Lumière bleue de ville, lampe de bureau chaude',
+      audio: 'Clavier discret, ville en fond, voix courte',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Presentadora en escritorio nocturno',
+      action: 'Levanta la mirada del portátil y dice una línea corta',
+      camera: 'Plano medio corto, deriva handheld lenta',
+      style: 'Luz azul de ciudad, lámpara cálida de escritorio',
+      audio: 'Tecleo suave, ciudad de fondo, voz corta',
+    };
+  }
+  return {
+    subject: 'Presenter in a late-night desk scene',
+    action: 'Looks up from a laptop and delivers one calm line',
+    camera: 'Medium close-up, slow handheld drift',
+    style: 'Cool city window light with a warm desk lamp',
+    audio: 'Soft typing, city hum, short voice line',
+  };
 }
 
 function getDuration(media: FeaturedMedia | null, locale: AppLocale) {
@@ -959,8 +1043,11 @@ export function ModelDecisionPromptingSection({
   const isLumaRay2Route = engineSlug === 'luma-ray-2' || engineSlug === 'lumaRay2';
   const isLumaFlashRoute = engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
   const isSora2ProRoute = engineSlug === 'sora-2-pro';
+  const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
   const isSeedance15ProRoute = engineSlug === 'seedance-1-5-pro';
+  const isLtx23FastRoute = engineSlug === 'ltx-2-3-fast';
+  const isLtx23ProRoute = engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getDemoSummary(locale);
   const seedance15Demo = getSeedance15DemoSummary(locale);
@@ -969,6 +1056,9 @@ export function ModelDecisionPromptingSection({
   const lumaRay2Demo = getLumaRay2DemoSummary(locale);
   const lumaFlashDemo = getLumaFlashDemoSummary(locale);
   const sora2ProDemo = getSora2ProDemoSummary(locale);
+  const ltx23FastDemo = getLtx23FastDemoSummary(locale);
+  const ltx23ProDemo = getLtx23ProDemoSummary(locale);
+  const veoFastDemo = getVeoFastDemoSummary(locale);
   const veoLiteDemo = getVeoLiteDemoSummary(locale);
   const demo = isHailuoDraftRoute
     ? { ...hailuoDemo, audio: hailuoDemo.output }
@@ -982,9 +1072,15 @@ export function ModelDecisionPromptingSection({
           ? { ...lumaFlashDemo, audio: lumaFlashDemo.output }
         : isSora2ProRoute
           ? { ...sora2ProDemo, output: sora2ProDemo.audio }
-          : isVeoLiteRoute
-            ? { ...veoLiteDemo, output: veoLiteDemo.audio }
-            : { ...standardDemo, output: standardDemo.audio };
+          : isLtx23FastRoute
+            ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
+            : isLtx23ProRoute
+              ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
+              : isVeoFastRoute
+                ? { ...veoFastDemo, output: veoFastDemo.audio }
+            : isVeoLiteRoute
+              ? { ...veoLiteDemo, output: veoLiteDemo.audio }
+              : { ...standardDemo, output: standardDemo.audio };
   const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
   const intro = copy.promptingIntro ?? '';
   const imageExamplesIntro =
@@ -1046,12 +1142,30 @@ export function ModelDecisionPromptingSection({
               : locale === 'es'
                 ? 'Cómo Luma Ray 2 Flash usa imágenes iniciales y rutas de edición'
                 : 'How Luma Ray 2 Flash uses start frames and edit routes'
+            : isLtx23ProRoute
+              ? locale === 'fr'
+                ? 'Comment LTX 2.3 Pro utilise Generate, Audio, Extend et Retake'
+                : locale === 'es'
+                  ? 'Cómo LTX 2.3 Pro usa Generate, Audio, Extend y Retake'
+                  : 'How LTX 2.3 Pro uses Generate, Audio, Extend and Retake'
+            : isVeoFastRoute
+              ? locale === 'fr'
+                ? 'Comment Veo 3.1 Fast utilise images de départ, références et image finale'
+                : locale === 'es'
+                  ? 'Cómo Veo 3.1 Fast usa imagen inicial, referencias y frame final'
+                  : 'How Veo 3.1 Fast uses start, reference and ending frames'
             : isVeoLiteRoute
               ? locale === 'fr'
                 ? 'Comment Veo 3.1 Lite utilise les images de départ'
                 : locale === 'es'
                   ? 'Cómo Veo 3.1 Lite usa imágenes iniciales'
                   : 'How Veo 3.1 Lite uses image references'
+            : isSeedance15ProRoute
+              ? locale === 'fr'
+                ? 'Comment prompter Seedance 1.5 Pro'
+                : locale === 'es'
+                  ? 'Cómo hacer prompts para Seedance 1.5 Pro'
+                  : 'How to prompt Seedance 1.5 Pro'
             : labels.referencesTitle;
   const posterSrc = demoMedia?.posterUrl ?? null;
   const demoVideoSrc = demoMedia?.videoUrl ?? demoMedia?.previewVideoUrl ?? null;
@@ -1061,6 +1175,12 @@ export function ModelDecisionPromptingSection({
       : isSeedance15ProRoute
         ? getSeedance15DemoPrompt(locale)
       : isSora2ProRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
+      : isLtx23FastRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
+      : isLtx23ProRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
+      : isVeoFastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
       : isPikaTextRoute
         ? getPikaDemoPrompt(locale)
@@ -1090,6 +1210,12 @@ export function ModelDecisionPromptingSection({
           ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
           : isSora2ProRoute
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+          : isLtx23FastRoute
+            ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
+          : isLtx23ProRoute
+            ? getDuration(demoMedia, locale)
+          : isVeoFastRoute
+            ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isVeoLiteRoute
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : getDuration(demoMedia, locale);
@@ -1112,6 +1238,16 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Check Pro'
           : 'Pro scene check'
+    : isLtx23FastRoute
+      ? locale === 'fr'
+        ? 'Check brouillon fast'
+        : locale === 'es'
+          ? 'Check de borrador fast'
+          : 'Fast draft check'
+    : isLtx23ProRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Generate' : locale === 'es' ? 'Prompt Generate' : 'Generate prompt'))
+    : isVeoFastRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo Fast' : locale === 'es' ? 'Prompt Veo Fast' : 'Veo Fast prompt'))
     : isPikaTextRoute
       ? 'Text-to-Video'
       : isLumaRay2Route
@@ -1180,6 +1316,24 @@ export function ModelDecisionPromptingSection({
           : locale === 'es'
             ? 'Escena CCTV de construcción con Sora 2 Pro'
             : 'Sora 2 Pro CCTV construction scene'
+      : isLtx23FastRoute
+        ? locale === 'fr'
+          ? 'Brouillon boxer LTX 2.3 Fast'
+          : locale === 'es'
+            ? 'Borrador boxer de LTX 2.3 Fast'
+            : 'LTX 2.3 Fast boxer draft'
+      : isLtx23ProRoute
+        ? locale === 'fr'
+          ? 'Rendu aventure boussole LTX 2.3 Pro'
+          : locale === 'es'
+            ? 'Render de aventura con brújula LTX 2.3 Pro'
+            : 'LTX 2.3 Pro desert compass adventure render'
+      : isVeoFastRoute
+        ? locale === 'fr'
+          ? 'Brouillon bureau de nuit Veo 3.1 Fast'
+          : locale === 'es'
+            ? 'Borrador de escritorio nocturno Veo 3.1 Fast'
+            : 'Veo 3.1 Fast late-night desk draft'
       : isLumaRay2Route
         ? locale === 'fr'
           ? 'Rendu produit Luma Ray 2'

@@ -255,15 +255,15 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt de démo - test de hook vertical",
-    "demoPromptLabel": "Hook social 9:16",
+    "demoTitle": "Prompt de démo - brouillon cinématique fast",
+    "demoPromptLabel": "Check brouillon 16:9",
     "demoPrompt": [
-      "Une ouverture de pub beauté en vertical, gros plan sur un produit pendant que la condensation glisse sur le flacon, push-in rapide, reflets nets, impact sonore subtil, 6 secondes."
+      "Un boxeur puissant avance seul dans un tunnel sombre vers le ring, silhouette athlétique sous un peignoir à capuche, épaules relâchées mais dangereuses. Tracking bas frontal, push-in lent, rim light dur, brume légère, rumeur de foule étouffée et un impact sonore net, 10 secondes, 16:9."
     ],
     "demoNotes": [
-      "Conçu pour tester des hooks",
-      "Premier plan clair et indice sonore",
-      "Facile à relancer en plusieurs variantes"
+      "Conçu pour un check motion rapide",
+      "Un sujet, un mouvement, une ambiance",
+      "Facile à relancer avant une passe Pro"
     ],
     "multishotTitle": "Beats fast plus longs",
     "multishotIntro1": "Fast peut aller plus loin que la génération standard de LTX 2.3 Pro, ce qui est utile pour des walkthroughs simples et des tests de pacing.",
