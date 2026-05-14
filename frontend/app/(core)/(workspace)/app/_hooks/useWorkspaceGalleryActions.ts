@@ -34,6 +34,7 @@ type UseWorkspaceGalleryActionsOptions = {
   batchHeroes: Record<string, string>;
   preflightCurrency?: string | null;
   fallbackEngineId: string;
+  suppressGuidedSampleAutoApply?: boolean;
   sharedPrompt: string | null;
   selectedPreview: SelectedVideoPreview | null;
   compositeOverrideSummary: GroupSummary | null;
@@ -74,6 +75,7 @@ export function useWorkspaceGalleryActions({
   batchHeroes,
   preflightCurrency,
   fallbackEngineId,
+  suppressGuidedSampleAutoApply = false,
   sharedPrompt,
   selectedPreview,
   compositeOverrideSummary,
@@ -352,13 +354,20 @@ export function useWorkspaceGalleryActions({
   }, [compositeOverrideSummary, isGuidedSamplesActive, setCompositeOverride, setCompositeOverrideSummary]);
 
   useEffect(() => {
+    if (suppressGuidedSampleAutoApply) return;
     if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return;
     const currentGroupId = compositeOverrideSummary?.id ?? null;
     if (currentGroupId && guidedSampleGroups.some((group) => group.id === currentGroupId)) {
       return;
     }
     handleGalleryGroupAction(guidedSampleGroups[0], 'open');
-  }, [compositeOverrideSummary?.id, guidedSampleGroups, handleGalleryGroupAction, isGuidedSamplesActive]);
+  }, [
+    compositeOverrideSummary?.id,
+    guidedSampleGroups,
+    handleGalleryGroupAction,
+    isGuidedSamplesActive,
+    suppressGuidedSampleAutoApply,
+  ]);
 
   const currentGuidedSampleIndex = useMemo(() => {
     if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return -1;

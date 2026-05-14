@@ -39,7 +39,6 @@ type UseWorkspaceComposerStateOptions = {
   authChecked: boolean;
   hydratedForScope: string | null;
   storageScope: string;
-  hasStoredFormRef: MutableRefObject<boolean>;
   preserveStoredDraftRef: MutableRefObject<boolean>;
   requestedEngineOverrideIdRef: MutableRefObject<string | null>;
   requestedEngineOverrideTokenRef: MutableRefObject<string | null>;
@@ -121,7 +120,6 @@ export function useWorkspaceComposerState({
   authChecked,
   hydratedForScope,
   storageScope,
-  hasStoredFormRef,
   preserveStoredDraftRef,
   requestedEngineOverrideIdRef,
   requestedEngineOverrideTokenRef,
@@ -169,7 +167,6 @@ export function useWorkspaceComposerState({
     authChecked,
     hydratedForScope,
     storageScope,
-    hasStoredFormRef,
     preserveStoredDraftRef,
     requestedEngineOverrideIdRef,
     requestedEngineOverrideTokenRef,

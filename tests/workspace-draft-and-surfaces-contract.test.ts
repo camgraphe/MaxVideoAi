@@ -5,6 +5,8 @@ import test from 'node:test';
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const draftStorageHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftStorage.ts';
 const draftHydrationHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration.ts';
+const engineModeHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts';
+const galleryActionsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions.ts';
 const appShellPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppShell.tsx';
 const appLoadStatePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppLoadState.tsx';
 const appReadyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
@@ -50,6 +52,21 @@ test('workspace draft storage and hydration are owned by route-local hooks', () 
   assert.match(hydrationHookSource, /readStoredWorkspaceForm/);
   assert.match(hydrationHookSource, /writeStorage\(STORAGE_KEYS\.form/);
   assert.match(hydrationHookSource, /hydratePendingRendersFromStorage/);
+});
+
+test('targeted engine links stay authoritative over stored drafts and guided samples', () => {
+  const appSource = readFileSync(appClientPath, 'utf8');
+  const engineModeHookSource = readFileSync(engineModeHookPath, 'utf8');
+  const galleryActionsHookSource = readFileSync(galleryActionsHookPath, 'utf8');
+
+  assert.match(engineModeHookSource, /matchesEngineToken\(engine, effectiveRequestedEngineToken\)/);
+  assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return null;/);
+  assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return;\s*setForm/);
+  assert.match(engineModeHookSource, /candidate\?\.engineId !== nextState\.engineId/);
+
+  assert.match(appSource, /suppressGuidedSampleAutoApply: Boolean\(draft\.effectiveRequestedEngineId \|\| draft\.effectiveRequestedEngineToken\)/);
+  assert.match(galleryActionsHookSource, /suppressGuidedSampleAutoApply/);
+  assert.match(galleryActionsHookSource, /if \(suppressGuidedSampleAutoApply\) return;/);
 });
 
 test('workspace app shell surfaces are split into route-local components', () => {

@@ -51,7 +51,6 @@ type UseWorkspaceEngineModeStateOptions = {
   authChecked: boolean;
   hydratedForScope: string | null;
   storageScope: string;
-  hasStoredFormRef: MutableRefObject<boolean>;
   preserveStoredDraftRef: MutableRefObject<boolean>;
   requestedEngineOverrideIdRef: MutableRefObject<string | null>;
   requestedEngineOverrideTokenRef: MutableRefObject<string | null>;
@@ -122,7 +121,6 @@ export function useWorkspaceEngineModeState({
   authChecked,
   hydratedForScope,
   storageScope,
-  hasStoredFormRef,
   preserveStoredDraftRef,
   requestedEngineOverrideIdRef,
   requestedEngineOverrideTokenRef,
@@ -135,9 +133,8 @@ export function useWorkspaceEngineModeState({
   const engineOverride = useMemo<EngineCaps | null>(() => {
     if (!effectiveRequestedEngineToken) return null;
     if (!engines.length) return null;
-    if (hasStoredFormRef.current) return null;
     return engines.find((engine) => matchesEngineToken(engine, effectiveRequestedEngineToken)) ?? null;
-  }, [engines, effectiveRequestedEngineToken, hasStoredFormRef]);
+  }, [engines, effectiveRequestedEngineToken]);
 
   const selectedEngine = useMemo<EngineCaps | null>(() => {
     if (!engines.length) return null;
@@ -338,7 +335,6 @@ export function useWorkspaceEngineModeState({
 
   useEffect(() => {
     if (!engineOverride) return;
-    if (hasStoredFormRef.current) return;
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
@@ -351,16 +347,22 @@ export function useWorkspaceEngineModeState({
           next: nextState.engineId,
         });
       }
-      queueMicrotask(() => {
-        try {
-          writeStorage(STORAGE_KEYS.form, JSON.stringify(nextState));
-        } catch {
-          // noop
-        }
-      });
+      const shouldPersistRequestedEngine =
+        !preserveStoredDraftRef.current ||
+        candidate?.engineId !== nextState.engineId ||
+        candidate?.mode !== nextState.mode;
+      if (shouldPersistRequestedEngine) {
+        queueMicrotask(() => {
+          try {
+            writeStorage(STORAGE_KEYS.form, JSON.stringify(nextState));
+          } catch {
+            // noop
+          }
+        });
+      }
       return nextState;
     });
-  }, [engineOverride, hasStoredFormRef, setForm, writeStorage]);
+  }, [engineOverride, preserveStoredDraftRef, setForm, writeStorage]);
 
   useEffect(() => {
     const pinnedToken = requestedEngineOverrideTokenRef.current;
