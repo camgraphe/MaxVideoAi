@@ -310,7 +310,14 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   }
 
   // Optionally poll FAL once if pending and we have provider job id
-  if (surface !== 'audio' && shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
+  if (
+    surface !== 'audio' &&
+    shouldUseFalApis() &&
+    (job.provider ?? 'fal') === 'fal' &&
+    job.provider_job_id &&
+    job.status !== 'completed' &&
+    job.status !== 'failed'
+  ) {
     try {
       const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
       const falClient = getFalClient();

@@ -8,13 +8,17 @@ import { createProviderJobTracker } from '../frontend/app/api/generate/_lib/prov
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/provider-job-tracker.ts');
+const providerSubmissionPath = join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
+const providerSubmissionSource = readFileSync(providerSubmissionPath, 'utf8');
 
 test('generate route delegates provider job id tracking', () => {
   assert.ok(existsSync(helperPath), 'provider job id tracking should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/provider-job-tracker'/);
+  assert.ok(existsSync(providerSubmissionPath), 'provider submission helper should own provider tracking wiring');
+  assert.match(routeSource, /from '\.\/_lib\/video-provider-submission'/);
+  assert.match(providerSubmissionSource, /from '\.\/provider-job-tracker'/);
   assert.doesNotMatch(routeSource, /let lastProviderJobId/, 'provider job id state belongs in provider-job-tracker.ts');
   assert.doesNotMatch(routeSource, /INSERT INTO fal_queue_log \(job_id, provider, provider_job_id, engine_id, status, payload\)\n\s+VALUES \(\$1,\$2,\$3,\$4,\$5,\$6::jsonb\)[\s\S]*'enqueue'/, 'enqueue queue log SQL belongs in provider-job-tracker.ts');
 
@@ -57,13 +61,14 @@ test('provider job tracker persists new provider ids and queue log payloads', as
   assert.equal(tracker.getLastProviderJobId(), 'fal_request_123');
   assert.equal(queries.length, 2);
   assert.match(queries[0]?.sql ?? '', /UPDATE app_jobs/);
-  assert.deepEqual(queries[0]?.params, ['job_123', 'fal_request_123']);
+  assert.deepEqual(queries[0]?.params, ['job_123', 'fal_request_123', 'fal']);
   assert.match(queries[1]?.sql ?? '', /INSERT INTO fal_queue_log/);
   assert.deepEqual(queries[1]?.params?.slice(0, 5), ['job_123', 'fal', 'fal_request_123', 'seedance-2-0', 'enqueue']);
   const payload = JSON.parse(String(queries[1]?.params?.[5]));
   assert.deepEqual(payload, {
     at: '2026-05-07T20:00:00.000Z',
     engineId: 'seedance-2-0',
+    provider: 'fal',
     promptLength: 13,
     inputSummary: {
       primaryImageUrl: 'https://cdn.maxvideoai.com/image.png',

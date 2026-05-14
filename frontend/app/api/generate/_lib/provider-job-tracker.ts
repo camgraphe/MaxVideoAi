@@ -34,10 +34,10 @@ export function createProviderJobTracker(params: {
     try {
       await queryFn(
         `UPDATE app_jobs
-         SET provider_job_id = $2, updated_at = NOW()
+         SET provider = $3, provider_job_id = $2, updated_at = NOW()
          WHERE job_id = $1
            AND (provider_job_id IS NULL OR provider_job_id <> $2)`,
-        [params.jobId, requestId]
+        [params.jobId, requestId, params.providerKey]
       );
     } catch (error) {
       console.warn('[api/generate] failed to persist provider_job_id', { jobId: params.jobId, requestId }, error);
@@ -52,12 +52,13 @@ export function createProviderJobTracker(params: {
           requestId,
           params.engineId,
           'enqueue',
-          JSON.stringify({
-            at: now().toISOString(),
-            engineId: params.engineId,
-            promptLength: params.prompt.length,
-            inputSummary: params.inputSummary,
-          }),
+        JSON.stringify({
+          at: now().toISOString(),
+          engineId: params.engineId,
+          provider: params.providerKey,
+          promptLength: params.prompt.length,
+          inputSummary: params.inputSummary,
+        }),
         ]
       );
     } catch (error) {
