@@ -11,6 +11,7 @@ import type { BillingSession, MemberStatus } from '../_lib/billing-types';
 type BillingWallet = {
   balance: number;
   currency: string;
+  hasCompletedTopUp: boolean;
 };
 
 export function useBillingSessionState({
@@ -51,7 +52,8 @@ export function useBillingSessionState({
             const balance = typeof data.balance === 'number' ? data.balance : null;
             if (balance === null) return;
             const currency = typeof data.currency === 'string' ? data.currency : 'USD';
-            const nextWallet = { balance, currency };
+            const hasCompletedTopUp = data.hasCompletedTopUp === true;
+            const nextWallet = { balance, currency, hasCompletedTopUp };
             setWallet(nextWallet);
             if (session.user?.id) {
               writeLastKnownWallet(nextWallet, session.user.id ?? readLastKnownUserId());

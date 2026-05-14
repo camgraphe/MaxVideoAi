@@ -28,6 +28,7 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   productTaxCode: string;
   customer?: string | null;
   customerUpdate?: Stripe.Checkout.SessionCreateParams.CustomerUpdate | null;
+  blockAmexCards?: boolean;
 };
 
 function normalizeOptionalStripeId(value: string | null | undefined): string | null {
@@ -43,6 +44,7 @@ export function normalizeWalletTopUpAmountCents(value: unknown): number | null {
 }
 
 export function buildWalletTopUpCheckoutSessionParams({
+  blockAmexCards = false,
   currency,
   settlementAmountCents,
   checkoutUiMode = 'hosted',
@@ -82,6 +84,16 @@ export function buildWalletTopUpCheckoutSessionParams({
     metadata: sessionMetadata,
     payment_intent_data: paymentIntentData,
   };
+
+  if (blockAmexCards) {
+    params.payment_method_options = {
+      card: {
+        restrictions: {
+          brands_blocked: ['american_express'],
+        },
+      },
+    } as NonNullable<WalletTopUpCheckoutSessionParams['payment_method_options']>;
+  }
 
   const customerId = normalizeOptionalStripeId(customer);
   if (customerId) {

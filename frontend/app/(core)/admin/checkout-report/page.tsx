@@ -101,7 +101,7 @@ export default async function CheckoutReportPage(props: PageProps) {
     <div className="space-y-5">
       <HubHeader selectedRange={report.range} />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6" aria-label="Checkout guard metrics">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-7" aria-label="Checkout guard metrics">
         {cards.map((card) => (
           <MetricCard key={card.label} card={card} />
         ))}
@@ -311,6 +311,7 @@ function buildReportCards(report: Awaited<ReturnType<typeof fetchCheckoutReport>
     { label: 'Passed', value: formatNumber(report.summary.passed), helper: 'Top-ups recorded after Checkout', tone: 'green', icon: CheckCircle2 },
     { label: 'Abandoned', value: formatNumber(report.summary.abandoned), helper: 'Session created, no receipt after 30 min', tone: 'amber', icon: Clock3 },
     { label: 'Blocked', value: formatNumber(report.summary.blocked), helper: 'Rate limited or CAPTCHA failed', tone: 'rose', icon: LockKeyhole },
+    { label: 'AMEX blocked', value: formatNumber(report.summary.amexBlocked), helper: 'First top-up attempts covered by the American Express block', tone: 'rose', icon: ShieldCheck },
     { label: 'Challenged', value: formatNumber(report.summary.challenged), helper: `${formatNumber(report.summary.captchaPassed)} CAPTCHA passes`, tone: 'violet', icon: ShieldAlert },
     { label: 'Open', value: formatNumber(report.summary.open), helper: 'Recent Checkout sessions still pending', tone: 'blue', icon: WalletCards },
   ];

@@ -41,6 +41,7 @@ const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 const STRIPE_API_VERSION = '2023-10-16';
+const STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION = '2025-02-24.acacia' as Stripe.LatestApiVersion;
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
 const CHECKOUT_COPY_BY_LOCALE: Record<
   AppLocale,
@@ -188,12 +189,16 @@ export async function GET(req: NextRequest) {
     let topups = 0;
     let charges = 0;
     let refunds = 0;
+    let completedTopups = 0;
     for (const r of rows) {
       const normalized = normalizeCurrencyCode(r.currency);
+      const amount = Number(r.amount_cents ?? 0);
+      if (r.type === 'topup' && amount > 0) {
+        completedTopups += 1;
+      }
       if (normalized && normalized.toUpperCase() !== walletCurrencyUpper) {
         continue;
       }
-      const amount = Number(r.amount_cents ?? 0);
       if (!Number.isFinite(amount)) continue;
       if (r.type === 'topup') topups += amount;
       if (r.type === 'charge') charges += amount;
@@ -205,6 +210,7 @@ export async function GET(req: NextRequest) {
       balance: balanceCents / 100,
       currency: walletCurrencyUpper,
       settlementCurrency: fallbackResolution.currency.toUpperCase(),
+      hasCompletedTopUp: completedTopups > 0,
     });
   } catch (error) {
     console.warn('[wallet] query failed', error);
@@ -274,7 +280,12 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const stripeApiVersion = isExpressCheckoutTopUp ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION : STRIPE_API_VERSION;
+  const stripeApiVersion =
+    requestMode === 'direct'
+      ? STRIPE_API_VERSION
+      : isExpressCheckoutTopUp
+        ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION
+        : STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION;
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, {
     apiVersion: stripeApiVersion,
   });
@@ -434,7 +445,10 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create a one-off Checkout Session for top-up
-    if (isExpressCheckoutTopUp) {
+    const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
+    const isFirstTopUp = !hasCompletedTopUp;
+
+    if (isExpressCheckoutTopUp && !isFirstTopUp) {
       const reusableSession = await findReusableExpressCheckoutSession(stripe, {
         userId,
         amountCents,
@@ -458,8 +472,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
-    const isFirstTopUp = !hasCompletedTopUp;
     const tier = findTopupTier({ usdAmountCents: amountCents });
     const captchaToken = typeof body.captchaToken === 'string' ? body.captchaToken : null;
     const checkoutGuard = await evaluateWalletCheckoutGuard({
@@ -474,6 +486,8 @@ export async function POST(req: NextRequest) {
         currency: resolvedCurrencyUpper,
         locale: checkoutLocale,
         checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+        amexBlocked: isFirstTopUp,
+        brandsBlocked: isFirstTopUp ? ['american_express'] : [],
       },
     });
     checkoutAttemptId = checkoutGuard.attemptId;
@@ -521,6 +535,10 @@ export async function POST(req: NextRequest) {
       checkout_guard_reason: checkoutGuard.reason,
       checkout_captcha_passed: String(checkoutGuard.captchaPassed),
     };
+    if (isFirstTopUp) {
+      sessionMetadata.amex_block_required = 'true';
+      sessionMetadata.brands_blocked = 'american_express';
+    }
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
     if (tier?.label) {
       sessionMetadata.topup_tier_label = tier.label;
@@ -576,6 +594,7 @@ export async function POST(req: NextRequest) {
         address: 'auto',
         name: 'auto',
       },
+      blockAmexCards: isFirstTopUp,
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
