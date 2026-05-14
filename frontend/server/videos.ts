@@ -24,7 +24,19 @@ export { mergeUniqueGalleryVideos } from './videos-examples';
 export type GalleryTab = 'starter' | 'latest' | 'trending';
 
 const BASE_SELECT = `
-  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
+         COALESCE(
+           NULLIF(thumb_url, ''),
+           (
+             SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
+               FROM job_outputs jo
+              WHERE jo.job_id = app_jobs.job_id
+                AND jo.kind = 'image'
+              ORDER BY jo.created_at ASC
+              LIMIT 1
+           )
+         ) AS thumb_url,
+         video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
@@ -33,7 +45,19 @@ const BASE_SELECT = `
 `;
 
 const BASE_SELECT_WITH_SETTINGS = `
-  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
+         COALESCE(
+           NULLIF(thumb_url, ''),
+           (
+             SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
+               FROM job_outputs jo
+              WHERE jo.job_id = app_jobs.job_id
+                AND jo.kind = 'image'
+              ORDER BY jo.created_at ASC
+              LIMIT 1
+           )
+         ) AS thumb_url,
+         video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
@@ -179,7 +203,18 @@ async function listPlaylistVideosWithOptions({
 
   const rows = await query<VideoRow & { order_index: number }>(
     `
-      SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
+      SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt,
+             COALESCE(
+               NULLIF(aj.thumb_url, ''),
+               (
+                 SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
+                   FROM job_outputs jo
+                  WHERE jo.job_id = aj.job_id
+                    AND jo.kind = 'image'
+                  ORDER BY jo.created_at ASC
+                  LIMIT 1
+               )
+             ) AS thumb_url,
              aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
              aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index

@@ -47,8 +47,8 @@ export function PlaylistDetailsPanel({
             {playlist.surfaceRole === 'family'
               ? 'The first positions are fully editorial here. When this playlist runs out, the page auto-fills from model playlists and then the main examples hub.'
               : playlist.isLocked
-                ? 'This collection powers a live runtime surface. You can curate clips and order, but metadata is read-only here.'
-                : 'Editable collection metadata. Clips and ordering are managed separately below.'}
+                ? 'This collection powers a live runtime surface. You can curate media and order, but metadata is read-only here.'
+                : 'Editable collection metadata. Media and ordering are managed separately below.'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

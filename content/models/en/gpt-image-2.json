@@ -2,14 +2,14 @@
   "marketingName": "GPT Image 2",
   "versionLabel": "2",
   "seo": {
-    "title": "GPT Image 2 - OpenAI Text-to-Image & Editing | MaxVideoAI",
-    "description": "Generate and edit images with GPT Image 2 in MaxVideoAI. Text-to-image, image-to-image, Fal image_size presets, custom size, quality levels, output formats, and optional mask URL control.",
+    "title": "GPT Image 2 - Text-to-Image & Editing | MaxVideoAI",
+    "description": "Generate and edit images with GPT Image 2 in MaxVideoAI. Text-to-image, image-to-image, image-size presets, custom size, quality levels, output formats, and optional mask URL control.",
     "image": "https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png"
   },
-  "overview": "GPT Image 2 is OpenAI's quality-first image model inside MaxVideoAI. Use one Image Lab entry for text-to-image and image-to-image, then control Fal image_size as a preset or width/height object, quality, number of outputs, output format, and mask URL when an edit needs a constrained region.",
+  "overview": "GPT Image 2 is a quality-first image model inside MaxVideoAI. One Image Lab entry covers text-to-image and image-to-image, with image-size presets, custom width/height, quality, number of outputs, output format, and mask URL when an edit needs a constrained region.",
   "hero": {
     "title": "GPT Image 2 - quality-first image generation and edits",
-    "intro": "OpenAI image generation for crisp typography, photoreal product shots, UI mockups, infographics, and controlled reference edits.",
+    "intro": "Image generation for crisp typography, photoreal product shots, UI mockups, infographics, and controlled reference edits.",
     "badge": "Text -> Image · Image -> Image · Low / Medium / High quality",
     "ctaPrimary": {
       "label": "Launch GPT Image 2",
@@ -87,20 +87,20 @@
   "faqs": [
     {
       "q": "Does GPT Image 2 support text-to-image and image-to-image?",
-      "a": "Yes. MaxVideoAI exposes one GPT Image 2 model with text-to-image mapped to openai/gpt-image-2 and image-to-image mapped to openai/gpt-image-2/edit."
+      "a": "Yes. MaxVideoAI exposes GPT Image 2 as one Image Lab entry with Create and Edit modes."
     },
     {
-      "q": "Which provider controls are available?",
+      "q": "Which image controls are available?",
       "a": "The Image Lab exposes image_size presets, canonical sizes 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440, and 3840x2160, a Custom width/height mode, quality, num_images, output_format, reference image inputs for edits, and optional mask_url."
     },
     {
       "q": "How much does GPT Image 2 cost?",
-      "a": "The provider cost follows the quality x size table, but MaxVideoAI applies its display pricing and shows the exact live quote before generation. Use the pricing card and app quote as the customer-facing price."
+      "a": "Image cost depends on quality and size, but MaxVideoAI shows the exact live quote before generation. Use the pricing card and app quote as the customer-facing price."
     }
   ],
-  "pricingNotes": "Underlying provider costs vary by quality and image_size. MaxVideoAI shows the final display price before generation; use the app quote rather than raw provider pricing for customer-facing estimates.",
+  "pricingNotes": "Image costs vary by quality and size. MaxVideoAI shows the final display price before generation; use the app quote for customer-facing estimates.",
   "custom": {
-    "heroEyebrow": "OpenAI - GPT Image 2",
+    "heroEyebrow": "GPT Image 2 Image Model",
     "heroSupportLine": "Best for text-heavy images, product photography, UI mockups, and controlled edits.",
     "heroSpecChips": [
       {
@@ -127,7 +127,7 @@
     "heroHighlights": [
       "Readable text||Use it for posters, labels, infographics, and UI screens that need clean typography.",
       "Product fidelity||Strong fit for packaging, catalog shots, and e-commerce images with visible labels.",
-      "Provider controls||Image size preset or custom width/height, quality, output format, and mask URL map into the active provider request.",
+      "Image controls||Image size preset or custom width/height, quality, output format, and mask URL are available in the Image Lab.",
       "Unified image workflow||Switch between Create and Edit without leaving the Image Lab."
     ],
     "whatTitle": "How GPT Image 2 works here",

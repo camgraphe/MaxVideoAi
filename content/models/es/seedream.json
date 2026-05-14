@@ -2,15 +2,15 @@
   "marketingName": "Seedream 5.0 Lite",
   "versionLabel": "5.0 Lite",
   "seo": {
-    "title": "Seedream 5.0 Lite | Generación y edición de imagen BytePlus | MaxVideoAI",
-    "description": "Crea y edita imágenes fijas con Seedream 5.0 Lite en MaxVideoAI. Usa BytePlus ModelArk para preparar conceptos, producto e imágenes de referencia antes de Seedance."
+    "title": "Seedream 5.0 Lite | Generación y edición de imagen | MaxVideoAI",
+    "description": "Crea y edita imágenes fijas con Seedream 5.0 Lite en MaxVideoAI. Prepara conceptos, producto e imágenes de referencia antes de Seedance."
   },
-  "overview": "Seedream 5.0 Lite es un modelo de generación y edición de imagen de BytePlus ModelArk. Sirve para crear stills limpios, conceptos de producto, frames de personaje, series de imágenes coherentes e imágenes fuente más controladas antes de un workflow image-to-video en Seedance 2.0 o Seedance 2.0 Fast.",
-  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente en BytePlus ModelArk, también en series de imágenes. MaxVideoAI muestra el precio activo de la cuenta antes de generar. El preset batch de $0.24 es un ejemplo de 4 imágenes generadas a $0.06 por imagen, no un precio para 15 imágenes.",
+  "overview": "Seedream 5.0 Lite es un modelo de generación y edición de imagen dentro de MaxVideoAI. Sirve para crear stills limpios, conceptos de producto, frames de personaje, series de imágenes coherentes e imágenes fuente más controladas antes de un workflow image-to-video en Seedance 2.0 o Seedance 2.0 Fast.",
+  "pricingNotes": "Seedream 5.0 Lite se factura por imagen generada correctamente, también en series de imágenes. MaxVideoAI muestra el precio activo de la cuenta antes de generar. El preset batch de $0.24 es un ejemplo de 4 imágenes generadas a $0.06 por imagen, no un precio para 15 imágenes.",
   "hero": {
-    "title": "Seedream 5.0 Lite - generación y edición de imagen BytePlus",
+    "title": "Seedream 5.0 Lite - generación y edición de imagen",
     "intro": "Usa Seedream 5.0 Lite como modelo de imagen independiente para text-to-image, limpieza image-to-image, series de imágenes y referencias visuales antes de animar los frames elegidos en Seedance.",
-    "badge": "Text -> Image · Image -> Image · Series de imágenes · BytePlus ModelArk",
+    "badge": "Text -> Image · Image -> Image · Series de imágenes",
     "ctaPrimary": {
       "label": "Abrir Seedream",
       "href": "/app/image?engine=seedream"
@@ -98,7 +98,7 @@
   "faqs": [
     {
       "q": "¿Qué es Seedream 5.0 Lite?",
-      "a": "Seedream 5.0 Lite es un modelo de generación y edición de imagen de BytePlus ModelArk disponible en MaxVideoAI para crear stills y preparar referencias."
+      "a": "Seedream 5.0 Lite es un modelo de generación y edición de imagen disponible en MaxVideoAI para crear stills y preparar referencias."
     },
     {
       "q": "¿Cómo se conecta Seedream con Seedance?",
@@ -106,7 +106,7 @@
     },
     {
       "q": "¿Seedream puede generar series de imágenes?",
-      "a": "Sí. Cuando pides más de una imagen, MaxVideoAI envía sequential_image_generation como auto a BytePlus con un número máximo de imágenes. Es útil para storyboards, comics, series de producto y visuales de marca."
+      "a": "Sí. Cuando pides más de una imagen, MaxVideoAI puede crear una serie coherente desde un mismo brief. Es útil para storyboards, comics, series de producto y visuales de marca."
     },
     {
       "q": "¿Seedream promete los resultados de Seedance?",
@@ -114,7 +114,7 @@
     }
   ],
   "custom": {
-    "heroEyebrow": "BytePlus ModelArk - Seedream 5.0 Lite",
+    "heroEyebrow": "Modelo de imagen Seedream 5.0 Lite",
     "heroSupportLine": "Ideal para imágenes fijas limpias, ediciones y frames fuente antes del movimiento en Seedance.",
     "heroSpecChips": [
       {
@@ -135,7 +135,7 @@
         "label": "2K/3K/4K"
       },
       {
-        "label": "BytePlus ModelArk"
+        "label": "2-10 referencias"
       }
     ],
     "whyTitle": "Por qué Seedream encaja con Seedance",
@@ -151,13 +151,13 @@
     ],
     "specSections": [
       {
-        "title": "Workflows BytePlus compatibles",
-        "intro": "El tutorial oficial de BytePlus ModelArk Seedream 4.0-5.0 documenta Seedream 5.0 Lite con entradas de texto, imagen única y multi-imagen.",
+        "title": "Workflows de imagen Seedream",
+        "intro": "Usa Seedream 5.0 Lite para workflows de texto, imagen única y multi-imagen dentro del Image Lab de MaxVideoAI.",
         "items": [
           "Text-to-image: crear un still desde un prompt con controles de salida 2K, 3K o 4K.",
           "Image-to-image: limpiar o editar una imagen fuente conservando detalles visuales importantes.",
           "Entrada multi-imagen: fusionar sujeto, estilo o elementos de escena desde 2-10 imágenes de referencia.",
-          "Salida batch: usar sequential_image_generation=auto para crear series relacionadas para storyboards, comics, visuales de producto o sistemas de marca."
+          "Series de imágenes: crea visuales relacionados para storyboards, comics, series de producto o sistemas de marca."
         ]
       },
       {
@@ -198,7 +198,7 @@
       "Las solicitudes batch deben mantener referencias más imágenes generadas dentro de 15 imágenes en total.",
       "Seedance sigue evaluando cada imagen fuente y prompt.",
       "Una referencia más limpia puede mejorar consistencia, pero el tratamiento final y la calidad dependen del run de Seedance.",
-      "No uses Seedream para preparar contenido contrario a las reglas de seguridad de MaxVideoAI o del proveedor."
+      "No uses Seedream para preparar contenido que infrinja las reglas de seguridad de MaxVideoAI."
     ],
     "safetyTitle": "Seguridad y parecido",
     "safetyRules": [
@@ -221,8 +221,7 @@
       "Las referencias de producto y personaje se animan mejor cuando silueta, luz y props ya son estables.",
       "Preparar primero la imagen separa decisiones de calidad visual de decisiones de movimiento."
     ],
-    "promptingGuideLabel": "Guía oficial de Seedream 4.0-5.0",
-    "promptingGuideUrl": "https://docs.byteplus.com/en/docs/ModelArk/1824121",
+    "promptingGuideLabel": "Guía de prompts Seedream",
     "relatedItems": [
       {
         "brand": "bytedance",

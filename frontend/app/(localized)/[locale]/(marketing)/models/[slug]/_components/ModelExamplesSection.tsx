@@ -120,10 +120,6 @@ function isVeo31Route(engineSlug?: string) {
   return engineSlug === 'veo-3-1';
 }
 
-function isSeedanceCurrentRoute(engineSlug?: string) {
-  return engineSlug === 'seedance-2-0' || engineSlug === 'seedance-2-0-fast';
-}
-
 function isSeedance20FastRoute(engineSlug?: string) {
   return engineSlug === 'seedance-2-0-fast';
 }
@@ -355,7 +351,7 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
       { title: 'Typography control', body: 'Exact copy, hierarchy and placement stay explicit.', icon: Type, tone: MODEL_PAGE_ICON_WRAP },
       { title: 'Reference edits', body: 'Keep product identity, palette, layout or style.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
       { title: '4K finals', body: 'Validate at 2K, then finish at 4K.', icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
-      { title: 'Safe for production', body: 'Owned references and built-in guardrails.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Production-aware', body: 'Owned references and built-in guardrails.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
     ];
   }
 
@@ -527,7 +523,7 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
     { title: 'Recreate any shot', body: 'Jump into the app with one click and reuse the setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
     { title: 'Native audio', body: 'Dialogue, ambience and SFX generated in sync.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
     { title: 'Multi-shot continuity', body: 'Keep characters, style and scene consistency across sequences.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
-    { title: 'Safe for production', body: 'Built-in guardrails and safety filters for peace of mind.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    { title: 'Production-aware', body: 'Built-in guardrails and safety filters for responsible review.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
   ];
 }
 
@@ -849,23 +845,10 @@ function buildDecisionExampleItems({
   isImageEngine: boolean;
   engineSlug: string;
 }): DecisionExampleGalleryItem[] {
-  const useCuratedLabels =
-    isSeedanceCurrentRoute(engineSlug) ||
-    isSeedance15ProRoute(engineSlug) ||
-    isSora2Route(engineSlug) ||
-    isSora2ProRoute(engineSlug) ||
-    isLtx23FastRoute(engineSlug) ||
-    isLtx23ProRoute(engineSlug) ||
-    isKling3ProRoute(engineSlug) ||
-    isKling3StandardRoute(engineSlug) ||
-    isKling34kRoute(engineSlug) ||
-    isLumaRay2Route(engineSlug) ||
-    isVeo31Route(engineSlug) ||
-    isVeoFastRoute(engineSlug) ||
-    isVeoLiteRoute(engineSlug);
+  const useCuratedLabels = false;
   const isSilentDraftEngine = isSilentVideoDecisionEngine(engineSlug);
 
-  return galleryVideos.slice(0, 4).map((video, index) => {
+  return galleryVideos.map((video, index) => {
     const fallbackTitle = deriveShortPromptLabel(video.promptFull ?? video.prompt, locale);
     const shortTitle = getCuratedDecisionExampleTitle(index, fallbackTitle, locale, useCuratedLabels, engineSlug);
     const category = getCuratedDecisionExampleCategory(
@@ -936,8 +919,44 @@ function buildImageFallbackExampleItems({
     copy.recreateLabel ??
     (locale === 'fr' ? 'Recréer ce still →' : locale === 'es' ? 'Recrear este still →' : 'Recreate this still →');
   const isNanoBanana2 = engineSlug === 'nano-banana-2';
+  const isNanoBanana = engineSlug === 'nano-banana';
   const isSeedream = engineSlug === 'seedream';
   const isGptImage2 = engineSlug === 'gpt-image-2';
+  const fallbackPosters: Record<string, Record<string, string>> = {
+    seedream: {
+      product: '/assets/model-examples/seedream/product.webp',
+      character: '/assets/model-examples/seedream/character.webp',
+      edit: '/assets/model-examples/seedream/edit.webp',
+      batch: '/assets/model-examples/seedream/batch.webp',
+    },
+    'gpt-image-2': {
+      product: '/assets/model-examples/gpt-image-2/product.webp',
+      typography: '/assets/model-examples/gpt-image-2/typography.webp',
+      ui: '/assets/model-examples/gpt-image-2/ui.webp',
+      edit: '/assets/model-examples/gpt-image-2/edit.webp',
+      mask: '/assets/model-examples/gpt-image-2/mask.webp',
+      final: '/assets/model-examples/gpt-image-2/final.webp',
+    },
+    'nano-banana': {
+      campaign: '/assets/model-examples/nano-banana/campaign.webp',
+      typography: '/assets/model-examples/nano-banana/typography.webp',
+      reference: '/assets/model-examples/nano-banana/reference.webp',
+      final: '/assets/model-examples/nano-banana/final.webp',
+    },
+    'nano-banana-2': {
+      grounded: '/assets/model-examples/nano-banana-2/grounded.webp',
+      edit: '/assets/model-examples/nano-banana-2/edit.webp',
+      reference: '/assets/model-examples/nano-banana-2/reference.webp',
+      wide: '/assets/model-examples/nano-banana-2/wide.webp',
+    },
+    'nano-banana-pro': {
+      campaign: '/assets/model-examples/nano-banana-pro/campaign.webp',
+      typography: '/assets/model-examples/nano-banana-pro/typography.webp',
+      reference: '/assets/model-examples/nano-banana-pro/reference.webp',
+      final: '/assets/model-examples/nano-banana-pro/final.webp',
+    },
+  };
+  const resolvePoster = (tag: string) => fallbackPosters[engineSlug]?.[tag] ?? fallbackImageUrl ?? '';
   const examples = isSeedream
     ? locale === 'fr'
       ? [
@@ -1007,6 +1026,27 @@ function buildImageFallbackExampleItems({
             ['mask', 'Mask-guided edit', 'Mask edit', 'Mask URL', 'GPT Image 2 edit constrained to a masked region'],
             ['final', '4K hero still', 'Final', '3840x2160', 'GPT Image 2 4K hero still with sharp product details'],
           ]
+    : isNanoBanana
+    ? locale === 'fr'
+      ? [
+          ['campaign', 'Concept thumbnail rapide', 'Brouillon', '16:9', 'Concept visuel Nano Banana pour miniature social'],
+          ['typography', 'Promo simple lisible', 'Typographie', '1:1', 'Image Nano Banana avec message promotionnel court'],
+          ['reference', 'Remix de référence', 'Référence', '4:3', 'Remix Nano Banana guidé par une référence visuelle'],
+          ['final', 'Batch de variantes', 'Batch', '4 variantes', 'Quatre variantes Nano Banana pour exploration rapide'],
+        ]
+      : locale === 'es'
+        ? [
+            ['campaign', 'Concepto thumbnail rápido', 'Borrador', '16:9', 'Concepto visual Nano Banana para miniatura social'],
+            ['typography', 'Promo simple legible', 'Tipografía', '1:1', 'Imagen Nano Banana con mensaje promocional corto'],
+            ['reference', 'Remix con referencia', 'Referencia', '4:3', 'Remix Nano Banana guiado por una referencia visual'],
+            ['final', 'Batch de variantes', 'Batch', '4 variantes', 'Cuatro variantes Nano Banana para exploración rápida'],
+          ]
+        : [
+            ['campaign', 'Fast thumbnail concept', 'Draft', '16:9', 'Nano Banana visual concept for a social thumbnail'],
+            ['typography', 'Simple promo still', 'Typography', '1:1', 'Nano Banana still with short readable promo copy'],
+            ['reference', 'Reference remix', 'Reference', '4:3', 'Nano Banana remix guided by a visual reference'],
+            ['final', 'Batch concept grid', 'Batch', '4 variants', 'Nano Banana four-variant exploration grid'],
+          ]
     : locale === 'fr'
       ? [
           ['campaign', 'Visuel campagne 2K', 'Campagne', '2K', 'Image campagne Nano Banana Pro avec layout publicitaire'],
@@ -1031,7 +1071,7 @@ function buildImageFallbackExampleItems({
   return examples.map(([tag, title, category, resolution, alt]) => ({
     id: `${engineSlug}-fallback-${tag}`,
     href: appHref,
-    posterUrl: fallbackImageUrl ?? '',
+    posterUrl: resolvePoster(tag),
     alt,
     audioBadgeLabel: null,
     durationLabel: null,
@@ -1076,10 +1116,8 @@ function ModelDecisionExamplesPanel({
   const fallbackItems = isImageEngine
     ? buildImageFallbackExampleItems({ copy, engineSlug, fallbackImageUrl, locale })
     : [];
-  const shouldPreferFallbackItems = isImageEngine && (engineSlug === 'nano-banana-2' || engineSlug === 'seedream' || engineSlug === 'gpt-image-2');
-  const items = shouldPreferFallbackItems ? fallbackItems : galleryItems.length ? galleryItems : fallbackItems;
-  const resolvedExamplesLinkHref =
-    (engineSlug === 'seedream' || engineSlug === 'gpt-image-2') && !galleryVideos.length ? null : examplesLinkHref;
+  const items = galleryItems.length ? galleryItems : fallbackItems;
+  const resolvedExamplesLinkHref = isImageEngine && !galleryVideos.length ? null : examplesLinkHref;
   const filters = getAvailableDecisionExampleFilters(locale, items, isImageEngine, engineSlug);
 
   return (

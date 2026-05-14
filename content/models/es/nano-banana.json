@@ -133,7 +133,7 @@
   ],
   "pricingNotes": "Los precios live se actualizan dentro del workspace. Revisa el chip antes de renderizar.",
   "custom": {
-    "heroEyebrow": "Google — Gemini 2.5 Flash Image (Nano Banana)",
+    "heroEyebrow": "Modelo de imagen Nano Banana",
     "heroSupportLine": "Ideal para concepting rápido, visuales de campaña ligeros y boards de referencia limpias antes de video.",
     "heroSpecChips": [
       {
@@ -230,7 +230,7 @@
       "Algunos prompts o referencias pueden ser bloqueados por filtros de seguridad del proveedor."
     ],
     "promptingTitle": "Cómo escribir un gran prompt para Nano Banana",
-    "promptingIntro": "Nano Banana (Gemini 2.5 Flash Image) premia briefs cortos y literales. Lidera con composición, luego iluminación/estilo. Para ediciones, indica qué cambiar y qué debe mantenerse. Para blends multi‑imagen, asigna un rol a cada referencia.",
+    "promptingIntro": "Nano Banana premia briefs cortos y literales. Lidera con composición, luego iluminación/estilo. Para ediciones, indica qué cambiar y qué debe mantenerse. Para blends multi‑imagen, asigna un rol a cada referencia.",
     "promptingTip": "Tip: la resolución + la relación se configuran en la UI — tu prompt controla sujeto, composición, iluminación, estilo e instrucciones de edición.",
     "promptingGlobalPrinciples": [
       "Composición primero. Estilo después.",

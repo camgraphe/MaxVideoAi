@@ -191,7 +191,8 @@ async function renderMarketingModelPage({
         localizedContent.marketingName ?? engine.marketingName,
         engine.modelSlug,
         engine.id,
-        backPath
+        backPath,
+        isImageEngine ? '/app/image' : '/app'
       )
     );
 
@@ -211,7 +212,8 @@ async function renderMarketingModelPage({
           localizedContent.marketingName ?? engine.marketingName,
           engine.modelSlug,
           engine.id,
-          backPath
+          backPath,
+          isImageEngine ? '/app/image' : '/app'
         ),
       ];
     }
@@ -271,9 +273,6 @@ async function renderMarketingModelPage({
   let demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
   if (engine.modelSlug === 'sora-2-pro') {
     demoMedia = heroMedia;
-  }
-  if (engine.modelSlug === 'veo-3-1-lite') {
-    demoMedia = fallbackMedia;
   }
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
     demoMedia.prompt =

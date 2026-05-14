@@ -33,6 +33,15 @@ export async function listPlaylistRows(whereClause = '', params?: ReadonlyArray<
           )::text AS site_visible_count,
           COUNT(*) FILTER (
             WHERE COALESCE(aj.video_url, '') <> ''
+              OR COALESCE(aj.surface, '') = 'image'
+              OR COALESCE(aj.render_ids::text, '') <> ''
+              OR EXISTS (
+                SELECT 1
+                  FROM job_outputs jo
+                 WHERE jo.job_id = aj.job_id
+                   AND jo.kind = 'image'
+                   AND COALESCE(jo.thumb_url, jo.url, jo.storage_url, '') <> ''
+              )
           )::text AS with_video_asset_count,
           MAX(pi.created_at) AS last_added_at
         FROM playlist_items pi
@@ -78,7 +87,17 @@ export async function getPlaylistItems(playlistId: string): Promise<PlaylistItem
         pi.order_index,
         pi.pinned,
         pi.created_at,
-        j.thumb_url,
+        COALESCE(
+          NULLIF(j.thumb_url, ''),
+          (
+            SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
+              FROM job_outputs jo
+             WHERE jo.job_id = j.job_id
+               AND jo.kind = 'image'
+             ORDER BY jo.created_at ASC
+             LIMIT 1
+          )
+        ) AS thumb_url,
         j.video_url,
         j.engine_label,
         j.aspect_ratio,

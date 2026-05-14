@@ -23,7 +23,7 @@ type BaseModelPagePricingPreset = {
 
 export type ModelPageVideoPricingPreset = BaseModelPagePricingPreset & {
   seconds: number;
-  resolution: Extract<Resolution, '480p' | '512P' | '720p' | '768P' | '1080p' | '1440p' | '4k'>;
+  resolution: Extract<Resolution, '480p' | '512P' | '540p' | '720p' | '768P' | '1080p' | '1440p' | '4k'>;
   audio?: boolean;
   fixedValueKey?: never;
   imageResolution?: never;

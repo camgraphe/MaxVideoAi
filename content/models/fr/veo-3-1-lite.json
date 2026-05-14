@@ -371,17 +371,18 @@
     "promptingGuideLabel": "Guide officiel Veo / Google DeepMind",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
     "demoTitle": "Démo : pattern de prompt pour Veo 3.1 Lite",
-    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoPromptLabel": "Réunion d’époque 8 s (16:9, audio on)",
     "demoPrompt": [
-      "Loop 6 s en 9:16 d’une jeune femme travaillant tard à un bureau minimaliste devant une grande fenêtre, lumières de ville floues.",
-      "Caméra : légère dérive handheld gauche/droite, centrée sur le visage et le laptop.",
-      "Lumière : bleu froid extérieur + lampe chaude sur les mains.",
-      "Audio : frappe clavier douce, bruit de ville, pas de dialogue."
+      "Clip Veo 3.1 Lite de 8 s en 16:9, audio inclus.",
+      "Réunion romantique cinématique sur un grand quai de gare, énergie de drame d’époque, élégante et intemporelle.",
+      "Un jeune couple en vêtements début 1900 court l’un vers l’autre : manteau sombre et chapeau pour l’homme, longue robe beige et petite valise vintage pour la femme.",
+      "Plan large en grue qui descend lentement vers eux, sensation légère de longue focale, mouvement fluide.",
+      "Lumière douce du matin filtrée par la vapeur et la verrière, tons sépia, bruns, laiton et crème. Une seule action claire, pas de texte ou signalétique proche caméra."
     ],
     "demoNotes": [
-      "Un sujet clair et un seul environnement.",
-      "Mouvement simple qui boucle proprement.",
-      "Audio qui soutient le mood sans complexité."
+      "Une seule action émotionnelle, pas une séquence chargée.",
+      "Verrouillez les détails d’époque et le mouvement caméra dès le début.",
+      "Gardez la signalétique et les figurants au second plan."
     ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [

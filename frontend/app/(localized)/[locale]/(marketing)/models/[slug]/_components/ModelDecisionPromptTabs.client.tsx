@@ -89,7 +89,7 @@ export function ModelDecisionPromptTabs({
               className={[
                 'inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-5 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                 isActive
-                  ? 'border-slate-950 bg-slate-950 text-white dark:border-white/15 dark:bg-white dark:text-slate-950'
+                  ? 'border-slate-950 bg-slate-950 text-white dark:border-white/15 dark:!bg-white/[0.10] dark:text-white'
                   : 'border-hairline bg-surface text-text-secondary hover:bg-surface-2 hover:text-text-primary',
               ].join(' ')}
             >
@@ -100,7 +100,7 @@ export function ModelDecisionPromptTabs({
         })}
       </div>
 
-      <article className="mt-3 rounded-[20px] border border-hairline bg-surface p-5 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:bg-white/[0.045]">
+      <article className="mt-3 rounded-[20px] border border-hairline bg-surface p-5 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="!text-left text-xl font-semibold text-text-primary">{activeTab.title}</h3>
@@ -115,11 +115,11 @@ export function ModelDecisionPromptTabs({
           />
         </div>
 
-        <pre className="mt-4 max-h-[250px] overflow-auto whitespace-pre-wrap rounded-xl border border-hairline bg-bg px-4 py-4 font-mono text-[0.82rem] leading-6 text-text-primary dark:bg-slate-950/72">
+        <pre className="mt-4 max-h-[250px] overflow-auto whitespace-pre-wrap rounded-xl border border-hairline bg-bg px-4 py-4 font-mono text-[0.82rem] leading-6 text-text-primary dark:!bg-slate-950/[0.72]">
           {activeCopy.template}
         </pre>
 
-        <div className="mt-4 rounded-xl border border-hairline bg-bg/80 p-4 dark:bg-slate-950/42">
+        <div className="mt-4 rounded-xl border border-hairline bg-bg/80 p-4 dark:!bg-slate-950/[0.42]">
           <div className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-blue-600 dark:text-blue-300">
             <UIIcon icon={Sparkles} size={14} className={MODEL_PAGE_ICON} />
             <span>{labels.example}</span>

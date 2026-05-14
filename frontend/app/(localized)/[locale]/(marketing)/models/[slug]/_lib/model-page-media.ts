@@ -69,11 +69,15 @@ export function toGalleryCard(
   fallbackLabel?: string,
   iconId?: string,
   engineSlug = 'sora-2',
-  fromPath?: string
+  fromPath?: string,
+  appPath = '/app'
 ): ExampleGalleryVideo {
   const promptExcerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
-  const videoHrefBase = `/video/${encodeURIComponent(video.id)}`;
-  const videoHref = fromPath ? `${videoHrefBase}?from=${encodeURIComponent(fromPath)}` : videoHrefBase;
+  const isImageWorkspace = appPath === '/app/image';
+  const videoHrefBase = isImageWorkspace
+    ? `${appPath}?job=${encodeURIComponent(video.id)}`
+    : `/video/${encodeURIComponent(video.id)}`;
+  const videoHref = !isImageWorkspace && fromPath ? `${videoHrefBase}?from=${encodeURIComponent(fromPath)}` : videoHrefBase;
   const thumbUrl = normalizeMediaUrl(video.thumbUrl);
   return {
     id: video.id,
@@ -91,7 +95,7 @@ export function toGalleryCard(
     rawPosterUrl: thumbUrl,
     videoUrl: normalizeMediaUrl(video.videoUrl),
     previewVideoUrl: normalizeMediaUrl(video.previewVideoUrl),
-    recreateHref: `/app?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
+    recreateHref: `${appPath}?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
   };
 }
 

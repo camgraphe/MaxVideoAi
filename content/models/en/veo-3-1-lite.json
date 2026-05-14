@@ -372,17 +372,18 @@
     "promptingGuideLabel": "Official Veo / Google DeepMind guide",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
     "demoTitle": "Demo: prompt pattern for Veo 3.1 Lite",
-    "demoPromptLabel": "6s vertical loop (9:16, 1080p)",
+    "demoPromptLabel": "8s period reunion (16:9, audio on)",
     "demoPrompt": [
-      "6s 9:16 loop of a young woman working late at a minimalist desk in front of a large window, city lights blurred.",
-      "Camera: slow handheld drift left/right, centered on her face and laptop.",
-      "Lighting: cool blue outside + warm lamp on hands.",
-      "Audio: soft typing, city hum, no dialogue."
+      "8s Veo 3.1 Lite clip in 16:9, audio included.",
+      "Romantic cinematic reunion on a large train station platform, grand period-drama energy, elegant and timeless.",
+      "A young couple in early-1900s clothing runs toward each other: the man in a dark wool coat and hat, the woman in a long beige dress with a small vintage suitcase.",
+      "Wide crane shot descending slowly toward them, slight long-lens feel, smooth cinematic motion.",
+      "Soft morning light filtered through steam and glass, sepia tones, muted browns, brass, and cream. One clear action only, no close foreground signage."
     ],
     "demoNotes": [
-      "One clear subject and one environment.",
-      "Simple movement that loops cleanly.",
-      "Audio supports the mood without adding complexity."
+      "Use one emotional action, not a crowded sequence.",
+      "Lock the period details and camera move early.",
+      "Keep signage and foreground extras out of the frame."
     ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [

@@ -155,7 +155,7 @@ test('Wan 2.6 benchmark specs keep reference mode and audio limits explicit', ()
   assert.ok(wan26);
   assert.equal(wan26.keySpecs?.videoToVideo, 'Reference-video guidance');
   assert.equal(wan26.keySpecs?.audioOutput, 'Text/Image modes only; off in Reference mode');
-  assert.equal(wan26.keySpecs?.lipSync, 'Not exposed in MaxVideoAI route');
+  assert.equal(wan26.keySpecs?.lipSync, 'Supported');
 });
 
 test('Pika Text-to-Video benchmark specs avoid image route overclaims', () => {

@@ -772,7 +772,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Short polished clips with native audio, reference-guided shots, and first-last or extend workflows.',
       subtitleHighlights: ['short polished clips', 'native audio', 'reference-guided shots'],
       paragraph:
-        'Use Veo 3.1 when the shot needs a premium feel in 4, 6 or 8 seconds: text prompts, start images, multi-reference stills, first-last frame transitions and extension runs are exposed in MaxVideoAI.',
+        'Use Veo 3.1 for premium 4, 6, or 8 second shots when you need text-to-video, start images, reference stills, first/last-frame control, or clip extension inside MaxVideoAI.',
       primaryCta: { label: 'Generate with Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [
@@ -840,7 +840,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Des clips courts finalisés avec audio natif, plans guidés par références et workflows first-last ou extend.',
       subtitleHighlights: ['clips courts finalisés', 'audio natif', 'plans guidés par références'],
       paragraph:
-        'Utilisez Veo 3.1 quand un plan doit avoir un rendu premium en 4, 6 ou 8 secondes : prompts texte, images de départ, références multiples, transition first-last et extension sont exposés dans MaxVideoAI.',
+        'Utilisez Veo 3.1 pour des plans premium de 4, 6 ou 8 secondes quand vous avez besoin de text-to-video, images de départ, références fixes, contrôle first/last-frame ou extension de clip dans MaxVideoAI.',
       primaryCta: { label: 'Générer avec Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [
@@ -908,7 +908,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Clips cortos pulidos con audio nativo, tomas guiadas por referencias y flujos first-last o extend.',
       subtitleHighlights: ['clips cortos pulidos', 'audio nativo', 'tomas guiadas por referencias'],
       paragraph:
-        'Usa Veo 3.1 cuando una toma necesita acabado premium en 4, 6 u 8 segundos: prompts de texto, imágenes iniciales, referencias múltiples, transiciones first-last y extensión están disponibles en MaxVideoAI.',
+        'Usa Veo 3.1 para tomas premium de 4, 6 u 8 segundos cuando necesitas texto a video, imágenes iniciales, referencias fijas, control first/last-frame o extensión de clip dentro de MaxVideoAI.',
       primaryCta: { label: 'Generar con Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [

@@ -149,7 +149,7 @@
   ],
   "faqs": [
     {
-      "q": "Que es Veo 3?",
+      "q": "¿Qué es Veo 3.1?",
       "a": "En MaxVideoAI, Veo 3.1 es el modelo de video IA de Google actual para clips cinematicos cortos, prompts text-to-video, runs image-to-video, workflows guiados por referencias, audio nativo y extension."
     },
     {
@@ -165,7 +165,7 @@
       "a": "Sí. Google Veo 3.1 puede partir de un still en Image-to-Video, usar 1-4 imágenes de referencia en Reference-to-Video o unir una imagen inicial y un último frame."
     },
     {
-      "q": "Como uso Veo 3 para text-to-video?",
+      "q": "¿Cómo uso Veo 3.1 para text-to-video?",
       "a": "Empieza con un sujeto claro, una accion, una instruccion de camara y tu formato objetivo. Los prompts text-to-video de Veo 3.1 suelen funcionar mejor cuando el movimiento, la luz y los cues de audio son explicitos."
     },
     {
@@ -252,7 +252,7 @@
       }
     ],
     "specValueProp": "Veo 3.1 en MaxVideoAI te da presets de encuadre, control de audio nativo, seeds y Extend — se comporta como una cámara directable, no una caja negra.",
-    "galleryTitle": "Galería de ejemplos: renders Veo 3.1 reales",
+    "galleryTitle": "Ejemplos reales de Veo 3.1",
     "galleryIntro": "Mira renders de Veo 3.1 generados con los mismos ajustes que tienes en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos de Veo 3.1 →",
     "recreateLabel": "Recrear esta toma →",
@@ -309,6 +309,29 @@
       "Borra en Veo 3.1 Fast y luego regenera los ganadores en Veo 3.1 en 1080p con audio nativo."
     ],
     "comparisonCta": "Comparar Veo 3.1 vs Veo 3.1 Fast ->",
+    "relatedItems": [
+      {
+        "brand": "google",
+        "title": "Veo 3.1 Fast",
+        "description": "Elige Fast para pruebas de timing o borradores reference-to-video de menor coste; usa Veo 3.1 cuando la toma aprobada necesita movimiento premium, audio y acabado 1080p.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Comparar Veo 3.1 vs Fast →"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Elige Kling 3 Pro cuando necesitas secuencias más largas y controladas; elige Veo 3.1 para piezas cortas premium con audio y polish de marca.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Comparar Veo 3.1 vs Kling 3 Pro →"
+      },
+      {
+        "brand": "openai",
+        "title": "Sora 2 Pro",
+        "description": "Compara Sora 2 Pro cuando decides entre generación conceptual estilo OpenAI y la ruta Google Veo 3.1 para tomas de marca pulidas.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Comparar Veo 3.1 vs Sora 2 Pro →"
+      }
+    ],
     "faqTitle": "FAQ – Veo 3.1",
     "faqs": [
       {

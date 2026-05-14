@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight, AudioLines, ChevronRight, ExternalLink } from 'lucide-react';
 
@@ -70,10 +70,26 @@ export function ModelDecisionExamplesGallery({
   emptyLabel,
 }: ModelDecisionExamplesGalleryProps) {
   const [activeFilter, setActiveFilter] = useState<DecisionExampleFilterId>('all');
+  const [pageIndex, setPageIndex] = useState(0);
   const visibleItems = useMemo(
     () => (activeFilter === 'all' ? items : items.filter((item) => item.tags.includes(activeFilter))),
     [activeFilter, items]
   );
+  const itemsPerPage = 4;
+  const pageCount = Math.max(1, Math.ceil(visibleItems.length / itemsPerPage));
+  const resolvedPageIndex = Math.min(pageIndex, pageCount - 1);
+  const pagedItems = visibleItems.slice(resolvedPageIndex * itemsPerPage, resolvedPageIndex * itemsPerPage + itemsPerPage);
+  const canPageExamples = visibleItems.length > itemsPerPage;
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [activeFilter]);
+
+  useEffect(() => {
+    if (pageIndex > pageCount - 1) {
+      setPageIndex(pageCount - 1);
+    }
+  }, [pageCount, pageIndex]);
 
   return (
     <>
@@ -122,7 +138,7 @@ export function ModelDecisionExamplesGallery({
         <div className="relative mt-5">
           {visibleItems.length ? (
             <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
-              {visibleItems.map((item) => {
+              {pagedItems.map((item) => {
                 const isVertical = item.aspectRatio === '9:16' || item.aspectRatio === '3:4';
                 return (
                   <article
@@ -199,9 +215,16 @@ export function ModelDecisionExamplesGallery({
               {emptyLabel}
             </div>
           )}
-          <span className="pointer-events-none absolute -right-7 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] dark:border-white/10 dark:bg-slate-900 dark:text-white xl:inline-flex">
-            <UIIcon icon={ChevronRight} size={19} />
-          </span>
+          {canPageExamples ? (
+            <button
+              type="button"
+              onClick={() => setPageIndex((current) => (current + 1) % pageCount)}
+              aria-label="Show more examples"
+              className="absolute right-2 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] transition hover:border-blue-200 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/10 dark:bg-slate-900 dark:text-white dark:hover:border-blue-300/30 dark:hover:text-blue-200 sm:right-3 sm:h-12 sm:w-12"
+            >
+              <UIIcon icon={ChevronRight} size={19} />
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-white/70 px-4 py-5 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.045] dark:text-slate-300">

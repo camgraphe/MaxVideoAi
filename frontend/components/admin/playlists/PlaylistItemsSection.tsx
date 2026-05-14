@@ -80,7 +80,7 @@ export function PlaylistItemsSection({
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Collection items</h2>
           <p className="text-sm text-text-secondary">
-            Drag clips to change the visible order, then save the gallery. Family playlists define the editorial top of the page.
+            Drag media items to change the visible order, then save the gallery. Family playlists define the editorial top of the page.
           </p>
         </div>
         <Button
@@ -159,7 +159,7 @@ export function PlaylistItemsSection({
         </div>
       ) : (
         <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg px-4 py-8 text-center text-sm text-text-secondary">
-          This collection is empty. Use the family seed helpers or add clips from moderation, then reorder them here.
+          This collection is empty. Use the family seed helpers or add media from moderation, then reorder items here.
         </div>
       )}
     </section>

@@ -95,7 +95,7 @@ export function getUsageLabel(target: string): string {
 
 export function summarizePlaylist(playlist: PlaylistSummary): string {
   if (!playlist.itemCount) return 'Empty collection';
-  return `${playlist.itemCount} items · ${playlist.siteVisibleCount} live · ${playlist.withVideoAssetCount} with video`;
+  return `${playlist.itemCount} items · ${playlist.siteVisibleCount} live · ${playlist.withVideoAssetCount} with media`;
 }
 
 export function buildPlaylistUpdateFromItems(playlist: EditablePlaylist, items: PlaylistItemRecord[]): EditablePlaylist {
@@ -108,7 +108,7 @@ export function buildPlaylistUpdateFromItems(playlist: EditablePlaylist, items: 
     ...playlist,
     itemCount: items.length,
     siteVisibleCount: items.filter((item) => item.isPublishedOnSite).length,
-    withVideoAssetCount: items.filter((item) => Boolean(item.videoUrl)).length,
+    withVideoAssetCount: items.filter((item) => Boolean(item.videoUrl || item.thumbUrl)).length,
     lastAddedAt,
   };
 }

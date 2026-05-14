@@ -3,10 +3,10 @@
   "versionLabel": "Pro",
   "seo": {
     "title": "Nano Banana Pro – 4K Text‑to‑Image & Editing | MaxVideoAI",
-    "description": "Générez des stills 2K et 4K avec Nano Banana Pro. Fidélité Google Gemini 3, références multi‑image et licensing commercial directement dans MaxVideoAI.",
+    "description": "Générez des stills 2K et 4K avec Nano Banana Pro. Sorties 2K/4K haute fidélité, références multi‑image et workflow commercial directement dans MaxVideoAI.",
     "image": "https://media.maxvideoai.com/marketing/marketing/5977bed2-7e9a-489c-a437-3232c99bc078.png"
   },
-  "overview": "Nano Banana Pro est l’upgrade Gemini 3 pour les marques qui ont besoin de texte lisible, de personnages cohérents et de stills prêts à exporter. Itérez en 2K puis basculez en 4K quand le frame est verrouillé — dans le même image lab.",
+  "overview": "Nano Banana Pro est l’upgrade premium pour les marques qui ont besoin de texte lisible, de personnages cohérents et de stills prêts à exporter. Itérez en 2K puis basculez en 4K quand le frame est verrouillé — dans le même image lab.",
   "hero": {
     "title": "Nano Banana Pro – 4K Text‑to‑Image & Editing",
     "intro": "Génération de stills studio‑grade et edits sémantiques — pensée pour des assets de campagne et une typographie propre.",
@@ -114,7 +114,7 @@
     },
     {
       "q": "Combien d’images de référence ?",
-      "a": "Dans l’UI : restez léger pour garder le contrôle. Les endpoints fal peuvent supporter plus de références (jusqu’à 14) selon la route."
+      "a": "Dans l’UI MaxVideoAI, gardez les références légères pour conserver le contrôle. Les limites avancées dépendent de la route active."
     },
     {
       "q": "Supporte‑t‑il les edits sans masque ?",
@@ -122,12 +122,12 @@
     },
     {
       "q": "Est‑il autorisé en usage commercial ?",
-      "a": "fal indique une utilisation commerciale via partenariat pour cette famille de modèles."
+      "a": "Utilisez-le pour du travail commercial lorsque vos inputs, références et sorties respectent vos licences et les règles MaxVideoAI."
     }
   ],
   "pricingNotes": "0,20 $ par image 2K, 0,39 $ en 4K. Prix affichés en live dans le studio avant rendu.",
   "custom": {
-    "heroEyebrow": "Google — Gemini 3 Pro Image",
+    "heroEyebrow": "Modèle image Nano Banana Pro",
     "heroSupportLine": "Idéal pour des stills brand‑ready, la cohérence de familles produit et des boards de référence avant animation vidéo.",
     "heroSpecChips": [
       {
@@ -154,7 +154,7 @@
     ],
     "whyTitle": "Pourquoi Nano Banana Pro est puissant",
     "heroDesc1": "Générez des stills 2K ou 4K avec une typographie ultra‑lisible, juste à côté de vos modèles vidéo.",
-    "heroDesc2": "Un seul wallet, un seul lab de prompts, et un logging complet — pas besoin d’un compte Fal séparé.",
+    "heroDesc2": "Un seul wallet, un seul lab de prompts, et un logging complet dans MaxVideoAI.",
     "heroHighlights": [
       "Texte et layouts lisibles||Pensé pour des assets marketing où la typo doit tenir.",
       "Edits sémantiques sans masques||Décrivez le changement; gardez le reste cohérent (composition, lumière, identité).",
@@ -189,7 +189,7 @@
       "Images fixes uniquement (pas de motion).",
       "Les sorties 4K sont à 0,39 $/image (2K à 0,20 $/image).",
       "Les batches sont de 1–8 images à la fois.",
-      "Les limites de références/images dépendent de la route : l’UI est volontairement limitée, tandis que les endpoints fal peuvent supporter des comptes plus élevés dans des workflows avancés."
+      "Les limites de références/images dépendent de la route MaxVideoAI active et des plafonds UI."
     ],
     "safetyTitle": "Sécurité & personnes / ressemblance",
     "safetyRules": [
@@ -200,7 +200,7 @@
       "Certains prompts ou images de référence peuvent être bloqués par les filtres du fournisseur."
     ],
     "promptingTitle": "Comment écrire un excellent prompt Nano Banana Pro",
-    "promptingIntro": "Gemini 3 Pro Image récompense les briefs structurés avec composition, typographie et intention d’edit claires.",
+    "promptingIntro": "Nano Banana Pro récompense les briefs structurés avec composition, typographie et intention d’edit claires.",
     "promptingTip": "Astuce : résolution + ratio se règlent dans l’UI - votre prompt contrôle sujet, composition, lumière, style et instructions d’edit.",
     "promptingGlobalPrinciples": [
       "Nommez le sujet et la composition d’abord.",

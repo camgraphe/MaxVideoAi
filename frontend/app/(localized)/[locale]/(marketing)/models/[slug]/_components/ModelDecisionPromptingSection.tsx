@@ -139,6 +139,262 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
+  if (engineSlug === 'happy-horse-1-0') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Conservatrice dans une galerie de portraits',
+        action: 'Traverse la salle pendant que les visages peints prennent vie',
+        camera: 'Dolly fluide dans la galerie',
+        style: 'Réalisme surréaliste, lumière d’aube, marbre et poussière douce',
+        audio: 'Ambiance feutrée de musée, pas de dialogue',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Conservadora en una galería de retratos',
+        action: 'Camina mientras los rostros pintados cobran vida',
+        camera: 'Dolly suave por la galería',
+        style: 'Realismo surreal, luz de amanecer, mármol y polvo suave',
+        audio: 'Ambiente silencioso de museo, sin diálogo',
+      };
+    }
+    return {
+      subject: 'Museum curator in a portrait gallery',
+      action: 'Walks through as painted faces come alive',
+      camera: 'Smooth dolly through the gallery',
+      style: 'Surreal realism, dawn light, marble reflections and soft dust',
+      audio: 'Quiet museum ambience, no dialogue',
+    };
+  }
+
+  if (engineSlug === 'kling-2-5-turbo') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Founder près d’une fenêtre',
+        action: 'Regarde vers caméra pendant un portrait vertical',
+        camera: 'Dérive handheld lente du buste vers le visage',
+        style: 'Golden hour, arrière-plan ville flou, portrait startup',
+        audio: 'Ambiance douce, pas de dialogue',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Founder junto a una ventana',
+        action: 'Mira a cámara en un retrato vertical',
+        camera: 'Deriva handheld lenta del torso al rostro',
+        style: 'Golden hour, ciudad desenfocada, retrato startup',
+        audio: 'Ambiente suave, sin diálogo',
+      };
+    }
+    return {
+      subject: 'Startup founder by a window',
+      action: 'Holds a vertical portrait moment',
+      camera: 'Slow handheld drift from chest-up to closer on the face',
+      style: 'Golden-hour light, blurred city background, founder portrait',
+      audio: 'Soft ambience, no dialogue',
+    };
+  }
+
+  if (engineSlug === 'kling-2-6-pro') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Jeune femme dans un café de nuit',
+        action: 'Travaille près d’une fenêtre sous la pluie',
+        camera: 'Plan cinématique vertical avec mouvement doux',
+        style: 'Café chaleureux, reflets de pluie, mood intime',
+        audio: 'Ambiance café et pluie discrète',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Mujer joven en una cafetería nocturna',
+        action: 'Trabaja junto a una ventana con lluvia',
+        camera: 'Plano vertical cinemático con movimiento suave',
+        style: 'Café cálido, reflejos de lluvia, mood íntimo',
+        audio: 'Ambiente de café y lluvia sutil',
+      };
+    }
+    return {
+      subject: 'Young woman in a night coffee shop',
+      action: 'Works by a rain-streaked window',
+      camera: 'Cinematic vertical shot with gentle motion',
+      style: 'Warm cafe, rain reflections, intimate mood',
+      audio: 'Cafe ambience and subtle rain',
+    };
+  }
+
+  if (engineSlug === 'ltx-2-fast') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Jeune femme à un passage piéton',
+        action: 'Attend puis traverse dans la lumière golden hour',
+        camera: 'Départ derrière elle, puis suivi handheld fluide',
+        style: 'Ville animée, lumière chaude, clip social cinématique',
+        audio: 'Ambiance urbaine, pas de dialogue',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Joven en un cruce urbano',
+        action: 'Espera y cruza con luz golden hour',
+        camera: 'Empieza detrás de ella y sigue en handheld suave',
+        style: 'Ciudad activa, luz cálida, clip social cinemático',
+        audio: 'Ambiente urbano, sin diálogo',
+      };
+    }
+    return {
+      subject: 'Young woman at a busy crosswalk',
+      action: 'Waits, then crosses in golden-hour light',
+      camera: 'Starts behind her, then moves into a smooth handheld follow',
+      style: 'Busy city, warm light, cinematic social clip',
+      audio: 'City ambience, no dialogue',
+    };
+  }
+
+  if (engineSlug === 'ltx-2') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Mégapole côtière futuriste',
+        action: 'La caméra glisse entre tours et trafic aérien',
+        camera: 'Vue aérienne large, travelling cinématique',
+        style: 'Coucher de soleil, verre, reflets premium, 4K',
+        audio: 'Ambiance futuriste discrète',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Megaciudad costera futurista',
+        action: 'La cámara atraviesa torres y tráfico aéreo',
+        camera: 'Vista aérea amplia, travelling cinemático',
+        style: 'Atardecer, cristal, reflejos premium, 4K',
+        audio: 'Ambiente futurista sutil',
+      };
+    }
+    return {
+      subject: 'Futuristic coastal megacity',
+      action: 'Camera glides between glass towers and flying traffic',
+      camera: 'Wide aerial view with cinematic travel motion',
+      style: 'Sunset, glass reflections, premium 4K cityscape',
+      audio: 'Subtle futuristic ambience',
+    };
+  }
+
+  if (engineSlug === 'seedance-2-0') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Bus scolaire muté en créature mécanique',
+        action: 'Transformation horrifique absurde dans une rue déserte',
+        camera: 'Plan cinématique large avec mouvement contrôlé',
+        style: 'Réalisme américain sombre, horror-comedy',
+        audio: 'Ambiance inquiétante, métal, tension',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Autobús escolar mutado en criatura mecánica',
+        action: 'Transformación de horror absurdo en una calle desierta',
+        camera: 'Plano cinemático amplio con movimiento controlado',
+        style: 'Realismo estadounidense oscuro, horror-comedy',
+        audio: 'Ambiente inquietante, metal, tensión',
+      };
+    }
+    return {
+      subject: 'School bus mutating into a mechanical creature',
+      action: 'Dark absurd transformation on a deserted street',
+      camera: 'Wide cinematic shot with controlled motion',
+      style: 'Grounded American realism, horror-comedy tone',
+      audio: 'Uneasy ambience, metal movement, tension',
+    };
+  }
+
+  if (engineSlug === 'seedance-2-0-fast') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Braquage absurde aux armes gonflables',
+        action: 'Les voleurs entrent dans une scène de thriller bancaire',
+        camera: 'Cadre cinéma lisible, rythme de brouillon rapide',
+        style: 'Thriller tendu avec humour visuel absurde',
+        audio: 'Ambiance banque, tension, pas de dialogue long',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Atraco absurdo con armas inflables',
+        action: 'Los ladrones entran en una escena de thriller bancario',
+        camera: 'Encuadre cinematográfico claro, ritmo de borrador rápido',
+        style: 'Thriller tenso con humor visual absurdo',
+        audio: 'Ambiente de banco, tensión, sin diálogo largo',
+      };
+    }
+    return {
+      subject: 'Absurd bank robbery with inflatable weapons',
+      action: 'Robbers enter a tense crime-thriller setup',
+      camera: 'Readable cinematic framing for a fast draft pass',
+      style: 'Tense thriller with absurd visual humor',
+      audio: 'Bank ambience, tension, no long dialogue',
+    };
+  }
+
+  if (engineSlug === 'wan-2-5') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Montre fitness sur le poignet d’un runner',
+        action: 'Le plan suit la course et les beats d’une piste énergique',
+        camera: 'Close-up puis pull-back synchronisé',
+        style: 'Vertical sport produit, pluie et énergie musicale',
+        audio: 'Piste électronique énergique',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Reloj fitness en la muñeca de un corredor',
+        action: 'La toma sigue la carrera y los beats de una pista energética',
+        camera: 'Close-up y pull-back sincronizado',
+        style: 'Vertical deportivo de producto, lluvia y energía musical',
+        audio: 'Pista electrónica energética',
+      };
+    }
+    return {
+      subject: 'Fitness smartwatch on a runner’s wrist',
+      action: 'Shot follows the run and beat changes of the track',
+      camera: 'Close-up, then synchronized pull-back',
+      style: 'Vertical product sport story, rain and music energy',
+      audio: 'Energetic electronic track',
+    };
+  }
+
+  if (engineSlug === 'wan-2-6') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Unboxing produit en studio cuisine',
+        action: 'La personne présente un produit sur une table minimaliste',
+        camera: 'Plan large 16:9, corps visible, mouvement propre',
+        style: 'Studio clair, rendu produit commercial',
+        audio: 'Ambiance légère, audio inclus si route active',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Unboxing de producto en estudio/cocina',
+        action: 'La persona presenta un producto sobre una mesa minimalista',
+        camera: 'Plano amplio 16:9, cuerpo visible, movimiento limpio',
+        style: 'Estudio luminoso, render comercial de producto',
+        audio: 'Ambiente ligero, audio incluido si la ruta lo expone',
+      };
+    }
+    return {
+      subject: 'Product unboxing in a clean studio kitchen',
+      action: 'Person presents a product on a minimalist tabletop',
+      camera: 'Wide 16:9 shot with visible body and clean motion',
+      style: 'Bright studio, commercial product render',
+      audio: 'Light ambience, audio included when the route exposes it',
+    };
+  }
+
+  return getDemoSummary(locale);
+}
+
 function getVeo31DemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
@@ -726,56 +982,56 @@ function getLumaRay2DemoPrompt(locale: AppLocale) {
 function getVeoLiteDemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
-      subject: 'Comptoir ramen de nuit',
-      action: 'Le chef dresse un bol pendant que la vapeur monte',
-      camera: 'Push-in handheld court vers le bol',
-      style: 'Lumière chaude de cuisine, rue urbaine douce',
-      audio: 'Ambiance de rue, sons de cuisine, pas de dialogue',
+      subject: 'Réunion romantique sur un quai de gare',
+      action: 'Un couple en tenue début 1900 court l’un vers l’autre',
+      camera: 'Plan large en grue qui descend lentement',
+      style: 'Lumière du matin, vapeur douce, tons sépia',
+      audio: 'Ambiance de gare, pas de dialogue',
     };
   }
   if (locale === 'es') {
     return {
-      subject: 'Barra de ramen nocturna',
-      action: 'El chef sirve un bowl mientras sube el vapor',
-      camera: 'Push-in handheld corto hacia el bowl',
-      style: 'Luz cálida de cocina, calle urbana suave',
-      audio: 'Ambiente de calle, sonidos de cocina, sin diálogo',
+      subject: 'Reencuentro romántico en un andén de tren',
+      action: 'Una pareja con ropa de principios de 1900 corre para encontrarse',
+      camera: 'Plano abierto con grúa descendiendo lentamente',
+      style: 'Luz de mañana, vapor suave, tonos sepia',
+      audio: 'Ambiente de estación, sin diálogo',
     };
   }
   return {
-    subject: 'Late-night ramen counter',
-    action: 'Chef plates one bowl as steam rises',
-    camera: 'Short handheld push-in toward the bowl',
-    style: 'Warm kitchen light, soft urban street mood',
-    audio: 'Street ambience, kitchen sound, no dialogue',
+    subject: 'Romantic train-platform reunion',
+    action: 'Early-1900s couple runs toward each other',
+    camera: 'Wide crane shot descending slowly',
+    style: 'Morning light, soft steam, sepia period-drama tones',
+    audio: 'Train station ambience, no dialogue',
   };
 }
 
 function getVeoLiteDemoPrompt(locale: AppLocale) {
   if (locale === 'fr') {
     return [
-      'Clip Veo 3.1 Lite de 8 s en 16:9, 720p, audio inclus.',
-      'Comptoir ramen de nuit à Tokyo, vapeur douce qui monte depuis un bol fraîchement dressé.',
-      'Le chef pose les garnitures avec un geste simple et lisible, sans action secondaire.',
-      'Push-in handheld court vers le bol, lumière chaude de cuisine, arrière-plan de rue urbain légèrement flou.',
-      'Audio : ambiance de rue, sons de cuisine discrets, pas de dialogue.',
+      'Clip Veo 3.1 Lite de 8 s en 16:9, audio inclus.',
+      'Réunion romantique cinématique sur un grand quai de gare, énergie de drame d’époque, élégante et intemporelle.',
+      'Un jeune couple en vêtements début 1900 court l’un vers l’autre : manteau sombre et chapeau pour l’homme, longue robe beige et petite valise vintage pour la femme.',
+      'Plan large en grue qui descend lentement vers eux, sensation légère de longue focale, mouvement fluide.',
+      'Lumière douce du matin filtrée par la vapeur et la verrière, tons sépia, bruns, laiton et crème. Une seule action claire, pas de texte ou signalétique proche caméra.',
     ].join('\n');
   }
   if (locale === 'es') {
     return [
-      'Clip Veo 3.1 Lite de 8 s en 16:9, 720p, audio incluido.',
-      'Barra de ramen nocturna en Tokio, vapor suave subiendo de un bowl recién servido.',
-      'El chef coloca toppings con un gesto simple y legible, sin acción secundaria.',
-      'Push-in handheld corto hacia el bowl, luz cálida de cocina, calle urbana suavemente desenfocada detrás.',
-      'Audio: ambiente de calle, sonidos sutiles de cocina, sin diálogo.',
+      'Clip Veo 3.1 Lite de 8 s en 16:9, audio incluido.',
+      'Reencuentro romántico cinematográfico en un gran andén de tren, con energía de drama de época, elegante y atemporal.',
+      'Una pareja joven con ropa de principios de 1900 corre para encontrarse: él lleva abrigo oscuro y sombrero; ella, vestido beige largo y una pequeña maleta vintage.',
+      'Plano abierto con grúa descendiendo lentamente hacia ellos, ligera sensación de teleobjetivo y movimiento cinematográfico suave.',
+      'Luz suave de mañana filtrada por vapor y cristal, tonos sepia, marrones, latón y crema. Una sola acción clara, sin texto ni señalética cerca de cámara.',
     ].join('\n');
   }
   return [
-    '8s Veo 3.1 Lite clip in 16:9, 720p, audio included.',
-    'A late-night ramen counter in Tokyo, soft steam rising from a freshly plated bowl.',
-    'The chef adds toppings with one clear readable motion, no extra action beats.',
-    'Short handheld push-in toward the bowl, warm kitchen light, soft urban street background.',
-    'Audio: street ambience, subtle kitchen sound, no dialogue.',
+    '8s Veo 3.1 Lite clip in 16:9, audio included.',
+    'Romantic cinematic reunion on a large train station platform, grand period-drama energy, elegant and timeless.',
+    'A young couple in early-1900s clothing runs toward each other: the man in a dark wool coat and hat, the woman in a long beige dress with a small vintage suitcase.',
+    'Wide crane shot descending slowly toward them, slight long-lens feel, smooth cinematic motion.',
+    'Soft morning light filtered through steam and glass, sepia tones, muted browns, brass, and cream. One clear action only, no close foreground signage.',
   ].join('\n');
 }
 
@@ -1272,7 +1528,7 @@ export function ModelDecisionPromptingSection({
   const isKling3StandardRoute = engineSlug === 'kling-3-standard';
   const isKling34kRoute = engineSlug === 'kling-3-4k';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
-  const standardDemo = getDemoSummary(locale);
+  const standardDemo = getRouteDemoSummary(locale, engineSlug);
   const seedance15Demo = getSeedance15DemoSummary(locale);
   const hailuoDemo = getHailuoDemoSummary(locale);
   const pikaDemo = getPikaDemoSummary(locale);
@@ -1698,10 +1954,10 @@ export function ModelDecisionPromptingSection({
             : 'Luma Ray 2 product render'
         : isVeoLiteRoute
           ? locale === 'fr'
-            ? 'Exemple Veo 3.1 Lite au comptoir ramen'
+            ? 'Réunion romantique Veo 3.1 Lite sur un quai de gare'
             : locale === 'es'
-              ? 'Ejemplo Veo 3.1 Lite en barra de ramen'
-              : 'Veo 3.1 Lite ramen counter example'
+              ? 'Reencuentro romántico Veo 3.1 Lite en andén de tren'
+              : 'Veo 3.1 Lite romantic train-platform reunion'
       : getImageAlt({
           kind: 'renderThumb',
           engine: modelName,
@@ -1712,41 +1968,42 @@ export function ModelDecisionPromptingSection({
 
   return (
     <section id={imageAnchorId} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
-      <div className="rounded-[28px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72 dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
+      <div className="rounded-[28px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <h2 className="text-[2rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-[2.45rem]">
-              {title}
-            </h2>
-            {guideHref ? (
-              <a
-                href={guideHref}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-8 items-center gap-1.5 rounded-full bg-blue-50 px-4 text-xs font-semibold uppercase tracking-[0.06em] text-blue-600 dark:bg-blue-500/12 dark:text-blue-200"
-              >
-                <span>{guideLabel}</span>
-                <UIIcon icon={ExternalLink} size={12} className={MODEL_PAGE_ICON_MUTED} />
-              </a>
-            ) : null}
-          </div>
+          <h2 className="text-[2rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-[2.45rem]">
+            {title}
+          </h2>
           {intro ? <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{intro}</p> : null}
           {copy.promptingTip ? (
-            <div className="mx-auto mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50/90 px-5 py-2 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.055] dark:text-slate-300">
+            <div className="mx-auto mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50/90 px-5 py-2 text-sm text-slate-600 dark:border-white/10 dark:!bg-white/[0.055] dark:text-slate-300">
               <UIIcon icon={Lightbulb} size={15} className="text-slate-500 dark:text-slate-300" />
               <span>{copy.promptingTip.replace(/^Tip:\s*/i, `${labels.tipPrefix}: `)}</span>
             </div>
           ) : null}
+          {guideHref ? (
+            <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+              <span>{locale === 'fr' ? 'Source : ' : locale === 'es' ? 'Fuente: ' : 'Source: '}</span>
+              <a
+                href={guideHref}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-slate-600 underline decoration-slate-300 underline-offset-4 transition hover:text-blue-600 hover:decoration-blue-300 dark:text-slate-300 dark:decoration-white/20 dark:hover:text-blue-200"
+              >
+                <span>{guideLabel}</span>
+                <UIIcon icon={ExternalLink} size={11} className={MODEL_PAGE_ICON_MUTED} />
+              </a>
+            </p>
+          ) : null}
         </div>
 
         {referenceWorkflows.length ? (
-          <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+          <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:!bg-white/[0.035]">
             <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{referencesTitle}</h3>
             <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
               {referenceWorkflows.map((workflow, index) => {
                 const Icon = REFERENCE_ICONS[index] ?? Sparkles;
                 return (
-                  <article key={workflow.title} className="rounded-xl border border-slate-200 bg-white p-3.5 dark:border-white/10 dark:bg-slate-950/56 sm:p-4">
+                  <article key={workflow.title} className="rounded-xl border border-slate-200 bg-white p-3.5 dark:border-white/10 dark:!bg-slate-950/[0.56] sm:p-4">
                     <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full sm:h-9 sm:w-9 ${MODEL_PAGE_ICON_WRAP}`}>
                       <UIIcon icon={Icon} size={17} className={MODEL_PAGE_ICON} />
                     </span>
@@ -1769,7 +2026,7 @@ export function ModelDecisionPromptingSection({
           />
 
           <div className="space-y-4 lg:pt-14">
-            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:bg-white/[0.045]">
+            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
               <div className="mb-3 flex items-center gap-3">
                 <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
                   <UIIcon icon={BadgeCheck} size={19} className={MODEL_PAGE_ICON} />
@@ -1786,7 +2043,7 @@ export function ModelDecisionPromptingSection({
               </ul>
             </article>
 
-            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:bg-white/[0.045]">
+            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
               <div className="mb-3 flex items-center gap-3">
                 <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
                   <UIIcon icon={Sparkles} size={19} className={MODEL_PAGE_ICON} />
@@ -1807,7 +2064,7 @@ export function ModelDecisionPromptingSection({
       </div>
 
       {isImageEngine ? (
-        <article className="rounded-[22px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72">
+        <article className="rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72]">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="!text-left text-2xl font-semibold text-text-primary">{labels.imageExamplesTitle}</h2>
@@ -1833,7 +2090,7 @@ export function ModelDecisionPromptingSection({
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="!text-left text-base font-semibold text-text-primary">{example.title}</h3>
-                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:bg-blue-500/12 dark:text-blue-200">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:!bg-blue-500/[0.12] dark:text-blue-200">
                           {example.badge}
                         </span>
                       </div>
@@ -1849,10 +2106,10 @@ export function ModelDecisionPromptingSection({
           </div>
         </article>
       ) : (
-      <article className="grid gap-5 rounded-[22px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72 lg:grid-cols-[minmax(0,0.86fr)_minmax(440px,1.14fr)]">
+      <article className="grid gap-5 rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] lg:grid-cols-[minmax(0,0.86fr)_minmax(440px,1.14fr)]">
         <div>
           <h2 className="!text-left text-2xl font-semibold text-text-primary">{copy.demoTitle ?? `Demo prompt — ${modelName}`}</h2>
-          <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/12 dark:text-blue-200">
+          <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:!bg-blue-500/[0.12] dark:text-blue-200">
             {demoModeLabel}
           </span>
           <p className="mt-4 text-sm leading-6 text-text-secondary">
@@ -1864,7 +2121,7 @@ export function ModelDecisionPromptingSection({
           </p>
           <details className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-sm">
             <summary className="cursor-pointer font-semibold text-text-primary">{labels.showPrompt}</summary>
-            <pre className="mt-3 max-h-[180px] overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-bg px-3 py-3 font-mono text-[0.8rem] leading-5 text-text-primary dark:bg-slate-950/72">
+            <pre className="mt-3 max-h-[180px] overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-bg px-3 py-3 font-mono text-[0.8rem] leading-5 text-text-primary dark:!bg-slate-950/[0.72]">
               {demoPromptText}
             </pre>
             <div className="mt-3">

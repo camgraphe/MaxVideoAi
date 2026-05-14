@@ -133,7 +133,7 @@
   ],
   "pricingNotes": "Live pricing updates inside the workspace. Check the chip before you render.",
   "custom": {
-    "heroEyebrow": "Google — Gemini 2.5 Flash Image (Nano Banana)",
+    "heroEyebrow": "Nano Banana Image Model",
     "heroSupportLine": "Best for rapid concepting, lightweight campaign visuals, and clean reference boards before video.",
     "heroSpecChips": [
       {
@@ -227,10 +227,10 @@
       "No hateful, harassing, or graphic-violence content.",
       "Don’t impersonate real people or public figures; use consent for any likeness.",
       "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
-      "Some prompts or reference images may be blocked by provider safety filters."
+      "Some prompts or reference images may be blocked by MaxVideoAI safety filters."
     ],
     "promptingTitle": "How to Write a Great Nano Banana Prompt",
-    "promptingIntro": "Nano Banana (Gemini 2.5 Flash Image) rewards short, literal briefs. Lead with composition, then lighting/style. For edits, say what to change and what must stay the same. For multi-image blends, assign each reference a role.",
+    "promptingIntro": "Nano Banana rewards short, literal briefs. Lead with composition, then lighting/style. For edits, say what to change and what must stay the same. For multi-image blends, assign each reference a role.",
     "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and edit instructions.",
     "promptingGlobalPrinciples": [
       "Composition first. Style second.",

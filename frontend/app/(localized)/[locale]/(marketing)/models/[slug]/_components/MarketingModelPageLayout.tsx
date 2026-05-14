@@ -287,10 +287,11 @@ export function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['nano-banana'].includes(engine.modelSlug);
+  const hideExamplesSection = false;
   const hasFallbackGalleryCopy = Boolean(copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta);
   const usesImageExampleFallback =
     engine.modelSlug === 'nano-banana-pro' ||
+    engine.modelSlug === 'nano-banana' ||
     engine.modelSlug === 'nano-banana-2' ||
     engine.modelSlug === 'seedream' ||
     engine.modelSlug === 'gpt-image-2';

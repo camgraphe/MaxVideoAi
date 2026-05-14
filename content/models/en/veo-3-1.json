@@ -150,7 +150,7 @@
   ],
   "faqs": [
     {
-      "q": "What is Veo 3?",
+      "q": "What is Veo 3.1?",
       "a": "On MaxVideoAI, Veo 3.1 is the current Google AI video model for short cinematic clips, text-to-video prompts, image-to-video runs, reference-guided workflows, native audio, and extension workflows."
     },
     {
@@ -166,7 +166,7 @@
       "a": "Yes. Google Veo 3.1 can start from a single still in Image-to-Video, use 1-4 reference stills in Reference-to-Video, or bridge a start and last frame."
     },
     {
-      "q": "How do I use Veo 3 for text-to-video?",
+      "q": "How do I use Veo 3.1 for text-to-video?",
       "a": "Start with one clear subject, one action, one camera instruction, and your target format. Veo 3.1 text-to-video prompts usually work best when movement, lighting, and audio cues are explicit."
     },
     {
@@ -253,7 +253,7 @@
       }
     ],
     "specValueProp": "Veo 3.1 in MaxVideoAI gives you framing presets, native audio control, seeds and Extend—so it behaves like a directable camera, not a black box.",
-    "galleryTitle": "Example Gallery: Real Veo 3.1 Outputs",
+    "galleryTitle": "Real Veo 3.1 examples",
     "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",
     "galleryAllCta": "View all Veo 3.1 examples →",
     "recreateLabel": "Recreate this shot →",
@@ -310,6 +310,29 @@
       "Draft in Veo 3.1 Fast, then regenerate winners in Veo 3.1 at 1080p with native audio."
     ],
     "comparisonCta": "Compare Veo 3.1 vs Veo 3.1 Fast ->",
+    "relatedItems": [
+      {
+        "brand": "google",
+        "title": "Veo 3.1 Fast",
+        "description": "Choose Fast when you need cheaper timing tests or reference-to-video drafts; stay on Veo 3.1 when the approved shot needs premium motion, audio and 1080p polish.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Compare Veo 3.1 vs Fast →"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Choose Kling 3 Pro when longer controlled sequences and storyboard-style planning matter more than Veo’s short premium audio-ready finish.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Compare Veo 3.1 vs Kling 3 Pro →"
+      },
+      {
+        "brand": "openai",
+        "title": "Sora 2 Pro",
+        "description": "Compare Sora 2 Pro when you are deciding between OpenAI-style concept generation and Veo 3.1’s Google route for polished brand shots.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Compare Veo 3.1 vs Sora 2 Pro →"
+      }
+    ],
     "faqTitle": "FAQ – Veo 3.1 in MaxVideoAI",
     "faqs": [
       {

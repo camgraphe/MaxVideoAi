@@ -142,7 +142,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Best effort for short voice lines; not a dedicated lip-sync route",
+        "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Oct 2025"
@@ -177,7 +177,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported (always on)",
-        "lipSync": "Best effort with short dialogue; not a dedicated lip-sync control",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "MaxVideoAI availability: Apr 2026"
@@ -282,7 +282,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Audio-to-video timing support; no dedicated lip-sync control",
+        "lipSync": "Supported",
         "cameraMotionControls": "Prompt-based only",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Data pending"
@@ -319,7 +319,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Audio generation supported; no dedicated lip-sync workflow",
+        "lipSync": "Supported",
         "cameraMotionControls": "Prompt-based only",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Data pending"
@@ -352,7 +352,7 @@
         ],
         "audioOutput": "Text/Image modes only; off in Reference mode",
         "nativeAudioGeneration": "Not supported",
-        "lipSync": "Not exposed in MaxVideoAI route",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Dec 2025"
@@ -385,7 +385,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Not supported",
-        "lipSync": "Not supported",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Sep 2025"
@@ -622,7 +622,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Best effort with short dialogue",
+        "lipSync": "Supported",
         "cameraMotionControls": "camera_fixed + prompt-based controls",
         "watermark": "No (MaxVideoAI)"
       }
@@ -658,7 +658,7 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "dualChannelAudio": null,
-        "lipSync": null,
+        "lipSync": "Supported",
         "pricePerSecond": null,
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",
@@ -695,7 +695,7 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "dualChannelAudio": null,
-        "lipSync": null,
+        "lipSync": "Supported",
         "pricePerSecond": null,
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",

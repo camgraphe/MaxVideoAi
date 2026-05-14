@@ -18,8 +18,19 @@ export async function searchPlaylistCandidates(options: {
     `COALESCE(hidden, FALSE) = FALSE`,
     `visibility = 'public'`,
     `COALESCE(indexable, TRUE) = TRUE`,
-    `COALESCE(video_url, '') <> ''`,
     `COALESCE(thumb_url, '') <> ''`,
+    `(
+      COALESCE(video_url, '') <> ''
+      OR COALESCE(surface, '') = 'image'
+      OR COALESCE(render_ids::text, '') <> ''
+      OR EXISTS (
+        SELECT 1
+          FROM job_outputs jo
+         WHERE jo.job_id = app_jobs.job_id
+           AND jo.kind = 'image'
+           AND COALESCE(jo.thumb_url, jo.url, jo.storage_url, '') <> ''
+      )
+    )`,
   ];
 
   if (q.length) {
@@ -46,7 +57,20 @@ export async function searchPlaylistCandidates(options: {
   const limitIndex = params.length;
 
   const rows = await query<PlaylistCandidateRow>(
-    `SELECT job_id, engine_id, engine_label, prompt, created_at, thumb_url, video_url, aspect_ratio
+    `SELECT job_id, engine_id, engine_label, prompt, created_at,
+            COALESCE(
+              NULLIF(thumb_url, ''),
+              (
+                SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
+                  FROM job_outputs jo
+                 WHERE jo.job_id = app_jobs.job_id
+                   AND jo.kind = 'image'
+                 ORDER BY jo.created_at ASC
+                 LIMIT 1
+              )
+            ) AS thumb_url,
+            video_url,
+            aspect_ratio
        FROM app_jobs
       WHERE ${clauses.join(' AND ')}
       ORDER BY created_at DESC
