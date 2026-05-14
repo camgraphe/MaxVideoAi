@@ -29,13 +29,14 @@ export const seedance20TemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#seedance-2-0-pricing',
     presets: [
-      { id: '5s-480p', seconds: 5, resolution: '480p', labelKey: 'entryDraft' },
-      { id: '8s-720p', seconds: 8, resolution: '720p', labelKey: 'standardPreview' },
+      { id: '5s-480p', seconds: 5, resolution: '480p', labelKey: 'entryDraft', noteKey: 'fiveSeconds480p' },
+      { id: '8s-720p', seconds: 8, resolution: '720p', labelKey: 'standardPreview', noteKey: 'eightSeconds720p' },
       {
         id: '10s-1080p',
         seconds: 10,
         resolution: '1080p',
         labelKey: 'commonProductionCheck',
+        noteKey: 'tenSeconds1080p',
         highlightKey: 'mostPopular',
       },
       { id: 'audio-included', fixedValueKey: 'audioExtraValue', labelKey: 'audio', noteKey: 'nativeAudioIncluded' },
