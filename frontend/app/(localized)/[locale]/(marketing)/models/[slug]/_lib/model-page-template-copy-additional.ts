@@ -505,7 +505,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Need final delivery?',
-        body: 'Validate in Standard first, then move approved shots into the Pro route for the main quality pass.',
+        body: 'Validate in Standard first, then move approved shots into Pro when fidelity, stability and final-quality approval matter more.',
         cta: { label: 'View Kling 3 Pro', href: modelsHref('en', 'kling-3-pro') },
       },
     ],
@@ -573,7 +573,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Besoin d’une livraison finale ?',
-        body: 'Validez d’abord en Standard, puis passez les plans approuvés en Pro pour la passe qualité principale.',
+        body: 'Validez d’abord en Standard, puis passez les plans approuvés en Pro quand fidélité, stabilité et qualité finale priment.',
         cta: { label: 'Voir Kling 3 Pro', href: modelsHref('fr', 'kling-3-pro') },
       },
     ],
@@ -641,7 +641,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
       },
       {
         title: '¿Necesitas entrega final?',
-        body: 'Valida primero en Standard y luego pasa las tomas aprobadas a Pro para la revisión principal de calidad.',
+        body: 'Valida primero en Standard y pasa tomas aprobadas a Pro cuando importen más fidelidad, estabilidad y calidad final.',
         cta: { label: 'Ver Kling 3 Pro', href: modelsHref('es', 'kling-3-pro') },
       },
     ],

@@ -86,11 +86,11 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported (extend / retake workflows)",
+        "videoToVideo": "Supported (Extend from one source video)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported (source clip for extend / retake)",
-        "maxResolution": "1080p",
+        "referenceImageStyle": "Image-to-Video: 1 start image; Reference-to-Video: 1-4 stills",
+        "referenceVideo": "Supported (one source clip for Extend)",
+        "maxResolution": "720p/1080p exposed in the MaxVideoAI route",
         "maxDuration": "8s",
         "aspectRatios": [
           "16:9",
@@ -107,7 +107,7 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)",
+        "watermark": "No visible MaxVideoAI watermark; provider/model provenance markers may apply",
         "releaseDate": "Oct 2025"
       }
     },
@@ -470,10 +470,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame; Kling Elements in prompt",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -502,10 +502,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame; Kling Elements in prompt",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -534,10 +534,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Not supported (no video input on this MaxVideoAI route)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "referenceImageStyle": "Image-to-video: 1 source image; optional end frame",
+        "referenceVideo": "Not supported (no video input on this MaxVideoAI route)",
         "maxResolution": "4K",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -638,9 +638,9 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (start + end image in i2v)",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Ref2V: up to 3 video references",
         "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -675,9 +675,9 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (start + end image in i2v)",
-        "referenceImageStyle": "Supported (multi reference stills)",
-        "referenceVideo": "Supported",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Ref2V: up to 3 video references",
         "maxResolution": "720p",
         "maxDuration": "15s",
         "aspectRatios": [

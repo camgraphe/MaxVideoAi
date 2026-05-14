@@ -139,6 +139,34 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getVeo31DemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Écouteurs sans fil premium',
+      action: 'Rotation macro, mise en place, puis fermeture du boîtier',
+      camera: 'Dollies fluides entre trois beats courts',
+      style: 'Pub produit cinématique, intérieur chaud puis rue froide',
+      audio: 'Ambiance urbaine, musique électronique douce, VO courte',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Auriculares inalámbricos premium',
+      action: 'Macro giratoria, puesta en uso y cierre del estuche',
+      camera: 'Dollies fluidos entre tres beats cortos',
+      style: 'Anuncio de producto cinematográfico, interior cálido y calle fría',
+      audio: 'Ambiente urbano, música electrónica suave, voz corta',
+    };
+  }
+  return {
+    subject: 'Premium wireless earbuds',
+    action: 'Macro rotation, in-use moment, and closing case',
+    camera: 'Smooth dolly moves across three short beats',
+    style: 'Cinematic product ad, warm interior to cool street light',
+    audio: 'City ambience, soft electronic bed, short voiceover',
+  };
+}
+
 function getSora2DemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
@@ -249,6 +277,167 @@ function getLtx23ProDemoSummary(locale: AppLocale) {
     style: 'Golden hour, drifting dust, bronze textures, premium adventure tone',
     audio: 'Desert wind, metallic compass click, low atmospheric rumble',
   };
+}
+
+function getKling34kDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Master produit montre premium',
+      action: "Reveal lent du bord, reflet et detail d'ecran",
+      camera: 'Dolly push 16:9 verrouille en 4K native',
+      style: 'Studio minimal, surface graphite, highlights produit nets',
+      audio: 'Audio off pour finition montage',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Master de producto smartwatch premium',
+      action: 'Reveal lento de borde, reflejo y detalle de pantalla',
+      camera: 'Dolly push 16:9 bloqueado en 4K nativo',
+      style: 'Estudio minimal, superficie grafito, highlights de producto nitidos',
+      audio: 'Audio off para acabado editorial',
+    };
+  }
+  return {
+    subject: 'Premium smartwatch product master',
+    action: 'Slow reveal of edge, reflection and screen detail',
+    camera: 'Locked 16:9 dolly push in native 4K',
+    style: 'Minimal studio, graphite surface, crisp product highlights',
+    audio: 'Audio off for editorial finishing',
+  };
+}
+
+function getKling3StandardDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Runner dans une rue néon',
+      action: 'Trois beats courts passent du départ à la traversée puis au plan final',
+      camera: 'Plans storyboard 1080p, tracking stable et coupe lisible',
+      style: 'Nuit pluvieuse, néons, look promo social',
+      audio: 'Audio activé : ambiance de rue et un court effet de pas',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Runner en calle neon',
+      action: 'Tres beats cortos pasan del inicio al cruce y al plano final',
+      camera: 'Storyboard 1080p, tracking estable y corte legible',
+      style: 'Noche lluviosa, neones, look promo social',
+      audio: 'Audio activado: ambiente de calle y un efecto breve de pasos',
+    };
+  }
+  return {
+    subject: 'Runner on a neon street',
+    action: 'Three short beats move from launch to crossing and final settle',
+    camera: '1080p storyboard shots, stable tracking and readable cuts',
+    style: 'Rainy night, neon reflections, social promo look',
+    audio: 'Audio on: street ambience and one short footstep cue',
+  };
+}
+
+function getKling3StandardDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Durée : 12 s • Ratio : 16:9 • Audio : activé',
+      '',
+      'Shot 1 (0-4 s) : @Element1 runner en veste sombre attend sous une enseigne néon, pluie légère, plan moyen stable.',
+      'Shot 2 (4-8 s) : @Element1 traverse la rue, tracking latéral fluide, reflets bleus et rouges sur le sol.',
+      'Shot 3 (8-12 s) : il ralentit près d’une vitrine, caméra qui se stabilise, même tenue et même lumière.',
+      '',
+      'Audio : ambiance de rue humide, pas courts, un léger souffle. Pas de texte, pas de logo, pas de sous-titres.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Duración: 12 s • Ratio: 16:9 • Audio: activado',
+      '',
+      'Shot 1 (0-4 s): @Element1 runner con chaqueta oscura espera bajo un letrero neon, lluvia suave, plano medio estable.',
+      'Shot 2 (4-8 s): @Element1 cruza la calle, tracking lateral fluido, reflejos azules y rojos en el suelo.',
+      'Shot 3 (8-12 s): baja el ritmo junto a una vitrina, cámara se estabiliza, misma ropa y misma luz.',
+      '',
+      'Audio: ambiente de calle mojada, pasos cortos, respiración leve. Sin texto, sin logos, sin subtítulos.',
+    ].join('\n');
+  }
+  return [
+    'Duration: 12s • Aspect: 16:9 • Audio: on',
+    '',
+    'Shot 1 (0-4s): @Element1 runner in a dark jacket waits under a neon sign, light rain, stable medium shot.',
+    'Shot 2 (4-8s): @Element1 crosses the street, smooth side tracking, blue and red reflections on wet pavement.',
+    'Shot 3 (8-12s): he slows beside a storefront, camera settles, same wardrobe and lighting anchors.',
+    '',
+    'Audio: wet street ambience, short footsteps, light breath. No text, no logos, no subtitles.',
+  ].join('\n');
+}
+
+function getKling3ProDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Présentatrice de lancement produit',
+      action: 'Présente un prototype puis marche vers un écran de démonstration',
+      camera: 'Trois plans storyboard 1080p avec tracking stable',
+      style: 'Studio premium, lumière douce, reflets contrôlés',
+      audio: 'Audio activé : courte ligne voice ID et ambiance studio',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Presentadora de lanzamiento de producto',
+      action: 'Presenta un prototipo y camina hacia una pantalla demo',
+      camera: 'Tres tomas storyboard 1080p con tracking estable',
+      style: 'Estudio premium, luz suave, reflejos controlados',
+      audio: 'Audio activado: línea corta con voice ID y ambiente de estudio',
+    };
+  }
+  return {
+    subject: 'Product launch presenter',
+    action: 'Introduces a prototype and walks toward a demo screen',
+    camera: 'Three 1080p storyboard shots with stable tracking',
+    style: 'Premium studio, soft lighting, controlled reflections',
+    audio: 'Audio on: short voice-ID line and studio ambience',
+  };
+}
+
+function getKling3ProDemoPrompt(locale: AppLocale) {
+  if (locale === 'fr') {
+    return [
+      'Durée : 12 s • Ratio : 16:9 • Audio : activé • shot_type : customize',
+      '',
+      '@Element1 = présentatrice en blazer bleu marine',
+      '@Element2 = prototype transparent sur socle graphite',
+      '',
+      'Shot 1 (0-4 s) : plan moyen de @Element1 tenant @Element2, studio premium, lumière douce, caméra stable.',
+      'Shot 2 (4-8 s) : @Element1 marche vers un écran de démonstration, tracking latéral fluide, même tenue et même produit.',
+      'Shot 3 (8-12 s) : gros plan du prototype sur le socle, reflets contrôlés, caméra qui se stabilise sur la composition finale.',
+      '',
+      'Audio : <<<voice_1>>> “Here is the next generation of our platform.” Ambiance studio discrète, un seul cue sonore doux. Pas de texte, pas de logo, pas de sous-titres.',
+    ].join('\n');
+  }
+  if (locale === 'es') {
+    return [
+      'Duración: 12 s • Ratio: 16:9 • Audio: activado • shot_type: customize',
+      '',
+      '@Element1 = presentadora con blazer azul marino',
+      '@Element2 = prototipo transparente sobre base grafito',
+      '',
+      'Shot 1 (0-4 s): plano medio de @Element1 sosteniendo @Element2, estudio premium, luz suave, cámara estable.',
+      'Shot 2 (4-8 s): @Element1 camina hacia una pantalla demo, tracking lateral fluido, misma ropa y mismo producto.',
+      'Shot 3 (8-12 s): primer plano del prototipo en la base, reflejos controlados, cámara se estabiliza en la composición final.',
+      '',
+      'Audio: <<<voice_1>>> “Here is the next generation of our platform.” Ambiente de estudio discreto, un solo cue sonoro suave. Sin texto, sin logos, sin subtítulos.',
+    ].join('\n');
+  }
+  return [
+    'Duration: 12s • Aspect: 16:9 • Audio: on • shot_type: customize',
+    '',
+    '@Element1 = female presenter in a navy blazer',
+    '@Element2 = translucent product prototype on a graphite plinth',
+    '',
+    'Shot 1 (0-4s): medium shot of @Element1 holding @Element2, premium studio, soft key light, stable camera.',
+    'Shot 2 (4-8s): @Element1 walks toward a demo screen, smooth side tracking, same wardrobe and product anchors.',
+    'Shot 3 (8-12s): close-up of the prototype on the plinth, controlled reflections, camera settles on the final composition.',
+    '',
+    'Audio: <<<voice_1>>> “Here is the next generation of our platform.” Quiet studio ambience, one soft UI chime. No text, no logos, no subtitles.',
+  ].join('\n');
 }
 
 function getSeedance15DemoSummary(locale: AppLocale) {
@@ -1072,11 +1261,16 @@ export function ModelDecisionPromptingSection({
   const isLumaFlashRoute = engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
   const isSora2Route = engineSlug === 'sora-2';
   const isSora2ProRoute = engineSlug === 'sora-2-pro';
+  const isVeo31Route = engineSlug === 'veo-3-1';
   const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
+  const isSeedance20FastRoute = engineSlug === 'seedance-2-0-fast';
   const isSeedance15ProRoute = engineSlug === 'seedance-1-5-pro';
   const isLtx23FastRoute = engineSlug === 'ltx-2-3-fast';
   const isLtx23ProRoute = engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
+  const isKling3ProRoute = engineSlug === 'kling-3-pro';
+  const isKling3StandardRoute = engineSlug === 'kling-3-standard';
+  const isKling34kRoute = engineSlug === 'kling-3-4k';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getDemoSummary(locale);
   const seedance15Demo = getSeedance15DemoSummary(locale);
@@ -1088,6 +1282,10 @@ export function ModelDecisionPromptingSection({
   const sora2ProDemo = getSora2ProDemoSummary(locale);
   const ltx23FastDemo = getLtx23FastDemoSummary(locale);
   const ltx23ProDemo = getLtx23ProDemoSummary(locale);
+  const kling3ProDemo = getKling3ProDemoSummary(locale);
+  const kling3StandardDemo = getKling3StandardDemoSummary(locale);
+  const kling34kDemo = getKling34kDemoSummary(locale);
+  const veo31Demo = getVeo31DemoSummary(locale);
   const veoFastDemo = getVeoFastDemoSummary(locale);
   const veoLiteDemo = getVeoLiteDemoSummary(locale);
   const demo = isHailuoDraftRoute
@@ -1108,11 +1306,19 @@ export function ModelDecisionPromptingSection({
                   ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
                   : isLtx23ProRoute
                     ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
-                    : isVeoFastRoute
-                      ? { ...veoFastDemo, output: veoFastDemo.audio }
-                      : isVeoLiteRoute
-                        ? { ...veoLiteDemo, output: veoLiteDemo.audio }
-                        : { ...standardDemo, output: standardDemo.audio };
+                    : isKling34kRoute
+                      ? { ...kling34kDemo, output: kling34kDemo.audio }
+                      : isKling3ProRoute
+                        ? { ...kling3ProDemo, output: kling3ProDemo.audio }
+                      : isKling3StandardRoute
+                        ? { ...kling3StandardDemo, output: kling3StandardDemo.audio }
+                      : isVeo31Route
+                        ? { ...veo31Demo, output: veo31Demo.audio }
+                        : isVeoFastRoute
+                          ? { ...veoFastDemo, output: veoFastDemo.audio }
+                          : isVeoLiteRoute
+                            ? { ...veoLiteDemo, output: veoLiteDemo.audio }
+                            : { ...standardDemo, output: standardDemo.audio };
   const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
   const intro = copy.promptingIntro ?? '';
   const imageExamplesIntro =
@@ -1180,6 +1386,30 @@ export function ModelDecisionPromptingSection({
                 : locale === 'es'
                   ? 'Cómo LTX 2.3 Pro usa Generate, Audio, Extend y Retake'
                   : 'How LTX 2.3 Pro uses Generate, Audio, Extend and Retake'
+            : isKling34kRoute
+              ? locale === 'fr'
+                ? 'Comment Kling 3 4K utilise les references'
+                : locale === 'es'
+                  ? 'Cómo Kling 3 4K usa referencias'
+                  : 'How Kling 3 4K uses references'
+            : isKling3ProRoute
+              ? locale === 'fr'
+                ? 'Comment Kling 3 Pro utilise les plans et références'
+                : locale === 'es'
+                  ? 'Cómo Kling 3 Pro usa tomas y referencias'
+                  : 'How Kling 3 Pro uses shots and references'
+            : isKling3StandardRoute
+              ? locale === 'fr'
+                ? 'Comment Kling 3 Standard structure les plans et références'
+                : locale === 'es'
+                  ? 'Cómo Kling 3 Standard estructura tomas y referencias'
+                  : 'How Kling 3 Standard structures shots and references'
+            : isVeo31Route
+              ? locale === 'fr'
+                ? 'Comment Veo 3.1 utilise les références'
+                : locale === 'es'
+                  ? 'Cómo Veo 3.1 usa referencias'
+                  : 'How Veo 3.1 uses references'
             : isVeoFastRoute
               ? locale === 'fr'
                 ? 'Comment Veo 3.1 Fast utilise images de départ, références et image finale'
@@ -1226,8 +1456,16 @@ export function ModelDecisionPromptingSection({
         ? copy.demoPrompt.join('\n')
       : isLtx23ProRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isVeo31Route && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isVeoFastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isKling34kRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
+      : isKling3ProRoute
+        ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKling3ProDemoPrompt(locale))
+      : isKling3StandardRoute
+        ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKling3StandardDemoPrompt(locale))
       : isPikaTextRoute
         ? getPikaDemoPrompt(locale)
         : isLumaRay2Route
@@ -1262,6 +1500,14 @@ export function ModelDecisionPromptingSection({
             ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
           : isLtx23ProRoute
             ? getDuration(demoMedia, locale)
+          : isKling34kRoute
+            ? (locale === 'fr' || locale === 'es' ? '6 s' : '6s')
+          : isKling3ProRoute
+            ? getDuration(demoMedia, locale)
+          : isKling3StandardRoute
+            ? getDuration(demoMedia, locale)
+          : isVeo31Route
+            ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isVeoFastRoute
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isVeoLiteRoute
@@ -1300,6 +1546,14 @@ export function ModelDecisionPromptingSection({
           : 'Fast draft check'
     : isLtx23ProRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Generate' : locale === 'es' ? 'Prompt Generate' : 'Generate prompt'))
+    : isKling34kRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Master 4K final' : locale === 'es' ? 'Master 4K final' : 'Final 4K master'))
+    : isKling3ProRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Pro' : locale === 'es' ? 'Prompt Pro' : 'Pro prompt'))
+    : isKling3StandardRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt storyboard' : locale === 'es' ? 'Prompt storyboard' : 'Storyboard prompt'))
+    : isVeo31Route
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo 3.1' : locale === 'es' ? 'Prompt Veo 3.1' : 'Veo 3.1 prompt'))
     : isVeoFastRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo Fast' : locale === 'es' ? 'Prompt Veo Fast' : 'Veo Fast prompt'))
     : isPikaTextRoute
@@ -1341,12 +1595,22 @@ export function ModelDecisionPromptingSection({
       : locale === 'es'
         ? 'Sin audio'
         : 'Silent'
-    : isSora2ProRoute
-      ? locale === 'fr'
-        ? 'Audio désactivé'
-        : locale === 'es'
-          ? 'Audio desactivado'
-          : 'Audio off'
+      : isSora2ProRoute
+        ? locale === 'fr'
+          ? 'Audio désactivé'
+          : locale === 'es'
+            ? 'Audio desactivado'
+            : 'Audio off'
+      : isKling34kRoute
+        ? locale === 'fr'
+          ? 'Audio off'
+          : locale === 'es'
+            ? 'Audio off'
+            : 'Audio off'
+      : isKling3ProRoute
+        ? labels.audioOn
+      : isKling3StandardRoute
+        ? labels.audioOn
       : labels.audioOn;
   const demoAlt = isPikaTextRoute
     ? locale === 'fr'
@@ -1354,6 +1618,12 @@ export function ModelDecisionPromptingSection({
       : locale === 'es'
         ? 'Loop pixel-art de Pika 2.2'
         : 'Pika 2.2 pixel-art loop'
+    : isSeedance20FastRoute
+      ? locale === 'fr'
+        ? 'Brouillon de mouvement Seedance 2.0 Fast'
+        : locale === 'es'
+          ? 'Borrador de movimiento Seedance 2.0 Fast'
+          : 'Seedance 2.0 Fast motion draft render'
     : isSeedance15ProRoute
       ? locale === 'fr'
         ? 'Rendu moto Seedance 1.5 Pro camera_fixed'
@@ -1390,6 +1660,30 @@ export function ModelDecisionPromptingSection({
           : locale === 'es'
             ? 'Render de aventura con brújula LTX 2.3 Pro'
             : 'LTX 2.3 Pro desert compass adventure render'
+      : isKling34kRoute
+        ? locale === 'fr'
+          ? 'Master produit Kling 3 4K'
+          : locale === 'es'
+            ? 'Master de producto Kling 3 4K'
+            : 'Kling 3 4K product master render'
+      : isKling3ProRoute
+        ? locale === 'fr'
+          ? 'Rendu lancement produit Kling 3 Pro'
+          : locale === 'es'
+            ? 'Render de lanzamiento de producto Kling 3 Pro'
+            : 'Kling 3 Pro product launch render'
+      : isKling3StandardRoute
+        ? locale === 'fr'
+          ? 'Brouillon storyboard Kling 3 Standard'
+          : locale === 'es'
+            ? 'Borrador storyboard Kling 3 Standard'
+            : 'Kling 3 Standard storyboard draft render'
+      : isVeo31Route
+        ? locale === 'fr'
+          ? 'Pub produit Veo 3.1 pour écouteurs sans fil'
+          : locale === 'es'
+            ? 'Anuncio de producto Veo 3.1 para auriculares inalámbricos'
+            : 'Veo 3.1 wireless earbuds product ad'
       : isVeoFastRoute
         ? locale === 'fr'
           ? 'Brouillon bureau de nuit Veo 3.1 Fast'

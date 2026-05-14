@@ -74,6 +74,27 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
         ? 'imagen inicial + imagen final en imagen → video'
         : normalized;
   }
+  if (lower === '1 start image + optional end image in i2v') {
+    return locale === 'fr'
+      ? '1 image de départ + image de fin optionnelle en image → vidéo'
+      : locale === 'es'
+        ? '1 imagen inicial + imagen final opcional en imagen → video'
+        : normalized;
+  }
+  if (lower === 'ref2v: up to 9 image references; i2v: 1 start image') {
+    return locale === 'fr'
+      ? 'Ref2V : jusqu’à 9 images de référence ; I2V : 1 image de départ'
+      : locale === 'es'
+        ? 'Ref2V: hasta 9 imágenes de referencia; I2V: 1 imagen inicial'
+        : normalized;
+  }
+  if (lower === 'ref2v: up to 3 video references') {
+    return locale === 'fr'
+      ? 'Ref2V : jusqu’à 3 vidéos de référence'
+      : locale === 'es'
+        ? 'Ref2V: hasta 3 videos de referencia'
+        : normalized;
+  }
   if (lower === 'i2v start + optional end frame') {
     return locale === 'fr'
       ? 'image de départ I2V + image finale optionnelle'

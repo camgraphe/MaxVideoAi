@@ -3,14 +3,14 @@
   "versionLabel": "v3 4K",
   "seo": {
     "title": "Kling 3 4K | Modelo de video IA 4K nativo | MaxVideoAI",
-    "description": "Usa Kling 3 4K en MaxVideoAI para renders texto-a-video e imagen-a-video en 4K nativo, con clips de 3 a 15 s y audio nativo.",
+    "description": "Usa Kling 3 4K en MaxVideoAI para renders finales texto-a-video e imagen-a-video en 4K nativo, clips de 3 a 15 s, audio opcional y precio final visible.",
     "image": "/hero/kling-3-4k-hero.jpg"
   },
-  "overview": "Kling 3 4K es la ruta Kling AI de 4K nativo para renders finales, prompts texto-a-video, referencias imagen-a-video, control multi-prompt por planos y audio nativo.",
+  "overview": "Kling 3 4K es la ruta Kling AI de video 4K nativo para renders finales, prompts aprobados, masters imagen-a-video, encuadre bloqueado y audio nativo opcional.",
   "pricingNotes": "Las estimaciones mostradas a miembros incluyen el margen de MaxVideoAI: aprox. 0,55 $/s para salida 4K nativa. Usa esta ruta para renders finales aprobados.",
   "hero": {
     "title": "Kling 3 4K - generacion de video 4K nativa",
-    "intro": "Usa Kling 3 4K cuando un prompt o una referencia de imagen ya esta listo para entrega final y quieres salida 4K nativa desde los endpoints Kling v3 4K.",
+    "intro": "Usa Kling 3 4K cuando un prompt, imagen fuente o storyboard ya esta aprobado y la toma necesita salida 4K nativa para entrega, edicion o revision en pantalla grande.",
     "badge": "4K nativo · 3-15 s · Texto o imagen · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 4K",
@@ -118,11 +118,23 @@
   "faqs": [
     {
       "q": "¿Kling 3 4K genera salida 4K nativa?",
-      "a": "Sí. Úsalo cuando la toma ya esté lista para un render de entrega 4K nativo después de validar a menor coste."
+      "a": "Si. Kling 3 4K es la ruta de entrega 4K nativa en MaxVideoAI para tomas seleccionadas texto-a-video o imagen-a-video."
     },
     {
-      "q": "¿Cuando usar Kling 3 4K?",
-      "a": "Usalo para renders finales despues de validar el prompt, la referencia de imagen y el plan de shots en Kling 3 Standard o Kling 3 Pro."
+      "q": "¿Cuando usar Kling 3 4K en vez de Kling 3 Pro?",
+      "a": "Usa Kling 3 Pro para validacion creativa y aprobaciones 1080p. Usa Kling 3 4K solo cuando la toma aprobada necesita entrega final en 4K nativo."
+    },
+    {
+      "q": "¿Kling 3 4K soporta imagen-a-video?",
+      "a": "Si. La ruta actual de MaxVideoAI soporta imagen-a-video desde una imagen fuente, con frame final opcional cuando la ruta activa lo expone."
+    },
+    {
+      "q": "¿Kling 3 4K soporta audio y lip sync?",
+      "a": "Si, el audio se puede activar/desactivar y lip sync esta soportado. Mantén el dialogo corto y el encuadre de rostro estable cuando lip sync importe."
+    },
+    {
+      "q": "¿Que duracion puede tener Kling 3 4K?",
+      "a": "La ruta es short-form, con opciones hasta 15 segundos. Confirma duracion final y cotizacion en Generate antes del render."
     }
   ],
   "custom": {
@@ -155,6 +167,114 @@
     ],
     "finalPara1": "Kling 3 4K funciona mejor cuando la dirección creativa ya está validada. Trátalo como la ruta de master 4K nativo para shots aprobados.",
     "finalPara2": "Para la mayoría de equipos, el workflow eficiente es Standard para explorar, Pro para validar y 4K solo para entrega final.",
-    "finalButton": "Renderizar un shot final Kling 3 4K"
+    "finalButton": "Renderizar un shot final Kling 3 4K",
+    "promptingTitle": "Prompt Lab — Kling 3 4K",
+    "promptingGuideLabel": "Guia oficial Kling 3 4K",
+    "promptingIntro": "Kling 3 4K funciona mejor como pasada final de entrega. Parte de un prompt o imagen de referencia aprobados, bloquea encuadre y duracion, decide si el audio forma parte del master y renderiza solo la toma seleccionada en 4K nativo.",
+    "promptingTip": "Consejo: valida timing, movimiento y encuadre en Kling 3 Standard o Pro antes de gastar en el master 4K.",
+    "promptingGlobalPrinciples": [
+      "Usa un brief de toma aprobado en vez de explorar varias direcciones creativas en 4K.",
+      "Bloquea sujeto, accion, camara, ratio y duracion antes del render final.",
+      "Usa una imagen fuente limpia cuando geometria del producto, identidad o encuadre deban mantenerse estables.",
+      "Decide audio on/off antes de exportar; trata el audio como parte de la especificacion de entrega.",
+      "Controla coste validando en una ruta menor y pasando solo tomas aprobadas a Kling 3 4K."
+    ],
+    "promptingEngineWhy": [
+      "Kling 3 4K se expone como texto-a-video e imagen-a-video en MaxVideoAI, no como ruta con entrada de video.",
+      "Imagen-a-video acepta una imagen fuente, con frame final opcional cuando la ruta activa lo expone.",
+      "La ruta sale en 4K nativo, por eso encaja mejor en masters finales que en exploracion amplia de prompts.",
+      "Lip sync esta soportado, pero el prompt debe mantener dialogo corto y encuadre estable del rostro.",
+      "Usa la cotizacion final en Generate antes de entrega al cliente o renders en volumen."
+    ],
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Master final",
+        "title": "Prompt de entrega 4K final",
+        "description": "Usalo cuando la receta de la toma ya esta aprobada.",
+        "copy": "Template (copy / paste)\nObjetivo: [master de producto, clip de campana, revision en pantalla grande]\nSujeto: [producto / personaje / escena aprobada]\nAccion: [una accion clara]\nCamara: [encuadre bloqueado + un movimiento]\nEstilo: [luz, paleta, textura aprobadas]\nEntrega: 4K nativo, [duracion], [ratio], audio [on/off]\n\nExample:\nMaster final en 4K nativo para un smartwatch premium sobre pedestal grafito. Un dolly push lento revela el reflejo de la pantalla y el borde metalico pulido. Encuadre 16:9 bloqueado, highlights de estudio nitidos, fondo negro, sin texto agregado ni cambios de logo. Audio off para acabado editorial."
+      },
+      {
+        "id": "structured",
+        "label": "Referencia",
+        "title": "Prompt master imagen-a-video",
+        "description": "Usalo cuando una imagen fuente controla identidad de producto o composicion.",
+        "copy": "Template (copy / paste)\nRol imagen fuente: [identidad / geometria producto / encuadre final]\nMantener: [forma, logo, color, pose, composicion]\nAnimar: [un solo beat de movimiento]\nCamara: [push pequeno / orbit / toma bloqueada]\nFrame final: [opcional si hace falta]\nEntrega: 4K nativo, [duracion], audio [on/off]\n\nExample:\nUsar el still de producto aprobado como imagen fuente. Preservar forma de la botella, ubicacion de la etiqueta y color ambar del vidrio. Agregar un orbit macro sutil en 4K con reflejos controlados, mantener la botella centrada y terminar en la misma composicion frontal limpia, sin texto agregado. Audio on solo con ambiente suave de estudio."
+      },
+      {
+        "id": "pro",
+        "label": "Audio",
+        "title": "Prompt de decision de audio",
+        "description": "Usalo cuando el archivo 4K final necesita contexto sonoro.",
+        "copy": "Template (copy / paste)\nRol audio: [contexto review / ambiente final / voz corta / sin audio]\nAccion visible ligada al sonido: [que crea el cue]\nEvitar: [dialogo largo, musicas en conflicto, accion fuera de camara ruidosa]\nNota export: [audio on/off]\n\nExample:\nMaster de campana fashion en 4K nativo, la modelo gira una sola vez bajo luz suave de estudio. Audio on: movimiento discreto de tela, room tone sutil, un hit cinematografico bajo al girar. Sin dialogo, sin cama musical, sin sonidos fuera de camara."
+      },
+      {
+        "id": "storyboard",
+        "label": "Coste",
+        "title": "Checklist antes de pasar a 4K",
+        "description": "Usalo antes de pasar de Standard o Pro a 4K.",
+        "copy": "Checklist\n1. Prompt aprobado en una ruta Kling de menor coste.\n2. Imagen fuente o frame final validado.\n3. Ratio y duracion alineados con la entrega.\n4. Audio on/off decidido.\n5. Solo la toma aprobada pasa a Kling 3 4K.\n\nExample:\nUna toma Kling 3 Pro 1080p aprobada se convierte en master 4K: mismo sujeto, mismo recorrido de camara, mismo timing, misma imagen fuente, salida 4K nativa para entrega final."
+      }
+    ],
+    "demoTitle": "Prompt de demostracion — Kling 3 4K",
+    "demoPromptLabel": "Master 4K final",
+    "demoPrompt": [
+      "Render Kling 3 en 4K nativo, 16:9, 6 segundos, audio off.",
+      "Un smartwatch premium reposa sobre un pedestal grafito en un estudio minimal.",
+      "Un dolly push lento revela el borde pulido, el reflejo del vidrio y el detalle de pantalla.",
+      "Encuadre de producto bloqueado, highlights nitidos, fondo negro limpio, sin texto agregado ni cambios de logo.",
+      "Usar solo despues de aprobar composicion y timing en Standard o Pro."
+    ],
+    "demoSummary": {
+      "subject": "Master de producto smartwatch premium",
+      "action": "Reveal lento de borde, reflejo y detalle de pantalla",
+      "camera": "Dolly push 16:9 bloqueado en 4K nativo",
+      "style": "Estudio minimal, superficie grafito, highlights de producto nitidos",
+      "audio": "Audio off para acabado editorial"
+    },
+    "tipsIntro": "Buenas practicas, control de coste y limites de entrega para renders finales 4K nativos con Kling 3 4K.",
+    "strengths": [
+      "Entrega 4K nativa despues de validar la direccion creativa.",
+      "Muy util para masters de producto, anuncios premium y archivos de revision en pantalla grande.",
+      "Flujos texto-a-video e imagen-a-video con audio opcional.",
+      "Adecuado cuando encuadre final y detalle importan mas que coste de iteracion."
+    ],
+    "troubleshootingTitle": "Problemas de entrega 4K -> soluciones",
+    "troubleshootingItems": [
+      "El coste sube rapido -> valida en Standard o Pro y renderiza solo tomas aprobadas en 4K.",
+      "El encuadre deriva -> usa una imagen fuente limpia y especifica composicion bloqueada.",
+      "El audio no aporta -> desactivalo para acabado editorial o musica externa.",
+      "El movimiento esta cargado -> reduce a una accion legible y un movimiento de camara."
+    ],
+    "boundaries": [
+      "Usa texto o una imagen fuente; sin entrada de video en la ruta Kling 3 4K actual de MaxVideoAI.",
+      "4K nativo esta pensado para tomas seleccionadas de entrega, no para exploracion amplia de prompts.",
+      "Los clips son short-form, hasta 15 segundos por generacion.",
+      "Los ratios 1:1, 16:9 y 9:16 estan soportados en esta ruta.",
+      "Usa la cotizacion final en Generate antes de entrega al cliente o workflows automatizados."
+    ],
+    "safetyNote": "Controles integrados y buenas practicas para entrega responsable con Kling 3 4K.",
+    "faqs": [
+      {
+        "q": "¿Kling 3 4K genera salida 4K nativa?",
+        "a": "Si. Kling 3 4K es la ruta de entrega 4K nativa en MaxVideoAI para tomas seleccionadas texto-a-video o imagen-a-video."
+      },
+      {
+        "q": "¿Cuando usar Kling 3 4K en vez de Kling 3 Pro?",
+        "a": "Usa Kling 3 Pro para validacion creativa y aprobaciones 1080p. Usa Kling 3 4K solo cuando la toma aprobada necesita entrega final en 4K nativo."
+      },
+      {
+        "q": "¿Kling 3 4K soporta imagen-a-video?",
+        "a": "Si. La ruta actual de MaxVideoAI soporta imagen-a-video desde una imagen fuente, con frame final opcional cuando la ruta activa lo expone."
+      },
+      {
+        "q": "¿Kling 3 4K soporta audio y lip sync?",
+        "a": "Si, el audio se puede activar/desactivar y lip sync esta soportado. Mantén el dialogo corto y el encuadre de rostro estable cuando lip sync importe."
+      },
+      {
+        "q": "¿Que duracion puede tener Kling 3 4K?",
+        "a": "La ruta es short-form, con opciones hasta 15 segundos. Confirma duracion final y cotizacion en Generate antes del render."
+      }
+    ]
   }
 }

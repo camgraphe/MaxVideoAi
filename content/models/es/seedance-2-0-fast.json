@@ -6,7 +6,7 @@
     "description": "Usa Seedance 2.0 Fast en MaxVideoAI para borradores más rápidos, iteraciones multimodales y specs/precios visibles antes de generar."
   },
   "overview": "Seedance 2.0 Fast es el modelo de video IA de Seedance rápido actual para borradores cortos, planificación de tomas y bucles de comparación antes del render final.",
-  "pricingNotes": "Seedance 2 Fast sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
+  "pricingNotes": "Seedance 2.0 Fast usa tarificación de proveedor por tokens. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
   "hero": {
     "title": "Seedance 2.0 Fast — modelo Seedance rápido actual para drafts e iteración",
     "intro": "Usa Seedance 2.0 Fast como la opción de video IA de Seedance más rápida para borradores más rápidos, planificación de tomas, checks de timing e iteraciones A/B antes de mover las direcciones aprobadas a Seedance 2.0.",
@@ -71,7 +71,7 @@
   "technicalOverview": [
     {
       "label": "Rol en la familia",
-      "body": "Variante rápida optimizada dentro de la familia Seedance 2 en Fal."
+      "body": "Variante rápida optimizada dentro de la familia Seedance 2 en MaxVideoAI."
     },
     {
       "label": "Entradas",
@@ -87,15 +87,15 @@
     },
     {
       "label": "Audio",
-      "body": "Audio nativo activado por defecto y desactivable; Fal indica que el precio es el mismo con o sin audio"
+      "body": "Audio nativo activado por defecto y desactivable; MaxVideoAI muestra el precio final antes de cada run"
     },
     {
       "label": "Cuándo usarlo",
       "body": "Exploración temprana, planificación de planos y rondas de comparación antes de los finales"
     },
     {
-      "label": "Posicionamiento Fal",
-      "body": "La página pública de Seedance en Fal agrupa Fast dentro de la misma familia de video IA de Seedance, con audio nativo, enfoque cinematográfico y workflows multimodales."
+      "label": "Notas de proveedor / familia de modelo",
+      "body": "Las notas de proveedor y familia de modelo agrupan Fast dentro de la misma familia de video IA de Seedance, con audio nativo, enfoque cinematográfico y workflows multimodales cuando la ruta activa los expone."
     }
   ],
   "promptStructure": {
@@ -143,12 +143,16 @@
       "a": "Seedance 2.0 Fast es la opción de video IA de Seedance más rápida dentro de la familia Seedance 2, pensada para producir borradores más deprisa antes de subir las versiones ganadoras a Seedance 2.0 estándar."
     },
     {
+      "q": "¿Cuánto cuesta Seedance 2.0 Fast?",
+      "a": "La tarjeta de precios muestra totales MaxVideoAI para escenarios de borrador comunes, como 5 s en 480p, 8 s en 720p y 10 s en 720p. Generate sigue siendo la fuente de verdad para el presupuesto exacto antes de enviar."
+    },
+    {
       "q": "¿Seedance 2.0 Fast mantiene text-to-video, image-to-video y reference-to-video?",
       "a": "Sí. Seedance 2.0 Fast mantiene la misma familia principal de workflows que Seedance 2.0 estándar: text-to-video, image-to-video con imagen final opcional y reference-to-video multimodal."
     },
     {
       "q": "¿Cuántas referencias acepta Seedance 2.0 Fast?",
-      "a": "Fast soporta hasta 9 imágenes de referencia, 3 videos de referencia y 3 audios de referencia, con 12 archivos máximos en toda la ejecución ref2v."
+      "a": "Fast soporta hasta 9 imágenes de referencia, 3 videos de referencia y 3 audios de referencia, con 12 archivos máximos en toda la ejecución ref2v. Las referencias de audio necesitan al menos una imagen o video de referencia en la ruta activa."
     },
     {
       "q": "¿El image-to-video de Seedance 2.0 Fast soporta una imagen final?",
@@ -156,7 +160,7 @@
     },
     {
       "q": "¿Qué duración puede alcanzar Seedance 2.0 Fast?",
-      "a": "Fal indica duración auto o explícita de 4 a 15 segundos para las rutas actuales de Seedance 2.0 Fast."
+      "a": "La ruta actual de MaxVideoAI expone duración auto o explícita de 4 a 15 segundos para Seedance 2.0 Fast."
     },
     {
       "q": "¿Cuándo usar Seedance 2.0 Fast en lugar de Seedance 2.0 estándar?",
@@ -167,7 +171,7 @@
     "whyTitle": "Por qué importa Seedance 2.0 Fast",
     "heroTrustLine": "Usa Fast para decidir rápido y lleva los finales a Seedance 2.0 estándar",
     "heroHighlights": [
-      "Variante rápida optimizada||Fal presenta Fast como la ruta optimizada dentro de la familia de endpoints Seedance 2",
+      "Variante rápida optimizada||Las notas de proveedor/familia de modelo presentan Fast como la ruta optimizada dentro de la familia Seedance 2",
       "Misma familia de modos||Text-to-video, image-to-video y reference-to-video siguen disponibles dentro de la misma pila Seedance 2",
       "Audio nativo y referencias multimodales||Fast sigue dentro de la misma lógica con audio nativo y control multimodal de Seedance 2",
       "Listo para comparar||Se enfrenta de forma natural a Veo 3.1 Fast y LTX 2.3 Fast",
@@ -178,7 +182,7 @@
     "specSections": [
       {
         "title": "Para qué sirve Fast",
-        "intro": "Fal posiciona Fast como la ruta más rápida dentro de la familia Seedance 2.",
+        "intro": "Las notas de proveedor/familia de modelo posicionan Fast como la ruta más rápida dentro de la familia Seedance 2.",
         "items": [
           "Planificación de planos antes de resultados pulidos",
           "Tests A/B rápidos de movimiento",
@@ -200,7 +204,7 @@
       }
     ],
     "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
-    "promptingGuideLabel": "Notas de workflow de Seedance 2.0",
+    "promptingGuideLabel": "Notas de workflow de Seedance 2.0 Fast",
     "promptingGuideUrl": "/models/seedance-2-0",
     "promptingIntro": "Seedance 2.0 Fast funciona mejor cuando cada render prueba una sola decisión. Mantén el brief en el orden Sujeto -> Acción -> Cámara -> Estilo y luego elige la ruta más rápida: texto, imagen inicio/final o referencias.",
     "promptingGlobalPrinciples": [

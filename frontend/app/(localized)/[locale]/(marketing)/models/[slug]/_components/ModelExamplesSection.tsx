@@ -116,8 +116,16 @@ function isVeoFastRoute(engineSlug?: string) {
   return engineSlug === 'veo-3-1-fast';
 }
 
+function isVeo31Route(engineSlug?: string) {
+  return engineSlug === 'veo-3-1';
+}
+
 function isSeedanceCurrentRoute(engineSlug?: string) {
   return engineSlug === 'seedance-2-0' || engineSlug === 'seedance-2-0-fast';
+}
+
+function isSeedance20FastRoute(engineSlug?: string) {
+  return engineSlug === 'seedance-2-0-fast';
 }
 
 function isSeedance15ProRoute(engineSlug?: string) {
@@ -138,6 +146,18 @@ function isLtx23FastRoute(engineSlug?: string) {
 
 function isLtx23ProRoute(engineSlug?: string) {
   return engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
+}
+
+function isKling34kRoute(engineSlug?: string) {
+  return engineSlug === 'kling-3-4k';
+}
+
+function isKling3ProRoute(engineSlug?: string) {
+  return engineSlug === 'kling-3-pro';
+}
+
+function isKling3StandardRoute(engineSlug?: string) {
+  return engineSlug === 'kling-3-standard';
 }
 
 function isSilentVideoDecisionEngine(engineSlug?: string) {
@@ -398,6 +418,90 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
     ];
   }
 
+  if (isKling34kRoute(engineSlug)) {
+    if (locale === 'fr') {
+      return [
+        { title: 'Masters 4K natifs', body: `Voyez les rendus finaux possibles avec ${modelName}.`, icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recréer un master', body: 'Ouvrez l’app avec Kling 3 4K et réutilisez le prompt validé.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio optionnel', body: 'Activez l’audio seulement s’il appartient au fichier de livraison.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Image source verrouillée', body: 'Gardez produit, cadrage et composition stables en image-to-video.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Prêt livraison', body: 'À réserver aux plans approuvés où le détail 4K justifie le coût.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: 'Masters 4K nativos', body: `Mira renders finales posibles con ${modelName}.`, icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recrear un master', body: 'Abre la app con Kling 3 4K y reutiliza el prompt aprobado.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio opcional', body: 'Activa audio solo cuando pertenece al archivo final.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Imagen fuente bloqueada', body: 'Mantén producto, encuadre y composición estables en image-to-video.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Listo para entrega', body: 'Úsalo en tomas aprobadas donde el detalle 4K justifica el coste.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: 'Native 4K masters', body: `See final delivery renders possible with ${modelName}.`, icon: Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Recreate a master', body: 'Open the app with Kling 3 4K and reuse the approved prompt.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Optional audio', body: 'Turn audio on only when it belongs in the delivery file.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Locked source image', body: 'Keep product, framing and composition stable in image-to-video.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Delivery ready', body: 'Reserved for approved shots where 4K detail justifies the cost.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
+  if (isKling3StandardRoute(engineSlug)) {
+    if (locale === 'fr') {
+      return [
+        { title: 'Brouillons storyboard', body: `Voyez les tests multi-plans possibles avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recréer une variante', body: 'Ouvrez l’app avec Kling 3 Standard et réutilisez le setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio on/off', body: 'Testez avec audio natif ou gardez le brouillon silencieux.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Image source + fin', body: 'Ancrez le sujet avec une image source et une fin optionnelle.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Passage Pro', body: 'Montez les directions validées vers Pro pour plus de fidélité.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: 'Borradores storyboard', body: `Mira pruebas multi-shot posibles con ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recrear una variante', body: 'Abre la app con Kling 3 Standard y reutiliza el setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio on/off', body: 'Prueba con audio nativo o mantén el borrador sin sonido.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Imagen fuente + final', body: 'Ancla el sujeto con imagen fuente y frame final opcional.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Pasar a Pro', body: 'Mueve direcciones aprobadas a Pro para más fidelidad.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: 'Storyboard drafts', body: `See multi-shot tests possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Recreate a variant', body: 'Open the app with Kling 3 Standard and reuse the setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Audio on/off', body: 'Test with native audio or keep the draft silent for post.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Source + end frame', body: 'Anchor the subject with a source image and optional end frame.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Move to Pro', body: 'Move approved directions to Pro for stronger fidelity.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
+  if (isKling3ProRoute(engineSlug)) {
+    if (locale === 'fr') {
+      return [
+        { title: 'Rendus Pro contrôlés', body: `Voyez les séquences premium possibles avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recréer un rendu', body: 'Ouvrez l’app avec Kling 3 Pro et réutilisez la configuration.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio + voix', body: 'Utilisez audio natif, lip sync et voice IDs quand le plan le demande.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Elements + end frame', body: 'Stabilisez sujet, produit et landing avec Elements et image finale.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Passe qualité', body: 'Gardez Pro pour les shots où fidélité et stabilité comptent.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { title: 'Renders Pro controlados', body: `Mira secuencias premium posibles con ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Recrear un render', body: 'Abre la app con Kling 3 Pro y reutiliza la configuración.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Audio + voces', body: 'Usa audio nativo, lip sync y voice IDs cuando la toma lo necesite.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Elements + frame final', body: 'Estabiliza sujeto, producto y landing con Elements y frame final.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Pasada de calidad', body: 'Reserva Pro para tomas donde importen fidelidad y estabilidad.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
+    return [
+      { title: 'Controlled Pro renders', body: `See premium sequences possible with ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Recreate a render', body: 'Open the app with Kling 3 Pro and reuse the setup.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Audio + voices', body: 'Use native audio, lip sync and voice IDs when the shot needs it.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Elements + end frame', body: 'Stabilize subject, product and landing frame with Elements.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+      { title: 'Quality pass', body: 'Use Pro when fidelity and stability matter more than draft cost.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+    ];
+  }
+
   if (locale === 'fr') {
     return [
       { title: 'Rendus communautaires', body: `Voyez ce qui est possible avec ${modelName}.`, icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
@@ -466,11 +570,27 @@ function getCuratedDecisionExampleTitle(
     };
     return labels[locale]?.[index] ?? fallback;
   }
+  if (isVeo31Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Wireless earbuds product ad', 'Premium brand hero shot', 'Reference-guided product reveal', 'First-last campaign beat'],
+      fr: ['Pub produit écouteurs sans fil', 'Plan hero de marque premium', 'Reveal produit guidé par références', 'Beat campagne first-last'],
+      es: ['Anuncio de auriculares inalámbricos', 'Toma hero de marca premium', 'Reveal de producto con referencias', 'Beat de campaña first-last'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   if (isSeedance15ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
       en: ['Luxury perfume commercial', 'Cinematic car motion', 'Camera-fixed product shot', 'Cinematic storyboard beat'],
       fr: ['Spot parfum premium', 'Mouvement voiture cinématique', 'Plan produit camera-fixed', 'Beat storyboard cinématique'],
       es: ['Spot premium de perfume', 'Movimiento cinemático de auto', 'Toma de producto camera-fixed', 'Beat storyboard cinemático'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSeedance20FastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Pizzeria social draft', 'Brand reveal timing test', 'Space station reference check', 'Desert action draft pass'],
+      fr: ['Brouillon social pizzeria', 'Test timing reveal de marque', 'Check référence station spatiale', 'Passe brouillon action désert'],
+      es: ['Borrador social pizzería', 'Test de timing para reveal de marca', 'Check de referencia estación espacial', 'Borrador de acción en desierto'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -503,6 +623,30 @@ function getCuratedDecisionExampleTitle(
       en: ['Astronaut source image test', 'Portrait motion handoff', 'Sword action retake', 'Office gag retake'],
       fr: ['Test image source astronaute', 'Handoff motion portrait', 'Retake action épée', 'Retake gag bureau'],
       es: ['Test imagen fuente astronauta', 'Handoff motion retrato', 'Retake acción espada', 'Retake gag oficina'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling34kRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Native 4K product master', 'Large-screen campaign render', 'Approved image-to-video final', 'Vertical 4K delivery pass'],
+      fr: ['Master produit 4K natif', 'Rendu campagne grand écran', 'Final image-vers-vidéo approuvé', 'Passe verticale 4K'],
+      es: ['Master de producto 4K nativo', 'Render campaña pantalla grande', 'Final imagen-a-video aprobado', 'Pasada vertical 4K'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling3StandardRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Neon storyboard draft', 'Product beat test', 'Image-to-video landing', 'Social promo variant'],
+      fr: ['Brouillon storyboard néon', 'Test beat produit', 'Landing image-vers-vidéo', 'Variante promo sociale'],
+      es: ['Borrador storyboard neon', 'Prueba beat producto', 'Landing imagen-a-video', 'Variante promo social'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling3ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Neon street multi-shot', 'Product launch sequence', 'Voice-led promo beat', 'Image-to-video final pose'],
+      fr: ['Multi-plan rue néon', 'Séquence lancement produit', 'Beat promo avec voix', 'Pose finale image-vidéo'],
+      es: ['Multi-shot calle neon', 'Secuencia lanzamiento producto', 'Beat promo con voz', 'Pose final imagen-video'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -546,11 +690,27 @@ function getCuratedDecisionExampleCategory(
     };
     return labels[locale]?.[index] ?? fallback;
   }
+  if (isVeo31Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Product / Ad', 'Brand · Hero', 'Product · References', 'Campaign · First/Last'],
+      fr: ['Produit / Pub', 'Marque · Hero', 'Produit · Références', 'Campagne · First/Last'],
+      es: ['Producto / Anuncio', 'Marca · Hero', 'Producto · Referencias', 'Campaña · First/Last'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
   if (isSeedance15ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
       en: ['Product · Beauty', 'Cinematic · Vehicle', 'Product · Camera fixed', 'Cinematic · Control test'],
       fr: ['Produit · Beauté', 'Cinématique · Véhicule', 'Produit · Camera fixed', 'Cinématique · Test contrôle'],
       es: ['Producto · Belleza', 'Cinemático · Vehículo', 'Producto · Camera fixed', 'Cinemático · Prueba de control'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSeedance20FastRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Social · Food', 'Brand · Motion test', 'Reference · Continuity', 'Cinematic · Draft'],
+      fr: ['Social · Food', 'Marque · Test motion', 'Référence · Continuité', 'Cinématique · Brouillon'],
+      es: ['Social · Food', 'Marca · Test motion', 'Referencia · Continuidad', 'Cinemático · Borrador'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -583,6 +743,30 @@ function getCuratedDecisionExampleCategory(
       en: ['Image-to-video · Source', 'Portrait · Motion', 'Retake · Action', 'Retake · Comedy'],
       fr: ['Image-to-video · Source', 'Portrait · Motion', 'Retake · Action', 'Retake · Comédie'],
       es: ['Imagen a video · Fuente', 'Retrato · Motion', 'Retake · Acción', 'Retake · Comedia'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling34kRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Product · 4K master', 'Campaign · Delivery', 'Image-to-video · Final', 'Vertical · 4K'],
+      fr: ['Produit · Master 4K', 'Campagne · Livraison', 'Image-vidéo · Final', 'Vertical · 4K'],
+      es: ['Producto · Master 4K', 'Campaña · Entrega', 'Imagen-video · Final', 'Vertical · 4K'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling3StandardRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Storyboard · Draft', 'Product · Test', 'Image-to-video · Draft', 'Social · Variant'],
+      fr: ['Storyboard · Brouillon', 'Produit · Test', 'Image-vidéo · Brouillon', 'Social · Variante'],
+      es: ['Storyboard · Borrador', 'Producto · Test', 'Imagen-video · Borrador', 'Social · Variante'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isKling3ProRoute(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Cinematic · Multi-shot', 'Product · Launch', 'Audio · Voice', 'Image-to-video · Control'],
+      fr: ['Cinématique · Multi-plan', 'Produit · Lancement', 'Audio · Voix', 'Image-vidéo · Contrôle'],
+      es: ['Cinemático · Multi-shot', 'Producto · Lanzamiento', 'Audio · Voz', 'Imagen-video · Control'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -672,7 +856,11 @@ function buildDecisionExampleItems({
     isSora2ProRoute(engineSlug) ||
     isLtx23FastRoute(engineSlug) ||
     isLtx23ProRoute(engineSlug) ||
+    isKling3ProRoute(engineSlug) ||
+    isKling3StandardRoute(engineSlug) ||
+    isKling34kRoute(engineSlug) ||
     isLumaRay2Route(engineSlug) ||
+    isVeo31Route(engineSlug) ||
     isVeoFastRoute(engineSlug) ||
     isVeoLiteRoute(engineSlug);
   const isSilentDraftEngine = isSilentVideoDecisionEngine(engineSlug);
@@ -703,10 +891,20 @@ function buildDecisionExampleItems({
           ? `LTX 2.3 Fast ${shortTitle.toLowerCase()}`
         : isLtx23ProRoute(engineSlug)
           ? `LTX 2.3 Pro ${shortTitle.toLowerCase()}`
+        : isKling3ProRoute(engineSlug)
+          ? `Kling 3 Pro ${shortTitle.toLowerCase()}`
+        : isKling34kRoute(engineSlug)
+          ? `Kling 3 4K ${shortTitle.toLowerCase()}`
+        : isKling3StandardRoute(engineSlug)
+          ? `Kling 3 Standard ${shortTitle.toLowerCase()}`
         : isVeoLiteRoute(engineSlug)
           ? `Veo 3.1 Lite ${shortTitle.toLowerCase()}`
+        : isVeo31Route(engineSlug)
+          ? `Veo 3.1 ${shortTitle.toLowerCase()}`
         : isVeoFastRoute(engineSlug)
           ? `Veo 3.1 Fast ${shortTitle.toLowerCase()}`
+        : isSeedance20FastRoute(engineSlug)
+          ? `Seedance 2.0 Fast ${shortTitle.toLowerCase()}`
           : isSeedance15ProRoute(engineSlug)
             ? `Seedance 1.5 Pro ${shortTitle.toLowerCase()}`
           : (galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${shortTitle}`),

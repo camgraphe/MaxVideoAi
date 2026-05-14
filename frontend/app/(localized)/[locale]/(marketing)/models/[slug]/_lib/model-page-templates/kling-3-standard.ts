@@ -29,14 +29,15 @@ export const kling3StandardTemplateConfig: ModelPageTemplateConfig = {
   pricing: {
     anchorHref: '/pricing#kling-3-standard-pricing',
     presets: [
-      { id: '5s-1080p', seconds: 5, resolution: '1080p', labelKey: 'entryDraft' },
-      { id: '8s-1080p-audio', seconds: 8, resolution: '1080p', audio: true, labelKey: 'storyboardPass' },
+      { id: '5s-1080p', seconds: 5, resolution: '1080p', labelKey: 'entryDraft', noteKey: 'fiveSeconds1080pAudioOff' },
+      { id: '8s-1080p-audio', seconds: 8, resolution: '1080p', audio: true, labelKey: 'storyboardPass', noteKey: 'eightSeconds1080pAudioOn' },
       {
         id: '15s-1080p-audio',
         seconds: 15,
         resolution: '1080p',
         audio: true,
         labelKey: 'commonProductionCheck',
+        noteKey: 'fifteenSeconds1080pAudioOn',
         highlightKey: 'mostPopular',
       },
       { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },

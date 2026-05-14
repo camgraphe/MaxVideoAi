@@ -155,7 +155,7 @@
     },
     {
       "q": "Quelle différence avec Pro ?",
-      "a": "Standard offre les mêmes contrôles multi‑prompt et Elements à un coût inférieur; Pro priorise la fidélité premium."
+      "a": "Standard inclut la structure multi-plans, les Elements, l’audio natif, le lip sync et les voice IDs à un coût plus bas. Pro reste la meilleure passe pour la fidélité, la stabilité et les validations de qualité finale."
     }
   ],
   "custom": {
@@ -266,6 +266,16 @@
     "galleryAllCta": "Voir tous les exemples Kling 3 Standard →",
     "recreateLabel": "Recréer ce plan →",
     "demoTitle": "Prompt démo — Kling 3 Standard",
-    "demoPromptLabel": "Prompt"
+    "demoPromptLabel": "Prompt",
+    "safetyNote": "Garde-fous intégrés et bonnes pratiques pour une création responsable avec Kling 3 Standard.",
+    "demoPrompt": [
+      "Durée : 12 s • Ratio : 16:9 • Audio : activé",
+      "",
+      "Shot 1 (0-4 s) : @Element1 runner en veste sombre attend sous une enseigne néon, pluie légère, plan moyen stable.",
+      "Shot 2 (4-8 s) : @Element1 traverse la rue, tracking latéral fluide, reflets bleus et rouges sur le sol.",
+      "Shot 3 (8-12 s) : il ralentit près d’une vitrine, caméra qui se stabilise, même tenue et même lumière.",
+      "",
+      "Audio : ambiance de rue humide, pas courts, un léger souffle. Pas de texte, pas de logo, pas de sous-titres."
+    ]
   }
 }

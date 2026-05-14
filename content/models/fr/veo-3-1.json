@@ -37,8 +37,8 @@
         "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
       },
       {
-        "label": "Comparer Seedance 2.0 vs Veo 3.1",
-        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+        "label": "Comparer Sora 2 vs Veo 3.1",
+        "href": "/ai-video-engines/sora-2-vs-veo-3-1"
       },
       {
         "label": "Comparer Kling 3 Pro vs Veo 3.1",
@@ -87,15 +87,15 @@
     },
     {
       "label": "Résolution",
-      "body": "720p ou 1080p à 24 fps"
+      "body": "720p ou 1080p exposés dans la route MaxVideoAI actuelle, à 24 fps"
     },
     {
       "label": "Formats",
-      "body": "16:9, 9:16 ou 1:1; pris en charge en génération texte, image de départ et rendus avec dernière image"
+      "body": "16:9 et 9:16 sur les routes texte, image de départ et références; 1:1 est exposé pour le texte et les runs first/last-frame"
     },
     {
       "label": "Entrées",
-      "body": "Prompts texte-to-video; Generate Video depuis le texte ou une image de depart; guidage optionnel par derniere image; jusqu a 4 stills de reference; Extend a partir d une video existante"
+      "body": "Prompts texte; une image de départ en Image-to-Video; 1-4 images de référence en Reference-to-Video; image de départ + dernière image; Extend depuis une vidéo source existante"
     },
     {
       "label": "Audio",
@@ -154,15 +154,15 @@
     },
     {
       "q": "Veo 3.1 est‑il disponible en Europe ou au Royaume‑Uni ?",
-      "a": "Oui. MaxVideoAI route Veo via des endpoints DeepMind sous licence, sans contrat séparé."
+      "a": "Oui. MaxVideoAI route les jobs Veo via des endpoints provider pris en charge, sans contrat Veo séparé."
     },
     {
       "q": "Veo 3.1 peut‑il générer du vertical ?",
-      "a": "Oui. Veo 3.1 supporte 16:9, 9:16 et 1:1. Choisissez 9:16 pour Reels/TikTok/Shorts et gardez l’action centrée."
+      "a": "Oui. Veo 3.1 prend en charge 16:9 et 9:16 sur les routes principales; 1:1 est exposé pour le texte et les runs first/last-frame. Choisissez 9:16 pour Reels/TikTok/Shorts et gardez l’action centrée."
     },
     {
       "q": "Veo 3.1 supporte‑t‑il l’image→vidéo ?",
-      "a": "Oui. Google Veo 3.1 peut partir d un still en image-to-video ou utiliser 1 a 4 images de reference pour guider un clip en texte-to-video."
+      "a": "Oui. Google Veo 3.1 peut partir d’un still en Image-to-Video, utiliser 1-4 images de référence en Reference-to-Video, ou relier une image de départ et une dernière image."
     },
     {
       "q": "Comment utiliser Veo 3 en texte-to-video ?",
@@ -170,7 +170,7 @@
     },
     {
       "q": "Puis‑je dépasser 8 secondes ?",
-      "a": "Les clips de base sont en 4/6/8 s. Utilisez Extend et enchaînez les clips; chaque extension est un bloc de 4–8 s."
+      "a": "Les clips de base font 4/6/8 s. Utilisez Extend depuis une vidéo source existante; confirmez la durée et les contrôles de résolution finaux dans l’app avant génération."
     },
     {
       "q": "Comment garder Veo 3.1 on‑brand ?",
@@ -227,8 +227,8 @@
       "5. Réglez la durée (4/6/8 s), le format, et la résolution (720p ou 1080p).",
       "6. Comparez avec d’autres modèles dans la même interface."
     ],
-    "specTitle": "Specs réelles — Veo 3.1 dans MaxVideoAI (720p/1080p, 4–8 s)",
-    "specNote": "Ces specs décrivent Veo 3.1 tel qu’il est utilisable aujourd’hui via MaxVideoAI — pas des démos de labo théoriques.",
+    "specTitle": "Specs réelles - route Veo 3.1 dans MaxVideoAI (720p/1080p, 4-8 s)",
+    "specNote": "Ces specs décrivent la route Veo 3.1 exposée dans MaxVideoAI aujourd’hui. 720p/1080p sont des options de route MaxVideoAI, pas une limite absolue de toutes les capacités Veo 3.1 côté provider.",
     "specSections": [
       {
         "title": "Cadrage directable",
@@ -259,8 +259,8 @@
     "imageTitle": "Workflow image-to-video avec Google Veo 3.1 (+ Nano Banana)",
     "imageIntro": "Associez Google Veo 3.1 a Nano Banana pour verrouiller le style et iterer sur le mouvement.",
     "imageFlow": [
-      "Générez 1–4 stills de référence dans Nano Banana (ou importez vos stills de marque).",
-      "Envoyez‑les dans Veo 3.1 comme images de référence en Texte→Vidéo, ou partez d’un still unique en Image→Vidéo.",
+      "Générez 1-4 stills de référence dans Nano Banana (ou importez vos stills de marque).",
+      "Envoyez-les dans Veo 3.1 comme stills Reference-to-Video, ou partez d’un seul still en Image-to-Video.",
       "Concentrez le prompt sur le mouvement, le timing et l’audio : comment bouge la caméra, comment bouge le sujet, et comment le beat se termine à 4/6/8 s.",
       "Régénérez avec les mêmes références pour garder l’identité cohérente."
     ],
@@ -288,7 +288,7 @@
     ],
     "boundaries": [
       "Jusqu’à 8 secondes par rendu; allez plus long en enchaînant les clips (ou Extend).",
-      "1080p max dans ce routage.",
+      "720p et 1080p sont les résolutions exposées par cette route MaxVideoAI.",
       "24 fps uniquement.",
       "Le texte UI minuscule et les petites lettres sont peu fiables — ajoutez en post."
     ],
@@ -313,19 +313,19 @@
     "faqs": [
       {
         "q": "Veo 3.1 est‑il disponible en Europe ou au Royaume‑Uni ?",
-        "a": "Oui. MaxVideoAI route Veo via des endpoints DeepMind sous licence, sans contrat séparé."
+        "a": "Oui. MaxVideoAI route les jobs Veo via des endpoints provider pris en charge, sans contrat Veo séparé."
       },
       {
         "q": "Veo 3.1 peut‑il générer du vertical ?",
-        "a": "Oui. Veo 3.1 supporte 16:9, 9:16 et 1:1. Choisissez 9:16 pour Reels/TikTok/Shorts et gardez l’action centrée."
+        "a": "Oui. Veo 3.1 prend en charge 16:9 et 9:16 sur les routes principales; 1:1 est exposé pour le texte et les runs first/last-frame. Choisissez 9:16 pour Reels/TikTok/Shorts et gardez l’action centrée."
       },
       {
         "q": "Veo 3.1 supporte‑t‑il l’image→vidéo ?",
-        "a": "Oui. Partez d’un still (Image→Vidéo) ou utilisez 1–4 images de référence pour guider un clip Texte→Vidéo."
+        "a": "Oui. Partez d’un still en Image-to-Video, utilisez 1-4 images de référence en Reference-to-Video, ou reliez une image de départ et une dernière image quand la composition finale doit tomber juste."
       },
       {
         "q": "Puis‑je dépasser 8 secondes ?",
-        "a": "Les clips de base sont en 4/6/8 s. Utilisez Extend et enchaînez les clips; chaque extension est un bloc de 4–8 s."
+        "a": "Les clips de base font 4/6/8 s. Utilisez Extend depuis une vidéo source existante; confirmez la durée et les contrôles de résolution finaux dans l’app avant génération."
       },
       {
         "q": "Comment garder Veo 3.1 on‑brand ?",
@@ -390,22 +390,22 @@
         "copy": "Clip actuel :\n[Ce qui s'est déjà produit]\n\nNouveau beat :\n[Ce qui doit se produire ensuite]\n\nCe qui doit rester continu :\n[Sujet / décor / rythme caméra / lumière]\n\nRègle :\nDécrivez uniquement la continuation. Ne réécrivez pas toute la scène."
       }
     ],
-    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideLabel": "Guide officiel de prompt Veo",
     "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Démo : un prompt séquencé (avec audio natif)",
-    "demoPromptLabel": "Micro‑histoire produit ciné 8 s pour écouteurs sans fil (16:9, 1080p)",
+    "demoTitle": "Démo : micro-histoire produit pour écouteurs sans fil",
+    "demoPromptLabel": "Pub produit guidée par références, 8 s (16:9, 1080p, audio natif)",
     "demoPrompt": [
-      "Plan 1 (0–3 s) : macro d’un écouteur qui tourne lentement sur un bureau bois, PDC réduite, lampe de bureau chaude.",
-      "Plan 2 (3–6 s) : plan moyen d’une jeune pro qui met les écouteurs avant de sortir dans une rue animée, bokeh doux.",
-      "Plan 3 (6–8 s) : close‑up du boîtier qui se ferme près d’un laptop, reflet doux du logo.",
-      "Caméra : dollies fluides entre les plans, feeling handheld mais stable.",
-      "Lumière : soirée, intérieur chaud qui bascule vers une lumière de rue froide, léger grain film.",
-      "Audio : ambiance de ville bas dans le mix, musique électronique douce, courte VO : « Bloque le bruit, garde le focus. » Sans sous‑titres.",
-      "Négatif : pas de marques, pas de texte à l’écran, pas d’ultra grand‑angle."
+      "Plan 1 (0-3 s) : macro d’un écouteur sans fil qui tourne lentement sur un bureau en bois, profondeur de champ courte, lampe chaude.",
+      "Plan 2 (3-6 s) : plan moyen d’une jeune professionnelle qui met les écouteurs avant de sortir dans une rue animée, bokeh doux en arrière-plan.",
+      "Plan 3 (6-8 s) : gros plan du boîtier qui se ferme près d’un ordinateur portable, reflets subtils sur la coque.",
+      "Caméra : dollies fluides entre les beats, sensation handheld mais stable.",
+      "Lumière : intérieur chaud qui bascule vers une lumière de rue froide en soirée, léger grain film.",
+      "Audio : ambiance de ville basse, musique électronique douce, courte VO : « Bloque le bruit, garde le focus. » Sans sous-titres.",
+      "Négatif : pas de marques visibles, pas de texte à l’écran, pas de distorsion ultra grand-angle."
     ],
     "demoNotes": [
-      "Structure en 3 beats claire, environnement cohérent et cinématographie définie.",
-      "VO réaliste qui tient en 8 s ; mention explicite « sans sous‑titres » pour éviter les overlays de texte."
+      "Le résumé, le prompt et le rendu démo décrivent la même pub produit pour écouteurs sans fil.",
+      "La structure en 3 beats tient dans un rendu Veo 3.1 de 8 s avec audio natif activé."
     ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
