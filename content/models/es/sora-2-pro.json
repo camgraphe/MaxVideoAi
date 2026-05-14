@@ -193,44 +193,45 @@
       "Los cues de audio ayudan al ritmo; describe 1–2 sonidos clave."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = continuidad. Úsalo para looks precisos y repetibles."
+      "text": "Texto a video = empieza con un brief de dirección limpio cuando no adjuntas imagen fuente.",
+      "image": "Imagen a video = fija el primer frame antes de pedir movimiento, cámara y audio.",
+      "audio": "Audio = usa diálogo corto y vincula los SFX con acciones visibles.",
+      "final": "Entrega final = usa 1080p Pro cuando encuadre, timing y audio ya estén cerca."
     },
     "promptingTitle": "Cómo escribir un gran prompt para Sora 2 Pro",
-    "promptingIntro": "Sora 2 Pro funciona mejor cuando lo describes como un operador: un plano claro, timing simple y acciones visibles.",
-    "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla sujeto, acción, cámara, luz, estilo y sonido.",
+    "promptingIntro": "Sora 2 Pro funciona mejor cuando el brief separa el plano, el rol de la imagen fuente, el audio sincronizado y las restricciones de entrega.",
+    "promptingTip": "Tip: duración, formato y resolución se definen en la UI — tu prompt controla sujeto, acción, cámara, luz, estilo y sonido.",
     "promptingGuideLabel": "OpenAI Developers",
     "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
     "tipsIntro": "Sora es más predecible cuando el plano es simple, legible y físico.",
     "promptingTabs": [
       {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Estilo] + [Sujeto] + [Escenario] + [Luz] + [Mood / paleta]"
+        "id": "text",
+        "label": "Texto",
+        "title": "Brief Pro de texto a video",
+        "description": "Úsalo cuando la toma parte solo de lenguaje.",
+        "copy": "Duración / salida:\n[4 s, 8 s o 12 s] • [16:9 o 9:16] • [720p o 1080p]\n\nSujeto:\n[Quién/qué aparece + 2 rasgos distintivos]\n\nAcción:\n[Una acción visible, luego una reacción opcional]\n\nCámara:\n[Encuadre + ángulo + un movimiento de cámara]\n\nEstilo / luz:\n[Look de producción + fuente de luz + paleta]\n\nAudio:\n[Ambiente + 1-2 SFX o una línea corta]\n\nRestricciones:\nSin logos, sin texto ilegible en overlay, sin personajes extra."
       },
       {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + 1 acción clara o pose.]\n\nEscenario:\n[Dónde + momento del día + 2–3 anclajes visuales.]\n\nComposición:\n- Encuadre: [abierto / medio / primer plano]\n- Ángulo: [nivel de ojos / contrapicado / picado]\n- Sensación de lente: [p. ej., 35mm natural, poca profundidad]\n\nLuz + paleta:\n[Luz principal + 2–3 anclajes de paleta]\n\nRestricciones de estilo:\nSin logos. Sin texto legible. Fondo limpio."
+        "id": "image",
+        "label": "Imagen",
+        "title": "Imagen a video desde un still aprobado",
+        "description": "Úsalo cuando el primer frame, producto o identidad deben mantenerse estables.",
+        "copy": "Rol de la imagen fuente:\n[Identidad / forma del producto / composición / entorno]\n\nMovimiento:\n[Qué cambia después del frame 1; mantenerlo simple]\n\nCámara:\n[Estática / push-in / dolly / handheld suave]\n\nAnclas de continuidad:\n[Vestuario, detalles de producto, luz, fondo]\n\nAudio:\n[Room tone, música, SFX o diálogo corto]\n\nFrame final:\n[Dónde debe terminar el movimiento en el último segundo]"
       },
       {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre planos.",
-        "copy": "Proyecto / intención:\n[Objetivo en una línea.]\n\nSujeto:\n[Quién/qué + vestuario/materiales + 2–3 rasgos distintivos.]\n\nLugar / set:\n[Dónde + momento del día + clima. Añade 3 anclajes visuales.]\n\nComposición:\n- Encuadre + ángulo\n- Sensación de lente + profundidad\n- Look: [digital limpio / grano sutil / bloom suave]\n\nLuz & grade:\n- Luz principal\n- Contraste\n- Anclajes de paleta (3–5)\n\nRestricciones:\nSin logos. Sin texto legible. Sin overlays."
+        "id": "audio",
+        "label": "Audio",
+        "title": "Prompt de audio sincronizado",
+        "description": "Úsalo cuando el timing del sonido importa en la decisión.",
+        "copy": "Beats visuales:\n0-3 s: [acción visible]\n3-8 s: [reacción o reveal]\n8-12 s: [beat final]\n\nDiálogo:\n[Una línea corta, si hace falta]\n\nAmbiente:\n[Room tone / calle / multitud / clima]\n\nSFX:\n[Vincula cada sonido con una acción visible]\n\nNota de mezcla:\n[Voz limpia / música baja / sin diálogo]"
       },
       {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (shot list secuenciada)",
-        "description": "Úsalo cuando necesitas continuidad y polish entre beats.",
-        "copy": "Storyboard / shot list (mismo sujeto + mismo escenario)\nDuración: [4/8/12s] • Formato: [16:9 o 9:16]\n\nShot 1 (0–2s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nShot 2 (2–6s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nShot 3 (6–8/12s):\n[Acción final / reveal + cámara que se asienta]\n\nContinuidad:\n[Repetir anclajes: vestuario, props, luz, escenario]\n\nAudio (opcional):\n[Ambiente + 1–2 cues SFX o una línea corta]\n\nRestricciones:\nSin logos. Sin texto legible. Sin overlays."
+        "id": "final",
+        "label": "Final",
+        "title": "Check de entrega final",
+        "description": "Úsalo antes de pagar una pasada Pro 1080p más costosa.",
+        "copy": "Objetivo de entrega:\n[Revisión de cliente / inserto de anuncio / hero de producto / B-roll cinemático]\n\nDirección aprobada:\n[Prompt o imagen ya validada en Sora 2]\n\nNo negociables:\n[Identidad, prop, ubicación, timing del movimiento, cue de audio]\n\nControl de calidad:\n[Qué debe verse limpio en 1080p]\n\nEvitar:\n[Artefactos, extremidades extra, logos falsos, texto involuntario, audio fuera de beat]"
       }
     ],
     "demoTitle": "Demo: prueba de continuidad Pro de 8 s",

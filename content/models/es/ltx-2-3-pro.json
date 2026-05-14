@@ -265,8 +265,8 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - brújula en el desierto",
-    "demoPromptLabel": "Prompt Generate",
+    "demoTitle": "Prompt demo - revelación cinematográfica con brújula",
+    "demoPromptLabel": "Prompt text-to-video Generate",
     "demoPrompt": [
       "Un aventurero robusto está al borde de un acantilado desértico enorme durante golden hour, rostro quemado por el sol, chaqueta de cuero gastada, pañuelo moviéndose con el viento. Abre una antigua brújula de latón en la mano, y un mapa luminoso hecho de luz y polvo se despliega encima, iluminando su rostro y la arena alrededor. La cámara empieza en un plano amplio desde atrás para mostrar las dunas infinitas, luego avanza lentamente cuando levanta la brújula y termina en un primer plano dramático de sus ojos reflejando el mapa luminoso. Sol cálido, polvo flotando, texturas bronce, composición épica pero limpia, tono de aventura cinematográfica premium, simple e icónico. Viento sobre las dunas, clic metálico sutil de la brújula, rumble atmosférico bajo del desierto, sin texto, sin logos, sin watermark."
     ],
@@ -331,7 +331,7 @@
         "label": "Generar",
         "title": "Prompt de generación",
         "description": "Úsalo cuando LTX crea una toma nueva desde texto o una imagen inicial.",
-        "copy": "Sujeto:\n[Quién / qué aparece]\n\nAcción:\n[Un beat visible]\n\nCámara:\n[Encuadre + un movimiento]\n\nLook:\n[Luz + paleta + textura]\n\nÚsalo cuando la escena empieza desde cero."
+        "copy": "Sujeto:\nAventurero del desierto con una antigua brújula de latón durante golden hour.\n\nAcción:\nAbre la brújula y un mapa luminoso de polvo se despliega encima.\n\nCámara:\nPlano amplio desde atrás sobre las dunas, luego push-in lento hasta sus ojos reflejando el mapa.\n\nLook:\nSol cálido, polvo flotando, texturas bronce, grade premium de película de aventura.\n\nAudio:\nViento del desierto, clic metálico suave de la brújula, rumble atmosférico bajo.\n\nFormato:\n10 segundos, 16:9, sin texto, sin logos."
       },
       {
         "id": "structured",

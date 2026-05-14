@@ -75,7 +75,7 @@
     },
     {
       "label": "Resolution",
-      "body": "1080p, 1440p or 2160p (4K)"
+      "body": "1080p, 1440p or 2160p (4K) on supported 6-10 s configurations; >10 s routes use 1080p / 25 fps"
     },
     {
       "label": "Aspect ratios",
@@ -216,13 +216,13 @@
           "No uploaded-audio-driven video mode.",
           "No source-video extension workflow.",
           "No selective retake workflow.",
-          "Move up to standard when those controls matter."
+          "Move to LTX 2.3 Pro when those controls matter."
         ]
       }
     ],
     "whatTitle": "How LTX 2.3 Fast works in MaxVideoAI",
     "whatIntro1": "Pick LTX 2.3 Fast, stay in the standard generate flow, then switch between text-driven and image-driven input by adding or removing the start image.",
-    "whatIntro2": "The page intentionally avoids standard-LTX editing modes so the options stay coherent with the public Fast routing.",
+    "whatIntro2": "The page intentionally avoids Pro editing modes so the options stay coherent with the public Fast routing.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Pick LTX 2.3 Fast as the engine.",

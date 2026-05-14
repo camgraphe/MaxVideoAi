@@ -263,10 +263,10 @@
         "imageToVideo": "Supported",
         "videoToVideo": "Supported (extend / retake workflows)",
         "firstLastFrame": "Supported (start + end image in I2V)",
-        "referenceImageStyle": "Supported (single start image)",
+        "referenceImageStyle": "Supported (single start image; no separate style-reference stack)",
         "referenceVideo": "Supported (source clip for extend / retake)",
-        "maxResolution": "4K",
-        "maxDuration": "20s",
+        "maxResolution": "4K on T2V/I2V generate; workflow-specific limits for Audio/Extend/Retake",
+        "maxDuration": "Generate 6–10s; Audio/Extend/Retake up to 20s",
         "aspectRatios": [
           "16:9 generate",
           "9:16 generate"
@@ -282,7 +282,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Supported",
+        "lipSync": "Audio-to-video timing support; no dedicated lip-sync control",
         "cameraMotionControls": "Prompt-based only",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Data pending"
@@ -300,7 +300,7 @@
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
         "firstLastFrame": "Supported (start + end image in I2V)",
-        "referenceImageStyle": "Supported (single start image)",
+        "referenceImageStyle": "Supported (single start image; no separate style-reference stack)",
         "referenceVideo": "Not supported",
         "maxResolution": "4K (6–10s); 1080p for >10s routing",
         "maxDuration": "20s (>10s requires 1080p / 25 fps)",
@@ -319,7 +319,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Supported",
+        "lipSync": "Audio generation supported; no dedicated lip-sync workflow",
         "cameraMotionControls": "Prompt-based only",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Data pending"

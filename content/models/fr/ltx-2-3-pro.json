@@ -265,8 +265,8 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt de démo - boussole dans le désert",
-    "demoPromptLabel": "Prompt Generate",
+    "demoTitle": "Prompt de démo - révélation boussole cinématique",
+    "demoPromptLabel": "Prompt text-to-video Generate",
     "demoPrompt": [
       "Un aventurier robuste se tient au bord d'une falaise désertique immense à la golden hour, visage marqué par le soleil, veste en cuir usée, foulard agité par le vent. Il ouvre une ancienne boussole en laiton dans sa main, et une carte lumineuse faite de lumière et de poussière se déploie au-dessus, éclairant son visage et le sable autour de lui. La caméra commence en plan large derrière lui pour montrer les dunes infinies, puis avance lentement lorsqu'il lève la boussole, jusqu'à un gros plan dramatique sur ses yeux reflétant la carte lumineuse. Soleil chaud, poussière flottante, textures bronze, composition épique mais propre, ton d'aventure cinématique premium, simple et iconique. Vent sur les dunes, léger clic métallique de la boussole, grondement désertique bas, pas de texte, pas de logo, pas de watermark."
     ],
@@ -331,7 +331,7 @@
         "label": "Générer",
         "title": "Prompt de génération",
         "description": "À utiliser quand LTX crée un plan neuf depuis du texte ou une image de départ.",
-        "copy": "Sujet :\n[Qui / quoi apparaît]\n\nAction :\n[Un beat visible]\n\nCaméra :\n[Cadrage + un mouvement]\n\nLook :\n[Lumière + palette + texture]\n\nÀ utiliser quand la scène démarre de zéro."
+        "copy": "Sujet :\nAventurier du désert avec une ancienne boussole en laiton à la golden hour.\n\nAction :\nIl ouvre la boussole et une carte lumineuse faite de poussière se déploie au-dessus.\n\nCaméra :\nPlan large arrière sur les dunes, puis push-in lent jusqu'à ses yeux qui reflètent la carte.\n\nLook :\nSoleil chaud, poussière flottante, textures bronze, étalonnage premium de film d'aventure.\n\nAudio :\nVent du désert, clic métallique léger de la boussole, grondement atmosphérique bas.\n\nFormat :\n10 secondes, 16:9, pas de texte, pas de logo."
       },
       {
         "id": "structured",

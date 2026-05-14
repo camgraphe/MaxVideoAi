@@ -576,8 +576,8 @@ const LTX_23_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'LTX 2.3 Fast example',
       description: 'Fast visual exploration draft',
       renderLabel: 'View draft',
-      badges: ['Fast route', 'Social draft', '9:16'],
-      altContext: 'LTX fast draft for a vertical social video concept',
+      badges: ['Fast route', '10s', '16:9'],
+      altContext: 'LTX 2.3 Fast cinematic draft example',
     },
     features: [
       { title: 'Visual exploration', body: 'Move through look, style and scene options quickly.', tone: 'quality' },
@@ -645,8 +645,8 @@ const LTX_23_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'Exemple LTX 2.3 Fast',
       description: 'Brouillon d’exploration visuelle rapide',
       renderLabel: 'Voir le brouillon',
-      badges: ['Fast', 'Social', '9:16'],
-      altContext: 'brouillon LTX Fast pour un concept vidéo vertical social',
+      badges: ['Fast', '10 s', '16:9'],
+      altContext: 'exemple de brouillon cinématique LTX 2.3 Fast',
     },
     features: [
       { title: 'Exploration visuelle', body: 'Parcourez rapidement looks, styles et scènes.', tone: 'quality' },
@@ -714,8 +714,8 @@ const LTX_23_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'Ejemplo LTX 2.3 Fast',
       description: 'Borrador rápido de exploración visual',
       renderLabel: 'Ver borrador',
-      badges: ['Fast', 'Social', '9:16'],
-      altContext: 'borrador LTX Fast para un concepto vertical de video social',
+      badges: ['Fast', '10s', '16:9'],
+      altContext: 'ejemplo de borrador cinematográfico de LTX 2.3 Fast',
     },
     features: [
       { title: 'Exploración visual', body: 'Avanza rápido por opciones de look, estilo y escena.', tone: 'quality' },

@@ -193,44 +193,45 @@
       "Audio cues help pacing; describe 1–2 key sounds for rhythm."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks."
+      "text": "Text-to-video = start from a clean director brief when no source image is attached.",
+      "image": "Image-to-video = lock a first frame before asking for motion, camera and audio.",
+      "audio": "Audio = keep dialogue short and attach SFX to visible actions.",
+      "final": "Final delivery = use 1080p Pro once the framing, timing and sound plan are close."
     },
     "promptingTitle": "How to Write a Great Sora 2 Pro Prompt",
-    "promptingIntro": "Sora 2 Pro works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Sora 2 Pro works best when the brief separates the shot, the source image role, the synced audio plan and the final delivery constraints.",
+    "promptingTip": "Tip: duration, aspect ratio and resolution are set in the UI — your prompt controls subject, action, camera, lighting, style and sound.",
     "promptingGuideLabel": "OpenAI Developers",
     "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
     "tipsIntro": "Sora is most predictable when you keep the shot simple, readable, and physical.",
     "promptingTabs": [
       {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "id": "text",
+        "label": "Text",
+        "title": "Text-to-video Pro brief",
+        "description": "Use this when the shot starts from language only.",
+        "copy": "Duration / output:\n[4s, 8s or 12s] • [16:9 or 9:16] • [720p or 1080p]\n\nSubject:\n[Who/what appears + 2 defining traits]\n\nAction:\n[One visible action, then one optional reaction]\n\nCamera:\n[Shot size + angle + one camera move]\n\nStyle / lighting:\n[Production look + light source + palette]\n\nAudio:\n[Ambience + 1-2 SFX cues or one short spoken line]\n\nConstraints:\nNo logos, no unreadable text overlays, no extra characters."
       },
       {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "id": "image",
+        "label": "Image",
+        "title": "Image-to-video from an approved still",
+        "description": "Use this when the first frame, product shape or character identity must stay stable.",
+        "copy": "Source image role:\n[Identity / product shape / composition / environment]\n\nMotion:\n[What changes after frame 1; keep it simple]\n\nCamera:\n[Static / push-in / dolly / handheld drift]\n\nContinuity anchors:\n[Wardrobe, product details, lighting, background]\n\nAudio:\n[Room tone, music bed, SFX, or short dialogue]\n\nFinal frame:\n[Where the motion should land by the last second]"
       },
       {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "id": "audio",
+        "label": "Audio",
+        "title": "Synced audio prompt",
+        "description": "Use this when sound timing is part of the decision.",
+        "copy": "Visual beats:\n0-3s: [visible action]\n3-8s: [reaction or reveal]\n8-12s: [final beat]\n\nDialogue:\n[One short line, if needed]\n\nAmbience:\n[Room tone / street bed / crowd / weather]\n\nSFX:\n[Tie each sound to a visible action]\n\nMix note:\n[Keep voice clean / keep music low / no dialogue]"
       },
       {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (sequenced shot list)",
-        "description": "Use this when you need continuity and polish across beats.",
-        "copy": "Storyboard / shot list (same subject + same setting)\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nShot 1 (0-2s):\n[Framing + subject action + camera move]\n\nShot 2 (2-6s):\n[Framing + subject action + camera move]\n\nShot 3 (6-8/12s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n\nAudio (optional):\n[Ambience + 1-2 SFX cues or a short line]\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "id": "final",
+        "label": "Final",
+        "title": "Final delivery check",
+        "description": "Use this before spending a higher-cost 1080p Pro pass.",
+        "copy": "Delivery target:\n[Client review / ad insert / product hero / cinematic B-roll]\n\nApproved direction:\n[Prompt or image direction already validated in Sora 2]\n\nNon-negotiables:\n[Subject identity, prop, location, motion timing, audio cue]\n\nQuality check:\n[What must look clean at 1080p]\n\nAvoid:\n[Artifacts, extra limbs, fake logos, unintended text, off-beat audio]"
       }
     ],
     "demoTitle": "Demo: 8s Pro scene continuity check",

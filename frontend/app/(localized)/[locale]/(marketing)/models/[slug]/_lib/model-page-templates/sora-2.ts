@@ -4,7 +4,7 @@ export const sora2TemplateConfig: ModelPageTemplateConfig = {
   slug: 'sora-2',
   intent: 'draft',
   hero: {
-    eyebrow: 'OPENAI FLAGSHIP VIDEO MODEL',
+    eyebrow: '720P VIDEO + NATIVE AUDIO ROUTE',
     subtitleHighlightTerms: ['synced audio', 'text-to-video', 'image-to-video'],
     primaryCtaHref: '/app?engine=sora-2',
     secondaryCtaHref: '/examples/sora',

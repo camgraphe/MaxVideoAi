@@ -51,10 +51,10 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'GOOGLE FAST VIDEO ROUTE',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Faster Veo drafts with optional native audio, first-last frame tests, and short concept loops.',
-      subtitleHighlights: ['faster Veo drafts', 'optional native audio', 'first-last frame tests'],
+      subtitle: 'Faster Veo drafts with optional native audio, reference-to-video runs, first-last frame tests, and short concept loops.',
+      subtitleHighlights: ['faster Veo drafts', 'optional native audio', 'reference-to-video runs'],
       paragraph:
-        'Use Veo 3.1 Fast for quick text-to-video, image-to-video and first-last frame tests when you need lower-cost Veo iteration before moving approved shots into Veo 3.1.',
+        'Use Veo 3.1 Fast for quick text-to-video, image-to-video, reference-to-video and first-last frame tests when you need lower-cost Veo iteration before moving approved shots into Veo 3.1.',
       primaryCta: { label: 'Generate with Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'veo') },
       quickLinks: [
@@ -73,9 +73,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     features: [
       { title: 'Fast Veo drafts', body: 'Test concepts before paying for the main production route.', tone: 'quality' },
       { title: 'Optional audio', body: 'Toggle native audio on when timing or ambience needs a rough pass.', tone: 'audio' },
+      { title: 'Reference-to-video', body: 'Attach 1-4 stills for an 8s consistency pass on identity, product or style.', tone: 'reference' },
       { title: 'First-last tests', body: 'Bridge approved opening and ending frames for short motion checks.', tone: 'reference' },
       { title: 'Extend support', body: 'Continue an existing Fast clip when a draft needs a pickup beat.', tone: 'duration' },
-      { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolutions before generation.', tone: 'quality' },
       { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
     ],
     decisionCards: [
@@ -98,9 +98,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Text prompt', body: 'Test subject, camera, style and audio direction in one short Veo draft.' },
       { title: 'Start image', body: 'Use one still when framing, product shape or identity should anchor the first frame.' },
+      { title: 'Reference-to-video', body: 'Attach 1-4 stills when identity, wardrobe, product or style continuity matters.' },
       { title: 'First-last frames', body: 'Provide a landing frame when the ending pose or composition matters.' },
       { title: 'Audio toggle', body: 'Turn audio on for rough timing, or off when you only need visual motion.' },
-      { title: 'Upgrade path', body: 'Move winning drafts into Veo 3.1 for higher-end production renders.' },
     ],
     pricingCopy: {
       title: 'Veo 3.1 Fast pricing at a glance',
@@ -119,10 +119,10 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'ROUTE GOOGLE FAST VIDEO',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Des brouillons Veo rapides avec audio natif optionnel, tests première-dernière image et boucles courtes.',
-      subtitleHighlights: ['brouillons Veo rapides', 'audio natif optionnel', 'tests première-dernière image'],
+      subtitle: 'Des brouillons Veo rapides avec audio natif optionnel, reference-to-video, tests première-dernière image et boucles courtes.',
+      subtitleHighlights: ['brouillons Veo rapides', 'audio natif optionnel', 'reference-to-video'],
       paragraph:
-        'Utilisez Veo 3.1 Fast pour tester vite en texte-vidéo, image-vidéo et première-dernière image quand vous voulez itérer à moindre coût avant de passer les plans retenus dans Veo 3.1.',
+        'Utilisez Veo 3.1 Fast pour tester vite en texte-vidéo, image-vidéo, reference-to-video et première-dernière image quand vous voulez itérer à moindre coût avant de passer les plans retenus dans Veo 3.1.',
       primaryCta: { label: 'Générer avec Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'veo') },
       quickLinks: [
@@ -141,9 +141,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     features: [
       { title: 'Brouillons Veo rapides', body: 'Testez les concepts avant la route de production principale.', tone: 'quality' },
       { title: 'Audio optionnel', body: 'Activez l’audio natif pour tester timing ou ambiance.', tone: 'audio' },
+      { title: 'Reference-to-video', body: 'Ajoutez 1 à 4 stills pour une passe cohérence identité, produit ou style de 8 s.', tone: 'reference' },
       { title: 'Tests première-dernière', body: 'Reliez deux images approuvées pour contrôler une transition courte.', tone: 'reference' },
       { title: 'Extension', body: 'Prolongez un clip Fast existant quand le brouillon a besoin d’un beat en plus.', tone: 'duration' },
-      { title: '720p ou 1080p', body: 'Choisissez les résolutions exposées dans MaxVideoAI avant génération.', tone: 'quality' },
       { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
     ],
     decisionCards: [
@@ -166,9 +166,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt texte', body: 'Testez sujet, caméra, style et intention audio dans un brouillon court.' },
       { title: 'Image de départ', body: 'Ancrez cadrage, produit ou identité avec une seule image source.' },
+      { title: 'Reference-to-video', body: 'Ajoutez 1 à 4 stills quand identité, tenue, produit ou style doivent rester cohérents.' },
       { title: 'Première-dernière image', body: 'Ajoutez une image d’arrivée quand la pose finale compte.' },
       { title: 'Audio', body: 'Activez l’audio pour le timing, ou coupez-le pour un test purement visuel.' },
-      { title: 'Passage final', body: 'Déplacez les meilleurs brouillons vers Veo 3.1 pour les rendus premium.' },
     ],
     pricingCopy: {
       title: 'Prix Veo 3.1 Fast en un coup d’œil',
@@ -187,10 +187,10 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'RUTA GOOGLE FAST VIDEO',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Borradores Veo más rápidos con audio nativo opcional, pruebas de primer-último cuadro y loops cortos.',
-      subtitleHighlights: ['borradores Veo más rápidos', 'audio nativo opcional', 'pruebas de primer-último cuadro'],
+      subtitle: 'Borradores Veo más rápidos con audio nativo opcional, reference-to-video, pruebas de primer-último cuadro y loops cortos.',
+      subtitleHighlights: ['borradores Veo más rápidos', 'audio nativo opcional', 'reference-to-video'],
       paragraph:
-        'Usa Veo 3.1 Fast para probar rápido texto a video, imagen a video y primer-último cuadro cuando necesitas iterar con menor coste antes de pasar las tomas aprobadas a Veo 3.1.',
+        'Usa Veo 3.1 Fast para probar rápido texto a video, imagen a video, reference-to-video y primer-último cuadro cuando necesitas iterar con menor coste antes de pasar las tomas aprobadas a Veo 3.1.',
       primaryCta: { label: 'Generar con Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'veo') },
       quickLinks: [
@@ -209,9 +209,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     features: [
       { title: 'Borradores Veo rápidos', body: 'Prueba conceptos antes de la ruta principal de producción.', tone: 'quality' },
       { title: 'Audio opcional', body: 'Activa audio nativo cuando necesitas probar ritmo o ambiente.', tone: 'audio' },
+      { title: 'Reference-to-video', body: 'Adjunta 1 a 4 stills para una pasada de consistencia de 8 s en identidad, producto o estilo.', tone: 'reference' },
       { title: 'Primer-último cuadro', body: 'Conecta cuadros aprobados para revisar una transición corta.', tone: 'reference' },
       { title: 'Extensión', body: 'Continúa un clip Fast existente cuando el borrador necesita un beat extra.', tone: 'duration' },
-      { title: '720p o 1080p', body: 'Elige las resoluciones expuestas en MaxVideoAI antes de generar.', tone: 'quality' },
       { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
     ],
     decisionCards: [
@@ -234,9 +234,9 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt de texto', body: 'Prueba sujeto, cámara, estilo e intención de audio en un borrador corto.' },
       { title: 'Imagen inicial', body: 'Usa un still cuando encuadre, producto o identidad deban anclar el primer cuadro.' },
+      { title: 'Reference-to-video', body: 'Adjunta 1 a 4 stills cuando identidad, vestuario, producto o estilo deben mantenerse coherentes.' },
       { title: 'Primer-último cuadro', body: 'Agrega un cuadro final cuando importan la pose o composición de llegada.' },
       { title: 'Audio', body: 'Actívalo para probar timing, o apágalo si solo necesitas movimiento visual.' },
-      { title: 'Paso final', body: 'Lleva los mejores borradores a Veo 3.1 para renders de producción.' },
     ],
     pricingCopy: {
       title: 'Precios de Veo 3.1 Fast de un vistazo',
@@ -895,8 +895,8 @@ const LTX_23_PRO_COPY: LocalizedTemplateCopy = {
       caption: 'LTX 2.3 Pro example',
       description: 'Production workflow render',
       renderLabel: 'View render',
-      badges: ['Audio workflow', 'Retake', '4K'],
-      altContext: 'LTX 2.3 Pro production workflow render',
+      badges: ['Generate', 'Audio on', '16:9'],
+      altContext: 'LTX 2.3 Pro cinematic generate render',
     },
     features: [
       { title: 'Text and image video', body: 'Generate new shots from prompts or start images with optional end frames.', tone: 'reference' },
@@ -963,8 +963,8 @@ const LTX_23_PRO_COPY: LocalizedTemplateCopy = {
       caption: 'Exemple LTX 2.3 Pro',
       description: 'Rendu de workflow production',
       renderLabel: 'Voir le rendu',
-      badges: ['Audio', 'Retake', '4K'],
-      altContext: 'rendu de workflow production LTX 2.3 Pro',
+      badges: ['Generate', 'Audio activé', '16:9'],
+      altContext: 'rendu cinématique Generate LTX 2.3 Pro',
     },
     features: [
       { title: 'Texte et image vidéo', body: 'Générez depuis prompt ou image de départ, avec image de fin optionnelle.', tone: 'reference' },
@@ -1031,8 +1031,8 @@ const LTX_23_PRO_COPY: LocalizedTemplateCopy = {
       caption: 'Ejemplo LTX 2.3 Pro',
       description: 'Render de flujo de producción',
       renderLabel: 'Ver render',
-      badges: ['Audio', 'Retake', '4K'],
-      altContext: 'render de flujo de producción en LTX 2.3 Pro',
+      badges: ['Generate', 'Audio activado', '16:9'],
+      altContext: 'render cinematográfico Generate con LTX 2.3 Pro',
     },
     features: [
       { title: 'Texto e imagen a video', body: 'Genera desde prompt o imagen inicial, con cuadro final opcional.', tone: 'reference' },
@@ -1740,7 +1740,7 @@ const SEEDANCE_15_PRO_COPY: LocalizedTemplateCopy = {
 const SORA_2_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
-      eyebrow: 'OPENAI FLAGSHIP VIDEO MODEL',
+      eyebrow: '720P VIDEO + NATIVE AUDIO ROUTE',
       title: 'Sora 2',
       subtitle: 'Synced audio, text-to-video and image-to-video for fast cinematic concepts, ads and social-ready scenes.',
       subtitleHighlights: ['Synced audio', 'text-to-video', 'image-to-video'],
@@ -1782,8 +1782,8 @@ const SORA_2_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Comparing premium routes?',
-        body: 'Compare Sora 2 with Veo 3.1 or Seedance 2.0 when choosing between OpenAI concepts, Google polish and ByteDance continuity.',
-        cta: { label: 'Compare Sora 2 vs Veo', href: compareHref('en', 'sora-2', 'veo-3-1') },
+        body: 'Compare Sora 2 with Veo 3.1 or Kling 3 Pro when choosing between OpenAI concepts, Google polish and motion-control alternatives.',
+        cta: { label: 'Compare Sora 2 vs Veo 3.1', href: compareHref('en', 'sora-2', 'veo-3-1') },
       },
     ],
     referenceWorkflows: [
@@ -1808,7 +1808,7 @@ const SORA_2_COPY: LocalizedTemplateCopy = {
   },
   fr: {
     hero: {
-      eyebrow: 'MODÈLE VIDÉO OPENAI',
+      eyebrow: 'ROUTE VIDÉO 720P + AUDIO NATIF',
       title: 'Sora 2',
       subtitle: 'Audio synchronisé, text-to-video et image-to-video pour concepts cinématographiques, pubs et scènes social-ready.',
       subtitleHighlights: ['Audio synchronisé', 'text-to-video', 'image-to-video'],
@@ -1850,8 +1850,8 @@ const SORA_2_COPY: LocalizedTemplateCopy = {
       },
       {
         title: 'Vous comparez les routes premium ?',
-        body: 'Comparez Sora 2 avec Veo 3.1 ou Seedance 2.0 selon vos priorités : concepts OpenAI, polish Google ou continuité ByteDance.',
-        cta: { label: 'Comparer Sora 2 vs Veo', href: compareHref('fr', 'sora-2', 'veo-3-1') },
+        body: 'Comparez Sora 2 avec Veo 3.1 ou Kling 3 Pro selon vos priorités : concepts OpenAI, polish Google ou alternatives de contrôle motion.',
+        cta: { label: 'Comparer Sora 2 vs Veo 3.1', href: compareHref('fr', 'sora-2', 'veo-3-1') },
       },
     ],
     referenceWorkflows: [
@@ -1876,7 +1876,7 @@ const SORA_2_COPY: LocalizedTemplateCopy = {
   },
   es: {
     hero: {
-      eyebrow: 'MODELO DE VIDEO OPENAI',
+      eyebrow: 'RUTA DE VIDEO 720P + AUDIO NATIVO',
       title: 'Sora 2',
       subtitle: 'Audio sincronizado, texto a video e imagen a video para conceptos cinematográficos, anuncios y escenas listas para social.',
       subtitleHighlights: ['Audio sincronizado', 'texto a video', 'imagen a video'],
@@ -1918,8 +1918,8 @@ const SORA_2_COPY: LocalizedTemplateCopy = {
       },
       {
         title: '¿Comparas rutas premium?',
-        body: 'Compara Sora 2 con Veo 3.1 o Seedance 2.0 según priorices conceptos OpenAI, acabado Google o continuidad ByteDance.',
-        cta: { label: 'Comparar Sora 2 vs Veo', href: compareHref('es', 'sora-2', 'veo-3-1') },
+        body: 'Compara Sora 2 con Veo 3.1 o Kling 3 Pro según priorices conceptos OpenAI, acabado Google o alternativas de control de movimiento.',
+        cta: { label: 'Comparar Sora 2 vs Veo 3.1', href: compareHref('es', 'sora-2', 'veo-3-1') },
       },
     ],
     referenceWorkflows: [
@@ -1963,10 +1963,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Sora 2 Pro example',
-      description: '8s 16:9 Pro render from the live gallery',
+      description: '8s 16:9 Pro continuity render',
       renderLabel: 'View render',
       badges: ['Audio off', '8s', '16:9'],
-      altContext: 'Sora 2 Pro CCTV construction scene',
+      altContext: 'Sora 2 Pro continuity control render',
     },
     features: [
       { title: '1080p route', body: 'Use Pro for selected shots that need cleaner delivery.', tone: 'quality' },
@@ -1990,7 +1990,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       {
         title: 'Comparing premium finals?',
         body: 'Compare Sora 2 Pro with Veo 3.1 or Kling 3 Pro when selecting a final route for ads, explainers or cinematic inserts.',
-        cta: { label: 'Compare Sora Pro vs Veo', href: compareHref('en', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
+        cta: { label: 'Compare Sora 2 Pro vs Veo 3.1', href: compareHref('en', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
       },
     ],
     referenceWorkflows: [
@@ -2031,10 +2031,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Sora 2 Pro',
-      description: 'Rendu Pro 8 s 16:9 issu de la galerie',
+      description: 'Rendu Pro 8 s 16:9 de continuité',
       renderLabel: 'Voir le rendu',
       badges: ['Audio désactivé', '8 s', '16:9'],
-      altContext: 'scène chantier CCTV Sora 2 Pro',
+      altContext: 'rendu de contrôle de continuité Sora 2 Pro',
     },
     features: [
       { title: 'Route 1080p', body: 'Utilisez Pro pour les plans sélectionnés qui demandent une livraison plus nette.', tone: 'quality' },
@@ -2058,7 +2058,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       {
         title: 'Vous comparez les finales premium ?',
         body: 'Comparez Sora 2 Pro avec Veo 3.1 ou Kling 3 Pro pour des pubs, explainers ou inserts cinématographiques.',
-        cta: { label: 'Comparer Sora Pro vs Veo', href: compareHref('fr', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
+        cta: { label: 'Comparer Sora 2 Pro vs Veo 3.1', href: compareHref('fr', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
       },
     ],
     referenceWorkflows: [
@@ -2099,10 +2099,10 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Sora 2 Pro',
-      description: 'Render Pro 8 s 16:9 de la galería',
+      description: 'Render Pro 8 s 16:9 de continuidad',
       renderLabel: 'Ver render',
       badges: ['Audio desactivado', '8 s', '16:9'],
-      altContext: 'escena CCTV de construcción con Sora 2 Pro',
+      altContext: 'render de control de continuidad con Sora 2 Pro',
     },
     features: [
       { title: 'Ruta 1080p', body: 'Usa Pro para tomas seleccionadas que necesitan entrega más limpia.', tone: 'quality' },
@@ -2126,7 +2126,7 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       {
         title: '¿Comparas finales premium?',
         body: 'Compara Sora 2 Pro con Veo 3.1 o Kling 3 Pro para anuncios, explainers o inserts cinematográficos.',
-        cta: { label: 'Comparar Sora Pro vs Veo', href: compareHref('es', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
+        cta: { label: 'Comparar Sora 2 Pro vs Veo 3.1', href: compareHref('es', 'sora-2-pro', 'veo-3-1', 'sora-2-pro') },
       },
     ],
     referenceWorkflows: [

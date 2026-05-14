@@ -139,6 +139,34 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getSora2DemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Coureuse urbaine',
+      action: 'Elle serre sa montre puis accélère dans la lumière du matin',
+      camera: 'Close-up montre, tracking latéral, puis gros plan visage',
+      style: 'Golden hour naturel, rendu lifestyle premium',
+      audio: 'Pas rythmés, souffle court, musique légère',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Corredora urbana',
+      action: 'Ajusta su reloj y acelera con luz de mañana',
+      camera: 'Close-up del reloj, tracking lateral y primer plano final',
+      style: 'Golden hour natural, look lifestyle premium',
+      audio: 'Pasos rítmicos, respiración breve, música suave',
+    };
+  }
+  return {
+    subject: 'Urban runner',
+    action: 'Tightens a smartwatch and accelerates through morning light',
+    camera: 'Watch close-up, side tracking shot, final face close-up',
+    style: 'Natural golden hour, premium lifestyle look',
+    audio: 'Rhythmic footsteps, short breath, soft optimistic music',
+  };
+}
+
 function getSora2ProDemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
@@ -1042,6 +1070,7 @@ export function ModelDecisionPromptingSection({
   const isPikaTextRoute = engineSlug === 'pika-text-to-video';
   const isLumaRay2Route = engineSlug === 'luma-ray-2' || engineSlug === 'lumaRay2';
   const isLumaFlashRoute = engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
+  const isSora2Route = engineSlug === 'sora-2';
   const isSora2ProRoute = engineSlug === 'sora-2-pro';
   const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
@@ -1055,6 +1084,7 @@ export function ModelDecisionPromptingSection({
   const pikaDemo = getPikaDemoSummary(locale);
   const lumaRay2Demo = getLumaRay2DemoSummary(locale);
   const lumaFlashDemo = getLumaFlashDemoSummary(locale);
+  const sora2Demo = getSora2DemoSummary(locale);
   const sora2ProDemo = getSora2ProDemoSummary(locale);
   const ltx23FastDemo = getLtx23FastDemoSummary(locale);
   const ltx23ProDemo = getLtx23ProDemoSummary(locale);
@@ -1064,23 +1094,25 @@ export function ModelDecisionPromptingSection({
     ? { ...hailuoDemo, audio: hailuoDemo.output }
     : isSeedance15ProRoute
       ? { ...seedance15Demo, output: seedance15Demo.audio }
-    : isPikaTextRoute
-      ? { ...pikaDemo, audio: pikaDemo.output }
-      : isLumaRay2Route
-        ? { ...lumaRay2Demo, audio: lumaRay2Demo.output }
-      : isLumaFlashRoute
-          ? { ...lumaFlashDemo, audio: lumaFlashDemo.output }
-        : isSora2ProRoute
-          ? { ...sora2ProDemo, output: sora2ProDemo.audio }
-          : isLtx23FastRoute
-            ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
-            : isLtx23ProRoute
-              ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
-              : isVeoFastRoute
-                ? { ...veoFastDemo, output: veoFastDemo.audio }
-            : isVeoLiteRoute
-              ? { ...veoLiteDemo, output: veoLiteDemo.audio }
-              : { ...standardDemo, output: standardDemo.audio };
+      : isPikaTextRoute
+        ? { ...pikaDemo, audio: pikaDemo.output }
+        : isLumaRay2Route
+          ? { ...lumaRay2Demo, audio: lumaRay2Demo.output }
+          : isLumaFlashRoute
+            ? { ...lumaFlashDemo, audio: lumaFlashDemo.output }
+            : isSora2Route
+              ? { ...sora2Demo, output: sora2Demo.audio }
+              : isSora2ProRoute
+                ? { ...sora2ProDemo, output: sora2ProDemo.audio }
+                : isLtx23FastRoute
+                  ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
+                  : isLtx23ProRoute
+                    ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
+                    : isVeoFastRoute
+                      ? { ...veoFastDemo, output: veoFastDemo.audio }
+                      : isVeoLiteRoute
+                        ? { ...veoLiteDemo, output: veoLiteDemo.audio }
+                        : { ...standardDemo, output: standardDemo.audio };
   const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
   const intro = copy.promptingIntro ?? '';
   const imageExamplesIntro =
@@ -1154,6 +1186,18 @@ export function ModelDecisionPromptingSection({
                 : locale === 'es'
                   ? 'Cómo Veo 3.1 Fast usa imagen inicial, referencias y frame final'
                   : 'How Veo 3.1 Fast uses start, reference and ending frames'
+            : isSora2Route
+              ? locale === 'fr'
+                ? 'Comment Sora 2 utilise prompt, image source et audio'
+                : locale === 'es'
+                  ? 'Cómo Sora 2 usa prompt, imagen inicial y audio'
+                  : 'How Sora 2 uses prompts, start images and audio'
+            : isSora2ProRoute
+              ? locale === 'fr'
+                ? 'Comment Sora 2 Pro utilise prompts, références et audio'
+                : locale === 'es'
+                  ? 'Cómo Sora 2 Pro usa prompts, referencias y audio'
+                  : 'How Sora 2 Pro uses prompts, references and audio'
             : isVeoLiteRoute
               ? locale === 'fr'
                 ? 'Comment Veo 3.1 Lite utilise les images de départ'
@@ -1174,6 +1218,8 @@ export function ModelDecisionPromptingSection({
       ? getHailuoDemoPrompt(locale)
       : isSeedance15ProRoute
         ? getSeedance15DemoPrompt(locale)
+      : isSora2Route && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isSora2ProRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
       : isLtx23FastRoute && copy.demoPrompt.length
@@ -1207,9 +1253,11 @@ export function ModelDecisionPromptingSection({
       : isLumaRay2Route
         ? (locale === 'fr' || locale === 'es' ? '9 s' : '9s')
         : isLumaFlashRoute
-          ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
-          : isSora2ProRoute
-            ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+        ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
+        : isSora2ProRoute
+          ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+        : isSora2Route
+          ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isLtx23FastRoute
             ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
           : isLtx23ProRoute
@@ -1238,6 +1286,12 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Check Pro'
           : 'Pro scene check'
+    : isSora2Route
+      ? locale === 'fr'
+        ? 'Prompt lifestyle 720p'
+        : locale === 'es'
+          ? 'Prompt lifestyle 720p'
+          : '720p lifestyle prompt'
     : isLtx23FastRoute
       ? locale === 'fr'
         ? 'Check brouillon fast'
@@ -1277,8 +1331,10 @@ export function ModelDecisionPromptingSection({
         : 'Output'
     : isSora2ProRoute
       ? labels.demoAudio
+    : isSora2Route
+      ? labels.demoAudio
     : labels.demoAudio;
-  const demoOutputValue = isSilentPromptRoute || isSora2ProRoute ? demo.output : demo.audio;
+  const demoOutputValue = isSilentPromptRoute || isSora2Route || isSora2ProRoute ? demo.output : demo.audio;
   const demoAudioChipLabel = isSilentPromptRoute
     ? locale === 'fr'
       ? 'Silencieux'
@@ -1312,10 +1368,16 @@ export function ModelDecisionPromptingSection({
           : 'Luma Ray 2 Flash tunnel draft'
       : isSora2ProRoute
         ? locale === 'fr'
-          ? 'Scène chantier CCTV Sora 2 Pro'
+          ? 'Rendu de contrôle de continuité Sora 2 Pro'
           : locale === 'es'
-            ? 'Escena CCTV de construcción con Sora 2 Pro'
-            : 'Sora 2 Pro CCTV construction scene'
+            ? 'Render de control de continuidad con Sora 2 Pro'
+            : 'Sora 2 Pro continuity control render'
+      : isSora2Route
+        ? locale === 'fr'
+          ? 'Rendu lifestyle Sora 2 avec audio'
+          : locale === 'es'
+            ? 'Render lifestyle de Sora 2 con audio'
+            : 'Sora 2 lifestyle render with audio'
       : isLtx23FastRoute
         ? locale === 'fr'
           ? 'Brouillon boxer LTX 2.3 Fast'

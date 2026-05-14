@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Seedance 2.0 vs Sora 2",
-        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
+        "label": "Comparer Sora 2 vs Sora 2 Pro",
+        "href": "/ai-video-engines/sora-2-vs-sora-2-pro"
       }
     ]
   },
@@ -222,11 +222,11 @@
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur les autres modèles.",
     "relatedItems": [
       {
-        "brand": "bytedance",
-        "title": "Seedance 2.0",
-        "description": "Ouvrez Seedance 2.0 si vous voulez la nouvelle famille flagship pour motion multi-plans, réalisme plus fort et sorties pilotées par l'audio natif.",
-        "modelSlug": "seedance-2-0",
-        "ctaLabel": "Comparer Seedance 2.0 vs OpenAI Sora 2 ->"
+        "brand": "openai",
+        "title": "Sora 2 Pro",
+        "description": "Passez les meilleurs concepts Sora 2 dans Sora 2 Pro quand le plan demande du 1080p, plus de contrôle de finition et une passe plus premium.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Comparer Sora 2 vs Sora 2 Pro →"
       },
       {
         "brand": "google-veo",
@@ -260,9 +260,9 @@
       "Les cues audio aident le rythme ; décrivez 1–2 sons clés."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables."
+      "quick": "Quick = tests de hook. Gardez une action, un mouvement caméra et un indice sonore.",
+      "structured": "Structured = cohérence. Séparez action, caméra, lumière, audio et dialogue court.",
+      "pro": "Pro = livraison contrôlée. Ajoutez des ancres de continuité et une fin claire."
     },
     "promptingTitle": "Comment écrire un excellent prompt Sora 2",
     "promptingIntro": "Sora 2 fonctionne mieux quand vous le briefez comme un chef op : un plan clair, un timing simple et des actions lisibles.",
@@ -274,30 +274,30 @@
       {
         "id": "quick",
         "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Style] + [Sujet] + [Décor] + [Lumière] + [Mood / palette]"
+        "title": "Prompt action rapide",
+        "description": "À utiliser pour tester un hook en 4 s.",
+        "copy": "[Sujet] fait [une action visible] dans [lieu]. Caméra : [un mouvement]. Lumière : [moment / mood]. Audio : [ambiance + un SFX]."
       },
       {
         "id": "structured",
         "label": "Structured",
-        "title": "Prompt structuré (le plus fiable)",
-        "description": "Séparez les informations pour que le modèle suive mieux.",
-        "copy": "Sujet :\n[Qui/quoi + 1 action claire ou pose.]\n\nDécor :\n[Où + moment + 2–3 repères visuels.]\n\nComposition :\n- Cadrage : [large / moyen / serré]\n- Angle : [niveau des yeux / contre‑plongée / plongée]\n- Sensation d’optique : [ex. 35mm naturel, faible profondeur de champ]\n\nLumière + palette :\n[Lumière principale + 2–3 repères de palette]\n\nContraintes de style :\nPas de logos. Pas de texte lisible. Fond propre."
+        "title": "Prompt vidéo structuré",
+        "description": "À utiliser quand le clip doit rester lisible côté action et son.",
+        "copy": "Sujet :\n[Qui/quoi + une action visible]\n\nLieu :\n[Où + moment + 2 repères visuels]\n\nCaméra :\n[Cadrage + angle + un mouvement]\n\nLumière :\n[Key light + palette + contraste]\n\nAudio :\n[Ambiance + 1 SFX + dialogue optionnel sous 8 mots]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de personne protégée."
       },
       {
         "id": "pro",
         "label": "Pro",
-        "title": "Prompt Pro (brief studio ultra‑spécifique)",
-        "description": "À utiliser si vous voulez un rendu très précis ou une continuité forte.",
-        "copy": "Projet / intention :\n[Objectif en une ligne.]\n\nSujet :\n[Qui/quoi + tenue/matériaux + 2–3 traits distinctifs.]\n\nLieu / décor :\n[Où + moment + météo. Ajoutez 3 repères visuels.]\n\nComposition :\n- Cadrage + angle\n- Sensation d’optique + profondeur de champ\n- Look : [digital clean / grain film subtil / bloom doux]\n\nLumière & grade :\n- Lumière principale\n- Contraste\n- Repères de palette (3–5)\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas d’overlays."
+        "title": "Prompt image-to-video",
+        "description": "À utiliser quand une image validée doit définir la première frame.",
+        "copy": "Rôle de l’image source :\n[Ce qui doit rester fixe : sujet, forme produit, tenue ou composition]\n\nMouvement :\n[Une action qui démarre depuis l’image]\n\nCaméra :\n[Mouvement lent / push-in / drift handheld / plan fixe]\n\nFin :\n[Position du sujet ou produit à la dernière seconde]\n\nAudio :\n[Ambiance courte + SFX visible]\n\nÉviter :\nChanger l’identité, ajouter des logos ou introduire trop de sujets."
       },
       {
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Prompt storyboard (shot list séquencée)",
         "description": "À utiliser quand vous avez besoin d’une continuité multi‑beats dans un seul clip.",
-        "copy": "Storyboard / shot list (même sujet + même décor)\nDurée : [4/8/12s] • Format : [16:9 ou 9:16]\n\nShot 1 (0–2s) :\n[Cadrage + action du sujet + mouvement caméra]\n\nShot 2 (2–6s) :\n[Cadrage + action du sujet + mouvement caméra]\n\nShot 3 (6–8/12s) :\n[Action finale / reveal + caméra qui se pose]\n\nContinuité :\n[Répéter les repères : tenue, props, lumière, décor]\n\nAudio (optionnel) :\n[Ambiance + 1–2 cues SFX]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas d’overlays."
+        "copy": "Storyboard / shot list (même sujet + même lieu)\nDurée : [4/8/12s] • Format : [16:9 ou 9:16]\n\nBeat 1 (0-2s) :\n[Cadrage + action sujet + mouvement caméra]\n\nBeat 2 (2-6s) :\n[L’action continue, sans changer de lieu]\n\nBeat 3 (6-8/12s) :\n[Révélation finale + caméra qui se pose]\n\nContinuité :\n[Tenue, accessoires, lumière, décor]\n\nAudio :\n[Ambiance + 1 SFX + dialogue court si utile]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de personnes protégées."
       }
     ],
     "demoTitle": "Démo : prompt séquencé",

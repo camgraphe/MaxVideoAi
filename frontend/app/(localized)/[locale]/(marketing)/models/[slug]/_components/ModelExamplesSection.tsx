@@ -128,6 +128,10 @@ function isSora2ProRoute(engineSlug?: string) {
   return engineSlug === 'sora-2-pro';
 }
 
+function isSora2Route(engineSlug?: string) {
+  return engineSlug === 'sora-2';
+}
+
 function isLtx23FastRoute(engineSlug?: string) {
   return engineSlug === 'ltx-2-3-fast';
 }
@@ -456,9 +460,9 @@ function getCuratedDecisionExampleTitle(
   }
   if (isVeoFastRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
-      en: ['Soldier stepping into abandoned factory', 'Close-up interview shot', 'Late-night desk loop', 'Man talking about happiness'],
-      fr: ['Soldat entrant dans une usine abandonnée', 'Interview en gros plan', 'Loop bureau de nuit', 'Homme parlant de bonheur'],
-      es: ['Soldado entrando en fábrica abandonada', 'Entrevista en primer plano', 'Loop de escritorio nocturno', 'Hombre hablando de felicidad'],
+      en: ['Soldier stepping into abandoned factory', 'Close-up interview shot', 'Late-night desk draft', 'Man talking about happiness'],
+      fr: ['Soldat entrant dans une usine abandonnée', 'Interview en gros plan', 'Brouillon bureau de nuit', 'Homme parlant de bonheur'],
+      es: ['Soldado entrando en fábrica abandonada', 'Entrevista en primer plano', 'Borrador de escritorio nocturno', 'Hombre hablando de felicidad'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -472,9 +476,17 @@ function getCuratedDecisionExampleTitle(
   }
   if (isSora2ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
-      en: ['Studio dialogue test', 'Restaurant character scene', 'Vertical character beat', 'CCTV construction scene'],
-      fr: ['Test dialogue studio', 'Scène restaurant personnage', 'Beat personnage vertical', 'Scène chantier CCTV'],
-      es: ['Prueba diálogo estudio', 'Escena de personaje en restaurante', 'Beat vertical de personaje', 'Escena CCTV de obra'],
+      en: ['Studio dialogue final', 'Restaurant character final', 'Vertical character take', 'Continuity control test'],
+      fr: ['Finale dialogue studio', 'Finale personnage restaurant', 'Prise personnage verticale', 'Test contrôle continuité'],
+      es: ['Final de diálogo en estudio', 'Final de personaje en restaurante', 'Toma vertical de personaje', 'Prueba de continuidad'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSora2Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Hallway escape concept', 'Lifestyle product beat', 'Vertical social hook', 'Storyboard motion pass'],
+      fr: ['Concept fuite couloir', 'Beat produit lifestyle', 'Hook social vertical', 'Passe motion storyboard'],
+      es: ['Concepto escape pasillo', 'Beat producto lifestyle', 'Hook social vertical', 'Pasada motion storyboard'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -528,9 +540,9 @@ function getCuratedDecisionExampleCategory(
   }
   if (isVeoFastRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
-      en: ['Cinematic · Action', 'Portrait · Interview', 'Social · Desk loop', 'Portrait · Audio'],
-      fr: ['Cinématique · Action', 'Portrait · Interview', 'Social · Loop bureau', 'Portrait · Audio'],
-      es: ['Cinemático · Acción', 'Portrait · Entrevista', 'Social · Loop escritorio', 'Portrait · Audio'],
+      en: ['Cinematic · Action', 'Interview · Close-up', 'Desk · Draft', 'Dialogue · Audio'],
+      fr: ['Cinématique · Action', 'Interview · Gros plan', 'Bureau · Brouillon', 'Dialogue · Audio'],
+      es: ['Cinemático · Acción', 'Entrevista · Primer plano', 'Escritorio · Borrador', 'Diálogo · Audio'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -544,9 +556,17 @@ function getCuratedDecisionExampleCategory(
   }
   if (isSora2ProRoute(engineSlug)) {
     const labels: Record<AppLocale, string[]> = {
-      en: ['Dialogue · Audio', 'Narrative · Audio', 'Vertical · Character', 'Cinematic · Control test'],
-      fr: ['Dialogue · Audio', 'Narratif · Audio', 'Vertical · Personnage', 'Cinématique · Test contrôle'],
-      es: ['Diálogo · Audio', 'Narrativa · Audio', 'Vertical · Personaje', 'Cinemático · Prueba control'],
+      en: ['Production · Dialogue', 'Narrative · Character', 'Vertical · Social', 'Production · Continuity'],
+      fr: ['Production · Dialogue', 'Narratif · Personnage', 'Vertical · Social', 'Production · Continuité'],
+      es: ['Producción · Diálogo', 'Narrativa · Personaje', 'Vertical · Social', 'Producción · Continuidad'],
+    };
+    return labels[locale]?.[index] ?? fallback;
+  }
+  if (isSora2Route(engineSlug)) {
+    const labels: Record<AppLocale, string[]> = {
+      en: ['Cinematic · Concept', 'Lifestyle · Product', 'Vertical · Social', 'Storyboard · Motion'],
+      fr: ['Cinématique · Concept', 'Lifestyle · Produit', 'Vertical · Social', 'Storyboard · Motion'],
+      es: ['Cinemático · Concepto', 'Lifestyle · Producto', 'Vertical · Social', 'Storyboard · Motion'],
     };
     return labels[locale]?.[index] ?? fallback;
   }
@@ -648,6 +668,7 @@ function buildDecisionExampleItems({
   const useCuratedLabels =
     isSeedanceCurrentRoute(engineSlug) ||
     isSeedance15ProRoute(engineSlug) ||
+    isSora2Route(engineSlug) ||
     isSora2ProRoute(engineSlug) ||
     isLtx23FastRoute(engineSlug) ||
     isLtx23ProRoute(engineSlug) ||
@@ -676,6 +697,8 @@ function buildDecisionExampleItems({
         ? `Luma Ray 2 ${shortTitle.toLowerCase()}`
         : isSora2ProRoute(engineSlug)
           ? `Sora 2 Pro ${shortTitle.toLowerCase()}`
+        : isSora2Route(engineSlug)
+          ? `Sora 2 ${shortTitle.toLowerCase()}`
         : isLtx23FastRoute(engineSlug)
           ? `LTX 2.3 Fast ${shortTitle.toLowerCase()}`
         : isLtx23ProRoute(engineSlug)

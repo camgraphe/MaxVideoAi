@@ -5,7 +5,7 @@ export const veo31FastTemplateConfig: ModelPageTemplateConfig = {
   intent: 'draft',
   hero: {
     eyebrow: 'GOOGLE FAST VIDEO ROUTE',
-    subtitleHighlightTerms: ['faster Veo drafts', 'optional native audio', 'first-last frame tests'],
+    subtitleHighlightTerms: ['faster Veo drafts', 'optional native audio', 'reference-to-video runs'],
     primaryCtaHref: '/app?engine=veo-3-1-fast',
     secondaryCtaHref: '/examples/veo',
     quickLinks: [

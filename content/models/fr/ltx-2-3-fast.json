@@ -75,7 +75,7 @@
     },
     {
       "label": "Résolution",
-      "body": "1080p, 1440p ou 2160p (4K)"
+      "body": "1080p, 1440p ou 2160p (4K) sur les configurations 6-10 s supportées ; au-delà de 10 s, le routing passe en 1080p / 25 fps"
     },
     {
       "label": "Formats",
@@ -216,13 +216,13 @@
           "Pas de mode vidéo piloté par audio uploadé.",
           "Pas de workflow d’extension de vidéo source.",
           "Pas de workflow de retake sélectif.",
-          "Passez sur la version standard quand ces contrôles deviennent nécessaires."
+          "Passez sur LTX 2.3 Pro quand ces contrôles deviennent nécessaires."
         ]
       }
     ],
     "whatTitle": "Comment fonctionne LTX 2.3 Fast dans MaxVideoAI",
     "whatIntro1": "Choisissez LTX 2.3 Fast, restez dans le flux standard de génération, puis basculez entre entrée pilotée par texte et entrée pilotée par image en ajoutant ou retirant l’image de départ.",
-    "whatIntro2": "La page évite volontairement les modes d’édition de la version standard pour que les options restent cohérentes avec le routing Fast public.",
+    "whatIntro2": "La page évite volontairement les modes d’édition Pro pour que les options restent cohérentes avec le routing Fast public.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choisissez LTX 2.3 Fast comme modèle.",
