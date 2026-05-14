@@ -143,7 +143,7 @@
     "heroDesc2": "C'est utile quand un run Seedance a besoin d'une source plus intentionnelle qu'un prompt seul ou une image externe non préparée.",
     "heroHighlights": [
       "Modèle image autonome||Utilisez Seedream pour générer et éditer des images fixes même sans vidéo ensuite.",
-      "Sortie image batch||Utilisez sequential_image_generation=auto pour générer des séries storyboard, comic, produit ou marque quand un prompt doit produire des images liées.",
+      "Sortie image batch||Générez des séries storyboard, comic, produit ou marque quand un prompt doit produire des images liées.",
       "Entrée multi-image||Fusionnez sujet, style et références de scène depuis 2-10 images sources quand l'image fixe doit être plus contrôlée.",
       "Préparation de référence||Créez des images sources plus propres avant animation Seedance.",
       "Éditer avant le mouvement||Ajustez produit, fond, tenue et lumière avant l'image-to-video.",

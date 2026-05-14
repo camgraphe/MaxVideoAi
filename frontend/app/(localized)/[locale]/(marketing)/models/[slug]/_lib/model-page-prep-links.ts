@@ -1,21 +1,13 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { PrepLinksSection } from '../_components/ModelPrepLinksSection';
 
-const NANO_BANANA_MODEL_SLUGS = new Set([
-  'nano-banana',
-  'nano-banana-pro',
-  'nano-banana-2',
-  'gpt-image-2',
-]);
-
-const VIDEO_PREP_MODEL_SLUGS = new Set([
-  'veo-3-1',
-  'kling-3-pro',
-  'happy-horse-1-0',
-  'sora-2-pro',
-  'ltx-2-3-pro',
-  'ltx-2-3-fast',
-]);
+const NANO_BANANA_MODEL_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
+const VIDEO_PREP_MODEL_SLUGS = new Set(['veo-3-1', 'kling-3-pro', 'happy-horse-1-0', 'sora-2-pro', 'ltx-2-3-pro', 'ltx-2-3-fast']);
+const gptImagePrepLinks = {
+  en: [{ href: '/tools/character-builder', label: 'Build a reusable character reference' }, { href: '/tools/angle', label: 'Change the viewpoint before the edit' }, { href: '/app/image?engine=gpt-image-2', label: 'Open GPT Image 2' }],
+  fr: [{ href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' }, { href: '/tools/angle', label: "Changer le point de vue avant l'edit" }, { href: '/app/image?engine=gpt-image-2', label: 'Ouvrir GPT Image 2' }],
+  es: [{ href: '/tools/character-builder', label: 'Crear una referencia de personaje reutilizable' }, { href: '/tools/angle', label: 'Cambiar el punto de vista antes del edit' }, { href: '/app/image?engine=gpt-image-2', label: 'Abrir GPT Image 2' }],
+};
 
 export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale): PrepLinksSection | null {
   if (modelSlug === 'gpt-image-2') {
@@ -24,11 +16,7 @@ export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale)
         eyebrow: 'Avant de générer',
         title: 'Préparez la source avant le rendu GPT Image 2',
         body: 'Si le rendu a besoin d’un produit, d’un texte ou d’un masque fiable, préparez la source avant de lancer GPT Image 2.',
-        links: [
-          { href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' },
-          { href: '/tools/angle', label: "Changer le point de vue avant l'edit" },
-          { href: '/app/image?engine=gpt-image-2', label: 'Ouvrir GPT Image 2' },
-        ],
+        links: gptImagePrepLinks.fr,
       };
     }
     if (locale === 'es') {
@@ -36,22 +24,14 @@ export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale)
         eyebrow: 'Antes de generar',
         title: 'Prepara la fuente antes del render GPT Image 2',
         body: 'Si el render necesita producto, texto o máscara confiable, prepara la fuente antes de lanzar GPT Image 2.',
-        links: [
-          { href: '/tools/character-builder', label: 'Crear una referencia de personaje reutilizable' },
-          { href: '/tools/angle', label: 'Cambiar el punto de vista antes del edit' },
-          { href: '/app/image?engine=gpt-image-2', label: 'Abrir GPT Image 2' },
-        ],
+        links: gptImagePrepLinks.es,
       };
     }
     return {
       eyebrow: 'Before you generate',
       title: 'Prepare the source before the GPT Image 2 render',
       body: 'If the render needs a reliable product source, exact text or a mask, prepare that input before launching GPT Image 2.',
-      links: [
-        { href: '/tools/character-builder', label: 'Build a reusable character reference' },
-        { href: '/tools/angle', label: 'Change the viewpoint before the edit' },
-        { href: '/app/image?engine=gpt-image-2', label: 'Open GPT Image 2' },
-      ],
+      links: gptImagePrepLinks.en,
     };
   }
 

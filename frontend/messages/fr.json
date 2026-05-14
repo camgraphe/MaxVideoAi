@@ -3625,6 +3625,7 @@
         "selectedAmount": "Montant sélectionné",
         "checkoutCta": "Continuer vers le Checkout Stripe sécurisé · {amount}",
         "checkoutNote": "Les taxes et le reçu sont finalisés par Stripe avant paiement.",
+        "firstTopupAmexNotice": "Par mesure de sécurité, American Express n’est pas disponible pour un premier rechargement.",
         "customLabel": "Montant personnalisé",
         "customPresetLabel": "Personnalisé",
         "customPresetHint": "Saisir un montant",
