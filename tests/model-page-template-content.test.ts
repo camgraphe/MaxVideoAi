@@ -277,7 +277,7 @@ test('Seedream uses image-prep identity, official guide copy, and batch pricing 
   for (const locale of LOCALES) {
     const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, 'seedream.json');
     const rawContent = readFileSync(contentPath, 'utf8');
-    assert.match(rawContent, /Seedream 4\.0-5\.0/);
+    assert.doesNotMatch(rawContent, /Seedream 4\.0-5\.0|BytePlus|ModelArk|docs\.byteplus\.com/i);
     assert.match(rawContent, /4 generated images|4 images générées|4 imágenes generadas/i);
     assert.match(rawContent, /jpeg.*png|png.*jpeg/i);
   }

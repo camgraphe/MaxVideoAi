@@ -16,6 +16,7 @@ import { ReceiptsPanel } from './ReceiptsPanel';
 import { WalletTopupPanel } from './WalletTopupPanel';
 import { useBillingCurrencyState } from '../_hooks/useBillingCurrencyState';
 import { useBillingReceipts } from '../_hooks/useBillingReceipts';
+import { useBillingCheckoutReturnToast } from '../_hooks/useBillingCheckoutReturnToast';
 import { useBillingSessionState } from '../_hooks/useBillingSessionState';
 import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
@@ -170,68 +171,13 @@ export function BillingClient() {
 
   // no FX preview when using Checkout redirection
 
-  // Show toast on return from Checkout
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const url = new URL(window.location.href);
-    const status = url.searchParams.get('status');
-    const amountParam = url.searchParams.get('amount');
-    const amountCentsParam = url.searchParams.get('amountCents');
-    const currencyParam = url.searchParams.get('currency');
-    const checkoutSessionIdParam = url.searchParams.get('checkoutSessionId');
-    const parsedAmountCents = amountCentsParam
-      ? Math.max(0, Math.round(Number(amountCentsParam)))
-      : amountParam
-        ? Math.max(0, Math.round(Number(amountParam) * 100))
-        : null;
-    const parsedCurrency = String(currencyParam ?? 'USD').toUpperCase();
-    if (!status) return undefined;
-    const message =
-      status === 'success'
-        ? copy.toasts.success
-        : status === 'cancelled'
-          ? copy.toasts.cancelled
-          : null;
-    if (message) {
-      setToast(message);
-      const timeout = window.setTimeout(() => setToast(null), 4000);
-      if (status === 'success') {
-        const value = amountParam ? Number(amountParam) : undefined;
-        triggerGoogleAdsConversion(value, currencyParam ?? undefined);
-        if (checkoutSessionIdParam) {
-          recordCheckoutInteractionEvent({
-            amountCents: parsedAmountCents,
-            eventName: 'hosted_checkout_success_return',
-            mode: 'hosted',
-            stripeCheckoutSessionId: checkoutSessionIdParam,
-          });
-        }
-      }
-      if (status === 'cancelled') {
-        triggerTopupCancelled(parsedAmountCents, parsedCurrency);
-        if (checkoutSessionIdParam) {
-          recordCheckoutInteractionEvent({
-            amountCents: parsedAmountCents,
-            eventName: 'hosted_checkout_cancelled_return',
-            mode: 'hosted',
-            stripeCheckoutSessionId: checkoutSessionIdParam,
-          });
-        }
-      }
-      if (status) {
-        url.searchParams.delete('status');
-        if (amountParam) url.searchParams.delete('amount');
-        if (amountCentsParam) url.searchParams.delete('amountCents');
-        if (currencyParam) url.searchParams.delete('currency');
-        url.searchParams.delete('settlementCurrency');
-        url.searchParams.delete('topupTier');
-        url.searchParams.delete('checkoutSessionId');
-        window.history.replaceState({}, '', url.toString());
-      }
-      return () => window.clearTimeout(timeout);
-    }
-    return undefined;
-  }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion, triggerTopupCancelled]);
+  useBillingCheckoutReturnToast({
+    cancelledMessage: copy.toasts.cancelled,
+    onCancelled: triggerTopupCancelled,
+    onGoogleAdsConversion: triggerGoogleAdsConversion,
+    onToast: setToast,
+    successMessage: copy.toasts.success,
+  });
 
   async function handleTopUp(amountCents: number) {
     if (!session) {

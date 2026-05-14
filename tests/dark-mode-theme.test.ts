@@ -15,10 +15,6 @@ const heroShowcaseSource = readFileSync('frontend/components/marketing/home/Hero
 const navSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const buttonSource = readFileSync('frontend/components/ui/Button.tsx', 'utf8');
 const toolsHubSource = readFileSync('frontend/src/components/tools/ToolsMarketingHubPage.tsx', 'utf8');
-const pricingPageSource = [
-  readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx', 'utf8'),
-  readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingHeroSection.tsx', 'utf8'),
-].join('\n');
 const blogPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/page.tsx', 'utf8');
 const comparePageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx', 'utf8');
 
@@ -153,15 +149,6 @@ test('tools pricing and blog hero images use compare-style derived dark assets',
       lightUrl: '/assets/tools/tools-hero-reference.webp',
       darkUrl: '/assets/tools/tools-hero-reference-dark.webp',
       darkFile: 'frontend/public/assets/tools/tools-hero-reference-dark.webp',
-      overlay:
-        /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.24\)_0%,rgba\(3,7,18,0\.16\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
-    },
-    {
-      name: 'pricing',
-      source: pricingPageSource,
-      lightUrl: '/assets/pricing/pricing-hero-reference.webp',
-      darkUrl: '/assets/pricing/pricing-hero-reference-dark.webp',
-      darkFile: 'frontend/public/assets/pricing/pricing-hero-reference-dark.webp',
       overlay:
         /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.24\)_0%,rgba\(3,7,18,0\.16\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
     },

@@ -19,13 +19,13 @@ function compactText(value: unknown): string {
   return JSON.stringify(value).toLowerCase();
 }
 
-test('Seedream localized model pages position Seedream as a BytePlus image reference companion', () => {
+test('Seedream localized model pages position Seedream as a MaxVideoAI image reference companion', () => {
   for (const locale of locales) {
     const seedream = readModel(locale, 'seedream');
     const copy = compactText(seedream);
 
     assert.match(copy, /seedream/i, `${locale} Seedream copy should name Seedream`);
-    assert.match(copy, /byteplus|modelark/i, `${locale} Seedream copy should mention BytePlus or ModelArk`);
+    assert.doesNotMatch(copy, /byteplus|modelark/i, `${locale} Seedream public copy should not send users to provider support`);
     assert.match(copy, /image/i, `${locale} Seedream copy should position the page as image generation/editing`);
     assert.match(copy, /seedance-2-0/i, `${locale} Seedream copy should link Seedance 2.0`);
     assert.match(copy, /seedance-2-0-fast/i, `${locale} Seedream copy should link Seedance 2.0 Fast`);
@@ -47,13 +47,12 @@ test('Seedance localized pages mention and link Seedream as an optional referenc
   }
 });
 
-test('Seedream localized model pages include official BytePlus workflow limits', () => {
+test('Seedream localized model pages include MaxVideoAI workflow limits without provider-facing parameters', () => {
   for (const locale of locales) {
     const seedream = readModel(locale, 'seedream');
     const copy = compactText(seedream);
 
-    assert.match(copy, /docs\.byteplus\.com\/en\/docs\/modelark\/1824121/i, `${locale} Seedream copy should link the official BytePlus tutorial`);
-    assert.match(copy, /sequential_image_generation/i, `${locale} Seedream copy should name the official batch mode parameter`);
+    assert.doesNotMatch(copy, /docs\.byteplus\.com|sequential_image_generation/i, `${locale} Seedream public copy should avoid provider docs and raw parameters`);
     assert.match(copy, /2-10/, `${locale} Seedream copy should mention the multi-reference input range`);
     assert.match(copy, /15/, `${locale} Seedream copy should mention the total reference plus output limit`);
     assert.match(copy, /successfully generated|générées avec succès|generadas correctamente/i, `${locale} Seedream copy should explain successful-image billing`);
