@@ -53,7 +53,7 @@ type WalletTopupPanelProps = {
   stripePromise: Promise<Stripe | null> | null;
   topupQuotes: Record<number, TopupQuote>;
   turnstileSiteKey: string;
-  wallet: { balance: number; currency: string } | null;
+  wallet: { balance: number; currency: string; hasCompletedTopUp?: boolean } | null;
   walletQuoteLoading: string;
 };
 
@@ -102,6 +102,8 @@ export function WalletTopupPanel({
   wallet,
   walletQuoteLoading,
 }: WalletTopupPanelProps) {
+  const shouldShowFirstTopupAmexNotice = wallet?.hasCompletedTopUp === false;
+
   return (
     <div className="rounded-card border border-border bg-surface p-3 shadow-card sm:p-5">
       <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:pb-4">
@@ -234,6 +236,9 @@ export function WalletTopupPanel({
           </Button>
         </div>
         <p className="mt-2 text-xs text-text-secondary">{copy.wallet.checkoutNote}</p>
+        {shouldShowFirstTopupAmexNotice ? (
+          <p className="mt-1 text-[11px] leading-4 text-text-muted">{copy.wallet.firstTopupAmexNotice}</p>
+        ) : null}
       </div>
 
       {checkoutCaptchaRequired ? (

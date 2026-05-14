@@ -15,6 +15,7 @@ export const DEFAULT_BILLING_COPY = {
     selectedAmount: 'Selected amount',
     checkoutCta: 'Continue to secure Stripe Checkout · {amount}',
     checkoutNote: 'Taxes and receipt are finalized by Stripe before payment.',
+    firstTopupAmexNotice: 'For security reasons, American Express is not available for a first top-up.',
     customLabel: 'Custom amount',
     customPresetLabel: 'Custom',
     customPresetHint: 'Enter amount',

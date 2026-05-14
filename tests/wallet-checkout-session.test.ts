@@ -112,25 +112,33 @@ test('wallet top-up Checkout does not block card brands by default', () => {
   assert.equal(params.payment_method_options, undefined);
 });
 
-test('wallet top-up Checkout does not contain application-level Amex blocking', () => {
+test('wallet top-up Checkout can block American Express for first top-ups', () => {
+  const params = buildParams({ blockAmexCards: true });
+  const paymentMethodOptions = params.payment_method_options as {
+    card?: { restrictions?: { brands_blocked?: string[] } };
+  };
+
+  assert.deepEqual(paymentMethodOptions.card?.restrictions?.brands_blocked, ['american_express']);
+});
+
+test('wallet top-up Checkout applies first top-up Amex blocking at the server boundary', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
   const checkoutSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/stripe-checkout.ts'), 'utf8');
   const envSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/env.ts'), 'utf8');
 
   assert.match(routeSource, /async function hasCompletedWalletTopUp\(userId: string\)/);
   assert.match(routeSource, /first_wallet_topup: String\(isFirstTopUp\)/);
+  assert.match(routeSource, /STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION/);
+  assert.match(routeSource, /blockAmexCards: isFirstTopUp/);
+  assert.match(routeSource, /amex_block_required/);
+  assert.match(routeSource, /brands_blocked/);
+  assert.match(routeSource, /amexBlocked: isFirstTopUp/);
   assert.doesNotMatch(routeSource, /STRIPE_BLOCK_AMEX/);
-  assert.doesNotMatch(routeSource, /shouldBlockAmexForWalletTopUp/);
-  assert.doesNotMatch(routeSource, /amex_block_required/);
-  assert.doesNotMatch(routeSource, /blockAmexCards/);
-  assert.doesNotMatch(routeSource, /brands_blocked/);
-  assert.doesNotMatch(routeSource, /STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION/);
-  assert.doesNotMatch(checkoutSource, /american_express/);
-  assert.doesNotMatch(checkoutSource, /brands_blocked/);
-  assert.doesNotMatch(checkoutSource, /blockAmexCards/);
+  assert.match(checkoutSource, /american_express/);
+  assert.match(checkoutSource, /brands_blocked/);
+  assert.match(checkoutSource, /blockAmexCards/);
   assert.doesNotMatch(envSource, /STRIPE_BLOCK_AMEX/);
   assert.doesNotMatch(routeSource, /express_checkout_unavailable_for_first_topup/);
-  assert.doesNotMatch(routeSource, /if \(isExpressCheckoutTopUp && blockAmexCards\)/);
 });
 
 test('wallet route honors bearer auth tokens sent by billing clients', () => {
