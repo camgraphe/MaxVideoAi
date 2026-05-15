@@ -47,11 +47,16 @@ const RANGE_OPTIONS: Array<{ value: CheckoutReportRange; label: string }> = [
 const numberFormatter = new Intl.NumberFormat('en-US');
 const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
+const CHECKOUT_REPORT_TIME_ZONE = 'Europe/Paris';
+const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZone: CHECKOUT_REPORT_TIME_ZONE,
 });
 
 const STATUS_META: Record<CheckoutReportStatus, { label: string; className: string }> = {
@@ -142,7 +147,7 @@ export default async function CheckoutReportPage(props: PageProps) {
             <table className="min-w-[1060px] w-full text-left text-sm">
               <thead className="border-b border-hairline text-xs uppercase tracking-micro text-text-muted">
                 <tr>
-                  <th className="px-3 py-3 font-semibold">Time</th>
+                  <th className="px-3 py-3 font-semibold">Time (Paris)</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
                   <th className="px-3 py-3 font-semibold">Signal</th>
                   <th className="px-3 py-3 font-semibold">Mode</th>
@@ -156,7 +161,11 @@ export default async function CheckoutReportPage(props: PageProps) {
               <tbody className="divide-y divide-hairline">
                 {report.recent.map((attempt) => (
                   <tr key={attempt.id} className="align-top text-text-secondary">
-                    <td className="px-3 py-3 whitespace-nowrap">{formatDateTime(attempt.createdAt)}</td>
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      <time dateTime={attempt.createdAt} title={`Stored timestamp: ${attempt.createdAt}`}>
+                        {formatDateTime(attempt.createdAt)}
+                      </time>
+                    </td>
                     <td className="px-3 py-3"><StatusPill status={attempt.status} /></td>
                     <td className="px-3 py-3"><SignalPill signal={attempt.abandonmentSignal} /></td>
                     <td className="px-3 py-3">{attempt.mode === 'express_checkout' ? 'Fast pay' : 'Hosted'}</td>
@@ -349,7 +358,9 @@ function formatAmount(amountCents: number) {
 }
 
 function formatDateTime(value: string) {
-  return dateTimeFormatter.format(new Date(value));
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return dateTimeFormatter.format(parsed);
 }
 
 function formatReason(value: string) {

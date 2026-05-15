@@ -55,3 +55,5 @@ assert.match(checkoutReportSource, /stripe_charge_failed/);
 const checkoutReportPageSource = readFileSync('frontend/app/(core)/admin/checkout-report/page.tsx', 'utf8');
 assert.match(checkoutReportPageSource, /Card failures/);
 assert.match(checkoutReportPageSource, /failedCardAttempts/);
+assert.match(checkoutReportPageSource, /CHECKOUT_REPORT_TIME_ZONE = 'Europe\/Paris'/);
+assert.match(checkoutReportPageSource, /Time \(Paris\)/);
