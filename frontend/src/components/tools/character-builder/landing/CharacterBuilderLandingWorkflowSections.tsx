@@ -33,7 +33,7 @@ export function CharacterBuilderOutputsWorkflowSection({ content }: { content: C
               <div className="p-4">
                 <div className="relative aspect-[4/4.8] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,#fff4ec,#ffffff)]">
                   <Image
-                    src="https://media.maxvideoai.com/marketing/marketing/45c7a9ef-3023-4f30-95f2-5a4598f7e8ba.png"
+                    src="/assets/blog/character-builder/ai-character-sheet-portrait-anchor.webp"
                     alt={portraitOutputCard.imageAlt}
                     fill
                     sizes="(max-width: 1280px) 100vw, 320px"
