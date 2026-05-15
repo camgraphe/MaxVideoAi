@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { classifyCheckoutReportStatus } from '../frontend/server/checkout-report';
 
@@ -45,3 +46,12 @@ assert.equal(
   'challenged',
   'CAPTCHA required attempts count as challenged'
 );
+
+const checkoutReportSource = readFileSync('frontend/server/checkout-report.ts', 'utf8');
+assert.match(checkoutReportSource, /failedCardAttempts/);
+assert.match(checkoutReportSource, /failedCardLimitedSessions/);
+assert.match(checkoutReportSource, /stripe_charge_failed/);
+
+const checkoutReportPageSource = readFileSync('frontend/app/(core)/admin/checkout-report/page.tsx', 'utf8');
+assert.match(checkoutReportPageSource, /Card failures/);
+assert.match(checkoutReportPageSource, /failedCardAttempts/);

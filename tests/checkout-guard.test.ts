@@ -73,3 +73,41 @@ assert.deepEqual(
   },
   'custom first top-ups must not be blocked when Turnstile is not configured'
 );
+
+assert.deepEqual(
+  classifyCheckoutGuardDecision({
+    hasCompletedTopUp: false,
+    isPresetTopupTier: true,
+    captchaConfigured: true,
+    captchaPassed: false,
+    userAttempts15m: 0,
+    userAttempts1h: 0,
+    ipAttempts15m: 0,
+    userFailedCardLimits30m: 1,
+  }),
+  {
+    action: 'rate_limited',
+    reason: 'failed_card_attempt_cooldown',
+    retryAfterSeconds: 1800,
+  },
+  'first top-ups must cool down after a Stripe session is expired for repeated failed card attempts'
+);
+
+assert.deepEqual(
+  classifyCheckoutGuardDecision({
+    hasCompletedTopUp: true,
+    isPresetTopupTier: true,
+    captchaConfigured: true,
+    captchaPassed: false,
+    userAttempts15m: 0,
+    userAttempts1h: 0,
+    ipAttempts15m: 0,
+    userFailedCardLimits30m: 1,
+  }),
+  {
+    action: 'allow',
+    reason: 'under_limits',
+    retryAfterSeconds: null,
+  },
+  'returning paying users must not be cooled down by the first-top-up failed-card guard'
+);

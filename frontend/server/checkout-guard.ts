@@ -10,6 +10,7 @@ const IP_HARD_LIMIT = 16;
 const RETURNING_USER_CAPTCHA_LIMIT = 8;
 const RETURNING_USER_HARD_LIMIT = 12;
 const FIFTEEN_MINUTES_SECONDS = 15 * 60;
+const FAILED_CARD_ATTEMPT_COOLDOWN_SECONDS = 30 * 60;
 const ONE_HOUR_SECONDS = 60 * 60;
 
 export type CheckoutGuardMode = 'hosted' | 'express_checkout';
@@ -25,6 +26,7 @@ type CheckoutGuardCounts = {
   userAttempts15m: number;
   userAttempts1h: number;
   ipAttempts15m: number;
+  userFailedCardLimits30m: number;
 };
 
 type EvaluateWalletCheckoutGuardParams = {
@@ -52,6 +54,7 @@ type CheckoutAttemptCountRow = {
   user_attempts_15m: number | string | null;
   user_attempts_1h: number | string | null;
   ip_attempts_15m: number | string | null;
+  user_failed_card_limits_30m: number | string | null;
 };
 
 type TurnstileSiteverifyResponse = {
@@ -71,6 +74,7 @@ export function classifyCheckoutGuardDecision({
   userAttempts15m,
   userAttempts1h,
   ipAttempts15m,
+  userFailedCardLimits30m = 0,
 }: {
   hasCompletedTopUp: boolean;
   isPresetTopupTier: boolean;
@@ -79,9 +83,18 @@ export function classifyCheckoutGuardDecision({
   userAttempts15m: number;
   userAttempts1h: number;
   ipAttempts15m: number;
+  userFailedCardLimits30m?: number;
 }): CheckoutGuardDecision {
   if (ipAttempts15m >= IP_HARD_LIMIT) {
     return { action: 'rate_limited', reason: 'ip_window_hard_limit', retryAfterSeconds: FIFTEEN_MINUTES_SECONDS };
+  }
+
+  if (!hasCompletedTopUp && userFailedCardLimits30m > 0) {
+    return {
+      action: 'rate_limited',
+      reason: 'failed_card_attempt_cooldown',
+      retryAfterSeconds: FAILED_CARD_ATTEMPT_COOLDOWN_SECONDS,
+    };
   }
 
   if (!hasCompletedTopUp && userAttempts15m >= FIRST_TOPUP_USER_HARD_LIMIT) {
@@ -162,7 +175,14 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
          WHERE ip_hash = $2
            AND outcome = 'session_created'
            AND created_at >= NOW() - INTERVAL '15 minutes'
-       ) AS ip_attempts_15m
+       ) AS ip_attempts_15m,
+       (
+         SELECT COUNT(*)::int
+           FROM checkout_interaction_events event
+          WHERE event.user_id = $1
+            AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+            AND event.created_at >= NOW() - INTERVAL '30 minutes'
+       ) AS user_failed_card_limits_30m
        FROM checkout_attempts`,
     [userId, ipHash]
   );
@@ -172,6 +192,7 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
     userAttempts15m: Number(row?.user_attempts_15m ?? 0),
     userAttempts1h: Number(row?.user_attempts_1h ?? 0),
     ipAttempts15m: Number(row?.ip_attempts_15m ?? 0),
+    userFailedCardLimits30m: Number(row?.user_failed_card_limits_30m ?? 0),
   };
 }
 

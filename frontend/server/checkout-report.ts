@@ -23,6 +23,8 @@ export type CheckoutReportSummary = {
   express: number;
   captchaPassed: number;
   amexBlocked: number;
+  failedCardAttempts: number;
+  failedCardLimitedSessions: number;
   distinctUsers: number;
   distinctIps: number;
 };
@@ -73,6 +75,8 @@ type CheckoutReportSummaryRow = {
   express: number | string | null;
   captcha_passed: number | string | null;
   amex_blocked: number | string | null;
+  failed_card_attempts: number | string | null;
+  failed_card_limited_sessions: number | string | null;
   distinct_users: number | string | null;
   distinct_ips: number | string | null;
 };
@@ -123,6 +127,8 @@ const EMPTY_SUMMARY: CheckoutReportSummary = {
   express: 0,
   captchaPassed: 0,
   amexBlocked: 0,
+  failedCardAttempts: 0,
+  failedCardLimitedSessions: 0,
   distinctUsers: 0,
   distinctIps: 0,
 };
@@ -224,6 +230,18 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
          COUNT(*) FILTER (WHERE attempt.mode = 'express_checkout')::int AS express,
          COUNT(*) FILTER (WHERE attempt.captcha_passed IS TRUE)::int AS captcha_passed,
          COUNT(*) FILTER (WHERE attempt.metadata->>'amexBlocked' = 'true')::int AS amex_blocked,
+         (
+           SELECT COUNT(*)::int
+             FROM checkout_interaction_events event
+            WHERE event.event_name = 'stripe_charge_failed'
+              AND event.created_at >= NOW() - INTERVAL '${interval}'
+         ) AS failed_card_attempts,
+         (
+           SELECT COUNT(*)::int
+             FROM checkout_interaction_events event
+            WHERE event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+              AND event.created_at >= NOW() - INTERVAL '${interval}'
+         ) AS failed_card_limited_sessions,
          COUNT(DISTINCT attempt.user_id)::int AS distinct_users,
          COUNT(DISTINCT attempt.ip_hash)::int AS distinct_ips
        ${scopedSql}`
@@ -271,6 +289,8 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
     express: Number(summaryRow?.express ?? 0),
     captchaPassed: Number(summaryRow?.captcha_passed ?? 0),
     amexBlocked: Number(summaryRow?.amex_blocked ?? 0),
+    failedCardAttempts: Number(summaryRow?.failed_card_attempts ?? 0),
+    failedCardLimitedSessions: Number(summaryRow?.failed_card_limited_sessions ?? 0),
     distinctUsers: Number(summaryRow?.distinct_users ?? 0),
     distinctIps: Number(summaryRow?.distinct_ips ?? 0),
   };
