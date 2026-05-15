@@ -397,6 +397,17 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/storyboard-sora-pro',
+        destination: 'https://maxvideoai.com/blog/sora-2-sequenced-prompts',
+        permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'blog.maxvideoai.com',
+          },
+        ],
+      },
+      {
         source: '/blog/storyboard-sora-pro',
         destination: '/blog/sora-2-sequenced-prompts',
         permanent: true,

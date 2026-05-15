@@ -5,6 +5,10 @@ import test from 'node:test';
 
 const root = process.cwd();
 const blockedHosts = ['docs.maxvideoai.com', 'blog.maxvideoai.com'];
+const allowedHostReferences = new Map<string, Set<string>>([
+  ['frontend/next.config.js', new Set(['blog.maxvideoai.com'])],
+  ['tests/premerge-seo-routes.test.ts', new Set(['blog.maxvideoai.com'])],
+]);
 const searchableExtensions = new Set([
   '.cjs',
   '.js',
@@ -55,7 +59,8 @@ test('source files do not reference unused MaxVideoAI subdomains', () => {
 
     const source = readFileSync(file, 'utf8');
     for (const host of blockedHosts) {
-      if (source.includes(host)) {
+      const isAllowed = allowedHostReferences.get(relativeFile)?.has(host) ?? false;
+      if (source.includes(host) && !isAllowed) {
         offenders.push(`${relativeFile} contains ${host}`);
       }
     }

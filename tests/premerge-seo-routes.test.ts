@@ -29,6 +29,22 @@ test('removed vertical-shorts best-for URLs redirect to active UGC guide', async
   }
 });
 
+test('legacy blog subdomain storyboard URL redirects to the canonical blog article', async () => {
+  const redirects = await nextConfig.redirects();
+
+  assert.ok(
+    redirects.some((redirect: { source: string; destination: string; permanent?: boolean; has?: Array<{ type: string; value: string }> }) => {
+      return (
+        redirect.source === '/storyboard-sora-pro' &&
+        redirect.destination === 'https://maxvideoai.com/blog/sora-2-sequenced-prompts' &&
+        redirect.permanent === true &&
+        redirect.has?.some((condition) => condition.type === 'host' && condition.value === 'blog.maxvideoai.com')
+      );
+    }),
+    'blog.maxvideoai.com/storyboard-sora-pro should permanently redirect to the canonical blog article',
+  );
+});
+
 test('best-for config has localized content and keeps vertical-shorts removed', () => {
   const slugs = (compareConfig.bestForPages as Array<{ slug: string }>).map((entry) => entry.slug);
   assert.ok(slugs.length > 0, 'best-for config should expose public guide slugs');
