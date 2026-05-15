@@ -131,6 +131,7 @@ export type VideoPricingRow = {
     brandId?: string;
   };
   engineName: string;
+  modelHref?: string;
   variant: string | null;
   pricingGroup: 'recommended' | 'legacy';
   highlightEligible: boolean;
@@ -165,6 +166,7 @@ export type ImagePricingRow = {
   id: string;
   anchorId: string;
   engine: string;
+  modelHref?: string;
   standardImage: string;
   highQualityImage: string;
   reference: string;
@@ -543,6 +545,10 @@ function buildVideoLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLi
   return links;
 }
 
+function buildModelHref(entry: FalEngineEntry, locale: AppLocale) {
+  return entry.surfaces.modelPage.indexable ? buildLocalizedMarketingHref(locale, 'models', entry.modelSlug) : undefined;
+}
+
 function buildVideoNotes(entry: FalEngineEntry, locale: AppLocale) {
   const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
@@ -662,6 +668,7 @@ function buildVideoPricingRows(locale: AppLocale) {
         anchorId: anchorFromSlug(entry.modelSlug),
         family: entry.family ?? entry.provider,
         engineName: formatPricingEngineName(entry),
+        modelHref: buildModelHref(entry, locale),
         engineIcon: {
           id: entry.engine.id || entry.id,
           label: formatPricingEngineName(entry),
@@ -870,6 +877,7 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
         id: entry.id,
         anchorId: anchorFromSlug(entry.modelSlug),
         engine: entry.marketingName || engine.label,
+        modelHref: buildModelHref(entry, locale),
         standardImage: formatPrice(locale, flatImageCents(engine, standardResolution, 'medium')),
         highQualityImage: formatPrice(locale, flatImageCents(engine, highResolution, 'high')),
         reference: engine.modes.includes('i2i') ? getPricingHubCopy(locale).quote.supported : '—',
