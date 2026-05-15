@@ -1,5 +1,13 @@
 import { cache } from 'react';
 import { type SeoWatchVideoConfig, VIDEO_SEO_WATCHLIST } from '@/config/video-seo-watchlist';
+import type { VideoSeoEditorialEntry, VideoSeoIntent } from '@/config/video-seo-editorial';
+import { normalizeEngineId } from '@/lib/engine-alias';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { getDuplicateVideoObjectNames } from '@/lib/video-seo-editorial-qa';
+import {
+  listVideoSeoEditorialEntryMap,
+  type PersistedVideoSeoEditorialEntry,
+} from '@/server/video-seo-editorial';
 import { getSeoVideoById, getSeoVideosByIds, type GalleryVideo } from '@/server/videos';
 import {
   deriveWatchPageSignals,
@@ -11,11 +19,13 @@ import {
 
 const BASE_WATCH_VIDEOS = [...VIDEO_SEO_WATCHLIST].sort((a, b) => b.priority - a.priority);
 const BASE_WATCH_VIDEO_MAP = new Map(BASE_WATCH_VIDEOS.map((entry) => [entry.id, entry] as const));
+const FALLBACK_PUBLISHED_AT = '1970-01-01T00:00:00.000Z';
 
 export type SeoWatchVideoMeta = SeoWatchVideoConfig;
 export type SeoWatchVideoRow = {
   entry: SeoWatchVideoMeta;
   video: GalleryVideo | null;
+  editorial: PersistedVideoSeoEditorialEntry | null;
   signals: WatchPageDerivedSignals | null;
   related: WatchPageRelatedLink[];
   isEligible: boolean;
@@ -53,19 +63,93 @@ export function getBaseSeoWatchVideoMeta(id?: string | null): SeoWatchVideoMeta 
   return BASE_WATCH_VIDEO_MAP.get(id) ?? null;
 }
 
+function toWatchPrimaryIntent(intent?: VideoSeoIntent | null): SeoWatchVideoConfig['videoPrimaryIntent'] {
+  if (!intent) return undefined;
+  if (intent === 'model-demo') return 'prompt-example';
+  return intent;
+}
+
+function buildMetaFromEditorial(options: {
+  id: string;
+  base?: SeoWatchVideoConfig | null;
+  editorial?: VideoSeoEditorialEntry | null;
+  video?: GalleryVideo | null;
+}): SeoWatchVideoMeta {
+  const { id, base, editorial, video } = options;
+  if (!editorial && base) return base;
+
+  const modelSlug = editorial?.modelSlug || base?.engineSlug || normalizeEngineId(video?.engineId ?? '') || video?.engineId || '';
+  const examplesSlug = editorial?.examplesSlug || base?.engineFamily || resolveExampleCanonicalSlug(modelSlug) || '';
+  const engineLabel = base?.engineLabel || video?.engineLabel || modelSlug || 'AI video engine';
+  const sourcePath = examplesSlug ? `/examples/${examplesSlug}` : modelSlug ? `/models/${modelSlug}` : '/examples';
+  const sourceLabel = examplesSlug ? `Editorial examples - ${examplesSlug}` : `Editorial model - ${modelSlug || 'video'}`;
+  const seoTitle = editorial?.seoTitle || base?.seoTitle || `${engineLabel} video SEO candidate`;
+
+  return {
+    id,
+    engineSlug: modelSlug,
+    engineFamily: examplesSlug || base?.engineFamily || 'video',
+    engineLabel,
+    sourceType: examplesSlug ? 'examples' : 'models',
+    sourcePath,
+    sourceLabel,
+    seoTitle,
+    intro: editorial?.shortDescription || base?.intro || `Editorial video SEO candidate for ${engineLabel}.`,
+    reasonForSelection:
+      editorial?.seoStatus === 'approved'
+        ? 'Approved editorial SEO watch page.'
+        : `Editorial SEO status: ${editorial?.seoStatus ?? 'candidate'}.`,
+    priority: base?.priority ?? 0,
+    publishedAt: base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
+    watchPageEligible: base?.watchPageEligible,
+    videoPrimaryIntent: toWatchPrimaryIntent(editorial?.intent) ?? base?.videoPrimaryIntent,
+    exampleFamily: examplesSlug || base?.exampleFamily,
+    styleTags: base?.styleTags,
+    capabilityTags: base?.capabilityTags,
+    seoTitleOverride: base?.seoTitleOverride,
+    seoSummaryOverride: base?.seoSummaryOverride,
+  };
+}
+
+function buildSeoWatchVideoIds(editorialMap: Map<string, PersistedVideoSeoEditorialEntry>): string[] {
+  const ids = new Set(BASE_WATCH_VIDEOS.map((entry) => entry.id));
+  for (const id of editorialMap.keys()) {
+    ids.add(id);
+  }
+  return [...ids];
+}
+
 export async function listSeoWatchVideos(): Promise<SeoWatchVideoMeta[]> {
-  return [...BASE_WATCH_VIDEOS];
+  const editorialMap = await listVideoSeoEditorialEntryMap();
+  return buildSeoWatchVideoIds(editorialMap)
+    .map((id) => buildMetaFromEditorial({ id, base: BASE_WATCH_VIDEO_MAP.get(id) ?? null, editorial: editorialMap.get(id) ?? null }))
+    .sort((a, b) => b.priority - a.priority);
 }
 
 const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
-  const videoMap = await getSeoVideosByIds(BASE_WATCH_VIDEOS.map((entry) => entry.id));
-  const rows = BASE_WATCH_VIDEOS.map((entry) => {
+  const editorialMap = await listVideoSeoEditorialEntryMap();
+  const ids = buildSeoWatchVideoIds(editorialMap);
+  const videoMap = await getSeoVideosByIds(ids);
+  const duplicateVideoObjectNames = getDuplicateVideoObjectNames([...editorialMap.values()]);
+  const entries = ids.map((id) =>
+    buildMetaFromEditorial({
+      id,
+      base: BASE_WATCH_VIDEO_MAP.get(id) ?? null,
+      editorial: editorialMap.get(id) ?? null,
+      video: videoMap.get(id) ?? null,
+    })
+  );
+  const rows = entries.map((entry) => {
     const video = videoMap.get(entry.id) ?? null;
-    const signals = video ? deriveWatchPageSignals({ entry, video }) : null;
+    const editorial = editorialMap.get(entry.id) ?? null;
+    const signals = video
+      ? deriveWatchPageSignals({ entry, video, editorial, duplicateVideoObjectNames })
+      : null;
     const isEligible = isEligibleSeoWatchVideo(video) && Boolean(signals?.indexable);
     return {
       entry,
       video,
+      editorial,
       signals,
       related: [] as WatchPageRelatedLink[],
       isEligible,
@@ -107,7 +191,8 @@ export async function listEligibleSeoWatchVideos(): Promise<EligibleSeoWatchVide
 
 export async function getSeoWatchVideoMetaById(id?: string | null): Promise<SeoWatchVideoMeta | null> {
   if (!id) return null;
-  return BASE_WATCH_VIDEO_MAP.get(id) ?? null;
+  const entries = await listSeoWatchVideos();
+  return entries.find((entry) => entry.id === id) ?? null;
 }
 
 export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWatchVideoRow | null> {
@@ -117,12 +202,13 @@ export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWa
 }
 
 export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchPageData | null> {
-  const entry = getBaseSeoWatchVideoMeta(id);
   const video = await getSeoVideoById(id);
   if (!video) return null;
 
-  const signals = deriveWatchPageSignals({ entry, video });
   const selectedRows = await listSeoWatchVideoRows();
+  const selectedRow = selectedRows.find((row) => row.entry.id === id) ?? null;
+  const entry = selectedRow?.entry ?? null;
+  const signals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video });
   const candidateRows = selectedRows.flatMap((row) => {
     if (!row.isEligible || !row.video || !row.signals) return [];
     return [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })];
@@ -138,8 +224,8 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
       candidates: candidateRows,
       limit: 4,
     }),
-    isSelected: Boolean(entry),
-    isEligible: Boolean(entry) && isEligibleSeoWatchVideo(video) && signals.indexable,
+    isSelected: Boolean(selectedRow),
+    isEligible: Boolean(selectedRow?.isEligible),
   };
 }
 

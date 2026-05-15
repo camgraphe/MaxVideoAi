@@ -1,6 +1,5 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isSeoWatchVideoPath } from '@/lib/video-seo';
 import { splitLocaleFromPath } from './routing-locale';
 
 const QUERY_PARAM_STRIP_PREFIXES = [
@@ -73,11 +72,6 @@ export function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, is
 
 export function shouldMarkAppNoindex(pathname: string): boolean {
   const normalized = pathname.toLowerCase();
-  if (normalized.startsWith('/video/')) {
-    // Keep the generic watch pages out of the index, but let the curated rollout
-    // control robots state through page metadata.
-    return !isSeoWatchVideoPath(normalized);
-  }
   return APP_NOINDEX_PREFIXES.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
 }
 

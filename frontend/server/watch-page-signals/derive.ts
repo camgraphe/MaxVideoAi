@@ -1,7 +1,13 @@
 import type { SeoWatchVideoConfig } from '@/config/video-seo-watchlist';
+import { getVideoSeoEditorialEntry, type VideoSeoEditorialEntry } from '@/config/video-seo-editorial';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import {
+  getDuplicateVideoObjectNames,
+  isVideoSeoEditorialApproved,
+  validateVideoSeoEditorialEntry,
+} from '@/lib/video-seo-editorial-qa';
 import type { GalleryVideo } from '@/server/videos';
 import {
   buildDetailRows,
@@ -26,16 +32,20 @@ import type { WatchPageDerivedSignals, WatchPageIntent } from './types';
 export function deriveWatchPageSignals(params: {
   entry?: SeoWatchVideoConfig | null;
   video: GalleryVideo;
+  editorial?: VideoSeoEditorialEntry | null;
+  duplicateVideoObjectNames?: ReadonlySet<string>;
 }): WatchPageDerivedSignals {
   const { entry, video } = params;
+  const editorial = params.editorial ?? getVideoSeoEditorialEntry(video.id);
   const snapshot = parseSnapshot(video);
-  const engineEntry = resolveEngineEntry(entry?.engineSlug ?? snapshot.engineId ?? video.engineId);
-  const engineSlug = engineEntry?.modelSlug ?? entry?.engineSlug ?? normalizeEngineId(video.engineId ?? '') ?? null;
+  const engineEntry = resolveEngineEntry(editorial?.modelSlug ?? entry?.engineSlug ?? snapshot.engineId ?? video.engineId);
+  const engineSlug = editorial?.modelSlug ?? engineEntry?.modelSlug ?? entry?.engineSlug ?? normalizeEngineId(video.engineId ?? '') ?? null;
   const engineLabel = engineEntry?.marketingName ?? entry?.engineLabel ?? video.engineLabel ?? 'AI video engine';
-  const exampleFamily = entry?.exampleFamily ?? resolveExampleCanonicalSlug(entry?.engineSlug ?? engineSlug ?? video.engineId ?? null);
+  const exampleFamily =
+    editorial?.examplesSlug ?? entry?.exampleFamily ?? resolveExampleCanonicalSlug(entry?.engineSlug ?? engineSlug ?? video.engineId ?? null);
   const exampleFamilyLabel = formatClusterLabel(exampleFamily ?? entry?.engineFamily ?? null);
-  const modelPath = engineEntry?.seo.canonicalPath ?? (entry?.sourceType === 'models' ? entry.sourcePath : null);
-  const parentPath = exampleFamily ? `/examples/${exampleFamily}` : modelPath ?? entry?.sourcePath ?? '/examples';
+  const modelPath = editorial?.modelSlug ? `/models/${editorial.modelSlug}` : engineEntry?.seo.canonicalPath ?? (entry?.sourceType === 'models' ? entry.sourcePath : null);
+  const parentPath = editorial?.examplesSlug ? `/examples/${editorial.examplesSlug}` : exampleFamily ? `/examples/${exampleFamily}` : modelPath ?? entry?.sourcePath ?? '/examples';
   const parentLabel = exampleFamilyLabel ? `Browse ${exampleFamilyLabel} video examples` : 'Browse video examples';
   const modelLabel = `Open ${engineLabel} model page`;
   const promptText = snapshot.prompt || video.prompt || '';
@@ -44,8 +54,9 @@ export function deriveWatchPageSignals(params: {
   const capabilityTags = buildCapabilityTags(snapshot, video, entry?.capabilityTags ?? []);
   const primaryIntent = (entry?.videoPrimaryIntent as WatchPageIntent | undefined) ?? pickPrimaryIntent(capabilityTags, styleTags);
   const descriptor = extractDescriptor(promptText) ?? 'generated scene';
-  const title = truncateText(entry?.seoTitleOverride ?? titlePattern(primaryIntent, engineLabel, descriptor), 86);
-  const metaTitle = truncateText(entry?.seoTitleOverride ?? entry?.seoTitle ?? title, 86);
+  const fallbackTitle = titlePattern(primaryIntent, engineLabel, descriptor);
+  const title = editorial?.h1 ?? truncateText(entry?.seoTitleOverride ?? fallbackTitle, 86);
+  const metaTitle = editorial?.seoTitle ?? truncateText(entry?.seoTitleOverride ?? entry?.seoTitle ?? title, 86);
   const introSentences = [
     `This ${engineLabel} ${formatModeLabel(snapshot.inputMode).toLowerCase()} example shows ${descriptor}.`,
     (() => {
@@ -66,9 +77,9 @@ export function deriveWatchPageSignals(params: {
       return tailParts.length ? `${head} with ${tailParts.join(' · ')} output.` : `${head}.`;
     })(),
   ];
-  const intro = truncateText(entry?.seoSummaryOverride ?? introSentences.join(' '), 240);
-  const metaDescription = truncateText(`${intro} Prompt: ${promptPreview}`, 170);
-  const videoDescription = truncateText(`${intro} ${promptPreview}`, 280);
+  const intro = editorial?.shortDescription ?? truncateText(entry?.seoSummaryOverride ?? introSentences.join(' '), 240);
+  const metaDescription = editorial?.metaDescription ?? truncateText(`${intro} Prompt: ${promptPreview}`, 170);
+  const videoDescription = editorial?.shortDescription ?? truncateText(`${intro} ${promptPreview}`, 280);
   const badges = [
     engineLabel,
     formatModeLabel(snapshot.inputMode),
@@ -107,16 +118,30 @@ export function deriveWatchPageSignals(params: {
   if (!video.thumbUrl) auditNotes.push('Missing thumbnail asset.');
   if (promptText.trim().length < 24) auditNotes.push('Prompt is too thin for a differentiated watch page.');
   if (whatThisShows.length < 3) auditNotes.push('Derived summary is still too sparse.');
+  const editorialQaContext = {
+    promptText,
+    hasVideoAsset: Boolean(video.videoUrl),
+    hasThumbnailAsset: Boolean(video.thumbUrl),
+    technicallyIndexable: Boolean(video.videoUrl && video.thumbUrl && video.visibility === 'public' && video.indexable),
+    duplicateVideoObjectNames: params.duplicateVideoObjectNames ?? getDuplicateVideoObjectNames(),
+  };
+  const editorialQa = entry
+    ? validateVideoSeoEditorialEntry(editorial, editorialQaContext)
+    : { passed: true, errors: [] as string[], warnings: [] as string[] };
+  if (entry && !editorial) auditNotes.push('Missing editorial SEO override.');
+  auditNotes.push(...editorialQa.errors.map((error) => `Editorial QA: ${error}`));
+  auditNotes.push(...editorialQa.warnings.map((warning) => `Editorial QA: ${warning}`));
   const stabilityWarnings = [
     likelyExpiringMediaUrl(video.videoUrl) ? 'Video URL looks signed or temporary.' : null,
     likelyExpiringMediaUrl(video.thumbUrl) ? 'Thumbnail URL looks signed or temporary.' : null,
   ].filter((value): value is string => Boolean(value));
-  const indexable =
+  const technicallyIndexable =
     Boolean(video.videoUrl) &&
     Boolean(video.thumbUrl) &&
     promptText.trim().length >= 24 &&
     completenessScore >= 50 &&
     (entry?.watchPageEligible ?? true);
+  const indexable = entry ? technicallyIndexable && isVideoSeoEditorialApproved(editorial, editorialQaContext) : technicallyIndexable;
   const engineGuide = engineEntry && DEFAULT_ENGINE_GUIDE[engineEntry.modelSlug];
   const engineDescription = engineGuide?.description ?? engineEntry?.seo.description ?? 'Open the engine page for specs, controls, and pricing.';
   const engineBadges = buildEngineBadges(engineEntry);
@@ -125,6 +150,10 @@ export function deriveWatchPageSignals(params: {
     title,
     metaTitle,
     metaDescription,
+    videoObjectName: editorial?.videoObjectName ?? title,
+    targetKeyword: editorial?.targetKeyword ?? null,
+    seoStatus: editorial?.seoStatus ?? null,
+    editorialQaErrors: editorialQa.errors,
     videoDescription,
     intro,
     promptText,

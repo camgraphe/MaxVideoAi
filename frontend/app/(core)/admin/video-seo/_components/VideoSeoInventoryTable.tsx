@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
+import { VideoSeoEditorialEditor } from './VideoSeoEditorialEditor.client';
 import {
   formatDate,
   formatDateTime,
@@ -17,8 +18,8 @@ export function VideoSeoInventoryTable({ rows }: { rows: WatchRow[] }) {
       <thead className="sticky top-0 z-10 bg-surface">
         <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
           <th className="px-4 py-3 font-semibold">Video</th>
-          <th className="px-4 py-3 font-semibold">Rollout state</th>
-          <th className="px-4 py-3 font-semibold">Editorial signal</th>
+          <th className="px-4 py-3 font-semibold">Indexing contract</th>
+          <th className="px-4 py-3 font-semibold">SERP and links</th>
           <th className="px-4 py-3 font-semibold">Actions</th>
         </tr>
       </thead>
@@ -58,10 +59,16 @@ function VideoSeoVideoCell({ row }: { row: WatchRow }) {
           <p className="line-clamp-2 text-sm text-text-secondary">{row.generatedIntro}</p>
           <div className="space-y-1 text-xs text-text-muted">
             <p>
-              Source:{' '}
+              Model/examples source:{' '}
               <Link href={row.entry.sourcePath} prefetch={false} className="font-medium text-text-primary hover:underline">
                 {row.entry.sourceLabel}
               </Link>
+            </p>
+            <p className="flex flex-wrap items-center gap-2">
+              Editorial data:
+              <StatusPill tone={row.editorialSourceLabel === 'DB override' ? 'ok' : 'neutral'}>
+                {row.editorialSourceLabel === 'DB override' ? 'DB override' : 'Config fallback'}
+              </StatusPill>
             </p>
             <p>
               Public URL:{' '}
@@ -75,6 +82,8 @@ function VideoSeoVideoCell({ row }: { row: WatchRow }) {
                 {row.entry.id}
               </code>
             </p>
+            <p>Target keyword: {row.targetKeyword || 'Missing'}</p>
+            <p>Prompt words: {row.promptWordCount}</p>
             <p>Published target: {formatDate(row.entry.publishedAt)}</p>
           </div>
         </div>
@@ -88,7 +97,15 @@ function VideoSeoRolloutCell({ row }: { row: WatchRow }) {
     <td className="px-4 py-4 align-top">
       <div className="max-w-[22rem] space-y-3">
         <div className="flex flex-wrap gap-2">
-          <StatusPill tone={row.isReady ? 'ok' : 'warn'}>{row.isReady ? 'Ready' : 'Needs attention'}</StatusPill>
+          <StatusPill tone={row.sitemapEligibilityLabel === 'Eligible' ? 'ok' : 'warn'}>
+            Sitemap eligibility: {row.sitemapEligibilityLabel}
+          </StatusPill>
+          <StatusPill tone={row.inVideoSitemap ? 'ok' : 'warn'}>
+            Sitemap: {row.inVideoSitemap ? 'Yes' : 'No'}
+          </StatusPill>
+          <StatusPill tone={row.robots === 'index, follow' ? 'ok' : 'warn'}>Robots: {row.robots}</StatusPill>
+          <StatusPill tone={row.seoStatus === 'approved' ? 'ok' : 'neutral'}>{row.seoStatus}</StatusPill>
+          <StatusPill tone={row.isReady ? 'ok' : 'warn'}>{row.isReady ? 'Ready' : 'Review'}</StatusPill>
           <StatusPill tone={row.video?.visibility === 'public' ? 'ok' : 'warn'}>
             {row.video?.visibility === 'public' ? 'Public' : 'Private or missing'}
           </StatusPill>
@@ -110,19 +127,46 @@ function VideoSeoRolloutCell({ row }: { row: WatchRow }) {
           <p>Audio: {row.video?.hasAudio ? 'Yes' : 'No'}</p>
         </div>
 
-        {row.issues.length ? (
+        <div className="rounded-xl border border-hairline bg-bg/50 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Sitemap eligibility:</p>
+          <p className={row.inVideoSitemap ? 'mt-2 text-sm font-semibold text-success' : 'mt-2 text-sm font-semibold text-warning'}>
+            {row.sitemapEligibilityLabel}
+          </p>
+          <ul className="mt-2 space-y-1 text-xs text-text-secondary">
+            {row.sitemapEligibilityReasons.slice(0, 4).map((reason) => (
+              <li key={reason}>• {reason}</li>
+            ))}
+            {row.sitemapEligibilityReasons.length > 4 ? <li>• +{row.sitemapEligibilityReasons.length - 4} more reason(s)</li> : null}
+          </ul>
+        </div>
+
+        {row.technicalEligibilityBlockers.length ? (
           <div className="rounded-xl border border-warning-border/60 bg-warning-bg/15 px-3 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-warning">Active blockers</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-warning">Technical / eligibility blockers</p>
             <ul className="mt-2 space-y-1 text-xs text-warning">
-              {row.issues.slice(0, 3).map((issue) => (
+              {row.technicalEligibilityBlockers.slice(0, 3).map((issue) => (
                 <li key={issue}>• {issue}</li>
               ))}
-              {row.issues.length > 3 ? <li>• +{row.issues.length - 3} more blocker(s)</li> : null}
+              {row.technicalEligibilityBlockers.length > 3 ? <li>• +{row.technicalEligibilityBlockers.length - 3} more blocker(s)</li> : null}
             </ul>
           </div>
         ) : (
-          <p className="text-xs text-text-muted">No rollout blockers detected on this watch page.</p>
+          <p className="text-xs text-text-muted">No technical or eligibility blocker detected.</p>
         )}
+
+        <div className="rounded-xl border border-hairline bg-bg/50 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Editorial QA errors</p>
+          {row.editorialQaErrors.length ? (
+            <ul className="mt-2 space-y-1 text-xs text-warning">
+              {row.editorialQaErrors.slice(0, 4).map((issue) => (
+                <li key={issue}>• {issue}</li>
+              ))}
+              {row.editorialQaErrors.length > 4 ? <li>• +{row.editorialQaErrors.length - 4} more error(s)</li> : null}
+            </ul>
+          ) : (
+            <p className="mt-2 text-xs text-text-muted">No contractual QA error detected.</p>
+          )}
+        </div>
       </div>
     </td>
   );
@@ -132,6 +176,13 @@ function VideoSeoEditorialCell({ row }: { row: WatchRow }) {
   return (
     <td className="px-4 py-4 align-top">
       <div className="max-w-[20rem] space-y-3">
+        <div className="rounded-xl border border-hairline bg-bg/50 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Preview SERP</p>
+          <p className="mt-2 line-clamp-2 text-sm font-semibold text-text-primary">{row.previewSerpTitle}</p>
+          <p className="mt-1 line-clamp-3 text-xs leading-5 text-text-secondary">{row.previewSerpDescription}</p>
+          <p className="mt-2 truncate font-mono text-[11px] text-text-muted">{row.watchUrl}</p>
+        </div>
+
         <div className="space-y-2">
           <ScoreMeter label="Completeness" value={row.completenessScore} tone={row.completenessScore >= 80 ? 'ok' : 'warn'} />
           <ScoreMeter
@@ -148,6 +199,28 @@ function VideoSeoEditorialCell({ row }: { row: WatchRow }) {
         </div>
 
         <p className="text-sm text-text-secondary">{row.entry.reasonForSelection}</p>
+
+        <p className="text-xs text-text-muted">
+          VideoObject.name: <span className="font-medium text-text-primary">{row.videoObjectName}</span>
+        </p>
+
+        {row.modelPath ? (
+          <p className="text-xs text-text-muted">
+            Model:{' '}
+            <Link href={row.modelPath} prefetch={false} className="font-medium text-text-primary hover:underline">
+              {row.modelLabel ?? row.modelPath}
+            </Link>
+          </p>
+        ) : null}
+
+        {row.examplesPath ? (
+          <p className="text-xs text-text-muted">
+            Examples:{' '}
+            <Link href={row.examplesPath} prefetch={false} className="font-medium text-text-primary hover:underline">
+              {row.examplesLabel ?? row.examplesPath}
+            </Link>
+          </p>
+        ) : null}
 
         {row.parentPath ? (
           <p className="text-xs text-text-muted">
@@ -208,6 +281,17 @@ function VideoSeoActionsCell({ row }: { row: WatchRow }) {
             />
           </div>
         </details>
+
+        {row.editorial ? (
+          <details className="mt-2 w-full rounded-xl border border-hairline bg-bg/40">
+            <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-text-primary marker:hidden">
+              Editorial editor
+            </summary>
+            <div className="border-t border-hairline px-3 py-3">
+              <VideoSeoEditorialEditor editorial={row.editorial} />
+            </div>
+          </details>
+        ) : null}
       </div>
     </td>
   );

@@ -64,7 +64,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
         '@type': 'VideoObject',
         url: canonical,
         mainEntityOfPage: canonical,
-        name: signals.title,
+        name: signals.videoObjectName,
         description: signals.videoDescription,
         thumbnailUrl: [thumbnailUrl],
         uploadDate: new Date(video.createdAt).toISOString(),

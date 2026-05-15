@@ -43,6 +43,8 @@ export type WatchPageIntent =
   | 'audio-enabled'
   | 'prompt-example';
 
+export type WatchPageSeoStatus = 'candidate' | 'draft' | 'needs_edits' | 'approved' | 'disabled';
+
 export type WatchPageRelatedLink = {
   id: string;
   href: string;
@@ -58,6 +60,10 @@ export type WatchPageDerivedSignals = {
   title: string;
   metaTitle: string;
   metaDescription: string;
+  videoObjectName: string;
+  targetKeyword: string | null;
+  seoStatus: WatchPageSeoStatus | null;
+  editorialQaErrors: string[];
   videoDescription: string;
   intro: string;
   promptText: string;

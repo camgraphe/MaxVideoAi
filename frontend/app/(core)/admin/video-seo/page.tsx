@@ -6,11 +6,13 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { listSeoWatchVideoRows } from '@/server/video-seo';
+import { VideoSeoCandidateForm } from './_components/VideoSeoCandidateForm.client';
 import { VideoSeoInventoryTable } from './_components/VideoSeoInventoryTable';
 import {
   buildOverviewItems,
   buildVideoSeoSummary,
   buildWatchRows,
+  splitVideoSeoRows,
 } from './_lib/video-seo-admin-helpers';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +20,8 @@ export const dynamic = 'force-dynamic';
 export default async function AdminVideoSeoPage() {
   const rows = buildWatchRows(await listSeoWatchVideoRows());
   const metrics = buildOverviewItems(rows);
-  const { issueCount, readyCount, strongRows } = buildVideoSeoSummary(rows);
+  const { candidateCount, issueCount, sitemapCount, strongRows } = buildVideoSeoSummary(rows);
+  const { candidateRows, indexedRows } = splitVideoSeoRows(rows);
 
   return (
     <div className="flex flex-col gap-5">
@@ -49,14 +52,38 @@ export default async function AdminVideoSeoPage() {
       </AdminSection>
 
       <AdminSection
-        title="Watch Page Inventory"
-        description="Valide la watch page publique, les assets live et les signaux de qualité pour chaque vidéo du rollout."
+        title="Add Candidate"
+        description="Ajoute une vidéo publique comme brouillon éditorial. Elle reste hors sitemap tant que le statut et la QA ne passent pas."
+      >
+        <VideoSeoCandidateForm />
+      </AdminSection>
+
+      <AdminSection
+        title="Indexed Watch Pages"
+        description="Pages calculées comme éligibles au sitemap vidéo : statut approved, fiche complète, QA OK et assets publics."
         action={
           <AdminSectionMeta
-            title={`${readyCount}/${rows.length} rollout pages ready`}
+            title={`${sitemapCount} page${sitemapCount === 1 ? '' : 's'} in sitemap`}
+            lines={[`${strongRows} page${strongRows === 1 ? '' : 's'} with strong completeness + differentiation scores`]}
+          />
+        }
+      >
+        {indexedRows.length ? (
+          <VideoSeoInventoryTable rows={indexedRows} />
+        ) : (
+          <AdminEmptyState>No watch pages currently pass the video sitemap contract.</AdminEmptyState>
+        )}
+      </AdminSection>
+
+      <AdminSection
+        title="Candidates And Drafts"
+        description="Pages candidates, brouillons, désactivées ou bloquées par la QA éditoriale/technique avant indexation."
+        action={
+          <AdminSectionMeta
+            title={`${candidateCount} page${candidateCount === 1 ? '' : 's'} outside sitemap`}
             lines={[
               issueCount ? `${issueCount} page${issueCount > 1 ? 's' : ''} still need attention` : 'No rollout blockers detected',
-              `${strongRows} page${strongRows === 1 ? '' : 's'} with strong completeness + differentiation scores`,
+              `${rows.length} total cockpit row${rows.length === 1 ? '' : 's'}`,
             ]}
           />
         }
@@ -68,10 +95,10 @@ export default async function AdminVideoSeoPage() {
               : 'The shortlist currently satisfies the rollout contract: public, discovery-on, with assets and no detected blockers.'}
           </AdminNotice>
 
-          {rows.length ? (
-            <VideoSeoInventoryTable rows={rows} />
+          {candidateRows.length ? (
+            <VideoSeoInventoryTable rows={candidateRows} />
           ) : (
-            <AdminEmptyState>No watch pages are currently configured for the rollout.</AdminEmptyState>
+            <AdminEmptyState>No candidates are currently blocked outside the sitemap.</AdminEmptyState>
           )}
         </div>
       </AdminSection>
