@@ -106,6 +106,13 @@ const KLING_3_4K_ENGINE: EngineCaps = {
         maxCount: 1,
         source: 'either',
       },
+      {
+        id: 'element_list',
+        type: 'text',
+        label: 'Kling element IDs',
+        description: 'Comma-separated Kling element_id values from the Kling element library. Up to 3.',
+        modes: ['i2v'],
+      },
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],

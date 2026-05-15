@@ -2,6 +2,7 @@ import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
+import { sanitizeKlingDirectFalFallbackPayload } from '@/server/video-providers/kling-direct/capabilities';
 import { estimateKlingDirectCost } from '@/server/video-providers/kling-direct/cost';
 import {
   classifyKlingDirectError,
@@ -198,7 +199,7 @@ export async function submitKlingDirectGenerateTask(params: {
       multiPromptCount: params.falPayload.multiPrompt?.length ?? 0,
       voiceCount: params.falPayload.voiceIds?.length ?? 0,
       hasCameraControl: Boolean(params.falPayload.extraInputValues?.camera_control),
-      hasElementList: Array.isArray(params.falPayload.extraInputValues?.element_list),
+      hasElementList: Boolean(params.falPayload.extraInputValues?.element_list),
       promptLength: params.prompt.length,
       estimatedProviderCostUnits: estimate.providerCostUnits,
       estimatedProviderCostUsd: estimate.providerCostUsd,
@@ -333,7 +334,7 @@ export async function submitKlingDirectGenerateTask(params: {
       queryFn,
     });
     const falSubmission = await submitFalGenerateTaskFn({
-      falPayload: params.falPayload,
+      falPayload: sanitizeKlingDirectFalFallbackPayload(params.falPayload),
       jobId: params.jobId,
       engineId: params.engineId,
       engineLabel: params.engineLabel,

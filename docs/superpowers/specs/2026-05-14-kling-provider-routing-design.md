@@ -97,9 +97,10 @@ Confirmed video endpoints:
 
 Confirmed request fields relevant to phase 1:
 
-- Text to Video supports `model_name`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, and `watermark_info`.
-- Image to Video supports `model_name`, `image`, `image_tail`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, masks, and `watermark_info`.
-- Omni Video supports `model_name`, `prompt`, `image_list`, `video_list`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, and `watermark_info`.
+- Text to Video supports `model_name`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, and `cfg_scale`.
+- Image to Video supports `model_name`, `image`, `image_tail`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, `element_list`, `camera_control`, `static_mask`, and `dynamic_masks`.
+- Omni Video supports `model_name`, `prompt`, `image_list`, `video_list`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, and `multi_prompt`.
+- Kling `watermark_info` is intentionally not exposed or sent in phase 1; MaxVideoAI should always request the clean output path.
 - `mode` enum: `std`, `pro`, `4k`.
 - `sound` enum: `on`, `off`.
 - `aspect_ratio` enum for relevant routes: `16:9`, `9:16`, `1:1`.
@@ -110,7 +111,7 @@ Confirmed model name enums relevant to phase 1:
 
 - Text to Video includes `kling-v3`.
 - Image to Video includes `kling-v3`.
-- Omni Video includes `kling-video-o1` and `kling-v3-omni`.
+- Omni Video includes `kling-v3-omni`; this route is intentionally deferred. Do not wire `kling-video-o1`.
 
 Error classification details from General Info:
 
@@ -248,13 +249,20 @@ In this schema, `provider_attempts.job_id` intentionally references `app_jobs.id
 
 ## Kling Direct Mapping
 
-Initial mapping remains conservative and explicit until official API fields are verified:
+Initial mapping remains conservative and explicit for current phase 1 implementation:
 
-- `kling-3-standard` -> Kling direct `model_name: "kling-v3"` or `"kling-v3-omni"` after quality/cost test, `mode: "std"`, no audio by default.
-- `kling-3-pro` -> Kling direct `model_name: "kling-v3"` or `"kling-v3-omni"`, `mode: "pro"`.
-- `kling-3-4k` -> Kling direct 4K route from Kling V3 / Video-3O pricing; exact request field to confirm.
+- `kling-3-standard` -> Kling direct `model_name: "kling-v3"`, `mode: "std"`.
+- `kling-3-pro` -> Kling direct `model_name: "kling-v3"`, `mode: "pro"`.
+- `kling-3-4k` -> Kling direct `model_name: "kling-v3"`, `mode: "4k"`.
 
-Admin smoke tests should prioritize `kling-v3-omni` / Video-3O because current visible pricing appears better for Pro with native audio.
+`kling-v3-omni` should be implemented later as a separate endpoint-family route, not hidden behind the current `text2video` / `image2video` mapping. `kling-video-o1` is excluded from the active plan.
+
+Current V3 capability notes from the official capability map:
+
+- `kling-v3` voice control is not supported; do not expose or submit `voice_list` for current direct routes.
+- `kling-v3` I2V `std` and `pro` support `camera_control`, `static_mask`, `dynamic_masks`, and `element_list`.
+- `kling-v3` I2V `4k` supports `element_list`, but not `camera_control` or motion brush.
+- `image_tail`, `camera_control`, and `static_mask`/`dynamic_masks` are mutually exclusive and must be rejected before provider submit.
 
 ## Cost Accounting
 
@@ -293,7 +301,7 @@ Add focused architecture and behavior tests:
 Manual smoke tests after implementation:
 
 - Admin-only `kling-3-standard` text-to-video.
-- Admin-only `kling-3-pro` text-to-video with native audio.
+- Admin-only `kling-3-pro` text-to-video with `sound: "on"`.
 - Admin-only `kling-3-pro` image-to-video.
 - Admin-only `kling-3-4k` if the exact 4K request field is confirmed.
 - Forced pre-acceptance fallback to Fal by simulating 429/5xx/no-task-id.
@@ -301,7 +309,6 @@ Manual smoke tests after implementation:
 
 ## Open Implementation Confirmations
 
-- Whether Text/Image `kling-v3` or Omni `kling-v3-omni` should be the preferred route for each public Kling 3 MaxVideoAI engine after real quality/cost tests.
-- Exact request-field combination for native 4K on each selected route.
+- When to add `kling-v3-omni` as a separate endpoint family for Omni references.
 - Exact provider status values and terminal failure messages.
 - Whether callbacks are reliable enough for phase 1 or polling should be primary with callback support added later.

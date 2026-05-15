@@ -6,6 +6,7 @@ import {
 } from '@/lib/luma-ray2';
 import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } from '@/lib/fal-model-helpers';
 import { buildSoraFalInput } from '@/lib/sora';
+import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export function buildFalGenerationRequest(
@@ -293,8 +294,11 @@ export function buildFalGenerationRequest(
     delete requestBody.video_urls;
   }
 
-  if (payload.extraInputValues) {
-    Object.entries(payload.extraInputValues).forEach(([key, value]) => {
+  const extraInputValues = payload.engineId.startsWith('kling-3')
+    ? stripKlingDirectOnlyExtraInputValues(payload.extraInputValues)
+    : payload.extraInputValues;
+  if (extraInputValues) {
+    Object.entries(extraInputValues).forEach(([key, value]) => {
       if (value === undefined || value === null || key in requestBody) return;
       requestBody[key] = value;
     });

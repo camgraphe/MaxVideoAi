@@ -19,6 +19,10 @@ import {
 import {
   resolveVideoProviderRoutingPlan,
 } from '../frontend/src/server/video-providers/router';
+import {
+  getKlingDirectRouteCapabilities,
+  sanitizeKlingDirectFalFallbackPayload,
+} from '../frontend/src/server/video-providers/kling-direct/capabilities';
 
 const root = process.cwd();
 const generateRouteSource = readFileSync(join(root, 'frontend/app/api/generate/route.ts'), 'utf8');
@@ -31,24 +35,26 @@ test('Kling direct router selects admin-only primary routing without changing pu
   assert.deepEqual(engines.map((engine) => engine.id).sort(), klingEngineIds.sort());
   assert.ok(klingEngineIds.every(isKlingDirectEngine));
 
-  const plan = resolveVideoProviderRoutingPlan({
-    engineId: 'kling-3-pro',
-    mode: 't2v',
-    isAdmin: true,
-    env: {
-      KLING_DIRECT_ENABLED: 'true',
-      KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
-      KLING_DIRECT_ADMIN_ONLY: 'true',
-      KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
-    },
-  });
+  for (const engineId of klingEngineIds) {
+    const plan = resolveVideoProviderRoutingPlan({
+      engineId,
+      mode: 't2v',
+      isAdmin: true,
+      env: {
+        KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
+        KLING_DIRECT_ADMIN_ONLY: 'true',
+        KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
+      },
+    });
 
-  assert.deepEqual(plan, {
-    kind: 'kling_direct_primary',
-    primaryProvider: 'kling_direct',
-    fallbackProvider: 'fal',
-    fallbackEnabled: true,
-  });
+    assert.deepEqual(plan, {
+      kind: 'kling_direct_primary',
+      primaryProvider: 'kling_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: true,
+    });
+  }
 });
 
 test('Kling direct router falls back to existing Fal routing for public users and unsupported modes', () => {
@@ -134,7 +140,64 @@ test('Kling direct payload maps MaxVideoAI slugs to explicit Kling routes', () =
   assert.equal(imagePayload.body.sound, 'off');
 });
 
-test('Kling direct payload preserves advanced Kling V3 provider options', () => {
+test('Kling direct capabilities cover current Kling V3 without enabling Omni or O1 routes', () => {
+  const standard = getKlingDirectRouteCapabilities(resolveKlingDirectModelRoute('kling-3-standard'));
+  const pro = getKlingDirectRouteCapabilities(resolveKlingDirectModelRoute('kling-3-pro'));
+  const fourK = getKlingDirectRouteCapabilities(resolveKlingDirectModelRoute('kling-3-4k'));
+
+  assert.equal(standard.providerModel, 'kling-v3');
+  assert.equal(pro.providerModel, 'kling-v3');
+  assert.equal(fourK.providerModel, 'kling-v3');
+  assert.equal(JSON.stringify([standard, pro, fourK]).includes('kling-video-o1'), false);
+  assert.equal(JSON.stringify([standard, pro, fourK]).includes('kling-v3-omni'), false);
+
+  assert.equal(pro.t2v.multiShot, true);
+  assert.equal(pro.t2v.voiceControl, false);
+  assert.equal(pro.t2v.cameraControl, false);
+  assert.equal(pro.i2v.startEndFrame, true);
+  assert.equal(pro.i2v.elementList, true);
+  assert.equal(pro.i2v.motionBrush, true);
+  assert.equal(pro.i2v.cameraControl, true);
+  assert.equal(fourK.i2v.motionBrush, false);
+  assert.equal(fourK.i2v.cameraControl, false);
+});
+
+test('Kling 3 engine schemas expose current direct V3 options conservatively', () => {
+  const enginesById = new Map(listFalEngines().map((entry) => [entry.id, entry.engine]));
+  const optionalIds = (engineId: string) =>
+    new Set((enginesById.get(engineId)?.inputSchema?.optional ?? []).map((field) => field.id));
+
+  assert.deepEqual(
+    ['kling-3-standard', 'kling-3-pro'].map((engineId) => optionalIds(engineId).has('camera_control')),
+    [true, true]
+  );
+  assert.deepEqual(
+    ['kling-3-standard', 'kling-3-pro'].map((engineId) => optionalIds(engineId).has('static_mask')),
+    [true, true]
+  );
+  assert.deepEqual(
+    ['kling-3-standard', 'kling-3-pro'].map((engineId) => optionalIds(engineId).has('dynamic_masks')),
+    [true, true]
+  );
+  assert.deepEqual(
+    ['kling-3-standard', 'kling-3-pro', 'kling-3-4k'].map((engineId) =>
+      optionalIds(engineId).has('element_list')
+    ),
+    [true, true, true]
+  );
+  assert.deepEqual(
+    ['kling-3-standard', 'kling-3-pro', 'kling-3-4k'].map((engineId) =>
+      optionalIds(engineId).has('watermark_enabled')
+    ),
+    [false, false, false]
+  );
+
+  assert.equal(optionalIds('kling-3-4k').has('camera_control'), false);
+  assert.equal(optionalIds('kling-3-4k').has('static_mask'), false);
+  assert.equal(optionalIds('kling-3-4k').has('dynamic_masks'), false);
+});
+
+test('Kling direct payload preserves supported advanced Kling V3 provider options', () => {
   const textPayload = buildKlingDirectPayload({
     engineId: 'kling-3-pro',
     jobId: 'job_multi',
@@ -149,8 +212,8 @@ test('Kling direct payload preserves advanced Kling V3 provider options', () => 
     shotType: 'customize',
     voiceIds: ['voice_a', 'voice_b'],
     extraInputValues: {
-      camera_control: { type: 'simple', config: { zoom: 4 } },
-      watermark_info: { enabled: false },
+      watermark_enabled: 'true',
+      watermark_info: { enabled: true },
       ignored: 'not-sent',
     },
   });
@@ -162,35 +225,112 @@ test('Kling direct payload preserves advanced Kling V3 provider options', () => 
     { index: 1, prompt: 'Shot one', duration: '3' },
     { index: 2, prompt: 'Shot two', duration: '5' },
   ]);
-  assert.deepEqual(textPayload.body.voice_list, [{ voice_id: 'voice_a' }, { voice_id: 'voice_b' }]);
   assert.equal(textPayload.body.sound, 'on');
-  assert.deepEqual(textPayload.body.camera_control, { type: 'simple', config: { zoom: 4 } });
-  assert.deepEqual(textPayload.body.watermark_info, { enabled: false });
+  assert.equal(textPayload.body.voice_list, undefined);
+  assert.equal(textPayload.body.watermark_info, undefined);
   assert.equal('ignored' in textPayload.body, false);
 
   const imagePayload = buildKlingDirectPayload({
-    engineId: 'kling-3-4k',
+    engineId: 'kling-3-pro',
     jobId: 'job_image',
     mode: 'i2v',
     prompt: 'Animate frame',
     durationSec: 5,
     imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
-    endImageUrl: 'https://cdn.maxvideoai.com/end.jpg',
     extraInputValues: {
-      static_mask: 'https://cdn.maxvideoai.com/mask.png',
-      dynamic_masks: [{ mask: 'https://cdn.maxvideoai.com/motion.png', trajectories: [{ x: 10, y: 20 }] }],
-      element_list: [{ element_id: 160 }],
+      camera_control: '{"type":"simple","config":{"zoom":4}}',
+      element_list: '160, 161',
     },
   });
 
   assert.equal(imagePayload.body.image, 'https://cdn.maxvideoai.com/start.jpg');
-  assert.equal(imagePayload.body.image_tail, 'https://cdn.maxvideoai.com/end.jpg');
-  assert.equal(imagePayload.body.mode, '4k');
-  assert.equal(imagePayload.body.static_mask, 'https://cdn.maxvideoai.com/mask.png');
-  assert.deepEqual(imagePayload.body.dynamic_masks, [
-    { mask: 'https://cdn.maxvideoai.com/motion.png', trajectories: [{ x: 10, y: 20 }] },
-  ]);
-  assert.deepEqual(imagePayload.body.element_list, [{ element_id: 160 }]);
+  assert.equal(imagePayload.body.mode, 'pro');
+  assert.deepEqual(imagePayload.body.camera_control, { type: 'simple', config: { zoom: 4 } });
+  assert.deepEqual(imagePayload.body.element_list, [{ element_id: 160 }, { element_id: 161 }]);
+});
+
+test('Kling direct payload rejects unsupported or mutually exclusive V3 provider options before submit', () => {
+  assert.throws(
+    () =>
+      buildKlingDirectPayload({
+        engineId: 'kling-3-pro',
+        jobId: 'job_conflict',
+        mode: 'i2v',
+        prompt: 'Animate frame',
+        durationSec: 5,
+        imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+        endImageUrl: 'https://cdn.maxvideoai.com/end.jpg',
+        extraInputValues: {
+          static_mask: 'https://cdn.maxvideoai.com/mask.png',
+        },
+      }),
+    /mutually exclusive/
+  );
+
+  assert.throws(
+    () =>
+      buildKlingDirectPayload({
+        engineId: 'kling-3-4k',
+        jobId: 'job_4k_motion',
+        mode: 'i2v',
+        prompt: 'Animate frame',
+        durationSec: 5,
+        imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+        extraInputValues: {
+          camera_control: '{"type":"simple","config":{"zoom":4}}',
+        },
+      }),
+    /does not support camera_control/
+  );
+
+  assert.throws(
+    () =>
+      buildKlingDirectPayload({
+        engineId: 'kling-3-pro',
+        jobId: 'job_bad_camera_json',
+        mode: 'i2v',
+        prompt: 'Animate frame',
+        durationSec: 5,
+        imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+        extraInputValues: {
+          camera_control: 'not json',
+        },
+      }),
+    /camera_control must be valid JSON/
+  );
+
+  assert.throws(
+    () =>
+      buildKlingDirectPayload({
+        engineId: 'kling-3-pro',
+        jobId: 'job_bad_motion_json',
+        mode: 'i2v',
+        prompt: 'Animate frame',
+        durationSec: 5,
+        imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+        extraInputValues: {
+          dynamic_masks: 'not json',
+        },
+      }),
+    /dynamic_masks must be valid JSON/
+  );
+});
+
+test('Kling direct fallback to Fal strips direct-only extra params', () => {
+  const sanitized = sanitizeKlingDirectFalFallbackPayload({
+    engineId: 'kling-3-pro',
+    prompt: 'Fallback prompt',
+    extraInputValues: {
+      camera_control: '{"type":"simple","config":{"zoom":4}}',
+      static_mask: 'https://cdn.maxvideoai.com/mask.png',
+      dynamic_masks: '[{"mask":"https://cdn.maxvideoai.com/motion.png","trajectories":[]}]',
+      element_list: '160,161',
+      watermark_enabled: 'true',
+      keep_for_fal: 'yes',
+    },
+  });
+
+  assert.deepEqual(sanitized.extraInputValues, { keep_for_fal: 'yes' });
 });
 
 test('Kling direct fallback classification is limited to pre-acceptance safe submit errors', () => {

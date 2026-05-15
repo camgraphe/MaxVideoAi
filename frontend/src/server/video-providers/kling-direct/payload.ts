@@ -1,8 +1,13 @@
 import type { Mode } from '@/types/engines';
 import {
+  getKlingDirectRouteCapabilities,
+  type KlingDirectSubmitCapabilities,
+} from './capabilities';
+import {
   resolveKlingDirectCreatePath,
   resolveKlingDirectModelRoute,
   resolveKlingDirectPollPathPrefix,
+  resolveKlingDirectSubmitMode,
 } from './model-map';
 
 const SUPPORTED_ASPECT_RATIOS = new Set(['16:9', '9:16', '1:1']);
@@ -27,7 +32,6 @@ export type KlingDirectPayloadBody = {
   camera_control?: Record<string, unknown>;
   static_mask?: string;
   dynamic_masks?: Array<Record<string, unknown>>;
-  watermark_info?: { enabled: boolean };
 };
 
 export type KlingDirectPayload = {
@@ -76,6 +80,23 @@ function normalizeVoiceList(voiceIds: string[] | null | undefined): Array<{ voic
 }
 
 function normalizeElementList(value: unknown): Array<{ element_id: string | number }> | null {
+  if (typeof value === 'string') {
+    const elements = value
+      .split(/[,\n]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((element_id) => {
+        const numeric = Number(element_id);
+        return {
+          element_id:
+            Number.isInteger(numeric) && String(numeric) === element_id
+              ? numeric
+              : element_id,
+        };
+      });
+    return elements.length ? elements : null;
+  }
   if (!Array.isArray(value)) return null;
   const elements: Array<{ element_id: string | number }> = [];
   value.slice(0, 3).forEach((entry) => {
@@ -101,31 +122,72 @@ function normalizeElementList(value: unknown): Array<{ element_id: string | numb
   return elements.length ? elements : null;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
+function parseJson(value: string, fieldId: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    throw new Error(`${fieldId} must be valid JSON.`);
+  }
+}
+
+function asRecord(value: unknown, fieldId = 'value'): Record<string, unknown> | null {
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = parseJson(value.trim(), fieldId);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error(`${fieldId} must be valid JSON object.`);
+    }
+    return parsed as Record<string, unknown>;
+  }
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function asRecordArray(value: unknown, fieldId: string): Array<Record<string, unknown>> {
+  const candidate = typeof value === 'string' && value.trim() ? parseJson(value.trim(), fieldId) : value;
+  if (typeof value === 'string' && value.trim() && !Array.isArray(candidate)) {
+    throw new Error(`${fieldId} must be a valid JSON array.`);
+  }
+  if (!Array.isArray(candidate)) return [];
+  return candidate.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)));
 }
 
 function applyKlingDirectExtraInputValues(
   body: KlingDirectPayloadBody,
-  extraInputValues: Record<string, unknown> | null | undefined
+  extraInputValues: Record<string, unknown> | null | undefined,
+  capabilities: KlingDirectSubmitCapabilities
 ) {
   const extra = extraInputValues ?? {};
-  const cameraControl = asRecord(extra.camera_control);
+  const cameraControl = asRecord(extra.camera_control, 'camera_control');
   if (cameraControl) {
+    if (!capabilities.cameraControl) {
+      throw new Error('Kling direct route does not support camera_control.');
+    }
     body.camera_control = cameraControl;
   }
-  if (typeof extra.static_mask === 'string' && extra.static_mask.trim()) {
-    body.static_mask = extra.static_mask.trim();
+  const staticMask = typeof extra.static_mask === 'string' ? extra.static_mask.trim() : '';
+  const dynamicMasks = asRecordArray(extra.dynamic_masks, 'dynamic_masks');
+  const hasMotionBrush = Boolean(staticMask || dynamicMasks.length);
+  if (hasMotionBrush && !capabilities.motionBrush) {
+    throw new Error('Kling direct route does not support motion brush options.');
   }
-  if (Array.isArray(extra.dynamic_masks)) {
-    body.dynamic_masks = extra.dynamic_masks.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)));
+  const exclusiveOptions = [
+    body.image_tail ? 'image_tail' : null,
+    cameraControl ? 'camera_control' : null,
+    hasMotionBrush ? 'motion brush' : null,
+  ].filter(Boolean);
+  if (exclusiveOptions.length > 1) {
+    throw new Error(`Kling direct image_tail, dynamic_masks/static_mask, and camera_control are mutually exclusive.`);
   }
-  const watermarkInfo = asRecord(extra.watermark_info);
-  if (typeof watermarkInfo?.enabled === 'boolean') {
-    body.watermark_info = { enabled: watermarkInfo.enabled };
+  if (staticMask) {
+    body.static_mask = staticMask;
+  }
+  if (dynamicMasks.length) {
+    body.dynamic_masks = dynamicMasks;
   }
   const elementList = normalizeElementList(extra.element_list);
   if (elementList) {
+    if (!capabilities.elementList) {
+      throw new Error('Kling direct route does not support element_list.');
+    }
     body.element_list = elementList;
   }
 }
@@ -150,6 +212,8 @@ export function buildKlingDirectPayload(params: {
   const route = resolveKlingDirectModelRoute(params.engineId);
   const createPath = resolveKlingDirectCreatePath(route, params.mode);
   const pollPathPrefix = resolveKlingDirectPollPathPrefix(route, params.mode);
+  const submitMode = resolveKlingDirectSubmitMode(params.mode);
+  const capabilities = getKlingDirectRouteCapabilities(route)[submitMode];
   const prompt = cleanString(params.prompt);
   const multiPrompt = normalizeMultiPrompt(params.multiPrompt);
   const isCustomizeMultiShot = multiPrompt.length > 0 && normalizeShotType(params.shotType) === 'customize';
@@ -164,7 +228,7 @@ export function buildKlingDirectPayload(params: {
     throw new Error('Image URL is required for Kling direct image-to-video.');
   }
 
-  const voiceList = normalizeVoiceList(params.voiceIds);
+  const voiceList = capabilities.voiceControl ? normalizeVoiceList(params.voiceIds) : [];
   const body: KlingDirectPayloadBody = {
     model_name: route.providerModel,
     duration: normalizeDuration(params.durationSec),
@@ -202,7 +266,7 @@ export function buildKlingDirectPayload(params: {
   if (voiceList.length > 0) {
     body.voice_list = voiceList;
   }
-  applyKlingDirectExtraInputValues(body, params.extraInputValues);
+  applyKlingDirectExtraInputValues(body, params.extraInputValues, capabilities);
 
   return {
     providerModel: route.providerModel,

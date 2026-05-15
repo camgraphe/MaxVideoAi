@@ -69,6 +69,16 @@ test('targeted engine links stay authoritative over stored drafts and guided sam
   assert.match(galleryActionsHookSource, /if \(suppressGuidedSampleAutoApply\) return;/);
 });
 
+test('workspace keeps Kling V3 voice ID controls disabled for current direct routes', () => {
+  const engineModeHookSource = readFileSync(engineModeHookPath, 'utf8');
+
+  assert.match(engineModeHookSource, /const supportsKlingV3VoiceControl = false;/);
+  assert.doesNotMatch(
+    engineModeHookSource,
+    /const supportsKlingV3VoiceControl =\s*selectedEngine\?\.id === 'kling-3-pro'/
+  );
+});
+
 test('workspace app shell surfaces are split into route-local components', () => {
   assert.equal(existsSync(appShellPath), true);
   assert.equal(existsSync(appLoadStatePath), true);

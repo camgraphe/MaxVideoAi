@@ -248,3 +248,31 @@ test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls on
   assert.equal(result.requestBody.aspect_ratio, '16:9');
   assert.equal(result.requestBody.generate_audio, true);
 });
+
+test('Fal request body strips Kling direct-only provider extras', () => {
+  const result = buildFalGenerationRequest(
+    {
+      engineId: 'kling-3-pro',
+      prompt: 'Fallback prompt',
+      mode: 'i2v',
+      durationSec: 5,
+      imageUrl: 'https://cdn.maxvideoai.com/start.png',
+      extraInputValues: {
+        camera_control: '{"type":"simple","config":{"zoom":4}}',
+        static_mask: 'https://cdn.maxvideoai.com/mask.png',
+        dynamic_masks: '[{"mask":"https://cdn.maxvideoai.com/motion.png","trajectories":[]}]',
+        element_list: '160,161',
+        watermark_enabled: 'true',
+        keep_for_fal: 'yes',
+      },
+    },
+    'fal-ai/kling-video/v3/pro/image-to-video'
+  );
+
+  assert.equal(result.requestBody.camera_control, undefined);
+  assert.equal(result.requestBody.static_mask, undefined);
+  assert.equal(result.requestBody.dynamic_masks, undefined);
+  assert.equal(result.requestBody.element_list, undefined);
+  assert.equal(result.requestBody.watermark_enabled, undefined);
+  assert.equal(result.requestBody.keep_for_fal, 'yes');
+});

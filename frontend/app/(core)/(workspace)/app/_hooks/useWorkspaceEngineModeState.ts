@@ -149,8 +149,7 @@ export function useWorkspaceEngineModeState({
     selectedEngine?.id === 'kling-3-pro' ||
     selectedEngine?.id === 'kling-3-standard' ||
     selectedEngine?.id === 'kling-3-4k';
-  const supportsKlingV3VoiceControl =
-    selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
+  const supportsKlingV3VoiceControl = false;
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
   const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
   const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
