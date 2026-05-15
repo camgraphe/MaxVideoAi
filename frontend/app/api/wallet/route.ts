@@ -447,6 +447,7 @@ export async function POST(req: NextRequest) {
     // Create a one-off Checkout Session for top-up
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
+    const shouldBlockAmexForCheckoutSession = isFirstTopUp && !isExpressCheckoutTopUp;
 
     if (isExpressCheckoutTopUp && !isFirstTopUp) {
       const reusableSession = await findReusableExpressCheckoutSession(stripe, {
@@ -486,8 +487,9 @@ export async function POST(req: NextRequest) {
         currency: resolvedCurrencyUpper,
         locale: checkoutLocale,
         checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
-        amexBlocked: isFirstTopUp,
-        brandsBlocked: isFirstTopUp ? ['american_express'] : [],
+        amexBlocked: shouldBlockAmexForCheckoutSession,
+        brandsBlocked: shouldBlockAmexForCheckoutSession ? ['american_express'] : [],
+        amexBlockSkippedReason: isFirstTopUp && isExpressCheckoutTopUp ? 'checkout_elements_unsupported' : null,
       },
     });
     checkoutAttemptId = checkoutGuard.attemptId;
@@ -535,9 +537,11 @@ export async function POST(req: NextRequest) {
       checkout_guard_reason: checkoutGuard.reason,
       checkout_captcha_passed: String(checkoutGuard.captchaPassed),
     };
-    if (isFirstTopUp) {
+    if (shouldBlockAmexForCheckoutSession) {
       sessionMetadata.amex_block_required = 'true';
       sessionMetadata.brands_blocked = 'american_express';
+    } else if (isFirstTopUp && isExpressCheckoutTopUp) {
+      sessionMetadata.amex_block_skipped_reason = 'checkout_elements_unsupported';
     }
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
     if (tier?.label) {
@@ -594,7 +598,7 @@ export async function POST(req: NextRequest) {
         address: 'auto',
         name: 'auto',
       },
-      blockAmexCards: isFirstTopUp,
+      blockAmexCards: shouldBlockAmexForCheckoutSession,
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
