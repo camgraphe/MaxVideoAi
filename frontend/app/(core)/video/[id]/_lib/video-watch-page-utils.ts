@@ -10,18 +10,7 @@ export const FALLBACK_THUMB = `${SITE}/og/price-before.png`;
 export const FALLBACK_POSTER = `${SITE}/og/price-before.png`;
 export const TITLE_SUFFIX = ' — MaxVideoAI';
 
-const META_TITLE_LIMIT = 60;
 const TRAILING_BRAND_SUFFIX = /\s+[—-]\s*MaxVideo\s*AI\s*$/i;
-
-export function truncateForMeta(title: string, limit: number) {
-  if (title.length <= limit) return title;
-  const slice = title.slice(0, Math.max(1, limit - 1));
-  const lastSpace = slice.lastIndexOf(' ');
-  if (lastSpace > Math.floor(limit * 0.6)) {
-    return `${slice.slice(0, lastSpace).trim()}…`;
-  }
-  return `${slice.trim()}…`;
-}
 
 export function normalizeTitlePrimary(primary: string) {
   let normalized = primary.trim();
@@ -32,10 +21,9 @@ export function normalizeTitlePrimary(primary: string) {
 }
 
 export function buildMetaTitle(primary: string) {
-  const available = Math.max(10, META_TITLE_LIMIT - TITLE_SUFFIX.length);
   const normalizedPrimary = primary ? normalizeTitlePrimary(primary) : '';
   const safePrimary = normalizedPrimary.length ? normalizedPrimary : 'Video example';
-  return `${truncateForMeta(safePrimary, available)}${TITLE_SUFFIX}`;
+  return `${safePrimary}${TITLE_SUFFIX}`;
 }
 
 export function toDurationIso(seconds?: number | null): string {

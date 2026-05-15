@@ -20,8 +20,8 @@ export const dynamic = 'force-dynamic';
 export default async function AdminVideoSeoPage() {
   const rows = buildWatchRows(await listSeoWatchVideoRows());
   const metrics = buildOverviewItems(rows);
-  const { candidateCount, issueCount, sitemapCount, strongRows } = buildVideoSeoSummary(rows);
-  const { candidateRows, indexedRows } = splitVideoSeoRows(rows);
+  const { candidateCount, disabledCount, issueCount, sitemapCount, strongRows } = buildVideoSeoSummary(rows);
+  const { candidateRows, disabledRows, indexedRows } = splitVideoSeoRows(rows);
 
   return (
     <div className="flex flex-col gap-5">
@@ -77,13 +77,13 @@ export default async function AdminVideoSeoPage() {
 
       <AdminSection
         title="Candidates And Drafts"
-        description="Pages candidates, brouillons, désactivées ou bloquées par la QA éditoriale/technique avant indexation."
+        description="Pages candidates, brouillons ou bloquées par la QA éditoriale/technique avant indexation. Les pages désactivées sont conservées à part pour éviter de polluer le pilotage quotidien."
         action={
           <AdminSectionMeta
             title={`${candidateCount} page${candidateCount === 1 ? '' : 's'} outside sitemap`}
             lines={[
               issueCount ? `${issueCount} page${issueCount > 1 ? 's' : ''} still need attention` : 'No rollout blockers detected',
-              `${rows.length} total cockpit row${rows.length === 1 ? '' : 's'}`,
+              `${disabledCount} disabled archive row${disabledCount === 1 ? '' : 's'}`,
             ]}
           />
         }
@@ -102,6 +102,17 @@ export default async function AdminVideoSeoPage() {
           )}
         </div>
       </AdminSection>
+
+      {disabledRows.length ? (
+        <AdminSection title="Disabled Archive" description="Overrides conservés en base pour empêcher le fallback config de remettre ces vidéos dans le sitemap. Replié par défaut et limité aux 20 premières lignes pour garder le cockpit lisible." action={<AdminSectionMeta title={`${disabledRows.length} disabled`} lines={['No sitemap, noindex follow']} />}>
+          <details className="rounded-2xl border border-hairline bg-bg/40">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-text-primary">Show disabled video SEO pages</summary>
+            <div className="border-t border-hairline">
+              <VideoSeoInventoryTable rows={disabledRows.slice(0, 20)} />
+            </div>
+          </details>
+        </AdminSection>
+      ) : null}
     </div>
   );
 }

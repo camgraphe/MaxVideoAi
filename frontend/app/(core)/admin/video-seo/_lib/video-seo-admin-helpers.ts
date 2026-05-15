@@ -137,7 +137,8 @@ export function compareWatchRows(a: WatchRow, b: WatchRow) {
 export function splitVideoSeoRows(rows: WatchRow[]) {
   return {
     indexedRows: rows.filter((row) => row.inVideoSitemap),
-    candidateRows: rows.filter((row) => !row.inVideoSitemap),
+    candidateRows: rows.filter((row) => !row.inVideoSitemap && row.seoStatus !== 'disabled'),
+    disabledRows: rows.filter((row) => !row.inVideoSitemap && row.seoStatus === 'disabled'),
   };
 }
 
@@ -161,7 +162,7 @@ export function buildOverviewItems(rows: WatchRow[]): AdminMetricItem[] {
     {
       label: 'Candidates',
       value: numberFormatter.format(summary.candidateCount),
-      helper: 'Draft, disabled, or QA-blocked pages',
+      helper: 'Draft or QA-blocked pages',
       tone: summary.issueCount ? 'warning' : 'default',
       icon: Radar,
     },
@@ -175,10 +176,12 @@ export function buildOverviewItems(rows: WatchRow[]): AdminMetricItem[] {
 }
 
 export function buildVideoSeoSummary(rows: WatchRow[]) {
-  const readyCount = rows.filter((row) => row.isReady).length;
-  const issueCount = rows.length - readyCount;
+  const activeRows = rows.filter((row) => row.seoStatus !== 'disabled');
+  const readyCount = activeRows.filter((row) => row.isReady).length;
+  const issueCount = activeRows.filter((row) => !row.isReady && !row.inVideoSitemap).length;
   const sitemapCount = rows.filter((row) => row.inVideoSitemap).length;
-  const candidateCount = rows.length - sitemapCount;
+  const candidateCount = activeRows.filter((row) => !row.inVideoSitemap).length;
+  const disabledCount = rows.filter((row) => row.seoStatus === 'disabled').length;
   const liveAssetCount = rows.filter((row) => Boolean(row.video?.videoUrl)).length;
   const engineFamilies = new Set(rows.map((row) => row.entry.engineFamily)).size;
   const strongRows = rows.filter((row) => row.completenessScore >= 80 && row.differentiationScore >= 70).length;
@@ -187,6 +190,7 @@ export function buildVideoSeoSummary(rows: WatchRow[]) {
     engineFamilies,
     issueCount,
     candidateCount,
+    disabledCount,
     liveAssetCount,
     readyCount,
     sitemapCount,
