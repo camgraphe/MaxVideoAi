@@ -69,6 +69,14 @@ test('sitemap data facade delegates route discovery, lastmod, locales, and XML h
 
   assert.match(routeDiscoverySource, /discoverTemplatesFromManifest/);
   assert.match(routeDiscoverySource, /DYNAMIC_ROUTE_GENERATORS/);
+  assert.match(
+    routeDiscoverySource,
+    /IGNORED_ROUTE_TEMPLATES[\s\S]*'\/models\/\[slug\]'/,
+    'localized sitemaps should not duplicate model detail URLs',
+  );
+  assert.doesNotMatch(routeDiscoverySource, /listEligibleSeoWatchVideos/, 'localized sitemaps should not duplicate video sitemap URLs');
+  assert.match(facadeSource, /buildModelsSitemapXml/, 'models should stay owned by the dedicated models sitemap');
+  assert.match(facadeSource, /videoPath = '\/sitemap-video\.xml'/, 'video watch pages should stay owned by the video sitemap');
   assert.match(lastmodSource, /getGitLastModified/);
   assert.match(xmlSource, /export const escapeXml/);
   sitemapModulePaths.forEach((path) => {

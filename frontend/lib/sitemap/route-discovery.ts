@@ -7,7 +7,6 @@ import { BLOG_ENTRIES } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
-import { listEligibleSeoWatchVideos } from '@/server/video-seo';
 import { canonicalizeCompareSlug, comparePaths, normalizeCompareEnglishPath } from './compare-paths';
 import { formatLastModified, getGitLastModified, getModelLastModified, getRouteLastModified } from './lastmod';
 import { hasBlogLocale, hasModelLocale } from './model-locales';
@@ -23,7 +22,13 @@ const APP_PATHS_MANIFEST_PATH = findAppPathsManifestPath();
 const SOURCE_APP_ROOT = resolveSourceAppRoot();
 const LOCALIZED_SOURCE_APP_ROOT = SOURCE_APP_ROOT ? path.join(SOURCE_APP_ROOT, '(localized)', '[locale]') : null;
 const PAGE_FILE_PATTERN = /^page\.(?:mdx|tsx?|ts|jsx?|js)$/i;
-const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]', '/legal/cookies']);
+const IGNORED_ROUTE_TEMPLATES = new Set([
+  '/404',
+  '/models/[slug]',
+  '/video/[videoId]',
+  '/v/[videoId]',
+  '/legal/cookies',
+]);
 let cachedAppPathsManifest: Record<string, string> | null = null;
 
 const parsedTolerance = Number(process.env.SITEMAP_LOCALE_TOLERANCE ?? '3');
@@ -83,15 +88,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
     });
   }
 
-  const extraCanonicalPaths: CanonicalPathEntry[] = [
-    ...BASE_EXTRA_CANONICAL_PATHS,
-    ...(await listEligibleSeoWatchVideos()).map(({ entry, video }) => ({
-      englishPath: `/video/${entry.id}`,
-      lastModified: formatLastModified(entry.publishedAt || video.createdAt),
-      locales: ['en'] as AppLocale[],
-      disableAlternates: true,
-    })),
-  ];
+  const extraCanonicalPaths: CanonicalPathEntry[] = [...BASE_EXTRA_CANONICAL_PATHS];
 
   extraCanonicalPaths.forEach((extra) => {
     if (!extra?.englishPath) {
