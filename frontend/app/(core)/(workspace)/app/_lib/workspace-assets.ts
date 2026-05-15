@@ -251,6 +251,7 @@ export function removeReferenceAsset(
 export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
+    assetId: asset.id,
     previewUrl: asset.url,
     kind: 'image',
     name: asset.url.split('/').pop() ?? 'Image',

@@ -99,6 +99,27 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
         maxCount: 1,
         source: 'either',
       },
+      {
+        id: 'camera_control',
+        type: 'text',
+        label: 'Camera control JSON',
+        description: 'Kling direct i2v only. Example: {"type":"simple","config":{"zoom":4}}. Cannot be combined with end frame or motion brush.',
+        modes: ['i2v'],
+      },
+      {
+        id: 'static_mask',
+        type: 'text',
+        label: 'Static mask URL',
+        description: 'Kling direct motion brush mask URL. Cannot be combined with end frame or camera control.',
+        modes: ['i2v'],
+      },
+      {
+        id: 'dynamic_masks',
+        type: 'text',
+        label: 'Dynamic masks JSON',
+        description: 'Kling direct motion brush JSON array. Cannot be combined with end frame or camera control.',
+        modes: ['i2v'],
+      },
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
@@ -123,7 +144,7 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.126,
     currency: 'USD',
-    notes: 'Provider cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
+    notes: 'Provider cost: $0.084/s audio off and $0.126/s audio on. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -175,7 +196,7 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Add end frames or elements for tighter motion control.',
+          notes: 'Add end frames or subject references for tighter motion control.',
         },
       },
     ],
@@ -183,12 +204,12 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Kling 3 Standard – Multi-prompt Text & Image to Video | MaxVideoAI',
       description:
-        'Use Kling 3 Standard for multi-prompt sequences, element references, and voice controls at a lower $/s rate in 1080p.',
+        'Use Kling 3 Standard for multi-prompt sequences, subject references, and native audio at a lower $/s rate in 1080p.',
       canonicalPath: '/models/kling-3-standard',
     },
     type: 'textImage',
     seoText:
-      'Kling 3 Standard brings scene-level prompting and element references to longer clips with a lower per-second price. Perfect for multi-shot testing and story beats.',
+      'Kling 3 Standard brings scene-level prompting and subject references to longer clips with a lower per-second price. Perfect for multi-shot testing and story beats.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
@@ -219,12 +240,12 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'What’s the difference between Kling 3 Standard and Pro?',
         answer:
-          'Standard offers the same multi-prompt and element controls at a lower price point; Pro prioritizes premium fidelity.',
+          'Standard offers the same multi-prompt and subject reference controls at a lower price point; Pro prioritizes premium fidelity.',
       },
       {
-        question: 'Does Standard support voice control?',
+        question: 'Does Standard include native audio?',
         answer:
-          'Yes, you can specify voice IDs for voice control with a small per-second add-on.',
+          'Yes. Native audio can be toggled on or off for supported Kling 3 Standard generations.',
       },
     ],
     pricingHint: {

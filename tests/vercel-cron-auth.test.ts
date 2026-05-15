@@ -44,6 +44,22 @@ test('vercel cron accepts Authorization Bearer CRON_SECRET', () => {
   assert.deepEqual(result, { ok: true, mode: 'vercel-secret' });
 });
 
+test('vercel cron accepts a route-specific token when configured', () => {
+  const result = authorizeCronRequest(
+    createHeaders({
+      'x-kling-direct-poll-token': 'route-secret',
+    }),
+    {
+      cronSecret: 'super-secret',
+      localTokens: ['route-secret'],
+      overrideHeaderName: 'x-kling-direct-poll-token',
+      vercelEnv: '1',
+    }
+  );
+
+  assert.deepEqual(result, { ok: true, mode: 'local-token' });
+});
+
 test('vercel cron rejects deployment mismatch when header is present', () => {
   const result = authorizeCronRequest(
     createHeaders({

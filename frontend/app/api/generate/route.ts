@@ -1,5 +1,4 @@
 export const runtime = 'nodejs';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { validateExtraInputValues } from './_lib/extra-input-values';
@@ -8,7 +7,6 @@ import { deriveGenerationAttachmentReferences } from './_lib/attachment-referenc
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
-import { createProviderJobTracker } from './_lib/provider-job-tracker';
 import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from './_lib/final-job-persistence';
 import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from './_lib/final-receipts';
 import { buildInitialProviderMediaState, resolveProviderMediaState } from './_lib/provider-media';
@@ -18,7 +16,7 @@ import { buildGenerateValidationPayload } from './_lib/validation-payload';
 import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
 import { buildGenerateRequestOptions } from './_lib/request-options';
 import { resolveGenerateUserGate } from './_lib/auth-idempotency';
-import { submitFalGenerateTask } from './_lib/fal-submission';
+import { submitGenerateProviderTask } from './_lib/video-provider-submission';
 import {
   buildResponseFromExistingVideoJob,
   createAtomicInitialVideoJob,
@@ -53,6 +51,7 @@ export async function POST(req: NextRequest) {
     mode,
     payment,
     providerKey,
+    providerRoutingPlan,
   } = routeContext.context;
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
@@ -333,15 +332,6 @@ export async function POST(req: NextRequest) {
   });
   let settingsSnapshotJson = JSON.stringify(settingsSnapshot);
 
-  const providerJobTracker = createProviderJobTracker({
-    jobId,
-    providerKey,
-    engineId: engine.id,
-    prompt,
-    inputSummary: falInputSummary,
-  });
-  const { getLastProviderJobId, persistProviderJobId, setLastProviderJobId } = providerJobTracker;
-
   try {
     const initialJobState = await createAtomicInitialVideoJob({
       jobId,
@@ -466,7 +456,6 @@ export async function POST(req: NextRequest) {
       heroRenderId,
       localKey,
       deps: {
-        persistProviderJobIdFn: persistProviderJobId,
         logMetricFn: logMetric,
       },
     });
@@ -476,29 +465,49 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const falSubmission = await submitFalGenerateTask({
+  const providerSubmission = await submitGenerateProviderTask({
+    providerRoutingPlan,
+    providerKey,
     falPayload,
     jobId,
+    userId,
     engineId: engine.id,
     engineLabel: engine.label,
-    isLumaRay2,
-    batchId,
+    mode,
+    prompt,
+    negativePrompt: body.negativePrompt,
     durationSec,
+    aspectRatio,
+    audioEnabled,
+    imageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
+    cfgScale: body.cfgScale,
+    placeholderThumb,
+    pricing,
+    paymentStatus,
     pendingReceipt,
     paymentMode,
     walletChargeReserved,
-    getLastProviderJobId,
-    setLastProviderJobId,
-    persistProviderJobId,
+    falInputSummary,
+    isLumaRay2,
+    batchId,
+    groupId,
+    iterationIndex,
+    iterationCount,
+    renderIds,
+    heroRenderId,
+    localKey,
     logMetricFn: logMetric,
   });
-  if (!falSubmission.ok) {
-    return NextResponse.json(falSubmission.body, { status: falSubmission.status });
+  if (providerSubmission.kind === 'error_response') {
+    return NextResponse.json(providerSubmission.body, { status: providerSubmission.status });
   }
-  const { generationResult } = falSubmission;
+  if (providerSubmission.kind === 'accepted_response') {
+    return NextResponse.json(providerSubmission.body);
+  }
+  const { generationResult } = providerSubmission;
 
   if (!generationResult) {
-    throw new Error('Fal generation did not return a result.');
+    throw new Error('Video provider generation did not return a result.');
   }
 
   const initialMediaState = buildInitialProviderMediaState({

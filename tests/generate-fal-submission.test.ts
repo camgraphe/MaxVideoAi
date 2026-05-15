@@ -13,12 +13,17 @@ import type { GeneratePayload, GenerateResult } from '../frontend/src/lib/fal';
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/fal-submission.ts');
+const providerSubmissionPath = join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts');
 const routeSource = readFileSync(routePath, 'utf8');
+const providerSubmissionSource = readFileSync(providerSubmissionPath, 'utf8');
 
 test('generate route delegates Fal submission and transient error handling', () => {
   assert.ok(existsSync(helperPath), 'Fal submission should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/fal-submission'/);
-  assert.match(routeSource, /const falSubmission = await submitFalGenerateTask/);
+  assert.ok(existsSync(providerSubmissionPath), 'provider submission routing should live in a route-local helper');
+  assert.match(routeSource, /from '\.\/_lib\/video-provider-submission'/);
+  assert.match(routeSource, /submitGenerateProviderTask/);
+  assert.match(providerSubmissionSource, /from '\.\/fal-submission'/);
+  assert.match(providerSubmissionSource, /const falSubmission = await submitFalGenerateTask/);
   assert.doesNotMatch(routeSource, /generateVideo\(/);
   assert.doesNotMatch(routeSource, /shouldDeferFalError/);
   assert.doesNotMatch(routeSource, /FAL_RETRY_DELAYS_MS/);

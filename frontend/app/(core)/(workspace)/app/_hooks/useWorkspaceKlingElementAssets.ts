@@ -180,6 +180,7 @@ export function useWorkspaceKlingElementAssets({
                 return {
                   ...asset,
                   status: 'ready' as const,
+                  assetId: assetResponse.id,
                   url: assetResponse.url,
                   previewUrl: assetResponse.url || asset.previewUrl,
                   name: assetResponse.name ?? asset.name,

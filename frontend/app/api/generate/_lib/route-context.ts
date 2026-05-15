@@ -15,6 +15,12 @@ import {
   shouldRoutePublicSeedanceFastToBytePlus,
   shouldRoutePublicSeedanceToBytePlus,
 } from '@/server/video-providers/byteplus-modelark';
+import {
+  resolveVideoProviderRoutingPlan,
+  shouldRouteKlingDirectSourceElementsToFal,
+  type VideoProviderRoutingPlan,
+} from '@/server/video-providers/router';
+import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { PaymentMode } from './initial-video-job';
 import { isVideoMode } from './request-options';
@@ -27,6 +33,7 @@ export type GenerateRouteContext = {
   mode: Mode;
   payment: { mode?: PaymentMode; paymentIntentId?: string | null };
   providerKey: string;
+  providerRoutingPlan: VideoProviderRoutingPlan;
 };
 
 export type GenerateRouteContextResult =
@@ -54,11 +61,19 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
 
+  const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
+  const jobId = requestedJobId ?? `job_${randomUUID()}`;
+  const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  const mode: Mode = isVideoMode(rawMode)
+    ? rawMode
+    : engine.modes.includes('t2v')
+      ? 't2v'
+      : engine.modes[0] ?? 't2v';
+
   const isPublicSeedanceBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
   const isPublicSeedanceFastBytePlus = shouldRoutePublicSeedanceFastToBytePlus(engine.id);
   const isBytePlusV1a =
     isBytePlusSeedanceFastEngine(engine.id) || isPublicSeedanceFastBytePlus || isPublicSeedanceBytePlus;
-  const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
     return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
@@ -74,6 +89,28 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 503, body: { ok: false, error: 'Database unavailable' } };
   }
 
+  let isAdminForKlingDirect = false;
+  if (!isBytePlusV1a && isKlingDirectEngine(engine.id)) {
+    try {
+      await requireAdmin(req);
+      isAdminForKlingDirect = true;
+    } catch {
+      isAdminForKlingDirect = false;
+    }
+  }
+  let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
+    ? ({ kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const)
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: isAdminForKlingDirect });
+  if (
+    shouldRouteKlingDirectSourceElementsToFal({
+      providerRoutingPlan,
+      elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
+    })
+  ) {
+    providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  }
+  const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
+
   const bytePlusRequiresAdmin =
     isBytePlusV1a && (isPublicSeedanceBytePlus ? seedanceBytePlusAdminOnly() : seedanceFastBytePlusAdminOnly());
   if (bytePlusRequiresAdmin) {
@@ -87,15 +124,6 @@ export async function resolveGenerateRouteContext(params: {
       return { ok: false, status: 500, body: { ok: false, error: 'Server error' } };
     }
   }
-
-  const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
-  const jobId = requestedJobId ?? `job_${randomUUID()}`;
-  const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
-  const mode: Mode = isVideoMode(rawMode)
-    ? rawMode
-    : engine.modes.includes('t2v')
-      ? 't2v'
-      : engine.modes[0] ?? 't2v';
 
   const bytePlusModeAllowed = isPublicSeedanceBytePlus
     ? isSeedanceBytePlusModeAllowed(mode)
@@ -126,6 +154,7 @@ export async function resolveGenerateRouteContext(params: {
       mode,
       payment,
       providerKey,
+      providerRoutingPlan,
     },
   };
 }

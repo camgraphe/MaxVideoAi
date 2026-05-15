@@ -97,9 +97,10 @@ Confirmed video endpoints:
 
 Confirmed request fields relevant to phase 1:
 
-- Text to Video supports `model_name`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, and `watermark_info`.
-- Image to Video supports `model_name`, `image`, `image_tail`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, masks, and `watermark_info`.
-- Omni Video supports `model_name`, `prompt`, `image_list`, `video_list`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, and `watermark_info`.
+- Text to Video supports `model_name`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, and `cfg_scale`.
+- Image to Video supports `model_name`, `image`, `image_tail`, `prompt`, `negative_prompt`, `duration`, `mode`, `sound`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, `multi_prompt`, `cfg_scale`, `element_list`, `camera_control`, `static_mask`, and `dynamic_masks`.
+- Omni Video supports `model_name`, `prompt`, `image_list`, `video_list`, `duration`, `mode`, `sound`, `aspect_ratio`, `callback_url`, `external_task_id`, `multi_shot`, `shot_type`, and `multi_prompt`.
+- Kling `watermark_info` is intentionally not exposed or sent in phase 1; MaxVideoAI should always request the clean output path.
 - `mode` enum: `std`, `pro`, `4k`.
 - `sound` enum: `on`, `off`.
 - `aspect_ratio` enum for relevant routes: `16:9`, `9:16`, `1:1`.
@@ -110,7 +111,7 @@ Confirmed model name enums relevant to phase 1:
 
 - Text to Video includes `kling-v3`.
 - Image to Video includes `kling-v3`.
-- Omni Video includes `kling-video-o1` and `kling-v3-omni`.
+- Omni Video includes `kling-v3-omni`; this route is intentionally deferred. Do not wire `kling-video-o1`.
 
 Error classification details from General Info:
 
@@ -128,6 +129,8 @@ Kling direct starts in admin/test mode:
 - `KLING_DIRECT_ENABLED`
 - `KLING_DIRECT_PUBLIC_ROUTING_ENABLED=false`
 - `KLING_DIRECT_FALLBACK_TO_FAL_ENABLED`
+- `KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED=false`
+- `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=false`
 - `KLING_DIRECT_ADMIN_ONLY=true`
 - `KLING_ACCESS_KEY`
 - `KLING_SECRET_KEY`
@@ -175,6 +178,14 @@ For Kling 3 engines, when flags allow Kling direct:
 6. If Kling submit fails without a usable task id and the error is fallback-safe, close attempt `1`, create attempt `2` for `fal`, and submit through Fal.
 7. If Kling submit fails with a non-fallback-safe error, fail/refund using the existing payment failure rules.
 
+For source subject references, phase 1 avoids automatic Kling element id creation by default:
+
+- `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=false` means MaxVideoAI must not call `/v1/general/advanced-custom-elements`.
+- If a Kling 3 request includes source subject references while element registration is disabled, route the job to Fal as the primary provider before any Kling submit.
+- Start image, end frame, multi-prompt, audio toggle, camera control, and motion brush do not require Kling element ids.
+- Raw Kling `element_id` / `element_list` values remain provider-internal and are not accepted from the public app payload.
+- Enabling element registration later is a deliberate feature flag decision, because creating a Kling element can create provider-side cost.
+
 Fallback-safe pre-acceptance errors:
 
 - network timeout during submit
@@ -182,16 +193,18 @@ Fallback-safe pre-acceptance errors:
 - HTTP 5xx / service codes `5000`, `5001`, `5002`
 - provider unavailable
 - invalid provider response with no usable task id
+- optionally, depleted prepaid Kling credits/resource pack (`1102`) when `KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED=true`
 
 Never fallback automatically for:
 
 - moderation / safety rejection
 - invalid request
 - auth error
-- insufficient credits
+- account arrears/postpaid billing issue (`1101`)
 - unsupported params
-- account arrears, depleted resource pack, expired resource pack, unauthorized API/model access
+- expired resource pack, unauthorized API/model access
 - any error after Kling direct returned a task id
+- options that cannot be represented in the fallback Fal payload without losing intent
 
 ## Polling Rules
 
@@ -248,13 +261,30 @@ In this schema, `provider_attempts.job_id` intentionally references `app_jobs.id
 
 ## Kling Direct Mapping
 
-Initial mapping remains conservative and explicit until official API fields are verified:
+Initial mapping remains conservative and explicit for current phase 1 implementation:
 
-- `kling-3-standard` -> Kling direct `model_name: "kling-v3"` or `"kling-v3-omni"` after quality/cost test, `mode: "std"`, no audio by default.
-- `kling-3-pro` -> Kling direct `model_name: "kling-v3"` or `"kling-v3-omni"`, `mode: "pro"`.
-- `kling-3-4k` -> Kling direct 4K route from Kling V3 / Video-3O pricing; exact request field to confirm.
+- `kling-3-standard` -> Kling direct `model_name: "kling-v3"`, `mode: "std"`.
+- `kling-3-pro` -> Kling direct `model_name: "kling-v3"`, `mode: "pro"`.
+- `kling-3-4k` -> Kling direct `model_name: "kling-v3"`, `mode: "4k"`.
 
-Admin smoke tests should prioritize `kling-v3-omni` / Video-3O because current visible pricing appears better for Pro with native audio.
+`kling-v3-omni` should be implemented later as a separate endpoint-family route, not hidden behind the current `text2video` / `image2video` mapping. `kling-video-o1` is excluded from the active plan.
+
+Current V3 capability notes from the official capability map:
+
+- `kling-v3` voice control is not supported; do not expose or submit `voice_list` for current direct routes.
+- `kling-v3` I2V `std` and `pro` support `camera_control`, `static_mask`, `dynamic_masks`, and `element_list`.
+- `kling-v3` I2V `4k` supports `element_list`, but not `camera_control` or motion brush.
+- `image_tail`, `camera_control`, and `static_mask`/`dynamic_masks` are mutually exclusive and must be rejected before provider submit.
+
+Element parity should use a MaxVideoAI-owned element payload:
+
+- Store source element assets in MaxVideoAI/S3 and keep their `assetId` values in the generation payload.
+- Send Fal `elements` from the source URLs.
+- Send Kling direct `element_list` only from known Kling `element_id` / `providerElementId` values when `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=true`.
+- Do not expose raw `element_list` as a public engine field. Kling element creation uses `/v1/general/advanced-custom-elements`; MaxVideoAI caches registrations in `provider_element_assets` only when the explicit registration flag is enabled.
+- While registration is disabled, source subject references remain Fal-only so the user can provide images/references without creating Kling ids or provider-side element registration cost.
+- If a Kling element creation task is accepted but does not complete, do not launch automatic Fal fallback for that generation; this avoids ambiguous element-generation cost and audit state.
+- Do not expose or submit `voice_ids` / `voice_list` in this phase.
 
 ## Cost Accounting
 
@@ -293,7 +323,7 @@ Add focused architecture and behavior tests:
 Manual smoke tests after implementation:
 
 - Admin-only `kling-3-standard` text-to-video.
-- Admin-only `kling-3-pro` text-to-video with native audio.
+- Admin-only `kling-3-pro` text-to-video with `sound: "on"`.
 - Admin-only `kling-3-pro` image-to-video.
 - Admin-only `kling-3-4k` if the exact 4K request field is confirmed.
 - Forced pre-acceptance fallback to Fal by simulating 429/5xx/no-task-id.
@@ -301,7 +331,6 @@ Manual smoke tests after implementation:
 
 ## Open Implementation Confirmations
 
-- Whether Text/Image `kling-v3` or Omni `kling-v3-omni` should be the preferred route for each public Kling 3 MaxVideoAI engine after real quality/cost tests.
-- Exact request-field combination for native 4K on each selected route.
+- When to add `kling-v3-omni` as a separate endpoint family for Omni references.
 - Exact provider status values and terminal failure messages.
 - Whether callbacks are reliable enough for phase 1 or polling should be primary with callback support added later.

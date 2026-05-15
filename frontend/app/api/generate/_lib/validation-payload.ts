@@ -1,3 +1,4 @@
+import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './validate';
 
@@ -49,7 +50,7 @@ export function buildGenerateValidationPayload(params: {
   audioUrls: string[];
   resolvedAudioUrl: string | null | undefined;
   sourceInputVideoUrl: string | null | undefined;
-  elements: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }> | null;
+  elements: MaxVideoProviderElement[] | null;
   isLumaRay2: boolean;
   initialImageUrl: string | null | undefined;
   deps?: GenerateValidationDeps;

@@ -75,4 +75,89 @@ export async function ensureBillingProviderSchema(): Promise<void> {
         ON app_generate_metrics (job_id)
         WHERE job_id IS NOT NULL;
     `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS provider_attempts (
+        id BIGSERIAL PRIMARY KEY,
+        job_id BIGINT NOT NULL REFERENCES app_jobs(id) ON DELETE CASCADE,
+        attempt_index INTEGER NOT NULL,
+        provider TEXT NOT NULL,
+        provider_model TEXT,
+        status TEXT NOT NULL,
+        provider_job_id TEXT,
+        started_at TIMESTAMPTZ,
+        accepted_at TIMESTAMPTZ,
+        finished_at TIMESTAMPTZ,
+        error_code TEXT,
+        error_class TEXT,
+        fallback_eligible BOOLEAN NOT NULL DEFAULT FALSE,
+        fallback_to_attempt_id BIGINT REFERENCES provider_attempts(id),
+        request_snapshot JSONB,
+        response_snapshot JSONB,
+        provider_cost_usd NUMERIC(12, 6),
+        provider_cost_units NUMERIC(12, 6),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (job_id, attempt_index)
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_attempts_job_attempt_idx
+        ON provider_attempts (job_id, attempt_index);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_attempts_provider_job_idx
+        ON provider_attempts (provider, provider_job_id)
+        WHERE provider_job_id IS NOT NULL;
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_attempts_status_updated_idx
+        ON provider_attempts (status, updated_at);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_attempts_provider_created_idx
+        ON provider_attempts (provider, created_at DESC);
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS provider_element_assets (
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT,
+        provider TEXT NOT NULL,
+        provider_model TEXT,
+        source_fingerprint TEXT NOT NULL,
+        source_snapshot JSONB,
+        provider_element_id TEXT,
+        provider_task_id TEXT,
+        status TEXT NOT NULL,
+        reference_type TEXT,
+        request_snapshot JSONB,
+        response_snapshot JSONB,
+        provider_cost_usd NUMERIC(12, 6),
+        provider_cost_units NUMERIC(12, 6),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (provider, source_fingerprint)
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_element_assets_provider_fingerprint_idx
+        ON provider_element_assets (provider, source_fingerprint);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_element_assets_user_provider_idx
+        ON provider_element_assets (user_id, provider, created_at DESC);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS provider_element_assets_provider_task_idx
+        ON provider_element_assets (provider, provider_task_id)
+        WHERE provider_task_id IS NOT NULL;
+    `);
 }

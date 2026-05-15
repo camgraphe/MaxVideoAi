@@ -211,6 +211,7 @@ test('prepareGenerationInputs builds Kling element and multi-prompt payloads', (
       id: 'element_1',
       frontal: {
         id: 'frontal',
+        assetId: 'asset_frontal',
         previewUrl: 'https://cdn.example.com/frontal.jpg',
         kind: 'image',
         name: 'frontal.jpg',
@@ -220,6 +221,7 @@ test('prepareGenerationInputs builds Kling element and multi-prompt payloads', (
       references: [
         {
           id: 'ref',
+          assetId: 'asset_ref',
           previewUrl: 'https://cdn.example.com/kling-ref.jpg',
           kind: 'image',
           name: 'ref.jpg',
@@ -236,6 +238,7 @@ test('prepareGenerationInputs builds Kling element and multi-prompt payloads', (
       references: [null],
       video: {
         id: 'video',
+        assetId: 'asset_video',
         previewUrl: 'https://cdn.example.com/kling-video.mp4',
         kind: 'video',
         name: 'video.mp4',
@@ -273,14 +276,22 @@ test('prepareGenerationInputs builds Kling element and multi-prompt payloads', (
   assertReady(result);
   assert.deepEqual(result.klingElementsPayload, [
     {
+      id: 'element_1',
       frontalImageUrl: 'https://cdn.example.com/frontal.jpg',
+      frontalAssetId: 'asset_frontal',
       referenceImageUrls: ['https://cdn.example.com/kling-ref.jpg'],
+      referenceAssetIds: ['asset_ref'],
       videoUrl: undefined,
+      videoAssetId: undefined,
     },
     {
+      id: 'element_2',
       frontalImageUrl: undefined,
+      frontalAssetId: undefined,
       referenceImageUrls: undefined,
+      referenceAssetIds: undefined,
       videoUrl: 'https://cdn.example.com/kling-video.mp4',
+      videoAssetId: 'asset_video',
     },
   ]);
   assert.deepEqual(result.multiPromptPayload, [

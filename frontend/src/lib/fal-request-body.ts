@@ -6,6 +6,8 @@ import {
 } from '@/lib/luma-ray2';
 import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } from '@/lib/fal-model-helpers';
 import { buildSoraFalInput } from '@/lib/sora';
+import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
+import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export function buildFalGenerationRequest(
@@ -88,12 +90,9 @@ export function buildFalGenerationRequest(
   if (payload.voiceIds && payload.voiceIds.length) {
     requestBody.voice_ids = payload.voiceIds;
   }
-  if (payload.elements && payload.elements.length) {
-    requestBody.elements = payload.elements.map((entry) => ({
-      frontal_image_url: entry.frontalImageUrl,
-      reference_image_urls: entry.referenceImageUrls,
-      video_url: entry.videoUrl,
-    }));
+  const falElements = buildFalElementInputs(payload.elements);
+  if (falElements) {
+    requestBody.elements = falElements;
   }
   if (payload.endImageUrl) {
     requestBody.end_image_url = payload.endImageUrl;
@@ -293,8 +292,11 @@ export function buildFalGenerationRequest(
     delete requestBody.video_urls;
   }
 
-  if (payload.extraInputValues) {
-    Object.entries(payload.extraInputValues).forEach(([key, value]) => {
+  const extraInputValues = payload.engineId.startsWith('kling-3')
+    ? stripKlingDirectOnlyExtraInputValues(payload.extraInputValues)
+    : payload.extraInputValues;
+  if (extraInputValues) {
+    Object.entries(extraInputValues).forEach(([key, value]) => {
       if (value === undefined || value === null || key in requestBody) return;
       requestBody[key] = value;
     });

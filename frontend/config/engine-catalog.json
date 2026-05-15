@@ -4043,6 +4043,33 @@
             "minCount": 0,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "camera_control",
+            "type": "text",
+            "label": "Camera control JSON",
+            "description": "Kling direct i2v only. Example: {\"type\":\"simple\",\"config\":{\"zoom\":4}}. Cannot be combined with end frame or motion brush.",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "static_mask",
+            "type": "text",
+            "label": "Static mask URL",
+            "description": "Kling direct motion brush mask URL. Cannot be combined with end frame or camera control.",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "dynamic_masks",
+            "type": "text",
+            "label": "Dynamic masks JSON",
+            "description": "Kling direct motion brush JSON array. Cannot be combined with end frame or camera control.",
+            "modes": [
+              "i2v"
+            ]
           }
         ],
         "constraints": {
@@ -4073,7 +4100,7 @@
         "unit": "USD/s",
         "base": 0.168,
         "currency": "USD",
-        "notes": "Provider cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
+        "notes": "Provider cost: $0.112/s audio off and $0.168/s audio on. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4165,7 +4192,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Add end frames or elements for tighter motion control."
+          "notes": "Add end frames or subject references for tighter motion control."
         }
       }
     ],
@@ -4396,6 +4423,33 @@
             "minCount": 0,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "camera_control",
+            "type": "text",
+            "label": "Camera control JSON",
+            "description": "Kling direct i2v only. Example: {\"type\":\"simple\",\"config\":{\"zoom\":4}}. Cannot be combined with end frame or motion brush.",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "static_mask",
+            "type": "text",
+            "label": "Static mask URL",
+            "description": "Kling direct motion brush mask URL. Cannot be combined with end frame or camera control.",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "dynamic_masks",
+            "type": "text",
+            "label": "Dynamic masks JSON",
+            "description": "Kling direct motion brush JSON array. Cannot be combined with end frame or camera control.",
+            "modes": [
+              "i2v"
+            ]
           }
         ],
         "constraints": {
@@ -4426,7 +4480,7 @@
         "unit": "USD/s",
         "base": 0.126,
         "currency": "USD",
-        "notes": "Provider cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
+        "notes": "Provider cost: $0.084/s audio off and $0.126/s audio on. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4518,7 +4572,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Add end frames or elements for tighter motion control."
+          "notes": "Add end frames or subject references for tighter motion control."
         }
       }
     ],

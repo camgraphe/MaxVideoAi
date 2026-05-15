@@ -19,9 +19,13 @@ export type GenerationAttachmentPayload = {
 };
 
 export type GenerationKlingElementPayload = {
+  id?: string;
   frontalImageUrl?: string;
+  frontalAssetId?: string;
   referenceImageUrls?: string[];
+  referenceAssetIds?: string[];
   videoUrl?: string;
+  videoAssetId?: string;
 };
 
 export type GenerationInputPreparationResult =
@@ -114,10 +118,10 @@ function buildKlingElementsPayload(
     const assetsToCheck = [frontal, ...references, video].filter(Boolean) as KlingElementAsset[];
     for (const asset of assetsToCheck) {
       if (asset.status === 'uploading') {
-        return { ok: false, message: 'Please wait for element uploads to finish before generating.' };
+        return { ok: false, message: 'Please wait for reference uploads to finish before generating.' };
       }
       if (asset.status === 'error' || !asset.url) {
-        return { ok: false, message: 'One of your element assets failed to upload. Remove it and try again.' };
+        return { ok: false, message: 'One of your subject references failed to upload. Remove it and try again.' };
       }
     }
 
@@ -132,18 +136,25 @@ function buildKlingElementsPayload(
     if (!hasImageSet && !hasVideoReference) {
       return {
         ok: false,
-        message: 'Each Kling element needs a frontal image plus at least one reference image, or one video reference.',
+        message: 'Each subject reference needs a frontal image plus at least one reference image, or one video reference.',
       };
     }
+    const referenceAssetIds = references
+      .map((asset) => asset.assetId)
+      .filter((assetId): assetId is string => Boolean(assetId));
     collected.push({
+      id: element.id,
       frontalImageUrl: frontalUrl,
+      frontalAssetId: frontal?.assetId,
       referenceImageUrls: referenceUrls.length ? referenceUrls : undefined,
+      referenceAssetIds: referenceAssetIds.length ? referenceAssetIds : undefined,
       videoUrl,
+      videoAssetId: video?.assetId,
     });
   }
 
   if (videoCount > 1) {
-    return { ok: false, message: 'Only one Kling element can include a video reference.' };
+    return { ok: false, message: 'Only one subject reference can include a video reference.' };
   }
 
   return {
