@@ -45,13 +45,13 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'kling-3-pro': {
     description:
-      'Kling 3 Pro adds multi-prompt sequencing, element references, and voice controls for long-form cinematic shots.',
-    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+      'Kling 3 Pro adds multi-prompt sequencing, subject references, and native audio for long-form cinematic shots.',
+    badges: ['Multi-prompt', 'Subject refs', 'Audio native'],
   },
   'kling-3-standard': {
     description:
-      'Kling 3 Standard brings multi-prompt sequencing and element references at a lower per-second rate.',
-    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+      'Kling 3 Standard brings multi-prompt sequencing and subject references at a lower per-second rate.',
+    badges: ['Multi-prompt', 'Subject refs', 'Audio native'],
   },
   'seedance-1-5-pro': {
     description:

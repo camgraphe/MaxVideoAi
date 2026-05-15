@@ -120,13 +120,6 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
         description: 'Kling direct motion brush JSON array. Cannot be combined with end frame or camera control.',
         modes: ['i2v'],
       },
-      {
-        id: 'element_list',
-        type: 'text',
-        label: 'Kling element IDs',
-        description: 'Comma-separated Kling element_id values from the Kling element library. Up to 3.',
-        modes: ['i2v'],
-      },
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
@@ -151,7 +144,7 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.168,
     currency: 'USD',
-    notes: 'Provider cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
+    notes: 'Provider cost: $0.112/s audio off and $0.168/s audio on. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -203,7 +196,7 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Add end frames or elements for tighter motion control.',
+          notes: 'Add end frames or subject references for tighter motion control.',
         },
       },
     ],
@@ -211,12 +204,12 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Kling 3 Pro – Multi-prompt Text & Image to Video | MaxVideoAI',
       description:
-        'Direct Kling 3 Pro renders with multi-prompt sequencing, element references, and voice controls. Generate cinematic 3–15s clips in 1080p.',
+        'Direct Kling 3 Pro renders with multi-prompt sequencing, subject references, and native audio. Generate cinematic 3-15s clips in 1080p.',
       canonicalPath: '/models/kling-3-pro',
     },
     type: 'textImage',
     seoText:
-      'Kling 3 Pro brings scene-level prompting, element references, and voice control to longer cinematic clips. Build multi-shot sequences with native audio from one workspace.',
+      'Kling 3 Pro brings scene-level prompting, subject references, and native audio to longer cinematic clips. Build multi-shot sequences from one workspace.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
@@ -250,9 +243,9 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           'Yes. Use multi-prompt to chain scenes with per-scene durations up to the 15s cap.',
       },
       {
-        question: 'What are elements used for?',
+        question: 'What are subject references used for?',
         answer:
-          'Elements let you add frontal + reference images (and an optional reference video) to anchor characters or products during image-to-video runs.',
+          'Subject references let you add frontal + reference images, plus an optional reference video, to anchor characters or products during image-to-video runs.',
       },
     ],
     pricingHint: {

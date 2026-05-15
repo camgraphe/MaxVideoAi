@@ -78,6 +78,8 @@ export async function submitGenerateProviderTask(params: {
       paymentMode: params.paymentMode,
       walletChargeReserved: params.walletChargeReserved,
       fallbackToFalEnabled: params.providerRoutingPlan.fallbackEnabled,
+      fallbackOnCreditsDepletedEnabled: params.providerRoutingPlan.fallbackOnCreditsDepletedEnabled,
+      elementRegistrationEnabled: params.providerRoutingPlan.elementRegistrationEnabled,
       falPayload: params.falPayload,
       falInputSummary: params.falInputSummary,
       isLumaRay2: params.isLumaRay2,

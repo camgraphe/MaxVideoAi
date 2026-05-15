@@ -5,6 +5,10 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import {
+  buildKlingDirectElementList,
+} from '../frontend/src/lib/video-provider-elements';
+import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body';
+import {
   classifyKlingDirectError,
   KlingDirectError,
   shouldFallbackFromKlingDirectSubmit,
@@ -18,9 +22,11 @@ import {
 } from '../frontend/src/server/video-providers/kling-direct/model-map';
 import {
   resolveVideoProviderRoutingPlan,
+  shouldRouteKlingDirectSourceElementsToFal,
 } from '../frontend/src/server/video-providers/router';
 import {
   getKlingDirectRouteCapabilities,
+  isKlingDirectFalFallbackCompatible,
   sanitizeKlingDirectFalFallbackPayload,
 } from '../frontend/src/server/video-providers/kling-direct/capabilities';
 
@@ -45,6 +51,7 @@ test('Kling direct router selects admin-only primary routing without changing pu
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
         KLING_DIRECT_ADMIN_ONLY: 'true',
         KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
+        KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED: 'true',
       },
     });
 
@@ -53,8 +60,46 @@ test('Kling direct router selects admin-only primary routing without changing pu
       primaryProvider: 'kling_direct',
       fallbackProvider: 'fal',
       fallbackEnabled: true,
+      fallbackOnCreditsDepletedEnabled: true,
+      elementRegistrationEnabled: false,
     });
   }
+});
+
+test('Kling direct routes source subject references to Fal unless element registration is enabled', () => {
+  const disabledPlan = resolveVideoProviderRoutingPlan({
+    engineId: 'kling-3-pro',
+    mode: 'i2v',
+    isAdmin: true,
+    env: {
+      KLING_DIRECT_ENABLED: 'true',
+      KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
+      KLING_DIRECT_ADMIN_ONLY: 'true',
+      KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
+    },
+  });
+  assert.equal(shouldRouteKlingDirectSourceElementsToFal({ providerRoutingPlan: disabledPlan, elementCount: 1 }), true);
+
+  const enabledPlan = resolveVideoProviderRoutingPlan({
+    engineId: 'kling-3-pro',
+    mode: 'i2v',
+    isAdmin: true,
+    env: {
+      KLING_DIRECT_ENABLED: 'true',
+      KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
+      KLING_DIRECT_ADMIN_ONLY: 'true',
+      KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
+      KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED: 'true',
+    },
+  });
+  assert.equal(
+    shouldRouteKlingDirectSourceElementsToFal({ providerRoutingPlan: enabledPlan, elementCount: 1 }),
+    false
+  );
+  if (enabledPlan.kind !== 'kling_direct_primary') {
+    throw new Error('Expected Kling direct plan');
+  }
+  assert.equal(enabledPlan.elementRegistrationEnabled, true);
 });
 
 test('Kling direct router falls back to existing Fal routing for public users and unsupported modes', () => {
@@ -183,7 +228,7 @@ test('Kling 3 engine schemas expose current direct V3 options conservatively', (
     ['kling-3-standard', 'kling-3-pro', 'kling-3-4k'].map((engineId) =>
       optionalIds(engineId).has('element_list')
     ),
-    [true, true, true]
+    [false, false, false]
   );
   assert.deepEqual(
     ['kling-3-standard', 'kling-3-pro', 'kling-3-4k'].map((engineId) =>
@@ -239,8 +284,18 @@ test('Kling direct payload preserves supported advanced Kling V3 provider option
     imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
     extraInputValues: {
       camera_control: '{"type":"simple","config":{"zoom":4}}',
-      element_list: '160, 161',
     },
+    elements: [
+      {
+        providerElementId: '160',
+        frontalImageUrl: 'https://cdn.maxvideoai.com/subject-front.jpg',
+        referenceImageUrls: ['https://cdn.maxvideoai.com/subject-side.jpg'],
+      },
+      {
+        providerElementId: 161,
+        videoUrl: 'https://cdn.maxvideoai.com/subject-video.mp4',
+      },
+    ],
   });
 
   assert.equal(imagePayload.body.image, 'https://cdn.maxvideoai.com/start.jpg');
@@ -320,6 +375,13 @@ test('Kling direct fallback to Fal strips direct-only extra params', () => {
   const sanitized = sanitizeKlingDirectFalFallbackPayload({
     engineId: 'kling-3-pro',
     prompt: 'Fallback prompt',
+    elements: [
+      {
+        providerElementId: 160,
+        frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+        referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+      },
+    ],
     extraInputValues: {
       camera_control: '{"type":"simple","config":{"zoom":4}}',
       static_mask: 'https://cdn.maxvideoai.com/mask.png',
@@ -331,6 +393,46 @@ test('Kling direct fallback to Fal strips direct-only extra params', () => {
   });
 
   assert.deepEqual(sanitized.extraInputValues, { keep_for_fal: 'yes' });
+  assert.deepEqual(sanitized.elements, [
+    {
+      providerElementId: 160,
+      frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+      referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+    },
+  ]);
+});
+
+test('Kling direct fallback to Fal requires portable MaxVideoAI options', () => {
+  assert.equal(
+    isKlingDirectFalFallbackCompatible({
+      engineId: 'kling-3-pro',
+      prompt: 'Fallback prompt',
+      elements: [
+        {
+          providerElementId: 160,
+          frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+          referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+        },
+      ],
+    }),
+    true
+  );
+  assert.equal(
+    isKlingDirectFalFallbackCompatible({
+      engineId: 'kling-3-pro',
+      prompt: 'Fallback prompt',
+      extraInputValues: { element_list: '160,161' },
+    }),
+    false
+  );
+  assert.equal(
+    isKlingDirectFalFallbackCompatible({
+      engineId: 'kling-3-pro',
+      prompt: 'Fallback prompt',
+      extraInputValues: { camera_control: '{"type":"simple","config":{"zoom":4}}' },
+    }),
+    false
+  );
 });
 
 test('Kling direct fallback classification is limited to pre-acceptance safe submit errors', () => {
@@ -364,6 +466,7 @@ test('Kling direct fallback classification is limited to pre-acceptance safe sub
       acceptedProviderJobId: 'task_accepted',
       error: new KlingDirectError('provider error after acceptance', { status: 500, code: '5000' }),
       fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: true,
     }),
     false
   );
@@ -372,9 +475,113 @@ test('Kling direct fallback classification is limited to pre-acceptance safe sub
       acceptedProviderJobId: null,
       error: new KlingDirectError('provider error before acceptance', { status: 500, code: '5000' }),
       fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: false,
     }),
     true
   );
+});
+
+test('Kling direct can fall back on depleted prepaid credits only before provider acceptance', () => {
+  const depletedPack = new KlingDirectError('prepaid resource pack depleted', { status: 429, code: '1102' });
+  const accountArrears = new KlingDirectError('account in arrears', { status: 429, code: '1101' });
+
+  assert.equal(classifyKlingDirectError(depletedPack).fallbackEligible, false);
+  assert.equal(
+    shouldFallbackFromKlingDirectSubmit({
+      acceptedProviderJobId: null,
+      error: depletedPack,
+      fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: false,
+    }),
+    false
+  );
+  assert.equal(
+    shouldFallbackFromKlingDirectSubmit({
+      acceptedProviderJobId: null,
+      error: depletedPack,
+      fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: true,
+    }),
+    true
+  );
+  assert.equal(
+    shouldFallbackFromKlingDirectSubmit({
+      acceptedProviderJobId: 'task_accepted',
+      error: depletedPack,
+      fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: true,
+    }),
+    false
+  );
+  assert.equal(
+    shouldFallbackFromKlingDirectSubmit({
+      acceptedProviderJobId: null,
+      error: accountArrears,
+      fallbackToFalEnabled: true,
+      fallbackOnCreditsDepletedEnabled: true,
+    }),
+    false
+  );
+});
+
+test('MaxVideoAI element payload maps to Kling element_list and Fal elements without voice ids', () => {
+  const elements = [
+    {
+      id: 'element_1',
+      providerElementId: '160',
+      frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+      referenceImageUrls: ['https://cdn.maxvideoai.com/ref-a.png', 'https://cdn.maxvideoai.com/ref-b.png'],
+      frontalAssetId: 'asset_front',
+      referenceAssetIds: ['asset_ref_a', 'asset_ref_b'],
+    },
+    {
+      id: 'element_2',
+      providerElementId: 161,
+      videoUrl: 'https://cdn.maxvideoai.com/element.mp4',
+      videoAssetId: 'asset_video',
+    },
+  ];
+
+  assert.deepEqual(buildKlingDirectElementList(elements), [{ element_id: 160 }, { element_id: 161 }]);
+
+  const directPayload = buildKlingDirectPayload({
+    engineId: 'kling-3-pro',
+    jobId: 'job_elements',
+    mode: 'i2v',
+    prompt: 'Keep both source elements consistent',
+    durationSec: 5,
+    imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+    elements,
+    voiceIds: ['voice_should_not_send'],
+  });
+  assert.deepEqual(directPayload.body.element_list, [{ element_id: 160 }, { element_id: 161 }]);
+  assert.equal(directPayload.body.voice_list, undefined);
+
+  const falRequest = buildFalGenerationRequest(
+    {
+      engineId: 'kling-3-pro',
+      prompt: 'Keep both source elements consistent',
+      mode: 'i2v',
+      durationSec: 5,
+      imageUrl: 'https://cdn.maxvideoai.com/start.jpg',
+      elements,
+      voiceIds: [],
+    },
+    'fal-ai/kling-video/v3/pro/image-to-video'
+  );
+  assert.deepEqual(falRequest.requestBody.elements, [
+    {
+      frontal_image_url: 'https://cdn.maxvideoai.com/front.png',
+      reference_image_urls: ['https://cdn.maxvideoai.com/ref-a.png', 'https://cdn.maxvideoai.com/ref-b.png'],
+      video_url: undefined,
+    },
+    {
+      frontal_image_url: undefined,
+      reference_image_urls: undefined,
+      video_url: 'https://cdn.maxvideoai.com/element.mp4',
+    },
+  ]);
+  assert.equal(falRequest.requestBody.voice_ids, undefined);
 });
 
 test('generate route delegates Kling direct submission and does not build Kling payloads inline', () => {

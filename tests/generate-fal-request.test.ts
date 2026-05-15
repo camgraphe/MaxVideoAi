@@ -257,6 +257,16 @@ test('Fal request body strips Kling direct-only provider extras', () => {
       mode: 'i2v',
       durationSec: 5,
       imageUrl: 'https://cdn.maxvideoai.com/start.png',
+      elements: [
+        {
+          id: 'element_1',
+          providerElementId: 160,
+          frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+          referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+          frontalAssetId: 'asset_front',
+          referenceAssetIds: ['asset_ref'],
+        },
+      ],
       extraInputValues: {
         camera_control: '{"type":"simple","config":{"zoom":4}}',
         static_mask: 'https://cdn.maxvideoai.com/mask.png',
@@ -275,4 +285,11 @@ test('Fal request body strips Kling direct-only provider extras', () => {
   assert.equal(result.requestBody.element_list, undefined);
   assert.equal(result.requestBody.watermark_enabled, undefined);
   assert.equal(result.requestBody.keep_for_fal, 'yes');
+  assert.deepEqual(result.requestBody.elements, [
+    {
+      frontal_image_url: 'https://cdn.maxvideoai.com/front.png',
+      reference_image_urls: ['https://cdn.maxvideoai.com/ref.png'],
+      video_url: undefined,
+    },
+  ]);
 });

@@ -17,6 +17,7 @@ import {
 } from '@/server/video-providers/byteplus-modelark';
 import {
   resolveVideoProviderRoutingPlan,
+  shouldRouteKlingDirectSourceElementsToFal,
   type VideoProviderRoutingPlan,
 } from '@/server/video-providers/router';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
@@ -97,9 +98,17 @@ export async function resolveGenerateRouteContext(params: {
       isAdminForKlingDirect = false;
     }
   }
-  const providerRoutingPlan = isBytePlusV1a
+  let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
     ? ({ kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const)
     : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: isAdminForKlingDirect });
+  if (
+    shouldRouteKlingDirectSourceElementsToFal({
+      providerRoutingPlan,
+      elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
+    })
+  ) {
+    providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
 
   const bytePlusRequiresAdmin =

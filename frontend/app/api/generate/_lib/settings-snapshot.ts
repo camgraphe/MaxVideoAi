@@ -1,4 +1,5 @@
 import type { GenerateAttachment } from '@/lib/fal';
+import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import type { Mode } from '@/types/engines';
 
 type MultiPromptEntry = {
@@ -6,11 +7,7 @@ type MultiPromptEntry = {
   duration: number;
 };
 
-type GenerationElement = {
-  frontalImageUrl?: string;
-  referenceImageUrls?: string[];
-  videoUrl?: string;
-};
+type GenerationElement = MaxVideoProviderElement;
 
 export type GenerationSettingsSnapshot = Record<string, unknown>;
 

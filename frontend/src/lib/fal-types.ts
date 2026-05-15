@@ -1,5 +1,6 @@
 import type { QueueStatus } from '@fal-ai/client';
 import type { SoraRequest } from '@/lib/sora';
+import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import type { ResultProviderMode } from '@/types/providers';
 import type { VideoAsset } from '@/types/render';
 
@@ -45,7 +46,7 @@ export type GeneratePayload = {
   cameraFixed?: boolean;
   safetyChecker?: boolean;
   voiceIds?: string[];
-  elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
+  elements?: MaxVideoProviderElement[];
   endImageUrl?: string;
   extraInputValues?: Record<string, unknown>;
 };

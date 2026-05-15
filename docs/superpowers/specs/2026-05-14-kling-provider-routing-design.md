@@ -129,6 +129,8 @@ Kling direct starts in admin/test mode:
 - `KLING_DIRECT_ENABLED`
 - `KLING_DIRECT_PUBLIC_ROUTING_ENABLED=false`
 - `KLING_DIRECT_FALLBACK_TO_FAL_ENABLED`
+- `KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED=false`
+- `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=false`
 - `KLING_DIRECT_ADMIN_ONLY=true`
 - `KLING_ACCESS_KEY`
 - `KLING_SECRET_KEY`
@@ -176,6 +178,14 @@ For Kling 3 engines, when flags allow Kling direct:
 6. If Kling submit fails without a usable task id and the error is fallback-safe, close attempt `1`, create attempt `2` for `fal`, and submit through Fal.
 7. If Kling submit fails with a non-fallback-safe error, fail/refund using the existing payment failure rules.
 
+For source subject references, phase 1 avoids automatic Kling element id creation by default:
+
+- `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=false` means MaxVideoAI must not call `/v1/general/advanced-custom-elements`.
+- If a Kling 3 request includes source subject references while element registration is disabled, route the job to Fal as the primary provider before any Kling submit.
+- Start image, end frame, multi-prompt, audio toggle, camera control, and motion brush do not require Kling element ids.
+- Raw Kling `element_id` / `element_list` values remain provider-internal and are not accepted from the public app payload.
+- Enabling element registration later is a deliberate feature flag decision, because creating a Kling element can create provider-side cost.
+
 Fallback-safe pre-acceptance errors:
 
 - network timeout during submit
@@ -183,16 +193,18 @@ Fallback-safe pre-acceptance errors:
 - HTTP 5xx / service codes `5000`, `5001`, `5002`
 - provider unavailable
 - invalid provider response with no usable task id
+- optionally, depleted prepaid Kling credits/resource pack (`1102`) when `KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED=true`
 
 Never fallback automatically for:
 
 - moderation / safety rejection
 - invalid request
 - auth error
-- insufficient credits
+- account arrears/postpaid billing issue (`1101`)
 - unsupported params
-- account arrears, depleted resource pack, expired resource pack, unauthorized API/model access
+- expired resource pack, unauthorized API/model access
 - any error after Kling direct returned a task id
+- options that cannot be represented in the fallback Fal payload without losing intent
 
 ## Polling Rules
 
@@ -263,6 +275,16 @@ Current V3 capability notes from the official capability map:
 - `kling-v3` I2V `std` and `pro` support `camera_control`, `static_mask`, `dynamic_masks`, and `element_list`.
 - `kling-v3` I2V `4k` supports `element_list`, but not `camera_control` or motion brush.
 - `image_tail`, `camera_control`, and `static_mask`/`dynamic_masks` are mutually exclusive and must be rejected before provider submit.
+
+Element parity should use a MaxVideoAI-owned element payload:
+
+- Store source element assets in MaxVideoAI/S3 and keep their `assetId` values in the generation payload.
+- Send Fal `elements` from the source URLs.
+- Send Kling direct `element_list` only from known Kling `element_id` / `providerElementId` values when `KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED=true`.
+- Do not expose raw `element_list` as a public engine field. Kling element creation uses `/v1/general/advanced-custom-elements`; MaxVideoAI caches registrations in `provider_element_assets` only when the explicit registration flag is enabled.
+- While registration is disabled, source subject references remain Fal-only so the user can provide images/references without creating Kling ids or provider-side element registration cost.
+- If a Kling element creation task is accepted but does not complete, do not launch automatic Fal fallback for that generation; this avoids ambiguous element-generation cost and audit state.
+- Do not expose or submit `voice_ids` / `voice_list` in this phase.
 
 ## Cost Accounting
 

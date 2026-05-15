@@ -109,8 +109,15 @@ export function shouldFallbackFromKlingDirectSubmit(params: {
   acceptedProviderJobId: string | null | undefined;
   error: unknown;
   fallbackToFalEnabled: boolean;
+  fallbackOnCreditsDepletedEnabled?: boolean;
 }): boolean {
   if (!params.fallbackToFalEnabled) return false;
   if (params.acceptedProviderJobId) return false;
-  return classifyKlingDirectError(params.error).fallbackEligible;
+  const normalized = classifyKlingDirectError(params.error);
+  if (normalized.fallbackEligible) return true;
+  return (
+    params.fallbackOnCreditsDepletedEnabled === true &&
+    normalized.errorClass === 'insufficient_provider_credits' &&
+    normalized.code === '1102'
+  );
 }

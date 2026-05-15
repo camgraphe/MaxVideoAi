@@ -1,5 +1,6 @@
 import type { GenerateAttachment, GeneratePayload } from '@/lib/fal';
 import type { SoraRequest } from '@/lib/sora';
+import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import type { Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './attachments';
 
@@ -23,11 +24,7 @@ type MultiPromptEntry = {
   duration: number;
 };
 
-type GenerationElement = {
-  frontalImageUrl?: string;
-  referenceImageUrls?: string[];
-  videoUrl?: string;
-};
+type GenerationElement = MaxVideoProviderElement;
 
 export type FalRequestParts = {
   falInputs: GenerateAttachment[] | undefined;

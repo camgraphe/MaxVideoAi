@@ -1,13 +1,14 @@
+import {
+  normalizeMaxVideoProviderElements,
+  type MaxVideoProviderElement,
+} from '@/lib/video-provider-elements';
+
 export type MultiPromptEntry = {
   prompt: string;
   duration: number;
 };
 
-export type GenerationElement = {
-  frontalImageUrl?: string;
-  referenceImageUrls?: string[];
-  videoUrl?: string;
-};
+export type GenerationElement = MaxVideoProviderElement;
 
 export function normalizeMultiPrompt(value: unknown): MultiPromptEntry[] | null {
   if (!Array.isArray(value)) return null;
@@ -47,33 +48,48 @@ export function normalizeStringArray(value: unknown): string[] {
     : [];
 }
 
+function pickString(record: Record<string, unknown>, ...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string' && value.trim().length) {
+      return value.trim();
+    }
+  }
+  return undefined;
+}
+
+function pickStringArray(record: Record<string, unknown>, ...keys: string[]): string[] | undefined {
+  for (const key of keys) {
+    const value = record[key];
+    const normalized = normalizeStringArray(value);
+    if (normalized.length) {
+      return normalized;
+    }
+  }
+  return undefined;
+}
+
 export function normalizeGenerationElements(value: unknown): GenerationElement[] | null {
   if (!Array.isArray(value)) return null;
   const elements = value
     .map((entry: unknown) => {
       if (!entry || typeof entry !== 'object') return null;
       const record = entry as Record<string, unknown>;
-      const frontalImageUrl =
-        typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
-          ? record.frontalImageUrl.trim()
-          : null;
-      const referenceImageUrls = Array.isArray(record.referenceImageUrls)
-        ? record.referenceImageUrls
-            .map((item: unknown) => (typeof item === 'string' ? item.trim() : ''))
-            .filter(isPresentString)
-        : [];
-      const videoUrl =
-        typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
-      if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) return null;
-      const element: GenerationElement = {};
-      if (frontalImageUrl) element.frontalImageUrl = frontalImageUrl;
-      if (referenceImageUrls.length) element.referenceImageUrls = referenceImageUrls;
-      if (videoUrl) element.videoUrl = videoUrl;
+      const element: GenerationElement = {
+        id: pickString(record, 'id'),
+        frontalImageUrl: pickString(record, 'frontalImageUrl', 'frontal_image_url'),
+        frontalAssetId: pickString(record, 'frontalAssetId', 'frontal_asset_id'),
+        referenceImageUrls: pickStringArray(record, 'referenceImageUrls', 'reference_image_urls'),
+        referenceAssetIds: pickStringArray(record, 'referenceAssetIds', 'reference_asset_ids'),
+        videoUrl: pickString(record, 'videoUrl', 'video_url'),
+        videoAssetId: pickString(record, 'videoAssetId', 'video_asset_id'),
+      };
       return element;
     })
     .filter((entry: GenerationElement | null): entry is GenerationElement => Boolean(entry));
+  const normalized = normalizeMaxVideoProviderElements(elements);
 
-  return elements.length ? elements : null;
+  return normalized.length ? normalized : null;
 }
 
 export function trimString(value: unknown): string | null {

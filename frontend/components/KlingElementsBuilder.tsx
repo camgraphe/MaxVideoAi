@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 
 export type KlingElementAsset = {
   id: string;
+  assetId?: string;
   previewUrl: string;
   name: string;
   kind: 'image' | 'video';
@@ -158,9 +159,9 @@ export function KlingElementsBuilder({
     <Card className="space-y-3 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Elements (Kling v3)</h3>
+          <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Subject references</h3>
           <p className="text-[12px] text-text-muted">
-            Use a frontal image plus at least one reference image, or a video reference, for each element.
+            Use a frontal image plus at least one reference image, or a video reference, for each subject.
           </p>
         </div>
         <Button
@@ -171,14 +172,14 @@ export function KlingElementsBuilder({
           disabled={disableAdd}
           className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
         >
-          + Element
+          + Subject
         </Button>
       </div>
       <div className="space-y-4">
         {elements.map((element, index) => (
           <div key={element.id} className="rounded-input border border-border bg-surface-2 p-3">
             <div className="flex items-center justify-between">
-              <span className="text-[12px] uppercase tracking-micro text-text-muted">Element {index + 1}</span>
+              <span className="text-[12px] uppercase tracking-micro text-text-muted">Subject {index + 1}</span>
               {elements.length > 1 && (
                 <Button
                   type="button"

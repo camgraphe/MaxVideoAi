@@ -7,6 +7,7 @@ import {
 import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } from '@/lib/fal-model-helpers';
 import { buildSoraFalInput } from '@/lib/sora';
 import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
+import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export function buildFalGenerationRequest(
@@ -89,12 +90,9 @@ export function buildFalGenerationRequest(
   if (payload.voiceIds && payload.voiceIds.length) {
     requestBody.voice_ids = payload.voiceIds;
   }
-  if (payload.elements && payload.elements.length) {
-    requestBody.elements = payload.elements.map((entry) => ({
-      frontal_image_url: entry.frontalImageUrl,
-      reference_image_urls: entry.referenceImageUrls,
-      video_url: entry.videoUrl,
-    }));
+  const falElements = buildFalElementInputs(payload.elements);
+  if (falElements) {
+    requestBody.elements = falElements;
   }
   if (payload.endImageUrl) {
     requestBody.end_image_url = payload.endImageUrl;

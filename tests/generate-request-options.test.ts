@@ -97,6 +97,46 @@ test('request option helper normalizes multi-prompt duration and render metadata
   assert.equal(result.options.iterationCount, 1);
 });
 
+test('request option helper preserves MaxVideoAI element source metadata without accepting provider ids', () => {
+  const result = buildGenerateRequestOptions({
+    body: {
+      prompt: 'element render',
+      elements: [
+        {
+          id: 'element_1',
+          providerElementId: '160',
+          provider_element_id: '161',
+          frontalImageUrl: ' https://cdn.maxvideoai.com/front.png ',
+          frontalAssetId: 'asset_front',
+          referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png', ''],
+          referenceAssetIds: ['asset_ref'],
+          videoUrl: '',
+          videoAssetId: '',
+        },
+      ],
+    },
+    engine: baseEngine,
+    mode: 'i2v',
+    isBytePlusV1a: false,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+
+  assert.deepEqual(result.options.elements, [
+    {
+      id: 'element_1',
+      providerElementId: undefined,
+      frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+      frontalAssetId: 'asset_front',
+      referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+      referenceAssetIds: ['asset_ref'],
+      videoUrl: undefined,
+      videoAssetId: undefined,
+    },
+  ]);
+});
+
 test('request option helper rejects unsupported BytePlus durations before provider submission', () => {
   const result = buildGenerateRequestOptions({
     body: {

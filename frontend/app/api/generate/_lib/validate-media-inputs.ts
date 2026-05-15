@@ -111,7 +111,7 @@ function validateKlingElements(payload: Record<string, unknown>): ValidationResu
         error: {
           code: 'ENGINE_CONSTRAINT',
           field: 'elements',
-          message: `Kling element ${index + 1} needs a frontal image plus at least one reference image, or one video reference.`,
+          message: `Subject reference ${index + 1} needs a frontal image plus at least one reference image, or one video reference.`,
         },
       };
     }

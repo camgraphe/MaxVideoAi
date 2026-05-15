@@ -1,4 +1,5 @@
 import type { Mode } from '@/types/engines';
+import { buildKlingDirectElementList, type MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import {
   getKlingDirectRouteCapabilities,
   type KlingDirectSubmitCapabilities,
@@ -206,6 +207,7 @@ export function buildKlingDirectPayload(params: {
   audioEnabled?: boolean;
   imageUrl?: string | null;
   endImageUrl?: string | null;
+  elements?: MaxVideoProviderElement[] | null;
   cfgScale?: number | null;
   extraInputValues?: Record<string, unknown> | null;
 }): KlingDirectPayload {
@@ -265,6 +267,13 @@ export function buildKlingDirectPayload(params: {
   }
   if (voiceList.length > 0) {
     body.voice_list = voiceList;
+  }
+  const elementList = buildKlingDirectElementList(params.elements);
+  if (elementList) {
+    if (!capabilities.elementList) {
+      throw new Error('Kling direct route does not support element_list.');
+    }
+    body.element_list = elementList;
   }
   applyKlingDirectExtraInputValues(body, params.extraInputValues, capabilities);
 

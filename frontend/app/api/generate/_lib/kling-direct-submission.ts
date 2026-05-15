@@ -2,10 +2,15 @@ import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
-import { sanitizeKlingDirectFalFallbackPayload } from '@/server/video-providers/kling-direct/capabilities';
+import {
+  isKlingDirectFalFallbackCompatible,
+  sanitizeKlingDirectFalFallbackPayload,
+} from '@/server/video-providers/kling-direct/capabilities';
 import { estimateKlingDirectCost } from '@/server/video-providers/kling-direct/cost';
+import { ensureKlingDirectElementsForPayload } from '@/server/video-providers/kling-direct/elements';
 import {
   classifyKlingDirectError,
+  KlingDirectError,
   shouldFallbackFromKlingDirectSubmit,
 } from '@/server/video-providers/kling-direct/errors';
 import { resolveKlingDirectModelRoute } from '@/server/video-providers/kling-direct/model-map';
@@ -137,6 +142,8 @@ export async function submitKlingDirectGenerateTask(params: {
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
   fallbackToFalEnabled: boolean;
+  fallbackOnCreditsDepletedEnabled: boolean;
+  elementRegistrationEnabled: boolean;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
   isLumaRay2: boolean;
@@ -156,7 +163,7 @@ export async function submitKlingDirectGenerateTask(params: {
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
   const route = resolveKlingDirectModelRoute(params.engineId);
-  const payload = buildKlingDirectPayload({
+  const basePayload = buildKlingDirectPayload({
     engineId: params.engineId,
     jobId: params.jobId,
     mode: params.mode,
@@ -189,8 +196,8 @@ export async function submitKlingDirectGenerateTask(params: {
       mode: params.mode,
       providerModel: route.providerModel,
       endpointFamily: route.endpointFamily,
-      createPath: payload.createPath,
-      pollPathPrefix: payload.pollPathPrefix,
+      createPath: basePayload.createPath,
+      pollPathPrefix: basePayload.pollPathPrefix,
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
       audioEnabled: params.audioEnabled === true,
@@ -199,7 +206,15 @@ export async function submitKlingDirectGenerateTask(params: {
       multiPromptCount: params.falPayload.multiPrompt?.length ?? 0,
       voiceCount: params.falPayload.voiceIds?.length ?? 0,
       hasCameraControl: Boolean(params.falPayload.extraInputValues?.camera_control),
-      hasElementList: Boolean(params.falPayload.extraInputValues?.element_list),
+      hasElementList: Boolean(
+        params.falPayload.elements?.some((element) => element.providerElementId) ||
+          params.falPayload.extraInputValues?.element_list
+      ),
+      elementCount: params.falPayload.elements?.length ?? 0,
+      requiresElementRegistration: Boolean(
+        params.falPayload.elements?.some((element) => element.providerElementId === undefined)
+      ),
+      elementRegistrationEnabled: params.elementRegistrationEnabled,
       promptLength: params.prompt.length,
       estimatedProviderCostUnits: estimate.providerCostUnits,
       estimatedProviderCostUsd: estimate.providerCostUsd,
@@ -207,7 +222,38 @@ export async function submitKlingDirectGenerateTask(params: {
   });
 
   try {
-    const task = await getKlingDirectClientFn().createTask(payload);
+    if ((params.falPayload.elements?.length ?? 0) > 0 && !params.elementRegistrationEnabled) {
+      throw new KlingDirectError('Kling direct subject reference registration is disabled.', {
+        code: 'KLING_ELEMENT_REGISTRATION_DISABLED',
+      });
+    }
+    const client = getKlingDirectClientFn();
+    const elementRegistration = await ensureKlingDirectElementsForPayload({
+      elements: params.falPayload.elements ?? null,
+      userId: params.userId,
+      jobId: params.jobId,
+      client,
+      queryFn,
+    });
+    const payload = buildKlingDirectPayload({
+      engineId: params.engineId,
+      jobId: params.jobId,
+      mode: params.mode,
+      prompt: params.prompt,
+      negativePrompt: params.negativePrompt,
+      multiPrompt: params.falPayload.multiPrompt ?? null,
+      shotType: params.falPayload.shotType ?? null,
+      voiceIds: params.falPayload.voiceIds ?? null,
+      durationSec: params.durationSec,
+      aspectRatio: params.aspectRatio,
+      audioEnabled: params.audioEnabled,
+      imageUrl: params.imageUrl,
+      endImageUrl: params.falPayload.endImageUrl ?? null,
+      elements: elementRegistration.elements ?? null,
+      cfgScale: typeof params.cfgScale === 'number' ? params.cfgScale : null,
+      extraInputValues: params.falPayload.extraInputValues ?? null,
+    });
+    const task = await client.createTask(payload);
     await markProviderAttemptAccepted({
       attemptId: klingAttempt.id,
       providerJobId: task.providerJobId,
@@ -261,11 +307,13 @@ export async function submitKlingDirectGenerateTask(params: {
     };
   } catch (error) {
     const normalized = classifyKlingDirectError(error);
-    const fallbackEligible = shouldFallbackFromKlingDirectSubmit({
-      acceptedProviderJobId: null,
-      error,
-      fallbackToFalEnabled: params.fallbackToFalEnabled,
-    });
+    const fallbackEligible =
+      shouldFallbackFromKlingDirectSubmit({
+        acceptedProviderJobId: null,
+        error,
+        fallbackToFalEnabled: params.fallbackToFalEnabled,
+        fallbackOnCreditsDepletedEnabled: params.fallbackOnCreditsDepletedEnabled,
+      }) && isKlingDirectFalFallbackCompatible(params.falPayload);
     await markProviderAttemptFailed({
       attemptId: klingAttempt.id,
       errorCode: normalized.code,

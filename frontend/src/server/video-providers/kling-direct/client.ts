@@ -1,6 +1,11 @@
 import { createHmac } from 'node:crypto';
 import { ENV } from '@/lib/env';
 import { KlingDirectError } from './errors';
+import {
+  normalizeKlingDirectElementTask,
+  type KlingDirectElementCreatePayload,
+  type NormalizedKlingDirectElementTask,
+} from './elements';
 import { firstString, normalizeKlingDirectTask, parseKlingJsonResponse } from './response';
 import type { KlingDirectPayload } from './payload';
 import type { NormalizedVideoProviderTask } from '../types';
@@ -99,6 +104,64 @@ export class KlingDirectClient {
       });
     }
     return task;
+  }
+
+  async createElement(payload: KlingDirectElementCreatePayload): Promise<NormalizedKlingDirectElementTask> {
+    const response = await fetch(`${this.baseUrl}/v1/general/advanced-custom-elements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: this.authHeader(),
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+      signal: timeoutSignal(this.timeoutMs),
+    });
+    const parsed = await parseKlingJsonResponse(response);
+    const serviceCode = firstString(parsed, ['code']);
+    if (!response.ok || (serviceCode && serviceCode !== '0')) {
+      throw new KlingDirectError(firstString(parsed, ['message', 'msg']) ?? 'Kling element creation failed.', {
+        status: response.status,
+        code: serviceCode,
+        providerMessage: firstString(parsed, ['message', 'msg']),
+        body: parsed,
+      });
+    }
+    const task = normalizeKlingDirectElementTask(parsed);
+    if (!task.providerTaskId) {
+      throw new KlingDirectError('Kling element response did not include a task id.', {
+        status: response.status,
+        code: 'KLING_TASK_ID_MISSING',
+        body: parsed,
+      });
+    }
+    return task;
+  }
+
+  async retrieveElement(params: { providerTaskId: string }): Promise<NormalizedKlingDirectElementTask> {
+    const response = await fetch(
+      `${this.baseUrl}/v1/general/advanced-custom-elements/${encodeURIComponent(params.providerTaskId)}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: this.authHeader(),
+        },
+        cache: 'no-store',
+        signal: timeoutSignal(this.timeoutMs),
+      }
+    );
+    const parsed = await parseKlingJsonResponse(response);
+    const serviceCode = firstString(parsed, ['code']);
+    if (!response.ok || (serviceCode && serviceCode !== '0')) {
+      throw new KlingDirectError(firstString(parsed, ['message', 'msg']) ?? 'Kling element polling failed.', {
+        status: response.status,
+        code: serviceCode,
+        providerMessage: firstString(parsed, ['message', 'msg']),
+        body: parsed,
+      });
+    }
+    const task = normalizeKlingDirectElementTask(parsed, params.providerTaskId);
+    return task.providerTaskId ? task : { ...task, providerTaskId: params.providerTaskId };
   }
 
   async retrieveTask(params: {

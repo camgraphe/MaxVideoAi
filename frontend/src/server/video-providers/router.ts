@@ -5,6 +5,8 @@ type RoutingEnv = Partial<Record<
   | 'KLING_DIRECT_ENABLED'
   | 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'
   | 'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED'
+  | 'KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED'
+  | 'KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED'
   | 'KLING_DIRECT_ADMIN_ONLY',
   string | undefined
 >>;
@@ -20,6 +22,8 @@ export type VideoProviderRoutingPlan =
       primaryProvider: 'kling_direct';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
+      fallbackOnCreditsDepletedEnabled: boolean;
+      elementRegistrationEnabled: boolean;
     };
 
 function flagEnabled(value: string | undefined): boolean {
@@ -51,5 +55,20 @@ export function resolveVideoProviderRoutingPlan(params: {
     primaryProvider: 'kling_direct',
     fallbackProvider: 'fal',
     fallbackEnabled: flagEnabled(readEnv(params.env, 'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED')),
+    fallbackOnCreditsDepletedEnabled: flagEnabled(
+      readEnv(params.env, 'KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED')
+    ),
+    elementRegistrationEnabled: flagEnabled(readEnv(params.env, 'KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED')),
   };
+}
+
+export function shouldRouteKlingDirectSourceElementsToFal(params: {
+  providerRoutingPlan: VideoProviderRoutingPlan;
+  elementCount: number;
+}): boolean {
+  return (
+    params.providerRoutingPlan.kind === 'kling_direct_primary' &&
+    params.elementCount > 0 &&
+    !params.providerRoutingPlan.elementRegistrationEnabled
+  );
 }
