@@ -112,6 +112,7 @@ export function EngineIcon({
             draggable={false}
             style={{
               width: markSize,
+              maxWidth: 'none',
               height: markSize,
               objectFit: brandMark.light.fit ?? 'contain',
             }}
@@ -128,6 +129,7 @@ export function EngineIcon({
               draggable={false}
               style={{
                 width: markSize,
+                maxWidth: 'none',
                 height: markSize,
                 objectFit: brandMark.dark.fit ?? 'contain',
               }}

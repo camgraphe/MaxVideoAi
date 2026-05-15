@@ -12,6 +12,7 @@ import {
   Wrench,
   Zap,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
@@ -159,6 +160,24 @@ function LeaderboardQuote({ liveQuoteLabel, quote }: { liveQuoteLabel: string; q
   return <span className="font-semibold text-[#1F5EFF]">{liveQuoteLabel}</span>;
 }
 
+function EngineNameLink({
+  children,
+  className,
+  row,
+}: {
+  children: ReactNode;
+  className: string;
+  row: Pick<VideoPricingRow, 'engineName' | 'modelHref'>;
+}) {
+  return row.modelHref ? (
+    <Link href={row.modelHref} prefetch={false} className={`${className} transition hover:text-[#1F5EFF] hover:underline`}>
+      {children}
+    </Link>
+  ) : (
+    <span className={className}>{children}</span>
+  );
+}
+
 function MobileScenarioLeaderboard({ locale, video }: { locale: AppLocale; video: VideoPricingMatrixData }) {
   const copy = getPricingHubCopy(locale);
   const currentRows = video.rows.filter((row) => row.highlightEligible);
@@ -199,7 +218,9 @@ function MobileScenarioLeaderboard({ locale, video }: { locale: AppLocale; video
                       <li key={row.id} className="grid grid-cols-[auto_1fr_auto] gap-3 border-b border-hairline px-3 py-2 last:border-0">
                         <span className="text-xs font-semibold text-text-muted">{index + 1}</span>
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-text-primary">{row.engineName}</span>
+                          <EngineNameLink row={row} className="block truncate text-sm font-semibold text-text-primary">
+                            {row.engineName}
+                          </EngineNameLink>
                           <span className="block truncate text-xs text-text-muted">{quote.note ?? row.notes.join(' · ')}</span>
                         </span>
                         <span className="text-right text-sm">
@@ -232,9 +253,9 @@ function MobileScenarioLeaderboard({ locale, video }: { locale: AppLocale; video
                           key={row.id}
                           className="flex items-center justify-between gap-3 border-b border-hairline px-3 py-2 text-xs last:border-0"
                         >
-                          <span className="min-w-0 truncate text-text-secondary">
+                          <EngineNameLink row={row} className="block min-w-0 truncate text-text-secondary">
                             {row.engineName} <span className="text-text-muted">{copy.video.mobile.previousGen}</span>
-                          </span>
+                          </EngineNameLink>
                           <LeaderboardQuote quote={quote} liveQuoteLabel={copy.liveQuote} />
                         </li>
                       );
@@ -281,10 +302,10 @@ function RowGroup({
           <th className="sticky left-0 z-10 border-b border-hairline bg-surface px-3 py-1.5 text-left align-middle">
             <div className="flex items-center gap-2.5">
               <EngineIcon engine={row.engineIcon} label={row.engineName} size={24} rounded="xl" className="rounded-[6px]" />
-              <span className="min-w-0">
+              <EngineNameLink row={row} className="block min-w-0">
                 <span className="block truncate text-[13px] font-semibold leading-5 text-text-primary">{row.engineName}</span>
                 <span className="block truncate text-[11px] text-text-muted">{row.variant ?? row.family}</span>
-              </span>
+              </EngineNameLink>
             </div>
           </th>
           {video.presets.map((preset) => (

@@ -56,6 +56,13 @@ const routeSource = readFileSync('frontend/app/api/checkout-events/route.ts', 'u
 assert.match(routeSource, /recordCheckoutInteractionEvent/);
 assert.match(routeSource, /getRouteAuthContext\(req\)/);
 
+const stripeWebhookSource = readFileSync('frontend/app/api/stripe/webhook/route.ts', 'utf8');
+assert.match(stripeWebhookSource, /charge\.failed/);
+assert.match(stripeWebhookSource, /payment_intent\.payment_failed/);
+assert.match(stripeWebhookSource, /handleChargeFailed/);
+assert.match(stripeWebhookSource, /handlePaymentIntentFailed/);
+assert.match(stripeWebhookSource, /expireCheckoutSessionForFailedCards/);
+
 const billingClientSource = readFileSync('frontend/app/(core)/billing/_components/BillingClient.tsx', 'utf8');
 assert.match(billingClientSource, /hosted_checkout_requested/);
 assert.match(billingClientSource, /hosted_checkout_redirecting/);

@@ -249,8 +249,8 @@ const PARTNER_BRANDS: PartnerBrand[] = [
     ),
     defaultAvailability: 'available',
     compactMark: {
-      light: { src: '/brand/partners/lightricks/lightricks-mark-light.png', scale: 0.76 },
-      dark: { src: '/brand/partners/lightricks/lightricks-mark-dark.png', scale: 0.76 },
+      light: { src: '/brand/partners/lightricks/lightricks-mark-light.png', scale: 1.48 },
+      dark: { src: '/brand/partners/lightricks/lightricks-mark-dark.png', scale: 1.48 },
     },
     alt: {
       light: 'Lightricks compact logo',

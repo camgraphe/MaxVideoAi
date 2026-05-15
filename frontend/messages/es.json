@@ -3617,7 +3617,7 @@
         "selectedAmount": "Importe seleccionado",
         "checkoutCta": "Continuar al Checkout seguro de Stripe · {amount}",
         "checkoutNote": "Stripe finaliza los impuestos y el recibo antes del pago.",
-        "firstTopupAmexNotice": "Por seguridad, American Express no está disponible para una primera recarga.",
+        "firstTopupAmexNotice": "Por seguridad, American Express puede no estar disponible para una primera recarga.",
         "customLabel": "Importe personalizado",
         "customPresetLabel": "Personalizado",
         "customPresetHint": "Introducir importe",

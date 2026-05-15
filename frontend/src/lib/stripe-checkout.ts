@@ -85,7 +85,7 @@ export function buildWalletTopUpCheckoutSessionParams({
     payment_intent_data: paymentIntentData,
   };
 
-  if (blockAmexCards) {
+  if (blockAmexCards && checkoutUiMode !== 'elements') {
     params.payment_method_options = {
       card: {
         restrictions: {

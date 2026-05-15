@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
-import type { OtherSurfacePricingData, PricingHubLink } from '../_lib/pricingHubData';
+import type { ImagePricingRow, OtherSurfacePricingData, PricingHubLink } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 
 function InlineLinks({ links }: { links: PricingHubLink[] }) {
@@ -15,6 +15,16 @@ function InlineLinks({ links }: { links: PricingHubLink[] }) {
         </span>
       ))}
     </div>
+  );
+}
+
+function ImageEngineName({ row }: { row: Pick<ImagePricingRow, 'engine' | 'modelHref'> }) {
+  return row.modelHref ? (
+    <Link href={row.modelHref} prefetch={false} className="text-text-primary transition hover:text-[#356BE8] hover:underline">
+      {row.engine}
+    </Link>
+  ) : (
+    <span>{row.engine}</span>
   );
 }
 
@@ -48,7 +58,9 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
             <tbody>
               {data.imageRows.map((row) => (
                 <tr key={row.id} id={row.anchorId} className="scroll-mt-24 border-b border-hairline last:border-0">
-                  <td className="py-3 pr-4 font-semibold text-text-primary">{row.engine}</td>
+                  <td className="py-3 pr-4 font-semibold text-text-primary">
+                    <ImageEngineName row={row} />
+                  </td>
                   <td className="px-4 py-3 text-right font-mono font-semibold tabular-nums">{row.standardImage}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold tabular-nums">{row.highQualityImage}</td>
                   <td className="px-4 py-3 text-text-secondary">{row.reference}</td>
