@@ -39,6 +39,10 @@ export function authorizeCronRequest(headers: HeaderReader, options: CronAuthOpt
       return { ok: false, reason: 'deployment-mismatch' };
     }
 
+    if (localTokens.some((token) => token === providedToken)) {
+      return { ok: true, mode: 'local-token' };
+    }
+
     if (cronSecret) {
       return providedToken === cronSecret
         ? { ok: true, mode: 'vercel-secret' }
