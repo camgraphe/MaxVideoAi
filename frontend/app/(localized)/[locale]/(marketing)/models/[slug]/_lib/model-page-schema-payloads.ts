@@ -1,4 +1,5 @@
 import type { FalEngineEntry } from '@/config/falEngines';
+import type { EngineCaps } from '@/types/engines';
 import { buildProductSchema } from '../_lib/model-page-schema';
 
 type BuildModelSchemaPayloadsOptions = {
@@ -12,6 +13,7 @@ type BuildModelSchemaPayloadsOptions = {
   localizedHomeUrl: string;
   localizedModelsUrl: string;
   pageTitle?: string;
+  pricingEngine?: EngineCaps;
   resolvedBreadcrumb: {
     home: string;
     models: string;
@@ -29,6 +31,7 @@ export function buildModelSchemaPayloads({
   localizedHomeUrl,
   localizedModelsUrl,
   pageTitle,
+  pricingEngine,
   resolvedBreadcrumb,
 }: BuildModelSchemaPayloadsOptions): object[] {
   const schemaPageTitle = pageTitle ?? heroTitle;
@@ -38,6 +41,7 @@ export function buildModelSchemaPayloads({
     description,
     heroTitle,
     heroPosterAbsolute,
+    pricingEngine,
   });
 
   return [

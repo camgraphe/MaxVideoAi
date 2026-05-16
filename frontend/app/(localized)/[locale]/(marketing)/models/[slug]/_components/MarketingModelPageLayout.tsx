@@ -2,6 +2,7 @@ import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
+import type { EngineCaps } from '@/types/engines';
 import type { EngineLocalizedContent } from '@/lib/models/i18n';
 import { getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
@@ -65,6 +66,7 @@ import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/
 
 export function MarketingModelPageLayout({
   engine,
+  pricingEngine,
   backLabel,
   pricingLinkLabel,
   localizedContent,
@@ -88,6 +90,7 @@ export function MarketingModelPageLayout({
   breadcrumb,
 }: {
   engine: FalEngineEntry;
+  pricingEngine: EngineCaps;
   backLabel: string;
   pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
@@ -349,6 +352,7 @@ export function MarketingModelPageLayout({
     localizedHomeUrl,
     localizedModelsUrl,
     pageTitle: templateData?.meta.title,
+    pricingEngine,
     resolvedBreadcrumb,
   });
   const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;

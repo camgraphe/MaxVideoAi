@@ -356,6 +356,7 @@ async function renderMarketingModelPage({
       localizedContent={localizedContent}
       copy={copy}
       engine={engine}
+      pricingEngine={pricingEngine}
       isVideoEngine={isVideoEngine}
       isImageEngine={isImageEngine}
       heroMedia={heroMedia}

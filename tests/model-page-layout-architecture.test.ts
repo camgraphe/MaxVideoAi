@@ -7,6 +7,7 @@ const root = process.cwd();
 const layoutPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx');
 const prepLinksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prep-links.ts');
 const schemaPayloadsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts');
+const schemaBuilderPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts');
 const prepLinksSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPrepLinksSection.tsx');
 const pricingCalloutsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing-callouts.ts');
 const pricingCalloutSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPricingCallout.tsx');
@@ -29,13 +30,14 @@ const readSource = (path: string) => readFileSync(path, 'utf8');
 const lineCount = (source: string) => source.split('\n').length;
 
 test('model page layout delegates prep link copy and schema payload composition', () => {
-  for (const path of [layoutPath, prepLinksPath, schemaPayloadsPath, prepLinksSectionPath, pricingCalloutsPath, pricingCalloutSectionPath]) {
+  for (const path of [layoutPath, prepLinksPath, schemaPayloadsPath, schemaBuilderPath, prepLinksSectionPath, pricingCalloutsPath, pricingCalloutSectionPath]) {
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
   const layoutSource = readSource(layoutPath);
   const prepLinksSource = readSource(prepLinksPath);
   const schemaSource = readSource(schemaPayloadsPath);
+  const schemaBuilderSource = readSource(schemaBuilderPath);
   const prepLinksSectionSource = readSource(prepLinksSectionPath);
   const pricingCalloutsSource = readSource(pricingCalloutsPath);
   const pricingCalloutSectionSource = readSource(pricingCalloutSectionPath);
@@ -49,6 +51,10 @@ test('model page layout delegates prep link copy and schema payload composition'
   assert.match(pricingCalloutsSource, /buildSlugMap\('pricing'\)/, 'pricing callout helper should localize pricing URLs');
   assert.match(pricingCalloutSectionSource, /export function ModelPricingCallout/, 'pricing callout component should own section markup');
   assert.match(schemaSource, /buildProductSchema|BreadcrumbList|export function buildModelSchemaPayloads/, 'schema helper should own JSON-LD payloads');
+  assert.match(schemaSource, /pricingEngine/, 'schema helper should pass pricing data into Product offers');
+  assert.match(schemaBuilderSource, /offers: buildProductOffer/, 'Product schema should include a Google-valid offers property');
+  assert.match(schemaBuilderSource, /priceCurrency/, 'Product offers should include price currency');
+  assert.match(schemaBuilderSource, /price:/, 'Product offers should include price');
   assert.match(prepLinksSectionSource, /export type PrepLinksSection/, 'prep links section should export its contract');
 });
 
