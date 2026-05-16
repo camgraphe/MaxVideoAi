@@ -619,9 +619,9 @@ const LTX_23_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       maxDurationNote: 'Longer drafts at 1080p',
     },
     meta: {
-      title: 'LTX 2.3 Fast: Draft Pricing & Prompt Testing | MaxVideoAI',
+      title: 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro',
       description:
-        'Use LTX 2.3 Fast for fast LTX 2.3 draft loops, visual exploration, prompt testing and vertical or social video drafts.',
+        'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.',
     },
   },
   fr: {

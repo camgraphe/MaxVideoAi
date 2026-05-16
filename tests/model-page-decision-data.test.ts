@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
   buildModelDecisionData,
   buildModelDecisionPricingScenarios,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { buildPricePerSecondRows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts';
 import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
 import { normalizeMediaUrl } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
@@ -12,6 +14,7 @@ import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(
 import { resolveSectionLabels } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts';
 import { getImagePresetQuote, getPresetQuote } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 function getEngine(engineId: string) {
   const entry = listFalEngines().find((candidate) => candidate.id === engineId || candidate.modelSlug === engineId);
@@ -161,7 +164,11 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   assert.match(en.hero.paragraph, /fast text-to-video and image-to-video/);
   assert.doesNotMatch(en.hero.subtitle, /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|retake|extend/i);
-  assert.match(en.meta.description, /fast LTX 2.3 draft loops/);
+  assert.equal(en.meta.title, 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro');
+  assert.equal(
+    en.meta.description,
+    'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.'
+  );
   assert.deepEqual(
     en.pricing.scenarios.map((scenario) => scenario.id),
     ['10s-1080p', 'max-duration']
@@ -172,6 +179,44 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   assert.deepEqual(fr.hero.subtitleHighlights, ['exploration visuelle', 'tests de prompts', 'brouillons verticaux/social']);
   assert.match(es.hero.subtitle, /exploración visual/);
   assert.deepEqual(es.hero.subtitleHighlights, ['exploración visual', 'pruebas de prompts', 'borradores verticales/sociales']);
+});
+
+test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
+  const ltx = getEngine('ltx-2-3-fast');
+  const decision = buildModelDecisionData({ engine: ltx, locale: 'en' });
+  const title = 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro';
+  const description =
+    'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.';
+  assert.ok(decision);
+
+  const meta = buildSeoMetadata({
+    locale: 'en',
+    title: decision.meta.title,
+    description: decision.meta.description,
+    englishPath: '/models/ltx-2-3-fast',
+    titleBranding: 'none',
+  });
+  const rows = await buildPricePerSecondRows(ltx.engine, 'en', 'Price per second', {
+    on: 'Audio on',
+    off: 'Audio off',
+  });
+  const modelPageSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx',
+    'utf8'
+  );
+
+  assert.equal(typeof meta.title === 'object' ? meta.title.absolute : meta.title, title);
+  assert.equal(meta.description, description);
+  assert.deepEqual(rows, [
+    {
+      id: 'pricePerSecond',
+      key: 'pricePerSecond',
+      label: 'Price per second',
+      value: '1080p: $0.05 per second',
+      valueLines: ['1080p: $0.05 per second', '1440p: $0.11 per second', '4k: $0.21 per second'],
+    },
+  ]);
+  assert.match(modelPageSource, /ltx-2-3-fast/);
 });
 
 test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3', () => {
@@ -286,6 +331,11 @@ test('remaining video templates preserve Happy Horse, Hailuo, and Pika route int
   assert.match(frHailuo.hero.subtitle, /Brouillons mouvement économiques/);
 
   assert.equal(pika.hero.title, 'Pika 2.2 Text-to-Video');
+  assert.equal(pika.meta.title, 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses');
+  assert.equal(
+    pika.meta.description,
+    'Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model.'
+  );
   assert.match(pika.hero.subtitle, /Text-to-Video social loops/);
   assert.match(pika.hero.subtitle, /seeds/);
   assert.equal(pika.hero.primaryCta.href, '/app?engine=pika-text-to-video');
@@ -296,6 +346,40 @@ test('remaining video templates preserve Happy Horse, Hailuo, and Pika route int
   );
   assert.doesNotMatch(visibleDecisionText(pika), /native audio|audio on|lip-sync|R2V references|physics-aware tests|image-to-video starts|Armored skull|Motorcycle/i);
   assert.match(esPika.hero.subtitle, /Loops sociales Text-to-Video/);
+});
+
+test('Pika price rows keep per-second context visible for Google snippets', async () => {
+  const pika = getEngine('pika-text-to-video');
+  const rows = await buildPricePerSecondRows(pika.engine, 'en', 'Price per second', {
+    on: 'Audio on',
+    off: 'Audio off',
+  });
+
+  assert.deepEqual(rows, [
+    {
+      id: 'pricePerSecond',
+      key: 'pricePerSecond',
+      label: 'Pika 2.2 price per second',
+      value: '720p: $0.05 per second',
+      valueLines: ['720p: $0.05 per second', '1080p: $0.12 per second'],
+    },
+  ]);
+});
+
+test('Pika SEO metadata can omit the site-name suffix when Google already shows it', () => {
+  const title = 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses';
+  const meta = buildSeoMetadata({
+    locale: 'en',
+    title,
+    description:
+      'Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model.',
+    englishPath: '/models/pika-text-to-video',
+    titleBranding: 'none',
+  });
+
+  assert.equal(typeof meta.title === 'object' ? meta.title.absolute : meta.title, title);
+  assert.equal(meta.openGraph?.title, title);
+  assert.equal(meta.twitter?.title, title);
 });
 
 test('image templates preserve GPT Image 2 and Nano Banana route intent', () => {

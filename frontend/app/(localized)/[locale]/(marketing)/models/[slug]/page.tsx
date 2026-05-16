@@ -61,6 +61,8 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
+const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast']);
+
 export function generateStaticParams() {
   const engines = listFalEngines();
   return locales.flatMap((locale) =>
@@ -105,6 +107,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
     image: ogImagePath,
     imageAlt: title,
     ogType: 'article',
+    titleBranding: locale === 'en' && UNBRANDED_MODEL_TITLE_SLUGS.has(canonicalSlug) ? 'none' : 'auto',
     robots: {
       index: engine.surfaces.modelPage.indexable,
       follow: true,

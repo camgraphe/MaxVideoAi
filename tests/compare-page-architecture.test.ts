@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 const routePath = 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx';
 const pageSource = readFileSync(routePath, 'utf8');
@@ -132,6 +134,59 @@ const generateCardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx',
   'utf8'
 );
+
+test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suffix', () => {
+  const override = EN_COMPARE_PAGE_OVERRIDES['seedance-2-0-vs-seedance-2-0-fast'];
+  const meta = override?.meta as { title?: string; description?: string; titleBranding?: string } | undefined;
+  const title = 'Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses';
+  const description =
+    'Compare Seedance 2.0 and Fast with identical prompts, side-by-side video outputs, pricing, speed, quality tradeoffs and when to use each model.';
+
+  assert.equal(meta?.title, title);
+  assert.equal(meta?.description, description);
+  assert.equal(meta?.titleBranding, 'none');
+  assert.match(
+    override?.heroIntro ?? '',
+    /^Use Seedance 2\.0 when quality and consistency matter\. Use Seedance 2\.0 Fast when you want quicker, cheaper prompt tests and rapid iteration\./
+  );
+  assert.match(metadataSource, /titleBranding:\s*metaOverride\.titleBranding \?\? 'auto'/);
+
+  const metadata = buildSeoMetadata({
+    locale: 'en',
+    title,
+    description,
+    englishPath: '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast',
+    titleBranding: meta?.titleBranding === 'none' ? 'none' : 'auto',
+  });
+
+  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+});
+
+test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name suffix', () => {
+  const override = EN_COMPARE_PAGE_OVERRIDES['veo-3-1-fast-vs-veo-3-1-lite'];
+  const meta = override?.meta as { title?: string; description?: string; titleBranding?: string } | undefined;
+  const title = 'Veo 3.1 Lite vs Fast: Price, Quality & Best Uses';
+  const description =
+    'Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.';
+
+  assert.equal(meta?.title, title);
+  assert.equal(meta?.description, description);
+  assert.equal(meta?.titleBranding, 'none');
+  assert.match(
+    override?.heroIntro ?? '',
+    /^Choose Veo 3\.1 Lite for lower-cost tests\. Choose Veo 3\.1 Fast when quality, audio control and workflow flexibility matter more\./
+  );
+
+  const metadata = buildSeoMetadata({
+    locale: 'en',
+    title,
+    description,
+    englishPath: '/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite',
+    titleBranding: meta?.titleBranding === 'none' ? 'none' : 'auto',
+  });
+
+  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+});
 
 test('comparison detail page delegates copy, data, schema, and media responsibilities', () => {
   const lineCount = pageSource.split('\n').length;

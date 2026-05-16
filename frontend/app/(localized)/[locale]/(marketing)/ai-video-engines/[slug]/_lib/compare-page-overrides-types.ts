@@ -4,6 +4,7 @@ export type ComparePageOverride = {
   meta?: {
     title?: string;
     description?: string;
+    titleBranding?: 'auto' | 'none';
   };
   heroIntro?: string;
   topCards?: Array<{

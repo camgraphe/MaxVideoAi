@@ -3880,9 +3880,9 @@ const PIKA_TEXT_TO_VIDEO_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Pika 2.2 Text-to-Video: Pricing, Silent Loops & Examples | MaxVideoAI',
+      title: 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses',
       description:
-        'Explore Pika 2.2 Text-to-Video pricing, stylized silent clips, social loops, seeds, negative prompts and prompt examples on MaxVideoAI.',
+        'Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model.',
     },
   },
   fr: {

@@ -366,6 +366,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
   const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
   const ltx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale: 'en' });
+  const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
   const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
   const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
   const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
@@ -395,6 +396,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(kling4k);
   assert.ok(ltx2);
   assert.ok(ltx2Fast);
+  assert.ok(ltxFast);
   assert.ok(ltxPro);
   assert.ok(seedream);
   assert.ok(sora);
@@ -422,6 +424,11 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   );
   assert.notEqual(seedanceFast.meta.title, seedance.meta.title);
   assert.notEqual(seedanceFast.meta.description, seedance.meta.description);
+  assert.equal(ltxFast.meta.title, 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro');
+  assert.equal(
+    ltxFast.meta.description,
+    'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.'
+  );
 
   const routeTitles = new Map([
     ['veo-3-1', veo.meta.title],
@@ -434,6 +441,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['kling-3-4k', kling4k.meta.title],
     ['ltx-2', ltx2.meta.title],
     ['ltx-2-fast', ltx2Fast.meta.title],
+    ['ltx-2-3-fast', ltxFast.meta.title],
     ['ltx-2-3-pro', ltxPro.meta.title],
     ['seedream', seedream.meta.title],
     ['seedance-1-5-pro', seedance15.meta.title],
@@ -468,7 +476,11 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(lumaFlash.meta.title, /Pricing|Drafts|Examples/i);
   assert.match(happyHorse.meta.title, /Pricing|Native Audio|R2V/i);
   assert.match(hailuo.meta.title, /Pricing|Motion Drafts|Examples/i);
-  assert.match(pika.meta.title, /Pricing|Stylized Clips|Examples/i);
+  assert.equal(pika.meta.title, 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses');
+  assert.equal(
+    pika.meta.description,
+    'Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model.'
+  );
   assert.match(gptImage.meta.title, /Pricing|Text Rendering|Editing/i);
   assert.match(nano.meta.title, /Pricing|Fast Image Drafts|Edits/i);
   assert.match(nano2.meta.title, /Pricing|Grounded Images|Editing/i);

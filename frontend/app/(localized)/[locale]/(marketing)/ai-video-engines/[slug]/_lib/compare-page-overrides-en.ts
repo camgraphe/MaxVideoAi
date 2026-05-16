@@ -84,8 +84,14 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'seedance-2-0-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses',
+        description:
+          'Compare Seedance 2.0 and Fast with identical prompts, side-by-side video outputs, pricing, speed, quality tradeoffs and when to use each model.',
+        titleBranding: 'none',
+      },
       heroIntro:
-        'Compare Seedance 2.0 and Seedance 2.0 Fast to choose the right current Seedance AI video workflow for final multi-shot work, native audio, and workflow comparison. Use this page to see when standard Seedance is better for polished Seedance video output and when Fast is better for testing, timing checks, and cheaper iteration.',
+        'Use Seedance 2.0 when quality and consistency matter. Use Seedance 2.0 Fast when you want quicker, cheaper prompt tests and rapid iteration. Compare identical prompts, side-by-side outputs, pricing, speed, and quality tradeoffs before choosing the right Seedance workflow.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -151,8 +157,14 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'veo-3-1-fast-vs-veo-3-1-lite': {
+      meta: {
+        title: 'Veo 3.1 Lite vs Fast: Price, Quality & Best Uses',
+        description:
+          'Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.',
+        titleBranding: 'none',
+      },
       heroIntro:
-        'Compare Veo 3.1 Fast and Veo 3.1 Lite to choose the right current Veo 3 AI workflow for cheaper text-to-video tests, image-to-video tests, native-audio behavior, and faster iteration.',
+        'Choose Veo 3.1 Lite for lower-cost tests. Choose Veo 3.1 Fast when quality, audio control and workflow flexibility matter more. Compare pricing, output quality, audio behavior, and tier tradeoffs before choosing the right current Veo workflow.',
       faq: {
         title: 'FAQ',
         subtitle:

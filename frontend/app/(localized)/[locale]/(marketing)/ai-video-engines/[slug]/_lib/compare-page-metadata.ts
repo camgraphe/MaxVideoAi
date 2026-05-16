@@ -112,6 +112,7 @@ export async function buildComparePageMetadata(props: {
     title,
     description,
     englishPath: `/ai-video-engines/${canonicalSlug}`,
+    titleBranding: metaOverride.titleBranding ?? 'auto',
     robots,
   });
 }

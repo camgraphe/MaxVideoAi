@@ -15,9 +15,14 @@ function normalizeTitleInput(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
 }
 
-function buildSeoTitle(input: string): string {
+type SeoTitleBranding = 'auto' | 'none';
+
+function buildSeoTitle(input: string, branding: SeoTitleBranding = 'auto'): string {
   const normalized = normalizeTitleInput(input);
   if (!normalized) return SITE_NAME;
+  if (branding === 'none') {
+    return normalized;
+  }
   if (BRAND_REGEX.test(normalized)) {
     return normalized;
   }
@@ -44,6 +49,7 @@ type BuildSeoMetadataOptions = {
   other?: Metadata['other'];
   openGraph?: Partial<Metadata['openGraph']>;
   twitter?: Partial<Metadata['twitter']>;
+  titleBranding?: SeoTitleBranding;
 };
 
 function resolveImageUrl(image?: string) {
@@ -75,8 +81,9 @@ export function buildSeoMetadata({
   other,
   openGraph: openGraphOverrides,
   twitter: twitterOverrides,
+  titleBranding = 'auto',
 }: BuildSeoMetadataOptions): Metadata {
-  const safeTitle = buildMetaTitle(buildSeoTitle(title));
+  const safeTitle = buildMetaTitle(buildSeoTitle(title, titleBranding));
   const safeDescription = buildMetaDescription(description);
   const resolvedEnglishPath = englishPath ?? (hreflangGroup ? getHreflangEnglishPath(hreflangGroup) : undefined);
   const metadataUrls = buildMetadataUrls(locale, slugMap, {

@@ -48,6 +48,34 @@ function formatPerSecondLabel(locale: AppLocale, currency: string, perSecond: nu
   return `${formatPerSecond(locale, currency, perSecond)}/s`;
 }
 
+function shouldUseExpandedPerSecondPriceContext(engineCaps: EngineCaps, locale: AppLocale): boolean {
+  return locale === 'en' && ['pika-text-to-video', 'ltx-2-3-fast'].includes(engineCaps.id);
+}
+
+function resolvePerSecondRowLabel(engineCaps: EngineCaps, locale: AppLocale, rowLabel: string): string {
+  if (locale === 'en' && engineCaps.id === 'pika-text-to-video') {
+    return 'Pika 2.2 price per second';
+  }
+  return rowLabel;
+}
+
+function expandPerSecondPriceLabel(label: string): string {
+  return label.replace(/\/s\b/g, ' per second');
+}
+
+function formatPerSecondResolutionLine(
+  engineCaps: EngineCaps,
+  locale: AppLocale,
+  resolution: string,
+  label: string
+): string {
+  const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
+  if (shouldUseExpandedPerSecondPriceContext(engineCaps, locale)) {
+    return `${displayResolution}: ${expandPerSecondPriceLabel(label)}`;
+  }
+  return `${displayResolution} ${label}`;
+}
+
 function parseDurationValue(raw: number | string | null | undefined): number | null {
   if (raw == null) return null;
   if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
@@ -203,6 +231,7 @@ export async function buildPricePerSecondRows(
   const onSame = new Set(onValues).size === 1;
   const offValues = Array.from(displayOff.values());
   const offSame = offValues.length ? new Set(offValues).size === 1 : false;
+  const priceRowLabel = resolvePerSecondRowLabel(engineCaps, locale, rowLabel);
 
   if (hasAudioOff && displayOff.size === displayOn.size) {
     const audioDiffers = Array.from(displayOn.entries()).some(([resolution, value]) => displayOff.get(resolution) !== value);
@@ -212,7 +241,7 @@ export async function buildPricePerSecondRows(
       rows.push({
         id: 'pricePerSecond',
         key: 'pricePerSecond',
-        label: rowLabel,
+        label: priceRowLabel,
         value: `${audioLabels.on} ${onLabel} · ${audioLabels.off} ${offLabel}`,
       });
       return rows;
@@ -225,14 +254,20 @@ export async function buildPricePerSecondRows(
           const offLabel = displayOff.get(resolution);
           if (!onLabel || !offLabel) return null;
           const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
-          return `${displayResolution}: ${audioLabels.on} ${onLabel} · ${audioLabels.off} ${offLabel}`;
+          const resolvedOnLabel = shouldUseExpandedPerSecondPriceContext(engineCaps, locale)
+            ? expandPerSecondPriceLabel(onLabel)
+            : onLabel;
+          const resolvedOffLabel = shouldUseExpandedPerSecondPriceContext(engineCaps, locale)
+            ? expandPerSecondPriceLabel(offLabel)
+            : offLabel;
+          return `${displayResolution}: ${audioLabels.on} ${resolvedOnLabel} · ${audioLabels.off} ${resolvedOffLabel}`;
         })
         .filter((line): line is string => Boolean(line));
       if (lines.length) {
         rows.push({
           id: 'pricePerSecond',
           key: 'pricePerSecond',
-          label: rowLabel,
+          label: priceRowLabel,
           value: lines[0],
           valueLines: lines,
         });
@@ -242,11 +277,14 @@ export async function buildPricePerSecondRows(
   }
 
   if (onSame) {
+    const value = shouldUseExpandedPerSecondPriceContext(engineCaps, locale)
+      ? expandPerSecondPriceLabel(onValues[0])
+      : onValues[0];
     rows.push({
       id: 'pricePerSecond',
       key: 'pricePerSecond',
-      label: rowLabel,
-      value: onValues[0],
+      label: priceRowLabel,
+      value,
     });
     return rows;
   }
@@ -254,8 +292,7 @@ export async function buildPricePerSecondRows(
   const lines = resolutions
     .map((resolution) => {
       const label = displayOn.get(resolution);
-      const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
-      return label ? `${displayResolution} ${label}` : null;
+      return label ? formatPerSecondResolutionLine(engineCaps, locale, resolution, label) : null;
     })
     .filter((line): line is string => Boolean(line));
 
@@ -263,7 +300,7 @@ export async function buildPricePerSecondRows(
     rows.push({
       id: 'pricePerSecond',
       key: 'pricePerSecond',
-      label: rowLabel,
+      label: priceRowLabel,
       value: lines[0],
       valueLines: lines,
     });
@@ -306,4 +343,3 @@ export async function buildPricePerImageRows(
     },
   ];
 }
-
