@@ -55,6 +55,9 @@ test('model page layout delegates prep link copy and schema payload composition'
   assert.match(schemaBuilderSource, /offers: buildProductOffer/, 'Product schema should include a Google-valid offers property');
   assert.match(schemaBuilderSource, /priceCurrency/, 'Product offers should include price currency');
   assert.match(schemaBuilderSource, /price:/, 'Product offers should include price');
+  assert.match(schemaBuilderSource, /shippingDetails/, 'Product offers should include Merchant listings shipping details');
+  assert.match(schemaBuilderSource, /hasMerchantReturnPolicy/, 'Product offers should include a Merchant listings return policy');
+  assert.match(schemaBuilderSource, /MerchantReturnNotPermitted/, 'Digital Product offers should mark returns as not permitted');
   assert.match(prepLinksSectionSource, /export type PrepLinksSection/, 'prep links section should export its contract');
 });
 

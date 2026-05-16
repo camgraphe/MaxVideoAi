@@ -25,6 +25,43 @@ const AVAILABILITY_MAP: Record<EngineAvailability, string> = {
 };
 
 const DEFAULT_SCHEMA_MARGIN_PERCENT = 0.3;
+const MERCHANT_POLICY_COUNTRIES = [
+  'US',
+  'CA',
+  'GB',
+  'AU',
+  'NZ',
+  'FR',
+  'BE',
+  'CH',
+  'LU',
+  'ES',
+  'MX',
+  'AR',
+  'CL',
+  'CO',
+  'PE',
+  'DE',
+  'AT',
+  'IT',
+  'NL',
+  'IE',
+  'PT',
+  'SE',
+  'NO',
+  'DK',
+  'FI',
+  'PL',
+  'CZ',
+  'BR',
+  'JP',
+  'KR',
+  'SG',
+  'HK',
+  'IN',
+  'AE',
+  'SA',
+] as const;
 
 export function resolveProviderInfo(engine: FalEngineEntry) {
   const fallback = PARTNER_BRAND_MAP.get(engine.brandId);
@@ -125,6 +162,46 @@ function buildProductOffer(engine: FalEngineEntry, pricingEngine: EngineCaps, ca
     priceCurrency: currency,
     price: (amountCents / 100).toFixed(2),
     availability: AVAILABILITY_MAP[engine.availability] ?? AVAILABILITY_MAP.limited,
+    shippingDetails: buildDigitalShippingDetails(currency),
+    hasMerchantReturnPolicy: buildDigitalReturnPolicy(),
+  };
+}
+
+function buildDigitalShippingDetails(currency: string) {
+  return {
+    '@type': 'OfferShippingDetails',
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      value: '0',
+      currency,
+    },
+    shippingDestination: MERCHANT_POLICY_COUNTRIES.map((addressCountry) => ({
+      '@type': 'DefinedRegion',
+      addressCountry,
+    })),
+    deliveryTime: {
+      '@type': 'ShippingDeliveryTime',
+      handlingTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 0,
+        maxValue: 0,
+        unitCode: 'DAY',
+      },
+      transitTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 0,
+        maxValue: 0,
+        unitCode: 'DAY',
+      },
+    },
+  };
+}
+
+function buildDigitalReturnPolicy() {
+  return {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: [...MERCHANT_POLICY_COUNTRIES],
+    returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
   };
 }
 
