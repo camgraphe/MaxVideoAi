@@ -417,10 +417,10 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(nano2);
   assert.ok(nanoPro);
 
-  assert.equal(seedance.meta.title, 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI');
+  assert.equal(seedance.meta.title, 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses');
   assert.equal(
     seedance.meta.description,
-    'Explore Seedance 2.0 pricing, examples, native audio, multi-shot video and reference-guided workflows. Compare Seedance 2.0 vs Fast and older versions.'
+    'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
   );
   assert.notEqual(seedanceFast.meta.title, seedance.meta.title);
   assert.notEqual(seedanceFast.meta.description, seedance.meta.description);

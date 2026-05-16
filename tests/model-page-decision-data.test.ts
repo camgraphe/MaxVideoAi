@@ -100,10 +100,10 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
     es.referenceWorkflows.map((workflow) => workflow.title),
     en.referenceWorkflows.map((workflow) => workflow.title)
   );
-  assert.equal(en.meta.title, 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI');
+  assert.equal(en.meta.title, 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses');
   assert.equal(
     en.meta.description,
-    'Explore Seedance 2.0 pricing, examples, native audio, multi-shot video and reference-guided workflows. Compare Seedance 2.0 vs Fast and older versions.'
+    'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
   );
   assert.notEqual(fr.hero.subtitle, en.hero.subtitle);
   assert.notEqual(es.hero.subtitle, en.hero.subtitle);
@@ -144,6 +144,23 @@ test('Seedance 2.0 Fast returns draft-intent decision data distinct from Seedanc
   assert.deepEqual(fr.hero.subtitleHighlights, ['brouillons rapides', 'tests de rythme', 'variantes de mouvement']);
   assert.match(es.hero.subtitle, /borradores rápidos/);
   assert.deepEqual(es.hero.subtitleHighlights, ['borradores rápidos', 'pruebas de ritmo', 'variantes de movimiento']);
+});
+
+test('Seedance 2.0 SEO metadata can omit the site-name suffix', () => {
+  const seedance = getEngine('seedance-2-0');
+  const decision = buildModelDecisionData({ engine: seedance, locale: 'en' });
+  const title = 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses';
+  assert.ok(decision);
+
+  const meta = buildSeoMetadata({
+    locale: 'en',
+    title: decision.meta.title,
+    description: decision.meta.description,
+    englishPath: '/models/seedance-2-0',
+    titleBranding: 'none',
+  });
+
+  assert.equal(typeof meta.title === 'object' ? meta.title.absolute : meta.title, title);
 });
 
 test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {

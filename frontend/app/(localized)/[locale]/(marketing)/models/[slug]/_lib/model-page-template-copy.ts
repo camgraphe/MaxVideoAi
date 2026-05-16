@@ -157,9 +157,9 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       ctaLabel: 'View full pricing',
     },
     meta: {
-      title: 'Seedance 2.0: Pricing, Native Audio & Examples | MaxVideoAI',
+      title: 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses',
       description:
-        'Explore Seedance 2.0 pricing, examples, native audio, multi-shot video and reference-guided workflows. Compare Seedance 2.0 vs Fast and older versions.',
+        'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.',
     },
   },
   fr: {
