@@ -479,6 +479,7 @@ export async function POST(req: NextRequest) {
     durationSec,
     aspectRatio,
     audioEnabled,
+    effectiveResolution,
     imageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
     cfgScale: body.cfgScale,
     placeholderThumb,

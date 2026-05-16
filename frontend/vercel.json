@@ -7,6 +7,7 @@
     { "path": "/api/cron/fal-poll", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/byteplus-poll", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/kling-direct-poll", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/google-vertex-veo-poll", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/reconcile-missing-jobs", "schedule": "*/10 * * * *" }
   ]
 }

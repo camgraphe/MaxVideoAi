@@ -20,6 +20,7 @@ import {
   shouldRouteKlingDirectSourceElementsToFal,
   type VideoProviderRoutingPlan,
 } from '@/server/video-providers/router';
+import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { PaymentMode } from './initial-video-job';
@@ -89,18 +90,18 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 503, body: { ok: false, error: 'Database unavailable' } };
   }
 
-  let isAdminForKlingDirect = false;
-  if (!isBytePlusV1a && isKlingDirectEngine(engine.id)) {
+  let isAdminForDirectProvider = false;
+  if (!isBytePlusV1a && (isKlingDirectEngine(engine.id) || isGoogleVertexVeoEngine(engine.id))) {
     try {
       await requireAdmin(req);
-      isAdminForKlingDirect = true;
+      isAdminForDirectProvider = true;
     } catch {
-      isAdminForKlingDirect = false;
+      isAdminForDirectProvider = false;
     }
   }
   let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
     ? ({ kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const)
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: isAdminForKlingDirect });
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: isAdminForDirectProvider });
   if (
     shouldRouteKlingDirectSourceElementsToFal({
       providerRoutingPlan,
