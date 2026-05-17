@@ -27,7 +27,7 @@ export async function resolveExamplePreviewPicks(picks: RankedPick[]): Promise<E
         });
         return [examplesSlug, result.items] as const;
       } catch {
-        return [examplesSlug, []] as const;
+        return [examplesSlug, [] as GalleryVideo[]] as const;
       }
     })
   );
