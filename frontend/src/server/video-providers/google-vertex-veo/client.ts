@@ -253,13 +253,14 @@ export class GoogleVertexVeoClient {
     const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(
       bucket
     )}/o?uploadType=media&name=${encodeURIComponent(objectName)}`;
+    const uploadBody = new Uint8Array(params.data).buffer;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         authorization: `Bearer ${await this.token()}`,
         'content-type': params.mime,
       },
-      body: params.data,
+      body: uploadBody,
     });
     const json = (await response.json().catch(() => null)) as Record<string, unknown> | null;
     if (!response.ok) {

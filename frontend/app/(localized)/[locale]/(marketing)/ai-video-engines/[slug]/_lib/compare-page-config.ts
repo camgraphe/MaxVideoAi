@@ -15,7 +15,7 @@ export const SHOWDOWNS =
   (compareConfig as { showdowns?: Record<string, Array<ShowdownEntry | null>> }).showdowns ?? {};
 export const SHOWDOWN_OVERRIDES =
   (compareConfig as { showdownOverrides?: Record<string, Record<string, string>> }).showdownOverrides ?? {};
-export const CATALOG = engineCatalog as EngineCatalogEntry[];
+export const CATALOG = engineCatalog as unknown as EngineCatalogEntry[];
 export const CATALOG_BY_SLUG = new Map(CATALOG.map((entry) => [entry.modelSlug, entry]));
 export const ENGINE_OPTIONS = [...CATALOG]
   .filter((entry) => !EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug))

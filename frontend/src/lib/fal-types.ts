@@ -32,6 +32,7 @@ export type GeneratePayload = {
   apiKey?: string;
   idempotencyKey?: string;
   imageUrl?: string;
+  videoUrl?: string;
   audioUrl?: string;
   referenceImages?: string[];
   inputs?: GenerateAttachment[];
