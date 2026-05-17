@@ -74,6 +74,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     canonicalOverride: seo.canonicalOverride,
     robots: seo.robots,
     keywords: entry ? buildBestForKeywords(locale, entry, title) : undefined,
+    titleBranding: 'none',
   });
 }
 

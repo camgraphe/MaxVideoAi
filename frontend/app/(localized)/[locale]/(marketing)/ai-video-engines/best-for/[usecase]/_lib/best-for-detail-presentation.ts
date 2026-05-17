@@ -9,8 +9,72 @@ import {
   type RankedPick,
 } from './best-for-detail-config';
 
+export const BEST_FOR_SERP_SNIPPETS: Record<string, { title: string; description: string }> = {
+  'image-to-video': {
+    title: 'Best AI Video Engines for Image-to-Video Prompts',
+    description:
+      'Compare the best AI video engines for animating still images, product shots, style frames and approved references with Seedance, Veo, Kling and LTX.',
+  },
+  'cinematic-realism': {
+    title: 'Best AI Video Engines for Cinematic Realism',
+    description:
+      'Compare AI video engines for cinematic realism, camera motion, lighting, character consistency and polished visual direction with Seedance, Kling, Veo and LTX.',
+  },
+  'character-reference': {
+    title: 'Best AI Video Engines for Character References',
+    description:
+      'Compare AI video engines for stable characters, wardrobe, props and product references across shots, including Kling, Seedance and other reference models.',
+  },
+  'reference-to-video': {
+    title: 'Best AI Video Engines for Reference-to-Video',
+    description:
+      'Compare AI video engines for turning image, video, audio, product, style or campaign references into usable video shots with the right model.',
+  },
+  'multi-shot-video': {
+    title: 'Best AI Video Engines for Multi-Shot Videos',
+    description:
+      'Compare AI video engines for mini-films, trailers, ad sequences and edited-style clips from structured prompts, with pricing and best-use guidance.',
+  },
+  '4k-video': {
+    title: 'Best AI Video Engines for 4K: Kling, LTX & Veo',
+    description:
+      'Compare the best AI video engines for 4K delivery, upscale-ready workflows, premium finishing, pricing, resolution limits and when to use Kling, LTX or Veo.',
+  },
+  ads: {
+    title: 'Best AI Video Engines for Ads & Product Creative',
+    description:
+      'Compare AI video engines for product ads, ecommerce creative, paid social campaigns and polished commercial assets with pricing and model recommendations.',
+  },
+  'ugc-ads': {
+    title: 'Best AI Video Engines for UGC Ads & Social Videos',
+    description:
+      'Compare AI video engines for creator-style clips, selfie videos, short dialogue, social proof and TikTok-style ad tests with the right model for each format.',
+  },
+  'product-videos': {
+    title: 'Best AI Video Engines for Product Videos',
+    description:
+      'Compare AI video engines for product reveals, ecommerce shots, packshots, demos and clean commercial storytelling with prompts, pricing and best uses.',
+  },
+  'lipsync-dialogue': {
+    title: 'Best AI Video Engines for Lip Sync & Dialogue',
+    description:
+      'Compare AI video engines for speaking characters, short dialogue, native audio, voice control and social narration with Seedance, Veo and other models.',
+  },
+  'fast-drafts': {
+    title: 'Best AI Video Engines for Fast Drafts & Prompt Tests',
+    description:
+      'Compare AI video engines for fast drafts, cheaper iterations, timing tests and concept exploration with LTX 2.3 Fast, Seedance Fast and other quick models.',
+  },
+  'stylized-anime': {
+    title: 'Best AI Video Engines for Anime & Stylized Video',
+    description:
+      'Compare AI video engines for anime-style motion, illustration, stylized loops and non-photoreal creative tests with Kling, Seedance, Pika and other models.',
+  },
+};
+
 export function getBestForDisplayTitle(locale: AppLocale, entry?: BestForEntry, fallbackTitle?: string) {
   if (!entry) return fallbackTitle ?? 'Best AI video engines by use case';
+  if (locale === 'en' && BEST_FOR_SERP_SNIPPETS[entry.slug]) return BEST_FOR_SERP_SNIPPETS[entry.slug].title;
   if (locale !== 'en') return fallbackTitle ?? entry.title;
   const intentLabels: Record<string, string> = {
     'image-to-video': 'image-to-video',
@@ -38,9 +102,11 @@ export function buildBestForHeroDescription(locale: AppLocale, entry: BestForEnt
 
 export function buildBestForMetaDescription(locale: AppLocale, entry: BestForEntry, fallbackDescription?: string) {
   if (locale !== 'en') return fallbackDescription ?? entry.description ?? 'Compare the best AI video engines by use case.';
+  if (BEST_FOR_SERP_SNIPPETS[entry.slug]) return BEST_FOR_SERP_SNIPPETS[entry.slug].description;
   const names = (entry.topPicks ?? []).slice(0, 3).map((slug) => ENGINE_BY_SLUG.get(slug)?.marketingName ?? slug);
   const engineText = names.length ? ` Compare ${formatList(names)}` : ' Compare leading AI video engines';
-  return `${fallbackDescription ?? entry.description ?? entry.title}.${engineText} by quality, control, consistency, cost, and workflow fit.`;
+  const lead = normalizeSentenceLead(fallbackDescription ?? entry.description ?? entry.title);
+  return `${lead}.${engineText} by quality, control, consistency, cost, and workflow fit.`;
 }
 
 export function buildBestForKeywords(locale: AppLocale, entry: BestForEntry, localizedTitle: string) {
@@ -134,12 +200,12 @@ export function getTopPicksTitle(locale: AppLocale, slug: string) {
 export function buildReasonSentence(locale: AppLocale, usecaseSlug: string, pick: RankedPick) {
   const usecaseLabel = getUsecaseLabel(locale, usecaseSlug);
   if (locale === 'fr') {
-    return `est classé ici car il donne aux utilisateurs MaxVideoAI une route pratique vers ${pick.criterion.toLowerCase()}, tout en gardant le flux adapté à ${usecaseLabel}.`;
+    return `est utile quand ${pick.criterion.toLowerCase()} compte pour ${usecaseLabel}, avec un chemin clair pour comparer qualité, coût et workflow avant le rendu final.`;
   }
   if (locale === 'es') {
-    return `está aquí porque da a los usuarios de MaxVideoAI una ruta práctica hacia ${pick.criterion.toLowerCase()}, manteniendo el flujo adecuado para ${usecaseLabel}.`;
+    return `es útil cuando ${pick.criterion.toLowerCase()} importa para ${usecaseLabel}, con una ruta clara para comparar calidad, coste y flujo antes del render final.`;
   }
-  return `ranks here because it gives MaxVideoAI users a practical route to ${pick.criterion.toLowerCase()} while keeping the workflow suitable for ${usecaseLabel}.`;
+  return `is useful when ${pick.criterion.toLowerCase()} matters for ${usecaseLabel}, with a clear path to compare quality, cost, and workflow fit before final delivery.`;
 }
 
 export function buildUsecaseMistakes(locale: AppLocale, usecaseSlug: string, criteria: string[]) {
@@ -193,6 +259,10 @@ function formatList(items: string[]) {
   if (items.length <= 1) return items[0] ?? '';
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+function normalizeSentenceLead(value: string) {
+  return value.replace(/\s+/g, ' ').trim().replace(/[.!?]+$/g, '');
 }
 
 function getUsecaseLabel(locale: AppLocale, slug: string) {

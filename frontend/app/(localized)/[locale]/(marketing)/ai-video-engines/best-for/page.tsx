@@ -51,8 +51,8 @@ const HUB_COPY: Record<
 > = {
   en: {
     eyebrow: 'Best for',
-    title: 'Best AI video engines by use case',
-    description: 'Pick the right AI video model for each job: cinematic shots, references, multi-shot sequences, ads, UGC, 4K delivery, and fast drafts.',
+    title: 'Best AI Video Engines by Use Case, Price & Quality',
+    description: 'Choose the right AI video engine for cinematic shots, ads, image-to-video, 4K delivery, fast drafts, product videos and creator-style content.',
     empty: 'More guides are on the way.',
     viewGuide: 'View guide',
     featured: 'Featured models',
@@ -136,6 +136,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     description: copy.description,
     englishPath: '/ai-video-engines/best-for',
     robots: BEST_FOR_PAGES.length ? undefined : { index: false, follow: true },
+    titleBranding: 'none',
     keywords: [
       copy.title,
       'best AI video generator',
