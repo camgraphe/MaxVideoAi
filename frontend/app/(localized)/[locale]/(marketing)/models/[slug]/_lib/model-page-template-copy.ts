@@ -769,10 +769,10 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
     hero: {
       eyebrow: 'GOOGLE PREMIUM VIDEO MODEL',
       title: 'Veo 3.1',
-      subtitle: 'Short polished clips with native audio, reference-guided shots, and first-last or extend workflows.',
-      subtitleHighlights: ['short polished clips', 'native audio', 'reference-guided shots'],
+      subtitle: 'Short polished clips with native audio, reference-guided shots, 4K output, and first-last or extend workflows.',
+      subtitleHighlights: ['short polished clips', 'native audio', '4K output'],
       paragraph:
-        'Use Veo 3.1 for premium 4, 6, or 8 second shots when you need text-to-video, start images, reference stills, first/last-frame control, or clip extension inside MaxVideoAI.',
+        'Use Veo 3.1 for premium 4, 6, or 8 second shots when you need text-to-video, start images, reference stills, first/last-frame control, 4K delivery, or clip extension inside MaxVideoAI.',
       primaryCta: { label: 'Generate with Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [
@@ -785,7 +785,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       caption: 'Veo 3.1 example',
       description: 'Polished native-audio video shot',
       renderLabel: 'View render',
-      badges: ['Native audio', '8s', '1080p'],
+      badges: ['Native audio', '8s', '4K option'],
       altContext: 'premium Veo 3.1 cinematic shot with controlled motion',
     },
     features: [
@@ -794,7 +794,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       { title: 'Reference stills', body: 'Use start images or multiple references to anchor identity, styling and wardrobe.', tone: 'reference' },
       { title: 'First-last control', body: 'Bridge opening and ending frames when the final pose or product placement matters.', tone: 'continuity' },
       { title: 'Extend route', body: 'Continue an existing Veo render without changing engines.', tone: 'duration' },
-      { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolutions before generation.', tone: 'quality' },
+      { title: '720p to 4K', body: 'Choose 720p, 1080p, or 4K before generation.', tone: 'quality' },
     ],
     decisionCards: [
       {
@@ -825,22 +825,22 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Audio-on preset totals - see the exact live price in the app before you generate.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
       ctaLabel: 'View full pricing',
-      maxDurationNote: 'Up to 8s at 1080p',
+      maxDurationNote: 'Up to 8s at 4K',
     },
     meta: {
-      title: 'Veo 3.1: Pricing, Native Audio & References | MaxVideoAI',
+      title: 'Veo 3.1: 4K Pricing, Native Audio & References | MaxVideoAI',
       description:
-        'Generate Veo 3.1 clips with native audio, text prompts, image references, first-last frame control and extend workflows in MaxVideoAI.',
+        'Generate Veo 3.1 clips up to 4K with native audio, text prompts, image references, first-last frame control and extend workflows in MaxVideoAI.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'MODÈLE VIDÉO PREMIUM GOOGLE',
       title: 'Veo 3.1',
-      subtitle: 'Des clips courts finalisés avec audio natif, plans guidés par références et workflows first-last ou extend.',
-      subtitleHighlights: ['clips courts finalisés', 'audio natif', 'plans guidés par références'],
+      subtitle: 'Des clips courts finalisés avec audio natif, plans guidés par références, sortie 4K et workflows first-last ou extend.',
+      subtitleHighlights: ['clips courts finalisés', 'audio natif', 'sortie 4K'],
       paragraph:
-        'Utilisez Veo 3.1 pour des plans premium de 4, 6 ou 8 secondes quand vous avez besoin de text-to-video, images de départ, références fixes, contrôle first/last-frame ou extension de clip dans MaxVideoAI.',
+        'Utilisez Veo 3.1 pour des plans premium de 4, 6 ou 8 secondes quand vous avez besoin de text-to-video, images de départ, références fixes, contrôle first/last-frame, sortie 4K ou extension de clip dans MaxVideoAI.',
       primaryCta: { label: 'Générer avec Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [
@@ -853,7 +853,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       caption: 'Exemple Veo 3.1',
       description: 'Plan vidéo finalisé avec audio natif',
       renderLabel: 'Voir le rendu',
-      badges: ['Audio natif', '8 s', '1080p'],
+      badges: ['Audio natif', '8 s', 'Option 4K'],
       altContext: 'plan cinématographique premium Veo 3.1 avec mouvement contrôlé',
     },
     features: [
@@ -862,7 +862,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       { title: 'Références fixes', body: 'Utilisez images de départ ou références multiples pour ancrer identité, style et tenue.', tone: 'reference' },
       { title: 'Contrôle first-last', body: 'Reliez image d’ouverture et image finale quand la pose ou le produit doit tomber juste.', tone: 'continuity' },
       { title: 'Extension', body: 'Prolongez un rendu Veo existant sans changer de moteur.', tone: 'duration' },
-      { title: '720p ou 1080p', body: 'Choisissez les résolutions exposées dans MaxVideoAI avant génération.', tone: 'quality' },
+      { title: '720p à 4K', body: 'Choisissez 720p, 1080p ou 4K avant génération.', tone: 'quality' },
     ],
     decisionCards: [
       {
@@ -893,22 +893,22 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Prix totaux avec audio activé — prix exact affiché dans l’app avant génération.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
-      maxDurationNote: 'Jusqu’à 8 s en 1080p',
+      maxDurationNote: 'Jusqu’à 8 s en 4K',
     },
     meta: {
-      title: 'Veo 3.1 : tarifs, audio natif et références | MaxVideoAI',
+      title: 'Veo 3.1 : tarifs 4K, audio natif et références | MaxVideoAI',
       description:
-        'Générez avec Veo 3.1 : audio natif, prompts texte, images de référence, contrôle first-last et extension dans MaxVideoAI.',
+        'Générez avec Veo 3.1 jusqu’en 4K : audio natif, prompts texte, images de référence, contrôle first-last et extension dans MaxVideoAI.',
     },
   },
   es: {
     hero: {
       eyebrow: 'MODELO DE VIDEO PREMIUM DE GOOGLE',
       title: 'Veo 3.1',
-      subtitle: 'Clips cortos pulidos con audio nativo, tomas guiadas por referencias y flujos first-last o extend.',
-      subtitleHighlights: ['clips cortos pulidos', 'audio nativo', 'tomas guiadas por referencias'],
+      subtitle: 'Clips cortos pulidos con audio nativo, tomas guiadas por referencias, salida 4K y flujos first-last o extend.',
+      subtitleHighlights: ['clips cortos pulidos', 'audio nativo', 'salida 4K'],
       paragraph:
-        'Usa Veo 3.1 para tomas premium de 4, 6 u 8 segundos cuando necesitas texto a video, imágenes iniciales, referencias fijas, control first/last-frame o extensión de clip dentro de MaxVideoAI.',
+        'Usa Veo 3.1 para tomas premium de 4, 6 u 8 segundos cuando necesitas texto a video, imágenes iniciales, referencias fijas, control first/last-frame, salida 4K o extensión de clip dentro de MaxVideoAI.',
       primaryCta: { label: 'Generar con Veo 3.1', href: '/app?engine=veo-3-1' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', VEO_EXAMPLES_FAMILY_SLUG) },
       quickLinks: [
@@ -921,7 +921,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       caption: 'Ejemplo Veo 3.1',
       description: 'Toma de video pulida con audio nativo',
       renderLabel: 'Ver resultado',
-      badges: ['Audio nativo', '8 s', '1080p'],
+      badges: ['Audio nativo', '8 s', 'Opción 4K'],
       altContext: 'toma cinematográfica premium de Veo 3.1 con movimiento controlado',
     },
     features: [
@@ -930,7 +930,7 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       { title: 'Referencias fijas', body: 'Usa imágenes iniciales o varias referencias para anclar identidad, estilo y vestuario.', tone: 'reference' },
       { title: 'Control first-last', body: 'Conecta imagen inicial y final cuando la pose o el producto deben cerrar con precisión.', tone: 'continuity' },
       { title: 'Extensión', body: 'Continúa un resultado de Veo sin cambiar de motor.', tone: 'duration' },
-      { title: '720p o 1080p', body: 'Elige las resoluciones expuestas en MaxVideoAI antes de generar.', tone: 'quality' },
+      { title: '720p a 4K', body: 'Elige 720p, 1080p o 4K antes de generar.', tone: 'quality' },
     ],
     decisionCards: [
       {
@@ -961,12 +961,12 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       subtitle: 'Precios totales con audio activado. Consulta el precio exacto en la app antes de generar.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
-      maxDurationNote: 'Hasta 8 s en 1080p',
+      maxDurationNote: 'Hasta 8 s en 4K',
     },
     meta: {
-      title: 'Veo 3.1: precios, audio nativo y referencias | MaxVideoAI',
+      title: 'Veo 3.1: precios 4K, audio nativo y referencias | MaxVideoAI',
       description:
-        'Genera con Veo 3.1: audio nativo, prompts de texto, imágenes de referencia, control first-last y extensión en MaxVideoAI.',
+        'Genera con Veo 3.1 hasta 4K: audio nativo, prompts de texto, imágenes de referencia, control first-last y extensión en MaxVideoAI.',
     },
   },
 };

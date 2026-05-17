@@ -2,6 +2,7 @@ import type { Mode } from '../../../../fixtures/engineCaps';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
 import { validateModeMediaInputs } from './validate-media-inputs';
+import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import type { ValidationResult } from './validate-types';
 
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
@@ -82,6 +83,11 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload });
   if (!mediaInputValidation.ok) {
     return mediaInputValidation;
+  }
+
+  const providerSpecificValidation = validateProviderSpecificConstraints({ engineId, normalizedMode, payload });
+  if (!providerSpecificValidation.ok) {
+    return providerSpecificValidation;
   }
 
   if (caps.frames) {

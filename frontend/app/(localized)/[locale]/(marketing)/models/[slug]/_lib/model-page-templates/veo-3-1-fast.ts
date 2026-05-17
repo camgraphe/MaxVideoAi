@@ -5,7 +5,7 @@ export const veo31FastTemplateConfig: ModelPageTemplateConfig = {
   intent: 'draft',
   hero: {
     eyebrow: 'GOOGLE FAST VIDEO ROUTE',
-    subtitleHighlightTerms: ['faster Veo drafts', 'optional native audio', 'reference-to-video runs'],
+    subtitleHighlightTerms: ['faster Veo drafts', 'optional native audio', 'up to 4K'],
     primaryCtaHref: '/app?engine=veo-3-1-fast',
     secondaryCtaHref: '/examples/veo',
     quickLinks: [
@@ -40,7 +40,8 @@ export const veo31FastTemplateConfig: ModelPageTemplateConfig = {
         noteKey: 'eightSeconds1080pAudioOn',
         highlightKey: 'mostPopular',
       },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },
+      { id: '8s-4k-audio', seconds: 8, resolution: '4k', audio: true, labelKey: 'fourKReference' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo4K' },
     ],
   },
   sections: {

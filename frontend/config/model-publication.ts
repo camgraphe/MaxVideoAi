@@ -125,7 +125,7 @@ export const LEGACY_APP_DISCOVERY_PRIORITY = [
 
 const LEGACY_COMPARE_SUGGESTED_OPPONENTS: Record<string, string[]> = {
   'veo-3-1': ['kling-3-pro', 'veo-3-1-fast', 'sora-2'],
-  'veo-3-1-lite': ['veo-3-1-fast', 'veo-3-1', 'ltx-2-3-fast'],
+  'veo-3-1-lite': ['veo-3-1-fast', 'veo-3-1', 'sora-2'],
   'kling-3-pro': ['kling-3-standard', 'kling-3-4k', 'veo-3-1'],
   'kling-3-standard': ['kling-3-pro', 'kling-3-4k', 'ltx-2-3-fast'],
   'kling-3-4k': ['kling-3-pro', 'veo-3-1', 'sora-2-pro'],

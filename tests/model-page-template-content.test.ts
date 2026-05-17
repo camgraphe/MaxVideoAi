@@ -639,6 +639,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
 
   for (const locale of LOCALES) {
     const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale });
+    const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale });
     const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale });
     const localizedKling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale });
     const localizedKling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale });
@@ -663,6 +664,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const localizedNanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale });
 
     assert.ok(veo);
+    assert.ok(veoFast);
     assert.ok(veoLite);
     assert.ok(localizedKling25);
     assert.ok(localizedKling26);
@@ -686,8 +688,9 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(localizedNano2);
     assert.ok(localizedNanoPro);
 
-    assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
-    assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
+    assert.match(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should mention 4K`);
+    assert.match(visibleDecisionText(veoFast), /4K/i, `Veo 3.1 Fast ${locale} copy should mention 4K`);
+    assert.doesNotMatch(visibleDecisionText(veoLite), /4K/i, `Veo 3.1 Lite ${locale} copy should not claim 4K`);
     assert.doesNotMatch(
       visibleDecisionText(localizedKling25),
       /native audio|Audio on|Audio activ|Audio nativo|4K|Omni|voice IDs|Elements/i,

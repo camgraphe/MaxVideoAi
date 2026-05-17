@@ -409,6 +409,9 @@ export async function runWorkspaceGenerationIteration({
           prev.map((render) => (render.id === jobId ? applyGenerationPollToRender(render, pollProjection) : render))
         );
         setSelectedPreview((current) => applyGenerationPollToSelectedPreview(current, pollProjection));
+        if (status.status === 'failed' && status.message) {
+          showComposerError(status.message);
+        }
         if (pollProjection.shouldKeepPolling && pollProjection.nextPollDelayMs !== null) {
           window.setTimeout(poll, pollProjection.nextPollDelayMs);
         }

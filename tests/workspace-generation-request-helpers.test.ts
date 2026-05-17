@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { LUMA_RAY2_ERROR_UNSUPPORTED } from '../frontend/src/lib/luma-ray2';
-import type { EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
+import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
 import {
   buildWorkspaceGeneratePayload,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-payload';
@@ -16,7 +16,13 @@ import type { GenerationAttachmentPayload } from '../frontend/app/(core)/(worksp
 import type { WorkspaceInputSchemaSummary } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { getEngineModeOptions } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import { getBaseEngines } from '../frontend/src/lib/engines';
+import {
+  buildComposerModeToggles,
+  getEngineModeOptions,
+  isWorkspaceModeAvailable,
+  resolveSelectedWorkspaceEngine,
+} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 const textField = (id: string, label: string): EngineInputField => ({ id, label, type: 'text' });
 const imageField = (id: string, label: string, minCount?: number): EngineInputField => ({
@@ -66,6 +72,55 @@ function readyAsset(overrides: Partial<ReferenceAsset> = {}): ReferenceAsset {
     ...overrides,
   };
 }
+
+function testEngine(id: string, overrides: Partial<EngineCaps> = {}): EngineCaps {
+  return {
+    id,
+    label: id,
+    provider: 'test',
+    status: 'live',
+    latencyTier: 'standard',
+    modes: ['t2v'],
+    maxDurationSec: 8,
+    resolutions: ['720p'],
+    aspectRatios: ['16:9'],
+    fps: [24],
+    audio: false,
+    upscale4k: false,
+    extend: false,
+    motionControls: false,
+    keyframes: false,
+    params: {},
+    inputLimits: {},
+    updatedAt: '2026-05-17T00:00:00.000Z',
+    ttlSec: 60,
+    availability: 'available',
+    ...overrides,
+  } as EngineCaps;
+}
+
+test('selected workspace engine keeps chip changes authoritative over stale engine URL tokens', () => {
+  const engines = [testEngine('veo-3-1'), testEngine('veo-3-1-fast'), testEngine('veo-3-1-lite')];
+  const standardUrlOverride = engines[0];
+
+  assert.equal(
+    resolveSelectedWorkspaceEngine({
+      engines,
+      form: null,
+      engineOverride: standardUrlOverride,
+    })?.id,
+    'veo-3-1'
+  );
+
+  assert.equal(
+    resolveSelectedWorkspaceEngine({
+      engines,
+      form: baseForm({ engineId: 'veo-3-1-fast' }),
+      engineOverride: standardUrlOverride,
+    })?.id,
+    'veo-3-1-fast'
+  );
+});
 
 test('start render validation reports required negative prompts', () => {
   const message = getStartRenderValidationMessage({
@@ -282,9 +337,70 @@ test('workspace generate payload resolves provider-specific options', () => {
   assert.deepEqual(result.payload.extraInputValues, { style: 'cinematic' });
 });
 
-test('workspace exposes Veo 3.1 Fast reference and extend manual modes', () => {
+test('workspace exposes Veo 3.1 manual modes by variant', () => {
   const veoFast = listFalEngines().find((entry) => entry.id === 'veo-3-1-fast')?.engine;
+  const veoLite = listFalEngines().find((entry) => entry.id === 'veo-3-1-lite')?.engine;
 
   assert.ok(veoFast);
+  assert.ok(veoLite);
   assert.deepEqual(getEngineModeOptions(veoFast), ['ref2v', 'extend']);
+  assert.deepEqual(getEngineModeOptions(veoLite), ['extend']);
+});
+
+test('workspace hides Veo manual workflow toggles when the mode is not actually available', () => {
+  const veoFast = getBaseEngines().find((entry) => entry.id === 'veo-3-1-fast');
+  assert.ok(veoFast);
+
+  const modeCapsWithoutReference = { ...(veoFast.modeCaps ?? {}) };
+  delete modeCapsWithoutReference.ref2v;
+  const withoutReferenceCaps: EngineCaps = {
+    ...veoFast,
+    modeCaps: modeCapsWithoutReference,
+  };
+
+  assert.equal(isWorkspaceModeAvailable(withoutReferenceCaps, 'ref2v'), false);
+  assert.deepEqual(getEngineModeOptions(withoutReferenceCaps), ['extend']);
+  assert.deepEqual(
+    buildComposerModeToggles({
+      selectedEngine: withoutReferenceCaps,
+      audioWorkflowLocked: false,
+      uiLocale: 'en',
+      workflowCopy: {
+        generateVideo: 'Generate Video',
+        removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported',
+        audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked',
+      },
+    })?.map((entry) => entry.mode),
+    [null, 'extend']
+  );
+
+  const withoutExtendInput: EngineCaps = {
+    ...veoFast,
+    inputSchema: {
+      ...veoFast.inputSchema,
+      required: veoFast.inputSchema?.required?.filter(
+        (field) => !field.modes?.includes('extend') && !field.requiredInModes?.includes('extend')
+      ),
+    },
+  };
+
+  assert.equal(isWorkspaceModeAvailable(withoutExtendInput, 'extend'), false);
+  assert.deepEqual(getEngineModeOptions(withoutExtendInput), ['ref2v']);
+  assert.deepEqual(
+    buildComposerModeToggles({
+      selectedEngine: withoutExtendInput,
+      audioWorkflowLocked: false,
+      uiLocale: 'en',
+      workflowCopy: {
+        generateVideo: 'Generate Video',
+        removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported',
+        audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked',
+      },
+    })?.map((entry) => entry.mode),
+    [null, 'ref2v']
+  );
 });

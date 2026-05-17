@@ -18,6 +18,23 @@ export function matchesEngineToken(engine: EngineCaps, token: string): boolean {
   return false;
 }
 
+export function resolveSelectedWorkspaceEngine({
+  engines,
+  form,
+  engineOverride,
+}: {
+  engines: EngineCaps[];
+  form: Pick<FormState, 'engineId'> | null;
+  engineOverride: EngineCaps | null;
+}): EngineCaps | null {
+  if (!engines.length) return null;
+  if (form) {
+    const formEngine = engines.find((engine) => engine.id === form.engineId);
+    if (formEngine) return formEngine;
+  }
+  return engineOverride ?? engines[0];
+}
+
 type DurationOptionMeta = {
   raw: number | string;
   value: number;
@@ -118,6 +135,28 @@ export function getEngineModeLabel(engineId: string | null | undefined, mode: Mo
   return getLocalizedModeLabel(mode, locale);
 }
 
+function getEngineFieldsForMode(engine: EngineCaps, mode: Mode): EngineInputField[] {
+  const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
+  return fields.filter((field) => field.modes?.includes(mode) || field.requiredInModes?.includes(mode));
+}
+
+export function isWorkspaceModeAvailable(engine: EngineCaps, mode: Mode): boolean {
+  if (!engine.modes.includes(mode)) return false;
+  if (engine.modeCaps && !engine.modeCaps[mode]) return false;
+  if (mode === 'extend') {
+    if (!engine.extend) return false;
+    return getEngineFieldsForMode(engine, mode).some((field) => field.type === 'video');
+  }
+  if (mode === 'ref2v') {
+    return getEngineFieldsForMode(engine, mode).some((field) => field.type === 'image' || field.type === 'video');
+  }
+  return true;
+}
+
+function filterAvailableWorkspaceModes(engine: EngineCaps, modes: readonly Mode[]): Mode[] {
+  return modes.filter((mode) => isWorkspaceModeAvailable(engine, mode));
+}
+
 export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefined {
   if (!engine) return undefined;
   if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
@@ -125,24 +164,26 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
   }
   if (engine.id === 'veo-3-1') {
     const order: Mode[] = ['ref2v', 'extend'];
-    const available = order.filter((value) => engine.modes.includes(value));
+    const available = filterAvailableWorkspaceModes(engine, order);
     return available.length ? available : undefined;
   }
   if (engine.id === 'veo-3-1-fast') {
     const order: Mode[] = ['ref2v', 'extend'];
-    const available = order.filter((value) => engine.modes.includes(value));
+    const available = filterAvailableWorkspaceModes(engine, order);
     return available.length ? available : undefined;
   }
   if (engine.id === 'veo-3-1-lite') {
-    return undefined;
+    const order: Mode[] = ['extend'];
+    const available = filterAvailableWorkspaceModes(engine, order);
+    return available.length ? available : undefined;
   }
   if (engine.id === 'ltx-2-3') {
     const order: Mode[] = ['extend', 'retake'];
-    const available = order.filter((value) => engine.modes.includes(value));
+    const available = filterAvailableWorkspaceModes(engine, order);
     return available.length ? available : undefined;
   }
   const preferredOrder: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
-  const available = preferredOrder.filter((value) => engine.modes.includes(value));
+  const available = filterAvailableWorkspaceModes(engine, preferredOrder);
   return available.length ? available : undefined;
 }
 
@@ -183,7 +224,7 @@ export function buildComposerModeToggles({
           : selectedEngine.id === 'veo-3-1-fast'
             ? (['ref2v', 'extend'] as const)
             : selectedEngine.id === 'veo-3-1-lite'
-              ? ([] as const)
+              ? (['extend'] as const)
               : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
                 ? ([] as const)
                 : null;
@@ -194,7 +235,7 @@ export function buildComposerModeToggles({
   return [
     { mode: null, label: workflowCopy.generateVideo },
     ...explicitModes
-      .filter((mode) => selectedEngine.modes.includes(mode))
+      .filter((mode) => isWorkspaceModeAvailable(selectedEngine, mode))
       .map((mode) => ({
         mode,
         label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
@@ -288,7 +329,9 @@ export function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldI
 }
 
 export function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
-  if (candidate && engine.modes.includes(candidate)) return candidate;
+  if (candidate && isWorkspaceModeAvailable(engine, candidate)) return candidate;
+  const availableMode = engine.modes.find((mode) => isWorkspaceModeAvailable(engine, mode));
+  if (availableMode) return availableMode;
   return engine.modes[0] ?? 't2v';
 }
 

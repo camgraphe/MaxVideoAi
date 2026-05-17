@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
     resolvedAudioUrl,
     sourceInputVideoUrl,
     elements,
+    endImageUrl,
     isLumaRay2,
     initialImageUrl,
   });
@@ -479,6 +480,7 @@ export async function POST(req: NextRequest) {
     durationSec,
     aspectRatio,
     audioEnabled,
+    effectiveResolution,
     imageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
     cfgScale: body.cfgScale,
     placeholderThumb,

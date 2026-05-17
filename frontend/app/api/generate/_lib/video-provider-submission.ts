@@ -2,6 +2,7 @@ import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { VideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { submitFalGenerateTask } from './fal-submission';
+import { submitGoogleVertexVeoGenerateTask } from './google-vertex-veo-submission';
 import { submitKlingDirectGenerateTask } from './kling-direct-submission';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
@@ -38,6 +39,7 @@ export async function submitGenerateProviderTask(params: {
   durationSec: number;
   aspectRatio: string | null;
   audioEnabled: boolean | undefined;
+  effectiveResolution: string | null;
   imageUrl: string | null | undefined;
   cfgScale: unknown;
   placeholderThumb: string;
@@ -99,6 +101,47 @@ export async function submitGenerateProviderTask(params: {
       return { kind: 'accepted_response', body: klingSubmission.body };
     }
     return { kind: 'generation_result', generationResult: klingSubmission.generationResult };
+  }
+
+  if (params.providerRoutingPlan.kind === 'google_vertex_veo_primary') {
+    const googleSubmission = await submitGoogleVertexVeoGenerateTask({
+      jobId: params.jobId,
+      userId: params.userId,
+      engineId: params.engineId,
+      engineLabel: params.engineLabel,
+      mode: params.mode,
+      prompt: params.prompt,
+      negativePrompt: typeof params.negativePrompt === 'string' ? params.negativePrompt : null,
+      durationSec: params.durationSec,
+      aspectRatio: params.aspectRatio,
+      audioEnabled: params.audioEnabled,
+      effectiveResolution: params.effectiveResolution,
+      placeholderThumb: params.placeholderThumb,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      pendingReceipt: params.pendingReceipt,
+      paymentMode: params.paymentMode,
+      walletChargeReserved: params.walletChargeReserved,
+      fallbackToFalEnabled: params.providerRoutingPlan.fallbackEnabled,
+      falPayload: params.falPayload,
+      falInputSummary: params.falInputSummary,
+      isLumaRay2: params.isLumaRay2,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+      logMetricFn: params.logMetricFn,
+    });
+    if (!googleSubmission.ok) {
+      return { kind: 'error_response', status: googleSubmission.status, body: googleSubmission.body };
+    }
+    if (googleSubmission.kind === 'accepted') {
+      return { kind: 'accepted_response', body: googleSubmission.body };
+    }
+    return { kind: 'generation_result', generationResult: googleSubmission.generationResult };
   }
 
   const providerJobTracker = createProviderJobTracker({

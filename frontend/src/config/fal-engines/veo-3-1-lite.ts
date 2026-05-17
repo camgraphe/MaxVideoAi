@@ -10,19 +10,19 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'fl2v'],
+  modes: ['t2v', 'i2v', 'fl2v', 'extend'],
   maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
-  aspectRatios: ['auto', '16:9', '9:16'],
+  aspectRatios: ['16:9', '9:16'],
   fps: [24],
   audio: true,
   upscale4k: false,
-  extend: false,
+  extend: true,
   motionControls: false,
   keyframes: false,
   params: {},
   inputLimits: {
-    imageMaxMB: 8,
+    imageMaxMB: 20,
   },
   inputSchema: {
     required: [
@@ -64,6 +64,17 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
         maxCount: 1,
         source: 'either',
       },
+      {
+        id: 'video_url',
+        type: 'video',
+        label: 'Source video',
+        description: 'Extend an existing Veo Lite render from a source clip URL or upload.',
+        modes: ['extend'],
+        requiredInModes: ['extend'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
     ],
     optional: [
       {
@@ -72,6 +83,7 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4s', '6s', '8s'],
         default: '8s',
+        modes: ['t2v', 'i2v', 'fl2v'],
         min: 4,
         max: 8,
       },
@@ -79,7 +91,7 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
         id: 'aspect_ratio',
         type: 'enum',
         label: 'Aspect ratio',
-        values: ['auto', '16:9', '9:16'],
+        values: ['16:9', '9:16'],
         default: '16:9',
       },
       {
@@ -101,15 +113,45 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
         description: 'Lock motion & noise for iterative runs.',
       },
       {
-        id: 'auto_fix',
+        id: 'person_generation',
         type: 'enum',
-        label: 'Auto fix policy',
+        label: 'People generation',
+        values: ['allow_adult', 'dont_allow'],
+        default: 'allow_adult',
+      },
+      {
+        id: 'compression_quality',
+        type: 'enum',
+        label: 'Compression quality',
+        values: ['optimized', 'lossless'],
+        default: 'optimized',
+      },
+      {
+        id: 'resize_mode',
+        type: 'enum',
+        label: 'Resize mode',
+        values: ['pad', 'crop'],
+        default: 'pad',
+        modes: ['i2v', 'fl2v'],
+      },
+      {
+        id: 'generate_audio',
+        type: 'enum',
+        label: 'Generate audio',
         values: ['true', 'false'],
-        default: 'false',
+        default: 'true',
+      },
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Extension duration (seconds)',
+        modes: ['extend'],
+        values: ['7s'],
+        default: '7s',
       },
     ],
     constraints: {
-      supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
+      supportedFormats: ['jpg', 'jpeg', 'png'],
     },
   },
   pricingDetails: {
@@ -121,12 +163,24 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
         '1080p': 8,
       },
     },
+    addons: {
+      audio_off: {
+        perSecondCentsByResolution: {
+          '720p': -2,
+          '1080p': -3,
+        },
+      },
+    },
   },
   pricing: {
     unit: 'USD/s',
     base: 0.05,
+    byResolution: {
+      '720p': 0.05,
+      '1080p': 0.08,
+    },
     currency: 'USD',
-    notes: '$0.05/s at 720p, $0.08/s at 1080p (audio always on)',
+    notes: '$0.05/s at 720p with audio, $0.08/s at 1080p with audio; audio off is $0.03/s at 720p and $0.05/s at 1080p',
   },
   updatedAt: '2026-04-02T00:00:00Z',
   ttlSec: 600,
@@ -161,7 +215,7 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p'],
           aspectRatio: ['16:9', '9:16'],
-          audioToggle: false,
+          audioToggle: true,
         },
       },
       {
@@ -171,11 +225,11 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           modes: ['i2v'],
           duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p'],
-          aspectRatio: ['auto', '16:9', '9:16'],
-          audioToggle: false,
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
-          maxUploadMB: 8,
-          notes: 'Animate one still with Veo 3.1 Lite. Audio is always included, and 1080p requires an 8 second render.',
+          aspectRatio: ['16:9', '9:16'],
+          audioToggle: true,
+          acceptsImageFormats: ['jpg', 'jpeg', 'png'],
+          maxUploadMB: 20,
+          notes: 'Animate one still with Veo 3.1 Lite. Disable audio when you want the lower-cost video-only path.',
         },
       },
       {
@@ -185,24 +239,37 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           modes: ['fl2v'],
           duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p'],
-          aspectRatio: ['auto', '16:9', '9:16'],
-          audioToggle: false,
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
-          maxUploadMB: 8,
-          notes: 'Bridge two keyframes inside Lite when you need a guided ending. Audio is always generated, and 1080p requires 8 seconds.',
+          aspectRatio: ['16:9', '9:16'],
+          audioToggle: true,
+          acceptsImageFormats: ['jpg', 'jpeg', 'png'],
+          maxUploadMB: 20,
+          notes: 'Bridge two keyframes inside Lite when you need a guided ending. Disable audio when you want the lower-cost video-only path.',
+        },
+      },
+      {
+        mode: 'extend',
+        falModelId: 'fal-ai/veo3.1/lite/extend-video',
+        ui: {
+          modes: ['extend'],
+          duration: { options: ['7s'], default: '7s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16'],
+          maxUploadMB: 30,
+          audioToggle: true,
+          notes: 'Extend an existing Veo Lite MP4 by 7 seconds. Lite does not support 4K output.',
         },
       },
     ],
     defaultFalModelId: 'fal-ai/veo3.1/lite',
     seo: {
-      title: 'Veo 3.1 Lite – Text, Start Image & First/Last Video',
+      title: 'Veo 3.1 Lite – Text, Start Image, First/Last & Extend Video',
       description:
-        'Use Veo 3.1 Lite for lower-cost text prompts, start-image animation, and optional first/last-frame control with always-on native audio inside one unified MaxVideoAI model page.',
+        'Use Veo 3.1 Lite for lower-cost text prompts, start-image animation, optional first/last-frame control, and Extend with optional native audio inside one unified MaxVideoAI model page.',
       canonicalPath: '/models/veo-3-1-lite',
     },
-    type: 'Text, start image, last frame',
+    type: 'Text, start image, last frame, extend',
     seoText:
-      'Veo 3.1 Lite keeps the unified Veo workflow on MaxVideoAI for text prompts, single start-image animation, and optional first/last-frame control, with native audio always included and lower-cost 720p or 1080p pricing.',
+      'Veo 3.1 Lite keeps the unified Veo workflow on MaxVideoAI for text prompts, single start-image animation, optional first/last-frame control, and 7-second Extend with native audio controls and lower-cost 720p or 1080p pricing.',
     demoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
@@ -232,11 +299,12 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'What workflows are available in Veo 3.1 Lite?',
         answer:
-          'Veo 3.1 Lite supports text-to-video, start-image animation, and first/last-frame transitions. Multi-reference stills and extend workflows remain reserved for other Veo tiers.',
+          'Veo 3.1 Lite supports text-to-video, start-image animation, first/last-frame transitions, and 7-second Extend. Multi-reference stills remain reserved for other Veo tiers.',
       },
       {
         question: 'Can I disable audio in Veo 3.1 Lite?',
-        answer: 'No. Veo 3.1 Lite has native audio always on, so MaxVideoAI keeps audio locked on for this tier.',
+        answer:
+          'Yes. MaxVideoAI exposes the Veo 3.1 Lite audio toggle, so you can generate video with native audio or use the lower-cost video-only path.',
       },
     ],
     pricingHint: {
@@ -244,7 +312,7 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       amountCents: 40,
       durationSeconds: 8,
       resolution: '720p',
-      label: 'Audio always on',
+      label: 'Audio optional',
     },
     surfaces: {
       modelPage: {
@@ -256,7 +324,7 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['veo-3-1-fast', 'veo-3-1', 'ltx-2-3-fast'],
+        suggestOpponents: ['veo-3-1-fast', 'veo-3-1', 'sora-2'],
         includeInHub: true,
       },
       app: {

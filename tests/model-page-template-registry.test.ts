@@ -243,17 +243,23 @@ test('second-wave templates preserve model intent and app engine routes', () => 
 });
 
 test('second-wave templates avoid cross-route overclaims', () => {
+  const veo = getModelPageTemplateConfig('veo-3-1');
+  const veoFast = getModelPageTemplateConfig('veo-3-1-fast');
   const veoLite = getModelPageTemplateConfig('veo-3-1-lite');
   const klingStandard = getModelPageTemplateConfig('kling-3-standard');
   const kling4k = getModelPageTemplateConfig('kling-3-4k');
   const ltxPro = getModelPageTemplateConfig('ltx-2-3-pro');
 
+  assert.ok(veo);
+  assert.ok(veoFast);
   assert.ok(veoLite);
   assert.ok(klingStandard);
   assert.ok(kling4k);
   assert.ok(ltxPro);
 
-  assert.equal(veoLite.pricing.presets.every((preset) => !preset.id.includes('extend')), true);
+  assert.equal(veo.pricing.presets.some((preset) => preset.resolution === '4k'), true);
+  assert.equal(veoFast.pricing.presets.some((preset) => preset.resolution === '4k'), true);
+  assert.equal(veoLite.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
   assert.equal(klingStandard.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
   assert.equal(kling4k.pricing.presets.some((preset) => preset.resolution === '4k'), true);
   assert.equal(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3');

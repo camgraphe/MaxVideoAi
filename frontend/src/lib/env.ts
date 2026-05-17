@@ -88,6 +88,7 @@ export const ENV = {
   KLING_ACCESS_KEY: getOptionalEnv('KLING_ACCESS_KEY'),
   KLING_SECRET_KEY: getOptionalEnv('KLING_SECRET_KEY'),
   KLING_API_BASE_URL: getOptionalEnv('KLING_API_BASE_URL', 'https://api-singapore.klingai.com'),
+  GOOGLE_VERTEX_VEO_INPUT_GCS_URI: getOptionalEnv('GOOGLE_VERTEX_VEO_INPUT_GCS_URI'),
   RESULT_PROVIDER:
     getOptionalEnv('NEXT_PUBLIC_RESULT_PROVIDER') ??
     getOptionalEnv('RESULT_PROVIDER'),

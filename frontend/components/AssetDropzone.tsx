@@ -70,9 +70,15 @@ export function AssetDropzone({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
   const minCount = required ? (field.minCount ?? 1) : 0;
+  const limits = engine.inputLimits;
+  const constraints = engine.inputSchema?.constraints ?? {};
   const acceptFormats = useMemo(
-    () => caps?.acceptsImageFormats?.map((format) => format.toLowerCase()) ?? [],
-    [caps?.acceptsImageFormats]
+    () => {
+      const configuredFormats =
+        caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
+      return configuredFormats?.map((format) => format.toLowerCase()) ?? [];
+    },
+    [caps?.acceptsImageFormats, constraints.supportedFormats]
   );
   const accept = (() => {
     if (field.type === 'image') {
@@ -85,8 +91,6 @@ export function AssetDropzone({
     }
     return 'video/*';
   })();
-  const limits = engine.inputLimits;
-  const constraints = engine.inputSchema?.constraints ?? {};
   const hideRequiredSlotCopy =
     field.type === 'image' &&
     (role === 'primary' || role === 'reference') &&

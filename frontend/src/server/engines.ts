@@ -25,6 +25,7 @@ import {
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { applyBytePlusSeedanceRuntimeOptions } from '@/server/video-providers/byteplus-modelark';
+import { applyGoogleVertexVeoRuntimeOptions } from '@/server/video-providers/google-vertex-veo/model-map';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -234,7 +235,7 @@ async function getConfiguredEnginesForBase(
   return baseEngines
     .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
     .filter((entry) => includeDisabled || !entry.disabled)
-    .map((entry) => applyBytePlusSeedanceRuntimeOptions(entry.engine));
+    .map((entry) => applyGoogleVertexVeoRuntimeOptions(applyBytePlusSeedanceRuntimeOptions(entry.engine)));
 }
 
 export async function getConfiguredEnginesByCategory(

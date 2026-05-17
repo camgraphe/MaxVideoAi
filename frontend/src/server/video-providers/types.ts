@@ -17,7 +17,7 @@ export type NormalizedVideoProviderTask = {
   raw: unknown;
 };
 
-export type VideoProviderKey = 'fal' | 'kling_direct' | 'byteplus_modelark';
+export type VideoProviderKey = 'fal' | 'kling_direct' | 'byteplus_modelark' | 'google_vertex_veo_direct';
 
 export type ProviderSubmitInput = {
   publicJobId: string;
@@ -53,6 +53,7 @@ export type ProviderCostInput = {
   engineId: string;
   durationSec: number;
   audioEnabled?: boolean;
+  resolution?: string | null;
 };
 
 export type ProviderCostEstimate = {

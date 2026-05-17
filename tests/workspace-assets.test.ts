@@ -10,6 +10,7 @@ import {
   getLibraryAssetFieldMismatchMessage,
   insertKlingLibraryAsset,
   insertReferenceAsset,
+  normalizeAssetLibraryPayload,
   removeReferenceAsset,
   shouldMirrorCharacterImageAsset,
   shouldMirrorVideoLibraryAsset,
@@ -49,6 +50,32 @@ test('asset library mirroring policy detects generated Fal media', () => {
   assert.equal(shouldMirrorVideoLibraryAsset(userAsset({ kind: 'video', source: 'upload', url: 'https://cdn.example.com/a.mp4' })), false);
   assert.equal(shouldMirrorCharacterImageAsset(userAsset({ source: 'character', url: 'https://foo.fal.media/a.jpg' })), true);
   assert.equal(shouldMirrorCharacterImageAsset(userAsset({ source: 'upload', url: 'https://foo.fal.media/a.jpg' })), false);
+});
+
+test('recent video asset payload keeps thumbnails and hover previews for the picker', () => {
+  const [asset] = normalizeAssetLibraryPayload(
+    {
+      ok: true,
+      outputs: [
+        {
+          id: 'job_1:video:0',
+          jobId: 'job_1',
+          url: 'https://media.maxvideoai.com/renders/video.mp4',
+          thumbUrl: 'https://media.maxvideoai.com/renders/thumb.jpg',
+          previewUrl: 'https://media.maxvideoai.com/renders/preview.mp4',
+          mime: 'video/mp4',
+          kind: 'video',
+        },
+      ],
+    },
+    'recent',
+    'video'
+  );
+
+  assert.equal(asset?.kind, 'video');
+  assert.equal(asset?.thumbUrl, 'https://media.maxvideoai.com/renders/thumb.jpg');
+  assert.equal(asset?.previewUrl, 'https://media.maxvideoai.com/renders/preview.mp4');
+  assert.equal(asset?.source, 'recent');
 });
 
 test('reference asset insertion fills slots, replaces assets, and preserves max count', () => {

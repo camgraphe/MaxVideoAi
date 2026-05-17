@@ -17,6 +17,8 @@ export type AssetLibraryKind = 'image' | 'video';
 export type UserAsset = {
   id: string;
   url: string;
+  thumbUrl?: string | null;
+  previewUrl?: string | null;
   kind: 'image' | 'video' | 'audio';
   width?: number | null;
   height?: number | null;
@@ -302,6 +304,8 @@ export function AssetLibraryModal({
         onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
+          thumbUrl: null,
+          previewUrl: null,
           kind: assetType,
           width: uploadedAsset.width ?? null,
           height: uploadedAsset.height ?? null,

@@ -454,7 +454,7 @@ test('image templates preserve GPT Image 2 and Nano Banana route intent', () => 
   assert.match(esNanoPro.hero.subtitle, /Stills de campaña 4K/);
 });
 
-test('Veo 3.1 returns production decision data without unsupported 4K claims', () => {
+test('Veo 3.1 returns production decision data with Standard 4K claims', () => {
   const veo = getEngine('veo-3-1');
   const en = buildModelDecisionData({ engine: veo, locale: 'en' });
   const fr = buildModelDecisionData({ engine: veo, locale: 'fr' });
@@ -471,9 +471,9 @@ test('Veo 3.1 returns production decision data without unsupported 4K claims', (
   assert.match(visibleDecisionText(en), /first-last|extend/i);
   assert.equal(en.hero.primaryCta.href, '/app?engine=veo-3-1');
   assert.equal(en.features[0]?.tone, 'quality');
-  assert.doesNotMatch(visibleDecisionText(en), /4K/i);
-  assert.doesNotMatch(visibleDecisionText(fr), /4K/i);
-  assert.doesNotMatch(visibleDecisionText(es), /4K/i);
+  assert.match(visibleDecisionText(en), /4K/i);
+  assert.match(visibleDecisionText(fr), /4K/i);
+  assert.match(visibleDecisionText(es), /4K/i);
 });
 
 test('Kling 3 Pro returns production decision data without unavailable route claims', () => {
@@ -634,8 +634,8 @@ test('second-wave model templates return distinct decision data without overclai
   assert.match(visibleDecisionText(veoFast), /Extend/i);
   assert.equal(veoFast.hero.primaryCta.href, '/app?engine=veo-3-1-fast');
 
-  assert.match(visibleDecisionText(veoLite), /lower-cost|audio included|Lite/i);
-  assert.doesNotMatch(visibleDecisionText(veoLite), /Extend/i);
+  assert.match(visibleDecisionText(veoLite), /lower-cost|optional audio|Lite/i);
+  assert.doesNotMatch(visibleDecisionText(veoLite), /4K/i);
   assert.equal(veoLite.hero.primaryCta.href, '/app?engine=veo-3-1-lite');
 
   assert.match(visibleDecisionText(klingStandard), /storyboard|1080p|draft/i);
@@ -678,8 +678,8 @@ test('migrated model pricing scenarios return configured IDs and helper values',
   const expectations = [
     [
       'veo-3-1',
-      ['4s-720p-audio', '6s-1080p-audio', '8s-1080p-audio', 'max-duration'],
-      ['$2.08', '$3.12', '$4.16', '8s'],
+      ['4s-720p-audio', '6s-1080p-audio', '8s-1080p-audio', '8s-4k-audio', 'max-duration'],
+      ['$2.08', '$3.12', '$4.16', '$6.24', '8s'],
     ],
     [
       'kling-3-pro',
@@ -750,7 +750,7 @@ test('migrated model pricing scenarios return configured IDs and helper values',
 
 test('second-wave model pricing scenarios reuse pricing page helper values', () => {
   const expectations = [
-    ['veo-3-1-fast', ['4s-720p', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
+    ['veo-3-1-fast', ['4s-720p', '6s-720p-audio', '8s-1080p-audio', '8s-4k-audio', 'max-duration']],
     ['veo-3-1-lite', ['4s-720p-audio', '6s-720p-audio', '8s-1080p-audio', 'max-duration']],
     ['kling-2-5-turbo', ['5s-1080p', '10s-1080p', 'max-duration']],
     ['kling-2-6-pro', ['5s-1080p', '5s-1080p-audio', '10s-1080p-audio', 'max-duration']],

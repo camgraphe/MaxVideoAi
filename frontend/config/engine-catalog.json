@@ -403,13 +403,12 @@
       "maxDurationSec": 8,
       "resolutions": [
         "720p",
-        "1080p"
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
-        "auto",
         "16:9",
-        "9:16",
-        "1:1"
+        "9:16"
       ],
       "fps": [
         24
@@ -421,7 +420,7 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 10
+        "imageMaxMB": 20
       },
       "inputSchema": {
         "required": [
@@ -456,7 +455,7 @@
               "ref2v"
             ],
             "minCount": 1,
-            "maxCount": 4,
+            "maxCount": 3,
             "source": "either"
           },
           {
@@ -516,6 +515,12 @@
               "8s"
             ],
             "default": "8s",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "fl2v"
+            ],
             "min": 4,
             "max": 8
           },
@@ -525,9 +530,7 @@
             "label": "Aspect ratio",
             "values": [
               "16:9",
-              "9:16",
-              "1:1",
-              "auto"
+              "9:16"
             ],
             "default": "16:9"
           },
@@ -537,7 +540,8 @@
             "label": "Resolution",
             "values": [
               "720p",
-              "1080p"
+              "1080p",
+              "4k"
             ],
             "default": "720p"
           },
@@ -551,29 +555,37 @@
             ]
           },
           {
-            "id": "enhance_prompt",
+            "id": "person_generation",
             "type": "enum",
-            "label": "Enhance prompt",
+            "label": "People generation",
             "values": [
-              "true",
-              "false"
+              "allow_adult",
+              "dont_allow"
             ],
-            "default": "false",
-            "modes": [
-              "t2v"
-            ]
+            "default": "allow_adult"
           },
           {
-            "id": "auto_fix",
+            "id": "compression_quality",
             "type": "enum",
-            "label": "Auto fix policy",
+            "label": "Compression quality",
             "values": [
-              "true",
-              "false"
+              "optimized",
+              "lossless"
             ],
-            "default": "false",
+            "default": "optimized"
+          },
+          {
+            "id": "resize_mode",
+            "type": "enum",
+            "label": "Resize mode",
+            "values": [
+              "pad",
+              "crop"
+            ],
+            "default": "pad",
             "modes": [
-              "t2v"
+              "i2v",
+              "fl2v"
             ]
           },
           {
@@ -588,41 +600,55 @@
           },
           {
             "id": "duration",
-            "type": "number",
+            "type": "enum",
             "label": "Extension duration (seconds)",
             "modes": [
               "extend"
             ],
-            "min": 1,
-            "max": 30,
-            "default": 5
+            "values": [
+              "7s"
+            ],
+            "default": "7s"
           }
         ],
         "constraints": {
           "supportedFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ]
         }
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 40
+          "default": 40,
+          "byResolution": {
+            "720p": 40,
+            "1080p": 40,
+            "4k": 60
+          }
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -20
+            "perSecondCentsByResolution": {
+              "720p": -20,
+              "1080p": -20,
+              "4k": -20
+            }
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
         "base": 0.4,
+        "byResolution": {
+          "720p": 0.4,
+          "1080p": 0.4,
+          "4k": 0.6
+        },
         "currency": "USD",
-        "notes": "$0.40/s with audio, $0.20/s audio off"
+        "notes": "$0.40/s with audio at 720p/1080p, $0.60/s with audio at 4K; audio off is $0.20/s cheaper"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
@@ -651,12 +677,12 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "16:9",
-            "9:16",
-            "1:1"
+            "9:16"
           ],
           "audioToggle": true
         }
@@ -676,10 +702,10 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
             "9:16"
           ],
@@ -687,10 +713,9 @@
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 12,
+          "maxUploadMB": 20,
           "notes": "Animate a single still while keeping the prompt and optional native audio aligned to one source image."
         }
       },
@@ -709,10 +734,10 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
             "9:16"
           ],
@@ -720,10 +745,9 @@
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 12,
+          "maxUploadMB": 20,
           "notes": "Attach multiple stills to preserve identity, styling, and wardrobe across the full shot."
         }
       },
@@ -744,22 +768,20 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
-            "9:16",
-            "1:1"
+            "9:16"
           ],
           "audioToggle": true,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 12,
+          "maxUploadMB": 20,
           "notes": "Bridge two keyframes with Veo 3.1 while the prompt defines motion, pacing, and camera path."
         }
       },
@@ -771,12 +793,23 @@
             "extend"
           ],
           "duration": {
-            "min": 1,
-            "default": 5
+            "options": [
+              "7s"
+            ],
+            "default": "7s"
           },
+          "resolution": [
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Extend an existing Veo 3.1 clip from a source render without switching engines."
+          "notes": "Extend an existing Veo-generated MP4 by 7 seconds on the Google direct route, including 4K when selected."
         }
       }
     ],
@@ -791,6 +824,9 @@
         "value": false
       },
       "extend": {
+        "value": true
+      },
+      "lipsync": {
         "value": true
       }
     },
@@ -886,13 +922,12 @@
       "maxDurationSec": 8,
       "resolutions": [
         "720p",
-        "1080p"
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
-        "auto",
-        "9:16",
         "16:9",
-        "1:1"
+        "9:16"
       ],
       "fps": [
         24
@@ -904,7 +939,7 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 10
+        "imageMaxMB": 20
       },
       "inputSchema": {
         "required": [
@@ -932,7 +967,7 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images",
-            "description": "Attach 1-4 stills to preserve identity, styling, wardrobe, or product details.",
+            "description": "Attach 1-3 stills to preserve identity, styling, wardrobe, or product details.",
             "modes": [
               "ref2v"
             ],
@@ -940,7 +975,7 @@
               "ref2v"
             ],
             "minCount": 1,
-            "maxCount": 4,
+            "maxCount": 3,
             "source": "either"
           },
           {
@@ -1000,6 +1035,12 @@
               "8s"
             ],
             "default": "8s",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "fl2v"
+            ],
             "min": 4,
             "max": 8
           },
@@ -1008,12 +1049,10 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
-              "auto",
-              "9:16",
               "16:9",
-              "1:1"
+              "9:16"
             ],
-            "default": "auto"
+            "default": "16:9"
           },
           {
             "id": "resolution",
@@ -1021,7 +1060,8 @@
             "label": "Resolution",
             "values": [
               "720p",
-              "1080p"
+              "1080p",
+              "4k"
             ],
             "default": "720p"
           },
@@ -1035,29 +1075,37 @@
             ]
           },
           {
-            "id": "enhance_prompt",
+            "id": "person_generation",
             "type": "enum",
-            "label": "Enhance prompt",
+            "label": "People generation",
             "values": [
-              "true",
-              "false"
+              "allow_adult",
+              "dont_allow"
             ],
-            "default": "false",
-            "modes": [
-              "t2v"
-            ]
+            "default": "allow_adult"
           },
           {
-            "id": "auto_fix",
+            "id": "compression_quality",
             "type": "enum",
-            "label": "Auto fix policy",
+            "label": "Compression quality",
             "values": [
-              "true",
-              "false"
+              "optimized",
+              "lossless"
             ],
-            "default": "false",
+            "default": "optimized"
+          },
+          {
+            "id": "resize_mode",
+            "type": "enum",
+            "label": "Resize mode",
+            "values": [
+              "pad",
+              "crop"
+            ],
+            "default": "pad",
             "modes": [
-              "t2v"
+              "i2v",
+              "fl2v"
             ]
           },
           {
@@ -1072,41 +1120,55 @@
           },
           {
             "id": "duration",
-            "type": "number",
+            "type": "enum",
             "label": "Extension duration (seconds)",
             "modes": [
               "extend"
             ],
-            "min": 1,
-            "max": 30,
-            "default": 5
+            "values": [
+              "7s"
+            ],
+            "default": "7s"
           }
         ],
         "constraints": {
           "supportedFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ]
         }
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 15
+          "default": 10,
+          "byResolution": {
+            "720p": 10,
+            "1080p": 12,
+            "4k": 30
+          }
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -5
+            "perSecondCentsByResolution": {
+              "720p": -2,
+              "1080p": -2,
+              "4k": -5
+            }
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.15,
+        "base": 0.1,
+        "byResolution": {
+          "720p": 0.1,
+          "1080p": 0.12,
+          "4k": 0.3
+        },
         "currency": "USD",
-        "notes": "$0.15/s with audio, $0.10/s when audio off"
+        "notes": "$0.10/s at 720p with audio, $0.12/s at 1080p with audio, $0.30/s at 4K with audio; audio off follows Google video-only rates"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
@@ -1135,12 +1197,12 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "16:9",
-            "9:16",
-            "1:1"
+            "9:16"
           ],
           "audioToggle": true
         }
@@ -1162,10 +1224,10 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
             "9:16"
           ],
@@ -1173,10 +1235,9 @@
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 12,
+          "maxUploadMB": 20,
           "notes": "Animate one still quickly while keeping Veo Fast native audio optional."
         }
       },
@@ -1195,7 +1256,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "16:9",
@@ -1205,10 +1267,9 @@
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 8,
+          "maxUploadMB": 20,
           "notes": "Attach multiple stills to keep identity, styling, and products consistent in a faster Veo pass."
         }
       },
@@ -1229,22 +1290,20 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
-            "9:16",
-            "1:1"
+            "9:16"
           ],
           "audioToggle": true,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
           ],
-          "maxUploadMB": 12,
+          "maxUploadMB": 20,
           "notes": "Use two keyframes for faster start-to-end bridging while keeping Veo Fast pricing and latency."
         }
       },
@@ -1256,12 +1315,23 @@
             "extend"
           ],
           "duration": {
-            "min": 1,
-            "default": 5
+            "options": [
+              "7s"
+            ],
+            "default": "7s"
           },
+          "resolution": [
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Extend an existing Veo 3.1 Fast clip without leaving the Fast workflow."
+          "notes": "Extend an existing Veo-generated MP4 by 7 seconds on the Google direct Fast route, including 4K when selected."
         }
       }
     ],
@@ -1276,6 +1346,9 @@
         "value": false
       },
       "extend": {
+        "value": true
+      },
+      "lipsync": {
         "value": true
       }
     },
@@ -1314,7 +1387,7 @@
         "suggestOpponents": [
           "veo-3-1-fast",
           "veo-3-1",
-          "ltx-2-3-fast"
+          "sora-2"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -1364,7 +1437,8 @@
       "modes": [
         "t2v",
         "i2v",
-        "fl2v"
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 8,
       "resolutions": [
@@ -1372,7 +1446,6 @@
         "1080p"
       ],
       "aspectRatios": [
-        "auto",
         "16:9",
         "9:16"
       ],
@@ -1381,12 +1454,12 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": false,
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 8
+        "imageMaxMB": 20
       },
       "inputSchema": {
         "required": [
@@ -1439,6 +1512,21 @@
             "minCount": 1,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Extend an existing Veo Lite render from a source clip URL or upload.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
           }
         ],
         "optional": [
@@ -1452,6 +1540,11 @@
               "8s"
             ],
             "default": "8s",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v"
+            ],
             "min": 4,
             "max": 8
           },
@@ -1460,7 +1553,6 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
-              "auto",
               "16:9",
               "9:16"
             ],
@@ -1488,24 +1580,67 @@
             "description": "Lock motion & noise for iterative runs."
           },
           {
-            "id": "auto_fix",
+            "id": "person_generation",
             "type": "enum",
-            "label": "Auto fix policy",
+            "label": "People generation",
+            "values": [
+              "allow_adult",
+              "dont_allow"
+            ],
+            "default": "allow_adult"
+          },
+          {
+            "id": "compression_quality",
+            "type": "enum",
+            "label": "Compression quality",
+            "values": [
+              "optimized",
+              "lossless"
+            ],
+            "default": "optimized"
+          },
+          {
+            "id": "resize_mode",
+            "type": "enum",
+            "label": "Resize mode",
+            "values": [
+              "pad",
+              "crop"
+            ],
+            "default": "pad",
+            "modes": [
+              "i2v",
+              "fl2v"
+            ]
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Generate audio",
             "values": [
               "true",
               "false"
             ],
-            "default": "false"
+            "default": "true"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Extension duration (seconds)",
+            "modes": [
+              "extend"
+            ],
+            "values": [
+              "7s"
+            ],
+            "default": "7s"
           }
         ],
         "constraints": {
           "supportedFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp",
-            "gif",
-            "avif"
+            "png"
           ]
         }
       },
@@ -1517,13 +1652,25 @@
             "720p": 5,
             "1080p": 8
           }
+        },
+        "addons": {
+          "audio_off": {
+            "perSecondCentsByResolution": {
+              "720p": -2,
+              "1080p": -3
+            }
+          }
         }
       },
       "pricing": {
         "unit": "USD/s",
         "base": 0.05,
+        "byResolution": {
+          "720p": 0.05,
+          "1080p": 0.08
+        },
         "currency": "USD",
-        "notes": "$0.05/s at 720p, $0.08/s at 1080p (audio always on)"
+        "notes": "$0.05/s at 720p with audio, $0.08/s at 1080p with audio; audio off is $0.03/s at 720p and $0.05/s at 1080p"
       },
       "updatedAt": "2026-04-02T00:00:00Z",
       "ttlSec": 600,
@@ -1558,7 +1705,7 @@
             "16:9",
             "9:16"
           ],
-          "audioToggle": false
+          "audioToggle": true
         }
       },
       {
@@ -1581,21 +1728,17 @@
             "1080p"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
             "9:16"
           ],
-          "audioToggle": false,
+          "audioToggle": true,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp",
-            "gif",
-            "avif"
+            "png"
           ],
-          "maxUploadMB": 8,
-          "notes": "Animate one still with Veo 3.1 Lite. Audio is always included, and 1080p requires an 8 second render."
+          "maxUploadMB": 20,
+          "notes": "Animate one still with Veo 3.1 Lite. Disable audio when you want the lower-cost video-only path."
         }
       },
       {
@@ -1618,21 +1761,43 @@
             "1080p"
           ],
           "aspectRatio": [
-            "auto",
             "16:9",
             "9:16"
           ],
-          "audioToggle": false,
+          "audioToggle": true,
           "acceptsImageFormats": [
             "jpg",
             "jpeg",
-            "png",
-            "webp",
-            "gif",
-            "avif"
+            "png"
           ],
-          "maxUploadMB": 8,
-          "notes": "Bridge two keyframes inside Lite when you need a guided ending. Audio is always generated, and 1080p requires 8 seconds."
+          "maxUploadMB": 20,
+          "notes": "Bridge two keyframes inside Lite when you need a guided ending. Disable audio when you want the lower-cost video-only path."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "fal-ai/veo3.1/lite/extend-video",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "7s"
+            ],
+            "default": "7s"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Extend an existing Veo Lite MP4 by 7 seconds. Lite does not support 4K output."
         }
       }
     ],
@@ -1647,7 +1812,10 @@
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
+      },
+      "lipsync": {
+        "value": true
       }
     },
     "bestFor": "Budget Veo drafts"
