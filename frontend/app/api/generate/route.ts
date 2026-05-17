@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
     resolvedAudioUrl,
     sourceInputVideoUrl,
     elements,
+    endImageUrl,
     isLumaRay2,
     initialImageUrl,
   });

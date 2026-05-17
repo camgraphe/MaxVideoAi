@@ -686,8 +686,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(localizedNano2);
     assert.ok(localizedNanoPro);
 
-    assert.doesNotMatch(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should not claim 4K`);
-    assert.doesNotMatch(visibleDecisionText(veoLite), /extend/i, `Veo 3.1 Lite ${locale} copy should not claim Extend`);
+    assert.doesNotMatch(visibleDecisionText(veoLite), /4K/i, `Veo 3.1 Lite ${locale} copy should not claim 4K`);
     assert.doesNotMatch(
       visibleDecisionText(localizedKling25),
       /native audio|Audio on|Audio activ|Audio nativo|4K|Omni|voice IDs|Elements/i,

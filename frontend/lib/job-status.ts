@@ -64,7 +64,15 @@ export function normalizeJobProgress(
 export function normalizeJobMessage(message: unknown): string | undefined {
   if (typeof message !== 'string') return undefined;
   const trimmed = message.trim();
-  return trimmed.length ? trimmed : undefined;
+  if (!trimmed.length) return undefined;
+  const normalized = trimmed.toLowerCase();
+  if (
+    normalized.includes('prompt could not be submitted') &&
+    (normalized.includes('responsible ai') || normalized.includes('sensitive words') || normalized.includes('safety'))
+  ) {
+    return 'The provider refused this prompt for safety reasons. Try rephrasing it with safer, more neutral wording.';
+  }
+  return trimmed;
 }
 
 export const JOB_STATUS_SETS = {

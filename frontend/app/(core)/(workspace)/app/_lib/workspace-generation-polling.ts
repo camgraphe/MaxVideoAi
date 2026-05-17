@@ -103,6 +103,7 @@ export function applyGenerationPollToRender(
     currency: projection.status.currency ?? projection.status.pricing?.currency ?? render.currency,
     pricingSnapshot: projection.status.pricing ?? render.pricingSnapshot,
     paymentStatus: nextPaymentStatus,
+    message: projection.status.message ?? render.message,
     failedAt: nextFailedAt,
   };
 }
@@ -128,5 +129,6 @@ export function applyGenerationPollToSelectedPreview(
     currency: projection.status.currency ?? projection.status.pricing?.currency ?? current.currency,
     etaLabel: current.etaLabel,
     etaSeconds: current.etaSeconds,
+    message: projection.status.message ?? current.message,
   };
 }

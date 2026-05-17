@@ -22,6 +22,8 @@ export type ReferenceAsset = {
 export type UserAsset = {
   id: string;
   url: string;
+  thumbUrl?: string | null;
+  previewUrl?: string | null;
   kind: 'image' | 'video' | 'audio';
   width?: number | null;
   height?: number | null;
@@ -74,11 +76,14 @@ export function normalizeAssetLibraryPayload(
         thumbUrl?: string | null;
         sourceOutputId?: string | null;
         jobId?: string | null;
+        previewUrl?: string | null;
       }>).map((asset) => {
         const mime = asset.mime ?? null;
         return {
           id: asset.id,
           url: asset.url,
+          thumbUrl: asset.thumbUrl ?? null,
+          previewUrl: asset.previewUrl ?? null,
           kind: mime?.startsWith('video/') ? 'video' : 'image',
           width: asset.width ?? null,
           height: asset.height ?? null,

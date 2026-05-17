@@ -92,7 +92,7 @@ test('poll projection patches renders and selected preview when media is complet
   assert.equal(nextRender.priceCents, 450);
   assert.equal(nextRender.currency, 'EUR');
   assert.equal(nextRender.paymentStatus, 'captured');
-  assert.equal(nextRender.message, 'Working');
+  assert.equal(nextRender.message, 'Done');
 
   const selected: SelectedVideoPreview = {
     id: 'job_123',
@@ -106,6 +106,7 @@ test('poll projection patches renders and selected preview when media is complet
   assert.equal(nextSelected?.status, 'completed');
   assert.equal(nextSelected?.videoUrl, 'https://cdn.example.com/final.mp4');
   assert.equal(nextSelected?.thumbUrl, 'https://cdn.example.com/thumb.jpg');
+  assert.equal(nextSelected?.message, 'Done');
 });
 
 test('poll projection marks refunded failures and stops progress tracking', () => {
@@ -132,4 +133,5 @@ test('poll projection marks refunded failures and stops progress tracking', () =
   assert.equal(nextRender.status, 'failed');
   assert.equal(nextRender.paymentStatus, 'refunded');
   assert.equal(nextRender.failedAt, 12_000);
+  assert.equal(nextRender.message, 'Failed');
 });

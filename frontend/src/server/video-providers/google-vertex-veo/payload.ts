@@ -1,7 +1,9 @@
 import type { GeneratePayload } from '@/lib/fal';
 import type { Mode } from '@/types/engines';
+import { getGoogleVertexVeoClient } from './client';
 import { GoogleVertexVeoError } from './errors';
 import { isGoogleVertexVeoSupportedImageMime, resolveGoogleVertexVeoModelRoute } from './model-map';
+import { fetchVideoAsGoogleVideo } from './video-input';
 
 type GoogleImage = {
   mimeType: string;
@@ -212,8 +214,8 @@ function applyOptionalParameters(params: {
     params.parameters.negativePrompt = params.negativePrompt.trim();
   }
   const enhancePrompt = normalizeBoolean(extra.enhance_prompt ?? extra.enhancePrompt);
-  if (typeof enhancePrompt === 'boolean') {
-    params.parameters.enhancePrompt = enhancePrompt;
+  if (enhancePrompt === true) {
+    params.parameters.enhancePrompt = true;
   }
   const personGeneration = normalizeStringOption(extra.person_generation ?? extra.personGeneration);
   if (personGeneration) {
@@ -222,6 +224,10 @@ function applyOptionalParameters(params: {
   const compressionQuality = normalizeStringOption(extra.compression_quality ?? extra.compressionQuality);
   if (compressionQuality) {
     params.parameters.compressionQuality = compressionQuality;
+  }
+  const resizeMode = normalizeStringOption(extra.resize_mode ?? extra.resizeMode);
+  if (resizeMode) {
+    params.parameters.resizeMode = resizeMode;
   }
   const storageUri = (process.env.GOOGLE_VERTEX_VEO_OUTPUT_GCS_URI ?? '').trim();
   if (storageUri) {
@@ -275,17 +281,33 @@ export async function buildGoogleVertexVeoPayload(
     );
   }
 
+  if (params.mode === 'extend') {
+    if (!params.falPayload.videoUrl) {
+      throw new GoogleVertexVeoError('Google Vertex Veo Extend requires a source video.', {
+        code: 'GOOGLE_VERTEX_VEO_INVALID_REQUEST',
+        errorClass: 'invalid_request',
+      });
+    }
+    const sourceVideoUrl = params.falPayload.videoUrl;
+    instance.video = await fetchVideoAsGoogleVideo({
+      url: sourceVideoUrl,
+      client: sourceVideoUrl.startsWith('gs://') ? undefined : getGoogleVertexVeoClient(),
+      inputGcsPrefix: process.env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI,
+    });
+  }
+
   const cameraControl = getCameraControl(params.falPayload.extraInputValues ?? {});
   if (cameraControl) {
     instance.cameraControl = cameraControl;
   }
 
   const resolution = params.falPayload.resolution === '4k' ? '4k' : params.falPayload.resolution ?? '720p';
+  const durationSeconds = params.mode === 'extend' ? 7 : params.durationSec;
   const audioEnabled = params.audioEnabled ?? route.defaultAudioEnabled;
   const parameters: Record<string, unknown> = {
     sampleCount: 1,
     fps: 24,
-    durationSeconds: params.durationSec,
+    durationSeconds,
     aspectRatio: params.aspectRatio ?? '16:9',
     resolution,
     generateAudio: audioEnabled,

@@ -253,7 +253,7 @@ test('second-wave templates avoid cross-route overclaims', () => {
   assert.ok(kling4k);
   assert.ok(ltxPro);
 
-  assert.equal(veoLite.pricing.presets.every((preset) => !preset.id.includes('extend')), true);
+  assert.equal(veoLite.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
   assert.equal(klingStandard.pricing.presets.every((preset) => preset.resolution !== '4k'), true);
   assert.equal(kling4k.pricing.presets.some((preset) => preset.resolution === '4k'), true);
   assert.equal(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3');

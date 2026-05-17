@@ -212,7 +212,7 @@ test('Veo 3.1 REF2V requires reference images', () => {
   assert.deepEqual(valid, OK);
 });
 
-test('Veo 3.1 Fast REF2V requires 1-4 reference images', () => {
+test('Veo 3.1 Fast REF2V requires 1-3 reference images', () => {
   const missing = validateRequest('veo-3-1-fast', 'ref2v', {
     prompt: 'Keep the campaign subject consistent',
     duration: '8s',
@@ -234,14 +234,14 @@ test('Veo 3.1 Fast REF2V requires 1-4 reference images', () => {
 
   const tooMany = validateRequest('veo-3-1-fast', 'ref2v', {
     prompt: 'Keep the campaign subject consistent',
-    image_urls: Array.from({ length: 5 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
+    image_urls: Array.from({ length: 4 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
     duration: '8s',
     resolution: '1080p',
     aspect_ratio: '16:9',
   });
   assert.equal(tooMany.ok, false);
   assert.equal(tooMany.error?.field, 'image_urls');
-  assert.deepEqual(tooMany.error?.allowed, [1, 4]);
+  assert.deepEqual(tooMany.error?.allowed, [1, 3]);
 });
 
 test('Seedance 2.0 REF2V accepts Fal-style multimodal references and keeps audio gated behind image/video refs', () => {
@@ -296,12 +296,55 @@ test('Veo 3.1 Fast FL2V requires both frames', () => {
   assert.deepEqual(valid, OK);
 });
 
-test('Veo 3.1 Lite T2V supports 4-8 second prompts with always-on audio', () => {
+test('Veo 3.1 Extend uses Google direct fixed 7 second caps by model', () => {
+  const missingSource = validateRequest('veo-3-1-fast', 'extend', {
+    duration: '7s',
+  });
+  assert.equal(missingSource.ok, false);
+  assert.equal(missingSource.error?.field, 'video_url');
+
+  const valid = validateRequest('veo-3-1-fast', 'extend', {
+    video_url: 'https://example.com/source.mp4',
+    duration: '7s',
+    resolution: '4k',
+    aspect_ratio: '16:9',
+    generate_audio: false,
+  });
+  assert.deepEqual(valid, OK);
+
+  const invalidDuration = validateRequest('veo-3-1-fast', 'extend', {
+    video_url: 'https://example.com/source.mp4',
+    duration: '8s',
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidDuration.ok, false);
+  assert.equal(invalidDuration.error?.field, 'duration');
+
+  const validLiteExtend = validateRequest('veo-3-1-lite', 'extend', {
+    video_url: 'https://example.com/source.mp4',
+    duration: '7s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(validLiteExtend, OK);
+
+  const invalidResolution = validateRequest('veo-3-1-lite', 'extend', {
+    video_url: 'https://example.com/source.mp4',
+    duration: '7s',
+    resolution: '4k',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidResolution.ok, false);
+  assert.equal(invalidResolution.error?.field, 'resolution');
+});
+
+test('Veo 3.1 Lite T2V supports 4-8 second prompts with optional audio', () => {
   const valid = validateRequest('veo-3-1-lite', 't2v', {
     duration: '6s',
     resolution: '1080p',
     aspect_ratio: '16:9',
-    auto_fix: 'true',
+    generate_audio: false,
   });
   assert.deepEqual(valid, OK);
 });
@@ -355,7 +398,7 @@ test('Veo 3 I2V rejects durations other than 8s', () => {
   const valid = validateRequest('veo-3-1', 'i2v', {
     duration: '8s',
     resolution: '1080p',
-    aspect_ratio: 'auto',
+    aspect_ratio: '16:9',
     image_url: 'https://example.com/frame.png',
   });
   assert.deepEqual(valid, OK);
@@ -415,6 +458,28 @@ test('Hailuo-02 Std enforces duration and resolution', () => {
     resolution: '768P',
     _uploadedFileMB: 10,
     image_url: 'https://example.com/frame.png',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Hailuo-02 Std rejects 512P image-to-video with an end frame', () => {
+  const invalid = validateRequest('minimax-hailuo-02-text', 'i2v', {
+    duration: 6,
+    resolution: '512P',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/start.png',
+    end_image_url: 'https://example.com/end.png',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'resolution');
+  assert.match(invalid.error?.message ?? '', /end frame.*768P/i);
+
+  const valid = validateRequest('minimax-hailuo-02-text', 'i2v', {
+    duration: 6,
+    resolution: '768P',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/start.png',
+    end_image_url: 'https://example.com/end.png',
   });
   assert.deepEqual(valid, OK);
 });
@@ -671,9 +736,64 @@ test('Veo 3.1 Lite registry exposes the unified lite mode mapping', () => {
     veoLite?.modes.find((mode) => mode.mode === 'fl2v')?.falModelId,
     'fal-ai/veo3.1/lite/first-last-frame-to-video'
   );
+  assert.equal(veoLite?.modes.find((mode) => mode.mode === 'extend')?.falModelId, 'fal-ai/veo3.1/lite/extend-video');
   assert.equal(veoLite?.modes.some((mode) => mode.mode === 'ref2v'), false);
-  assert.equal(veoLite?.modes.some((mode) => mode.mode === 'extend'), false);
-  assert.equal(veoLite?.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), false);
+  assert.equal(veoLite?.modes.some((mode) => mode.mode === 'extend'), true);
+  assert.equal(veoLite?.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), true);
+  assert.equal(veoLite?.modes.every((mode) => mode.ui.audioToggle === true), true);
+});
+
+test('Veo 3.1 registry exposes Google direct resolution support by model', () => {
+  const registry = listFalEngines();
+  const standard = registry.find((entry) => entry.id === 'veo-3-1');
+  const fast = registry.find((entry) => entry.id === 'veo-3-1-fast');
+  const lite = registry.find((entry) => entry.id === 'veo-3-1-lite');
+
+  assert.ok(standard);
+  assert.ok(fast);
+  assert.ok(lite);
+
+  assert.deepEqual(standard?.engine.resolutions, ['720p', '1080p', '4k']);
+  assert.deepEqual(fast?.engine.resolutions, ['720p', '1080p', '4k']);
+  assert.deepEqual(lite?.engine.resolutions, ['720p', '1080p']);
+
+  assert.equal(
+    validateRequest('veo-3-1', 't2v', {
+      duration: '8s',
+      resolution: '4k',
+      aspect_ratio: '16:9',
+    }).ok,
+    true
+  );
+  assert.equal(
+    validateRequest('veo-3-1-fast', 't2v', {
+      duration: '8s',
+      resolution: '4k',
+      aspect_ratio: '9:16',
+    }).ok,
+    true
+  );
+  assert.equal(
+    validateRequest('veo-3-1-lite', 't2v', {
+      duration: '8s',
+      resolution: '4k',
+      aspect_ratio: '16:9',
+    }).ok,
+    false
+  );
+});
+
+test('Veo 3.1 Google-first catalog avoids Fal-only direct-incompatible options', () => {
+  const registry = listFalEngines();
+  const engines = ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']
+    .map((id) => registry.find((entry) => entry.id === id))
+    .filter(Boolean);
+
+  for (const entry of engines) {
+    assert.deepEqual(entry?.engine.aspectRatios, ['16:9', '9:16']);
+    assert.deepEqual(entry?.engine.inputSchema?.constraints?.supportedFormats, ['jpg', 'jpeg', 'png']);
+    assert.equal(entry?.engine.inputSchema?.optional?.some((field) => field.id === 'auto_fix'), false);
+  }
 });
 
 test('Veo 3.1 Fast registry exposes unified reference-to-video mapping', () => {
@@ -693,7 +813,7 @@ test('Veo 3.1 Fast registry exposes unified reference-to-video mapping', () => {
         field.modes?.includes('ref2v') &&
         field.requiredInModes?.includes('ref2v') &&
         field.minCount === 1 &&
-        field.maxCount === 4
+        field.maxCount === 3
     ),
     true
   );

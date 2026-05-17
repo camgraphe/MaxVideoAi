@@ -27,7 +27,9 @@ import {
   getEngineModeOptions,
   getModeCaps,
   getPreferredEngineMode,
+  isWorkspaceModeAvailable,
   matchesEngineToken,
+  resolveSelectedWorkspaceEngine,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { UNIFIED_VEO_FIRST_LAST_ENGINE_IDS } from '../_lib/workspace-client-helpers';
@@ -137,12 +139,7 @@ export function useWorkspaceEngineModeState({
   }, [engines, effectiveRequestedEngineToken]);
 
   const selectedEngine = useMemo<EngineCaps | null>(() => {
-    if (!engines.length) return null;
-    if (engineOverride) return engineOverride;
-    if (form && engines.some((engine) => engine.id === form.engineId)) {
-      return engines.find((engine) => engine.id === form.engineId) ?? engines[0];
-    }
-    return engines[0];
+    return resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
   }, [engines, form, engineOverride]);
 
   const supportsKlingV3Controls =
@@ -245,7 +242,7 @@ export function useWorkspaceEngineModeState({
         currentMode === 'ref2v' ||
         currentMode === 'extend' ||
         currentMode === 'retake') &&
-      selectedEngine.modes.includes(currentMode)
+      isWorkspaceModeAvailable(selectedEngine, currentMode)
     ) {
       return currentMode;
     }
@@ -383,6 +380,7 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
+      if (!isWorkspaceModeAvailable(selectedEngine, mode)) return;
       const nextMode = getPreferredEngineMode(selectedEngine, mode);
       setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
@@ -424,6 +422,7 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
+      if (mode && !isWorkspaceModeAvailable(selectedEngine, mode)) return;
       const nextMode = mode ?? implicitMode;
       setForm((current) =>
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)

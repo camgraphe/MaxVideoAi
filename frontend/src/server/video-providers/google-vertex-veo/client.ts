@@ -239,9 +239,41 @@ export class GoogleVertexVeoClient {
       mime: response.headers.get('content-type') || 'video/mp4',
     };
   }
+
+  async uploadGcsObject(params: { gcsUri: string; data: Buffer; mime: string }): Promise<string> {
+    const match = params.gcsUri.match(/^gs:\/\/([^/]+)\/(.+)$/);
+    if (!match) {
+      throw new GoogleVertexVeoError('Google input staging URI is not a valid GCS URI.', {
+        code: 'GOOGLE_VERTEX_VEO_INVALID_GCS_URI',
+        errorClass: 'invalid_request',
+        raw: { gcsUri: params.gcsUri },
+      });
+    }
+    const [, bucket, objectName] = match;
+    const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(
+      bucket
+    )}/o?uploadType=media&name=${encodeURIComponent(objectName)}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${await this.token()}`,
+        'content-type': params.mime,
+      },
+      body: params.data,
+    });
+    const json = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    if (!response.ok) {
+      throw new GoogleVertexVeoError('Google GCS input upload failed.', {
+        status: response.status,
+        code: 'GOOGLE_VERTEX_VEO_INPUT_GCS_UPLOAD_FAILED',
+        errorClass: response.status >= 500 ? 'provider_unavailable' : 'invalid_request',
+        raw: json,
+      });
+    }
+    return params.gcsUri;
+  }
 }
 
 export function getGoogleVertexVeoClient(): GoogleVertexVeoClient {
   return new GoogleVertexVeoClient();
 }
-

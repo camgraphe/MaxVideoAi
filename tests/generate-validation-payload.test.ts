@@ -35,6 +35,7 @@ const baseParams = {
   resolvedAudioUrl: null,
   sourceInputVideoUrl: null,
   elements: null,
+  endImageUrl: null,
   isLumaRay2: false,
   initialImageUrl: null,
 };
@@ -169,4 +170,27 @@ test('validation payload helper converts engine constraint errors to route respo
     allowed: [5, 10],
     value: 8,
   });
+});
+
+test('validation payload helper includes image-to-video end frame for provider constraints', () => {
+  let capturedPayload: Record<string, unknown> | null = null;
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    engineId: 'minimax-hailuo-02-text',
+    mode: 'i2v',
+    effectiveResolution: '512P',
+    audioEnabled: false,
+    initialImageUrl: 'https://cdn.maxvideoai.com/start.png',
+    endImageUrl: 'https://cdn.maxvideoai.com/end.png',
+    deps: {
+      validateRequestFn: (_engineId, _mode, payload) => {
+        capturedPayload = payload;
+        return { ok: true };
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedPayload?.image_url, 'https://cdn.maxvideoai.com/start.png');
+  assert.equal(capturedPayload?.end_image_url, 'https://cdn.maxvideoai.com/end.png');
 });

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import type { GeneratePayload } from '../frontend/src/lib/fal-types';
+import { getBaseEngines } from '../frontend/src/lib/engines';
 import { estimateGoogleVertexVeoCost } from '../frontend/src/server/video-providers/google-vertex-veo/cost';
 import {
   classifyGoogleVertexVeoError,
@@ -9,6 +10,7 @@ import {
   shouldFallbackFromGoogleVertexVeoSubmit,
 } from '../frontend/src/server/video-providers/google-vertex-veo/errors';
 import {
+  applyGoogleVertexVeoRuntimeOptions,
   isGoogleVertexVeoEngine,
   resolveGoogleVertexVeoModelRoute,
   resolveGoogleVertexVeoSupport,
@@ -60,15 +62,63 @@ test('Google Vertex Veo router keeps Fal for public users while public routing i
 
 test('Google Vertex Veo model map uses Agent Platform Veo 3.1 model ids including Lite', () => {
   assert.equal(resolveGoogleVertexVeoModelRoute('veo-3-1').providerModel, 'veo-3.1-generate-001');
-  assert.equal(resolveGoogleVertexVeoModelRoute('veo-3-1-fast').providerModel, 'veo-3.1-fast-generate-001');
+  assert.equal(resolveGoogleVertexVeoModelRoute('veo-3-1').supports4k, true);
+  assert.equal(resolveGoogleVertexVeoModelRoute('veo-3-1').supportedModes.includes('extend'), true);
+  const fast = resolveGoogleVertexVeoModelRoute('veo-3-1-fast');
+  assert.equal(fast.providerModel, 'veo-3.1-fast-generate-001');
+  assert.equal(fast.supports4k, true);
+  assert.equal(fast.supportedModes.includes('extend'), true);
   const lite = resolveGoogleVertexVeoModelRoute('veo-3-1-lite');
   assert.equal(lite.providerModel, 'veo-3.1-lite-generate-001');
   assert.equal(lite.launchStage, 'preview');
   assert.equal(lite.supportsReferenceImages, false);
   assert.equal(lite.supports4k, false);
+  assert.equal(lite.supportedModes.includes('extend'), true);
 });
 
-test('Google Vertex Veo support falls back to Fal for provider options not supported by direct phase 1', () => {
+test('Google Vertex Veo runtime options repair stale engine_settings caps', () => {
+  const standard = getBaseEngines().find((engine) => engine.id === 'veo-3-1');
+  const lite = getBaseEngines().find((engine) => engine.id === 'veo-3-1-lite');
+  assert.ok(standard);
+  assert.ok(lite);
+
+  const staleStandard = applyGoogleVertexVeoRuntimeOptions({
+    ...standard,
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['auto', '16:9', '9:16', '1:1'],
+    inputSchema: standard.inputSchema
+      ? {
+          ...standard.inputSchema,
+          optional: standard.inputSchema.optional?.map((field) => {
+            if (field.id === 'resolution') return { ...field, values: ['720p', '1080p'] };
+            if (field.id === 'aspect_ratio') return { ...field, values: ['auto', '16:9', '9:16', '1:1'] };
+            return field;
+          }),
+        }
+      : standard.inputSchema,
+  });
+
+  assert.deepEqual(staleStandard.resolutions, ['720p', '1080p', '4k']);
+  assert.deepEqual(staleStandard.aspectRatios, ['16:9', '9:16']);
+  assert.deepEqual(staleStandard.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
+    '720p',
+    '1080p',
+    '4k',
+  ]);
+  assert.equal(staleStandard.inputSchema?.optional?.some((field) => field.id === 'enhance_prompt'), false);
+  assert.deepEqual(staleStandard.modeCaps?.t2v?.resolution, ['720p', '1080p', '4k']);
+
+  const staleLite = applyGoogleVertexVeoRuntimeOptions({
+    ...lite,
+    modes: ['t2v', 'i2v', 'fl2v', 'extend'],
+    resolutions: ['720p', '1080p', '4k'],
+  });
+  assert.deepEqual(staleLite.modes, ['t2v', 'i2v', 'fl2v', 'extend']);
+  assert.deepEqual(staleLite.resolutions, ['720p', '1080p']);
+  assert.deepEqual(staleLite.modeCaps?.extend?.resolution, ['720p', '1080p']);
+});
+
+test('Google Vertex Veo support validates direct-supported and fallback-only options', () => {
   const base: GeneratePayload = {
     engineId: 'veo-3-1',
     prompt: 'A cinematic coastal sunrise',
@@ -111,10 +161,98 @@ test('Google Vertex Veo support falls back to Fal for provider options not suppo
     'aspect_ratio_not_supported'
   );
   assert.equal(
+    resolveGoogleVertexVeoSupport({ engineId: 'veo-3-1', mode: 't2v', falPayload: { ...base, resolution: '4k' } }).supported,
+    true
+  );
+  assert.equal(
     resolveGoogleVertexVeoSupport({
       engineId: 'veo-3-1-lite',
       mode: 't2v',
       falPayload: { ...base, engineId: 'veo-3-1-lite', resolution: '4k' },
+    }).reason,
+    'resolution_not_supported'
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-lite',
+      mode: 'i2v',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-fast',
+        mode: 'i2v',
+        imageUrl: 'https://cdn.maxvideoai.com/start.png',
+        extraInputValues: {
+          resize_mode: 'crop',
+          compression_quality: 'lossless',
+          person_generation: 'dont_allow',
+        },
+      },
+    }).supported,
+    true
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-lite',
+      mode: 'i2v',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-fast',
+        mode: 'i2v',
+        imageUrl: 'https://cdn.maxvideoai.com/start.png',
+        extraInputValues: { resize_mode: 'stretch' },
+      },
+    }).reason,
+    'resize_mode_not_supported'
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-fast',
+      mode: 't2v',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-fast',
+        extraInputValues: { compression_quality: 'maximum' },
+      },
+    }).reason,
+    'compression_quality_not_supported'
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-fast',
+      mode: 't2v',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-fast',
+        extraInputValues: { person_generation: 'allow_all' },
+      },
+    }).reason,
+    'person_generation_not_supported'
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-fast',
+      mode: 'extend',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-fast',
+        mode: 'extend',
+        videoUrl: 'gs://maxvideoai-veo-inputs/test/source.mp4',
+        resolution: '4k',
+      },
+    }).supported,
+    true
+  );
+  assert.equal(
+    resolveGoogleVertexVeoSupport({
+      engineId: 'veo-3-1-lite',
+      mode: 'extend',
+      falPayload: {
+        ...base,
+        engineId: 'veo-3-1-lite',
+        mode: 'extend',
+        videoUrl: 'gs://maxvideoai-veo-inputs/test/source.mp4',
+        resolution: '4k',
+      },
     }).reason,
     'resolution_not_supported'
   );
@@ -140,6 +278,8 @@ test('Google Vertex Veo payload maps supported MaxVideoAI options to predictLong
       extraInputValues: {
         enhance_prompt: false,
         person_generation: 'allow_adult',
+        compression_quality: 'lossless',
+        resize_mode: 'crop',
         camera_control: 'push_in',
       },
     },
@@ -161,8 +301,64 @@ test('Google Vertex Veo payload maps supported MaxVideoAI options to predictLong
     generateAudio: true,
     seed: 42,
     negativePrompt: 'low quality',
-    enhancePrompt: false,
     personGeneration: 'allow_adult',
+    compressionQuality: 'lossless',
+    resizeMode: 'crop',
+  });
+});
+
+test('Google Vertex Veo payload only enables prompt enhancement when explicitly true', async () => {
+  const payload = await buildGoogleVertexVeoPayload({
+    engineId: 'veo-3-1',
+    mode: 't2v',
+    prompt: 'A cinematic city street at blue hour',
+    durationSec: 8,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    falPayload: {
+      engineId: 'veo-3-1',
+      prompt: 'A cinematic city street at blue hour',
+      mode: 't2v',
+      resolution: '720p',
+      extraInputValues: {
+        enhance_prompt: true,
+      },
+    },
+  });
+
+  assert.equal(payload.body.parameters.enhancePrompt, true);
+});
+
+test('Google Vertex Veo Extend maps a staged source MP4 to a fixed 7 second direct request', async () => {
+  const sourceVideo = 'gs://maxvideoai-veo-inputs/test/source.mp4';
+  const payload = await buildGoogleVertexVeoPayload({
+    engineId: 'veo-3-1-fast',
+    mode: 'extend',
+    prompt: 'Continue the same cinematic movement',
+    durationSec: 30,
+    aspectRatio: '9:16',
+    audioEnabled: false,
+    falPayload: {
+      engineId: 'veo-3-1-fast',
+      prompt: 'Continue the same cinematic movement',
+      mode: 'extend',
+      videoUrl: sourceVideo,
+      resolution: '4k',
+    },
+  });
+
+  assert.equal(payload.providerModel, 'veo-3.1-fast-generate-001');
+  assert.deepEqual(payload.body.instances[0]?.video, {
+    gcsUri: sourceVideo,
+    mimeType: 'video/mp4',
+  });
+  assert.deepEqual(payload.body.parameters, {
+    sampleCount: 1,
+    fps: 24,
+    durationSeconds: 7,
+    aspectRatio: '9:16',
+    resolution: '4k',
+    generateAudio: false,
   });
 });
 

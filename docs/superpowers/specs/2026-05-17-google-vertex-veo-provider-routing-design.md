@@ -23,14 +23,19 @@ The internal provider key is `google_vertex_veo_direct`. Fal remains the fallbac
 - Do not recalculate the user-facing MaxVideoAI price when fallback happens.
 - Do not mark Google jobs as completed using provider-hosted output URLs.
 - Do not add automatic fallback after Google returns an operation name.
-- Do not wire Veo extension as public Google-direct routing in phase 1.
 - Do not route `veo-3-1-lite` to a non-Lite Vertex model.
+- Do not expose Lite 4K; current Agent Platform docs list Lite output resolutions as `720p` and `1080p`.
+- Do not expose multi-output `sampleCount` in phase 1 because MaxVideoAI job/media/pricing still assumes one output per generation.
 
 ## Official References
 
 - Agent Platform model index: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models
 - Agent Platform Veo 3.1 model details: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate
 - Agent Platform Veo video generation API: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation
+- Text-to-video guide: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/generate-videos-from-text
+- Image-to-video guide: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/generate-videos-from-an-image
+- Reference images guide: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/use-reference-images-to-guide-video-generation
+- Extend guide: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/extend-a-veo-video
 - Agent Platform pricing, Veo section: https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing
 - Vertex AI locations: https://docs.cloud.google.com/vertex-ai/docs/general/locations
 - Generative AI on Vertex AI locations: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
@@ -65,13 +70,12 @@ Optional future flags:
 
 - `GOOGLE_VERTEX_VEO_ADMIN_ONLY=true`
 - `GOOGLE_VERTEX_VEO_OUTPUT_GCS_URI`
-- `GOOGLE_VERTEX_VEO_USE_GCS_INPUTS=false`
-- `GOOGLE_VERTEX_VEO_EXTEND_ENABLED=false`
+- `GOOGLE_VERTEX_VEO_INPUT_GCS_URI`
 
 Minimum IAM target for the service account:
 
 - Start with Vertex AI user permissions sufficient for publisher model `predictLongRunning` and operation polling.
-- Add Cloud Storage permissions only if the implementation uses GCS URIs for inputs or outputs.
+- Add Cloud Storage object permissions for the configured output bucket and, if Extend uses non-`gs://` source videos, the configured `GOOGLE_VERTEX_VEO_INPUT_GCS_URI` bucket/prefix.
 
 ## Vertex API Shape
 
@@ -95,9 +99,9 @@ Initial conservative mapping:
 
 | Public engine | Vertex model | Phase 1 routing |
 | --- | --- | --- |
-| `veo-3-1` | `veo-3.1-generate-001` | Google direct primary for supported modes |
-| `veo-3-1-fast` | `veo-3.1-fast-generate-001` | Google direct primary for supported modes |
-| `veo-3-1-lite` | `veo-3.1-lite-generate-001` | Google direct primary for supported modes |
+| `veo-3-1` | `veo-3.1-generate-001` | Google direct primary for supported modes; 4K is a Preview capability |
+| `veo-3-1-fast` | `veo-3.1-fast-generate-001` | Google direct primary for supported modes; 4K is a Preview capability |
+| `veo-3-1-lite` | `veo-3.1-lite-generate-001` | Google direct primary for supported modes, including Extend, `720p`/`1080p` only |
 
 The docs also list preview model IDs such as `veo-3.1-generate-preview` and `veo-3.1-fast-generate-preview`. Do not choose preview IDs by default if `-001` IDs are available for the required mode. `veo-3.1-lite-generate-001` is a `-001` model ID but its launch stage is Preview, so keep it behind the same phase-1 routing flags until smoke-tested.
 
@@ -110,21 +114,24 @@ Google Vertex Veo options that should be represented in MaxVideoAI controls wher
 - `lastFrame` for first/last-frame interpolation
 - `referenceImages` up to three images when using a supported Vertex model
 - `aspectRatio`: `16:9`, `9:16`
-- `durationSeconds`: `4`, `6`, `8`
-- `resolution`: `720p`, `1080p`; `4k` only when the selected Vertex model and mode support it
+- `durationSeconds`: `4`, `6`, `8` for generation; `7` fixed for Extend output
+- `resolution`: `720p`, `1080p`; `4k` for Standard/Fast only
 - `generateAudio`
 - `enhancePrompt`
 - `personGeneration`
 - `seed`
 - `compressionQuality`
+- `resizeMode`: `pad`, `crop` for image-input workflows only
+- `video.gcsUri` for Extend, with non-`gs://` source videos staged to `GOOGLE_VERTEX_VEO_INPUT_GCS_URI`
 
 MaxVideoAI should remove or mark Fal-only options that Google cannot represent exactly. In particular:
 
 - `1:1` aspect ratio is not a Google Vertex Veo phase 1 option.
 - Reference image count should be capped at three for Google direct.
 - Reference asset images are not supported by `veo-3.1-lite-generate-001`.
-- `extend` remains Fal-only or admin-only in phase 1.
+- Extend is Google-direct capable when the request has a source MP4 and output duration is fixed to `7s`. Standard/Fast expose `720p`, `1080p`, and `4k`; Lite exposes `720p` and `1080p`.
 - `veo-3-1-lite` should not expose `4k` because current Google docs list Lite output resolutions as `720p` and `1080p`.
+- `sampleCount` stays fixed at `1`.
 
 ## Provider Interface
 
@@ -138,6 +145,7 @@ The Google implementation should be focused modules, not a large branch inside `
 - `google-vertex-veo/errors.ts`
 - `google-vertex-veo/cost.ts`
 - `google-vertex-veo/model-map.ts`
+- `google-vertex-veo/video-input.ts`
 - `google-vertex-veo/index.ts`
 
 Existing `provider_attempts` should be reused. No new migration is expected unless implementation discovers that provider-specific audit data cannot fit into `request_snapshot`, `response_snapshot`, `provider_cost_usd`, and `provider_cost_units`.
@@ -220,7 +228,8 @@ Phase 1:
 - Add spec and implementation plan.
 - Add `google_vertex_veo_direct` adapter and router support.
 - Wire `veo-3-1`, `veo-3-1-fast`, and `veo-3-1-lite` for Google-direct supported modes.
-- Keep `extend` Fal-only or admin-only.
+- Wire Google-direct Extend for Standard/Fast with MP4 source staging and fixed `7s` output, including 4K when selected.
+- Wire Lite Extend with MP4 source staging and fixed `7s` output, without 4K.
 - Add cron route for Google Vertex Veo polling.
 - Keep public routing disabled by default.
 

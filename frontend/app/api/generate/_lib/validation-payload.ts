@@ -51,6 +51,7 @@ export function buildGenerateValidationPayload(params: {
   resolvedAudioUrl: string | null | undefined;
   sourceInputVideoUrl: string | null | undefined;
   elements: MaxVideoProviderElement[] | null;
+  endImageUrl: string | null | undefined;
   isLumaRay2: boolean;
   initialImageUrl: string | null | undefined;
   deps?: GenerateValidationDeps;
@@ -118,6 +119,9 @@ export function buildGenerateValidationPayload(params: {
   }
   if (params.elements?.length) {
     payload.elements = params.elements;
+  }
+  if (params.mode === 'i2v' && params.endImageUrl) {
+    payload.end_image_url = params.endImageUrl;
   }
 
   const needsImage = params.mode === 'i2v' || params.mode === 'i2i';

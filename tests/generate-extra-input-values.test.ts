@@ -26,6 +26,32 @@ const engineWithExtraFields = {
   },
 } as const;
 
+const veoGoogleDirectExtraFields = {
+  inputSchema: {
+    optional: [
+      {
+        id: 'person_generation',
+        type: 'enum',
+        label: 'People generation',
+        values: ['allow_adult', 'dont_allow'],
+      },
+      {
+        id: 'compression_quality',
+        type: 'enum',
+        label: 'Compression quality',
+        values: ['optimized', 'lossless'],
+      },
+      {
+        id: 'resize_mode',
+        type: 'enum',
+        label: 'Resize mode',
+        values: ['pad', 'crop'],
+        modes: ['i2v', 'fl2v'],
+      },
+    ],
+  },
+} as const;
+
 test('generate route delegates extra input validation', () => {
   assert.ok(existsSync(helperPath), 'extra input validation should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/extra-input-values'/);
@@ -159,4 +185,66 @@ test('extra input helper excludes standard route fields from the extra field con
       message: 'Unsupported input field "aspect_ratio" for this mode.',
     },
   });
+});
+
+test('extra input helper validates Google Veo direct advanced fields', () => {
+  assert.deepEqual(
+    validateExtraInputValues({
+      engine: veoGoogleDirectExtraFields,
+      mode: 'i2v',
+      rawExtraInputValues: {
+        person_generation: 'dont_allow',
+        compression_quality: 'lossless',
+        resize_mode: 'crop',
+      },
+    }),
+    {
+      ok: true,
+      values: {
+        person_generation: 'dont_allow',
+        compression_quality: 'lossless',
+        resize_mode: 'crop',
+      },
+    }
+  );
+
+  assert.deepEqual(
+    validateExtraInputValues({
+      engine: veoGoogleDirectExtraFields,
+      mode: 'i2v',
+      rawExtraInputValues: {
+        person_generation: 'allow_all',
+      },
+    }),
+    {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error: 'INVALID_EXTRA_FIELD',
+        field: 'person_generation',
+        message: 'person_generation must be one of allow_adult, dont_allow.',
+      },
+    }
+  );
+
+  assert.deepEqual(
+    validateExtraInputValues({
+      engine: veoGoogleDirectExtraFields,
+      mode: 't2v',
+      rawExtraInputValues: {
+        resize_mode: 'crop',
+      },
+    }),
+    {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error: 'INVALID_EXTRA_FIELD',
+        field: 'resize_mode',
+        message: 'Unsupported input field "resize_mode" for this mode.',
+      },
+    }
+  );
 });
