@@ -45,6 +45,7 @@ export type CheckoutReportRecentAttempt = {
   captchaRequired: boolean;
   captchaPassed: boolean;
   stripeCheckoutSessionId: string | null;
+  canExpireCheckoutSession: boolean;
   hasReceipt: boolean;
   createdAt: string;
   abandonmentSignal: CheckoutAbandonmentSignal;
@@ -159,6 +160,18 @@ export function classifyCheckoutReportStatus({
   }
   if (outcome === 'pending') return 'open';
   return 'failed';
+}
+
+export function canExpireCheckoutSessionFromReport({
+  hasReceipt,
+  status,
+  stripeCheckoutSessionId,
+}: {
+  hasReceipt: boolean;
+  status: CheckoutReportStatus;
+  stripeCheckoutSessionId: string | null;
+}): boolean {
+  return Boolean(stripeCheckoutSessionId && !hasReceipt && (status === 'open' || status === 'abandoned'));
 }
 
 export function classifyCheckoutAbandonmentSignal(
@@ -321,6 +334,11 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
         captchaPassed: Boolean(row.captcha_passed),
         stripeCheckoutSessionId: row.stripe_checkout_session_id,
         hasReceipt: Boolean(row.has_receipt),
+        canExpireCheckoutSession: canExpireCheckoutSessionFromReport({
+          hasReceipt: Boolean(row.has_receipt),
+          status: row.status,
+          stripeCheckoutSessionId: row.stripe_checkout_session_id,
+        }),
         createdAt: row.created_at,
         abandonmentSignal: classifyCheckoutAbandonmentSignal(events),
         events,

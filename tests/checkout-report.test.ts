@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { classifyCheckoutReportStatus } from '../frontend/server/checkout-report';
+import { canExpireCheckoutSessionFromReport, classifyCheckoutReportStatus } from '../frontend/server/checkout-report';
 
 assert.equal(
   classifyCheckoutReportStatus({
@@ -47,13 +47,56 @@ assert.equal(
   'CAPTCHA required attempts count as challenged'
 );
 
+assert.equal(
+  canExpireCheckoutSessionFromReport({
+    hasReceipt: false,
+    status: 'open',
+    stripeCheckoutSessionId: 'cs_live_open',
+  }),
+  true,
+  'open unpaid report rows with a Stripe session can expose the admin expire action'
+);
+
+assert.equal(
+  canExpireCheckoutSessionFromReport({
+    hasReceipt: false,
+    status: 'abandoned',
+    stripeCheckoutSessionId: 'cs_live_abandoned',
+  }),
+  true,
+  'abandoned report rows without a receipt can expose the admin expire action'
+);
+
+assert.equal(
+  canExpireCheckoutSessionFromReport({
+    hasReceipt: true,
+    status: 'open',
+    stripeCheckoutSessionId: 'cs_live_paid',
+  }),
+  false,
+  'receipted Checkout sessions must not expose the admin expire action'
+);
+
 const checkoutReportSource = readFileSync('frontend/server/checkout-report.ts', 'utf8');
 assert.match(checkoutReportSource, /failedCardAttempts/);
 assert.match(checkoutReportSource, /failedCardLimitedSessions/);
 assert.match(checkoutReportSource, /stripe_charge_failed/);
+assert.match(checkoutReportSource, /canExpireCheckoutSessionFromReport/);
 
 const checkoutReportPageSource = readFileSync('frontend/app/(core)/admin/checkout-report/page.tsx', 'utf8');
 assert.match(checkoutReportPageSource, /Card failures/);
 assert.match(checkoutReportPageSource, /failedCardAttempts/);
 assert.match(checkoutReportPageSource, /CHECKOUT_REPORT_TIME_ZONE = 'Europe\/Paris'/);
 assert.match(checkoutReportPageSource, /Time \(Paris\)/);
+assert.match(checkoutReportPageSource, /CheckoutSessionExpireButton/);
+
+const expireRouteSource = readFileSync('frontend/app/api/admin/checkout-sessions/expire/route.ts', 'utf8');
+assert.match(expireRouteSource, /requireAdmin\(req\)/);
+assert.match(expireRouteSource, /expireAdminCheckoutSession/);
+
+const expireHelperSource = readFileSync('frontend/server/admin-checkout-sessions.ts', 'utf8');
+assert.match(expireHelperSource, /checkout\.sessions\.expire/);
+assert.match(expireHelperSource, /Checkout session already has a wallet top-up receipt/);
+assert.match(expireHelperSource, /admin_checkout_session_expired/);
+assert.match(expireHelperSource, /already_expired/);
+assert.match(expireHelperSource, /logAdminAction/);

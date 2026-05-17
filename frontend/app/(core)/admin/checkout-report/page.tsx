@@ -13,6 +13,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { CheckoutSessionExpireButton } from './_components/CheckoutSessionExpireButton.client';
 import {
   type CheckoutAbandonmentSignal,
   type CheckoutReportRange,
@@ -144,7 +145,7 @@ export default async function CheckoutReportPage(props: PageProps) {
       >
         {report.recent.length ? (
           <div className="overflow-x-auto">
-            <table className="min-w-[1060px] w-full text-left text-sm">
+            <table className="min-w-[1160px] w-full text-left text-sm">
               <thead className="border-b border-hairline text-xs uppercase tracking-micro text-text-muted">
                 <tr>
                   <th className="px-3 py-3 font-semibold">Time (Paris)</th>
@@ -156,6 +157,7 @@ export default async function CheckoutReportPage(props: PageProps) {
                   <th className="px-3 py-3 font-semibold">Events</th>
                   <th className="px-3 py-3 font-semibold">User</th>
                   <th className="px-3 py-3 font-semibold">Session</th>
+                  <th className="px-3 py-3 font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-hairline">
@@ -174,6 +176,13 @@ export default async function CheckoutReportPage(props: PageProps) {
                     <td className="px-3 py-3 text-xs">{formatEventTrail(attempt.events.map((event) => event.eventName))}</td>
                     <td className="px-3 py-3 font-mono text-xs">{truncateId(attempt.userId)}</td>
                     <td className="px-3 py-3 font-mono text-xs">{attempt.stripeCheckoutSessionId ? truncateId(attempt.stripeCheckoutSessionId) : '—'}</td>
+                    <td className="px-3 py-3">
+                      {attempt.canExpireCheckoutSession && attempt.stripeCheckoutSessionId ? (
+                        <CheckoutSessionExpireButton attemptId={attempt.id} sessionId={attempt.stripeCheckoutSessionId} />
+                      ) : (
+                        <span className="text-xs text-text-muted">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
