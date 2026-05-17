@@ -828,9 +828,9 @@ const VEO_31_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
       maxDurationNote: 'Up to 8s at 4K',
     },
     meta: {
-      title: 'Veo 3.1: 4K Pricing, Native Audio & References | MaxVideoAI',
+      title: 'Google Veo 3.1 AI Video: Price, Prompts & References',
       description:
-        'Generate Veo 3.1 clips up to 4K with native audio, text prompts, image references, first-last frame control and extend workflows in MaxVideoAI.',
+        'See Google Veo 3.1 pricing, native audio, image references, first/last frame control, prompt tips and best uses before you render.',
     },
   },
   fr: {

@@ -61,7 +61,7 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
-const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast', 'seedance-2-0']);
+const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast', 'seedance-2-0', 'veo-3-1']);
 
 export function generateStaticParams() {
   const engines = listFalEngines();

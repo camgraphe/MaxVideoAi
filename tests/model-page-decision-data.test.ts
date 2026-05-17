@@ -474,6 +474,33 @@ test('Veo 3.1 returns production decision data with Standard 4K claims', () => {
   assert.match(visibleDecisionText(en), /4K/i);
   assert.match(visibleDecisionText(fr), /4K/i);
   assert.match(visibleDecisionText(es), /4K/i);
+  assert.equal(en.meta.title, 'Google Veo 3.1 AI Video: Price, Prompts & References');
+  assert.equal(
+    en.meta.description,
+    'See Google Veo 3.1 pricing, native audio, image references, first/last frame control, prompt tips and best uses before you render.'
+  );
+});
+
+test('Veo 3.1 SEO metadata can omit the site-name suffix', () => {
+  const veo = getEngine('veo-3-1');
+  const decision = buildModelDecisionData({ engine: veo, locale: 'en' });
+  const title = 'Google Veo 3.1 AI Video: Price, Prompts & References';
+  const modelPageSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx',
+    'utf8'
+  );
+  assert.ok(decision);
+
+  const meta = buildSeoMetadata({
+    locale: 'en',
+    title: decision.meta.title,
+    description: decision.meta.description,
+    englishPath: '/models/veo-3-1',
+    titleBranding: 'none',
+  });
+
+  assert.equal(typeof meta.title === 'object' ? meta.title.absolute : meta.title, title);
+  assert.match(modelPageSource, /UNBRANDED_MODEL_TITLE_SLUGS[\s\S]*'veo-3-1'/);
 });
 
 test('Kling 3 Pro returns production decision data without unavailable route claims', () => {

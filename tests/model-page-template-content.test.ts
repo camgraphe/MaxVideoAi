@@ -429,6 +429,11 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ltxFast.meta.description,
     'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.'
   );
+  assert.equal(veo.meta.title, 'Google Veo 3.1 AI Video: Price, Prompts & References');
+  assert.equal(
+    veo.meta.description,
+    'See Google Veo 3.1 pricing, native audio, image references, first/last frame control, prompt tips and best uses before you render.'
+  );
 
   const routeTitles = new Map([
     ['veo-3-1', veo.meta.title],
