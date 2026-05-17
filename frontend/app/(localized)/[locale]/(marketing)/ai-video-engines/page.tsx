@@ -39,6 +39,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     image: '/og/compare-hub.png',
     imageAlt: t('title'),
     ogType: 'website',
+    titleBranding: 'none',
     keywords: ['AI video engines', 'AI video engine comparison', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
   });
 }

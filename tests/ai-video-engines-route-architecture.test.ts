@@ -11,6 +11,9 @@ const copyEnPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/ai-
 const copyFrPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/_lib/ai-video-engines-copy-fr.ts');
 const copyEsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/_lib/ai-video-engines-copy-es.ts');
 const scoresPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/_lib/ai-video-engines-scores.ts');
+const enMessagesPath = join(root, 'frontend/messages/en.json');
+const frMessagesPath = join(root, 'frontend/messages/fr.json');
+const esMessagesPath = join(root, 'frontend/messages/es.json');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
@@ -19,6 +22,15 @@ const copyEnSource = readFileSync(copyEnPath, 'utf8');
 const copyFrSource = readFileSync(copyFrPath, 'utf8');
 const copyEsSource = readFileSync(copyEsPath, 'utf8');
 const scoresSource = readFileSync(scoresPath, 'utf8');
+const enMessages = JSON.parse(readFileSync(enMessagesPath, 'utf8')) as {
+  aiVideoEngines: { meta: { title: string; description: string } };
+};
+const frMessages = JSON.parse(readFileSync(frMessagesPath, 'utf8')) as {
+  aiVideoEngines: { meta: { title: string; description: string } };
+};
+const esMessages = JSON.parse(readFileSync(esMessagesPath, 'utf8')) as {
+  aiVideoEngines: { meta: { title: string; description: string } };
+};
 
 test('ai video engines hub keeps page.tsx focused on route orchestration', () => {
   assert.ok(existsSync(copyPath), 'localized hub copy should live in a route-local copy module');
@@ -56,4 +68,31 @@ test('ai video engines route-local modules expose copy and score contracts', () 
   assert.match(scoresSource, /type EngineScoreRow/);
   assert.match(scoresSource, /function computeOverallFromScore/);
   assert.match(scoresSource, /export async function loadHubEngineScoreMap/);
+});
+
+test('ai video engines hub exposes SERP-focused metadata without a brand suffix', () => {
+  const { title, description } = enMessages.aiVideoEngines.meta;
+
+  assert.equal(title, 'Compare AI Video Engines: 11-Criteria Scorecards');
+  assert.equal(
+    description,
+    'Compare Kling, Seedance, Veo, LTX and other AI video engines by pricing, audio, duration, resolution and 11-criteria side-by-side scorecards.'
+  );
+  assert.ok(title.length <= 60, `title should stay within 60 chars, got ${title.length}`);
+  assert.ok(description.length <= 160, `description should stay within 160 chars, got ${description.length}`);
+  assert.doesNotMatch(title, /MaxVideoAI|—|\|/);
+  assert.doesNotMatch(frMessages.aiVideoEngines.meta.title, /MaxVideoAI|—|\|/);
+  assert.doesNotMatch(esMessages.aiVideoEngines.meta.title, /MaxVideoAI|—|\|/);
+  for (const [locale, meta] of [
+    ['fr', frMessages.aiVideoEngines.meta],
+    ['es', esMessages.aiVideoEngines.meta],
+  ] as const) {
+    assert.ok(meta.title.length <= 60, `${locale} title should stay within 60 chars, got ${meta.title.length}`);
+    assert.ok(
+      meta.description.length <= 160,
+      `${locale} description should stay within 160 chars, got ${meta.description.length}`
+    );
+  }
+  assert.match(pageSource, /titleBranding:\s*'none'/);
+  assert.match(copyEnSource, /title:\s*'Compare AI video engines'/);
 });
