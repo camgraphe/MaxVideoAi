@@ -5,7 +5,7 @@ export const veo31TemplateConfig: ModelPageTemplateConfig = {
   intent: 'production',
   hero: {
     eyebrow: 'GOOGLE PREMIUM VIDEO MODEL',
-    subtitleHighlightTerms: ['short polished clips', 'native audio', 'reference-guided shots'],
+    subtitleHighlightTerms: ['short polished clips', 'native audio', 'up to 4K'],
     primaryCtaHref: '/app?engine=veo-3-1',
     secondaryCtaHref: '/examples/veo',
     quickLinks: [
@@ -39,7 +39,8 @@ export const veo31TemplateConfig: ModelPageTemplateConfig = {
         highlightKey: 'mostPopular',
       },
       { id: '8s-1080p-audio', seconds: 8, resolution: '1080p', audio: true, labelKey: 'commonProductionCheck' },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },
+      { id: '8s-4k-audio', seconds: 8, resolution: '4k', audio: true, labelKey: 'fourKReference' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo4K' },
     ],
   },
   sections: {

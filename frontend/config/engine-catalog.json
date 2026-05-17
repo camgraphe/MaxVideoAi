@@ -825,6 +825,9 @@
       },
       "extend": {
         "value": true
+      },
+      "lipsync": {
+        "value": true
       }
     },
     "bestFor": "Ads and B-roll"
@@ -1344,6 +1347,9 @@
       },
       "extend": {
         "value": true
+      },
+      "lipsync": {
+        "value": true
       }
     },
     "bestFor": "Fast iterations"
@@ -1381,7 +1387,7 @@
         "suggestOpponents": [
           "veo-3-1-fast",
           "veo-3-1",
-          "ltx-2-3-fast"
+          "sora-2"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -1806,6 +1812,9 @@
         "value": false
       },
       "extend": {
+        "value": true
+      },
+      "lipsync": {
         "value": true
       }
     },

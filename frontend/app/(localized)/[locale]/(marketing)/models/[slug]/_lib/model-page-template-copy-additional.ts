@@ -51,10 +51,10 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'GOOGLE FAST VIDEO ROUTE',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Faster Veo drafts with optional native audio, reference-to-video runs, first-last frame tests, and short concept loops.',
-      subtitleHighlights: ['faster Veo drafts', 'optional native audio', 'reference-to-video runs'],
+      subtitle: 'Faster Veo drafts with optional native audio, reference-to-video runs, 4K output, and short concept loops.',
+      subtitleHighlights: ['faster Veo drafts', 'optional native audio', '4K output'],
       paragraph:
-        'Use Veo 3.1 Fast for quick text-to-video, image-to-video, reference-to-video and first-last frame tests when you need lower-cost Veo iteration before moving approved shots into Veo 3.1.',
+        'Use Veo 3.1 Fast for quick text-to-video, image-to-video, reference-to-video, first-last frame tests, and 4K checks when you need lower-cost Veo iteration before moving approved shots into Veo 3.1.',
       primaryCta: { label: 'Generate with Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'veo') },
       quickLinks: [
@@ -67,13 +67,13 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       caption: 'Veo 3.1 Fast example',
       description: 'Fast Veo draft with optional audio',
       renderLabel: 'View draft',
-      badges: ['Fast route', '8s', '1080p'],
+      badges: ['Fast route', '8s', '4K option'],
       altContext: 'Veo 3.1 Fast short concept draft',
     },
     features: [
-      { title: 'Fast Veo drafts', body: 'Test concepts before paying for the main production route.', tone: 'quality' },
+      { title: 'Fast Veo drafts', body: 'Test concepts from 720p through 4K before paying for the main production route.', tone: 'quality' },
       { title: 'Optional audio', body: 'Toggle native audio on when timing or ambience needs a rough pass.', tone: 'audio' },
-      { title: 'Reference-to-video', body: 'Attach 1-4 stills for an 8s consistency pass on identity, product or style.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Attach 1-3 stills for an 8s consistency pass on identity, product or style.', tone: 'reference' },
       { title: 'First-last tests', body: 'Bridge approved opening and ending frames for short motion checks.', tone: 'reference' },
       { title: 'Extend support', body: 'Continue an existing Fast clip when a draft needs a pickup beat.', tone: 'duration' },
       { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
@@ -98,7 +98,8 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Text prompt', body: 'Test subject, camera, style and audio direction in one short Veo draft.' },
       { title: 'Start image', body: 'Use one still when framing, product shape or identity should anchor the first frame.' },
-      { title: 'Reference-to-video', body: 'Attach 1-4 stills when identity, wardrobe, product or style continuity matters.' },
+      { title: 'Reference-to-video', body: 'Attach 1-3 stills when identity, wardrobe, product or style continuity matters.' },
+      { title: '4K check', body: 'Use 4K on selected Fast runs when you need to inspect detail before the production route.' },
       { title: 'First-last frames', body: 'Provide a landing frame when the ending pose or composition matters.' },
       { title: 'Audio toggle', body: 'Turn audio on for rough timing, or off when you only need visual motion.' },
     ],
@@ -107,22 +108,22 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       subtitle: 'Preset draft totals - see the exact live price in the app before you generate.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
       ctaLabel: 'View full pricing',
-      maxDurationNote: 'Up to 1080p',
+      maxDurationNote: 'Up to 4K',
     },
     meta: {
-      title: 'Veo 3.1 Fast: Pricing, Drafts & Examples | MaxVideoAI',
+      title: 'Veo 3.1 Fast: 4K Pricing, Drafts & Examples | MaxVideoAI',
       description:
-        'Use Veo 3.1 Fast for faster Veo drafts, optional native audio, first-last frame tests and lower-cost short concept loops before Veo 3.1 finals.',
+        'Use Veo 3.1 Fast for faster Veo drafts up to 4K, optional native audio, first-last frame tests and lower-cost short concept loops before Veo 3.1 finals.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'ROUTE GOOGLE FAST VIDEO',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Des brouillons Veo rapides avec audio natif optionnel, reference-to-video, tests première-dernière image et boucles courtes.',
-      subtitleHighlights: ['brouillons Veo rapides', 'audio natif optionnel', 'reference-to-video'],
+      subtitle: 'Des brouillons Veo rapides avec audio natif optionnel, reference-to-video, sortie 4K et boucles courtes.',
+      subtitleHighlights: ['brouillons Veo rapides', 'audio natif optionnel', 'sortie 4K'],
       paragraph:
-        'Utilisez Veo 3.1 Fast pour tester vite en texte-vidéo, image-vidéo, reference-to-video et première-dernière image quand vous voulez itérer à moindre coût avant de passer les plans retenus dans Veo 3.1.',
+        'Utilisez Veo 3.1 Fast pour tester vite en texte-vidéo, image-vidéo, reference-to-video, première-dernière image et checks 4K avant de passer les plans retenus dans Veo 3.1.',
       primaryCta: { label: 'Générer avec Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'veo') },
       quickLinks: [
@@ -135,13 +136,13 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       caption: 'Exemple Veo 3.1 Fast',
       description: 'Brouillon Veo rapide avec audio optionnel',
       renderLabel: 'Voir le brouillon',
-      badges: ['Fast', '8 s', '1080p'],
+      badges: ['Fast', '8 s', 'Option 4K'],
       altContext: 'brouillon court Veo 3.1 Fast',
     },
     features: [
-      { title: 'Brouillons Veo rapides', body: 'Testez les concepts avant la route de production principale.', tone: 'quality' },
+      { title: 'Brouillons Veo rapides', body: 'Testez les concepts de 720p à 4K avant la route de production principale.', tone: 'quality' },
       { title: 'Audio optionnel', body: 'Activez l’audio natif pour tester timing ou ambiance.', tone: 'audio' },
-      { title: 'Reference-to-video', body: 'Ajoutez 1 à 4 stills pour une passe cohérence identité, produit ou style de 8 s.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Ajoutez 1 à 3 stills pour une passe cohérence identité, produit ou style de 8 s.', tone: 'reference' },
       { title: 'Tests première-dernière', body: 'Reliez deux images approuvées pour contrôler une transition courte.', tone: 'reference' },
       { title: 'Extension', body: 'Prolongez un clip Fast existant quand le brouillon a besoin d’un beat en plus.', tone: 'duration' },
       { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
@@ -166,7 +167,8 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt texte', body: 'Testez sujet, caméra, style et intention audio dans un brouillon court.' },
       { title: 'Image de départ', body: 'Ancrez cadrage, produit ou identité avec une seule image source.' },
-      { title: 'Reference-to-video', body: 'Ajoutez 1 à 4 stills quand identité, tenue, produit ou style doivent rester cohérents.' },
+      { title: 'Reference-to-video', body: 'Ajoutez 1 à 3 stills quand identité, tenue, produit ou style doivent rester cohérents.' },
+      { title: 'Check 4K', body: 'Utilisez la 4K sur les runs Fast retenus quand vous devez inspecter le détail.' },
       { title: 'Première-dernière image', body: 'Ajoutez une image d’arrivée quand la pose finale compte.' },
       { title: 'Audio', body: 'Activez l’audio pour le timing, ou coupez-le pour un test purement visuel.' },
     ],
@@ -175,22 +177,22 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       subtitle: 'Prix totaux par scénario de brouillon — prix exact affiché dans l’app avant génération.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
-      maxDurationNote: 'Jusqu’à 1080p',
+      maxDurationNote: 'Jusqu’à 4K',
     },
     meta: {
-      title: 'Veo 3.1 Fast : tarifs, brouillons et exemples | MaxVideoAI',
+      title: 'Veo 3.1 Fast : tarifs 4K, brouillons et exemples | MaxVideoAI',
       description:
-        'Utilisez Veo 3.1 Fast pour des brouillons Veo rapides, audio natif optionnel, tests première-dernière image et boucles courtes avant les rendus Veo 3.1.',
+        'Utilisez Veo 3.1 Fast pour des brouillons Veo rapides jusqu’en 4K, audio natif optionnel, tests première-dernière image et boucles courtes.',
     },
   },
   es: {
     hero: {
       eyebrow: 'RUTA GOOGLE FAST VIDEO',
       title: 'Veo 3.1 Fast',
-      subtitle: 'Borradores Veo más rápidos con audio nativo opcional, reference-to-video, pruebas de primer-último cuadro y loops cortos.',
-      subtitleHighlights: ['borradores Veo más rápidos', 'audio nativo opcional', 'reference-to-video'],
+      subtitle: 'Borradores Veo más rápidos con audio nativo opcional, reference-to-video, salida 4K y loops cortos.',
+      subtitleHighlights: ['borradores Veo más rápidos', 'audio nativo opcional', 'salida 4K'],
       paragraph:
-        'Usa Veo 3.1 Fast para probar rápido texto a video, imagen a video, reference-to-video y primer-último cuadro cuando necesitas iterar con menor coste antes de pasar las tomas aprobadas a Veo 3.1.',
+        'Usa Veo 3.1 Fast para probar rápido texto a video, imagen a video, reference-to-video, primer-último cuadro y checks 4K antes de pasar las tomas aprobadas a Veo 3.1.',
       primaryCta: { label: 'Generar con Veo 3.1 Fast', href: '/app?engine=veo-3-1-fast' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'veo') },
       quickLinks: [
@@ -203,13 +205,13 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       caption: 'Ejemplo Veo 3.1 Fast',
       description: 'Borrador Veo rápido con audio opcional',
       renderLabel: 'Ver borrador',
-      badges: ['Fast', '8 s', '1080p'],
+      badges: ['Fast', '8 s', 'Opción 4K'],
       altContext: 'borrador corto de concepto con Veo 3.1 Fast',
     },
     features: [
-      { title: 'Borradores Veo rápidos', body: 'Prueba conceptos antes de la ruta principal de producción.', tone: 'quality' },
+      { title: 'Borradores Veo rápidos', body: 'Prueba conceptos de 720p a 4K antes de la ruta principal de producción.', tone: 'quality' },
       { title: 'Audio opcional', body: 'Activa audio nativo cuando necesitas probar ritmo o ambiente.', tone: 'audio' },
-      { title: 'Reference-to-video', body: 'Adjunta 1 a 4 stills para una pasada de consistencia de 8 s en identidad, producto o estilo.', tone: 'reference' },
+      { title: 'Reference-to-video', body: 'Adjunta 1 a 3 stills para una pasada de consistencia de 8 s en identidad, producto o estilo.', tone: 'reference' },
       { title: 'Primer-último cuadro', body: 'Conecta cuadros aprobados para revisar una transición corta.', tone: 'reference' },
       { title: 'Extensión', body: 'Continúa un clip Fast existente cuando el borrador necesita un beat extra.', tone: 'duration' },
       { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
@@ -234,7 +236,8 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt de texto', body: 'Prueba sujeto, cámara, estilo e intención de audio en un borrador corto.' },
       { title: 'Imagen inicial', body: 'Usa un still cuando encuadre, producto o identidad deban anclar el primer cuadro.' },
-      { title: 'Reference-to-video', body: 'Adjunta 1 a 4 stills cuando identidad, vestuario, producto o estilo deben mantenerse coherentes.' },
+      { title: 'Reference-to-video', body: 'Adjunta 1 a 3 stills cuando identidad, vestuario, producto o estilo deben mantenerse coherentes.' },
+      { title: 'Check 4K', body: 'Usa 4K en runs Fast seleccionados cuando necesites revisar detalle.' },
       { title: 'Primer-último cuadro', body: 'Agrega un cuadro final cuando importan la pose o composición de llegada.' },
       { title: 'Audio', body: 'Actívalo para probar timing, o apágalo si solo necesitas movimiento visual.' },
     ],
@@ -243,12 +246,12 @@ const VEO_31_FAST_COPY: LocalizedTemplateCopy = {
       subtitle: 'Precios totales por escenario de borrador. Consulta el precio exacto en la app antes de generar.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
-      maxDurationNote: 'Hasta 1080p',
+      maxDurationNote: 'Hasta 4K',
     },
     meta: {
-      title: 'Veo 3.1 Fast: precios, borradores y ejemplos | MaxVideoAI',
+      title: 'Veo 3.1 Fast: precios 4K, borradores y ejemplos | MaxVideoAI',
       description:
-        'Usa Veo 3.1 Fast para borradores Veo rápidos, audio nativo opcional, pruebas de primer-último cuadro y loops cortos antes de Veo 3.1.',
+        'Usa Veo 3.1 Fast para borradores Veo rápidos hasta 4K, audio nativo opcional, pruebas de primer-último cuadro y loops cortos.',
     },
   },
 };
@@ -258,10 +261,10 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'GOOGLE LOWER-COST VIDEO ROUTE',
       title: 'Veo 3.1 Lite',
-      subtitle: 'Lower-cost Veo drafts with audio included, short prompt tests, and simple image-to-video checks.',
-      subtitleHighlights: ['lower-cost Veo drafts', 'audio included', 'short prompt tests'],
+      subtitle: 'Lower-cost Veo drafts with optional native audio, short prompt tests, and simple image-to-video checks.',
+      subtitleHighlights: ['lower-cost Veo drafts', 'optional native audio', 'short prompt tests'],
       paragraph:
-        'Use Veo 3.1 Lite when you need the cheapest Veo 3.1 route for short audio-ready drafts, timing checks and prompt comparisons before upgrading winners to Fast or Veo 3.1.',
+        'Use Veo 3.1 Lite when you need the cheapest Veo 3.1 route for short drafts, timing checks and prompt comparisons before upgrading winners to Fast or Veo 3.1.',
       primaryCta: { label: 'Generate with Veo 3.1 Lite', href: '/app?engine=veo-3-1-lite' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'veo') },
       quickLinks: [
@@ -272,14 +275,14 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Veo 3.1 Lite example',
-      description: 'Lower-cost audio-ready Veo draft',
+      description: 'Lower-cost Veo draft with optional audio',
       renderLabel: 'View draft',
-      badges: ['Audio included', '8s', '720p'],
+      badges: ['Optional audio', '8s', '720p'],
       altContext: 'Veo 3.1 Lite short audio-ready draft',
     },
     features: [
       { title: 'Lower-cost Veo', body: 'Use Lite for the cheapest Veo timing and prompt checks.', tone: 'price' },
-      { title: 'Audio included', body: 'Every Lite render includes native audio, so prompt ambience deliberately.', tone: 'audio' },
+      { title: 'Optional audio', body: 'Toggle native audio on for ambience or off for lower-cost visual tests.', tone: 'audio' },
       { title: 'Text or image', body: 'Start from a prompt or a single visual reference.', tone: 'reference' },
       { title: 'First-last tests', body: 'Use paired frames when the ending composition matters.', tone: 'continuity' },
       { title: 'Max 8s', body: 'Keep tests short and focused on one clear beat.', tone: 'duration' },
@@ -288,12 +291,12 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: 'Lite or Fast?',
-        body: 'Use Lite for the lowest-cost Veo drafts with audio included. Use Fast when you need optional audio control or more iteration controls.',
+        body: 'Use Lite for the lowest-cost Veo drafts. Use Fast when you need reference-to-video control or broader iteration controls.',
         cta: { label: 'Compare Lite vs Fast', href: compareHref('en', 'veo-3-1-lite', 'veo-3-1-fast') },
       },
       {
         title: 'Need audio timing?',
-        body: 'Because audio is included, write short ambience, SFX or dialogue cues into the prompt instead of leaving sound vague.',
+        body: 'When audio is enabled, write short ambience, SFX or dialogue cues into the prompt instead of leaving sound vague.',
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
@@ -305,7 +308,7 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Text prompt', body: 'Use one subject, one action, one camera move and a simple audio cue.' },
       { title: 'Start image', body: 'Anchor composition or product shape with a single image source.' },
-      { title: 'Audio cue', body: 'Keep ambience or dialogue short because audio is included in the render.' },
+      { title: 'Audio cue', body: 'Keep ambience or dialogue short when audio is enabled.' },
       { title: 'Short timing test', body: 'Use 4, 6 or 8 seconds to test the core beat without overbuilding.' },
       { title: 'Upgrade path', body: 'Promote the best drafts to Fast or Veo 3.1 when you need more control or polish.' },
     ],
@@ -317,19 +320,19 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Veo 3.1 Lite: Pricing, Audio Drafts & Examples | MaxVideoAI',
+      title: 'Veo 3.1 Lite: Pricing, Optional Audio & Examples | MaxVideoAI',
       description:
-        'Use Veo 3.1 Lite for lower-cost Veo drafts with audio included, short prompt tests and image-to-video checks before upgrading winners.',
+        'Use Veo 3.1 Lite for lower-cost Veo drafts with optional native audio, short prompt tests and image-to-video checks before upgrading winners.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'ROUTE GOOGLE VIDEO À MOINDRE COÛT',
       title: 'Veo 3.1 Lite',
-      subtitle: 'Des brouillons Veo à moindre coût avec audio inclus, tests de prompts courts et contrôles image-vidéo simples.',
-      subtitleHighlights: ['brouillons Veo à moindre coût', 'audio inclus', 'tests de prompts courts'],
+      subtitle: 'Des brouillons Veo à moindre coût avec audio natif optionnel, tests de prompts courts et contrôles image-vidéo simples.',
+      subtitleHighlights: ['brouillons Veo à moindre coût', 'audio natif optionnel', 'tests de prompts courts'],
       paragraph:
-        'Utilisez Veo 3.1 Lite pour la route Veo 3.1 la moins coûteuse : brouillons courts avec audio, tests de rythme et comparaisons de prompts avant de monter les gagnants vers Fast ou Veo 3.1.',
+        'Utilisez Veo 3.1 Lite pour la route Veo 3.1 la moins coûteuse : brouillons courts, tests de rythme et comparaisons de prompts avant de monter les gagnants vers Fast ou Veo 3.1.',
       primaryCta: { label: 'Générer avec Veo 3.1 Lite', href: '/app?engine=veo-3-1-lite' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'veo') },
       quickLinks: [
@@ -340,14 +343,14 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Veo 3.1 Lite',
-      description: 'Brouillon Veo avec audio inclus',
+      description: 'Brouillon Veo avec audio optionnel',
       renderLabel: 'Voir le brouillon',
-      badges: ['Audio inclus', '8 s', '720p'],
+      badges: ['Audio optionnel', '8 s', '720p'],
       altContext: 'brouillon court Veo 3.1 Lite avec audio',
     },
     features: [
       { title: 'Veo à moindre coût', body: 'Utilisez Lite pour les tests Veo les plus économiques.', tone: 'price' },
-      { title: 'Audio inclus', body: 'Chaque rendu Lite inclut l’audio natif : promptgez l’ambiance clairement.', tone: 'audio' },
+      { title: 'Audio optionnel', body: 'Activez l’audio natif pour l’ambiance ou coupez-le pour un test visuel moins cher.', tone: 'audio' },
       { title: 'Texte ou image', body: 'Démarrez depuis un prompt ou une seule référence visuelle.', tone: 'reference' },
       { title: 'Première-dernière', body: 'Utilisez deux images quand la composition finale compte.', tone: 'continuity' },
       { title: 'Max 8 s', body: 'Gardez les tests courts et centrés sur un beat.', tone: 'duration' },
@@ -356,12 +359,12 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: 'Lite ou Fast ?',
-        body: 'Utilisez Lite pour les brouillons Veo les moins chers avec audio inclus. Choisissez Fast pour plus de contrôle d’itération.',
+        body: 'Utilisez Lite pour les brouillons Veo les moins chers. Choisissez Fast pour le reference-to-video ou des contrôles plus larges.',
         cta: { label: 'Comparer Lite vs Fast', href: compareHref('fr', 'veo-3-1-lite', 'veo-3-1-fast') },
       },
       {
         title: 'Besoin de timing audio ?',
-        body: 'Comme l’audio est inclus, écrivez des cues courts d’ambiance, de SFX ou de dialogue dans le prompt.',
+        body: 'Quand l’audio est activé, écrivez des cues courts d’ambiance, de SFX ou de dialogue dans le prompt.',
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
@@ -373,7 +376,7 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt texte', body: 'Un sujet, une action, un mouvement caméra et un cue audio simple.' },
       { title: 'Image de départ', body: 'Ancrez composition ou forme produit avec une seule image source.' },
-      { title: 'Cue audio', body: 'Gardez ambiance ou dialogue courts, car l’audio est inclus.' },
+      { title: 'Cue audio', body: 'Gardez ambiance ou dialogue courts quand l’audio est activé.' },
       { title: 'Test court', body: 'Utilisez 4, 6 ou 8 secondes pour valider le beat central.' },
       { title: 'Montée en gamme', body: 'Passez les meilleurs brouillons vers Fast ou Veo 3.1 selon le besoin.' },
     ],
@@ -385,19 +388,19 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Jusqu’à 1080p',
     },
     meta: {
-      title: 'Veo 3.1 Lite : tarifs, brouillons audio et exemples | MaxVideoAI',
+      title: 'Veo 3.1 Lite : tarifs, audio optionnel et exemples | MaxVideoAI',
       description:
-        'Utilisez Veo 3.1 Lite pour des brouillons Veo à moindre coût avec audio inclus, tests de prompts courts et contrôles image-vidéo.',
+        'Utilisez Veo 3.1 Lite pour des brouillons Veo à moindre coût avec audio natif optionnel, tests de prompts courts et contrôles image-vidéo.',
     },
   },
   es: {
     hero: {
       eyebrow: 'RUTA GOOGLE VIDEO DE MENOR COSTE',
       title: 'Veo 3.1 Lite',
-      subtitle: 'Borradores Veo de menor coste con audio incluido, pruebas cortas de prompt y checks simples de imagen a video.',
-      subtitleHighlights: ['borradores Veo de menor coste', 'audio incluido', 'pruebas cortas de prompt'],
+      subtitle: 'Borradores Veo de menor coste con audio nativo opcional, pruebas cortas de prompt y checks simples de imagen a video.',
+      subtitleHighlights: ['borradores Veo de menor coste', 'audio nativo opcional', 'pruebas cortas de prompt'],
       paragraph:
-        'Usa Veo 3.1 Lite cuando necesitas la ruta Veo 3.1 más económica para borradores cortos con audio, pruebas de ritmo y comparación de prompts antes de subir ganadores a Fast o Veo 3.1.',
+        'Usa Veo 3.1 Lite cuando necesitas la ruta Veo 3.1 más económica para borradores cortos, pruebas de ritmo y comparación de prompts antes de subir ganadores a Fast o Veo 3.1.',
       primaryCta: { label: 'Generar con Veo 3.1 Lite', href: '/app?engine=veo-3-1-lite' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'veo') },
       quickLinks: [
@@ -408,14 +411,14 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Veo 3.1 Lite',
-      description: 'Borrador Veo con audio incluido',
+      description: 'Borrador Veo con audio opcional',
       renderLabel: 'Ver borrador',
-      badges: ['Audio incluido', '8 s', '720p'],
+      badges: ['Audio opcional', '8 s', '720p'],
       altContext: 'borrador corto con audio en Veo 3.1 Lite',
     },
     features: [
       { title: 'Veo de menor coste', body: 'Usa Lite para los checks Veo más económicos.', tone: 'price' },
-      { title: 'Audio incluido', body: 'Cada render Lite incluye audio nativo, así que define ambiente con intención.', tone: 'audio' },
+      { title: 'Audio opcional', body: 'Activa audio nativo para ambiente o apágalo para pruebas visuales de menor coste.', tone: 'audio' },
       { title: 'Texto o imagen', body: 'Empieza desde un prompt o una sola referencia visual.', tone: 'reference' },
       { title: 'Primer-último cuadro', body: 'Usa dos cuadros cuando la composición final importa.', tone: 'continuity' },
       { title: 'Max 8 s', body: 'Mantén las pruebas cortas y enfocadas en un beat claro.', tone: 'duration' },
@@ -424,12 +427,12 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: '¿Lite o Fast?',
-        body: 'Usa Lite para los borradores Veo más económicos con audio incluido. Usa Fast si necesitas más control de iteración.',
+        body: 'Usa Lite para los borradores Veo más económicos. Usa Fast si necesitas reference-to-video o más controles.',
         cta: { label: 'Comparar Lite vs Fast', href: compareHref('es', 'veo-3-1-lite', 'veo-3-1-fast') },
       },
       {
         title: '¿Necesitas ritmo de audio?',
-        body: 'Como el audio viene incluido, escribe cues breves de ambiente, SFX o diálogo en el prompt.',
+        body: 'Cuando el audio está activado, escribe cues breves de ambiente, SFX o diálogo en el prompt.',
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
@@ -441,7 +444,7 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
     referenceWorkflows: [
       { title: 'Prompt de texto', body: 'Un sujeto, una acción, un movimiento de cámara y un cue simple de audio.' },
       { title: 'Imagen inicial', body: 'Ancla composición o forma de producto con una sola imagen fuente.' },
-      { title: 'Cue de audio', body: 'Mantén ambiente o diálogo cortos porque el audio está incluido.' },
+      { title: 'Cue de audio', body: 'Mantén ambiente o diálogo cortos cuando el audio está activado.' },
       { title: 'Prueba corta', body: 'Usa 4, 6 u 8 segundos para validar el beat principal.' },
       { title: 'Subida de nivel', body: 'Promueve los mejores borradores a Fast o Veo 3.1 según el caso.' },
     ],
@@ -453,9 +456,9 @@ const VEO_31_LITE_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Hasta 1080p',
     },
     meta: {
-      title: 'Veo 3.1 Lite: precios, borradores con audio y ejemplos | MaxVideoAI',
+      title: 'Veo 3.1 Lite: precios, audio opcional y ejemplos | MaxVideoAI',
       description:
-        'Usa Veo 3.1 Lite para borradores Veo de menor coste con audio incluido, pruebas cortas de prompt y checks de imagen a video.',
+        'Usa Veo 3.1 Lite para borradores Veo de menor coste con audio nativo opcional, pruebas cortas de prompt y checks de imagen a video.',
     },
   },
 };

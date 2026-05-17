@@ -140,6 +140,14 @@ function parseResolutionValue(value: string): number | null {
   return null;
 }
 
+function formatResolutionLabel(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === '4k') return '4K';
+  if (normalized === '2k') return '2K';
+  if (normalized === '1k') return '1K';
+  return value;
+}
+
 function resolveMaxResolution(resolutions: string[] | undefined): { label: string; value: number | null } {
   const list = Array.isArray(resolutions) ? resolutions : [];
   let bestValue: number | null = null;
@@ -150,7 +158,7 @@ function resolveMaxResolution(resolutions: string[] | undefined): { label: strin
     if (value == null) return;
     if (bestValue == null || value > bestValue) {
       bestValue = value;
-      bestLabel = entry;
+      bestLabel = formatResolutionLabel(entry);
     }
   });
 

@@ -21,12 +21,21 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     },
     'veo-3-1': {
       bestFor: 'Ads and B-roll',
+      features: {
+        lipsync: { value: true },
+      },
     },
     'veo-3-1-fast': {
       bestFor: 'Fast iterations',
+      features: {
+        lipsync: { value: true },
+      },
     },
     'veo-3-1-lite': {
       bestFor: 'Budget Veo drafts',
+      features: {
+        lipsync: { value: true },
+      },
     },
     lumaRay2: {
       bestFor: 'Premium cinematic generation with modify and reframe',

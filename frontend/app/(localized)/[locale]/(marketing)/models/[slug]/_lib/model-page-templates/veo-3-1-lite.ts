@@ -5,7 +5,7 @@ export const veo31LiteTemplateConfig: ModelPageTemplateConfig = {
   intent: 'draft',
   hero: {
     eyebrow: 'GOOGLE LOWER-COST VIDEO ROUTE',
-    subtitleHighlightTerms: ['lower-cost Veo drafts', 'audio included', 'short prompt tests'],
+    subtitleHighlightTerms: ['lower-cost Veo drafts', 'optional native audio', 'short prompt tests'],
     primaryCtaHref: '/app?engine=veo-3-1-lite',
     secondaryCtaHref: '/examples/veo',
     quickLinks: [
@@ -35,7 +35,7 @@ export const veo31LiteTemplateConfig: ModelPageTemplateConfig = {
         resolution: '720p',
         audio: true,
         labelKey: 'entryDraft',
-        noteKey: 'fourSeconds720pAudioIncluded',
+        noteKey: 'fourSeconds720pAudioOn',
       },
       {
         id: '6s-720p-audio',
@@ -43,7 +43,7 @@ export const veo31LiteTemplateConfig: ModelPageTemplateConfig = {
         resolution: '720p',
         audio: true,
         labelKey: 'standardPreview',
-        noteKey: 'sixSeconds720pAudioIncluded',
+        noteKey: 'sixSeconds720pAudioOn',
       },
       {
         id: '8s-1080p-audio',
@@ -51,7 +51,7 @@ export const veo31LiteTemplateConfig: ModelPageTemplateConfig = {
         resolution: '1080p',
         audio: true,
         labelKey: 'commonProductionCheck',
-        noteKey: 'eightSeconds1080pAudioIncluded',
+        noteKey: 'eightSeconds1080pAudioOn',
         highlightKey: 'mostPopular',
       },
       { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },

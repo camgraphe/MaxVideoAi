@@ -3,10 +3,15 @@ import type { CompareSpecValues, EngineCatalogEntry } from './compare-page-types
 
 export function formatMaxResolution(entry: EngineCatalogEntry) {
   const resolutions = entry.engine?.resolutions ?? [];
+  if (resolutions.some((value) => /4k/i.test(String(value)))) return '4K';
+  if (resolutions.some((value) => /2k/i.test(String(value)))) return '2K';
   const numeric = resolutions
     .map((value) => {
-      const match = String(value).match(/(\d+)/);
-      return match ? Number(match[1]) : null;
+      const raw = String(value).toLowerCase();
+      const matchK = raw.match(/(\d+)\s*k/);
+      if (matchK) return Number(matchK[1]) * 1000;
+      const matchP = raw.match(/(\d+)\s*p/);
+      return matchP ? Number(matchP[1]) : null;
     })
     .filter((value): value is number => value != null);
   if (!numeric.length) return resolutions.join(', ') || 'Data pending';
