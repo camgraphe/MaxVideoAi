@@ -57,10 +57,10 @@
     {
       "slug": "4k-video",
       "title": "Best 4K AI video generator",
-      "description": "Best AI video models when the deciding factor is native high-resolution output for final delivery.",
+      "description": "Best AI video models when the deciding factor is 4K output, high-resolution finishing, and final delivery.",
       "tier": 1,
-      "topPicks": ["kling-3-4k", "ltx-2-3-pro", "ltx-2-3-fast"],
-      "relatedComparisons": ["kling-3-4k-vs-ltx-2-3-pro", "kling-3-4k-vs-kling-3-pro", "ltx-2-3-fast-vs-ltx-2-3-pro"]
+      "topPicks": ["veo-3-1", "kling-3-4k", "veo-3-1-fast", "ltx-2-3-pro"],
+      "relatedComparisons": ["kling-3-4k-vs-veo-3-1", "veo-3-1-vs-veo-3-1-fast", "ltx-2-3-pro-vs-veo-3-1"]
     },
     {
       "slug": "ads",

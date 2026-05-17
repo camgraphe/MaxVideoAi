@@ -54,9 +54,9 @@ const BEST_FOR_EXPECTED_SNIPPETS = [
   {
     path: '/ai-video-engines/best-for/4k-video',
     slug: '4k-video',
-    title: 'Best AI Video Engines for 4K: Kling, LTX & Veo',
+    title: 'Best AI Video Engines for 4K: Veo, Kling & LTX',
     description:
-      'Compare the best AI video engines for 4K delivery, upscale-ready workflows, premium finishing, pricing, resolution limits and when to use Kling, LTX or Veo.',
+      'Compare the best AI video engines for 4K delivery, native 4K workflows, premium finishing, pricing, resolution limits and when to use Veo, Kling or LTX.',
   },
   {
     path: '/ai-video-engines/best-for/ads',

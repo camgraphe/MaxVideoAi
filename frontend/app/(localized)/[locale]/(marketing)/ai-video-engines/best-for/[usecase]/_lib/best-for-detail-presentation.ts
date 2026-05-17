@@ -36,9 +36,9 @@ export const BEST_FOR_SERP_SNIPPETS: Record<string, { title: string; description
       'Compare AI video engines for mini-films, trailers, ad sequences and edited-style clips from structured prompts, with pricing and best-use guidance.',
   },
   '4k-video': {
-    title: 'Best AI Video Engines for 4K: Kling, LTX & Veo',
+    title: 'Best AI Video Engines for 4K: Veo, Kling & LTX',
     description:
-      'Compare the best AI video engines for 4K delivery, upscale-ready workflows, premium finishing, pricing, resolution limits and when to use Kling, LTX or Veo.',
+      'Compare the best AI video engines for 4K delivery, native 4K workflows, premium finishing, pricing, resolution limits and when to use Veo, Kling or LTX.',
   },
   ads: {
     title: 'Best AI Video Engines for Ads & Product Creative',
