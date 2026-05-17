@@ -114,9 +114,9 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   kling: {
-    metaTitle: 'Kling AI Video Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'Kling AI Video Examples: Prompts, Motion & Product Shots',
     metaDescription:
-      'Browse Kling AI video examples, prompts, settings, and image-to-video patterns for Kling 3 Pro, Kling 3 Standard, and native Kling 3 4K delivery renders, then compare supported older Kling workflows on MaxVideoAI.',
+      'Explore Kling AI video examples with prompts, camera motion, product shots, image-to-video settings and pricing. Clone a shot and render with Kling.',
     heroTitle: 'Kling AI Video Examples, Prompts & Settings',
     subtitle:
       'Kling AI video examples, prompts, settings, image-to-video patterns, and model guidance for current Kling workflows and supported older versions.',

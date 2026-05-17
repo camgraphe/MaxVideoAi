@@ -13,6 +13,7 @@ import ExamplesPage from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const EXAMPLE_MODEL_SLUG_SET = new Set(getMarketingExampleRouteSlugs().map((slug) => slug.toLowerCase()));
+const UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS = new Set(['kling']);
 const DEFAULT_SORT = 'playlist';
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const ALLOWED_MODEL_QUERY_KEYS = new Set(['sort', 'page']);
@@ -118,6 +119,7 @@ export async function generateMetadata(
     englishPath: `/examples/${canonical}`,
     image: ogImage,
     imageAlt: 'MaxVideo AI — Examples gallery preview',
+    titleBranding: params.locale === 'en' && UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS.has(canonical) ? 'none' : 'auto',
     robots: {
       index: !noindex,
       follow: true,

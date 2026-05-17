@@ -3,10 +3,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { getExampleModelLanding } from '../frontend/lib/examples/modelLanding.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx');
+const modelPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/[model]/page.tsx');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-route-utils.ts');
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts');
 const enMessagesPath = join(root, 'frontend/messages/en.json');
@@ -20,6 +22,7 @@ const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketi
 const routeSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-route-sections.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
+const modelPageSource = readFileSync(modelPagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
 const enMessages = JSON.parse(readFileSync(enMessagesPath, 'utf8')) as {
@@ -105,6 +108,30 @@ test('examples hub owns clone-focused CTR metadata without a site-name suffix', 
     title,
     description,
     englishPath: '/examples',
+    titleBranding: 'none',
+  });
+
+  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+  assert.equal(metadata.description, description);
+});
+
+test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
+  const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
+  const description =
+    'Explore Kling AI video examples with prompts, camera motion, product shots, image-to-video settings and pricing. Clone a shot and render with Kling.';
+  const landing = getExampleModelLanding('en', 'kling');
+
+  assert.ok(landing);
+  assert.equal(landing.metaTitle, title);
+  assert.equal(landing.metaDescription, description);
+  assert.equal(landing.heroTitle, 'Kling AI Video Examples, Prompts & Settings');
+  assert.match(modelPageSource, /UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS[\s\S]*'kling'/);
+
+  const metadata = buildSeoMetadata({
+    locale: 'en',
+    title: landing.metaTitle,
+    description: landing.metaDescription,
+    englishPath: '/examples/kling',
     titleBranding: 'none',
   });
 
