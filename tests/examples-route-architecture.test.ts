@@ -3,10 +3,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
+
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx');
 const utilsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-route-utils.ts');
 const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts');
+const enMessagesPath = join(root, 'frontend/messages/en.json');
 const pageDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-data.ts');
 const hrefsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-hrefs.ts');
 const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-jsonld.ts');
@@ -19,6 +22,9 @@ const routeSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketi
 const pageSource = readFileSync(pagePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 const copySource = readFileSync(copyPath, 'utf8');
+const enMessages = JSON.parse(readFileSync(enMessagesPath, 'utf8')) as {
+  gallery?: { meta?: { title?: string; description?: string } };
+};
 const pageDataSource = readFileSync(pageDataPath, 'utf8');
 const hrefsSource = readFileSync(hrefsPath, 'utf8');
 const jsonLdSource = readFileSync(jsonLdPath, 'utf8');
@@ -83,6 +89,27 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
 
   const lineCount = pageSource.split('\n').length;
   assert.ok(lineCount <= 400, `examples page should stay below 400 lines after route extraction, got ${lineCount}`);
+});
+
+test('examples hub owns clone-focused CTR metadata without a site-name suffix', () => {
+  const title = 'AI Video Examples You Can Clone: Prompts, Models & Pricing';
+  const description =
+    'Browse real AI video examples with prompts, model settings, duration and pricing. Clone a shot into your workspace and render with Kling, Seedance, LTX or Veo.';
+
+  assert.equal(enMessages.gallery?.meta?.title, title);
+  assert.equal(enMessages.gallery?.meta?.description, description);
+  assert.match(pageSource, /titleBranding:\s*locale === 'en' \? 'none' : 'auto'/);
+
+  const metadata = buildSeoMetadata({
+    locale: 'en',
+    title,
+    description,
+    englishPath: '/examples',
+    titleBranding: 'none',
+  });
+
+  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+  assert.equal(metadata.description, description);
 });
 
 test('examples helper module exposes the route contract', () => {

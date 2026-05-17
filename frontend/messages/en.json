@@ -3052,8 +3052,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "AI Video Examples + Pricing Shown | MaxVideoAI",
-      "description": "Explore real AI video examples with prompts, duration, audio info and pricing shown per clip. Clone any shot into your workspace in seconds.",
+      "title": "AI Video Examples You Can Clone: Prompts, Models & Pricing",
+      "description": "Browse real AI video examples with prompts, model settings, duration and pricing. Clone a shot into your workspace and render with Kling, Seedance, LTX or Veo.",
       "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
       "description_engine": "Browse {engineName} examples with prompts, duration, audio info, and pricing shown per clip. Pages may include multiple {engineName} models and modes."
     }

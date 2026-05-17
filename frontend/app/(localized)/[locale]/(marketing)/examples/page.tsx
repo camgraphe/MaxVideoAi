@@ -103,6 +103,7 @@ export async function generateMetadata(
     image: ogImage,
     imageAlt: 'MaxVideo AI — Examples gallery preview',
     canonicalOverride: metadataUrls.canonical,
+    titleBranding: locale === 'en' ? 'none' : 'auto',
     robots: {
       index: !shouldNoindex,
       follow: true,
