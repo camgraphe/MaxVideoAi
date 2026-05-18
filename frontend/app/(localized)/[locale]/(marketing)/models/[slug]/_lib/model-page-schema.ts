@@ -211,7 +211,7 @@ export function buildProductSchema({
   description,
   heroTitle,
   heroPosterAbsolute,
-  pricingEngine = engine.engine,
+  pricingEngine,
 }: {
   engine: FalEngineEntry;
   canonical: string;
@@ -221,6 +221,9 @@ export function buildProductSchema({
   pricingEngine?: EngineCaps;
 }) {
   const provider = resolveProviderInfo(engine);
+  const offerPayload: { offers?: ReturnType<typeof buildProductOffer> } = pricingEngine
+    ? { offers: buildProductOffer(engine, pricingEngine, canonical) }
+    : {};
   const category = isImageOnlyModel(engine)
     ? 'AI Image Generator'
     : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
@@ -234,7 +237,7 @@ export function buildProductSchema({
     category,
     url: canonical,
     image: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
-    offers: buildProductOffer(engine, pricingEngine, canonical),
+    ...(offerPayload.offers ? { offers: offerPayload.offers } : {}),
     brand: {
       '@type': 'Brand',
       name: provider.name,

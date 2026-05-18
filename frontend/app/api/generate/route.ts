@@ -17,11 +17,7 @@ import { submitBytePlusGenerateTask } from './_lib/byteplus-submission';
 import { buildGenerateRequestOptions } from './_lib/request-options';
 import { resolveGenerateUserGate } from './_lib/auth-idempotency';
 import { submitGenerateProviderTask } from './_lib/video-provider-submission';
-import {
-  buildResponseFromExistingVideoJob,
-  createAtomicInitialVideoJob,
-  VideoInitialJobError,
-} from './_lib/initial-video-job';
+import { buildResponseFromExistingVideoJob, createAtomicInitialVideoJob, VideoInitialJobError } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
