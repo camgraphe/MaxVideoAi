@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { ENGINE_OPTIONS } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
+import { resolveEngines } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-helpers.ts';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
@@ -134,6 +136,17 @@ const generateCardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx',
   'utf8'
 );
+
+test('comparison detail engine selector only lists public compare engines', () => {
+  const optionValues = new Set(ENGINE_OPTIONS.map((option) => String(option.value)));
+  const optionLabels = ENGINE_OPTIONS.map((option) => String(option.label));
+
+  assert.equal(optionValues.has('seedance-2-0'), true);
+  assert.equal(optionValues.has('seedance-2-0-fast'), true);
+  assert.equal(optionValues.has('seedance-2-0-fast-byteplus'), false);
+  assert.equal(optionLabels.some((label) => label.includes('BytePlus')), false);
+  assert.equal(resolveEngines('seedance-2-0-vs-seedance-2-0-fast-byteplus'), null);
+});
 
 test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suffix', () => {
   const override = EN_COMPARE_PAGE_OVERRIDES['seedance-2-0-vs-seedance-2-0-fast'];
