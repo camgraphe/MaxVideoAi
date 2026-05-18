@@ -128,6 +128,15 @@ export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<stri
   return map;
 }
 
+export async function listPublicVideoPagesForSeoAudit(limit = 1000): Promise<GalleryVideo[]> {
+  const safeLimit = Math.max(1, Math.min(5000, Math.floor(limit)));
+  const rows = await query<VideoRow>(
+    `${BASE_SELECT_WITH_SETTINGS} WHERE visibility = 'public' ORDER BY created_at DESC LIMIT $1`,
+    [safeLimit]
+  );
+  return rows.map(mapGalleryVideoRow);
+}
+
 export async function getLatestVideoByPromptAndEngine(
   prompt: string,
   engineId: string

@@ -13,8 +13,10 @@ import {
 } from '../frontend/lib/video-seo-editorial-qa.ts';
 
 const deriveSource = readFileSync('frontend/server/watch-page-signals/derive.ts', 'utf8');
+const canonicalSignalsSource = readFileSync('frontend/server/watch-page-signals/canonical.ts', 'utf8');
 const sitemapSource = readFileSync('frontend/server/sitemaps/video.ts', 'utf8');
 const contentSource = readFileSync('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx', 'utf8');
+const pageSource = readFileSync('frontend/app/(core)/video/[id]/page.tsx', 'utf8');
 const editorialSource = readFileSync('frontend/config/video-seo-editorial.ts', 'utf8');
 
 const removedFromSitemap = new Set([
@@ -63,6 +65,12 @@ test('approved video SEO entries pass static editorial QA', () => {
       promptText: validPromptFixture,
       hasVideoAsset: true,
       hasThumbnailAsset: true,
+      hasStableVideoAsset: true,
+      hasStableThumbnailAsset: true,
+      hasInternalLinkTargets: true,
+      canonicalUrl: `https://maxvideoai.com/video/${entry.id}`,
+      expectedCanonicalUrl: `https://maxvideoai.com/video/${entry.id}`,
+      canonicalTargetIndexable: true,
       technicallyIndexable: true,
       duplicateVideoObjectNames: getDuplicateVideoObjectNames(),
     });
@@ -71,6 +79,12 @@ test('approved video SEO entries pass static editorial QA', () => {
       promptText: validPromptFixture,
       hasVideoAsset: true,
       hasThumbnailAsset: true,
+      hasStableVideoAsset: true,
+      hasStableThumbnailAsset: true,
+      hasInternalLinkTargets: true,
+      canonicalUrl: `https://maxvideoai.com/video/${entry.id}`,
+      expectedCanonicalUrl: `https://maxvideoai.com/video/${entry.id}`,
+      canonicalTargetIndexable: true,
       technicallyIndexable: true,
       duplicateVideoObjectNames: getDuplicateVideoObjectNames(),
     }), true);
@@ -94,8 +108,19 @@ test('weak current pages are held out of the video sitemap', () => {
 test('watch page rendering and sitemap depend on editorial approval', () => {
   assert.match(deriveSource, /getVideoSeoEditorialEntry/, 'watch page signals should read editorial overrides');
   assert.match(deriveSource, /isVideoSeoEditorialApproved/, 'indexability should depend on editorial approval');
+  assert.match(deriveSource, /isStablePublicMediaUrl/, 'watch page eligibility should block temporary media URLs');
+  assert.match(deriveSource, /buildWatchPageCanonicalState/, 'watch page eligibility should delegate canonical state');
+  assert.match(canonicalSignalsSource, /buildExpectedVideoCanonicalUrl/, 'watch page eligibility should build production watch canonicals');
+  assert.match(canonicalSignalsSource, /validateVideoSeoCanonical/, 'watch page eligibility should validate canonical state');
+  assert.match(deriveSource, /hasInternalLinkTargets/, 'watch page eligibility should require internal link targets');
   assert.match(deriveSource, /seoStatus/, 'watch page signals should expose SEO status');
   assert.match(deriveSource, /editorialQaErrors/, 'watch page signals should expose editorial QA errors');
   assert.match(contentSource, /name: signals\.videoObjectName/, 'VideoObject.name should use editorial copy');
+  assert.match(contentSource, /description: signals\.metaDescription/, 'VideoObject.description should align with OG metadata');
+  assert.match(contentSource, /page\.entry\?\.publishedAt \?\? video\.createdAt/, 'VideoObject.uploadDate should align with sitemap publication date');
+  assert.match(contentSource, /buildExpectedVideoCanonicalUrl\(video\.id\)/, 'VideoObject URL should use the production watch canonical');
+  assert.match(pageSource, /buildExpectedVideoCanonicalUrl\(params\.id\)/, 'metadata canonical should use the production watch canonical');
+  assert.match(sitemapSource, /signals\.videoObjectName/, 'video sitemap title should align with VideoObject.name');
+  assert.match(sitemapSource, /signals\.metaDescription/, 'video sitemap description should align with page metadata');
   assert.match(sitemapSource, /listEligibleSeoWatchVideos/, 'sitemap should use eligible rows instead of a direct toggle');
 });

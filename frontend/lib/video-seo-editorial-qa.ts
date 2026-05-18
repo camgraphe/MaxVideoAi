@@ -2,11 +2,19 @@ import {
   VIDEO_SEO_EDITORIAL_ENTRIES,
   type VideoSeoEditorialEntry,
 } from '@/config/video-seo-editorial';
+import { validateVideoSeoCanonical } from '@/lib/video-seo-canonical';
 
 export type VideoSeoEditorialQaContext = {
   promptText?: string | null;
   hasVideoAsset?: boolean;
   hasThumbnailAsset?: boolean;
+  hasStableVideoAsset?: boolean;
+  hasStableThumbnailAsset?: boolean;
+  hasInternalLinkTargets?: boolean;
+  canonicalUrl?: string | null;
+  expectedCanonicalUrl?: string | null;
+  canonicalTargetIndexable?: boolean;
+  canonicalConflictIds?: ReadonlySet<string> | readonly string[] | null;
   technicallyIndexable?: boolean;
   duplicateVideoObjectNames?: ReadonlySet<string>;
 };
@@ -54,6 +62,15 @@ function isMissing(value: unknown): boolean {
 
 function hasForbiddenTitleLanguage(value: string): boolean {
   return /\b(examples hero|model hero)\b/i.test(value);
+}
+
+function hasCanonicalQaContext(context: VideoSeoEditorialQaContext): boolean {
+  return (
+    'canonicalUrl' in context ||
+    'expectedCanonicalUrl' in context ||
+    'canonicalTargetIndexable' in context ||
+    'canonicalConflictIds' in context
+  );
 }
 
 function looksTruncated(value: string): boolean {
@@ -114,6 +131,19 @@ export function validateVideoSeoEditorialEntry(
   }
   if (context.hasVideoAsset === false) errors.push('Missing primary video asset.');
   if (context.hasThumbnailAsset === false) errors.push('Missing thumbnail asset.');
+  if (context.hasStableVideoAsset === false) errors.push('Stable public video asset is required.');
+  if (context.hasStableThumbnailAsset === false) errors.push('Stable public thumbnail asset is required.');
+  if (context.hasInternalLinkTargets === false) errors.push('Approved pages require internal link targets.');
+  if (hasCanonicalQaContext(context)) {
+    const canonical = validateVideoSeoCanonical({
+      videoId: entry.id,
+      canonicalUrl: context.canonicalUrl,
+      expectedCanonicalUrl: context.expectedCanonicalUrl,
+      canonicalTargetIndexable: context.canonicalTargetIndexable,
+      canonicalConflictIds: context.canonicalConflictIds,
+    });
+    errors.push(...canonical.blockerLabels);
+  }
   if (context.technicallyIndexable === false) errors.push('Video is not technically indexable.');
 
   if (entry.seoStatus !== 'approved') {

@@ -3,6 +3,7 @@ import { getVideoSeoEditorialEntry, type VideoSeoEditorialEntry } from '@/config
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { isStablePublicMediaUrl } from '@/lib/media';
 import {
   getDuplicateVideoObjectNames,
   isVideoSeoEditorialApproved,
@@ -27,6 +28,8 @@ import {
 } from './formatting';
 import { parseSnapshot } from './snapshot';
 import { buildCapabilityTags, extractStyleTags, pickPrimaryIntent } from './tags';
+import { buildCompareLinks, buildPromptImprovementNotes } from './recommendations';
+import { buildWatchPageCanonicalState } from './canonical';
 import type { WatchPageDerivedSignals, WatchPageIntent } from './types';
 
 export function deriveWatchPageSignals(params: {
@@ -95,6 +98,21 @@ export function deriveWatchPageSignals(params: {
   const detailRows = buildDetailRows(video, snapshot, engineLabel);
   const promptRows = buildPromptRows(snapshot);
   const inputRows = buildInputRows(snapshot);
+  const compareLinks = buildCompareLinks({ engineSlug, engineLabel, engineEntry });
+  const promptImprovementNotes = buildPromptImprovementNotes({
+    capabilityTags,
+    primaryIntent,
+    hasNegativePrompt: Boolean(snapshot.negativePrompt),
+  });
+  const stableVideoAsset = isStablePublicMediaUrl(video.videoUrl);
+  const stableThumbnailAsset = isStablePublicMediaUrl(video.thumbUrl);
+  const hasInternalLinkTargets = Boolean(modelPath && exampleFamily && parentPath);
+  const canonical = buildWatchPageCanonicalState({
+    video,
+    stableVideoAsset,
+    stableThumbnailAsset,
+    hasInternalLinkTargets,
+  });
   const completenessScore = [
     video.videoUrl ? 25 : 0,
     video.thumbUrl ? 15 : 0,
@@ -116,12 +134,22 @@ export function deriveWatchPageSignals(params: {
   const auditNotes: string[] = [];
   if (!video.videoUrl) auditNotes.push('Missing primary video asset.');
   if (!video.thumbUrl) auditNotes.push('Missing thumbnail asset.');
+  if (video.videoUrl && !stableVideoAsset) auditNotes.push('Stable public video asset is required.');
+  if (video.thumbUrl && !stableThumbnailAsset) auditNotes.push('Stable public thumbnail asset is required.');
+  if (!hasInternalLinkTargets) auditNotes.push('Internal link targets are missing.');
+  auditNotes.push(...canonical.validation.blockerLabels);
   if (promptText.trim().length < 24) auditNotes.push('Prompt is too thin for a differentiated watch page.');
   if (whatThisShows.length < 3) auditNotes.push('Derived summary is still too sparse.');
   const editorialQaContext = {
     promptText,
     hasVideoAsset: Boolean(video.videoUrl),
     hasThumbnailAsset: Boolean(video.thumbUrl),
+    hasStableVideoAsset: stableVideoAsset,
+    hasStableThumbnailAsset: stableThumbnailAsset,
+    hasInternalLinkTargets,
+    canonicalUrl: canonical.canonicalUrl,
+    expectedCanonicalUrl: canonical.validation.expectedCanonicalUrl,
+    canonicalTargetIndexable: canonical.canonicalTargetIndexable,
     technicallyIndexable: Boolean(video.videoUrl && video.thumbUrl && video.visibility === 'public' && video.indexable),
     duplicateVideoObjectNames: params.duplicateVideoObjectNames ?? getDuplicateVideoObjectNames(),
   };
@@ -138,6 +166,10 @@ export function deriveWatchPageSignals(params: {
   const technicallyIndexable =
     Boolean(video.videoUrl) &&
     Boolean(video.thumbUrl) &&
+    stableVideoAsset &&
+    stableThumbnailAsset &&
+    hasInternalLinkTargets &&
+    canonical.validation.passed &&
     promptText.trim().length >= 24 &&
     completenessScore >= 50 &&
     (entry?.watchPageEligible ?? true);
@@ -151,6 +183,9 @@ export function deriveWatchPageSignals(params: {
     metaTitle,
     metaDescription,
     videoObjectName: editorial?.videoObjectName ?? title,
+    canonicalUrl: canonical.canonicalUrl,
+    expectedCanonicalUrl: canonical.validation.expectedCanonicalUrl,
+    canonicalBlockers: canonical.validation.blockerLabels,
     targetKeyword: editorial?.targetKeyword ?? null,
     seoStatus: editorial?.seoStatus ?? null,
     editorialQaErrors: editorialQa.errors,
@@ -179,6 +214,8 @@ export function deriveWatchPageSignals(params: {
     detailRows,
     promptRows,
     inputRows,
+    promptImprovementNotes,
+    compareLinks,
     parentPath,
     parentLabel,
     modelPath,

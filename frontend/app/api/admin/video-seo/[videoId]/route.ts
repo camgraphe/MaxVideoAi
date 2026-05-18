@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
+import { isStablePublicMediaUrl } from '@/lib/media';
+import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { getSeoVideoById } from '@/server/videos';
 import {
@@ -43,6 +45,19 @@ export async function PUT(req: NextRequest, props: RouteParams) {
     const video = await getSeoVideoById(videoId);
     const entries = await listVideoSeoEditorialEntries();
     const fallback = entries.find((entry) => entry.id === videoId) ?? null;
+    const stableVideoAsset = isStablePublicMediaUrl(video?.videoUrl);
+    const stableThumbnailAsset = isStablePublicMediaUrl(video?.thumbUrl);
+    const hasInternalLinkTargets = validationTargetHasInternalLinks(payload as Record<string, unknown>);
+    const canonicalUrl = buildExpectedVideoCanonicalUrl(videoId);
+    const canonicalTargetIndexable = Boolean(
+      video?.videoUrl &&
+        video?.thumbUrl &&
+        video?.visibility === 'public' &&
+        video?.indexable &&
+        stableVideoAsset &&
+        stableThumbnailAsset &&
+        hasInternalLinkTargets
+    );
     const validation = validateVideoSeoEditorialUpdatePayload({
       videoId,
       payload,
@@ -52,6 +67,12 @@ export async function PUT(req: NextRequest, props: RouteParams) {
         promptText: video?.prompt,
         hasVideoAsset: Boolean(video?.videoUrl),
         hasThumbnailAsset: Boolean(video?.thumbUrl),
+        hasStableVideoAsset: stableVideoAsset,
+        hasStableThumbnailAsset: stableThumbnailAsset,
+        hasInternalLinkTargets,
+        canonicalUrl,
+        expectedCanonicalUrl: canonicalUrl,
+        canonicalTargetIndexable,
         technicallyIndexable: Boolean(video?.videoUrl && video?.thumbUrl && video?.visibility === 'public' && video?.indexable),
       },
     });
@@ -71,4 +92,13 @@ export async function PUT(req: NextRequest, props: RouteParams) {
     const message = error instanceof Error ? error.message : 'Failed to save video SEO page';
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
+}
+
+function validationTargetHasInternalLinks(payload: Record<string, unknown>): boolean {
+  return (
+    typeof payload.modelSlug === 'string' &&
+    payload.modelSlug.trim().length > 0 &&
+    typeof payload.examplesSlug === 'string' &&
+    payload.examplesSlug.trim().length > 0
+  );
 }

@@ -12,6 +12,13 @@ import {
   type WatchRow,
 } from '../_lib/video-seo-admin-helpers';
 
+const CANONICAL_BLOCKER_LABELS = [
+  'Missing canonical',
+  'Canonical mismatch',
+  'Canonical conflict',
+  'Canonical target not indexable',
+] as const;
+
 export function VideoSeoInventoryTable({ rows }: { rows: WatchRow[] }) {
   return (
     <AdminDataTable viewportClassName="max-h-[72vh] overflow-auto">
@@ -104,6 +111,9 @@ function VideoSeoRolloutCell({ row }: { row: WatchRow }) {
             Sitemap: {row.inVideoSitemap ? 'Yes' : 'No'}
           </StatusPill>
           <StatusPill tone={row.robots === 'index, follow' ? 'ok' : 'warn'}>Robots: {row.robots}</StatusPill>
+          <StatusPill tone={row.canonicalBlockers.length ? 'warn' : 'ok'}>
+            Canonical: {row.canonicalBlockers.length ? 'Review' : 'OK'}
+          </StatusPill>
           <StatusPill tone={row.seoStatus === 'approved' ? 'ok' : 'neutral'}>{row.seoStatus}</StatusPill>
           <StatusPill tone={row.isReady ? 'ok' : 'warn'}>{row.isReady ? 'Ready' : 'Review'}</StatusPill>
           <StatusPill tone={row.video?.visibility === 'public' ? 'ok' : 'warn'}>
@@ -115,8 +125,17 @@ function VideoSeoRolloutCell({ row }: { row: WatchRow }) {
           <StatusPill tone={row.video?.videoUrl ? 'ok' : 'warn'}>
             {row.video?.videoUrl ? 'Video asset' : 'Missing video'}
           </StatusPill>
+          <StatusPill tone={row.stableVideoAsset ? 'ok' : 'warn'}>
+            {row.stableVideoAsset ? 'Stable video URL' : 'Temporary video URL'}
+          </StatusPill>
           <StatusPill tone={row.video?.thumbUrl ? 'ok' : 'warn'}>
             {row.video?.thumbUrl ? 'Thumbnail' : 'Missing thumb'}
+          </StatusPill>
+          <StatusPill tone={row.stableThumbnailAsset ? 'ok' : 'warn'}>
+            {row.stableThumbnailAsset ? 'Stable thumbnail URL' : 'Temporary thumbnail URL'}
+          </StatusPill>
+          <StatusPill tone={row.internalLinkTargets ? 'ok' : 'warn'}>
+            {row.internalLinkTargets ? 'Internal links' : 'Missing internal links'}
           </StatusPill>
         </div>
 
@@ -138,6 +157,23 @@ function VideoSeoRolloutCell({ row }: { row: WatchRow }) {
             ))}
             {row.sitemapEligibilityReasons.length > 4 ? <li>• +{row.sitemapEligibilityReasons.length - 4} more reason(s)</li> : null}
           </ul>
+        </div>
+
+        <div className="rounded-xl border border-hairline bg-bg/50 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Canonical</p>
+          <p className="mt-2 break-all font-mono text-[11px] text-text-secondary">{row.canonicalUrl ?? 'Missing canonical'}</p>
+          <p className="mt-1 break-all font-mono text-[11px] text-text-muted">Expected: {row.expectedCanonicalUrl}</p>
+          {row.canonicalBlockers.length ? (
+            <ul className="mt-2 space-y-1 text-xs text-warning">
+              {row.canonicalBlockers.map((blocker) => (
+                <li key={blocker}>• {blocker}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-xs text-text-muted">
+              Canonical checks pass: {CANONICAL_BLOCKER_LABELS.join(', ')}.
+            </p>
+          )}
         </div>
 
         {row.technicalEligibilityBlockers.length ? (

@@ -18,6 +18,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import { WatchVideoPlayer } from '@/components/watch/WatchVideoPlayer';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import {
   FALLBACK_POSTER,
   FALLBACK_THUMB,
@@ -37,7 +38,7 @@ import { VideoWatchSidebar } from './VideoWatchSidebar';
 
 export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
-  const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
+  const canonical = buildExpectedVideoCanonicalUrl(video.id);
   const playbackPoster =
     buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ??
     video.thumbUrl ??
@@ -65,9 +66,9 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
         url: canonical,
         mainEntityOfPage: canonical,
         name: signals.videoObjectName,
-        description: signals.videoDescription,
+        description: signals.metaDescription,
         thumbnailUrl: [thumbnailUrl],
-        uploadDate: new Date(video.createdAt).toISOString(),
+        uploadDate: new Date(page.entry?.publishedAt ?? video.createdAt).toISOString(),
         duration: toDurationIso(signals.durationSec ?? video.durationSec),
         contentUrl: videoUrl,
         publisher: {
@@ -97,9 +98,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
 
   const detailRows = signals.detailRows;
   const workflowLabel = getDetailValue(detailRows, 'mode') ?? signals.modeLabel;
-  const durationLabel =
-    getDetailValue(detailRows, 'duration') ??
-    (signals.durationSec ? `${signals.durationSec} seconds` : null);
+  const durationLabel = getDetailValue(detailRows, 'duration') ?? (signals.durationSec ? `${signals.durationSec} seconds` : null);
   const aspectLabel = getDetailValue(detailRows, 'aspectRatio') ?? signals.aspectRatio;
   const resolutionLabel = getDetailValue(detailRows, 'resolution') ?? signals.resolution;
   const audioLabel = getDetailValue(detailRows, 'audio') ?? (signals.hasAudio ? 'Enabled' : 'Off');
@@ -113,6 +112,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
     { label: 'Workflow', value: workflowLabel },
     { label: 'Camera', value: cameraHighlights.length ? cameraHighlights.join(', ') : humanizeTag(signals.primaryIntent) },
     { label: 'Output', value: [durationLabel, aspectLabel, resolutionLabel].filter(Boolean).join(' · ') },
+    { label: 'Estimated price', value: costLabel ?? 'Shown before render' },
     { label: 'Audio', value: audioLabel },
     { label: 'Constraints', value: signals.negativePrompt ?? signals.capabilityTags.slice(0, 3).map(humanizeTag).join(', ') },
   ].filter((row) => row.value);
@@ -260,6 +260,50 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               <p id={fullPromptId} className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
             </details>
           </VideoWatchCard>
+
+          {signals.promptImprovementNotes.length ? (
+            <VideoWatchCard className="p-5 sm:p-6">
+              <div className="inline-flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-brand" aria-hidden />
+                <h2 className="text-lg font-semibold text-text-primary">Prompt improvement notes</h2>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {signals.promptImprovementNotes.map((note, index) => (
+                  <div key={note} className="rounded-input border border-hairline bg-surface-2 px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">Note {index + 1}</p>
+                    <p className="mt-1 text-sm leading-6 text-text-secondary">{note}</p>
+                  </div>
+                ))}
+              </div>
+            </VideoWatchCard>
+          ) : null}
+
+          {signals.compareLinks.length ? (
+            <VideoWatchCard className="p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-text-primary">Compare this model</h2>
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
+                    Review this example beside nearby engines before choosing a render path.
+                  </p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-text-muted" aria-hidden />
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {signals.compareLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    prefetch={false}
+                    className="rounded-input border border-hairline bg-surface-2 px-4 py-3 transition hover:bg-surface-hover"
+                  >
+                    <span className="block text-sm font-semibold text-text-primary">{link.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-text-secondary">{link.reason}</span>
+                  </Link>
+                ))}
+              </div>
+            </VideoWatchCard>
+          ) : null}
 
           <VideoWatchCard className="p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-text-primary">Why {signals.engineLabel} fits this shot</h2>

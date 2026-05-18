@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { getVideoWatchPageDataById } from '@/server/video-seo';
+import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import { VideoUnavailableState } from './_components/VideoUnavailableState';
 import { VideoWatchContent } from './_components/VideoWatchContent';
 import {
   FALLBACK_THUMB,
-  SITE,
   TITLE_SUFFIX,
   buildMetaTitle,
   isRenderable,
@@ -25,7 +25,7 @@ export const revalidate = 1800;
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params;
   const page = await getWatchPageData(params.id);
-  const canonical = `${SITE}/video/${encodeURIComponent(params.id)}`;
+  const canonical = buildExpectedVideoCanonicalUrl(params.id);
 
   if (!isRenderable(page)) {
     return {

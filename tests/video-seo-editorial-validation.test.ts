@@ -22,6 +22,12 @@ const qaContext = {
     'A detailed cinematic video prompt with subject, location, lighting, camera movement, timing, output format, production intent, visual style, scene continuity, pacing, camera lens, audio cues and final framing for a complete SEO validation fixture.',
   hasVideoAsset: true,
   hasThumbnailAsset: true,
+  hasStableVideoAsset: true,
+  hasStableThumbnailAsset: true,
+  hasInternalLinkTargets: true,
+  canonicalUrl: 'https://maxvideoai.com/video/job_test',
+  expectedCanonicalUrl: 'https://maxvideoai.com/video/job_test',
+  canonicalTargetIndexable: true,
   technicallyIndexable: true,
   duplicateVideoObjectNames: new Set<string>(),
 };
@@ -74,6 +80,26 @@ test('video SEO update validation blocks approved pages with missing critical fi
   assert.match(failingQa.error, /failed QA/i);
 });
 
+test('video SEO update validation blocks approved pages with temporary media or missing internal links', () => {
+  const temporaryVideo = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, hasStableVideoAsset: false },
+  });
+  assert.equal(temporaryVideo.ok, false);
+  assert.match(temporaryVideo.error, /failed QA/i);
+  assert.match(temporaryVideo.qa?.errors.join(' '), /Stable public video asset/i);
+
+  const missingLinks = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, hasInternalLinkTargets: false },
+  });
+  assert.equal(missingLinks.ok, false);
+  assert.match(missingLinks.error, /failed QA/i);
+  assert.match(missingLinks.qa?.errors.join(' '), /internal link targets/i);
+});
+
 test('video SEO update validation accepts complete approved pages that pass QA', () => {
   const result = validateVideoSeoEditorialUpdatePayload({
     videoId: 'job_test',
@@ -83,4 +109,38 @@ test('video SEO update validation accepts complete approved pages that pass QA',
   assert.equal(result.ok, true);
   assert.equal(result.entry.seoStatus, 'approved');
   assert.equal(result.qa.passed, true);
+});
+
+test('video SEO canonical validation blocks unsafe approved pages', () => {
+  const missingCanonical = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, canonicalUrl: null },
+  });
+  assert.equal(missingCanonical.ok, false);
+  assert.match(missingCanonical.qa?.errors.join(' '), /Missing canonical/i);
+
+  const canonicalMismatch = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, canonicalUrl: 'http://example.com/video/job_test' },
+  });
+  assert.equal(canonicalMismatch.ok, false);
+  assert.match(canonicalMismatch.qa?.errors.join(' '), /Canonical mismatch/i);
+
+  const duplicateCanonical = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, canonicalConflictIds: new Set(['job_other']) },
+  });
+  assert.equal(duplicateCanonical.ok, false);
+  assert.match(duplicateCanonical.qa?.errors.join(' '), /Canonical conflict/i);
+
+  const noindexTarget = validateVideoSeoEditorialUpdatePayload({
+    videoId: 'job_test',
+    payload: completeApprovedPayload,
+    qaContext: { ...qaContext, canonicalTargetIndexable: false },
+  });
+  assert.equal(noindexTarget.ok, false);
+  assert.match(noindexTarget.qa?.errors.join(' '), /Canonical target not indexable/i);
 });

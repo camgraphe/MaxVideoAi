@@ -8,11 +8,13 @@ const facadePath = join(root, 'frontend/server/watch-page-signals.ts');
 const signalsDir = join(root, 'frontend/server/watch-page-signals');
 const focusedModules = [
   'constants.ts',
+  'canonical.ts',
   'content.ts',
   'derive.ts',
   'engine.ts',
   'formatting.ts',
   'normalization.ts',
+  'recommendations.ts',
   'related.ts',
   'snapshot.ts',
   'tags.ts',
@@ -68,5 +70,8 @@ test('watch page signal modules expose the expected contracts', () => {
   assert.match(readModule('tags.ts'), /export function extractStyleTags/);
   assert.match(readModule('tags.ts'), /export function buildCapabilityTags/);
   assert.match(readModule('content.ts'), /export function buildDetailRows/);
+  assert.match(readModule('canonical.ts'), /export function buildWatchPageCanonicalState/);
   assert.match(readModule('engine.ts'), /export function resolveEngineEntry/);
+  assert.match(readModule('recommendations.ts'), /export function buildPromptImprovementNotes/);
+  assert.match(readModule('recommendations.ts'), /export function buildCompareLinks/);
 });

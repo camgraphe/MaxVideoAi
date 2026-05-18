@@ -71,6 +71,27 @@ export function isTemporaryProviderMediaUrl(value?: string | null): boolean {
   }
 }
 
+const SIGNED_MEDIA_PARAM_PATTERN =
+  /[?&](x-amz-|x-goog-|x-tos-|expires=|signature=|token=|googleaccessid=|policy=|key-pair-id=)/i;
+const PRIVATE_RELATIVE_MEDIA_PATH_PATTERN = /^\/(?:api|admin|app|billing|connect|dashboard|generate|jobs|settings)(?:\/|$)/i;
+
+export function isSignedMediaUrl(value?: string | null): boolean {
+  const normalized = normalizeMediaUrl(value);
+  if (!normalized || !/^https?:\/\//i.test(normalized)) return false;
+  return SIGNED_MEDIA_PARAM_PATTERN.test(normalized);
+}
+
+export function isStablePublicMediaUrl(value?: string | null): boolean {
+  const normalized = normalizeMediaUrl(value);
+  if (!normalized) return false;
+  if (normalized.startsWith('data:') || normalized.startsWith('blob:')) return false;
+  if (isPlaceholderMediaUrl(normalized)) return false;
+  if (isTemporaryProviderMediaUrl(normalized)) return false;
+  if (isSignedMediaUrl(normalized)) return false;
+  if (PRIVATE_RELATIVE_MEDIA_PATH_PATTERN.test(normalized)) return false;
+  return normalized.startsWith('/') || /^https?:\/\//i.test(normalized);
+}
+
 export function resolvePreferredMediaUrl(...candidates: Array<string | null | undefined>): string | null {
   let fallback: string | null = null;
   for (const candidate of candidates) {

@@ -69,16 +69,21 @@ test('admin video SEO helpers expose row, summary, and formatting contracts', ()
 
   assert.match(helpersSource, /Number\(a\.isReady\) - Number\(b\.isReady\)/, 'sorting should keep blockers first');
   assert.match(helpersSource, /encodeURIComponent\(entry\.id\)/, 'audit path should URL-encode IDs');
-  assert.match(helpersSource, /SITE_ORIGIN/, 'watch URLs should keep the site origin helper');
+  assert.match(helpersSource, /buildExpectedVideoCanonicalUrl/, 'watch URLs should use the production watch canonical helper');
   assert.match(helpersSource, /inVideoSitemap/, 'rows should expose computed sitemap presence');
   assert.match(helpersSource, /robots/, 'rows should expose effective robots state');
   assert.match(helpersSource, /promptWordCount/, 'rows should expose prompt length');
   assert.match(helpersSource, /previewSerpTitle/, 'rows should expose SERP title preview');
   assert.match(helpersSource, /modelPath/, 'rows should expose model links');
   assert.match(helpersSource, /examplesPath/, 'rows should expose examples links');
+  assert.match(helpersSource, /stableVideoAsset/, 'rows should expose stable media eligibility');
+  assert.match(helpersSource, /internalLinkTargets/, 'rows should expose internal link eligibility');
   assert.match(helpersSource, /editorialSourceLabel/, 'rows should expose editorial source labels');
   assert.match(helpersSource, /technicalEligibilityBlockers/, 'rows should separate technical blockers from editorial QA');
   assert.match(helpersSource, /sitemapEligibilityReasons/, 'rows should expose sitemap eligibility reasons');
+  assert.match(helpersSource, /canonicalUrl/, 'rows should expose generated canonical URLs');
+  assert.match(helpersSource, /expectedCanonicalUrl/, 'rows should expose expected canonical URLs');
+  assert.match(helpersSource, /canonicalBlockers/, 'rows should expose canonical blockers');
 });
 
 test('admin video SEO inventory table owns row rendering surfaces', () => {
@@ -99,6 +104,13 @@ test('admin video SEO inventory table owns row rendering surfaces', () => {
   assert.match(tableSource, /Editorial QA errors/, 'table should label editorial QA separately');
   assert.match(tableSource, /Technical \/ eligibility blockers/, 'table should label technical blockers separately');
   assert.match(tableSource, /Sitemap eligibility:/, 'table should render sitemap eligibility summary');
+  assert.match(tableSource, /Stable video URL/, 'table should show stable video URL eligibility');
+  assert.match(tableSource, /Internal links/, 'table should show internal link eligibility');
+  assert.match(tableSource, /Canonical/, 'table should show generated canonical URL state');
+  assert.match(tableSource, /Missing canonical/, 'table should show missing canonical blockers');
+  assert.match(tableSource, /Canonical mismatch/, 'table should show canonical mismatch blockers');
+  assert.match(tableSource, /Canonical conflict/, 'table should show canonical conflict blockers');
+  assert.match(tableSource, /Canonical target not indexable/, 'table should show noindex canonical target blockers');
 });
 
 test('admin video SEO editing uses a dedicated table and guarded API', () => {

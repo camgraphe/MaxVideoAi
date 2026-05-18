@@ -51,6 +51,9 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /WatchVideoPlayer/, 'content component should own video player rendering');
   assert.match(contentSource, /WatchKeyFrames/, 'content component should own keyframe rendering');
   assert.match(contentSource, /CopyPromptButton/, 'content component should own prompt copy UI');
+  assert.match(contentSource, /Prompt improvement notes/, 'watch page should include prompt improvement notes');
+  assert.match(contentSource, /Compare this model/, 'watch page should include compare links');
+  assert.match(contentSource, /Estimated price/, 'watch page should label the estimated render price');
   assert.match(contentSource, /dangerouslySetInnerHTML/, 'content component should own JSON-LD script rendering');
   assert.match(contentSource, /from '\.\/VideoWatchCard'/, 'content component should compose the watch card shell');
   assert.match(contentSource, /from '\.\/VideoWatchRelatedExamples'/, 'content component should compose related examples');

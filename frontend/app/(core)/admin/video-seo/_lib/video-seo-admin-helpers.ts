@@ -1,7 +1,8 @@
 import { Eye, Film, Radar, ShieldCheck } from 'lucide-react';
 import type { AdminMetricItem } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { SITE_ORIGIN } from '@/lib/siteOrigin';
+import { isStablePublicMediaUrl } from '@/lib/media';
 import { countEditorialWords } from '@/lib/video-seo-editorial-qa';
+import { buildExpectedVideoCanonicalUrl, validateVideoSeoCanonical } from '@/lib/video-seo-canonical';
 import type { SeoWatchVideoMeta, SeoWatchVideoRow } from '@/server/video-seo';
 import type { GalleryVideo } from '@/server/videos';
 import type { PersistedVideoSeoEditorialEntry } from '@/server/video-seo-editorial';
@@ -23,6 +24,9 @@ export type WatchRow = {
   issues: string[];
   watchPath: string;
   watchUrl: string;
+  canonicalUrl: string | null;
+  expectedCanonicalUrl: string;
+  canonicalBlockers: string[];
   auditPath: string;
   isReady: boolean;
   inVideoSitemap: boolean;
@@ -46,6 +50,9 @@ export type WatchRow = {
   examplesLabel: string | null;
   parentPath: string | null;
   parentLabel: string | null;
+  stableVideoAsset: boolean;
+  stableThumbnailAsset: boolean;
+  internalLinkTargets: boolean;
   relatedCount: number;
   completenessScore: number;
   differentiationScore: number;
@@ -68,6 +75,27 @@ export function buildWatchRow({ entry, video, editorial, isEligible, signals, re
   const modelPath = generatedSignals?.modelPath ?? (editorial?.modelSlug ? `/models/${editorial.modelSlug}` : null);
   const examplesPath =
     generatedSignals?.exampleFamily ? `/examples/${generatedSignals.exampleFamily}` : editorial?.examplesSlug ? `/examples/${editorial.examplesSlug}` : null;
+  const stableVideoAsset = isStablePublicMediaUrl(video?.videoUrl);
+  const stableThumbnailAsset = isStablePublicMediaUrl(video?.thumbUrl);
+  const internalLinkTargets = Boolean(modelPath && examplesPath && parentPath);
+  const expectedCanonicalUrl = buildExpectedVideoCanonicalUrl(entry.id);
+  const canonicalUrl = generatedSignals?.canonicalUrl ?? expectedCanonicalUrl;
+  const canonicalTargetIndexable = Boolean(
+    video?.videoUrl &&
+      video?.thumbUrl &&
+      video?.visibility === 'public' &&
+      video?.indexable &&
+      stableVideoAsset &&
+      stableThumbnailAsset &&
+      internalLinkTargets
+  );
+  const canonicalValidation = validateVideoSeoCanonical({
+    videoId: entry.id,
+    canonicalUrl,
+    expectedCanonicalUrl,
+    canonicalTargetIndexable,
+  });
+  const canonicalBlockers = canonicalValidation.blockerLabels;
 
   if (!video) {
     technicalEligibilityBlockers.push('Video missing from app_jobs.');
@@ -76,7 +104,11 @@ export function buildWatchRow({ entry, video, editorial, isEligible, signals, re
     if (!video.indexable) technicalEligibilityBlockers.push('Public discovery is disabled.');
     if (!video.videoUrl) technicalEligibilityBlockers.push('Video asset URL is missing.');
     if (!video.thumbUrl) technicalEligibilityBlockers.push('Thumbnail URL is missing.');
+    if (video.videoUrl && !stableVideoAsset) technicalEligibilityBlockers.push('Stable public video asset is required.');
+    if (video.thumbUrl && !stableThumbnailAsset) technicalEligibilityBlockers.push('Stable public thumbnail asset is required.');
   }
+  if (!internalLinkTargets) technicalEligibilityBlockers.push('Internal link targets are missing.');
+  technicalEligibilityBlockers.push(...canonicalBlockers);
   const editorialQaNotes =
     generatedSignals?.auditNotes?.filter((note) => note.startsWith('Editorial QA:')).map((note) => note.replace(/^Editorial QA:\s*/, '')) ?? [];
   const nonEditorialAuditNotes = generatedSignals?.auditNotes?.filter((note) => !note.startsWith('Editorial QA:')) ?? [];
@@ -97,7 +129,10 @@ export function buildWatchRow({ entry, video, editorial, isEligible, signals, re
     editorial,
     issues,
     watchPath,
-    watchUrl: `${SITE_ORIGIN}${watchPath}`,
+    watchUrl: canonicalUrl ?? expectedCanonicalUrl,
+    canonicalUrl,
+    expectedCanonicalUrl,
+    canonicalBlockers,
     auditPath: `/admin/jobs?jobId=${encodeURIComponent(entry.id)}`,
     isReady: isEligible && issues.length === 0,
     inVideoSitemap: isEligible,
@@ -121,6 +156,9 @@ export function buildWatchRow({ entry, video, editorial, isEligible, signals, re
     examplesLabel: examplesPath ? `Open ${entry.engineFamily} examples` : null,
     parentPath,
     parentLabel: generatedSignals?.parentLabel ?? null,
+    stableVideoAsset,
+    stableThumbnailAsset,
+    internalLinkTargets,
     relatedCount,
     completenessScore: generatedSignals?.completenessScore ?? 0,
     differentiationScore: generatedSignals?.differentiationScore ?? 0,

@@ -56,11 +56,20 @@ export type WatchPageRelatedLink = {
   reason: string;
 };
 
+export type WatchPageCompareLink = {
+  href: string;
+  label: string;
+  reason: string;
+};
+
 export type WatchPageDerivedSignals = {
   title: string;
   metaTitle: string;
   metaDescription: string;
   videoObjectName: string;
+  canonicalUrl: string;
+  expectedCanonicalUrl: string;
+  canonicalBlockers: string[];
   targetKeyword: string | null;
   seoStatus: WatchPageSeoStatus | null;
   editorialQaErrors: string[];
@@ -89,6 +98,8 @@ export type WatchPageDerivedSignals = {
   detailRows: Array<{ key: string; label: string; value: string }>;
   promptRows: Array<{ key: string; label: string; value: string }>;
   inputRows: Array<{ key: string; label: string; value: string }>;
+  promptImprovementNotes: string[];
+  compareLinks: WatchPageCompareLink[];
   parentPath: string | null;
   parentLabel: string | null;
   modelPath: string | null;
