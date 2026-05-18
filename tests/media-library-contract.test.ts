@@ -479,3 +479,17 @@ test('single-job thumbnail regeneration keeps legacy outputs in sync', () => {
   assert.match(source, /thumb_url:\s*newThumb/);
   assert.match(source, /preview_frame:\s*newThumb/);
 });
+
+test('admin moderation thumbnail updates keep generated media records in sync', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/admin/videos/[videoId]/thumbnail/route.ts'),
+    'utf8'
+  );
+
+  assert.match(source, /ensureJobThumbnail/);
+  assert.match(source, /force:\s*true/);
+  assert.match(source, /UPDATE app_jobs[\s\S]*thumb_url = \$2[\s\S]*preview_frame = \$2/);
+  assert.match(source, /upsertLegacyJobOutputs/);
+  assert.match(source, /UPDATE media_assets[\s\S]*thumb_url = \$2[\s\S]*source_job_id = \$1/);
+  assert.match(source, /logAdminAction/);
+});
