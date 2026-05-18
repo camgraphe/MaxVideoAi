@@ -107,8 +107,10 @@ export function deriveWatchPageSignals(params: {
   const stableVideoAsset = isStablePublicMediaUrl(video.videoUrl);
   const stableThumbnailAsset = isStablePublicMediaUrl(video.thumbUrl);
   const hasInternalLinkTargets = Boolean(modelPath && exampleFamily && parentPath);
+  const canonicalSlug = editorial?.canonicalSlug ?? null;
   const canonical = buildWatchPageCanonicalState({
     video,
+    canonicalSlug,
     stableVideoAsset,
     stableThumbnailAsset,
     hasInternalLinkTargets,
@@ -183,6 +185,7 @@ export function deriveWatchPageSignals(params: {
     metaTitle,
     metaDescription,
     videoObjectName: editorial?.videoObjectName ?? title,
+    canonicalSlug,
     canonicalUrl: canonical.canonicalUrl,
     expectedCanonicalUrl: canonical.validation.expectedCanonicalUrl,
     canonicalBlockers: canonical.validation.blockerLabels,

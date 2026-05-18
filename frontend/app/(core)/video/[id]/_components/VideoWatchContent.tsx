@@ -18,7 +18,6 @@ import { ButtonLink } from '@/components/ui/Button';
 import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import { WatchVideoPlayer } from '@/components/watch/WatchVideoPlayer';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
-import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import {
   FALLBACK_POSTER,
   FALLBACK_THUMB,
@@ -38,7 +37,7 @@ import { VideoWatchSidebar } from './VideoWatchSidebar';
 
 export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
-  const canonical = buildExpectedVideoCanonicalUrl(video.id);
+  const canonical = signals.canonicalUrl;
   const playbackPoster =
     buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ??
     video.thumbUrl ??

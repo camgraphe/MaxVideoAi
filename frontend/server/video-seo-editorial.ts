@@ -11,6 +11,10 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import {
+  buildDefaultVideoSeoCanonicalSlug,
+  normalizeVideoSeoCanonicalSlug,
+} from '@/lib/video-seo-canonical';
+import {
   getDuplicateVideoObjectNames,
   validateVideoSeoEditorialEntry,
   type VideoSeoEditorialQaContext,
@@ -37,6 +41,7 @@ type VideoSeoPageRow = {
   intent: string | null;
   model_slug: string | null;
   examples_slug: string | null;
+  canonical_slug: string | null;
   notes: string | null;
   updated_at: string | null;
   updated_by: string | null;
@@ -46,6 +51,7 @@ type EditableInput = Partial<Omit<VideoSeoEditorialEntry, 'id'>> & {
   id?: string;
   videoId?: string;
   notes?: string | null;
+  allowCanonicalSlugChange?: boolean;
 };
 
 type VideoSeoEditorialUpdateValidationOptions = {
@@ -115,8 +121,22 @@ function isValidSeoIntent(value: unknown): value is VideoSeoIntent {
   return VIDEO_SEO_INTENTS.includes(value as VideoSeoIntent);
 }
 
+function buildFallbackCanonicalSlug(videoId: string, entry: Partial<VideoSeoEditorialEntry>): string {
+  return buildDefaultVideoSeoCanonicalSlug({
+    videoId,
+    title: entry.seoTitle,
+    h1: entry.h1,
+    videoObjectName: entry.videoObjectName,
+    targetKeyword: entry.targetKeyword,
+  });
+}
+
+function resolveCanonicalSlug(videoId: string, entry: Partial<VideoSeoEditorialEntry>, explicit?: unknown): string {
+  return normalizeVideoSeoCanonicalSlug(explicit) || normalizeVideoSeoCanonicalSlug(entry.canonicalSlug) || buildFallbackCanonicalSlug(videoId, entry);
+}
+
 function mapVideoSeoPageRow(row: VideoSeoPageRow): PersistedVideoSeoEditorialEntry {
-  return {
+  const entry = {
     id: row.video_id,
     seoStatus: normalizeVideoSeoStatus(row.seo_status),
     seoTitle: row.seo_title ?? '',
@@ -128,16 +148,22 @@ function mapVideoSeoPageRow(row: VideoSeoPageRow): PersistedVideoSeoEditorialEnt
     intent: normalizeVideoSeoIntent(row.intent),
     modelSlug: row.model_slug ?? '',
     examplesSlug: row.examples_slug ?? '',
-    source: 'database',
+    canonicalSlug: row.canonical_slug ?? '',
+    source: 'database' as const,
     notes: row.notes ?? null,
     updatedAt: row.updated_at ?? null,
     updatedBy: row.updated_by ?? null,
+  };
+  return {
+    ...entry,
+    canonicalSlug: resolveCanonicalSlug(row.video_id, entry, row.canonical_slug),
   };
 }
 
 function withCodeSource(entry: VideoSeoEditorialEntry): PersistedVideoSeoEditorialEntry {
   return {
     ...entry,
+    canonicalSlug: resolveCanonicalSlug(entry.id, entry, entry.canonicalSlug),
     source: 'code',
     notes: null,
     updatedAt: null,
@@ -156,6 +182,7 @@ export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoE
       `
         SELECT video_id, seo_status, seo_title, meta_description, h1, video_object_name,
                short_description, target_keyword, intent, model_slug, examples_slug,
+               to_jsonb(video_seo_pages)->>'canonical_slug' AS canonical_slug,
                notes, updated_at::text AS updated_at, updated_by::text AS updated_by
         FROM video_seo_pages
         ORDER BY updated_at DESC, video_id ASC
@@ -214,6 +241,10 @@ export function buildDraftVideoSeoEditorialEntry(video: GalleryVideo): VideoSeoE
     intent: 'prompt-example',
     modelSlug,
     examplesSlug,
+    canonicalSlug: buildDefaultVideoSeoCanonicalSlug({
+      videoId: video.id,
+      title: `${engineLabel} ${promptSummary}`,
+    }),
   };
 }
 
@@ -223,18 +254,34 @@ export function normalizeVideoSeoEditorialInput(
   fallback?: VideoSeoEditorialEntry | null
 ): VideoSeoEditorialEntry {
   const source = fallback ?? resolveCodeVideoSeoEditorialEntry(videoId);
+  const seoTitle = cleanText(input.seoTitle, source?.seoTitle ?? '');
+  const h1 = cleanText(input.h1, source?.h1 ?? '');
+  const videoObjectName = cleanText(input.videoObjectName, source?.videoObjectName ?? '');
+  const targetKeyword = cleanText(input.targetKeyword, source?.targetKeyword ?? '');
+  const canonicalSlug =
+    normalizeVideoSeoCanonicalSlug(input.canonicalSlug) ||
+    normalizeVideoSeoCanonicalSlug(source?.canonicalSlug) ||
+    buildDefaultVideoSeoCanonicalSlug({
+      videoId,
+      title: seoTitle,
+      h1,
+      videoObjectName,
+      targetKeyword,
+    });
+
   return {
     id: videoId,
     seoStatus: normalizeVideoSeoStatus(input.seoStatus, source?.seoStatus ?? 'draft'),
-    seoTitle: cleanText(input.seoTitle, source?.seoTitle ?? ''),
+    seoTitle,
     metaDescription: cleanText(input.metaDescription, source?.metaDescription ?? ''),
-    h1: cleanText(input.h1, source?.h1 ?? ''),
-    videoObjectName: cleanText(input.videoObjectName, source?.videoObjectName ?? ''),
+    h1,
+    videoObjectName,
     shortDescription: cleanText(input.shortDescription, source?.shortDescription ?? ''),
-    targetKeyword: cleanText(input.targetKeyword, source?.targetKeyword ?? ''),
+    targetKeyword,
     intent: normalizeVideoSeoIntent(input.intent, source?.intent ?? 'prompt-example'),
     modelSlug: cleanText(input.modelSlug, source?.modelSlug ?? ''),
     examplesSlug: cleanText(input.examplesSlug, source?.examplesSlug ?? ''),
+    canonicalSlug,
   };
 }
 
@@ -255,7 +302,20 @@ export function validateVideoSeoEditorialUpdatePayload({
     return { ok: false, error: 'Invalid intent' };
   }
 
-  const entry = normalizeVideoSeoEditorialInput(videoId, payload, fallback);
+  const source = fallback ?? resolveCodeVideoSeoEditorialEntry(videoId);
+  const entry = normalizeVideoSeoEditorialInput(videoId, payload, source);
+  const lockedCanonicalSlug = normalizeVideoSeoCanonicalSlug(source?.canonicalSlug);
+  if (
+    lockedCanonicalSlug &&
+    entry.canonicalSlug !== lockedCanonicalSlug &&
+    payload.allowCanonicalSlugChange !== true
+  ) {
+    return {
+      ok: false,
+      error: 'Canonical slug is locked. Unlock and confirm the canonical URL change before saving.',
+    };
+  }
+
   const duplicateVideoObjectNames =
     qaContext?.duplicateVideoObjectNames ??
     (otherEntries
@@ -301,9 +361,9 @@ export async function upsertVideoSeoEditorialEntry(
     `
       INSERT INTO video_seo_pages (
         video_id, seo_status, seo_title, meta_description, h1, video_object_name,
-        short_description, target_keyword, intent, model_slug, examples_slug, notes, updated_by
+        short_description, target_keyword, intent, model_slug, examples_slug, canonical_slug, notes, updated_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::uuid)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::uuid)
       ON CONFLICT (video_id) DO UPDATE SET
         seo_status = EXCLUDED.seo_status,
         seo_title = EXCLUDED.seo_title,
@@ -315,11 +375,12 @@ export async function upsertVideoSeoEditorialEntry(
         intent = EXCLUDED.intent,
         model_slug = EXCLUDED.model_slug,
         examples_slug = EXCLUDED.examples_slug,
+        canonical_slug = EXCLUDED.canonical_slug,
         notes = EXCLUDED.notes,
         updated_by = EXCLUDED.updated_by,
         updated_at = NOW()
       RETURNING video_id, seo_status, seo_title, meta_description, h1, video_object_name,
-                short_description, target_keyword, intent, model_slug, examples_slug,
+                short_description, target_keyword, intent, model_slug, examples_slug, canonical_slug,
                 notes, updated_at::text AS updated_at, updated_by::text AS updated_by
     `,
     [
@@ -334,6 +395,7 @@ export async function upsertVideoSeoEditorialEntry(
       entry.intent,
       entry.modelSlug,
       entry.examplesSlug,
+      entry.canonicalSlug ?? '',
       notes ?? null,
       updatedBy ?? null,
     ]

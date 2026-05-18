@@ -6,6 +6,7 @@ import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { getSeoVideoById } from '@/server/videos';
 import {
   listVideoSeoEditorialEntries,
+  normalizeVideoSeoEditorialInput,
   upsertVideoSeoEditorialEntry,
   validateVideoSeoEditorialUpdatePayload,
 } from '@/server/video-seo-editorial';
@@ -47,8 +48,10 @@ export async function PUT(req: NextRequest, props: RouteParams) {
     const fallback = entries.find((entry) => entry.id === videoId) ?? null;
     const stableVideoAsset = isStablePublicMediaUrl(video?.videoUrl);
     const stableThumbnailAsset = isStablePublicMediaUrl(video?.thumbUrl);
+    const editablePayload = payload as Parameters<typeof normalizeVideoSeoEditorialInput>[1];
     const hasInternalLinkTargets = validationTargetHasInternalLinks(payload as Record<string, unknown>);
-    const canonicalUrl = buildExpectedVideoCanonicalUrl(videoId);
+    const provisionalEntry = normalizeVideoSeoEditorialInput(videoId, editablePayload, fallback);
+    const canonicalUrl = buildExpectedVideoCanonicalUrl(videoId, provisionalEntry.canonicalSlug);
     const canonicalTargetIndexable = Boolean(
       video?.videoUrl &&
         video?.thumbUrl &&

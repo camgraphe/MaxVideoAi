@@ -24,10 +24,6 @@ function formatSitemapDate(value?: string | number | Date | null): string | null
   return date.toISOString().slice(0, 10);
 }
 
-function buildVideoLoc(id: string): string {
-  return `${SITE}/video/${encodeURIComponent(id)}`;
-}
-
 export async function generateVideoSitemapResponse(): Promise<NextResponse> {
   if (!isDatabaseConfigured()) {
     return new NextResponse('Database unavailable', { status: 503 });
@@ -38,7 +34,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
 
     const urls = watchVideos
       .map(({ entry, video, signals }) => {
-        const loc = buildVideoLoc(entry.id);
+        const loc = signals.canonicalUrl || `${SITE}/video/${encodeURIComponent(entry.id)}`;
         const escapedLoc = escapeXml(loc);
         const lastModified = formatSitemapDate(entry.publishedAt || video.createdAt);
 

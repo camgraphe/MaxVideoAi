@@ -67,6 +67,7 @@ export type WatchPageDerivedSignals = {
   metaTitle: string;
   metaDescription: string;
   videoObjectName: string;
+  canonicalSlug: string | null;
   canonicalUrl: string;
   expectedCanonicalUrl: string;
   canonicalBlockers: string[];

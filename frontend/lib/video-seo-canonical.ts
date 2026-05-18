@@ -32,6 +32,7 @@ const CANONICAL_BLOCKER_LABELS: Record<VideoSeoCanonicalBlocker, string> = {
 
 const PRIVATE_CANONICAL_PATH_PATTERN = /^\/(?:api|admin|app|billing|connect|dashboard|generate|jobs|settings)(?:\/|$)/i;
 const PRODUCTION_CANONICAL_HOST = new URL(CANONICAL_PRODUCTION_ORIGIN).hostname.toLowerCase();
+const MAX_VIDEO_CANONICAL_SLUG_LENGTH = 96;
 
 function uniqueBlockers(blockers: VideoSeoCanonicalBlocker[]): VideoSeoCanonicalBlocker[] {
   return Array.from(new Set(blockers));
@@ -43,8 +44,85 @@ function hasCanonicalConflicts(value: VideoSeoCanonicalValidationInput['canonica
   return value.length > 0;
 }
 
-export function buildExpectedVideoCanonicalUrl(videoId: string): string {
-  return `${CANONICAL_PRODUCTION_ORIGIN}/video/${encodeURIComponent(videoId)}`;
+function trimSlug(value: string): string {
+  return value
+    .slice(0, MAX_VIDEO_CANONICAL_SLUG_LENGTH)
+    .replace(/-+$/g, '')
+    .replace(/^-+/g, '');
+}
+
+function getShortVideoId(videoId: string): string {
+  const normalized = videoId.replace(/^job[_-]/i, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+  return normalized.slice(0, 8) || 'video';
+}
+
+function decodeIdentifier(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+export function normalizeVideoSeoCanonicalSlug(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  const normalized = value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\bmax\s*video\s*ai\b/gi, ' ')
+    .replace(/&/g, ' and ')
+    .replace(/['’]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+  if (/^job-[a-z0-9-]+$/i.test(normalized)) return '';
+  return trimSlug(normalized);
+}
+
+export function buildDefaultVideoSeoCanonicalSlug(input: {
+  videoId: string;
+  title?: string | null;
+  h1?: string | null;
+  videoObjectName?: string | null;
+  targetKeyword?: string | null;
+}): string {
+  const source =
+    input.title?.trim() ||
+    input.h1?.trim() ||
+    input.videoObjectName?.trim() ||
+    input.targetKeyword?.trim() ||
+    'video example';
+  const base = normalizeVideoSeoCanonicalSlug(source) || 'video-example';
+  const suffix = getShortVideoId(input.videoId);
+  if (base.endsWith(`-${suffix}`)) return base;
+
+  const suffixWithDash = `-${suffix}`;
+  const safeBase = trimSlug(base.slice(0, Math.max(1, MAX_VIDEO_CANONICAL_SLUG_LENGTH - suffixWithDash.length)));
+  return `${safeBase || 'video-example'}${suffixWithDash}`;
+}
+
+export function buildVideoWatchPath(videoId: string, canonicalSlug?: string | null): string {
+  const identifier = normalizeVideoSeoCanonicalSlug(canonicalSlug) || videoId;
+  return `/video/${encodeURIComponent(identifier)}`;
+}
+
+export function buildExpectedVideoCanonicalUrl(videoId: string, canonicalSlug?: string | null): string {
+  return `${CANONICAL_PRODUCTION_ORIGIN}${buildVideoWatchPath(videoId, canonicalSlug)}`;
+}
+
+export function getVideoCanonicalRedirectPath(input: {
+  requestedIdentifier: string;
+  videoId: string;
+  canonicalSlug?: string | null;
+  isEligible: boolean;
+}): string | null {
+  if (!input.isEligible) return null;
+  const canonicalSlug = normalizeVideoSeoCanonicalSlug(input.canonicalSlug);
+  if (!canonicalSlug) return null;
+  const requested = normalizeVideoSeoCanonicalSlug(decodeIdentifier(input.requestedIdentifier));
+  if (requested === canonicalSlug) return null;
+  return buildVideoWatchPath(input.videoId, canonicalSlug);
 }
 
 export function validateVideoSeoCanonical(input: VideoSeoCanonicalValidationInput): VideoSeoCanonicalValidationResult {

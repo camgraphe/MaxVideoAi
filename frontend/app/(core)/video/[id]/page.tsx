@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { cache } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getVideoWatchPageDataById } from '@/server/video-seo';
-import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
+import { buildExpectedVideoCanonicalUrl, getVideoCanonicalRedirectPath } from '@/lib/video-seo-canonical';
 import { VideoUnavailableState } from './_components/VideoUnavailableState';
 import { VideoWatchContent } from './_components/VideoWatchContent';
 import {
@@ -25,7 +25,7 @@ export const revalidate = 1800;
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params;
   const page = await getWatchPageData(params.id);
-  const canonical = buildExpectedVideoCanonicalUrl(params.id);
+  const canonical = page?.isEligible ? page.signals.canonicalUrl : buildExpectedVideoCanonicalUrl(page?.video.id ?? params.id);
 
   if (!isRenderable(page)) {
     return {
@@ -76,6 +76,16 @@ export default async function VideoPage(props: PageProps) {
   if (!page) notFound();
 
   const backHref = page.signals.parentPath ?? page.signals.modelPath ?? '/examples';
+  const redirectPath = getVideoCanonicalRedirectPath({
+    requestedIdentifier: params.id,
+    videoId: page.video.id,
+    canonicalSlug: page.signals.canonicalSlug,
+    isEligible: page.isEligible,
+  });
+  if (redirectPath) {
+    permanentRedirect(redirectPath);
+  }
+
   if (!isRenderable(page)) {
     return <VideoUnavailableState backHref={backHref} />;
   }

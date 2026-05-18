@@ -2,7 +2,7 @@ import { Eye, Film, Radar, ShieldCheck } from 'lucide-react';
 import type { AdminMetricItem } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { isStablePublicMediaUrl } from '@/lib/media';
 import { countEditorialWords } from '@/lib/video-seo-editorial-qa';
-import { buildExpectedVideoCanonicalUrl, validateVideoSeoCanonical } from '@/lib/video-seo-canonical';
+import { buildExpectedVideoCanonicalUrl, buildVideoWatchPath, validateVideoSeoCanonical } from '@/lib/video-seo-canonical';
 import type { SeoWatchVideoMeta, SeoWatchVideoRow } from '@/server/video-seo';
 import type { GalleryVideo } from '@/server/videos';
 import type { PersistedVideoSeoEditorialEntry } from '@/server/video-seo-editorial';
@@ -67,9 +67,10 @@ function uniqueList(values: string[]): string[] {
 }
 
 export function buildWatchRow({ entry, video, editorial, isEligible, signals, related }: SeoWatchVideoRow): WatchRow {
-  const watchPath = buildWatchPath(entry.id);
   const technicalEligibilityBlockers: string[] = [];
   const generatedSignals = signals;
+  const canonicalSlug = generatedSignals?.canonicalSlug ?? editorial?.canonicalSlug ?? null;
+  const watchPath = buildWatchPath(entry.id, canonicalSlug);
   const relatedCount = related.length;
   const parentPath = generatedSignals?.parentPath ?? null;
   const modelPath = generatedSignals?.modelPath ?? (editorial?.modelSlug ? `/models/${editorial.modelSlug}` : null);
@@ -78,7 +79,7 @@ export function buildWatchRow({ entry, video, editorial, isEligible, signals, re
   const stableVideoAsset = isStablePublicMediaUrl(video?.videoUrl);
   const stableThumbnailAsset = isStablePublicMediaUrl(video?.thumbUrl);
   const internalLinkTargets = Boolean(modelPath && examplesPath && parentPath);
-  const expectedCanonicalUrl = buildExpectedVideoCanonicalUrl(entry.id);
+  const expectedCanonicalUrl = buildExpectedVideoCanonicalUrl(entry.id, canonicalSlug);
   const canonicalUrl = generatedSignals?.canonicalUrl ?? expectedCanonicalUrl;
   const canonicalTargetIndexable = Boolean(
     video?.videoUrl &&
@@ -236,8 +237,8 @@ export function buildVideoSeoSummary(rows: WatchRow[]) {
   };
 }
 
-export function buildWatchPath(id: string): string {
-  return `/video/${encodeURIComponent(id)}`;
+export function buildWatchPath(id: string, canonicalSlug?: string | null): string {
+  return buildVideoWatchPath(id, canonicalSlug);
 }
 
 export function formatDate(value?: string | null): string {

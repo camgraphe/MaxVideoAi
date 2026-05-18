@@ -3,6 +3,7 @@ import { type SeoWatchVideoConfig, VIDEO_SEO_WATCHLIST } from '@/config/video-se
 import type { VideoSeoEditorialEntry, VideoSeoIntent } from '@/config/video-seo-editorial';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { normalizeVideoSeoCanonicalSlug } from '@/lib/video-seo-canonical';
 import { getDuplicateVideoObjectNames } from '@/lib/video-seo-editorial-qa';
 import {
   listVideoSeoEditorialEntryMap,
@@ -45,6 +46,14 @@ export type VideoWatchPageData = {
   isSelected: boolean;
   isEligible: boolean;
 };
+
+function decodeIdentifier(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
 function isEligibleSeoWatchVideo(video: GalleryVideo | null): video is GalleryVideo {
   if (!video) return false;
@@ -202,11 +211,14 @@ export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWa
 }
 
 export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchPageData | null> {
-  const video = await getSeoVideoById(id);
+  const selectedRows = await listSeoWatchVideoRows();
+  const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
+  const selectedRow =
+    selectedRows.find((row) => row.entry.id === id || (requestedSlug && row.signals?.canonicalSlug === requestedSlug)) ?? null;
+  const resolvedId = selectedRow?.entry.id ?? id;
+  const video = selectedRow?.video ?? (await getSeoVideoById(resolvedId));
   if (!video) return null;
 
-  const selectedRows = await listSeoWatchVideoRows();
-  const selectedRow = selectedRows.find((row) => row.entry.id === id) ?? null;
   const entry = selectedRow?.entry ?? null;
   const signals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video });
   const candidateRows = selectedRows.flatMap((row) => {

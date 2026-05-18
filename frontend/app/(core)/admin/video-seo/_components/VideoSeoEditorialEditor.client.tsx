@@ -20,6 +20,12 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [canonicalSlugUnlocked, setCanonicalSlugUnlocked] = useState(false);
+  const [confirmCanonicalSlugChange, setConfirmCanonicalSlugChange] = useState(false);
+  const existingCanonicalSlug = editorial.canonicalSlug?.trim() ?? '';
+  const draftCanonicalSlug = draft.canonicalSlug?.trim() ?? '';
+  const hasExistingCanonicalSlug = existingCanonicalSlug.length > 0;
+  const canonicalSlugChanged = hasExistingCanonicalSlug && draftCanonicalSlug !== existingCanonicalSlug;
 
   function updateField(field: keyof VideoSeoEditorialEntry, value: string) {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -31,11 +37,20 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
     setMessage(null);
     setError(null);
 
+    if (canonicalSlugChanged && (!canonicalSlugUnlocked || !confirmCanonicalSlugChange)) {
+      setSaving(false);
+      setError('Canonical slug is locked. Unlock it and confirm the canonical URL change before saving.');
+      return;
+    }
+
     try {
       const response = await authFetch(`/api/admin/video-seo/${encodeURIComponent(draft.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(draft),
+        body: JSON.stringify({
+          ...draft,
+          allowCanonicalSlugChange: canonicalSlugChanged && canonicalSlugUnlocked && confirmCanonicalSlugChange,
+        }),
       });
       const json = await response.json().catch(() => null);
       if (!response.ok || !json?.ok) {
@@ -43,6 +58,8 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
       }
       if (json.editorial) {
         setDraft(json.editorial);
+        setCanonicalSlugUnlocked(false);
+        setConfirmCanonicalSlugChange(false);
       }
       setMessage('Editorial page saved. Sitemap inclusion will still depend on QA.');
       startTransition(() => router.refresh());
@@ -71,6 +88,44 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
         <TextField label="Target keyword" value={draft.targetKeyword} onChange={(value) => updateField('targetKeyword', value)} />
         <TextField label="Model slug" value={draft.modelSlug} onChange={(value) => updateField('modelSlug', value)} />
         <TextField label="Examples slug" value={draft.examplesSlug} onChange={(value) => updateField('examplesSlug', value)} />
+        <div className="md:col-span-2">
+          <TextField
+            label="Canonical slug"
+            value={draft.canonicalSlug ?? ''}
+            disabled={hasExistingCanonicalSlug && !canonicalSlugUnlocked}
+            onChange={(value) => updateField('canonicalSlug', value)}
+          />
+          {hasExistingCanonicalSlug ? (
+            <div className="mt-2 space-y-2 rounded-input border border-hairline bg-bg/60 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-text-muted">
+                  Existing slug is locked to avoid accidental canonical URL changes.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCanonicalSlugUnlocked((current) => !current);
+                    setConfirmCanonicalSlugChange(false);
+                  }}
+                  className="text-xs font-semibold text-text-primary underline-offset-2 hover:underline"
+                >
+                  {canonicalSlugUnlocked ? 'Lock slug' : 'Unlock slug'}
+                </button>
+              </div>
+              {canonicalSlugUnlocked ? (
+                <label className="flex items-start gap-2 text-xs text-text-secondary">
+                  <input
+                    type="checkbox"
+                    checked={confirmCanonicalSlugChange}
+                    onChange={(event) => setConfirmCanonicalSlugChange(event.currentTarget.checked)}
+                    className="mt-0.5"
+                  />
+                  <span>I confirm this may change the indexed canonical URL and require Google to recrawl the video page.</span>
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
         <TextField label="VideoObject.name" value={draft.videoObjectName} onChange={(value) => updateField('videoObjectName', value)} />
       </div>
       <TextField label="SEO title" value={draft.seoTitle} onChange={(value) => updateField('seoTitle', value)} />
@@ -93,10 +148,12 @@ function TextField({
   label,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
@@ -104,7 +161,8 @@ function TextField({
       <input
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
-        className="mt-1 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm normal-case tracking-normal text-text-primary outline-none transition focus:border-border-hover focus:ring-2 focus:ring-ring/30"
+        disabled={disabled}
+        className="mt-1 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm normal-case tracking-normal text-text-primary outline-none transition focus:border-border-hover focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
       />
     </label>
   );

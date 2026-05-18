@@ -118,9 +118,11 @@ test('watch page rendering and sitemap depend on editorial approval', () => {
   assert.match(contentSource, /name: signals\.videoObjectName/, 'VideoObject.name should use editorial copy');
   assert.match(contentSource, /description: signals\.metaDescription/, 'VideoObject.description should align with OG metadata');
   assert.match(contentSource, /page\.entry\?\.publishedAt \?\? video\.createdAt/, 'VideoObject.uploadDate should align with sitemap publication date');
-  assert.match(contentSource, /buildExpectedVideoCanonicalUrl\(video\.id\)/, 'VideoObject URL should use the production watch canonical');
-  assert.match(pageSource, /buildExpectedVideoCanonicalUrl\(params\.id\)/, 'metadata canonical should use the production watch canonical');
+  assert.match(contentSource, /const canonical = signals\.canonicalUrl/, 'VideoObject URL should use the derived production watch canonical');
+  assert.match(pageSource, /getVideoCanonicalRedirectPath/, 'watch page should redirect legacy job URLs to approved canonical slugs');
+  assert.match(pageSource, /page\?\.isEligible \? page\.signals\.canonicalUrl/, 'metadata canonical should use slugged canonicals for eligible pages');
   assert.match(sitemapSource, /signals\.videoObjectName/, 'video sitemap title should align with VideoObject.name');
   assert.match(sitemapSource, /signals\.metaDescription/, 'video sitemap description should align with page metadata');
+  assert.match(sitemapSource, /signals\.canonicalUrl/, 'video sitemap loc should use the derived canonical URL');
   assert.match(sitemapSource, /listEligibleSeoWatchVideos/, 'sitemap should use eligible rows instead of a direct toggle');
 });

@@ -31,6 +31,7 @@ export type VideoSeoEditorialEntry = {
   intent: VideoSeoIntent;
   modelSlug: string;
   examplesSlug: string;
+  canonicalSlug?: string;
 };
 
 export const VIDEO_SEO_EDITORIAL_ENTRIES = [

@@ -3,12 +3,13 @@ import type { GalleryVideo } from '@/server/videos';
 
 export function buildWatchPageCanonicalState(params: {
   video: GalleryVideo;
+  canonicalSlug?: string | null;
   stableVideoAsset: boolean;
   stableThumbnailAsset: boolean;
   hasInternalLinkTargets: boolean;
 }) {
-  const { video, stableVideoAsset, stableThumbnailAsset, hasInternalLinkTargets } = params;
-  const canonicalUrl = buildExpectedVideoCanonicalUrl(video.id);
+  const { video, canonicalSlug, stableVideoAsset, stableThumbnailAsset, hasInternalLinkTargets } = params;
+  const canonicalUrl = buildExpectedVideoCanonicalUrl(video.id, canonicalSlug);
   const canonicalTargetIndexable = Boolean(
     video.videoUrl &&
       video.thumbUrl &&
