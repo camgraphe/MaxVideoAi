@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
+import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { isStorageConfigured, uploadFileBuffer } from '@/server/storage';
 
 type EnsureJobPreviewVideoOptions = {
@@ -129,6 +130,7 @@ export async function ensureJobPreviewVideo(options: EnsureJobPreviewVideoOption
 
   const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) return null;
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
@@ -165,7 +167,7 @@ export async function ensureJobPreviewVideo(options: EnsureJobPreviewVideoOption
     const inputPath = path.join(tempDir, 'source.mp4');
     const outputPath = path.join(tempDir, 'preview.mp4');
     await writeFile(inputPath, buffer);
-    await runPreviewFfmpeg(ffmpegPath, inputPath, outputPath);
+    await runPreviewFfmpeg(executableFfmpegPath, inputPath, outputPath);
     const preview = await readFile(outputPath);
     if (!preview.length) return null;
 

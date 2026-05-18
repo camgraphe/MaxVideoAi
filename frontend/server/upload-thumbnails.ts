@@ -7,6 +7,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 
 import { normalizeMediaUrl } from '@/lib/media';
+import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadImageToStorage } from '@/server/storage';
 
 const requireForRuntime = createRequire(import.meta.url);
@@ -86,6 +87,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
 
   const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) return null;
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-upload-thumb-'));
   const inputPath = path.join(tempDir, 'source');
@@ -93,7 +95,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
 
   try {
     await writeFile(inputPath, params.data);
-    await runFfmpeg(ffmpegPath, inputPath, outputPath);
+    await runFfmpeg(executableFfmpegPath, inputPath, outputPath);
     const thumb = await readFile(outputPath);
     if (!thumb.length) return null;
 

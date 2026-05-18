@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
+import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { isStorageConfigured, uploadFileBuffer } from '@/server/storage';
 
 export type JobKeyframeUrls = {
@@ -144,6 +145,7 @@ export async function ensureJobKeyframes(options: EnsureJobKeyframesOptions): Pr
 
   const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) return null;
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
@@ -183,7 +185,7 @@ export async function ensureJobKeyframes(options: EnsureJobKeyframesOptions): Pr
     const result: JobKeyframeUrls = {};
     for (const spec of buildKeyframeSpecs(options.durationSec)) {
       const outputPath = path.join(tempDir, spec.fileName);
-      await runKeyframeFfmpeg(ffmpegPath, inputPath, outputPath, spec.seekSec);
+      await runKeyframeFfmpeg(executableFfmpegPath, inputPath, outputPath, spec.seekSec);
       const data = await readFile(outputPath);
       if (!data.length) return null;
       const upload = await uploadFileBuffer({

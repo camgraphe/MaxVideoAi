@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { detectHasAudioStream, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { ensureJobThumbnail } from '@/server/thumbnails';
+import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadFileBuffer } from '@/server/storage';
 import type { AudioIntensity } from '@/lib/audio-generation';
 
@@ -212,6 +213,7 @@ export async function mixAudioTracks(params: MixAudioTracksParams): Promise<Buff
   if (!ffmpegPath) {
     throw new Error('ffmpeg is not available');
   }
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const stems = [
     params.soundDesignUrl ? { url: params.soundDesignUrl, fileName: 'sound.bin' } : null,
@@ -260,7 +262,7 @@ export async function mixAudioTracks(params: MixAudioTracksParams): Promise<Buff
     ];
 
     await new Promise<void>((resolve, reject) => {
-      execFile(ffmpegPath, args, (error) => {
+      execFile(executableFfmpegPath, args, (error) => {
         if (error) {
           reject(error);
           return;
@@ -283,6 +285,7 @@ export async function muxAudioBufferIntoVideo(params: {
   if (!ffmpegPath) {
     throw new Error('ffmpeg is not available');
   }
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-audio-mux-'));
   const sourcePath = path.join(tempDir, 'source.mp4');
@@ -316,7 +319,7 @@ export async function muxAudioBufferIntoVideo(params: {
     ];
 
     await new Promise<void>((resolve, reject) => {
-      execFile(ffmpegPath, args, (error) => {
+      execFile(executableFfmpegPath, args, (error) => {
         if (error) {
           reject(error);
           return;

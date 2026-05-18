@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { uploadImageToStorage, type UploadResult } from '@/server/storage';
 import { normalizeMediaUrl } from '@/lib/media';
+import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 
 const PLACEHOLDER_PREFIX = '/assets/frames/';
 const requireForRuntime = createRequire(import.meta.url);
@@ -112,6 +113,7 @@ async function captureThumbnailFromVideo(params: {
     console.warn('[thumbnails] ffmpeg binary path not resolved');
     return null;
   }
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
 
   const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-thumb-'));
   const inputPath = path.join(tempDir, 'source');
@@ -136,7 +138,7 @@ async function captureThumbnailFromVideo(params: {
     let success = false;
     for (const seek of seeks) {
       try {
-        await runFfmpeg(ffmpegPath, inputPath, outputPath, seek, params.aspectRatio);
+        await runFfmpeg(executableFfmpegPath, inputPath, outputPath, seek, params.aspectRatio);
         success = true;
         break;
       } catch (error) {
