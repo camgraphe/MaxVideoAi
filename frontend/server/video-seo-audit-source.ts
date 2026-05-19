@@ -43,6 +43,7 @@ function buildAuditMeta(options: {
     reasonForSelection: editorial?.seoStatus === 'approved' ? 'Approved editorial SEO watch page.' : `Editorial SEO status: ${editorial?.seoStatus ?? 'candidate'}.`,
     priority: base?.priority ?? 0,
     publishedAt: base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
+    modifiedAt: editorial?.updatedAt ?? base?.modifiedAt ?? base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
     watchPageEligible: base?.watchPageEligible,
     videoPrimaryIntent: base?.videoPrimaryIntent,
     exampleFamily: examplesSlug || base?.exampleFamily,

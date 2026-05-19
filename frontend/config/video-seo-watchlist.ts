@@ -11,6 +11,7 @@ export type SeoWatchVideoConfig = {
   reasonForSelection: string;
   priority: number;
   publishedAt: string;
+  modifiedAt?: string | null;
   watchPageEligible?: boolean;
   videoPrimaryIntent?:
     | 'image-to-video'

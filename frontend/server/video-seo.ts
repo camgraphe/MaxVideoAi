@@ -78,10 +78,14 @@ function toWatchPrimaryIntent(intent?: VideoSeoIntent | null): SeoWatchVideoConf
   return intent;
 }
 
+type EditorialMetaSource = VideoSeoEditorialEntry & {
+  updatedAt?: string | null;
+};
+
 function buildMetaFromEditorial(options: {
   id: string;
   base?: SeoWatchVideoConfig | null;
-  editorial?: VideoSeoEditorialEntry | null;
+  editorial?: EditorialMetaSource | null;
   video?: GalleryVideo | null;
 }): SeoWatchVideoMeta {
   const { id, base, editorial, video } = options;
@@ -110,6 +114,7 @@ function buildMetaFromEditorial(options: {
         : `Editorial SEO status: ${editorial?.seoStatus ?? 'candidate'}.`,
     priority: base?.priority ?? 0,
     publishedAt: base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
+    modifiedAt: editorial?.updatedAt ?? base?.modifiedAt ?? base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
     watchPageEligible: base?.watchPageEligible,
     videoPrimaryIntent: toWatchPrimaryIntent(editorial?.intent) ?? base?.videoPrimaryIntent,
     exampleFamily: examplesSlug || base?.exampleFamily,

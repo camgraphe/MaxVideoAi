@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import modelRoster from '@/config/model-roster.json';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import { listEligibleSeoWatchVideos } from '@/server/video-seo';
+import { resolveVideoSitemapDates } from '@/server/sitemaps/video-dates';
 import { MODEL_CONTENT_ROOT } from './model-locales';
 
 const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.routes ?? {}));
@@ -115,7 +116,7 @@ export async function getVideoSitemapLastModified(): Promise<string | undefined>
   const watchVideos = await listEligibleSeoWatchVideos();
   return getLatestEntryDate(
     watchVideos.map(({ entry, video }) => ({
-      lastModified: formatLastModified(entry.publishedAt || video.createdAt),
+      lastModified: resolveVideoSitemapDates(entry, video).lastModified ?? undefined,
     }))
   );
 }

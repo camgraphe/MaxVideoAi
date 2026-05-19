@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { listEligibleSeoWatchVideos } from '@/server/video-seo';
+import { resolveVideoSitemapDates } from './video-dates';
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
 
@@ -11,17 +12,6 @@ function escapeXml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
-}
-
-function formatSitemapDate(value?: string | number | Date | null): string | null {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString().slice(0, 10);
 }
 
 export async function generateVideoSitemapResponse(): Promise<NextResponse> {
@@ -36,16 +26,19 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
       .map(({ entry, video, signals }) => {
         const loc = signals.canonicalUrl || `${SITE}/video/${encodeURIComponent(entry.id)}`;
         const escapedLoc = escapeXml(loc);
-        const lastModified = formatSitemapDate(entry.publishedAt || video.createdAt);
+        const dates = resolveVideoSitemapDates(entry, video);
 
         const parts = ['<url>', `<loc>${escapedLoc}</loc>`];
-        if (lastModified) {
-          parts.push(`<lastmod>${escapeXml(lastModified)}</lastmod>`);
+        if (dates.lastModified) {
+          parts.push(`<lastmod>${escapeXml(dates.lastModified)}</lastmod>`);
         }
 
         const description = signals.metaDescription.replace(/\s+/g, ' ').trim();
         const duration = Math.max(0, Math.floor(signals.durationSec ?? video.durationSec ?? 0));
-        const publicationDate = new Date(entry.publishedAt || video.createdAt).toISOString();
+        const publicationDate = dates.publicationDate;
+        if (!publicationDate) {
+          return null;
+        }
         const contentUrl = video.videoUrl ?? loc;
         const thumbUrl = video.thumbUrl ?? video.videoUrl ?? loc;
         const keywords = [
@@ -76,6 +69,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
         );
         return parts.join('');
       })
+      .filter((value): value is string => Boolean(value))
       .join('');
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n${urls}\n</urlset>`;
