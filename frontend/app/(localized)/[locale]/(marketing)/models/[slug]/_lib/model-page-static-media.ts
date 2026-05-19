@@ -32,7 +32,7 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     demo: 'job_b8db408a-7b09-4268-ad10-48e9cb8fc4a7',
   },
   'kling-3-pro': {
-    hero: 'job_665a317f-f4dc-41c8-ade4-4a0a891627c8',
+    hero: 'job_d95edc94-9708-49ac-b3d8-b0dada10a609',
     demo: 'job_3092cc94-f948-42e8-abd0-744534f5b38e',
   },
   'kling-3-standard': {
@@ -56,7 +56,7 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     demo: 'job_cd3036e6-a6a3-4f4a-b139-0c7a31a918f2',
   },
   'ltx-2-3-pro': {
-    hero: 'job_2a07e085-4764-4e9b-8850-c3941dbf303a',
+    hero: 'job_37043493-5971-46a9-96aa-ccf4cf09d0f0',
     demo: 'job_ff7bf5c5-44f2-4d8d-92a6-851ecc5a59ab',
   },
   'ltx-2-3-fast': {
