@@ -38,7 +38,7 @@ export function MediaPreview({
   altContext?: string;
   autoPlayDelayMs?: number;
   waitForLcp?: boolean;
-  showPlayButton?: boolean;
+  showPlayButton?: boolean | 'when-autoplay-disabled';
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
 }) {

@@ -59,7 +59,7 @@ export function ModelDecisionMediaCard({
             sizes="(max-width: 768px) 100vw, 760px"
             autoPlayDelayMs={250}
             waitForLcp
-            showPlayButton={false}
+            showPlayButton="when-autoplay-disabled"
             priority
             fetchPriority="high"
             quality={80}
@@ -84,10 +84,10 @@ export function ModelDecisionMediaCard({
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.12)_0%,rgba(8,23,45,0)_42%,rgba(8,23,45,0.62)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.20)_0%,rgba(3,7,18,0.06)_42%,rgba(3,7,18,0.72)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.08)_0%,rgba(8,23,45,0)_46%,rgba(8,23,45,0.48)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.14)_0%,rgba(3,7,18,0.04)_46%,rgba(3,7,18,0.58)_100%)]" />
 
         {leadingBadge ? (
-          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[#142238]/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[rgba(20,34,56,0.88)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
             <UIIcon icon={LeadingBadgeIcon} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
             {leadingBadge}
           </span>
@@ -95,32 +95,32 @@ export function ModelDecisionMediaCard({
 
         <div className="absolute right-5 top-5 flex items-center gap-2">
           {durationBadge ? (
-            <span className="rounded-xl bg-[#142238]/82 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+            <span className="rounded-xl bg-[rgba(20,34,56,0.82)] px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
               {durationBadge}
             </span>
           ) : null}
           {ratioBadge ? (
-            <span className="rounded-xl bg-[#142238]/82 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+            <span className="rounded-xl bg-[rgba(20,34,56,0.82)] px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
               {ratioBadge}
             </span>
           ) : null}
         </div>
-
-        <figcaption className="absolute bottom-4 left-4 max-w-[min(310px,calc(100%-150px))] rounded-[10px] border border-white/14 bg-[#07111f]/70 px-4 py-3 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] backdrop-blur-md">
-          <p className="text-sm font-semibold leading-tight">{label}</p>
-          <p className="mt-0.5 text-xs leading-5 text-white/74">{description}</p>
-        </figcaption>
-
-        {media.href ? (
-          <Link
-            href={media.href}
-            className="absolute bottom-5 right-5 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white/14 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(0,0,0,0.24)] backdrop-blur transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-          >
-            <span>{renderLinkLabel}</span>
-            <UIIcon icon={ExternalLink} size={15} />
-          </Link>
-        ) : null}
       </div>
+
+      <figcaption className="border-t border-white/[0.12] bg-[#07111f] px-4 py-3 text-white sm:absolute sm:bottom-4 sm:left-4 sm:max-w-[min(310px,calc(100%-150px))] sm:rounded-[10px] sm:border sm:border-white/[0.14] sm:bg-[#07111f]/70 sm:shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:backdrop-blur-md">
+        <p className="text-sm font-semibold leading-tight">{label}</p>
+        <p className="mt-0.5 text-xs leading-5 text-white/74">{description}</p>
+      </figcaption>
+
+      {media.href ? (
+        <Link
+          href={media.href}
+          className="mx-4 mb-4 flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white/[0.12] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(0,0,0,0.24)] backdrop-blur transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:absolute sm:bottom-5 sm:right-5 sm:mx-0 sm:mb-0 sm:inline-flex sm:bg-white/[0.14]"
+        >
+          <span>{renderLinkLabel}</span>
+          <UIIcon icon={ExternalLink} size={15} />
+        </Link>
+      ) : null}
     </figure>
   );
 }

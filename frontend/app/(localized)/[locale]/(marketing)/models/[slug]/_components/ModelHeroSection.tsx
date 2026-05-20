@@ -237,7 +237,7 @@ export function ModelHeroSection({
                     altContext={mediaAltContexts.hero}
                     autoPlayDelayMs={HERO_AUTOPLAY_DELAY_MS}
                     waitForLcp
-                    showPlayButton={false}
+                    showPlayButton="when-autoplay-disabled"
                     priority
                     fetchPriority="high"
                   />

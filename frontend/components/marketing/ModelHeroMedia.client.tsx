@@ -12,7 +12,7 @@ type ModelHeroMediaProps = {
   sizes: string;
   autoPlayDelayMs?: number;
   waitForLcp?: boolean;
-  showPlayButton?: boolean;
+  showPlayButton?: boolean | 'when-autoplay-disabled';
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
   quality?: number;
@@ -51,6 +51,7 @@ export function ModelHeroMedia({
   const lcpReadyRef = useRef(false);
   const lcpObserverRef = useRef<PerformanceObserver | null>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [autoPlayDisabled, setAutoPlayDisabled] = useState(false);
 
   const clearScheduledLoad = useCallback(() => {
     if (idleIdRef.current != null) {
@@ -94,7 +95,9 @@ export function ModelHeroMedia({
     if (!videoSrc) return;
     if (!autoPlayDelayMs || autoPlayDelayMs <= 0) return;
     if (shouldLoadVideo) return;
-    if (shouldDisableAutoPlay()) return;
+    const isAutoPlayDisabled = shouldDisableAutoPlay();
+    setAutoPlayDisabled(isAutoPlayDisabled);
+    if (isAutoPlayDisabled) return;
     if (timerIdRef.current != null) return;
     lcpReadyRef.current = false;
 
@@ -173,6 +176,10 @@ export function ModelHeroMedia({
   const mediaClassName = ['absolute inset-0 h-full w-full object-cover', objectClassName].filter(Boolean).join(' ');
   const normalizedVideoSrc = (videoSrc ?? '').toLowerCase();
   const sourceType = normalizedVideoSrc.includes('.webm') ? 'video/webm' : 'video/mp4';
+  const shouldShowPlayButton =
+    videoSrc &&
+    !shouldLoadVideo &&
+    (showPlayButton === true || (showPlayButton === 'when-autoplay-disabled' && autoPlayDisabled));
 
   return (
     <div className={className}>
@@ -207,13 +214,13 @@ export function ModelHeroMedia({
           <source src={videoSrc} type={sourceType} />
         </video>
       ) : null}
-      {videoSrc && !shouldLoadVideo && showPlayButton ? (
+      {shouldShowPlayButton ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <button
             type="button"
             onClick={() => scheduleLoad(true)}
             aria-label="Play preview"
-            className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-surface/90 text-text-primary shadow-card backdrop-blur-sm transition hover:-translate-y-0.5"
+            className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.24] bg-[rgba(7,17,31,0.82)] text-white shadow-[0_14px_36px_rgba(0,0,0,0.28)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-[rgba(7,17,31,0.92)]"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" className="fill-current">
               <path d="M8 5.5v13l11-6.5-11-6.5z" />
