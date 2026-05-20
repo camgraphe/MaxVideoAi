@@ -21,6 +21,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/auth',
   '/settings',
   '/video',
+  '/sitemap-video-pages.xml',
   '/sitemap-video.xml',
   '/app',
   '/_next',

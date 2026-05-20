@@ -76,7 +76,8 @@ test('sitemap data facade delegates route discovery, lastmod, locales, and XML h
   );
   assert.doesNotMatch(routeDiscoverySource, /listEligibleSeoWatchVideos/, 'localized sitemaps should not duplicate video sitemap URLs');
   assert.match(facadeSource, /buildModelsSitemapXml/, 'models should stay owned by the dedicated models sitemap');
-  assert.match(facadeSource, /videoPath = '\/sitemap-video\.xml'/, 'video watch pages should stay owned by the video sitemap');
+  assert.match(facadeSource, /videoPagesPath = '\/sitemap-video-pages\.xml'/, 'video watch pages should have a dedicated web sitemap');
+  assert.match(facadeSource, /videoPath = '\/sitemap-video\.xml'/, 'video metadata should stay owned by the video sitemap');
   assert.match(lastmodSource, /getGitLastModified/);
   assert.match(xmlSource, /export const escapeXml/);
   sitemapModulePaths.forEach((path) => {

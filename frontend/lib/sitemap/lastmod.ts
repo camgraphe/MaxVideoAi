@@ -108,7 +108,15 @@ export function getLatestEntryDate(entries: { lastModified?: string }[]): string
 }
 
 export async function getVideoSitemapLastModified(): Promise<string | undefined> {
-  const manual = getManualSitemapLastModified(getSitemapFileName('/sitemap-video.xml'));
+  return getVideoWatchSitemapLastModified('/sitemap-video.xml');
+}
+
+export async function getVideoPagesSitemapLastModified(): Promise<string | undefined> {
+  return getVideoWatchSitemapLastModified('/sitemap-video-pages.xml');
+}
+
+async function getVideoWatchSitemapLastModified(sitemapPath: string): Promise<string | undefined> {
+  const manual = getManualSitemapLastModified(getSitemapFileName(sitemapPath));
   if (manual) {
     return manual;
   }

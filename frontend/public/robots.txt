@@ -43,4 +43,5 @@ Sitemap: https://maxvideoai.com/sitemap-en.xml
 Sitemap: https://maxvideoai.com/sitemap-fr.xml
 Sitemap: https://maxvideoai.com/sitemap-es.xml
 Sitemap: https://maxvideoai.com/sitemap-models.xml
+Sitemap: https://maxvideoai.com/sitemap-video-pages.xml
 Sitemap: https://maxvideoai.com/sitemap-video.xml

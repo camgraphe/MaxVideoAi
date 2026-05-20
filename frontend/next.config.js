@@ -418,8 +418,18 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/sitemap-video-pages.xml',
+        destination: '/sitemap-video-pages.xml',
+        permanent: true,
+      },
+      {
         source: '/es/sitemap-video.xml',
         destination: '/sitemap-video.xml',
+        permanent: true,
+      },
+      {
+        source: '/es/sitemap-video-pages.xml',
+        destination: '/sitemap-video-pages.xml',
         permanent: true,
       },
       {

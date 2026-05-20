@@ -10,6 +10,7 @@ import {
   getModelLastModified,
   getModelsSitemapLastModified,
   getSitemapFileName,
+  getVideoPagesSitemapLastModified,
   getVideoSitemapLastModified,
 } from './sitemap/lastmod';
 import { hasModelLocale } from './sitemap/model-locales';
@@ -118,6 +119,12 @@ export async function buildSitemapIndexXml(): Promise<string> {
   entries.push({
     loc: buildAbsoluteUrl(modelsPath),
     lastModified: modelsLastMod,
+  });
+
+  const videoPagesPath = '/sitemap-video-pages.xml';
+  entries.push({
+    loc: buildAbsoluteUrl(videoPagesPath),
+    lastModified: await getVideoPagesSitemapLastModified(),
   });
 
   const videoPath = '/sitemap-video.xml';

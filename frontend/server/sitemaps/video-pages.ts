@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { listEligibleSeoWatchVideos } from '@/server/video-seo';
-import { buildVideoSitemapXml } from './video-xml';
+import { buildVideoPagesSitemapXml } from './video-xml';
 
-export { buildVideoSitemapXml } from './video-xml';
+export { buildVideoPagesSitemapXml } from './video-xml';
 
-export async function generateVideoSitemapResponse(): Promise<NextResponse> {
+export async function generateVideoPagesSitemapResponse(): Promise<NextResponse> {
   if (!isDatabaseConfigured()) {
     return new NextResponse('Database unavailable', { status: 503 });
   }
 
   try {
     const watchVideos = await listEligibleSeoWatchVideos();
-    const xml = buildVideoSitemapXml(watchVideos);
+    const xml = buildVideoPagesSitemapXml(watchVideos);
 
     return new NextResponse(xml, {
       status: 200,
@@ -22,7 +22,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
       },
     });
   } catch (error) {
-    console.error('[sitemap-video] failed', error);
+    console.error('[sitemap-video-pages] failed', error);
     return new NextResponse('Server error', { status: 500 });
   }
 }

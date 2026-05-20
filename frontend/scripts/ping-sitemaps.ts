@@ -26,7 +26,7 @@ function toAbsoluteUrl(siteUrl: string, value: string): string {
 
 function buildDefaultSitemapUrls(siteUrl: string): string[] {
   const normalized = siteUrl.replace(/\/+$/, '');
-  return [`${normalized}/sitemap.xml`, `${normalized}/sitemap-video.xml`];
+  return [`${normalized}/sitemap.xml`, `${normalized}/sitemap-video-pages.xml`, `${normalized}/sitemap-video.xml`];
 }
 
 type CliOptions = {

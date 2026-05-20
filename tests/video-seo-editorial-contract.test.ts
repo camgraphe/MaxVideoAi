@@ -14,7 +14,8 @@ import {
 
 const deriveSource = readFileSync('frontend/server/watch-page-signals/derive.ts', 'utf8');
 const canonicalSignalsSource = readFileSync('frontend/server/watch-page-signals/canonical.ts', 'utf8');
-const sitemapSource = readFileSync('frontend/server/sitemaps/video.ts', 'utf8');
+const sitemapRouteSource = readFileSync('frontend/server/sitemaps/video.ts', 'utf8');
+const sitemapXmlSource = readFileSync('frontend/server/sitemaps/video-xml.ts', 'utf8');
 const contentSource = readFileSync('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx', 'utf8');
 const pageSource = readFileSync('frontend/app/(core)/video/[id]/page.tsx', 'utf8');
 const editorialSource = readFileSync('frontend/config/video-seo-editorial.ts', 'utf8');
@@ -121,8 +122,8 @@ test('watch page rendering and sitemap depend on editorial approval', () => {
   assert.match(contentSource, /const canonical = signals\.canonicalUrl/, 'VideoObject URL should use the derived production watch canonical');
   assert.match(pageSource, /getVideoCanonicalRedirectPath/, 'watch page should redirect legacy job URLs to approved canonical slugs');
   assert.match(pageSource, /page\?\.isEligible \? page\.signals\.canonicalUrl/, 'metadata canonical should use slugged canonicals for eligible pages');
-  assert.match(sitemapSource, /signals\.videoObjectName/, 'video sitemap title should align with VideoObject.name');
-  assert.match(sitemapSource, /signals\.metaDescription/, 'video sitemap description should align with page metadata');
-  assert.match(sitemapSource, /signals\.canonicalUrl/, 'video sitemap loc should use the derived canonical URL');
-  assert.match(sitemapSource, /listEligibleSeoWatchVideos/, 'sitemap should use eligible rows instead of a direct toggle');
+  assert.match(sitemapXmlSource, /signals\.videoObjectName/, 'video sitemap title should align with VideoObject.name');
+  assert.match(sitemapXmlSource, /signals\.metaDescription/, 'video sitemap description should align with page metadata');
+  assert.match(sitemapXmlSource, /getVideoWatchSitemapEntries/, 'video sitemap loc should use the shared watch sitemap entry builder');
+  assert.match(sitemapRouteSource, /listEligibleSeoWatchVideos/, 'sitemap should use eligible rows instead of a direct toggle');
 });

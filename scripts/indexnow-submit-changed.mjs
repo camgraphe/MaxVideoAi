@@ -157,6 +157,7 @@ function addBestForUrl(urls, locale, slug) {
 function collectUrlsFromChangedFiles(changedFiles) {
   const urls = new Set([
     toAbsoluteUrl('/sitemap.xml'),
+    toAbsoluteUrl('/sitemap-video-pages.xml'),
     toAbsoluteUrl('/sitemap-video.xml'),
     toAbsoluteUrl('/sitemap-en.xml'),
     toAbsoluteUrl('/sitemap-fr.xml'),
