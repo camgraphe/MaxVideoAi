@@ -66,7 +66,8 @@ function ComparisonScorecard({ copy }: { copy: SectionCopy }) {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.72),transparent)] dark:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.08),transparent)]" />
       <Image
         src="/assets/marketing/comparison-scorecard-transparent.webp"
-        alt="Side-by-side AI video model scorecard comparing Seedance 1.5 Pro and Seedance 2.0 across prompt adherence, visual quality, motion, audio and pricing."
+        alt=""
+        aria-hidden="true"
         width={1280}
         height={853}
         sizes="(max-width: 1023px) 92vw, 700px"

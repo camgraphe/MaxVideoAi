@@ -28,6 +28,7 @@ export function MarketingHeroImage({
         <img
           src={src}
           alt={alt}
+          aria-hidden={alt ? undefined : 'true'}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : undefined}
           decoding="async"

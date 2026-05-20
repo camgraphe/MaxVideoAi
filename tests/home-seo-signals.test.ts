@@ -153,3 +153,16 @@ test('homepage disables prefetch for workspace CTAs that are blocked in robots.t
   assert.match(toolboxSource, /prefetch=\{isWorkspaceHref\(tool\.href\) \? false : undefined\}/);
   assert.match(toolboxSource, /href="\/app"[\s\S]*?prefetch=\{false\}/);
 });
+
+test('homepage scorecard image avoids duplicate long accessible text', () => {
+  const scorecardSource = homeSectionsSource.slice(
+    homeSectionsSource.indexOf('function ComparisonScorecard'),
+    homeSectionsSource.indexOf('export function ComparisonPreview')
+  );
+
+  assert.match(scorecardSource, /role="img"/);
+  assert.match(scorecardSource, /aria-label=\{`\$\{copy\.scorecardTitle/);
+  assert.match(scorecardSource, /src="\/assets\/marketing\/comparison-scorecard-transparent\.webp"[\s\S]*alt=""/);
+  assert.match(scorecardSource, /src="\/assets\/marketing\/comparison-scorecard-transparent\.webp"[\s\S]*aria-hidden="true"/);
+  assert.doesNotMatch(scorecardSource, /Side-by-side AI video model scorecard comparing/);
+});

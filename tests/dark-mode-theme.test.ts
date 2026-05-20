@@ -17,6 +17,7 @@ const buttonSource = readFileSync('frontend/components/ui/Button.tsx', 'utf8');
 const toolsHubSource = readFileSync('frontend/src/components/tools/ToolsMarketingHubPage.tsx', 'utf8');
 const blogPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/page.tsx', 'utf8');
 const comparePageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx', 'utf8');
+const marketingHeroImageSource = readFileSync('frontend/components/marketing/MarketingHeroImage.tsx', 'utf8');
 
 const lightTokenBlock = tokensSource.slice(tokensSource.indexOf(':root {'), tokensSource.indexOf('\n}\n\n@media'));
 const darkTokenBlock = tokensSource.slice(tokensSource.indexOf('[data-theme="dark"] {'), tokensSource.indexOf('\n}\n\n.card'));
@@ -175,6 +176,11 @@ test('tools pricing and blog hero images use compare-style derived dark assets',
     assert.match(hero.source, hero.overlay);
     assert.doesNotMatch(hero.source, /dark:(brightness|contrast|saturate|invert)/, `${hero.name} should use a dark asset instead of CSS image filters`);
   }
+});
+
+test('decorative marketing hero images stay hidden from assistive tech', () => {
+  assert.match(marketingHeroImageSource, /<div aria-hidden=\{alt \? undefined : 'true'\}/);
+  assert.match(marketingHeroImageSource, /alt=\{alt\}[\s\S]*aria-hidden=\{alt \? undefined : 'true'\}/);
 });
 
 test('marketing navigation dark mode is translucent like the reference header', () => {
