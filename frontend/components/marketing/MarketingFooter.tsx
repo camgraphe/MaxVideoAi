@@ -211,7 +211,7 @@ export function MarketingFooter() {
             href="/"
             className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
-            <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} className="h-8 w-8" />
+            <Image src="/assets/branding/logo-mark.svg" alt="" aria-hidden="true" width={32} height={32} className="h-8 w-8" />
             <span>{brandLabel}</span>
           </Link>
           <div className="flex items-center gap-4 md:gap-6">

@@ -303,7 +303,8 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
           >
             <Image
               src="/assets/branding/logo-mark.svg"
-              alt="MaxVideoAI"
+              alt=""
+              aria-hidden="true"
               width={28}
               height={28}
               className="h-7 w-7 shrink-0"

@@ -11,6 +11,7 @@ import {
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
+const marketingFooterSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
 
 const bestForUseCaseLinks = [
@@ -125,7 +126,7 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
 });
 
 test('marketing footer separates Best-For use cases from popular comparisons', () => {
-  const source = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
+  const source = marketingFooterSource;
   const comparisonBlock = source.slice(source.indexOf('const comparisonLinks'), source.indexOf('const useCaseLinks'));
   const useCaseBlock = source.slice(source.indexOf('const useCaseLinks'), source.indexOf('const exampleLinks'));
 
@@ -135,6 +136,15 @@ test('marketing footer separates Best-For use cases from popular comparisons', (
   assert.doesNotMatch(comparisonBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
   assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_HUB/);
   assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
+});
+
+test('marketing brand logo images are decorative when brand text is visible', () => {
+  assert.match(marketingNavSource, /src="\/assets\/branding\/logo-mark\.svg"[\s\S]+alt=""/);
+  assert.match(marketingNavSource, /src="\/assets\/branding\/logo-mark\.svg"[\s\S]+aria-hidden/);
+  assert.match(marketingFooterSource, /src="\/assets\/branding\/logo-mark\.svg"[\s\S]+alt=""/);
+  assert.match(marketingFooterSource, /src="\/assets\/branding\/logo-mark\.svg"[\s\S]+aria-hidden/);
+  assert.doesNotMatch(marketingNavSource, /alt="MaxVideoAI"/);
+  assert.doesNotMatch(marketingFooterSource, /alt="MaxVideoAI"/);
 });
 
 test('marketing footer preserves crawl equity for ranking comparison targets', () => {

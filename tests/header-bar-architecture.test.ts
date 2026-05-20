@@ -50,7 +50,9 @@ test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(headerSource, /flex min-w-0 shrink-0 items-center justify-end/, 'right header actions should stay compact and right aligned');
   assert.doesNotMatch(headerSource, /className="h-10 w-\[180px\]/, 'auth loading placeholder should not force desktop width on mobile');
   assert.match(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading placeholder should expand only from the small breakpoint');
-  assert.match(logoSource, /hidden[^"]*sm:inline/, 'brand text should collapse below narrow mobile widths');
+  assert.match(logoSource, /alt=""/, 'decorative logo mark should not duplicate the brand in the accessible name');
+  assert.match(logoSource, /aria-hidden/, 'decorative logo mark should be hidden from assistive tech');
+  assert.match(logoSource, /sr-only[^"]*sm:not-sr-only/, 'brand text should stay accessible while visually collapsing below narrow mobile widths');
   assert.match(walletStatusSource, /aria-label=\{walletLabel\}/, 'compact wallet status needs a stable accessible name');
   assert.match(walletStatusSource, /max-w-\[5rem\]/, 'wallet amount should not stretch the mobile action cluster');
 });

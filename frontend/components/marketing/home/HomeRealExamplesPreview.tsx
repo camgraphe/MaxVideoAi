@@ -79,6 +79,7 @@ function HomeExamplePreviewRow({ example }: { example: HomeExampleCard }) {
   const modeIcon = example.mode.toLowerCase().startsWith('text') ? Type : example.mode.toLowerCase().startsWith('video') ? Video : ImageIcon;
   const showExamplesCta = example.examplesCtaVisible !== false;
   const modelHref = example.modelHref ?? example.href;
+  const modelCtaLabel = example.modelCtaLabel ?? 'Specs & pricing';
 
   return (
     <article className="grid grid-cols-[112px_1fr] gap-3 px-3 py-3 lg:grid-cols-[132px_220px_165px_72px_82px_170px] lg:items-center lg:gap-3 lg:px-5">
@@ -151,14 +152,14 @@ function HomeExamplePreviewRow({ example }: { example: HomeExampleCard }) {
 
         <Link
           href={modelHref}
-          aria-label={example.engine === 'Seedance 2.0' ? 'View Seedance 2.0 specs, limits and pricing' : `View ${example.engine} specs, limits and pricing`}
+          aria-label={`${modelCtaLabel} - ${example.engine}`}
           className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-input border border-hairline bg-surface px-2 text-center text-xs font-semibold text-text-secondary hover:text-text-primary sm:text-sm lg:min-h-0 lg:justify-start lg:border-0 lg:bg-transparent lg:px-0 lg:text-left"
           data-analytics-event="model_card_click"
           data-analytics-cta-name={example.id}
           data-analytics-cta-location="examples_preview_model"
           data-analytics-target-family="models"
         >
-          {example.modelCtaLabel ?? 'Specs & pricing'}
+          {modelCtaLabel}
           <span aria-hidden="true">→</span>
         </Link>
       </div>

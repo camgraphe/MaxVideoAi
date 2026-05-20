@@ -182,6 +182,14 @@ test('homepage hero model CTA says specs and pricing instead of open model', () 
   assert.doesNotMatch(showcaseSource, /Open \$\{selected\.name\} model/);
 });
 
+test('homepage examples model CTAs keep visible text in accessible names', () => {
+  const previewSource = readFileSync('frontend/components/marketing/home/HomeRealExamplesPreview.tsx', 'utf8');
+
+  assert.match(previewSource, /const modelCtaLabel = example\.modelCtaLabel \?\? 'Specs & pricing';/);
+  assert.match(previewSource, /aria-label=\{`\$\{modelCtaLabel\} - \$\{example\.engine\}`\}/);
+  assert.doesNotMatch(previewSource, /aria-label=\{example\.engine === 'Seedance 2\.0'/);
+});
+
 test('homepage supported engines strip includes the Happy Horse family', () => {
   const providers = enMessages.home.redesign.providers.items;
   const happyHorse = providers.find((item) => item.providerKey === 'Alibaba' && item.model === 'Happy Horse');
