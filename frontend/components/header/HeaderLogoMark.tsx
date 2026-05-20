@@ -9,7 +9,7 @@ export function HeaderLogoMark() {
   return (
     <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} className="shrink-0" priority />
-      <span className="text-sm font-semibold tracking-normal text-text-primary sm:text-lg">MaxVideoAI</span>
+      <span className="hidden text-sm font-semibold tracking-normal text-text-primary sm:inline sm:text-lg">MaxVideoAI</span>
     </Link>
   );
 }

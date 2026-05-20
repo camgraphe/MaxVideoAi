@@ -251,7 +251,7 @@ export function HeaderBar() {
           'border-b border-hairline bg-surface'
         )}
       >
-        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4 md:gap-6">
           <Button
             type="button"
             variant="ghost"
@@ -394,7 +394,7 @@ export function HeaderBar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-text-muted sm:gap-3">
+        <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 text-xs text-text-muted sm:gap-3">
           <HeaderWalletStatus
             authResolved={authResolved}
             promptId={walletPromptId}
@@ -454,7 +454,7 @@ export function HeaderBar() {
               </ButtonLink>
             </div>
           ) : (
-            <div className="h-10 w-[180px] rounded-input bg-surface-2 shadow-sm" aria-hidden />
+            <div className="h-10 w-24 rounded-input bg-surface-2 shadow-sm sm:w-[180px]" aria-hidden />
           )}
         </div>
       </header>

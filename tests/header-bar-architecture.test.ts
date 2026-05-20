@@ -8,11 +8,13 @@ const headerPath = join(root, 'frontend/components/HeaderBar.tsx');
 const accountHookPath = join(root, 'frontend/components/header/useHeaderAccountState.ts');
 const logoPath = join(root, 'frontend/components/header/HeaderLogoMark.tsx');
 const navHelpersPath = join(root, 'frontend/components/header/header-nav-helpers.ts');
+const walletStatusPath = join(root, 'frontend/components/header/HeaderWalletStatus.tsx');
 
 const headerSource = readFileSync(headerPath, 'utf8');
 const accountHookSource = readFileSync(accountHookPath, 'utf8');
 const logoSource = readFileSync(logoPath, 'utf8');
 const navHelpersSource = readFileSync(navHelpersPath, 'utf8');
+const walletStatusSource = readFileSync(walletStatusPath, 'utf8');
 
 test('header bar delegates account, logo, and nav helper responsibilities', () => {
   assert.ok(existsSync(accountHookPath), 'header account state should live in a focused hook');
@@ -41,4 +43,14 @@ test('header bar does not regain auth session ownership', () => {
 
   const lineCount = headerSource.split('\n').length;
   assert.ok(lineCount <= 780, `HeaderBar.tsx should stay below 780 lines after nav helper extraction, got ${lineCount}`);
+});
+
+test('header bar keeps narrow mobile chrome compact', () => {
+  assert.match(headerSource, /flex min-w-0 items-center gap-2/, 'left header cluster should be allowed to shrink on narrow screens');
+  assert.match(headerSource, /flex min-w-0 shrink-0 items-center justify-end/, 'right header actions should stay compact and right aligned');
+  assert.doesNotMatch(headerSource, /className="h-10 w-\[180px\]/, 'auth loading placeholder should not force desktop width on mobile');
+  assert.match(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading placeholder should expand only from the small breakpoint');
+  assert.match(logoSource, /hidden[^"]*sm:inline/, 'brand text should collapse below narrow mobile widths');
+  assert.match(walletStatusSource, /aria-label=\{walletLabel\}/, 'compact wallet status needs a stable accessible name');
+  assert.match(walletStatusSource, /max-w-\[5rem\]/, 'wallet amount should not stretch the mobile action cluster');
 });
