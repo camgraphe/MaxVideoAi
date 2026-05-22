@@ -142,7 +142,11 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(bytePlusSeedreamExecutionSource, /extractBytePlusSeedreamImages/);
   assert.match(bytePlusSeedreamExecutionSource, /copyGeneratedImagesToStorage/);
   assert.match(completionSource, /export async function persistCompletedImageGeneration/);
-  assert.match(completionSource, /recordUserAsset/);
+  assert.doesNotMatch(
+    completionSource,
+    /recordUserAsset/,
+    'character outputs should be persisted once through ensureReusableAsset and its legacy mirror'
+  );
   assert.match(completionSource, /upsertLegacyJobOutputs/);
   assert.match(completionSource, /ensureReusableAsset/);
   assert.match(completionSource, /status = 'completed'/);

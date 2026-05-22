@@ -268,6 +268,17 @@ export function resolveLibraryAssetDedupeKey(params: {
   return `url:${params.userId ?? 'anonymous'}:${params.kind}:${normalizeString(params.url) ?? params.url}`;
 }
 
+export function resolveLibraryAssetOriginDedupeKey(params: {
+  userId: string | null;
+  kind: MediaKind;
+  url: string;
+  metadata?: unknown;
+}): string {
+  const metadata = normalizeMetadata(params.metadata);
+  const originUrl = normalizeString(metadata.originUrl) ?? normalizeString(params.url) ?? params.url;
+  return `origin-url:${params.userId ?? 'anonymous'}:${params.kind}:${originUrl}`;
+}
+
 export function buildMediaAssetInsert(params: {
   userId: string;
   kind: MediaKind;

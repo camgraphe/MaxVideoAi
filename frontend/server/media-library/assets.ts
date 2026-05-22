@@ -12,6 +12,7 @@ import {
   normalizeString,
   resolveLibraryAssetDedupeKey,
   resolveLibraryAssetIdentity,
+  resolveLibraryAssetOriginDedupeKey,
   type DbJobOutputRow,
   type DbMediaAssetRow,
   type MediaAssetRecord,
@@ -63,10 +64,12 @@ export async function listLibraryAssets(params: {
   rows.forEach((row) => {
     const asset = mapAssetRow(row);
     const dedupeKey = resolveLibraryAssetDedupeKey(asset);
-    if (seen.has(asset.id) || seen.has(dedupeKey)) return;
+    const originDedupeKey = resolveLibraryAssetOriginDedupeKey(asset);
+    if (seen.has(asset.id) || seen.has(dedupeKey) || seen.has(originDedupeKey)) return;
     assets.push(asset);
     seen.add(asset.id);
     seen.add(dedupeKey);
+    seen.add(originDedupeKey);
   });
 
   const legacyRows = await query<{
@@ -123,7 +126,7 @@ export async function listLibraryAssets(params: {
         ? 'audio'
         : 'image';
     const metadata = normalizeMetadata(row.metadata);
-    const asset: MediaAssetRecord = {
+    const legacyAsset: MediaAssetRecord = {
       id: row.asset_id,
       userId: row.user_id,
       kind,
@@ -141,11 +144,13 @@ export async function listLibraryAssets(params: {
       metadata,
       createdAt: row.created_at,
     };
-    const dedupeKey = resolveLibraryAssetDedupeKey(asset);
-    if (seen.has(dedupeKey)) return;
-    assets.push(asset);
+    const dedupeKey = resolveLibraryAssetDedupeKey(legacyAsset);
+    const originDedupeKey = resolveLibraryAssetOriginDedupeKey(legacyAsset);
+    if (seen.has(dedupeKey) || seen.has(originDedupeKey)) return;
+    assets.push(legacyAsset);
     seen.add(row.asset_id);
     seen.add(dedupeKey);
+    seen.add(originDedupeKey);
   });
 
   return assets

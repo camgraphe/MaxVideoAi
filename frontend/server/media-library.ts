@@ -3,6 +3,7 @@ export {
   mapLegacyJobRowToOutputs,
   normalizeMediaAssetSource,
   resolveLibraryAssetDedupeKey,
+  resolveLibraryAssetOriginDedupeKey,
   resolveLibraryAssetIdentity,
 } from './media-library-records';
 

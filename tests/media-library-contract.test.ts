@@ -8,6 +8,7 @@ import {
   mapLegacyJobRowToOutputs,
   normalizeMediaAssetSource,
   resolveLibraryAssetDedupeKey,
+  resolveLibraryAssetOriginDedupeKey,
   resolveLibraryAssetIdentity,
 } from '../frontend/server/media-library';
 
@@ -161,6 +162,36 @@ test('deduplicates canonical and legacy library rows by media URL identity', () 
   );
   assert.match(source, /const\s+dedupeKey\s*=\s*resolveLibraryAssetDedupeKey\(asset\)/);
   assert.match(source, /seen\.has\(dedupeKey\)/);
+});
+
+test('deduplicates copied generated assets against legacy origin urls', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+
+  assert.equal(
+    resolveLibraryAssetOriginDedupeKey({
+      id: 'output:job_123:image:0',
+      userId: 'user_1',
+      kind: 'image',
+      url: 'https://storage.example.com/renders/job_123-1.png',
+      metadata: {
+        originUrl: 'https://v3b.fal.media/files/b/render.png',
+      },
+    }),
+    resolveLibraryAssetOriginDedupeKey({
+      id: 'job_123:character:1',
+      userId: 'user_1',
+      kind: 'image',
+      url: 'https://v3b.fal.media/files/b/render.png',
+      metadata: {
+        jobId: 'job_123',
+      },
+    })
+  );
+  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(asset\)/);
+  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(legacyAsset\)/);
 });
 
 test('media asset insert keeps saved job output linked to the source output', () => {
