@@ -1,7 +1,6 @@
 import { query } from '@/lib/db';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
-import { recordUserAsset } from '@/server/storage';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { PricingSnapshot } from '@/types/engines';
 import type { GeneratedImage, ImageGenerationMode } from '@/types/image-generation';
@@ -42,13 +41,11 @@ export async function persistCompletedImageGeneration(params: {
   visibility: 'public' | 'private';
 }) {
   const {
-    billingProductKey,
     characterReferenceCount,
     costBreakdownJson,
     description,
     enableWebSearch,
     engineId,
-    engineLabel,
     images,
     indexable,
     jobId,
@@ -76,36 +73,6 @@ export async function persistCompletedImageGeneration(params: {
   const hero = images[0]?.url ?? null;
   const heroThumb = resolveHeroThumbFromRenders(images) ?? hero;
   const renderIdsJson = JSON.stringify(storedRenderEntries);
-
-  if (jobSurface === 'character') {
-    await Promise.all(
-      images.map(async (image, index) => {
-        try {
-          await recordUserAsset({
-            assetId: `${jobId}:character:${index + 1}`,
-            userId,
-            url: image.url,
-            mime: image.mimeType ?? 'image/png',
-            width: image.width ?? null,
-            height: image.height ?? null,
-            size: null,
-            source: 'character',
-            metadata: {
-              jobId,
-              thumbUrl: image.thumbUrl ?? null,
-              engineId,
-              engineLabel,
-              surface: jobSurface,
-              billingProductKey,
-              resultIndex: index,
-            },
-          });
-        } catch (assetError) {
-          console.warn('[images] failed to persist character asset', { jobId, index }, assetError);
-        }
-      })
-    );
-  }
 
   await query(
     `UPDATE app_jobs
