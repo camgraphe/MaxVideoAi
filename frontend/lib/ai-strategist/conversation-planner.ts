@@ -417,7 +417,22 @@ function resolveTier(text: string, hasPreviousBrief = false): AiStrategistTierPo
   if (/^(best|use best|choose best|go best)\b/.test(text)) return 'best';
   if (/^(medium|use medium|choose medium|go medium)\b/.test(text)) return 'medium';
   if (/^(value|use value|choose value|go value|budget)\b/.test(text)) return 'value';
-  if (hasPreviousBrief && containsAny(text, ['cheaper option', 'less expensive', 'lower cost', 'reduce price', 'too expensive', 'moins cher', 'moins chere', 'trop cher', 'pas cher'])) {
+  if (hasPreviousBrief && containsAny(text, [
+    'cheaper option',
+    'less expensive',
+    'lower cost',
+    'reduce price',
+    'too expensive',
+    'keep it cheaper',
+    'make it cheaper',
+    'can we keep it cheaper',
+    'actually can we keep it cheaper',
+    'cheaper',
+    'moins cher',
+    'moins chere',
+    'trop cher',
+    'pas cher',
+  ])) {
     return 'value';
   }
   return undefined;
@@ -476,6 +491,20 @@ function resolveNavigationSuggestion(text: string): StrategistNavigationSuggesti
       label: 'Pricing',
       href: '/pricing',
       reason: 'Open pricing to compare plans, credits, and model costs before generating.',
+    };
+  }
+
+  if (containsAny(text, [
+    'where are the model pages',
+    'where are model pages',
+    'where are the models',
+    'where are models',
+    'model pages',
+  ])) {
+    return {
+      label: 'Models catalog',
+      href: '/models',
+      reason: 'Open the model catalog to inspect model strengths, settings, examples, and prompt guidance.',
     };
   }
 

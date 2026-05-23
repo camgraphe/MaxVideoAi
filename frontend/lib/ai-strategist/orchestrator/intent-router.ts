@@ -60,11 +60,15 @@ function resolveRecommendationTask(
   if (asksForPricing(text)) return 'pricing_help';
   if (asksForModelInfo(text)) return 'model_info_help';
   if (asksForModelNavigation(text)) return 'navigation_help';
+  if (asksForModelPagesNavigation(text)) return 'navigation_help';
+  if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
+  if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
+  if (asksForExplicitModelDecisionAdvice(text)) return 'model_advice';
   if (hasCreativeBriefWithModelWorkflowUncertainty(text)) return 'new_video_brief';
   if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (asksForSiteNavigation(text) && !hasCreativeBriefSignal(text)) return 'navigation_help';
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text)) return 'asset_reference_help';
-  if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
@@ -92,9 +96,10 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 }
 
 function asksForPricing(text: string): boolean {
-  if (asksForCheapestModel(text)) return true;
   if (hasModelChoiceBudgetTradeoff(text)) return false;
+  if (asksForModelPriceComparison(text)) return true;
   if (hasCreativeBudgetBriefIntent(text)) return false;
+  if (asksForCheapestModel(text)) return true;
   return containsAny(text, [
     'price',
     'pricing',
@@ -173,16 +178,19 @@ function hasModelChoiceBudgetTradeoff(text: string): boolean {
 }
 
 function hasCreativeBudgetBriefIntent(text: string): boolean {
-  if (asksForCheapestModel(text)) return false;
+  if (asksForExplicitCheapestModelQuestion(text)) return false;
   if (!containsAny(text, ['cheap', 'cheaper', 'low cost', 'budget', 'pas cher', 'pas chere', 'moins cher', 'moins chere', 'barato'])) return false;
   return containsAny(text, [
     'ad',
     'pub',
     'tiktok',
-    'video',
     'product',
+    'producto',
     'produit',
     'creative',
+    'concept',
+    'draft',
+    'storyboard',
     'test',
     'tester',
     'create',
@@ -191,7 +199,6 @@ function hasCreativeBudgetBriefIntent(text: string): boolean {
     'generer',
     'générer',
     'anuncio',
-    'barato',
     'probar',
   ]);
 }
@@ -199,6 +206,46 @@ function hasCreativeBudgetBriefIntent(text: string): boolean {
 function asksForCheapestModel(text: string): boolean {
   return containsAny(text, ['model', 'models', 'modele', 'modèle', 'modelo', 'engine', 'engine', 'moteur']) &&
     containsAny(text, ['cheapest', 'least expensive', 'lowest cost', 'lowest price', 'moins cher', 'moin cher', 'pas cher', 'barato', 'mas barato', 'más barato', 'menos caro']);
+}
+
+function asksForExplicitCheapestModelQuestion(text: string): boolean {
+  return containsAny(text, [
+    'whats cheapest',
+    'what s cheapest',
+    'what is cheapest',
+    'which is cheapest',
+    'which one is cheapest',
+    'cheapest vid model',
+    'cheapest video model',
+    'cheapest model',
+    'cheapest engine',
+    'least expensive model',
+    'least expensive engine',
+    'lowest cost model',
+    'lowest cost engine',
+    'modelo mas barato',
+    'modelo más barato',
+    'modele moins cher',
+    'modèle moins cher',
+  ]);
+}
+
+function asksForModelPriceComparison(text: string): boolean {
+  if (!containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse'])) return false;
+  return containsAny(text, [
+    'cheaper than',
+    'less expensive than',
+    'more expensive than',
+    'cost more than',
+    'costs more than',
+    'cost less than',
+    'costs less than',
+    'price difference',
+    'pricing difference',
+    'compare price',
+    'compare pricing',
+    'before i spend credits',
+  ]);
 }
 
 function asksForExamples(text: string): boolean {
@@ -337,7 +384,7 @@ function asksForAssetHelp(text: string): boolean {
 }
 
 function hasCreativeCreationIntent(text: string): boolean {
-  return containsAny(text, [
+  return /\bads?\b/.test(text) || containsAny(text, [
     'animate',
     'animation',
     'create',
@@ -345,7 +392,7 @@ function hasCreativeCreationIntent(text: string): boolean {
     'generate',
     'turn this',
     'video',
-    'ad',
+    'advert',
     'commercial',
     'speaking',
     'speak',
@@ -380,6 +427,15 @@ function asksForSiteNavigation(text: string): boolean {
 function asksForModelNavigation(text: string): boolean {
   if (!containsAny(text, ['where is', 'where can i find', 'show me', 'open', 'find'])) return false;
   return containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse']);
+}
+
+function asksForModelPagesNavigation(text: string): boolean {
+  return containsAny(text, [
+    'where are the model pages',
+    'where are model pages',
+    'where are the models',
+    'where are models',
+  ]);
 }
 
 function asksForModelAdvice(text: string): boolean {
@@ -441,6 +497,20 @@ function asksForModelAdvice(text: string): boolean {
     'lequel tu recommandes',
     'plutot',
     'plutôt',
+  ]);
+}
+
+function asksForExplicitModelDecisionAdvice(text: string): boolean {
+  return containsAny(text, [
+    'do i need 4k',
+    'really need 4k',
+    'need 4k for',
+    'should i use 4k',
+    'is 4k worth',
+    'worth using 4k',
+    'premium but not the most expensive',
+    'not the most expensive model',
+    'burn credits',
   ]);
 }
 

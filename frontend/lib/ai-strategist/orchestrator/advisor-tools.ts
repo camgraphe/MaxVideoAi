@@ -217,7 +217,15 @@ function resolveModelId(text: string): AiStrategistModelId | undefined {
 }
 
 function resolveWorkflowId(text: string): AiStrategistWorkflowId | undefined {
-  if (containsAny(text, ['text to image then image to video', 'text-to-image-then-image-to-video', 'starting image'])) return 'text-to-image-then-image-to-video';
+  if (containsAny(text, [
+    'text to image then image to video',
+    'text-to-image-then-image-to-video',
+    'starting image',
+    'still image first',
+    'generate a still image first',
+    'better product control',
+    'product control',
+  ])) return 'text-to-image-then-image-to-video';
   if (containsAny(text, ['image to video', 'image-to-video', 'i2v', 'reference image'])) return 'image-to-video';
   if (containsAny(text, ['video to video', 'video-to-video', 'v2v', 'restyle'])) return 'video-to-video';
   if (containsAny(text, ['text to video', 'text-to-video', 't2v'])) return 'text-to-video';

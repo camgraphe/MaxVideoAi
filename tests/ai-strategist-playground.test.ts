@@ -271,6 +271,32 @@ test('AI Strategist conversation planner handles upload navigation without model
   assert.match(result.assistantMessage, /image-to-video/i);
 });
 
+test('AI Strategist keeps messy upload image questions as asset reference help despite uncertainty wording', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const cases = [
+    'where upload img?? Not sure which model or workflow is best.',
+    'how upload prod pic and keep logo?? Not sure which model or workflow is best.',
+  ];
+
+  for (const userMessage of cases) {
+    const result = await playground.runAiStrategistPlaygroundPipeline(
+      {
+        userMessage,
+        mode: 'recommend',
+        surface: 'chat',
+      },
+      { env: {} }
+    );
+
+    assert.equal(result.orchestrationPlan.task, 'asset_reference_help', userMessage);
+    assert.equal(result.mode, 'product_help', userMessage);
+    assert.equal(result.recommendations, undefined, userMessage);
+    assert.match(result.assistantMessage, /upload|image-to-video|reference image/i, userMessage);
+    assert.match(result.assistantMessage, /not run generation|spend credits/i, userMessage);
+  }
+});
+
 test('AI Strategist orchestrator answers model pricing help without creative routing', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -316,6 +342,49 @@ test('AI Strategist answers cheapest model questions from the engine catalog', a
   assert.match(result.assistantMessage, /LTX 2\.3 Fast|Pika 2\.2|LTX Video 2\.0 Fast/i);
   assert.match(result.assistantMessage, /\$0\.04|4 cents/i);
   assert.doesNotMatch(result.assistantMessage, /open the video generator, choose the workflow/i);
+});
+
+test('AI Strategist answers Spanish cheapest video model questions as pricing help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'cuál es el modelo más barato para video? pls, no credits spent yet',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /cheapest|barato|least expensive|\$0\.04/i);
+});
+
+test('AI Strategist routes model cost comparisons to pricing help even when draft language is present', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const cases = [
+    "I'm comparing tools before signup. Is Veo Lite cheaper than regular Veo for a draft?",
+    'Before I spend credits, Is Veo Lite cheaper than regular Veo for a draft?',
+  ];
+
+  for (const userMessage of cases) {
+    const result = await playground.runAiStrategistPlaygroundPipeline(
+      {
+        userMessage,
+        mode: 'recommend',
+        surface: 'chat',
+      },
+      { env: {} }
+    );
+
+    assert.equal(result.orchestrationPlan.task, 'pricing_help', userMessage);
+    assert.equal(result.mode, 'product_help', userMessage);
+    assert.equal(result.recommendations, undefined, userMessage);
+    assert.match(result.assistantMessage, /Veo|price|cost|cheaper|estimate|quote/i, userMessage);
+  }
 });
 
 test('AI Strategist orchestrator explains workflow help without generating a prompt', async () => {
@@ -446,19 +515,44 @@ test('AI Strategist keeps expanded hesitant creative briefs as briefs', async ()
 test('AI Strategist keeps noisy cheapest-model questions as pricing help', async () => {
   const playground = await loadPlaygroundModule();
 
+  const cases = [
+    'whats cheapest vid model?? Not sure which model or workflow is best.',
+    'whats cheapest vid model?? pls, make smart assumptions if needed',
+    "I'm testing MaxVideoAI for a campaign. whats cheapest vid model??",
+  ];
+
+  for (const userMessage of cases) {
+    const result = await playground.runAiStrategistPlaygroundPipeline(
+      {
+        userMessage,
+        mode: 'recommend',
+        surface: 'chat',
+      },
+      { env: {} }
+    );
+
+    assert.equal(result.orchestrationPlan.task, 'pricing_help', userMessage);
+    assert.equal(result.mode, 'product_help', userMessage);
+    assert.equal(result.recommendations, undefined, userMessage);
+    assert.match(result.assistantMessage, /cheapest|least expensive|\$0\.04/i, userMessage);
+  }
+});
+
+test('AI Strategist keeps multilingual cheap ad briefs as creative recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
   const result = await playground.runAiStrategistPlaygroundPipeline(
     {
-      userMessage: 'whats cheapest vid model?? Not sure which model or workflow is best.',
+      userMessage: 'quiero un anuncio TikTok barato para probar un producto Not sure which model or workflow is best.',
       mode: 'recommend',
       surface: 'chat',
     },
     { env: {} }
   );
 
-  assert.equal(result.orchestrationPlan.task, 'pricing_help');
-  assert.equal(result.mode, 'product_help');
-  assert.equal(result.recommendations, undefined);
-  assert.match(result.assistantMessage, /cheapest|least expensive|\$0\.04/i);
+  assert.equal(result.orchestrationPlan.task, 'new_video_brief');
+  assert.ok(result.recommendations);
+  assert.doesNotMatch(result.assistantMessage, /cheapest engines in the local catalog/i);
 });
 
 test('AI Strategist treats premium without burning credits as model tradeoff advice', async () => {
@@ -526,6 +620,23 @@ test('AI Strategist keeps noisy best-model questions as model advice', async () 
   assert.ok(result.recommendations);
 });
 
+test('AI Strategist routes 4K necessity questions as model advice even with workflow uncertainty', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Do I really need 4K for a TikTok product ad? Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_advice');
+  assert.ok(result.recommendations);
+  assert.match(result.assistantMessage, /4K|product|TikTok|model/i);
+});
+
 test('AI Strategist routes model location questions to navigation help even with acquisition wording', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -542,6 +653,24 @@ test('AI Strategist routes model location questions to navigation help even with
   assert.equal(result.mode, 'product_help');
   assert.equal(result.recommendations, undefined);
   assert.match(result.assistantMessage, /veo|model|examples|\/models|\/examples/i);
+});
+
+test('AI Strategist routes generic model-page location questions to navigation help despite uncertainty wording', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'where are the model pages? Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /\/models|model catalog|models catalog/i);
 });
 
 test('AI Strategist keeps multilingual creative briefs as briefs when model or workflow is uncertain', async () => {
@@ -574,6 +703,24 @@ test('AI Strategist preserves model info routing when a support question mention
 
   assert.equal(result.orchestrationPlan.task, 'model_info_help');
   assert.equal(result.recommendations, undefined);
+});
+
+test('AI Strategist keeps product-control still-image questions as workflow help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: "I'm trying to pick the right workflow. Should I generate a still image first for better product control?",
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'workflow_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /text-to-image|still image|image-to-video|workflow/i);
 });
 
 test('AI Strategist orchestrator explains MaxVideoAI site capabilities in French', async () => {
@@ -891,6 +1038,8 @@ test('AI Strategist chat can make assumptions, confirm direction, then generate 
   assert.match(third.assistantMessage, /Generate the prompt/i);
   assert.ok(third.uiActions.some((action: { type: string }) => action.type === 'SET_DURATION'));
   assert.equal(fourth.conversationStage, 'prompt_ready');
+  assert.match(fourth.assistantMessage, /prompt is ready|review|copy|adjust/i);
+  assert.match(fourth.assistantMessage, /no generation|credits/i);
   assert.ok(fourth.sanitizedFinalOutput?.finalPrompt);
   assert.match(fourth.sanitizedFinalOutput.finalPrompt, /Duration:\n\d+ seconds/i);
   assert.match(fourth.sanitizedFinalOutput.finalPrompt, /arcade fighting|stylized combat|Assumed direction|16:9/i);
@@ -971,6 +1120,43 @@ test('AI Strategist chat applies duration changes during confirmation without re
   assert.notEqual(sixth.conversationStage, 'awaiting_model_choice');
   assert.equal(sixth.selectedModel, fifth.selectedModel);
   assert.match(sixth.sanitizedFinalOutput?.finalPrompt ?? '', /Duration:\n12 seconds/i);
+});
+
+test('AI Strategist chat treats keep-it-cheaper follow-ups as value selection after a model choice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'premium perfume bottle video pls, make smart assumptions if needed',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'best',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'actually can we keep it cheaper?',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+
+  assert.equal(third.orchestrationPlan.task, 'model_or_tier_selection');
+  assert.equal(third.selectedTier, 'value');
+  assert.ok(third.selectedModel);
+  assert.notEqual(third.conversationStage, 'awaiting_model_choice');
+  assert.doesNotMatch(third.assistantMessage, /For video, the cheapest engines/i);
 });
 
 test('AI Strategist chat treats explicit model switch during missing-field collection as model selection', async () => {

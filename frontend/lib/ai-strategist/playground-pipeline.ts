@@ -752,7 +752,12 @@ function buildRecommendationOnlyResult(input: {
 
   return {
     ok: true,
-    assistantMessage: buildRecommendationAssistantMessage(input.workflow, input.recommendations, input.orchestrationPlan.task),
+    assistantMessage: buildRecommendationAssistantMessage(
+      input.workflow,
+      input.recommendations,
+      input.orchestrationPlan.task,
+      input.body.userMessage
+    ),
     mode: 'recommend',
     workflow: input.workflow,
     selectedModel: null,
@@ -1228,13 +1233,19 @@ function buildAssistantMessage(
 function buildRecommendationAssistantMessage(
   workflow: AiStrategistWorkflowId,
   recommendations: AiStrategistRecommendations,
-  task: StrategistOrchestrationPlan['task']
+  task: StrategistOrchestrationPlan['task'],
+  rawUserMessage: string
 ): string {
+  const text = rawUserMessage.toLowerCase();
+  const contextLine = task === 'model_advice' && containsAny(text, ['4k', '4 k'])
+    ? 'For TikTok or social ads, I’d treat 4K as an upgrade decision rather than an automatic requirement unless product detail, cropping, or final delivery quality matters.'
+    : undefined;
   const routeLine = task === 'model_advice'
     ? `I’m showing three possible paths below: ${recommendations.best.model.label} is my first pick, ${recommendations.medium.model.label} is the balanced route, and ${recommendations.value.model.label} keeps the test more cost-aware.`
     : 'I’m showing three possible paths below: the strongest quality route, a balanced route, and a faster/value route.';
 
   return [
+    contextLine,
     `I’d route this as ${workflow}.`,
     routeLine,
     'Choose the direction that fits the job, then I’ll check the missing creative details before writing the prompt.',

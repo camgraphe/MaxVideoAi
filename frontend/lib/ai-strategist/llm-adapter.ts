@@ -542,7 +542,7 @@ function buildPromptWriterFallback(context: AiStrategistPromptGenerationContext)
   });
   const warnings = uniqueStrings([draft.warning, ...context.warnings.all].filter((value): value is string => Boolean(value)));
   return {
-    assistantMessage: `Prepared a deterministic fallback prompt for ${context.selectedModel.label}.`,
+    assistantMessage: `Great, the prompt is ready for ${context.selectedModel.label}. Next, use the prompt below with the negative prompt, settings, and warnings; you can copy it or adjust the brief. No generation runs and no credits are spent here.`,
     finalPrompt: draft.finalPrompt,
     negativePrompt: draft.negativePrompt,
     settings: [...draft.recommendedSettings],
