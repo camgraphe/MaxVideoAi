@@ -346,7 +346,7 @@ function buildNormalizedBrief(input: {
   if (containsAny(raw, ['voiture', 'pub de voiture'])) {
     return 'A high-energy cinematic car commercial emphasizing speed, dynamic motion, and polished automotive camera work.';
   }
-  return input.rawUserMessage;
+  return stripOpeningGreeting(input.rawUserMessage);
 }
 
 function inferAspectRatio(text: string): AiStrategistAspectRatioHint | undefined {
@@ -449,6 +449,12 @@ function summarizePageContext(pageContext: unknown): string {
 
 function cleanText(value: unknown): string {
   return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+}
+
+function stripOpeningGreeting(value: string): string {
+  return value
+    .replace(/^\s*(?:hi|hello|hey|yo|bonjour|salut|hola|good morning|good afternoon|good evening)[,!. ]+/i, '')
+    .trim();
 }
 
 function containsAny(value: string, needles: readonly string[]): boolean {

@@ -285,6 +285,7 @@ function asksForCapabilities(text: string): boolean {
   if (hasCreativeCreationIntent(text) && containsAny(text, ['can you help me make', 'help me make', 'can you help me create', 'help me create'])) {
     return false;
   }
+  if (asksForLowIntentOpening(text)) return true;
   return containsAny(text, [
     'what can you do',
     'what do you do',
@@ -332,6 +333,29 @@ function asksForGreeting(text: string): boolean {
     !hasCreativeCreationIntent(text) &&
     !asksForPricing(text) &&
     !asksForExamples(text);
+}
+
+function asksForLowIntentOpening(text: string): boolean {
+  if (!text) return false;
+  if (hasCreativeCreationIntent(text) || asksForPricing(text) || asksForExamples(text) || asksForWorkflow(text) || asksForModelInfo(text)) return false;
+  if (/^(hi|hello|hey|bonjour|salut|hola|yo|good morning|good afternoon|good evening)(?:\s+(?:there|again))?[.!? ]*$/.test(text)) return true;
+  return containsAny(text, [
+    'can i ask',
+    'can i ask you',
+    'can i ask you something',
+    'i have a question',
+    'quick question',
+    'i need help',
+    'can you help me',
+    'could you help me',
+    'not sure what to ask',
+    'je peux te poser une question',
+    'j ai une question',
+    'j ai besoin d aide',
+    'tu peux m aider',
+    'puedes ayudarme',
+    'tengo una pregunta',
+  ]);
 }
 
 function asksForSiteOverview(text: string): boolean {

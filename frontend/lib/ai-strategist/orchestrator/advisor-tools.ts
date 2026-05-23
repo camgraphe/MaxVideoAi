@@ -34,6 +34,42 @@ export function runStrategistAdvisorHelpTool(input: {
 }
 
 function buildCapabilityHelp(text: string): StrategistAdvisorToolResult {
+  if (isLowIntentOpening(text)) {
+    if (isSpanishText(text)) {
+      return {
+        assistantMessage: [
+          'Hola. Sí, puedo ayudarte.',
+          'Dime si quieres crear un video, mejorar un prompt, elegir un modelo, entender precios/workflows o usar una imagen de referencia.',
+          'Si solo tienes una idea vaga, escríbela en una frase y te guío paso a paso.',
+        ].join('\n'),
+        warnings: [],
+        uiActions: [],
+      };
+    }
+
+    if (isFrenchText(text)) {
+      return {
+        assistantMessage: [
+          'Bonjour. Oui, je peux t’aider.',
+          'Dis-moi si tu veux créer une vidéo, améliorer un prompt, choisir un modèle, comprendre les prix/workflows ou utiliser une image de référence.',
+          'Si tu as juste une idée vague, écris-la en une phrase et je te guide étape par étape.',
+        ].join('\n'),
+        warnings: [],
+        uiActions: [],
+      };
+    }
+
+    return {
+      assistantMessage: [
+        'Hi. Yes, I can help.',
+        'Tell me if you want to create a video, improve a prompt, choose a model, understand pricing/workflows, or use a reference image.',
+        'If you only have a rough idea, describe it in one sentence and I’ll guide the next step.',
+      ].join('\n'),
+      warnings: [],
+      uiActions: [],
+    };
+  }
+
   if (isFrenchText(text)) {
     return {
       assistantMessage: [
@@ -281,11 +317,57 @@ function normalizeSearchText(value: unknown): string {
 }
 
 function isFrenchText(text: string): boolean {
-  const frenchTokens = text.match(/\b(?:tu|peux|quoi|comment|fonctionne|marche|aide|capacites|modele|modeles|generer|creer|prix)\b/g) ?? [];
+  const frenchTokens = text.match(/\b(?:bonjour|salut|tu|peux|quoi|comment|fonctionne|marche|aide|capacites|modele|modeles|generer|creer|prix|question)\b/g) ?? [];
   if (frenchTokens.length === 0) return false;
 
   const englishTokens = text.match(/\b(?:can|you|help|choose|models|prompts|what|how|here)\b/g) ?? [];
   return !(englishTokens.length >= 2 && frenchTokens.length <= 1);
+}
+
+function isSpanishText(text: string): boolean {
+  const spanishTokens = text.match(/\b(?:hola|puedes|ayudarme|pregunta|precio|modelo|modelos|crear|video|referencia)\b/g) ?? [];
+  if (spanishTokens.length === 0) return false;
+
+  const englishTokens = text.match(/\b(?:can|you|help|choose|models|prompts|what|how|here)\b/g) ?? [];
+  return !(englishTokens.length >= 2 && spanishTokens.length <= 1);
+}
+
+function isLowIntentOpening(text: string): boolean {
+  if (/^(hi|hello|hey|bonjour|salut|hola|yo|good morning|good afternoon|good evening)(?:\s+(?:there|again))?[.!? ]*$/.test(text)) return true;
+  return containsAny(text, [
+    'can i ask',
+    'can i ask you',
+    'can i ask you something',
+    'i have a question',
+    'quick question',
+    'i need help',
+    'can you help me',
+    'could you help me',
+    'not sure what to ask',
+    'je peux te poser une question',
+    'j ai une question',
+    'j ai besoin d aide',
+    'tu peux m aider',
+    'puedes ayudarme',
+    'tengo una pregunta',
+  ]) && !containsAny(text, [
+    'video',
+    'ad',
+    'prompt',
+    'model',
+    'models',
+    'engine',
+    'price',
+    'pricing',
+    'workflow',
+    'upload',
+    'reference image',
+    'image',
+    'generate',
+    'create',
+    'creer',
+    'generer',
+  ]);
 }
 
 function escapeRegExp(value: string): string {

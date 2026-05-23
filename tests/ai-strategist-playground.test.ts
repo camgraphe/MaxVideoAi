@@ -471,6 +471,67 @@ test('AI Strategist answers English capability questions in English', async () =
   assert.doesNotMatch(result.assistantMessage, /^Je peux/i);
 });
 
+test('AI Strategist handles plain first greetings without model routing', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'hello',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.sanitizedFinalOutput, undefined);
+  assert.equal(result.llm.briefRefinement.used, false);
+  assert.equal(result.llm.promptWriter.used, false);
+  assert.match(result.assistantMessage, /^Hi\. Yes, I can help\./);
+  assert.match(result.assistantMessage, /rough idea/i);
+});
+
+test('AI Strategist answers French first greetings in French without recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'bonjour',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /^Bonjour\. Oui, je peux t’aider\./);
+  assert.doesNotMatch(result.assistantMessage, /^Hi\./);
+});
+
+test('AI Strategist treats no-intent first questions as onboarding, not creative briefs', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Can I ask you something?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.promptGenerationContext, undefined);
+  assert.match(result.assistantMessage, /create a video/i);
+  assert.doesNotMatch(result.assistantMessage, /I understand this as/i);
+});
+
 test('AI Strategist treats acquisition handoff greetings as capability guidance', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -486,6 +547,26 @@ test('AI Strategist treats acquisition handoff greetings as capability guidance'
   assert.equal(result.orchestrationPlan.task, 'capability_help');
   assert.equal(result.mode, 'product_help');
   assert.equal(result.recommendations, undefined);
+});
+
+test('AI Strategist still routes greeting plus concrete creative intent as a brief', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'hi, I need a dynamic car ad',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'new_video_brief');
+  assert.equal(result.mode, 'recommend');
+  assert.ok(result.recommendations);
+  assert.match(result.normalizedBrief.normalizedBrief, /car|automotive/i);
+  assert.doesNotMatch(result.normalizedBrief.normalizedBrief, /^hi\b/i);
+  assert.doesNotMatch(result.assistantMessage, /I understand this as: hi\b/i);
 });
 
 test('AI Strategist recommends models for creative briefs even when user is unsure about model or workflow', async () => {

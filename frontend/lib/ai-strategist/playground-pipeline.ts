@@ -1401,6 +1401,7 @@ function buildRecommendationRiskLine(
 
 function formatBriefForAcknowledgement(value: string): string {
   const clean = sanitizeProtectedStyleReferences(value)
+    .replace(/^\s*(?:hi|hello|hey|yo|bonjour|salut|hola|good morning|good afternoon|good evening)[,!. ]+/i, '')
     .replace(/\btiktoc\b/gi, 'TikTok')
     .replace(/\bshooes\b/gi, 'shoes')
     .replace(/\bcheep\b/gi, 'cheap')
