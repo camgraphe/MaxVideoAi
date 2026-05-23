@@ -1197,6 +1197,35 @@ test('AI Strategist chat treats explicit model switch during missing-field colle
   assert.notEqual(third.conversationStage, 'awaiting_model_choice');
 });
 
+test('AI Strategist chat treats safest-option follow-ups as selecting the recommended best route', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I have one image. Make this person hold my headphones and speak to camera for TikTok.',
+      mode: 'recommend',
+      surface: 'chat',
+      uploadedAsset: { type: 'image', hasPerson: true, hasProduct: true, isReferenceImage: true },
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'choose the safest option',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+
+  assert.equal(second.orchestrationPlan.task, 'model_or_tier_selection');
+  assert.equal(second.conversationPlan.action, 'select_tier');
+  assert.equal(second.selectedTier, 'best');
+  assert.equal(second.selectedModel, first.recommendations?.best.model.id);
+  assert.notEqual(second.conversationStage, 'awaiting_model_choice');
+});
+
 test('AI Strategist chat routes uploaded creative references to recommendations instead of upload help', async () => {
   const playground = await loadPlaygroundModule();
 
