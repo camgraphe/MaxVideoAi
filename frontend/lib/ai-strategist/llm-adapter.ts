@@ -31,6 +31,8 @@ type GoogleServiceAccount = {
 type AiStrategistLLMEnv = {
   AI_STRATEGIST_LLM_PROVIDER?: string;
   AI_STRATEGIST_LLM_MODEL?: string;
+  AI_STRATEGIST_LLM_MAX_RETRIES?: string;
+  AI_STRATEGIST_LLM_RETRY_BASE_MS?: string;
   GOOGLE_VERTEX_PROJECT_ID?: string;
   GOOGLE_VERTEX_LOCATION?: string;
   GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON?: string;
@@ -332,6 +334,29 @@ async function runCompletion(params: {
   config: AiStrategistLLMConfig;
   options: AiStrategistLLMRunOptions;
 }): Promise<unknown> {
+  const retryOptions = resolveRetryOptions(params.options.env);
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retryOptions.maxRetries; attempt += 1) {
+    try {
+      return await runCompletionOnce(params);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retryOptions.maxRetries || !isRetryableLlmError(error)) {
+        throw error;
+      }
+      await delay(retryOptions.baseDelayMs * 2 ** attempt);
+    }
+  }
+
+  throw lastError;
+}
+
+async function runCompletionOnce(params: {
+  request: AiStrategistLLMRequest<Record<string, unknown>>;
+  config: AiStrategistLLMConfig;
+  options: AiStrategistLLMRunOptions;
+}): Promise<unknown> {
   if (params.options.completionClient) {
     return params.options.completionClient({
       request: params.request,
@@ -339,8 +364,39 @@ async function runCompletion(params: {
       signal: params.options.signal,
     });
   }
-
   return callGoogleVertexGemini(params.config, params.request, params.options.signal);
+}
+
+function resolveRetryOptions(envInput?: AiStrategistLLMEnv): { maxRetries: number; baseDelayMs: number } {
+  const env = envInput ?? process.env;
+  return {
+    maxRetries: clampInteger(env.AI_STRATEGIST_LLM_MAX_RETRIES, 2, 0, 5),
+    baseDelayMs: clampInteger(env.AI_STRATEGIST_LLM_RETRY_BASE_MS, 750, 0, 10_000),
+  };
+}
+
+function isRetryableLlmError(error: unknown): boolean {
+  const message = errorMessage(error).toLowerCase();
+  return (
+    message.includes('status 429') ||
+    message.includes('resource_exhausted') ||
+    message.includes('status 500') ||
+    message.includes('status 502') ||
+    message.includes('status 503') ||
+    message.includes('status 504') ||
+    message.includes('temporarily unavailable')
+  );
+}
+
+function delay(ms: number): Promise<void> {
+  if (ms <= 0) return Promise.resolve();
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function clampInteger(value: string | undefined, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(value ?? '', 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
 }
 
 function resolveLocalLLMConfig(envInput?: AiStrategistLLMEnv):
@@ -438,7 +494,7 @@ function parseGeminiJsonResponse(raw: unknown): unknown {
   if (!text) {
     throw new Error('Vertex Gemini response did not include text output.');
   }
-  return parseJsonText(text);
+  return parseStrategistLlmJsonText(text);
 }
 
 function extractGeminiText(raw: unknown): string | null {
@@ -456,15 +512,54 @@ function extractGeminiText(raw: unknown): string | null {
     .trim() || null;
 }
 
-function parseJsonText(text: string): unknown {
+export function parseStrategistLlmJsonText(text: string): unknown {
   const trimmed = text.trim();
   try {
     return JSON.parse(trimmed) as unknown;
   } catch {
-    const match = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i) ?? trimmed.match(/(\{[\s\S]*\})/);
-    if (!match) throw new Error('Vertex Gemini output was not valid JSON.');
-    return JSON.parse(match[1].trim()) as unknown;
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const candidate = fenced?.[1] ?? extractFirstBalancedJsonObject(trimmed);
+    if (!candidate) throw new Error('Vertex Gemini output was not valid JSON.');
+    return JSON.parse(candidate.trim()) as unknown;
   }
+}
+
+function extractFirstBalancedJsonObject(text: string): string | null {
+  const start = text.indexOf('{');
+  if (start < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaping = false;
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (inString) {
+      if (escaping) {
+        escaping = false;
+      } else if (char === '\\') {
+        escaping = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === '{') {
+      depth += 1;
+      continue;
+    }
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(start, index + 1);
+    }
+  }
+
+  return null;
 }
 
 function parseServiceAccount(raw: string): GoogleServiceAccount {

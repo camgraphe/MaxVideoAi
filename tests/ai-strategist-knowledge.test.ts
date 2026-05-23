@@ -880,6 +880,77 @@ test('runPromptWriterLLM validates local LLM output and falls back safely', asyn
   assert.ok(invalid.output.uiActions.every((action: { type?: unknown; value?: unknown }) => typeof action.type === 'string' && typeof action.value === 'string'));
 });
 
+test('parseStrategistLlmJsonText accepts a first valid JSON object with trailing model text', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+
+  const parsed = llmAdapter.parseStrategistLlmJsonText(
+    [
+      '{',
+      '  "assistantMessage": "Ready",',
+      '  "finalPrompt": "Subject: perfume bottle with a brace-like reflection } inside the text",',
+      '  "negativePrompt": "none",',
+      '  "settings": ["9:16"],',
+      '  "warnings": [],',
+      '  "uiActions": [{"type":"SET_PROMPT","value":"Subject: perfume"}]',
+      '}',
+      'Note: I followed the requested schema.',
+    ].join('\n')
+  );
+
+  assert.equal((parsed as { assistantMessage?: string }).assistantMessage, 'Ready');
+  assert.match((parsed as { finalPrompt?: string }).finalPrompt ?? '', /brace-like reflection/);
+});
+
+test('runPromptWriterLLM retries transient local LLM errors before falling back', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'seedance-2-0',
+    workflow: 'text-to-video',
+    promptStructureId: 'social-ad',
+    brief: 'Social-first sneaker ad with voiceover, vertical',
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    AI_STRATEGIST_LLM_MAX_RETRIES: '1',
+    AI_STRATEGIST_LLM_RETRY_BASE_MS: '0',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+  let attempts = 0;
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        throw new Error('Vertex Gemini request failed with status 429: RESOURCE_EXHAUSTED');
+      }
+      return {
+        assistantMessage: 'Prepared a Seedance prompt.',
+        finalPrompt: [
+          'Subject: sneakers with crisp silhouette in vertical social framing',
+          'Duration: 8 seconds total',
+          'Action: fast product reveal with one voiceover beat',
+          'Camera: handheld-style push-in, vertical 9:16',
+          'Style: bright creator ad lighting, clean studio texture',
+          'Audio: off-camera voiceover with light sneaker impact SFX',
+        ].join('\n'),
+        negativePrompt: 'no unreadable text, no warped shoe shape',
+        settings: ['9:16', 'Duration: 8 seconds'],
+        warnings: ['Exact logos and tiny text may drift.'],
+        uiActions: [{ type: 'SET_PROMPT', value: 'Subject: sneakers' }],
+      };
+    },
+  });
+
+  assert.equal(attempts, 2);
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.source, 'llm');
+  assert.match(result.output.finalPrompt, /^Subject:/);
+});
+
 test('runPromptWriterLLM falls back when the LLM claims unsupported 8K resolution', async () => {
   const { prompts, llmAdapter } = await loadStrategistModules();
   const context = prompts.buildPromptGenerationContext({

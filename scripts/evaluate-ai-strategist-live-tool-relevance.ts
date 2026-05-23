@@ -423,7 +423,7 @@ async function runScenario(
   const recentTurns: StrategistConversationTurn[] = [];
   const reports: LiveTurnReport[] = [];
 
-  for (const turn of scenario.turns) {
+  async function executeTurn(turn: LiveTurn) {
     const selectedModel =
       turn.selectedModel ??
       (turn.selectedTier && previous?.recommendations ? previous.recommendations[turn.selectedTier].model.id : undefined);
@@ -457,12 +457,30 @@ async function runScenario(
     }
   }
 
+  for (const turn of scenario.turns) {
+    if (isGeneratePromptTurn(turn) && previous?.conversationStage === 'collecting_missing_fields') {
+      await executeTurn({
+        label: `${turn.label} / auto assumptions`,
+        userMessage: 'Make assumptions',
+        expect: {
+          task: 'prompt_build',
+          mustMentionAny: ["Here's what I'll build", 'Generate the prompt'],
+        },
+      });
+    }
+    await executeTurn(turn);
+  }
+
   return {
     id: scenario.id,
     label: scenario.label,
     passed: reports.every((report) => report.relevanceIssues.length === 0),
     turns: reports,
   };
+}
+
+function isGeneratePromptTurn(turn: LiveTurn): boolean {
+  return normalize(turn.userMessage) === 'generate prompt';
 }
 
 function buildConversationState(
