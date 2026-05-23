@@ -681,6 +681,82 @@ test('AI Strategist chat can make assumptions, confirm direction, then generate 
   assert.doesNotMatch(fourth.sanitizedFinalOutput.finalPrompt, /Street Fighter/i);
 });
 
+test('AI Strategist chat applies duration changes during confirmation without returning to model choice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'j aimerai un spokesperson avec mon produit dans les mains, j ai juste une image',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'un casque audio. je veux qu ils disent que c est beau et que le son est top, c est pour tiktok en mode influencer en anglais',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+  const fourth = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'je veux que ca dure 15 secondes',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(third),
+    },
+    { env: {} }
+  );
+
+  assert.equal(third.conversationStage, 'awaiting_confirmation');
+  assert.equal(fourth.conversationPlan.action, 'build_prompt');
+  assert.notEqual(fourth.conversationStage, 'awaiting_model_choice');
+  assert.equal(fourth.selectedModel, third.selectedModel);
+  assert.equal(fourth.workflow, third.workflow);
+  assert.equal(fourth.recommendations?.best.model.id, third.recommendations?.best.model.id);
+  assert.match(fourth.assistantMessage, /Duration: 15 seconds/i);
+  assert.match(fourth.briefCompletion?.resolvedBrief ?? '', /15 secondes/i);
+
+  const fifth = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Generate prompt',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(fourth),
+    },
+    { env: {} }
+  );
+  const sixth = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'modifie le prompt pour une duree de 12 secondes',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(fifth),
+    },
+    { env: {} }
+  );
+
+  assert.equal(fifth.conversationStage, 'prompt_ready');
+  assert.equal(sixth.conversationPlan.action, 'build_prompt');
+  assert.notEqual(sixth.conversationStage, 'awaiting_model_choice');
+  assert.equal(sixth.selectedModel, fifth.selectedModel);
+  assert.match(sixth.sanitizedFinalOutput?.finalPrompt ?? '', /Duration:\n12 seconds/i);
+});
+
 test('AI Strategist chat does not ask generic clarification for a clear perfume product brief', async () => {
   const playground = await loadPlaygroundModule();
 

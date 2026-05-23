@@ -995,7 +995,9 @@ function shouldAllowBriefAssumptions(body: ReturnType<typeof normalizePlayground
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
-  return body.conversationState?.stage === 'collecting_missing_fields' || containsAny(text, [
+  return body.conversationState?.stage === 'collecting_missing_fields' || body.conversationState?.stage === 'awaiting_confirmation' || containsAny(text, [
+    'revision:',
+    'duration:',
     'make assumptions',
     'smart assumptions',
     'go ahead',

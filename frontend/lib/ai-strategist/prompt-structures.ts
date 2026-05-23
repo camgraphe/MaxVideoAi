@@ -1681,6 +1681,7 @@ function insertBeforeField(prompt: string, fieldLabel: string, block: string, af
 
 function durationBoundsForModel(modelId: AiStrategistModelId): { min: number; max: number } {
   if (modelId === 'veo-3-1' || modelId === 'veo-3-1-fast' || modelId === 'veo-3-1-lite') return { min: 4, max: 8 };
+  if (modelId === 'kling-3-pro' || modelId === 'kling-3-standard') return { min: 3, max: 15 };
   if (modelId === 'seedance-2-0' || modelId === 'seedance-2-0-fast' || modelId === 'happy-horse-1-0') return { min: 3, max: 15 };
   if (modelId === 'ltx-2-3' || modelId === 'pika') return { min: 4, max: 10 };
   if (modelId === 'sora') return { min: 4, max: 20 };
@@ -1688,9 +1689,10 @@ function durationBoundsForModel(modelId: AiStrategistModelId): { min: number; ma
 }
 
 function extractRequestedDurationSeconds(brief: string): number | undefined {
-  const match = brief.match(/\b(\d{1,2})\s*(?:seconds?|secs?|sec|s|secondes?)\b/i);
-  if (!match) return undefined;
-  const seconds = Number.parseInt(match[1], 10);
+  const matches = Array.from(brief.matchAll(/\b(\d{1,2})\s*(?:seconds?|secs?|sec|s|secondes?)\b/gi));
+  const latestMatch = matches.at(-1);
+  if (!latestMatch) return undefined;
+  const seconds = Number.parseInt(latestMatch[1], 10);
   return Number.isFinite(seconds) && seconds > 0 ? seconds : undefined;
 }
 

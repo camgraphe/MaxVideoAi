@@ -111,7 +111,7 @@ const modelAliases: readonly { modelId: AiStrategistModelId; aliases: readonly s
 export function planStrategistConversation(input: StrategistConversationPlannerInput): StrategistConversationPlan {
   const rawUserMessage = cleanText(input.rawUserMessage);
   const normalized = normalizeSearchText(rawUserMessage);
-  const previousBrief = input.conversationState?.lastNormalizedBrief?.normalizedBrief;
+  const previousBrief = input.conversationState?.lastBriefCompletion?.resolvedBrief ?? input.conversationState?.lastNormalizedBrief?.normalizedBrief;
   const hasPreviousBrief = Boolean(previousBrief && previousBrief !== 'Unspecified video brief.');
   const selectedTier = resolveTier(normalized);
   const selectedModel = resolveModelId(normalized, input.conversationState?.lastRecommendations);
@@ -154,6 +154,21 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         confidence: 0.94,
       };
     }
+  }
+
+  if ((previousStage === 'awaiting_confirmation' || previousStage === 'prompt_ready') && hasPreviousBrief && isContextualBriefRevision(normalized)) {
+    const resolvedBrief = mergeBriefRevision(previousBrief, rawUserMessage);
+    return {
+      action: 'build_prompt',
+      rawUserMessage,
+      resolvedBrief,
+      selectedTier: lastBriefCompletion?.selectedTier ?? input.conversationState?.lastSelectedTier,
+      selectedModel: lastBriefCompletion?.selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
+      selectedWorkflow: input.selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.88,
+    };
   }
 
   if (previousStage === 'collecting_missing_fields' && hasPreviousBrief) {
@@ -338,6 +353,13 @@ function appendAssumptionsToBrief(brief: string | undefined, assumptions: readon
   if (!brief) return undefined;
   if (!assumptions?.length) return brief;
   return `${brief}. Assumed direction: ${assumptions.join('; ')}.`;
+}
+
+function mergeBriefRevision(brief: string | undefined, revision: string): string | undefined {
+  if (!brief) return undefined;
+  const cleanRevision = cleanText(revision);
+  if (!cleanRevision) return brief;
+  return `${brief}. Revision: ${cleanRevision}.`;
 }
 
 function resolveTier(text: string): AiStrategistTierPosition | undefined {
@@ -541,6 +563,21 @@ function isPromptConfirmation(text: string): boolean {
   return (
     /^(yes|yep|ok|okay|go|go ahead|generate|generate prompt|build prompt|confirm|confirmed|do it|continue|vas y|vas-y)\b/.test(text) ||
     containsAny(text, ['generate prompt', 'build prompt', 'go ahead', 'do it', 'continue'])
+  );
+}
+
+function isContextualBriefRevision(text: string): boolean {
+  if (!text) return false;
+  if (isProductHelpRequest(text) || resolveNavigationSuggestion(text)) return false;
+  if (/\b(?:change|choose|switch|select|use|prendre|choisir|changer)\s+(?:the\s+)?(?:model|engine|tier|best|medium|value|modele|modèle)\b/.test(text)) return false;
+  return (
+    /\b(?:duration|seconds?|secs?|secondes?|dure|durer|15s|10s|8s|6s)\b/.test(text) ||
+    /\b(?:9:16|16:9|1:1|vertical|landscape|portrait|format)\b/.test(text) ||
+    /\b(?:change|modify|update|adjust|revise|make it|make this|mets|mettre|modifie|modifier|change|changer|ajoute|ajouter|enleve|enlever)\b/.test(text) ||
+    /\b(?:more|less|plus|moins|premium|cinematic|social|tiktok|influencer|english|anglais|french|francais|français)\b/.test(text) ||
+    /\b(?:voiceover|dialogue|spoken|speaking|lip-sync|audio|sfx|music|dit|disent|dire)\b/.test(text) ||
+    /\b(?:camera|close-up|wide|push-in|handheld|orbit|lighting|style|mood|background)\b/.test(text) ||
+    /\b(?:prompt|brief)\b/.test(text)
   );
 }
 
