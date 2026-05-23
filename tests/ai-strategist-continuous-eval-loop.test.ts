@@ -67,6 +67,29 @@ test('scenario generator creates runnable English-first eval scenarios', () => {
   assert.ok(englishCount / generated.scenarios.length >= 0.7);
 });
 
+test('scenario expansion creates deterministic adversarial variants while preserving expectations', () => {
+  const baseline = generateStrategistScenariosFromSeeds({
+    seedPath: 'docs/ai-strategist/evals/scenario-seeds.json',
+    batchSize: 12,
+    englishFirst: true,
+    offset: 0,
+  });
+  const expanded = generateStrategistScenariosFromSeeds({
+    seedPath: 'docs/ai-strategist/evals/scenario-seeds.json',
+    batchSize: 12,
+    englishFirst: true,
+    offset: 0,
+    expandScenarios: true,
+    expansionRound: 3,
+  });
+
+  assert.equal(expanded.scenarios.length, baseline.scenarios.length);
+  assert.match(expanded.description, /expanded/i);
+  assert.ok(expanded.scenarios.every((scenario) => scenario.id.includes('-exp-')));
+  assert.notEqual(expanded.scenarios[0]?.turns[0]?.userMessage, baseline.scenarios[0]?.turns[0]?.userMessage);
+  assert.deepEqual(expanded.scenarios[0]?.turns[0]?.expect, baseline.scenarios[0]?.turns[0]?.expect);
+});
+
 test('quality judge scores advisor behavior and clusters failures by owner', () => {
   const score = scoreStrategistTranscript({
     userMessage: 'hi',
@@ -94,6 +117,23 @@ test('continuous loop stops only after repeated clean runs or max iterations', (
   assert.equal(shouldStopStrategistLoop({ cleanRuns: 2, stopAfterCleanRuns: 3, iteration: 10, maxIterations: 20 }), false);
   assert.equal(shouldStopStrategistLoop({ cleanRuns: 3, stopAfterCleanRuns: 3, iteration: 10, maxIterations: 20 }), true);
   assert.equal(shouldStopStrategistLoop({ cleanRuns: 0, stopAfterCleanRuns: 3, iteration: 20, maxIterations: 20 }), true);
+});
+
+test('continuous loop can keep expanding scenarios after clean runs until max iterations', () => {
+  assert.equal(shouldStopStrategistLoop({
+    cleanRuns: 10,
+    stopAfterCleanRuns: 3,
+    iteration: 10,
+    maxIterations: 20,
+    continueAfterCleanRuns: true,
+  }), false);
+  assert.equal(shouldStopStrategistLoop({
+    cleanRuns: 10,
+    stopAfterCleanRuns: 3,
+    iteration: 20,
+    maxIterations: 20,
+    continueAfterCleanRuns: true,
+  }), true);
 });
 
 test('rough upload image phrasing routes to asset reference help', async () => {

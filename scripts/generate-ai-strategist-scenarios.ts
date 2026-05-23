@@ -46,17 +46,26 @@ export function generateStrategistScenariosFromSeeds(input: {
   batchSize: number;
   englishFirst: boolean;
   offset?: number;
+  expandScenarios?: boolean;
+  expansionRound?: number;
 }): GeneratedStrategistScenarioFixture {
   const fixture = JSON.parse(readFileSync(input.seedPath, 'utf8')) as SeedFixture;
   validateSeedFixture(fixture, input.seedPath);
 
   const ordered = orderSeeds(fixture.seeds, input.englishFirst);
   const selected = takeCycledBatch(ordered, input.batchSize, input.offset ?? 0);
+  const expansionRound = Math.max(1, Math.floor(input.expansionRound ?? 1));
+  const scenarios = selected.map((seed, index) => input.expandScenarios
+    ? seedToScenario(expandSeed(seed, index, expansionRound))
+    : seedToScenario(seed)
+  );
 
   return {
     version: 1,
-    description: 'Generated AI Strategist conversation scenarios from the English-first seed bank.',
-    scenarios: selected.map(seedToScenario),
+    description: input.expandScenarios
+      ? `Generated expanded AI Strategist conversation scenarios from the English-first seed bank. Expansion round: ${expansionRound}.`
+      : 'Generated AI Strategist conversation scenarios from the English-first seed bank.',
+    scenarios,
   };
 }
 
@@ -76,6 +85,62 @@ function orderSeeds(seeds: Seed[], englishFirst: boolean): Seed[] {
 function takeCycledBatch<T>(items: T[], batchSize: number, offset: number): T[] {
   if (!items.length || batchSize <= 0) return [];
   return Array.from({ length: batchSize }, (_, index) => items[(offset + index) % items.length]).filter((item): item is T => Boolean(item));
+}
+
+const expansionStrategies = [
+  { id: 'context', wrap: contextualizeTurn },
+  { id: 'hesitant', wrap: hesitateTurn },
+  { id: 'messy', wrap: addMessyClientLanguage },
+  { id: 'handoff', wrap: addAcquisitionHandoff },
+] as const;
+
+function expandSeed(seed: Seed, index: number, expansionRound: number): Seed {
+  const strategy = expansionStrategies[(index + expansionRound - 1) % expansionStrategies.length] ?? expansionStrategies[0];
+  return {
+    ...seed,
+    id: `${seed.id}-exp-r${expansionRound}-${strategy.id}`,
+    turns: seed.turns.map((turn, turnIndex) => strategy.wrap(seed, turn, turnIndex)),
+  };
+}
+
+function contextualizeTurn(seed: Seed, turn: string, turnIndex: number): string {
+  if (turnIndex > 0) return turn;
+  if (seed.category === 'greeting') return `I just landed on MaxVideoAI and need direction. ${turn}`;
+  if (seed.category === 'pricing') return `Before I spend credits, ${turn}`;
+  if (seed.category === 'examples') return `Before I choose an engine, ${turn}`;
+  if (seed.category === 'workflow_help') return `I'm trying to pick the right workflow. ${turn}`;
+  if (seed.category === 'prompt_improvement') return `I have a rough prompt to improve. ${turn}`;
+  if (seed.category === 'model_advice') return `For a real client project, ${turn}`;
+  return `For a client campaign, ${turn}`;
+}
+
+function hesitateTurn(seed: Seed, turn: string, turnIndex: number): string {
+  if (turnIndex > 0) return turn;
+  if (seed.category === 'greeting') return `${turn} - I'm not sure what I should ask first.`;
+  if (seed.category === 'prompt_improvement') return `${turn} I can paste it if needed.`;
+  if (seed.category === 'pricing') return `${turn} I want to avoid surprises before checkout.`;
+  if (seed.category === 'workflow_help') return `${turn} I only need the right path, not a render yet.`;
+  return `${turn} Not sure which model or workflow is best.`;
+}
+
+function addMessyClientLanguage(seed: Seed, turn: string, turnIndex: number): string {
+  if (turnIndex > 0) return turn;
+  if (seed.category === 'greeting') return `hey, ${turn}, can u guide me?`;
+  if (seed.category === 'pricing') return `${turn} pls, no credits spent yet`;
+  if (seed.category === 'examples') return `${turn} b4 I pay pls`;
+  if (seed.category === 'workflow_help') return `${turn} idk workflow`;
+  if (seed.category === 'prompt_improvement') return `${turn} pls make it less basic`;
+  return `${turn} pls, make smart assumptions if needed`;
+}
+
+function addAcquisitionHandoff(seed: Seed, turn: string, turnIndex: number): string {
+  if (turnIndex > 0) return turn;
+  if (seed.category === 'greeting') return `I came from an ad and I need help. ${turn}`;
+  if (seed.category === 'pricing') return `I'm comparing tools before signup. ${turn}`;
+  if (seed.category === 'examples') return `I need proof before choosing. ${turn}`;
+  if (seed.category === 'workflow_help') return `I have assets but I'm not technical. ${turn}`;
+  if (seed.category === 'prompt_improvement') return `I want the strategist to improve a prompt. ${turn}`;
+  return `I'm testing MaxVideoAI for a campaign. ${turn}`;
 }
 
 function seedToScenario(seed: Seed): GeneratedScenario {
@@ -160,6 +225,8 @@ function parseArgs(args: string[]) {
     batchSize: numberArg(args, '--batch-size', Number(process.env.AI_STRATEGIST_EVAL_BATCH_SIZE ?? 80)),
     offset: numberArg(args, '--offset', Number(process.env.AI_STRATEGIST_EVAL_OFFSET ?? 0)),
     englishFirst: !args.includes('--no-english-first'),
+    expandScenarios: args.includes('--expand-scenarios') || args.includes('--scenario-expansion'),
+    expansionRound: numberArg(args, '--expansion-round', Number(process.env.AI_STRATEGIST_EXPANSION_ROUND ?? 1)),
   };
 }
 

@@ -383,6 +383,199 @@ test('AI Strategist orchestrator explains its own capabilities without creative 
   assert.match(result.assistantMessage, /I will not run generation/i);
 });
 
+test('AI Strategist treats acquisition handoff greetings as capability guidance', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I just landed on MaxVideoAI and need direction. hi',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+});
+
+test('AI Strategist recommends models for creative briefs even when user is unsure about model or workflow', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'premium headphones product ad, black background, blue rim light, 15 seconds Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'new_video_brief');
+  assert.ok(result.recommendations);
+});
+
+test('AI Strategist keeps expanded hesitant creative briefs as briefs', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const cases = [
+    'arcade fighting inspired scene, two stylized fighters, rooftop at night Not sure which model or workflow is best.',
+    'use my uploaded headshot and make me speak to camera Not sure which model or workflow is best.',
+    'premium jewelry video, gold ring on velvet, slow macro camera Not sure which model or workflow is best.',
+    'realistic human office scene with subtle camera movement Not sure which model or workflow is best.',
+    'fantasy creature animation breathing fire in a dark cave Not sure which model or workflow is best.',
+    'I have a reference image of a person, but I only need subtle silent movement Not sure which model or workflow is best.',
+  ];
+
+  for (const userMessage of cases) {
+    const result = await playground.runAiStrategistPlaygroundPipeline(
+      {
+        userMessage,
+        mode: 'recommend',
+        surface: 'chat',
+      },
+      { env: {} }
+    );
+
+    assert.equal(result.orchestrationPlan.task, 'new_video_brief', userMessage);
+    assert.ok(result.recommendations, userMessage);
+  }
+});
+
+test('AI Strategist keeps noisy cheapest-model questions as pricing help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'whats cheapest vid model?? Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /cheapest|least expensive|\$0\.04/i);
+});
+
+test('AI Strategist treats premium without burning credits as model tradeoff advice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: "I need something that looks premium but I don't want to burn credits pls, no credits spent yet",
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_advice');
+  assert.ok(result.recommendations);
+  assert.match(result.assistantMessage, /cost-aware|balanced|value|credits/i);
+});
+
+test('AI Strategist keeps noisy model comparisons as model advice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I saw Veo on the site. Is it better than Seedance for ads? Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_advice');
+  assert.ok(result.recommendations);
+});
+
+test('AI Strategist keeps French model comparisons as model advice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'pour une scene humaine premium avec dialogue, tu conseilles plutot veo ou kling ?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_advice');
+  assert.ok(result.recommendations);
+});
+
+test('AI Strategist keeps noisy best-model questions as model advice', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: "What's the best model for TikTok ads with fast motion? Not sure which model or workflow is best.",
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_advice');
+  assert.ok(result.recommendations);
+});
+
+test('AI Strategist routes model location questions to navigation help even with acquisition wording', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I need proof before choosing. where is Veo Lite?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /veo|model|examples|\/models|\/examples/i);
+});
+
+test('AI Strategist keeps multilingual creative briefs as briefs when model or workflow is uncertain', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'une pub de voiture dynamique Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'new_video_brief');
+  assert.ok(result.recommendations);
+});
+
+test('AI Strategist preserves model info routing when a support question mentions workflow uncertainty', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Which Veo models support 4K? Not sure which model or workflow is best.',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_info_help');
+  assert.equal(result.recommendations, undefined);
+});
+
 test('AI Strategist orchestrator explains MaxVideoAI site capabilities in French', async () => {
   const playground = await loadPlaygroundModule();
 

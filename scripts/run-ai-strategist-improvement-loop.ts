@@ -7,10 +7,13 @@ type StopInput = {
   stopAfterCleanRuns: number;
   iteration: number;
   maxIterations: number;
+  continueAfterCleanRuns?: boolean;
 };
 
 export function shouldStopStrategistLoop(input: StopInput): boolean {
-  return input.cleanRuns >= input.stopAfterCleanRuns || input.iteration >= input.maxIterations;
+  if (input.iteration >= input.maxIterations) return true;
+  if (input.continueAfterCleanRuns) return false;
+  return input.cleanRuns >= input.stopAfterCleanRuns;
 }
 
 function main() {
@@ -23,7 +26,8 @@ function main() {
     const fixturePath = resolve(reportDir, `generated-scenarios-${iteration}.json`);
     const jsonReportPath = resolve(reportDir, `eval-report-${iteration}.json`);
     const markdownReportPath = resolve(reportDir, `eval-report-${iteration}.md`);
-    const offset = (iteration - 1) * options.batchSize;
+    const offset = options.offset + (iteration - 1) * options.batchSize;
+    const expansionRound = options.expansionRoundOffset + iteration;
 
     runOrThrow('npx', [
       'tsx',
@@ -35,6 +39,11 @@ function main() {
       String(options.batchSize),
       '--offset',
       String(offset),
+      ...(options.scenarioExpansion ? [
+        '--expand-scenarios',
+        '--expansion-round',
+        String(expansionRound),
+      ] : []),
       ...(options.englishFirst ? [] : ['--no-english-first']),
     ]);
 
@@ -62,6 +71,9 @@ function main() {
       fixturePath,
       jsonReportPath,
       markdownReportPath,
+      scenarioExpansion: options.scenarioExpansion,
+      expansionRound,
+      continueAfterCleanRuns: options.continueAfterCleanRuns,
     });
 
     writeFileSync(resolve(reportDir, 'latest-loop-summary.md'), summary);
@@ -72,6 +84,7 @@ function main() {
       stopAfterCleanRuns: options.stopAfterCleanRuns,
       iteration,
       maxIterations: options.iterations,
+      continueAfterCleanRuns: options.continueAfterCleanRuns,
     })) {
       process.exitCode = passed ? 0 : 1;
       return;
@@ -87,12 +100,17 @@ function buildSummary(input: {
   fixturePath: string;
   jsonReportPath: string;
   markdownReportPath: string;
+  scenarioExpansion?: boolean;
+  expansionRound?: number;
+  continueAfterCleanRuns?: boolean;
 }) {
   return [
     `# AI Strategist Loop Iteration ${input.iteration}`,
     '',
     `- Passed: ${input.passed ? 'yes' : 'no'}`,
     `- Clean runs: ${input.cleanRuns}/${input.stopAfterCleanRuns}`,
+    `- Scenario expansion: ${input.scenarioExpansion ? `enabled (round ${input.expansionRound})` : 'disabled'}`,
+    `- Continue after clean runs: ${input.continueAfterCleanRuns ? 'yes' : 'no'}`,
     `- Fixture: ${input.fixturePath}`,
     `- JSON report: ${input.jsonReportPath}`,
     `- Markdown report: ${input.markdownReportPath}`,
@@ -108,10 +126,14 @@ function parseArgs(args: string[]) {
   return {
     iterations: numberArg(args, '--iterations', 20),
     batchSize: numberArg(args, '--batch-size', 80),
+    offset: numberArg(args, '--offset', Number(process.env.AI_STRATEGIST_EVAL_OFFSET ?? 0)),
     stopAfterCleanRuns: numberArg(args, '--stop-after-clean-runs', 3),
     englishFirst: args.includes('--english-first') || !args.includes('--no-english-first'),
     writeReports: args.includes('--write-reports'),
     liveJudge: args.includes('--live-judge'),
+    scenarioExpansion: args.includes('--scenario-expansion') || args.includes('--expand-scenarios'),
+    expansionRoundOffset: numberArg(args, '--expansion-round-offset', Number(process.env.AI_STRATEGIST_EXPANSION_ROUND_OFFSET ?? 0)),
+    continueAfterCleanRuns: args.includes('--continue-after-clean-runs') || args.includes('--continuous'),
   };
 }
 

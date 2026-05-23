@@ -57,13 +57,15 @@ function resolveRecommendationTask(
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForGreeting(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
-  if (asksForWorkflow(text)) return 'workflow_help';
-  if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForModelInfo(text)) return 'model_info_help';
+  if (asksForModelNavigation(text)) return 'navigation_help';
+  if (hasCreativeBriefWithModelWorkflowUncertainty(text)) return 'new_video_brief';
+  if (asksForModelAdvice(text)) return 'model_advice';
+  if (asksForWorkflow(text)) return 'workflow_help';
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text)) return 'asset_reference_help';
   if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
-  if (asksForModelInfo(text)) return 'model_info_help';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
 }
@@ -91,6 +93,7 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 
 function asksForPricing(text: string): boolean {
   if (asksForCheapestModel(text)) return true;
+  if (hasModelChoiceBudgetTradeoff(text)) return false;
   if (hasCreativeBudgetBriefIntent(text)) return false;
   return containsAny(text, [
     'price',
@@ -146,6 +149,26 @@ function asksForPricing(text: string): boolean {
     'generation fails',
     'if fail',
     'if it fails',
+  ]);
+}
+
+function hasModelChoiceBudgetTradeoff(text: string): boolean {
+  if (!containsAny(text, ['premium', 'quality', 'high quality', 'best looking', 'looks good', 'look good'])) return false;
+  return containsAny(text, [
+    'burn credits',
+    'waste credits',
+    'spend too much',
+    'too expensive',
+    'not the most expensive',
+    'without spending',
+    'dont want to spend',
+    'don t want to spend',
+    'do not want to spend',
+    'low cost',
+    'cost aware',
+    'cost-aware',
+    'cheap',
+    'cheaper',
   ]);
 }
 
@@ -224,6 +247,9 @@ function asksForCapabilities(text: string): boolean {
     'can you help',
     'can you help me',
     'help me',
+    'need direction',
+    'need guidance',
+    'need help getting started',
     'what should i do first',
     'where should i start',
     'where do i start',
@@ -351,7 +377,23 @@ function asksForSiteNavigation(text: string): boolean {
   return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'model page', 'model pages', 'engines', 'upload', 'pricing', 'examples']);
 }
 
+function asksForModelNavigation(text: string): boolean {
+  if (!containsAny(text, ['where is', 'where can i find', 'show me', 'open', 'find'])) return false;
+  return containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse']);
+}
+
 function asksForModelAdvice(text: string): boolean {
+  if (containsAny(text, [
+    'models support image to video',
+    'models support image-to-video',
+    'support image to video',
+    'support image-to-video',
+    'models support video to video',
+    'models support video-to-video',
+    'support video to video',
+    'support video-to-video',
+  ])) return false;
+  if (isExplicitModelComparison(text)) return true;
   if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\b(?:or|vs|versus)\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
   if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\bbetter than\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
   if (/\bdifference between\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
@@ -404,6 +446,8 @@ function asksForModelAdvice(text: string): boolean {
 
 function asksForModelInfo(text: string): boolean {
   if (!containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse'])) return false;
+  if (isExplicitModelComparison(text)) return false;
+  if (containsAny(text, ['difference between', 'better than', 'which model should i use', 'which engine should i use', 'what model should i use', 'what engine should i use'])) return false;
   return containsAny(text, [
     'what can',
     'what is',
@@ -427,6 +471,95 @@ function asksForModelInfo(text: string): boolean {
     'voice',
     'voix',
     'dialogue',
+  ]);
+}
+
+function isExplicitModelComparison(text: string): boolean {
+  const model = '(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)';
+  return new RegExp(`\\b${model}\\b.*\\b(?:or|ou|vs|versus|plutot|plutôt)\\b.*\\b${model}\\b`).test(text);
+}
+
+function hasCreativeBriefWithModelWorkflowUncertainty(text: string): boolean {
+  if (!containsAny(text, [
+    'not sure which model or workflow',
+    'not sure which model',
+    'idk model',
+    'dont know model',
+    'don t know model',
+  ])) return false;
+  if (containsAny(text, [
+    'better than',
+    'difference between',
+    ' vs ',
+    ' versus ',
+    'which model should i use',
+    'which engine should i use',
+    'what model should i use',
+    'what engine should i use',
+    'pick the best model',
+    'best model for',
+    'best engine for',
+    'recommend a model',
+    'which model is',
+    'which engine is',
+    'what should i use',
+  ])) return false;
+  return hasCreativeBriefSignal(text);
+}
+
+function hasCreativeBriefSignal(text: string): boolean {
+  return containsAny(text, [
+    ' ad',
+    'ad ',
+    'pub',
+    'advert',
+    'commercial',
+    'tiktok',
+    'reel',
+    'product reveal',
+    'product ad',
+    'brand video',
+    'spokesperson',
+    'talking avatar',
+    'speaking to camera',
+    'voiceover',
+    'dialogue',
+    'cinematic',
+    'stylized',
+    'arcade',
+    'fighting',
+    'fighter',
+    'fighters',
+    'rooftop',
+    'macro',
+    'velvet',
+    'jewelry',
+    'ring',
+    'gold ring',
+    'headshot',
+    'reference image',
+    'person',
+    'human',
+    'office scene',
+    'silent movement',
+    'creature',
+    'fantasy',
+    'breathing fire',
+    'dark cave',
+    'restyle',
+    'uploaded video',
+    'product image',
+    'logo',
+    'packaging',
+    'headphones',
+    'sneaker',
+    'drink can',
+    'energy drink',
+    'watch',
+    'perfume',
+    'skincare',
+    'car',
+    'voiture',
   ]);
 }
 
