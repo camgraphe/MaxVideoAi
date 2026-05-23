@@ -470,6 +470,7 @@ function checkQuality(
     'engines',
     'quote',
     'devis',
+    'quick direction check',
     'choose',
     'pick',
     'model',

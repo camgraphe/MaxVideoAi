@@ -113,7 +113,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const normalized = normalizeSearchText(rawUserMessage);
   const previousBrief = input.conversationState?.lastBriefCompletion?.resolvedBrief ?? input.conversationState?.lastNormalizedBrief?.normalizedBrief;
   const hasPreviousBrief = Boolean(previousBrief && previousBrief !== 'Unspecified video brief.');
-  const selectedTier = resolveTier(normalized, hasPreviousBrief);
+  const selectedTier = resolveTier(normalized, hasPreviousBrief) ?? resolveAdvisorChoiceTier(normalized, hasPreviousBrief);
   const selectedModel = resolveModelId(normalized, input.conversationState?.lastRecommendations);
   const promptRequest = isPromptCreationRequest(normalized);
   const improvementRequest = isPromptImprovementRequest(normalized);
@@ -411,6 +411,31 @@ function resolveTier(text: string, hasPreviousBrief = false): AiStrategistTierPo
   return undefined;
 }
 
+function resolveAdvisorChoiceTier(text: string, hasPreviousBrief = false): AiStrategistTierPosition | undefined {
+  if (!hasPreviousBrief) return undefined;
+  if (containsAny(text, [
+    'choose for me',
+    'pick for me',
+    'you choose',
+    'you decide',
+    'choose the best',
+    'pick the best',
+    'choisis pour moi',
+    'choisi pour moi',
+    'tu choisis',
+    'tu decides',
+    'tu decides pour moi',
+    'tu decider',
+    'a toi de choisir',
+    'à toi de choisir',
+    'prends le meilleur',
+    'prend le meilleur',
+  ])) {
+    return 'best';
+  }
+  return undefined;
+}
+
 function resolveModelId(text: string, recommendations?: AiStrategistRecommendations): AiStrategistModelId | undefined {
   const matches = modelAliases.filter((entry) => entry.aliases.some((alias) => includesPhrase(text, alias)));
   if (!matches.length) return undefined;
@@ -588,6 +613,13 @@ function isPromptShareOffer(text: string): boolean {
     'je te partage mon prompt',
     'te partager mon prompt',
     'te le partager',
+    'g deja un prompt',
+    'j ai deja un prompt',
+    'j ai déjà un prompt',
+    'jai deja un prompt',
+    'jai déjà un prompt',
+    'deja un prompt',
+    'déjà un prompt',
   ]);
 }
 

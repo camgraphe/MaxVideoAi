@@ -724,6 +724,115 @@
       ]
     },
     {
+      "id": "choose-for-me-after-recommendation",
+      "label": "Client asks the strategist to choose after recommendations",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "starts social product brief",
+          "userMessage": "j ai besoin d une pub TikTok pour une boisson energisante",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "quality": {
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        },
+        {
+          "label": "asks strategist to choose",
+          "userMessage": "choisis pour moi",
+          "expect": {
+            "action": "select_tier",
+            "selectedModelPresent": true,
+            "notStage": "awaiting_model_choice",
+            "mustMentionAny": ["Quick direction check", "Here’s what I’ll build", "Here's what I'll build"],
+            "quality": {
+              "actionableNextStep": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "prompt-edit-intake-informal-fr",
+      "label": "Informal French prompt edit intake",
+      "category": "language_issue",
+      "turns": [
+        {
+          "label": "asks to improve existing Seedance prompt with informal French",
+          "userMessage": "g deja un prompt seedance tu peux l ameliorer ?",
+          "expect": {
+            "action": "await_prompt_paste",
+            "task": "prompt_edit_intake",
+            "stage": "awaiting_prompt_paste",
+            "selectedModel": "seedance-2-0",
+            "noRecommendations": true,
+            "mustMentionAny": ["colle ton prompt", "paste the prompt"],
+            "quality": {
+              "actionableNextStep": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "product-logo-text-preservation-fr",
+      "label": "Product image with logo and text preservation concern",
+      "category": "asset_reference_routing",
+      "turns": [
+        {
+          "label": "asks to animate a product image with logo and text",
+          "userMessage": "j ai une image produit avec logo et texte, je veux l animer sans deformer le packaging",
+          "uploadedAsset": {
+            "type": "image",
+            "hasProduct": true,
+            "hasLogo": true,
+            "hasText": true,
+            "isReferenceImage": true
+          },
+          "expect": {
+            "workflow": "image-to-video",
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "warningsMentionAny": ["Exact labels", "logos", "tiny text", "legal copy"],
+            "quality": {
+              "actionableNextStep": true,
+              "conversationalAdvisor": true,
+              "preservesSafety": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing-page-credits-fr",
+      "label": "Pricing and credits navigation",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks where to see tariffs and credits",
+          "userMessage": "ou voir les tarifs et les credits ?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["pricing", "price", "prix", "credits"],
+            "quality": {
+              "actionableNextStep": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "ambiguous-prompt-improvement",
       "label": "Ambiguous prompt improvement",
       "category": "language_issue",
