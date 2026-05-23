@@ -155,6 +155,7 @@ export function answerEngineSettingsQuestion(input: { rawUserMessage: string }):
       `Resolutions: ${resolutions.length ? resolutions.join(', ') : 'not listed'}.`,
       `Aspect ratios: ${aspectRatios.length ? aspectRatios.join(', ') : 'not listed'}.`,
       `Audio toggle: ${audioSupported ? 'available where exposed' : 'not listed'}.`,
+      'Use this to choose the workflow and settings in the generator; the currently exposed generator controls remain authoritative.',
     ].join('\n'),
     sources: [engineCatalogSource()],
     confidence: 0.88,
@@ -188,8 +189,12 @@ function asksForCheapestEngine(value: string): boolean {
     'lowest price',
     'cheaper',
     'moins cher',
+    'moin cher',
     'moins couteux',
     'pas cher',
+    'barato',
+    'mas barato',
+    'menos caro',
   ].some((phrase) => text.includes(phrase));
 }
 
@@ -208,6 +213,7 @@ function isFrenchText(value: string): boolean {
     'quelle',
     'modele',
     'moins cher',
+    'moin cher',
     'tarif',
     'prix',
     'combien',

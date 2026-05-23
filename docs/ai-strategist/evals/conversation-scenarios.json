@@ -27,6 +27,54 @@
       ]
     },
     {
+      "id": "pricing-cheapest-typo-fr",
+      "label": "Pricing help with informal French typo",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks cheapest model with typo",
+          "userMessage": "c koi le modele moin cher pr faire une video ?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["$0.04"],
+            "mustMentionAny": ["moins cher", "cheapest"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing-cheapest-es",
+      "label": "Pricing help in Spanish",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks cheapest model in Spanish",
+          "userMessage": "cuál es el modelo más barato para video?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["$0.04"],
+            "mustMentionAny": ["cheapest", "barato", "menos caro"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "capabilities-fr",
       "label": "Capabilities help in French",
       "category": "safety_or_funnel",
@@ -102,6 +150,29 @@
       ]
     },
     {
+      "id": "model-info-seedance-lipsync-fr",
+      "label": "Model support question: Seedance lip sync",
+      "category": "knowledge_gap",
+      "turns": [
+        {
+          "label": "asks whether Seedance supports lip sync",
+          "userMessage": "est ce que seedance fait le lip sync ?",
+          "expect": {
+            "task": "model_info_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["Seedance 2.0"],
+            "mustMentionAny": ["lip-sync", "lip sync", "audio"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "settings-kling-4k-fr",
       "label": "Engine settings answer",
       "category": "knowledge_gap",
@@ -146,6 +217,29 @@
             "task": "examples_help",
             "noRecommendations": true,
             "mustMentionAny": ["Kling examples", "/examples/kling"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "examples-before-paying-fr",
+      "label": "Examples discovery before paying",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks to see examples before paying",
+          "userMessage": "je veux voir des exemples avant de payer",
+          "expect": {
+            "task": "examples_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["/examples"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -545,6 +639,53 @@
               "actionableNextStep": true,
               "avoidsTechnicalJargon": true,
               "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "budget-creative-brief-es",
+      "label": "Budget creative brief in Spanish should recommend value routes",
+      "category": "model_recommendation_issue",
+      "turns": [
+        {
+          "label": "asks for cheap TikTok ad test in Spanish",
+          "userMessage": "quiero un anuncio TikTok barato para probar un producto",
+          "expect": {
+            "task": "new_video_brief",
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "mustNotMention": ["Price depends mainly on model"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "credits-budget-question-fr",
+      "label": "Credit budget question should guide pricing without generation",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks what can be done with 5 credits",
+          "userMessage": "j ai 5 credits qu est ce que je peux faire ?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["credits", "crédits"],
+            "mustMentionAnyGroup": [["model", "duration"], ["modèle", "durée"], ["modele", "duree"]],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
               "acquisitionFunnelForward": true
             }
           }

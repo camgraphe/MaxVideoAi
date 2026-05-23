@@ -34,6 +34,7 @@ export function answerExamplesQuestion(input: { rawUserMessage: string }): Strat
         'Examples hub: /examples.',
         'Use it to inspect real outputs, prompts, settings, and model behavior before choosing a model.',
         'I could not match a specific model family, so I will not invent a family examples page.',
+        'I will not navigate automatically, run generation, or spend credits.',
       ].join('\n'),
       sources: examplesSources(),
       confidence: 0.54,

@@ -88,6 +88,7 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 }
 
 function asksForPricing(text: string): boolean {
+  if (asksForCheapestModel(text)) return true;
   if (hasCreativeBudgetBriefIntent(text)) return false;
   return containsAny(text, [
     'price',
@@ -109,14 +110,23 @@ function asksForPricing(text: string): boolean {
     'lowest price',
     'cheaper',
     'moins cher',
+    'moin cher',
     'moins couteux',
     'moins coûteux',
     'pas cher',
+    'barato',
+    'mas barato',
+    'más barato',
+    'menos caro',
+    'credito',
+    'creditos',
+    'créditos',
   ]);
 }
 
 function hasCreativeBudgetBriefIntent(text: string): boolean {
-  if (!containsAny(text, ['cheap', 'cheaper', 'low cost', 'budget', 'pas cher', 'pas chere', 'moins cher', 'moins chere'])) return false;
+  if (asksForCheapestModel(text)) return false;
+  if (!containsAny(text, ['cheap', 'cheaper', 'low cost', 'budget', 'pas cher', 'pas chere', 'moins cher', 'moins chere', 'barato'])) return false;
   return containsAny(text, [
     'ad',
     'pub',
@@ -132,7 +142,15 @@ function hasCreativeBudgetBriefIntent(text: string): boolean {
     'faire',
     'generer',
     'générer',
+    'anuncio',
+    'barato',
+    'probar',
   ]);
+}
+
+function asksForCheapestModel(text: string): boolean {
+  return containsAny(text, ['model', 'models', 'modele', 'modèle', 'modelo', 'engine', 'engine', 'moteur']) &&
+    containsAny(text, ['cheapest', 'least expensive', 'lowest cost', 'lowest price', 'moins cher', 'moin cher', 'pas cher', 'barato', 'mas barato', 'más barato', 'menos caro']);
 }
 
 function asksForExamples(text: string): boolean {
@@ -225,7 +243,30 @@ function asksForModelAdvice(text: string): boolean {
 
 function asksForModelInfo(text: string): boolean {
   if (!containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse'])) return false;
-  return containsAny(text, ['what can', 'what is', 'best for', 'avoid', 'support', 'supports', 'capable', 'can do', 'tell me about', 'explique', 'sert a quoi', 'sert à quoi']);
+  return containsAny(text, [
+    'what can',
+    'what is',
+    'best for',
+    'avoid',
+    'support',
+    'supports',
+    'capable',
+    'can do',
+    'tell me about',
+    'explique',
+    'sert a quoi',
+    'sert à quoi',
+    'fait quoi',
+    'fait le',
+    'peut faire',
+    'est ce que',
+    'lip sync',
+    'lip-sync',
+    'audio',
+    'voice',
+    'voix',
+    'dialogue',
+  ]);
 }
 
 function containsAny(value: string, needles: readonly string[]): boolean {

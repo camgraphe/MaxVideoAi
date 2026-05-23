@@ -227,6 +227,32 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
     };
   }
 
+  if (selectedTier) {
+    if (!hasPreviousBrief) {
+      return {
+        action: 'ask_clarification',
+        rawUserMessage,
+        selectedTier,
+        clarificationQuestion: 'What video brief should I use for that tier?',
+        shouldUsePreviousBrief: false,
+        shouldUseCurrentPrompt: false,
+        confidence: 0.82,
+      };
+    }
+
+    return {
+      action: 'select_tier',
+      rawUserMessage,
+      resolvedBrief: previousBrief,
+      selectedTier,
+      selectedModel: input.conversationState?.lastRecommendations?.[selectedTier]?.model.id,
+      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.93,
+    };
+  }
+
   const navigationSuggestion = resolveNavigationSuggestion(normalized);
   if (navigationSuggestion) {
     return {
@@ -282,32 +308,6 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       shouldUsePreviousBrief: false,
       shouldUseCurrentPrompt: false,
       confidence: 0.85,
-    };
-  }
-
-  if (selectedTier) {
-    if (!hasPreviousBrief) {
-      return {
-        action: 'ask_clarification',
-        rawUserMessage,
-        selectedTier,
-        clarificationQuestion: 'What video brief should I use for that tier?',
-        shouldUsePreviousBrief: false,
-        shouldUseCurrentPrompt: false,
-        confidence: 0.82,
-      };
-    }
-
-    return {
-      action: 'select_tier',
-      rawUserMessage,
-      resolvedBrief: previousBrief,
-      selectedTier,
-      selectedModel: input.conversationState?.lastRecommendations?.[selectedTier]?.model.id,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
-      shouldUsePreviousBrief: true,
-      shouldUseCurrentPrompt: false,
-      confidence: 0.93,
     };
   }
 
@@ -510,6 +510,11 @@ function isProductHelpRequest(text: string): boolean {
     'combien',
     'combien de credits',
     'combien de crédits',
+    'moin cher',
+    'moins cher',
+    'credito',
+    'creditos',
+    'créditos',
   ]);
 }
 

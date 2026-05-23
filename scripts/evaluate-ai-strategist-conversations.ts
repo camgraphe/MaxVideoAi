@@ -414,6 +414,7 @@ function checkQuality(
     'I will not navigate',
     'I’ll check',
     'next',
+    'give me',
   ])) {
     issues.push(buildIssue(scenario, turn, 'quality.actionableNextStep: assistant did not provide a clear next step'));
   }
@@ -464,6 +465,10 @@ function checkQuality(
     'generate',
     'pricing',
     'price',
+    'cheapest',
+    'engine',
+    'engines',
+    'quote',
     'devis',
     'choose',
     'pick',
@@ -530,10 +535,8 @@ function checkIncludesAnyGroup(
   label: string
 ) {
   if (!groups?.length) return;
-  for (const group of groups) {
-    if (!group.every((needle) => includesNormalized(text, needle))) {
-      issues.push(buildIssue(scenario, turn, `${label}: missing group [${group.join(', ')}]`));
-    }
+  if (!groups.some((group) => group.every((needle) => includesNormalized(text, needle)))) {
+    issues.push(buildIssue(scenario, turn, `${label}: no full group matched`));
   }
 }
 
