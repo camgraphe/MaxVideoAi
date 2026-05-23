@@ -33,6 +33,7 @@ export function resolveStrategistStage(input: {
     input.task === 'site_overview_help' ||
     input.task === 'capability_help' ||
     input.task === 'model_info_help' ||
+    input.task === 'examples_help' ||
     input.task === 'pricing_help' ||
     input.task === 'navigation_help' ||
     input.task === 'workflow_help' ||
@@ -52,9 +53,11 @@ function resolveRecommendationTask(
   text: string
 ): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (asksForSiteNavigation(text)) return 'navigation_help';
   if (asksForModelInfo(text)) return 'model_info_help';
   if (asksForAssetHelp(text) || input.uploadedAsset?.isReferenceImage) return 'asset_reference_help';
   if (asksForModelAdvice(text)) return 'model_advice';
@@ -64,6 +67,7 @@ function resolveRecommendationTask(
 
 function resolveHelpTask(text: string): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
@@ -73,6 +77,7 @@ function resolveHelpTask(text: string): StrategistOrchestratorTask {
 
 function resolveNavigationTask(text: string): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForAssetHelp(text)) return 'asset_reference_help';
@@ -81,6 +86,10 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 
 function asksForPricing(text: string): boolean {
   return containsAny(text, ['price', 'pricing', 'credit', 'credits', 'cost', 'how much', 'how many credits', 'tarif', 'tarifs', 'cout', 'coût', 'combien', 'combien de credits']);
+}
+
+function asksForExamples(text: string): boolean {
+  return containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples']);
 }
 
 function asksForCapabilities(text: string): boolean {
@@ -121,6 +130,11 @@ function asksForWorkflow(text: string): boolean {
 
 function asksForAssetHelp(text: string): boolean {
   return containsAny(text, ['upload image', 'upload an image', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
+}
+
+function asksForSiteNavigation(text: string): boolean {
+  if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing'])) return false;
+  return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'engines', 'upload', 'pricing', 'examples']);
 }
 
 function asksForModelAdvice(text: string): boolean {

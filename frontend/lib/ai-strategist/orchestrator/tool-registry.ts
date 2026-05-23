@@ -11,6 +11,7 @@ const toolsByTask: Record<StrategistOrchestratorTask, readonly StrategistToolNam
   prompt_build: ['conversation_planner', 'brief_refinement', 'prompt_context', 'brief_completion', 'prompt_writer', 'validation'],
   model_advice: ['conversation_planner', 'brief_refinement', 'model_recommendation'],
   model_info_help: ['conversation_planner', 'model_info'],
+  examples_help: ['conversation_planner', 'examples_help'],
   pricing_help: ['conversation_planner', 'pricing_help'],
   site_help: ['conversation_planner', 'product_help'],
   site_overview_help: ['conversation_planner', 'site_overview_help'],

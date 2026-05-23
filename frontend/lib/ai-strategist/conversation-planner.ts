@@ -359,6 +359,17 @@ function resolveModelId(text: string, recommendations?: AiStrategistRecommendati
 }
 
 function resolveNavigationSuggestion(text: string): StrategistNavigationSuggestion | undefined {
+  const examplesSuggestion = resolveExamplesNavigationSuggestion(text);
+  if (examplesSuggestion) return examplesSuggestion;
+
+  if (containsAny(text, ['where do i compare', 'where to compare', 'compare models', 'compare engines', 'compare before generating'])) {
+    return {
+      label: 'Compare',
+      href: '/compare',
+      reason: 'Open Compare to review models side by side, then use Generate when you are ready to create.',
+    };
+  }
+
   if (containsAny(text, ['show me pricing', 'pricing page', 'where is pricing', 'prices', 'tarifs'])) {
     return {
       label: 'Pricing',
@@ -385,6 +396,32 @@ function resolveNavigationSuggestion(text: string): StrategistNavigationSuggesti
     };
   }
 
+  return undefined;
+}
+
+function resolveExamplesNavigationSuggestion(text: string): StrategistNavigationSuggestion | undefined {
+  if (!containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples'])) return undefined;
+  const modelId = resolveModelId(text);
+  const familySlug = modelId ? modelIdToExampleFamily(modelId) : undefined;
+  const label = familySlug ? `${modelLabel(modelId ?? 'seedance-2-0')} examples` : 'Examples';
+  return {
+    label,
+    href: familySlug ? `/examples/${familySlug}` : '/examples',
+    reason: familySlug
+      ? `Open ${label} to inspect real outputs, prompts, settings, and model behavior before generating.`
+      : 'Open Examples to inspect real outputs, prompts, settings, and model behavior before generating.',
+  };
+}
+
+function modelIdToExampleFamily(modelId: AiStrategistModelId): string | undefined {
+  if (modelId.startsWith('kling-')) return 'kling';
+  if (modelId.startsWith('veo-')) return 'veo';
+  if (modelId.startsWith('seedance-')) return 'seedance';
+  if (modelId.startsWith('ltx-')) return 'ltx';
+  if (modelId === 'happy-horse-1-0') return 'happy-horse';
+  if (modelId === 'pika') return 'pika';
+  if (modelId === 'hailuo') return 'hailuo';
+  if (modelId === 'sora') return 'sora';
   return undefined;
 }
 

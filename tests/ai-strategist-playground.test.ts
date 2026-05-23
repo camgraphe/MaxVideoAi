@@ -487,6 +487,51 @@ test('AI Strategist playground answers engine settings from engine catalog', asy
   assert.match(result.assistantMessage, /Resolutions/i);
 });
 
+test('AI Strategist routes example questions to examples pages without auto-navigation', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Show me Kling examples',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'examples_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'examples_help');
+  assert.match(result.assistantMessage, /Kling examples/i);
+  assert.match(result.assistantMessage, /\/examples\/kling/i);
+  assert.equal(result.safety.uiActionsApplied, false);
+});
+
+test('AI Strategist explains where to compare models and where to generate', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Where do I compare models before generating?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'navigation_help');
+  assert.match(result.assistantMessage, /Compare/i);
+  assert.match(result.assistantMessage, /Generate/i);
+  assert.match(result.assistantMessage, /\/compare/i);
+  assert.match(result.assistantMessage, /\/app/i);
+});
+
 test('AI Strategist chat recommendation cards trigger tier and model selection without generating immediately', async () => {
   const playground = await loadPlaygroundModule();
 

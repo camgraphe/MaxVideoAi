@@ -80,7 +80,7 @@ export function shouldDisableBriefLlm(tier: StrategistLlmTier): boolean {
 }
 
 function isDeterministicHelpTask(task: StrategistOrchestratorTask): boolean {
-  return task === 'site_help' || task === 'site_overview_help' || task === 'capability_help' || task === 'model_info_help' || task === 'navigation_help' || task === 'pricing_help' || task === 'workflow_help' || task === 'asset_reference_help';
+  return task === 'site_help' || task === 'site_overview_help' || task === 'capability_help' || task === 'model_info_help' || task === 'examples_help' || task === 'navigation_help' || task === 'pricing_help' || task === 'workflow_help' || task === 'asset_reference_help';
 }
 
 function isShortSelectionOrConfirmation(text: string): boolean {
