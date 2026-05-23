@@ -1814,3 +1814,14 @@ test('AI Strategist does not call RAG while RAG is disabled', async () => {
   assert.match(result.assistantMessage, /not connected|available structured/i);
   assert.equal(result.llm.promptWriter.used, false);
 });
+
+test('AI Strategist project context contract forbids silent private access', async () => {
+  const projectContext = await import('../frontend/lib/ai-strategist/knowledge/project-context-contract.ts');
+
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.userOwnedContextOnly, true);
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.explicitAppProvidedContextOnly, true);
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.noSilentPrivateProjectReads, true);
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.noCrossUserJobsOrPrompts, true);
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.noCreditSpend, true);
+  assert.equal(projectContext.AI_STRATEGIST_PROJECT_CONTEXT_ACCESS_POLICY.noAutoApplyGeneratorActions, true);
+});
