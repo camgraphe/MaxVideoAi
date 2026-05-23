@@ -94,6 +94,7 @@ function buildPricingHelp(
       assistantMessage: [
         `${model.label} is a ${model.relativeCostLevel} cost model in the strategist catalog.`,
         `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationSeconds} seconds.`,
+        'Use this preview to choose the model and duration in the generator before you launch manually.',
         'Treat this as guidance only: the final generator quote shown before rendering is authoritative, and I will not run generation or spend credits.',
       ].join('\n'),
       selectedModel: modelId,

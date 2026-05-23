@@ -833,6 +833,75 @@
       ]
     },
     {
+      "id": "quote-before-generation-fr",
+      "label": "Quote before generation question",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks for an estimate before launching",
+          "userMessage": "est ce que je peux avoir une estimation avant de lancer ?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["devis", "quote", "price", "prix"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "seedance-duration-quote-fr",
+      "label": "Seedance duration quote",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks Seedance quote for 15 seconds",
+          "userMessage": "donne moi un devis pour seedance 2 en 15 secondes",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["Seedance 2.0", "15 seconds"],
+            "mustMentionAny": ["quote", "devis", "$"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "compare-veo-kling-human-dialogue-fr",
+      "label": "Comparative model advice for premium human dialogue",
+      "category": "model_recommendation_issue",
+      "turns": [
+        {
+          "label": "asks whether Veo or Kling fits a human dialogue scene",
+          "userMessage": "pour une scene humaine premium avec dialogue, tu conseilles plutot veo ou kling ?",
+          "expect": {
+            "task": "model_advice",
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "mustMentionAny": ["Veo", "Kling"],
+            "quality": {
+              "actionableNextStep": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "ambiguous-prompt-improvement",
       "label": "Ambiguous prompt improvement",
       "category": "language_issue",

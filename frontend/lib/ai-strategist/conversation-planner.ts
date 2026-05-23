@@ -540,6 +540,13 @@ function isProductHelpRequest(text: string): boolean {
     'credito',
     'creditos',
     'créditos',
+    'devis',
+    'estimation',
+    'estimate',
+    'quote',
+    'avant de lancer',
+    'before launching',
+    'before generation',
   ]);
 }
 

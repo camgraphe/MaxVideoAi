@@ -731,7 +731,7 @@ function buildRecommendationOnlyResult(input: {
 
   return {
     ok: true,
-    assistantMessage: buildRecommendationAssistantMessage(input.workflow),
+    assistantMessage: buildRecommendationAssistantMessage(input.workflow, input.recommendations, input.orchestrationPlan.task),
     mode: 'recommend',
     workflow: input.workflow,
     selectedModel: null,
@@ -1199,10 +1199,18 @@ function buildAssistantMessage(
   return `Previewed routing with ${recommendations.best.model.label} as Best, ${recommendations.medium.model.label} as Medium, and ${recommendations.value.model.label} as Value.`;
 }
 
-function buildRecommendationAssistantMessage(workflow: AiStrategistWorkflowId): string {
+function buildRecommendationAssistantMessage(
+  workflow: AiStrategistWorkflowId,
+  recommendations: AiStrategistRecommendations,
+  task: StrategistOrchestrationPlan['task']
+): string {
+  const routeLine = task === 'model_advice'
+    ? `I’m showing three possible paths below: ${recommendations.best.model.label} is my first pick, ${recommendations.medium.model.label} is the balanced route, and ${recommendations.value.model.label} keeps the test more cost-aware.`
+    : 'I’m showing three possible paths below: the strongest quality route, a balanced route, and a faster/value route.';
+
   return [
     `I’d route this as ${workflow}.`,
-    'I’m showing three possible paths below: the strongest quality route, a balanced route, and a faster/value route.',
+    routeLine,
     'Choose the direction that fits the job, then I’ll check the missing creative details before writing the prompt.',
     'No generation or credits are used here.',
   ].join('\n');

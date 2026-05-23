@@ -59,9 +59,9 @@ function resolveRecommendationTask(
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
+  if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForModelInfo(text)) return 'model_info_help';
   if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
-  if (asksForModelAdvice(text)) return 'model_advice';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
 }
@@ -121,6 +121,13 @@ function asksForPricing(text: string): boolean {
     'credito',
     'creditos',
     'créditos',
+    'devis',
+    'estimation',
+    'estimate',
+    'quote',
+    'avant de lancer',
+    'before launching',
+    'before generation',
   ]);
 }
 
@@ -238,7 +245,25 @@ function asksForSiteNavigation(text: string): boolean {
 }
 
 function asksForModelAdvice(text: string): boolean {
-  return containsAny(text, ['which model', 'what model', 'recommend model', 'recommend a model', 'best model', 'choose a model', 'choisir un modele', 'choisir un modèle']);
+  return containsAny(text, [
+    'which model',
+    'what model',
+    'recommend model',
+    'recommend a model',
+    'best model',
+    'choose a model',
+    'should i use',
+    'which one should i use',
+    'choisir un modele',
+    'choisir un modèle',
+    'tu conseilles',
+    'tu conseille',
+    'tu recommandes',
+    'tu recommande',
+    'lequel tu recommandes',
+    'plutot',
+    'plutôt',
+  ]);
 }
 
 function asksForModelInfo(text: string): boolean {
