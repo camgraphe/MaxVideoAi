@@ -6,6 +6,7 @@ import type {
   AiStrategistQualityIntent,
 } from './brief-normalization';
 import type { AiStrategistPromptGenerationContext } from './prompt-structures';
+import type { StrategistKnowledgeToolResult } from './knowledge/types';
 import type { AiStrategistModelId, AiStrategistWorkflowId } from './types';
 
 type JsonSchemaType = 'object' | 'array' | 'string' | 'number' | 'boolean';
@@ -23,7 +24,7 @@ export type AiStrategistJsonSchema = {
 };
 
 export type AiStrategistLLMRequest<TPayload extends Record<string, unknown>> = {
-  kind: 'brief_refinement' | 'prompt_writer';
+  kind: 'brief_refinement' | 'prompt_writer' | 'knowledge_synthesis';
   systemInstructions: string;
   developerPayload: Record<string, unknown>;
   userPayload: TPayload;
@@ -62,6 +63,19 @@ type BriefRefinementUserPayload = {
 
 type PromptWriterUserPayload = {
   promptGenerationContext: AiStrategistPromptGenerationContext;
+};
+
+type KnowledgeSynthesisUserPayload = {
+  toolResults: StrategistKnowledgeToolResult[];
+  conversationContext?: Record<string, unknown>;
+  allowedSourceLabels: string[];
+  lowConfidence: boolean;
+  hardRules: {
+    noAutoGeneration: true;
+    noCreditSpend: true;
+    noPublishing: true;
+    previewOnly: true;
+  };
 };
 
 const normalizedIntentValues: readonly AiStrategistNormalizedIntent[] = [
@@ -135,6 +149,17 @@ const promptWriterSystemInstructions = [
   'Return JSON only and keep uiActions in { type, value } shape.',
 ].join('\n');
 
+const knowledgeSynthesisSystemInstructions = [
+  'You are the MaxVideoAI knowledge synthesis LLM. Rephrase or combine deterministic knowledge tool results without inventing facts.',
+  'Use only facts, URLs, prices, settings, warnings, and limitations present in toolResults.',
+  'Cite or mention only source labels available in allowedSourceLabels.',
+  'Do not claim unavailable routes, settings, prices, discounts, free generation, unlimited generation, or unsupported resolution.',
+  'Keep answers short and helpful.',
+  'If any source confidence is below 0.65, say what is missing or ask one short clarification instead of guessing.',
+  'Do not run generation, spend credits, publish anything, or imply that a render has started.',
+  'Return JSON only and keep uiActions in { type, value } shape.',
+].join('\n');
+
 export function buildBriefRefinementLLMRequest(
   input: AiStrategistBriefNormalizationInput
 ): AiStrategistLLMRequest<BriefRefinementUserPayload> {
@@ -196,6 +221,45 @@ export function buildPromptWriterLLMRequest(
       promptGenerationContext,
     },
     expectedJsonSchema: buildPromptWriterJsonSchema(),
+  };
+}
+
+export function buildKnowledgeSynthesisLLMRequest(
+  toolResults: readonly StrategistKnowledgeToolResult[],
+  conversationContext: Record<string, unknown> = {}
+): AiStrategistLLMRequest<KnowledgeSynthesisUserPayload> {
+  const safeToolResults = toJsonSafe(toolResults) as StrategistKnowledgeToolResult[];
+  const allowedSourceLabels = uniqueStrings(
+    toolResults.flatMap((result) => result.sources.map((source) => source.label))
+  );
+
+  return {
+    kind: 'knowledge_synthesis',
+    systemInstructions: knowledgeSynthesisSystemInstructions,
+    developerPayload: {
+      task: 'Synthesize deterministic MaxVideoAI knowledge tool results into a concise advisor answer.',
+      pipelinePosition: 'knowledge tool router -> deterministic source-backed tool results -> optional cheap LLM synthesis -> validation',
+      rules: [
+        'Return JSON only.',
+        'Use only toolResults as factual context.',
+        'Preserve tool warnings and limitations when relevant.',
+        'Do not add claims that are not supported by toolResults.',
+        'Do not call generation, spend credits, publish, or apply UI actions.',
+      ],
+    },
+    userPayload: {
+      toolResults: safeToolResults,
+      conversationContext: toJsonSafe(conversationContext) as Record<string, unknown>,
+      allowedSourceLabels,
+      lowConfidence: toolResults.some((result) => result.confidence < 0.65),
+      hardRules: {
+        noAutoGeneration: true,
+        noCreditSpend: true,
+        noPublishing: true,
+        previewOnly: true,
+      },
+    },
+    expectedJsonSchema: buildKnowledgeSynthesisJsonSchema(),
   };
 }
 
@@ -277,6 +341,37 @@ export function validateBriefRefinementLLMOutput(output: unknown): AiStrategistL
   };
 }
 
+export function validateKnowledgeSynthesisOutput(
+  output: unknown,
+  context: { toolResults: readonly StrategistKnowledgeToolResult[] }
+): AiStrategistLLMValidationResult {
+  const issues: AiStrategistLLMValidationIssue[] = [];
+  const outputRecord = isRecord(output) ? output : {};
+  const outputText = collectText(outputRecord);
+  const warnings = Array.isArray(outputRecord.warnings)
+    ? outputRecord.warnings.filter((warning): warning is string => typeof warning === 'string')
+    : [];
+  const dedupedWarnings = uniqueStrings(warnings);
+
+  if (!isRecord(output)) {
+    issues.push(errorIssue('invalid_output_shape', 'Knowledge synthesis output must be a JSON object.'));
+  }
+
+  validateUiActions(outputRecord.uiActions, issues);
+  validateKnowledgeUnsupportedClaims(outputText, context.toolResults, issues);
+  validateKnowledgeSourceLabels(outputRecord, context.toolResults, issues);
+
+  if (warnings.length !== dedupedWarnings.length) {
+    issues.push(warningIssue('duplicate_warning', 'Warnings should be deduped before returning to the UI.'));
+  }
+
+  return {
+    ok: issues.filter((issue) => issue.severity === 'error').length === 0,
+    issues,
+    dedupedWarnings,
+  };
+}
+
 function buildNormalizedBriefJsonSchema(): AiStrategistJsonSchema {
   return {
     type: 'object',
@@ -354,6 +449,80 @@ function buildPromptWriterJsonSchema(): AiStrategistJsonSchema {
       },
     },
   };
+}
+
+function buildKnowledgeSynthesisJsonSchema(): AiStrategistJsonSchema {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['assistantMessage', 'warnings', 'uiActions'],
+    properties: {
+      assistantMessage: stringSchema('Short UI-facing answer grounded only in the provided knowledge tool results.'),
+      warnings: stringArraySchema(),
+      sourceLabels: stringArraySchema(),
+      uiActions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'value'],
+          properties: {
+            type: enumSchema(uiActionValues),
+            value: stringSchema('Value to preview in the UI.'),
+          },
+        },
+      },
+    },
+  };
+}
+
+function validateKnowledgeUnsupportedClaims(
+  outputText: string,
+  toolResults: readonly StrategistKnowledgeToolResult[],
+  issues: AiStrategistLLMValidationIssue[]
+): void {
+  const toolText = toolResults.map((result) => result.answer).join('\n');
+  const unsupportedPatterns = [
+    /\bfree\b/i,
+    /\bunlimited\b/i,
+    /\b(?:ultra[-\s]?(?:high)?[-\s]*)?(?:[5-9]|[1-9]\d+)\s*k\b/i,
+    /\bguaranteed\b/i,
+  ];
+
+  if (unsupportedPatterns.some((pattern) => pattern.test(outputText) && !pattern.test(toolText))) {
+    issues.push(errorIssue('unsupported_knowledge_claim', 'Knowledge synthesis output contains an unsupported factual claim.'));
+  }
+
+  if (/\b(run|start|launch)\s+(?:the\s+)?generation\b/i.test(outputText)) {
+    issues.push(errorIssue('unsafe_generation_claim', 'Knowledge synthesis must not imply it can run generation or spend credits.'));
+  }
+}
+
+function validateKnowledgeSourceLabels(
+  outputRecord: Record<string, unknown>,
+  toolResults: readonly StrategistKnowledgeToolResult[],
+  issues: AiStrategistLLMValidationIssue[]
+): void {
+  const allowedLabels = new Set(toolResults.flatMap((result) => result.sources.map((source) => source.label)));
+  const explicitLabels = Array.isArray(outputRecord.sourceLabels)
+    ? outputRecord.sourceLabels.filter((label): label is string => typeof label === 'string')
+    : [];
+  const inlineLabels = collectInlineSourceLabels(typeof outputRecord.assistantMessage === 'string' ? outputRecord.assistantMessage : '');
+
+  for (const label of [...explicitLabels, ...inlineLabels]) {
+    if (!allowedLabels.has(label.trim())) {
+      issues.push(errorIssue('unknown_source_label', 'Knowledge synthesis cited a source label that was not provided by toolResults.'));
+      return;
+    }
+  }
+}
+
+function collectInlineSourceLabels(text: string): string[] {
+  const labels: string[] = [];
+  for (const match of text.matchAll(/\bSource:\s*([^\n.]+)/gi)) {
+    if (match[1]) labels.push(match[1].trim());
+  }
+  return labels;
 }
 
 function validateUiActions(value: unknown, issues: AiStrategistLLMValidationIssue[]): void {

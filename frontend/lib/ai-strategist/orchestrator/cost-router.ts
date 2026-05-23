@@ -11,11 +11,13 @@ export function selectStrategistLlmRouting(input: {
 }): StrategistLlmRoutingPlan {
   const text = normalizeSearchText(input.orchestratorInput.rawUserMessage);
   const hasPreviousBrief = Boolean(input.orchestratorInput.conversationState?.lastNormalizedBrief?.normalizedBrief);
+  const knowledgeSynthesis = selectKnowledgeSynthesisTier(input.task, text);
 
   if (isDeterministicHelpTask(input.task)) {
     return {
       briefRefinement: 'none',
       promptWriter: 'none',
+      knowledgeSynthesis,
       reason: 'Deterministic help/navigation turn; no creative LLM is needed.',
     };
   }
@@ -24,6 +26,7 @@ export function selectStrategistLlmRouting(input: {
     return {
       briefRefinement: 'none',
       promptWriter: 'none',
+      knowledgeSynthesis,
       reason: 'The assistant is collecting user input before any creative generation step.',
     };
   }
@@ -32,6 +35,7 @@ export function selectStrategistLlmRouting(input: {
     return {
       briefRefinement: 'none',
       promptWriter: 'strong',
+      knowledgeSynthesis,
       reason: 'Model/tier selection can reuse the previous normalized brief; reserve LLM budget for the final prompt writer.',
     };
   }
@@ -40,6 +44,7 @@ export function selectStrategistLlmRouting(input: {
     return {
       briefRefinement: 'none',
       promptWriter: 'strong',
+      knowledgeSynthesis,
       reason: 'The user confirmed an existing direction; reuse state and spend only on the prompt writer if confirmation passes.',
     };
   }
@@ -48,6 +53,7 @@ export function selectStrategistLlmRouting(input: {
     return {
       briefRefinement: shouldUseCheapBriefRefinement(text, input.orchestratorInput.currentPrompt) ? 'cheap' : 'none',
       promptWriter: 'strong',
+      knowledgeSynthesis,
       reason: 'Prompt editing needs the strongest model only for the final rewrite; brief refinement is cheap or deterministic.',
     };
   }
@@ -57,6 +63,7 @@ export function selectStrategistLlmRouting(input: {
       return {
         briefRefinement: 'cheap',
         promptWriter: 'strong',
+        knowledgeSynthesis,
         reason: 'Debug/evaluation surfaces may build the deterministic prompt preview immediately; use cheap brief refinement and strong prompt writing when configured.',
       };
     }
@@ -64,6 +71,7 @@ export function selectStrategistLlmRouting(input: {
     return {
       briefRefinement: 'cheap',
       promptWriter: 'none',
+      knowledgeSynthesis,
       reason: 'A new creative brief benefits from inexpensive normalization before deterministic model routing.',
     };
   }
@@ -71,6 +79,7 @@ export function selectStrategistLlmRouting(input: {
   return {
     briefRefinement: 'cheap',
     promptWriter: 'none',
+    knowledgeSynthesis,
     reason: 'Default to cheap refinement and deterministic routing until prompt writing is required.',
   };
 }
@@ -81,6 +90,21 @@ export function shouldDisableBriefLlm(tier: StrategistLlmTier): boolean {
 
 function isDeterministicHelpTask(task: StrategistOrchestratorTask): boolean {
   return task === 'site_help' || task === 'site_overview_help' || task === 'capability_help' || task === 'model_info_help' || task === 'examples_help' || task === 'navigation_help' || task === 'pricing_help' || task === 'workflow_help' || task === 'asset_reference_help';
+}
+
+function selectKnowledgeSynthesisTier(task: StrategistOrchestratorTask, text: string): StrategistLlmTier {
+  if (!isDeterministicHelpTask(task)) return 'none';
+  if (isDirectKnowledgeLookup(task)) return 'none';
+  return isBroadKnowledgeQuestion(text) ? 'cheap' : 'none';
+}
+
+function isDirectKnowledgeLookup(task: StrategistOrchestratorTask): boolean {
+  return task === 'pricing_help' || task === 'model_info_help' || task === 'navigation_help' || task === 'capability_help' || task === 'examples_help';
+}
+
+function isBroadKnowledgeQuestion(text: string): boolean {
+  const signals = ['model', 'models', 'pricing', 'price', 'cost', 'settings', 'examples', 'compare', 'workflow', 'generate', 'upload'];
+  return signals.filter((signal) => text.includes(signal)).length >= 2;
 }
 
 function isShortSelectionOrConfirmation(text: string): boolean {

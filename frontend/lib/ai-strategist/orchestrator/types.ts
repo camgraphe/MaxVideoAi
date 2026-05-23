@@ -62,6 +62,7 @@ export type StrategistToolName =
 export type StrategistLlmRoutingPlan = {
   briefRefinement: StrategistLlmTier;
   promptWriter: StrategistLlmTier;
+  knowledgeSynthesis: StrategistLlmTier;
   reason: string;
 };
 
