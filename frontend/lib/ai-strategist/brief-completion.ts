@@ -34,7 +34,7 @@ export function assessStrategistBriefCompletion(input: {
   const requiredFields = input.promptGenerationContext.workflowPromptStructure.blocks.flatMap((block) =>
     block.fields.map((field) => field.label)
   );
-  const missingFields = input.allowAssumptions
+  const missingFields = input.allowAssumptions || shouldUseProactiveProductReferenceDefaults(input)
     ? []
     : selectMissingFields({
         text,
@@ -188,6 +188,19 @@ function buildAssumptions(input: {
   return assumptions;
 }
 
+function shouldUseProactiveProductReferenceDefaults(input: {
+  resolvedBrief: string;
+  normalizedBrief: AiStrategistNormalizedBrief;
+  promptGenerationContext: AiStrategistPromptGenerationContext;
+}): boolean {
+  return (
+    input.promptGenerationContext.selectedWorkflow === 'image-to-video' &&
+    input.normalizedBrief.hasUploadedReference &&
+    input.normalizedBrief.hasProduct &&
+    input.normalizedBrief.hasLogoOrTextRisk
+  );
+}
+
 function hasConcreteSubject(text: string, normalizedBrief: AiStrategistNormalizedBrief): boolean {
   if (normalizedBrief.hasProduct || normalizedBrief.hasPerson || normalizedBrief.hasCharacter) return true;
   if (isCombatBrief(text)) return true;
@@ -247,6 +260,7 @@ function normalizeText(value: string): string {
 
 function sanitizeProtectedStyleReferences(value: string): string {
   return value
+    .replace(/\bstreet[-\s]?fighter\b/gi, 'arcade combat')
     .replace(/\bStreet Fighter\s+style\s+fight\b/gi, 'arcade fighting / stylized combat scene')
     .replace(/\bStreet Fighter\s+(?:style|aesthetic|inspiration)\b/gi, 'arcade fighting / stylized combat inspiration')
     .replace(/\binspired by\s+Street Fighter\b/gi, 'inspired by arcade fighting games and stylized combat')

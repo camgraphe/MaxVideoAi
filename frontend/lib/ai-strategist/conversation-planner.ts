@@ -124,6 +124,19 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const previousStage = input.conversationState?.stage;
   const lastBriefCompletion = input.conversationState?.lastBriefCompletion;
 
+  if (previousStage === 'awaiting_model_choice' && hasPreviousBrief && isPricingHelpFollowUp(normalized)) {
+    return {
+      action: 'product_help',
+      rawUserMessage,
+      resolvedBrief: previousBrief,
+      selectedTier: 'value',
+      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.9,
+    };
+  }
+
   if (previousStage === 'awaiting_prompt_paste' && rawUserMessage) {
     const model = input.selectedModel ?? input.conversationState?.lastSelectedModel ?? selectedModel;
     return {
@@ -467,6 +480,30 @@ function resolveAdvisorChoiceTier(text: string, hasPreviousBrief = false): AiStr
     return 'best';
   }
   return undefined;
+}
+
+function isPricingHelpFollowUp(text: string): boolean {
+  if (!text) return false;
+  if (/^(?:value|budget|cheaper|less expensive|lowest cost)$/.test(text)) return false;
+  const hasPriceSignal = containsAny(text, [
+    'sounds expensive',
+    'too expensive',
+    'price',
+    'pricing',
+    'cost',
+    'credits',
+    'quote',
+    'estimate',
+    'devis',
+    'cheaper option',
+    'cheaper route',
+    'less expensive option',
+    'lowest cost option',
+    'what is the cheaper',
+    'which is cheaper',
+  ]);
+  const asksQuestion = /\b(?:what|which|how much|can you|could you|is there|show me)\b/.test(text) || text.includes('?');
+  return hasPriceSignal && asksQuestion;
 }
 
 function resolveModelId(text: string, recommendations?: AiStrategistRecommendations): AiStrategistModelId | undefined {

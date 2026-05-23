@@ -91,6 +91,7 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
   if (asksForDocsSearch(text)) return 'site_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
+  if (asksForUploadNavigation(text)) return 'navigation_help';
   if (asksForAssetHelp(text)) return 'asset_reference_help';
   return 'navigation_help';
 }
@@ -381,6 +382,18 @@ function asksForAssetHelp(text: string): boolean {
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset)\b/.test(text)) return true;
   if (/\bupload\b/.test(text) && /\b(?:pic|logo|product|prod)\b/.test(text)) return true;
   return containsAny(text, ['upload image', 'upload an image', 'upload img', 'where upload img', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
+}
+
+function asksForUploadNavigation(text: string): boolean {
+  return containsAny(text, [
+    'where do i upload',
+    'where to upload',
+    'where upload',
+    'where can i upload',
+    'where should i upload',
+    'where is upload',
+    'where is the upload',
+  ]);
 }
 
 function hasCreativeCreationIntent(text: string): boolean {

@@ -264,7 +264,7 @@ test('AI Strategist conversation planner handles upload navigation without model
   );
 
   assert.equal(result.conversationPlan.action, 'navigation_help');
-  assert.equal(result.orchestrationPlan.task, 'asset_reference_help');
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
   assert.equal(result.orchestrationPlan.llm.briefRefinement, 'none');
   assert.equal(result.mode, 'product_help');
   assert.equal(result.recommendations, undefined);
@@ -1201,6 +1201,94 @@ test('AI Strategist chat treats keep-it-cheaper follow-ups as value selection af
   assert.doesNotMatch(third.assistantMessage, /For video, the cheapest engines/i);
 });
 
+test('AI Strategist routes cheaper-option questions after recommendations to pricing help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Premium jewelry product ad on reflective black glass, luxury look',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'that sounds expensive, what is the cheaper option?',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+
+  assert.equal(first.orchestrationPlan.task, 'new_video_brief');
+  assert.match(first.assistantMessage, /jewelry/i);
+  assert.match(first.assistantMessage, /model routes/i);
+  assert.equal(second.orchestrationPlan.task, 'pricing_help');
+  assert.equal(second.recommendations, undefined);
+  assert.match(second.assistantMessage, /cheaper|value|quote|credits/i);
+});
+
+test('AI Strategist preserves uploaded product reference constraints across model selection', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'animate this skincare bottle for an Instagram ad, keep the logo visible',
+      mode: 'recommend',
+      surface: 'chat',
+      uploadedAsset: { type: 'image', hasProduct: true, hasLogo: true, hasText: true, isReferenceImage: true },
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Value',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+
+  assert.equal(first.orchestrationPlan.task, 'new_video_brief');
+  assert.match(first.assistantMessage, /logo|text|drift|overlay/i);
+  assert.equal(second.orchestrationPlan.task, 'model_or_tier_selection');
+  assert.equal(second.promptGenerationContext?.uploadedAsset?.hasProduct, true);
+  assert.equal(second.promptGenerationContext?.uploadedAsset?.hasLogo, true);
+  assert.match(second.assistantMessage, /logo|text/i);
+});
+
+test('AI Strategist recommendation acknowledgement stays specific for messy and multilingual briefs', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const messy = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'need vid for tiktoc shooes, fast flashy but no weird faces, cheep test',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const spanish = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'quiero un anuncio vertical para un perfume, elegante, con reflejos dorados',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.match(messy.assistantMessage, /TikTok/i);
+  assert.match(messy.assistantMessage, /shoes/i);
+  assert.match(messy.assistantMessage, /budget|cheap/i);
+  assert.match(messy.assistantMessage, /model routes/i);
+  assert.match(spanish.assistantMessage, /perfume/i);
+  assert.match(spanish.assistantMessage, /vertical/i);
+  assert.match(spanish.assistantMessage, /Lo entiendo|rutas de modelos/i);
+});
+
 test('AI Strategist chat treats explicit model switch during missing-field collection as model selection', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -1324,7 +1412,7 @@ test('AI Strategist chat does not ask generic clarification for a clear perfume 
   assert.notEqual(result.conversationPlan.action, 'ask_clarification');
   assert.notEqual(result.assistantMessage, 'What video are you trying to create or improve?');
   assert.ok(result.recommendations);
-  assert.match(result.assistantMessage, /three possible paths/i);
+  assert.match(result.assistantMessage, /three possible paths|model routes/i);
   assert.doesNotMatch(result.assistantMessage, /Best:|Medium:|Value:/i);
   assert.doesNotMatch(result.assistantMessage, /Kling|Seedance|Veo|LTX/i);
   assert.match(result.warnings.join('\n'), /Exact labels, logos, legal copy/i);

@@ -435,6 +435,7 @@ function applyConversationPlan(
   body: ReturnType<typeof normalizePlaygroundInput>,
   plan: StrategistConversationPlan
 ): ReturnType<typeof normalizePlaygroundInput> {
+  const uploadedAsset = body.uploadedAsset ?? inferUploadedAssetFromConversationState(body.conversationState);
   if (plan.action === 'select_model' || plan.action === 'select_tier' || plan.action === 'build_prompt') {
     return {
       ...body,
@@ -443,6 +444,7 @@ function applyConversationPlan(
       selectedTier: plan.selectedTier ?? body.selectedTier,
       selectedModel: plan.selectedModel ?? body.selectedModel,
       selectedWorkflow: plan.selectedWorkflow ?? body.selectedWorkflow,
+      uploadedAsset,
     };
   }
 
@@ -454,6 +456,7 @@ function applyConversationPlan(
       currentPrompt: plan.currentPrompt ?? (body.currentPrompt || body.conversationState?.lastFinalPrompt || ''),
       selectedModel: plan.selectedModel ?? body.selectedModel,
       selectedWorkflow: plan.selectedWorkflow ?? body.selectedWorkflow,
+      uploadedAsset,
     };
   }
 
@@ -470,6 +473,20 @@ function applyConversationPlan(
     userMessage: plan.resolvedBrief ?? body.userMessage,
     selectedModel: plan.selectedModel ?? body.selectedModel,
     selectedWorkflow: plan.selectedWorkflow ?? body.selectedWorkflow,
+    uploadedAsset,
+  };
+}
+
+function inferUploadedAssetFromConversationState(state?: StrategistConversationState): AiStrategistPlaygroundUploadedAsset | undefined {
+  const brief = state?.lastNormalizedBrief;
+  if (!brief?.hasUploadedReference) return undefined;
+  return {
+    isReferenceImage: true,
+    hasPerson: brief.hasPerson,
+    hasProduct: brief.hasProduct,
+    hasLogo: brief.hasLogoOrTextRisk && brief.hasProduct,
+    hasText: brief.hasLogoOrTextRisk && brief.hasProduct,
+    type: brief.intent === 'video_to_video' ? 'video' : 'image',
   };
 }
 
@@ -571,6 +588,7 @@ function buildOrchestratedHelpResult(input: {
   conversationPlan: StrategistConversationPlan;
   orchestrationPlan: StrategistOrchestrationPlan;
 }): AiStrategistPlaygroundResult {
+  const contextualPricingMessage = buildContextualPricingFollowUpMessage(input);
   const knowledgeToolResult = runStrategistKnowledgeTool({
     task: input.orchestrationPlan.task,
     toolInput: {
@@ -588,7 +606,7 @@ function buildOrchestratedHelpResult(input: {
 
   return {
     ok: true,
-    assistantMessage: knowledgeToolResult?.answer ?? toolResult.assistantMessage,
+    assistantMessage: contextualPricingMessage ?? knowledgeToolResult?.answer ?? toolResult.assistantMessage,
     mode: 'product_help',
     workflow: null,
     selectedModel: toolResult.selectedModel ?? input.body.selectedModel ?? null,
@@ -622,6 +640,25 @@ function buildOrchestratedHelpResult(input: {
     },
     safety: playgroundSafety(),
   };
+}
+
+function buildContextualPricingFollowUpMessage(input: {
+  body: ReturnType<typeof normalizePlaygroundInput>;
+  conversationPlan: StrategistConversationPlan;
+  orchestrationPlan: StrategistOrchestrationPlan;
+}): string | undefined {
+  if (input.orchestrationPlan.task !== 'pricing_help') return undefined;
+  if (!input.conversationPlan.shouldUsePreviousBrief) return undefined;
+  const value = input.body.conversationState?.lastRecommendations?.value;
+  if (!value) return undefined;
+  const brief = input.body.conversationState?.lastNormalizedBrief?.normalizedBrief;
+  return [
+    `Yes. For this brief, the cheaper route is ${value.model.label}.`,
+    brief ? `I’d keep the creative direction (${formatBriefForAcknowledgement(brief).replace(/\.$/, '')}) but simplify the motion, keep the duration tight, and avoid unnecessary premium resolution unless the final quote justifies it.` : undefined,
+    `Tradeoff: ${value.reason}`,
+    'Check the generator quote before rendering; that quote is authoritative and no credits are spent from this preview.',
+    'If you want the lower-cost path, tell me to use it and I’ll adapt the prompt.',
+  ].filter(Boolean).join('\n');
 }
 
 function buildNavigationHelpResult(input: {
@@ -759,7 +796,9 @@ function buildRecommendationOnlyResult(input: {
       input.workflow,
       input.recommendations,
       input.orchestrationPlan.task,
-      input.body.userMessage
+      input.body.userMessage,
+      input.normalizedBrief,
+      input.body
     ),
     mode: 'recommend',
     workflow: input.workflow,
@@ -839,7 +878,10 @@ function buildBriefCompletionResult(input: {
   return buildStoppedBeforePromptResult({
     ...input,
     stage: 'collecting_missing_fields',
-    assistantMessage: input.briefCompletion.assistantMessage,
+    assistantMessage: appendBriefCompletionContext(
+      input.briefCompletion.assistantMessage,
+      input.promptGenerationContext.warnings.all
+    ),
     promptWriterFallbackReason: 'brief_completion_required',
   });
 }
@@ -865,6 +907,18 @@ function buildConfirmationResult(input: {
   });
 }
 
+function appendBriefCompletionContext(message: string, warnings: readonly string[]): string {
+  if (!warnings.length) return message;
+  const text = warnings.join('\n');
+  if (/labels?|logos?|legal copy|tiny text|packaging/i.test(text)) {
+    return `${message}\n\nI’ll keep the logo/text constraint in the brief. Exact labels, logos, legal copy, packaging details, and tiny text may drift, so check them after generation or add final typography as overlays.`;
+  }
+  if (/person|character|identity|reference/i.test(text)) {
+    return `${message}\n\nI’ll keep the person/reference constraint in the brief and favor safer image-to-video handling to reduce identity drift.`;
+  }
+  return message;
+}
+
 function buildStoppedBeforePromptResult(input: {
   body: ReturnType<typeof normalizePlaygroundInput>;
   refinement: AiStrategistBriefRefinementLLMResult;
@@ -887,6 +941,7 @@ function buildStoppedBeforePromptResult(input: {
     input.recommendations.value.warning,
     ...input.promptGenerationContext.warnings.all,
   ]);
+  const includeRecommendations = shouldIncludeStoppedResultRecommendations(input);
 
   return {
     ok: true,
@@ -902,8 +957,8 @@ function buildStoppedBeforePromptResult(input: {
     conversationPlan: input.conversationPlan,
     orchestrationPlan: input.orchestrationPlan,
     briefCompletion: input.briefCompletion,
-    recommendations: input.recommendations,
-    ...(input.recommendations.alsoConsider ? { alsoConsider: input.recommendations.alsoConsider } : {}),
+    ...(includeRecommendations ? { recommendations: input.recommendations } : {}),
+    ...(includeRecommendations && input.recommendations.alsoConsider ? { alsoConsider: input.recommendations.alsoConsider } : {}),
     warnings,
     promptGenerationContext: input.promptGenerationContext,
     promptGenerationContextSummary: summarizePromptGenerationContext(input.promptGenerationContext),
@@ -931,6 +986,14 @@ function buildStoppedBeforePromptResult(input: {
     },
     safety: playgroundSafety(),
   };
+}
+
+function shouldIncludeStoppedResultRecommendations(input: {
+  conversationPlan: StrategistConversationPlan;
+  body: ReturnType<typeof normalizePlaygroundInput>;
+}): boolean {
+  if (input.conversationPlan.action !== 'build_prompt') return true;
+  return input.body.conversationState?.stage === 'awaiting_model_choice';
 }
 
 function buildLlmSummary(
@@ -1242,23 +1305,137 @@ function buildRecommendationAssistantMessage(
   workflow: AiStrategistWorkflowId,
   recommendations: AiStrategistRecommendations,
   task: StrategistOrchestrationPlan['task'],
-  rawUserMessage: string
+  rawUserMessage: string,
+  normalizedBrief: AiStrategistNormalizedBrief,
+  body: ReturnType<typeof normalizePlaygroundInput>
 ): string {
   const text = rawUserMessage.toLowerCase();
+  const language = prefersSpanishResponse(rawUserMessage) ? 'es' : 'en';
   const contextLine = task === 'model_advice' && containsAny(text, ['4k', '4 k'])
-    ? 'For TikTok or social ads, I’d treat 4K as an upgrade decision rather than an automatic requirement unless product detail, cropping, or final delivery quality matters.'
+    ? language === 'es'
+      ? 'Para TikTok o anuncios sociales, trataría 4K como una mejora opcional, no como un requisito automático salvo que importen mucho el detalle del producto, el recorte o la entrega final.'
+      : 'For TikTok or social ads, I’d treat 4K as an upgrade decision rather than an automatic requirement unless product detail, cropping, or final delivery quality matters.'
     : undefined;
   const routeLine = task === 'model_advice'
-    ? `I’m showing three possible paths below: ${recommendations.best.model.label} is my first pick, ${recommendations.medium.model.label} is the balanced route, and ${recommendations.value.model.label} keeps the test more cost-aware.`
-    : 'I’m showing three possible paths below: the strongest quality route, a balanced route, and a faster/value route.';
+    ? language === 'es'
+      ? `Te muestro tres rutas posibles abajo: ${recommendations.best.model.label} como primera opción, ${recommendations.medium.model.label} como ruta equilibrada y ${recommendations.value.model.label} para controlar mejor el coste.`
+      : `I’m showing three possible paths below: ${recommendations.best.model.label} is my first pick, ${recommendations.medium.model.label} is the balanced route, and ${recommendations.value.model.label} keeps the test more cost-aware.`
+    : language === 'es'
+      ? 'Comparo tres rutas de modelos abajo: máxima calidad, equilibrada y más rápida/value.'
+      : 'I’ll compare three model routes below: strongest quality, balanced, and faster/value.';
+  const acknowledgement = buildRecommendationAcknowledgement({
+    workflow,
+    rawUserMessage,
+    normalizedBrief,
+    body,
+    language,
+  });
+  const riskLine = buildRecommendationRiskLine(body, normalizedBrief, workflow, language);
 
   return [
+    acknowledgement,
     contextLine,
-    `I’d route this as ${workflow}.`,
+    riskLine,
     routeLine,
-    'Choose the direction that fits the job, then I’ll check the missing creative details before writing the prompt.',
-    'No generation or credits are used here.',
-  ].join('\n');
+    language === 'es'
+      ? 'Elige la dirección que encaja mejor y después revisaré los detalles creativos que falten antes de escribir el prompt.'
+      : 'Choose the direction that fits the job, then I’ll check the missing creative details before writing the prompt.',
+  ].filter(Boolean).join('\n');
+}
+
+function buildRecommendationAcknowledgement(input: {
+  workflow: AiStrategistWorkflowId;
+  rawUserMessage: string;
+  normalizedBrief: AiStrategistNormalizedBrief;
+  body: ReturnType<typeof normalizePlaygroundInput>;
+  language: 'en' | 'es';
+}): string {
+  const text = buildSearchText(input.body);
+  const brief = formatBriefForAcknowledgement(input.normalizedBrief.normalizedBrief || input.rawUserMessage);
+  const details: string[] = [];
+  if (input.workflow === 'video-to-video') {
+    details.push(input.language === 'es'
+      ? 'Para video-to-video, mantendré el movimiento original y haré el restyle con cuidado.'
+      : 'For video-to-video, I’ll keep the source motion and restyle carefully.');
+  } else if (input.workflow === 'text-to-image-then-image-to-video') {
+    details.push(input.language === 'es'
+      ? 'Crear primero una imagen inicial controlada ayuda con la forma del producto, los reflejos y el encuadre hero.'
+      : 'A controlled starting image first should help with product shape, reflections, and hero framing.');
+  } else if (input.workflow === 'image-to-video') {
+    details.push(input.language === 'es'
+      ? 'Usar la imagen como referencia mantiene el sujeto más anclado mientras el movimiento sigue controlado.'
+      : 'Using the image as a reference should keep the subject anchored while the motion stays controlled.');
+  }
+  if (input.normalizedBrief.hasPerson || containsAny(text, ['founder', 'person', 'recognizable', 'face'])) {
+    details.push(input.language === 'es'
+      ? 'La consistencia de persona/identidad importa, así que priorizaré modelos que reduzcan el drift.'
+      : 'The person/identity constraint matters, so I’ll favor models that reduce drift.');
+  }
+  if (containsAny(text, ['cheap', 'cheep', 'budget', 'low cost', 'value', 'pas cher'])) {
+    details.push(input.language === 'es'
+      ? 'Mantendré una ruta consciente del presupuesto.'
+      : 'I’ll keep the route budget-aware.');
+  }
+  return [input.language === 'es' ? `Lo entiendo así: ${brief}` : `I understand this as: ${brief}`, ...details].join('\n');
+}
+
+function buildRecommendationRiskLine(
+  body: ReturnType<typeof normalizePlaygroundInput>,
+  normalizedBrief: AiStrategistNormalizedBrief,
+  workflow: AiStrategistWorkflowId,
+  language: 'en' | 'es'
+): string | undefined {
+  const text = buildSearchText(body);
+  if (normalizedBrief.hasLogoOrTextRisk || containsAny(text, ['logo', 'label', 'text', 'packaging', 'bottle', 'skincare', 'perfume'])) {
+    return language === 'es'
+      ? 'Nota: logos, texto de etiqueta, legal copy y detalles pequeños del packaging pueden variar; revísalos después de generar o añade la tipografía final como overlay.'
+      : 'One note: logo, label text, legal copy, and tiny packaging details can drift; check them after generation or add final typography as overlays.';
+  }
+  if ((normalizedBrief.hasPerson || body.uploadedAsset?.hasPerson) && (workflow === 'image-to-video' || workflow === 'video-to-video')) {
+    return language === 'es'
+      ? 'Nota: las referencias de persona necesitan un routing compatible para reducir el drift de identidad; conviene mantener movimiento y lip-sync simples.'
+      : 'One note: person references need compatible routing to reduce identity drift; keep motion and lip-sync simple when possible.';
+  }
+  return undefined;
+}
+
+function formatBriefForAcknowledgement(value: string): string {
+  const clean = sanitizeProtectedStyleReferences(value)
+    .replace(/\btiktoc\b/gi, 'TikTok')
+    .replace(/\bshooes\b/gi, 'shoes')
+    .replace(/\bcheep\b/gi, 'cheap')
+    .replace(/\bvid\b/gi, 'video')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return clean.endsWith('.') ? clean : `${clean}.`;
+}
+
+function prefersSpanishResponse(value: string): boolean {
+  const text = value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9:.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return containsAny(text, ['quiero', 'anuncio', 'elegante', 'reflejos', 'dorado', 'dorados', 'producto', 'modelo', 'barato']);
+}
+
+function sanitizeProtectedStyleReferences(value: string): string {
+  return value
+    .replace(/\bstreet[-\s]?fighter\b/gi, 'arcade combat')
+    .replace(/\bStreet Fighter\s+style\s+fight\b/gi, 'arcade fighting / stylized combat scene')
+    .replace(/\bStreet Fighter\s+(?:style|aesthetic|inspiration)\b/gi, 'arcade fighting / stylized combat inspiration')
+    .replace(/\binspired by\s+Street Fighter\b/gi, 'inspired by arcade fighting games and stylized combat')
+    .replace(/\bStreet Fighter\b/gi, 'arcade fighting / stylized combat')
+    .replace(/\bMortal Kombat\b/gi, 'dark arcade fighting game inspiration')
+    .replace(/\bGrand Theft Auto\b|\bGTA\b/gi, 'open-world urban crime-drama inspiration')
+    .replace(/\bFortnite\b/gi, 'colorful stylized battle-game inspiration')
+    .replace(/\bMinecraft\b/gi, 'blocky voxel-world inspiration')
+    .replace(/\bPok[eé]mon\b/gi, 'creature-collector adventure inspiration')
+    .replace(/\bMarvel\b/gi, 'superhero comic-book inspiration')
+    .replace(/\bDisney\b/gi, 'family-friendly animated film inspiration')
+    .replace(/\bStar Wars\b/gi, 'space-opera sci-fi inspiration');
 }
 
 function buildProductHelpMessage(body: ReturnType<typeof normalizePlaygroundInput>): string {

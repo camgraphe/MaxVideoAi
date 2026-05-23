@@ -939,14 +939,34 @@ function sanitizePromptWriterText(text: string, context: AiStrategistPromptGener
   }
   next = sanitizeOverStrongPromptWording(next);
   next = sanitizeProtectedStyleReferences(next);
+  next = ensureProtectedStyleDescriptor(next, context);
   if (!context.uploadedAsset?.hasText && !context.uploadedAsset?.hasLogo && context.promptStructure.id === 'product-ad') {
     next = sanitizeGeneratedLabelTypography(next);
   }
   return next;
 }
 
+function ensureProtectedStyleDescriptor(text: string, context: AiStrategistPromptGenerationContext): string {
+  const source = [context.userBrief, context.currentPrompt].filter(Boolean).join('\n');
+  if (!isCombatStyleContext(source)) return text;
+  if (/\barcade fighting\b|\bstylized combat\b/i.test(text)) return text;
+
+  if (/^Style:/m.test(text)) {
+    return text.replace(/^Style:\s*/m, 'Style: arcade fighting / stylized combat inspiration, ');
+  }
+  if (/^Subject:/m.test(text)) {
+    return text.replace(/^Subject:\s*/m, 'Subject: arcade fighting / stylized combat scene, ');
+  }
+  return `Style: arcade fighting / stylized combat inspiration\n${text}`;
+}
+
+function isCombatStyleContext(source: string): boolean {
+  return /\bStreet Fighter\b|\barcade fighting\b|\bstylized combat\b|\barcade[-\s]style\b|\bfighting\b|\bfight\b|\bcombat\b|\bduel\b|\bmartial arts\b/i.test(source);
+}
+
 function sanitizeProtectedStyleReferences(text: string): string {
   return text
+    .replace(/\bstreet[-\s]?fighter\b/gi, 'arcade combat')
     .replace(/\bStreet Fighter\s+style\s+fight\b/gi, 'arcade fighting / stylized combat scene')
     .replace(/\bStreet Fighter\s+(?:style|aesthetic|inspiration)\b/gi, 'arcade fighting / stylized combat inspiration')
     .replace(/\binspired by\s+Street Fighter\b/gi, 'inspired by arcade fighting games and stylized combat')
