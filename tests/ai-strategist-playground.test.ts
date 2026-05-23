@@ -414,6 +414,25 @@ test('AI Strategist routes model cost comparisons to pricing help even when draf
   }
 });
 
+test('AI Strategist treats Veo Live wording as Veo Lite for pricing/model help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Is Veo 3.1 Live cheap for a 720p draft?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /Veo 3\.1 Lite|Google Veo 3\.1 Lite/i);
+  assert.match(result.assistantMessage, /720p|price|cost|estimate|quote/i);
+});
+
 test('AI Strategist orchestrator explains workflow help without generating a prompt', async () => {
   const playground = await loadPlaygroundModule();
 

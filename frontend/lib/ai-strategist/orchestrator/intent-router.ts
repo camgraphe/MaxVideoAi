@@ -233,6 +233,7 @@ function asksForExplicitCheapestModelQuestion(text: string): boolean {
 
 function asksForModelPriceComparison(text: string): boolean {
   if (!containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse'])) return false;
+  if (/\b(?:is|are|c'est|c est|est ce que|est-ce que)\b.*\b(?:cheap|expensive|pas cher|moins cher|cher|chere|chère)\b/.test(text)) return true;
   return containsAny(text, [
     'cheaper than',
     'less expensive than',

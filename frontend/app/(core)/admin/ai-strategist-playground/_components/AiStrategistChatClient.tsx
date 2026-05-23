@@ -20,6 +20,7 @@ import type {
   AiStrategistPlaygroundResult,
 } from '@/lib/ai-strategist/playground-pipeline';
 import type {
+  AiStrategistAlsoConsider,
   AiStrategistModelId,
   AiStrategistRecommendation,
   AiStrategistTierPosition,
@@ -117,6 +118,20 @@ export function AiStrategistChatClient() {
         selectedModel: recommendation.model.id,
       },
       `Choose ${tier}: ${recommendation.model.label}`,
+      lastContext
+    );
+  }
+
+  async function submitAlternativeChoice(alternative: AiStrategistAlsoConsider) {
+    if (!lastContext || isSubmitting) return;
+    await runChatRequest(
+      {
+        userMessage: `Choose ${alternative.model.label}`,
+        mode: 'recommend',
+        surface: 'chat',
+        selectedModel: alternative.model.id,
+      },
+      `Choose ${alternative.model.label}`,
       lastContext
     );
   }
@@ -366,6 +381,7 @@ export function AiStrategistChatClient() {
                   message={message}
                   isSubmitting={isSubmitting}
                   onChooseRecommendation={submitRecommendationChoice}
+                  onChooseAlternative={submitAlternativeChoice}
                   onGeneratePrompt={submitGeneratePrompt}
                   onMakeAssumptions={submitMakeAssumptions}
                   onQuickReply={(reply) => void submitQuickReply(reply)}
@@ -440,6 +456,7 @@ function ChatBubble({
   message,
   isSubmitting,
   onChooseRecommendation,
+  onChooseAlternative,
   onGeneratePrompt,
   onMakeAssumptions,
   onQuickReply,
@@ -449,6 +466,7 @@ function ChatBubble({
   message: ChatMessage;
   isSubmitting: boolean;
   onChooseRecommendation: (tier: AiStrategistTierPosition, recommendation: AiStrategistRecommendation) => void;
+  onChooseAlternative: (alternative: AiStrategistAlsoConsider) => void;
   onGeneratePrompt: () => void;
   onMakeAssumptions: () => void;
   onQuickReply: (reply: string) => void;
@@ -473,6 +491,7 @@ function ChatBubble({
               result={message.result}
               isSubmitting={isSubmitting}
               onChooseRecommendation={onChooseRecommendation}
+              onChooseAlternative={onChooseAlternative}
               onGeneratePrompt={onGeneratePrompt}
               onMakeAssumptions={onMakeAssumptions}
               onQuickReply={onQuickReply}
@@ -490,6 +509,7 @@ function ChatResult({
   result,
   isSubmitting,
   onChooseRecommendation,
+  onChooseAlternative,
   onGeneratePrompt,
   onMakeAssumptions,
   onQuickReply,
@@ -499,6 +519,7 @@ function ChatResult({
   result: AiStrategistPlaygroundResult;
   isSubmitting: boolean;
   onChooseRecommendation: (tier: AiStrategistTierPosition, recommendation: AiStrategistRecommendation) => void;
+  onChooseAlternative: (alternative: AiStrategistAlsoConsider) => void;
   onGeneratePrompt: () => void;
   onMakeAssumptions: () => void;
   onQuickReply: (reply: string) => void;
@@ -515,6 +536,13 @@ function ChatResult({
             <RecommendationCard label="Medium" tier="medium" recommendation={result.recommendations.medium} disabled={isSubmitting} onChoose={onChooseRecommendation} />
             <RecommendationCard label="Value" tier="value" recommendation={result.recommendations.value} disabled={isSubmitting} onChoose={onChooseRecommendation} />
           </div>
+          {result.alsoConsider?.length ? (
+            <div className="flex flex-wrap gap-2">
+              {result.alsoConsider.map((alternative) => (
+                <AlternativeModelChip key={alternative.model.id} alternative={alternative} disabled={isSubmitting} onChoose={onChooseAlternative} />
+              ))}
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2 pt-1">
             <QuickActionButton disabled={isSubmitting} onClick={onMakeAssumptions}>
               <Sparkles className="h-3.5 w-3.5" />
@@ -627,6 +655,31 @@ function RecommendationCard({
         </span>
       </span>
       <span className="mt-2 block max-h-10 overflow-hidden text-[11px] leading-4 text-slate-500">{shortReason(recommendation.reason)}</span>
+    </button>
+  );
+}
+
+function AlternativeModelChip({
+  alternative,
+  disabled,
+  onChoose,
+}: {
+  alternative: AiStrategistAlsoConsider;
+  disabled: boolean;
+  onChoose: (alternative: AiStrategistAlsoConsider) => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onChoose(alternative)}
+      className="group inline-flex min-h-[34px] max-w-full items-center gap-2 rounded-full border border-[#e4e9f3] bg-white px-2.5 text-left text-[11px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.035)] transition hover:border-[#7c3aed]/30 hover:bg-[#7c3aed]/[0.035] hover:text-[#6d28d9] disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-950 text-[9px] font-bold text-white">
+        {modelIconText(alternative.model.label)}
+      </span>
+      <span className="truncate">Also consider {alternative.model.label}</span>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#7c3aed]" />
     </button>
   );
 }

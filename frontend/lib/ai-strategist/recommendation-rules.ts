@@ -84,6 +84,9 @@ const noSpeechTerms = ['no dialogue', 'without dialogue', 'silent', 'no speech',
 const veoLiteBudgetTerms = [
   'veo lite',
   'veo 3.1 lite',
+  'veo live',
+  'veo 3 live',
+  'veo 3.1 live',
   'veo-style',
   'veo style',
   'budget veo',
@@ -174,6 +177,10 @@ export function scoreModelForBrief(model: AiStrategistModelEntry, briefInput: Ai
       if (model.id === 'seedance-2-0-fast') score += 36;
       if (model.id === 'veo-3-1-lite') score += 16;
     }
+    if (isVeoFriendlySocialOrCommercialBrief(brief) && !isStrictProductPreservationBrief(brief)) {
+      if (model.id === 'veo-3-1-fast') score += 8;
+      if (model.id === 'veo-3-1-lite') score += 10;
+    }
     if (isStrictProductPreservationBrief(brief)) {
       if (model.id === 'kling-3-standard') score += 8;
       if (model.id === 'seedance-2-0') score += 3;
@@ -193,6 +200,10 @@ export function scoreModelForBrief(model: AiStrategistModelEntry, briefInput: Ai
     if (model.id.startsWith('kling-3')) score += 4;
     if (model.id === 'seedance-2-0-fast' || model.id === 'ltx-2-3') score += 4;
     if (model.id === 'veo-3-1-lite') score += veoLiteBudgetBrief || brief.budgetPriority === 'value' ? 16 : 4;
+    if (isVeoFriendlySocialOrCommercialBrief(brief)) {
+      if (model.id === 'veo-3-1-fast') score += 14;
+      if (model.id === 'veo-3-1-lite') score += 12;
+    }
     if (model.id === 'happy-horse-1-0' && lipSyncBrief) score += 6;
     if (model.id === 'sora') score -= 34;
   } else if (focus === 'character') {
@@ -229,6 +240,7 @@ export function scoreModelForBrief(model: AiStrategistModelEntry, briefInput: Ai
     if (model.id === 'ltx-2-3') score += 12;
     if (model.id === 'veo-3-1' || model.id === 'veo-3-1-fast') score += 14;
     if (model.id === 'veo-3-1-lite') score += 8;
+    if (isVeoFriendlySocialOrCommercialBrief(brief) && model.id === 'veo-3-1-lite') score += 14;
   }
 
   if (veoLiteBudgetBrief && model.id === 'veo-3-1-lite') {
@@ -365,10 +377,11 @@ function getPreferredCandidatesForTier(
   }
 
   if (focus === 'social' && (brief.speedPriority === 'high' || brief.budgetPriority === 'value')) {
+    const veoFriendly = isVeoFriendlySocialOrCommercialBrief(brief);
     return candidatesByIds(scoredModels, {
       best: ['seedance-2-0'],
-      medium: ['kling-3-pro'],
-      value: isPlayfulEffectBrief(brief) ? ['pika'] : ['seedance-2-0-fast'],
+      medium: veoFriendly ? ['veo-3-1-fast', 'kling-3-pro'] : ['kling-3-pro', 'veo-3-1-fast'],
+      value: isPlayfulEffectBrief(brief) ? ['pika'] : veoFriendly ? ['veo-3-1-lite', 'seedance-2-0-fast'] : ['seedance-2-0-fast'],
     }[tier]);
   }
 
@@ -390,10 +403,13 @@ function getPreferredCandidatesForTier(
     }
 
     if (isSocialFirstProductMotionBrief(brief)) {
+      const veoFriendly = isVeoFriendlySocialOrCommercialBrief(brief);
       return candidatesByIds(scoredModels, {
         best: ['kling-3-pro'],
-        medium: ['seedance-2-0', 'kling-3-standard'],
-        value: ['seedance-2-0-fast', 'seedance-2-0', 'veo-3-1-lite', 'kling-3-standard'],
+        medium: veoFriendly ? ['seedance-2-0', 'veo-3-1-fast', 'kling-3-standard'] : ['seedance-2-0', 'kling-3-standard', 'veo-3-1-fast'],
+        value: veoFriendly
+          ? ['veo-3-1-lite', 'seedance-2-0-fast', 'seedance-2-0', 'kling-3-standard']
+          : ['seedance-2-0-fast', 'seedance-2-0', 'veo-3-1-lite', 'kling-3-standard'],
       }[tier]);
     }
 
@@ -611,22 +627,32 @@ function buildAlsoConsider(
   brief: NormalizedBrief,
   selectedIds: ReadonlySet<AiStrategistModelId>
 ): readonly AiStrategistAlsoConsider[] {
-  if (selectedIds.has('happy-horse-1-0') || !shouldAlsoConsiderHappyHorse(brief)) {
-    return [];
+  const suggestions: AiStrategistAlsoConsider[] = [];
+
+  if (!selectedIds.has('happy-horse-1-0') && shouldAlsoConsiderHappyHorse(brief)) {
+    const happyHorse = scoredModels.find((entry) => entry.model.id === 'happy-horse-1-0');
+    if (happyHorse?.model.supportedWorkflows.includes(brief.workflow)) {
+      suggestions.push({
+        model: happyHorse.model,
+        reason: buildHappyHorseAlsoConsiderReason(brief),
+        matchedSignals: [...new Set([...happyHorse.matchedSignals, 'specialized-audio-lip-sync'])],
+      });
+    }
   }
 
-  const happyHorse = scoredModels.find((entry) => entry.model.id === 'happy-horse-1-0');
-  if (!happyHorse || !happyHorse.model.supportedWorkflows.includes(brief.workflow)) {
-    return [];
+  const veoAlternativeId = selectVeoFamilyAlternative(brief, selectedIds);
+  if (veoAlternativeId) {
+    const veoAlternative = scoredModels.find((entry) => entry.model.id === veoAlternativeId);
+    if (veoAlternative?.model.supportedWorkflows.includes(brief.workflow)) {
+      suggestions.push({
+        model: veoAlternative.model,
+        reason: buildVeoFamilyAlsoConsiderReason(veoAlternative.model.id),
+        matchedSignals: [...new Set([...veoAlternative.matchedSignals, 'veo-family-alternative'])],
+      });
+    }
   }
 
-  return [
-    {
-      model: happyHorse.model,
-      reason: buildHappyHorseAlsoConsiderReason(brief),
-      matchedSignals: [...new Set([...happyHorse.matchedSignals, 'specialized-audio-lip-sync'])],
-    },
-  ];
+  return suggestions;
 }
 
 function shouldAlsoConsiderHappyHorse(brief: NormalizedBrief): boolean {
@@ -651,6 +677,30 @@ function buildHappyHorseAlsoConsiderReason(brief: NormalizedBrief): string {
   }
 
   return 'Happy Horse 1.0 for compatible audio/lip-sync/spokesperson workflows.';
+}
+
+function selectVeoFamilyAlternative(
+  brief: NormalizedBrief,
+  selectedIds: ReadonlySet<AiStrategistModelId>
+): AiStrategistModelId | undefined {
+  if ([...selectedIds].some((id) => id.startsWith('veo-'))) return undefined;
+  if (!isVeoFriendlySocialOrCommercialBrief(brief)) return undefined;
+  if (isPersonReferenceImageToVideoBrief(brief) && !isCompatibleGeneratedPersonWorkflow(brief)) return undefined;
+  if (isStrictProductPreservationBrief(brief)) return undefined;
+
+  if (isVeoLiteBudgetBrief(brief) || isDraftTestingBrief(brief) || brief.budgetPriority === 'value' || brief.speedPriority === 'high') {
+    return 'veo-3-1-lite';
+  }
+
+  return 'veo-3-1-fast';
+}
+
+function buildVeoFamilyAlsoConsiderReason(modelId: AiStrategistModelId): string {
+  if (modelId === 'veo-3-1-lite') {
+    return 'Veo 3.1 Lite for a lower-cost Veo-family realistic pass with native audio when speed and price matter more than strict product/detail control.';
+  }
+
+  return 'Veo 3.1 Fast for a more cinematic Veo-family route when natural motion, audio, and polished realism matter.';
 }
 
 function containsAny(value: string, needles: readonly string[]): boolean {
@@ -707,7 +757,7 @@ function isLipSyncBrief(brief: AiStrategistBrief & { goal: string }): boolean {
 
 function isVeoLiteBudgetBrief(brief: AiStrategistBrief & { goal: string }): boolean {
   const text = briefText(brief);
-  return containsAny(text, veoLiteBudgetTerms) || (text.includes('veo') && containsAny(text, ['budget', 'value', 'lower-cost', 'low-cost', 'cheap']));
+  return containsAny(text, veoLiteBudgetTerms) || (text.includes('veo') && containsAny(text, ['budget', 'value', 'lower-cost', 'low-cost', 'cheap', 'lite', 'live']));
 }
 
 function isVeoLiteExtendBrief(brief: AiStrategistBrief & { goal: string }): boolean {
@@ -717,6 +767,63 @@ function isVeoLiteExtendBrief(brief: AiStrategistBrief & { goal: string }): bool
 function isVoiceoverOnlyProductBrief(brief: AiStrategistBrief & { goal: string }): boolean {
   const text = briefText(brief);
   return detectFocusArea(brief) === 'product' && containsAny(text, ['voiceover', 'voice over']) && !hasVisibleSpeakingPerformanceSignal(brief);
+}
+
+function isVeoFriendlySocialOrCommercialBrief(brief: NormalizedBrief): boolean {
+  const focus = detectFocusArea(brief);
+  const text = briefText(brief);
+
+  if (isVeoLiteBudgetBrief(brief)) return true;
+  if (focus === 'cinematic' || focus === 'character') return true;
+
+  if (focus === 'social') {
+    return containsAny(text, [
+      'realistic',
+      'cinematic',
+      'natural',
+      'human',
+      'creator',
+      'voiceover',
+      'voice over',
+      'dialogue',
+      'spoken',
+      'audio',
+      'native audio',
+      'ad-quality',
+      'ad quality',
+      'budget',
+      'value',
+      'cheap',
+      'lower-cost',
+      'low-cost',
+    ]);
+  }
+
+  if (focus === 'product') {
+    return (
+      isSocialFirstProductMotionBrief(brief) &&
+      !isStrictProductPreservationBrief(brief) &&
+      containsAny(text, [
+        'voiceover',
+        'voice over',
+        'audio',
+        'native audio',
+        'realistic',
+        'cinematic',
+        'tiktok',
+        'reels',
+        'creator',
+        'influencer',
+        'budget',
+        'value',
+        'cheap',
+        'lower-cost',
+        'low-cost',
+      ])
+    );
+  }
+
+  return false;
 }
 
 function hasVisibleSpeakingPerformanceSignal(brief: AiStrategistBrief & { goal: string }): boolean {

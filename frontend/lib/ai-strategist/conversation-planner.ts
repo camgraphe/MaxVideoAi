@@ -99,7 +99,7 @@ const modelAliases: readonly { modelId: AiStrategistModelId; aliases: readonly s
   { modelId: 'kling-3-pro', aliases: ['kling pro', 'kling 3 pro', 'kling'] },
   { modelId: 'kling-3-standard', aliases: ['kling standard', 'kling 3 standard'] },
   { modelId: 'veo-3-1-fast', aliases: ['veo fast', 'veo 3.1 fast'] },
-  { modelId: 'veo-3-1-lite', aliases: ['veo lite', 'veo 3.1 lite'] },
+  { modelId: 'veo-3-1-lite', aliases: ['veo lite', 'veo 3.1 lite', 'veo live', 'veo 3 live', 'veo 3.1 live'] },
   { modelId: 'veo-3-1', aliases: ['veo', 'veo 3', 'veo 3.1'] },
   { modelId: 'ltx-2-3', aliases: ['ltx', 'ltx 2.3'] },
   { modelId: 'pika', aliases: ['pika', 'pika labs'] },

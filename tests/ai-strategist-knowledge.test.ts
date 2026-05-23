@@ -58,6 +58,23 @@ function tierRecommendations(result: { best: unknown; medium: unknown; value: un
   return [result.best, result.medium, result.value] as const;
 }
 
+function recommendationSetContainsModel(
+  result: {
+    best: { model: { id: string } };
+    medium: { model: { id: string } };
+    value: { model: { id: string } };
+    alsoConsider?: readonly { model: { id: string } }[];
+  },
+  modelId: string
+) {
+  return [
+    result.best.model.id,
+    result.medium.model.id,
+    result.value.model.id,
+    ...(result.alsoConsider?.map((entry) => entry.model.id) ?? []),
+  ].includes(modelId);
+}
+
 test('AI Strategist catalog exposes versioned complete entries for every v1 model', async () => {
   const { catalog } = await loadStrategistModules();
 
@@ -1858,7 +1875,10 @@ test('recommendModelsForBrief handles Happy Horse limits for focused audio and p
     'Seedance 2.0 should stay viable for product ads with audio when no problematic person image is involved'
   );
   assert.notEqual(productVoiceover.best.model.id, 'happy-horse-1-0');
-  assert.equal(productVoiceover.alsoConsider, undefined);
+  assert.ok(
+    recommendationSetContainsModel(productVoiceover, 'veo-3-1-lite') || recommendationSetContainsModel(productVoiceover, 'veo-3-1-fast'),
+    'Veo Lite/Fast should stay visible as a realistic audio-ready product ad route'
+  );
 
   const productVoiceoverOnly = recommendations.recommendModelsForBrief({
     workflow: 'text-to-video',
@@ -1869,7 +1889,11 @@ test('recommendModelsForBrief handles Happy Horse limits for focused audio and p
     requiredTraits: ['product', 'voiceover', 'dynamic motion'],
   });
 
-  assert.equal(productVoiceoverOnly.alsoConsider, undefined);
+  assert.equal(Boolean(productVoiceoverOnly.alsoConsider?.some((entry) => entry.model.id === 'happy-horse-1-0')), false);
+  assert.ok(
+    recommendationSetContainsModel(productVoiceoverOnly, 'veo-3-1-lite'),
+    'Veo 3.1 Lite should stay visible for lower-cost social product ads with off-camera voiceover'
+  );
 
   const storyboard = recommendations.recommendModelsForBrief({
     workflow: 'text-to-video',
@@ -1910,14 +1934,8 @@ test('recommendModelsForBrief handles Happy Horse limits for focused audio and p
   });
 
   assert.equal(socialSpeakingAd.best.model.id, 'seedance-2-0');
-  assert.ok(
-    ['kling-3-pro', 'veo-3-1-fast'].includes(socialSpeakingAd.medium.model.id),
-    `social speaking ad medium should keep Kling or Veo visible, got ${socialSpeakingAd.medium.model.id}`
-  );
-  assert.ok(
-    ['kling-3-standard', 'veo-3-1-lite', 'seedance-2-0-fast'].includes(socialSpeakingAd.value.model.id),
-    `social speaking ad value should stay commercial/value appropriate, got ${socialSpeakingAd.value.model.id}`
-  );
+  assert.equal(socialSpeakingAd.medium.model.id, 'veo-3-1-fast');
+  assert.equal(socialSpeakingAd.value.model.id, 'veo-3-1-lite');
   assert.notEqual(socialSpeakingAd.best.model.id, 'happy-horse-1-0');
   assert.equal(socialSpeakingAd.alsoConsider?.[0]?.model.id, 'happy-horse-1-0');
   assert.match(socialSpeakingAd.alsoConsider?.[0]?.reason ?? '', /compatible audio\/lip-sync\/spokesperson workflows/);
