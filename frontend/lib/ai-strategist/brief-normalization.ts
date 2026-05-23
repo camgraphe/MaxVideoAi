@@ -1,4 +1,8 @@
-import type { AiStrategistModelId, AiStrategistWorkflowId } from './types';
+import type {
+  AiStrategistModelId,
+  AiStrategistTierPosition,
+  AiStrategistWorkflowId,
+} from './types';
 
 // Contract for the future brief-refinement LLM step.
 // The deterministic implementation below is a fallback/test-mode parser that
@@ -21,6 +25,7 @@ export type AiStrategistNormalizedIntent =
 export type AiStrategistAspectRatioHint = '9:16' | '16:9' | '1:1' | '4:3' | '3:4';
 export type AiStrategistQualityIntent = 'premium' | 'balanced' | 'value' | 'draft';
 export type AiStrategistPlatformHint = 'tiktok' | 'instagram' | 'youtube' | 'website' | 'ad' | 'unknown';
+export type AiStrategistBriefMode = 'recommend' | 'build_prompt' | 'improve_prompt' | 'product_help';
 
 export type AiStrategistBriefUploadedAsset = {
   type?: string;
@@ -31,13 +36,44 @@ export type AiStrategistBriefUploadedAsset = {
   isReferenceImage?: boolean;
 };
 
+export type AiStrategistBriefRefinementTurn = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export type AiStrategistBriefRefinementRecommendationSummary = {
+  modelId: AiStrategistModelId;
+  label?: string;
+  reason?: string;
+  warning?: string;
+};
+
+export type AiStrategistBriefRefinementConversationContext = {
+  currentChatStage?: string;
+  currentUserMessage?: string;
+  lastUserBrief?: string;
+  enrichedBrief?: string;
+  lastRecommendations?: {
+    best?: AiStrategistBriefRefinementRecommendationSummary;
+    medium?: AiStrategistBriefRefinementRecommendationSummary;
+    value?: AiStrategistBriefRefinementRecommendationSummary;
+    alsoConsider?: AiStrategistBriefRefinementRecommendationSummary[];
+  };
+  lastSelectedModel?: AiStrategistModelId;
+  lastSelectedTier?: AiStrategistTierPosition;
+  lastSelectedWorkflow?: AiStrategistWorkflowId;
+  recentTurns?: readonly AiStrategistBriefRefinementTurn[];
+};
+
 export type AiStrategistBriefNormalizationInput = {
   rawUserMessage?: string;
+  mode?: AiStrategistBriefMode;
   pageContext?: unknown;
   currentPrompt?: string;
   uploadedAsset?: AiStrategistBriefUploadedAsset;
   selectedModel?: AiStrategistModelId;
   selectedWorkflow?: AiStrategistWorkflowId;
+  conversationContext?: AiStrategistBriefRefinementConversationContext;
 };
 
 export type AiStrategistNormalizedBrief = {
@@ -78,6 +114,8 @@ const productTerms = [
   'package',
   'packshot',
   'car',
+  'voiture',
+  'auto',
   'watch',
   'cream',
   'serum',
@@ -101,6 +139,7 @@ const textRiskTerms = [
   'sneaker',
   'sneakers',
   'car',
+  'voiture',
   'badge',
   'plate',
 ] as const;
@@ -147,8 +186,8 @@ export function normalizeStrategistBrief(input: AiStrategistBriefNormalizationIn
   const text = combinedText.toLowerCase();
 
   const hasUploadedReference = input.uploadedAsset?.isReferenceImage === true;
-  const hasPerson = input.uploadedAsset?.hasPerson === true || containsAny(text, ['person', 'human', 'face', 'founder', 'actor']);
-  const hasCharacter = containsAny(text, ['character', 'avatar', 'creature', 'mascot']);
+  const hasPerson = input.uploadedAsset?.hasPerson === true || containsAny(text, ['person', 'human', 'face', 'founder', 'actor', 'fighter']);
+  const hasCharacter = containsAny(text, ['character', 'avatar', 'creature', 'mascot', 'fighter', 'street fighter', 'combat']);
   const hasProduct = input.uploadedAsset?.hasProduct === true || containsAny(text, productTerms);
   const hasVoiceover = containsAny(text, ['voiceover', 'voice over', 'off-camera narration', 'off camera narration', 'narration']);
   const explicitVisibleSpeaker = containsAny(text, visibleSpeakerTerms);
@@ -255,7 +294,7 @@ function inferIntent(input: {
     return 'social_ad';
   }
   if (input.hasProduct) return 'product_ad';
-  if (containsAny(input.text, ['cinematic', 'film', 'scene', 'realistic human', 'camera movement'])) return 'cinematic_scene';
+  if (containsAny(input.text, ['cinematic', 'film', 'scene', 'realistic human', 'camera movement', 'pub', 'fight', 'street fighter', 'combat', 'battle'])) return 'cinematic_scene';
   return 'unknown';
 }
 
@@ -297,6 +336,10 @@ function buildNormalizedBrief(input: {
   }
 
   if (!input.rawUserMessage) return input.intent === 'unknown' ? 'Unspecified video brief.' : `Video brief for ${input.intent}.`;
+  const raw = input.rawUserMessage.toLowerCase();
+  if (containsAny(raw, ['voiture', 'pub de voiture'])) {
+    return 'A high-energy cinematic car commercial emphasizing speed, dynamic motion, and polished automotive camera work.';
+  }
   return input.rawUserMessage;
 }
 
@@ -320,13 +363,13 @@ function inferPlatform(text: string): AiStrategistPlatformHint {
   if (containsAny(text, ['instagram', 'reels'])) return 'instagram';
   if (text.includes('youtube')) return 'youtube';
   if (text.includes('website')) return 'website';
-  if (containsAny(text, ['ad', 'advert', 'commercial', 'saas'])) return 'ad';
+  if (containsAny(text, ['ad', 'advert', 'commercial', 'saas', 'pub', 'publicite', 'publicité'])) return 'ad';
   return 'unknown';
 }
 
 function inferStyleHints(text: string): string[] {
   const hints: string[] = [];
-  for (const hint of ['cinematic', 'luxury', 'premium', 'social-first', 'black marble', 'vertical', 'creator-style', 'fast', 'realistic']) {
+  for (const hint of ['cinematic', 'luxury', 'premium', 'social-first', 'black marble', 'vertical', 'creator-style', 'fast', 'realistic', 'dynamic', 'dynamique', 'street fighter', 'arcade', 'combat', 'stylized']) {
     if (text.includes(hint)) hints.push(hint);
   }
   return hints;

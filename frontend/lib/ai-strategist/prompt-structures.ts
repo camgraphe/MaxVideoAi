@@ -131,6 +131,8 @@ export type AiStrategistModelSpecificPrompt = {
   promptStructure: AiStrategistPromptStructure;
   modelPagePromptStructure: AiStrategistModelPagePromptStructure;
   reason: string;
+  durationGuidance: AiStrategistDurationGuidance;
+  priceEstimate: AiStrategistPriceEstimate;
   finalPrompt: string;
   negativePrompt: string;
   recommendedSettings: readonly string[];
@@ -162,6 +164,23 @@ export type AiStrategistWorkflowPromptStructure = {
   rules: readonly string[];
 };
 
+export type AiStrategistDurationGuidance = {
+  seconds: number;
+  label: string;
+  promptLine: string;
+  reason: string;
+  source: 'brief' | 'brief_adjusted' | 'strategist_default';
+};
+
+export type AiStrategistPriceEstimate = {
+  label: string;
+  estimatedAmountCents: number;
+  currency: 'USD';
+  note: string;
+  calculationBasis: string;
+  isPreview: true;
+};
+
 export type AiStrategistPromptGenerationContext = {
   userBrief: string;
   currentPrompt?: string;
@@ -172,6 +191,8 @@ export type AiStrategistPromptGenerationContext = {
   modelPagePromptStructure: AiStrategistModelPagePromptStructure;
   workflowPromptStructure: AiStrategistWorkflowPromptStructure;
   uploadedAsset?: AiStrategistPromptContextUploadedAsset;
+  durationGuidance: AiStrategistDurationGuidance;
+  priceEstimate: AiStrategistPriceEstimate;
   warnings: {
     product: readonly string[];
     person: readonly string[];
@@ -232,13 +253,15 @@ export function buildModelSpecificPrompt(input: {
   const structure = getAiStrategistPromptStructure(input.promptStructureId);
   const selectedTier = input.selectedTier ?? model.tierPosition;
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
-  const finalPrompt = buildFinalPrompt({
+  const durationGuidance = buildDurationGuidance(input);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance);
+  const finalPrompt = applyDurationToPrompt(buildFinalPrompt({
     brief: input.brief,
     modelId: input.modelId,
     promptStructureId: input.promptStructureId,
     workflow: input.workflow,
     sourceImageKind: input.sourceImageKind,
-  });
+  }), input.workflow, durationGuidance);
   const negativePrompt = buildNegativePrompt(input.promptStructureId, input.modelId, input.sourceImageKind);
   const warning = buildPromptWarning(input.brief, input.workflow, input.sourceImageKind);
 
@@ -249,9 +272,11 @@ export function buildModelSpecificPrompt(input: {
     promptStructure: structure,
     modelPagePromptStructure,
     reason: buildPromptReason(modelPagePromptStructure, input.workflow, input.promptStructureId, input.modelId),
+    durationGuidance,
+    priceEstimate,
     finalPrompt,
     negativePrompt,
-    recommendedSettings: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief),
+    recommendedSettings: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate),
     ...(warning ? { warning } : {}),
   };
 }
@@ -270,6 +295,8 @@ export function buildPromptGenerationContext(input: {
   const promptStructure = getAiStrategistPromptStructure(input.promptStructureId);
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
   const workflowPromptStructure = buildWorkflowPromptStructure(input.workflow);
+  const durationGuidance = buildDurationGuidance(input);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance);
   const warnings = buildContextWarnings(input);
   const negativePromptGuidance = {
     model: model.negativePromptGuidance,
@@ -287,10 +314,12 @@ export function buildPromptGenerationContext(input: {
     modelPagePromptStructure,
     workflowPromptStructure,
     ...(input.uploadedAsset ? { uploadedAsset: input.uploadedAsset } : {}),
+    durationGuidance,
+    priceEstimate,
     warnings,
     negativePromptGuidance,
-    settingsGuidance: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief),
-    maxVideoAiRules: buildMaxVideoAiRules(input, warnings),
+    settingsGuidance: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate),
+    maxVideoAiRules: buildMaxVideoAiRules(input, warnings, durationGuidance, priceEstimate),
     outputFormatExamples: buildOutputFormatExamples(input.workflow),
   };
 }
@@ -422,6 +451,7 @@ function buildWorkflowPromptStructure(workflow: AiStrategistWorkflowId): AiStrat
   const sharedRules = [
     'Write the final prompt as directly usable MaxVideoAI text.',
     'Keep the structure explicit and field-by-field.',
+    'Include the strategist-selected duration as a timing constraint in the prompt, not only as a setting.',
     'Use audio only when it supports the selected workflow, brief, or approval pass.',
   ];
 
@@ -436,6 +466,7 @@ function buildWorkflowPromptStructure(workflow: AiStrategistWorkflowId): AiStrat
           fields: [
             { label: 'Reference', instruction: 'Name the MaxVideoAI reference image role and what it anchors.' },
             { label: 'Preserve', instruction: 'List identity, product, text/logo areas, palette, materials, and composition that must stay stable.' },
+            { label: 'Duration', instruction: 'Use the strategist-selected duration and pace motion/audio to fit it.' },
             { label: 'Motion', instruction: 'Describe one controlled subject/product/action movement.' },
             { label: 'Camera', instruction: 'Specify shot size, framing, aspect ratio, angle, and one camera move.' },
             { label: 'Atmosphere', instruction: 'Define lighting, environment, palette, and mood.' },
@@ -472,6 +503,7 @@ function buildWorkflowPromptStructure(workflow: AiStrategistWorkflowId): AiStrat
           fields: [
             { label: 'Reference', instruction: 'State that the MaxVideoAI starting image is the product/scene anchor.' },
             { label: 'Preserve', instruction: 'Protect product shape, identity, material finish, logos/text areas, and final composition.' },
+            { label: 'Duration', instruction: 'Use the strategist-selected duration for the animation beat, hold, and audio pacing.' },
             { label: 'Motion', instruction: 'Describe one controlled animation beat.' },
             { label: 'Camera', instruction: 'Specify framing, aspect ratio, angle, and one camera move.' },
             { label: 'Atmosphere', instruction: 'Carry over lighting, palette, texture, and mood from the starting image.' },
@@ -499,6 +531,7 @@ function buildWorkflowPromptStructure(workflow: AiStrategistWorkflowId): AiStrat
           fields: [
             { label: 'Source clip', instruction: 'Describe the uploaded/source video role as the timing and motion base.' },
             { label: 'Preserve', instruction: 'List subject identity, usable timing, motion, framing, and audio intent to keep.' },
+            { label: 'Duration', instruction: 'State the target duration or source-duration handling before edit details.' },
             { label: 'Edit direction', instruction: 'Describe the restyle, refinement, extension, or transformation goal.' },
             { label: 'Camera/motion', instruction: 'Explain what can move or change without fighting the source clip.' },
             { label: 'Audio handling', instruction: 'State whether source audio should be kept, regenerated, or guided with new audio cues.' },
@@ -523,6 +556,7 @@ function buildWorkflowPromptStructure(workflow: AiStrategistWorkflowId): AiStrat
         label: 'Text-to-video prompt',
         fields: [
           { label: 'Subject', instruction: 'Describe who or what appears with 2-3 defining traits.' },
+          { label: 'Duration', instruction: 'Use the strategist-selected duration and make the action/audio fit that timing.' },
           { label: 'Action', instruction: 'Describe one visible action or one timed beat.' },
           { label: 'Camera', instruction: 'Specify shot size, aspect ratio, angle, one move, and optional transition.' },
           { label: 'Style', instruction: 'Define lighting, palette, texture, lens feel, and realism/stylization level.' },
@@ -577,11 +611,15 @@ function buildMaxVideoAiRules(
     sourceImageKind?: AiStrategistSourceImageKind;
     uploadedAsset?: AiStrategistPromptContextUploadedAsset;
   },
-  warnings: AiStrategistPromptGenerationContext['warnings']
+  warnings: AiStrategistPromptGenerationContext['warnings'],
+  durationGuidance: AiStrategistDurationGuidance,
+  priceEstimate: AiStrategistPriceEstimate
 ): readonly string[] {
   const rules = [
     'Do not mention Midjourney, DALL-E, Runway, or external tools by default.',
     'Use the selected MaxVideoAI model, selected workflow, settings guidance, and compatibility warnings as constraints.',
+    `Use ${durationGuidance.label} as the selected duration; carry it into the final prompt timing, shot plan, dialogue pacing, audio cues, settings, and SET_DURATION uiAction.`,
+    `${priceEstimate.label}. Treat this as a preview estimate only; the generator quote shown before rendering is authoritative.`,
     'Do not auto-run generation, spend credits, or imply the video has already been generated.',
     'Return polished prompt text that is directly usable in MaxVideoAI.',
     'Avoid overpromising words like flawless, perfect, guaranteed, or always.',
@@ -607,24 +645,24 @@ function buildMaxVideoAiRules(
 function buildOutputFormatExamples(workflow: AiStrategistWorkflowId): readonly string[] {
   if (workflow === 'image-to-video') {
     return [
-      'Reference:\n[Use the MaxVideoAI reference image as the anchor]\n\nPreserve:\n[Identity/product/material/composition details]\n\nMotion:\n[One controlled movement]\n\nCamera:\n[Shot size + angle + one move]\n\nAtmosphere:\n[Lighting + palette + environment]\n\nEnd frame:\n[Stable final pose/product angle]\n\nAudio:\n[Ambience/SFX/voiceover/lip-sync guidance or off]',
+      'Reference:\n[Use the MaxVideoAI reference image as the anchor]\n\nPreserve:\n[Identity/product/material/composition details]\n\nDuration:\n[Strategist-selected duration]\n\nMotion:\n[One controlled movement]\n\nCamera:\n[Shot size + angle + one move]\n\nAtmosphere:\n[Lighting + palette + environment]\n\nEnd frame:\n[Stable final pose/product angle]\n\nAudio:\n[Ambience/SFX/voiceover/lip-sync guidance or off]',
     ];
   }
 
   if (workflow === 'text-to-image-then-image-to-video') {
     return [
-      'Starting image prompt:\nProduct/subject: [Still image subject and defining details]\nComposition: [Framing, surface, background, safe space]\nLighting: [Light direction, reflections, palette]\nPreserve for video: [Details the animation must keep]\n\nVideo animation prompt:\nReference: [Use the MaxVideoAI starting image as the anchor]\nPreserve: [Product/identity/material/composition details]\nMotion: [One controlled animation beat]\nCamera: [Aspect ratio + angle + one move]\nAtmosphere: [Carry over lighting, palette, texture]\nEnd frame: [Final hero frame or loop point]\nAudio: [Ambience/SFX/voiceover guidance or off]',
+      'Starting image prompt:\nProduct/subject: [Still image subject and defining details]\nComposition: [Framing, surface, background, safe space]\nLighting: [Light direction, reflections, palette]\nPreserve for video: [Details the animation must keep]\n\nVideo animation prompt:\nReference: [Use the MaxVideoAI starting image as the anchor]\nPreserve: [Product/identity/material/composition details]\nDuration: [Strategist-selected duration]\nMotion: [One controlled animation beat]\nCamera: [Aspect ratio + angle + one move]\nAtmosphere: [Carry over lighting, palette, texture]\nEnd frame: [Final hero frame or loop point]\nAudio: [Ambience/SFX/voiceover guidance or off]',
     ];
   }
 
   if (workflow === 'video-to-video') {
     return [
-      'Source clip:\n[Uploaded/source video role]\n\nPreserve:\n[Identity, timing, motion, framing, audio intent]\n\nEdit direction:\n[Restyle/refine/extend goal]\n\nCamera/motion:\n[What can change safely]\n\nAudio handling:\n[Keep, regenerate, or guide audio]\n\nEnd frame:\n[Final pose/product/story beat]',
+      'Source clip:\n[Uploaded/source video role]\n\nPreserve:\n[Identity, timing, motion, framing, audio intent]\n\nDuration:\n[Strategist-selected duration or source-duration handling]\n\nEdit direction:\n[Restyle/refine/extend goal]\n\nCamera/motion:\n[What can change safely]\n\nAudio handling:\n[Keep, regenerate, or guide audio]\n\nEnd frame:\n[Final pose/product/story beat]',
     ];
   }
 
   return [
-    'Subject:\n[Who/what appears + 2-3 defining traits]\n\nAction:\n[One visible action or timed beat]\n\nCamera:\n[Shot size + aspect ratio + angle + one move]\n\nStyle:\n[Lighting + palette + texture / lens feel]\n\nAudio:\n[Ambience + SFX + optional voiceover/dialogue, or off]',
+    'Subject:\n[Who/what appears + 2-3 defining traits]\n\nDuration:\n[Strategist-selected duration]\n\nAction:\n[One visible action or timed beat]\n\nCamera:\n[Shot size + aspect ratio + angle + one move]\n\nStyle:\n[Lighting + palette + texture / lens feel]\n\nAudio:\n[Ambience + SFX + optional voiceover/dialogue, or off]',
   ];
 }
 
@@ -731,7 +769,12 @@ function buildKling4kProductSubject(brief: string): {
   };
 }
 
-function buildKlingProPrompt(input: { brief: string; workflow: AiStrategistWorkflowId }): string {
+function buildKlingProPrompt(input: {
+  brief: string;
+  workflow: AiStrategistWorkflowId;
+  promptStructureId: AiStrategistPromptStructureId;
+  sourceImageKind?: AiStrategistSourceImageKind;
+}): string {
   if (input.workflow === 'text-to-image-then-image-to-video') {
     const product = cleanProductSubject(input.brief) || 'hero product';
     const prompt = [
@@ -754,6 +797,45 @@ function buildKlingProPrompt(input: { brief: string; workflow: AiStrategistWorkf
   }
 
   if (input.workflow === 'image-to-video') {
+    if (input.promptStructureId === 'character-scene' || isPersonSource(input.sourceImageKind)) {
+      const prompt = [
+        'Reference:',
+        'Use a reference image in MaxVideoAI as the uploaded person/character anchor.',
+        '',
+        'Preserve:',
+        'Face shape, hairstyle, wardrobe, body proportions, identity anchors, pose language and reference-image composition.',
+        '',
+        'Motion:',
+        `One controlled person-safe motion beat from the reference image: ${input.brief}`,
+        '',
+        'Camera:',
+        'Locked medium shot or gentle push-in; keep the face readable, centered and stable.',
+        '',
+        'Atmosphere:',
+        'Clean studio or simple real-world background, soft natural light, review-friendly mood.',
+        '',
+        'End frame:',
+        'Settle on a stable final pose with identity, wardrobe, face shape and reference composition preserved.',
+        '',
+        ...(isSpeakingBrief(input.brief)
+          ? [
+              'Spoken line:',
+              'Use one short customer-provided line for the spokesperson.',
+              '',
+              'Audio:',
+              LIP_SYNC_AUDIO_LINE,
+            ]
+          : [
+              'Audio:',
+              'Off for the first compatibility review unless ambience or SFX are needed.',
+            ]),
+        '',
+        'Constraints:',
+        'No extra people, no face warping, no wardrobe drift, no readable text, no subtitles or burned-in overlays.',
+      ];
+      return compactLines(prompt).join('\n');
+    }
+
     const prompt = [
       'Reference:',
       'Use the product photo in MaxVideoAI as the source frame and hero product reference.',
@@ -1326,86 +1408,310 @@ function buildRecommendedSettings(
   modelId: AiStrategistModelId,
   workflow: AiStrategistWorkflowId,
   promptStructureId: AiStrategistPromptStructureId,
-  brief: string
+  brief: string,
+  durationGuidance: AiStrategistDurationGuidance = buildDurationGuidance({
+    modelId,
+    workflow,
+    promptStructureId,
+    brief,
+  }),
+  priceEstimate?: AiStrategistPriceEstimate
 ): readonly string[] {
   const aspectRatio = extractRequestedAspectRatio(brief) ?? (brief.toLowerCase().includes('vertical') ? '9:16' : undefined);
+  const durationSetting = `Duration: ${durationGuidance.label}`;
+  const priceSetting = priceEstimate ? `${priceEstimate.label}; final generator quote wins` : undefined;
   if (modelId === 'kling-3-4k') {
-    return [
+    return compactLines([
       aspectRatio ?? '9:16 for vertical ads or 16:9 for campaign masters',
       'native 4K',
-      '6-10 seconds',
+      durationSetting,
+      priceSetting,
       'audio ambience/SFX on when useful, off for silent approvals',
       'use one approved starting image',
-    ];
+    ]);
   }
   if (modelId === 'kling-3-pro') {
-    return [
+    return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
       '1080p',
-      '5-10 seconds for approval passes',
+      durationSetting,
+      priceSetting,
       workflow === 'image-to-video' ? 'use one product reference image' : '2-3 shots maximum',
       isSpeakingBrief(brief) ? 'use compatible audio/lip-sync workflow' : 'audio ambience/SFX on when useful',
-    ];
+    ]);
   }
   if (modelId === 'kling-3-standard') {
-    return [
+    return compactLines([
       '1080p',
-      '8-10 seconds',
+      durationSetting,
+      priceSetting,
       'use @Element1 for the person or product reference',
       isSpeakingBrief(brief) ? 'use compatible audio/lip-sync workflow' : 'audio ambience/SFX on when useful',
-    ];
+    ]);
   }
   if (modelId === 'veo-3-1') {
-    return [
+    return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
       brief.toLowerCase().includes('4k') ? '4K available in MaxVideoAI' : '1080p, with 4K available when selected',
-      '4-8 seconds',
+      durationSetting,
+      priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
-    ];
+    ]);
   }
   if (modelId === 'veo-3-1-fast') {
-    return [
+    return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
       brief.toLowerCase().includes('4k') ? '4K available in MaxVideoAI' : '720p/1080p, with 4K available when selected',
-      '4-8 seconds',
+      durationSetting,
+      priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
       'Fast route for lower-cost Veo iteration',
-    ];
+    ]);
   }
   if (modelId === 'veo-3-1-lite') {
-    return [
+    return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
       '720p/1080p',
-      '4-8 seconds',
+      durationSetting,
+      priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
       'Lite budget route for value testing',
-    ];
+    ]);
   }
   if (modelId === 'happy-horse-1-0') {
-    return [
+    return compactLines([
       aspectRatio ?? (workflow === 'image-to-video' ? 'source image aspect ratio' : '16:9 or 9:16 based on placement'),
       '720p/1080p',
-      '3-15 seconds',
+      durationSetting,
+      priceSetting,
       isSpeakingBrief(brief) ? 'native synchronized audio/lip-sync workflow' : 'native synchronized audio with ambience/SFX',
       workflow === 'video-to-video' ? 'auto or origin audio handling' : 'use R2V/V2V when references or source clips matter',
-    ];
+    ]);
   }
-  if (modelId === 'seedance-2-0-fast') return [aspectRatio ?? '9:16', '720p preview', '5-8 seconds', 'one variable per run', 'audio/SFX on for social ad timing tests'];
+  if (modelId === 'seedance-2-0-fast') {
+    return compactLines([
+      aspectRatio ?? '9:16',
+      '720p preview',
+      durationSetting,
+      priceSetting,
+      'one variable per run',
+      'audio/SFX on for social ad timing tests',
+    ]);
+  }
   if (modelId === 'seedance-2-0') {
-    return [
+    return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
       '1080p',
-      '5-8 seconds',
+      durationSetting,
+      priceSetting,
       isSpeakingBrief(brief)
         ? 'native audio with compatible lip-sync workflow'
         : isVoiceoverBrief(brief)
           ? 'native audio with off-camera voiceover/SFX guidance'
           : 'native audio ambience/SFX on when useful',
-    ];
+    ]);
   }
-  if (modelId === 'ltx-2-3') return [promptStructureId === 'social-ad' ? '9:16 draft' : '16:9 draft', '1080p', 'about 10 seconds', isSpeakingBrief(brief) ? 'use compatible audio/lip-sync workflow' : 'native audio cue when useful'];
-  if (modelId === 'pika') return [aspectRatio ? `${aspectRatio} social loop` : '9:16 social loop', '5-10 seconds', '720p or 1080p depending on budget', 'keep the transformation simple'];
-  return ['short-form duration', 'one subject', 'one camera move'];
+  if (modelId === 'ltx-2-3') {
+    return compactLines([
+      promptStructureId === 'social-ad' ? '9:16 draft' : '16:9 draft',
+      '1080p',
+      durationSetting,
+      priceSetting,
+      isSpeakingBrief(brief) ? 'use compatible audio/lip-sync workflow' : 'native audio cue when useful',
+    ]);
+  }
+  if (modelId === 'pika') {
+    return compactLines([
+      aspectRatio ? `${aspectRatio} social loop` : '9:16 social loop',
+      durationSetting,
+      priceSetting,
+      '720p or 1080p depending on budget',
+      'keep the transformation simple',
+    ]);
+  }
+  return compactLines([durationSetting, priceSetting, 'one subject', 'one camera move']);
+}
+
+function buildDurationGuidance(input: {
+  modelId: AiStrategistModelId;
+  workflow: AiStrategistWorkflowId;
+  promptStructureId: AiStrategistPromptStructureId;
+  brief: string;
+}): AiStrategistDurationGuidance {
+  const bounds = durationBoundsForModel(input.modelId);
+  const requestedSeconds = extractRequestedDurationSeconds(input.brief);
+  if (requestedSeconds) {
+    const seconds = clampDurationSeconds(requestedSeconds, bounds.min, bounds.max);
+    const adjusted = seconds !== requestedSeconds;
+    return {
+      seconds,
+      label: formatDurationLabel(seconds),
+      promptLine: `${formatDurationLabel(seconds)} total; pace the action, camera move, audio, and final hold to fit this duration.`,
+      reason: adjusted
+        ? `requested ${formatDurationLabel(requestedSeconds)}, adjusted to the selected model range`
+        : 'requested in the brief',
+      source: adjusted ? 'brief_adjusted' : 'brief',
+    };
+  }
+
+  const text = input.brief.toLowerCase();
+  const seconds = clampDurationSeconds(defaultDurationSeconds(input, text), bounds.min, bounds.max);
+  return {
+    seconds,
+    label: formatDurationLabel(seconds),
+    promptLine: `${formatDurationLabel(seconds)} total; use this timing to shape shot count, motion beats, dialogue, audio cues, and the end hold.`,
+    reason: durationReason(input, text, seconds),
+    source: 'strategist_default',
+  };
+}
+
+function defaultDurationSeconds(
+  input: {
+    modelId: AiStrategistModelId;
+    workflow: AiStrategistWorkflowId;
+    promptStructureId: AiStrategistPromptStructureId;
+    brief: string;
+  },
+  text: string
+): number {
+  if (isSpeakingBrief(input.brief) || isVoiceoverBrief(input.brief)) return 8;
+  if (containsDurationSignal(text, ['multi-shot', 'multishot', 'storyboard', 'shot list', 'sequence'])) return 10;
+  if (input.modelId === 'ltx-2-3' || containsDurationSignal(text, ['draft', 'rough concept', 'storyboard'])) return 10;
+  if (input.promptStructureId === 'social-ad' || containsDurationSignal(text, ['tiktok', 'reels', 'shorts', 'social'])) return 6;
+  if (input.workflow === 'text-to-image-then-image-to-video' || input.promptStructureId === 'product-ad') return 6;
+  if (input.workflow === 'video-to-video') return 8;
+  if (input.modelId === 'happy-horse-1-0') return 8;
+  if (input.modelId === 'veo-3-1' || input.modelId === 'veo-3-1-fast' || input.modelId === 'veo-3-1-lite') return 8;
+  return 6;
+}
+
+function durationReason(
+  input: {
+    modelId: AiStrategistModelId;
+    workflow: AiStrategistWorkflowId;
+    promptStructureId: AiStrategistPromptStructureId;
+    brief: string;
+  },
+  text: string,
+  seconds: number
+): string {
+  if (isSpeakingBrief(input.brief) || isVoiceoverBrief(input.brief)) {
+    return 'gives enough room for readable audio, voiceover, or lip-sync pacing';
+  }
+  if (containsDurationSignal(text, ['multi-shot', 'multishot', 'storyboard', 'shot list', 'sequence']) || input.modelId === 'ltx-2-3') {
+    return 'gives enough room for a compact multi-shot or storyboard beat';
+  }
+  if (input.promptStructureId === 'social-ad' || containsDurationSignal(text, ['tiktok', 'reels', 'shorts', 'social'])) {
+    return 'keeps the social ad fast and feed-friendly';
+  }
+  if (input.workflow === 'text-to-image-then-image-to-video' || input.promptStructureId === 'product-ad') {
+    return 'keeps the product reveal controlled with a stable end hold';
+  }
+  return `${seconds}-second short-form default for the selected model/workflow`;
+}
+
+function buildPriceEstimate(
+  model: ReturnType<typeof getAiStrategistModel>,
+  durationGuidance: AiStrategistDurationGuidance
+): AiStrategistPriceEstimate {
+  const estimatedAmountCents = Math.max(25, Math.round(durationGuidance.seconds * estimatedCentsPerSecond(model)));
+  return {
+    label: `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationGuidance.label}`,
+    estimatedAmountCents,
+    currency: 'USD',
+    note: 'Preview estimate only. The MaxVideoAI generator quote shown before rendering is authoritative.',
+    calculationBasis: `${model.label} ${model.relativeCostLevel} tier x ${durationGuidance.label}`,
+    isPreview: true,
+  };
+}
+
+function estimatedCentsPerSecond(model: ReturnType<typeof getAiStrategistModel>): number {
+  if (model.id === 'kling-3-4k') return 58;
+  if (model.id === 'veo-3-1') return 44;
+  if (model.id === 'veo-3-1-fast' || model.id === 'kling-3-pro') return 30;
+  if (model.id === 'happy-horse-1-0') return 24;
+  if (model.id === 'veo-3-1-lite' || model.id === 'ltx-2-3' || model.id === 'seedance-2-0-fast') return 12;
+  if (model.id === 'kling-3-standard') return 16;
+  if (model.id === 'seedance-2-0') return 18;
+  if (model.relativeCostLevel === 'premium') return 44;
+  if (model.relativeCostLevel === 'high') return 30;
+  if (model.relativeCostLevel === 'medium') return 18;
+  return 12;
+}
+
+function applyDurationToPrompt(
+  prompt: string,
+  workflow: AiStrategistWorkflowId,
+  durationGuidance: AiStrategistDurationGuidance
+): string {
+  const normalizedPrompt = normalizePromptDurationText(prompt, durationGuidance);
+  if (/^Duration:/im.test(normalizedPrompt)) return normalizedPrompt;
+
+  const durationBlock = `Duration:\n${durationGuidance.promptLine}\n\n`;
+  if (workflow === 'text-to-image-then-image-to-video') {
+    return insertBeforeField(normalizedPrompt, 'Motion', durationBlock, 'Video animation prompt:');
+  }
+  if (workflow === 'image-to-video') {
+    return insertBeforeField(normalizedPrompt, 'Motion', durationBlock);
+  }
+  if (workflow === 'video-to-video') {
+    return insertBeforeField(normalizedPrompt, 'Edit direction', durationBlock);
+  }
+  return insertBeforeField(normalizedPrompt, 'Action', durationBlock);
+}
+
+function normalizePromptDurationText(prompt: string, durationGuidance: AiStrategistDurationGuidance): string {
+  return prompt
+    .replace(/\b(?:3-15|3-10|4-8|5-8|5-10|6-10|8-10)\s*seconds\b/gi, durationGuidance.label)
+    .replace(/\b(?:3-15|3-10|4-8|5-8|5-10|6-10|8-10)s\b/gi, `${durationGuidance.seconds}s`)
+    .replace(/\babout\s+10\s+seconds\b/gi, durationGuidance.label)
+    .replace(/\bshort-form duration\b/gi, durationGuidance.label);
+}
+
+function insertBeforeField(prompt: string, fieldLabel: string, block: string, afterLabel?: string): string {
+  const searchAreaStart = afterLabel ? prompt.search(new RegExp(`^${escapeRegExpLocal(afterLabel)}\\s*$`, 'im')) : -1;
+  const prefix = searchAreaStart >= 0 ? prompt.slice(0, searchAreaStart) : '';
+  const suffix = searchAreaStart >= 0 ? prompt.slice(searchAreaStart) : prompt;
+  const fieldPattern = new RegExp(`\\n${escapeRegExpLocal(fieldLabel)}:`, 'i');
+  if (fieldPattern.test(suffix)) {
+    return `${prefix}${suffix.replace(fieldPattern, `\n${block}${fieldLabel}:`)}`;
+  }
+  return `${prompt.trim()}\n\n${block.trim()}`;
+}
+
+function durationBoundsForModel(modelId: AiStrategistModelId): { min: number; max: number } {
+  if (modelId === 'veo-3-1' || modelId === 'veo-3-1-fast' || modelId === 'veo-3-1-lite') return { min: 4, max: 8 };
+  if (modelId === 'seedance-2-0' || modelId === 'seedance-2-0-fast' || modelId === 'happy-horse-1-0') return { min: 3, max: 15 };
+  if (modelId === 'ltx-2-3' || modelId === 'pika') return { min: 4, max: 10 };
+  if (modelId === 'sora') return { min: 4, max: 20 };
+  return { min: 4, max: 10 };
+}
+
+function extractRequestedDurationSeconds(brief: string): number | undefined {
+  const match = brief.match(/\b(\d{1,2})\s*(?:seconds?|secs?|sec|s|secondes?)\b/i);
+  if (!match) return undefined;
+  const seconds = Number.parseInt(match[1], 10);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : undefined;
+}
+
+function clampDurationSeconds(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function formatDurationLabel(seconds: number): string {
+  return `${seconds} seconds`;
+}
+
+function formatUsd(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function containsDurationSignal(text: string, terms: readonly string[]): boolean {
+  return terms.some((term) => text.includes(term));
+}
+
+function escapeRegExpLocal(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function buildPromptReason(

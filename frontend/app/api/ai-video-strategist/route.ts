@@ -91,6 +91,7 @@ export async function POST(request: Request) {
   const selectedModelId = normalizeModelId(body.selectedModel);
   const normalizedBrief = normalizeStrategistBrief({
     rawUserMessage: textOrEmpty(body.userMessage),
+    mode,
     pageContext: body.pageContext,
     currentPrompt: textOrEmpty(body.currentPrompt) || undefined,
     uploadedAsset,

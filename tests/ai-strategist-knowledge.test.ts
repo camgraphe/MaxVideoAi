@@ -38,15 +38,17 @@ const expectedPromptStructureIds = [
 
 async function loadStrategistModules() {
   try {
-    const [catalog, workflows, prompts, recommendations, normalization] = await Promise.all([
+    const [catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter] = await Promise.all([
       import('../frontend/lib/ai-strategist/model-catalog.ts'),
       import('../frontend/lib/ai-strategist/workflow-rules.ts'),
       import('../frontend/lib/ai-strategist/prompt-structures.ts'),
       import('../frontend/lib/ai-strategist/recommendation-rules.ts'),
       import('../frontend/lib/ai-strategist/brief-normalization.ts'),
+      import('../frontend/lib/ai-strategist/llm-contracts.ts'),
+      import('../frontend/lib/ai-strategist/llm-adapter.ts'),
     ]);
 
-    return { catalog, workflows, prompts, recommendations, normalization };
+    return { catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter };
   } catch (error) {
     assert.fail(`Expected AI Strategist knowledge modules to be importable: ${(error as Error).message}`);
   }
@@ -245,10 +247,17 @@ test('buildPromptGenerationContext returns JSON-safe LLM guidance without final 
   );
   assert.match(context.outputFormatExamples.join('\n'), /Starting image prompt:/);
   assert.match(context.outputFormatExamples.join('\n'), /Video animation prompt:/);
+  assert.match(context.outputFormatExamples.join('\n'), /Duration:/);
   assert.match(context.warnings.all.join(' '), /Exact text, logos, legal copy/);
   assert.match(context.negativePromptGuidance.compiled, /unreadable text/i);
+  assert.equal(context.durationGuidance.seconds, 8);
+  assert.match(context.durationGuidance.reason, /audio|voiceover/i);
+  assert.match(context.priceEstimate.label, /Estimated price: about \$/);
   assert.ok(context.settingsGuidance.some((setting: string) => /9:16/i.test(setting)));
+  assert.ok(context.settingsGuidance.some((setting: string) => /Duration: 8 seconds/i.test(setting)));
+  assert.ok(context.settingsGuidance.some((setting: string) => /Estimated price/i.test(setting)));
   assert.ok(context.maxVideoAiRules.some((rule: string) => /Do not mention Midjourney/i.test(rule)));
+  assert.ok(context.maxVideoAiRules.some((rule: string) => /selected duration/i.test(rule)));
   assert.ok(!Object.hasOwn(context, 'finalPrompt'));
   assert.ok(!Object.hasOwn(context, 'prompt'));
   assert.doesNotThrow(() => JSON.stringify(context));
@@ -273,10 +282,784 @@ test('buildPromptGenerationContext includes person reference compatibility guida
   assert.equal(context.workflowPromptStructure.id, 'image-to-video');
   assert.deepEqual(
     context.workflowPromptStructure.blocks[0].fields.map((field: { label: string }) => field.label),
-    ['Reference', 'Preserve', 'Motion', 'Camera', 'Atmosphere', 'End frame', 'Audio']
+    ['Reference', 'Preserve', 'Duration', 'Motion', 'Camera', 'Atmosphere', 'End frame', 'Audio']
   );
+  assert.equal(context.durationGuidance.seconds, 8);
   assert.match(context.warnings.person.join(' '), /compatible image-to-video model/);
   assert.match(context.maxVideoAiRules.join(' '), /Kling or LTX are safer choices/);
+});
+
+test('buildBriefRefinementLLMRequest defines the future normalized brief contract', async () => {
+  const { llmContracts } = await loadStrategistModules();
+
+  const request = llmContracts.buildBriefRefinementLLMRequest({
+    rawUserMessage: 'Social-first sneaker ad with voiceover, vertical',
+    uploadedAsset: {
+      type: 'image',
+      hasProduct: true,
+      hasText: true,
+      isReferenceImage: true,
+    },
+    selectedWorkflow: 'image-to-video',
+    conversationContext: {
+      currentChatStage: 'awaiting_model_choice',
+      currentUserMessage: 'ok seedance',
+      lastUserBrief: 'une pub de voiture dynamique',
+      enrichedBrief: 'A high-energy cinematic car commercial with dynamic motion.',
+      lastSelectedWorkflow: 'text-to-video',
+      lastRecommendations: {
+        best: {
+          modelId: 'kling-3-pro',
+          label: 'Kling 3 Pro',
+          reason: 'Controlled commercial realism.',
+        },
+        value: {
+          modelId: 'seedance-2-0',
+          label: 'Seedance 2.0',
+          reason: 'Social-first motion value.',
+        },
+      },
+      recentTurns: [
+        { role: 'user', content: 'une pub de voiture dynamique' },
+        { role: 'assistant', content: 'Choose Best, Medium, or Value.' },
+      ],
+    },
+  });
+
+  assert.match(request.systemInstructions, /brief refinement/i);
+  assert.match(request.systemInstructions, /Do not choose the final model/i);
+  assert.match(request.systemInstructions, /Do not write the final video prompt/i);
+  assert.match(request.systemInstructions, /Voiceover means off-camera narration/i);
+  assert.match(request.systemInstructions, /Hard app context wins/i);
+  assert.match(request.systemInstructions, /ok seedance/i);
+  assert.equal(request.userPayload.rawUserMessage, 'Social-first sneaker ad with voiceover, vertical');
+  assert.equal(request.userPayload.selectedWorkflow, 'image-to-video');
+  assert.equal(request.userPayload.uploadedAsset.hasProduct, true);
+  assert.equal(request.userPayload.conversationContext.currentChatStage, 'awaiting_model_choice');
+  assert.equal(request.userPayload.conversationContext.currentUserMessage, 'ok seedance');
+  assert.equal(request.userPayload.conversationContext.enrichedBrief, 'A high-energy cinematic car commercial with dynamic motion.');
+  assert.equal(request.userPayload.conversationContext.lastRecommendations.value.modelId, 'seedance-2-0');
+  assert.equal(request.expectedJsonSchema.type, 'object');
+  assert.ok(request.expectedJsonSchema.required.includes('normalizedBrief'));
+  assert.ok(request.expectedJsonSchema.required.includes('intent'));
+  assert.ok(request.expectedJsonSchema.required.includes('confidence'));
+  assert.deepEqual(request.expectedJsonSchema.properties.intent.enum, [
+    'product_ad',
+    'social_ad',
+    'cinematic_scene',
+    'talking_avatar',
+    'spokesperson',
+    'character_animation',
+    'product_reference_i2v',
+    'person_reference_i2v',
+    'video_to_video',
+    'draft_storyboard',
+    'product_help',
+    'prompt_improvement',
+    'unknown',
+  ]);
+  assert.match(JSON.stringify(request.expectedJsonSchema), /clarificationQuestion/);
+  assert.doesNotThrow(() => JSON.stringify(request));
+});
+
+test('buildPromptWriterLLMRequest carries selected model workflow and prompt structures', async () => {
+  const { prompts, llmContracts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'text-to-image-then-image-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Luxury perfume ad on black marble, 9:16',
+    selectedTier: 'best',
+    uploadedAsset: {
+      hasProduct: true,
+      hasLogo: true,
+      hasText: true,
+    },
+  });
+  const request = llmContracts.buildPromptWriterLLMRequest(context);
+
+  assert.match(request.systemInstructions, /final MaxVideoAI prompt writer/i);
+  assert.match(request.systemInstructions, /Do not auto-run generation/i);
+  assert.match(request.systemInstructions, /Do not spend credits/i);
+  assert.match(request.systemInstructions, /Do not switch model/i);
+  assert.equal(request.userPayload.promptGenerationContext.selectedModel.id, 'kling-3-pro');
+  assert.equal(request.userPayload.promptGenerationContext.selectedWorkflow, 'text-to-image-then-image-to-video');
+  assert.equal(request.userPayload.promptGenerationContext.durationGuidance.seconds, 6);
+  assert.match(request.systemInstructions, /durationGuidance/i);
+  assert.match(request.systemInstructions, /shot count, motion beats, voiceover\/dialogue pacing/i);
+  assert.deepEqual(
+    request.userPayload.promptGenerationContext.workflowPromptStructure.blocks.map((block: { label: string }) => block.label),
+    ['Starting image prompt', 'Video animation prompt']
+  );
+  assert.match(request.userPayload.promptGenerationContext.modelPagePromptStructure.sourcePath, /kling-3-pro/);
+  assert.ok(request.expectedJsonSchema.required.includes('assistantMessage'));
+  assert.ok(request.expectedJsonSchema.required.includes('finalPrompt'));
+  assert.ok(request.expectedJsonSchema.required.includes('uiActions'));
+  assert.deepEqual(request.expectedJsonSchema.properties.uiActions.items.required, ['type', 'value']);
+  assert.doesNotThrow(() => JSON.stringify(request));
+});
+
+test('validatePromptWriterLLMOutput flags unsafe future LLM outputs', async () => {
+  const { prompts, llmContracts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'seedance-2-0',
+    workflow: 'image-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Use a sneaker product reference image with a voiceover only.',
+    uploadedAsset: {
+      hasProduct: true,
+      isReferenceImage: true,
+    },
+  });
+
+  const validation = llmContracts.validatePromptWriterLLMOutput(
+    {
+      assistantMessage: 'Perfect output guaranteed.',
+      finalPrompt: 'Starting image prompt:\nUse Midjourney style.\nVideo animation prompt:\nAnimate it.',
+      negativePrompt: 'no artifacts',
+      settings: ['9:16'],
+      warnings: ['Check logo.', 'Check logo.'],
+      uiActions: ['SET_PROMPT', { type: 'SET_MODEL' }, { type: 'SET_PROMPT', value: 'x' }],
+    },
+    context
+  );
+
+  assert.equal(validation.ok, false);
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'bare_ui_action_string'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'invalid_ui_action_shape'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'external_tool_reference'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'overpromising_language'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'workflow_prompt_structure_mismatch'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'duplicate_warning'));
+  assert.deepEqual(validation.dedupedWarnings, ['Check logo.']);
+});
+
+test('validatePromptWriterLLMOutput rejects unsupported high-resolution claims', async () => {
+  const { prompts, llmContracts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'text-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Perfume bottle on marble, cinematic premium product ad',
+  });
+
+  for (const resolutionClaim of ['8k', '8K', '12k', 'ultra-high 8k'] as const) {
+    const validation = llmContracts.validatePromptWriterLLMOutput(
+      {
+        assistantMessage: 'Prepared a prompt.',
+        finalPrompt: [
+          'Subject: transparent perfume bottle on marble',
+          'Action: slow product reveal',
+          'Camera: controlled push-in',
+          `Style: premium studio lighting, ${resolutionClaim} resolution, crisp reflections`,
+        ].join('\n'),
+        negativePrompt: 'no unreadable text',
+        settings: ['9:16', '1080p'],
+        warnings: [],
+        uiActions: [{ type: 'SET_PROMPT', value: 'Subject: perfume bottle' }],
+      },
+      context
+    );
+
+    assert.equal(validation.ok, false, `${resolutionClaim} should be rejected`);
+    assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'unsupported_resolution_claim'));
+  }
+});
+
+test('validateBriefRefinementLLMOutput flags model selection and invalid clarification behavior', async () => {
+  const { llmContracts } = await loadStrategistModules();
+
+  const validation = llmContracts.validateBriefRefinementLLMOutput({
+    normalizedBrief: 'Make it better',
+    intent: 'unknown',
+    hasProduct: false,
+    hasPerson: false,
+    hasCharacter: false,
+    hasUploadedReference: false,
+    hasVisibleSpeaker: false,
+    hasVoiceover: false,
+    hasDialogue: false,
+    hasLipSyncIntent: false,
+    hasLogoOrTextRisk: false,
+    qualityIntent: 'balanced',
+    platformHint: 'unknown',
+    styleHints: [],
+    constraints: [],
+    confidence: 0.3,
+    clarificationQuestion: 'Which exact model, workflow, style, platform, duration, camera, lighting, brand, and audience should I use?',
+    selectedModel: 'kling-3-pro',
+    finalPrompt: 'Subject: product',
+  });
+
+  assert.equal(validation.ok, false);
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'brief_refinement_selected_model'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'brief_refinement_final_prompt'));
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'clarification_too_long'));
+});
+
+test('runBriefRefinementLLM falls back deterministically when local env is missing', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  let callCount = 0;
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Social-first sneaker ad with voiceover, vertical',
+    },
+    {
+      env: {},
+      completionClient: async () => {
+        callCount += 1;
+        return {};
+      },
+    }
+  );
+
+  assert.equal(callCount, 0);
+  assert.equal(result.usedLLM, false);
+  assert.equal(result.source, 'deterministic_fallback');
+  assert.equal(result.fallbackReason, 'missing_local_llm_config');
+  assert.equal(result.output.intent, 'social_ad');
+  assert.equal(result.output.hasVoiceover, true);
+  assert.equal(result.validation.ok, true);
+});
+
+test('runBriefRefinementLLM uses valid local LLM output and falls back on invalid output', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const valid = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Talking avatar with a short spoken line',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Talking avatar with a short spoken line',
+        normalizedBrief: 'Talking avatar with a short spoken line',
+        intent: 'talking_avatar',
+        workflowHint: 'text-to-video',
+        hasProduct: false,
+        hasPerson: false,
+        hasCharacter: true,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: true,
+        hasVoiceover: false,
+        hasDialogue: true,
+        hasLipSyncIntent: true,
+        hasLogoOrTextRisk: false,
+        qualityIntent: 'balanced',
+        platformHint: 'unknown',
+        styleHints: [],
+        constraints: [],
+        confidence: 0.86,
+      }),
+    }
+  );
+
+  assert.equal(valid.usedLLM, true);
+  assert.equal(valid.source, 'llm');
+  assert.equal(valid.output.intent, 'talking_avatar');
+
+  const invalid = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Talking avatar with a short spoken line',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        selectedModel: 'happy-horse-1-0',
+        finalPrompt: 'Subject: avatar',
+      }),
+    }
+  );
+
+  assert.equal(invalid.usedLLM, false);
+  assert.equal(invalid.source, 'deterministic_fallback');
+  assert.equal(invalid.fallbackReason, 'validation_failed');
+  assert.ok(invalid.validation.issues.some((issue: { code: string }) => issue.code === 'brief_refinement_selected_model'));
+});
+
+test('runBriefRefinementLLM applies uploaded person reference hard-context override', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Make this person speak to camera',
+      uploadedAsset: { hasPerson: true, isReferenceImage: true },
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Make this person speak to camera',
+        normalizedBrief: 'Make this person speak to camera',
+        intent: 'talking_avatar',
+        workflowHint: 'text-to-video',
+        hasProduct: false,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: true,
+        hasVoiceover: false,
+        hasDialogue: true,
+        hasLipSyncIntent: true,
+        hasLogoOrTextRisk: false,
+        qualityIntent: 'balanced',
+        platformHint: 'unknown',
+        styleHints: [],
+        constraints: [],
+        confidence: 0.91,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.intent, 'person_reference_i2v');
+  assert.equal(result.output.workflowHint, 'image-to-video');
+  assert.equal(result.output.hasPerson, true);
+  assert.equal(result.output.hasUploadedReference, true);
+});
+
+test('runBriefRefinementLLM keeps product references distinct from person references', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Animate this product photo with a premium commercial reveal',
+      uploadedAsset: { hasProduct: true, isReferenceImage: true },
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Animate this product photo with a premium commercial reveal',
+        normalizedBrief: 'Animate this product photo with a premium commercial reveal',
+        intent: 'product_ad',
+        workflowHint: 'text-to-video',
+        hasProduct: false,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: false,
+        hasVoiceover: false,
+        hasDialogue: false,
+        hasLipSyncIntent: false,
+        hasLogoOrTextRisk: false,
+        qualityIntent: 'premium',
+        platformHint: 'ad',
+        styleHints: [],
+        constraints: [],
+        confidence: 0.9,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.intent, 'product_reference_i2v');
+  assert.notEqual(result.output.intent, 'person_reference_i2v');
+  assert.equal(result.output.workflowHint, 'image-to-video');
+  assert.equal(result.output.hasProduct, true);
+  assert.equal(result.output.hasPerson, false);
+  assert.equal(result.output.hasUploadedReference, true);
+});
+
+test('runBriefRefinementLLM preserves selected workflow over hard-context inference', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Animate this person image speaking to camera',
+      uploadedAsset: { hasPerson: true, isReferenceImage: true },
+      selectedWorkflow: 'video-to-video',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Animate this person image speaking to camera',
+        normalizedBrief: 'Animate this person image speaking to camera',
+        intent: 'talking_avatar',
+        workflowHint: 'text-to-video',
+        hasProduct: false,
+        hasPerson: true,
+        hasCharacter: false,
+        hasUploadedReference: true,
+        hasVisibleSpeaker: true,
+        hasVoiceover: false,
+        hasDialogue: true,
+        hasLipSyncIntent: true,
+        hasLogoOrTextRisk: false,
+        qualityIntent: 'balanced',
+        platformHint: 'unknown',
+        styleHints: [],
+        constraints: [],
+        confidence: 0.9,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.intent, 'person_reference_i2v');
+  assert.equal(result.output.workflowHint, 'video-to-video');
+});
+
+test('runBriefRefinementLLM prefers starting-image workflow for premium product prompt improvements', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      mode: 'improve_prompt',
+      rawUserMessage: 'Make this better for a premium product ad',
+      currentPrompt: 'Perfume bottle on marble, cinematic',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Make this better for a premium product ad',
+        normalizedBrief: 'Perfume bottle on marble, cinematic. Premium product ad treatment.',
+        intent: 'product_ad',
+        workflowHint: 'text-to-video',
+        hasProduct: true,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: false,
+        hasVoiceover: false,
+        hasDialogue: false,
+        hasLipSyncIntent: false,
+        hasLogoOrTextRisk: true,
+        qualityIntent: 'premium',
+        platformHint: 'ad',
+        styleHints: ['cinematic', 'premium'],
+        constraints: [],
+        confidence: 0.94,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.intent, 'product_ad');
+  assert.equal(result.output.workflowHint, 'text-to-image-then-image-to-video');
+});
+
+test('runBriefRefinementLLM keeps explicit text-to-video workflow for product prompt improvements', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      mode: 'improve_prompt',
+      rawUserMessage: 'Make this better for a premium product ad but keep it pure text-to-video',
+      currentPrompt: 'Perfume bottle on marble, cinematic',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Make this better for a premium product ad but keep it pure text-to-video',
+        normalizedBrief: 'Perfume bottle on marble, cinematic. Premium product ad treatment.',
+        intent: 'product_ad',
+        workflowHint: 'text-to-video',
+        hasProduct: true,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: false,
+        hasVoiceover: false,
+        hasDialogue: false,
+        hasLipSyncIntent: false,
+        hasLogoOrTextRisk: true,
+        qualityIntent: 'premium',
+        platformHint: 'ad',
+        styleHints: ['cinematic', 'premium'],
+        constraints: [],
+        confidence: 0.94,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.workflowHint, 'text-to-video');
+});
+
+test('runPromptWriterLLM validates local LLM output and falls back safely', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'seedance-2-0',
+    workflow: 'text-to-video',
+    promptStructureId: 'social-ad',
+    brief: 'Social-first sneaker ad with voiceover, vertical',
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const valid = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Prepared a Seedance prompt.',
+      finalPrompt: [
+        'Subject: sneakers with crisp silhouette in vertical social framing',
+        'Duration: 8 seconds total',
+        'Action: fast product reveal with one voiceover beat',
+        'Camera: handheld-style push-in, vertical 9:16',
+        'Style: bright creator ad lighting, clean studio texture',
+        'Audio: off-camera voiceover with light sneaker impact SFX',
+      ].join('\n'),
+      negativePrompt: 'no unreadable text, no warped shoe shape',
+      settings: ['9:16', 'Duration: 8 seconds'],
+      warnings: ['Exact logos and tiny text may drift.'],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Subject: sneakers' }],
+    }),
+  });
+
+  assert.equal(valid.usedLLM, true);
+  assert.equal(valid.source, 'llm');
+  assert.match(valid.output.finalPrompt, /^Subject:/);
+
+  const invalid = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Perfect.',
+      finalPrompt: 'Starting image prompt:\nUse Midjourney.\nVideo animation prompt:\nAnimate.',
+      negativePrompt: 'none',
+      settings: [],
+      warnings: ['Check text.', 'Check text.'],
+      uiActions: ['SET_PROMPT'],
+    }),
+  });
+
+  assert.equal(invalid.usedLLM, false);
+  assert.equal(invalid.source, 'deterministic_fallback');
+  assert.equal(invalid.fallbackReason, 'validation_failed');
+  assert.ok(invalid.validation.issues.some((issue: { code: string }) => issue.code === 'bare_ui_action_string'));
+  assert.match(invalid.output.finalPrompt, /^Subject:/m);
+  assert.ok(invalid.output.uiActions.every((action: { type?: unknown; value?: unknown }) => typeof action.type === 'string' && typeof action.value === 'string'));
+});
+
+test('runPromptWriterLLM falls back when the LLM claims unsupported 8K resolution', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'text-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Perfume bottle on marble, cinematic premium product ad',
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Prepared a product prompt.',
+      finalPrompt: [
+        'Subject: transparent perfume bottle on marble',
+        'Action: slow commercial reveal',
+        'Camera: controlled push-in',
+        'Style: premium lighting, 8K resolution, crisp reflections',
+      ].join('\n'),
+      negativePrompt: 'no unreadable text',
+      settings: ['9:16', '8K'],
+      warnings: [],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Subject: perfume bottle' }],
+    }),
+  });
+
+  assert.equal(result.usedLLM, false);
+  assert.equal(result.fallbackReason, 'validation_failed');
+  assert.ok(result.validation.issues.some((issue: { code: string }) => issue.code === 'unsupported_resolution_claim'));
+  assert.doesNotMatch(result.output.finalPrompt, /\b8\s*k\b/i);
+});
+
+test('runPromptWriterLLM flags and sanitizes invented voiceover lines', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'seedance-2-0',
+    workflow: 'text-to-video',
+    promptStructureId: 'social-ad',
+    brief: 'Social-first sneaker ad with voiceover, vertical',
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Prepared a sneaker prompt.',
+      finalPrompt: [
+        'Subject: modern athletic sneakers',
+        'Duration: 8 seconds total',
+        'Action: fast product reveal',
+        'Camera: vertical 9:16 tracking shot',
+        'Style: bright social ad lighting',
+        "Audio: crisp off-camera voiceover narrating: 'Engineered for the streets, built for your pace.'",
+      ].join('\n'),
+      negativePrompt: 'no unreadable text',
+      settings: ['9:16', '1080p', 'Duration: 8 seconds'],
+      warnings: [],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Subject: sneakers' }],
+    }),
+  });
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.sanitizerChangedOutput, true);
+  assert.ok(result.validationBeforeSanitizer.issues.some((issue: { code: string }) => issue.code === 'invented_spoken_line'));
+  assert.ok(!result.validationAfterSanitizer.issues.some((issue: { code: string }) => issue.code === 'invented_spoken_line'));
+  assert.doesNotMatch(result.output.finalPrompt, /Engineered for the streets/i);
+  assert.match(result.output.finalPrompt, /\[customer-provided line\]/i);
+});
+
+test('runPromptWriterLLM softens over-strong lip-sync and precision wording', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'image-to-video',
+    promptStructureId: 'character-scene',
+    brief: 'Make this person speak to camera',
+    sourceImageKind: 'uploaded-person',
+    uploadedAsset: { type: 'image', hasPerson: true, isReferenceImage: true },
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Prepared a person prompt.',
+      finalPrompt: [
+        'Reference: Use the uploaded reference image.',
+        "Preserve: Maintain exact facial structure, the person's exact facial structure, and maintain the exact facial identity. Ensure no identity drift or wardrobe changes occur during speech.",
+        'Duration: 8 seconds total.',
+        'Motion: Match mouth movements precisely to the provided dialogue with perfect lip-sync. The lip-sync should be fluid and natural, matching the provided audio. Realistic lip-syncing for the dialogue. Realistic lip-sync for the dialogue. Simple, readable lip-syncing to match the provided dialogue.',
+        'Camera: Medium close-up, perfectly centered, with focus on lip-sync accuracy.',
+        'Atmosphere: soft studio lighting.',
+        'End frame: composed pose.',
+        "Audio: Lip-sync enabled to match the provided dialogue, lip-sync enabled for the provided audio track, lip-syncing enabled for the provided audio track, exactly synchronized dialogue. Lip-sync enabled; the subject should speak the provided content with natural cadence and mouth movement. Lip-sync to the provided dialogue. The character's mouth movements should match the provided audio track.",
+      ].join('\n'),
+      negativePrompt: 'no face warping',
+      settings: ['1080p', 'Duration: 8 seconds'],
+      warnings: [],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Reference: person' }],
+    }),
+  });
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.sanitizerChangedOutput, true);
+  assert.ok(result.validationBeforeSanitizer.issues.some((issue: { code: string }) => issue.code === 'over_strong_prompt_wording'));
+  assert.ok(!result.validationAfterSanitizer.issues.some((issue: { code: string }) => issue.code === 'over_strong_prompt_wording'));
+  assert.doesNotMatch(result.output.finalPrompt, /perfectly|precisely|perfect lip-sync|realistic lip-sync(?:ing)?|lip-sync accuracy|exactly synchronized|matching the provided audio|mouth movements should match|lip-sync(?:ing)? to match|lip-sync to the provided|ensure no identity drift|exact facial identity|exact facial structure|lip-sync(?:ing)? enabled/i);
+  assert.doesNotMatch(result.output.finalPrompt, /Reduce identity drift or wardrobe changes occur/i);
+  assert.match(result.output.finalPrompt, /sync mouth movement as closely as possible|reduce identity drift and wardrobe changes|cleanly centered|keep lip-sync simple and readable/i);
+});
+
+test('runPromptWriterLLM avoids generated readable label typography without a label asset', async () => {
+  const { prompts, llmAdapter } = await loadStrategistModules();
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'text-to-image-then-image-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Perfume bottle on marble, cinematic. Premium product ad treatment.',
+  });
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env,
+    completionClient: async () => ({
+      assistantMessage: 'Prepared a perfume prompt.',
+      finalPrompt: [
+        'Starting image prompt:',
+        'Product/subject: glass perfume bottle with a readable label area, minimalist label, and elegant label with serif typography.',
+        'Composition: centered on marble.',
+        'Lighting: cinematic studio lighting.',
+        'Preserve for video: bottle shape and label readability.',
+        '',
+        'Video animation prompt:',
+        'Reference: use the starting image.',
+        'Preserve: product identity and label readability.',
+        'Duration: 6 seconds total.',
+        'Motion: slow reveal.',
+        'Camera: slow push-in.',
+        'Atmosphere: luxury.',
+        'End frame: hero frame.',
+      ].join('\n'),
+      negativePrompt: 'no unreadable text',
+      settings: ['16:9', '1080p', 'Duration: 6 seconds'],
+      warnings: ['Exact labels, logos, legal copy, packaging details, and tiny text may drift and should be checked after generation or added as overlays.'],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Starting image prompt:' }],
+    }),
+  });
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.sanitizerChangedOutput, true);
+  assert.ok(result.validationBeforeSanitizer.issues.some((issue: { code: string }) => issue.code === 'generated_label_typography'));
+  assert.ok(!result.validationAfterSanitizer.issues.some((issue: { code: string }) => issue.code === 'generated_label_typography'));
+  assert.doesNotMatch(result.output.finalPrompt, /serif typography|label readability/i);
+  assert.doesNotMatch(result.output.finalPrompt, /clean label area area/i);
+  assert.match(result.output.finalPrompt, /clean label area, no readable text required/i);
 });
 
 test('buildModelSpecificPrompt mirrors model-page prompting structures for strategist scenarios', async () => {
@@ -386,6 +1169,17 @@ test('buildModelSpecificPrompt returns filled model-specific field templates', a
   for (const field of ['Reference:', 'Preserve:', 'Motion:', 'Camera:', 'Atmosphere:', 'End frame:']) {
     assert.match(klingI2v.finalPrompt, new RegExp(`^${field}`, 'm'));
   }
+
+  const klingProPersonI2v = prompts.buildModelSpecificPrompt({
+    modelId: 'kling-3-pro',
+    workflow: 'image-to-video',
+    promptStructureId: 'character-scene',
+    brief: 'Animate this uploaded person image speaking to camera with stable face identity.',
+    sourceImageKind: 'uploaded-person',
+  });
+  assert.match(klingProPersonI2v.finalPrompt, /^Reference:\nUse a reference image in MaxVideoAI as the uploaded person\/character anchor\./m);
+  assert.match(klingProPersonI2v.finalPrompt, /stable face identity/i);
+  assert.doesNotMatch(klingProPersonI2v.finalPrompt, /product photo|hero product reference|Packaging shape/i);
 
   const ltxStoryboard = prompts.buildModelSpecificPrompt({
     modelId: 'ltx-2-3',

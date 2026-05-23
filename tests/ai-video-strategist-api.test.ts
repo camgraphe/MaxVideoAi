@@ -36,6 +36,8 @@ type StrategistResponse = {
     selectedTier?: string;
     modelPagePromptStructure?: { sourcePath?: string; title?: string };
     workflowPromptStructure?: { id?: string; blocks?: Array<{ label?: string }> };
+    durationGuidance?: { seconds?: number; label?: string };
+    priceEstimate?: { label?: string };
     warnings?: { all?: string[] };
     negativePromptGuidance?: { compiled?: string };
     settingsGuidance?: string[];
@@ -190,13 +192,18 @@ test('AI video strategist treats product voiceover as off-camera narration', asy
   assert.equal(payload.recommendations, undefined);
   assert.equal(payload.promptGenerationContext?.selectedModel?.id, 'seedance-2-0');
   assert.equal(payload.promptGenerationContext?.selectedWorkflow, 'text-to-video');
+  assert.equal(payload.promptGenerationContext?.durationGuidance?.seconds, 8);
+  assert.match(payload.promptGenerationContext?.priceEstimate?.label ?? '', /Estimated price: about \$/);
   assert.match(payload.promptGenerationContext?.outputFormatExamples?.join('\n') ?? '', /^Subject:/m);
   assert.ok(!Object.hasOwn(payload.promptGenerationContext ?? {}, 'finalPrompt'));
   assert.match(payload.prompt ?? '', /sneaker/i);
+  assert.match(payload.prompt ?? '', /Duration:\n8 seconds/i);
   assert.match(payload.prompt ?? '', /voiceover|off-camera|narration/i);
   assert.doesNotMatch(payload.prompt ?? '', /Starting image prompt:|Video animation prompt:/i);
   assert.doesNotMatch(payload.prompt ?? '', /face movement|medium close-up|restrained gesture|Spoken line|lip-sync/i);
   assert.ok(payload.settings?.some((setting) => /9:16/i.test(setting)));
+  assert.ok(payload.settings?.some((setting) => /Duration: 8 seconds/i.test(setting)));
+  assert.ok(payload.uiActions?.some((action) => action.type === 'SET_DURATION' && /8 seconds/i.test(action.value)));
   assert.ok(
     payload.uiActions?.every(
       (action) => typeof action === 'object' && typeof action.type === 'string' && Object.hasOwn(action, 'value')
@@ -248,11 +255,37 @@ test('AI video strategist improves prompts without copying the instruction text'
   });
 
   assert.equal(response.status, 200);
+  assert.equal(payload.mode, 'improve_prompt');
+  assert.equal(payload.workflow, 'text-to-image-then-image-to-video');
+  assert.equal(payload.promptGenerationContext?.currentPrompt, 'Perfume bottle on marble, cinematic');
+  assert.deepEqual(
+    payload.promptGenerationContext?.workflowPromptStructure?.blocks?.map((block) => block.label),
+    ['Starting image prompt', 'Video animation prompt']
+  );
   assert.match(payload.prompt ?? '', /perfume bottle/i);
   assert.match(payload.prompt ?? '', /premium|product/i);
+  assert.match(payload.prompt ?? '', /Starting image prompt:/);
+  assert.match(payload.prompt ?? '', /Video animation prompt:/);
   assert.doesNotMatch(payload.prompt ?? '', /Improvement request|Make this better/i);
   assert.equal(new Set(payload.warnings ?? []).size, payload.warnings?.length ?? 0);
   assert.equal((payload.warnings ?? []).filter((warning) => /may drift/i.test(warning)).length, 1);
+});
+
+test('AI video strategist keeps cheap social prompt improvements on an intentional fast route', async () => {
+  const { response, payload } = await postStrategist({
+    mode: 'improve_prompt',
+    currentPrompt: 'A fast TikTok sneaker concept',
+    userMessage: 'make it cheaper/faster',
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.mode, 'improve_prompt');
+  assert.equal(payload.workflow, 'text-to-video');
+  assert.equal(payload.promptGenerationContext?.currentPrompt, 'A fast TikTok sneaker concept');
+  assert.deepEqual(
+    payload.promptGenerationContext?.workflowPromptStructure?.blocks?.map((block) => block.label),
+    ['Text-to-video prompt']
+  );
 });
 
 test('AI video strategist asks one clarification question for ambiguous requests', async () => {

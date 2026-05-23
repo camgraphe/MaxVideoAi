@@ -1,0 +1,769 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import test from 'node:test';
+
+const root = process.cwd();
+
+async function loadPlaygroundModule() {
+  try {
+    return await import('../frontend/lib/ai-strategist/playground-pipeline.ts');
+  } catch (error) {
+    assert.fail(`Expected AI Strategist playground pipeline to be importable: ${(error as Error).message}`);
+  }
+}
+
+function conversationStateFrom(result: {
+  normalizedBrief?: unknown;
+  recommendations?: unknown;
+  workflow?: unknown;
+  selectedModel?: unknown;
+  selectedTier?: unknown;
+  conversationStage?: unknown;
+  briefCompletion?: unknown;
+  sanitizedFinalOutput?: { finalPrompt?: string };
+}) {
+  return {
+    lastNormalizedBrief: result.normalizedBrief,
+    lastRecommendations: result.recommendations,
+    lastSelectedWorkflow: result.workflow ?? undefined,
+    lastSelectedModel: result.selectedModel ?? undefined,
+    lastSelectedTier: result.selectedTier,
+    stage: result.conversationStage,
+    lastBriefCompletion: result.briefCompletion,
+    lastFinalPrompt: result.sanitizedFinalOutput?.finalPrompt,
+  };
+}
+
+test('AI Strategist playground pipeline exposes deterministic fallback state without generation side effects', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Social-first sneaker ad with voiceover, vertical',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.mode, 'recommend');
+  assert.equal(result.orchestrationPlan.task, 'new_video_brief');
+  assert.equal(result.orchestrationPlan.llm.briefRefinement, 'cheap');
+  assert.equal(result.orchestrationPlan.llm.promptWriter, 'strong');
+  assert.equal(result.normalizedBrief.hasVoiceover, true);
+  assert.equal(result.normalizedBrief.hasVisibleSpeaker, false);
+  assert.equal(result.llm.briefRefinement.used, false);
+  assert.equal(result.llm.promptWriter.used, false);
+  assert.equal(result.llm.promptWriter.fallbackReason, 'missing_local_llm_config');
+  assert.equal(result.safety.autoGeneration, false);
+  assert.equal(result.safety.creditSpend, false);
+  assert.equal(result.safety.publishing, false);
+  assert.equal(result.safety.uiActionsApplied, false);
+  assert.ok(result.recommendations?.best.model.id);
+  assert.ok(result.promptGenerationContextSummary?.selectedModel);
+  assert.ok(result.promptGenerationContextSummary?.durationGuidance.seconds);
+  assert.match(result.promptGenerationContextSummary?.priceEstimate.label ?? '', /Estimated price: about \$/);
+  assert.ok(result.sanitizedFinalOutput?.finalPrompt);
+  assert.match(result.sanitizedFinalOutput?.finalPrompt ?? '', /Duration:\n\d+ seconds/i);
+  assert.ok(result.uiActions.every((action: { type?: string; value?: string }) => typeof action.type === 'string' && typeof action.value === 'string'));
+  assert.ok(result.uiActions.some((action: { type: string }) => action.type === 'SET_MODEL'));
+  assert.ok(result.uiActions.some((action: { type: string }) => action.type === 'SET_WORKFLOW'));
+  assert.ok(result.uiActions.some((action: { type: string }) => action.type === 'SET_PROMPT'));
+  assert.ok(result.uiActions.some((action: { type: string }) => action.type === 'SET_NEGATIVE_PROMPT'));
+  assert.ok(result.uiActions.some((action: { type: string }) => action.type === 'SET_DURATION'));
+});
+
+test('AI Strategist playground keeps product help as guide output without prompt writer routing', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Where do I generate a video and how do I choose a model?',
+      mode: 'product_help',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.orchestrationPlan.task, 'site_help');
+  assert.equal(result.orchestrationPlan.llm.briefRefinement, 'none');
+  assert.equal(result.workflow, null);
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.promptGenerationContext, undefined);
+  assert.equal(result.sanitizedFinalOutput, undefined);
+  assert.equal(result.uiActions.length, 0);
+  assert.match(result.assistantMessage, /open the video generator/i);
+});
+
+test('AI Strategist conversation planner uses previous car brief when user selects Seedance', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'une pub de voiture dynamique',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'ok seedance',
+      mode: 'recommend',
+      conversationState: {
+        lastNormalizedBrief: first.normalizedBrief,
+        lastRecommendations: first.recommendations,
+        lastSelectedWorkflow: first.workflow ?? undefined,
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(first.conversationPlan.action, 'recommend_models');
+  assert.equal(second.conversationPlan.action, 'select_model');
+  assert.equal(second.orchestrationPlan.task, 'model_or_tier_selection');
+  assert.equal(second.orchestrationPlan.llm.briefRefinement, 'none');
+  assert.equal(second.llm.briefRefinement.fallbackReason, 'orchestrator_no_brief_llm');
+  assert.equal(second.conversationPlan.shouldUsePreviousBrief, true);
+  assert.equal(second.mode, 'build_prompt');
+  assert.equal(second.selectedModel, 'seedance-2-0');
+  assert.match(second.sanitizedFinalOutput?.finalPrompt ?? '', /voiture|car|pub/i);
+});
+
+test('AI Strategist conversation planner uses previous recommendation when user selects Best tier', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'une pub de voiture dynamique',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Best',
+      mode: 'recommend',
+      conversationState: {
+        lastNormalizedBrief: first.normalizedBrief,
+        lastRecommendations: first.recommendations,
+        lastSelectedWorkflow: first.workflow ?? undefined,
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(second.conversationPlan.action, 'select_tier');
+  assert.equal(second.orchestrationPlan.task, 'model_or_tier_selection');
+  assert.equal(second.orchestrationPlan.llm.briefRefinement, 'none');
+  assert.equal(second.conversationPlan.selectedTier, 'best');
+  assert.equal(second.selectedModel, first.recommendations?.best.model.id);
+  assert.equal(second.mode, 'build_prompt');
+  assert.ok(second.sanitizedFinalOutput?.finalPrompt);
+});
+
+test('AI Strategist conversation planner asks for a brief when only model prompt intent is provided', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'le modèle Seedance, je veux faire un prompt',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'ask_clarification');
+  assert.equal(result.conversationPlan.selectedModel, 'seedance-2-0');
+  assert.equal(result.selectedModel, 'seedance-2-0');
+  assert.match(result.assistantMessage, /What do you want the video to show/);
+  assert.equal(result.recommendations, undefined);
+});
+
+test('AI Strategist chat accepts an existing prompt paste flow for Seedance instead of asking for a new video brief', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'je veux éditer un prompt pour seedance 2 je peux te le partager ?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const pastedPrompt = 'Subject: premium running shoes on wet asphalt. Action: fast reveal with splash and city lights. Camera: vertical tracking push-in. Style: cinematic streetwear ad.';
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: pastedPrompt,
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+
+  assert.equal(first.conversationPlan.action, 'await_prompt_paste');
+  assert.equal(first.orchestrationPlan.task, 'prompt_edit_intake');
+  assert.equal(first.orchestrationPlan.llm.briefRefinement, 'none');
+  assert.equal(first.conversationStage, 'awaiting_prompt_paste');
+  assert.equal(first.selectedModel, 'seedance-2-0');
+  assert.match(first.assistantMessage, /colle ton prompt ici|paste/i);
+  assert.doesNotMatch(first.assistantMessage, /What do you want the video to show/i);
+  assert.equal(second.conversationPlan.action, 'improve_prompt');
+  assert.equal(second.mode, 'improve_prompt');
+  assert.equal(second.selectedModel, 'seedance-2-0');
+  assert.equal(second.promptGenerationContext?.currentPrompt, pastedPrompt);
+  assert.notEqual(second.conversationStage, 'awaiting_model_choice');
+});
+
+test('AI Strategist conversation planner improves when currentPrompt is present', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'make it better',
+      mode: 'recommend',
+      currentPrompt: 'Perfume bottle on marble, cinematic',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'improve_prompt');
+  assert.equal(result.conversationPlan.shouldUseCurrentPrompt, true);
+  assert.equal(result.mode, 'improve_prompt');
+  assert.match(result.sanitizedFinalOutput?.finalPrompt ?? '', /Perfume bottle on marble/i);
+});
+
+test('AI Strategist conversation planner asks what to improve when no prompt context exists', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'make it better',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'ask_clarification');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /What prompt do you want me to improve/);
+});
+
+test('AI Strategist conversation planner handles upload navigation without model recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'where do I upload an image?',
+      mode: 'recommend',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'navigation_help');
+  assert.equal(result.orchestrationPlan.task, 'asset_reference_help');
+  assert.equal(result.orchestrationPlan.llm.briefRefinement, 'none');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.navigationSuggestion?.href, '/app');
+  assert.match(result.assistantMessage, /image-to-video/i);
+});
+
+test('AI Strategist orchestrator answers model pricing help without creative routing', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How much does Seedance 2 cost for 8 seconds?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.promptGenerationContext, undefined);
+  assert.equal(result.llm.briefRefinement.used, false);
+  assert.equal(result.llm.promptWriter.used, false);
+  assert.match(result.assistantMessage, /Seedance 2\.0/i);
+  assert.match(result.assistantMessage, /8 seconds/i);
+  assert.match(result.assistantMessage, /Estimated price: about \$1\.44/i);
+  assert.match(result.assistantMessage, /final generator quote/i);
+});
+
+test('AI Strategist orchestrator explains workflow help without generating a prompt', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Explain image-to-video workflow',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'workflow_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.workflow, null);
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /reference image/i);
+  assert.match(result.assistantMessage, /motion prompt/i);
+  assert.match(result.assistantMessage, /does not run generation/i);
+});
+
+test('AI Strategist orchestrator points model navigation to the model page without recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Where is Seedance?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.navigationSuggestion?.href, '/models/seedance-2-0');
+  assert.match(result.assistantMessage, /Seedance 2\.0/i);
+  assert.match(result.assistantMessage, /\/models\/seedance-2-0/i);
+});
+
+test('AI Strategist orchestrator explains its own capabilities without creative routing', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'What can you do?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.promptGenerationContext, undefined);
+  assert.equal(result.llm.briefRefinement.used, false);
+  assert.equal(result.llm.promptWriter.used, false);
+  assert.match(result.assistantMessage, /choose the right MaxVideoAI model/i);
+  assert.match(result.assistantMessage, /improve prompts/i);
+  assert.match(result.assistantMessage, /estimate cost/i);
+  assert.match(result.assistantMessage, /I will not run generation/i);
+});
+
+test('AI Strategist orchestrator explains MaxVideoAI site capabilities in French', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Tu peux faire quoi sur MaxVideoAI ?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /mod[eè]le MaxVideoAI/i);
+  assert.match(result.assistantMessage, /workflow/i);
+  assert.match(result.assistantMessage, /prix/i);
+  assert.match(result.assistantMessage, /cr[eé]dits/i);
+});
+
+test('AI Strategist orchestrator answers general site overview without model cards', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How does MaxVideoAI work?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'site_overview_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /video generator/i);
+  assert.match(result.assistantMessage, /compare models/i);
+  assert.match(result.assistantMessage, /price shown before generation/i);
+});
+
+test('AI Strategist knowledge answers include grounded sources and no prompt writer', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'What can Seedance 2 do?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.llm.briefRefinement.used, false);
+  assert.equal(result.llm.promptWriter.used, false);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.match(result.knowledgeToolResults[0].answer, /Seedance 2\.0/i);
+  assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'ai_strategist_model_catalog'));
+});
+
+test('AI Strategist knowledge answers workflow support from structured catalogs', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Which models support image-to-video?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'workflow_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.match(result.assistantMessage, /image-to-video/i);
+  assert.match(result.assistantMessage, /Kling/i);
+  assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'ai_strategist_model_catalog'));
+  assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'ai_strategist_workflow_rules'));
+});
+
+test('AI Strategist chat recommendation cards trigger tier and model selection without generating immediately', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I want a Street Fighter style fight',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const selected = first.recommendations?.best;
+  assert.ok(selected);
+
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: selected.model.id,
+      conversationState: {
+        lastNormalizedBrief: first.normalizedBrief,
+        lastRecommendations: first.recommendations,
+        lastSelectedWorkflow: first.workflow ?? undefined,
+        stage: first.conversationStage,
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(first.conversationStage, 'awaiting_model_choice');
+  assert.equal(second.conversationPlan.action, 'select_tier');
+  assert.equal(second.selectedModel, selected.model.id);
+  assert.equal(second.sanitizedFinalOutput, undefined);
+  assert.match(['collecting_missing_fields', 'awaiting_confirmation'].join('|'), new RegExp(second.conversationStage));
+});
+
+test('AI Strategist chat asks targeted missing-field questions before prompt generation', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I want a Street Fighter style fight',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: {
+        lastNormalizedBrief: first.normalizedBrief,
+        lastRecommendations: first.recommendations,
+        lastSelectedWorkflow: first.workflow ?? undefined,
+        stage: first.conversationStage,
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(second.conversationStage, 'collecting_missing_fields');
+  assert.equal(second.sanitizedFinalOutput, undefined);
+  assert.ok((second.briefCompletion?.missingFields.length ?? 0) > 0);
+  assert.match(second.assistantMessage, /Quick direction check/i);
+  assert.match(second.assistantMessage, /one fighter, two fighters/i);
+});
+
+test('AI Strategist chat can make assumptions, confirm direction, then generate a final prompt', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I want a Street Fighter style fight',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: {
+        lastNormalizedBrief: first.normalizedBrief,
+        lastRecommendations: first.recommendations,
+        lastSelectedWorkflow: first.workflow ?? undefined,
+        stage: first.conversationStage,
+      },
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'go ahead, make smart assumptions',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: {
+        lastNormalizedBrief: second.normalizedBrief,
+        lastRecommendations: second.recommendations,
+        lastSelectedWorkflow: second.workflow ?? undefined,
+        lastSelectedModel: second.selectedModel ?? undefined,
+        lastSelectedTier: second.selectedTier,
+        stage: second.conversationStage,
+        lastBriefCompletion: second.briefCompletion,
+      },
+    },
+    { env: {} }
+  );
+  const fourth = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Generate prompt',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: {
+        lastNormalizedBrief: third.normalizedBrief,
+        lastRecommendations: third.recommendations,
+        lastSelectedWorkflow: third.workflow ?? undefined,
+        lastSelectedModel: third.selectedModel ?? undefined,
+        lastSelectedTier: third.selectedTier,
+        stage: third.conversationStage,
+        lastBriefCompletion: third.briefCompletion,
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(third.conversationStage, 'awaiting_confirmation');
+  assert.equal(third.sanitizedFinalOutput, undefined);
+  assert.match(third.assistantMessage, /Here.s what I.ll build/i);
+  assert.match(third.assistantMessage, /Duration:/i);
+  assert.match(third.assistantMessage, /Estimated price:/i);
+  assert.match(third.assistantMessage, /Generate the prompt/i);
+  assert.ok(third.uiActions.some((action: { type: string }) => action.type === 'SET_DURATION'));
+  assert.equal(fourth.conversationStage, 'prompt_ready');
+  assert.ok(fourth.sanitizedFinalOutput?.finalPrompt);
+  assert.match(fourth.sanitizedFinalOutput.finalPrompt, /Duration:\n\d+ seconds/i);
+  assert.match(fourth.sanitizedFinalOutput.finalPrompt, /arcade fighting|stylized combat|Assumed direction|16:9/i);
+  assert.doesNotMatch(fourth.sanitizedFinalOutput.finalPrompt, /Street Fighter/i);
+});
+
+test('AI Strategist chat does not ask generic clarification for a clear perfume product brief', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Luxury perfume ad on black marble, 9:16, premium look, slow camera push-in, soft gold reflections',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.notEqual(result.conversationPlan.action, 'ask_clarification');
+  assert.notEqual(result.assistantMessage, 'What video are you trying to create or improve?');
+  assert.ok(result.recommendations);
+  assert.match(result.assistantMessage, /three possible paths/i);
+  assert.doesNotMatch(result.assistantMessage, /Best:|Medium:|Value:/i);
+  assert.doesNotMatch(result.assistantMessage, /Kling|Seedance|Veo|LTX/i);
+  assert.match(result.warnings.join('\n'), /Exact labels, logos, legal copy/i);
+});
+
+test('AI Strategist chat treats fast-path sneaker voiceover as clear off-camera narration', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Make assumptions and create a TikTok sneaker ad with voiceover',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+
+  assert.notEqual(first.conversationPlan.action, 'ask_clarification');
+  assert.ok(first.recommendations);
+  assert.equal(first.normalizedBrief.hasVoiceover, true);
+  assert.equal(first.normalizedBrief.hasVisibleSpeaker, false);
+  assert.equal(second.conversationStage, 'awaiting_confirmation');
+  assert.equal(second.briefCompletion?.missingFields.length, 0);
+  assert.match(second.assistantMessage, /off-camera voiceover/i);
+  assert.match(second.assistantMessage, /Duration: 8 seconds/i);
+  assert.match(second.assistantMessage, /Estimated price:/i);
+});
+
+test('AI Strategist chat sanitizes protected game references in summaries and final prompts', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'I want a Street Fighter style fight',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'go ahead, make smart assumptions',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+  const fourth = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Generate prompt',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(third),
+    },
+    { env: {} }
+  );
+
+  assert.match(second.assistantMessage, /one fighter, two fighters/i);
+  assert.match(third.assistantMessage, /arcade fighting|stylized combat/i);
+  assert.doesNotMatch(third.assistantMessage, /Street Fighter/i);
+  assert.match(fourth.sanitizedFinalOutput?.finalPrompt ?? '', /arcade fighting|stylized combat/i);
+  assert.doesNotMatch(fourth.sanitizedFinalOutput?.finalPrompt ?? '', /Street Fighter/i);
+});
+
+test('AI Strategist chat reuses enriched English car brief when Seedance is selected after French brief', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'une pub de voiture dynamique',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'ok seedance',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Generate prompt',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+
+  assert.equal(second.selectedModel, 'seedance-2-0');
+  assert.match(first.normalizedBrief.normalizedBrief, /car commercial|automotive/i);
+  assert.match(second.assistantMessage, /car|automotive/i);
+  assert.doesNotMatch(third.sanitizedFinalOutput?.finalPrompt ?? '', /une pub de voiture dynamique/i);
+  assert.match(third.sanitizedFinalOutput?.finalPrompt ?? '', /car|automotive/i);
+});
+
+test('AI Strategist playground admin route and page stay internal-only', () => {
+  const routeSource = readFileSync(join(root, 'frontend/app/api/admin/ai-strategist-playground/route.ts'), 'utf8');
+  const pageSource = readFileSync(join(root, 'frontend/app/(core)/admin/ai-strategist-playground/page.tsx'), 'utf8');
+  const chatSource = readFileSync(join(root, 'frontend/app/(core)/admin/ai-strategist-playground/_components/AiStrategistChatClient.tsx'), 'utf8');
+  const navigationSource = readFileSync(join(root, 'frontend/lib/admin/navigation.ts'), 'utf8');
+
+  assert.match(routeSource, /requireAdmin\(req\)/);
+  assert.match(routeSource, /isAiStrategistPlaygroundEnabled\(\)/);
+  assert.match(pageSource, /isAiStrategistPlaygroundEnabled\(\)/);
+  assert.match(pageSource, /AiStrategistChatClient/);
+  assert.match(pageSource, /Technical Debug Playground/);
+  assert.match(chatSource, /ai-strategist-overlay-preview/);
+  assert.match(chatSource, /ai-strategist-launcher/);
+  assert.match(chatSource, /paste a prompt to improve/);
+  assert.match(chatSource, /setIsWidgetOpen/);
+  assert.match(chatSource, /aria-expanded/);
+  assert.match(chatSource, /Minimize AI Strategist/);
+  assert.match(chatSource, /Close AI Strategist/);
+  assert.match(chatSource, /Best/);
+  assert.match(chatSource, /Medium/);
+  assert.match(chatSource, /Value/);
+  assert.match(chatSource, /conversationState/);
+  assert.match(chatSource, /onChooseRecommendation/);
+  assert.match(chatSource, /Generate prompt/);
+  assert.match(chatSource, /Make assumptions/);
+  assert.match(chatSource, /Copy/);
+  assert.match(chatSource, /buildAdvisorRecommendationReply/);
+  assert.match(chatSource, /I understand this as/);
+  assert.doesNotMatch(chatSource, /Got it\. I recommend these models/);
+  assert.doesNotMatch(chatSource, /Optional context/);
+  assert.doesNotMatch(chatSource, /Debug details/);
+  assert.doesNotMatch(chatSource, /<details[^>]*open/);
+  assert.doesNotMatch(navigationSource, /ai-strategist-playground/);
+});
