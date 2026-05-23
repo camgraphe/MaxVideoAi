@@ -52,24 +52,26 @@ function resolveRecommendationTask(
   input: StrategistOrchestratorInput,
   text: string
 ): StrategistOrchestratorTask {
+  if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset)\b/.test(text)) return 'asset_reference_help';
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForPricing(text)) return 'pricing_help';
   if (asksForDocsSearch(text)) return 'site_help';
-  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
+  if (asksForGreeting(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
   if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForModelInfo(text)) return 'model_info_help';
-  if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
 }
 
 function resolveHelpTask(text: string): StrategistOrchestratorTask {
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForPricing(text)) return 'pricing_help';
   if (asksForDocsSearch(text)) return 'site_help';
-  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
@@ -78,9 +80,9 @@ function resolveHelpTask(text: string): StrategistOrchestratorTask {
 }
 
 function resolveNavigationTask(text: string): StrategistOrchestratorTask {
+  if (asksForExamples(text)) return 'examples_help';
   if (asksForPricing(text)) return 'pricing_help';
   if (asksForDocsSearch(text)) return 'site_help';
-  if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForAssetHelp(text)) return 'asset_reference_help';
@@ -161,7 +163,7 @@ function asksForCheapestModel(text: string): boolean {
 }
 
 function asksForExamples(text: string): boolean {
-  return containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples']);
+  return containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples', 'compare outputs', 'see outputs', 'outputs before']);
 }
 
 function asksForDocsSearch(text: string): boolean {
@@ -175,6 +177,10 @@ function asksForCapabilities(text: string): boolean {
     'how can you help',
     'what can this assistant do',
     'what can the strategist do',
+    'can you help',
+    'can you help me',
+    'help me',
+    'not sure where to start',
     'capabilities',
     'tes capacites',
     'tes capacités',
@@ -185,6 +191,13 @@ function asksForCapabilities(text: string): boolean {
     'à quoi tu sers',
     'comment tu peux aider',
   ]);
+}
+
+function asksForGreeting(text: string): boolean {
+  return /^(hi|hello|hey|bonjour|salut|hola)(?:\b|$)/.test(text) &&
+    !hasCreativeCreationIntent(text) &&
+    !asksForPricing(text) &&
+    !asksForExamples(text);
 }
 
 function asksForSiteOverview(text: string): boolean {
@@ -201,11 +214,12 @@ function asksForSiteOverview(text: string): boolean {
 }
 
 function asksForWorkflow(text: string): boolean {
-  return containsAny(text, ['workflow', 'text to video', 'image to video', 'video to video', 'r2v', 'i2v', 'v2v']);
+  return containsAny(text, ['workflow', 'text to video', 'image to video', 'video to video', 'r2v', 'i2v', 'v2v', 'restyle a video', 'video i already have', 'video already have']);
 }
 
 function asksForAssetHelp(text: string): boolean {
-  return containsAny(text, ['upload image', 'upload an image', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
+  if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset)\b/.test(text)) return true;
+  return containsAny(text, ['upload image', 'upload an image', 'upload img', 'where upload img', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
 }
 
 function hasCreativeCreationIntent(text: string): boolean {
@@ -240,6 +254,7 @@ function hasCreativeCreationIntent(text: string): boolean {
 }
 
 function asksForSiteNavigation(text: string): boolean {
+  if (containsAny(text, ['i uploaded', 'i have uploaded']) && hasCreativeCreationIntent(text)) return false;
   if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing'])) return false;
   return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'engines', 'upload', 'pricing', 'examples']);
 }
@@ -252,6 +267,11 @@ function asksForModelAdvice(text: string): boolean {
     'recommend a model',
     'best model',
     'choose a model',
+    'pick model',
+    'pick a model',
+    'pick the model',
+    'can u pick model',
+    'can you pick model',
     'should i use',
     'which one should i use',
     'choisir un modele',

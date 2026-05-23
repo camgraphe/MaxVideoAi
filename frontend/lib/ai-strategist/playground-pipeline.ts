@@ -186,6 +186,12 @@ const productTerms = [
   'auto',
   'glass',
   'bottle',
+  'drink',
+  'beverage',
+  'can',
+  'energy drink',
+  'makeup',
+  'cosmetic',
 ] as const;
 
 export async function runAiStrategistPlaygroundPipeline(
@@ -673,9 +679,13 @@ function buildPromptPasteRequestResult(input: {
 }): AiStrategistPlaygroundResult {
   const selectedModelId = input.conversationPlan.selectedModel ?? input.body.selectedModel ?? null;
   const selectedModel = selectedModelId ? AI_STRATEGIST_MODELS.find((model) => model.id === selectedModelId) : undefined;
-  const assistantMessage = selectedModel
-    ? `Oui, colle ton prompt ici. Je vais le relire pour ${selectedModel.label}, garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles.`
-    : 'Oui, colle ton prompt ici. Je vais garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles.';
+  const assistantMessage = prefersFrenchResponse(input.body.userMessage)
+    ? selectedModel
+      ? `Oui, colle ton prompt ici. Je vais le relire pour ${selectedModel.label}, garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles. Je ne lance pas de génération et je ne dépense pas de crédits.`
+      : 'Oui, colle ton prompt ici. Je vais garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles. Je ne lance pas de génération et je ne dépense pas de crédits.'
+    : selectedModel
+      ? `Paste the prompt here. I’ll review it for ${selectedModel.label}, keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings. I will not run generation or spend credits.`
+      : 'Paste the prompt here. I’ll keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings. I will not run generation or spend credits.';
 
   return {
     ok: true,
@@ -711,6 +721,17 @@ function buildPromptPasteRequestResult(input: {
     },
     safety: playgroundSafety(),
   };
+}
+
+function prefersFrenchResponse(value: string): boolean {
+  const text = value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9:.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return containsAny(text, ['bonjour', 'salut', 'je ', 'j ai', 'j aimerai', 'peux', 'peut', 'colle', 'partager', 'ameliorer', 'améliorer', 'prompt seedance']);
 }
 
 function buildRecommendationOnlyResult(input: {
@@ -955,6 +976,7 @@ function shouldAskClarification(
   body: ReturnType<typeof normalizePlaygroundInput>
 ): boolean {
   if (!normalizedBrief.clarificationQuestion) return false;
+  if (asksForModelChoice(body)) return false;
   if (body.selectedModel || body.selectedWorkflow) return false;
   if (body.currentPrompt || body.uploadedAsset?.isReferenceImage || body.uploadedAsset?.hasPerson || body.uploadedAsset?.hasProduct) return false;
   if (shouldAllowBriefAssumptions(body)) return false;

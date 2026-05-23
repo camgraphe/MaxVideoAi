@@ -5,6 +5,7 @@ import {
   runAiStrategistPlaygroundPipeline,
   type AiStrategistPlaygroundResult,
 } from '../frontend/lib/ai-strategist/playground-pipeline.ts';
+import { clusterStrategistFailures } from './judge-ai-strategist-conversations.ts';
 import type {
   AiStrategistModelId,
   AiStrategistTierPosition,
@@ -133,6 +134,7 @@ type EvalReport = {
   failedTurns: number;
   passRate: number;
   failuresByCategory: Record<string, number>;
+  failureClusters: ReturnType<typeof clusterStrategistFailures>;
   scenarios: ScenarioReport[];
 };
 
@@ -267,6 +269,7 @@ async function runEvaluation(scenarios: ConversationScenario[], options: CliOpti
 
   const passedScenarios = scenarioReports.filter((scenario) => scenario.passed).length;
   const failedTurns = turnCount - passedTurns;
+  const allIssues = scenarioReports.flatMap((scenario) => scenario.turns.flatMap((turn) => turn.issues));
   return {
     generatedAt: new Date().toISOString(),
     liveLlm: options.liveLlm,
@@ -278,6 +281,7 @@ async function runEvaluation(scenarios: ConversationScenario[], options: CliOpti
     failedTurns,
     passRate: turnCount === 0 ? 0 : Number((passedTurns / turnCount).toFixed(4)),
     failuresByCategory,
+    failureClusters: clusterStrategistFailures(allIssues),
     scenarios: scenarioReports,
   };
 }
@@ -415,6 +419,9 @@ function checkQuality(
     'I’ll check',
     'next',
     'give me',
+    'quick direction check',
+    'what prompt do you want me to improve',
+    'paste the prompt',
   ])) {
     issues.push(buildIssue(scenario, turn, 'quality.actionableNextStep: assistant did not provide a clear next step'));
   }
@@ -455,6 +462,8 @@ function checkQuality(
     'Oui, colle',
     'Use these',
     'Open',
+    'Paste the prompt',
+    'What prompt do you want me to improve',
   ])) {
     issues.push(buildIssue(scenario, turn, 'quality.conversationalAdvisor: response reads too mechanical or lacks advisory framing'));
   }
@@ -609,6 +618,9 @@ function printConsoleReport(report: EvalReport) {
   if (Object.keys(report.failuresByCategory).length) {
     console.log(`Failures by category: ${JSON.stringify(report.failuresByCategory)}`);
   }
+  if (report.failureClusters.length) {
+    console.log(`Top failure cluster: ${report.failureClusters[0]?.owner} (${report.failureClusters[0]?.count})`);
+  }
   console.log('');
 
   for (const scenario of report.scenarios) {
@@ -649,6 +661,15 @@ function writeMarkdownReport(report: EvalReport, path: string) {
     '',
     Object.keys(report.failuresByCategory).length
       ? Object.entries(report.failuresByCategory).map(([category, count]) => `- ${category}: ${count}`).join('\n')
+      : '- None',
+    '',
+    '## Failure Clusters',
+    '',
+    report.failureClusters.length
+      ? report.failureClusters.map((cluster) => [
+          `- ${cluster.owner}: ${cluster.count}`,
+          ...cluster.examples.map((example) => `  - ${example}`),
+        ].join('\n')).join('\n')
       : '- None',
     '',
     '## Scenarios',

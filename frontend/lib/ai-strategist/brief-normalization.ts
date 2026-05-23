@@ -121,6 +121,12 @@ const productTerms = [
   'serum',
   'logo',
   'label',
+  'drink',
+  'beverage',
+  'can',
+  'energy drink',
+  'makeup',
+  'cosmetic',
 ] as const;
 
 const textRiskTerms = [

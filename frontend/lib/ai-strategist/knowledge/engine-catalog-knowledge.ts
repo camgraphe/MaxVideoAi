@@ -156,6 +156,7 @@ export function answerEngineSettingsQuestion(input: { rawUserMessage: string }):
       `Aspect ratios: ${aspectRatios.length ? aspectRatios.join(', ') : 'not listed'}.`,
       `Audio toggle: ${audioSupported ? 'available where exposed' : 'not listed'}.`,
       'Use this to choose the workflow and settings in the generator; the currently exposed generator controls remain authoritative.',
+      'I will not run generation or spend credits.',
     ].join('\n'),
     sources: [engineCatalogSource()],
     confidence: 0.88,

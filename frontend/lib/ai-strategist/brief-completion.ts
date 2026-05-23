@@ -191,7 +191,7 @@ function buildAssumptions(input: {
 function hasConcreteSubject(text: string, normalizedBrief: AiStrategistNormalizedBrief): boolean {
   if (normalizedBrief.hasProduct || normalizedBrief.hasPerson || normalizedBrief.hasCharacter) return true;
   if (isCombatBrief(text)) return true;
-  return /\b(car|voiture|perfume|bottle|sneaker|shoe|watch|jewelry|avatar|spokesperson|fighter|character|person|product|scene)\b/.test(text);
+  return /\b(car|voiture|perfume|bottle|sneaker|shoe|watch|jewelry|avatar|spokesperson|fighter|character|person|product|scene|drink|beverage|can|makeup|cosmetic)\b/.test(text);
 }
 
 function hasMotion(text: string): boolean {

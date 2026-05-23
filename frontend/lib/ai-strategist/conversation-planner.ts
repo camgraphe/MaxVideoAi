@@ -301,6 +301,18 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       };
     }
 
+    if (isPromptPasteNeededRequest(normalized)) {
+      return {
+        action: 'await_prompt_paste',
+        rawUserMessage,
+        selectedModel: selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
+        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        shouldUsePreviousBrief: false,
+        shouldUseCurrentPrompt: false,
+        confidence: 0.88,
+      };
+    }
+
     return {
       action: 'ask_clarification',
       rawUserMessage,
@@ -583,6 +595,7 @@ function isPromptImprovementRequest(text: string): boolean {
 function isExistingPromptEditRequest(text: string): boolean {
   return containsAny(text, [
     'edit prompt',
+    'edit a prompt',
     'edit my prompt',
     'edit existing prompt',
     'rewrite prompt',
@@ -603,13 +616,30 @@ function isExistingPromptEditRequest(text: string): boolean {
   ]);
 }
 
+function isPromptPasteNeededRequest(text: string): boolean {
+  return containsAny(text, [
+    'improve this prompt',
+    'improve my prompt',
+    'improve prompt',
+    'edit a prompt',
+    'edit my prompt',
+    'optimize prompt',
+    'rewrite prompt',
+    'prompt for',
+  ]);
+}
+
 function isPromptShareOffer(text: string): boolean {
   return containsAny(text, [
     'can i share it',
+    'can i paste it',
+    'can i paste my prompt',
+    'can i paste the prompt',
     'can i share my prompt',
     'i can share it',
     'i have a prompt',
     'i have an existing prompt',
+    'i already have a prompt',
     'i want to share my prompt',
     'here is my prompt',
     'voici mon prompt',
