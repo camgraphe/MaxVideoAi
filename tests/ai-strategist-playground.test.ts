@@ -248,7 +248,8 @@ test('AI Strategist conversation planner asks what to improve when no prompt con
 
   assert.equal(result.conversationPlan.action, 'ask_clarification');
   assert.equal(result.recommendations, undefined);
-  assert.match(result.assistantMessage, /What prompt do you want me to improve/);
+  assert.match(result.assistantMessage, /Paste the current prompt/i);
+  assert.match(result.assistantMessage, /visual style|pacing|story/i);
 });
 
 test('AI Strategist conversation planner handles upload navigation without model recommendations', async () => {
@@ -450,6 +451,24 @@ test('AI Strategist orchestrator explains its own capabilities without creative 
   assert.match(result.assistantMessage, /improve prompts/i);
   assert.match(result.assistantMessage, /estimate cost/i);
   assert.match(result.assistantMessage, /I will not run generation/i);
+});
+
+test('AI Strategist answers English capability questions in English', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'hi, can you actually help me choose models and prompts here?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.match(result.assistantMessage, /^I can help/i);
+  assert.doesNotMatch(result.assistantMessage, /^Je peux/i);
 });
 
 test('AI Strategist treats acquisition handoff greetings as capability guidance', async () => {
@@ -848,6 +867,29 @@ test('AI Strategist playground answers engine settings from engine catalog', asy
   assert.equal(result.knowledgeToolResults[0].toolName, 'engine_settings');
   assert.match(result.assistantMessage, /Kling 3 4K/i);
   assert.match(result.assistantMessage, /Resolutions/i);
+});
+
+test('AI Strategist answers audio and lip-sync model questions conversationally before settings', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Does Seedance 2 support audio and lip sync for short ads?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_info_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'engine_settings');
+  assert.match(result.assistantMessage, /^Yes[,.]?\s+Seedance 2\.0 supports audio/i);
+  assert.match(result.assistantMessage, /lip-sync/i);
+  assert.match(result.assistantMessage, /short ads/i);
+  assert.match(result.assistantMessage, /Duration options/i);
 });
 
 test('AI Strategist routes example questions to examples pages without auto-navigation', async () => {
@@ -1286,6 +1328,41 @@ test('AI Strategist chat does not ask generic clarification for a clear perfume 
   assert.doesNotMatch(result.assistantMessage, /Best:|Medium:|Value:/i);
   assert.doesNotMatch(result.assistantMessage, /Kling|Seedance|Veo|LTX/i);
   assert.match(result.warnings.join('\n'), /Exact labels, logos, legal copy/i);
+});
+
+test('AI Strategist carries requested aspect ratio from recommendation into final prompt', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Luxury perfume ad on black marble, 9:16, premium look, slow camera push-in, soft gold reflections',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Best',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Generate prompt',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+
+  assert.match(second.assistantMessage, /Format: 9:16/i);
+  assert.match(third.sanitizedFinalOutput?.finalPrompt ?? '', /9:16|vertical/i);
+  assert.match((third.sanitizedFinalOutput?.settings ?? []).join('\n'), /9:16/);
 });
 
 test('AI Strategist chat treats fast-path sneaker voiceover as clear off-camera narration', async () => {

@@ -289,6 +289,27 @@ test('buildPromptGenerationContext includes person reference compatibility guida
   assert.match(context.maxVideoAiRules.join(' '), /Kling or LTX are safer choices/);
 });
 
+test('buildPromptGenerationContext preserves hyphenated requested durations', async () => {
+  const { prompts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-standard',
+    workflow: 'image-to-video',
+    promptStructureId: 'character-scene',
+    brief: 'Create a 15-second vertical TikTok influencer video from the uploaded person image.',
+    sourceImageKind: 'uploaded-person',
+    uploadedAsset: {
+      type: 'image',
+      hasPerson: true,
+      isReferenceImage: true,
+    },
+  });
+
+  assert.equal(context.durationGuidance.seconds, 15);
+  assert.equal(context.durationGuidance.source, 'brief');
+  assert.match(context.settingsGuidance.join('\n'), /Duration: 15 seconds/);
+});
+
 test('buildBriefRefinementLLMRequest defines the future normalized brief contract', async () => {
   const { llmContracts } = await loadStrategistModules();
 
@@ -467,6 +488,39 @@ test('validatePromptWriterLLMOutput rejects unsupported high-resolution claims',
     assert.equal(validation.ok, false, `${resolutionClaim} should be rejected`);
     assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'unsupported_resolution_claim'));
   }
+});
+
+test('validatePromptWriterLLMOutput rejects aspect ratio mismatches against context', async () => {
+  const { prompts, llmContracts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'kling-3-pro',
+    workflow: 'text-to-image-then-image-to-video',
+    promptStructureId: 'product-ad',
+    brief: 'Luxury perfume ad on black marble, 9:16, premium look',
+  });
+
+  const validation = llmContracts.validatePromptWriterLLMOutput(
+    {
+      assistantMessage: 'Prepared a prompt.',
+      finalPrompt: [
+        'Starting image prompt:',
+        'Product/subject: perfume bottle on black marble',
+        'Composition: 16:9 centered product frame',
+        'Video animation prompt:',
+        'Duration: 6 seconds',
+        'Camera: 16:9 slow push-in',
+      ].join('\n'),
+      negativePrompt: 'no unreadable text',
+      settings: ['Aspect Ratio: 16:9', 'Duration: 6 seconds'],
+      warnings: [],
+      uiActions: [{ type: 'SET_PROMPT', value: 'x' }],
+    },
+    context
+  );
+
+  assert.equal(validation.ok, false);
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'aspect_ratio_mismatch'));
 });
 
 test('validateBriefRefinementLLMOutput flags model selection and invalid clarification behavior', async () => {
@@ -728,6 +782,97 @@ test('runBriefRefinementLLM preserves selected workflow over hard-context infere
   assert.equal(result.usedLLM, true);
   assert.equal(result.output.intent, 'person_reference_i2v');
   assert.equal(result.output.workflowHint, 'video-to-video');
+});
+
+test('runBriefRefinementLLM preserves explicit aspect ratio from raw brief when LLM omits it', async () => {
+  const { llmAdapter } = await loadStrategistModules();
+  const env = {
+    AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+    AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+    GOOGLE_VERTEX_PROJECT_ID: 'dark-furnace-496521-g5',
+    GOOGLE_VERTEX_LOCATION: 'global',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+  };
+
+  const result = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'Luxury perfume ad on black marble, 9:16, premium look',
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'Luxury perfume ad on black marble, 9:16, premium look',
+        normalizedBrief: 'A luxury perfume bottle on black marble with premium lighting.',
+        intent: 'product_ad',
+        workflowHint: 'text-to-image-then-image-to-video',
+        hasProduct: true,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: false,
+        hasVoiceover: false,
+        hasDialogue: false,
+        hasLipSyncIntent: false,
+        hasLogoOrTextRisk: true,
+        qualityIntent: 'premium',
+        platformHint: 'ad',
+        styleHints: ['luxury', 'black marble'],
+        constraints: [],
+        confidence: 0.9,
+      }),
+    }
+  );
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.output.aspectRatioHint, '9:16');
+
+  const followUp = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'A luxury perfume bottle on black marble with premium lighting.',
+      conversationContext: {
+        lastUserBrief: 'Luxury perfume ad on black marble, 9:16, premium look',
+        enrichedBrief: 'A luxury perfume bottle on black marble with premium lighting.',
+      },
+    },
+    {
+      env,
+      completionClient: async () => ({
+        rawUserMessage: 'A luxury perfume bottle on black marble with premium lighting.',
+        normalizedBrief: 'A luxury perfume bottle on black marble with premium lighting.',
+        intent: 'product_ad',
+        workflowHint: 'text-to-image-then-image-to-video',
+        hasProduct: true,
+        hasPerson: false,
+        hasCharacter: false,
+        hasUploadedReference: false,
+        hasVisibleSpeaker: false,
+        hasVoiceover: false,
+        hasDialogue: false,
+        hasLipSyncIntent: false,
+        hasLogoOrTextRisk: true,
+        qualityIntent: 'premium',
+        platformHint: 'ad',
+        styleHints: ['luxury', 'black marble'],
+        constraints: [],
+        confidence: 0.9,
+      }),
+    }
+  );
+
+  assert.equal(followUp.output.aspectRatioHint, '9:16');
+
+  const fallbackFollowUp = await llmAdapter.runBriefRefinementLLM(
+    {
+      rawUserMessage: 'A luxury perfume bottle on black marble with premium lighting.',
+      conversationContext: {
+        lastUserBrief: 'Luxury perfume ad on black marble, 9:16, premium look',
+      },
+    },
+    { env: {} }
+  );
+
+  assert.equal(fallbackFollowUp.usedLLM, false);
+  assert.equal(fallbackFollowUp.output.aspectRatioHint, '9:16');
 });
 
 test('runBriefRefinementLLM prefers starting-image workflow for premium product prompt improvements', async () => {

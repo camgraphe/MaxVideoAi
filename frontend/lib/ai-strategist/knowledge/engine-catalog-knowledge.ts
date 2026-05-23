@@ -145,11 +145,17 @@ export function answerEngineSettingsQuestion(input: { rawUserMessage: string }):
   const modeLabels = uniqueStrings(modes.map((mode) => mode.mode).filter((mode): mode is string => Boolean(mode)));
   const audioSupported = modes.some((mode) => mode.ui?.audioToggle === true);
   const label = entry.marketingName ?? entry.engineId ?? modelId ?? 'Selected engine';
+  const intro = buildSettingsIntro({
+    rawUserMessage: input.rawUserMessage,
+    label,
+    audioSupported,
+  });
 
   return {
     toolName: 'engine_settings',
     answer: [
-      `${label} settings from the engine catalog:`,
+      intro,
+      `In the generator, the practical ${label} controls are:`,
       `Modes: ${modeLabels.length ? modeLabels.join(', ') : 'not listed'}.`,
       `Duration options: ${durations.length ? durations.join(', ') : 'not listed'}.`,
       `Resolutions: ${resolutions.length ? resolutions.join(', ') : 'not listed'}.`,
@@ -164,6 +170,18 @@ export function answerEngineSettingsQuestion(input: { rawUserMessage: string }):
     warnings: [],
     uiActions: modelId ? [{ type: 'SET_MODEL', value: modelId }] : [],
   };
+}
+
+function buildSettingsIntro(input: { rawUserMessage: string; label: string; audioSupported: boolean }): string {
+  const text = normalizeSearchText(input.rawUserMessage);
+  const asksAudio = /\baudio\b|\bsound\b|\bvoice(?:over)?\b|\blip\s*sync\b|\blipsync\b|\blip-sync\b|\bdialogue\b|\bspeak/i.test(text);
+  if (!asksAudio) return `Here are the ${input.label} controls I found in the local engine catalog.`;
+
+  if (input.audioSupported) {
+    return `Yes, ${input.label} supports audio in MaxVideoAI where exposed. For short ads, keep any spoken line concise and use a compatible audio/lip-sync workflow when speech timing matters.`;
+  }
+
+  return `${input.label} does not list an audio toggle in the local engine settings. Use post audio or choose an audio-ready model if sound or lip-sync is central.`;
 }
 
 function resolveEngineEntry(rawUserMessage: string, modelId?: AiStrategistModelId): EngineCatalogEntry | undefined {

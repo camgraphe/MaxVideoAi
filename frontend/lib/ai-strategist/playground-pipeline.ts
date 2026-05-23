@@ -291,7 +291,10 @@ export async function runAiStrategistPlaygroundPipeline(
   const selectedTier = body.selectedTier;
   const selectedModelId = body.selectedModel ?? recommendations[selectedTier].model.id;
   const selectedTierForGuidance = conversationPlan.selectedTier ?? (body.selectedModel ? undefined : selectedTier);
-  const promptBrief = buildPromptBrief({ body, goal, mode: effectiveMode });
+  const promptBrief = appendAspectRatioToBrief(
+    buildPromptBrief({ body, goal, mode: effectiveMode }),
+    normalizedBrief.aspectRatioHint
+  );
   const promptGenerationContext = buildPromptGenerationContext({
     modelId: selectedModelId,
     promptStructureId: promptStructure,
@@ -1171,6 +1174,11 @@ function buildPromptBrief(input: {
   return input.mode === 'improve_prompt' && input.body.currentPrompt
     ? buildImprovedPromptBrief(input.body.currentPrompt, input.body.userMessage)
     : input.goal || input.body.userMessage;
+}
+
+function appendAspectRatioToBrief(brief: string, aspectRatioHint: AiStrategistNormalizedBrief['aspectRatioHint']): string {
+  if (!aspectRatioHint || brief.includes(aspectRatioHint)) return brief;
+  return `${brief}. Aspect ratio: ${aspectRatioHint}.`;
 }
 
 function buildRequiredTraits(

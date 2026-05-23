@@ -316,7 +316,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
     return {
       action: 'ask_clarification',
       rawUserMessage,
-      clarificationQuestion: 'What prompt do you want me to improve?',
+      clarificationQuestion: 'Paste the current prompt, or tell me if you want to improve visual style, pacing, or story.',
       shouldUsePreviousBrief: false,
       shouldUseCurrentPrompt: false,
       confidence: 0.85,

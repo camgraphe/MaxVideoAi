@@ -281,7 +281,11 @@ function normalizeSearchText(value: unknown): string {
 }
 
 function isFrenchText(text: string): boolean {
-  return containsAny(text, ['tu ', ' peux ', 'quoi', 'comment', 'fonctionne', 'marche', 'aide', 'capacites', 'capacités', 'credits', 'crédits', 'prix']);
+  const frenchTokens = text.match(/\b(?:tu|peux|quoi|comment|fonctionne|marche|aide|capacites|modele|modeles|generer|creer|prix)\b/g) ?? [];
+  if (frenchTokens.length === 0) return false;
+
+  const englishTokens = text.match(/\b(?:can|you|help|choose|models|prompts|what|how|here)\b/g) ?? [];
+  return !(englishTokens.length >= 2 && frenchTokens.length <= 1);
 }
 
 function escapeRegExp(value: string): string {

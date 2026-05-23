@@ -8,9 +8,14 @@ import {
   type AiStrategistPlaygroundInput,
   type AiStrategistPlaygroundResult,
 } from '../frontend/lib/ai-strategist/playground-pipeline.ts';
+import { runAdvisorQualityJudgeLLM } from '../frontend/lib/ai-strategist/llm-adapter.ts';
 import type { StrategistConversationTurn } from '../frontend/lib/ai-strategist/conversation-planner.ts';
 import type { StrategistOrchestratorTask, StrategistToolName } from '../frontend/lib/ai-strategist/orchestrator/types.ts';
 import type { AiStrategistModelId, AiStrategistTierPosition } from '../frontend/lib/ai-strategist/types.ts';
+import type {
+  AiStrategistAdvisorQualityJudgeInput,
+  AiStrategistLLMValidationIssue,
+} from '../frontend/lib/ai-strategist/llm-contracts.ts';
 
 type UploadedAssetMetadata = AiStrategistPlaygroundInput['uploadedAsset'];
 
@@ -82,6 +87,7 @@ type LiveScenarioReport = {
   label: string;
   passed: boolean;
   turns: LiveTurnReport[];
+  judge?: LiveScenarioJudgeReport;
 };
 
 type EnvFileLoadResult = {
@@ -90,10 +96,35 @@ type EnvFileLoadResult = {
   loaded: boolean;
 };
 
+type LiveScenarioJudgeReport = {
+  usedLLM: boolean;
+  source: 'llm' | 'deterministic_fallback';
+  fallbackReason?: string;
+  score: number;
+  passed: boolean;
+  issues: {
+    code: string;
+    severity: 'low' | 'medium' | 'high';
+    message: string;
+    owner: string;
+  }[];
+  strengths: string[];
+  recommendedFix: string;
+  validationIssues: readonly AiStrategistLLMValidationIssue[];
+};
+
+type ScriptOptions = {
+  model?: string;
+  scenarioSet: 'core' | 'expanded';
+  limit?: number;
+  offset: number;
+  llmJudge: boolean;
+};
+
 const outputDir = resolve(process.cwd(), '.reports/ai-strategist/live-tool-relevance');
 const timeoutMs = Number.parseInt(process.env.AI_STRATEGIST_LIVE_QA_TIMEOUT_MS ?? '60000', 10);
 
-const scenarios: readonly LiveScenario[] = [
+const coreScenarios: readonly LiveScenario[] = [
   {
     id: 'site-capability-intake',
     label: 'New visitor asks what the strategist can do',
@@ -324,12 +355,258 @@ const scenarios: readonly LiveScenario[] = [
   },
 ];
 
+const expandedOnlyScenarios: readonly LiveScenario[] = [
+  {
+    id: 'greeting-to-brief',
+    label: 'Casual visitor greeting before creative request',
+    turns: [
+      {
+        label: 'greeting',
+        userMessage: 'hey there',
+        expect: {
+          task: 'capability_help',
+          toolCalls: ['conversation_planner', 'capability_help'],
+          noRecommendations: true,
+          mustMentionAny: ['create', 'prompt', 'model', 'help'],
+        },
+      },
+      {
+        label: 'rough brief',
+        userMessage: 'I need something cool for a new coffee brand launch',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['coffee', 'brand', 'models', 'routes'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'duration-edit-after-summary',
+    label: 'Small duration edit should preserve selected model and brief',
+    turns: [
+      {
+        label: 'brief',
+        userMessage: 'TikTok influencer holding headphones and speaking to camera, I only have one image',
+        uploadedAsset: { type: 'image', hasPerson: true, hasProduct: true, isReferenceImage: true },
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+        },
+      },
+      {
+        label: 'choose best',
+        userMessage: 'Best',
+        expect: {
+          task: 'model_or_tier_selection',
+          mustMentionAny: ["Here's what I'll build", 'Quick direction check'],
+        },
+      },
+      {
+        label: 'details',
+        userMessage: 'English influencer vibe, say the headphones look beautiful and sound great',
+        expect: {
+          task: 'prompt_build',
+          mustMentionAny: ['Generate the prompt', 'English', 'headphones'],
+        },
+      },
+      {
+        label: 'duration edit',
+        userMessage: 'make it 15 seconds',
+        expect: {
+          task: 'prompt_build',
+          noRecommendations: true,
+          mustMentionAny: ['15 seconds', 'Generate the prompt'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'price-objection-after-recommendation',
+    label: 'Buyer asks for cheaper route after recommendations',
+    turns: [
+      {
+        label: 'premium product brief',
+        userMessage: 'Premium jewelry product ad on reflective black glass, luxury look',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['jewelry', 'models', 'routes'],
+        },
+      },
+      {
+        label: 'price concern',
+        userMessage: 'that sounds expensive, what is the cheaper option?',
+        expect: {
+          task: 'pricing_help',
+          toolCalls: ['conversation_planner', 'pricing_help'],
+          noRecommendations: true,
+          mustMentionAny: ['cheaper', 'value', 'quote', 'credits'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'uploaded-product-logo-risk',
+    label: 'Product reference with logo and label risk',
+    turns: [
+      {
+        label: 'product reference brief',
+        userMessage: 'animate this skincare bottle for an Instagram ad, keep the logo visible',
+        uploadedAsset: { type: 'image', hasProduct: true, hasLogo: true, hasText: true, isReferenceImage: true },
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['logo', 'text', 'drift', 'overlay'],
+        },
+      },
+      {
+        label: 'choose value',
+        userMessage: 'Value',
+        expect: {
+          task: 'model_or_tier_selection',
+          mustMentionAny: ["Here's what I'll build", 'logo', 'text'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'video-to-video-person-restyle',
+    label: 'Video-to-video restyle with a person',
+    turns: [
+      {
+        label: 'v2v brief',
+        userMessage: 'I have a short clip of a founder talking. Can you restyle it into a polished ad while keeping the person recognizable?',
+        uploadedAsset: { type: 'video', hasPerson: true, isReferenceImage: false },
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['video-to-video', 'person', 'recognizable'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'choose-for-me',
+    label: 'User asks the strategist to choose the model',
+    turns: [
+      {
+        label: 'brief',
+        userMessage: 'Make a cinematic SaaS launch video, polished lighting, 16:9, with a short founder voiceover',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+        },
+      },
+      {
+        label: 'choose for me',
+        userMessage: 'you decide, pick the best fit',
+        expect: {
+          task: 'model_or_tier_selection',
+          mustMentionAny: ["Here's what I'll build", 'Generate the prompt'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'messy-english-social-ad',
+    label: 'Messy spelling social ad request',
+    turns: [
+      {
+        label: 'messy brief',
+        userMessage: 'need vid for tiktoc shooes, fast flashy but no weird faces, cheep test',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['TikTok', 'shoes', 'budget', 'routes'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'spanish-product-ad',
+    label: 'Spanish brief should route and answer naturally',
+    turns: [
+      {
+        label: 'spanish brief',
+        userMessage: 'quiero un anuncio vertical para un perfume, elegante, con reflejos dorados',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['perfume', 'vertical', 'models', 'routes'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'navigation-upload-help',
+    label: 'Upload navigation help should not recommend models',
+    turns: [
+      {
+        label: 'upload help',
+        userMessage: 'where do I upload an image before generating?',
+        expect: {
+          task: 'navigation_help',
+          toolCalls: ['conversation_planner', 'navigation_help'],
+          noRecommendations: true,
+          mustMentionAny: ['upload', 'image', 'generator', 'reference'],
+        },
+      },
+    ],
+  },
+  {
+    id: 'street-fighter-sanitize',
+    label: 'Trademark style brief should be sanitized before prompt',
+    turns: [
+      {
+        label: 'brief',
+        userMessage: 'I want a Street Fighter style fight',
+        expect: {
+          task: 'new_video_brief',
+          hasRecommendations: true,
+          mustMentionAny: ['arcade', 'combat', 'models'],
+          mustNotMention: ['Street Fighter style'],
+        },
+      },
+      {
+        label: 'choose best',
+        userMessage: 'Best',
+        expect: {
+          task: 'model_or_tier_selection',
+          mustMentionAny: ["Here's what I'll build", 'Quick direction check'],
+          mustNotMention: ['Street Fighter style'],
+        },
+      },
+      {
+        label: 'make assumptions',
+        userMessage: 'Make assumptions',
+        expect: {
+          task: 'prompt_build',
+          mustMentionAny: ['Generate the prompt', 'arcade', 'stylized'],
+          mustNotMention: ['Street Fighter style'],
+        },
+      },
+      {
+        label: 'generate',
+        userMessage: 'Generate prompt',
+        expect: {
+          task: 'prompt_build',
+          promptReady: true,
+          finalPromptMustMentionAny: ['arcade fighting', 'stylized combat'],
+          finalPromptMustNotMention: ['Street Fighter'],
+        },
+      },
+    ],
+  },
+];
+
 async function main() {
+  const options = parseArgs(process.argv.slice(2));
   const envLoadResults = loadLocalEnvFiles();
-  const model = selectedModel();
+  const scenarios = selectScenarios(options);
   const env = {
     ...process.env,
-    ...(model ? { AI_STRATEGIST_LLM_MODEL: model } : {}),
+    ...(options.model ? { AI_STRATEGIST_LLM_MODEL: options.model } : {}),
   };
   const liveReady = hasVertexEnv(env);
 
@@ -345,12 +622,14 @@ async function main() {
   console.log(`GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: ${env.GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON ? 'present' : 'missing'}`);
   console.log(`Vertex env complete: ${liveReady ? 'yes' : 'no'}`);
   console.log(`LLM model: ${env.AI_STRATEGIST_LLM_MODEL ?? '[missing]'}`);
+  console.log(`Scenario set: ${options.scenarioSet}; selected scenarios: ${scenarios.length}`);
+  console.log(`LLM judge: ${options.llmJudge ? 'enabled' : 'disabled'}`);
   console.log('');
 
   const reports: LiveScenarioReport[] = [];
   for (const scenario of scenarios) {
     console.log(`Running: ${scenario.label}`);
-    reports.push(await runScenario(scenario, liveReady ? env : {}));
+    reports.push(await runScenario(scenario, liveReady ? env : {}, { llmJudge: options.llmJudge && liveReady }));
   }
 
   const summary = summarizeReports(reports);
@@ -363,6 +642,8 @@ async function main() {
         generatedAt: new Date().toISOString(),
         liveReady,
         model: env.AI_STRATEGIST_LLM_MODEL ?? null,
+        scenarioSet: options.scenarioSet,
+        llmJudge: options.llmJudge,
         summary,
         reports,
       },
@@ -372,17 +653,40 @@ async function main() {
   );
 
   printReport(summary, reports, jsonPath);
-  if (summary.failedTurns > 0) process.exitCode = 1;
+  if (summary.failedTurns > 0 || summary.judgeFailedScenarios > 0) process.exitCode = 1;
 }
 
-function selectedModel(): string | undefined {
-  const args = process.argv.slice(2);
+function parseArgs(args: readonly string[]): ScriptOptions {
+  return {
+    model: stringArg(args, '--model'),
+    scenarioSet: stringArg(args, '--scenario-set') === 'expanded' ? 'expanded' : 'core',
+    limit: numberArg(args, '--limit'),
+    offset: numberArg(args, '--offset') ?? 0,
+    llmJudge: args.includes('--llm-judge'),
+  };
+}
+
+function selectScenarios(options: ScriptOptions): readonly LiveScenario[] {
+  const source = options.scenarioSet === 'expanded' ? [...coreScenarios, ...expandedOnlyScenarios] : [...coreScenarios];
+  const offset = Math.max(0, options.offset);
+  const limited = options.limit === undefined ? source.slice(offset) : source.slice(offset, offset + Math.max(0, options.limit));
+  return limited;
+}
+
+function stringArg(args: readonly string[], key: string): string | undefined {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index] ?? '';
-    if (arg === '--model') return args[index + 1];
-    if (arg.startsWith('--model=')) return arg.slice('--model='.length);
+    if (arg === key) return args[index + 1];
+    if (arg.startsWith(`${key}=`)) return arg.slice(key.length + 1);
   }
   return undefined;
+}
+
+function numberArg(args: readonly string[], key: string): number | undefined {
+  const raw = stringArg(args, key);
+  if (raw === undefined) return undefined;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function loadLocalEnvFiles(): readonly EnvFileLoadResult[] {
@@ -417,7 +721,8 @@ function hasVertexEnv(env: NodeJS.ProcessEnv | Record<string, string | undefined
 
 async function runScenario(
   scenario: LiveScenario,
-  env: NodeJS.ProcessEnv | Record<string, string | undefined>
+  env: NodeJS.ProcessEnv | Record<string, string | undefined>,
+  options: { llmJudge: boolean }
 ): Promise<LiveScenarioReport> {
   let previous: AiStrategistPlaygroundResult | undefined;
   const recentTurns: StrategistConversationTurn[] = [];
@@ -471,12 +776,80 @@ async function runScenario(
     await executeTurn(turn);
   }
 
+  const judge = options.llmJudge ? await runScenarioJudge(scenario, reports, env) : undefined;
+  const judgeFailure = judge?.source === 'llm' && !judge.passed;
   return {
     id: scenario.id,
     label: scenario.label,
-    passed: reports.every((report) => report.relevanceIssues.length === 0),
+    passed: reports.every((report) => report.relevanceIssues.length === 0) && !judgeFailure,
     turns: reports,
+    ...(judge ? { judge } : {}),
   };
+}
+
+async function runScenarioJudge(
+  scenario: LiveScenario,
+  reports: readonly LiveTurnReport[],
+  env: NodeJS.ProcessEnv | Record<string, string | undefined>
+): Promise<LiveScenarioJudgeReport> {
+  const result = await runAdvisorQualityJudgeLLM(buildJudgeInput(scenario, reports), { env });
+  return {
+    usedLLM: result.usedLLM,
+    source: result.source,
+    fallbackReason: result.fallbackReason,
+    score: result.output.score,
+    passed: result.output.passed,
+    issues: result.output.issues,
+    strengths: result.output.strengths,
+    recommendedFix: result.output.recommendedFix,
+    validationIssues: result.validation.issues,
+  };
+}
+
+function buildJudgeInput(
+  scenario: LiveScenario,
+  reports: readonly LiveTurnReport[]
+): AiStrategistAdvisorQualityJudgeInput {
+  return {
+    scenarioId: scenario.id,
+    scenarioLabel: scenario.label,
+    userGoal: scenario.turns.map((turn) => turn.userMessage).join(' -> '),
+    expectedExperience: scenario.turns.flatMap((turn) => buildExpectedExperience(turn)),
+    hardRules: {
+      noAutoGeneration: true,
+      noCreditSpend: true,
+      noPublishing: true,
+      noUiActionsApplied: true,
+    },
+    turns: reports.map((turn) => ({
+      userMessage: turn.userMessage,
+      assistantMessage: compact(turn.assistantMessage, 1200),
+      task: turn.task,
+      stage: turn.stage,
+      toolCalls: turn.toolCalls,
+      workflow: turn.workflow,
+      selectedModel: turn.selectedModel,
+      usedBriefLlm: turn.llm.briefRefinement.used,
+      usedPromptLlm: turn.llm.promptWriter.used,
+      warnings: turn.warnings,
+      ...(turn.finalPrompt ? { finalPrompt: compact(turn.finalPrompt, 1600) } : {}),
+      heuristicIssues: turn.relevanceIssues,
+    })),
+  };
+}
+
+function buildExpectedExperience(turn: LiveTurn): string[] {
+  const expectations: string[] = [];
+  if (turn.expect?.task) expectations.push(`Planner task should be ${turn.expect.task}.`);
+  if (turn.expect?.hasRecommendations) expectations.push('Show model recommendations with a conversational acknowledgement.');
+  if (turn.expect?.noRecommendations) expectations.push('Do not show Best / Medium / Value recommendations.');
+  if (turn.expect?.promptReady) expectations.push('Produce a final sanitized MaxVideoAI prompt only after confirmation.');
+  if (turn.expect?.selectedModel) expectations.push(`Preserve selected model ${turn.expect.selectedModel}.`);
+  if (turn.expect?.mustMentionAny?.length) expectations.push(`Assistant should address at least one of: ${turn.expect.mustMentionAny.join(', ')}.`);
+  if (turn.expect?.mustNotMention?.length) expectations.push(`Assistant should avoid: ${turn.expect.mustNotMention.join(', ')}.`);
+  if (turn.expect?.finalPromptMustMentionAny?.length) expectations.push(`Final prompt should include one of: ${turn.expect.finalPromptMustMentionAny.join(', ')}.`);
+  if (turn.expect?.finalPromptMustNotMention?.length) expectations.push(`Final prompt should avoid: ${turn.expect.finalPromptMustNotMention.join(', ')}.`);
+  return expectations.length ? expectations : ['Respond naturally and move the MaxVideoAI workflow forward.'];
 }
 
 function isGeneratePromptTurn(turn: LiveTurn): boolean {
@@ -648,6 +1021,7 @@ function summarizeReports(reports: readonly LiveScenarioReport[]) {
   const turns = reports.flatMap((scenario) => scenario.turns);
   const failedTurns = turns.filter((turn) => turn.relevanceIssues.length > 0);
   const promptTurns = turns.filter((turn) => turn.finalPrompt);
+  const judges = reports.flatMap((scenario) => (scenario.judge ? [scenario.judge] : []));
   return {
     scenarios: reports.length,
     passedScenarios: reports.filter((scenario) => scenario.passed).length,
@@ -661,6 +1035,12 @@ function summarizeReports(reports: readonly LiveScenarioReport[]) {
     promptLlmUsedTurns: turns.filter((turn) => turn.llm.promptWriter.used).length,
     promptReadyTurns: promptTurns.length,
     sanitizerChangedTurns: turns.filter((turn) => turn.llm.promptWriter.sanitizerChangedOutput).length,
+    judgeRuns: judges.length,
+    judgeLlmRuns: judges.filter((judge) => judge.usedLLM).length,
+    averageJudgeScore: judges.length
+      ? Number((judges.reduce((sum, judge) => sum + judge.score, 0) / judges.length).toFixed(2))
+      : 0,
+    judgeFailedScenarios: reports.filter((scenario) => scenario.judge?.source === 'llm' && !scenario.judge.passed).length,
   };
 }
 
@@ -674,6 +1054,11 @@ function printReport(summary: ReturnType<typeof summarizeReports>, reports: read
   console.log(`Prompt LLM used turns: ${summary.promptLlmUsedTurns}`);
   console.log(`Prompt-ready turns: ${summary.promptReadyTurns}`);
   console.log(`Sanitizer changed turns: ${summary.sanitizerChangedTurns}`);
+  if (summary.judgeRuns) {
+    console.log(`LLM judge runs: ${summary.judgeLlmRuns}/${summary.judgeRuns}`);
+    console.log(`Average judge score: ${summary.averageJudgeScore}/5`);
+    console.log(`Judge-failed scenarios: ${summary.judgeFailedScenarios}`);
+  }
   console.log(`JSON report: ${relative(process.cwd(), jsonPath)}`);
   console.log('');
 
@@ -683,6 +1068,15 @@ function printReport(summary: ReturnType<typeof summarizeReports>, reports: read
     for (const turn of scenario.turns) {
       console.log(`- ${turn.label}: task=${turn.task}; stage=${turn.stage}; tools=${turn.toolCalls.join(', ') || 'none'}; briefLLM=${turn.llm.briefRefinement.used ? 'yes' : 'no'}; promptLLM=${turn.llm.promptWriter.used ? 'yes' : 'no'}; score=${turn.relevanceScore}/5`);
       if (turn.relevanceIssues.length) console.log(`  issues=${turn.relevanceIssues.join(' | ')}`);
+    }
+    if (scenario.judge) {
+      console.log(
+        `  judge=${scenario.judge.source}${scenario.judge.usedLLM ? '' : `:${scenario.judge.fallbackReason ?? 'fallback'}`}; score=${scenario.judge.score}/5; passed=${scenario.judge.passed ? 'yes' : 'no'}`
+      );
+      for (const issue of scenario.judge.issues.slice(0, 3)) {
+        console.log(`  judgeIssue=${issue.severity}:${issue.owner}:${issue.message}`);
+      }
+      if (scenario.judge.recommendedFix) console.log(`  judgeFix=${scenario.judge.recommendedFix}`);
     }
     if (last?.finalPrompt) {
       console.log(`  finalPrompt=${compact(last.finalPrompt, 520)}`);

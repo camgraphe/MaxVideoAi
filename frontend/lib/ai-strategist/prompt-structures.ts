@@ -1689,7 +1689,7 @@ function durationBoundsForModel(modelId: AiStrategistModelId): { min: number; ma
 }
 
 function extractRequestedDurationSeconds(brief: string): number | undefined {
-  const matches = Array.from(brief.matchAll(/\b(\d{1,2})\s*(?:seconds?|secs?|sec|s|secondes?)\b/gi));
+  const matches = Array.from(brief.matchAll(/\b(\d{1,2})\s*-?\s*(?:seconds?|secs?|sec|s|secondes?)\b/gi));
   const latestMatch = matches.at(-1);
   if (!latestMatch) return undefined;
   const seconds = Number.parseInt(latestMatch[1], 10);

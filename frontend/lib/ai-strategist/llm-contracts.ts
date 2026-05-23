@@ -24,7 +24,7 @@ export type AiStrategistJsonSchema = {
 };
 
 export type AiStrategistLLMRequest<TPayload extends Record<string, unknown>> = {
-  kind: 'brief_refinement' | 'prompt_writer' | 'knowledge_synthesis';
+  kind: 'brief_refinement' | 'prompt_writer' | 'knowledge_synthesis' | 'advisor_quality_judge';
   systemInstructions: string;
   developerPayload: Record<string, unknown>;
   userPayload: TPayload;
@@ -76,6 +76,37 @@ type KnowledgeSynthesisUserPayload = {
     noPublishing: true;
     previewOnly: true;
   };
+};
+
+export type AiStrategistAdvisorQualityJudgeInput = {
+  scenarioId: string;
+  scenarioLabel: string;
+  userGoal?: string;
+  turns: Array<{
+    userMessage: string;
+    assistantMessage: string;
+    task: string;
+    stage: string;
+    toolCalls: string[];
+    workflow?: string | null;
+    selectedModel?: string | null;
+    usedBriefLlm: boolean;
+    usedPromptLlm: boolean;
+    warnings: string[];
+    finalPrompt?: string;
+    heuristicIssues: string[];
+  }>;
+  expectedExperience: string[];
+  hardRules: {
+    noAutoGeneration: true;
+    noCreditSpend: true;
+    noPublishing: true;
+    noUiActionsApplied: true;
+  };
+};
+
+type AdvisorQualityJudgeUserPayload = {
+  evaluationInput: AiStrategistAdvisorQualityJudgeInput;
 };
 
 const normalizedIntentValues: readonly AiStrategistNormalizedIntent[] = [
@@ -158,6 +189,18 @@ const knowledgeSynthesisSystemInstructions = [
   'If any source confidence is below 0.65, say what is missing or ask one short clarification instead of guessing.',
   'Do not run generation, spend credits, publish anything, or imply that a render has started.',
   'Return JSON only and keep uiActions in { type, value } shape.',
+].join('\n');
+
+const advisorQualityJudgeSystemInstructions = [
+  'You are the MaxVideoAI AI Strategist quality judge.',
+  'Evaluate the full conversation like a strict product QA reviewer, not like a prompt writer.',
+  'Judge whether the assistant understood the user, selected the right tool path, reused context, moved the funnel forward, stayed conversational, and produced a usable MaxVideoAI next step.',
+  'Use the provided turns, tool calls, stages, warnings, final prompt, and heuristic issues only.',
+  'Do not invent product facts, prices, model capabilities, or hidden user context.',
+  'Do not write a replacement final prompt.',
+  'Flag answers that are technically correct but feel mechanical, answer beside the question, expose internal implementation details, ask unnecessary generic questions, forget previous context, or push model cards before acknowledging the client.',
+  'Hard safety rules: no generation is run, no credits are spent, nothing is published, and UI actions are preview-only.',
+  'Return JSON only.',
 ].join('\n');
 
 export function buildBriefRefinementLLMRequest(
@@ -263,6 +306,36 @@ export function buildKnowledgeSynthesisLLMRequest(
   };
 }
 
+export function buildAdvisorQualityJudgeLLMRequest(
+  evaluationInput: AiStrategistAdvisorQualityJudgeInput
+): AiStrategistLLMRequest<AdvisorQualityJudgeUserPayload> {
+  return {
+    kind: 'advisor_quality_judge',
+    systemInstructions: advisorQualityJudgeSystemInstructions,
+    developerPayload: {
+      task: 'Score one MaxVideoAI AI Strategist conversation for production advisor quality.',
+      pipelinePosition: 'live/local strategist simulation -> deterministic checks -> optional LLM quality judge -> failure clusters',
+      scoring: {
+        '5': 'Excellent: helpful, contextual, accurate, safe, and funnel-forward.',
+        '4': 'Good with minor copy or UX issues.',
+        '3': 'Usable but awkward, incomplete, or too mechanical.',
+        '2': 'Wrong route, poor state handling, or weak answer.',
+        '1': 'Actively misleading, unsafe, or unusable.',
+      },
+      rules: [
+        'Return JSON only.',
+        'Prefer concrete issues over vague critique.',
+        'A pass requires score >= 4 and no high severity issue.',
+        'Never ask the production assistant to run generation or spend credits.',
+      ],
+    },
+    userPayload: {
+      evaluationInput: toJsonSafe(evaluationInput) as AiStrategistAdvisorQualityJudgeInput,
+    },
+    expectedJsonSchema: buildAdvisorQualityJudgeJsonSchema(),
+  };
+}
+
 export function validatePromptWriterLLMOutput(
   output: unknown,
   context?: AiStrategistPromptGenerationContext
@@ -292,6 +365,7 @@ export function validatePromptWriterLLMOutput(
   validateGeneratedReadableLabelTypography(finalPrompt, context, issues);
   validateUnsupportedResolutionClaims([assistantMessage, finalPrompt, ...settings].join('\n'), context, issues);
   validateDurationInheritance(finalPrompt, settings, context, issues);
+  validateAspectRatioInheritance(finalPrompt, settings, context, issues);
   validateWorkflowPromptStructure(finalPrompt, context, issues);
 
   if (warnings.length !== dedupedWarnings.length) {
@@ -369,6 +443,49 @@ export function validateKnowledgeSynthesisOutput(
     ok: issues.filter((issue) => issue.severity === 'error').length === 0,
     issues,
     dedupedWarnings,
+  };
+}
+
+export function validateAdvisorQualityJudgeOutput(output: unknown): AiStrategistLLMValidationResult {
+  const issues: AiStrategistLLMValidationIssue[] = [];
+  const outputRecord = isRecord(output) ? output : {};
+
+  if (!isRecord(output)) {
+    issues.push(errorIssue('invalid_output_shape', 'Advisor quality judge output must be a JSON object.'));
+  }
+
+  if (typeof outputRecord.score !== 'number' || outputRecord.score < 1 || outputRecord.score > 5) {
+    issues.push(errorIssue('invalid_judge_score', 'Advisor quality judge score must be a number from 1 to 5.'));
+  }
+
+  if (typeof outputRecord.passed !== 'boolean') {
+    issues.push(errorIssue('invalid_judge_passed', 'Advisor quality judge output must include a boolean passed field.'));
+  }
+
+  if (!Array.isArray(outputRecord.issues)) {
+    issues.push(errorIssue('invalid_judge_issues', 'Advisor quality judge output must include an issues array.'));
+  } else {
+    for (const issue of outputRecord.issues) {
+      if (!isRecord(issue) || typeof issue.code !== 'string' || typeof issue.severity !== 'string' || typeof issue.message !== 'string') {
+        issues.push(errorIssue('invalid_judge_issue_shape', 'Every judge issue must include code, severity, and message strings.'));
+        break;
+      }
+    }
+  }
+
+  if (!Array.isArray(outputRecord.strengths)) {
+    issues.push(errorIssue('invalid_judge_strengths', 'Advisor quality judge output must include a strengths array.'));
+  }
+
+  const outputText = collectText(outputRecord);
+  if (/\b(?:run|start|launch)\s+(?:the\s+)?generation\b/i.test(outputText) || /\bspend\s+credits\b/i.test(outputText)) {
+    issues.push(errorIssue('unsafe_judge_instruction', 'Advisor quality judge must not instruct the assistant to run generation or spend credits.'));
+  }
+
+  return {
+    ok: issues.filter((issue) => issue.severity === 'error').length === 0,
+    issues,
+    dedupedWarnings: [],
   };
 }
 
@@ -472,6 +589,39 @@ function buildKnowledgeSynthesisJsonSchema(): AiStrategistJsonSchema {
           },
         },
       },
+    },
+  };
+}
+
+function buildAdvisorQualityJudgeJsonSchema(): AiStrategistJsonSchema {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['score', 'passed', 'issues', 'strengths', 'recommendedFix'],
+    properties: {
+      score: {
+        type: 'number',
+        minimum: 1,
+        maximum: 5,
+        description: 'Overall advisor quality score from 1 to 5.',
+      },
+      passed: booleanSchema(),
+      issues: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['code', 'severity', 'message', 'owner'],
+          properties: {
+            code: stringSchema('Stable issue code such as state_memory_error, tool_choice_error, weak_answer_copy, prompt_quality_issue.'),
+            severity: enumSchema(['low', 'medium', 'high']),
+            message: stringSchema('Short actionable critique.'),
+            owner: stringSchema('Likely owner: planner, router, knowledge, prompt_writer, validator, ui, or eval_fixture.'),
+          },
+        },
+      },
+      strengths: stringArraySchema(),
+      recommendedFix: stringSchema('One concise fix recommendation, or empty string when no fix is needed.'),
     },
   };
 }
@@ -652,6 +802,44 @@ function validateDurationInheritance(
   if (!durationPattern.test(settings.join('\n'))) {
     issues.push(errorIssue('missing_duration_in_settings', 'Settings must include the strategist-selected duration.'));
   }
+}
+
+function validateAspectRatioInheritance(
+  finalPrompt: string,
+  settings: readonly string[],
+  context: AiStrategistPromptGenerationContext | undefined,
+  issues: AiStrategistLLMValidationIssue[]
+): void {
+  const expectedAspectRatio = extractContextAspectRatio(context);
+  if (!expectedAspectRatio) return;
+
+  const settingsText = settings.join('\n');
+  const outputText = [finalPrompt, settingsText].join('\n');
+  const aspectRatios = Array.from(outputText.matchAll(/\b(?:9\s*:\s*16|16\s*:\s*9|1\s*:\s*1|4\s*:\s*3|3\s*:\s*4)\b/g))
+    .map((match) => match[0].replace(/\s+/g, ''));
+  const wrongAspectRatio = aspectRatios.find((ratio) => ratio !== expectedAspectRatio);
+  if (wrongAspectRatio) {
+    issues.push(errorIssue('aspect_ratio_mismatch', `Prompt writer output used ${wrongAspectRatio} but the strategist context requires ${expectedAspectRatio}.`));
+    return;
+  }
+
+  if (settingsText && !new RegExp(`\\b${escapeRegExp(expectedAspectRatio)}\\b`).test(settingsText)) {
+    issues.push(errorIssue('aspect_ratio_mismatch', `Settings must include the strategist-selected aspect ratio ${expectedAspectRatio}.`));
+  }
+}
+
+function extractContextAspectRatio(
+  context: AiStrategistPromptGenerationContext | undefined
+): '9:16' | '16:9' | '1:1' | '4:3' | '3:4' | undefined {
+  if (!context) return undefined;
+  const text = [context.userBrief, context.currentPrompt].filter(Boolean).join('\n');
+  const match = text.match(/\b(9\s*:\s*16|16\s*:\s*9|1\s*:\s*1|4\s*:\s*3|3\s*:\s*4)\b/);
+  const normalized = match?.[1]?.replace(/\s+/g, '');
+  return isSupportedAspectRatio(normalized) ? normalized : undefined;
+}
+
+function isSupportedAspectRatio(value: string | undefined): value is '9:16' | '16:9' | '1:1' | '4:3' | '3:4' {
+  return value === '9:16' || value === '16:9' || value === '1:1' || value === '4:3' || value === '3:4';
 }
 
 function hasCustomerProvidedSpokenLine(context: AiStrategistPromptGenerationContext | undefined): boolean {

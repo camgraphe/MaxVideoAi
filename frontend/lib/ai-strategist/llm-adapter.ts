@@ -3,11 +3,14 @@ import { createSign } from 'node:crypto';
 import type { AiStrategistBriefNormalizationInput, AiStrategistNormalizedBrief } from './brief-normalization';
 import { normalizeStrategistBrief } from './brief-normalization';
 import {
+  buildAdvisorQualityJudgeLLMRequest,
   buildBriefRefinementLLMRequest,
   buildPromptWriterLLMRequest,
+  type AiStrategistAdvisorQualityJudgeInput,
   type AiStrategistLLMRequest,
   type AiStrategistLLMValidationIssue,
   type AiStrategistLLMValidationResult,
+  validateAdvisorQualityJudgeOutput,
   validateBriefRefinementLLMOutput,
   validatePromptWriterLLMOutput,
 } from './llm-contracts';
@@ -112,6 +115,32 @@ export type AiStrategistPromptWriterLLMResult = {
   error?: string;
 };
 
+export type AiStrategistAdvisorQualityJudgeOutput = {
+  score: number;
+  passed: boolean;
+  issues: {
+    code: string;
+    severity: 'low' | 'medium' | 'high';
+    message: string;
+    owner: string;
+  }[];
+  strengths: string[];
+  recommendedFix: string;
+};
+
+export type AiStrategistAdvisorQualityJudgeLLMResult = {
+  usedLLM: boolean;
+  source: 'llm' | 'deterministic_fallback';
+  fallbackReason?: string;
+  provider?: string;
+  model?: string;
+  output: AiStrategistAdvisorQualityJudgeOutput;
+  request: ReturnType<typeof buildAdvisorQualityJudgeLLMRequest>;
+  validation: AiStrategistLLMValidationResult;
+  rawOutput?: unknown;
+  error?: string;
+};
+
 let cachedGoogleToken: { accessToken: string; expiresAtMs: number } | null = null;
 
 const productObjectTerms = [
@@ -163,7 +192,7 @@ export async function runBriefRefinementLLM(
   options: AiStrategistLLMRunOptions = {}
 ): Promise<AiStrategistBriefRefinementLLMResult> {
   const request = buildBriefRefinementLLMRequest(input);
-  const fallbackOutput = normalizeStrategistBrief(input);
+  const fallbackOutput = applyBriefHardContextOverrides(normalizeStrategistBrief(input), input);
   if (options.disableLLM) {
     return {
       usedLLM: false,
@@ -324,6 +353,84 @@ export async function runPromptWriterLLM(
       validationBeforeSanitizer: validation,
       validationAfterSanitizer: validation,
       sanitizerChangedOutput: fallbackSanitizerChangedOutput,
+      error: errorMessage(error),
+    };
+  }
+}
+
+export async function runAdvisorQualityJudgeLLM(
+  evaluationInput: AiStrategistAdvisorQualityJudgeInput,
+  options: AiStrategistLLMRunOptions = {}
+): Promise<AiStrategistAdvisorQualityJudgeLLMResult> {
+  const request = buildAdvisorQualityJudgeLLMRequest(evaluationInput);
+  const fallbackOutput = buildAdvisorQualityJudgeFallback(evaluationInput);
+
+  if (options.disableLLM) {
+    return {
+      usedLLM: false,
+      source: 'deterministic_fallback',
+      fallbackReason: options.disableReason ?? 'llm_disabled',
+      output: fallbackOutput,
+      request,
+      validation: okValidation(),
+    };
+  }
+
+  const configResult = resolveLocalLLMConfig(options.env);
+  if (!configResult.ok) {
+    return {
+      usedLLM: false,
+      source: 'deterministic_fallback',
+      fallbackReason: configResult.reason,
+      output: fallbackOutput,
+      request,
+      validation: okValidation(),
+    };
+  }
+
+  try {
+    const rawOutput = await runCompletion({ request, config: configResult.config, options });
+    const validation = validateAdvisorQualityJudgeOutput(rawOutput);
+    const output = isAdvisorQualityJudgeOutput(rawOutput) ? rawOutput : null;
+    const finalValidation = output
+      ? validation
+      : withIssue(validation, errorIssue('invalid_advisor_quality_judge_shape', 'LLM output does not match the advisor quality judge shape.'));
+
+    if (!output || !finalValidation.ok) {
+      return {
+        usedLLM: false,
+        source: 'deterministic_fallback',
+        fallbackReason: 'validation_failed',
+        provider: configResult.config.provider,
+        model: configResult.config.model,
+        output: fallbackOutput,
+        request,
+        validation: finalValidation,
+        rawOutput,
+      };
+    }
+
+    return {
+      usedLLM: true,
+      source: 'llm',
+      provider: configResult.config.provider,
+      model: configResult.config.model,
+      output,
+      request,
+      validation: finalValidation,
+      rawOutput,
+    };
+  } catch (error) {
+    const validation = withIssue(okValidation(), errorIssue('llm_adapter_error', errorMessage(error)));
+    return {
+      usedLLM: false,
+      source: 'deterministic_fallback',
+      fallbackReason: classifyAdapterError(error),
+      provider: configResult.config.provider,
+      model: configResult.config.model,
+      output: fallbackOutput,
+      request,
+      validation,
       error: errorMessage(error),
     };
   }
@@ -712,6 +819,72 @@ function isPromptWriterOutput(value: unknown): value is AiStrategistPromptWriter
   );
 }
 
+function isAdvisorQualityJudgeOutput(value: unknown): value is AiStrategistAdvisorQualityJudgeOutput {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.score === 'number' &&
+    typeof value.passed === 'boolean' &&
+    Array.isArray(value.issues) &&
+    value.issues.every(
+      (issue) =>
+        isRecord(issue) &&
+        typeof issue.code === 'string' &&
+        typeof issue.severity === 'string' &&
+        ['low', 'medium', 'high'].includes(issue.severity) &&
+        typeof issue.message === 'string' &&
+        typeof issue.owner === 'string'
+    ) &&
+    Array.isArray(value.strengths) &&
+    value.strengths.every((strength) => typeof strength === 'string') &&
+    typeof value.recommendedFix === 'string'
+  );
+}
+
+function buildAdvisorQualityJudgeFallback(
+  evaluationInput: AiStrategistAdvisorQualityJudgeInput
+): AiStrategistAdvisorQualityJudgeOutput {
+  const heuristicIssues = uniqueStrings(evaluationInput.turns.flatMap((turn) => turn.heuristicIssues));
+  const issues = heuristicIssues.map((issue) => ({
+    code: normalizeJudgeIssueCode(issue),
+    severity: inferJudgeIssueSeverity(issue),
+    message: issue,
+    owner: inferJudgeIssueOwner(issue),
+  }));
+  const hasHighIssue = issues.some((issue) => issue.severity === 'high');
+  const score = Math.max(1, Number((5 - issues.length * 0.75 - (hasHighIssue ? 1 : 0)).toFixed(1)));
+  return {
+    score,
+    passed: score >= 4 && !hasHighIssue,
+    issues,
+    strengths: issues.length
+      ? ['Deterministic fallback preserved the heuristic issue list for review.']
+      : ['No deterministic heuristic issues were found.'],
+    recommendedFix: issues[0]?.message ?? '',
+  };
+}
+
+function normalizeJudgeIssueCode(issue: string): string {
+  return issue
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 60) || 'heuristic_issue';
+}
+
+function inferJudgeIssueSeverity(issue: string): 'low' | 'medium' | 'high' {
+  if (/\b(runtime_error|safety|validation has|expected final prompt|unsupported|side effects)\b/i.test(issue)) return 'high';
+  if (/\b(expected|missing|did not|disallowed|wrong|failed)\b/i.test(issue)) return 'medium';
+  return 'low';
+}
+
+function inferJudgeIssueOwner(issue: string): string {
+  if (/\btool calls?|task|stage|recommendations?\b/i.test(issue)) return 'planner';
+  if (/\bprompt|validation|resolution|disallowed text\b/i.test(issue)) return 'prompt_writer';
+  if (/\bmodel|workflow|route\b/i.test(issue)) return 'router';
+  if (/\bassistant|debug wording|mechanical\b/i.test(issue)) return 'ui';
+  return 'eval_fixture';
+}
+
 function normalizePromptWriterOutput(
   output: AiStrategistPromptWriterOutput,
   context: AiStrategistPromptGenerationContext
@@ -723,7 +896,7 @@ function normalizePromptWriterOutput(
     finalPrompt,
     negativePrompt,
     settings: uniqueStrings(output.settings.map(sanitizeProtectedStyleReferences)),
-    warnings: uniqueStrings(output.warnings.map(sanitizeProtectedStyleReferences)),
+    warnings: dedupePromptWriterWarnings(uniqueStrings(output.warnings.map(sanitizeProtectedStyleReferences))),
     uiActions: output.uiActions.map((action) => {
       if (action.type === 'SET_PROMPT') return { ...action, value: finalPrompt };
       if (action.type === 'SET_NEGATIVE_PROMPT') return { ...action, value: negativePrompt };
@@ -740,6 +913,23 @@ function promptWriterOutputChanged(rawOutput: AiStrategistPromptWriterOutput, ou
     JSON.stringify(rawOutput.warnings) !== JSON.stringify(output.warnings) ||
     JSON.stringify(rawOutput.uiActions) !== JSON.stringify(output.uiActions)
   );
+}
+
+function dedupePromptWriterWarnings(warnings: readonly string[]): string[] {
+  const next: string[] = [];
+  let hasProductTextWarning = false;
+  for (const warning of warnings) {
+    if (isProductTextDriftWarning(warning)) {
+      if (hasProductTextWarning) continue;
+      hasProductTextWarning = true;
+    }
+    next.push(warning);
+  }
+  return next;
+}
+
+function isProductTextDriftWarning(warning: string): boolean {
+  return /\b(?:labels?|logos?|legal copy|tiny text|packaging details?)\b/i.test(warning) && /\b(?:drift|overlay|checked?|added)\b/i.test(warning);
 }
 
 function sanitizePromptWriterText(text: string, context: AiStrategistPromptGenerationContext): string {
@@ -860,6 +1050,10 @@ function applyBriefHardContextOverrides(
   if (uploadedAsset?.hasLogo === true || uploadedAsset?.hasText === true) {
     next.hasLogoOrTextRisk = true;
   }
+  const aspectRatioHint = extractExplicitAspectRatioHint(input, output);
+  if (aspectRatioHint) {
+    next.aspectRatioHint = aspectRatioHint;
+  }
 
   if (uploadedAsset?.hasPerson === true && uploadedAsset.isReferenceImage === true) {
     next.intent = 'person_reference_i2v';
@@ -886,6 +1080,30 @@ function applyBriefHardContextOverrides(
   }
 
   return next;
+}
+
+function extractExplicitAspectRatioHint(
+  input: AiStrategistBriefNormalizationInput,
+  output: AiStrategistNormalizedBrief
+): AiStrategistNormalizedBrief['aspectRatioHint'] | undefined {
+  const text = [
+    input.rawUserMessage,
+    input.currentPrompt,
+    input.conversationContext?.lastUserBrief,
+    input.conversationContext?.enrichedBrief,
+    input.conversationContext?.recentTurns?.map((turn) => turn.content).join(' '),
+    output.rawUserMessage,
+    output.normalizedBrief,
+    ...output.constraints,
+    ...output.styleHints,
+  ].filter(Boolean).join(' ');
+
+  if (/\b9\s*:\s*16\b|\bvertical\b|\btiktok\b|\breels?\b|\bshorts\b/i.test(text)) return '9:16';
+  if (/\b16\s*:\s*9\b|\blandscape\b|\byoutube\b|\bwidescreen\b/i.test(text)) return '16:9';
+  if (/\b1\s*:\s*1\b|\bsquare\b/i.test(text)) return '1:1';
+  if (/\b4\s*:\s*3\b/i.test(text)) return '4:3';
+  if (/\b3\s*:\s*4\b/i.test(text)) return '3:4';
+  return undefined;
 }
 
 function shouldPreferCommercialObjectStartingImage(
