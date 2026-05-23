@@ -53,16 +53,16 @@ function resolveRecommendationTask(
   text: string
 ): StrategistOrchestratorTask {
   if (asksForExamples(text)) return 'examples_help';
-  if (asksForPricing(text)) return 'pricing_help';
   if (asksForDocsSearch(text)) return 'site_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForGreeting(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (asksForModelAdvice(text)) return 'model_advice';
+  if (asksForPricing(text)) return 'pricing_help';
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text)) return 'asset_reference_help';
   if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
-  if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForModelInfo(text)) return 'model_info_help';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
@@ -138,6 +138,14 @@ function asksForPricing(text: string): boolean {
     'no sub',
     'credits are spent',
     'credits spent',
+    'refund',
+    'refunded',
+    'refunds',
+    'failed generation',
+    'failed generations',
+    'generation fails',
+    'if fail',
+    'if it fails',
   ]);
 }
 
@@ -190,6 +198,11 @@ function asksForExamples(text: string): boolean {
     'before paying',
     'b4 payin',
     'b4 paying',
+    'see videos made with',
+    'videos made with',
+    'see vids made with',
+    'videos from',
+    'outputs from',
   ]);
 }
 
@@ -211,6 +224,19 @@ function asksForCapabilities(text: string): boolean {
     'can you help',
     'can you help me',
     'help me',
+    'what should i do first',
+    'where should i start',
+    'where do i start',
+    'landed here from an ad',
+    'came from an ad',
+    'dont know prompts',
+    'don t know prompts',
+    'do not know prompts',
+    'i dont know prompts',
+    'i don t know prompts',
+    'can u just generate it',
+    'can you just generate it',
+    'can you generate it for me',
     'not sure where to start',
     'not sure if i need',
     'guide me from idea to video',
@@ -261,6 +287,15 @@ function asksForWorkflow(text: string): boolean {
     'video already have',
     'should i upload',
     'write a text prompt',
+    'product photo enough',
+    'is that enough',
+    'still image first',
+    'generate a still image first',
+    'better product control',
+    'product control',
+    'reference video',
+    'same actor',
+    'same character from a reference video',
     'existing clip',
     'change the style',
     'keep motion',
@@ -288,6 +323,9 @@ function hasCreativeCreationIntent(text: string): boolean {
     'commercial',
     'speaking',
     'speak',
+    'movement',
+    'motion',
+    'subtle silent movement',
     'spokesperson',
     'lip sync',
     'lip-sync',
@@ -307,6 +345,7 @@ function hasCreativeCreationIntent(text: string): boolean {
 }
 
 function asksForSiteNavigation(text: string): boolean {
+  if (containsAny(text, ['can u just generate it', 'can you just generate it', 'can you generate it for me'])) return false;
   if ((containsAny(text, ['i uploaded', 'i have uploaded']) || /\buploaded\b/.test(text)) && hasCreativeCreationIntent(text)) return false;
   if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing'])) return false;
   return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'model page', 'model pages', 'engines', 'upload', 'pricing', 'examples']);
@@ -314,6 +353,9 @@ function asksForSiteNavigation(text: string): boolean {
 
 function asksForModelAdvice(text: string): boolean {
   if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\b(?:or|vs|versus)\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
+  if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\bbetter than\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
+  if (/\bdifference between\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
+  if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\bdifference between\b/.test(text)) return true;
   return containsAny(text, [
     'which model',
     'which engine',
@@ -335,6 +377,17 @@ function asksForModelAdvice(text: string): boolean {
     'engine is safest',
     'safest engine',
     'safest model',
+    'premium but not the most expensive',
+    'premium but cheap',
+    'premium but low cost',
+    'premium but cheaper',
+    'not the most expensive model',
+    'burn credits',
+    'need 4k',
+    'really need 4k',
+    'do i need 4k',
+    'better than',
+    'difference between',
     'should i use',
     'which one should i use',
     'choisir un modele',

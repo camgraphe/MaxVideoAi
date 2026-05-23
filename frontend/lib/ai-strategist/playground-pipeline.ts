@@ -1068,6 +1068,10 @@ function hasUsableCreativeBrief(
       'push-in',
       'reflections',
       'create',
+      'movement',
+      'motion',
+      'subtle',
+      'silent',
     ]);
   return hasSubject && hasGoalOrStyle;
 }
@@ -1302,6 +1306,17 @@ function asksForModelChoice(body: ReturnType<typeof normalizePlaygroundInput>): 
     'which engine for',
     'what model for',
     'what engine for',
+    'premium but not the most expensive',
+    'premium but cheap',
+    'premium but low cost',
+    'premium but cheaper',
+    'not the most expensive model',
+    'burn credits',
+    'need 4k',
+    'really need 4k',
+    'do i need 4k',
+    'better than',
+    'difference between',
     'idk model',
     'dont know model',
     'don t know model',

@@ -254,7 +254,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   }
 
   const navigationSuggestion = resolveNavigationSuggestion(normalized);
-  if (navigationSuggestion) {
+  if (navigationSuggestion && !isDirectGenerationExecutionRequest(normalized)) {
     return {
       action: 'navigation_help',
       rawUserMessage,
@@ -487,6 +487,14 @@ function resolveNavigationSuggestion(text: string): StrategistNavigationSuggesti
     };
   }
 
+  if (containsAny(text, ['where do i paste the prompt', 'where to paste the prompt', 'where paste prompt', 'where do i paste prompt', 'u make prompt then where paste'])) {
+    return {
+      label: 'Video generator',
+      href: '/app',
+      reason: 'Paste the finished prompt in the video generator prompt field, then review the model, workflow, duration, and price before launching manually.',
+    };
+  }
+
   const modelId = resolveModelId(text);
   if (modelId && /^(where is|show me|open|ou est|où est)/.test(text)) {
     const model = AI_STRATEGIST_MODELS.find((entry) => entry.id === modelId);
@@ -501,7 +509,21 @@ function resolveNavigationSuggestion(text: string): StrategistNavigationSuggesti
 }
 
 function resolveExamplesNavigationSuggestion(text: string): StrategistNavigationSuggestion | undefined {
-  if (!containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples'])) return undefined;
+  if (!containsAny(text, [
+    'example',
+    'examples',
+    'sample',
+    'samples',
+    'gallery',
+    'galleries',
+    'exemple',
+    'exemples',
+    'see videos made with',
+    'videos made with',
+    'show me videos made with',
+    'outputs from',
+    'videos from',
+  ])) return undefined;
   const modelId = resolveModelId(text);
   const familySlug = modelId ? modelIdToExampleFamily(modelId) : undefined;
   const label = familySlug ? `${modelLabel(modelId ?? 'seedance-2-0')} examples` : 'Examples';
@@ -527,7 +549,36 @@ function modelIdToExampleFamily(modelId: AiStrategistModelId): string | undefine
 }
 
 function isProductHelpRequest(text: string): boolean {
+  if (containsAny(text, [
+    'premium but not the most expensive',
+    'premium but cheap',
+    'premium but low cost',
+    'premium but cheaper',
+    'not the most expensive model',
+    'burn credits',
+    'need 4k',
+    'really need 4k',
+    'do i need 4k',
+    'better than',
+    'difference between',
+  ])) {
+    return false;
+  }
+
   return containsAny(text, [
+    'what should i do first',
+    'where should i start',
+    'where do i start',
+    'landed here from an ad',
+    'came from an ad',
+    'dont know prompts',
+    'don t know prompts',
+    'do not know prompts',
+    'i dont know prompts',
+    'i don t know prompts',
+    'can u just generate it',
+    'can you just generate it',
+    'can you generate it for me',
     'where do i generate',
     'how do i generate',
     'how to generate',
@@ -559,6 +610,14 @@ function isProductHelpRequest(text: string): boolean {
     'avant de lancer',
     'before launching',
     'before generation',
+    'refund',
+    'refunded',
+    'refunds',
+    'failed generation',
+    'failed generations',
+    'generation fails',
+    'if fail',
+    'if it fails',
   ]);
 }
 
@@ -585,6 +644,9 @@ function isPromptImprovementRequest(text: string): boolean {
     'refine this',
     'refine prompt',
     'more premium',
+    'too generic',
+    'make it more cinematic',
+    'more cinematic',
     'ameliore ce prompt',
     'améliore ce prompt',
     'ameliore',
@@ -617,6 +679,18 @@ function isExistingPromptEditRequest(text: string): boolean {
     'retravailler un prompt',
     'optimiser un prompt',
     'corriger un prompt',
+    'this prompt is too generic',
+    'prompt is too generic',
+  ]);
+}
+
+function isDirectGenerationExecutionRequest(text: string): boolean {
+  return containsAny(text, [
+    'can u just generate it',
+    'can you just generate it',
+    'can you generate it for me',
+    'just generate it',
+    'run generation for me',
   ]);
 }
 
@@ -633,6 +707,9 @@ function isPromptPasteNeededRequest(text: string): boolean {
     'rewrite a bad prompt',
     'fix my prompt',
     'fix prompt',
+    'this prompt is too generic',
+    'prompt is too generic',
+    'too generic',
     'prompt for',
   ]);
 }
