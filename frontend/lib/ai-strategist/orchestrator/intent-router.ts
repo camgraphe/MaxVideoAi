@@ -80,7 +80,7 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 }
 
 function asksForPricing(text: string): boolean {
-  return containsAny(text, ['price', 'pricing', 'credit', 'credits', 'cost', 'tarif', 'tarifs', 'cout', 'coût']);
+  return containsAny(text, ['price', 'pricing', 'credit', 'credits', 'cost', 'how much', 'how many credits', 'tarif', 'tarifs', 'cout', 'coût', 'combien', 'combien de credits']);
 }
 
 function asksForCapabilities(text: string): boolean {

@@ -404,6 +404,11 @@ function isProductHelpRequest(text: string): boolean {
     'cost',
     'price',
     'pricing',
+    'how much',
+    'how many credits',
+    'combien',
+    'combien de credits',
+    'combien de crédits',
   ]);
 }
 

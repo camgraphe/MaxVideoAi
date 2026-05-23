@@ -444,6 +444,49 @@ test('AI Strategist knowledge answers workflow support from structured catalogs'
   assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'ai_strategist_workflow_rules'));
 });
 
+test('AI Strategist playground answers engine pricing from engine catalog when available', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How much is Kling 3 Pro for 10 seconds with audio?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'engine_pricing');
+  assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'engine_catalog'));
+  assert.match(result.assistantMessage, /Kling 3 Pro/i);
+  assert.match(result.assistantMessage, /10 seconds/i);
+});
+
+test('AI Strategist playground answers engine settings from engine catalog', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'What settings does Kling 3 4K support?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'model_info_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'engine_settings');
+  assert.match(result.assistantMessage, /Kling 3 4K/i);
+  assert.match(result.assistantMessage, /Resolutions/i);
+});
+
 test('AI Strategist chat recommendation cards trigger tier and model selection without generating immediately', async () => {
   const playground = await loadPlaygroundModule();
 
