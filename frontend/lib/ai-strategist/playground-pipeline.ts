@@ -284,13 +284,14 @@ export async function runAiStrategistPlaygroundPipeline(
 
   const selectedTier = body.selectedTier;
   const selectedModelId = body.selectedModel ?? recommendations[selectedTier].model.id;
+  const selectedTierForGuidance = conversationPlan.selectedTier ?? (body.selectedModel ? undefined : selectedTier);
   const promptBrief = buildPromptBrief({ body, goal, mode: effectiveMode });
   const promptGenerationContext = buildPromptGenerationContext({
     modelId: selectedModelId,
     promptStructureId: promptStructure,
     brief: promptBrief,
     workflow,
-    selectedTier: body.selectedModel ? undefined : selectedTier,
+    selectedTier: selectedTierForGuidance,
     sourceImageKind,
     currentPrompt: body.currentPrompt || undefined,
     uploadedAsset: body.uploadedAsset,
@@ -300,7 +301,7 @@ export async function runAiStrategistPlaygroundPipeline(
     resolvedBrief: promptBrief,
     normalizedBrief,
     promptGenerationContext,
-    selectedTier: body.selectedModel ? undefined : selectedTier,
+    selectedTier: selectedTierForGuidance,
     allowAssumptions: shouldAllowBriefAssumptions(initialBody),
   });
 

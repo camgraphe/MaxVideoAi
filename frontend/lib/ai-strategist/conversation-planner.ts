@@ -113,7 +113,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const normalized = normalizeSearchText(rawUserMessage);
   const previousBrief = input.conversationState?.lastBriefCompletion?.resolvedBrief ?? input.conversationState?.lastNormalizedBrief?.normalizedBrief;
   const hasPreviousBrief = Boolean(previousBrief && previousBrief !== 'Unspecified video brief.');
-  const selectedTier = resolveTier(normalized);
+  const selectedTier = resolveTier(normalized, hasPreviousBrief);
   const selectedModel = resolveModelId(normalized, input.conversationState?.lastRecommendations);
   const promptRequest = isPromptCreationRequest(normalized);
   const improvementRequest = isPromptImprovementRequest(normalized);
@@ -401,10 +401,13 @@ function mergeBriefRevision(brief: string | undefined, revision: string): string
   return `${brief}. Revision: ${cleanRevision}.`;
 }
 
-function resolveTier(text: string): AiStrategistTierPosition | undefined {
+function resolveTier(text: string, hasPreviousBrief = false): AiStrategistTierPosition | undefined {
   if (/^(best|use best|choose best|go best)\b/.test(text)) return 'best';
   if (/^(medium|use medium|choose medium|go medium)\b/.test(text)) return 'medium';
   if (/^(value|use value|choose value|go value|budget)\b/.test(text)) return 'value';
+  if (hasPreviousBrief && containsAny(text, ['cheaper option', 'less expensive', 'lower cost', 'reduce price', 'too expensive', 'moins cher', 'moins chere', 'trop cher', 'pas cher'])) {
+    return 'value';
+  }
   return undefined;
 }
 

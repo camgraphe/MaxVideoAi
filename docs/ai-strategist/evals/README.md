@@ -27,6 +27,9 @@ It checks whether the strategist:
 - keeps uploaded person and product references distinct
 - waits for confirmation before prompt generation
 - keeps safety constraints: no generation, no credit spend, no publishing
+- distinguishes pure pricing questions from budget-constrained creative briefs
+- handles acquisition-funnel moments such as price objections, examples discovery, comparison intent, and generator onboarding
+- avoids internal jargon in customer-facing answers
 
 ## Run The Deterministic Regression Pass
 
@@ -76,6 +79,30 @@ Each scenario has a category so failures point to the owner layer:
 - `safety_or_funnel`: safety and acquisition funnel guidance
 - `ui_flow_issue`: admin playground chat UI
 
+## Qualitative Advisor Checks
+
+Some turns include a `quality` block. These deterministic checks do not replace a future LLM judge, but they catch common product-quality regressions:
+
+```json
+{
+  "quality": {
+    "actionableNextStep": true,
+    "avoidsTechnicalJargon": true,
+    "preservesSafety": true,
+    "conversationalAdvisor": true,
+    "acquisitionFunnelForward": true
+  }
+}
+```
+
+Use these checks when a turn should feel like a MaxVideoAI advisor, not a form response:
+
+- `actionableNextStep`: the reply gives the user a clear next move
+- `avoidsTechnicalJargon`: the reply does not expose internal pipeline/debug terms
+- `preservesSafety`: the reply keeps no-generation/no-credit/no-publish constraints when relevant
+- `conversationalAdvisor`: the reply sounds like guidance, not a raw classification
+- `acquisitionFunnelForward`: the reply moves the user toward a useful MaxVideoAI funnel step such as compare, examples, pricing, generator, model choice, or prompt creation
+
 ## Long-Term Agent Improvement Loop
 
 Use this loop for larger improvement sessions:
@@ -94,6 +121,6 @@ Future upgrades should add:
 
 - an LLM-as-judge for naturalness and funnel quality
 - richer site/product knowledge sources behind explicit tools
-- acquisition-funnel scenarios such as pricing objections, comparison intent, examples discovery, and generator onboarding
+- more acquisition-funnel scenarios such as pricing objections, comparison intent, examples discovery, generator onboarding, plan/credit objections, and model-comparison objections
 - trend reports that compare pass rate and failure categories over time
 - CI gating for deterministic regressions while keeping live LLM evaluation local-only

@@ -55,6 +55,7 @@ export function assessStrategistBriefCompletion(input: {
     normalizedBrief: input.normalizedBrief,
     context: input.promptGenerationContext,
     assumptions,
+    selectedTier: input.selectedTier,
   });
 
   return {
@@ -148,9 +149,11 @@ function buildConfirmationSummary(input: {
   normalizedBrief: AiStrategistNormalizedBrief;
   context: AiStrategistPromptGenerationContext;
   assumptions: readonly string[];
+  selectedTier?: AiStrategistTierPosition;
 }): string[] {
   const summary = [
     `Concept: ${sanitizeProtectedStyleReferences(input.resolvedBrief)}`,
+    ...(input.selectedTier ? [`Tier: ${formatTier(input.selectedTier)}`] : []),
     `Model: ${input.context.selectedModel.label}`,
     `Workflow: ${input.context.selectedWorkflow}`,
     `Format: ${input.normalizedBrief.aspectRatioHint ?? inferFormat(input.resolvedBrief)}`,
@@ -161,6 +164,12 @@ function buildConfirmationSummary(input: {
   ];
   if (input.assumptions.length) summary.push(`Assumptions: ${input.assumptions.join('; ')}`);
   return summary;
+}
+
+function formatTier(tier: AiStrategistTierPosition): string {
+  if (tier === 'best') return 'Best - strongest fit for the current brief';
+  if (tier === 'medium') return 'Medium - balanced quality, speed, and cost';
+  return 'Value - faster/lower-cost route for testing or budget control';
 }
 
 function buildAssumptions(input: {

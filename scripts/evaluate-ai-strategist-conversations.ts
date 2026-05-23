@@ -46,6 +46,13 @@ type ConversationExpectation = {
   finalPromptMustMention?: string[];
   finalPromptMustMentionAny?: string[];
   finalPromptMustNotMention?: string[];
+  quality?: {
+    actionableNextStep?: boolean;
+    avoidsTechnicalJargon?: boolean;
+    preservesSafety?: boolean;
+    conversationalAdvisor?: boolean;
+    acquisitionFunnelForward?: boolean;
+  };
 };
 
 type ConversationTurn = {
@@ -380,8 +387,94 @@ function evaluateTurn(input: {
   checkIncludes(issues, scenario, turn, finalPrompt, expect.finalPromptMustMention, 'finalPromptMustMention');
   checkIncludesAny(issues, scenario, turn, finalPrompt, expect.finalPromptMustMentionAny, 'finalPromptMustMentionAny');
   checkExcludes(issues, scenario, turn, finalPrompt, expect.finalPromptMustNotMention, 'finalPromptMustNotMention');
+  checkQuality(issues, scenario, turn, result, expect.quality);
 
   return issues;
+}
+
+function checkQuality(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  result: AiStrategistPlaygroundResult,
+  quality: ConversationExpectation['quality']
+) {
+  if (!quality) return;
+  const text = result.assistantMessage;
+
+  if (quality.actionableNextStep && !containsAnyPhrase(text, [
+    'choose',
+    'pick',
+    'open',
+    'use',
+    'generate the prompt',
+    'colle ton prompt',
+    'compare',
+    'devis',
+    'I will not navigate',
+    'I’ll check',
+    'next',
+  ])) {
+    issues.push(buildIssue(scenario, turn, 'quality.actionableNextStep: assistant did not provide a clear next step'));
+  }
+
+  if (quality.avoidsTechnicalJargon && containsAnyPhrase(text, [
+    'normalizedbrief',
+    'orchestration',
+    'pipeline',
+    'toolresult',
+    'json',
+    'deterministic',
+  ])) {
+    issues.push(buildIssue(scenario, turn, 'quality.avoidsTechnicalJargon: assistant exposed internal implementation language'));
+  }
+
+  if (quality.preservesSafety && !containsAnyPhrase(text, [
+    'I will not run generation',
+    'I will not navigate',
+    'ne lance',
+    'ne dépense',
+    'ne depense',
+    'generator quote',
+    'devis',
+    'spend credits',
+    'crédits',
+    'credits',
+  ])) {
+    issues.push(buildIssue(scenario, turn, 'quality.preservesSafety: assistant did not preserve no-generation/no-credit safety'));
+  }
+
+  if (quality.conversationalAdvisor && !containsAnyPhrase(text, [
+    'I’d route',
+    'I’m showing',
+    'Here’s what I’ll build',
+    'Great',
+    'Je peux',
+    'Pour la vidéo',
+    'Oui, colle',
+    'Use these',
+    'Open',
+  ])) {
+    issues.push(buildIssue(scenario, turn, 'quality.conversationalAdvisor: response reads too mechanical or lacks advisory framing'));
+  }
+
+  if (quality.acquisitionFunnelForward && !containsAnyPhrase(text, [
+    'compare',
+    'examples',
+    'generate',
+    'pricing',
+    'price',
+    'devis',
+    'choose',
+    'pick',
+    'model',
+    'workflow',
+    'prompt',
+    'générateur',
+    'generateur',
+  ])) {
+    issues.push(buildIssue(scenario, turn, 'quality.acquisitionFunnelForward: response does not move user toward a useful MaxVideoAI funnel step'));
+  }
 }
 
 function checkEqual(
@@ -581,6 +674,10 @@ function ensureParentDir(path: string) {
 
 function includesNormalized(text: string, needle: string): boolean {
   return normalizeText(text).includes(normalizeText(needle));
+}
+
+function containsAnyPhrase(text: string, phrases: string[]): boolean {
+  return phrases.some((phrase) => includesNormalized(text, phrase));
 }
 
 function normalizeText(value: string): string {

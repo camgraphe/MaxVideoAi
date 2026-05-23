@@ -15,7 +15,13 @@
             "mode": "product_help",
             "noRecommendations": true,
             "mustMention": ["moins cher", "$0.04"],
-            "mustNotMention": ["open the video generator, choose the workflow"]
+            "mustNotMention": ["open the video generator, choose the workflow"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -33,7 +39,13 @@
             "noRecommendations": true,
             "mustMentionAny": ["modèle", "modele"],
             "mustMention": ["prompt", "prix"],
-            "mustMentionAnyGroup": [["ne lance", "crédits"], ["ne lance", "credits"]]
+            "mustMentionAnyGroup": [["ne lance", "crédits"], ["ne lance", "credits"]],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -191,7 +203,13 @@
             "stage": "awaiting_model_choice",
             "hasRecommendations": true,
             "warningsMention": ["Exact labels", "logos", "legal copy"],
-            "mustNotMention": ["What video are you trying to create"]
+            "mustNotMention": ["What video are you trying to create"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -217,7 +235,13 @@
           "pickTier": "best",
           "expect": {
             "stage": "awaiting_confirmation",
-            "mustMention": ["off-camera voiceover", "Duration:", "Estimated price:"]
+            "mustMention": ["off-camera voiceover", "Duration:", "Estimated price:"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -277,7 +301,13 @@
             "action": "await_prompt_paste",
             "selectedModel": "seedance-2-0",
             "noRecommendations": true,
-            "mustMentionAny": ["colle ton prompt", "paste"]
+            "mustMentionAny": ["colle ton prompt", "paste"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]
@@ -499,6 +529,60 @@
       ]
     },
     {
+      "id": "budget-creative-brief-fr",
+      "label": "Budget creative brief should recommend value routes",
+      "category": "model_recommendation_issue",
+      "turns": [
+        {
+          "label": "asks for cheap TikTok ad test",
+          "userMessage": "je veux une pub TikTok pas chère pour tester un produit rapidement",
+          "expect": {
+            "task": "new_video_brief",
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "mustNotMention": ["Price depends mainly on model"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "price-objection-after-recommendation",
+      "label": "Price objection after recommendations should move toward value tier",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "starts premium product brief",
+          "userMessage": "premium skincare product ad, white studio, slow clean camera move",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "asks cheaper option",
+          "userMessage": "c est trop cher, propose une option moins chère",
+          "expect": {
+            "action": "select_tier",
+            "notStage": "awaiting_model_choice",
+            "selectedModelPresent": true,
+            "mustMentionAny": ["Value", "value", "faster", "cost", "prix", "moins"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "conversationalAdvisor": true,
+              "acquisitionFunnelForward": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "ambiguous-prompt-improvement",
       "label": "Ambiguous prompt improvement",
       "category": "language_issue",
@@ -526,7 +610,13 @@
             "task": "asset_reference_help",
             "mode": "product_help",
             "noRecommendations": true,
-            "mustMentionAny": ["image-to-video", "reference image"]
+            "mustMentionAny": ["image-to-video", "reference image"],
+            "quality": {
+              "actionableNextStep": true,
+              "avoidsTechnicalJargon": true,
+              "preservesSafety": true,
+              "acquisitionFunnelForward": true
+            }
           }
         }
       ]

@@ -88,6 +88,7 @@ function resolveNavigationTask(text: string): StrategistOrchestratorTask {
 }
 
 function asksForPricing(text: string): boolean {
+  if (hasCreativeBudgetBriefIntent(text)) return false;
   return containsAny(text, [
     'price',
     'pricing',
@@ -111,6 +112,26 @@ function asksForPricing(text: string): boolean {
     'moins couteux',
     'moins coûteux',
     'pas cher',
+  ]);
+}
+
+function hasCreativeBudgetBriefIntent(text: string): boolean {
+  if (!containsAny(text, ['cheap', 'cheaper', 'low cost', 'budget', 'pas cher', 'pas chere', 'moins cher', 'moins chere'])) return false;
+  return containsAny(text, [
+    'ad',
+    'pub',
+    'tiktok',
+    'video',
+    'product',
+    'produit',
+    'creative',
+    'test',
+    'tester',
+    'create',
+    'make',
+    'faire',
+    'generer',
+    'générer',
   ]);
 }
 

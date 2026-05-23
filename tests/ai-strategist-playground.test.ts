@@ -1098,4 +1098,9 @@ test('AI Strategist conversation eval scenarios are versioned and broad enough f
   ]) {
     assert.ok(categories.has(requiredCategory), `Expected category ${requiredCategory}`);
   }
+
+  const qualityScenarioCount = parsed.scenarios.filter((scenario) =>
+    scenario.turns?.some((turn) => Boolean((turn.expect as { quality?: unknown } | undefined)?.quality))
+  ).length;
+  assert.ok(qualityScenarioCount >= 5, 'Expected at least 5 scenarios with qualitative advisor checks');
 });
