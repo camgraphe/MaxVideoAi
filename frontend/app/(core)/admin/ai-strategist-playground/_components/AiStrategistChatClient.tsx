@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import {
   Check,
   ChevronRight,
@@ -84,6 +84,12 @@ export function AiStrategistChatClient() {
       context
     );
     setInput('');
+  }
+
+  function handleInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
   }
 
   async function submitTierPrompt(tier: AiStrategistTierPosition, visibleText?: string) {
@@ -388,8 +394,10 @@ export function AiStrategistChatClient() {
                 <textarea
                   value={input}
                   onChange={(event) => setInput(event.currentTarget.value)}
+                  onKeyDown={handleInputKeyDown}
                   rows={1}
                   placeholder="Ask anything..."
+                  aria-keyshortcuts="Enter"
                   className="min-h-[44px] flex-1 resize-none border-0 bg-transparent py-3 text-sm font-medium leading-5 text-slate-900 outline-none placeholder:text-slate-400"
                 />
                 <button

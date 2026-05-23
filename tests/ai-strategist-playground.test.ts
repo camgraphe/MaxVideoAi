@@ -1678,6 +1678,10 @@ test('AI Strategist playground admin route and page stay internal-only', () => {
   assert.match(chatSource, /onChooseRecommendation/);
   assert.match(chatSource, /Generate prompt/);
   assert.match(chatSource, /Make assumptions/);
+  assert.match(chatSource, /handleInputKeyDown/);
+  assert.match(chatSource, /requestSubmit\(\)/);
+  assert.match(chatSource, /event\.shiftKey/);
+  assert.match(chatSource, /aria-keyshortcuts="Enter"/);
   assert.match(chatSource, /Copy/);
   assert.match(chatSource, /knowledgeToolResults/);
   assert.match(chatSource, /Sources:/);
