@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "English-first realistic conversation seeds for the MaxVideoAI AI Strategist continuous evaluation loop.",
+  "description": "English-first realistic conversation seeds for the MaxVideoAI Strategist continuous evaluation loop.",
   "seeds": [
     {"id":"en-greeting-001","language":"en","persona":"new visitor","category":"greeting","turns":["hi"],"expected":{"primaryTask":"capability_help","shouldAnswerHelp":true}},
     {"id":"en-greeting-002","language":"en","persona":"curious creator","category":"greeting","turns":["hey, can you help me?"],"expected":{"primaryTask":"capability_help","shouldAnswerHelp":true}},

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build an English-first continuous evaluation and improvement loop for the MaxVideoAI AI Strategist so Codex can run simulated real-life conversations, find failures, fix the highest-impact issue, test, commit, and repeat.
+**Goal:** Build an English-first continuous evaluation and improvement loop for the MaxVideoAI Strategist so Codex can run simulated real-life conversations, find failures, fix the highest-impact issue, test, commit, and repeat.
 
 **Architecture:** Keep the existing deterministic strategist pipeline as the system under test. Add a larger English-first scenario generator, a judge/reporting layer, and a loop runner that repeatedly runs evaluations and produces actionable failure clusters. The loop does not auto-edit source code by itself; Codex uses the report to make targeted fixes, run tests, commit, then continue.
 
@@ -144,7 +144,7 @@ Create `docs/ai-strategist/evals/scenario-seeds.json` with at least 60 seeds. In
 ```json
 {
   "version": 1,
-  "description": "English-first realistic conversation seeds for the MaxVideoAI AI Strategist.",
+  "description": "English-first realistic conversation seeds for the MaxVideoAI Strategist.",
   "seeds": [
     {
       "id": "en-greeting-001",
@@ -842,7 +842,7 @@ Create `docs/ai-strategist/evals/continuous-improvement-prompt.md`:
 ```md
 # Codex Prompt: Run AI Strategist Continuous Improvement
 
-You are working on the MaxVideoAI AI Strategist.
+You are working on the MaxVideoAI Strategist.
 
 Goal:
 Run repeated English-first conversation QA loops, fix the highest-impact failure cluster, test, commit, and continue until the loop reaches the stop criteria.

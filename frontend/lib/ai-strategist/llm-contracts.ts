@@ -192,7 +192,7 @@ const knowledgeSynthesisSystemInstructions = [
 ].join('\n');
 
 const advisorQualityJudgeSystemInstructions = [
-  'You are the MaxVideoAI AI Strategist quality judge.',
+  'You are the MaxVideoAI Strategist quality judge.',
   'Evaluate the full conversation like a strict product QA reviewer, not like a prompt writer.',
   'Judge whether the assistant understood the user, selected the right tool path, reused context, moved the funnel forward, stayed conversational, and produced a usable MaxVideoAI next step.',
   'Use the provided turns, tool calls, stages, warnings, final prompt, and heuristic issues only.',
@@ -313,7 +313,7 @@ export function buildAdvisorQualityJudgeLLMRequest(
     kind: 'advisor_quality_judge',
     systemInstructions: advisorQualityJudgeSystemInstructions,
     developerPayload: {
-      task: 'Score one MaxVideoAI AI Strategist conversation for production advisor quality.',
+      task: 'Score one MaxVideoAI Strategist conversation for production advisor quality.',
       pipelinePosition: 'live/local strategist simulation -> deterministic checks -> optional LLM quality judge -> failure clusters',
       scoring: {
         '5': 'Excellent: helpful, contextual, accurate, safe, and funnel-forward.',

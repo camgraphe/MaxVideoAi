@@ -1,6 +1,6 @@
 # AI Strategist Conversation Evals
 
-This folder contains the local evaluation loop for the internal MaxVideoAI AI Video Strategist.
+This folder contains the local evaluation loop for the internal MaxVideoAI Strategist.
 
 The goal is to make strategist quality measurable before adding public UI, RAG, or wider production exposure.
 

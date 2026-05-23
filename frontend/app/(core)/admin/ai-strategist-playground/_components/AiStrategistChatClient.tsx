@@ -14,6 +14,13 @@ import {
 } from 'lucide-react';
 
 import { authFetch } from '@/lib/authFetch';
+import {
+  AI_STRATEGIST_ASK_CTA,
+  AI_STRATEGIST_BETA_NAME,
+  AI_STRATEGIST_INTRO_MESSAGE,
+  AI_STRATEGIST_LAUNCHER_LABEL,
+  AI_STRATEGIST_WIDGET_TITLE,
+} from '@/lib/ai-strategist/branding';
 import type {
   AiStrategistPlaygroundInput,
   AiStrategistPlaygroundMode,
@@ -37,9 +44,6 @@ type LastRequestContext = {
   userMessage: string;
 };
 
-const introMessage =
-  'Tell me what you want to create, paste a prompt to improve, or ask about models, pricing, and workflows. I’ll guide the next step.';
-
 export function AiStrategistChatClient() {
   const messageId = useRef(0);
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -47,7 +51,7 @@ export function AiStrategistChatClient() {
     {
       id: 'intro',
       role: 'assistant',
-      text: introMessage,
+      text: AI_STRATEGIST_INTRO_MESSAGE,
     },
   ]);
   const [isWidgetOpen, setIsWidgetOpen] = useState(true);
@@ -214,7 +218,7 @@ export function AiStrategistChatClient() {
       });
       const json = (await response.json().catch(() => null)) as AiStrategistPlaygroundResult | { ok?: false; error?: string } | null;
       if (!response.ok || !json?.ok) {
-        throw new Error(json && 'error' in json && json.error ? json.error : 'AI Strategist chat request failed');
+        throw new Error(json && 'error' in json && json.error ? json.error : `${AI_STRATEGIST_WIDGET_TITLE} chat request failed`);
       }
 
       setLastContext(resolveNextContext(json, context));
@@ -227,7 +231,7 @@ export function AiStrategistChatClient() {
         },
       ]);
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : 'AI Strategist chat request failed';
+      const message = submitError instanceof Error ? submitError.message : `${AI_STRATEGIST_WIDGET_TITLE} chat request failed`;
       setError(message);
       setMessages((current) => [...current, createMessage('assistant', `I could not run the strategist preview: ${message}`)]);
     } finally {
@@ -316,13 +320,13 @@ export function AiStrategistChatClient() {
 
           <div className="inline-flex items-center gap-2 rounded-full border border-[#7c3aed]/15 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6d28d9] shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
             <Sparkles className="h-3.5 w-3.5" />
-            AI strategist preview
+            {AI_STRATEGIST_BETA_NAME}
           </div>
           <h2 className="mt-8 max-w-[500px] text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-slate-950 lg:text-5xl">
             Stop guessing which AI video model to use.
           </h2>
           <p className="mt-5 max-w-[430px] text-base leading-8 text-slate-600">
-            Internal overlay preview for recommendations, model choice, brief completion, and prompt preview.
+            Internal preview for model choice, brief completion, prompt strategy, and apply-to-generator testing.
           </p>
           <div className="mt-8 flex max-w-[320px] flex-col gap-3">
             {['Multi-engine routing', 'Price before generation', 'No credits spent'].map((item) => (
@@ -353,7 +357,7 @@ export function AiStrategistChatClient() {
                 <Sparkles className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-950">AI Video Strategist</p>
+                <p className="truncate text-sm font-semibold text-slate-950">{AI_STRATEGIST_WIDGET_TITLE}</p>
                 <p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Online
@@ -364,10 +368,10 @@ export function AiStrategistChatClient() {
               <IconButton label="Reset chat" onClick={resetChat}>
                 <RotateCcw className="h-3.5 w-3.5" />
               </IconButton>
-              <IconButton label="Minimize AI Strategist" onClick={() => setIsWidgetOpen(false)}>
+              <IconButton label={`Minimize ${AI_STRATEGIST_WIDGET_TITLE}`} onClick={() => setIsWidgetOpen(false)}>
                 <Minimize2 className="h-3.5 w-3.5" />
               </IconButton>
-              <IconButton label="Close AI Strategist" onClick={() => setIsWidgetOpen(false)}>
+              <IconButton label={`Close ${AI_STRATEGIST_WIDGET_TITLE}`} onClick={() => setIsWidgetOpen(false)}>
                 <X className="h-4 w-4" />
               </IconButton>
             </div>
@@ -412,7 +416,7 @@ export function AiStrategistChatClient() {
                   onChange={(event) => setInput(event.currentTarget.value)}
                   onKeyDown={handleInputKeyDown}
                   rows={1}
-                  placeholder="Ask anything..."
+                  placeholder={`${AI_STRATEGIST_ASK_CTA}...`}
                   aria-keyshortcuts="Enter"
                   className="min-h-[44px] flex-1 resize-none border-0 bg-transparent py-3 text-sm font-medium leading-5 text-slate-900 outline-none placeholder:text-slate-400"
                 />
@@ -436,12 +440,12 @@ export function AiStrategistChatClient() {
         type="button"
         data-testid="ai-strategist-launcher"
         aria-expanded={isWidgetOpen}
-        aria-label={isWidgetOpen ? 'Close AI Strategist' : 'Open AI Strategist'}
+        aria-label={isWidgetOpen ? `Close ${AI_STRATEGIST_WIDGET_TITLE}` : `Open ${AI_STRATEGIST_WIDGET_TITLE}`}
         onClick={() => setIsWidgetOpen((current) => !current)}
         className="group absolute bottom-4 right-4 z-30 flex items-center gap-2"
       >
         <span className="rounded-full border border-[#7c3aed]/15 bg-white/85 px-2.5 py-1 text-xs font-semibold text-[#7c3aed] opacity-0 shadow-[0_8px_20px_rgba(15,23,42,0.10)] transition group-hover:opacity-100">
-          AI Strategist
+          {AI_STRATEGIST_LAUNCHER_LABEL}
         </span>
         <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-[#7c3aed] text-white shadow-[0_20px_42px_rgba(124,58,237,0.48)] transition hover:scale-[1.03]">
           <Sparkles className="h-6 w-6" />

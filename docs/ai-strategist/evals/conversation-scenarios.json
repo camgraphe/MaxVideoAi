@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Versioned deterministic conversation QA scenarios for the internal MaxVideoAI AI Video Strategist.",
+  "description": "Versioned deterministic conversation QA scenarios for the internal MaxVideoAI Strategist.",
   "scenarios": [
     {
       "id": "pricing-cheapest-fr",

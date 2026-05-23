@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AI_STRATEGIST_BETA_NAME } from '@/lib/ai-strategist/branding';
 import { AI_STRATEGIST_MODELS } from '@/lib/ai-strategist/model-catalog';
 import { isAiStrategistPlaygroundEnabled } from '@/lib/ai-strategist/playground-pipeline';
 import { AI_STRATEGIST_WORKFLOWS } from '@/lib/ai-strategist/workflow-rules';
@@ -19,8 +20,8 @@ export default function AiStrategistPlaygroundPage() {
     <div className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Dev"
-        title="AI Strategist Playground"
-        description="Internal preview of the future compact MaxVideoAI AI Video Strategist chat widget."
+        title={`${AI_STRATEGIST_BETA_NAME} Playground`}
+        description="Internal preview of the compact Generate Video strategist widget."
       />
 
       <AiStrategistChatClient />

@@ -1,6 +1,6 @@
 # Codex Prompt: Run AI Strategist Continuous Improvement
 
-You are working on the MaxVideoAI AI Strategist.
+You are working on the MaxVideoAI Strategist.
 
 Goal:
 Run repeated English-first conversation QA loops, fix the highest-impact failure cluster, test, commit, and continue until the loop reaches the stop criteria.

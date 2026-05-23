@@ -2,7 +2,7 @@
 
 ## Goal
 
-The continuous loop improves the internal AI Strategist by testing realistic conversations, fixing the highest-impact issue, committing, and repeating.
+The continuous loop improves the internal MaxVideoAI Strategist by testing realistic conversations, fixing the highest-impact issue, committing, and repeating.
 
 ## Language Mix
 
