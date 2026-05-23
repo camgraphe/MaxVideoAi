@@ -41,6 +41,8 @@ type EngineCatalogEntry = {
 const catalogEntries = engineCatalog as EngineCatalogEntry[];
 
 export function answerEnginePricingQuestion(input: { rawUserMessage: string }): StrategistKnowledgeToolResult | null {
+  if (asksForCheapestEngine(input.rawUserMessage)) return answerCheapestEngineQuestion(input.rawUserMessage);
+
   const modelId = resolveModelId(input.rawUserMessage);
   const entry = resolveEngineEntry(input.rawUserMessage, modelId);
   if (!entry) return null;
@@ -70,6 +72,54 @@ export function answerEnginePricingQuestion(input: { rawUserMessage: string }): 
     ],
     warnings: entry.engine?.pricing?.notes ? [entry.engine.pricing.notes] : [],
     uiActions: modelId ? [{ type: 'SET_MODEL', value: modelId }] : [],
+  };
+}
+
+function answerCheapestEngineQuestion(rawUserMessage: string): StrategistKnowledgeToolResult | null {
+  const candidates = catalogEntries
+    .filter(isAvailableVideoEngineWithPricing)
+    .map((entry) => ({
+      entry,
+      centsPerSecond: entry.engine?.pricingDetails?.perSecondCents?.default ?? Number.POSITIVE_INFINITY,
+    }))
+    .sort((a, b) => a.centsPerSecond - b.centsPerSecond);
+
+  const cheapest = candidates[0];
+  if (!cheapest || !Number.isFinite(cheapest.centsPerSecond)) return null;
+
+  const tiedCheapest = candidates.filter((candidate) => candidate.centsPerSecond === cheapest.centsPerSecond).slice(0, 3);
+  const nextOptions = candidates
+    .filter((candidate) => candidate.centsPerSecond > cheapest.centsPerSecond)
+    .slice(0, 2);
+  const isFrench = isFrenchText(rawUserMessage);
+  const cheapestLabels = tiedCheapest.map(({ entry }) => entry.marketingName ?? entry.engineId ?? 'Unknown engine').join(', ');
+  const nextLabels = nextOptions
+    .map(({ entry, centsPerSecond }) => `${entry.marketingName ?? entry.engineId ?? 'Unknown engine'} (${formatUsd(centsPerSecond)}/s)`)
+    .join(', ');
+
+  return {
+    toolName: 'engine_pricing',
+    answer: isFrench
+      ? [
+          `Pour la vidéo, les moteurs les moins chers dans le catalogue local sont: ${cheapestLabels}.`,
+          `Base catalogue: ${formatUsd(cheapest.centsPerSecond)} par seconde. Pour 8 secondes, ça donne environ ${formatUsd(Math.round(cheapest.centsPerSecond * 8))}.`,
+          nextLabels ? `Options value juste au-dessus: ${nextLabels}.` : undefined,
+          'Le devis affiché dans le générateur avant rendu reste la source de vérité. Je ne lance pas de génération et je ne dépense pas de crédits.',
+        ].filter(Boolean).join('\n')
+      : [
+          `For video, the cheapest engines in the local catalog are: ${cheapestLabels}.`,
+          `Catalog basis: ${formatUsd(cheapest.centsPerSecond)} per second. For 8 seconds, that is about ${formatUsd(Math.round(cheapest.centsPerSecond * 8))}.`,
+          nextLabels ? `Next value options: ${nextLabels}.` : undefined,
+          'The generator quote shown before rendering remains authoritative. I will not run generation or spend credits.',
+        ].filter(Boolean).join('\n'),
+    sources: [engineCatalogSource()],
+    confidence: 0.88,
+    limitations: [
+      'This is a local catalog preview for available video engines only.',
+      'The generator quote shown before rendering is authoritative.',
+    ],
+    warnings: ['Preview pricing is approximate. Final cost can change with duration, workflow, resolution, audio, and current generator settings.'],
+    uiActions: [],
   };
 }
 
@@ -127,6 +177,43 @@ function resolveEngineEntry(rawUserMessage: string, modelId?: AiStrategistModelI
     const haystack = normalizeSearchText([entry.engineId, entry.modelSlug, entry.marketingName].filter(Boolean).join(' '));
     return haystack.length > 0 && text.includes(haystack);
   });
+}
+
+function asksForCheapestEngine(value: string): boolean {
+  const text = normalizeSearchText(value);
+  return [
+    'cheapest',
+    'least expensive',
+    'lowest cost',
+    'lowest price',
+    'cheaper',
+    'moins cher',
+    'moins couteux',
+    'pas cher',
+  ].some((phrase) => text.includes(phrase));
+}
+
+function isAvailableVideoEngineWithPricing(entry: EngineCatalogEntry): boolean {
+  if (entry.availability && entry.availability !== 'available') return false;
+  const centsPerSecond = entry.engine?.pricingDetails?.perSecondCents?.default;
+  if (typeof centsPerSecond !== 'number' || !Number.isFinite(centsPerSecond)) return false;
+  const modes = entry.modes ?? [];
+  return modes.some((mode) => ['t2v', 'i2v', 'v2v', 'r2v'].includes(mode.mode ?? ''));
+}
+
+function isFrenchText(value: string): boolean {
+  const text = normalizeSearchText(value);
+  return [
+    'quel',
+    'quelle',
+    'modele',
+    'moins cher',
+    'tarif',
+    'prix',
+    'combien',
+    'cout',
+    'couteux',
+  ].some((needle) => text.includes(needle));
 }
 
 function resolveDurationSeconds(text: string): number | undefined {

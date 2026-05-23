@@ -295,6 +295,29 @@ test('AI Strategist orchestrator answers model pricing help without creative rou
   assert.match(result.assistantMessage, /final generator quote/i);
 });
 
+test('AI Strategist answers cheapest model questions from the engine catalog', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'quelle est le model le moins cher sur le site ?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'engine_pricing');
+  assert.match(result.assistantMessage, /moins cher|cheapest/i);
+  assert.match(result.assistantMessage, /LTX 2\.3 Fast|Pika 2\.2|LTX Video 2\.0 Fast/i);
+  assert.match(result.assistantMessage, /\$0\.04|4 cents/i);
+  assert.doesNotMatch(result.assistantMessage, /open the video generator, choose the workflow/i);
+});
+
 test('AI Strategist orchestrator explains workflow help without generating a prompt', async () => {
   const playground = await loadPlaygroundModule();
 
