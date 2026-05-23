@@ -254,7 +254,7 @@ export function buildModelSpecificPrompt(input: {
   const selectedTier = input.selectedTier ?? model.tierPosition;
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
   const durationGuidance = buildDurationGuidance(input);
-  const priceEstimate = buildPriceEstimate(model, durationGuidance);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance, input);
   const finalPrompt = applyDurationToPrompt(buildFinalPrompt({
     brief: input.brief,
     modelId: input.modelId,
@@ -296,7 +296,7 @@ export function buildPromptGenerationContext(input: {
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
   const workflowPromptStructure = buildWorkflowPromptStructure(input.workflow);
   const durationGuidance = buildDurationGuidance(input);
-  const priceEstimate = buildPriceEstimate(model, durationGuidance);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance, input);
   const warnings = buildContextWarnings(input);
   const negativePromptGuidance = {
     model: model.negativePromptGuidance,
@@ -1612,25 +1612,118 @@ function durationReason(
 
 function buildPriceEstimate(
   model: ReturnType<typeof getAiStrategistModel>,
-  durationGuidance: AiStrategistDurationGuidance
+  durationGuidance: AiStrategistDurationGuidance,
+  input: {
+    brief: string;
+    workflow: AiStrategistWorkflowId;
+    promptStructureId: AiStrategistPromptStructureId;
+  }
 ): AiStrategistPriceEstimate {
-  const estimatedAmountCents = Math.max(25, Math.round(durationGuidance.seconds * estimatedCentsPerSecond(model)));
+  const pricingBasis = inferPricingBasis(model.id, input);
+  const estimatedAmountCents = estimateModelPriceCents(model, durationGuidance.seconds, pricingBasis);
   return {
-    label: `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationGuidance.label}`,
+    label: `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationGuidance.label} at ${pricingBasis.resolution}${pricingBasis.aspectRatio ? ` ${pricingBasis.aspectRatio}` : ''}`,
     estimatedAmountCents,
     currency: 'USD',
     note: 'Preview estimate only. The MaxVideoAI generator quote shown before rendering is authoritative.',
-    calculationBasis: `${model.label} ${model.relativeCostLevel} tier x ${durationGuidance.label}`,
+    calculationBasis: `${model.label} ${model.relativeCostLevel} tier x ${durationGuidance.label} at ${pricingBasis.resolution}${pricingBasis.aspectRatio ? ` ${pricingBasis.aspectRatio}` : ''}`,
     isPreview: true,
   };
 }
 
-function estimatedCentsPerSecond(model: ReturnType<typeof getAiStrategistModel>): number {
+function inferPricingBasis(
+  modelId: AiStrategistModelId,
+  input: {
+    brief: string;
+    workflow: AiStrategistWorkflowId;
+    promptStructureId: AiStrategistPromptStructureId;
+  }
+): { resolution: string; aspectRatio?: string } {
+  const text = input.brief.toLowerCase();
+  const explicitResolution = text.match(/\b(480p|720p|1080p|4k)\b/i)?.[1]?.toLowerCase();
+  const aspectRatio = text.match(/\b(21:9|16:9|4:3|1:1|3:4|9:16)\b/)?.[1] ?? (
+    containsDurationSignal(text, ['vertical', 'tiktok', 'reels', 'shorts']) ? '9:16' : undefined
+  );
+  if (explicitResolution) return { resolution: explicitResolution, ...(aspectRatio ? { aspectRatio } : {}) };
+  if (modelId === 'kling-3-4k') return { resolution: 'native 4K', ...(aspectRatio ? { aspectRatio } : {}) };
+  if (modelId === 'seedance-2-0-fast') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
+  if (modelId === 'veo-3-1-lite') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
+  if (modelId === 'pika') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
+  return { resolution: '1080p', ...(aspectRatio ? { aspectRatio } : {}) };
+}
+
+function estimateModelPriceCents(
+  model: ReturnType<typeof getAiStrategistModel>,
+  seconds: number,
+  pricingBasis: { resolution: string; aspectRatio?: string }
+): number {
+  const seedanceRate = model.id === 'seedance-2-0'
+    ? 0.014
+    : model.id === 'seedance-2-0-fast'
+      ? 0.0112
+      : undefined;
+  if (seedanceRate) {
+    return estimateSeedanceTokenPriceCents({
+      seconds,
+      resolution: pricingBasis.resolution,
+      aspectRatio: pricingBasis.aspectRatio ?? '16:9',
+      unitPriceUsdPer1kTokens: seedanceRate,
+    });
+  }
+  return Math.max(25, Math.round(seconds * estimatedCentsPerSecond(model, pricingBasis.resolution)));
+}
+
+function estimateSeedanceTokenPriceCents(input: {
+  seconds: number;
+  resolution: string;
+  aspectRatio: string;
+  unitPriceUsdPer1kTokens: number;
+}): number {
+  const dimensions = seedancePricingDimensions(input.resolution, input.aspectRatio);
+  const tokenCount = (dimensions.width * dimensions.height * input.seconds * 24) / 1024;
+  const vendorUsd = (tokenCount * input.unitPriceUsdPer1kTokens) / 1000;
+  return Math.max(1, Math.ceil(vendorUsd * 1.3 * 100 - 1e-9));
+}
+
+function seedancePricingDimensions(resolution: string, aspectRatio: string): { width: number; height: number } {
+  const normalizedResolution = resolution === '1080p' || resolution === '720p' || resolution === '480p' ? resolution : '720p';
+  const dimensionsByResolution: Record<string, Record<string, { width: number; height: number }>> = {
+    '480p': {
+      '21:9': { width: 1120, height: 480 },
+      '16:9': { width: 854, height: 480 },
+      '4:3': { width: 640, height: 480 },
+      '1:1': { width: 480, height: 480 },
+      '3:4': { width: 480, height: 640 },
+      '9:16': { width: 480, height: 854 },
+    },
+    '720p': {
+      '21:9': { width: 1680, height: 720 },
+      '16:9': { width: 1280, height: 720 },
+      '4:3': { width: 960, height: 720 },
+      '1:1': { width: 720, height: 720 },
+      '3:4': { width: 720, height: 960 },
+      '9:16': { width: 720, height: 1280 },
+    },
+    '1080p': {
+      '21:9': { width: 2520, height: 1080 },
+      '16:9': { width: 1920, height: 1080 },
+      '4:3': { width: 1440, height: 1080 },
+      '1:1': { width: 1080, height: 1080 },
+      '3:4': { width: 1080, height: 1440 },
+      '9:16': { width: 1080, height: 1920 },
+    },
+  };
+  const dimensions = dimensionsByResolution[normalizedResolution] ?? dimensionsByResolution['720p'];
+  return dimensions[aspectRatio] ?? dimensions['16:9'];
+}
+
+function estimatedCentsPerSecond(model: ReturnType<typeof getAiStrategistModel>, resolution = '1080p'): number {
   if (model.id === 'kling-3-4k') return 58;
   if (model.id === 'veo-3-1') return 44;
   if (model.id === 'veo-3-1-fast' || model.id === 'kling-3-pro') return 30;
   if (model.id === 'happy-horse-1-0') return 24;
-  if (model.id === 'veo-3-1-lite' || model.id === 'ltx-2-3' || model.id === 'seedance-2-0-fast') return 12;
+  if (model.id === 'veo-3-1-lite') return resolution === '1080p' ? 8 : 5;
+  if (model.id === 'ltx-2-3' || model.id === 'seedance-2-0-fast') return 12;
   if (model.id === 'kling-3-standard') return 16;
   if (model.id === 'seedance-2-0') return 18;
   if (model.relativeCostLevel === 'premium') return 44;

@@ -253,6 +253,7 @@ test('buildPromptGenerationContext returns JSON-safe LLM guidance without final 
   assert.equal(context.durationGuidance.seconds, 8);
   assert.match(context.durationGuidance.reason, /audio|voiceover/i);
   assert.match(context.priceEstimate.label, /Estimated price: about \$/);
+  assert.match(context.priceEstimate.label, /720p|1080p|native 4K/);
   assert.ok(context.settingsGuidance.some((setting: string) => /9:16/i.test(setting)));
   assert.ok(context.settingsGuidance.some((setting: string) => /Duration: 8 seconds/i.test(setting)));
   assert.ok(context.settingsGuidance.some((setting: string) => /Estimated price/i.test(setting)));

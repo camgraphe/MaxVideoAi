@@ -64,6 +64,7 @@ test('AI Strategist playground pipeline exposes deterministic fallback state wit
   assert.ok(result.promptGenerationContextSummary?.selectedModel);
   assert.ok(result.promptGenerationContextSummary?.durationGuidance.seconds);
   assert.match(result.promptGenerationContextSummary?.priceEstimate.label ?? '', /Estimated price: about \$/);
+  assert.match(result.promptGenerationContextSummary?.priceEstimate.label ?? '', /720p|1080p|native 4K/);
   assert.ok(result.sanitizedFinalOutput?.finalPrompt);
   assert.match(result.sanitizedFinalOutput?.finalPrompt ?? '', /Duration:\n\d+ seconds/i);
   assert.ok(result.uiActions.every((action: { type?: string; value?: string }) => typeof action.type === 'string' && typeof action.value === 'string'));
@@ -319,8 +320,32 @@ test('AI Strategist orchestrator answers model pricing help without creative rou
   assert.equal(result.llm.promptWriter.used, false);
   assert.match(result.assistantMessage, /Seedance 2\.0/i);
   assert.match(result.assistantMessage, /8 seconds/i);
-  assert.match(result.assistantMessage, /Estimated price: about \$1\.44/i);
+  assert.match(result.assistantMessage, /about \$3\.15/i);
+  assert.match(result.assistantMessage, /720p 16:9/i);
+  assert.match(result.assistantMessage, /token-priced/i);
   assert.match(result.assistantMessage, /final generator quote/i);
+});
+
+test('AI Strategist model pricing specifies resolution and aspect ratio for token-priced Seedance', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How much is Seedance 2 for 10 seconds at 1080p 9:16?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /Seedance 2\.0/i);
+  assert.match(result.assistantMessage, /10 seconds/i);
+  assert.match(result.assistantMessage, /1080p 9:16/i);
+  assert.match(result.assistantMessage, /1080x1920/i);
+  assert.doesNotMatch(result.assistantMessage, /medium cost model in the strategist catalog/i);
 });
 
 test('AI Strategist answers cheapest model questions from the engine catalog', async () => {
