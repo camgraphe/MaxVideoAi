@@ -52,7 +52,6 @@ function resolveRecommendationTask(
   input: StrategistOrchestratorInput,
   text: string
 ): StrategistOrchestratorTask {
-  if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset)\b/.test(text)) return 'asset_reference_help';
   if (asksForExamples(text)) return 'examples_help';
   if (asksForPricing(text)) return 'pricing_help';
   if (asksForDocsSearch(text)) return 'site_help';
@@ -60,6 +59,7 @@ function resolveRecommendationTask(
   if (asksForGreeting(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text)) return 'asset_reference_help';
   if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
   if (asksForModelAdvice(text)) return 'model_advice';
@@ -130,6 +130,14 @@ function asksForPricing(text: string): boolean {
     'avant de lancer',
     'before launching',
     'before generation',
+    'pay as you go',
+    'pay-as-you-go',
+    'paygo',
+    'subscription',
+    'subscribe',
+    'no sub',
+    'credits are spent',
+    'credits spent',
   ]);
 }
 
@@ -163,7 +171,26 @@ function asksForCheapestModel(text: string): boolean {
 }
 
 function asksForExamples(text: string): boolean {
-  return containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples', 'compare outputs', 'see outputs', 'outputs before']);
+  return containsAny(text, [
+    'example',
+    'examples',
+    'sample',
+    'samples',
+    'gallery',
+    'galleries',
+    'exemple',
+    'exemples',
+    'compare outputs',
+    'see outputs',
+    'outputs before',
+    'browse outputs',
+    'outputs by model',
+    'real vids',
+    'real videos',
+    'before paying',
+    'b4 payin',
+    'b4 paying',
+  ]);
 }
 
 function asksForDocsSearch(text: string): boolean {
@@ -171,9 +198,13 @@ function asksForDocsSearch(text: string): boolean {
 }
 
 function asksForCapabilities(text: string): boolean {
+  if (hasCreativeCreationIntent(text) && containsAny(text, ['can you help me make', 'help me make', 'can you help me create', 'help me create'])) {
+    return false;
+  }
   return containsAny(text, [
     'what can you do',
     'what do you do',
+    'what can you actually do',
     'how can you help',
     'what can this assistant do',
     'what can the strategist do',
@@ -181,6 +212,9 @@ function asksForCapabilities(text: string): boolean {
     'can you help me',
     'help me',
     'not sure where to start',
+    'not sure if i need',
+    'guide me from idea to video',
+    'from idea to video',
     'capabilities',
     'tes capacites',
     'tes capacités',
@@ -214,11 +248,30 @@ function asksForSiteOverview(text: string): boolean {
 }
 
 function asksForWorkflow(text: string): boolean {
-  return containsAny(text, ['workflow', 'text to video', 'image to video', 'video to video', 'r2v', 'i2v', 'v2v', 'restyle a video', 'video i already have', 'video already have']);
+  return containsAny(text, [
+    'workflow',
+    'text to video',
+    'image to video',
+    'video to video',
+    'r2v',
+    'i2v',
+    'v2v',
+    'restyle a video',
+    'video i already have',
+    'video already have',
+    'should i upload',
+    'write a text prompt',
+    'existing clip',
+    'change the style',
+    'keep motion',
+    'workflow is best',
+    'logo must stay stable',
+  ]);
 }
 
 function asksForAssetHelp(text: string): boolean {
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset)\b/.test(text)) return true;
+  if (/\bupload\b/.test(text) && /\b(?:pic|logo|product|prod)\b/.test(text)) return true;
   return containsAny(text, ['upload image', 'upload an image', 'upload img', 'where upload img', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
 }
 
@@ -254,24 +307,34 @@ function hasCreativeCreationIntent(text: string): boolean {
 }
 
 function asksForSiteNavigation(text: string): boolean {
-  if (containsAny(text, ['i uploaded', 'i have uploaded']) && hasCreativeCreationIntent(text)) return false;
+  if ((containsAny(text, ['i uploaded', 'i have uploaded']) || /\buploaded\b/.test(text)) && hasCreativeCreationIntent(text)) return false;
   if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing'])) return false;
-  return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'engines', 'upload', 'pricing', 'examples']);
+  return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'model page', 'model pages', 'engines', 'upload', 'pricing', 'examples']);
 }
 
 function asksForModelAdvice(text: string): boolean {
+  if (/\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b.*\b(?:or|vs|versus)\b.*\b(?:seedance|sidance|kling|veo|ltx|pika|hailuo|sora|happy horse)\b/.test(text)) return true;
   return containsAny(text, [
     'which model',
+    'which engine',
     'what model',
+    'what engine',
     'recommend model',
     'recommend a model',
     'best model',
+    'best engine',
     'choose a model',
     'pick model',
     'pick a model',
     'pick the model',
     'can u pick model',
     'can you pick model',
+    'idk model',
+    'dont know model',
+    'don t know model',
+    'engine is safest',
+    'safest engine',
+    'safest model',
     'should i use',
     'which one should i use',
     'choisir un modele',

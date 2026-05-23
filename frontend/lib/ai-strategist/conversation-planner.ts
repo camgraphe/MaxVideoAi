@@ -599,6 +599,10 @@ function isExistingPromptEditRequest(text: string): boolean {
     'edit my prompt',
     'edit existing prompt',
     'rewrite prompt',
+    'rewrite a prompt',
+    'rewrite a bad prompt',
+    'fix my prompt',
+    'fix prompt',
     'optimize prompt',
     'optimise prompt',
     'prompt to improve',
@@ -625,6 +629,10 @@ function isPromptPasteNeededRequest(text: string): boolean {
     'edit my prompt',
     'optimize prompt',
     'rewrite prompt',
+    'rewrite a prompt',
+    'rewrite a bad prompt',
+    'fix my prompt',
+    'fix prompt',
     'prompt for',
   ]);
 }

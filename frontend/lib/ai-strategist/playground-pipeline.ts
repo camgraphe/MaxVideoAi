@@ -1290,12 +1290,23 @@ function asksForModelChoice(body: ReturnType<typeof normalizePlaygroundInput>): 
   }
   return containsAny(text, [
     'which model should i use',
+    'which engine should i use',
+    'which engine is safest',
     'what model should i use',
+    'what engine should i use',
     'recommend a model',
     'recommend models',
     'best model for',
+    'best engine for',
     'which model for',
+    'which engine for',
     'what model for',
+    'what engine for',
+    'idk model',
+    'dont know model',
+    'don t know model',
+    'safest model',
+    'safest engine',
   ]);
 }
 
