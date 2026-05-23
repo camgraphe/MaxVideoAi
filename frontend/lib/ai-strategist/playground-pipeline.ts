@@ -995,6 +995,9 @@ function shouldAllowBriefAssumptions(body: ReturnType<typeof normalizePlayground
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
+  if (body.currentPrompt && containsAny(text, ['improve', 'make it better', 'make this better', 'more premium', 'premium', 'ameliore', 'améliore'])) {
+    return true;
+  }
   return body.conversationState?.stage === 'collecting_missing_fields' || body.conversationState?.stage === 'awaiting_confirmation' || containsAny(text, [
     'revision:',
     'duration:',

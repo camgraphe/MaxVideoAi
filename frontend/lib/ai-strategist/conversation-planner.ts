@@ -171,6 +171,45 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
     };
   }
 
+  if ((previousStage === 'collecting_missing_fields' || previousStage === 'awaiting_confirmation') && selectedTier) {
+    if (!hasPreviousBrief) {
+      return {
+        action: 'ask_clarification',
+        rawUserMessage,
+        selectedTier,
+        clarificationQuestion: 'What video brief should I use for that tier?',
+        shouldUsePreviousBrief: false,
+        shouldUseCurrentPrompt: false,
+        confidence: 0.82,
+      };
+    }
+
+    return {
+      action: 'select_tier',
+      rawUserMessage,
+      resolvedBrief: previousBrief,
+      selectedTier,
+      selectedModel: input.conversationState?.lastRecommendations?.[selectedTier]?.model.id,
+      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.93,
+    };
+  }
+
+  if ((previousStage === 'collecting_missing_fields' || previousStage === 'awaiting_confirmation') && selectedModel) {
+    return {
+      action: 'select_model',
+      rawUserMessage,
+      resolvedBrief: hasPreviousBrief ? previousBrief : undefined,
+      selectedModel,
+      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: hasPreviousBrief,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.92,
+    };
+  }
+
   if (previousStage === 'collecting_missing_fields' && hasPreviousBrief) {
     const resolvedBrief = isAssumptionRequest(normalized)
       ? previousBrief

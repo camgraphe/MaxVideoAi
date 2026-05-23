@@ -60,7 +60,7 @@ function resolveRecommendationTask(
   if (asksForWorkflow(text)) return 'workflow_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
   if (asksForModelInfo(text)) return 'model_info_help';
-  if (asksForAssetHelp(text) || input.uploadedAsset?.isReferenceImage) return 'asset_reference_help';
+  if (asksForAssetHelp(text) && !hasCreativeCreationIntent(text)) return 'asset_reference_help';
   if (asksForModelAdvice(text)) return 'model_advice';
   if (!input.rawUserMessage?.trim()) return 'unknown';
   return 'new_video_brief';
@@ -160,6 +160,37 @@ function asksForWorkflow(text: string): boolean {
 
 function asksForAssetHelp(text: string): boolean {
   return containsAny(text, ['upload image', 'upload an image', 'reference image', 'image upload', 'uploader une image', 'mettre mon image']);
+}
+
+function hasCreativeCreationIntent(text: string): boolean {
+  return containsAny(text, [
+    'animate',
+    'animation',
+    'create',
+    'make',
+    'generate',
+    'turn this',
+    'video',
+    'ad',
+    'commercial',
+    'speaking',
+    'speak',
+    'spokesperson',
+    'lip sync',
+    'lip-sync',
+    'preserve',
+    'product photo',
+    'photo produit',
+    'animer',
+    'anime',
+    'créer',
+    'creer',
+    'faire',
+    'générer',
+    'generer',
+    'pub',
+    'parler',
+  ]);
 }
 
 function asksForSiteNavigation(text: string): boolean {

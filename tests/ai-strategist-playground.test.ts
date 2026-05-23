@@ -780,6 +780,85 @@ test('AI Strategist chat applies duration changes during confirmation without re
   assert.match(sixth.sanitizedFinalOutput?.finalPrompt ?? '', /Duration:\n12 seconds/i);
 });
 
+test('AI Strategist chat treats explicit model switch during missing-field collection as model selection', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const first = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'cinematic car commercial at night, premium reflections',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const second = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Choose best',
+      mode: 'recommend',
+      surface: 'chat',
+      selectedTier: 'best',
+      selectedModel: first.recommendations?.best.model.id,
+      conversationState: conversationStateFrom(first),
+    },
+    { env: {} }
+  );
+  const third = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'change model to seedance',
+      mode: 'recommend',
+      surface: 'chat',
+      conversationState: conversationStateFrom(second),
+    },
+    { env: {} }
+  );
+
+  assert.equal(second.conversationStage, 'collecting_missing_fields');
+  assert.equal(third.conversationPlan.action, 'select_model');
+  assert.equal(third.selectedModel, 'seedance-2-0');
+  assert.notEqual(third.conversationStage, 'awaiting_model_choice');
+});
+
+test('AI Strategist chat routes uploaded creative references to recommendations instead of upload help', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Animate this person image speaking to camera',
+      mode: 'recommend',
+      surface: 'chat',
+      uploadedAsset: { type: 'image', hasPerson: true, isReferenceImage: true },
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.normalizedBrief.intent, 'person_reference_i2v');
+  assert.equal(result.workflow, 'image-to-video');
+  assert.ok(result.recommendations);
+  assert.notEqual(result.orchestrationPlan.task, 'asset_reference_help');
+  assert.match(result.warnings.join('\n'), /person|character|reference|Kling|LTX/i);
+});
+
+test('AI Strategist chat can advance current prompt improvements with smart assumptions', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'make it more premium',
+      currentPrompt: 'Perfume bottle on marble, cinematic',
+      selectedModel: 'kling-3-pro',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'improve_prompt');
+  assert.equal(result.workflow, 'text-to-image-then-image-to-video');
+  assert.equal(result.conversationStage, 'awaiting_confirmation');
+  assert.match(result.assistantMessage, /Here.s what I.ll build/i);
+  assert.match(result.assistantMessage, /Generate the prompt/i);
+});
+
 test('AI Strategist chat does not ask generic clarification for a clear perfume product brief', async () => {
   const playground = await loadPlaygroundModule();
 
