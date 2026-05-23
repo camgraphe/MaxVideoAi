@@ -555,6 +555,26 @@ function ChatResult({
           </QuickActionButton>
         </div>
       ) : null}
+
+      {result.knowledgeToolResults?.length ? <SourceChips result={result} /> : null}
+    </div>
+  );
+}
+
+function SourceChips({ result }: { result: AiStrategistPlaygroundResult }) {
+  const labels = Array.from(
+    new Set(result.knowledgeToolResults?.flatMap((toolResult) => toolResult.sources.map((source) => source.label)) ?? [])
+  );
+  if (!labels.length) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px] font-semibold text-slate-400">
+      <span>Sources:</span>
+      {labels.slice(0, 3).map((label) => (
+        <span key={label} className="rounded-full border border-slate-100 bg-slate-50 px-2 py-0.5 text-slate-500">
+          {label}
+        </span>
+      ))}
     </div>
   );
 }

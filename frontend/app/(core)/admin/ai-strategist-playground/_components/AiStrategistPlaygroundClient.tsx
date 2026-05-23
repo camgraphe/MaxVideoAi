@@ -225,6 +225,17 @@ function PlaygroundOutput({ result }: { result: AiStrategistPlaygroundResult }) 
         <JsonBlock value={result.orchestrationPlan} />
       </OutputPanel>
 
+      <OutputPanel title="Knowledge tools and source details">
+        <JsonBlock
+          value={{
+            toolCalls: result.orchestrationPlan.toolCalls,
+            costRouting: result.orchestrationPlan.llm,
+            knowledgeToolResults: result.knowledgeToolResults ?? [],
+            sourcesUsed: result.knowledgeToolResults?.flatMap((toolResult) => toolResult.sources) ?? [],
+          }}
+        />
+      </OutputPanel>
+
       {result.recommendations ? (
         <OutputPanel title="Recommendations">
           <div className="grid gap-3 lg:grid-cols-3">

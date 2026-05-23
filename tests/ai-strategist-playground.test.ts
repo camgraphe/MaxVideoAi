@@ -847,6 +847,8 @@ test('AI Strategist playground admin route and page stay internal-only', () => {
   assert.match(chatSource, /Generate prompt/);
   assert.match(chatSource, /Make assumptions/);
   assert.match(chatSource, /Copy/);
+  assert.match(chatSource, /knowledgeToolResults/);
+  assert.match(chatSource, /Sources:/);
   assert.match(chatSource, /buildAdvisorRecommendationReply/);
   assert.match(chatSource, /I understand this as/);
   assert.doesNotMatch(chatSource, /Got it\. I recommend these models/);
@@ -854,4 +856,18 @@ test('AI Strategist playground admin route and page stay internal-only', () => {
   assert.doesNotMatch(chatSource, /Debug details/);
   assert.doesNotMatch(chatSource, /<details[^>]*open/);
   assert.doesNotMatch(navigationSource, /ai-strategist-playground/);
+});
+
+test('AI Strategist technical source details stay secondary', () => {
+  const chatSource = readFileSync(join(root, 'frontend/app/(core)/admin/ai-strategist-playground/_components/AiStrategistChatClient.tsx'), 'utf8');
+  const debugSource = readFileSync(join(root, 'frontend/app/(core)/admin/ai-strategist-playground/_components/AiStrategistPlaygroundClient.tsx'), 'utf8');
+  const pageSource = readFileSync(join(root, 'frontend/app/(core)/admin/ai-strategist-playground/page.tsx'), 'utf8');
+
+  assert.match(chatSource, /SourceChips/);
+  assert.match(debugSource, /Knowledge tools and source details/);
+  assert.match(debugSource, /knowledgeToolResults/);
+  assert.match(debugSource, /sourcesUsed/);
+  assert.match(pageSource, /Open technical debug form/);
+  assert.doesNotMatch(chatSource, /<details[^>]*open/);
+  assert.doesNotMatch(pageSource, /<details[^>]*open/);
 });
