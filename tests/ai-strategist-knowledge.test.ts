@@ -1782,3 +1782,35 @@ test('RAG-friendly AI Strategist docs exist for models, workflows, prompt struct
   assert.ok(existsSync(decisionRulesPath), 'best/medium/value decision doc should exist');
   assert.match(readFileSync(decisionRulesPath, 'utf8'), /recommendModelsForBrief/);
 });
+
+test('AI Strategist RAG boundary is documented but disabled', async () => {
+  const rag = await import('../frontend/lib/ai-strategist/knowledge/rag-contract.ts');
+  const sourceDocPath = join(root, 'docs/ai-strategist/knowledge-sources.md');
+  const sourceDoc = readFileSync(sourceDocPath, 'utf8');
+
+  assert.equal(rag.AI_STRATEGIST_RAG_ENABLED, false);
+  assert.ok(rag.AI_STRATEGIST_ALLOWED_RAG_SOURCE_IDS.includes('ai-strategist-model-docs'));
+  assert.match(sourceDoc, /RAG is not connected yet/);
+  assert.match(sourceDoc, /Private user projects/);
+  assert.match(sourceDoc, /Credentials, provider secrets/);
+});
+
+test('AI Strategist does not call RAG while RAG is disabled', async () => {
+  const playground = await import('../frontend/lib/ai-strategist/playground-pipeline.ts');
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Search your docs for Seedance lip sync limits',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.notEqual(result.orchestrationPlan.task, 'docs_search');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'docs_search');
+  assert.match(result.assistantMessage, /not connected|available structured/i);
+  assert.equal(result.llm.promptWriter.used, false);
+});

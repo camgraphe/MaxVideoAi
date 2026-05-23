@@ -53,6 +53,7 @@ function resolveRecommendationTask(
   text: string
 ): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForDocsSearch(text)) return 'site_help';
   if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
@@ -67,6 +68,7 @@ function resolveRecommendationTask(
 
 function resolveHelpTask(text: string): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForDocsSearch(text)) return 'site_help';
   if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
@@ -77,6 +79,7 @@ function resolveHelpTask(text: string): StrategistOrchestratorTask {
 
 function resolveNavigationTask(text: string): StrategistOrchestratorTask {
   if (asksForPricing(text)) return 'pricing_help';
+  if (asksForDocsSearch(text)) return 'site_help';
   if (asksForExamples(text)) return 'examples_help';
   if (asksForCapabilities(text)) return 'capability_help';
   if (asksForSiteOverview(text)) return 'site_overview_help';
@@ -90,6 +93,10 @@ function asksForPricing(text: string): boolean {
 
 function asksForExamples(text: string): boolean {
   return containsAny(text, ['example', 'examples', 'sample', 'samples', 'gallery', 'galleries', 'exemple', 'exemples']);
+}
+
+function asksForDocsSearch(text: string): boolean {
+  return containsAny(text, ['search your docs', 'search docs', 'docs search', 'search the docs', 'rag', 'knowledge base']);
 }
 
 function asksForCapabilities(text: string): boolean {
