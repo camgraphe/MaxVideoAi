@@ -72,7 +72,7 @@ export function answerSiteNavigationQuestion(input: { rawUserMessage: string }):
     answer: [
       'Use these MaxVideoAI destinations:',
       ...selectedRoutes.map((route) => `${route.label}: ${route.href} - ${route.guidance}`),
-      'I will not navigate automatically, run generation, or spend credits.',
+      'I will not navigate automatically.',
     ].join('\n'),
     sources: [siteNavigationSource()],
     confidence: selectedRoutes.length ? 0.86 : 0.62,

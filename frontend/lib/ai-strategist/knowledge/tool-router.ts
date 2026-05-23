@@ -43,7 +43,7 @@ function answerDocsSearchDisabledQuestion(): StrategistKnowledgeToolResult {
     answer: [
       'Docs/RAG search is not connected yet.',
       'I can still answer from available structured MaxVideoAI sources: model catalog, workflow rules, prompt structures, engine catalog, examples routes, and site navigation.',
-      'I will not search private projects, run generation, or spend credits.',
+      'I will not search private projects.',
     ].join('\n'),
     sources: [
       {

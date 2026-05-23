@@ -210,6 +210,7 @@ test('AI Strategist chat accepts an existing prompt paste flow for Seedance inst
   assert.equal(first.selectedModel, 'seedance-2-0');
   assert.match(first.assistantMessage, /colle ton prompt ici|paste/i);
   assert.doesNotMatch(first.assistantMessage, /What do you want the video to show/i);
+  assert.doesNotMatch(first.assistantMessage, /ne lance pas de génération|spend credits|run generation/i);
   assert.equal(second.conversationPlan.action, 'improve_prompt');
   assert.equal(second.mode, 'improve_prompt');
   assert.equal(second.selectedModel, 'seedance-2-0');
@@ -294,7 +295,7 @@ test('AI Strategist keeps messy upload image questions as asset reference help d
     assert.equal(result.mode, 'product_help', userMessage);
     assert.equal(result.recommendations, undefined, userMessage);
     assert.match(result.assistantMessage, /upload|image-to-video|reference image/i, userMessage);
-    assert.match(result.assistantMessage, /not run generation|spend credits/i, userMessage);
+    assert.doesNotMatch(result.assistantMessage, /not run generation|spend credits/i, userMessage);
   }
 });
 
@@ -406,7 +407,7 @@ test('AI Strategist orchestrator explains workflow help without generating a pro
   assert.equal(result.recommendations, undefined);
   assert.match(result.assistantMessage, /reference image/i);
   assert.match(result.assistantMessage, /motion prompt/i);
-  assert.match(result.assistantMessage, /does not run generation/i);
+  assert.doesNotMatch(result.assistantMessage, /does not run generation|spend credits/i);
 });
 
 test('AI Strategist orchestrator points model navigation to the model page without recommendations', async () => {
@@ -450,7 +451,25 @@ test('AI Strategist orchestrator explains its own capabilities without creative 
   assert.match(result.assistantMessage, /choose the right MaxVideoAI model/i);
   assert.match(result.assistantMessage, /improve prompts/i);
   assert.match(result.assistantMessage, /estimate cost/i);
-  assert.match(result.assistantMessage, /I will not run generation/i);
+  assert.doesNotMatch(result.assistantMessage, /I will not run generation|spend credits|publish anything/i);
+});
+
+test('AI Strategist shows safety caveats only when generation or credit actions are requested', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Can you run generation for me and spend credits?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'pricing_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /not run generation|spend credits|final generator quote/i);
 });
 
 test('AI Strategist answers English capability questions in English', async () => {
@@ -841,7 +860,8 @@ test('AI Strategist orchestrator explains MaxVideoAI site capabilities in French
   assert.match(result.assistantMessage, /mod[eè]le MaxVideoAI/i);
   assert.match(result.assistantMessage, /workflow/i);
   assert.match(result.assistantMessage, /prix/i);
-  assert.match(result.assistantMessage, /cr[eé]dits/i);
+  assert.match(result.assistantMessage, /co[uû]t|prix/i);
+  assert.doesNotMatch(result.assistantMessage, /d[eé]pense pas de cr[eé]dits|lance jamais une g[eé]n[eé]ration/i);
 });
 
 test('AI Strategist orchestrator answers general site overview without model cards', async () => {

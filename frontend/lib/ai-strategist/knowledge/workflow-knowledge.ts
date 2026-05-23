@@ -23,7 +23,6 @@ export function answerWorkflowQuestion(input: {
         : undefined,
       `Models currently listed for ${workflow.id}: ${supportingModels.slice(0, 8).join(', ')}.`,
       `Planning steps: ${workflow.planningSteps.slice(0, 3).join(' ')}`,
-      'This is guidance only; the strategist does not run generation or spend credits.',
     ].filter(Boolean).join('\n'),
     sources: [
       {

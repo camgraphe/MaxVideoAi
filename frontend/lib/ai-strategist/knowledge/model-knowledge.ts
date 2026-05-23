@@ -35,7 +35,7 @@ export function answerModelInfoQuestion(input: { rawUserMessage: string }): Stra
       `Avoid for: ${model.avoidFor.slice(0, 3).join(', ')}.`,
       `Supported workflows: ${model.supportedWorkflows.join(', ')}.`,
       `Prompt style: ${model.promptStyle}`,
-      'Use this as model guidance only. I will not run generation or spend credits.',
+      'Use this as model guidance only.',
     ].join('\n'),
     sources: [
       {

@@ -75,8 +75,8 @@ function buildCapabilityHelp(text: string): StrategistAdvisorToolResult {
       assistantMessage: [
         'Je peux t’aider à choisir le bon modèle MaxVideoAI, comparer qualité/coût/vitesse, préparer ou améliorer un prompt, expliquer les workflows, estimer le prix avant génération, et guider l’upload d’images ou de références.',
         'Je peux aussi signaler les risques utiles: logo, texte minuscule, packaging, personne réelle, lip-sync, durée, format et coût probable.',
-        'Je ne lance jamais une génération, ne dépense pas de crédits, ne publie rien et n’applique rien au vrai générateur depuis ce playground.',
-      ].join('\n'),
+        shouldShowSafetyCaveat(text) ? 'Je ne lance jamais une génération, ne dépense pas de crédits, ne publie rien et n’applique rien au vrai générateur depuis ce playground.' : undefined,
+      ].filter(Boolean).join('\n'),
       warnings: [],
       uiActions: [],
     };
@@ -86,8 +86,8 @@ function buildCapabilityHelp(text: string): StrategistAdvisorToolResult {
     assistantMessage: [
       'I can help you choose the right MaxVideoAI model, compare quality/cost/speed tradeoffs, improve prompts, build model-specific prompts, explain workflows, estimate cost before generation, and guide image/reference uploads.',
       'I can also flag practical risks: logos, tiny text, packaging, real-person references, lip-sync, duration, format, and likely cost.',
-      'I will not run generation, spend credits, publish anything, or apply changes to the real generator from this playground.',
-    ].join('\n'),
+      shouldShowSafetyCaveat(text) ? 'I will not run generation, spend credits, publish anything, or apply changes to the real generator from this playground.' : undefined,
+    ].filter(Boolean).join('\n'),
     warnings: [],
     uiActions: [],
   };
@@ -99,8 +99,10 @@ function buildSiteOverviewHelp(text: string): StrategistAdvisorToolResult {
       assistantMessage: [
         'MaxVideoAI sert à créer des vidéos IA avec des workflows comme text-to-video, image-to-video, image generation puis animation, ou video-to-video.',
         'Dans le générateur vidéo, tu compares les modèles, prépares ou améliores le prompt, vérifies les warnings, regardes le prix avant génération, puis lances manuellement quand tout est prêt.',
-        'Le strategist t’aide à choisir le bon chemin et à préparer le prompt, mais il ne lance pas la génération et ne dépense pas de crédits.',
-      ].join('\n'),
+        shouldShowSafetyCaveat(text)
+          ? 'Le strategist t’aide à choisir le bon chemin et à préparer le prompt, mais il ne lance pas la génération et ne dépense pas de crédits.'
+          : 'Le strategist t’aide à choisir le bon chemin et à préparer le prompt.',
+      ].filter(Boolean).join('\n'),
       warnings: [],
       uiActions: [],
     };
@@ -110,8 +112,10 @@ function buildSiteOverviewHelp(text: string): StrategistAdvisorToolResult {
     assistantMessage: [
       'MaxVideoAI helps you create AI videos through workflows like text-to-video, image-to-video, text-to-image then image-to-video, and video-to-video.',
       'In the video generator, you compare models, prepare or improve the prompt, check warnings, review the price shown before generation, then launch manually when ready.',
-      'The strategist helps choose the route and prepare the prompt, but it does not run generation or spend credits.',
-    ].join('\n'),
+      shouldShowSafetyCaveat(text)
+        ? 'The strategist helps choose the route and prepare the prompt, but it does not run generation or spend credits.'
+        : 'The strategist helps choose the route and prepare the prompt.',
+    ].filter(Boolean).join('\n'),
     warnings: [],
     uiActions: [],
   };
@@ -166,7 +170,7 @@ function buildWorkflowHelp(
       `Use it when: ${workflow.bestFor.slice(0, 2).join(', ')}.`,
       workflowSpecificTip,
       `Good first step: ${firstPlanningStep}`,
-      'This is guidance only; the strategist does not run generation or spend credits.',
+      shouldShowSafetyCaveat(text) ? 'This is guidance only; the strategist does not run generation or spend credits.' : undefined,
     ].filter(Boolean).join('\n'),
     selectedWorkflow: workflowId,
     warnings: [],
@@ -213,8 +217,8 @@ function buildSiteHelp(
     assistantMessage: [
       'I can help with model choice, prompt improvement, workflow setup, reference-image guidance, and pricing previews.',
       'To generate, open the video generator, choose the workflow, enter or improve your prompt, compare models, check the price shown before generation, then launch manually.',
-      'I will not run generation, spend credits, publish, or apply changes to the real generator from this playground.',
-    ].join('\n'),
+      shouldShowSafetyCaveat(text) ? 'I will not run generation, spend credits, publish, or apply changes to the real generator from this playground.' : undefined,
+    ].filter(Boolean).join('\n'),
     warnings: [],
     uiActions: [],
   };
@@ -367,6 +371,36 @@ function isLowIntentOpening(text: string): boolean {
     'create',
     'creer',
     'generer',
+  ]);
+}
+
+function shouldShowSafetyCaveat(text: string): boolean {
+  return containsAny(text, [
+    'run generation',
+    'start generation',
+    'launch generation',
+    'generate now',
+    'render now',
+    'start render',
+    'launch render',
+    'spend credits',
+    'use credits',
+    'burn credits',
+    'charge me',
+    'publish',
+    'post it',
+    'apply this',
+    'apply to generator',
+    'auto apply',
+    'automatically apply',
+    'navigate automatically',
+    'do it for me',
+    'lance la generation',
+    'lancer la generation',
+    'depense des credits',
+    'dépense des crédits',
+    'publie',
+    'applique',
   ]);
 }
 

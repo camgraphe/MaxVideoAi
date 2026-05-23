@@ -721,11 +721,11 @@ function buildPromptPasteRequestResult(input: {
   const selectedModel = selectedModelId ? AI_STRATEGIST_MODELS.find((model) => model.id === selectedModelId) : undefined;
   const assistantMessage = prefersFrenchResponse(input.body.userMessage)
     ? selectedModel
-      ? `Oui, colle ton prompt ici. Je vais le relire pour ${selectedModel.label}, garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles. Je ne lance pas de génération et je ne dépense pas de crédits.`
-      : 'Oui, colle ton prompt ici. Je vais garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles. Je ne lance pas de génération et je ne dépense pas de crédits.'
+      ? `Oui, colle ton prompt ici. Je vais le relire pour ${selectedModel.label}, garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles.`
+      : 'Oui, colle ton prompt ici. Je vais garder ton intention, puis améliorer la structure, la durée, le mouvement, la caméra, l’audio et les warnings utiles.'
     : selectedModel
-      ? `Paste the prompt here. I’ll review it for ${selectedModel.label}, keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings. I will not run generation or spend credits.`
-      : 'Paste the prompt here. I’ll keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings. I will not run generation or spend credits.';
+      ? `Paste the prompt here. I’ll review it for ${selectedModel.label}, keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings.`
+      : 'Paste the prompt here. I’ll keep your intent, then improve the structure, duration, motion, camera, audio, and useful warnings.';
 
   return {
     ok: true,
