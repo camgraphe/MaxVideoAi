@@ -1049,3 +1049,53 @@ test('AI Strategist technical source details stay secondary', () => {
   assert.doesNotMatch(chatSource, /<details[^>]*open/);
   assert.doesNotMatch(pageSource, /<details[^>]*open/);
 });
+
+test('AI Strategist conversation eval scenarios are versioned and broad enough for regression passes', () => {
+  const scenariosPath = join(root, 'docs/ai-strategist/evals/conversation-scenarios.json');
+  const parsed = JSON.parse(readFileSync(scenariosPath, 'utf8')) as {
+    version?: number;
+    scenarios?: Array<{
+      id?: string;
+      label?: string;
+      category?: string;
+      turns?: Array<{
+        label?: string;
+        userMessage?: string;
+        expect?: Record<string, unknown>;
+      }>;
+    }>;
+  };
+
+  assert.equal(parsed.version, 1);
+  assert.ok(Array.isArray(parsed.scenarios));
+  assert.ok(parsed.scenarios.length >= 20);
+
+  const categories = new Set<string>();
+  for (const scenario of parsed.scenarios) {
+    assert.equal(typeof scenario.id, 'string');
+    assert.equal(typeof scenario.label, 'string');
+    assert.equal(typeof scenario.category, 'string');
+    assert.ok(Array.isArray(scenario.turns));
+    assert.ok(scenario.turns.length > 0);
+    categories.add(scenario.category);
+
+    for (const turn of scenario.turns) {
+      assert.equal(typeof turn.label, 'string');
+      assert.equal(typeof turn.userMessage, 'string');
+      assert.ok(turn.expect && Object.keys(turn.expect).length > 0);
+    }
+  }
+
+  for (const requiredCategory of [
+    'pricing_or_catalog_gap',
+    'site_or_navigation_help',
+    'state_memory_error',
+    'prompt_generation_issue',
+    'model_recommendation_issue',
+    'asset_reference_routing',
+    'language_issue',
+    'safety_or_funnel',
+  ]) {
+    assert.ok(categories.has(requiredCategory), `Expected category ${requiredCategory}`);
+  }
+});

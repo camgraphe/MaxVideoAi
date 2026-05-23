@@ -1,535 +1,288 @@
-import { runAiStrategistPlaygroundPipeline } from '../frontend/lib/ai-strategist/playground-pipeline.ts';
-import type { AiStrategistModelId, AiStrategistWorkflowId } from '../frontend/lib/ai-strategist/types.ts';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, relative, resolve } from 'node:path';
+
+import {
+  runAiStrategistPlaygroundPipeline,
+  type AiStrategistPlaygroundResult,
+} from '../frontend/lib/ai-strategist/playground-pipeline.ts';
+import type {
+  AiStrategistModelId,
+  AiStrategistTierPosition,
+  AiStrategistWorkflowId,
+} from '../frontend/lib/ai-strategist/types.ts';
+
+type UploadedAssetMetadata = {
+  type?: string;
+  hasPerson?: boolean;
+  hasProduct?: boolean;
+  hasLogo?: boolean;
+  hasText?: boolean;
+  isReferenceImage?: boolean;
+};
+
+type ConversationExpectation = {
+  action?: string;
+  task?: string;
+  mode?: string;
+  stage?: string;
+  notStage?: string;
+  workflow?: string;
+  selectedModel?: string;
+  selectedModelPresent?: boolean;
+  selectedModelSameAsPrevious?: boolean;
+  normalizedIntent?: string;
+  normalizedHasVoiceover?: boolean;
+  normalizedHasVisibleSpeaker?: boolean;
+  hasRecommendations?: boolean;
+  noRecommendations?: boolean;
+  currentPromptPresent?: boolean;
+  mustMention?: string[];
+  mustMentionAny?: string[];
+  mustMentionAnyGroup?: string[][];
+  mustNotMention?: string[];
+  warningsMention?: string[];
+  warningsMentionAny?: string[];
+  warningsMustNotMention?: string[];
+  finalPromptMustMention?: string[];
+  finalPromptMustMentionAny?: string[];
+  finalPromptMustNotMention?: string[];
+};
 
 type ConversationTurn = {
   label: string;
   userMessage: string;
   mode?: 'recommend' | 'build_prompt' | 'improve_prompt' | 'product_help';
   currentPrompt?: string;
-  pickTier?: 'best' | 'medium' | 'value';
+  pickTier?: AiStrategistTierPosition;
   selectedModel?: AiStrategistModelId;
   selectedWorkflow?: AiStrategistWorkflowId;
-  uploadedAsset?: {
-    type?: string;
-    hasPerson?: boolean;
-    hasProduct?: boolean;
-    hasLogo?: boolean;
-    hasText?: boolean;
-    isReferenceImage?: boolean;
-  };
-  expect: (result: AnyResult, previous?: AnyResult) => string[];
+  uploadedAsset?: UploadedAssetMetadata;
+  expect: ConversationExpectation;
 };
 
 type ConversationScenario = {
+  id: string;
   label: string;
+  category: FailureCategory;
   turns: ConversationTurn[];
 };
 
-type AnyResult = Awaited<ReturnType<typeof runAiStrategistPlaygroundPipeline>>;
+type ScenarioFixture = {
+  version: number;
+  description?: string;
+  scenarios: ConversationScenario[];
+};
 
-const scenarios: ConversationScenario[] = [
-  {
-    label: 'Pricing help: cheapest model on the site',
-    turns: [
-      {
-        label: 'asks for cheapest model',
-        userMessage: 'quelle est le model le moins cher sur le site ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'pricing_help', 'routes to pricing_help'),
-          expectEqual(result.mode, 'product_help', 'stays in product_help'),
-          expectMissing(result.recommendations, 'does not show recommendation cards'),
-          expectIncludes(result.assistantMessage, /moins cher|cheapest/i, 'answers the cheapest-model question'),
-          expectIncludes(result.assistantMessage, /\$0\.04|4 cents/i, 'uses catalog price basis'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Capabilities help in French',
-    turns: [
-      {
-        label: 'asks what the assistant can do',
-        userMessage: 'tu peux faire quoi exactement ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'capability_help', 'routes to capability help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /mod[eè]le|prompt|prix|workflow/i, 'explains strategist capabilities'),
-          expectIncludes(result.assistantMessage, /ne lance|cr[eé]dits/i, 'keeps safety clear'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'General product help',
-    turns: [
-      {
-        label: 'asks how MaxVideoAI works',
-        userMessage: 'comment fonctionne MaxVideoAI ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'site_overview_help', 'routes to site overview'),
-          expectEqual(result.mode, 'product_help', 'stays in product_help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /g[eé]n[eé]rateur|workflow|prix/i, 'explains product flow'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Named model pricing',
-    turns: [
-      {
-        label: 'asks Veo Lite price',
-        userMessage: 'combien coute Veo 3.1 Lite pour 10 secondes ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'pricing_help', 'routes to pricing help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Veo 3\.1 Lite|Google Veo 3\.1 Lite/i, 'answers for named model'),
-          expectIncludes(result.assistantMessage, /10 seconds|10 secondes/i, 'keeps requested duration'),
-          expectIncludes(result.assistantMessage, /\$0\.50|\$1\.20|Estimated price|pricing/i, 'includes a price estimate'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Model knowledge answer',
-    turns: [
-      {
-        label: 'asks what Seedance can do',
-        userMessage: 'Seedance 2 ça sert à quoi ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'model_info_help', 'routes to model info'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Seedance 2\.0/i, 'answers about Seedance'),
-          expectIncludes(result.assistantMessage, /social|motion|audio|workflow|video/i, 'gives useful model traits'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Engine settings answer',
-    turns: [
-      {
-        label: 'asks Kling 4K settings',
-        userMessage: 'quelles settings supporte Kling 3 4K ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'model_info_help', 'routes settings through model info'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Kling 3 4K/i, 'answers for Kling 3 4K'),
-          expectIncludes(result.assistantMessage, /Duration|Resolutions|Aspect ratios|Audio/i, 'shows settings fields'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Workflow guidance',
-    turns: [
-      {
-        label: 'asks image-to-video explanation',
-        userMessage: 'explique moi image-to-video',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'workflow_help', 'routes to workflow help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /reference image|motion prompt|image-to-video/i, 'explains reference-image workflow'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Examples navigation',
-    turns: [
-      {
-        label: 'asks for Kling examples',
-        userMessage: 'montre moi des exemples Kling',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'examples_help', 'routes to examples help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Kling examples|\/examples\/kling/i, 'points to Kling examples'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Compare and generate navigation',
-    turns: [
-      {
-        label: 'asks where to compare models',
-        userMessage: 'où comparer les modèles avant de générer ?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'navigation_help', 'routes to navigation help'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Compare|\/compare|Generate|\/app/i, 'points to compare/generate destinations'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'French car brief then Seedance selection',
-    turns: [
-      {
-        label: 'new car brief',
-        userMessage: 'une pub de voiture dynamique',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'waits for model choice'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'selects Seedance by alias',
-        userMessage: 'ok seedance',
-        expect: (result) => [
-          expectEqual(result.selectedModel, 'seedance-2-0', 'selects Seedance 2.0'),
-          expectNotIncludes(result.assistantMessage, /Subject:\s*une pub de voiture dynamique/i, 'does not paste raw French as subject'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not restart model choice'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Clear perfume brief',
-    turns: [
-      {
-        label: 'gives detailed premium product brief',
-        userMessage: 'Luxury perfume ad on black marble, 9:16, premium look, slow camera push-in, soft gold reflections',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'recommends models instead of generic clarification'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-          expectIncludes(result.warnings.join('\n'), /Exact labels, logos, legal copy/i, 'keeps product text/logo warning'),
-          expectNotIncludes(result.assistantMessage, /What video are you trying to create/i, 'does not ask generic clarification'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Fast social sneaker voiceover',
-    turns: [
-      {
-        label: 'asks fast path with assumptions',
-        userMessage: 'Make assumptions and create a TikTok sneaker ad with voiceover',
-        expect: (result) => [
-          expectEqual(result.normalizedBrief.hasVoiceover, true, 'detects voiceover'),
-          expectEqual(result.normalizedBrief.hasVisibleSpeaker, false, 'does not invent visible speaker'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-          expectNotIncludes(result.assistantMessage, /What video are you trying to create/i, 'does not ask generic clarification'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'chooses best and reaches confirmation',
-        userMessage: 'Choose best',
-        pickTier: 'best',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_confirmation', 'uses assumptions and confirms'),
-          expectIncludes(result.assistantMessage, /off-camera voiceover/i, 'keeps voiceover off-camera'),
-          expectIncludes(result.assistantMessage, /Duration:/i, 'includes duration'),
-          expectIncludes(result.assistantMessage, /Estimated price:/i, 'includes price'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Vague stylized fight brief',
-    turns: [
-      {
-        label: 'gives trademarked vague inspiration',
-        userMessage: 'I want a Street Fighter style fight',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'starts with model recommendations'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'chooses best and gets useful missing-field questions',
-        userMessage: 'Choose best',
-        pickTier: 'best',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'collecting_missing_fields', 'asks targeted missing questions'),
-          expectIncludes(result.assistantMessage, /one fighter|two fighters|arcade|stylized|setting/i, 'asks useful creative questions'),
-          expectNotIncludes(result.assistantMessage, /Street Fighter/i, 'sanitizes trademark wording'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'accepts assumptions',
-        userMessage: 'make assumptions',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_confirmation', 'moves to confirmation'),
-          expectIncludes(result.assistantMessage, /arcade fighting|stylized combat/i, 'uses descriptive alternative'),
-          expectNotIncludes(result.assistantMessage, /Street Fighter/i, 'keeps trademark out of summary'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'generates prompt after confirmation',
-        userMessage: 'Generate prompt',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'prompt_ready', 'generates only after confirmation'),
-          expectIncludes(result.sanitizedFinalOutput?.finalPrompt ?? '', /arcade fighting|stylized combat/i, 'final prompt uses sanitized description'),
-          expectNotIncludes(result.sanitizedFinalOutput?.finalPrompt ?? '', /Street Fighter/i, 'final prompt avoids trademark style requirement'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Prompt edit intake remains conversational',
-    turns: [
-      {
-        label: 'asks to share a Seedance prompt',
-        userMessage: 'je veux editer un prompt pour seedance 2, je peux te le partager ?',
-        expect: (result) => [
-          expectEqual(result.conversationPlan.action, 'await_prompt_paste', 'asks user to paste the prompt'),
-          expectEqual(result.selectedModel, 'seedance-2-0', 'keeps Seedance selected'),
-          expectIncludes(result.assistantMessage, /colle ton prompt|paste/i, 'invites prompt paste'),
-          expectMissing(result.recommendations, 'does not recommend models'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Prompt paste after intake',
-    turns: [
-      {
-        label: 'asks to share a prompt',
-        userMessage: 'je veux editer un prompt pour seedance 2, je peux te le partager ?',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_prompt_paste', 'waits for prompt paste'),
-          expectEqual(result.selectedModel, 'seedance-2-0', 'keeps Seedance selected'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'pastes prompt',
-        userMessage: 'A sneaker spins on a concrete floor with a quick camera move and neon light',
-        expect: (result) => [
-          expectEqual(result.conversationPlan.action, 'improve_prompt', 'treats pasted text as prompt to improve'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not restart recommendations'),
-          expectPresent(result.currentPrompt ?? result.promptGenerationContext?.currentPrompt, 'stores pasted prompt context'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Current prompt improvement',
-    turns: [
-      {
-        label: 'improves existing perfume prompt',
-        userMessage: 'make it more premium',
-        currentPrompt: 'Perfume bottle on marble, cinematic',
-        mode: 'recommend',
-        selectedModel: 'kling-3-pro',
-        expect: (result) => [
-          expectEqual(result.conversationPlan.action, 'improve_prompt', 'routes to prompt improvement'),
-          expectEqual(result.workflow, 'text-to-image-then-image-to-video', 'prefers controlled product workflow'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /Generate the prompt|Here.s what I.ll build|Starting image/i, 'continues improvement flow'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Duration edit during confirmation',
-    turns: [
-      {
-        label: 'spokesperson product reference brief',
-        userMessage: 'j aimerai un spokesperson avec mon produit dans les mains, j ai juste une image',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'waits for model choice'),
-          expectPresent(result.recommendations, 'shows model cards'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'chooses best card',
-        userMessage: 'Choose best',
-        pickTier: 'best',
-        expect: (result) => [
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'continues after model selection'),
-          expectPresent(result.selectedModel, 'keeps selected model'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'adds product and TikTok dialogue details',
-        userMessage: 'un casque audio, je veux qu ils disent que c est beau et que le son est top, pour TikTok en mode influencer en anglais',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_confirmation', 'shows confirmation summary'),
-          expectIncludes(result.assistantMessage, /Duration:/i, 'includes duration'),
-          expectIncludes(result.assistantMessage, /Estimated price:/i, 'includes price estimate'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'changes duration only',
-        userMessage: 'je veux que ca dure 15 secondes',
-        expect: (result, previous) => [
-          expectEqual(result.conversationPlan.action, 'build_prompt', 'treats duration as brief revision'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not restart model choice'),
-          expectEqual(result.selectedModel, previous?.selectedModel, 'preserves selected model'),
-          expectIncludes(result.assistantMessage, /Duration: 15 seconds/i, 'updates duration in summary'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Format change during confirmation',
-    turns: [
-      {
-        label: 'starts clear perfume brief',
-        userMessage: 'Luxury perfume ad on black marble, premium look, slow camera push-in',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'waits for model choice'),
-          expectPresent(result.recommendations, 'shows model cards'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'chooses medium',
-        userMessage: 'Choose medium',
-        pickTier: 'medium',
-        expect: (result) => [
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'continues after tier choice'),
-          expectPresent(result.selectedModel, 'keeps selected model'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'changes format to vertical',
-        userMessage: 'mets le format en 9:16',
-        expect: (result, previous) => [
-          expectEqual(result.conversationPlan.action, 'build_prompt', 'treats format as contextual revision'),
-          expectEqual(result.selectedModel, previous?.selectedModel, 'preserves model'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not restart model choice'),
-          expectIncludes(result.assistantMessage, /9:16|vertical/i, 'updates format'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Model switch during confirmation',
-    turns: [
-      {
-        label: 'starts car brief',
-        userMessage: 'cinematic car commercial at night, premium reflections',
-        expect: (result) => [
-          expectEqual(result.conversationStage, 'awaiting_model_choice', 'waits for model choice'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'chooses best',
-        userMessage: 'Choose best',
-        pickTier: 'best',
-        expect: (result) => [
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'continues after model choice'),
-          expectPresent(result.selectedModel, 'has selected model'),
-        ].filter(Boolean),
-      },
-      {
-        label: 'switches model explicitly',
-        userMessage: 'change model to seedance',
-        expect: (result) => [
-          expectEqual(result.conversationPlan.action, 'select_model', 'treats explicit model switch as model selection'),
-          expectEqual(result.selectedModel, 'seedance-2-0', 'switches to Seedance'),
-          expectNotEqual(result.conversationStage, 'awaiting_model_choice', 'does not restart recommendations'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Uploaded person image speaking',
-    turns: [
-      {
-        label: 'asks to animate person reference speaking',
-        userMessage: 'Animate this person image speaking to camera',
-        uploadedAsset: { type: 'image', hasPerson: true, isReferenceImage: true },
-        expect: (result) => [
-          expectEqual(result.normalizedBrief.intent, 'person_reference_i2v', 'hard context sets person_reference_i2v'),
-          expectEqual(result.workflow, 'image-to-video', 'uses image-to-video'),
-          expectPresent(result.recommendations, 'shows compatible recommendations'),
-          expectIncludes(result.warnings.join('\n'), /person|character|reference|Kling|LTX/i, 'includes person-reference warning'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Product reference with text risk',
-    turns: [
-      {
-        label: 'asks product photo animation with label',
-        userMessage: 'Animate this skincare bottle product photo, preserve label and packaging, 9:16',
-        uploadedAsset: { type: 'image', hasProduct: true, hasLogo: true, hasText: true, isReferenceImage: true },
-        expect: (result) => [
-          expectEqual(result.workflow, 'image-to-video', 'uses image-to-video for uploaded product reference'),
-          expectPresent(result.recommendations, 'shows product-reference recommendations'),
-          expectIncludes(result.warnings.join('\n'), /Exact labels, logos, legal copy|tiny text/i, 'keeps text/logo warning'),
-          expectNotIncludes(result.warnings.join('\n'), /Person\/character reference/i, 'does not apply person warning to product reference'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Video-to-video restyle',
-    turns: [
-      {
-        label: 'asks to restyle uploaded video',
-        userMessage: 'I have a short video, restyle it as a premium cinematic ad',
-        selectedWorkflow: 'video-to-video',
-        expect: (result) => [
-          expectEqual(result.workflow, 'video-to-video', 'preserves selected video-to-video workflow'),
-          expectPresent(result.recommendations, 'shows recommendations'),
-          expectNotIncludes(result.assistantMessage, /What video are you trying to create/i, 'does not ask generic clarification'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Ambiguous prompt improvement',
-    turns: [
-      {
-        label: 'asks make it better without context',
-        userMessage: 'make it better',
-        expect: (result) => [
-          expectEqual(result.conversationPlan.action, 'ask_clarification', 'asks for clarification'),
-          expectMissing(result.recommendations, 'does not show recommendations'),
-          expectIncludes(result.assistantMessage, /What prompt do you want me to improve|What video/i, 'asks short clarification'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-  {
-    label: 'Navigation help: image upload',
-    turns: [
-      {
-        label: 'asks where to upload image',
-        userMessage: 'where do I upload an image?',
-        expect: (result) => [
-          expectEqual(result.orchestrationPlan.task, 'asset_reference_help', 'routes to asset reference help'),
-          expectEqual(result.mode, 'product_help', 'stays in help mode'),
-          expectMissing(result.recommendations, 'does not show model cards'),
-          expectIncludes(result.assistantMessage, /image-to-video|reference image/i, 'answers upload workflow'),
-        ].filter(Boolean),
-      },
-    ],
-  },
-];
+type FailureCategory =
+  | 'routing_error'
+  | 'state_memory_error'
+  | 'knowledge_gap'
+  | 'bad_answer_copy'
+  | 'prompt_generation_issue'
+  | 'model_recommendation_issue'
+  | 'pricing_or_catalog_gap'
+  | 'site_or_navigation_help'
+  | 'asset_reference_routing'
+  | 'language_issue'
+  | 'safety_or_funnel'
+  | 'ui_flow_issue';
+
+type EvalIssue = {
+  scenarioId: string;
+  scenarioLabel: string;
+  turnLabel: string;
+  category: FailureCategory;
+  owner: string;
+  message: string;
+};
+
+type TurnReport = {
+  label: string;
+  userMessage: string;
+  passed: boolean;
+  issues: EvalIssue[];
+  stage: string;
+  action: string;
+  task: string;
+  assistantMessage: string;
+};
+
+type ScenarioReport = {
+  id: string;
+  label: string;
+  category: FailureCategory;
+  passed: boolean;
+  turns: TurnReport[];
+};
+
+type EvalReport = {
+  generatedAt: string;
+  liveLlm: boolean;
+  scenarioCount: number;
+  turnCount: number;
+  passedScenarios: number;
+  failedScenarios: number;
+  passedTurns: number;
+  failedTurns: number;
+  passRate: number;
+  failuresByCategory: Record<string, number>;
+  scenarios: ScenarioReport[];
+};
+
+type CliOptions = {
+  cases: string[];
+  fixturePath: string;
+  jsonOutput?: string;
+  markdownOutput?: string;
+  liveLlm: boolean;
+};
+
+const defaultFixturePath = resolve(process.cwd(), 'docs/ai-strategist/evals/conversation-scenarios.json');
 
 async function main() {
-  const selected = filterScenarios(scenarios);
-  let failed = 0;
+  const options = parseCliOptions(process.argv.slice(2));
+  const fixture = loadFixture(options.fixturePath);
+  const selected = filterScenarios(fixture.scenarios, options.cases);
+  const report = await runEvaluation(selected, options);
 
-  console.log('AI Strategist Conversation QA');
-  console.log('Live LLM: disabled for deterministic regression pass');
-  console.log('Auto-generation/credit spend/publish: no');
-  console.log('');
+  printConsoleReport(report);
+  if (options.jsonOutput) writeJsonReport(report, options.jsonOutput);
+  if (options.markdownOutput) writeMarkdownReport(report, options.markdownOutput);
 
-  for (const scenario of selected) {
-    const scenarioFailures = await runScenario(scenario);
-    failed += scenarioFailures;
-  }
-
-  console.log(failed === 0 ? 'Overall: PASS' : `Overall: FAIL (${failed} issue${failed === 1 ? '' : 's'})`);
-  if (failed > 0) process.exitCode = 1;
+  if (report.failedTurns > 0) process.exitCode = 1;
 }
 
-async function runScenario(scenario: ConversationScenario): Promise<number> {
-  console.log(`Scenario: ${scenario.label}`);
+function parseCliOptions(args: string[]): CliOptions {
+  const options: CliOptions = {
+    cases: [],
+    fixturePath: defaultFixturePath,
+    liveLlm: false,
+  };
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index] ?? '';
+    if (arg === '--live') {
+      options.liveLlm = true;
+      continue;
+    }
+    if (arg === '--case') {
+      const value = args[index + 1];
+      if (value) options.cases.push(value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--case=')) {
+      options.cases.push(arg.slice('--case='.length));
+      continue;
+    }
+    if (arg === '--fixture') {
+      const value = args[index + 1];
+      if (value) options.fixturePath = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--fixture=')) {
+      options.fixturePath = resolve(process.cwd(), arg.slice('--fixture='.length));
+      continue;
+    }
+    if (arg === '--json-output') {
+      const value = args[index + 1];
+      if (value) options.jsonOutput = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--json-output=')) {
+      options.jsonOutput = resolve(process.cwd(), arg.slice('--json-output='.length));
+      continue;
+    }
+    if (arg === '--markdown-output') {
+      const value = args[index + 1];
+      if (value) options.markdownOutput = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--markdown-output=')) {
+      options.markdownOutput = resolve(process.cwd(), arg.slice('--markdown-output='.length));
+    }
+  }
+
+  return options;
+}
+
+function loadFixture(path: string): ScenarioFixture {
+  if (!existsSync(path)) throw new Error(`AI Strategist conversation fixture not found: ${path}`);
+  const parsed = JSON.parse(readFileSync(path, 'utf8')) as ScenarioFixture;
+  validateFixture(parsed, path);
+  return parsed;
+}
+
+function validateFixture(fixture: ScenarioFixture, path: string) {
+  if (fixture.version !== 1) throw new Error(`Unsupported fixture version in ${path}: ${fixture.version}`);
+  if (!Array.isArray(fixture.scenarios) || fixture.scenarios.length === 0) {
+    throw new Error(`Fixture has no scenarios: ${path}`);
+  }
+}
+
+function filterScenarios(allScenarios: ConversationScenario[], filters: string[]): ConversationScenario[] {
+  const normalizedFilters = filters.map((value) => value.trim().toLowerCase()).filter(Boolean);
+  if (normalizedFilters.length === 0) return allScenarios;
+
+  const selected = allScenarios.filter((scenario) => {
+    const haystack = [scenario.id, scenario.label, scenario.category].join(' ').toLowerCase();
+    return normalizedFilters.some((filter) => haystack.includes(filter));
+  });
+
+  if (selected.length === 0) {
+    throw new Error(`No AI Strategist eval scenarios matched: ${normalizedFilters.join(', ')}`);
+  }
+
+  return selected;
+}
+
+async function runEvaluation(scenarios: ConversationScenario[], options: CliOptions): Promise<EvalReport> {
+  const scenarioReports: ScenarioReport[] = [];
+  let turnCount = 0;
+  let passedTurns = 0;
+  const failuresByCategory: Record<string, number> = {};
+
+  for (const scenario of scenarios) {
+    const scenarioReport = await runScenario(scenario, options);
+    scenarioReports.push(scenarioReport);
+    for (const turn of scenarioReport.turns) {
+      turnCount += 1;
+      if (turn.passed) {
+        passedTurns += 1;
+      } else {
+        failuresByCategory[scenario.category] = (failuresByCategory[scenario.category] ?? 0) + turn.issues.length;
+      }
+    }
+  }
+
+  const passedScenarios = scenarioReports.filter((scenario) => scenario.passed).length;
+  const failedTurns = turnCount - passedTurns;
+  return {
+    generatedAt: new Date().toISOString(),
+    liveLlm: options.liveLlm,
+    scenarioCount: scenarioReports.length,
+    turnCount,
+    passedScenarios,
+    failedScenarios: scenarioReports.length - passedScenarios,
+    passedTurns,
+    failedTurns,
+    passRate: turnCount === 0 ? 0 : Number((passedTurns / turnCount).toFixed(4)),
+    failuresByCategory,
+    scenarios: scenarioReports,
+  };
+}
+
+async function runScenario(scenario: ConversationScenario, options: CliOptions): Promise<ScenarioReport> {
   let state: ReturnType<typeof conversationStateFrom> | undefined;
-  let previous: AnyResult | undefined;
-  let failures = 0;
+  let previous: AiStrategistPlaygroundResult | undefined;
+  const turns: TurnReport[] = [];
 
   for (const turn of scenario.turns) {
     const selectedTier = turn.pickTier;
-    const selectedModel = selectedTier ? previous?.recommendations?.[selectedTier]?.model.id : undefined;
+    const selectedModel = turn.selectedModel ?? (selectedTier ? previous?.recommendations?.[selectedTier]?.model.id : undefined);
     const result = await runAiStrategistPlaygroundPipeline(
       {
         userMessage: turn.userMessage,
@@ -539,27 +292,204 @@ async function runScenario(scenario: ConversationScenario): Promise<number> {
         uploadedAsset: turn.uploadedAsset,
         selectedTier,
         selectedModel,
+        selectedWorkflow: turn.selectedWorkflow,
         conversationState: state,
       },
-      { env: {} }
+      { env: options.liveLlm ? process.env : {} }
     );
 
-    const issues = turn.expect(result, previous);
-    failures += issues.length;
-    console.log(`  ${issues.length === 0 ? 'PASS' : 'FAIL'} ${turn.label}`);
-    console.log(`    stage=${result.conversationStage}; action=${result.conversationPlan.action}; task=${result.orchestrationPlan.task}`);
-    console.log(`    message=${oneLine(result.assistantMessage)}`);
-    for (const issue of issues) console.log(`    - ${issue}`);
+    const issues = evaluateTurn({ scenario, turn, result, previous });
+    turns.push({
+      label: turn.label,
+      userMessage: turn.userMessage,
+      passed: issues.length === 0,
+      issues,
+      stage: result.conversationStage,
+      action: result.conversationPlan.action,
+      task: result.orchestrationPlan.task,
+      assistantMessage: oneLine(result.assistantMessage, 320),
+    });
 
     previous = result;
     state = conversationStateFrom(result);
   }
 
-  console.log('');
-  return failures;
+  return {
+    id: scenario.id,
+    label: scenario.label,
+    category: scenario.category,
+    passed: turns.every((turn) => turn.passed),
+    turns,
+  };
 }
 
-function conversationStateFrom(result: AnyResult) {
+function evaluateTurn(input: {
+  scenario: ConversationScenario;
+  turn: ConversationTurn;
+  result: AiStrategistPlaygroundResult;
+  previous?: AiStrategistPlaygroundResult;
+}): EvalIssue[] {
+  const { scenario, turn, result, previous } = input;
+  const expect = turn.expect;
+  const issues: EvalIssue[] = [];
+  const assistantText = result.assistantMessage;
+  const warningsText = result.warnings.join('\n');
+  const finalPrompt = result.sanitizedFinalOutput?.finalPrompt ?? '';
+  const currentPromptPresent = Boolean(result.promptGenerationContext?.currentPrompt);
+
+  checkEqual(issues, scenario, turn, result.conversationPlan.action, expect.action, 'action');
+  checkEqual(issues, scenario, turn, result.orchestrationPlan.task, expect.task, 'task');
+  checkEqual(issues, scenario, turn, result.mode, expect.mode, 'mode');
+  checkEqual(issues, scenario, turn, result.conversationStage, expect.stage, 'stage');
+  checkEqual(issues, scenario, turn, result.workflow, expect.workflow, 'workflow');
+  checkEqual(issues, scenario, turn, result.selectedModel, expect.selectedModel, 'selectedModel');
+  checkEqual(issues, scenario, turn, result.normalizedBrief.intent, expect.normalizedIntent, 'normalizedIntent');
+
+  if (expect.notStage !== undefined && result.conversationStage === expect.notStage) {
+    issues.push(buildIssue(scenario, turn, `notStage: got disallowed stage ${expect.notStage}`));
+  }
+  if (expect.selectedModelPresent === true && !result.selectedModel) {
+    issues.push(buildIssue(scenario, turn, 'selectedModelPresent: selected model is missing'));
+  }
+  if (expect.selectedModelSameAsPrevious === true && result.selectedModel !== previous?.selectedModel) {
+    issues.push(buildIssue(scenario, turn, `selectedModelSameAsPrevious: expected ${previous?.selectedModel}, got ${result.selectedModel}`));
+  }
+  if (expect.normalizedHasVoiceover !== undefined && result.normalizedBrief.hasVoiceover !== expect.normalizedHasVoiceover) {
+    issues.push(buildIssue(scenario, turn, `normalizedHasVoiceover: expected ${expect.normalizedHasVoiceover}, got ${result.normalizedBrief.hasVoiceover}`));
+  }
+  if (expect.normalizedHasVisibleSpeaker !== undefined && result.normalizedBrief.hasVisibleSpeaker !== expect.normalizedHasVisibleSpeaker) {
+    issues.push(buildIssue(scenario, turn, `normalizedHasVisibleSpeaker: expected ${expect.normalizedHasVisibleSpeaker}, got ${result.normalizedBrief.hasVisibleSpeaker}`));
+  }
+  if (expect.hasRecommendations === true && !result.recommendations) {
+    issues.push(buildIssue(scenario, turn, 'hasRecommendations: recommendations are missing'));
+  }
+  if (expect.noRecommendations === true && result.recommendations) {
+    issues.push(buildIssue(scenario, turn, 'noRecommendations: recommendations were returned'));
+  }
+  if (expect.currentPromptPresent === true && !currentPromptPresent) {
+    issues.push(buildIssue(scenario, turn, 'currentPromptPresent: prompt generation context has no currentPrompt'));
+  }
+
+  checkIncludes(issues, scenario, turn, assistantText, expect.mustMention, 'mustMention');
+  checkIncludesAny(issues, scenario, turn, assistantText, expect.mustMentionAny, 'mustMentionAny');
+  checkIncludesAnyGroup(issues, scenario, turn, assistantText, expect.mustMentionAnyGroup, 'mustMentionAnyGroup');
+  checkExcludes(issues, scenario, turn, assistantText, expect.mustNotMention, 'mustNotMention');
+  checkIncludes(issues, scenario, turn, warningsText, expect.warningsMention, 'warningsMention');
+  checkIncludesAny(issues, scenario, turn, warningsText, expect.warningsMentionAny, 'warningsMentionAny');
+  checkExcludes(issues, scenario, turn, warningsText, expect.warningsMustNotMention, 'warningsMustNotMention');
+  checkIncludes(issues, scenario, turn, finalPrompt, expect.finalPromptMustMention, 'finalPromptMustMention');
+  checkIncludesAny(issues, scenario, turn, finalPrompt, expect.finalPromptMustMentionAny, 'finalPromptMustMentionAny');
+  checkExcludes(issues, scenario, turn, finalPrompt, expect.finalPromptMustNotMention, 'finalPromptMustNotMention');
+
+  return issues;
+}
+
+function checkEqual(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  actual: unknown,
+  expected: unknown,
+  label: string
+) {
+  if (expected === undefined) return;
+  if (actual !== expected) {
+    issues.push(buildIssue(scenario, turn, `${label}: expected ${String(expected)}, got ${String(actual)}`));
+  }
+}
+
+function checkIncludes(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  text: string,
+  needles: string[] | undefined,
+  label: string
+) {
+  if (!needles?.length) return;
+  for (const needle of needles) {
+    if (!includesNormalized(text, needle)) {
+      issues.push(buildIssue(scenario, turn, `${label}: missing "${needle}"`));
+    }
+  }
+}
+
+function checkIncludesAny(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  text: string,
+  needles: string[] | undefined,
+  label: string
+) {
+  if (!needles?.length) return;
+  if (!needles.some((needle) => includesNormalized(text, needle))) {
+    issues.push(buildIssue(scenario, turn, `${label}: none matched [${needles.join(', ')}]`));
+  }
+}
+
+function checkIncludesAnyGroup(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  text: string,
+  groups: string[][] | undefined,
+  label: string
+) {
+  if (!groups?.length) return;
+  for (const group of groups) {
+    if (!group.every((needle) => includesNormalized(text, needle))) {
+      issues.push(buildIssue(scenario, turn, `${label}: missing group [${group.join(', ')}]`));
+    }
+  }
+}
+
+function checkExcludes(
+  issues: EvalIssue[],
+  scenario: ConversationScenario,
+  turn: ConversationTurn,
+  text: string,
+  needles: string[] | undefined,
+  label: string
+) {
+  if (!needles?.length) return;
+  for (const needle of needles) {
+    if (includesNormalized(text, needle)) {
+      issues.push(buildIssue(scenario, turn, `${label}: found disallowed "${needle}"`));
+    }
+  }
+}
+
+function buildIssue(scenario: ConversationScenario, turn: ConversationTurn, message: string): EvalIssue {
+  return {
+    scenarioId: scenario.id,
+    scenarioLabel: scenario.label,
+    turnLabel: turn.label,
+    category: scenario.category,
+    owner: ownerForCategory(scenario.category),
+    message,
+  };
+}
+
+function ownerForCategory(category: FailureCategory): string {
+  const owners: Record<FailureCategory, string> = {
+    routing_error: 'conversation planner / orchestrator intent router',
+    state_memory_error: 'conversation state merge / planner follow-up handling',
+    knowledge_gap: 'structured knowledge tools / future RAG boundary',
+    bad_answer_copy: 'advisor response templates / prompt writer instructions',
+    prompt_generation_issue: 'brief completion / prompt generation context / prompt writer',
+    model_recommendation_issue: 'recommendation rules / model catalog',
+    pricing_or_catalog_gap: 'engine catalog pricing tool',
+    site_or_navigation_help: 'site navigation knowledge tool',
+    asset_reference_routing: 'uploaded asset normalization / workflow router',
+    language_issue: 'brief refinement / response language handling',
+    safety_or_funnel: 'safety guardrails / funnel guidance',
+    ui_flow_issue: 'admin playground chat UI',
+  };
+  return owners[category];
+}
+
+function conversationStateFrom(result: AiStrategistPlaygroundResult) {
   return {
     lastNormalizedBrief: result.normalizedBrief,
     lastRecommendations: result.recommendations,
@@ -572,47 +502,98 @@ function conversationStateFrom(result: AnyResult) {
   };
 }
 
-function filterScenarios(allScenarios: ConversationScenario[]): ConversationScenario[] {
-  const filters = process.argv
-    .slice(2)
-    .flatMap((arg, index, args) => {
-      if (arg === '--case') return args[index + 1] ? [args[index + 1]] : [];
-      if (arg.startsWith('--case=')) return [arg.slice('--case='.length)];
-      return [];
-    })
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
+function printConsoleReport(report: EvalReport) {
+  console.log('AI Strategist Conversation QA');
+  console.log(`Live LLM: ${report.liveLlm ? 'yes' : 'disabled for deterministic regression pass'}`);
+  console.log('Auto-generation/credit spend/publish: no');
+  console.log(`Scenarios: ${report.passedScenarios}/${report.scenarioCount} passed`);
+  console.log(`Turns: ${report.passedTurns}/${report.turnCount} passed`);
+  console.log(`Pass rate: ${(report.passRate * 100).toFixed(1)}%`);
+  if (Object.keys(report.failuresByCategory).length) {
+    console.log(`Failures by category: ${JSON.stringify(report.failuresByCategory)}`);
+  }
+  console.log('');
 
-  if (filters.length === 0) return allScenarios;
-  return allScenarios.filter((scenario) => filters.some((filter) => scenario.label.toLowerCase().includes(filter)));
+  for (const scenario of report.scenarios) {
+    console.log(`Scenario: ${scenario.label}`);
+    for (const turn of scenario.turns) {
+      console.log(`  ${turn.passed ? 'PASS' : 'FAIL'} ${turn.label}`);
+      console.log(`    stage=${turn.stage}; action=${turn.action}; task=${turn.task}`);
+      console.log(`    message=${turn.assistantMessage}`);
+      for (const issue of turn.issues) {
+        console.log(`    - [${issue.category}] ${issue.message}`);
+        console.log(`      owner: ${issue.owner}`);
+      }
+    }
+    console.log('');
+  }
+
+  console.log(report.failedTurns === 0 ? 'Overall: PASS' : `Overall: FAIL (${report.failedTurns} failed turn${report.failedTurns === 1 ? '' : 's'})`);
 }
 
-function expectEqual(actual: unknown, expected: unknown, label: string): string | undefined {
-  return actual === expected ? undefined : `${label}: expected ${String(expected)}, got ${String(actual)}`;
+function writeJsonReport(report: EvalReport, path: string) {
+  ensureParentDir(path);
+  writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  console.log(`JSON report: ${relative(process.cwd(), path)}`);
 }
 
-function expectNotEqual(actual: unknown, unexpected: unknown, label: string): string | undefined {
-  return actual !== unexpected ? undefined : `${label}: got ${String(actual)}`;
+function writeMarkdownReport(report: EvalReport, path: string) {
+  ensureParentDir(path);
+  const lines = [
+    '# AI Strategist Conversation QA Report',
+    '',
+    `Generated: ${report.generatedAt}`,
+    `Live LLM: ${report.liveLlm ? 'yes' : 'no'}`,
+    `Scenarios: ${report.passedScenarios}/${report.scenarioCount} passed`,
+    `Turns: ${report.passedTurns}/${report.turnCount} passed`,
+    `Pass rate: ${(report.passRate * 100).toFixed(1)}%`,
+    '',
+    '## Failure Categories',
+    '',
+    Object.keys(report.failuresByCategory).length
+      ? Object.entries(report.failuresByCategory).map(([category, count]) => `- ${category}: ${count}`).join('\n')
+      : '- None',
+    '',
+    '## Scenarios',
+    '',
+    ...report.scenarios.flatMap((scenario) => [
+      `### ${scenario.passed ? 'PASS' : 'FAIL'} ${scenario.label}`,
+      '',
+      `Category: \`${scenario.category}\``,
+      '',
+      ...scenario.turns.flatMap((turn) => [
+        `- ${turn.passed ? 'PASS' : 'FAIL'} ${turn.label}`,
+        `  - stage/action/task: \`${turn.stage}\` / \`${turn.action}\` / \`${turn.task}\``,
+        `  - assistant: ${turn.assistantMessage}`,
+        ...turn.issues.map((issue) => `  - issue: [${issue.category}] ${issue.message} (owner: ${issue.owner})`),
+      ]),
+      '',
+    ]),
+  ];
+
+  writeFileSync(path, `${lines.join('\n')}\n`, 'utf8');
+  console.log(`Markdown report: ${relative(process.cwd(), path)}`);
 }
 
-function expectPresent(value: unknown, label: string): string | undefined {
-  return value ? undefined : `${label}: missing`;
+function ensureParentDir(path: string) {
+  mkdirSync(dirname(path), { recursive: true });
 }
 
-function expectMissing(value: unknown, label: string): string | undefined {
-  return value ? `${label}: present` : undefined;
+function includesNormalized(text: string, needle: string): boolean {
+  return normalizeText(text).includes(normalizeText(needle));
 }
 
-function expectIncludes(value: string, pattern: RegExp, label: string): string | undefined {
-  return pattern.test(value) ? undefined : `${label}: pattern ${pattern} not found`;
+function normalizeText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-function expectNotIncludes(value: string, pattern: RegExp, label: string): string | undefined {
-  return pattern.test(value) ? `${label}: pattern ${pattern} was found` : undefined;
-}
-
-function oneLine(value: string): string {
-  return value.replace(/\s+/g, ' ').trim().slice(0, 220);
+function oneLine(value: string, maxLength: number): string {
+  return value.replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 main().catch((error) => {

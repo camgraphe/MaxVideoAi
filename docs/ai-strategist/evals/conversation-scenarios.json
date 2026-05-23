@@ -1,0 +1,535 @@
+{
+  "version": 1,
+  "description": "Versioned deterministic conversation QA scenarios for the internal MaxVideoAI AI Video Strategist.",
+  "scenarios": [
+    {
+      "id": "pricing-cheapest-fr",
+      "label": "Pricing help: cheapest model on the site",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks for cheapest model",
+          "userMessage": "quelle est le model le moins cher sur le site ?",
+          "expect": {
+            "task": "pricing_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMention": ["moins cher", "$0.04"],
+            "mustNotMention": ["open the video generator, choose the workflow"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "capabilities-fr",
+      "label": "Capabilities help in French",
+      "category": "safety_or_funnel",
+      "turns": [
+        {
+          "label": "asks what the assistant can do",
+          "userMessage": "tu peux faire quoi exactement ?",
+          "expect": {
+            "task": "capability_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["modèle", "modele"],
+            "mustMention": ["prompt", "prix"],
+            "mustMentionAnyGroup": [["ne lance", "crédits"], ["ne lance", "credits"]]
+          }
+        }
+      ]
+    },
+    {
+      "id": "site-overview-fr",
+      "label": "General product help",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks how MaxVideoAI works",
+          "userMessage": "comment fonctionne MaxVideoAI ?",
+          "expect": {
+            "task": "site_overview_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["générateur", "generateur"],
+            "mustMention": ["workflow", "prix"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing-veo-lite",
+      "label": "Named model pricing",
+      "category": "pricing_or_catalog_gap",
+      "turns": [
+        {
+          "label": "asks Veo Lite price",
+          "userMessage": "combien coute Veo 3.1 Lite pour 10 secondes ?",
+          "expect": {
+            "task": "pricing_help",
+            "noRecommendations": true,
+            "mustMention": ["Veo 3.1 Lite", "10 seconds", "$0.50"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "model-info-seedance-fr",
+      "label": "Model knowledge answer",
+      "category": "knowledge_gap",
+      "turns": [
+        {
+          "label": "asks what Seedance can do",
+          "userMessage": "Seedance 2 ça sert à quoi ?",
+          "expect": {
+            "task": "model_info_help",
+            "noRecommendations": true,
+            "mustMention": ["Seedance 2.0"],
+            "mustMentionAny": ["social", "motion", "audio", "workflow", "video"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "settings-kling-4k-fr",
+      "label": "Engine settings answer",
+      "category": "knowledge_gap",
+      "turns": [
+        {
+          "label": "asks Kling 4K settings",
+          "userMessage": "quelles settings supporte Kling 3 4K ?",
+          "expect": {
+            "task": "model_info_help",
+            "noRecommendations": true,
+            "mustMention": ["Kling 3 4K", "Duration", "Resolutions", "Aspect ratios", "Audio"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "workflow-i2v-fr",
+      "label": "Workflow guidance",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks image-to-video explanation",
+          "userMessage": "explique moi image-to-video",
+          "expect": {
+            "task": "workflow_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["reference image", "image-to-video"],
+            "mustMention": ["motion prompt"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "examples-kling-fr",
+      "label": "Examples navigation",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks for Kling examples",
+          "userMessage": "montre moi des exemples Kling",
+          "expect": {
+            "task": "examples_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["Kling examples", "/examples/kling"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "compare-navigation-fr",
+      "label": "Compare and generate navigation",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks where to compare models",
+          "userMessage": "où comparer les modèles avant de générer ?",
+          "expect": {
+            "task": "navigation_help",
+            "noRecommendations": true,
+            "mustMention": ["/compare"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "french-car-seedance-followup",
+      "label": "French car brief then Seedance selection",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "new car brief",
+          "userMessage": "une pub de voiture dynamique",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "selects Seedance by alias",
+          "userMessage": "ok seedance",
+          "expect": {
+            "selectedModel": "seedance-2-0",
+            "notStage": "awaiting_model_choice",
+            "mustMentionAny": ["car", "automotive"],
+            "mustNotMention": ["Subject: une pub de voiture dynamique"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "clear-perfume-brief",
+      "label": "Clear perfume brief",
+      "category": "model_recommendation_issue",
+      "turns": [
+        {
+          "label": "gives detailed premium product brief",
+          "userMessage": "Luxury perfume ad on black marble, 9:16, premium look, slow camera push-in, soft gold reflections",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true,
+            "warningsMention": ["Exact labels", "logos", "legal copy"],
+            "mustNotMention": ["What video are you trying to create"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fast-social-sneaker-voiceover",
+      "label": "Fast social sneaker voiceover",
+      "category": "prompt_generation_issue",
+      "turns": [
+        {
+          "label": "asks fast path with assumptions",
+          "userMessage": "Make assumptions and create a TikTok sneaker ad with voiceover",
+          "expect": {
+            "hasRecommendations": true,
+            "normalizedHasVoiceover": true,
+            "normalizedHasVisibleSpeaker": false,
+            "mustNotMention": ["What video are you trying to create"]
+          }
+        },
+        {
+          "label": "chooses best and reaches confirmation",
+          "userMessage": "Choose best",
+          "pickTier": "best",
+          "expect": {
+            "stage": "awaiting_confirmation",
+            "mustMention": ["off-camera voiceover", "Duration:", "Estimated price:"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "stylized-fight-safe-reference",
+      "label": "Vague stylized fight brief",
+      "category": "prompt_generation_issue",
+      "turns": [
+        {
+          "label": "gives trademarked vague inspiration",
+          "userMessage": "I want a Street Fighter style fight",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "chooses best and gets useful missing-field questions",
+          "userMessage": "Choose best",
+          "pickTier": "best",
+          "expect": {
+            "stage": "collecting_missing_fields",
+            "mustMentionAny": ["one fighter", "two fighters", "arcade", "stylized", "setting"],
+            "mustNotMention": ["Street Fighter"]
+          }
+        },
+        {
+          "label": "accepts assumptions",
+          "userMessage": "make assumptions",
+          "expect": {
+            "stage": "awaiting_confirmation",
+            "mustMentionAny": ["arcade fighting", "stylized combat"],
+            "mustNotMention": ["Street Fighter"]
+          }
+        },
+        {
+          "label": "generates prompt after confirmation",
+          "userMessage": "Generate prompt",
+          "expect": {
+            "stage": "prompt_ready",
+            "finalPromptMustMentionAny": ["arcade fighting", "stylized combat"],
+            "finalPromptMustNotMention": ["Street Fighter"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "prompt-edit-intake-fr",
+      "label": "Prompt edit intake remains conversational",
+      "category": "prompt_generation_issue",
+      "turns": [
+        {
+          "label": "asks to share a Seedance prompt",
+          "userMessage": "je veux editer un prompt pour seedance 2, je peux te le partager ?",
+          "expect": {
+            "action": "await_prompt_paste",
+            "selectedModel": "seedance-2-0",
+            "noRecommendations": true,
+            "mustMentionAny": ["colle ton prompt", "paste"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "prompt-paste-after-intake",
+      "label": "Prompt paste after intake",
+      "category": "prompt_generation_issue",
+      "turns": [
+        {
+          "label": "asks to share a prompt",
+          "userMessage": "je veux editer un prompt pour seedance 2, je peux te le partager ?",
+          "expect": {
+            "stage": "awaiting_prompt_paste",
+            "selectedModel": "seedance-2-0"
+          }
+        },
+        {
+          "label": "pastes prompt",
+          "userMessage": "A sneaker spins on a concrete floor with a quick camera move and neon light",
+          "expect": {
+            "action": "improve_prompt",
+            "notStage": "awaiting_model_choice",
+            "currentPromptPresent": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "current-prompt-improvement",
+      "label": "Current prompt improvement",
+      "category": "prompt_generation_issue",
+      "turns": [
+        {
+          "label": "improves existing perfume prompt",
+          "userMessage": "make it more premium",
+          "currentPrompt": "Perfume bottle on marble, cinematic",
+          "selectedModel": "kling-3-pro",
+          "expect": {
+            "action": "improve_prompt",
+            "workflow": "text-to-image-then-image-to-video",
+            "stage": "awaiting_confirmation",
+            "mustMentionAny": ["Here’s what I’ll build", "Here's what I'll build"],
+            "mustMention": ["Generate the prompt"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "duration-edit-confirmation",
+      "label": "Duration edit during confirmation",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "spokesperson product reference brief",
+          "userMessage": "j aimerai un spokesperson avec mon produit dans les mains, j ai juste une image",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "chooses best card",
+          "userMessage": "Choose best",
+          "pickTier": "best",
+          "expect": {
+            "notStage": "awaiting_model_choice",
+            "selectedModelPresent": true
+          }
+        },
+        {
+          "label": "adds product and TikTok dialogue details",
+          "userMessage": "un casque audio, je veux qu ils disent que c est beau et que le son est top, pour TikTok en mode influencer en anglais",
+          "expect": {
+            "stage": "awaiting_confirmation",
+            "mustMention": ["Duration:", "Estimated price:"]
+          }
+        },
+        {
+          "label": "changes duration only",
+          "userMessage": "je veux que ca dure 15 secondes",
+          "expect": {
+            "action": "build_prompt",
+            "notStage": "awaiting_model_choice",
+            "selectedModelSameAsPrevious": true,
+            "mustMention": ["Duration: 15 seconds"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "format-edit-confirmation",
+      "label": "Format change during confirmation",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "starts clear perfume brief",
+          "userMessage": "Luxury perfume ad on black marble, premium look, slow camera push-in",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "chooses medium",
+          "userMessage": "Choose medium",
+          "pickTier": "medium",
+          "expect": {
+            "notStage": "awaiting_model_choice",
+            "selectedModelPresent": true
+          }
+        },
+        {
+          "label": "changes format to vertical",
+          "userMessage": "mets le format en 9:16",
+          "expect": {
+            "action": "build_prompt",
+            "selectedModelSameAsPrevious": true,
+            "notStage": "awaiting_model_choice",
+            "mustMentionAny": ["9:16", "vertical"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "model-switch-confirmation",
+      "label": "Model switch during confirmation",
+      "category": "state_memory_error",
+      "turns": [
+        {
+          "label": "starts car brief",
+          "userMessage": "cinematic car commercial at night, premium reflections",
+          "expect": {
+            "stage": "awaiting_model_choice",
+            "hasRecommendations": true
+          }
+        },
+        {
+          "label": "chooses best",
+          "userMessage": "Choose best",
+          "pickTier": "best",
+          "expect": {
+            "notStage": "awaiting_model_choice",
+            "selectedModelPresent": true
+          }
+        },
+        {
+          "label": "switches model explicitly",
+          "userMessage": "change model to seedance",
+          "expect": {
+            "action": "select_model",
+            "selectedModel": "seedance-2-0",
+            "notStage": "awaiting_model_choice"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uploaded-person-speaking",
+      "label": "Uploaded person image speaking",
+      "category": "asset_reference_routing",
+      "turns": [
+        {
+          "label": "asks to animate person reference speaking",
+          "userMessage": "Animate this person image speaking to camera",
+          "uploadedAsset": {
+            "type": "image",
+            "hasPerson": true,
+            "isReferenceImage": true
+          },
+          "expect": {
+            "normalizedIntent": "person_reference_i2v",
+            "workflow": "image-to-video",
+            "hasRecommendations": true,
+            "warningsMentionAny": ["person", "character", "reference", "Kling", "LTX"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "product-reference-label-risk",
+      "label": "Product reference with text risk",
+      "category": "asset_reference_routing",
+      "turns": [
+        {
+          "label": "asks product photo animation with label",
+          "userMessage": "Animate this skincare bottle product photo, preserve label and packaging, 9:16",
+          "uploadedAsset": {
+            "type": "image",
+            "hasProduct": true,
+            "hasLogo": true,
+            "hasText": true,
+            "isReferenceImage": true
+          },
+          "expect": {
+            "workflow": "image-to-video",
+            "hasRecommendations": true,
+            "warningsMentionAny": ["Exact labels", "logos", "legal copy", "tiny text"],
+            "warningsMustNotMention": ["Person/character reference"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "video-to-video-restyle",
+      "label": "Video-to-video restyle",
+      "category": "model_recommendation_issue",
+      "turns": [
+        {
+          "label": "asks to restyle uploaded video",
+          "userMessage": "I have a short video, restyle it as a premium cinematic ad",
+          "selectedWorkflow": "video-to-video",
+          "expect": {
+            "workflow": "video-to-video",
+            "hasRecommendations": true,
+            "mustNotMention": ["What video are you trying to create"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-prompt-improvement",
+      "label": "Ambiguous prompt improvement",
+      "category": "language_issue",
+      "turns": [
+        {
+          "label": "asks make it better without context",
+          "userMessage": "make it better",
+          "expect": {
+            "action": "ask_clarification",
+            "noRecommendations": true,
+            "mustMentionAny": ["What prompt do you want me to improve", "What video"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "upload-navigation",
+      "label": "Navigation help: image upload",
+      "category": "site_or_navigation_help",
+      "turns": [
+        {
+          "label": "asks where to upload image",
+          "userMessage": "where do I upload an image?",
+          "expect": {
+            "task": "asset_reference_help",
+            "mode": "product_help",
+            "noRecommendations": true,
+            "mustMentionAny": ["image-to-video", "reference image"]
+          }
+        }
+      ]
+    }
+  ]
+}
