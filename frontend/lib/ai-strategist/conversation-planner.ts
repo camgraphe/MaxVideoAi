@@ -115,6 +115,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const hasPreviousBrief = Boolean(previousBrief && previousBrief !== 'Unspecified video brief.');
   const selectedTier = resolveTier(normalized, hasPreviousBrief) ?? resolveAdvisorChoiceTier(normalized, hasPreviousBrief);
   const selectedModel = resolveModelId(normalized, input.conversationState?.lastRecommendations);
+  const modelReferenceQuestion = isModelReferenceQuestion(normalized);
   const promptRequest = isPromptCreationRequest(normalized);
   const improvementRequest = isPromptImprovementRequest(normalized);
   const existingPromptEditRequest = isExistingPromptEditRequest(normalized);
@@ -336,7 +337,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
     };
   }
 
-  if (selectedModel) {
+  if (selectedModel && !modelReferenceQuestion) {
     if (hasPreviousBrief) {
       return {
         action: 'select_model',
@@ -347,6 +348,19 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         shouldUsePreviousBrief: true,
         shouldUseCurrentPrompt: false,
         confidence: 0.92,
+      };
+    }
+
+    if (hasCreativeBriefForExplicitModel(normalized)) {
+      return {
+        action: 'select_model',
+        rawUserMessage,
+        resolvedBrief: rawUserMessage,
+        selectedModel,
+        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        shouldUsePreviousBrief: false,
+        shouldUseCurrentPrompt: false,
+        confidence: 0.9,
       };
     }
 
@@ -856,6 +870,103 @@ function isContextualBriefRevision(text: string): boolean {
 
 function isShortModelSelection(text: string): boolean {
   return text.split(/\s+/).filter(Boolean).length <= 4;
+}
+
+function hasCreativeBriefForExplicitModel(text: string): boolean {
+  if (!text) return false;
+  if (isProductHelpRequest(text) || resolveNavigationSuggestion(text)) return false;
+  if (isExistingPromptEditRequest(text) || isPromptShareOffer(text)) return false;
+  if (isPromptCreationRequest(text) && !hasConcreteCreativeSubject(text)) return false;
+  return hasConcreteCreativeSubject(text) || containsAny(text, [
+    'ad',
+    'ads',
+    'pub',
+    'commercial',
+    'campaign',
+    'video',
+    'scene',
+    'shot',
+    'tiktok',
+    'instagram',
+    'youtube',
+    'cinematic',
+    'luxury',
+    'luxe',
+    'product',
+    'produit',
+    'spokesperson',
+    'avatar',
+    'influencer',
+    'voiceover',
+    'dialogue',
+  ]);
+}
+
+function hasConcreteCreativeSubject(text: string): boolean {
+  return containsAny(text, [
+    'car',
+    'voiture',
+    'auto',
+    'vehicle',
+    'suv',
+    'perfume',
+    'bottle',
+    'skincare',
+    'jewelry',
+    'jewellery',
+    'watch',
+    'sneaker',
+    'shoe',
+    'headphone',
+    'headphones',
+    'casque',
+    'speaker',
+    'drink',
+    'beverage',
+    'food',
+    'restaurant',
+    'fighter',
+    'fight',
+    'character',
+    'creature',
+    'person',
+    'human',
+    'face',
+    'portrait',
+    'landscape',
+    'city',
+    'street',
+    'beach',
+    'mountain',
+    'room',
+    'studio',
+    'office',
+  ]);
+}
+
+function isModelReferenceQuestion(text: string): boolean {
+  if (!text) return false;
+  if (/\b(?:better than|versus|vs|difference between|compare|comparison)\b/.test(text)) return true;
+  if (/\b(?:or|ou)\b/.test(text) && containsAny(text, ['seedance', 'sidance', 'kling', 'veo', 'ltx', 'pika', 'hailuo', 'sora', 'happy horse'])) return true;
+  if (containsAny(text, ['tu conseilles', 'tu conseil', 'conseilles plutot', 'conseille plutot', 'plutot', 'plutôt'])) return true;
+  if (containsAny(text, ['which model', 'what model', 'which engine', 'what engine', 'not sure which model', 'not sure which workflow'])) return true;
+  if (/^(?:does|do|can|is|are)\b/.test(text) && containsAny(text, [
+    'support',
+    'supports',
+    'audio',
+    'lip sync',
+    'lipsync',
+    'settings',
+    'duration',
+    'resolution',
+    'price',
+    'pricing',
+    'cost',
+    'available',
+  ])) {
+    return true;
+  }
+  return false;
 }
 
 function includesPhrase(text: string, phrase: string): boolean {

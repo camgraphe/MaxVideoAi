@@ -3,6 +3,7 @@
 
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import { MessageCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -35,6 +36,7 @@ export function Composer({
   error,
   messages,
   textareaRef,
+  onOpenPromptAssistant,
   onGenerate,
   preflight,
   promptField,
@@ -287,6 +289,17 @@ export function Composer({
                 ) : null}
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
+                {onOpenPromptAssistant ? (
+                  <button
+                    type="button"
+                    aria-label="Open AI Assistant prompt helper"
+                    title="Open AI Assistant prompt helper"
+                    onClick={onOpenPromptAssistant}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-text-secondary transition hover:border-border-strong hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
+                  >
+                    <MessageCircle className="h-4 w-4" strokeWidth={1.8} />
+                  </button>
+                ) : null}
                 {multiPrompt ? (
                   <Button
                     type="button"

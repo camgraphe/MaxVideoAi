@@ -189,7 +189,7 @@ export function AiStrategistChatClient() {
       {
         id: 'intro',
         role: 'assistant',
-        text: introMessage,
+        text: AI_STRATEGIST_INTRO_MESSAGE,
       },
     ]);
     setLastContext(null);
@@ -257,7 +257,7 @@ export function AiStrategistChatClient() {
       ...(lastResult?.workflow ? { lastSelectedWorkflow: lastResult.workflow } : {}),
       ...(lastResult?.sanitizedFinalOutput?.finalPrompt ? { lastFinalPrompt: lastResult.sanitizedFinalOutput.finalPrompt } : {}),
       ...(lastResult?.conversationStage ? { stage: lastResult.conversationStage } : {}),
-      ...(lastResult?.briefCompletion ? { lastBriefCompletion: lastResult.briefCompletion } : {}),
+      ...(lastResult?.briefCompletion ? { lastBriefCompletion: toConversationBriefCompletion(lastResult.briefCompletion) } : {}),
     };
   }
 
@@ -692,10 +692,11 @@ function PromptPreview({ result }: { result: AiStrategistPlaygroundResult }) {
   const output = result.sanitizedFinalOutput;
   const [copied, setCopied] = useState(false);
   if (!output) return null;
+  const finalPrompt = output.finalPrompt;
 
   async function copyPrompt() {
     try {
-      await navigator.clipboard.writeText(output.finalPrompt);
+      await navigator.clipboard.writeText(finalPrompt);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1400);
     } catch {
@@ -718,7 +719,7 @@ function PromptPreview({ result }: { result: AiStrategistPlaygroundResult }) {
           </button>
         }
       >
-        <pre className={preClassName}>{output.finalPrompt}</pre>
+        <pre className={preClassName}>{finalPrompt}</pre>
       </PreviewSection>
       <CompactDetails title="Negative prompt">
         <pre className={compactPreClassName}>{output.negativePrompt}</pre>
@@ -812,6 +813,20 @@ function buildMissingInfoChips(result: AiStrategistPlaygroundResult): string[] {
   if (text.includes('setting') || text.includes('street') || text.includes('arena') || text.includes('rooftop')) chips.push('Street', 'Rooftop', 'Arena');
   if (!chips.length) chips.push('Premium', 'Fast social', 'Cinematic');
   return Array.from(new Set(chips)).slice(0, 6);
+}
+
+function toConversationBriefCompletion(
+  completion: NonNullable<AiStrategistPlaygroundResult['briefCompletion']>
+): NonNullable<AiStrategistPlaygroundInput['conversationState']>['lastBriefCompletion'] {
+  return {
+    resolvedBrief: completion.resolvedBrief,
+    selectedModel: completion.selectedModel,
+    ...(completion.selectedTier ? { selectedTier: completion.selectedTier } : {}),
+    selectedWorkflow: completion.selectedWorkflow,
+    missingFields: completion.missingFields.map((field) => field.label),
+    assumptions: completion.assumptions,
+    confirmationSummary: completion.confirmationSummary,
+  };
 }
 
 function getModelPositionTag(recommendation: AiStrategistRecommendation): string {

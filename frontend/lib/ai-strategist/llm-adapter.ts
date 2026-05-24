@@ -1132,7 +1132,6 @@ function shouldPreferCommercialObjectStartingImage(
 ): boolean {
   if (input.selectedWorkflow || input.uploadedAsset?.isReferenceImage) return false;
   if (output.intent !== 'product_ad' && output.intent !== 'product_reference_i2v') return false;
-  if (output.intent === 'social_ad' || output.intent === 'draft_storyboard') return false;
 
   const text = [input.rawUserMessage, input.currentPrompt, output.normalizedBrief, ...output.styleHints]
     .filter(Boolean)

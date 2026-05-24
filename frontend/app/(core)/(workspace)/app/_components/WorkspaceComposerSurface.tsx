@@ -256,6 +256,19 @@ export function WorkspaceComposerSurface({
     [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]
   );
 
+  const handleOpenPromptAssistant = useCallback(() => {
+    const opened =
+      window.__mvaiAiStrategistBeta?.openWidget?.({
+        source: 'prompt_panel',
+        mode: 'prompt_assistant',
+        currentPrompt: prompt,
+      }) ?? false;
+
+    if (!opened) {
+      showNotice('Open the Strategist beta from the sidebar to improve this prompt.');
+    }
+  }, [prompt, showNotice]);
+
   useEffect(() => {
     const cfgParam = selectedEngine.params?.cfg_scale;
     if (cfgParam) {
@@ -317,6 +330,7 @@ export function WorkspaceComposerSurface({
       error={preflightError}
       messages={preflight?.ok ? preflight.messages : undefined}
       textareaRef={composerRef}
+      onOpenPromptAssistant={handleOpenPromptAssistant}
       onGenerate={startRender}
       preflight={preflight}
       promptField={inputSchemaSummary.promptField}

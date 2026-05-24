@@ -21,6 +21,7 @@ import { Chip } from '@/components/ui/Chip';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ButtonLink } from '@/components/ui/Button';
+import { AiStrategistBetaSidebarWidget } from '@/components/ai-strategist/AiStrategistBetaSidebarWidget';
 import { FEATURES } from '@/content/feature-flags';
 
 type NavItemDefinition = {
@@ -135,6 +136,9 @@ export function AppSidebar() {
           </ul>
         </nav>
         <div className="mt-auto px-3 pb-5 pt-3">
+          <ul className="mb-3 flex w-full flex-col gap-1">
+            <AiStrategistBetaSidebarWidget />
+          </ul>
           <div className="rounded-card border border-hairline bg-surface p-4 shadow-sm">
             <p className="text-xs text-text-secondary">
               {t('workspace.sidebar.newModel.label', 'New model')}

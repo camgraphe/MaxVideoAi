@@ -873,7 +873,7 @@ function validateWorkflowPromptStructure(
     return;
   }
 
-  if (context.selectedWorkflow !== 'text-to-image-then-image-to-video' && hasStartingImageBlocks) {
+  if (hasStartingImageBlocks) {
     issues.push(errorIssue('workflow_prompt_structure_mismatch', 'Prompt blocks do not match the selected workflow.'));
     return;
   }

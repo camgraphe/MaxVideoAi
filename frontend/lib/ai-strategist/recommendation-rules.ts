@@ -332,27 +332,27 @@ function getPreferredCandidatesForTier(
   const focus = detectFocusArea(brief);
 
   if (isDraftTestingBrief(brief)) {
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: ['seedance-2-0-fast'],
       medium: ['veo-3-1-lite', 'seedance-2-0'],
       value: ['ltx-2-3', 'veo-3-1-lite'],
-    }[tier]);
+    });
   }
 
   if (isPersonReferenceImageToVideoBrief(brief)) {
     if (isCompatibleGeneratedPersonWorkflow(brief)) {
-      return candidatesByIds(scoredModels, {
+      return candidatesByTier(scoredModels, tier, {
         best: ['kling-3-pro', 'seedance-2-0', 'kling-3-standard', 'ltx-2-3', 'veo-3-1-fast', 'happy-horse-1-0'],
         medium: ['seedance-2-0'],
         value: ['ltx-2-3', 'veo-3-1-lite', 'seedance-2-0-fast', 'kling-3-standard', 'hailuo'],
-      }[tier]);
+      });
     }
 
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: ['kling-3-pro', 'kling-3-standard', 'ltx-2-3', 'veo-3-1-fast'],
       medium: ['kling-3-standard', 'ltx-2-3', 'kling-3-pro', 'veo-3-1-fast', 'happy-horse-1-0'],
       value: ['ltx-2-3', 'veo-3-1-lite', 'kling-3-standard', 'hailuo', 'pika'],
-    }[tier]);
+    });
   }
 
   if (isLipSyncBrief(brief)) {
@@ -361,70 +361,66 @@ function getPreferredCandidatesForTier(
         ? ['veo-3-1', 'seedance-2-0', 'kling-3-pro', 'ltx-2-3']
         : ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'];
 
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: bestIds,
       medium: ['kling-3-pro', 'veo-3-1-fast', 'seedance-2-0'],
       value: ['veo-3-1-lite', 'ltx-2-3', 'kling-3-standard', 'seedance-2-0-fast'],
-    }[tier]);
+    });
   }
 
   if (isVeoLiteBudgetBrief(brief)) {
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: ['veo-3-1-fast', 'seedance-2-0', 'kling-3-pro'],
       medium: ['seedance-2-0', 'veo-3-1-fast'],
       value: ['veo-3-1-lite'],
-    }[tier]);
+    });
   }
 
   if (focus === 'social' && (brief.speedPriority === 'high' || brief.budgetPriority === 'value')) {
     const veoFriendly = isVeoFriendlySocialOrCommercialBrief(brief);
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: ['seedance-2-0'],
       medium: veoFriendly ? ['veo-3-1-fast', 'kling-3-pro'] : ['kling-3-pro', 'veo-3-1-fast'],
       value: isPlayfulEffectBrief(brief) ? ['pika'] : veoFriendly ? ['veo-3-1-lite', 'seedance-2-0-fast'] : ['seedance-2-0-fast'],
-    }[tier]);
+    });
   }
 
   if (focus === 'product') {
     if (isKling4kEscalationBrief(brief)) {
-      return candidatesByIds(scoredModels, {
+      return candidatesByTier(scoredModels, tier, {
         best: ['kling-3-4k'],
         medium: ['kling-3-pro'],
         value: ['kling-3-standard', 'seedance-2-0', 'veo-3-1-lite'],
-      }[tier]);
+      });
     }
 
     if (isStrictProductPreservationBrief(brief)) {
-      return candidatesByIds(scoredModels, {
+      return candidatesByTier(scoredModels, tier, {
         best: ['kling-3-pro'],
         medium: ['kling-3-standard'],
         value: ['seedance-2-0', 'seedance-2-0-fast', 'kling-3-standard', 'veo-3-1-lite'],
-      }[tier]);
+      });
     }
 
     if (isSocialFirstProductMotionBrief(brief)) {
       const veoFriendly = isVeoFriendlySocialOrCommercialBrief(brief);
-      return candidatesByIds(scoredModels, {
+      return candidatesByTier(scoredModels, tier, {
         best: ['kling-3-pro'],
         medium: veoFriendly ? ['seedance-2-0', 'veo-3-1-fast', 'kling-3-standard'] : ['seedance-2-0', 'kling-3-standard', 'veo-3-1-fast'],
         value: veoFriendly
           ? ['veo-3-1-lite', 'seedance-2-0-fast', 'seedance-2-0', 'kling-3-standard']
           : ['seedance-2-0-fast', 'seedance-2-0', 'veo-3-1-lite', 'kling-3-standard'],
-      }[tier]);
+      });
     }
 
-    return candidatesByIds(scoredModels, {
+    return candidatesByTier(scoredModels, tier, {
       best: ['kling-3-pro'],
       medium: ['kling-3-standard', 'veo-3-1-fast', 'seedance-2-0'],
       value: ['kling-3-standard', 'seedance-2-0', 'seedance-2-0-fast', 'veo-3-1-lite'],
-    }[tier]);
+    });
   }
 
   if (tier !== 'value') return [];
-
-  if (focus === 'product') {
-    return candidatesByIds(scoredModels, ['kling-3-standard', 'seedance-2-0', 'seedance-2-0-fast', 'veo-3-1-lite', 'ltx-2-3']);
-  }
 
   if (focus === 'social' && isPlayfulEffectBrief(brief)) {
     return candidatesByIds(scoredModels, ['pika']);
@@ -443,6 +439,14 @@ function getPreferredCandidatesForTier(
   }
 
   return [];
+}
+
+function candidatesByTier(
+  scoredModels: readonly ScoredModel[],
+  tier: AiStrategistTierPosition,
+  idsByTier: Record<AiStrategistTierPosition, readonly AiStrategistModelId[]>
+): readonly ScoredModel[] {
+  return candidatesByIds(scoredModels, idsByTier[tier]);
 }
 
 function candidatesByIds(scoredModels: readonly ScoredModel[], ids: readonly AiStrategistModelId[]): readonly ScoredModel[] {
@@ -538,7 +542,7 @@ function buildMatchedSignals(
   brief: AiStrategistBrief & { goal: string; workflow: AiStrategistWorkflowId }
 ): readonly string[] {
   const focus = detectFocusArea(brief);
-  const signals = [focus, brief.workflow];
+  const signals: string[] = [focus, brief.workflow];
 
   if (model.supportedWorkflows.includes(brief.workflow)) signals.push('workflow-supported');
   if (isDraftTestingBrief(brief)) signals.push('draft-testing');

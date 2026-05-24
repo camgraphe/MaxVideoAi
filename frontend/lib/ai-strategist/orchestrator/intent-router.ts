@@ -42,7 +42,6 @@ export function resolveStrategistStage(input: {
     return 'answering_help';
   }
   if (input.task === 'new_video_brief' || input.task === 'model_advice') return 'recommending';
-  if (input.task === 'model_info_help') return 'answering_help';
   if (input.task === 'model_or_tier_selection') return 'collecting_details';
   if (input.task === 'prompt_build' || input.task === 'prompt_edit') return 'writing_prompt';
   return 'understanding';

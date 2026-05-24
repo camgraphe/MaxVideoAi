@@ -46,6 +46,7 @@ export interface ComposerProps {
   error?: string;
   messages?: string[];
   textareaRef?: Ref<HTMLTextAreaElement>;
+  onOpenPromptAssistant?: () => void;
   onGenerate?: () => void;
   iterations?: number;
   preflight?: PreflightResponse | null;

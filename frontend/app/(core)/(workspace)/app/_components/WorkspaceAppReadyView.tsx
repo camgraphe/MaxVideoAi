@@ -3,6 +3,7 @@
 import { WorkspaceAppShell } from './WorkspaceAppShell';
 import { WorkspaceComposerSurface } from './WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
+import { WorkspaceStrategistBetaBridge } from './WorkspaceStrategistBetaBridge';
 import type { useWorkspaceAppBootstrap } from '../_hooks/useWorkspaceAppBootstrap';
 import type { useWorkspaceAssets } from '../_hooks/useWorkspaceAssets';
 import type { useWorkspaceComposerState } from '../_hooks/useWorkspaceComposerState';
@@ -294,6 +295,23 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
+      />
+      <WorkspaceStrategistBetaBridge
+        engines={engines}
+        form={form}
+        prompt={prompt}
+        selectedEngine={selectedEngine}
+        activeMode={activeMode}
+        inputAssets={inputAssets}
+        price={price}
+        currency={currency}
+        setPrompt={setPrompt}
+        setNegativePrompt={setNegativePrompt}
+        handleEngineChange={handleEngineChange}
+        handleDurationChange={handleDurationChange}
+        handleResolutionChange={handleResolutionChange}
+        handleAspectRatioChange={handleAspectRatioChange}
+        showNotice={showNotice}
       />
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}

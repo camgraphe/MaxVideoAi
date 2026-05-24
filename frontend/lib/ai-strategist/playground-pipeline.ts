@@ -1,6 +1,7 @@
 import type {
   AiStrategistBriefRefinementConversationContext,
   AiStrategistNormalizedBrief,
+  AiStrategistBriefRefinementRecommendationSummary,
 } from './brief-normalization';
 import {
   assessStrategistBriefCompletion,
@@ -84,11 +85,11 @@ export type AiStrategistPlaygroundPromptContextSummary = {
   promptStructure: AiStrategistPromptStructureId;
   modelPagePromptStructureSource: string;
   workflowBlocks: string[];
-  warnings: string[];
+  warnings: readonly string[];
   durationGuidance: AiStrategistPromptGenerationContext['durationGuidance'];
   priceEstimate: AiStrategistPromptGenerationContext['priceEstimate'];
-  settingsGuidance: string[];
-  maxVideoAiRules: string[];
+  settingsGuidance: readonly string[];
+  maxVideoAiRules: readonly string[];
 };
 
 export type AiStrategistPlaygroundResult = {
@@ -302,7 +303,7 @@ export async function runAiStrategistPlaygroundPipeline(
     workflow,
     selectedTier: selectedTierForGuidance,
     sourceImageKind,
-    currentPrompt: body.currentPrompt || undefined,
+    currentPrompt: conversationPlan.shouldUseCurrentPrompt ? body.currentPrompt || undefined : undefined,
     uploadedAsset: body.uploadedAsset,
   });
 
@@ -441,6 +442,7 @@ function applyConversationPlan(
       ...body,
       mode: 'build_prompt',
       userMessage: plan.resolvedBrief ?? body.userMessage,
+      currentPrompt: plan.shouldUseCurrentPrompt ? body.currentPrompt : '',
       selectedTier: plan.selectedTier ?? body.selectedTier,
       selectedModel: plan.selectedModel ?? body.selectedModel,
       selectedWorkflow: plan.selectedWorkflow ?? body.selectedWorkflow,
@@ -1604,7 +1606,7 @@ function normalizeConversationState(state: unknown): StrategistConversationState
   return {
     ...(recentTurns?.length ? { recentTurns } : {}),
     ...(isRecord(state.lastNormalizedBrief) ? { lastNormalizedBrief: state.lastNormalizedBrief as AiStrategistNormalizedBrief } : {}),
-    ...(isRecord(state.lastRecommendations) ? { lastRecommendations: state.lastRecommendations as AiStrategistRecommendations } : {}),
+    ...(isRecord(state.lastRecommendations) ? { lastRecommendations: state.lastRecommendations as unknown as AiStrategistRecommendations } : {}),
     ...(lastSelectedModel ? { lastSelectedModel } : {}),
     ...(lastSelectedTier ? { lastSelectedTier } : {}),
     ...(lastSelectedWorkflow ? { lastSelectedWorkflow } : {}),
@@ -1649,7 +1651,7 @@ function summarizeRecommendationsForRefinement(
 
 function summarizeRecommendationForRefinement(
   recommendation: AiStrategistRecommendations['best']
-): NonNullable<AiStrategistBriefRefinementConversationContext['lastRecommendations']>['best'] {
+): AiStrategistBriefRefinementRecommendationSummary {
   return {
     modelId: recommendation.model.id,
     label: recommendation.model.label,

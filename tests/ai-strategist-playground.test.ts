@@ -182,6 +182,29 @@ test('AI Strategist conversation planner asks for a brief when only model prompt
   assert.equal(result.recommendations, undefined);
 });
 
+test('AI Strategist honors an explicit model inside a new creative brief', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'je veux une pub pour voiture de luxe veo 3.1 lite',
+      mode: 'recommend',
+      surface: 'chat',
+      currentPrompt: 'A quiet cinematic shot of neon-lit Tokyo streets in the rain',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'select_model');
+  assert.equal(result.selectedModel, 'veo-3-1-lite');
+  assert.equal(result.mode, 'build_prompt');
+  assert.notEqual(result.conversationStage, 'awaiting_model_choice');
+  assert.match(result.promptGenerationContext?.userBrief ?? '', /luxury car|car commercial|voiture|luxe/i);
+  assert.equal(result.promptGenerationContext?.currentPrompt, undefined);
+  assert.doesNotMatch(result.assistantMessage, /compare three routes/i);
+  assert.equal(result.sanitizedFinalOutput, undefined);
+});
+
 test('AI Strategist chat accepts an existing prompt paste flow for Seedance instead of asking for a new video brief', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -1730,10 +1753,10 @@ test('AI Strategist playground admin route and page stay internal-only', () => {
   assert.match(pageSource, /AI_STRATEGIST_BETA_NAME/);
   assert.match(pageSource, /AiStrategistChatClient/);
   assert.match(pageSource, /Technical Debug Playground/);
-  assert.match(brandingSource, /MaxVideoAI Strategist Beta/);
-  assert.match(brandingSource, /AI Video Strategist/);
-  assert.match(brandingSource, /Strategist/);
-  assert.match(brandingSource, /Ask the AI Video Strategist/);
+  assert.match(brandingSource, /MaxVideoAI Assistant Beta/);
+  assert.match(brandingSource, /AI Video Assistant/);
+  assert.match(brandingSource, /Assistant/);
+  assert.match(brandingSource, /Ask the AI Assistant/);
   assert.match(brandingSource, /paste a prompt to improve/);
   assert.match(chatSource, /ai-strategist-overlay-preview/);
   assert.match(chatSource, /ai-strategist-launcher/);
