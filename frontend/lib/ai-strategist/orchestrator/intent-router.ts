@@ -66,6 +66,7 @@ function resolveRecommendationTask(
   if (hasCreativeBriefWithModelWorkflowUncertainty(text)) return 'new_video_brief';
   if (asksForModelAdvice(text)) return 'model_advice';
   if (asksForWorkflow(text)) return 'workflow_help';
+  if (asksForNonVideoCreationSurface(text) && !hasVideoCreationIntent(text)) return 'navigation_help';
   if (asksForSiteNavigation(text) && !hasCreativeBriefSignal(text)) return 'navigation_help';
   if (/\bupload\b/.test(text) && /\b(?:image|img|photo|reference|asset|pic|logo|product|prod)\b/.test(text)) return 'asset_reference_help';
   if (asksForSiteNavigation(text)) return 'navigation_help';
@@ -362,12 +363,21 @@ function asksForSiteOverview(text: string): boolean {
   return containsAny(text, [
     'how does maxvideoai work',
     'how does the site work',
+    'how does this app work',
     'what is maxvideoai',
     'explain maxvideoai',
     'site overview',
+    'app overview',
+    'ecosystem',
+    'whole platform',
+    'what can i do on maxvideoai',
+    'what can users do on maxvideoai',
+    'what can the site do',
     'comment fonctionne maxvideoai',
     'comment marche maxvideoai',
     'explique maxvideoai',
+    'tout l ecosysteme',
+    'tout l’écosystème',
   ]);
 }
 
@@ -454,11 +464,62 @@ function hasCreativeCreationIntent(text: string): boolean {
   ]);
 }
 
+function hasVideoCreationIntent(text: string): boolean {
+  return /\b(?:video|videos|vid|clip|ad|ads|advert|commercial|reel|tiktok|shorts|animation|animate|motion|i2v|v2v|text to video|image to video|video to video|pub)\b/.test(text);
+}
+
+function asksForNonVideoCreationSurface(text: string): boolean {
+  return containsAny(text, [
+    'generate image',
+    'create image',
+    'make image',
+    'image generator',
+    'text to image',
+    'edit image',
+    'generate audio',
+    'create audio',
+    'audio generator',
+    'make music',
+    'sound design',
+    'library',
+    'recent renders',
+    'render history',
+    'saved assets',
+    'tools',
+    'upscale',
+    'character builder',
+    'angle tool',
+  ]);
+}
+
 function asksForSiteNavigation(text: string): boolean {
   if (containsAny(text, ['can u just generate it', 'can you just generate it', 'can you generate it for me'])) return false;
   if ((containsAny(text, ['i uploaded', 'i have uploaded']) || /\buploaded\b/.test(text)) && hasCreativeCreationIntent(text)) return false;
-  if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing'])) return false;
-  return containsAny(text, ['compare', 'generate', 'generating', 'generator', 'models', 'model page', 'model pages', 'engines', 'upload', 'pricing', 'examples']);
+  if (!containsAny(text, ['where', 'show me', 'open', 'go to', 'find', 'compare', 'generate', 'generating', 'upload', 'pricing', 'library', 'history', 'tools'])) return false;
+  return containsAny(text, [
+    'compare',
+    'generate',
+    'generating',
+    'generator',
+    'models',
+    'model page',
+    'model pages',
+    'engines',
+    'upload',
+    'pricing',
+    'examples',
+    'library',
+    'history',
+    'recent renders',
+    'saved assets',
+    'generate image',
+    'generate audio',
+    'image generator',
+    'audio generator',
+    'tools',
+    'upscale',
+    'character builder',
+  ]);
 }
 
 function asksForModelNavigation(text: string): boolean {

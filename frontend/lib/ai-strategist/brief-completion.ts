@@ -41,6 +41,7 @@ export function assessStrategistBriefCompletion(input: {
         normalizedBrief: input.normalizedBrief,
         workflow: input.promptGenerationContext.selectedWorkflow,
         requiredFields,
+        modelId: input.promptGenerationContext.selectedModel.id,
       }).slice(0, 4);
   const assumptions = missingFields.length
     ? []
@@ -79,12 +80,14 @@ function selectMissingFields(input: {
   normalizedBrief: AiStrategistNormalizedBrief;
   workflow: AiStrategistWorkflowId;
   requiredFields: readonly string[];
+  modelId: AiStrategistModelId;
 }): StrategistBriefMissingField[] {
   if (isCombatBrief(input.text)) {
     return [
       { label: 'Subject', question: 'Do you want one fighter, two fighters, or a group moment?' },
       { label: 'Style', question: 'Should it feel realistic/cinematic or more arcade/stylized?' },
       { label: 'Location', question: 'Any setting: street, arena, rooftop, dojo, or something else?' },
+      ...missingSettingsQuestion(input.text, input.modelId),
     ];
   }
 
@@ -96,6 +99,7 @@ function selectMissingFields(input: {
     if (!hasMotion(input.text)) missing.push({ label: 'Motion', question: 'What is the main movement or action?' });
     if (!hasCamera(input.text)) missing.push({ label: 'Camera', question: 'What framing or camera move should I use?' });
     if (!hasStyle(input.text)) missing.push({ label: 'Atmosphere', question: 'What mood, lighting, or environment should it have?' });
+    if (missing.length) missing.push(...missingSettingsQuestion(input.text, input.modelId));
     return missing;
   }
 
@@ -112,6 +116,7 @@ function selectMissingFields(input: {
     if (!hasCamera(input.text)) {
       missing.push({ label: 'Camera', question: 'What format and camera movement should I assume?' });
     }
+    if (missing.length) missing.push(...missingSettingsQuestion(input.text, input.modelId));
     return missing;
   }
 
@@ -127,6 +132,7 @@ function selectMissingFields(input: {
   if (!hasStyle(input.text)) {
     missing.push({ label: 'Style', question: 'Should the look be realistic, cinematic, stylized, playful, or something else?' });
   }
+  if (missing.length) missing.push(...missingSettingsQuestion(input.text, input.modelId));
 
   return missing;
 }
@@ -157,6 +163,7 @@ function buildConfirmationSummary(input: {
     `Model: ${input.context.selectedModel.label}`,
     `Workflow: ${input.context.selectedWorkflow}`,
     `Format: ${input.normalizedBrief.aspectRatioHint ?? inferFormat(input.resolvedBrief)}`,
+    `Resolution: ${input.context.resolutionGuidance.label} - ${input.context.resolutionGuidance.reason}`,
     `Duration: ${input.context.durationGuidance.label} - ${input.context.durationGuidance.reason}`,
     `${input.context.priceEstimate.label} - preview only; final generator quote wins`,
     `Style: ${summarizeStyle(input.resolvedBrief, input.normalizedBrief)}`,
@@ -186,6 +193,23 @@ function buildAssumptions(input: {
     assumptions.push('motion: one controlled reveal from the starting image');
   }
   return assumptions;
+}
+
+function missingSettingsQuestion(text: string, modelId: AiStrategistModelId): StrategistBriefMissingField[] {
+  const missingDuration = !hasDuration(text);
+  const missingResolution = !hasResolution(text);
+  if (!missingDuration && !missingResolution) return [];
+
+  if (missingDuration && missingResolution) {
+    return [{
+      label: 'Duration/resolution',
+      question: `Do you want a specific duration and resolution, or should I recommend them for ${modelShortName(modelId)}?`,
+    }];
+  }
+  if (missingDuration) {
+    return [{ label: 'Duration', question: `What duration should I target, or should I use the recommended ${modelShortName(modelId)} length?` }];
+  }
+  return [{ label: 'Resolution', question: `Should I use 720p for value, 1080p for standard quality, or 4K if this model supports it?` }];
 }
 
 function shouldUseProactiveProductReferenceDefaults(input: {
@@ -221,6 +245,22 @@ function hasStyle(text: string): boolean {
 
 function hasAudio(text: string): boolean {
   return /\b(audio|sound|sfx|music|voiceover|dialogue|spoken|lip-sync|impact|ambience|silent)\b/.test(text);
+}
+
+function hasDuration(text: string): boolean {
+  return /\b\d{1,2}\s*-?\s*(?:seconds?|secs?|sec|s|secondes?)\b/.test(text);
+}
+
+function hasResolution(text: string): boolean {
+  return /\b(?:480p|720p|1080p|4k)\b/.test(text);
+}
+
+function modelShortName(modelId: AiStrategistModelId): string {
+  if (modelId.startsWith('veo-3-1')) return 'Veo';
+  if (modelId.startsWith('kling-3')) return 'Kling';
+  if (modelId.startsWith('seedance-2-0')) return 'Seedance';
+  if (modelId === 'ltx-2-3') return 'LTX';
+  return 'this model';
 }
 
 function isCombatBrief(text: string): boolean {

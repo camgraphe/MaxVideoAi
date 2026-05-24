@@ -1,6 +1,7 @@
 import type { StrategistOrchestratorTask } from '../orchestrator';
 import type { StrategistKnowledgeToolInput, StrategistKnowledgeToolName, StrategistKnowledgeToolResult } from './types';
 import { answerEnginePricingQuestion, answerEngineSettingsQuestion } from './engine-catalog-knowledge';
+import { answerCapabilityQuestion, answerSiteOverviewQuestion } from './ecosystem-knowledge';
 import { answerExamplesQuestion } from './examples-knowledge';
 import { answerModelInfoQuestion } from './model-knowledge';
 import { answerSiteNavigationQuestion } from './site-navigation-knowledge';
@@ -27,6 +28,8 @@ export function runStrategistKnowledgeTool(input: {
   toolInput: StrategistKnowledgeToolInput;
 }): StrategistKnowledgeToolResult | null {
   const toolName = selectStrategistKnowledgeTool(input.task, input.toolInput.rawUserMessage);
+  if (toolName === 'capability_help') return answerCapabilityQuestion(input.toolInput);
+  if (toolName === 'site_overview') return answerSiteOverviewQuestion(input.toolInput);
   if (toolName === 'engine_pricing') return answerEnginePricingQuestion(input.toolInput);
   if (toolName === 'engine_settings') return answerEngineSettingsQuestion(input.toolInput);
   if (toolName === 'examples_help') return answerExamplesQuestion(input.toolInput);

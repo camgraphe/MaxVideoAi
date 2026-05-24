@@ -951,6 +951,109 @@ test('AI Strategist orchestrator answers general site overview without model car
   assert.match(result.assistantMessage, /price shown before generation/i);
 });
 
+test('AI Strategist answers ecosystem overview from structured product knowledge', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How does the MaxVideoAI ecosystem work?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'site_overview_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.ok(result.knowledgeToolResults?.length);
+  assert.equal(result.knowledgeToolResults[0].toolName, 'site_overview');
+  assert.ok(result.knowledgeToolResults[0].sources.some((source: { id: string }) => source.id === 'maxvideoai_ecosystem_map'));
+  assert.match(result.assistantMessage, /Generate Video/i);
+  assert.match(result.assistantMessage, /Generate Image/i);
+  assert.match(result.assistantMessage, /Generate Audio/i);
+  assert.match(result.assistantMessage, /Library/i);
+  assert.match(result.assistantMessage, /Pricing|quote/i);
+});
+
+test('AI Strategist routes library questions to saved assets and render history without video recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Where can I find my recent renders and saved assets?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.conversationPlan.action, 'navigation_help');
+  assert.equal(result.orchestrationPlan.task, 'navigation_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.equal(result.navigationSuggestion?.href, '/app/library');
+  assert.match(result.assistantMessage, /Library/i);
+  assert.match(result.assistantMessage, /recent renders|saved assets/i);
+  assert.match(result.assistantMessage, /\/app\/library/i);
+});
+
+test('AI Strategist routes image and audio creation questions to the right app surfaces', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const imageResult = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'How do I generate images instead of videos?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+  const audioResult = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Where do I make audio or sound design?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(imageResult.orchestrationPlan.task, 'navigation_help');
+  assert.equal(imageResult.mode, 'product_help');
+  assert.equal(imageResult.recommendations, undefined);
+  assert.equal(imageResult.navigationSuggestion?.href, '/app/image');
+  assert.match(imageResult.assistantMessage, /Generate Image/i);
+  assert.match(imageResult.assistantMessage, /\/app\/image/i);
+
+  assert.equal(audioResult.orchestrationPlan.task, 'navigation_help');
+  assert.equal(audioResult.mode, 'product_help');
+  assert.equal(audioResult.recommendations, undefined);
+  assert.equal(audioResult.navigationSuggestion?.href, '/app/audio');
+  assert.match(audioResult.assistantMessage, /Generate Audio/i);
+  assert.match(audioResult.assistantMessage, /\/app\/audio/i);
+});
+
+test('AI Strategist can describe non-video capabilities without starting model recommendations', async () => {
+  const playground = await loadPlaygroundModule();
+
+  const result = await playground.runAiStrategistPlaygroundPipeline(
+    {
+      userMessage: 'Can you help with image generation too?',
+      mode: 'recommend',
+      surface: 'chat',
+    },
+    { env: {} }
+  );
+
+  assert.equal(result.orchestrationPlan.task, 'capability_help');
+  assert.equal(result.mode, 'product_help');
+  assert.equal(result.recommendations, undefined);
+  assert.match(result.assistantMessage, /^I can help/i);
+  assert.match(result.assistantMessage, /Generate Image/i);
+  assert.match(result.assistantMessage, /Generate Audio/i);
+  assert.doesNotMatch(result.assistantMessage, /I understand this as/i);
+});
+
 test('AI Strategist knowledge answers include grounded sources and no prompt writer', async () => {
   const playground = await loadPlaygroundModule();
 
@@ -1176,6 +1279,7 @@ test('AI Strategist chat asks targeted missing-field questions before prompt gen
   assert.ok((second.briefCompletion?.missingFields.length ?? 0) > 0);
   assert.match(second.assistantMessage, /Quick direction check/i);
   assert.match(second.assistantMessage, /one fighter, two fighters/i);
+  assert.match(second.assistantMessage, /duration and resolution|specific duration|resolution/i);
 });
 
 test('AI Strategist chat can make assumptions, confirm direction, then generate a final prompt', async () => {
@@ -1617,6 +1721,7 @@ test('AI Strategist carries requested aspect ratio from recommendation into fina
   );
 
   assert.match(second.assistantMessage, /Format: 9:16/i);
+  assert.match(second.assistantMessage, /Resolution:/i);
   assert.match(third.sanitizedFinalOutput?.finalPrompt ?? '', /9:16|vertical/i);
   assert.match((third.sanitizedFinalOutput?.settings ?? []).join('\n'), /9:16/);
 });

@@ -28,3 +28,18 @@ test('engine knowledge answers available durations and resolution settings', asy
   assert.match(result.answer, /aspect ratios/i);
   assert.ok(result.sources.some((source: { path?: string }) => source.path === 'frontend/config/engine-catalog.json'));
 });
+
+test('engine knowledge clamps Veo price estimates to catalog duration cap', async () => {
+  const { answerEnginePricingQuestion } = await import('../frontend/lib/ai-strategist/knowledge/engine-catalog-knowledge.ts');
+
+  const result = answerEnginePricingQuestion({
+    rawUserMessage: 'How much is Veo 3.1 for 15 seconds at 4K?',
+  });
+
+  assert.ok(result);
+  assert.match(result.answer, /Veo 3\.1/i);
+  assert.match(result.answer, /8 seconds/i);
+  assert.match(result.answer, /4k/i);
+  assert.doesNotMatch(result.answer, /15 seconds/);
+  assert.ok(result.warnings.some((warning: string) => /capped at 8 seconds/i.test(warning)));
+});

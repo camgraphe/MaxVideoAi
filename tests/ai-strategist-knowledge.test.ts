@@ -328,6 +328,56 @@ test('buildPromptGenerationContext preserves hyphenated requested durations', as
   assert.match(context.settingsGuidance.join('\n'), /Duration: 15 seconds/);
 });
 
+test('buildPromptGenerationContext clamps Veo requested durations to 8 seconds', async () => {
+  const { prompts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'veo-3-1',
+    workflow: 'text-to-video',
+    promptStructureId: 'cinematic-scene',
+    brief: 'Create a 15-second luxury car commercial with cinematic lighting.',
+  });
+
+  assert.equal(context.durationGuidance.seconds, 8);
+  assert.equal(context.durationGuidance.source, 'brief_adjusted');
+  assert.match(context.durationGuidance.reason, /adjusted to the selected model range/i);
+  assert.match(context.settingsGuidance.join('\n'), /Duration: 8 seconds/);
+});
+
+test('buildPromptGenerationContext carries selected resolution into pricing and rules', async () => {
+  const { prompts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'veo-3-1-fast',
+    workflow: 'text-to-video',
+    promptStructureId: 'cinematic-scene',
+    brief: 'Create an 8 second 4K luxury car commercial in 9:16.',
+  });
+
+  assert.equal(context.durationGuidance.seconds, 8);
+  assert.equal(context.resolutionGuidance.resolution, '4k');
+  assert.equal(context.resolutionGuidance.aspectRatio, '9:16');
+  assert.match(context.priceEstimate.label, /4K 9:16/);
+  assert.match(context.settingsGuidance.join('\n'), /Resolution: 4K 9:16/);
+  assert.ok(context.maxVideoAiRules.some((rule: string) => /selected resolution/i.test(rule)));
+});
+
+test('buildPromptGenerationContext adjusts unsupported requested resolution', async () => {
+  const { prompts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'veo-3-1-lite',
+    workflow: 'text-to-video',
+    promptStructureId: 'social-ad',
+    brief: 'Create an 8 second 4K TikTok product ad.',
+  });
+
+  assert.equal(context.resolutionGuidance.resolution, '720p');
+  assert.equal(context.resolutionGuidance.source, 'brief_adjusted');
+  assert.match(context.resolutionGuidance.warning ?? '', /does not support 4K/i);
+  assert.doesNotMatch(context.settingsGuidance.join('\n'), /Resolution: 4K/);
+});
+
 test('buildBriefRefinementLLMRequest defines the future normalized brief contract', async () => {
   const { llmContracts } = await loadStrategistModules();
 
@@ -506,6 +556,39 @@ test('validatePromptWriterLLMOutput rejects unsupported high-resolution claims',
     assert.equal(validation.ok, false, `${resolutionClaim} should be rejected`);
     assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'unsupported_resolution_claim'));
   }
+});
+
+test('validatePromptWriterLLMOutput rejects 4K when strategist selected a lower resolution', async () => {
+  const { prompts, llmContracts } = await loadStrategistModules();
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'veo-3-1-fast',
+    workflow: 'text-to-video',
+    promptStructureId: 'cinematic-scene',
+    brief: 'Fast cinematic car ad, 9:16, premium look.',
+  });
+
+  assert.equal(context.resolutionGuidance.resolution, '1080p');
+
+  const validation = llmContracts.validatePromptWriterLLMOutput(
+    {
+      assistantMessage: 'Prepared a prompt.',
+      finalPrompt: [
+        'Subject: luxury car at night',
+        'Duration: 8 seconds',
+        'Camera: vertical tracking shot',
+        'Style: cinematic lighting, 4K output',
+      ].join('\n'),
+      negativePrompt: 'no unreadable text',
+      settings: ['9:16', '4K', '8 seconds'],
+      warnings: [],
+      uiActions: [{ type: 'SET_PROMPT', value: 'Subject: luxury car' }],
+    },
+    context
+  );
+
+  assert.equal(validation.ok, false);
+  assert.ok(validation.issues.some((issue: { code: string }) => issue.code === 'unsupported_resolution_claim'));
 });
 
 test('validatePromptWriterLLMOutput rejects aspect ratio mismatches against context', async () => {
@@ -1352,7 +1435,8 @@ test('buildModelSpecificPrompt mirrors model-page prompting structures for strat
   assert.match(veoLiteBudget.modelPagePromptStructure.title, /Structured prompt|Text-to-video prompt/i);
   assert.match(veoLiteBudget.finalPrompt, /^Subject \+ action \+ context:/m);
   assert.match(veoLiteBudget.finalPrompt, /^Sound:/m);
-  assert.ok(veoLiteBudget.recommendedSettings.some((setting: string) => /720p\/1080p/i.test(setting)));
+  assert.equal(veoLiteBudget.resolutionGuidance.resolution, '720p');
+  assert.ok(veoLiteBudget.recommendedSettings.some((setting: string) => /Resolution: 720p/i.test(setting)));
   assert.ok(!veoLiteBudget.recommendedSettings.some((setting: string) => /4K/i.test(setting)));
 
   const happyHorseLipSync = prompts.buildModelSpecificPrompt({
@@ -1448,7 +1532,7 @@ test('buildModelSpecificPrompt follows brief-specific settings and active audio 
   assert.match(kling4k.finalPrompt, /^Product: transparent glass perfume bottle with metallic cap/m);
   assert.doesNotMatch(kling4k.finalPrompt, /^Product: Luxury perfume ad/m);
   assert.match(kling4k.finalPrompt, /native 4K/i);
-  assert.deepEqual(kling4k.recommendedSettings.slice(0, 2), ['9:16', 'native 4K']);
+  assert.deepEqual(kling4k.recommendedSettings.slice(0, 2), ['9:16', 'Resolution: native 4K 9:16']);
   assert.ok(!kling4k.recommendedSettings.some((setting: string) => /or 16:9/i.test(setting)));
 
   const seedanceFast = prompts.buildModelSpecificPrompt({

@@ -170,6 +170,7 @@ const promptWriterSystemInstructions = [
   'For product labels without a provided label/text asset, use a clean label area and say final typography should be added as an overlay if needed.',
   'Use promptGenerationContext.durationGuidance as a required timing constraint in the final prompt, settings, and SET_DURATION uiAction.',
   'Use duration to shape shot count, motion beats, voiceover/dialogue pacing, lip-sync readability, SFX timing, and final hold.',
+  'Use promptGenerationContext.resolutionGuidance as the selected resolution/aspect-ratio basis in settings and SET_RESOLUTION/SET_ASPECT_RATIO uiActions.',
   'Do not auto-run generation.',
   'Do not spend credits.',
   'Do not publish anything.',
@@ -780,6 +781,11 @@ function validateUnsupportedResolutionClaims(
 
   if (!modelId || !supports4KClaim(modelId)) {
     issues.push(errorIssue('unsupported_resolution_claim', '4K wording is only allowed when the selected model/settings guidance supports 4K.'));
+    return;
+  }
+
+  if (context?.resolutionGuidance?.resolution !== '4k') {
+    issues.push(errorIssue('unsupported_resolution_claim', '4K wording is only allowed when the strategist-selected resolution is 4K.'));
   }
 }
 

@@ -551,6 +551,38 @@ function resolveNavigationSuggestion(text: string): StrategistNavigationSuggesti
     };
   }
 
+  if (containsAny(text, ['generate image', 'create image', 'make image', 'image generator', 'text to image', 'text-to-image', 'edit image'])) {
+    return {
+      label: 'Generate Image',
+      href: '/app/image',
+      reason: 'Use Generate Image to create or edit still images, including product or character starting frames before video animation.',
+    };
+  }
+
+  if (containsAny(text, ['generate audio', 'create audio', 'audio generator', 'make audio', 'make music', 'sound design', 'voice asset'])) {
+    return {
+      label: 'Generate Audio',
+      href: '/app/audio',
+      reason: 'Use Generate Audio to create sound, ambience, music, or voice/audio assets for a campaign.',
+    };
+  }
+
+  if (containsAny(text, ['library', 'recent renders', 'render history', 'my renders', 'saved assets', 'download outputs', 'where are my renders'])) {
+    return {
+      label: 'Library',
+      href: '/app/library',
+      reason: 'Use Library to review recent renders, saved assets, downloads, and reusable media for future prompts.',
+    };
+  }
+
+  if (containsAny(text, ['tools', 'upscale', 'character builder', 'angle tool', 'angle exploration'])) {
+    return {
+      label: 'Tools',
+      href: '/app/tools',
+      reason: 'Use Tools for utility workflows such as upscaling, angle exploration, or character-building when available.',
+    };
+  }
+
   if (containsAny(text, [
     'where are the model pages',
     'where are model pages',

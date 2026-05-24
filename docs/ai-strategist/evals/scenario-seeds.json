@@ -134,6 +134,11 @@
     {"id":"en-messy-014","language":"en","persona":"rough typer","category":"messy_input","turns":["u make prompt then where paste"],"expected":{"primaryTask":"navigation_help","shouldAnswerHelp":true}},
     {"id":"en-messy-015","language":"en","persona":"rough typer","category":"messy_input","turns":["need premium but cheap model"],"expected":{"primaryTask":"model_advice","shouldRecommend":true}},
     {"id":"en-messy-016","language":"en","persona":"rough typer","category":"messy_input","turns":["can u just generate it"],"expected":{"primaryTask":"capability_help","shouldAnswerHelp":true}},
+    {"id":"en-ecosystem-001","language":"en","persona":"new user","category":"examples","turns":["How does the MaxVideoAI ecosystem work?"],"expected":{"primaryTask":"site_overview_help","shouldAnswerHelp":true}},
+    {"id":"en-ecosystem-002","language":"en","persona":"new user","category":"greeting","turns":["Can you help with image generation too?"],"expected":{"primaryTask":"capability_help","shouldAnswerHelp":true}},
+    {"id":"en-navigation-009","language":"en","persona":"returning user","category":"examples","turns":["Where can I find my recent renders and saved assets?"],"expected":{"primaryTask":"navigation_help","shouldAnswerHelp":true}},
+    {"id":"en-navigation-010","language":"en","persona":"creator","category":"examples","turns":["How do I generate images instead of videos?"],"expected":{"primaryTask":"navigation_help","shouldAnswerHelp":true}},
+    {"id":"en-navigation-011","language":"en","persona":"campaign producer","category":"examples","turns":["Where do I make audio or sound design?"],"expected":{"primaryTask":"navigation_help","shouldAnswerHelp":true}},
 
     {"id":"fr-greeting-001","language":"fr","persona":"new visitor","category":"greeting","turns":["bonjour"],"expected":{"primaryTask":"capability_help","shouldAnswerHelp":true}},
     {"id":"fr-pricing-001","language":"fr","persona":"budget user","category":"pricing","turns":["c koi le modele moin cher pr une video ?"],"expected":{"primaryTask":"pricing_help","shouldAnswerHelp":true}},

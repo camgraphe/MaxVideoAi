@@ -87,6 +87,7 @@ export type AiStrategistPlaygroundPromptContextSummary = {
   workflowBlocks: string[];
   warnings: readonly string[];
   durationGuidance: AiStrategistPromptGenerationContext['durationGuidance'];
+  resolutionGuidance: AiStrategistPromptGenerationContext['resolutionGuidance'];
   priceEstimate: AiStrategistPromptGenerationContext['priceEstimate'];
   settingsGuidance: readonly string[];
   maxVideoAiRules: readonly string[];
@@ -355,6 +356,7 @@ export async function runAiStrategistPlaygroundPipeline(
     selectedModelId,
     workflow,
     durationGuidance: promptGenerationContext.durationGuidance,
+    resolutionGuidance: promptGenerationContext.resolutionGuidance,
   });
   const warnings = uniqueStrings([
     recommendations.best.warning,
@@ -976,6 +978,10 @@ function buildStoppedBeforePromptResult(input: {
       { type: 'SET_MODEL', value: input.selectedModelId },
       { type: 'SET_WORKFLOW', value: input.workflow },
       { type: 'SET_DURATION', value: `${input.promptGenerationContext.durationGuidance.seconds}s` },
+      { type: 'SET_RESOLUTION', value: input.promptGenerationContext.resolutionGuidance.resolution },
+      ...(input.promptGenerationContext.resolutionGuidance.aspectRatio
+        ? [{ type: 'SET_ASPECT_RATIO' as const, value: input.promptGenerationContext.resolutionGuidance.aspectRatio }]
+        : []),
     ],
     llm: {
       briefRefinement: summarizeBriefLlm(input.refinement),
@@ -1038,6 +1044,7 @@ function summarizePromptGenerationContext(
     workflowBlocks: context.workflowPromptStructure.blocks.map((block) => block.label),
     warnings: context.warnings.all,
     durationGuidance: context.durationGuidance,
+    resolutionGuidance: context.resolutionGuidance,
     priceEstimate: context.priceEstimate,
     settingsGuidance: context.settingsGuidance,
     maxVideoAiRules: context.maxVideoAiRules,
@@ -1457,6 +1464,7 @@ function buildPreviewUiActions(input: {
   selectedModelId: AiStrategistModelId;
   workflow: AiStrategistWorkflowId;
   durationGuidance: AiStrategistPromptGenerationContext['durationGuidance'];
+  resolutionGuidance: AiStrategistPromptGenerationContext['resolutionGuidance'];
 }): AiStrategistPromptWriterOutput['uiActions'] {
   const actions = new Map<AiStrategistPromptWriterOutput['uiActions'][number]['type'], string>();
 
@@ -1471,7 +1479,7 @@ function buildPreviewUiActions(input: {
 
   const settingsText = input.output.settings.join('\n');
   if (!actions.has('SET_ASPECT_RATIO')) {
-    const aspectRatio = settingsText.match(/\b\d+:\d+\b/)?.[0];
+    const aspectRatio = input.resolutionGuidance.aspectRatio ?? settingsText.match(/\b\d+:\d+\b/)?.[0];
     if (aspectRatio) actions.set('SET_ASPECT_RATIO', aspectRatio);
   }
   if (!actions.has('SET_DURATION')) {
@@ -1479,7 +1487,7 @@ function buildPreviewUiActions(input: {
     actions.set('SET_DURATION', duration ?? `${input.durationGuidance.seconds}s`);
   }
   if (!actions.has('SET_RESOLUTION')) {
-    const resolution = settingsText.match(/\b(?:native\s+)?(?:4K|1080p|720p)\b/i)?.[0];
+    const resolution = input.resolutionGuidance.resolution ?? settingsText.match(/\b(?:native\s+)?(?:4K|1080p|720p)\b/i)?.[0];
     if (resolution) actions.set('SET_RESOLUTION', resolution);
   }
 

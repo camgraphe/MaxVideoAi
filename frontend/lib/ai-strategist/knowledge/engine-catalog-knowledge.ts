@@ -10,6 +10,7 @@ type EngineCatalogEntry = {
   marketingName?: string;
   availability?: string;
   engine?: {
+    maxDurationSec?: number;
     pricing?: {
       unit?: string;
       base?: number;
@@ -60,8 +61,15 @@ export function answerEnginePricingQuestion(input: { rawUserMessage: string }): 
   const entry = resolveEngineEntry(input.rawUserMessage, modelId);
   if (!entry) return null;
 
-  const durationSeconds = resolveDurationSeconds(input.rawUserMessage) ?? 8;
-  const tokenPrice = buildTokenPricingQuote({ rawUserMessage: input.rawUserMessage, entry, durationSeconds, modelId });
+  const requestedDurationSeconds = resolveDurationSeconds(input.rawUserMessage);
+  const durationSeconds = clampEngineDuration(requestedDurationSeconds ?? 8, entry);
+  const tokenPrice = buildTokenPricingQuote({
+    rawUserMessage: input.rawUserMessage,
+    entry,
+    durationSeconds,
+    requestedDurationSeconds,
+    modelId,
+  });
   if (tokenPrice) return tokenPrice;
 
   const defaultPerSecondCents = entry.engine?.pricingDetails?.perSecondCents?.default;
@@ -94,6 +102,7 @@ export function answerEnginePricingQuestion(input: { rawUserMessage: string }): 
       'This tool reads the local engine catalog and does not start a render.',
     ],
     warnings: [
+      ...durationAdjustmentWarnings(requestedDurationSeconds, durationSeconds, label, entry),
       ...(!hasExplicitResolution(input.rawUserMessage) && resolution ? [`No resolution was specified, so this estimate assumes ${resolution}.`] : []),
       ...(entry.engine?.pricing?.notes ? [entry.engine.pricing.notes] : []),
     ],
@@ -105,6 +114,7 @@ function buildTokenPricingQuote(input: {
   rawUserMessage: string;
   entry: EngineCatalogEntry;
   durationSeconds: number;
+  requestedDurationSeconds?: number;
   modelId?: AiStrategistModelId;
 }): StrategistKnowledgeToolResult | null {
   const tokenPricing = input.entry.engine?.pricingDetails?.tokenPricing;
@@ -145,6 +155,7 @@ function buildTokenPricingQuote(input: {
       'The generator quote shown before rendering is authoritative.',
     ],
     warnings: [
+      ...durationAdjustmentWarnings(input.requestedDurationSeconds, input.durationSeconds, label, input.entry),
       ...(!hasExplicitResolution(input.rawUserMessage) ? [`No resolution was specified, so this estimate assumes ${resolution}.`] : []),
       ...(!hasExplicitAspectRatio(input.rawUserMessage) ? [`No aspect ratio was specified, so this estimate assumes ${aspectRatio}.`] : []),
       ...(input.entry.engine?.pricing?.notes ? [input.entry.engine.pricing.notes] : []),
@@ -331,6 +342,32 @@ function resolveDurationSeconds(text: string): number | undefined {
   if (!match) return undefined;
   const value = Number.parseInt(match[1] ?? '', 10);
   return Number.isFinite(value) ? Math.min(Math.max(value, 1), 60) : undefined;
+}
+
+function clampEngineDuration(durationSeconds: number, entry: EngineCatalogEntry): number {
+  const maxDurationSec = entry.engine?.maxDurationSec;
+  if (typeof maxDurationSec !== 'number' || !Number.isFinite(maxDurationSec) || maxDurationSec <= 0) {
+    return durationSeconds;
+  }
+  return Math.min(durationSeconds, maxDurationSec);
+}
+
+function durationAdjustmentWarnings(
+  requestedDurationSeconds: number | undefined,
+  usedDurationSeconds: number,
+  label: string,
+  entry: EngineCatalogEntry
+): string[] {
+  const maxDurationSec = entry.engine?.maxDurationSec;
+  if (
+    typeof requestedDurationSeconds !== 'number' ||
+    typeof maxDurationSec !== 'number' ||
+    !Number.isFinite(maxDurationSec) ||
+    requestedDurationSeconds <= usedDurationSeconds
+  ) {
+    return [];
+  }
+  return [`Requested ${requestedDurationSeconds} seconds, but ${label} is capped at ${maxDurationSec} seconds in the local engine catalog, so this estimate uses ${usedDurationSeconds} seconds.`];
 }
 
 function resolvePricingResolution(rawUserMessage: string, entry: EngineCatalogEntry): string | undefined {

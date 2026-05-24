@@ -132,6 +132,7 @@ export type AiStrategistModelSpecificPrompt = {
   modelPagePromptStructure: AiStrategistModelPagePromptStructure;
   reason: string;
   durationGuidance: AiStrategistDurationGuidance;
+  resolutionGuidance: AiStrategistResolutionGuidance;
   priceEstimate: AiStrategistPriceEstimate;
   finalPrompt: string;
   negativePrompt: string;
@@ -172,6 +173,16 @@ export type AiStrategistDurationGuidance = {
   source: 'brief' | 'brief_adjusted' | 'strategist_default';
 };
 
+export type AiStrategistResolutionGuidance = {
+  resolution: string;
+  aspectRatio?: string;
+  label: string;
+  promptLine: string;
+  reason: string;
+  source: 'brief' | 'brief_adjusted' | 'strategist_default';
+  warning?: string;
+};
+
 export type AiStrategistPriceEstimate = {
   label: string;
   estimatedAmountCents: number;
@@ -192,6 +203,7 @@ export type AiStrategistPromptGenerationContext = {
   workflowPromptStructure: AiStrategistWorkflowPromptStructure;
   uploadedAsset?: AiStrategistPromptContextUploadedAsset;
   durationGuidance: AiStrategistDurationGuidance;
+  resolutionGuidance: AiStrategistResolutionGuidance;
   priceEstimate: AiStrategistPriceEstimate;
   warnings: {
     product: readonly string[];
@@ -254,7 +266,8 @@ export function buildModelSpecificPrompt(input: {
   const selectedTier = input.selectedTier ?? model.tierPosition;
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
   const durationGuidance = buildDurationGuidance(input);
-  const priceEstimate = buildPriceEstimate(model, durationGuidance, input);
+  const resolutionGuidance = buildResolutionGuidance(input);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance, resolutionGuidance);
   const finalPrompt = applyDurationToPrompt(buildFinalPrompt({
     brief: input.brief,
     modelId: input.modelId,
@@ -273,10 +286,11 @@ export function buildModelSpecificPrompt(input: {
     modelPagePromptStructure,
     reason: buildPromptReason(modelPagePromptStructure, input.workflow, input.promptStructureId, input.modelId),
     durationGuidance,
+    resolutionGuidance,
     priceEstimate,
     finalPrompt,
     negativePrompt,
-    recommendedSettings: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate),
+    recommendedSettings: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate, resolutionGuidance),
     ...(warning ? { warning } : {}),
   };
 }
@@ -296,7 +310,8 @@ export function buildPromptGenerationContext(input: {
   const modelPagePromptStructure = selectModelPagePromptStructure(input);
   const workflowPromptStructure = buildWorkflowPromptStructure(input.workflow);
   const durationGuidance = buildDurationGuidance(input);
-  const priceEstimate = buildPriceEstimate(model, durationGuidance, input);
+  const resolutionGuidance = buildResolutionGuidance(input);
+  const priceEstimate = buildPriceEstimate(model, durationGuidance, resolutionGuidance);
   const warnings = buildContextWarnings(input);
   const negativePromptGuidance = {
     model: model.negativePromptGuidance,
@@ -315,11 +330,12 @@ export function buildPromptGenerationContext(input: {
     workflowPromptStructure,
     ...(input.uploadedAsset ? { uploadedAsset: input.uploadedAsset } : {}),
     durationGuidance,
+    resolutionGuidance,
     priceEstimate,
     warnings,
     negativePromptGuidance,
-    settingsGuidance: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate),
-    maxVideoAiRules: buildMaxVideoAiRules(input, warnings, durationGuidance, priceEstimate),
+    settingsGuidance: buildRecommendedSettings(input.modelId, input.workflow, input.promptStructureId, input.brief, durationGuidance, priceEstimate, resolutionGuidance),
+    maxVideoAiRules: buildMaxVideoAiRules(input, warnings, durationGuidance, priceEstimate, resolutionGuidance),
     outputFormatExamples: buildOutputFormatExamples(input.workflow),
   };
 }
@@ -613,12 +629,15 @@ function buildMaxVideoAiRules(
   },
   warnings: AiStrategistPromptGenerationContext['warnings'],
   durationGuidance: AiStrategistDurationGuidance,
-  priceEstimate: AiStrategistPriceEstimate
+  priceEstimate: AiStrategistPriceEstimate,
+  resolutionGuidance: AiStrategistResolutionGuidance
 ): readonly string[] {
   const rules = [
     'Do not mention Midjourney, DALL-E, Runway, or external tools by default.',
     'Use the selected MaxVideoAI model, selected workflow, settings guidance, and compatibility warnings as constraints.',
     `Use ${durationGuidance.label} as the selected duration; carry it into the final prompt timing, shot plan, dialogue pacing, audio cues, settings, and SET_DURATION uiAction.`,
+    `Use ${resolutionGuidance.label} as the selected resolution/format basis; carry it into settings and SET_RESOLUTION/SET_ASPECT_RATIO uiActions when applicable.`,
+    ...(resolutionGuidance.warning ? [resolutionGuidance.warning] : []),
     `${priceEstimate.label}. Treat this as a preview estimate only; the generator quote shown before rendering is authoritative.`,
     'Do not auto-run generation, spend credits, or imply the video has already been generated.',
     'Return polished prompt text that is directly usable in MaxVideoAI.',
@@ -1415,15 +1434,22 @@ function buildRecommendedSettings(
     promptStructureId,
     brief,
   }),
-  priceEstimate?: AiStrategistPriceEstimate
+  priceEstimate?: AiStrategistPriceEstimate,
+  resolutionGuidance: AiStrategistResolutionGuidance = buildResolutionGuidance({
+    modelId,
+    workflow,
+    promptStructureId,
+    brief,
+  })
 ): readonly string[] {
-  const aspectRatio = extractRequestedAspectRatio(brief) ?? (brief.toLowerCase().includes('vertical') ? '9:16' : undefined);
+  const aspectRatio = resolutionGuidance.aspectRatio;
   const durationSetting = `Duration: ${durationGuidance.label}`;
+  const resolutionSetting = `Resolution: ${resolutionGuidance.label}`;
   const priceSetting = priceEstimate ? `${priceEstimate.label}; final generator quote wins` : undefined;
   if (modelId === 'kling-3-4k') {
     return compactLines([
       aspectRatio ?? '9:16 for vertical ads or 16:9 for campaign masters',
-      'native 4K',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       'audio ambience/SFX on when useful, off for silent approvals',
@@ -1433,7 +1459,7 @@ function buildRecommendedSettings(
   if (modelId === 'kling-3-pro') {
     return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
-      '1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       workflow === 'image-to-video' ? 'use one product reference image' : '2-3 shots maximum',
@@ -1442,7 +1468,7 @@ function buildRecommendedSettings(
   }
   if (modelId === 'kling-3-standard') {
     return compactLines([
-      '1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       'use @Element1 for the person or product reference',
@@ -1452,7 +1478,7 @@ function buildRecommendedSettings(
   if (modelId === 'veo-3-1') {
     return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
-      brief.toLowerCase().includes('4k') ? '4K available in MaxVideoAI' : '1080p, with 4K available when selected',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
@@ -1461,7 +1487,7 @@ function buildRecommendedSettings(
   if (modelId === 'veo-3-1-fast') {
     return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
-      brief.toLowerCase().includes('4k') ? '4K available in MaxVideoAI' : '720p/1080p, with 4K available when selected',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
@@ -1471,7 +1497,7 @@ function buildRecommendedSettings(
   if (modelId === 'veo-3-1-lite') {
     return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
-      '720p/1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief) ? 'native audio with compatible lip-sync workflow' : 'native audio ambience/SFX on when useful',
@@ -1481,7 +1507,7 @@ function buildRecommendedSettings(
   if (modelId === 'happy-horse-1-0') {
     return compactLines([
       aspectRatio ?? (workflow === 'image-to-video' ? 'source image aspect ratio' : '16:9 or 9:16 based on placement'),
-      '720p/1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief) ? 'native synchronized audio/lip-sync workflow' : 'native synchronized audio with ambience/SFX',
@@ -1491,7 +1517,7 @@ function buildRecommendedSettings(
   if (modelId === 'seedance-2-0-fast') {
     return compactLines([
       aspectRatio ?? '9:16',
-      '720p preview',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       'one variable per run',
@@ -1501,7 +1527,7 @@ function buildRecommendedSettings(
   if (modelId === 'seedance-2-0') {
     return compactLines([
       aspectRatio ?? '16:9 or 9:16 based on placement',
-      '1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief)
@@ -1514,7 +1540,7 @@ function buildRecommendedSettings(
   if (modelId === 'ltx-2-3') {
     return compactLines([
       promptStructureId === 'social-ad' ? '9:16 draft' : '16:9 draft',
-      '1080p',
+      resolutionSetting,
       durationSetting,
       priceSetting,
       isSpeakingBrief(brief) ? 'use compatible audio/lip-sync workflow' : 'native audio cue when useful',
@@ -1525,11 +1551,11 @@ function buildRecommendedSettings(
       aspectRatio ? `${aspectRatio} social loop` : '9:16 social loop',
       durationSetting,
       priceSetting,
-      '720p or 1080p depending on budget',
+      resolutionSetting,
       'keep the transformation simple',
     ]);
   }
-  return compactLines([durationSetting, priceSetting, 'one subject', 'one camera move']);
+  return compactLines([durationSetting, resolutionSetting, priceSetting, 'one subject', 'one camera move']);
 }
 
 function buildDurationGuidance(input: {
@@ -1610,46 +1636,69 @@ function durationReason(
   return `${seconds}-second short-form default for the selected model/workflow`;
 }
 
-function buildPriceEstimate(
-  model: ReturnType<typeof getAiStrategistModel>,
-  durationGuidance: AiStrategistDurationGuidance,
-  input: {
-    brief: string;
-    workflow: AiStrategistWorkflowId;
-    promptStructureId: AiStrategistPromptStructureId;
+function buildResolutionGuidance(input: {
+  modelId: AiStrategistModelId;
+  workflow: AiStrategistWorkflowId;
+  promptStructureId: AiStrategistPromptStructureId;
+  brief: string;
+}): AiStrategistResolutionGuidance {
+  const text = input.brief.toLowerCase();
+  const aspectRatio = extractRequestedAspectRatio(input.brief) ?? (/\b(?:vertical|tiktok|reels|shorts)\b/i.test(input.brief) ? '9:16' : undefined);
+  const requestedResolution = extractRequestedResolution(input.brief);
+  const supported = supportedResolutionsForModel(input.modelId);
+  const defaultResolution = defaultResolutionForModel(input.modelId, input);
+
+  if (requestedResolution) {
+    const requestedNormalized = requestedResolution.toLowerCase() === '4k' ? '4k' : requestedResolution.toLowerCase();
+    if (supported.includes(requestedNormalized)) {
+      const label = formatResolutionGuidanceLabel(input.modelId, requestedNormalized, aspectRatio);
+      return {
+        resolution: requestedNormalized,
+        ...(aspectRatio ? { aspectRatio } : {}),
+        label,
+        promptLine: `${label}; use this as the output settings target and pricing basis.`,
+        reason: 'requested in the brief',
+        source: 'brief',
+      };
+    }
+
+    const label = formatResolutionGuidanceLabel(input.modelId, defaultResolution, aspectRatio);
+    return {
+      resolution: defaultResolution,
+      ...(aspectRatio ? { aspectRatio } : {}),
+      label,
+      promptLine: `${label}; the requested ${requestedResolution.toUpperCase()} setting is not available for this selected model.`,
+      reason: `requested ${requestedResolution.toUpperCase()}, adjusted to the selected model settings`,
+      source: 'brief_adjusted',
+      warning: `${modelResolutionName(input.modelId)} does not support ${requestedResolution.toUpperCase()} in this route, so the strategist uses ${label}.`,
+    };
   }
-): AiStrategistPriceEstimate {
-  const pricingBasis = inferPricingBasis(model.id, input);
-  const estimatedAmountCents = estimateModelPriceCents(model, durationGuidance.seconds, pricingBasis);
+
+  const label = formatResolutionGuidanceLabel(input.modelId, defaultResolution, aspectRatio);
   return {
-    label: `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationGuidance.label} at ${pricingBasis.resolution}${pricingBasis.aspectRatio ? ` ${pricingBasis.aspectRatio}` : ''}`,
-    estimatedAmountCents,
-    currency: 'USD',
-    note: 'Preview estimate only. The MaxVideoAI generator quote shown before rendering is authoritative.',
-    calculationBasis: `${model.label} ${model.relativeCostLevel} tier x ${durationGuidance.label} at ${pricingBasis.resolution}${pricingBasis.aspectRatio ? ` ${pricingBasis.aspectRatio}` : ''}`,
-    isPreview: true,
+    resolution: defaultResolution,
+    ...(aspectRatio ? { aspectRatio } : {}),
+    label,
+    promptLine: `${label}; recommended by the strategist for this model, cost, and output intent.`,
+    reason: resolutionReason(input.modelId, input.promptStructureId, text),
+    source: 'strategist_default',
   };
 }
 
-function inferPricingBasis(
-  modelId: AiStrategistModelId,
-  input: {
-    brief: string;
-    workflow: AiStrategistWorkflowId;
-    promptStructureId: AiStrategistPromptStructureId;
-  }
-): { resolution: string; aspectRatio?: string } {
-  const text = input.brief.toLowerCase();
-  const explicitResolution = text.match(/\b(480p|720p|1080p|4k)\b/i)?.[1]?.toLowerCase();
-  const aspectRatio = text.match(/\b(21:9|16:9|4:3|1:1|3:4|9:16)\b/)?.[1] ?? (
-    containsDurationSignal(text, ['vertical', 'tiktok', 'reels', 'shorts']) ? '9:16' : undefined
-  );
-  if (explicitResolution) return { resolution: explicitResolution, ...(aspectRatio ? { aspectRatio } : {}) };
-  if (modelId === 'kling-3-4k') return { resolution: 'native 4K', ...(aspectRatio ? { aspectRatio } : {}) };
-  if (modelId === 'seedance-2-0-fast') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
-  if (modelId === 'veo-3-1-lite') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
-  if (modelId === 'pika') return { resolution: '720p', ...(aspectRatio ? { aspectRatio } : {}) };
-  return { resolution: '1080p', ...(aspectRatio ? { aspectRatio } : {}) };
+function buildPriceEstimate(
+  model: ReturnType<typeof getAiStrategistModel>,
+  durationGuidance: AiStrategistDurationGuidance,
+  resolutionGuidance: AiStrategistResolutionGuidance
+): AiStrategistPriceEstimate {
+  const estimatedAmountCents = estimateModelPriceCents(model, durationGuidance.seconds, resolutionGuidance);
+  return {
+    label: `Estimated price: about ${formatUsd(estimatedAmountCents)} for ${durationGuidance.label} at ${resolutionGuidance.label}`,
+    estimatedAmountCents,
+    currency: 'USD',
+    note: 'Preview estimate only. The MaxVideoAI generator quote shown before rendering is authoritative.',
+    calculationBasis: `${model.label} ${model.relativeCostLevel} tier x ${durationGuidance.label} at ${resolutionGuidance.label}`,
+    isPreview: true,
+  };
 }
 
 function estimateModelPriceCents(
@@ -1671,6 +1720,66 @@ function estimateModelPriceCents(
     });
   }
   return Math.max(25, Math.round(seconds * estimatedCentsPerSecond(model, pricingBasis.resolution)));
+}
+
+function supportedResolutionsForModel(modelId: AiStrategistModelId): readonly string[] {
+  if (modelId === 'kling-3-4k') return ['4k'];
+  if (modelId === 'veo-3-1' || modelId === 'veo-3-1-fast') return ['720p', '1080p', '4k'];
+  if (modelId === 'veo-3-1-lite') return ['720p', '1080p'];
+  if (modelId === 'seedance-2-0' || modelId === 'seedance-2-0-fast') return ['480p', '720p', '1080p'];
+  if (modelId === 'pika') return ['720p', '1080p'];
+  return ['720p', '1080p'];
+}
+
+function defaultResolutionForModel(
+  modelId: AiStrategistModelId,
+  input: {
+    workflow: AiStrategistWorkflowId;
+    promptStructureId: AiStrategistPromptStructureId;
+    brief: string;
+  }
+): string {
+  const text = input.brief.toLowerCase();
+  if (modelId === 'kling-3-4k') return '4k';
+  if (modelId === 'veo-3-1-lite' || modelId === 'seedance-2-0-fast' || modelId === 'pika') return '720p';
+  if (modelId === 'veo-3-1' || modelId === 'veo-3-1-fast') {
+    if (/\b(?:final delivery|premium export|large screen|maximum detail|4k)\b/i.test(input.brief)) return '4k';
+    return '1080p';
+  }
+  if (containsDurationSignal(text, ['cheap', 'draft', 'storyboard', 'quick test', 'low cost', 'rough concept'])) return '720p';
+  return '1080p';
+}
+
+function resolutionReason(modelId: AiStrategistModelId, promptStructureId: AiStrategistPromptStructureId, text: string): string {
+  if (modelId === 'kling-3-4k') return 'native 4K route for premium detail';
+  if (modelId === 'veo-3-1-lite' || modelId === 'seedance-2-0-fast') return 'value route keeps preview cost lower';
+  if (containsDurationSignal(text, ['cheap', 'draft', 'storyboard', 'quick test', 'low cost', 'rough concept'])) {
+    return 'lower-resolution preview is recommended for fast/low-cost testing';
+  }
+  if (promptStructureId === 'product-ad' || containsDurationSignal(text, ['premium', 'luxury', 'commercial', 'product'])) {
+    return 'recommended quality/cost balance for commercial review';
+  }
+  return 'recommended default for the selected model';
+}
+
+function extractRequestedResolution(brief: string): string | undefined {
+  if (/\b(?:no|not|without|avoid|pas de)\s+4k\b/i.test(brief)) return undefined;
+  const match = brief.match(/\b(480p|720p|1080p|4k)\b/i);
+  if (!match?.[1]) return undefined;
+  return match[1].toLowerCase() === '4k' ? '4k' : match[1].toLowerCase();
+}
+
+function formatResolutionGuidanceLabel(modelId: AiStrategistModelId, resolution: string, aspectRatio?: string): string {
+  const displayResolution = resolution === '4k'
+    ? modelId === 'kling-3-4k'
+      ? 'native 4K'
+      : '4K'
+    : resolution;
+  return aspectRatio ? `${displayResolution} ${aspectRatio}` : displayResolution;
+}
+
+function modelResolutionName(modelId: AiStrategistModelId): string {
+  return getAiStrategistModel(modelId).label;
 }
 
 function estimateSeedanceTokenPriceCents(input: {
@@ -1719,8 +1828,9 @@ function seedancePricingDimensions(resolution: string, aspectRatio: string): { w
 
 function estimatedCentsPerSecond(model: ReturnType<typeof getAiStrategistModel>, resolution = '1080p'): number {
   if (model.id === 'kling-3-4k') return 58;
-  if (model.id === 'veo-3-1') return 44;
-  if (model.id === 'veo-3-1-fast' || model.id === 'kling-3-pro') return 30;
+  if (model.id === 'veo-3-1') return resolution === '4k' ? 60 : 40;
+  if (model.id === 'veo-3-1-fast') return resolution === '4k' ? 30 : resolution === '1080p' ? 12 : 10;
+  if (model.id === 'kling-3-pro') return 30;
   if (model.id === 'happy-horse-1-0') return 24;
   if (model.id === 'veo-3-1-lite') return resolution === '1080p' ? 8 : 5;
   if (model.id === 'ltx-2-3' || model.id === 'seedance-2-0-fast') return 12;

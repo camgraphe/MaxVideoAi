@@ -5,6 +5,7 @@ export type StrategistKnowledgeSourceId =
   | 'ai_strategist_workflow_rules'
   | 'ai_strategist_prompt_structures'
   | 'engine_catalog'
+  | 'maxvideoai_ecosystem_map'
   | 'site_navigation_map'
   | 'examples_catalog'
   | 'project_context'
