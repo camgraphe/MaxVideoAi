@@ -535,6 +535,7 @@ export function AiStrategistBetaSidebarWidget() {
             : {}),
         } satisfies CSSProperties)
       : undefined;
+  const conversationLlmCost = formatConversationLlmCost(messages);
 
   return (
     <>
@@ -629,7 +630,10 @@ export function AiStrategistBetaSidebarWidget() {
               </button>
             </div>
             {error ? <p className="mt-2 rounded-xl border border-error/25 bg-error/10 px-3 py-2 text-xs font-semibold text-error">{error}</p> : null}
-            <p className="mt-2 text-[10px] font-medium text-slate-400">Beta preview — does not run generation or spend credits.</p>
+            <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium text-slate-400">
+              <span>Beta preview — does not run generation or spend credits.</span>
+              {conversationLlmCost ? <span>Est. assistant LLM: {conversationLlmCost} this chat.</span> : null}
+            </p>
           </form>
           <button
             type="button"
@@ -1171,6 +1175,18 @@ function buildPageContext(pathname: string | null, bridgePageContext: unknown): 
     ...base,
     ...(bridgePageContext as Record<string, unknown>),
   };
+}
+
+function formatConversationLlmCost(messages: readonly ChatMessage[]): string | null {
+  const costs = messages
+    .map((message) => message.result?.llmCost.totalEstimatedCostUsd)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+  if (!costs.length) return null;
+  const total = costs.reduce((sum, value) => sum + value, 0);
+  if (total === 0) return '$0.00';
+  if (total < 0.0001) return '<$0.0001';
+  if (total < 0.01) return `$${total.toFixed(4)}`;
+  return `$${total.toFixed(2)}`;
 }
 
 function toConversationBriefCompletion(

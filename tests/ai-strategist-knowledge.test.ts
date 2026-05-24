@@ -38,7 +38,7 @@ const expectedPromptStructureIds = [
 
 async function loadStrategistModules() {
   try {
-    const [catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter] = await Promise.all([
+    const [catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter, llmCost] = await Promise.all([
       import('../frontend/lib/ai-strategist/model-catalog.ts'),
       import('../frontend/lib/ai-strategist/workflow-rules.ts'),
       import('../frontend/lib/ai-strategist/prompt-structures.ts'),
@@ -46,9 +46,10 @@ async function loadStrategistModules() {
       import('../frontend/lib/ai-strategist/brief-normalization.ts'),
       import('../frontend/lib/ai-strategist/llm-contracts.ts'),
       import('../frontend/lib/ai-strategist/llm-adapter.ts'),
+      import('../frontend/lib/ai-strategist/llm-cost.ts'),
     ]);
 
-    return { catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter };
+    return { catalog, workflows, prompts, recommendations, normalization, llmContracts, llmAdapter, llmCost };
   } catch (error) {
     assert.fail(`Expected AI Strategist knowledge modules to be importable: ${(error as Error).message}`);
   }
@@ -679,6 +680,113 @@ test('runBriefRefinementLLM falls back deterministically when local env is missi
   assert.equal(result.output.intent, 'social_ad');
   assert.equal(result.output.hasVoiceover, true);
   assert.equal(result.validation.ok, true);
+});
+
+test('AI Strategist LLM cost estimates use provider token metadata when available', async () => {
+  const { prompts, llmAdapter, llmCost } = await loadStrategistModules();
+
+  const usage = llmCost.extractGeminiUsageMetadata({
+    usageMetadata: {
+      promptTokenCount: 1000,
+      candidatesTokenCount: 200,
+      totalTokenCount: 1200,
+      cachedContentTokenCount: 25,
+    },
+  });
+  assert.equal(usage?.inputTokens, 1000);
+  assert.equal(usage?.outputTokens, 200);
+  assert.equal(usage?.totalTokens, 1200);
+  assert.equal(usage?.cachedInputTokens, 25);
+
+  const context = prompts.buildPromptGenerationContext({
+    modelId: 'seedance-2-0',
+    workflow: 'text-to-video',
+    promptStructureId: 'social-ad',
+    brief: 'Social-first sneaker ad with voiceover, vertical',
+  });
+
+  const result = await llmAdapter.runPromptWriterLLM(context, {
+    env: {
+      AI_STRATEGIST_LLM_PROVIDER: 'google-vertex-gemini',
+      AI_STRATEGIST_LLM_MODEL: 'gemini-3.1-flash-lite',
+      GOOGLE_VERTEX_PROJECT_ID: 'test-project',
+      GOOGLE_VERTEX_LOCATION: 'global',
+      GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"test-key"}',
+    },
+    completionClient: async () => ({
+      output: {
+        assistantMessage: 'Prompt ready.',
+        finalPrompt: [
+          'Subject:',
+          'vertical sneaker product ad',
+          'Action:',
+          'fast reveal and product close-up',
+          'Camera:',
+          '9:16 tracking push-in',
+          'Style:',
+          'clean social lighting',
+          'Audio:',
+          'Voiceover: [customer-provided line], energetic reveal SFX.',
+          'Duration:',
+          '8 seconds',
+        ].join('\n'),
+        negativePrompt: 'blurry product, warped shoe, unreadable text',
+        settings: ['Aspect ratio: 9:16', 'Duration: 8 seconds', 'Resolution: 720p'],
+        warnings: [],
+        uiActions: [{ type: 'SET_PROMPT', value: 'prompt' }],
+      },
+      providerUsage: usage,
+    }),
+  });
+
+  assert.equal(result.usedLLM, true);
+  assert.equal(result.costEstimate.liveCall, true);
+  assert.equal(result.costEstimate.acceptedOutput, true);
+  assert.equal(result.costEstimate.usage.source, 'provider');
+  assert.equal(result.costEstimate.usage.inputTokens, 1000);
+  assert.equal(result.costEstimate.usage.outputTokens, 200);
+  assert.equal(result.costEstimate.pricing.source, 'default_table');
+  assert.equal(result.costEstimate.estimatedCostUsd, 0.00055);
+  assert.match(result.costEstimate.formattedCost, /\$0\.0006/);
+});
+
+test('AI Strategist LLM cost estimates support env price overrides and unpriced models', async () => {
+  const { llmCost, llmContracts } = await loadStrategistModules();
+  const request = llmContracts.buildBriefRefinementLLMRequest({
+    rawUserMessage: 'Luxury perfume ad on black marble',
+  });
+
+  const priced = llmCost.buildLlmCallCostEstimate({
+    stage: 'brief_refinement',
+    request,
+    output: { normalizedBrief: 'Luxury perfume ad on black marble' },
+    provider: 'google-vertex-gemini',
+    model: 'custom-local-model',
+    providerUsage: { inputTokens: 500, outputTokens: 100, totalTokens: 600 },
+    liveCall: true,
+    acceptedOutput: true,
+    env: {
+      AI_STRATEGIST_LLM_INPUT_USD_PER_1M: '1',
+      AI_STRATEGIST_LLM_OUTPUT_USD_PER_1M: '2',
+    },
+  });
+  const unpriced = llmCost.buildLlmCallCostEstimate({
+    stage: 'brief_refinement',
+    request,
+    output: { normalizedBrief: 'Luxury perfume ad on black marble' },
+    provider: 'google-vertex-gemini',
+    model: 'custom-local-model',
+    providerUsage: { inputTokens: 500, outputTokens: 100, totalTokens: 600 },
+    liveCall: true,
+    acceptedOutput: true,
+    env: {},
+  });
+
+  assert.equal(priced.pricing.source, 'env');
+  assert.equal(priced.estimatedCostUsd, 0.0007);
+  assert.equal(unpriced.pricing.source, 'not_configured');
+  assert.equal(unpriced.estimatedCostUsd, null);
+  assert.match(unpriced.warnings.join(' '), /No LLM price is configured/);
 });
 
 test('runBriefRefinementLLM uses valid local LLM output and falls back on invalid output', async () => {

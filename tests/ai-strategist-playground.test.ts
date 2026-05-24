@@ -56,6 +56,9 @@ test('AI Strategist playground pipeline exposes deterministic fallback state wit
   assert.equal(result.llm.briefRefinement.used, false);
   assert.equal(result.llm.promptWriter.used, false);
   assert.equal(result.llm.promptWriter.fallbackReason, 'missing_local_llm_config');
+  assert.equal(result.llmCost.liveCallCount, 0);
+  assert.equal(result.llmCost.totalEstimatedCostUsd, 0);
+  assert.equal(result.llmCost.formattedTotal, '$0.00');
   assert.equal(result.safety.autoGeneration, false);
   assert.equal(result.safety.creditSpend, false);
   assert.equal(result.safety.publishing, false);

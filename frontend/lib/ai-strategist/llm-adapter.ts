@@ -18,6 +18,13 @@ import {
   buildModelSpecificPrompt,
   type AiStrategistPromptGenerationContext,
 } from './prompt-structures';
+import {
+  buildLlmCallCostEstimate,
+  extractGeminiUsageMetadata,
+  type AiStrategistLlmCallCostEstimate,
+  type AiStrategistLlmCostStage,
+  type AiStrategistLlmProviderUsage,
+} from './llm-cost';
 import type {
   AiStrategistPromptStructureId,
   AiStrategistSourceImageKind,
@@ -34,6 +41,8 @@ type GoogleServiceAccount = {
 type AiStrategistLLMEnv = {
   AI_STRATEGIST_LLM_PROVIDER?: string;
   AI_STRATEGIST_LLM_MODEL?: string;
+  AI_STRATEGIST_LLM_INPUT_USD_PER_1M?: string;
+  AI_STRATEGIST_LLM_OUTPUT_USD_PER_1M?: string;
   AI_STRATEGIST_LLM_MAX_RETRIES?: string;
   AI_STRATEGIST_LLM_RETRY_BASE_MS?: string;
   GOOGLE_VERTEX_PROJECT_ID?: string;
@@ -59,6 +68,12 @@ export type AiStrategistLLMCompletionParams = {
 
 export type AiStrategistLLMCompletionClient = (params: AiStrategistLLMCompletionParams) => Promise<unknown>;
 
+type AiStrategistLLMCompletionResult = {
+  output: unknown;
+  providerUsage?: AiStrategistLlmProviderUsage;
+  rawResponse?: unknown;
+};
+
 export type AiStrategistLLMRunOptions = {
   env?: AiStrategistLLMEnv;
   completionClient?: AiStrategistLLMCompletionClient;
@@ -76,6 +91,7 @@ export type AiStrategistBriefRefinementLLMResult = {
   output: AiStrategistNormalizedBrief;
   request: ReturnType<typeof buildBriefRefinementLLMRequest>;
   validation: AiStrategistLLMValidationResult;
+  costEstimate: AiStrategistLlmCallCostEstimate;
   rawOutput?: unknown;
   error?: string;
 };
@@ -111,6 +127,7 @@ export type AiStrategistPromptWriterLLMResult = {
   validationBeforeSanitizer: AiStrategistLLMValidationResult;
   validationAfterSanitizer: AiStrategistLLMValidationResult;
   sanitizerChangedOutput: boolean;
+  costEstimate: AiStrategistLlmCallCostEstimate;
   rawOutput?: unknown;
   error?: string;
 };
@@ -137,6 +154,7 @@ export type AiStrategistAdvisorQualityJudgeLLMResult = {
   output: AiStrategistAdvisorQualityJudgeOutput;
   request: ReturnType<typeof buildAdvisorQualityJudgeLLMRequest>;
   validation: AiStrategistLLMValidationResult;
+  costEstimate: AiStrategistLlmCallCostEstimate;
   rawOutput?: unknown;
   error?: string;
 };
@@ -201,6 +219,15 @@ export async function runBriefRefinementLLM(
       output: fallbackOutput,
       request,
       validation: okValidation(),
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'brief_refinement',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: options.disableReason ?? 'llm_disabled',
+      }),
     };
   }
 
@@ -213,11 +240,21 @@ export async function runBriefRefinementLLM(
       output: fallbackOutput,
       request,
       validation: okValidation(),
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'brief_refinement',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: configResult.reason,
+      }),
     };
   }
 
   try {
-    const rawOutput = await runCompletion({ request, config: configResult.config, options });
+    const completion = await runCompletion({ request, config: configResult.config, options });
+    const rawOutput = completion.output;
     const validation = validateBriefRefinementLLMOutput(rawOutput);
     const output = isNormalizedBrief(rawOutput) ? rawOutput : null;
     const finalValidation = output ? validation : withIssue(validation, errorIssue('invalid_normalized_brief_shape', 'LLM output does not match the normalized brief shape.'));
@@ -232,6 +269,17 @@ export async function runBriefRefinementLLM(
         output: fallbackOutput,
         request,
         validation: finalValidation,
+        costEstimate: buildAdapterCostEstimate({
+          stage: 'brief_refinement',
+          request,
+          output: rawOutput,
+          options,
+          config: configResult.config,
+          providerUsage: completion.providerUsage,
+          liveCall: true,
+          acceptedOutput: false,
+          fallbackReason: 'validation_failed',
+        }),
         rawOutput,
       };
     }
@@ -246,18 +294,39 @@ export async function runBriefRefinementLLM(
       output: mergedOutput,
       request,
       validation: finalValidation,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'brief_refinement',
+        request,
+        output: rawOutput,
+        options,
+        config: configResult.config,
+        providerUsage: completion.providerUsage,
+        liveCall: true,
+        acceptedOutput: true,
+      }),
       rawOutput,
     };
   } catch (error) {
+    const fallbackReason = classifyAdapterError(error);
     return {
       usedLLM: false,
       source: 'deterministic_fallback',
-      fallbackReason: classifyAdapterError(error),
+      fallbackReason,
       provider: configResult.config.provider,
       model: configResult.config.model,
       output: fallbackOutput,
       request,
       validation: withIssue(okValidation(), errorIssue('llm_adapter_error', errorMessage(error))),
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'brief_refinement',
+        request,
+        output: fallbackOutput,
+        options,
+        config: configResult.config,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason,
+      }),
       error: errorMessage(error),
     };
   }
@@ -282,6 +351,15 @@ export async function runPromptWriterLLM(
       validationBeforeSanitizer: okValidation(),
       validationAfterSanitizer: okValidation(),
       sanitizerChangedOutput: fallbackSanitizerChangedOutput,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'prompt_writer',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: options.disableReason ?? 'llm_disabled',
+      }),
     };
   }
 
@@ -297,11 +375,21 @@ export async function runPromptWriterLLM(
       validationBeforeSanitizer: okValidation(),
       validationAfterSanitizer: okValidation(),
       sanitizerChangedOutput: fallbackSanitizerChangedOutput,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'prompt_writer',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: configResult.reason,
+      }),
     };
   }
 
   try {
-    const rawOutput = await runCompletion({ request, config: configResult.config, options });
+    const completion = await runCompletion({ request, config: configResult.config, options });
+    const rawOutput = completion.output;
     const validationBeforeSanitizer = validatePromptWriterLLMOutput(rawOutput, context);
     const output = isPromptWriterOutput(rawOutput) ? normalizePromptWriterOutput(rawOutput, context) : null;
     const validationAfterSanitizer = output ? validatePromptWriterLLMOutput(output, context) : validationBeforeSanitizer;
@@ -322,6 +410,17 @@ export async function runPromptWriterLLM(
         validationBeforeSanitizer,
         validationAfterSanitizer: finalValidation,
         sanitizerChangedOutput: sanitizerChangedOutput || fallbackSanitizerChangedOutput,
+        costEstimate: buildAdapterCostEstimate({
+          stage: 'prompt_writer',
+          request,
+          output: rawOutput,
+          options,
+          config: configResult.config,
+          providerUsage: completion.providerUsage,
+          liveCall: true,
+          acceptedOutput: false,
+          fallbackReason: 'validation_failed',
+        }),
         rawOutput,
       };
     }
@@ -337,14 +436,25 @@ export async function runPromptWriterLLM(
       validationBeforeSanitizer,
       validationAfterSanitizer,
       sanitizerChangedOutput,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'prompt_writer',
+        request,
+        output: rawOutput,
+        options,
+        config: configResult.config,
+        providerUsage: completion.providerUsage,
+        liveCall: true,
+        acceptedOutput: true,
+      }),
       rawOutput,
     };
   } catch (error) {
     const validation = withIssue(okValidation(), errorIssue('llm_adapter_error', errorMessage(error)));
+    const fallbackReason = classifyAdapterError(error);
     return {
       usedLLM: false,
       source: 'deterministic_fallback',
-      fallbackReason: classifyAdapterError(error),
+      fallbackReason,
       provider: configResult.config.provider,
       model: configResult.config.model,
       output: fallbackOutput,
@@ -353,6 +463,16 @@ export async function runPromptWriterLLM(
       validationBeforeSanitizer: validation,
       validationAfterSanitizer: validation,
       sanitizerChangedOutput: fallbackSanitizerChangedOutput,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'prompt_writer',
+        request,
+        output: fallbackOutput,
+        options,
+        config: configResult.config,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason,
+      }),
       error: errorMessage(error),
     };
   }
@@ -373,6 +493,15 @@ export async function runAdvisorQualityJudgeLLM(
       output: fallbackOutput,
       request,
       validation: okValidation(),
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'advisor_quality_judge',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: options.disableReason ?? 'llm_disabled',
+      }),
     };
   }
 
@@ -385,11 +514,21 @@ export async function runAdvisorQualityJudgeLLM(
       output: fallbackOutput,
       request,
       validation: okValidation(),
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'advisor_quality_judge',
+        request,
+        output: fallbackOutput,
+        options,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason: configResult.reason,
+      }),
     };
   }
 
   try {
-    const rawOutput = await runCompletion({ request, config: configResult.config, options });
+    const completion = await runCompletion({ request, config: configResult.config, options });
+    const rawOutput = completion.output;
     const validation = validateAdvisorQualityJudgeOutput(rawOutput);
     const output = isAdvisorQualityJudgeOutput(rawOutput) ? rawOutput : null;
     const finalValidation = output
@@ -406,6 +545,17 @@ export async function runAdvisorQualityJudgeLLM(
         output: fallbackOutput,
         request,
         validation: finalValidation,
+        costEstimate: buildAdapterCostEstimate({
+          stage: 'advisor_quality_judge',
+          request,
+          output: rawOutput,
+          options,
+          config: configResult.config,
+          providerUsage: completion.providerUsage,
+          liveCall: true,
+          acceptedOutput: false,
+          fallbackReason: 'validation_failed',
+        }),
         rawOutput,
       };
     }
@@ -418,19 +568,40 @@ export async function runAdvisorQualityJudgeLLM(
       output,
       request,
       validation: finalValidation,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'advisor_quality_judge',
+        request,
+        output: rawOutput,
+        options,
+        config: configResult.config,
+        providerUsage: completion.providerUsage,
+        liveCall: true,
+        acceptedOutput: true,
+      }),
       rawOutput,
     };
   } catch (error) {
     const validation = withIssue(okValidation(), errorIssue('llm_adapter_error', errorMessage(error)));
+    const fallbackReason = classifyAdapterError(error);
     return {
       usedLLM: false,
       source: 'deterministic_fallback',
-      fallbackReason: classifyAdapterError(error),
+      fallbackReason,
       provider: configResult.config.provider,
       model: configResult.config.model,
       output: fallbackOutput,
       request,
       validation,
+      costEstimate: buildAdapterCostEstimate({
+        stage: 'advisor_quality_judge',
+        request,
+        output: fallbackOutput,
+        options,
+        config: configResult.config,
+        liveCall: false,
+        acceptedOutput: false,
+        fallbackReason,
+      }),
       error: errorMessage(error),
     };
   }
@@ -440,7 +611,7 @@ async function runCompletion(params: {
   request: AiStrategistLLMRequest<Record<string, unknown>>;
   config: AiStrategistLLMConfig;
   options: AiStrategistLLMRunOptions;
-}): Promise<unknown> {
+}): Promise<AiStrategistLLMCompletionResult> {
   const retryOptions = resolveRetryOptions(params.options.env);
   let lastError: unknown;
 
@@ -463,15 +634,67 @@ async function runCompletionOnce(params: {
   request: AiStrategistLLMRequest<Record<string, unknown>>;
   config: AiStrategistLLMConfig;
   options: AiStrategistLLMRunOptions;
-}): Promise<unknown> {
+}): Promise<AiStrategistLLMCompletionResult> {
   if (params.options.completionClient) {
-    return params.options.completionClient({
+    const output = await params.options.completionClient({
       request: params.request,
       config: params.config,
       signal: params.options.signal,
     });
+    return normalizeCompletionResult(output);
   }
   return callGoogleVertexGemini(params.config, params.request, params.options.signal);
+}
+
+function normalizeCompletionResult(output: unknown): AiStrategistLLMCompletionResult {
+  if (isRecord(output) && Object.hasOwn(output, 'output')) {
+    return {
+      output: output.output,
+      providerUsage: normalizeProviderUsage(output.providerUsage ?? output.usage),
+      rawResponse: output.rawResponse,
+    };
+  }
+  return { output };
+}
+
+function normalizeProviderUsage(value: unknown): AiStrategistLlmProviderUsage | undefined {
+  if (!isRecord(value)) return undefined;
+  return {
+    inputTokens: numberOrUndefined(value.inputTokens ?? value.promptTokenCount),
+    outputTokens: numberOrUndefined(value.outputTokens ?? value.candidatesTokenCount),
+    totalTokens: numberOrUndefined(value.totalTokens ?? value.totalTokenCount),
+    cachedInputTokens: numberOrUndefined(value.cachedInputTokens ?? value.cachedContentTokenCount),
+    thoughtsTokens: numberOrUndefined(value.thoughtsTokens ?? value.thoughtsTokenCount),
+  };
+}
+
+function numberOrUndefined(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function buildAdapterCostEstimate(input: {
+  stage: AiStrategistLlmCostStage;
+  request: AiStrategistLLMRequest<Record<string, unknown>>;
+  output: unknown;
+  options: AiStrategistLLMRunOptions;
+  config?: AiStrategistLLMConfig;
+  providerUsage?: AiStrategistLlmProviderUsage;
+  liveCall: boolean;
+  acceptedOutput: boolean;
+  fallbackReason?: string;
+}): AiStrategistLlmCallCostEstimate {
+  return buildLlmCallCostEstimate({
+    stage: input.stage,
+    request: input.request,
+    output: input.output,
+    provider: input.config?.provider,
+    model: input.config?.model,
+    providerUsage: input.providerUsage,
+    liveCall: input.liveCall,
+    acceptedOutput: input.acceptedOutput,
+    fallbackReason: input.fallbackReason,
+    env: input.options.env,
+  });
 }
 
 function resolveRetryOptions(envInput?: AiStrategistLLMEnv): { maxRetries: number; baseDelayMs: number } {
@@ -543,7 +766,7 @@ async function callGoogleVertexGemini(
   config: AiStrategistLLMConfig,
   request: AiStrategistLLMRequest<Record<string, unknown>>,
   signal?: AbortSignal
-): Promise<unknown> {
+): Promise<AiStrategistLLMCompletionResult> {
   const serviceAccount = parseServiceAccount(config.serviceAccountJson);
   const token = await getGoogleAccessToken(serviceAccount);
   const response = await fetch(buildGeminiGenerateContentUrl(config), {
@@ -559,7 +782,11 @@ async function callGoogleVertexGemini(
   if (!response.ok) {
     throw new Error(`Vertex Gemini request failed with status ${response.status}: ${JSON.stringify(raw)}`);
   }
-  return parseGeminiJsonResponse(raw);
+  return {
+    output: parseGeminiJsonResponse(raw),
+    providerUsage: extractGeminiUsageMetadata(raw) ?? undefined,
+    rawResponse: raw,
+  };
 }
 
 function buildGeminiGenerateContentUrl(config: AiStrategistLLMConfig): string {

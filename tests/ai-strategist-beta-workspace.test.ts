@@ -68,6 +68,8 @@ test('AI Strategist beta API is feature-flagged and strips raw debug output', as
   assert.equal(response.ok, true);
   assert.equal('rawLlmOutput' in response, false);
   assert.equal('promptGenerationContext' in response, false);
+  assert.equal(response.llmCost.formattedTotal, '$0.00');
+  assert.equal(response.llmCost.liveCallCount, 0);
   assert.equal(response.safety.autoGeneration, false);
   assert.equal(response.safety.creditSpend, false);
   assert.equal(response.safety.publishing, false);
@@ -119,6 +121,8 @@ test('workspace sidebar exposes the beta strategist in local/dev while Generate 
   assert.match(composerSurfaceSource, /mode: 'prompt_assistant'/);
   assert.match(widgetSource, /Apply to generator/);
   assert.match(widgetSource, /Apply in generator/);
+  assert.match(widgetSource, /Est\. assistant LLM/);
+  assert.match(widgetSource, /formatConversationLlmCost/);
   assert.match(widgetSource, /storePendingAiStrategistApply/);
   assert.match(widgetSource, /window\.location\.assign/);
   assert.match(betaBridgeSource, /AI_STRATEGIST_PENDING_APPLY_STORAGE_KEY/);

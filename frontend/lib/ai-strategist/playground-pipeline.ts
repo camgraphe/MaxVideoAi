@@ -39,6 +39,11 @@ import {
   buildPromptGenerationContext,
   type AiStrategistPromptGenerationContext,
 } from './prompt-structures';
+import {
+  buildConversationCostEstimate,
+  buildSkippedLlmCallCostEstimate,
+  type AiStrategistConversationCostEstimate,
+} from './llm-cost';
 import { recommendModelsForBrief } from './recommendation-rules';
 import type {
   AiStrategistBrief,
@@ -145,6 +150,7 @@ export type AiStrategistPlaygroundResult = {
       sanitizerChangedOutput: boolean;
     };
   };
+  llmCost: AiStrategistConversationCostEstimate;
   safety: {
     autoGeneration: false;
     creditSpend: false;
@@ -398,6 +404,7 @@ export async function runAiStrategistPlaygroundPipeline(
     },
     uiActions,
     llm: buildLlmSummary(refinement, promptWriter),
+    llmCost: buildPlaygroundLlmCost(refinement, promptWriter),
     safety: playgroundSafety(),
   };
 }
@@ -537,6 +544,7 @@ function buildClarificationResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'clarification_required'),
     safety: playgroundSafety(),
   };
 }
@@ -581,6 +589,7 @@ function buildProductHelpResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'product_help_no_prompt_writer'),
     safety: playgroundSafety(),
   };
 }
@@ -642,6 +651,7 @@ function buildOrchestratedHelpResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'orchestrator_help_tool'),
     safety: playgroundSafety(),
   };
 }
@@ -710,6 +720,7 @@ function buildNavigationHelpResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'navigation_help_no_prompt_writer'),
     safety: playgroundSafety(),
   };
 }
@@ -763,6 +774,7 @@ function buildPromptPasteRequestResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'awaiting_prompt_paste'),
     safety: playgroundSafety(),
   };
 }
@@ -835,6 +847,7 @@ function buildRecommendationOnlyResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'awaiting_model_choice'),
     safety: playgroundSafety(),
   };
 }
@@ -992,6 +1005,7 @@ function buildStoppedBeforePromptResult(input: {
         sanitizerChangedOutput: false,
       },
     },
+    llmCost: buildPlaygroundLlmCost(input.refinement, input.promptWriterFallbackReason),
     safety: playgroundSafety(),
   };
 }
@@ -1020,6 +1034,16 @@ function buildLlmSummary(
       sanitizerChangedOutput: promptWriter.sanitizerChangedOutput,
     },
   };
+}
+
+function buildPlaygroundLlmCost(
+  refinement: AiStrategistBriefRefinementLLMResult,
+  promptWriterOrFallbackReason: AiStrategistPromptWriterLLMResult | string
+): AiStrategistConversationCostEstimate {
+  const promptWriterCost = typeof promptWriterOrFallbackReason === 'string'
+    ? buildSkippedLlmCallCostEstimate('prompt_writer', promptWriterOrFallbackReason)
+    : promptWriterOrFallbackReason.costEstimate;
+  return buildConversationCostEstimate([refinement.costEstimate, promptWriterCost]);
 }
 
 function summarizeBriefLlm(refinement: AiStrategistBriefRefinementLLMResult): AiStrategistPlaygroundResult['llm']['briefRefinement'] {

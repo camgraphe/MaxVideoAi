@@ -236,6 +236,10 @@ function PlaygroundOutput({ result }: { result: AiStrategistPlaygroundResult }) 
         />
       </OutputPanel>
 
+      <OutputPanel title="LLM cost estimate">
+        <JsonBlock value={result.llmCost} />
+      </OutputPanel>
+
       {result.recommendations ? (
         <OutputPanel title="Recommendations">
           <div className="grid gap-3 lg:grid-cols-3">

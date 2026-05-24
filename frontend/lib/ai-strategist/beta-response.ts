@@ -28,6 +28,7 @@ export type AiStrategistBetaResponse = {
     promptWriterFallbackReason?: string;
     sanitizerChangedOutput: boolean;
   };
+  llmCost: AiStrategistPlaygroundResult['llmCost'];
   safety: AiStrategistPlaygroundResult['safety'];
 };
 
@@ -64,6 +65,7 @@ export function toAiStrategistBetaResponse(result: AiStrategistPlaygroundResult)
         : {}),
       sanitizerChangedOutput: result.llm.promptWriter.sanitizerChangedOutput,
     },
+    llmCost: result.llmCost,
     safety: result.safety,
   };
 }
