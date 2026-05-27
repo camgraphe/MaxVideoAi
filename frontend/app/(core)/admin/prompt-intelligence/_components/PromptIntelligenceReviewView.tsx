@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { CheckCircle2, Eye, Sparkles, ThumbsDown, Wrench } from 'lucide-react';
+import clsx from 'clsx';
 
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
-import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import type {
   PromptIntelligenceReviewCandidate,
@@ -45,18 +46,19 @@ export function PromptIntelligenceReviewView({
   const strongCount = queue.filter((row) => row.verdict === 'strong_example').length;
   const avoidCount = queue.filter((row) => row.verdict === 'avoid_pattern' || row.verdict === 'bad_result').length;
   const unreviewedCount = queue.filter((row) => !row.hasReview).length;
+  const selectedJobId = selected?.summary.jobId ?? queue[0]?.jobId ?? null;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <AdminPageHeader
         eyebrow="Prompt Intelligence"
         title="Prompt result reviews"
-        description="Review rendered videos against their prompt, model, workflow, settings, and final output. This builds the data layer for better prompt recommendations."
+        description="Score rendered videos against their prompt, model, workflow, settings, and final output. Use quick verdicts for volume, then open the full QCM when a clip needs detail."
       />
 
       <AdminSection
-        title="Review queue"
-        description="Start with completed jobs already in app_jobs. Score the prompt-result pair by model and workflow; mark best prompts, weak prompts, and avoid patterns."
+        title="Review board"
+        description="Latest completed clips from app_jobs. Cards are designed for fast triage: select, score in one click, or open the full adaptive QCM below."
         action={
           <AdminSectionMeta
             title={`${queue.length} loaded`}
@@ -73,24 +75,33 @@ export function PromptIntelligenceReviewView({
         </div>
       </AdminSection>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
-        <AdminSection title="Adaptive QCM" description="The form expands only for relevant risks: product preservation, character consistency, text/logo drift, or audio/lip-sync.">
-          {selected ? (
-            <div className="space-y-5">
-              <SelectedVideoPreview selected={selected} />
-              <PromptIntelligenceReviewForm candidate={selected} reviewAction={reviewAction} />
-            </div>
-          ) : (
-            <AdminEmptyState>No completed video is available for review with the current filters.</AdminEmptyState>
-          )}
+      <AdminSection
+        title="Rendered videos"
+        description="Compact visual cards show more clips at once. Use the one-click score buttons for quick data collection."
+        contentClassName="bg-bg/30 p-3 sm:p-4"
+      >
+        {queue.length ? (
+          <QueueCardGrid queue={queue} selectedJobId={selectedJobId} reviewAction={reviewAction} />
+        ) : (
+          <AdminEmptyState>No jobs match the current filters.</AdminEmptyState>
+        )}
+      </AdminSection>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(460px,1.05fr)]">
+        <AdminSection
+          title="Selected clip"
+          description="Use this focused preview to compare the prompt with the rendered video before the detailed score."
+          contentClassName="p-4"
+        >
+          {selected ? <SelectedVideoPreview selected={selected} /> : <AdminEmptyState>No completed video is available for review with the current filters.</AdminEmptyState>}
         </AdminSection>
 
         <AdminSection
-          title="Rendered videos"
-          description="Open a row to review that prompt/result pair."
-          contentClassName="p-0"
+          title="Adaptive QCM"
+          description="Detailed review expands only for relevant risks: product preservation, character consistency, text/logo drift, or audio/lip-sync."
+          contentClassName="p-4"
         >
-          {queue.length ? <QueueTable queue={queue} /> : <AdminEmptyState>No jobs match the current filters.</AdminEmptyState>}
+          {selected ? <PromptIntelligenceReviewForm candidate={selected} reviewAction={reviewAction} /> : <AdminEmptyState>Select a clip to review.</AdminEmptyState>}
         </AdminSection>
       </div>
     </div>
@@ -139,10 +150,10 @@ function SelectedVideoPreview({ selected }: { selected: PromptIntelligenceReview
   const { summary, video, signals } = selected;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(260px,420px)_minmax(0,1fr)]">
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-black">
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-black shadow-sm">
         {video.videoUrl ? (
-          <video src={video.videoUrl} poster={video.thumbUrl} controls preload="metadata" className="aspect-video w-full bg-black object-contain" />
+          <video src={video.videoUrl} poster={video.thumbUrl} controls preload="metadata" className="max-h-[420px] w-full bg-black object-contain" />
         ) : (
           <div className="flex aspect-video items-center justify-center text-sm text-white/70">No video asset</div>
         )}
@@ -150,7 +161,7 @@ function SelectedVideoPreview({ selected }: { selected: PromptIntelligenceReview
       <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 p-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">Prompt</p>
-          <p className="mt-2 text-sm leading-6 text-text-primary">{summary.promptText}</p>
+          <p className="mt-2 line-clamp-6 text-sm leading-6 text-text-primary">{summary.promptText}</p>
         </div>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <Meta label="Model" value={summary.engineLabel} />
@@ -172,39 +183,249 @@ function SelectedVideoPreview({ selected }: { selected: PromptIntelligenceReview
   );
 }
 
-function QueueTable({ queue }: { queue: PromptIntelligenceReviewSummary[] }) {
+function QueueCardGrid({
+  queue,
+  selectedJobId,
+  reviewAction,
+}: {
+  queue: PromptIntelligenceReviewSummary[];
+  selectedJobId: string | null;
+  reviewAction: ReviewAction;
+}) {
   return (
-    <AdminDataTable className="rounded-none border-0">
-      <thead className="bg-bg/60 text-xs uppercase tracking-[0.14em] text-text-muted">
-        <tr>
-          <th className="px-4 py-3 font-semibold">Video</th>
-          <th className="px-4 py-3 font-semibold">Model</th>
-          <th className="px-4 py-3 font-semibold">Score</th>
-          <th className="px-4 py-3 font-semibold">Verdict</th>
-          <th className="px-4 py-3 font-semibold">Updated</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-hairline">
-        {queue.map((row) => (
-          <tr key={row.jobId} className="align-top">
-            <td className="max-w-[360px] px-4 py-3">
-              <Link href={`/admin/prompt-intelligence?jobId=${encodeURIComponent(row.jobId)}`} className="font-semibold text-text-primary hover:text-brand">
-                {row.promptExcerpt || row.jobId}
-              </Link>
-              <p className="mt-1 text-xs text-text-muted">{row.jobId}</p>
-            </td>
-            <td className="px-4 py-3 text-sm text-text-secondary">
-              <span className="font-medium text-text-primary">{row.engineLabel}</span>
-              <span className="mt-1 block text-xs text-text-muted">{row.workflow}</span>
-            </td>
-            <td className="px-4 py-3 text-sm font-semibold text-text-primary">{formatPromptReviewScore(row.overallScore)}</td>
-            <td className="px-4 py-3 text-sm text-text-secondary">{row.verdict ? formatPromptReviewLabel(row.verdict) : 'Unreviewed'}</td>
-            <td className="px-4 py-3 text-xs text-text-muted">{formatPromptReviewDate(row.createdAt)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </AdminDataTable>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+      {queue.map((row) => (
+        <QueueCard key={row.jobId} row={row} selected={row.jobId === selectedJobId} reviewAction={reviewAction} />
+      ))}
+    </div>
   );
+}
+
+function QueueCard({
+  row,
+  selected,
+  reviewAction,
+}: {
+  row: PromptIntelligenceReviewSummary;
+  selected: boolean;
+  reviewAction: ReviewAction;
+}) {
+  const mediaUrl = row.thumbUrl || row.previewVideoUrl || row.videoUrl;
+  const verdictLabel = row.verdict ? formatPromptReviewLabel(row.verdict) : 'Unreviewed';
+
+  return (
+    <article
+      className={clsx(
+        'group overflow-hidden rounded-2xl border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-card',
+        selected ? 'border-brand/70 ring-2 ring-brand/10' : 'border-hairline'
+      )}
+    >
+      <Link href={`/admin/prompt-intelligence?jobId=${encodeURIComponent(row.jobId)}`} className="block">
+        <div className="relative aspect-video overflow-hidden bg-slate-950">
+          {mediaUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={mediaUrl} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-xs font-semibold text-white/60">No preview</div>
+          )}
+          <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">
+            <Badge tone={row.hasReview ? 'good' : 'muted'}>{verdictLabel}</Badge>
+            {selected ? <Badge tone="brand">Selected</Badge> : null}
+          </div>
+          <div className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white">
+            {row.durationSec ? `${row.durationSec}s` : 'Duration ?'}
+          </div>
+        </div>
+      </Link>
+
+      <div className="space-y-2 p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-text-primary">{row.engineLabel}</p>
+            <p className="mt-0.5 text-[11px] font-medium text-text-muted">
+              {row.workflow} · {row.aspectRatio ?? 'Aspect ?'} · {row.resolution ?? 'Res ?'}
+            </p>
+          </div>
+          <div className="shrink-0 rounded-full border border-hairline bg-bg px-2 py-1 text-[11px] font-bold text-text-primary">
+            {formatPromptReviewScore(row.overallScore)}
+          </div>
+        </div>
+
+        <Link
+          href={`/admin/prompt-intelligence?jobId=${encodeURIComponent(row.jobId)}`}
+          className="line-clamp-2 min-h-10 text-xs leading-5 text-text-secondary hover:text-text-primary"
+        >
+          {row.promptExcerpt || row.jobId}
+        </Link>
+
+        <div className="flex flex-wrap gap-1">
+          {row.signals.suggestedTags.slice(0, 3).map((tag) => (
+            <span key={tag} className="rounded-full bg-bg px-2 py-0.5 text-[10px] font-semibold text-text-muted">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <QuickScoreActions row={row} reviewAction={reviewAction} />
+
+        <div className="flex items-center justify-between border-t border-hairline pt-2 text-[11px] text-text-muted">
+          <span>{formatPromptReviewDate(row.createdAt)}</span>
+          <Link href={`/admin/prompt-intelligence?jobId=${encodeURIComponent(row.jobId)}`} className="inline-flex items-center gap-1 font-semibold text-text-secondary hover:text-brand">
+            <Eye className="h-3.5 w-3.5" />
+            Review
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function QuickScoreActions({
+  row,
+  reviewAction,
+}: {
+  row: PromptIntelligenceReviewSummary;
+  reviewAction: ReviewAction;
+}) {
+  const actions = [
+    {
+      label: 'Strong',
+      icon: Sparkles,
+      tone: 'strong',
+      hidden: {
+        verdict: 'strong_example',
+        overallScore: '5',
+        promptMatchScore: '5',
+        modelFitScore: '5',
+        workflowFitScore: '5',
+        visualQualityScore: '5',
+        motionScore: '5',
+        cameraScore: '5',
+        commercialUseScore: '5',
+        seoPotentialScore: '4',
+        nextAction: 'use_as_example',
+        tags: mergeTags(row, ['strong-example']),
+      },
+    },
+    {
+      label: 'Good',
+      icon: CheckCircle2,
+      tone: 'good',
+      hidden: {
+        verdict: 'good_needs_prompt_tweak',
+        overallScore: '4',
+        promptMatchScore: '4',
+        modelFitScore: '4',
+        workflowFitScore: '4',
+        visualQualityScore: '4',
+        motionScore: '4',
+        cameraScore: '4',
+        commercialUseScore: '4',
+        seoPotentialScore: '3',
+        nextAction: 'improve_prompt',
+        tags: mergeTags(row, ['good-result']),
+      },
+    },
+    {
+      label: 'Weak',
+      icon: Wrench,
+      tone: 'weak',
+      hidden: {
+        verdict: 'bad_result',
+        overallScore: '2',
+        promptMatchScore: '2',
+        modelFitScore: '3',
+        workflowFitScore: '3',
+        visualQualityScore: '2',
+        motionScore: '2',
+        cameraScore: '2',
+        commercialUseScore: '2',
+        seoPotentialScore: '1',
+        nextAction: 'improve_prompt',
+        mainIssue: 'prompt_too_vague',
+        tags: mergeTags(row, ['weak-result']),
+      },
+    },
+    {
+      label: 'Avoid',
+      icon: ThumbsDown,
+      tone: 'avoid',
+      hidden: {
+        verdict: 'avoid_pattern',
+        overallScore: '1',
+        promptMatchScore: '1',
+        modelFitScore: '2',
+        workflowFitScore: '2',
+        visualQualityScore: '1',
+        motionScore: '1',
+        cameraScore: '1',
+        commercialUseScore: '1',
+        seoPotentialScore: '1',
+        nextAction: 'avoid_this_pattern',
+        mainIssue: 'model_limitation',
+        tags: mergeTags(row, ['avoid-pattern']),
+      },
+    },
+  ] as const;
+
+  return (
+    <div className="grid grid-cols-4 gap-1.5">
+      {actions.map(({ label, icon: Icon, tone, hidden }) => (
+        <form key={label} action={reviewAction}>
+          <input type="hidden" name="jobId" value={row.jobId} />
+          <input type="hidden" name="intent" value={row.intent} />
+          <input type="hidden" name="promptSource" value="manual" />
+          <input type="hidden" name="reviewDepth" value="one_click" />
+          {Object.entries(hidden).map(([name, value]) => (
+            <input key={name} type="hidden" name={name} value={value} />
+          ))}
+          {row.signals.adaptiveScoreKeys.map((key) => (
+            <input key={key} type="hidden" name={key} value={adaptiveQuickScore(tone)} />
+          ))}
+          <button
+            type="submit"
+            className={clsx(
+              'flex w-full items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-bold transition hover:-translate-y-0.5',
+              tone === 'strong' && 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100',
+              tone === 'good' && 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+              tone === 'weak' && 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+              tone === 'avoid' && 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
+            )}
+            title={`One-click score as ${label}`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+          </button>
+        </form>
+      ))}
+    </div>
+  );
+}
+
+function Badge({ tone, children }: { tone: 'brand' | 'good' | 'muted'; children: ReactNode }) {
+  return (
+    <span
+      className={clsx(
+        'rounded-full px-2 py-1 text-[10px] font-bold shadow-sm backdrop-blur',
+        tone === 'brand' && 'bg-brand text-on-brand',
+        tone === 'good' && 'bg-emerald-500 text-white',
+        tone === 'muted' && 'bg-white/90 text-text-secondary'
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function mergeTags(row: PromptIntelligenceReviewSummary, extra: string[]): string {
+  return Array.from(new Set([...row.signals.suggestedTags, ...extra])).join(', ');
+}
+
+function adaptiveQuickScore(tone: 'strong' | 'good' | 'weak' | 'avoid'): string {
+  if (tone === 'strong') return '5';
+  if (tone === 'good') return '4';
+  if (tone === 'weak') return '2';
+  return '1';
 }
 
 function Meta({ label, value }: { label: string; value: string }) {

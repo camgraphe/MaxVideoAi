@@ -69,7 +69,7 @@ export default async function PromptIntelligencePage(props: PageProps) {
   }
 
   const queue = await fetchPromptIntelligenceReviewQueue({
-    limit: 80,
+    limit: 20,
     reviewStatus: filters.reviewStatus,
     engineId: filters.engineId,
     search: filters.q,

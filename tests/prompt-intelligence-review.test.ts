@@ -104,7 +104,12 @@ test('prompt intelligence admin route is internal, thin, and review-focused', ()
   assert.ok(pageSource.split('\n').length <= 120, 'prompt intelligence page should stay a thin route');
 
   assert.match(viewSource, /export function PromptIntelligenceReviewView/);
-  assert.match(viewSource, /Review queue/);
+  assert.match(viewSource, /Review board/);
+  assert.match(viewSource, /QueueCardGrid/);
+  assert.match(viewSource, /QuickScoreActions/);
+  assert.match(viewSource, /one_click/);
+  assert.match(viewSource, /Strong/);
+  assert.match(viewSource, /Avoid/);
   assert.match(viewSource, /Best prompts/);
   assert.match(viewSource, /Avoid patterns/);
   assert.match(formSource, /Prompt match/);
