@@ -125,6 +125,7 @@ export function mapJobAuditRow(row: RawJobAuditRow, now = Date.now()): AdminJobA
     userId: row.user_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    hiddenByUser: row.hidden === true,
     status: row.status,
     progress: row.progress,
     message: row.message,

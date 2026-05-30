@@ -38,6 +38,7 @@ export async function fetchRecentJobAudits({
         j.id,
         j.job_id,
         j.updated_at,
+        COALESCE(j.hidden, FALSE) AS hidden,
         j.user_id,
         j.created_at,
         j.status,

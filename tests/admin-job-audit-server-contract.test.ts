@@ -18,6 +18,7 @@ function buildRawJobAuditRow(overrides: Partial<RawJobAuditRow> = {}): RawJobAud
     user_id: 'user_1',
     created_at: '2026-05-09T00:00:00.000Z',
     updated_at: '2026-05-09T00:00:00.000Z',
+    hidden: false,
     status: 'completed',
     progress: 100,
     message: null,
@@ -191,4 +192,12 @@ test('admin job audit mapper handles refunded failures and image outputs', () =>
   assert.equal(image.outputUrl, '/render.png');
   assert.equal(image.hasOutput, true);
   assert.equal(image.isPlaceholderOutput, false);
+});
+
+test('admin job audit mapper exposes user-hidden jobs as an explicit opt-out', () => {
+  const visible = mapJobAuditRow(buildRawJobAuditRow({ hidden: false }));
+  const hidden = mapJobAuditRow(buildRawJobAuditRow({ hidden: true }));
+
+  assert.equal(visible.hiddenByUser, false);
+  assert.equal(hidden.hiddenByUser, true);
 });

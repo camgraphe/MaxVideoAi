@@ -81,6 +81,7 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(controllerHookSource, /window\.addEventListener\('jobs:hidden'/);
   assert.match(copySource, /export const DEFAULT_JOBS_COPY/);
   assert.match(copySource, /export type JobsCopy/);
+  assert.match(readFileSync(join(root, 'frontend/components/GroupedJobCardMenu.tsx'), 'utf8'), /Remove from history/);
   assert.match(helpersSource, /export function resolveClientJobSurface/);
   assert.match(helpersSource, /export function resolveWorkspaceJobHref/);
   assert.match(helpersSource, /export function resolveGroupLibrarySavePayload/);

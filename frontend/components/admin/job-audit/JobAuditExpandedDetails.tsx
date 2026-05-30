@@ -55,6 +55,7 @@ export function JobAuditExpandedDetails({ job }: { job: AdminJobAuditRecord }) {
             <p>Surface: {job.surface ?? 'video'}</p>
             <p>Engine: {job.engineLabel ?? 'Unknown engine'}</p>
             <p>Provider ID: {job.providerJobId ?? '—'}</p>
+            <p>User-hidden: {job.hiddenByUser ? 'Yes' : 'No'}</p>
             <p>Hero render: {job.heroRenderId ?? '—'}</p>
             <p>Thumb: {job.thumbUrl ?? '—'}</p>
             <p>Render count: {job.renderCount}</p>

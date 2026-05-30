@@ -204,7 +204,7 @@ export function GroupedJobCardMenu({
           onClick={() => handleAction('remove')}
           className="mt-2 w-full justify-between rounded-input px-2 py-1.5 text-left text-error hover:bg-error-bg"
         >
-          <span>Remove</span>
+          <span>Remove from history</span>
         </Button>
       )}
     </div>
