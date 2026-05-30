@@ -1,7 +1,10 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
 import type { Mode, PricingSnapshot } from '@/types/engines';
-import { buildGoogleVertexVeoPayload } from '@/server/video-providers/google-vertex-veo/payload';
+import {
+  buildGoogleVertexVeoPayload,
+  resolveGoogleVertexVeoEndImageUrl,
+} from '@/server/video-providers/google-vertex-veo/payload';
 import { getGoogleVertexVeoClient } from '@/server/video-providers/google-vertex-veo/client';
 import { estimateGoogleVertexVeoCost } from '@/server/video-providers/google-vertex-veo/cost';
 import {
@@ -322,7 +325,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
       resolution: params.effectiveResolution ?? params.falPayload.resolution ?? null,
       audioEnabled: params.audioEnabled !== false,
       hasImage: Boolean(params.falPayload.imageUrl),
-      hasEndImage: Boolean(params.falPayload.endImageUrl),
+      hasEndImage: Boolean(resolveGoogleVertexVeoEndImageUrl(params.falPayload)),
       referenceImageCount: params.falPayload.referenceImages?.length ?? 0,
       promptLength: params.prompt.length,
       estimatedProviderCostUsd: estimate.providerCostUsd,
