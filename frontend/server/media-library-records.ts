@@ -9,6 +9,8 @@ export type LegacyJobMediaRow = {
   user_id?: string | null;
   surface?: string | null;
   video_url?: string | null;
+  video_width?: number | null;
+  video_height?: number | null;
   audio_url?: string | null;
   thumb_url?: string | null;
   preview_frame?: string | null;
@@ -190,8 +192,8 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       thumbUrl,
       previewUrl,
       mimeType: inferMimeFromUrl(videoUrl, 'video'),
-      width: null,
-      height: null,
+      width: normalizeInteger(row.video_width),
+      height: normalizeInteger(row.video_height),
       durationSec: normalizeInteger(row.duration_sec),
       position: 0,
       status,

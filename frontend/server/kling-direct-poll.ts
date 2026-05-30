@@ -12,6 +12,8 @@ import { ensureFastStartVideo } from '@/server/video-faststart';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
+import { detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { formatAspectRatioLabel } from '@/server/fal-webhook-media';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
 import { computeKlingDirectProviderCostUsd } from '@/server/video-providers/kling-direct/cost';
 import { classifyKlingDirectError } from '@/server/video-providers/kling-direct/errors';
@@ -54,6 +56,7 @@ type KlingDirectPollDeps = {
   queryFn?: QueryFn;
   getKlingDirectClientFn?: typeof getKlingDirectClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
+  detectVideoDimensionsFn?: typeof detectVideoDimensions;
   ensureJobThumbnailFn?: typeof ensureJobThumbnail;
   upsertLegacyJobOutputsFn?: typeof upsertLegacyJobOutputs;
   generateAndPersistJobPreviewVideoFn?: typeof generateAndPersistJobPreviewVideo;
@@ -261,6 +264,7 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
   const queryFn = deps.queryFn ?? query;
   const getKlingDirectClientFn = deps.getKlingDirectClientFn ?? getKlingDirectClient;
   const ensureFastStartVideoFn = deps.ensureFastStartVideoFn ?? ensureFastStartVideo;
+  const detectVideoDimensionsFn = deps.detectVideoDimensionsFn ?? detectVideoDimensions;
   const ensureJobThumbnailFn = deps.ensureJobThumbnailFn ?? ensureJobThumbnail;
   const upsertLegacyJobOutputsFn = deps.upsertLegacyJobOutputsFn ?? upsertLegacyJobOutputs;
   const generateAndPersistJobPreviewVideoFn =
@@ -386,13 +390,18 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
         continue;
       }
 
+      const detectedDimensions = await detectVideoDimensionsFn(copiedVideoUrl).catch(() => null);
+      const detectedAspectRatio = detectedDimensions
+        ? formatAspectRatioLabel(detectedDimensions.width, detectedDimensions.height)
+        : null;
+      const effectiveAspectRatio = detectedAspectRatio ?? job.aspect_ratio ?? '16:9';
       let thumb = job.thumb_url ?? '/assets/frames/thumb-16x9.svg';
       if (isPlaceholderThumbnail(thumb)) {
         const generatedThumb = await ensureJobThumbnailFn({
           jobId: job.job_id,
           userId: job.user_id ?? undefined,
           videoUrl: copiedVideoUrl,
-          aspectRatio: job.aspect_ratio ?? '16:9',
+          aspectRatio: effectiveAspectRatio,
           existingThumbUrl: thumb,
         });
         if (generatedThumb) {
@@ -410,12 +419,18 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
                 preview_frame = $3,
                 message = NULL,
                 cost_breakdown_usd = $4::jsonb,
+                aspect_ratio = COALESCE($5, aspect_ratio),
+                settings_snapshot = CASE
+                  WHEN $5::text IS NOT NULL
+                    THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{core,aspectRatio}', to_jsonb($5::text), true)
+                  ELSE settings_snapshot
+                END,
                 provisional = FALSE,
                 updated_at = NOW()
           WHERE job_id = $1
-            AND status = ANY($5::text[])
+            AND status = ANY($6::text[])
           RETURNING job_id`,
-        [job.job_id, copiedVideoUrl, thumb, JSON.stringify(costBreakdown), ACTIVE_JOB_STATUSES]
+        [job.job_id, copiedVideoUrl, thumb, JSON.stringify(costBreakdown), detectedAspectRatio, ACTIVE_JOB_STATUSES]
       );
       if (!completedRows.length) {
         continue;
@@ -429,6 +444,8 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
         thumb_url: thumb,
         preview_frame: thumb,
         preview_video_url: job.preview_video_url,
+        video_width: detectedDimensions?.width ?? null,
+        video_height: detectedDimensions?.height ?? null,
         render_ids: null,
         duration_sec: job.duration_sec,
         status: 'completed',

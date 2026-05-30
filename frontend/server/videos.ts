@@ -32,13 +32,17 @@ const imageThumbFallbackSelect = (jobAlias: string) => `
               LIMIT 1
 `;
 
+const videoOutputDimensionSelect = (jobAlias: string, column: 'width' | 'height') =>
+  `SELECT jo.${column} FROM job_outputs jo WHERE jo.job_id = ${jobAlias}.job_id AND jo.kind = 'video' AND jo.status <> 'deleted' AND jo.width IS NOT NULL AND jo.height IS NOT NULL ORDER BY jo.position ASC, jo.created_at ASC LIMIT 1`;
+
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
          COALESCE(NULLIF(thumb_url, ''), (${imageThumbFallbackSelect('app_jobs')})) AS thumb_url,
          video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
-         aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
+         aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
+         has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, pricing_snapshot
   FROM app_jobs
 `;
@@ -49,7 +53,8 @@ const BASE_SELECT_WITH_SETTINGS = `
          video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
-         aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
+         aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
+         has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, settings_snapshot
   FROM app_jobs
 `;
@@ -204,7 +209,8 @@ async function listPlaylistVideosWithOptions({
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt,
              COALESCE(NULLIF(aj.thumb_url, ''), (${imageThumbFallbackSelect('aj')})) AS thumb_url,
              aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
-             aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
+             aj.aspect_ratio, (${videoOutputDimensionSelect('aj', 'width')}) AS output_width, (${videoOutputDimensionSelect('aj', 'height')}) AS output_height,
+             aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index
       FROM playlists p
       JOIN playlist_items pi ON pi.playlist_id = p.id
