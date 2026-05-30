@@ -137,6 +137,13 @@ export async function runFalPoll() {
       }
 
       let engineIdForLookup = job.engine_id;
+      const markRefundEligiblePollFailure = async (reason: string) => {
+        await markJobFailed(reason, {
+          autoRefundEligible: true,
+          failureOrigin: 'poll_internal',
+        });
+      };
+
       if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
         const logRows = await query<{ engine_id: string | null }>(
           `SELECT engine_id
@@ -178,7 +185,7 @@ export async function runFalPoll() {
           );
           continue;
         }
-        await markJobFailed('Unable to determine Fal engine for this job.');
+        await markRefundEligiblePollFailure('Unable to determine Fal engine for this job.');
         continue;
       }
 
@@ -212,7 +219,7 @@ export async function runFalPoll() {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markJobFailed('Fal status remained unavailable after timeout grace period.');
+          await markRefundEligiblePollFailure('Fal status remained unavailable after timeout grace period.');
           continue;
         }
         await markJobFailed('Fal job status unavailable (possibly expired).');
@@ -241,7 +248,7 @@ export async function runFalPoll() {
 
       if (state && !COMPLETED_STATES.has(state)) {
         if (timedOut && beyondTimeoutGrace) {
-          await markJobFailed('Fal polling exceeded expected window after timeout grace period.');
+          await markRefundEligiblePollFailure('Fal polling exceeded expected window after timeout grace period.');
           continue;
         }
         await updateJobFromFalWebhook({
@@ -281,7 +288,7 @@ export async function runFalPoll() {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markJobFailed(providerError ?? 'Fal returned no result after timeout grace period.');
+          await markRefundEligiblePollFailure(providerError ?? 'Fal returned no result after timeout grace period.');
           continue;
         }
         await markJobFailed(providerError ?? 'Fal returned no result for this job.');
