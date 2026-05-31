@@ -787,8 +787,6 @@ function isVeoFriendlySocialOrCommercialBrief(brief: NormalizedBrief): boolean {
       'natural',
       'human',
       'creator',
-      'voiceover',
-      'voice over',
       'dialogue',
       'spoken',
       'audio',

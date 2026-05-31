@@ -32,12 +32,14 @@ export type AiStrategistBetaBridge = {
 };
 
 export function resolveAiStrategistApplyTarget(
-  result: Pick<AiStrategistBetaResponse, 'workflow' | 'uiActions'>,
+  result: Pick<AiStrategistBetaResponse, 'workflow' | 'uiActions'> & { selectedModel?: string | null },
   currentPath?: string | null
 ): AiStrategistBetaApplyTarget {
   const hasVideoWorkflow = Boolean(result.workflow && result.workflow.includes('video'));
   const hasVideoAction = result.uiActions.some((action) => action.type === 'SET_DURATION' || action.type === 'SET_WORKFLOW');
   if (hasVideoWorkflow || hasVideoAction) return 'video';
+  const modelAction = result.uiActions.find((action) => action.type === 'SET_MODEL')?.value;
+  if (isImageEngineId(result.selectedModel) || isImageEngineId(modelAction)) return 'image';
   if (currentPath?.startsWith('/app/image')) return 'image';
   return 'video';
 }
@@ -77,6 +79,10 @@ export function consumePendingAiStrategistApply(target: AiStrategistBetaApplyTar
     window.sessionStorage.removeItem(AI_STRATEGIST_PENDING_APPLY_STORAGE_KEY);
     return null;
   }
+}
+
+function isImageEngineId(value: string | null | undefined): boolean {
+  return value === 'gpt-image-2' || value === 'seedream' || value === 'nano-banana' || value === 'nano-banana-pro' || value === 'nano-banana-2';
 }
 
 declare global {

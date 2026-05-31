@@ -1259,8 +1259,9 @@ function sanitizeGeneratedLabelTypography(text: string): string {
     .replace(
       /\b(?:elegant|minimalist|premium|branded)?\s*label\s+with\s+[^,\n.;]*(?:typography|text|lettering)\b/gi,
       'clean label area, no readable text required; add final typography as an overlay if needed'
-    )
-    .replace(/\blabel readability\b/gi, 'clean label area')
+	    )
+	    .replace(/\blabel readability\b/gi, 'clean label area')
+	    .replace(/\blabel legibility\b/gi, 'clean label area')
     .replace(/\breadable labels?\s+area\b/gi, 'clean label area')
     .replace(/\blegible labels?\s+area\b/gi, 'clean label area')
     .replace(/\b(?:elegant|minimalist|premium|branded)\s+label\b/gi, 'clean label area, no readable text required; add final typography as an overlay if needed')

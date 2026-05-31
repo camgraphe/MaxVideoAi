@@ -1,5 +1,6 @@
 'use client';
 
+import type { Dispatch, SetStateAction } from 'react';
 import { useEffect } from 'react';
 
 import {
@@ -8,6 +9,7 @@ import {
 } from '@/lib/ai-strategist/beta-bridge';
 import type { AiStrategistBetaResponse } from '@/lib/ai-strategist/beta-response';
 import type { EngineCaps, Mode } from '@/types/engines';
+import { buildAiStrategistApplyFormState, hasAiStrategistFormApply } from '../_lib/ai-strategist-apply-form';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
 
@@ -20,12 +22,9 @@ type WorkspaceStrategistBetaBridgeProps = {
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   price: number | null;
   currency: string;
+  setForm: Dispatch<SetStateAction<FormState | null>>;
   setPrompt: (value: string) => void;
   setNegativePrompt: (value: string) => void;
-  handleEngineChange: (engineId: string) => void;
-  handleDurationChange: (raw: number | string) => void;
-  handleResolutionChange: (resolution: string) => void;
-  handleAspectRatioChange: (ratio: string) => void;
   showNotice: (message: string) => void;
 };
 
@@ -38,12 +37,9 @@ export function WorkspaceStrategistBetaBridge({
   inputAssets,
   price,
   currency,
+  setForm,
   setPrompt,
   setNegativePrompt,
-  handleEngineChange,
-  handleDurationChange,
-  handleResolutionChange,
-  handleAspectRatioChange,
   showNotice,
 }: WorkspaceStrategistBetaBridgeProps) {
   useEffect(() => {
@@ -65,6 +61,7 @@ export function WorkspaceStrategistBetaBridge({
     });
     const applyUiActions = (result: AiStrategistBetaResponse) => {
       let appliedCount = 0;
+
       for (const action of result.uiActions) {
         if (!action.value) continue;
         if (action.type === 'SET_PROMPT') {
@@ -73,19 +70,19 @@ export function WorkspaceStrategistBetaBridge({
         } else if (action.type === 'SET_NEGATIVE_PROMPT') {
           setNegativePrompt(action.value);
           appliedCount += 1;
-        } else if (action.type === 'SET_MODEL' && engines.some((engine) => engine.id === action.value)) {
-          handleEngineChange(action.value);
-          appliedCount += 1;
-        } else if (action.type === 'SET_ASPECT_RATIO') {
-          handleAspectRatioChange(action.value);
-          appliedCount += 1;
-        } else if (action.type === 'SET_DURATION') {
-          handleDurationChange(action.value);
-          appliedCount += 1;
-        } else if (action.type === 'SET_RESOLUTION') {
-          handleResolutionChange(normalizeResolution(action.value));
-          appliedCount += 1;
         }
+      }
+      if (hasAiStrategistFormApply(result)) {
+        setForm((current) =>
+          buildAiStrategistApplyFormState({
+            currentForm: current,
+            engines,
+            selectedEngine,
+            activeMode,
+            result,
+          })
+        );
+        appliedCount += 1;
       }
 
       if (appliedCount > 0) {
@@ -120,15 +117,11 @@ export function WorkspaceStrategistBetaBridge({
     form.aspectRatio,
     form.durationSec,
     form.resolution,
-    handleAspectRatioChange,
-    handleDurationChange,
-    handleEngineChange,
-    handleResolutionChange,
     inputAssets,
     price,
     prompt,
-    selectedEngine.id,
-    selectedEngine.label,
+    selectedEngine,
+    setForm,
     setNegativePrompt,
     setPrompt,
     showNotice,
@@ -146,11 +139,4 @@ function inferUploadedAsset(inputAssets: Record<string, (ReferenceAsset | null)[
     type: hasVideo ? 'video' : hasImage ? 'image' : undefined,
     isReferenceImage: hasImage,
   };
-}
-
-function normalizeResolution(value: string): string {
-  if (/4\s*k/i.test(value)) return '4K';
-  if (/1080\s*p/i.test(value)) return '1080p';
-  if (/720\s*p/i.test(value)) return '720p';
-  return value;
 }

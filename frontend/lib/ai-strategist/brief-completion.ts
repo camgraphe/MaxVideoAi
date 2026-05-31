@@ -228,11 +228,11 @@ function shouldUseProactiveProductReferenceDefaults(input: {
 function hasConcreteSubject(text: string, normalizedBrief: AiStrategistNormalizedBrief): boolean {
   if (normalizedBrief.hasProduct || normalizedBrief.hasPerson || normalizedBrief.hasCharacter) return true;
   if (isCombatBrief(text)) return true;
-  return /\b(car|voiture|perfume|bottle|sneaker|shoe|watch|jewelry|avatar|spokesperson|fighter|character|person|product|scene|drink|beverage|can|makeup|cosmetic)\b/.test(text);
+  return /\b(car|voiture|perfume|bottle|sneaker|shoe|watch|jewelry|avatar|spokesperson|fighter|character|person|product|scene|drink|beverage|can|makeup|cosmetic|food|culinary|sauce|dish|chef|restaurant)\b/.test(text);
 }
 
 function hasMotion(text: string): boolean {
-  return /\b(fight|combat|run|jump|drive|drift|reveal|spin|walk|talk|speak|transform|animate|push|pull|zoom|attack|punch|kick|move|motion|dynamic|dynamique)\b/.test(text);
+  return /\b(fight|combat|run|jump|drive|drift|reveal|spin|walk|talk|speak|transform|animate|push|pull|zoom|attack|punch|kick|move|motion|dynamic|dynamique|slowmo|slow[-\s]?motion|slomow|pour|stir|cook|slice|macro)\b/.test(text);
 }
 
 function hasCamera(text: string): boolean {
@@ -240,7 +240,7 @@ function hasCamera(text: string): boolean {
 }
 
 function hasStyle(text: string): boolean {
-  return /\b(cinematic|realistic|stylized|arcade|anime|premium|luxury|dark|bright|moody|studio|neon|gritty|polished|street fighter)\b/.test(text);
+  return /\b(cinematic|realistic|stylized|arcade|anime|premium|luxury|dark|bright|moody|studio|neon|gritty|polished|street fighter|culinary|asmr|beauty|commercial|pub|pro)\b/.test(text);
 }
 
 function hasAudio(text: string): boolean {
@@ -252,7 +252,7 @@ function hasDuration(text: string): boolean {
 }
 
 function hasResolution(text: string): boolean {
-  return /\b(?:480p|720p|1080p|4k)\b/.test(text);
+  return /\b(?:hd|full\s*hd|480p|720p|1080p|4k)\b/.test(text);
 }
 
 function modelShortName(modelId: AiStrategistModelId): string {

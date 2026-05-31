@@ -1764,6 +1764,7 @@ function resolutionReason(modelId: AiStrategistModelId, promptStructureId: AiStr
 
 function extractRequestedResolution(brief: string): string | undefined {
   if (/\b(?:no|not|without|avoid|pas de)\s+4k\b/i.test(brief)) return undefined;
+  if (/\b(?:full\s*)?hd\b/i.test(brief)) return '1080p';
   const match = brief.match(/\b(480p|720p|1080p|4k)\b/i);
   if (!match?.[1]) return undefined;
   return match[1].toLowerCase() === '4k' ? '4k' : match[1].toLowerCase();

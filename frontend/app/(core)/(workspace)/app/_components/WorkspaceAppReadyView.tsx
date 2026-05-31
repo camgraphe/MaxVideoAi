@@ -305,12 +305,9 @@ export function WorkspaceAppReadyView({
         inputAssets={inputAssets}
         price={price}
         currency={currency}
+        setForm={setForm}
         setPrompt={setPrompt}
         setNegativePrompt={setNegativePrompt}
-        handleEngineChange={handleEngineChange}
-        handleDurationChange={handleDurationChange}
-        handleResolutionChange={handleResolutionChange}
-        handleAspectRatioChange={handleAspectRatioChange}
         showNotice={showNotice}
       />
       <WorkspaceRuntimeModals

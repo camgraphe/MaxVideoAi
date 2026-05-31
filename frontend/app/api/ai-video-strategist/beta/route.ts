@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { isAiStrategistBetaApiEnabled } from '@/lib/ai-strategist/beta-flags';
 import { toAiStrategistBetaResponse } from '@/lib/ai-strategist/beta-response';
+import { getUserIdFromRequest } from '@/lib/user';
 import {
   runAiStrategistPlaygroundPipeline,
   type AiStrategistPlaygroundInput,
 } from '@/lib/ai-strategist/playground-pipeline';
+import { recordAiStrategistConversationTurn } from '@/server/ai-strategist-conversations';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,7 +27,22 @@ export async function POST(req: NextRequest) {
       ...body,
       surface: 'chat',
     });
-    return NextResponse.json(toAiStrategistBetaResponse(result));
+    const userId = await getUserIdFromRequest(req);
+    const persistedTurn = await recordAiStrategistConversationTurn({
+      conversationId: body.conversationId,
+      clientSessionId: body.clientSessionId,
+      userId,
+      visibleUserText: body.userMessage,
+      request: {
+        ...body,
+        surface: 'chat',
+      },
+      result: result as unknown as Record<string, unknown>,
+    });
+    return NextResponse.json(toAiStrategistBetaResponse(result, {
+      conversationId: persistedTurn?.conversationId,
+      conversationTurnId: persistedTurn?.conversationTurnId,
+    }));
   } catch (error) {
     console.error('[ai-video-strategist/beta] failed to run strategist beta', error);
     return NextResponse.json({ ok: false, error: 'Failed to run AI Strategist beta.' }, { status: 500 });

@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { authFetch } from '@/lib/authFetch';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import {
@@ -35,6 +36,7 @@ import {
   AI_STRATEGIST_WIDGET_TITLE,
 } from '@/lib/ai-strategist/branding';
 import { isAiStrategistBetaWidgetEnabled } from '@/lib/ai-strategist/beta-flags';
+import { buildAiStrategistApplyPhases } from '@/lib/ai-strategist/apply-phases';
 import {
   getAiStrategistApplyHref,
   resolveAiStrategistApplyTarget,
@@ -110,6 +112,7 @@ export function AiStrategistBetaSidebarWidget() {
   const widgetRef = useRef<HTMLElement | null>(null);
   const dragStateRef = useRef<WidgetDragState | null>(null);
   const resizeStateRef = useRef<WidgetResizeState | null>(null);
+  const clientSessionIdRef = useRef(createClientSessionId());
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'intro',
@@ -121,6 +124,7 @@ export function AiStrategistBetaSidebarWidget() {
   const [input, setInput] = useState('');
   const [lastContext, setLastContext] = useState<LastRequestContext | null>(null);
   const [lastResult, setLastResult] = useState<AiStrategistBetaResponse | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appliedAt, setAppliedAt] = useState<number | null>(null);
@@ -305,6 +309,8 @@ export function AiStrategistBetaSidebarWidget() {
     ]);
     setLastContext(null);
     setLastResult(null);
+    setConversationId(null);
+    clientSessionIdRef.current = createClientSessionId();
     setError(null);
     setInput('');
     setAppliedAt(null);
@@ -333,6 +339,8 @@ export function AiStrategistBetaSidebarWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...payload,
+          ...(conversationId ? { conversationId } : {}),
+          clientSessionId: clientSessionIdRef.current,
           surface: 'chat',
           currentPrompt: bridgeContext.currentPrompt || payload.currentPrompt,
           selectedWorkflow: payload.selectedWorkflow ?? bridgeContext.selectedWorkflow,
@@ -348,6 +356,9 @@ export function AiStrategistBetaSidebarWidget() {
 
       setLastContext(resolveNextContext(json, context));
       setLastResult(json);
+      if (json.conversationId) {
+        setConversationId(json.conversationId);
+      }
       setMessages((current) => [
         ...current,
         {
@@ -404,9 +415,11 @@ export function AiStrategistBetaSidebarWidget() {
   }
 
   function applyUiActions(result: AiStrategistBetaResponse) {
-    const appliedCount = window.__mvaiAiStrategistBeta?.applyUiActions?.(result) ?? 0;
+    const target = resolveAiStrategistApplyTarget(result, pathname);
+    void recordAiStrategistApplyDecision(result, target);
+    const canUseCurrentBridge = currentPathMatchesApplyTarget(pathname, target);
+    const appliedCount = canUseCurrentBridge ? window.__mvaiAiStrategistBeta?.applyUiActions?.(result) ?? 0 : 0;
     if (!appliedCount) {
-      const target = resolveAiStrategistApplyTarget(result, pathname);
       const href = getAiStrategistApplyHref(target);
       if (!storePendingAiStrategistApply(result, target)) return;
       dispatchAnalyticsEvent('ai_strategist_beta_apply_redirect', {
@@ -426,6 +439,25 @@ export function AiStrategistBetaSidebarWidget() {
       workflow: result.workflow,
       surface: 'app_sidebar',
     });
+  }
+
+  async function recordAiStrategistApplyDecision(result: AiStrategistBetaResponse, target: 'video' | 'image') {
+    const id = result.conversationId ?? conversationId;
+    if (!id) return;
+    try {
+      await authFetch('/api/ai-video-strategist/beta/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: id,
+          selectedModel: result.selectedModel,
+          workflow: result.workflow,
+          target,
+        }),
+      });
+    } catch (error) {
+      console.warn('[ai-strategist-beta] failed to record apply decision', error);
+    }
   }
 
   function handleWidgetMouseDown(event: ReactMouseEvent<HTMLElement>) {
@@ -684,6 +716,18 @@ export function AiStrategistBetaSidebarWidget() {
   );
 }
 
+function createClientSessionId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function currentPathMatchesApplyTarget(pathname: string | null, target: 'video' | 'image'): boolean {
+  if (target === 'image') return Boolean(pathname?.startsWith('/app/image'));
+  return pathname === '/app' || Boolean(pathname?.startsWith('/app?'));
+}
+
 function ChatBubble({
   message,
   isSubmitting,
@@ -842,26 +886,31 @@ function RecommendationCard({
       type="button"
       disabled={disabled}
       onClick={() => onChoose(tier, recommendation)}
-      className="group min-h-[124px] rounded-2xl border border-[#e4e9f3] bg-white px-3 py-3 text-left shadow-[0_12px_28px_rgba(15,23,42,0.045)] transition hover:border-slate-300 hover:bg-slate-50/70 disabled:cursor-not-allowed disabled:opacity-60"
+      title={recommendation.reason}
+      className="group min-h-[96px] rounded-2xl border border-[#e4e9f3] bg-white p-2.5 text-left shadow-[0_12px_28px_rgba(15,23,42,0.045)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50/70 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="flex items-center justify-between gap-2">
-        <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getTierBadgeClassName(tier)}`}>
+        <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${getTierBadgeClassName(tier)}`}>
           {label}
         </span>
         <ChevronRight className="h-3.5 w-3.5 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-700" />
       </span>
-      <span className="mt-2 flex items-center gap-2">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-[11px] font-bold text-white">
-          {modelIconText(recommendation.model.label)}
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[13px] font-semibold text-slate-950">{recommendation.model.label}</span>
-          <span className="mt-0.5 inline-flex rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-            {getModelPositionTag(recommendation)}
-          </span>
+      <span className="mt-2 flex min-w-0 items-center justify-between gap-2">
+        <EngineIcon
+          engine={engineIconIdentity(recommendation.model.id, recommendation.model.label)}
+          label={recommendation.model.label}
+          size={32}
+          rounded="xl"
+          className="shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
+        />
+        <span className="inline-flex rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600">
+          {getModelPositionTag(recommendation)}
         </span>
       </span>
-      <span className="mt-2 block max-h-8 overflow-hidden text-[11px] leading-4 text-slate-500">{shortReason(recommendation.reason)}</span>
+      <span className="mt-1.5 block min-h-8 overflow-hidden text-[12px] font-semibold leading-4 text-slate-950">
+        {recommendation.model.label}
+      </span>
+      <span className="sr-only">{shortReason(recommendation.reason)}</span>
     </button>
   );
 }
@@ -882,9 +931,12 @@ function AlternativeModelChip({
       onClick={() => onChoose(alternative)}
       className="group inline-flex min-h-[34px] max-w-full items-center gap-2 rounded-full border border-[#e4e9f3] bg-white px-2.5 text-left text-[11px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.035)] transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-950 text-[9px] font-bold text-white">
-        {modelIconText(alternative.model.label)}
-      </span>
+      <EngineIcon
+        engine={engineIconIdentity(alternative.model.id, alternative.model.label)}
+        label={alternative.model.label}
+        size={22}
+        rounded="xl"
+      />
       <span className="truncate">Also consider {alternative.model.label}</span>
       <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-700" />
     </button>
@@ -906,7 +958,8 @@ function PromptPreview({
   const [copied, setCopied] = useState(false);
   if (!output) return null;
   const finalPrompt = output.finalPrompt;
-  const canApply = hasLiveApplyBridge || result.uiActions.length > 0;
+  const applyPhases = buildAiStrategistApplyPhases(result);
+  const canApply = (phaseResult: AiStrategistBetaResponse) => hasLiveApplyBridge || phaseResult.uiActions.length > 0;
 
   async function copyPrompt() {
     try {
@@ -932,19 +985,27 @@ function PromptPreview({
               <Copy className="h-3 w-3" />
               {copied ? 'Copied' : 'Copy'}
             </button>
-            {canApply ? (
+            {applyPhases.filter((phase) => canApply(phase.result)).map((phase) => (
               <button
+                key={phase.id}
                 type="button"
-                onClick={() => onApply(result)}
+                onClick={() => onApply(phase.result)}
                 className="inline-flex min-h-[26px] items-center gap-1.5 rounded-full border border-slate-950 bg-slate-950 px-2.5 text-[11px] font-semibold text-white shadow-[0_10px_22px_rgba(15,23,42,0.2)] transition hover:bg-slate-800"
               >
-                {hasLiveApplyBridge ? 'Apply to generator' : 'Apply in generator'}
+                {phase.label === 'Apply to generator'
+                  ? hasLiveApplyBridge ? 'Apply to generator' : 'Apply in generator'
+                  : phase.label}
               </button>
-            ) : null}
+            ))}
           </div>
         }
       >
         <pre className={promptPreClassName}>{finalPrompt}</pre>
+        {applyPhases.length > 1 ? (
+          <p className="mt-1.5 text-[10px] leading-4 text-slate-500">
+            Apply the image prompt first in Generate Image, create/select that starting image, then apply the video prompt in Generate Video.
+          </p>
+        ) : null}
         {appliedAt ? <p className="mt-1.5 text-[10px] font-semibold text-emerald-600">Applied to the generator preview. Review before rendering.</p> : null}
       </PreviewSection>
       <CompactDetails title="Negative prompt">
@@ -1106,8 +1167,16 @@ function buildClientWarningLine(result: AiStrategistBetaResponse): string {
 function buildMissingInfoChips(result: AiStrategistBetaResponse): string[] {
   const text = `${result.assistantMessage}\n${result.briefCompletion?.missingFields.join(' ') ?? ''}`.toLowerCase();
   const chips: string[] = [];
+  if (text.includes('choose for me') && text.includes('i know my model')) {
+    return ['8s', '10s', '1080p', '4K final', 'Choose for me', 'I know my model'];
+  }
+  if (/workflow|starting image|start image|text-to-video|multi-shot|multishot|product|macro|culinary|sauce/.test(text)) {
+    chips.push('Text-to-video', 'Start image first');
+  }
   if (text.includes('fighter')) chips.push('One fighter', 'Two fighters');
-  if (text.includes('style') || text.includes('stylized') || text.includes('cinematic')) chips.push('Cinematic', 'Arcade / stylized');
+  if (/culinary|sauce|food|macro|asmr|beauty/.test(text)) chips.push('Macro beauty', 'ASMR SFX');
+  if (text.includes('fighter') && (text.includes('style') || text.includes('stylized') || text.includes('cinematic'))) chips.push('Cinematic', 'Arcade / stylized');
+  else if (text.includes('style') || text.includes('cinematic')) chips.push('Cinematic', 'Premium');
   if (text.includes('setting') || text.includes('street') || text.includes('arena') || text.includes('rooftop')) chips.push('Street', 'Rooftop', 'Arena');
   if (!chips.length) chips.push('Premium', 'Fast social', 'Cinematic');
   return Array.from(new Set(chips)).slice(0, 6);
@@ -1134,14 +1203,32 @@ function getTierBadgeClassName(tier: AiStrategistTierPosition): string {
   return 'bg-slate-100 text-slate-600';
 }
 
-function modelIconText(label: string): string {
-  const normalized = label.trim();
-  if (/veo/i.test(normalized)) return 'V';
-  if (/kling/i.test(normalized)) return 'K';
-  if (/seedance/i.test(normalized)) return 'S';
-  if (/ltx/i.test(normalized)) return 'L';
-  if (/pika/i.test(normalized)) return 'P';
-  return normalized.slice(0, 1).toUpperCase();
+function engineIconIdentity(modelId: AiStrategistModelId, label: string): { id: string; label: string; brandId?: string } {
+  const brandId = strategistModelBrandId(modelId);
+  return {
+    id: engineIconId(modelId),
+    label,
+    ...(brandId ? { brandId } : {}),
+  };
+}
+
+function engineIconId(modelId: AiStrategistModelId): string {
+  if (modelId === 'pika') return 'pika-text-to-video';
+  if (modelId === 'hailuo') return 'minimax-hailuo-02-text';
+  if (modelId === 'sora') return 'sora-2';
+  return modelId;
+}
+
+function strategistModelBrandId(modelId: AiStrategistModelId): string | undefined {
+  if (modelId.startsWith('veo-')) return 'google-veo';
+  if (modelId.startsWith('kling-')) return 'kling';
+  if (modelId.startsWith('seedance-')) return 'bytedance';
+  if (modelId.startsWith('ltx-')) return 'lightricks';
+  if (modelId === 'happy-horse-1-0') return 'alibaba';
+  if (modelId === 'hailuo') return 'minimax';
+  if (modelId === 'pika') return 'pika';
+  if (modelId === 'sora') return 'openai';
+  return undefined;
 }
 
 function shortReason(reason: string): string {

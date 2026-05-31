@@ -2,6 +2,8 @@ import type { AiStrategistPlaygroundResult } from './playground-pipeline';
 
 export type AiStrategistBetaResponse = {
   ok: true;
+  conversationId?: string;
+  conversationTurnId?: string;
   assistantMessage: AiStrategistPlaygroundResult['assistantMessage'];
   mode: AiStrategistPlaygroundResult['mode'];
   workflow: AiStrategistPlaygroundResult['workflow'];
@@ -32,9 +34,14 @@ export type AiStrategistBetaResponse = {
   safety: AiStrategistPlaygroundResult['safety'];
 };
 
-export function toAiStrategistBetaResponse(result: AiStrategistPlaygroundResult): AiStrategistBetaResponse {
+export function toAiStrategistBetaResponse(
+  result: AiStrategistPlaygroundResult,
+  persistence?: { conversationId?: string | null; conversationTurnId?: string | null }
+): AiStrategistBetaResponse {
   return {
     ok: true,
+    ...(persistence?.conversationId ? { conversationId: persistence.conversationId } : {}),
+    ...(persistence?.conversationTurnId ? { conversationTurnId: persistence.conversationTurnId } : {}),
     assistantMessage: result.assistantMessage,
     mode: result.mode,
     workflow: result.workflow,

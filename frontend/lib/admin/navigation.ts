@@ -59,6 +59,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Analytics',
     items: [
       { id: 'insights', label: 'Insights', href: '/admin/insights', icon: 'insights' },
+      { id: 'ai-strategist-conversations', label: 'Strategist reviews', href: '/admin/ai-strategist-conversations', icon: 'conversation' },
       { id: 'prompt-intelligence', label: 'Prompt intelligence', href: '/admin/prompt-intelligence', icon: 'insights' },
       { id: 'gsc-seo', label: 'SEO cockpit', href: '/admin/seo/cockpit', icon: 'search' },
     ],

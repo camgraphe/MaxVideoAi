@@ -752,7 +752,7 @@ function validateGeneratedReadableLabelTypography(
   if (!finalPrompt || context?.uploadedAsset?.hasText || context?.uploadedAsset?.hasLogo) return;
   if (context?.promptStructure.id !== 'product-ad') return;
 
-  if (/\blabel\s+with\s+[^,\n.;]*(?:typography|text|lettering)\b/i.test(finalPrompt) || /\b(?:label readability|readable label|legible label|readable typography)\b/i.test(finalPrompt)) {
+  if (/\blabel\s+with\s+[^,\n.;]*(?:typography|text|lettering)\b/i.test(finalPrompt) || /\b(?:label readability|label legibility|readable label|legible label|readable typography)\b/i.test(finalPrompt)) {
     issues.push(warningIssue('generated_label_typography', 'Do not ask the model to generate readable label typography when no label/text asset was provided.'));
   }
 }

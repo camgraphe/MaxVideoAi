@@ -115,6 +115,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const hasPreviousBrief = Boolean(previousBrief && previousBrief !== 'Unspecified video brief.');
   const selectedTier = resolveTier(normalized, hasPreviousBrief) ?? resolveAdvisorChoiceTier(normalized, hasPreviousBrief);
   const selectedModel = resolveModelId(normalized, input.conversationState?.lastRecommendations);
+  const selectedWorkflow = input.selectedWorkflow ?? resolveWorkflowChoice(normalized);
   const modelReferenceQuestion = isModelReferenceQuestion(normalized);
   const promptRequest = isPromptCreationRequest(normalized);
   const improvementRequest = isPromptImprovementRequest(normalized);
@@ -125,13 +126,38 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
   const previousStage = input.conversationState?.stage;
   const lastBriefCompletion = input.conversationState?.lastBriefCompletion;
 
+  if (previousStage === 'collecting_missing_fields' && hasPreviousBrief && isChooseForMeRequest(normalized)) {
+    return {
+      action: 'build_prompt',
+      rawUserMessage,
+      resolvedBrief: mergeBriefRevision(previousBrief, rawUserMessage || 'Choose the model and settings for me.'),
+      selectedTier: 'best',
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.9,
+    };
+  }
+
+  if (previousStage === 'collecting_missing_fields' && hasPreviousBrief && isKnownModelRequest(normalized) && !selectedModel) {
+    return {
+      action: 'ask_clarification',
+      rawUserMessage,
+      resolvedBrief: previousBrief,
+      clarificationQuestion: 'Which MaxVideoAI model do you want to use for this brief?',
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.9,
+    };
+  }
+
   if (previousStage === 'awaiting_model_choice' && hasPreviousBrief && isPricingHelpFollowUp(normalized)) {
     return {
       action: 'product_help',
       rawUserMessage,
       resolvedBrief: previousBrief,
       selectedTier: 'value',
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: 0.9,
@@ -146,7 +172,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       resolvedBrief: model ? `Improve this pasted prompt for ${modelLabel(model)}.` : 'Improve this pasted prompt.',
       currentPrompt: rawUserMessage,
       selectedModel: model,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: false,
       shouldUseCurrentPrompt: true,
       confidence: 0.92,
@@ -162,7 +188,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         resolvedBrief,
         selectedTier: lastBriefCompletion?.selectedTier ?? input.conversationState?.lastSelectedTier,
         selectedModel: lastBriefCompletion?.selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
-        selectedWorkflow: input.selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        selectedWorkflow: selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
         shouldUsePreviousBrief: true,
         shouldUseCurrentPrompt: false,
         confidence: 0.94,
@@ -178,10 +204,24 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       resolvedBrief,
       selectedTier: lastBriefCompletion?.selectedTier ?? input.conversationState?.lastSelectedTier,
       selectedModel: lastBriefCompletion?.selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
-      selectedWorkflow: input.selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: 0.88,
+    };
+  }
+
+  if ((previousStage === 'collecting_missing_fields' || previousStage === 'awaiting_confirmation') && selectedWorkflow && hasPreviousBrief) {
+    return {
+      action: 'build_prompt',
+      rawUserMessage,
+      resolvedBrief: mergeBriefRevision(previousBrief, `Workflow choice: ${formatWorkflowChoice(selectedWorkflow)}`),
+      selectedTier: lastBriefCompletion?.selectedTier ?? input.conversationState?.lastSelectedTier,
+      selectedModel: lastBriefCompletion?.selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
+      selectedWorkflow,
+      shouldUsePreviousBrief: true,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.9,
     };
   }
 
@@ -204,7 +244,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       resolvedBrief: previousBrief,
       selectedTier,
       selectedModel: input.conversationState?.lastRecommendations?.[selectedTier]?.model.id,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: 0.93,
@@ -217,7 +257,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       rawUserMessage,
       resolvedBrief: hasPreviousBrief ? previousBrief : undefined,
       selectedModel,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: hasPreviousBrief,
       shouldUseCurrentPrompt: false,
       confidence: 0.92,
@@ -234,10 +274,23 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       resolvedBrief,
       selectedTier: lastBriefCompletion?.selectedTier ?? input.conversationState?.lastSelectedTier,
       selectedModel: lastBriefCompletion?.selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
-      selectedWorkflow: input.selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? lastBriefCompletion?.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: isAssumptionRequest(normalized) ? 0.88 : 0.82,
+    };
+  }
+
+  if (previousStage === 'collecting_brief' && input.conversationState?.lastSelectedModel && hasCreativeBriefForExplicitModel(normalized)) {
+    return {
+      action: 'select_model',
+      rawUserMessage,
+      resolvedBrief: rawUserMessage,
+      selectedModel: input.conversationState.lastSelectedModel,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState.lastSelectedWorkflow,
+      shouldUsePreviousBrief: false,
+      shouldUseCurrentPrompt: false,
+      confidence: 0.88,
     };
   }
 
@@ -260,7 +313,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       resolvedBrief: previousBrief,
       selectedTier,
       selectedModel: input.conversationState?.lastRecommendations?.[selectedTier]?.model.id,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: 0.93,
@@ -294,7 +347,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       action: 'await_prompt_paste',
       rawUserMessage,
       selectedModel: selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: false,
       shouldUseCurrentPrompt: false,
       confidence: 0.9,
@@ -308,7 +361,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         rawUserMessage,
         resolvedBrief: hasPreviousBrief ? previousBrief : undefined,
         selectedModel: input.selectedModel ?? input.conversationState?.lastSelectedModel,
-        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
         shouldUsePreviousBrief: hasPreviousBrief,
         shouldUseCurrentPrompt: true,
         confidence: 0.9,
@@ -320,7 +373,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         action: 'await_prompt_paste',
         rawUserMessage,
         selectedModel: selectedModel ?? input.selectedModel ?? input.conversationState?.lastSelectedModel,
-        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
         shouldUsePreviousBrief: false,
         shouldUseCurrentPrompt: false,
         confidence: 0.88,
@@ -344,7 +397,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         rawUserMessage,
         resolvedBrief: previousBrief,
         selectedModel,
-        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
         shouldUsePreviousBrief: true,
         shouldUseCurrentPrompt: false,
         confidence: 0.92,
@@ -357,7 +410,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
         rawUserMessage,
         resolvedBrief: rawUserMessage,
         selectedModel,
-        selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+        selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
         shouldUsePreviousBrief: false,
         shouldUseCurrentPrompt: false,
         confidence: 0.9,
@@ -397,7 +450,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
       rawUserMessage,
       resolvedBrief: previousBrief,
       selectedModel: input.selectedModel ?? input.conversationState?.lastSelectedModel,
-      selectedWorkflow: input.selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
+      selectedWorkflow: selectedWorkflow ?? input.conversationState?.lastSelectedWorkflow,
       shouldUsePreviousBrief: true,
       shouldUseCurrentPrompt: false,
       confidence: 0.78,
@@ -420,7 +473,7 @@ export function planStrategistConversation(input: StrategistConversationPlannerI
     rawUserMessage,
     resolvedBrief: rawUserMessage,
     selectedModel: input.selectedModel,
-    selectedWorkflow: input.selectedWorkflow,
+    selectedWorkflow,
     shouldUsePreviousBrief: false,
     shouldUseCurrentPrompt: false,
     confidence: rawUserMessage ? 0.72 : 0.4,
@@ -529,6 +582,61 @@ function resolveModelId(text: string, recommendations?: AiStrategistRecommendati
     : [];
   const recommendedMatch = matches.find((match) => recommendedIds.includes(match.modelId));
   return recommendedMatch?.modelId ?? matches[0]?.modelId;
+}
+
+function resolveWorkflowChoice(text: string): AiStrategistWorkflowId | undefined {
+  if (!text) return undefined;
+  if (containsAny(text, [
+    'start image first',
+    'starting image first',
+    'startimage',
+    'start image',
+    'starting image',
+    'image first',
+    'hero image first',
+    'still image first',
+    'text to image then video',
+    'text-to-image then video',
+    'image then video',
+    'starting frame',
+  ])) {
+    return 'text-to-image-then-image-to-video';
+  }
+  if (containsAny(text, ['image to video', 'image-to-video', 'uploaded image', 'reference image'])) {
+    return 'image-to-video';
+  }
+  if (containsAny(text, [
+    'text to video',
+    'text-to-video',
+    'direct video',
+    'directly video',
+    'direct generation',
+    'multi shot',
+    'multi-shot',
+    'multishot',
+    'shot list',
+    'multi plan',
+    'plusieurs plans',
+    'beaucoup de plan',
+    'beaucoup de plans',
+    'different plan',
+    'different plans',
+    'different shots',
+    'macro shots',
+  ])) {
+    return 'text-to-video';
+  }
+  if (containsAny(text, ['video to video', 'video-to-video', 'restyle video'])) {
+    return 'video-to-video';
+  }
+  return undefined;
+}
+
+function formatWorkflowChoice(workflow: AiStrategistWorkflowId): string {
+  if (workflow === 'text-to-image-then-image-to-video') return 'start with a MaxVideoAI generated image, then animate it';
+  if (workflow === 'image-to-video') return 'use image-to-video with a reference image';
+  if (workflow === 'video-to-video') return 'use video-to-video with a source clip';
+  return 'direct text-to-video multi-shot prompt';
 }
 
 function resolveNavigationSuggestion(text: string): StrategistNavigationSuggestion | undefined {
@@ -876,6 +984,47 @@ function isAmbiguousFollowUp(text: string): boolean {
 
 function isAssumptionRequest(text: string): boolean {
   return containsAny(text, ['make assumptions', 'smart assumptions', 'go ahead', 'continue', 'vas y', 'vas-y', 'assume', 'assumptions']);
+}
+
+function isChooseForMeRequest(text: string): boolean {
+  return containsAny(text, [
+    'choose for me',
+    'pick for me',
+    'select for me',
+    'recommend for me',
+    'you choose',
+    'you decide',
+    'choose the model',
+    'pick the model',
+    'choose engine for me',
+    'fais le choix',
+    'choisis pour moi',
+    'choisi pour moi',
+    'choisis le modele',
+    'choisis le modèle',
+    'choisi le modele',
+    'choisi le modèle',
+    'tu choisis',
+  ]);
+}
+
+function isKnownModelRequest(text: string): boolean {
+  return containsAny(text, [
+    'i know my model',
+    'i already know my model',
+    'i know the model',
+    'i already know the model',
+    'i know which model',
+    'i already have a model',
+    'je sais deja mon modele',
+    'je sais déjà mon modèle',
+    'je sais deja le modele',
+    'je sais déjà le modèle',
+    'je connais mon modele',
+    'je connais mon modèle',
+    'j ai deja mon modele',
+    'j ai déjà mon modèle',
+  ]);
 }
 
 function isPromptConfirmation(text: string): boolean {

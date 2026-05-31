@@ -6,6 +6,7 @@ import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceCompo
 import { ImageWorkspaceEmptyState } from './_components/ImageWorkspaceEmptyState';
 import { ImageWorkspaceRuntimeModals } from './_components/ImageWorkspaceRuntimeModals';
 import { ImageWorkspaceShell } from './_components/ImageWorkspaceShell';
+import { ImageWorkspaceStrategistBetaBridge } from './_components/ImageWorkspaceStrategistBetaBridge';
 import { useImageWorkspaceDisplayState } from './_hooks/useImageWorkspaceDisplayState';
 import { useImageGallerySelection } from './_hooks/useImageGallerySelection';
 import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
@@ -465,6 +466,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               showWatermarkControl={showWatermarkControl}
         />
       </ImageWorkspaceShell>
+      <ImageWorkspaceStrategistBetaBridge
+        engines={engines}
+        engineId={engineId} mode={mode} prompt={prompt}
+        aspectRatio={aspectRatio} resolution={resolution}
+        price={estimatedCostAmount} currency={estimatedCostCurrency}
+        setEngineId={setEngineId} setMode={setMode} setPrompt={setPrompt}
+        setAspectRatio={setAspectRatio} setResolution={setResolution} showNotice={setStatusMessage}
+      />
       <ImageWorkspaceRuntimeModals
         authModalOpen={authModalOpen}
         characterSelectionLimit={characterSelectionLimit}

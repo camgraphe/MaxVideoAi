@@ -72,6 +72,8 @@ export type AiStrategistPlaygroundUploadedAsset = {
 };
 
 export type AiStrategistPlaygroundInput = {
+  conversationId?: string;
+  clientSessionId?: string;
   userMessage?: string;
   mode?: AiStrategistPlaygroundMode;
   surface?: AiStrategistPlaygroundSurface;
@@ -196,6 +198,12 @@ const productTerms = [
   'bottle',
   'drink',
   'beverage',
+  'food',
+  'culinary',
+  'sauce',
+  'dish',
+  'chef',
+  'restaurant',
   'can',
   'energy drink',
   'makeup',
@@ -283,8 +291,19 @@ export async function runAiStrategistPlaygroundPipeline(
     qualityPriority: inferQualityPriority(normalizedBrief),
     requiredTraits: buildRequiredTraits(body, normalizedBrief),
   };
+  if (shouldCollectPreModelRoutingCriteria({ body, effectiveMode, normalizedBrief, conversationPlan })) {
+    return buildPreModelRoutingCriteriaResult({
+      body,
+      refinement,
+      normalizedBrief,
+      conversationPlan,
+      orchestrationPlan,
+      workflow,
+    });
+  }
+
   const recommendations = recommendModelsForBrief(brief);
-  if (shouldReturnChatRecommendationsOnly({ body, effectiveMode, conversationPlan })) {
+  if (shouldReturnRecommendationsOnly({ body, effectiveMode, conversationPlan })) {
     return buildRecommendationOnlyResult({
       body,
       refinement,
@@ -513,7 +532,7 @@ function buildClarificationResult(input: {
     ok: true,
     assistantMessage: input.conversationPlan.clarificationQuestion ?? input.normalizedBrief.clarificationQuestion ?? 'Can you clarify what video you want to create?',
     mode: input.effectiveMode,
-    workflow: null,
+    workflow: input.conversationPlan.selectedWorkflow ?? null,
     selectedModel: input.conversationPlan.selectedModel ?? input.body.selectedModel ?? null,
     selectedTier: input.body.selectedTier,
     normalizedBrief: input.normalizedBrief,
@@ -790,6 +809,102 @@ function prefersFrenchResponse(value: string): boolean {
   return containsAny(text, ['bonjour', 'salut', 'je ', 'j ai', 'j aimerai', 'peux', 'peut', 'colle', 'partager', 'ameliorer', 'améliorer', 'prompt seedance']);
 }
 
+function shouldCollectPreModelRoutingCriteria(input: {
+  body: ReturnType<typeof normalizePlaygroundInput>;
+  effectiveMode: AiStrategistPlaygroundMode;
+  normalizedBrief: AiStrategistNormalizedBrief;
+  conversationPlan: StrategistConversationPlan;
+}): boolean {
+  if (input.body.surface !== 'chat') return false;
+  if (input.effectiveMode !== 'recommend') return false;
+  if (input.conversationPlan.action !== 'recommend_models') return false;
+  if (input.body.selectedModel) return false;
+  if (asksForModelChoice(input.body)) return false;
+  if (input.body.conversationState?.stage && input.body.conversationState.stage !== 'collecting_brief') return false;
+  if (shouldAllowBriefAssumptions(input.body)) return false;
+  if (!hasPremiumCommercialRoutingNeed(input.body, input.normalizedBrief)) return false;
+  return missingGenerationRoutingCriteria(input.body, input.normalizedBrief).length > 0;
+}
+
+function buildPreModelRoutingCriteriaResult(input: {
+  body: ReturnType<typeof normalizePlaygroundInput>;
+  refinement: AiStrategistBriefRefinementLLMResult;
+  normalizedBrief: AiStrategistNormalizedBrief;
+  conversationPlan: StrategistConversationPlan;
+  orchestrationPlan: StrategistOrchestrationPlan;
+  workflow: AiStrategistWorkflowId;
+}): AiStrategistPlaygroundResult {
+  const missingCriteria = missingGenerationRoutingCriteria(input.body, input.normalizedBrief);
+  const warnings = uniqueStrings(buildLightweightRoutingWarnings(input.body, input.normalizedBrief));
+
+  return {
+    ok: true,
+    assistantMessage: buildPreModelRoutingCriteriaMessage(input.normalizedBrief, missingCriteria),
+    mode: 'recommend',
+    workflow: input.workflow,
+    selectedModel: null,
+    selectedTier: input.body.selectedTier,
+    normalizedBrief: input.normalizedBrief,
+    normalizationSource: input.refinement.source,
+    normalizationConfidence: input.normalizedBrief.confidence,
+    conversationStage: 'collecting_missing_fields',
+    conversationPlan: input.conversationPlan,
+    orchestrationPlan: input.orchestrationPlan,
+    warnings,
+    validationIssuesBeforeSanitizer: {
+      brief: input.refinement.validation.issues,
+      prompt: [],
+    },
+    validationIssuesAfterSanitizer: {
+      brief: input.refinement.validation.issues,
+      prompt: [],
+    },
+    uiActions: input.normalizedBrief.aspectRatioHint
+      ? [{ type: 'SET_ASPECT_RATIO', value: input.normalizedBrief.aspectRatioHint }]
+      : [],
+    llm: {
+      briefRefinement: summarizeBriefLlm(input.refinement),
+      promptWriter: {
+        used: false,
+        source: 'deterministic_fallback',
+        fallbackReason: 'pre_model_routing_criteria',
+        sanitizerChangedOutput: false,
+      },
+    },
+    llmCost: buildPlaygroundLlmCost(input.refinement, 'pre_model_routing_criteria'),
+    safety: playgroundSafety(),
+  };
+}
+
+function buildPreModelRoutingCriteriaMessage(
+  normalizedBrief: AiStrategistNormalizedBrief,
+  missingCriteria: readonly string[]
+): string {
+  const brief = normalizedBrief.normalizedBrief || normalizedBrief.rawUserMessage || 'your video idea';
+  const lines = [
+    `I understand this as: ${brief}.`,
+    'Before I choose the engine, I need the generation constraints that affect model fit and price.',
+    '',
+  ];
+
+  const questions: string[] = [];
+  if (missingCriteria.includes('duration')) questions.push('Duration: 6s, 8s, 10s, 15s, or another target?');
+  if (missingCriteria.includes('format')) questions.push('Format: 9:16, 16:9, 1:1, or another delivery format?');
+  if (missingCriteria.includes('resolution')) questions.push('Resolution: 720p for value, 1080p for standard review, or 4K when final detail matters?');
+
+  lines.push(...questions.map((question, index) => `${index + 1}. ${question}`));
+  if (normalizedBrief.aspectRatioHint && !missingCriteria.includes('format')) {
+    lines.push(`Format captured: ${normalizedBrief.aspectRatioHint}.`);
+  }
+  lines.push(
+    '',
+    'Then choose one path:',
+    '* Choose for me - I’ll pick the best model/workflow for the brief and settings.',
+    '* I know my model - tell me the engine, and I’ll build around it without recommendations.'
+  );
+  return lines.join('\n');
+}
+
 function buildRecommendationOnlyResult(input: {
   body: ReturnType<typeof normalizePlaygroundInput>;
   refinement: AiStrategistBriefRefinementLLMResult;
@@ -894,14 +1009,18 @@ function buildBriefCompletionResult(input: {
 }): AiStrategistPlaygroundResult {
   return buildStoppedBeforePromptResult({
     ...input,
-    stage: 'collecting_missing_fields',
-    assistantMessage: appendBriefCompletionContext(
-      input.briefCompletion.assistantMessage,
-      input.promptGenerationContext.warnings.all
-    ),
-    promptWriterFallbackReason: 'brief_completion_required',
-  });
-}
+	    stage: 'collecting_missing_fields',
+	    assistantMessage: appendWorkflowChoiceContext(
+	      appendBriefCompletionContext(
+	        input.briefCompletion.assistantMessage,
+	        input.promptGenerationContext.warnings.all
+	      ),
+	      input.workflow,
+	      input.body
+	    ),
+	    promptWriterFallbackReason: 'brief_completion_required',
+	  });
+	}
 
 function buildConfirmationResult(input: {
   body: ReturnType<typeof normalizePlaygroundInput>;
@@ -934,6 +1053,15 @@ function appendBriefCompletionContext(message: string, warnings: readonly string
     return `${message}\n\nI’ll keep the person/reference constraint in the brief and favor safer image-to-video handling to reduce identity drift.`;
   }
   return message;
+}
+
+function appendWorkflowChoiceContext(
+  message: string,
+  workflow: AiStrategistWorkflowId,
+  body: ReturnType<typeof normalizePlaygroundInput>
+): string {
+  if (workflow !== 'text-to-video' || !isExplicitMultiShotTextToVideoBrief(buildSearchText(body))) return message;
+  return `${message}\n\nWorkflow note: I’ll keep this as direct text-to-video for the multi-shot prompt. If product control matters more, choose “Start image first” and I’ll split it into image prompt + video animation prompt.`;
 }
 
 function buildStoppedBeforePromptResult(input: {
@@ -1089,13 +1217,12 @@ function shouldAskClarification(
   return normalizedBrief.confidence < 0.55;
 }
 
-function shouldReturnChatRecommendationsOnly(input: {
+function shouldReturnRecommendationsOnly(input: {
   body: ReturnType<typeof normalizePlaygroundInput>;
   effectiveMode: AiStrategistPlaygroundMode;
   conversationPlan: StrategistConversationPlan;
 }): boolean {
   return (
-    input.body.surface === 'chat' &&
     input.effectiveMode === 'recommend' &&
     input.conversationPlan.action === 'recommend_models' &&
     !input.body.selectedModel
@@ -1134,10 +1261,65 @@ function shouldAllowBriefAssumptions(body: ReturnType<typeof normalizePlayground
     'continue',
     'assume',
     'you decide',
+    'choose for me',
+    'pick for me',
+    'select for me',
+    'recommend for me',
+    'choisis pour moi',
+    'choisi pour moi',
     'just make it',
     'vas y',
     'vas-y',
   ]);
+}
+
+function hasPremiumCommercialRoutingNeed(
+  body: ReturnType<typeof normalizePlaygroundInput>,
+  normalizedBrief: AiStrategistNormalizedBrief
+): boolean {
+  const text = buildSearchText(body);
+  if (!hasUsableCreativeBrief(body, normalizedBrief)) return false;
+  if (normalizedBrief.qualityIntent === 'draft' || normalizedBrief.qualityIntent === 'value') return false;
+  const hasPremiumCue = containsAny(text, [
+    'premium',
+    'luxury',
+    'luxe',
+    'high end',
+    'high-end',
+    'final delivery',
+    'final commercial',
+    'hero shot',
+    '4k',
+  ]);
+  const hasProductCue = containsAny(text, [
+    'commercial',
+    'product ad',
+    'product shot',
+    'perfume',
+    'skincare',
+    'jewelry',
+    'jewellery',
+    'packaging',
+    'glass',
+    'bottle',
+    'label',
+    'logo',
+    'reflections',
+  ]);
+  const hasFormatCue = Boolean(normalizedBrief.aspectRatioHint) || /\b(?:9:16|16:9|1:1|4:3|3:4|vertical|landscape|portrait)\b/.test(text);
+  return hasPremiumCue && hasProductCue && hasFormatCue;
+}
+
+function missingGenerationRoutingCriteria(
+  body: ReturnType<typeof normalizePlaygroundInput>,
+  normalizedBrief: AiStrategistNormalizedBrief
+): string[] {
+  const text = buildSearchText(body);
+  const missing: string[] = [];
+  if (!/\b(?:[1-9]\d?\s?(?:s|sec|secs|second|seconds|secondes)|duration|duree|durée)\b/.test(text)) missing.push('duration');
+  if (!normalizedBrief.aspectRatioHint && !/\b(?:9:16|16:9|1:1|4:3|3:4|vertical|landscape|portrait|format)\b/.test(text)) missing.push('format');
+  if (!/\b(?:720p|1080p|1440p|2160p|4k|uhd|hd|full hd|resolution|res|definition|définition)\b/.test(text)) missing.push('resolution');
+  return missing;
 }
 
 function hasUsableCreativeBrief(
@@ -1181,7 +1363,7 @@ function hasUsableCreativeBrief(
 }
 
 function isPromptGenerationConfirmed(body: ReturnType<typeof normalizePlaygroundInput>): boolean {
-  const text = buildSearchText(body);
+  const text = body.userMessage.toLowerCase();
   return body.conversationState?.stage === 'awaiting_confirmation' && containsAny(text, [
     'generate prompt',
     'build prompt',
@@ -1209,6 +1391,7 @@ function inferWorkflow(
   if (body.uploadedAsset?.isReferenceImage || containsAny(text, ['reference image', 'image-to-video', 'uploaded image'])) {
     return 'image-to-video';
   }
+  if (!body.uploadedAsset && isExplicitMultiShotTextToVideoBrief(text)) return 'text-to-video';
   if (!body.uploadedAsset && isSocialFirstTextToVideoBrief(text)) return 'text-to-video';
   if (normalizedBrief.intent === 'product_ad' || normalizedBrief.intent === 'product_reference_i2v' || normalizedBrief.intent === 'prompt_improvement') {
     return 'text-to-image-then-image-to-video';
@@ -1398,6 +1581,10 @@ function buildRecommendationAcknowledgement(input: {
     details.push(input.language === 'es'
       ? 'Usar la imagen como referencia mantiene el sujeto más anclado mientras el movimiento sigue controlado.'
       : 'Using the image as a reference should keep the subject anchored while the motion stays controlled.');
+  } else if (input.workflow === 'text-to-video' && isExplicitMultiShotTextToVideoBrief(text)) {
+    details.push(input.language === 'es'
+      ? 'Para multi-shot, text-to-video mantiene el prompt directo y flexible; si necesitas más control del producto, también podemos empezar por una imagen hero.'
+      : 'For multi-shot, text-to-video keeps this direct and flexible; if product control matters more, we can switch to a starting-image-first route.');
   }
   if (input.normalizedBrief.hasPerson || containsAny(text, ['founder', 'person', 'recognizable', 'face'])) {
     details.push(input.language === 'es'
@@ -1537,6 +1724,10 @@ function asksForModelChoice(body: ReturnType<typeof normalizePlaygroundInput>): 
     'which engine for',
     'what model for',
     'what engine for',
+    'not sure which model',
+    'not sure which engine',
+    'not sure which workflow',
+    'not sure which model or workflow',
     'premium but not the most expensive',
     'premium but cheap',
     'premium but low cost',
@@ -1699,10 +1890,25 @@ function normalizeChatStage(stage: unknown): StrategistChatStage | undefined {
 }
 
 function buildSearchText(body: ReturnType<typeof normalizePlaygroundInput>): string {
-  return [body.userMessage, body.currentPrompt, pageContextSummary(body.pageContext), ...assetHints(body.uploadedAsset)]
+  return [
+    body.userMessage,
+    body.currentPrompt,
+    body.conversationState?.lastNormalizedBrief?.rawUserMessage,
+    body.conversationState?.lastNormalizedBrief?.normalizedBrief,
+    ...recentUserTurns(body.conversationState),
+    pageContextSummary(body.pageContext),
+    ...assetHints(body.uploadedAsset),
+  ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
+}
+
+function recentUserTurns(state?: StrategistConversationState): string[] {
+  return state?.recentTurns
+    ?.filter((turn) => turn.role === 'user')
+    .slice(-4)
+    .map((turn) => turn.content) ?? [];
 }
 
 function assetHints(uploadedAsset?: AiStrategistPlaygroundUploadedAsset): string[] {
@@ -1735,6 +1941,38 @@ function isSocialFirstTextToVideoBrief(text: string): boolean {
     containsAny(text, ['social-first', 'social first', 'tiktok', 'reels', 'ugc', 'vertical', 'fast social', 'quick social']) &&
     !containsAny(text, ['uploaded image', 'reference image', 'product photo', 'packshot', 'exact packaging', 'label placement'])
   );
+}
+
+function isExplicitMultiShotTextToVideoBrief(text: string): boolean {
+  if (containsAny(text, [
+    'start image',
+    'starting image',
+    'image first',
+    'hero image first',
+    'still image first',
+    'text-to-image then video',
+    'text to image then video',
+    'image then video',
+  ])) {
+    return false;
+  }
+  return containsAny(text, [
+    'text-to-video',
+    'text to video',
+    'direct video',
+    'multi-shot',
+    'multi shot',
+    'multishot',
+    'shot list',
+    'macro shots',
+    'different shots',
+    'different plan',
+    'different plans',
+    'multi plan',
+    'plusieurs plans',
+    'beaucoup de plan',
+    'beaucoup de plans',
+  ]);
 }
 
 function uniqueStrings(values: ReadonlyArray<string | undefined>): string[] {
