@@ -45,6 +45,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
     user_id: 'user_1',
     surface: 'image',
     video_url: 'https://cdn.example.com/video.mp4',
+    video_width: 1440,
+    video_height: 1440,
     audio_url: 'https://cdn.example.com/audio.wav',
     thumb_url: 'https://cdn.example.com/poster.webp',
     preview_frame: null,
@@ -60,7 +62,7 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
     ],
     duration_sec: 8,
     status: 'completed',
-  });
+  } as Parameters<typeof mapLegacyJobRowToOutputs>[0] & { video_width: number; video_height: number });
 
   assert.deepEqual(
     outputs.map((output) => ({
@@ -69,6 +71,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
       thumbUrl: output.thumbUrl,
       position: output.position,
       mimeType: output.mimeType,
+      width: output.width,
+      height: output.height,
     })),
     [
       {
@@ -77,6 +81,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
         thumbUrl: 'https://cdn.example.com/poster.webp',
         position: 0,
         mimeType: 'video/mp4',
+        width: 1440,
+        height: 1440,
       },
       {
         kind: 'audio',
@@ -84,6 +90,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
         thumbUrl: null,
         position: 0,
         mimeType: 'audio/wav',
+        width: null,
+        height: null,
       },
       {
         kind: 'image',
@@ -91,6 +99,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
         thumbUrl: 'https://cdn.example.com/image-1-thumb.webp',
         position: 0,
         mimeType: 'image/png',
+        width: 1024,
+        height: 768,
       },
       {
         kind: 'image',
@@ -98,6 +108,8 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
         thumbUrl: 'https://cdn.example.com/image-2.png',
         position: 1,
         mimeType: 'image/png',
+        width: null,
+        height: null,
       },
     ]
   );
@@ -350,6 +362,16 @@ test('video preview urls stay separate from final media urls across library cont
   assert.match(browserSource, /activePreviewId/);
   assert.match(browserSource, /src=\{activePreviewId === asset\.id \? asset\.previewUrl : undefined\}/);
   assert.match(browserSource, /poster=\{asset\.thumbUrl \?\? undefined\}/);
+});
+
+test('job output upserts preserve detected dimensions when legacy sync omits them', () => {
+  const jobOutputsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/job-outputs.ts'),
+    'utf8'
+  );
+
+  assert.match(jobOutputsSource, /width = COALESCE\(EXCLUDED\.width, job_outputs\.width\)/);
+  assert.match(jobOutputsSource, /height = COALESCE\(EXCLUDED\.height, job_outputs\.height\)/);
 });
 
 test('history cards use thumbnails and explicit card actions', () => {

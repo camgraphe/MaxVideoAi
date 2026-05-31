@@ -20,6 +20,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusVariant, setStatusVariant] = useState<'info' | 'success' | 'error'>('info');
   const [showArchived, setShowArchived] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
   const [syncingJobId, setSyncingJobId] = useState<string | null>(null);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +33,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
     setStatusMessage(null);
     setStatusVariant('info');
     setShowArchived(false);
+    setShowHidden(false);
     setSyncingJobId(null);
     setExpandedJobId(null);
   }, [filtersQuery, initialCursor, initialJobs]);
@@ -61,9 +63,8 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
 
   const visibleJobs = useMemo(() => {
     const base = [...jobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    if (showArchived) return base;
-    return base.filter((job) => !job.archived);
-  }, [jobs, showArchived]);
+    return base.filter((job) => (showArchived || !job.archived) && (showHidden || !job.hiddenByUser));
+  }, [jobs, showArchived, showHidden]);
 
   const attentionCount = useMemo(
     () =>
@@ -74,6 +75,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
   );
 
   const archivedCount = useMemo(() => jobs.filter((job) => job.archived).length, [jobs]);
+  const hiddenCount = useMemo(() => jobs.filter((job) => job.hiddenByUser).length, [jobs]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -229,12 +231,19 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
           <p className="text-sm font-medium text-text-primary">
             {visibleJobs.length} jobs loaded
             {showArchived ? ' including archived rows' : ''}
+            {showHidden ? ' including hidden rows' : ''}
           </p>
           <p className="mt-1 text-xs text-text-secondary">
-            {attentionCount} need attention{archivedCount > 0 ? ` · ${archivedCount} archived candidates hidden by default` : ''}.
+            {attentionCount} need attention{archivedCount > 0 ? ` · ${archivedCount} archived candidates hidden by default` : ''}
+            {hiddenCount > 0 ? ` · ${hiddenCount} user-hidden rows hidden by default` : ''}.
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {hiddenCount > 0 ? (
+            <Button type="button" size="sm" variant="outline" onClick={() => setShowHidden((prev) => !prev)} className="border-border bg-surface">
+              {showHidden ? 'Hide hidden' : 'Show hidden'}
+            </Button>
+          ) : null}
           {archivedCount > 0 ? (
             <Button
               type="button"

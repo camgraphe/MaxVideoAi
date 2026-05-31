@@ -60,6 +60,11 @@ export function JobAuditRows({
                   Archived candidate
                 </span>
               ) : null}
+              {job.hiddenByUser ? (
+                <span className="inline-flex items-center rounded-full border border-info-border bg-info-bg px-2 py-0.5 text-xs font-semibold uppercase tracking-micro text-info">
+                  Hidden by user
+                </span>
+              ) : null}
             </div>
           </td>
 
@@ -153,9 +158,9 @@ export function JobAuditRows({
                 </Button>
               ) : null}
 
-              {job.archived ? (
+              {job.archived || job.hiddenByUser ? (
                 <Button type="button" size="sm" variant="outline" onClick={() => onRestore(job.jobId)} className="border-border bg-surface">
-                  Bring online
+                  {job.hiddenByUser ? 'Restore visibility' : 'Bring online'}
                 </Button>
               ) : null}
             </div>

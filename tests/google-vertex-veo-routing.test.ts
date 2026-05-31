@@ -307,6 +307,45 @@ test('Google Vertex Veo payload maps supported MaxVideoAI options to predictLong
   });
 });
 
+test('Google Vertex Veo first-last-frame payload uses normalized last frame attachments', async () => {
+  const firstFrame = `data:image/png;base64,${Buffer.from('first').toString('base64')}`;
+  const lastFrame = `data:image/png;base64,${Buffer.from('last').toString('base64')}`;
+  const payload = await buildGoogleVertexVeoPayload({
+    engineId: 'veo-3-1',
+    mode: 'fl2v',
+    prompt: 'Match the motion from the first frame into the final pose',
+    durationSec: 8,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    falPayload: {
+      engineId: 'veo-3-1',
+      prompt: 'Match the motion from the first frame into the final pose',
+      mode: 'fl2v',
+      imageUrl: firstFrame,
+      inputs: [
+        {
+          name: 'last-frame',
+          type: 'image/png',
+          size: 4,
+          kind: 'image',
+          slotId: 'last_frame_url',
+          url: lastFrame,
+        },
+      ],
+      resolution: '1080p',
+    },
+  });
+
+  assert.deepEqual(payload.body.instances[0]?.image, {
+    mimeType: 'image/png',
+    bytesBase64Encoded: Buffer.from('first').toString('base64'),
+  });
+  assert.deepEqual(payload.body.instances[0]?.lastFrame, {
+    mimeType: 'image/png',
+    bytesBase64Encoded: Buffer.from('last').toString('base64'),
+  });
+});
+
 test('Google Vertex Veo payload only enables prompt enhancement when explicitly true', async () => {
   const payload = await buildGoogleVertexVeoPayload({
     engineId: 'veo-3-1',

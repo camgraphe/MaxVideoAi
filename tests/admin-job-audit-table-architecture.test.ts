@@ -32,8 +32,12 @@ test('admin job audit table delegates row rendering, detail cards, and formattin
 test('admin job audit helper modules expose the expected contract', () => {
   assert.match(rowsSource, /export function JobAuditRows/);
   assert.match(rowsSource, /JobAuditExpandedDetails/);
+  assert.match(tableSource, /showHidden/, 'admin audit table should keep user-hidden rows behind an explicit toggle');
+  assert.match(tableSource, /Show hidden/, 'admin audit table should label the user-hidden rows toggle clearly');
+  assert.match(rowsSource, /Hidden by user/, 'admin audit rows should flag user-hidden jobs');
   assert.match(detailsSource, /export function IntegrityPill/);
   assert.match(detailsSource, /export function JobAuditExpandedDetails/);
+  assert.match(detailsSource, /User-hidden/, 'expanded audit details should preserve the user opt-out signal');
 
   for (const exportName of ['formatCurrency', 'formatDate', 'outcomeMeta', 'technicalStatusBadge', 'displayMeta']) {
     assert.match(formattersSource, new RegExp(`export function ${exportName}\\b`), `${exportName} should be exported`);

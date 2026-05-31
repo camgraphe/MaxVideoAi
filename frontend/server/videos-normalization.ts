@@ -14,6 +14,8 @@ export type VideoRow = {
   preview_video_url: string | null;
   keyframe_urls: unknown;
   aspect_ratio: string | null;
+  output_width?: number | null;
+  output_height?: number | null;
   has_audio: boolean | null;
   can_upscale: boolean | null;
   created_at: string;
@@ -41,6 +43,8 @@ export type GalleryVideo = {
   previewVideoUrl?: string;
   keyframeUrls?: JobKeyframeUrls | null;
   aspectRatio?: string;
+  outputWidth?: number | null;
+  outputHeight?: number | null;
   createdAt: string;
   visibility: 'public' | 'private';
   indexable: boolean;
@@ -73,6 +77,8 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     previewVideoUrl: row.preview_video_url ? normalizeMediaUrl(row.preview_video_url) ?? undefined : undefined,
     keyframeUrls: normalizeJobKeyframeUrls(row.keyframe_urls),
     aspectRatio: row.aspect_ratio ?? undefined,
+    outputWidth: typeof row.output_width === 'number' && Number.isFinite(row.output_width) ? row.output_width : null,
+    outputHeight: typeof row.output_height === 'number' && Number.isFinite(row.output_height) ? row.output_height : null,
     createdAt: row.created_at,
     visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
     indexable: Boolean(row.indexable ?? true),

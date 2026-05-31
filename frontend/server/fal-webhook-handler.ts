@@ -412,9 +412,11 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   let detectedAspectRatio: string | null = null;
+  let detectedDimensions: { width: number; height: number } | null = null;
   if (!shouldClearVideo && finalVideoUrl) {
     const dimensions = await detectVideoDimensions(finalVideoUrl).catch(() => null);
     if (dimensions) {
+      detectedDimensions = dimensions;
       detectedAspectRatio = formatAspectRatioLabel(dimensions.width, dimensions.height);
       if (detectedAspectRatio) {
         job.aspect_ratio = detectedAspectRatio;
@@ -500,7 +502,12 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          render_ids = CASE WHEN $15::jsonb IS NOT NULL THEN $15::jsonb ELSE render_ids END,
          hero_render_id = CASE WHEN $16::text IS NOT NULL THEN $16::text ELSE hero_render_id END,
          settings_snapshot = CASE
-           WHEN $17::jsonb IS NOT NULL THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $17::jsonb, true)
+           WHEN $17::jsonb IS NOT NULL AND $14::text IS NOT NULL
+             THEN jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $17::jsonb, true), '{core,aspectRatio}', to_jsonb($14::text), true)
+           WHEN $17::jsonb IS NOT NULL
+             THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $17::jsonb, true)
+           WHEN $14::text IS NOT NULL
+             THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{core,aspectRatio}', to_jsonb($14::text), true)
            ELSE settings_snapshot
          END,
          updated_at = NOW()
@@ -535,6 +542,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     thumb_url: shouldClearThumb ? null : finalThumbUrl ?? job.thumb_url,
     preview_frame: shouldClearThumb ? null : finalPreviewFrame ?? job.preview_frame,
     preview_video_url: job.preview_video_url,
+    video_width: detectedDimensions?.width ?? null,
+    video_height: detectedDimensions?.height ?? null,
     render_ids: renderIdsJson ? JSON.parse(renderIdsJson) : job.render_ids,
     duration_sec: job.duration_sec,
     status: nextStatus,

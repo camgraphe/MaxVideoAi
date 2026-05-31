@@ -63,6 +63,23 @@ function normalizeStringOption(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length ? value.trim() : undefined;
 }
 
+function normalizeAttachmentUrl(value: string | undefined): string | null {
+  const normalized = normalizeStringOption(value);
+  return normalized ?? null;
+}
+
+export function resolveGoogleVertexVeoEndImageUrl(falPayload: GeneratePayload): string | null {
+  const explicitEndImage = normalizeAttachmentUrl(falPayload.endImageUrl);
+  if (explicitEndImage) return explicitEndImage;
+
+  const endImageInput = falPayload.inputs?.find((input) => {
+    const slotId = normalizeStringOption(input.slotId);
+    return slotId === 'last_frame_url' || slotId === 'end_image_url';
+  });
+
+  return normalizeAttachmentUrl(endImageInput?.url) ?? normalizeAttachmentUrl(endImageInput?.dataUrl);
+}
+
 function imageMimeFromDataUrl(dataUrl: string): string | null {
   const match = dataUrl.match(/^data:([^;,]+)[;,]/i);
   return match?.[1]?.toLowerCase() ?? null;
@@ -255,14 +272,15 @@ export async function buildGoogleVertexVeoPayload(
   }
 
   if (params.mode === 'fl2v') {
-    if (!params.falPayload.imageUrl || !params.falPayload.endImageUrl) {
+    const endImageUrl = resolveGoogleVertexVeoEndImageUrl(params.falPayload);
+    if (!params.falPayload.imageUrl || !endImageUrl) {
       throw new GoogleVertexVeoError('Google Vertex Veo first/last-frame mode requires both frames.', {
         code: 'GOOGLE_VERTEX_VEO_INVALID_REQUEST',
         errorClass: 'invalid_request',
       });
     }
     instance.image = await fetchImageAsGoogleImage(params.falPayload.imageUrl);
-    instance.lastFrame = await fetchImageAsGoogleImage(params.falPayload.endImageUrl);
+    instance.lastFrame = await fetchImageAsGoogleImage(endImageUrl);
   }
 
   if (params.mode === 'ref2v') {

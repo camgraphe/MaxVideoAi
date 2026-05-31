@@ -34,43 +34,47 @@ const baseJob = {
 test('Kling direct poll copies provider output before marking the job completed', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const outputs: unknown[] = [];
+  const deps: NonNullable<Parameters<typeof runKlingDirectPoll>[0]>['deps'] & {
+    detectVideoDimensionsFn: () => Promise<{ width: number; height: number }>;
+  } = {
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+        return [baseJob] as never;
+      }
+      if (/FROM provider_attempts/.test(sql)) {
+        return [{ id: 7, attempt_index: 1 }] as never;
+      }
+      if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
+        return [{ job_id: 'job_123' }] as never;
+      }
+      return [] as never;
+    },
+    getKlingDirectClientFn: () => ({
+      retrieveTask: async () => ({
+        providerJobId: 'task_123',
+        status: 'completed',
+        rawStatus: 'succeed',
+        videoUrl: 'https://provider.kling/video.mp4',
+        message: null,
+        usage: null,
+        providerCostUnits: 8,
+        providerCostUsd: 1.12,
+        raw: { data: { task_id: 'task_123', final_unit_deduction: 8 } },
+      }),
+    }),
+    ensureFastStartVideoFn: async () => 'https://cdn.maxvideoai.com/jobs/job_123/video.mp4',
+    detectVideoDimensionsFn: async () => ({ width: 1440, height: 1440 }),
+    ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/jobs/job_123/thumb.jpg',
+    upsertLegacyJobOutputsFn: async (payload) => {
+      outputs.push(payload);
+    },
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  };
 
   const response = await runKlingDirectPoll({
-    deps: {
-      queryFn: async (sql, params) => {
-        queries.push({ sql, params });
-        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
-          return [baseJob] as never;
-        }
-        if (/FROM provider_attempts/.test(sql)) {
-          return [{ id: 7, attempt_index: 1 }] as never;
-        }
-        if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
-          return [{ job_id: 'job_123' }] as never;
-        }
-        return [] as never;
-      },
-      getKlingDirectClientFn: () => ({
-        retrieveTask: async () => ({
-          providerJobId: 'task_123',
-          status: 'completed',
-          rawStatus: 'succeed',
-          videoUrl: 'https://provider.kling/video.mp4',
-          message: null,
-          usage: null,
-          providerCostUnits: 8,
-          providerCostUsd: 1.12,
-          raw: { data: { task_id: 'task_123', final_unit_deduction: 8 } },
-        }),
-      }),
-      ensureFastStartVideoFn: async () => 'https://cdn.maxvideoai.com/jobs/job_123/video.mp4',
-      ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/jobs/job_123/thumb.jpg',
-      upsertLegacyJobOutputsFn: async (payload) => {
-        outputs.push(payload);
-      },
-      generateAndPersistJobPreviewVideoFn: async () => null,
-      generateAndPersistJobKeyframesFn: async () => [],
-    },
+    deps,
   });
 
   const body = await response.json();
@@ -80,7 +84,15 @@ test('Kling direct poll copies provider output before marking the job completed'
   assert.equal(completedUpdate.params?.[1], 'https://cdn.maxvideoai.com/jobs/job_123/video.mp4');
   assert.notEqual(completedUpdate.params?.[1], 'https://provider.kling/video.mp4');
   assert.match(JSON.stringify(completedUpdate.params?.[3]), /provider_cost_units/);
+  assert.equal(completedUpdate.params?.[4], '1:1');
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
+  assert.deepEqual(
+    {
+      width: (outputs[0] as { video_width?: number }).video_width,
+      height: (outputs[0] as { video_height?: number }).video_height,
+    },
+    { width: 1440, height: 1440 }
+  );
 
   const attemptUpdate = queries.find((entry) => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_units/.test(entry.sql));
   assert.ok(attemptUpdate, 'provider_attempts should store final Kling cost');

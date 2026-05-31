@@ -19,6 +19,7 @@ export type RawJobAuditRow = {
   user_id: string | null;
   created_at: string;
   updated_at: string;
+  hidden: boolean | null;
   status: string | null;
   progress: number | null;
   message: string | null;
@@ -66,6 +67,7 @@ export type AdminJobAuditRecord = {
   userId: string | null;
   createdAt: string;
   updatedAt: string;
+  hiddenByUser: boolean;
   status: string | null;
   progress: number | null;
   message: string | null;
