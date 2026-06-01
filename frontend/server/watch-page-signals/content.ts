@@ -1,7 +1,8 @@
 import type { GalleryVideo } from '@/server/videos';
+import { isStablePublicMediaUrl } from '@/lib/media';
 import { CAMERA_PATTERNS, DESCRIPTOR_PATTERNS } from './constants';
-import { formatModeLabel } from './formatting';
-import type { ParsedSnapshot, WatchPageIntent } from './types';
+import { formatModeLabel, truncateText } from './formatting';
+import type { ParsedSnapshot, WatchPageIntent, WatchPageSourceImage } from './types';
 
 export function extractDescriptor(prompt: string): string | null {
   const normalized = prompt.replace(/\s+/g, ' ').trim();
@@ -192,4 +193,47 @@ export function buildInputRows(snapshot: ParsedSnapshot): Array<{ key: string; l
   if (snapshot.refs.endImageUrl) rows.push({ key: 'endImage', label: 'End frame', value: 'Provided' });
   if (snapshot.refs.audioUrl) rows.push({ key: 'audioInput', label: 'Audio input', value: 'Provided' });
   return rows;
+}
+
+export function buildSourceImages(
+  snapshot: ParsedSnapshot,
+  options: {
+    enabled: boolean;
+    title: string;
+    altContext?: string | null;
+  }
+): WatchPageSourceImage[] {
+  if (!options.enabled) return [];
+
+  const candidates = [
+    { key: 'firstFrame', label: 'First frame', url: snapshot.refs.firstFrameUrl },
+    { key: 'lastFrame', label: 'Last frame', url: snapshot.refs.lastFrameUrl },
+    { key: 'referenceImage', label: 'Reference image', url: snapshot.refs.imageUrl },
+    { key: 'endFrame', label: 'End frame', url: snapshot.refs.endImageUrl },
+    ...snapshot.refs.referenceImages.map((url, index) => ({
+      key: `storyboardFrame${index + 1}`,
+      label: snapshot.refs.referenceImages.length > 1 ? `Storyboard frame ${index + 1}` : 'Storyboard frame',
+      url,
+    })),
+  ];
+  const seen = new Set<string>();
+  const altContext = options.altContext ? truncateText(options.altContext, 140) : null;
+
+  return candidates
+    .flatMap((candidate) => {
+      const url = candidate.url?.trim();
+      if (!url || !isStablePublicMediaUrl(url) || seen.has(url)) return [];
+      seen.add(url);
+      return [
+        {
+          key: candidate.key,
+          label: candidate.label,
+          url,
+          alt: altContext
+            ? `${candidate.label} for ${options.title}. ${altContext}`
+            : `${candidate.label} for ${options.title}`,
+        },
+      ];
+    })
+    .slice(0, 4);
 }

@@ -24,8 +24,9 @@ export function buildCapabilityTags(
   const tags = new Set(explicitTags.map((tag) => tag.trim().toLowerCase()).filter(Boolean));
   const mode = snapshot.inputMode ?? 't2v';
   if (mode === 'i2v') tags.add('image-to-video');
+  if (mode === 'fl2v') tags.add('first-last-frame');
   if (mode === 't2v') tags.add('text-to-video');
-  if (mode === 'r2v') tags.add('reference-to-video');
+  if (mode === 'r2v' || mode === 'ref2v') tags.add('reference-to-video');
   if (mode === 'a2v') tags.add('audio-to-video');
   if (snapshot.core.audio || video.hasAudio) tags.add('audio-enabled');
   if (snapshot.advanced.multiPromptCount > 1) tags.add('multi-shot');

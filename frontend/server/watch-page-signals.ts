@@ -5,4 +5,5 @@ export type {
   WatchPageIntent,
   WatchPageRelatedLink,
   WatchPageSeoStatus,
+  WatchPageSourceImage,
 } from './watch-page-signals/types';

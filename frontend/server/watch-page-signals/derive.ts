@@ -4,32 +4,16 @@ import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { isStablePublicMediaUrl } from '@/lib/media';
-import {
-  getDuplicateVideoObjectNames,
-  isVideoSeoEditorialApproved,
-  validateVideoSeoEditorialEntry,
-} from '@/lib/video-seo-editorial-qa';
+import { isVideoSeoEditorialApproved, validateVideoSeoEditorialEntry } from '@/lib/video-seo-editorial-qa';
 import type { GalleryVideo } from '@/server/videos';
-import {
-  buildDetailRows,
-  buildInputRows,
-  buildPromptRows,
-  buildWhatThisShows,
-  extractDescriptor,
-  titlePattern,
-} from './content';
+import { buildDetailRows, buildInputRows, buildPromptRows, buildWhatThisShows, extractDescriptor, titlePattern } from './content';
 import { buildEngineBadges, resolveEngineEntry } from './engine';
-import {
-  formatClusterLabel,
-  formatModeLabel,
-  formatPromptPreview,
-  likelyExpiringMediaUrl,
-  truncateText,
-} from './formatting';
+import { formatClusterLabel, formatModeLabel, formatPromptPreview, likelyExpiringMediaUrl, truncateText } from './formatting';
 import { parseSnapshot } from './snapshot';
 import { buildCapabilityTags, extractStyleTags, pickPrimaryIntent } from './tags';
 import { buildCompareLinks, buildPromptImprovementNotes } from './recommendations';
 import { buildWatchPageCanonicalState } from './canonical';
+import { buildWatchPageVisualContext } from './visual';
 import type { WatchPageDerivedSignals, WatchPageIntent } from './types';
 
 export function deriveWatchPageSignals(params: {
@@ -115,10 +99,25 @@ export function deriveWatchPageSignals(params: {
     stableThumbnailAsset,
     hasInternalLinkTargets,
   });
+  const visualContext = buildWatchPageVisualContext({
+    snapshot,
+    video,
+    editorial,
+    capabilityTags,
+    primaryIntent,
+    promptText,
+    title,
+    intro,
+    stableVideoAsset,
+    stableThumbnailAsset,
+    hasInternalLinkTargets,
+    canonical,
+    duplicateVideoObjectNames: params.duplicateVideoObjectNames,
+  });
   const completenessScore = [
     video.videoUrl ? 25 : 0,
     video.thumbUrl ? 15 : 0,
-    promptText.trim().length >= 24 ? 10 : 0,
+    visualContext.promptQualityGate ? 10 : 0,
     snapshot.surface === 'video' ? 10 : 0,
     modelPath ? 10 : 0,
     parentPath ? 10 : 0,
@@ -140,20 +139,11 @@ export function deriveWatchPageSignals(params: {
   if (video.thumbUrl && !stableThumbnailAsset) auditNotes.push('Stable public thumbnail asset is required.');
   if (!hasInternalLinkTargets) auditNotes.push('Internal link targets are missing.');
   auditNotes.push(...canonical.validation.blockerLabels);
-  if (promptText.trim().length < 24) auditNotes.push('Prompt is too thin for a differentiated watch page.');
+  if (!visualContext.promptQualityGate) auditNotes.push('Prompt is too thin for a differentiated watch page.');
   if (whatThisShows.length < 3) auditNotes.push('Derived summary is still too sparse.');
   const editorialQaContext = {
-    promptText,
-    hasVideoAsset: Boolean(video.videoUrl),
-    hasThumbnailAsset: Boolean(video.thumbUrl),
-    hasStableVideoAsset: stableVideoAsset,
-    hasStableThumbnailAsset: stableThumbnailAsset,
-    hasInternalLinkTargets,
-    canonicalUrl: canonical.canonicalUrl,
-    expectedCanonicalUrl: canonical.validation.expectedCanonicalUrl,
-    canonicalTargetIndexable: canonical.canonicalTargetIndexable,
+    ...visualContext.baseEditorialQaContext,
     technicallyIndexable: Boolean(video.videoUrl && video.thumbUrl && video.visibility === 'public' && video.indexable),
-    duplicateVideoObjectNames: params.duplicateVideoObjectNames ?? getDuplicateVideoObjectNames(),
   };
   const editorialQa = entry
     ? validateVideoSeoEditorialEntry(editorial, editorialQaContext)
@@ -172,7 +162,7 @@ export function deriveWatchPageSignals(params: {
     stableThumbnailAsset &&
     hasInternalLinkTargets &&
     canonical.validation.passed &&
-    promptText.trim().length >= 24 &&
+    visualContext.promptQualityGate &&
     completenessScore >= 50 &&
     (entry?.watchPageEligible ?? true);
   const indexable = entry ? technicallyIndexable && isVideoSeoEditorialApproved(editorial, editorialQaContext) : technicallyIndexable;
@@ -196,6 +186,7 @@ export function deriveWatchPageSignals(params: {
     intro,
     promptText,
     promptPreview,
+    seoPromptContext: visualContext.seoPromptContext,
     negativePrompt: snapshot.negativePrompt,
     engineLabel,
     engineSlug,
@@ -208,7 +199,7 @@ export function deriveWatchPageSignals(params: {
     aspectRatio: snapshot.core.aspectRatio,
     resolution: snapshot.core.resolution,
     fps: snapshot.core.fps,
-    hasAudio: Boolean(snapshot.core.audio ?? video.hasAudio),
+    hasAudio: visualContext.hasAudio,
     primaryIntent,
     capabilityTags,
     styleTags,
@@ -217,6 +208,7 @@ export function deriveWatchPageSignals(params: {
     detailRows,
     promptRows,
     inputRows,
+    sourceImages: visualContext.sourceImages,
     promptImprovementNotes,
     compareLinks,
     parentPath,

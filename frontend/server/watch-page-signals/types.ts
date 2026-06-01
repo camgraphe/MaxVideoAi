@@ -26,6 +26,7 @@ export type ParsedSnapshot = {
   refs: {
     imageUrl: string | null;
     audioUrl: string | null;
+    referenceImages: string[];
     referenceImagesCount: number;
     referenceVideosCount: number;
     firstFrameUrl: string | null;
@@ -56,6 +57,13 @@ export type WatchPageRelatedLink = {
   reason: string;
 };
 
+export type WatchPageSourceImage = {
+  key: string;
+  label: string;
+  url: string;
+  alt: string;
+};
+
 export type WatchPageCompareLink = {
   href: string;
   label: string;
@@ -78,6 +86,7 @@ export type WatchPageDerivedSignals = {
   intro: string;
   promptText: string;
   promptPreview: string;
+  seoPromptContext: string | null;
   negativePrompt: string | null;
   engineLabel: string;
   engineSlug: string | null;
@@ -99,6 +108,7 @@ export type WatchPageDerivedSignals = {
   detailRows: Array<{ key: string; label: string; value: string }>;
   promptRows: Array<{ key: string; label: string; value: string }>;
   inputRows: Array<{ key: string; label: string; value: string }>;
+  sourceImages: WatchPageSourceImage[];
   promptImprovementNotes: string[];
   compareLinks: WatchPageCompareLink[];
   parentPath: string | null;

@@ -1,4 +1,5 @@
 import { VIDEO_SEO_WATCHLIST, type SeoWatchVideoConfig } from '@/config/video-seo-watchlist';
+import type { VideoSeoIntent } from '@/config/video-seo-editorial';
 import { isStablePublicMediaUrl } from '@/lib/media';
 import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import { normalizeEngineId } from '@/lib/engine-alias';
@@ -12,6 +13,12 @@ import type { VideoSeoAuditSourceRow } from '@/server/video-seo-audit';
 
 const WATCHLIST_BY_ID = new Map(VIDEO_SEO_WATCHLIST.map((entry) => [entry.id, entry] as const));
 const FALLBACK_PUBLISHED_AT = '1970-01-01T00:00:00.000Z';
+
+function toWatchPrimaryIntent(intent?: VideoSeoIntent | null): SeoWatchVideoConfig['videoPrimaryIntent'] {
+  if (!intent) return undefined;
+  if (intent === 'model-demo') return 'prompt-example';
+  return intent;
+}
 
 function countInternalLinks(signals: Pick<WatchPageDerivedSignals, 'modelPath' | 'parentPath' | 'compareLinks'>, relatedCount: number) {
   return Number(Boolean(signals.modelPath)) + Number(Boolean(signals.parentPath)) + signals.compareLinks.length + relatedCount;
@@ -45,7 +52,7 @@ function buildAuditMeta(options: {
     publishedAt: base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
     modifiedAt: editorial?.updatedAt ?? base?.modifiedAt ?? base?.publishedAt ?? video?.createdAt ?? FALLBACK_PUBLISHED_AT,
     watchPageEligible: base?.watchPageEligible,
-    videoPrimaryIntent: base?.videoPrimaryIntent,
+    videoPrimaryIntent: toWatchPrimaryIntent(editorial?.intent) ?? base?.videoPrimaryIntent,
     exampleFamily: examplesSlug || base?.exampleFamily,
     styleTags: base?.styleTags,
     capabilityTags: base?.capabilityTags,

@@ -19,6 +19,7 @@ const focusedModules = [
   'snapshot.ts',
   'tags.ts',
   'types.ts',
+  'visual.ts',
 ];
 
 const facadeSource = readFileSync(facadePath, 'utf8');
@@ -74,4 +75,5 @@ test('watch page signal modules expose the expected contracts', () => {
   assert.match(readModule('engine.ts'), /export function resolveEngineEntry/);
   assert.match(readModule('recommendations.ts'), /export function buildPromptImprovementNotes/);
   assert.match(readModule('recommendations.ts'), /export function buildCompareLinks/);
+  assert.match(readModule('visual.ts'), /export function buildWatchPageVisualContext/);
 });

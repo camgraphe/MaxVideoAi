@@ -27,11 +27,13 @@ export type VideoSeoEditorialEntry = {
   h1: string;
   videoObjectName: string;
   shortDescription: string;
+  editorialPromptBreakdown?: string;
   targetKeyword: string;
   intent: VideoSeoIntent;
   modelSlug: string;
   examplesSlug: string;
   canonicalSlug?: string;
+  showSourceImages?: boolean;
 };
 
 export const VIDEO_SEO_EDITORIAL_ENTRIES = [
