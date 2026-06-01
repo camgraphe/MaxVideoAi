@@ -37,11 +37,13 @@ type VideoSeoPageRow = {
   h1: string | null;
   video_object_name: string | null;
   short_description: string | null;
+  editorial_prompt_breakdown: string | null;
   target_keyword: string | null;
   intent: string | null;
   model_slug: string | null;
   examples_slug: string | null;
   canonical_slug: string | null;
+  show_source_images: boolean | null;
   notes: string | null;
   updated_at: string | null;
   updated_by: string | null;
@@ -144,11 +146,13 @@ function mapVideoSeoPageRow(row: VideoSeoPageRow): PersistedVideoSeoEditorialEnt
     h1: row.h1 ?? '',
     videoObjectName: row.video_object_name ?? '',
     shortDescription: row.short_description ?? '',
+    editorialPromptBreakdown: row.editorial_prompt_breakdown ?? '',
     targetKeyword: row.target_keyword ?? '',
     intent: normalizeVideoSeoIntent(row.intent),
     modelSlug: row.model_slug ?? '',
     examplesSlug: row.examples_slug ?? '',
     canonicalSlug: row.canonical_slug ?? '',
+    showSourceImages: Boolean(row.show_source_images),
     source: 'database' as const,
     notes: row.notes ?? null,
     updatedAt: row.updated_at ?? null,
@@ -181,8 +185,11 @@ export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoE
     const rows = await query<VideoSeoPageRow>(
       `
         SELECT video_id, seo_status, seo_title, meta_description, h1, video_object_name,
-               short_description, target_keyword, intent, model_slug, examples_slug,
+               short_description,
+               to_jsonb(video_seo_pages)->>'editorial_prompt_breakdown' AS editorial_prompt_breakdown,
+               target_keyword, intent, model_slug, examples_slug,
                to_jsonb(video_seo_pages)->>'canonical_slug' AS canonical_slug,
+               COALESCE((to_jsonb(video_seo_pages)->>'show_source_images')::boolean, false) AS show_source_images,
                notes, updated_at::text AS updated_at, updated_by::text AS updated_by
         FROM video_seo_pages
         ORDER BY updated_at DESC, video_id ASC
@@ -277,11 +284,16 @@ export function normalizeVideoSeoEditorialInput(
     h1,
     videoObjectName,
     shortDescription: cleanText(input.shortDescription, source?.shortDescription ?? ''),
+    editorialPromptBreakdown: cleanText(input.editorialPromptBreakdown, source?.editorialPromptBreakdown ?? ''),
     targetKeyword,
     intent: normalizeVideoSeoIntent(input.intent, source?.intent ?? 'prompt-example'),
     modelSlug: cleanText(input.modelSlug, source?.modelSlug ?? ''),
     examplesSlug: cleanText(input.examplesSlug, source?.examplesSlug ?? ''),
     canonicalSlug,
+    showSourceImages:
+      typeof input.showSourceImages === 'boolean'
+        ? input.showSourceImages
+        : Boolean(source?.showSourceImages),
   };
 }
 
@@ -361,9 +373,10 @@ export async function upsertVideoSeoEditorialEntry(
     `
       INSERT INTO video_seo_pages (
         video_id, seo_status, seo_title, meta_description, h1, video_object_name,
-        short_description, target_keyword, intent, model_slug, examples_slug, canonical_slug, notes, updated_by
+        short_description, editorial_prompt_breakdown, target_keyword, intent, model_slug,
+        examples_slug, canonical_slug, show_source_images, notes, updated_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::uuid)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16::uuid)
       ON CONFLICT (video_id) DO UPDATE SET
         seo_status = EXCLUDED.seo_status,
         seo_title = EXCLUDED.seo_title,
@@ -371,17 +384,20 @@ export async function upsertVideoSeoEditorialEntry(
         h1 = EXCLUDED.h1,
         video_object_name = EXCLUDED.video_object_name,
         short_description = EXCLUDED.short_description,
+        editorial_prompt_breakdown = EXCLUDED.editorial_prompt_breakdown,
         target_keyword = EXCLUDED.target_keyword,
         intent = EXCLUDED.intent,
         model_slug = EXCLUDED.model_slug,
         examples_slug = EXCLUDED.examples_slug,
         canonical_slug = EXCLUDED.canonical_slug,
+        show_source_images = EXCLUDED.show_source_images,
         notes = EXCLUDED.notes,
         updated_by = EXCLUDED.updated_by,
         updated_at = NOW()
       RETURNING video_id, seo_status, seo_title, meta_description, h1, video_object_name,
-                short_description, target_keyword, intent, model_slug, examples_slug, canonical_slug,
-                notes, updated_at::text AS updated_at, updated_by::text AS updated_by
+                short_description, editorial_prompt_breakdown, target_keyword, intent, model_slug,
+                examples_slug, canonical_slug, show_source_images, notes,
+                updated_at::text AS updated_at, updated_by::text AS updated_by
     `,
     [
       entry.id,
@@ -391,11 +407,13 @@ export async function upsertVideoSeoEditorialEntry(
       entry.h1,
       entry.videoObjectName,
       entry.shortDescription,
+      entry.editorialPromptBreakdown ?? '',
       entry.targetKeyword,
       entry.intent,
       entry.modelSlug,
       entry.examplesSlug,
       entry.canonicalSlug ?? '',
+      Boolean(entry.showSourceImages),
       notes ?? null,
       updatedBy ?? null,
     ]

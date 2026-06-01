@@ -3,7 +3,7 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { isStablePublicMediaUrl } from '@/lib/media';
 import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
-import { getSeoVideoById } from '@/server/videos';
+import { getSeoVideoById, type GalleryVideo } from '@/server/videos';
 import {
   listVideoSeoEditorialEntries,
   normalizeVideoSeoEditorialInput,
@@ -67,6 +67,7 @@ export async function PUT(req: NextRequest, props: RouteParams) {
       fallback,
       otherEntries: entries,
       qaContext: {
+        ...buildVisualQaContext(video, provisionalEntry.intent),
         promptText: video?.prompt,
         hasVideoAsset: Boolean(video?.videoUrl),
         hasThumbnailAsset: Boolean(video?.thumbUrl),
@@ -104,4 +105,47 @@ function validationTargetHasInternalLinks(payload: Record<string, unknown>): boo
     typeof payload.examplesSlug === 'string' &&
     payload.examplesSlug.trim().length > 0
   );
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length ? value.trim() : null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function buildVisualQaContext(video: GalleryVideo | null, intent: string) {
+  const raw = asRecord(video?.settingsSnapshot);
+  const core = asRecord(raw?.core);
+  const advanced = asRecord(raw?.advanced);
+  const refs = asRecord(raw?.refs);
+  const inputMode = asString(raw?.inputMode);
+  const referenceImageCount = asArray(refs?.referenceImages).map(asString).filter(Boolean).length;
+  const hasVisualReferenceAsset = Boolean(
+    asString(refs?.imageUrl) ||
+      asString(refs?.firstFrameUrl) ||
+      asString(refs?.lastFrameUrl) ||
+      asString(refs?.endImageUrl) ||
+      referenceImageCount > 0
+  );
+  const isVisualReferenceWorkflow =
+    intent === 'image-to-video' ||
+    ['i2v', 'r2v', 'fl2v', 'ref2v', 'image-to-video', 'reference-to-video'].includes(inputMode ?? '') ||
+    hasVisualReferenceAsset;
+
+  return {
+    isVisualReferenceWorkflow,
+    hasVisualReferenceAsset,
+    hasAudio: Boolean(video?.hasAudio || asBoolean(core?.audio) || asString(refs?.audioUrl)),
+    hasMultiShot: asArray(advanced?.multiPrompt).filter((entry) => Boolean(asRecord(entry)?.prompt)).length > 1,
+  };
 }

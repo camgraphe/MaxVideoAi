@@ -1,39 +1,16 @@
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Box,
-  Clock3,
-  ExternalLink,
-  Film,
-  Monitor,
-  Sparkles,
-  Tag,
-  TextCursorInput,
-  Volume2,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, Box, Clock3, ExternalLink, Film, Monitor, Sparkles, Tag, TextCursorInput, Volume2, type LucideIcon } from 'lucide-react';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import { WatchVideoPlayer } from '@/components/watch/WatchVideoPlayer';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
-import {
-  FALLBACK_POSTER,
-  FALLBACK_THUMB,
-  SITE,
-  formatWatchDate,
-  getDetailValue,
-  humanizeTag,
-  parseAspectRatio,
-  serializeJsonLd,
-  toAbsoluteUrl,
-  toDurationIso,
-  type WatchPageData,
-} from '../_lib/video-watch-page-utils';
+import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, formatWatchDate, getDetailValue, humanizeTag, parseAspectRatio, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchCard } from './VideoWatchCard';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoWatchSidebar } from './VideoWatchSidebar';
+import { VideoWatchSourceImages } from './VideoWatchSourceImages';
 
 export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
@@ -103,11 +80,13 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const audioLabel = getDetailValue(detailRows, 'audio') ?? (signals.hasAudio ? 'Enabled' : 'Off');
   const costLabel = getDetailValue(detailRows, 'cost');
   const createdLabel = formatWatchDate(video.createdAt);
+  const promptContextText = signals.seoPromptContext ?? signals.promptPreview;
+  const sourceImagesTitle = signals.seoPromptContext?.toLowerCase().includes('storyboard') ? 'Storyboard inputs' : 'Source images';
   const cameraHighlights = signals.capabilityTags
     .filter((tag) => ['push-in', 'tracking', 'drone', 'close-up', 'transition', 'camera-lock'].includes(tag))
     .map(humanizeTag);
   const promptBreakdownRows = [
-    { label: 'Subject', value: signals.promptPreview },
+    { label: signals.seoPromptContext ? 'SEO context' : 'Subject', value: promptContextText },
     { label: 'Workflow', value: workflowLabel },
     { label: 'Camera', value: cameraHighlights.length ? cameraHighlights.join(', ') : humanizeTag(signals.primaryIntent) },
     { label: 'Output', value: [durationLabel, aspectLabel, resolutionLabel].filter(Boolean).join(' · ') },
@@ -223,13 +202,15 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
                   <TextCursorInput className="h-4 w-4 text-brand" aria-hidden />
                   <h2 className="text-lg font-semibold text-text-primary">Prompt breakdown</h2>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">Text-to-video prompt used to generate this render.</p>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                  {signals.seoPromptContext ? 'Editorial context for this visual workflow.' : 'Prompt used to generate this render.'}
+                </p>
               </div>
               <CopyPromptButton promptElementId={fullPromptId} copyLabel="Copy full prompt" copiedLabel="Copied!" />
             </div>
 
             <div className="mt-5 overflow-hidden rounded-input border border-hairline">
-              <div className="border-b border-hairline bg-surface-2 px-4 py-3 text-sm leading-6 text-text-primary">{signals.promptPreview}</div>
+              <div className="border-b border-hairline bg-surface-2 px-4 py-3 text-sm leading-6 text-text-primary">{promptContextText}</div>
               <div className="grid divide-y divide-hairline md:grid-cols-2 md:divide-x md:divide-y-0">
                 {promptBreakdownRows.map((row) => (
                   <div key={row.label} className="grid grid-cols-[110px_minmax(0,1fr)] divide-x divide-hairline">
@@ -253,12 +234,14 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
 
             <details className="group mt-4 rounded-input border border-hairline bg-surface px-4 py-3">
               <summary className="cursor-pointer list-none text-xs font-semibold text-brand transition hover:text-brandHover">
-                <span className="group-open:hidden">Show full prompt</span>
-                <span className="hidden group-open:inline">Hide full prompt</span>
+                <span className="group-open:hidden">{signals.seoPromptContext ? 'Show raw job prompt' : 'Show full prompt'}</span>
+                <span className="hidden group-open:inline">{signals.seoPromptContext ? 'Hide raw job prompt' : 'Hide full prompt'}</span>
               </summary>
               <p id={fullPromptId} className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
             </details>
           </VideoWatchCard>
+
+          <VideoWatchSourceImages title={sourceImagesTitle} sourceImages={signals.sourceImages} />
 
           {signals.promptImprovementNotes.length ? (
             <VideoWatchCard className="p-5 sm:p-6">

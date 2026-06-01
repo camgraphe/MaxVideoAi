@@ -2,6 +2,8 @@ export const MODE_LABELS: Record<string, string> = {
   t2v: 'Text to video',
   i2v: 'Image to video',
   r2v: 'Reference to video',
+  fl2v: 'First/last frame to video',
+  ref2v: 'Reference to video',
   a2v: 'Audio to video',
   extend: 'Video extend',
   retake: 'Video retake',

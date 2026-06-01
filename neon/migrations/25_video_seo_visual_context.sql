@@ -1,0 +1,3 @@
+ALTER TABLE video_seo_pages
+  ADD COLUMN IF NOT EXISTS editorial_prompt_breakdown TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS show_source_images BOOLEAN NOT NULL DEFAULT FALSE;

@@ -16,6 +16,7 @@ export function parseSnapshot(video: GalleryVideo): ParsedSnapshot {
   const advanced = asRecord(raw?.advanced);
   const refs = asRecord(raw?.refs);
   const prompt = asString(raw?.prompt) ?? video.prompt ?? '';
+  const referenceImages = asArray(refs?.referenceImages).map(asString).filter((url): url is string => Boolean(url));
 
   return {
     surface: asString(raw?.surface) ?? 'video',
@@ -43,7 +44,8 @@ export function parseSnapshot(video: GalleryVideo): ParsedSnapshot {
     refs: {
       imageUrl: asString(refs?.imageUrl),
       audioUrl: asString(refs?.audioUrl),
-      referenceImagesCount: asArray(refs?.referenceImages).map(asString).filter(Boolean).length,
+      referenceImages,
+      referenceImagesCount: referenceImages.length,
       referenceVideosCount: asArray(refs?.videoUrls).map(asString).filter(Boolean).length,
       firstFrameUrl: asString(refs?.firstFrameUrl),
       lastFrameUrl: asString(refs?.lastFrameUrl),

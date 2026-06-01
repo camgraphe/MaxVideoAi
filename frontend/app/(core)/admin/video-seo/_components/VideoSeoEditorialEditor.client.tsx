@@ -10,6 +10,8 @@ type VideoSeoEditorialEditorProps = {
   editorial: VideoSeoEditorialEntry;
 };
 
+type TextEditorialField = Exclude<keyof VideoSeoEditorialEntry, 'showSourceImages'>;
+
 const SEO_STATUSES: VideoSeoStatus[] = ['candidate', 'draft', 'needs_edits', 'approved', 'disabled'];
 const SEO_INTENTS: VideoSeoIntent[] = ['prompt-example', 'model-demo', 'product-ad', 'camera-motion', 'image-to-video', 'audio-enabled'];
 
@@ -27,7 +29,11 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
   const hasExistingCanonicalSlug = existingCanonicalSlug.length > 0;
   const canonicalSlugChanged = hasExistingCanonicalSlug && draftCanonicalSlug !== existingCanonicalSlug;
 
-  function updateField(field: keyof VideoSeoEditorialEntry, value: string) {
+  function updateField(field: TextEditorialField, value: string) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateBooleanField(field: 'showSourceImages', value: boolean) {
     setDraft((current) => ({ ...current, [field]: value }));
   }
 
@@ -132,6 +138,23 @@ export function VideoSeoEditorialEditor({ editorial }: VideoSeoEditorialEditorPr
       <TextField label="H1" value={draft.h1} onChange={(value) => updateField('h1', value)} />
       <TextareaField label="Meta description" value={draft.metaDescription} onChange={(value) => updateField('metaDescription', value)} rows={3} />
       <TextareaField label="Short description" value={draft.shortDescription} onChange={(value) => updateField('shortDescription', value)} rows={4} />
+      <TextareaField
+        label="Editorial prompt breakdown"
+        value={draft.editorialPromptBreakdown ?? ''}
+        onChange={(value) => updateField('editorialPromptBreakdown', value)}
+        rows={5}
+      />
+      <label className="flex items-start gap-2 rounded-input border border-hairline bg-bg/60 px-3 py-2 text-xs text-text-secondary">
+        <input
+          type="checkbox"
+          checked={Boolean(draft.showSourceImages)}
+          onChange={(event) => updateBooleanField('showSourceImages', event.currentTarget.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          Show stable public source images on eligible visual watch pages.
+        </span>
+      </label>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="sm" disabled={saving || pending}>
