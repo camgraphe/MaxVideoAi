@@ -44,7 +44,7 @@ test('admin video SEO page delegates helpers and inventory table', () => {
   assert.doesNotMatch(pageSource, /function ScoreMeter/, 'score meter belongs in table module');
   assert.doesNotMatch(pageSource, /VideoThumbnailEditor/, 'thumbnail editor wiring belongs in table module');
   assert.doesNotMatch(pageSource, /VideoSeoEditorialEditor/, 'editor form wiring belongs in table module');
-  assert.doesNotMatch(pageSource, /AdminDataTable/, 'inventory table rendering belongs in table module');
+  assert.doesNotMatch(pageSource, /AdminDataTable/, 'inventory wall rendering belongs in inventory module');
 
   const lineCount = pageSource.split('\n').length;
   assert.ok(lineCount <= 120, `admin video SEO page should stay below 120 lines, got ${lineCount}`);
@@ -86,14 +86,20 @@ test('admin video SEO helpers expose row, summary, and formatting contracts', ()
   assert.match(helpersSource, /canonicalBlockers/, 'rows should expose canonical blockers');
 });
 
-test('admin video SEO inventory table owns row rendering surfaces', () => {
-  assert.match(tableSource, /export function VideoSeoInventoryTable/, 'inventory table should be exported');
+test('admin video SEO inventory wall owns card and modal rendering surfaces', () => {
+  assert.match(tableSource, /'use client'/, 'inventory wall should be a client component for modal selection');
+  assert.match(tableSource, /export function VideoSeoInventoryTable/, 'inventory wall should keep the public export stable');
+  assert.match(tableSource, /function VideoSeoVideoCard/, 'inventory wall should own compact video cards');
+  assert.match(tableSource, /function VideoSeoDetailModal/, 'inventory wall should own the focused detail modal');
+  assert.match(tableSource, /role="dialog"/, 'detail modal should expose dialog semantics');
+  assert.match(tableSource, /aria-modal="true"/, 'detail modal should be modal for assistive tech');
   assert.match(tableSource, /function WatchPreview/, 'table should own preview rendering');
   assert.match(tableSource, /function StatusPill/, 'table should own status pills');
   assert.match(tableSource, /function ScoreMeter/, 'table should own score meter');
   assert.match(tableSource, /VideoThumbnailEditor/, 'table should own thumbnail editor wiring');
   assert.match(tableSource, /VideoSeoEditorialEditor/, 'table should own editorial editor wiring');
-  assert.match(tableSource, /AdminDataTable/, 'table should own data table rendering');
+  assert.doesNotMatch(tableSource, /AdminDataTable/, 'video SEO inventory should no longer render a dense data table');
+  assert.match(tableSource, /grid-cols-\[repeat\(auto-fill,minmax\(180px,1fr\)\)\]/, 'inventory wall should use a scannable responsive video grid');
   assert.match(tableSource, /Preview SERP/, 'table should render the SERP preview');
   assert.match(tableSource, /QA errors/, 'table should render editorial QA errors');
   assert.match(tableSource, /Sitemap/, 'table should render computed sitemap presence');
