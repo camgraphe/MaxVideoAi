@@ -342,7 +342,9 @@ export function CoreSettingsBar({
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
   const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
-  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
+  const modeCanExposeNativeAudio = caps?.audioToggle ?? true;
+  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl && modeCanExposeNativeAudio;
+  const showAudioInlineControl = showAudioControl || audioIncluded;
   const audioSelectLocked = audioIncluded || !showAudioControl || audioControlDisabled;
   const audioValue = audioIncluded ? true : showAudioControl ? Boolean(audioEnabled) : false;
   const audioOptions = [
@@ -421,16 +423,18 @@ export function CoreSettingsBar({
           />
         ) : null}
 
-        <InlineSelectControl
-          kind="audio"
-          options={audioOptions}
-          value={audioValue}
-          onChange={(value) => {
-            if (audioSelectLocked || typeof onAudioChange !== 'function') return;
-            onAudioChange(Boolean(value));
-          }}
-          disabled={audioSelectLocked}
-        />
+        {showAudioInlineControl ? (
+          <InlineSelectControl
+            kind="audio"
+            options={audioOptions}
+            value={audioValue}
+            onChange={(value) => {
+              if (audioSelectLocked || typeof onAudioChange !== 'function') return;
+              onAudioChange(Boolean(value));
+            }}
+            disabled={audioSelectLocked}
+          />
+        ) : null}
 
         {onIterationsChange ? (
           <InlineSelectControl

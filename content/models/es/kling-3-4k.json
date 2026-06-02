@@ -10,7 +10,7 @@
   "pricingNotes": "Las estimaciones mostradas a miembros incluyen el margen de MaxVideoAI: aprox. 0,55 $/s para salida 4K nativa. Usa esta ruta para renders finales aprobados.",
   "hero": {
     "title": "Kling 3 4K - generacion de video 4K nativa",
-    "intro": "Usa Kling 3 4K cuando un prompt, imagen fuente o storyboard ya esta aprobado y la toma necesita salida 4K nativa para entrega, edicion o revision en pantalla grande.",
+    "intro": "Usa Kling 3 4K cuando un prompt o start frame ya esta aprobado y la toma necesita salida 4K nativa para entrega, edicion o revision en pantalla grande. Usa Kling 3.0 Omni 4K cuando imagenes de referencia o storyboard deben guiar el plano sin abrir el clip.",
     "badge": "4K nativo · 3-15 s · Texto o imagen · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 4K",

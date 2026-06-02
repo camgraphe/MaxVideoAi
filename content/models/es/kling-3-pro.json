@@ -6,11 +6,11 @@
     "description": "Usa Kling 3 Pro en MaxVideoAI para video IA multi-shot, control de escena, audio nativo y specs y precios en vivo antes de renderizar.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro es el modelo de video IA Kling actual en MaxVideoAI para video multi-shot, workflows Kling de imagen-a-video, Kling Elements reutilizables, frames finales opcionales y audio nativo.",
+  "overview": "Kling 3 Pro es el modelo de video IA Kling actual en MaxVideoAI para video multi-shot, workflows Kling de imagen-a-video con start frame, Kling Elements reutilizables, frames finales opcionales y audio nativo.",
   "pricingNotes": "Las estimaciones mostradas a miembros incluyen el margen de MaxVideoAI: aprox. 0,22 $/s con audio, 0,15 $/s audio off y 0,26 $/s con voice control.",
   "hero": {
     "title": "Kling 3 Pro — modelo Kling actual para video multi-shot y control de escena",
-    "intro": "Kling 3 Pro es el modelo Kling AI actual para video multi-shot, workflows Kling de imagen-a-video, Kling Elements reutilizables, frames finales opcionales y audio nativo cuando necesitas el control de escena más sólido en anuncios, trailers y secuencias cinematográficas.",
+    "intro": "Kling 3 Pro es el modelo Kling AI actual para video multi-shot, workflows Kling de imagen-a-video con start frame, Kling Elements reutilizables, frames finales opcionales y audio nativo. Usa Kling 3.0 Omni cuando las imagenes subidas deben servir como referencias sin abrir el clip.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 Pro",
@@ -167,7 +167,7 @@
     },
     {
       "q": "¿Como deberia usar Kling AI para imagen-a-video y escenas multi-shot?",
-      "a": "Usa una imagen fuente o un frame inicial claros, mantén una sola acción legible por plano y reutiliza los mismos anclajes de Kling Elements entre escenas para reducir el drift."
+      "a": "Usa una start frame clara cuando la imagen debe abrir el clip, manten una sola accion legible por plano y reutiliza los mismos anclajes de Kling Elements entre escenas para reducir el drift. Usa Kling 3.0 Omni Reference cuando las imagenes deben guiar el plano sin convertirse en el primer frame."
     }
   ],
   "custom": {

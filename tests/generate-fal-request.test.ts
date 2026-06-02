@@ -249,6 +249,151 @@ test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls on
   assert.equal(result.requestBody.generate_audio, true);
 });
 
+test('Fal request body routes Kling 3.0 Omni reference images without promoting them to a start frame', () => {
+  const payload = {
+    engineId: 'kling-o3-pro',
+    prompt: 'Use @Image1 as the storyboard composition and @Image2 as the character style.',
+    mode: 'ref2v',
+    durationOption: '5',
+    aspectRatio: '16:9',
+    audio: true,
+    referenceImages: [
+      'https://cdn.maxvideoai.com/storyboard-1.png',
+      'https://cdn.maxvideoai.com/style-2.png',
+    ],
+    elements: [
+      {
+        frontalImageUrl: 'https://cdn.maxvideoai.com/front.png',
+        referenceImageUrls: ['https://cdn.maxvideoai.com/ref.png'],
+      },
+    ],
+  };
+
+  const model = resolveFalModelSlug(payload, 'fal-ai/kling-video/o3/pro/text-to-video');
+  assert.equal(model, 'fal-ai/kling-video/o3/pro/reference-to-video');
+
+  const result = buildFalGenerationRequest(payload, model ?? '');
+  assert.equal(result.model, 'fal-ai/kling-video/o3/pro/reference-to-video');
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.equal(result.requestBody.start_image_url, undefined);
+  assert.deepEqual(result.requestBody.image_urls, [
+    'https://cdn.maxvideoai.com/storyboard-1.png',
+    'https://cdn.maxvideoai.com/style-2.png',
+  ]);
+  assert.deepEqual(result.requestBody.elements, [
+    {
+      frontal_image_url: 'https://cdn.maxvideoai.com/front.png',
+      reference_image_urls: ['https://cdn.maxvideoai.com/ref.png'],
+      video_url: undefined,
+    },
+  ]);
+  assert.equal(result.requestBody.duration, '5');
+  assert.equal(result.requestBody.aspect_ratio, '16:9');
+  assert.equal(result.requestBody.generate_audio, true);
+});
+
+test('Fal request body sends Kling 3.0 Omni optional reference start frame explicitly', () => {
+  const payload = {
+    engineId: 'kling-o3-pro',
+    prompt: 'Use @Image1 as style guidance, then open from the supplied start frame.',
+    mode: 'ref2v',
+    durationOption: '5',
+    inputs: [
+      attachment({
+        name: 'start.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'start_image_url',
+        url: 'https://cdn.maxvideoai.com/start-frame.png',
+      }),
+      attachment({
+        name: 'reference.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'image_urls',
+        url: 'https://cdn.maxvideoai.com/reference.png',
+      }),
+    ],
+  };
+
+  const result = buildFalGenerationRequest(payload, 'fal-ai/kling-video/o3/pro/reference-to-video');
+
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.equal(result.requestBody.start_image_url, 'https://cdn.maxvideoai.com/start-frame.png');
+  assert.deepEqual(result.requestBody.image_urls, ['https://cdn.maxvideoai.com/reference.png']);
+});
+
+test('Fal request body routes Kling 3.0 Omni video-to-video through the reference video endpoint', () => {
+  const payload = {
+    engineId: 'kling-o3-pro',
+    prompt: 'Use @Video1 for motion language and @Image1 for watercolor styling.',
+    mode: 'v2v',
+    durationOption: '5',
+    aspectRatio: '16:9',
+    inputs: [
+      attachment({
+        name: 'source.mp4',
+        type: 'video/mp4',
+        size: 1200,
+        kind: 'video',
+        slotId: 'video_url',
+        url: 'https://cdn.maxvideoai.com/source.mp4',
+      }),
+    ],
+    referenceImages: ['https://cdn.maxvideoai.com/style.png'],
+    extraInputValues: {
+      keep_audio: false,
+    },
+  };
+
+  const model = resolveFalModelSlug(payload, 'fal-ai/kling-video/o3/pro/text-to-video');
+  assert.equal(model, 'fal-ai/kling-video/o3/pro/video-to-video/reference');
+
+  const result = buildFalGenerationRequest(payload, model ?? '');
+  assert.equal(result.model, 'fal-ai/kling-video/o3/pro/video-to-video/reference');
+  assert.equal(result.requestBody.video_url, 'https://cdn.maxvideoai.com/source.mp4');
+  assert.deepEqual(result.requestBody.image_urls, ['https://cdn.maxvideoai.com/style.png']);
+  assert.equal(result.requestBody.reference_image_urls, undefined);
+  assert.equal(result.requestBody.reference_images, undefined);
+  assert.equal(result.requestBody.keep_audio, false);
+  assert.equal(result.requestBody.duration, '5');
+  assert.equal(result.requestBody.aspect_ratio, '16:9');
+});
+
+test('Kling 3 image-to-video keeps using start_image_url for the uploaded start frame', () => {
+  const result = buildFalGenerationRequest(
+    {
+      engineId: 'kling-3-pro',
+      prompt: 'Animate the opening frame with a slow dolly push.',
+      mode: 'i2v',
+      durationOption: '5',
+      imageUrl: 'https://cdn.maxvideoai.com/start-frame.png',
+    },
+    'fal-ai/kling-video/v3/pro/image-to-video'
+  );
+
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.equal(result.requestBody.start_image_url, 'https://cdn.maxvideoai.com/start-frame.png');
+});
+
+test('Kling 3.0 Omni image-to-video keeps using image_url for the uploaded start frame', () => {
+  const result = buildFalGenerationRequest(
+    {
+      engineId: 'kling-o3-pro',
+      prompt: 'Animate the opening frame with a slow dolly push.',
+      mode: 'i2v',
+      durationOption: '5',
+      imageUrl: 'https://cdn.maxvideoai.com/start-frame.png',
+    },
+    'fal-ai/kling-video/o3/pro/image-to-video'
+  );
+
+  assert.equal(result.requestBody.image_url, 'https://cdn.maxvideoai.com/start-frame.png');
+  assert.equal(result.requestBody.start_image_url, undefined);
+});
+
 test('Fal request body strips Kling direct-only provider extras', () => {
   const result = buildFalGenerationRequest(
     {

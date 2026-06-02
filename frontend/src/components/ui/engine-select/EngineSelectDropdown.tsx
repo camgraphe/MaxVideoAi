@@ -25,6 +25,7 @@ type EngineSelectDropdownProps = {
   legacyToggleLabel: string;
   locale?: string;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  disabledEngineReasons?: Record<string, string>;
   onBrowse: () => void;
   onHighlight: (index: number) => void;
   onItemRef: (index: number, node: HTMLButtonElement | null) => void;
@@ -50,6 +51,7 @@ export function EngineSelectDropdown({
   legacyToggleLabel,
   locale,
   modeLabelOverrides,
+  disabledEngineReasons,
   onBrowse,
   onHighlight,
   onItemRef,
@@ -109,7 +111,8 @@ export function EngineSelectDropdown({
             const meta = registryMeta?.meta.get(engine.id);
             const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
             const availability: EngineAvailability = meta?.availability ?? engine.availability ?? 'available';
-            const disabled = availability === 'paused';
+            const disabledReason = disabledEngineReasons?.[engine.id];
+            const disabled = availability === 'paused' || Boolean(disabledReason);
             return (
               <li key={engine.id}>
                 <button
@@ -119,6 +122,7 @@ export function EngineSelectDropdown({
                     if (disabled) return;
                     onSelectEngine(engine.id);
                   }}
+                  title={disabledReason}
                   onMouseEnter={() => onHighlight(index)}
                   onFocus={() => onHighlight(index)}
                   className={clsx(

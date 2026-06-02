@@ -4,8 +4,8 @@ export const kling3StandardTemplateConfig: ModelPageTemplateConfig = {
   slug: 'kling-3-standard',
   intent: 'draft',
   hero: {
-    eyebrow: 'KLING LOWER-COST STORYBOARD ROUTE',
-    subtitleHighlightTerms: ['multi-shot drafts', '1080p storyboard tests', 'native audio options'],
+    eyebrow: 'KLING LOWER-COST START-FRAME ROUTE',
+    subtitleHighlightTerms: ['multi-shot drafts', '1080p start-frame tests', 'native audio options'],
     primaryCtaHref: '/app?engine=kling-3-standard',
     secondaryCtaHref: '/examples/kling',
     quickLinks: [

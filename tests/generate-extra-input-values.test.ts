@@ -21,6 +21,7 @@ const engineWithExtraFields = {
     optional: [
       { id: 'camera_style', type: 'enum', label: 'Camera style', values: ['cinematic', 'handheld'] },
       { id: 'director_note', type: 'text', label: 'Director note' },
+      { id: 'keep_audio', type: 'boolean', label: 'Keep audio', modes: ['v2v'] },
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', values: ['16:9', '9:16'] },
     ],
   },
@@ -87,6 +88,23 @@ test('extra input helper validates and normalizes schema-driven values', () => {
       style_strength: 0.72,
       camera_style: 'cinematic',
       director_note: 'close camera',
+    },
+  });
+});
+
+test('extra input helper validates boolean advanced fields', () => {
+  const result = validateExtraInputValues({
+    engine: engineWithExtraFields,
+    mode: 'v2v',
+    rawExtraInputValues: {
+      keep_audio: 'false',
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: true,
+    values: {
+      keep_audio: false,
     },
   });
 });

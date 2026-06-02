@@ -1,0 +1,57 @@
+{
+  "marketingName": "Kling 3.0 Omni 4K",
+  "versionLabel": "3.0 Omni 4K",
+  "seo": {
+    "title": "Kling 3.0 Omni 4K reference-to-video | MaxVideoAI",
+    "description": "Usa Kling 3.0 Omni 4K para video Kling nativo 4K guiado por referencias, storyboard y anclas @Image. Usa Standard o Pro para V2V desde video fuente."
+  },
+  "overview": "Kling 3.0 Omni 4K es la ruta nativa 4K para renders Kling guiados por referencias y storyboard.",
+  "pricingNotes": "Costo aproximado del proveedor antes del margen MaxVideoAI: $0.42/s.",
+  "hero": {
+    "title": "Kling 3.0 Omni 4K para renders 4K guiados por referencias",
+    "intro": "Usa Kling 3.0 Omni 4K cuando las imágenes de referencia o storyboard deben guiar un render Kling nativo 4K sin forzarse como frame inicial. Esta ruta 4K no es la ruta video-to-video desde video fuente.",
+    "badge": "Imágenes de referencia · 4K nativo · Storyboard · Sin V2V",
+    "ctaPrimary": {
+      "label": "Generar con Kling 3.0 Omni 4K",
+      "href": "/app?engine=kling-o3-4k"
+    }
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Imágenes de referencia",
+      "body": "Sube hasta 7 imágenes de referencia y menciónalas como @Image1, @Image2, etc. para guiar storyboard, estilo o composición."
+    },
+    {
+      "label": "Sin V2V desde video fuente",
+      "body": "Kling 3.0 Omni 4K es una ruta 4K orientada a referencias. No soporta source-video video-to-video en la ruta actual de MaxVideoAI; usa 3.0 Omni Standard o Pro cuando se requieren @Video1 y keep_audio."
+    },
+    {
+      "label": "Resolución",
+      "body": "Salida 4K nativa."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Kling 3.0 Omni 4K con referencias",
+    "quote": "Usa @Image1 como frame storyboard aprobado y @Image2 como referencia de estilo. Renderiza un plano cinematográfico 4K con continuidad estable.",
+    "description": "3.0 Omni 4K debe funcionar como pase final después de validar el workflow de referencia. El prompt debe asignar cada imagen a un rol creativo claro antes del render 4K más costoso.",
+    "steps": [
+      "Validar la idea en 3.0 Omni Standard u 3.0 Omni Pro",
+      "Elegir modo Reference para imágenes storyboard o estilo",
+      "Mencionar cada imagen como @Image1, @Image2, etc.",
+      "Bloquear movimiento, encuadre, audio y continuidad",
+      "Usar 3.0 Omni Standard o Pro si el workflow necesita @Video1, video-to-video desde video fuente o keep_audio",
+      "Usar Kling 3 4K solo si la imagen subida debe abrir el clip"
+    ]
+  },
+  "faqs": [
+    {
+      "q": "¿Cuándo debo usar Kling 3.0 Omni 4K?",
+      "a": "Úsalo después de validar el workflow de referencia cuando necesitas salida nativa 4K."
+    },
+    {
+      "q": "¿Kling 3.0 Omni 4K soporta video-to-video?",
+      "a": "No. La ruta 4K actual es para generación 4K nativa guiada por referencias, sin video-to-video desde video fuente. Usa Kling 3.0 Omni Standard o Pro cuando el prompt debe citar @Video1 o mantener audio fuente con keep_audio."
+    }
+  ]
+}

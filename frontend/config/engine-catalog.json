@@ -3364,6 +3364,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k",
@@ -3371,6 +3374,9 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k"
@@ -3684,6 +3690,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k",
@@ -3691,6 +3700,9 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k"
@@ -4011,6 +4023,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k",
@@ -4018,6 +4033,9 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k"
@@ -4129,7 +4147,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start frame",
+            "description": "Used as the opening frame for Kling 3 image-to-video generation.",
             "modes": [
               "i2v"
             ],
@@ -4360,7 +4379,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Add end frames or subject references for tighter motion control."
+          "notes": "Animate one start frame. Use Kling Elements for subject consistency; the uploaded image is the opening frame."
         }
       }
     ],
@@ -4391,6 +4410,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k",
@@ -4398,6 +4420,9 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k"
@@ -4509,7 +4534,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start frame",
+            "description": "Used as the opening frame for Kling 3 image-to-video generation.",
             "modes": [
               "i2v"
             ],
@@ -4740,7 +4766,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Add end frames or subject references for tighter motion control."
+          "notes": "Animate one start frame. Use Kling Elements for subject consistency; the uploaded image is the opening frame."
         }
       }
     ],
@@ -4758,7 +4784,7 @@
         "value": false
       }
     },
-    "bestFor": "Multi-shot testing at lower cost"
+    "bestFor": "Start-frame testing at lower cost"
   },
   {
     "engineId": "kling-3-4k",
@@ -4771,6 +4797,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k",
@@ -4778,6 +4807,9 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
         "kling-3-pro",
         "kling-3-standard",
         "kling-3-4k"
@@ -4872,7 +4904,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start frame",
+            "description": "Used as the opening frame for Kling 3 4K image-to-video generation.",
             "modes": [
               "i2v"
             ],
@@ -5083,7 +5116,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Animate a source frame directly to native 4K output."
+          "notes": "Animate one start frame directly to native 4K output. Use Kling 3.0 Omni Reference when images should guide the shot without opening the clip."
         }
       }
     ],
@@ -5101,6 +5134,1797 @@
         "value": false
       }
     }
+  },
+  {
+    "engineId": "kling-o3-standard",
+    "modelSlug": "kling-o3-standard",
+    "marketingName": "Kling 3.0 Omni Standard",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "3.0 Omni Standard",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-pro",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "kling-3-pro",
+          "kling-3-standard",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-o3",
+        "variantLabel": "Standard"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "reference-guided storyboard video"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "kling-o3-standard",
+      "label": "Kling 3.0 Omni Standard",
+      "provider": "Kling by Kuaishou",
+      "version": "3.0 Omni Standard",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 200,
+        "videoMaxDurationSec": 10,
+        "videoCodecs": [
+          "mp4",
+          "mov"
+        ],
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start frame",
+            "description": "Used as the first frame for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "minDurationSec": 3,
+            "maxDurationSec": 10
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference / storyboard images",
+            "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 4,
+            "source": "either",
+            "slotLabelPattern": "@Image{n}"
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Optional start frame",
+            "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "ref2v",
+              "v2v"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "keep_audio",
+            "type": "boolean",
+            "label": "Keep source audio",
+            "description": "Preserve the original source-video audio when the provider supports it.",
+            "modes": [
+              "v2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10,
+          "minImageSidePx": 300,
+          "imageAspectRatioRange": "1:2.5 to 2.5:1"
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 12.6,
+          "byResolution": {
+            "1080p": 12.6
+          }
+        },
+        "addons": {
+          "audio_off": {
+            "perSecondCents": -4.2
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.126,
+        "byResolution": {
+          "1080p": 0.126
+        },
+        "currency": "USD",
+        "notes": "Provider cost: $0.084/s audio off and $0.126/s audio on for Kling 3.0 Omni Standard. MaxVideoAI display prices add platform margin before showing quotes."
+      },
+      "updatedAt": "2026-06-01T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/o3/standard/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/o3/standard/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/o3/standard/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "fal-ai/kling-video/o3/standard/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "fal-ai/kling-video/o3/standard/video-to-video/reference",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Lower-cost reference-guided drafts"
+  },
+  {
+    "engineId": "kling-o3-pro",
+    "modelSlug": "kling-o3-pro",
+    "marketingName": "Kling 3.0 Omni Pro",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "3.0 Omni Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-pro",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "kling-3-pro",
+          "kling-3-standard",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 6,
+        "variantGroup": "kling-o3",
+        "variantLabel": "Pro"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "reference-guided storyboard video"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "kling-o3-pro",
+      "label": "Kling 3.0 Omni Pro",
+      "provider": "Kling by Kuaishou",
+      "version": "3.0 Omni Pro",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 200,
+        "videoMaxDurationSec": 10,
+        "videoCodecs": [
+          "mp4",
+          "mov"
+        ],
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start frame",
+            "description": "Used as the first frame for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "minDurationSec": 3,
+            "maxDurationSec": 10
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference / storyboard images",
+            "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 4,
+            "source": "either",
+            "slotLabelPattern": "@Image{n}"
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Optional start frame",
+            "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "ref2v",
+              "v2v"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "keep_audio",
+            "type": "boolean",
+            "label": "Keep source audio",
+            "description": "Preserve the original source-video audio when the provider supports it.",
+            "modes": [
+              "v2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10,
+          "minImageSidePx": 300,
+          "imageAspectRatioRange": "1:2.5 to 2.5:1"
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 16.8,
+          "byResolution": {
+            "1080p": 16.8
+          }
+        },
+        "addons": {
+          "audio_off": {
+            "perSecondCents": -5.6
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.168,
+        "byResolution": {
+          "1080p": 0.168
+        },
+        "currency": "USD",
+        "notes": "Provider cost: $0.112/s audio off and $0.168/s audio on for Kling 3.0 Omni Pro. MaxVideoAI display prices add platform margin before showing quotes."
+      },
+      "updatedAt": "2026-06-01T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/o3/pro/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/o3/pro/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/o3/pro/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "fal-ai/kling-video/o3/pro/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "fal-ai/kling-video/o3/pro/video-to-video/reference",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Reference-guided storyboard video"
+  },
+  {
+    "engineId": "kling-o3-4k",
+    "modelSlug": "kling-o3-4k",
+    "marketingName": "Kling 3.0 Omni 4K",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "3.0 Omni 4K",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-pro",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "kling-3-pro",
+          "kling-3-standard",
+          "seedance-2-0",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-o3",
+        "variantLabel": "4K"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "reference-guided storyboard video"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "kling-o3-4k",
+      "label": "Kling 3.0 Omni 4K",
+      "provider": "Kling by Kuaishou",
+      "version": "3.0 Omni 4K",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "4k"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start frame",
+            "description": "Used as the first frame for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference / storyboard images",
+            "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 7,
+            "source": "either",
+            "slotLabelPattern": "@Image{n}"
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Optional start frame",
+            "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "4k"
+            ],
+            "default": "4k"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10,
+          "minImageSidePx": 300,
+          "imageAspectRatioRange": "1:2.5 to 2.5:1"
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 42,
+          "byResolution": {
+            "4k": 42
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.42,
+        "byResolution": {
+          "4k": 0.42
+        },
+        "currency": "USD",
+        "notes": "Provider cost: $0.420/s for Kling 3.0 Omni 4K. MaxVideoAI display prices add platform margin before showing quotes."
+      },
+      "updatedAt": "2026-06-01T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/o3/4k/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/o3/4k/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Prompt-only Kling 3.0 Omni generation with native audio support."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/o3/4k/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Animate one start frame. The uploaded image is intended to appear as the opening frame."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "fal-ai/kling-video/o3/4k/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": true,
+          "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "4K reference-guided delivery"
   },
   {
     "engineId": "happy-horse-1-0",

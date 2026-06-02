@@ -1,0 +1,58 @@
+{
+  "marketingName": "Kling 3.0 Omni Standard",
+  "versionLabel": "3.0 Omni Standard",
+  "seo": {
+    "title": "Kling 3.0 Omni Standard referencia y video-to-video | MaxVideoAI",
+    "description": "Usa Kling 3.0 Omni Standard para borradores Kling guiados por referencias, storyboard, video fuente V2V, anclas @Image y @Video1, audio opcional y separación clara de start frame."
+  },
+  "overview": "Kling 3.0 Omni Standard es la ruta Kling Omni de menor costo para reference-to-video, borradores storyboard y pruebas video-to-video desde video fuente.",
+  "pricingNotes": "Costo aproximado del proveedor antes del margen MaxVideoAI: $0.126/s con audio y $0.084/s sin audio.",
+  "hero": {
+    "title": "Kling 3.0 Omni Standard para borradores guiados por referencias",
+    "intro": "Usa Kling 3.0 Omni Standard cuando las imágenes deben guiar estilo, sujeto o storyboard sin convertirse en el primer frame, o cuando un video fuente debe guiar el movimiento en V2V. Usa Kling 3 Standard cuando la imagen debe abrir el clip.",
+    "badge": "Imágenes de referencia · Video fuente V2V · 1080p · Audio",
+    "ctaPrimary": {
+      "label": "Generar con Kling 3.0 Omni Standard",
+      "href": "/app?engine=kling-o3-standard"
+    }
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Imágenes de referencia",
+      "body": "Sube 1 a 4 imágenes de referencia y menciónalas como @Image1, @Image2, etc. Usa el prompt para definir si cada imagen controla estilo, sujeto, composición o continuidad de storyboard."
+    },
+    {
+      "label": "V2V desde video fuente",
+      "body": "Sube un video fuente de 3 a 10 s para video-to-video y menciónalo como @Video1. Agrega referencias @Image para estilo y usa keep_audio cuando el audio fuente debe preservarse."
+    },
+    {
+      "label": "Separación start frame",
+      "body": "El modo Reference no obliga a que la primera imagen se convierta en la apertura. Usa Image-to-video solo cuando quieras una start frame real."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Kling 3.0 Omni Standard con referencias",
+    "quote": "Usa @Video1 para ritmo, @Image1 para la composición storyboard y @Image2 para el estilo del personaje. Genera un plano corto 1080p con movimiento coherente y ambiente opcional.",
+    "description": "El prompt debe explicar el rol de cada imagen o video fuente. Usa 3.0 Omni Standard para pruebas de referencia y video-to-video de menor costo y escala a 3.0 Omni Pro o 4K cuando la dirección esté aprobada.",
+    "steps": [
+      "Elegir modo Reference en lugar de Image-to-video",
+      "Subir 1 a 4 imágenes de referencia o storyboard",
+      "Subir un video fuente para V2V cuando el movimiento o ritmo de cámara debe venir de @Video1",
+      "Nombrar cada imagen como @Image1, @Image2, etc.",
+      "Activar keep_audio para mantener el audio del video fuente cuando haga falta",
+      "Indicar si la imagen controla estilo, sujeto, encuadre o continuidad",
+      "Usar Kling 3 Standard solo si la imagen debe ser la start frame"
+    ]
+  },
+  "faqs": [
+    {
+      "q": "¿Es lo mismo que Kling 3 image-to-video?",
+      "a": "No. Kling 3 image-to-video anima una start frame. Kling 3.0 Omni Standard reference-to-video sirve para referencias y storyboard."
+    },
+    {
+      "q": "¿Kling 3.0 Omni Standard soporta video-to-video?",
+      "a": "Sí. Standard soporta V2V con un video fuente de 3 a 10 s referenciado como @Video1, referencias @Image opcionales y keep_audio para mantener el audio fuente."
+    }
+  ]
+}

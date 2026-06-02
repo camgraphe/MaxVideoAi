@@ -43,7 +43,8 @@ const KLING_3_4K_ENGINE: EngineCaps = {
       {
         id: 'image_url',
         type: 'image',
-        label: 'Reference image',
+        label: 'Start frame',
+        description: 'Used as the opening frame for Kling 3 4K image-to-video generation.',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -203,7 +204,7 @@ export const KLING_3_4K_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Animate a source frame directly to native 4K output.',
+          notes: 'Animate one start frame directly to native 4K output. Use Kling 3.0 Omni Reference when images should guide the shot without opening the clip.',
         },
       },
     ],
@@ -238,7 +239,7 @@ export const KLING_3_4K_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         title: 'Animate source frame in 4K',
         prompt:
-          'Animate the uploaded reference into a native 4K slow push-in with clean subject edges, stable lighting, and polished final-frame composition.',
+          'Animate the uploaded start frame into a native 4K slow push-in with clean subject edges, stable lighting, and polished final-frame composition.',
         mode: 'i2v',
       },
     ],

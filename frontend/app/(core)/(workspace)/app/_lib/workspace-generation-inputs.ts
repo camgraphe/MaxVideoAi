@@ -1,6 +1,7 @@
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, Mode } from '@/types/engines';
+import { isKlingO3FrameFieldId, shouldIgnoreKlingO3FrameAssets } from './kling-o3-unified-workflow';
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -91,9 +92,18 @@ function buildAttachmentPayload(
 }
 
 function buildKlingElementsPayload(
-  options: Pick<PrepareGenerationInputsOptions, 'supportsKlingV3Controls' | 'form' | 'klingElements'>
+  options: Pick<
+    PrepareGenerationInputsOptions,
+    'selectedEngineId' | 'supportsKlingV3Controls' | 'submissionMode' | 'klingElements'
+  >
 ): GenerationInputPreparationResult {
-  if (!options.supportsKlingV3Controls || options.form.mode !== 'i2v') {
+  const supportsKlingO3Elements =
+    options.selectedEngineId.startsWith('kling-o3-') &&
+    (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
+  const supportsKling3Elements =
+    !options.selectedEngineId.startsWith('kling-o3-') &&
+    (options.submissionMode === 'i2v' || options.submissionMode === 'ref2v');
+  if (!options.supportsKlingV3Controls || (!supportsKlingO3Elements && !supportsKling3Elements)) {
     return {
       ok: true,
       primaryAttachment: null,
@@ -177,7 +187,9 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   }
 
   const orderedAttachments: Array<{ field: { id: string; label?: string }; asset: ReferenceAsset }> = [];
+  const ignoreKlingO3FrameAssets = shouldIgnoreKlingO3FrameAssets(options.selectedEngineId, options.submissionMode);
   options.inputSchemaSummary.assetFields.forEach(({ field }) => {
+    if (ignoreKlingO3FrameAssets && isKlingO3FrameFieldId(field.id)) return;
     const items = options.inputAssets[field.id] ?? [];
     items.forEach((asset) => {
       if (!asset) return;
@@ -186,6 +198,7 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   });
 
   Object.entries(options.inputAssets).forEach(([fieldId, items]) => {
+    if (ignoreKlingO3FrameAssets && isKlingO3FrameFieldId(fieldId)) return;
     if (orderedAttachments.some((entry) => entry.field.id === fieldId)) return;
     const field = fieldIndex.get(fieldId);
     if (!field) return;
@@ -245,7 +258,7 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           .map((attachment) => attachment.url)
       )
     : [];
-  const referenceVideoUrls = inputsPayload
+  let referenceVideoUrls = inputsPayload
     ? uniqueValues(
         inputsPayload
           .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
@@ -290,6 +303,29 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   const klingResult = buildKlingElementsPayload(options);
   if (!klingResult.ok) {
     return klingResult;
+  }
+
+  if (options.selectedEngineId.startsWith('kling-o3-') && options.submissionMode === 'v2v') {
+    const hasSourceVideoInput = inputsPayload?.some(
+      (attachment) => attachment.kind === 'video' && attachment.slotId === 'video_url'
+    );
+    const subjectVideo = options.klingElements
+      .map((element) => element.video)
+      .find((asset): asset is KlingElementAsset => Boolean(asset?.url));
+    if (!hasSourceVideoInput && subjectVideo?.url) {
+      const syntheticSourceVideo: GenerationAttachmentPayload = {
+        name: subjectVideo.name,
+        type: 'video/*',
+        size: 0,
+        kind: 'video',
+        slotId: 'video_url',
+        label: 'Source video',
+        url: subjectVideo.url,
+        assetId: subjectVideo.assetId,
+      };
+      inputsPayload = [...(inputsPayload ?? []), syntheticSourceVideo];
+      referenceVideoUrls = uniqueValues([...referenceVideoUrls, subjectVideo.url]);
+    }
   }
 
   const multiPromptPayload = options.multiPromptActive

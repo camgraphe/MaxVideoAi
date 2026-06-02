@@ -687,6 +687,81 @@ test('Kling 3 i2v enforces valid element inputs before provider submission', () 
   assert.deepEqual(videoOnly, OK);
 });
 
+test('Kling 3.0 Omni scopes elements to reference-to-video provider support', () => {
+  const validElement = {
+    frontalImageUrl: 'https://example.com/front.png',
+    referenceImageUrls: ['https://example.com/ref.png'],
+  };
+
+  const imageWithElement = validateRequest('kling-o3-pro', 'i2v', {
+    prompt: 'Animate this still',
+    image_url: 'https://example.com/frame.png',
+    duration: '5',
+    elements: [validElement],
+  });
+  assert.equal(imageWithElement.ok, false);
+  assert.equal(imageWithElement.error?.field, 'elements');
+
+  const referenceElementOnly = validateRequest('kling-o3-pro', 'ref2v', {
+    prompt: 'Use @Element1 as the main character.',
+    duration: '5',
+    aspect_ratio: '16:9',
+    elements: [validElement],
+  });
+  assert.deepEqual(referenceElementOnly, OK);
+
+  const referenceStartFrameOnly = validateRequest('kling-o3-pro', 'ref2v', {
+    prompt: 'Use the start frame as composition, then move into a new shot.',
+    duration: '5',
+    aspect_ratio: '16:9',
+    start_image_url: 'https://example.com/start.png',
+  });
+  assert.deepEqual(referenceStartFrameOnly, OK);
+});
+
+test('Kling 3.0 Omni video-to-video requires one source video and accepts bounded visual references', () => {
+  const validElement = {
+    frontalImageUrl: 'https://example.com/front.png',
+    referenceImageUrls: ['https://example.com/ref.png'],
+  };
+
+  const missingSource = validateRequest('kling-o3-pro', 'v2v', {
+    prompt: 'Use @Image1 as style guidance.',
+    duration: '5',
+    aspect_ratio: '16:9',
+    image_urls: ['https://example.com/style.png'],
+  });
+  assert.equal(missingSource.ok, false);
+  assert.equal(missingSource.error?.field, 'video_url');
+
+  const tooManyReferences = validateRequest('kling-o3-pro', 'v2v', {
+    prompt: 'Use @Video1 for motion and the images for style.',
+    video_url: 'https://example.com/source.mp4',
+    duration: '5',
+    aspect_ratio: '16:9',
+    image_urls: [
+      'https://example.com/ref-1.png',
+      'https://example.com/ref-2.png',
+      'https://example.com/ref-3.png',
+      'https://example.com/ref-4.png',
+      'https://example.com/ref-5.png',
+    ],
+  });
+  assert.equal(tooManyReferences.ok, false);
+  assert.equal(tooManyReferences.error?.field, 'image_urls');
+
+  const validVideoReference = validateRequest('kling-o3-pro', 'v2v', {
+    prompt: 'Use @Video1 for motion, @Image1 for style, and @Element1 as the subject.',
+    video_url: 'https://example.com/source.mp4',
+    duration: '5',
+    aspect_ratio: '16:9',
+    image_urls: ['https://example.com/style.png'],
+    keep_audio: false,
+    elements: [validElement],
+  });
+  assert.deepEqual(validVideoReference, OK);
+});
+
 test('Wan prompt length follows documented provider limits', () => {
   const invalid = validateRequest('wan-2-6', 't2v', {
     prompt: 'x'.repeat(801),

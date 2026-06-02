@@ -15,6 +15,9 @@ kling-2-6-pro,Kling 2.6 Pro,kling,kling-2-6-pro,kling,v2.6 Pro,available,logoAll
 kling-3-4k,Kling 3 4K,kling,kling-3-4k,kling,v3 4K,available,logoAllowed,true,true
 kling-3-pro,Kling 3 Pro,kling,kling-3-pro,kling,v3 Pro,available,logoAllowed,true,true
 kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,v3 Standard,available,logoAllowed,true,true
+kling-o3-4k,Kling 3.0 Omni 4K,kling,kling-o3-4k,kling,3.0 Omni 4K,available,logoAllowed,true,true
+kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,3.0 Omni Pro,available,logoAllowed,true,true
+kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,3.0 Omni Standard,available,logoAllowed,true,true
 ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,2.3 Fast,available,logoAllowed,true,true
 ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,Pro,available,logoAllowed,true,true
 ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,Fast,available,logoAllowed,true,true

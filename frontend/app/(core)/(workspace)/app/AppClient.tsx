@@ -149,6 +149,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     form: routeForm.form,
     setForm: routeForm.setForm,
     inputAssets: assets.inputAssets,
+    klingElements: routeForm.klingElements,
     prompt: routeForm.prompt,
     multiPromptEnabled: routeForm.multiPromptEnabled,
     setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
@@ -198,6 +199,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   });
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,
+    klingO3UnsupportedVideoReason: composer.klingO3UnsupportedVideoReason,
     form: routeForm.form,
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,

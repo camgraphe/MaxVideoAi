@@ -15,6 +15,7 @@ export interface EngineSelectProps {
   modeOptions?: Mode[];
   showBillingNote?: boolean;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  disabledEngineReasons?: Record<string, string>;
   showModeSelect?: boolean;
   modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';

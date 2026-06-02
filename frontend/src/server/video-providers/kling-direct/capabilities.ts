@@ -16,9 +16,11 @@ export type KlingDirectSubmitCapabilities = {
 };
 
 export type KlingDirectRouteCapabilities = {
-  providerModel: 'kling-v3';
-  t2v: KlingDirectSubmitCapabilities;
-  i2v: KlingDirectSubmitCapabilities;
+  providerModel: 'kling-v3' | 'kling-v3-omni';
+  t2v?: KlingDirectSubmitCapabilities;
+  i2v?: KlingDirectSubmitCapabilities;
+  ref2v?: KlingDirectSubmitCapabilities;
+  v2v?: KlingDirectSubmitCapabilities;
 };
 
 const KLING_V3_TEXT_CAPABILITIES: KlingDirectSubmitCapabilities = {
@@ -47,7 +49,47 @@ const KLING_V3_IMAGE_4K_CAPABILITIES: KlingDirectSubmitCapabilities = {
   motionBrush: false,
 };
 
+const KLING_O3_TEXT_CAPABILITIES: KlingDirectSubmitCapabilities = {
+  audio: true,
+  cameraControl: false,
+  elementList: true,
+  motionBrush: false,
+  multiShot: true,
+  startEndFrame: false,
+  voiceControl: false,
+};
+
+const KLING_O3_IMAGE_CAPABILITIES: KlingDirectSubmitCapabilities = {
+  audio: true,
+  cameraControl: false,
+  elementList: true,
+  motionBrush: false,
+  multiShot: true,
+  startEndFrame: true,
+  voiceControl: false,
+};
+
+const KLING_O3_VIDEO_CAPABILITIES: KlingDirectSubmitCapabilities = {
+  audio: false,
+  cameraControl: false,
+  elementList: true,
+  motionBrush: false,
+  multiShot: false,
+  startEndFrame: false,
+  voiceControl: false,
+};
+
 export function getKlingDirectRouteCapabilities(route: KlingDirectModelRoute): KlingDirectRouteCapabilities {
+  if (route.endpointFamily === 'video-o3-omni') {
+    return {
+      providerModel: route.providerModel,
+      t2v: KLING_O3_TEXT_CAPABILITIES,
+      i2v: KLING_O3_IMAGE_CAPABILITIES,
+      ref2v: KLING_O3_IMAGE_CAPABILITIES,
+      ...(route.createPaths.v2v ? { v2v: KLING_O3_VIDEO_CAPABILITIES } : {}),
+    };
+  }
+
   return {
     providerModel: route.providerModel,
     t2v: KLING_V3_TEXT_CAPABILITIES,

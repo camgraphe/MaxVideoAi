@@ -46,7 +46,10 @@ const ENGINE_V2V_REFERENCE_IMAGE_LIMITS = listFalEngines().reduce<Record<string,
   (acc, entry) => {
     const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
     const imageField = fields.find(
-      (field) => field.type === 'image' && field.modes?.includes('v2v') && field.id === 'reference_image_urls'
+      (field) =>
+        field.type === 'image' &&
+        field.modes?.includes('v2v') &&
+        (field.id === 'reference_image_urls' || field.id === 'image_urls')
     );
     if (imageField) {
       acc[entry.id] = {
@@ -120,14 +123,36 @@ function validateKlingElements(payload: Record<string, unknown>): ValidationResu
   return { ok: true };
 }
 
+function hasKlingElementEntries(payload: Record<string, unknown>): boolean {
+  const rawElements = payload['elements'];
+  return Array.isArray(rawElements) && rawElements.length > 0;
+}
+
 export function validateModeMediaInputs(params: {
   engineId: string;
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
+  const isKling3Engine = engineId.startsWith('kling-3');
+  const isKlingO3Engine = engineId.startsWith('kling-o3');
+  const hasKlingElements = hasKlingElementEntries(payload);
 
-  if (engineId.startsWith('kling-3') && normalizedMode === 'i2v') {
+  if (isKlingO3Engine && normalizedMode !== 'ref2v' && normalizedMode !== 'v2v' && hasKlingElements) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: 'elements',
+        message: 'Kling 3.0 Omni Elements are only supported in reference-to-video or video-to-video mode.',
+      },
+    };
+  }
+
+  const supportsKlingElements =
+    (isKling3Engine && (normalizedMode === 'i2v' || normalizedMode === 'ref2v')) ||
+    (isKlingO3Engine && (normalizedMode === 'ref2v' || normalizedMode === 'v2v'));
+  if (supportsKlingElements) {
     const klingElementsValidation = validateKlingElements(payload);
     if (!klingElementsValidation.ok) return klingElementsValidation;
   }
@@ -279,6 +304,8 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
   const imageUrls = referenceImageUrls.length ? referenceImageUrls : genericImageUrls;
   const videoUrls = referenceVideoUrls.length ? referenceVideoUrls : genericVideoUrls;
   const audioUrls = referenceAudioUrls.length ? referenceAudioUrls : genericAudioUrls;
+  const startImageUrls = normalizeStringArray(payload['start_image_url']);
+  const endImageUrls = normalizeStringArray(payload['end_image_url']);
   const imageFieldId =
     referenceImageUrls.length ||
     payload['reference_image_urls'] !== undefined ||
@@ -297,6 +324,23 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
     configured.audioFieldId === 'reference_audio_urls'
       ? 'reference_audio_urls'
       : 'audio_urls';
+  if (
+    engineId.startsWith('kling-o3') &&
+    !imageUrls.length &&
+    !startImageUrls.length &&
+    !endImageUrls.length &&
+    !hasKlingElementEntries(payload)
+  ) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: imageFieldId,
+        message:
+          'Reference images, an optional start/end frame, or Kling 3.0 Omni Elements are required for this engine mode',
+      },
+    };
+  }
   if (configured.imageRequired && !imageUrls.length) {
     return {
       ok: false,

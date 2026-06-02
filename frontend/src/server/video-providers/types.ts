@@ -51,6 +51,7 @@ export type ProviderPollResult = NormalizedVideoProviderTask;
 
 export type ProviderCostInput = {
   engineId: string;
+  mode?: string | null;
   durationSec: number;
   audioEnabled?: boolean;
   resolution?: string | null;

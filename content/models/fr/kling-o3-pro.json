@@ -1,0 +1,75 @@
+{
+  "marketingName": "Kling 3.0 Omni Pro",
+  "versionLabel": "3.0 Omni Pro",
+  "seo": {
+    "title": "Kling 3.0 Omni Pro références, storyboard et video-to-video | MaxVideoAI",
+    "description": "Utilisez Kling 3.0 Omni Pro pour guider une vidéo Kling avec images de référence, storyboard, vidéo source V2V, ancres @Image et @Video1, audio natif et prix à jour."
+  },
+  "overview": "Kling 3.0 Omni Pro est la route Kling Omni à utiliser quand des images ou une vidéo source doivent guider la vidéo sans devenir automatiquement la première frame.",
+  "pricingNotes": "Coût provider approximatif avant marge MaxVideoAI : $0.168/s avec audio, $0.112/s audio off.",
+  "hero": {
+    "title": "Kling 3.0 Omni Pro pour références, storyboard et video-to-video",
+    "intro": "Utilisez Kling 3.0 Omni Pro quand vos images doivent guider le style, les personnages, les objets ou la structure du storyboard sans être forcées comme frame d’ouverture. Utilisez le V2V avec une vidéo source quand @Video1 doit guider le mouvement, le langage caméra ou la continuité. Utilisez Kling 3 Pro quand l’image importée doit vraiment être la start frame.",
+    "badge": "Images de référence · Vidéo source V2V · Ancres @Image/@Video1 · Audio natif",
+    "ctaPrimary": {
+      "label": "Générer avec Kling 3.0 Omni Pro",
+      "href": "/app?engine=kling-o3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Utiliser Kling 3 Pro en start frame",
+        "href": "/fr/modeles/kling-3-pro"
+      },
+      {
+        "label": "Voir les exemples Kling",
+        "href": "/fr/galerie/kling"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs usages",
+    "items": [
+      {
+        "title": "Images storyboard qui guident la scène sans ouvrir le clip",
+        "icon": "storyboard"
+      },
+      {
+        "title": "V2V depuis vidéo source pour mouvement, rythme caméra et continuité",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Références de style, personnage ou objet avec ancres @Image",
+        "icon": "layers"
+      },
+      {
+        "title": "Prompts multi-shot avec ambiance ou dialogue natif",
+        "icon": "cinematic"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Mode référence",
+      "body": "Importez des images de référence ou storyboard en mode Reference et mentionnez-les comme @Image1, @Image2, etc. Elles guident la génération sans devenir la frame d’ouverture obligatoire."
+    },
+    {
+      "label": "Video-to-video",
+      "body": "Importez une vidéo source de 3 à 10 s pour le V2V et mentionnez-la comme @Video1. Pro conserve les références @Image optionnelles pour le style ou le storyboard, plus keep_audio quand la bande-son source doit être préservée."
+    },
+    {
+      "label": "Mode start frame",
+      "body": "Utilisez Image-to-video si l’image importée doit être la première frame. C’est un workflow différent du reference-to-video."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Quelle différence entre Kling 3 et Kling 3.0 Omni ?",
+      "a": "Kling 3 image-to-video traite l’image importée comme start frame. Kling 3.0 Omni reference-to-video peut utiliser des images comme références ou storyboard sans les forcer comme première frame."
+    },
+    {
+      "q": "Kling 3.0 Omni Pro supporte-t-il le video-to-video ?",
+      "a": "Oui. Pro supporte le V2V avec une vidéo source de 3 à 10 s référencée comme @Video1, des références @Image optionnelles et keep_audio pour conserver l’audio source."
+    }
+  ]
+}

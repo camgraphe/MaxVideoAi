@@ -256,6 +256,54 @@
     }
   },
   {
+    "engineId": "kling-o3-4k",
+    "marketingName": "Kling 3.0 Omni 4K",
+    "brandId": "kling",
+    "modelSlug": "kling-o3-4k",
+    "family": "kling",
+    "versionLabel": "3.0 Omni 4K",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "kling-o3-pro",
+    "marketingName": "Kling 3.0 Omni Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-o3-pro",
+    "family": "kling",
+    "versionLabel": "3.0 Omni Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "kling-o3-standard",
+    "marketingName": "Kling 3.0 Omni Standard",
+    "brandId": "kling",
+    "modelSlug": "kling-o3-standard",
+    "family": "kling",
+    "versionLabel": "3.0 Omni Standard",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "ltx-2-3-fast",
     "marketingName": "LTX 2.3 Fast",
     "brandId": "lightricks",

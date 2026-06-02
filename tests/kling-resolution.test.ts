@@ -6,7 +6,16 @@ import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { resolveFalVideoResolutionInput } from '../frontend/src/lib/fal.ts';
 
-const currentKlingEngineIds = ['kling-2-5-turbo', 'kling-2-6-pro', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k'];
+const currentKlingEngineIds = [
+  'kling-2-5-turbo',
+  'kling-2-6-pro',
+  'kling-3-pro',
+  'kling-3-standard',
+  'kling-3-4k',
+  'kling-o3-standard',
+  'kling-o3-pro',
+  'kling-o3-4k',
+];
 
 test('Kling fixed-resolution modes expose a visible locked resolution choice', () => {
   const entries = listFalEngines().filter((entry) => currentKlingEngineIds.includes(entry.id));

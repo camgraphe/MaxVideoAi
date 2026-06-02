@@ -556,6 +556,113 @@
       }
     },
     {
+      "modelSlug": "kling-o3-standard",
+      "sources": [
+        "https://kling.ai/quickstart/klingai-video-3-omni-model-user-guide",
+        "https://fal.ai/models/fal-ai/kling-video/o3/standard/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/standard/image-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/standard/reference-to-video/api",
+        "https://fal.ai/docs/model-api-reference/video-generation-api/kling-video-o3-standard-video-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (source-video reference/edit via Fal)",
+        "firstLastFrame": "I2V start image + optional end frame; optional start/end frames in Reference mode",
+        "referenceImageStyle": "Reference-to-video and V2V: @Image references plus Kling Elements; I2V: one start image",
+        "referenceVideo": "V2V source video plus video elements in Reference/V2V modes",
+        "maxResolution": "1080p",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Native audio/dialogue supported; element voice control not exposed yet",
+        "cameraMotionControls": "Shot type + multi-shot prompt structure + prompt-based camera control",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-o3-pro",
+      "sources": [
+        "https://kling.ai/quickstart/klingai-video-3-omni-model-user-guide",
+        "https://fal.ai/docs/model-api-reference/video-generation-api/kling-video-o3-pro-reference-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/pro/image-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/pro/text-to-video",
+        "https://fal.ai/docs/model-api-reference/video-generation-api/kling-video-o3-pro-video-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (source-video reference/edit via Fal)",
+        "firstLastFrame": "I2V start image + optional end frame; optional start/end frames in Reference mode",
+        "referenceImageStyle": "Reference-to-video and V2V: @Image references plus Kling Elements; I2V: one start image",
+        "referenceVideo": "V2V source video plus video elements in Reference/V2V modes",
+        "maxResolution": "1080p",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Native audio/dialogue supported; element voice control not exposed yet",
+        "cameraMotionControls": "Shot type + multi-shot prompt structure + prompt-based camera control",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-o3-4k",
+      "sources": [
+        "https://kling.ai/quickstart/klingai-video-3-omni-model-user-guide",
+        "https://fal.ai/models/fal-ai/kling-video/o3/4k/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/4k/image-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/o3/4k/reference-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not available on the current Fal 4K route",
+        "firstLastFrame": "I2V start image + optional end frame; optional start/end frames in Reference mode",
+        "referenceImageStyle": "Reference-to-video: @Image references plus Kling Elements; I2V: one start image",
+        "referenceVideo": "Video elements in Reference mode",
+        "maxResolution": "4K",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Native audio/dialogue supported; element voice control not exposed yet",
+        "cameraMotionControls": "Shot type + multi-shot prompt structure + prompt-based camera control",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
       "modelSlug": "happy-horse-1-0",
       "sources": [
         "https://fal.ai/models/alibaba/happy-horse/text-to-video/api",

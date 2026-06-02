@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
+import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
@@ -27,6 +28,7 @@ type UseWorkspaceComposerStateOptions = {
   form: FormState | null;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  klingElements: KlingElementState[];
   prompt: string;
   multiPromptEnabled: boolean;
   setMultiPromptEnabled: Dispatch<SetStateAction<boolean>>;
@@ -56,6 +58,9 @@ type UseWorkspaceComposerStateResult = {
   isSeedance: boolean;
   isUnifiedSeedance: boolean;
   isUnifiedHappyHorse: boolean;
+  isUnifiedKlingO3: boolean;
+  klingO3UnsupportedVideoReason: string | null;
+  klingO3DisabledEngineReasons: Record<string, string>;
   multiPromptTotalSec: number;
   multiPromptActive: boolean;
   multiPromptInvalid: boolean;
@@ -108,6 +113,7 @@ export function useWorkspaceComposerState({
   form,
   setForm,
   inputAssets,
+  klingElements,
   prompt,
   multiPromptEnabled,
   setMultiPromptEnabled,
@@ -136,6 +142,9 @@ export function useWorkspaceComposerState({
     isSeedance,
     isUnifiedSeedance,
     isUnifiedHappyHorse,
+    isUnifiedKlingO3,
+    klingO3UnsupportedVideoReason,
+    klingO3DisabledEngineReasons,
     referenceInputStatus,
     primaryAudioDurationSec,
     primaryVideoDurationSec,
@@ -161,6 +170,7 @@ export function useWorkspaceComposerState({
     form,
     setForm,
     inputAssets,
+    klingElements,
     shotType,
     setShotType,
     effectiveRequestedEngineToken,
@@ -376,6 +386,9 @@ export function useWorkspaceComposerState({
     isSeedance,
     isUnifiedSeedance,
     isUnifiedHappyHorse,
+    isUnifiedKlingO3,
+    klingO3UnsupportedVideoReason,
+    klingO3DisabledEngineReasons,
     multiPromptTotalSec,
     multiPromptActive,
     multiPromptInvalid,

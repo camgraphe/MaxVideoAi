@@ -98,6 +98,31 @@ test('Kling 3 4K pricing definition exposes the native 4K rate', () => {
   assert.equal(definition.durationSteps.max, 15);
 });
 
+test('Kling 3.0 Omni pricing definitions align Standard and Pro rates with Kling 3', () => {
+  const standard = listFalEngines().find((entry) => entry.id === 'kling-o3-standard')?.engine;
+  const pro = listFalEngines().find((entry) => entry.id === 'kling-o3-pro')?.engine;
+  const native4k = listFalEngines().find((entry) => entry.id === 'kling-o3-4k')?.engine;
+  assert.ok(standard);
+  assert.ok(pro);
+  assert.ok(native4k);
+
+  const standardDefinition = buildPricingDefinition(standard);
+  const proDefinition = buildPricingDefinition(pro);
+  const standardV2v = buildPricingDefinition(applyEngineVariantPricing(standard, 'v2v'));
+  const proV2v = buildPricingDefinition(applyEngineVariantPricing(pro, 'v2v'));
+  const native4kV2v = buildPricingDefinition(applyEngineVariantPricing(native4k, 'v2v'));
+
+  assert.equal(standardDefinition?.baseUnitPriceCents, 12.6);
+  assert.equal(standardDefinition?.addons?.audio_off?.perSecondCents, -4.2);
+  assert.equal(proDefinition?.baseUnitPriceCents, 16.8);
+  assert.equal(proDefinition?.addons?.audio_off?.perSecondCents, -5.6);
+  assert.equal(standardV2v?.baseUnitPriceCents, 12.6);
+  assert.equal(standardV2v?.resolutionMultipliers['1080p'], 1);
+  assert.equal(proV2v?.baseUnitPriceCents, 16.8);
+  assert.equal(proV2v?.resolutionMultipliers['1080p'], 1);
+  assert.equal(native4kV2v?.baseUnitPriceCents, 42);
+});
+
 test('Happy Horse pricing definition exposes standard and V2V rates', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-0')?.engine;
   assert.ok(engine);

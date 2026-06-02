@@ -43,7 +43,8 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
       {
         id: 'image_url',
         type: 'image',
-        label: 'Reference image',
+        label: 'Start frame',
+        description: 'Used as the opening frame for Kling 3 image-to-video generation.',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -196,7 +197,7 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Add end frames or subject references for tighter motion control.',
+          notes: 'Animate one start frame. Use Kling Elements for subject consistency; the uploaded image is the opening frame.',
         },
       },
     ],
@@ -204,12 +205,12 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Kling 3 Standard – Multi-prompt Text & Image to Video | MaxVideoAI',
       description:
-        'Use Kling 3 Standard for multi-prompt sequences, subject references, and native audio at a lower $/s rate in 1080p.',
+        'Use Kling 3 Standard for multi-prompt sequences, start-frame image-to-video, Kling Elements, and native audio at a lower $/s rate in 1080p.',
       canonicalPath: '/models/kling-3-standard',
     },
     type: 'textImage',
     seoText:
-      'Kling 3 Standard brings scene-level prompting and subject references to longer clips with a lower per-second price. Perfect for multi-shot testing and story beats.',
+      'Kling 3 Standard brings scene-level prompting, start-frame image-to-video, and Kling Elements to longer clips with a lower per-second price. Perfect for multi-shot testing and story beats.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
@@ -230,9 +231,9 @@ export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         mode: 't2v',
       },
       {
-        title: 'Animate a reference + end frame',
+        title: 'Animate a start frame + end frame',
         prompt:
-          'Animate the uploaded reference into a smooth dolly push and resolve into the provided end frame, soft ambient audio bed.',
+          'Animate the uploaded start frame into a smooth dolly push and resolve into the provided end frame, soft ambient audio bed.',
         mode: 'i2v',
       },
     ],

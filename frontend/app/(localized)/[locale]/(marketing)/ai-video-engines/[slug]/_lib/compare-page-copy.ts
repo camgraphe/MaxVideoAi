@@ -151,6 +151,7 @@ export function buildCompareDetailPageText({
   labels,
   pageHeroIntro,
   pairHasKling3Native4k,
+  hasShowdownSlots,
 }: {
   activeLocale: AppLocale;
   compareCopy: ComparePageCopy;
@@ -159,6 +160,7 @@ export function buildCompareDetailPageText({
   labels: CompareDetailLabels;
   pageHeroIntro?: string | null;
   pairHasKling3Native4k: boolean;
+  hasShowdownSlots: boolean;
 }) {
   const prelaunchNotice = hasPrelaunchEngine
     ? {
@@ -166,6 +168,12 @@ export function buildCompareDetailPageText({
         body: compareCopy.prelaunch?.notice ?? getPrelaunchCompareNotice(activeLocale).body,
       }
     : null;
+  const noShowdownHeroIntro =
+    activeLocale === 'fr'
+      ? `Cette page compare {left} vs {right} sur MaxVideoAI avec les specs clés, les prix, les contrôles et une grille de score sur ${criteriaCount} critères. Les vidéos côte à côte curées seront ajoutées quand des rendus dédiés seront disponibles.`
+      : activeLocale === 'es'
+        ? `Esta página compara {left} vs {right} en MaxVideoAI con especificaciones clave, precios, controles y una puntuación de ${criteriaCount} criterios. Los vídeos comparativos curados se añadirán cuando haya renders dedicados disponibles.`
+        : `This page compares {left} vs {right} on MaxVideoAI using key specs, pricing, controls, and a scorecard across ${criteriaCount} criteria. Curated side-by-side videos will be added once model-specific renders are available.`;
   const heroIntroTemplate = replaceCriteriaCount(
     pairHasKling3Native4k
       ? (pageHeroIntro ??
@@ -173,6 +181,8 @@ export function buildCompareDetailPageText({
       : hasPrelaunchEngine
         ? (compareCopy.hero?.introPrelaunch ??
           `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`)
+        : !hasShowdownSlots
+          ? (pageHeroIntro ?? noShowdownHeroIntro)
         : (pageHeroIntro ??
           compareCopy.hero?.intro ??
           `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`),

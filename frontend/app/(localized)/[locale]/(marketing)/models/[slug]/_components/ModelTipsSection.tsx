@@ -1,3 +1,5 @@
+import type { AppLocale } from '@/i18n/locales';
+
 import {
   FULL_BLEED_SECTION,
   SECTION_BG_A,
@@ -15,6 +17,7 @@ type TipsCardLabels = {
 type ModelTipsSectionProps = {
   hasTipsSection: boolean;
   copy: SoraCopy;
+  locale: AppLocale;
   modelName: string;
   strengths: string[];
   troubleshootingItems: string[];
@@ -27,6 +30,7 @@ type ModelTipsSectionProps = {
 export function ModelTipsSection({
   hasTipsSection,
   copy,
+  locale,
   modelName,
   strengths,
   troubleshootingItems,
@@ -41,6 +45,7 @@ export function ModelTipsSection({
     return (
       <ModelDecisionTipsSection
         copy={copy}
+        locale={locale}
         modelName={modelName}
         strengths={strengths}
         troubleshootingItems={troubleshootingItems}

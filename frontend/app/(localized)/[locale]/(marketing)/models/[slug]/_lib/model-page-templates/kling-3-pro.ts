@@ -5,7 +5,7 @@ export const kling3ProTemplateConfig: ModelPageTemplateConfig = {
   intent: 'production',
   hero: {
     eyebrow: 'KLING PRO VIDEO MODEL',
-    subtitleHighlightTerms: ['storyboard control', 'native audio', '15s production clips'],
+    subtitleHighlightTerms: ['multi-shot control', 'native audio', '15s production clips'],
     primaryCtaHref: '/app?engine=kling-3-pro',
     secondaryCtaHref: '/examples/kling',
     quickLinks: [

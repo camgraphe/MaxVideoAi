@@ -26,6 +26,15 @@ function hasMedia(side?: ShowdownSide | null) {
   return Boolean(side?.videoUrl || side?.posterUrl);
 }
 
+function isKlingOmni(entry: EngineCatalogEntry) {
+  return entry.modelSlug.startsWith('kling-o3-') || entry.engineId.startsWith('kling-o3-');
+}
+
+function hasCuratedShowdowns(slug: string | null | undefined) {
+  if (!slug) return false;
+  return Boolean(SHOWDOWNS[slug]?.some((entry) => Boolean(entry)));
+}
+
 export async function buildCompareShowdownSlots({
   activeLocale,
   canonicalSlug,
@@ -43,8 +52,12 @@ export async function buildCompareShowdownSlots({
   right: EngineCatalogEntry;
   shouldSwapDisplayOrder: boolean;
 }): Promise<CompareShowdownSlot[]> {
-  const compareShowdowns = pairHasKling3Native4k ? [] : getCompareShowdowns({ pairHasNativeAudio });
   const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
+  const hasCuratedPairShowdowns = hasCuratedShowdowns(canonicalSlug) || hasCuratedShowdowns(reversedShowdownSlug);
+  if ((isKlingOmni(left) || isKlingOmni(right)) && !hasCuratedPairShowdowns) {
+    return [];
+  }
+  const compareShowdowns = pairHasKling3Native4k ? [] : getCompareShowdowns({ pairHasNativeAudio });
   const showdownSourceSlug =
     SHOWDOWNS[canonicalSlug] != null
       ? canonicalSlug

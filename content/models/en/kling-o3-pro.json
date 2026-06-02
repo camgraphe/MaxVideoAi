@@ -1,0 +1,111 @@
+{
+  "marketingName": "Kling 3.0 Omni Pro",
+  "versionLabel": "3.0 Omni Pro",
+  "seo": {
+    "title": "Kling 3.0 Omni Pro Reference, Storyboard & Video-to-Video Generator | MaxVideoAI",
+    "description": "Use Kling 3.0 Omni Pro for reference-guided Kling video with storyboard images, source-video V2V, @Image and @Video1 anchors, optional start/end frames, native audio, and live pricing."
+  },
+  "overview": "Kling 3.0 Omni Pro is the Kling Omni route to use when uploaded images or a source video should guide a render without automatically becoming the first frame.",
+  "pricingNotes": "Provider cost is about $0.168/s with audio on and $0.112/s audio off before the MaxVideoAI margin.",
+  "hero": {
+    "title": "Kling 3.0 Omni Pro reference and video-to-video for storyboard-guided AI video",
+    "intro": "Use Kling 3.0 Omni Pro when you want images to guide style, characters, objects, or storyboard structure without forcing the first uploaded image to appear as the opening frame. Use source-video V2V when @Video1 should guide motion, camera language, or scene continuity. Use Kling 3 Pro instead when your uploaded image should be the start frame.",
+    "badge": "Reference images · Source video V2V · @Image/@Video1 anchors · Native audio",
+    "ctaPrimary": {
+      "label": "Start with Kling 3.0 Omni Pro",
+      "href": "/app?engine=kling-o3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Use Kling 3 Pro start-frame mode",
+        "href": "/models/kling-3-pro"
+      },
+      {
+        "label": "View Kling examples",
+        "href": "/examples/kling"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Storyboard images that should guide the scene without opening the clip",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Source-video V2V for motion, camera language, and scene continuity",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Style, character, and object references with @Image anchors",
+        "icon": "layers"
+      },
+      {
+        "title": "Multi-shot cinematic prompts with native ambience or dialogue",
+        "icon": "cinematic"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Reference mode",
+      "body": "Upload reference or storyboard images in Reference mode and mention them as @Image1, @Image2, and so on. These images guide the generation; they are not treated as the required opening frame."
+    },
+    {
+      "label": "Video-to-video",
+      "body": "Upload one 3-10 s source video for V2V and mention it as @Video1. Pro keeps optional @Image references for style or storyboard context, plus keep_audio when the source soundtrack should be preserved."
+    },
+    {
+      "label": "Start frame mode",
+      "body": "Use Image-to-video mode when the uploaded image should be the opening frame. That is different from reference-to-video."
+    },
+    {
+      "label": "Duration",
+      "body": "3-15 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "1080p"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Kling 3.0 Omni Pro references",
+    "quote": "Use @Video1 for pacing and camera language, @Image1 as the storyboard composition, and @Image2 as the character style. Generate a three-shot cinematic sequence with consistent lighting and native ambience.",
+    "description": "Tell Kling 3.0 Omni what each reference controls: source-video motion, style, subject, camera composition, storyboard beat, or continuity anchor.",
+    "steps": [
+      "Choose Reference mode",
+      "Upload 1-4 public reference/storyboard images",
+      "Upload one source video for video-to-video when @Video1 should guide motion or camera rhythm",
+      "Mention each image with @Image1, @Image2, etc.",
+      "Use keep_audio when the source-video audio should be preserved in the V2V output",
+      "Explain the creative intent and generated motion",
+      "Use Start frame only when the image should open the clip"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Use Kling 3 for start-frame animation.",
+      "Use Kling 3.0 Omni Reference when the images are guidance, not the opening frame.",
+      "Use Kling 3.0 Omni Pro V2V when a source video should guide motion, pacing, or camera continuity.",
+      "Keep one visual role per reference image.",
+      "Use short shot descriptions for storyboard continuity."
+    ]
+  },
+  "faqs": [
+    {
+      "q": "What is the difference between Kling 3 and Kling 3.0 Omni?",
+      "a": "Kling 3 image-to-video treats the uploaded image as the start frame. Kling 3.0 Omni reference-to-video can use uploaded images as visual references or storyboard inputs without forcing them to be the first frame."
+    },
+    {
+      "q": "How do I reference uploaded images?",
+      "a": "Use Reference mode and mention the images as @Image1, @Image2, and so on in the prompt."
+    },
+    {
+      "q": "Does Kling 3.0 Omni Pro support video-to-video?",
+      "a": "Yes. Pro supports source-video V2V with one 3-10 s source clip referenced as @Video1, optional @Image references, and keep_audio for preserving the source soundtrack."
+    }
+  ]
+}

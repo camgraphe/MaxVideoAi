@@ -43,7 +43,8 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
       {
         id: 'image_url',
         type: 'image',
-        label: 'Reference image',
+        label: 'Start frame',
+        description: 'Used as the opening frame for Kling 3 image-to-video generation.',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -196,7 +197,7 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Add end frames or subject references for tighter motion control.',
+          notes: 'Animate one start frame. Use Kling Elements for subject consistency; the uploaded image is the opening frame.',
         },
       },
     ],
@@ -204,12 +205,12 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Kling 3 Pro – Multi-prompt Text & Image to Video | MaxVideoAI',
       description:
-        'Direct Kling 3 Pro renders with multi-prompt sequencing, subject references, and native audio. Generate cinematic 3-15s clips in 1080p.',
+        'Direct Kling 3 Pro renders with multi-prompt sequencing, start-frame image-to-video, Kling Elements, and native audio. Generate cinematic 3-15s clips in 1080p.',
       canonicalPath: '/models/kling-3-pro',
     },
     type: 'textImage',
     seoText:
-      'Kling 3 Pro brings scene-level prompting, subject references, and native audio to longer cinematic clips. Build multi-shot sequences from one workspace.',
+      'Kling 3 Pro brings scene-level prompting, start-frame image-to-video, Kling Elements, and native audio to longer cinematic clips. Build multi-shot sequences from one workspace.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
@@ -230,9 +231,9 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         mode: 't2v',
       },
       {
-        title: 'Animate a keyframe + end frame',
+        title: 'Animate a start frame + end frame',
         prompt:
-          'Animate the uploaded keyframe into a smooth dolly push, then resolve into the provided end frame with subtle lens flare and soft ambient audio.',
+          'Animate the uploaded start frame into a smooth dolly push, then resolve into the provided end frame with subtle lens flare and soft ambient audio.',
         mode: 'i2v',
       },
     ],
@@ -243,9 +244,9 @@ export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           'Yes. Use multi-prompt to chain scenes with per-scene durations up to the 15s cap.',
       },
       {
-        question: 'What are subject references used for?',
+        question: 'What are Kling Elements used for?',
         answer:
-          'Subject references let you add frontal + reference images, plus an optional reference video, to anchor characters or products during image-to-video runs.',
+          'Kling Elements let you add frontal + reference images, plus an optional reference video, to anchor characters or products during image-to-video runs.',
       },
     ],
     pricingHint: {

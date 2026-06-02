@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const composerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts';
 const engineModeHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts';
+const engineHelpersPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers.ts';
 const generationRunnerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts';
 const generationIterationRunnerPath = 'frontend/app/(core)/(workspace)/app/_hooks/workspace-generation-iteration-runner.ts';
 const walletPreflightHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceWalletPreflight.ts';
@@ -13,6 +14,7 @@ test('workspace composer engine and mode orchestration is split from composer fi
 
   const composerSource = readFileSync(composerHookPath, 'utf8');
   const engineModeSource = readFileSync(engineModeHookPath, 'utf8');
+  const engineHelpersSource = readFileSync(engineHelpersPath, 'utf8');
 
   assert.match(composerSource, /useWorkspaceEngineModeState/);
   assert.match(composerSource, /useWorkspaceEngineModeState\(\{/);
@@ -23,6 +25,7 @@ test('workspace composer engine and mode orchestration is split from composer fi
   assert.doesNotMatch(composerSource, /getModeCaps/);
   assert.doesNotMatch(composerSource, /findGenerateAudioField/);
   assert.doesNotMatch(composerSource, /supportsAudioPricingToggle/);
+  assert.doesNotMatch(composerSource, /supportsModeAudioControl/);
   assert.doesNotMatch(composerSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
 
   assert.match(engineModeSource, /export function useWorkspaceEngineModeState/);
@@ -30,9 +33,11 @@ test('workspace composer engine and mode orchestration is split from composer fi
   assert.match(engineModeSource, /getUnifiedHappyHorseMode/);
   assert.match(engineModeSource, /getReferenceInputStatus/);
   assert.match(engineModeSource, /getModeCaps/);
-  assert.match(engineModeSource, /findGenerateAudioField/);
-  assert.match(engineModeSource, /supportsAudioPricingToggle/);
+  assert.match(engineModeSource, /supportsModeAudioControl/);
+  assert.doesNotMatch(engineModeSource, /supportsAudioPricingToggle/);
   assert.match(engineModeSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
+  assert.match(engineHelpersSource, /findGenerateAudioField/);
+  assert.match(engineHelpersSource, /supportsModeAudioControl/);
 });
 
 test('workspace generation wallet preflight is split from generation submission orchestration', () => {

@@ -60,6 +60,7 @@ type MutateLatestJobs = SWRInfiniteKeyedMutator<JobsPage[]>;
 
 type UseWorkspaceGenerationRunnerOptions = {
   audioWorkflowUnsupported: boolean;
+  klingO3UnsupportedVideoReason?: string | null;
   form: FormState | null;
   activeMode: Mode;
   submissionMode: Mode;
@@ -119,6 +120,7 @@ type UseWorkspaceGenerationRunnerOptions = {
 
 export function useWorkspaceGenerationRunner({
   audioWorkflowUnsupported,
+  klingO3UnsupportedVideoReason,
   form,
   activeMode,
   submissionMode,
@@ -183,6 +185,10 @@ export function useWorkspaceGenerationRunner({
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
+    if (klingO3UnsupportedVideoReason) {
+      showComposerError(klingO3UnsupportedVideoReason);
+      return;
+    }
     const { supabase } = await import('@/lib/supabaseClient');
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token ?? null;
@@ -320,6 +326,7 @@ export function useWorkspaceGenerationRunner({
     }
   }, [
     audioWorkflowUnsupported,
+    klingO3UnsupportedVideoReason,
     form,
     activeMode,
     submissionMode,

@@ -50,7 +50,16 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
       bestFor: 'Multi-shot cinematic control',
     },
     'kling-3-standard': {
-      bestFor: 'Multi-shot testing at lower cost',
+      bestFor: 'Start-frame testing at lower cost',
+    },
+    'kling-o3-pro': {
+      bestFor: 'Reference-guided storyboard video',
+    },
+    'kling-o3-standard': {
+      bestFor: 'Lower-cost reference-guided drafts',
+    },
+    'kling-o3-4k': {
+      bestFor: '4K reference-guided delivery',
     },
     'seedance-1-5-pro': {
       bestFor: 'Cinematic motion with camera lock',

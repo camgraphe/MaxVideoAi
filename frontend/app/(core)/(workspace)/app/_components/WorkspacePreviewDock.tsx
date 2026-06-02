@@ -39,6 +39,7 @@ export function WorkspacePreviewDock({
   modeLabelLocale,
   onEngineChange,
   onModeChange,
+  disabledEngineReasons,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -58,6 +59,7 @@ export function WorkspacePreviewDock({
   modeLabelLocale: string;
   onEngineChange: (engineId: string) => void;
   onModeChange: (mode: Mode) => void;
+  disabledEngineReasons?: Record<string, string>;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
   setViewerTarget: Dispatch<SetStateAction<WorkspaceViewerTarget>>;
@@ -79,6 +81,7 @@ export function WorkspacePreviewDock({
           mode={activeMode}
           onModeChange={onModeChange}
           modeOptions={engineModeOptions}
+          disabledEngineReasons={disabledEngineReasons}
           modeLabel={getEngineModeLabel(selectedEngineId, activeMode, modeLabelLocale)}
           showModeBadge={false}
         />

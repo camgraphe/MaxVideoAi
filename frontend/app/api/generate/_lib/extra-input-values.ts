@@ -2,7 +2,7 @@ import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 
 type ExtraInputField = {
   id: string;
-  type: Extract<EngineInputField['type'], 'text' | 'number' | 'enum'>;
+  type: Extract<EngineInputField['type'], 'text' | 'number' | 'enum' | 'boolean'>;
   required: boolean;
   values?: Array<string | number>;
 };
@@ -52,8 +52,8 @@ function getApplicableExtraInputFields(engine: Pick<EngineCaps, 'inputSchema'>, 
   return [...(schema.required ?? []), ...(schema.optional ?? [])]
     .filter((field) => !field.modes || field.modes.includes(mode))
     .filter(
-      (field): field is EngineInputField & { type: 'text' | 'number' | 'enum' } =>
-        field.type === 'text' || field.type === 'number' || field.type === 'enum'
+      (field): field is EngineInputField & { type: 'text' | 'number' | 'enum' | 'boolean' } =>
+        field.type === 'text' || field.type === 'number' || field.type === 'enum' || field.type === 'boolean'
     )
     .filter((field) => !STANDARD_INPUT_FIELD_IDS.has(normalizeFieldId(field.id)))
     .map((field) => ({
@@ -126,6 +126,28 @@ export function validateExtraInputValues(params: {
         }
         validatedExtraInputValues[key] = parsed;
         continue;
+      }
+
+      if (schemaField.type === 'boolean') {
+        const parsed =
+          typeof rawValue === 'boolean'
+            ? rawValue
+            : typeof rawValue === 'string'
+              ? rawValue.trim().toLowerCase()
+              : null;
+        if (parsed === true || parsed === 'true') {
+          validatedExtraInputValues[key] = true;
+          continue;
+        }
+        if (parsed === false || parsed === 'false') {
+          validatedExtraInputValues[key] = false;
+          continue;
+        }
+        return {
+          ok: false,
+          status: 400,
+          body: { ok: false, error: 'INVALID_EXTRA_FIELD', field: key, message: `${key} must be true or false.` },
+        };
       }
 
       if (schemaField.type === 'text') {

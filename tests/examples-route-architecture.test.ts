@@ -118,7 +118,7 @@ test('examples hub owns clone-focused CTR metadata without a site-name suffix', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Explore Kling AI video examples with prompts, camera motion, product shots, image-to-video settings and pricing. Clone a shot and render with Kling.';
+    'Explore Kling AI examples with prompts, reference-to-video, source-video V2V, start-frame settings and pricing across Kling 3.0 Omni and Kling 3.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);

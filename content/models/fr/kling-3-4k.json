@@ -10,7 +10,7 @@
   "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,55 $/s pour la sortie 4K native. Gardez cette route pour les rendus finaux validés.",
   "hero": {
     "title": "Kling 3 4K - generation video 4K native",
-    "intro": "Utilisez Kling 3 4K quand un prompt, une image source ou un storyboard est deja valide et que le plan doit sortir en 4K native pour livraison, montage ou revue grand format.",
+    "intro": "Utilisez Kling 3 4K quand un prompt ou une start frame est deja valide et que le plan doit sortir en 4K native pour livraison, montage ou revue grand format. Utilisez Kling 3.0 Omni 4K quand des images de reference ou de storyboard doivent guider le plan sans l'ouvrir.",
     "badge": "4K natif · 3-15 s · Texte ou image · Audio on/off",
     "ctaPrimary": {
       "label": "Generer avec Kling 3 4K",
@@ -91,7 +91,7 @@
       "Valider la composition dans Standard ou Pro",
       "Passer le prompt approuve ou le plan multi-prompt dans Kling 3 4K",
       "Garder une action claire par plan",
-      "Utiliser les references image pour le cadrage final",
+      "Utiliser les start frames pour le cadrage final",
       "Rendre en 4K natif pour la livraison"
     ]
   },
@@ -170,7 +170,7 @@
     "finalButton": "Rendre un shot final Kling 3 4K",
     "promptingTitle": "Prompt Lab — Kling 3 4K",
     "promptingGuideLabel": "Guide officiel Kling 3 4K",
-    "promptingIntro": "Kling 3 4K fonctionne surtout comme passe de livraison finale. Partez d un prompt ou d une image de reference approuvee, verrouillez cadrage et duree, decidez si l audio fait partie du master, puis rendez uniquement le plan selectionne en 4K native.",
+    "promptingIntro": "Kling 3 4K fonctionne surtout comme passe de livraison finale. Partez d un prompt ou d une start frame approuvee, verrouillez cadrage et duree, decidez si l audio fait partie du master, puis rendez uniquement le plan selectionne en 4K native.",
     "promptingTip": "Astuce: validez timing, mouvement et cadrage dans Kling 3 Standard ou Pro avant de depenser sur le master 4K.",
     "promptingGlobalPrinciples": [
       "Utilisez un brief de plan approuve plutot que plusieurs directions creatives en 4K.",

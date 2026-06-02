@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, ShieldCheck, Wrench } from 'lucide-react';
 
 import { UIIcon } from '@/components/ui/UIIcon';
+import type { AppLocale } from '@/i18n/locales';
 
 import {
   MODEL_PAGE_ICON,
@@ -17,6 +18,7 @@ type TipsCardLabels = {
 
 type ModelDecisionTipsSectionProps = {
   copy: SoraCopy;
+  locale: AppLocale;
   modelName: string;
   strengths: string[];
   troubleshootingItems: string[];
@@ -46,15 +48,36 @@ const CARD_META = [
   },
 ] as const;
 
-function getTipsIntro(copy: SoraCopy, modelName: string) {
+function getTipsIntro(copy: SoraCopy, modelName: string, locale: AppLocale) {
+  if (copy.tipsIntro) return copy.tipsIntro;
+  if (locale === 'fr') {
+    return `Bonnes pratiques, corrections fréquentes et limites importantes pour obtenir de meilleurs résultats avec ${modelName}.`;
+  }
+  if (locale === 'es') {
+    return `Buenas prácticas, correcciones frecuentes y límites importantes para obtener mejores resultados con ${modelName}.`;
+  }
   return (
-    copy.tipsIntro ??
     `Best practices, common fixes, and important limitations to help you get the strongest results with ${modelName}.`
   );
 }
 
+function getTipsTitle(copy: SoraCopy, locale: AppLocale) {
+  if (copy.tipsTitle) return copy.tipsTitle;
+  if (locale === 'fr') return 'Conseils et limites';
+  if (locale === 'es') return 'Consejos y límites';
+  return 'Tips and boundaries';
+}
+
+function getTroubleshootingTitle(title: string | null, locale: AppLocale) {
+  if (title) return title;
+  if (locale === 'fr') return 'Problèmes fréquents → solutions rapides';
+  if (locale === 'es') return 'Problemas comunes → soluciones rápidas';
+  return 'Common problems → fast fixes';
+}
+
 export function ModelDecisionTipsSection({
   copy,
+  locale,
   modelName,
   strengths,
   troubleshootingItems,
@@ -64,7 +87,7 @@ export function ModelDecisionTipsSection({
 }: ModelDecisionTipsSectionProps) {
   const groups = [
     { title: tipsCardLabels.strengths, items: strengths },
-    { title: troubleshootingTitle ?? 'Common problems -> fast fixes', items: troubleshootingItems },
+    { title: getTroubleshootingTitle(troubleshootingTitle, locale), items: troubleshootingItems },
     { title: tipsCardLabels.boundaries, items: boundaries },
   ].filter((group) => group.items.length);
 
@@ -74,9 +97,9 @@ export function ModelDecisionTipsSection({
     <section id="tips" className={`${SECTION_SCROLL_MARGIN} space-y-5 py-6`}>
       <div>
         <h2 className="!text-left text-3xl font-semibold leading-tight text-text-primary">
-          {copy.tipsTitle ?? 'Tips and boundaries'}
+          {getTipsTitle(copy, locale)}
         </h2>
-        <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{getTipsIntro(copy, modelName)}</p>
+        <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{getTipsIntro(copy, modelName, locale)}</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">

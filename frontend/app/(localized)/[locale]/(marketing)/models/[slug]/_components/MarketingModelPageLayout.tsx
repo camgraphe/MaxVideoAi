@@ -453,7 +453,7 @@ export function MarketingModelPageLayout({
               decisionReferenceWorkflows: templateData?.referenceWorkflows,
             }}
             prepLinksProps={{ prepLinksSection, locale }}
-            tipsProps={{ hasTipsSection, copy, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
+            tipsProps={{ hasTipsSection, copy, locale, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
             compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
             safetyFaqProps={{ copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
           />

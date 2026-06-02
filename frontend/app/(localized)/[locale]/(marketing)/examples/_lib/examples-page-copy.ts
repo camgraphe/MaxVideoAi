@@ -71,10 +71,10 @@ export function getExamplesLongDescription(locale: AppLocale) {
 export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding: boolean) {
   if (!isKlingLanding) return null;
   if (locale === 'fr') {
-    return ['Prompts Kling AI a reutiliser', 'Schemas image-vers-video', 'Reglages et choix du modele'];
+    return ['Prompts Kling AI à réutiliser', 'Schémas image-vers-vidéo', 'Réglages et choix du modèle'];
   }
   if (locale === 'es') {
-    return ['Prompts de Kling AI para reutilizar', 'Patrones de imagen a video', 'Ajustes y eleccion del modelo'];
+    return ['Prompts de Kling AI para reutilizar', 'Patrones de imagen a video', 'Ajustes y elección del modelo'];
   }
   return ['Kling AI prompts to reuse', 'Image-to-video prompt patterns', 'Settings and model fit'];
 }
@@ -97,7 +97,7 @@ export function getExamplesModelPageLabels({
   const currentModelPagesLabel =
     isKlingLanding
       ? locale === 'fr'
-        ? 'Choisissez votre modele Kling'
+        ? 'Choisissez votre modèle Kling'
         : locale === 'es'
           ? 'Elige tu modelo Kling'
           : 'Choose your Kling model'
@@ -115,9 +115,9 @@ export function getExamplesModelPageLabels({
   const supportedOlderVersionLabel =
     isKlingLanding
       ? locale === 'fr'
-        ? 'Anciens modeles Kling encore pris en charge'
+        ? 'Anciens modèles Kling encore pris en charge'
         : locale === 'es'
-          ? 'Modelos Kling anteriores aun compatibles'
+          ? 'Modelos Kling anteriores aún compatibles'
           : 'Supported older Kling models'
       : isLtxLanding
         ? locale === 'fr'
@@ -200,49 +200,49 @@ export function buildExamplesNextStepLinks({
     : isKlingLanding
       ? [
           {
-            href: buildModelHref(appLocale, 'kling-3-pro'),
+            href: buildModelHref(appLocale, 'kling-o3-pro'),
             label:
               locale === 'fr'
-                ? 'Ouvrir la page modele Kling 3 Pro'
+                ? 'Ouvrir la page modèle Kling 3.0 Omni Pro'
                 : locale === 'es'
-                  ? 'Abrir la pagina del modelo Kling 3 Pro'
-                  : 'Open Kling 3 Pro model page',
+                  ? 'Abrir la página del modelo Kling 3.0 Omni Pro'
+                  : 'Open Kling 3.0 Omni Pro model page',
           },
           {
-            href: buildModelHref(appLocale, 'kling-3-standard'),
+            href: buildModelHref(appLocale, 'kling-o3-standard'),
             label:
               locale === 'fr'
-                ? 'Ouvrir la page modele Kling 3 Standard'
+                ? 'Ouvrir la page modèle Kling 3.0 Omni Standard'
                 : locale === 'es'
-                  ? 'Abrir la pagina del modelo Kling 3 Standard'
-                  : 'Open Kling 3 Standard model page',
+                  ? 'Abrir la página del modelo Kling 3.0 Omni Standard'
+                  : 'Open Kling 3.0 Omni Standard model page',
           },
           {
-            href: buildCompareHref(appLocale, 'kling-3-pro-vs-kling-3-standard'),
+            href: buildCompareHref(appLocale, 'kling-3-pro-vs-kling-o3-pro'),
             label:
               locale === 'fr'
-                ? 'Comparer Kling 3 Pro vs Kling 3 Standard'
+                ? 'Comparer Kling 3 Pro vs Kling 3.0 Omni Pro'
                 : locale === 'es'
-                  ? 'Comparar Kling 3 Pro vs Kling 3 Standard'
-                  : 'Compare Kling 3 Pro vs Kling 3 Standard',
+                  ? 'Comparar Kling 3 Pro vs Kling 3.0 Omni Pro'
+                  : 'Compare Kling 3 Pro vs Kling 3.0 Omni Pro',
           },
           {
-            href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
+            href: buildCompareHref(appLocale, 'kling-o3-4k-vs-kling-o3-pro'),
             label:
               locale === 'fr'
-                ? 'Comparer Kling 3 Pro vs Veo 3.1'
+                ? 'Comparer Kling 3.0 Omni 4K vs O3 Pro'
                 : locale === 'es'
-                  ? 'Comparar Kling 3 Pro vs Veo 3.1'
-                  : 'Compare Kling 3 Pro vs Veo 3.1',
+                  ? 'Comparar Kling 3.0 Omni 4K vs O3 Pro'
+                  : 'Compare Kling 3.0 Omni 4K vs O3 Pro',
           },
           {
-            href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-0'),
+            href: buildCompareHref(appLocale, 'kling-o3-pro-vs-seedance-2-0'),
             label:
               locale === 'fr'
-                ? 'Comparer Kling 3 Pro vs Seedance 2.0'
+                ? 'Comparer Kling 3.0 Omni Pro vs Seedance 2.0'
                 : locale === 'es'
-                  ? 'Comparar Kling 3 Pro vs Seedance 2.0'
-                  : 'Compare Kling 3 Pro vs Seedance 2.0',
+                  ? 'Comparar Kling 3.0 Omni Pro vs Seedance 2.0'
+                  : 'Compare Kling 3.0 Omni Pro vs Seedance 2.0',
           },
         ]
       : isVeoLanding

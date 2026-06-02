@@ -139,6 +139,601 @@ function getDemoSummary(locale: AppLocale) {
   };
 }
 
+function getRoutePromptingTitle(locale: AppLocale, engineSlug: string, modelName: string) {
+  if (engineSlug === 'kling-o3-pro') {
+    if (locale === 'fr') return 'Prompt Lab — Kling 3.0 Omni Pro références et V2V';
+    if (locale === 'es') return 'Prompt Lab — Kling 3.0 Omni Pro referencias y V2V';
+    return 'Prompt Lab — Kling 3.0 Omni Pro references and V2V';
+  }
+  if (engineSlug === 'kling-o3-standard') {
+    if (locale === 'fr') return 'Prompt Lab — Kling 3.0 Omni Standard drafts référence';
+    if (locale === 'es') return 'Prompt Lab — Kling 3.0 Omni Standard drafts con referencias';
+    return 'Prompt Lab — Kling 3.0 Omni Standard reference drafts';
+  }
+  if (engineSlug === 'kling-o3-4k') {
+    if (locale === 'fr') return 'Prompt Lab — Kling 3.0 Omni 4K finales guidées par références';
+    if (locale === 'es') return 'Prompt Lab — Kling 3.0 Omni 4K finales guiadas por referencias';
+    return 'Prompt Lab — Kling 3.0 Omni 4K reference finals';
+  }
+  return `Prompt Lab — ${modelName}`;
+}
+
+function getKlingO3PromptingTabs(locale: AppLocale, engineSlug: string): SoraCopy['promptingTabs'] {
+  if (engineSlug === 'kling-o3-pro') {
+    if (locale === 'fr') {
+      return [
+        {
+          id: 'quick',
+          label: 'Text',
+          title: 'Prompt text-to-video O3 Pro',
+          description: 'À utiliser quand aucun asset ne guide la scène.',
+          copy: [
+            'Sujet:',
+            '[Personnage / produit / décor + 2 traits visuels]',
+            '',
+            'Action:',
+            '[Une action lisible ou 2-3 beats courts]',
+            '',
+            'Caméra:',
+            '[Mouvement caméra + cadrage + continuité]',
+            '',
+            'Style:',
+            '[Lumière, texture, palette, rendu cinéma]',
+            '',
+            'Audio:',
+            '[Ambiance native, SFX courts, dialogue bref si utile]',
+            '',
+            'Example:',
+            'Un designer traverse un studio nocturne avec un prototype lumineux. Caméra: tracking bas puis léger push-in. Style: reflets bleus, métal brossé, rendu premium. Audio: ambiance studio, hum électrique discret, pas de sous-titres.',
+          ].join('\n'),
+        },
+        {
+          id: 'structured',
+          label: 'Start/End',
+          title: 'Start/end optionnels avec références',
+          description: 'À utiliser quand la première ou dernière pose doit rester contrôlée.',
+          copy: [
+            'Opening frame optionnel:',
+            '[Ce qui doit structurer le premier beat sans annuler les références]',
+            '',
+            'End frame optionnel:',
+            '[Pose finale / composition / distance caméra attendue]',
+            '',
+            'Références:',
+            '@Image1 = [composition ou personnage]',
+            '@Image2 = [style, lumière ou objet]',
+            '',
+            'Action et caméra:',
+            '[Un mouvement lisible entre ouverture et fin]',
+            '',
+            'Example:',
+            'Utilise @Image1 comme composition de départ et @Image2 comme style lumière. Le personnage avance lentement vers caméra, puis termine dans une pose stable proche de l’end frame. Lumière cohérente, pas de changement de décor.',
+          ].join('\n'),
+        },
+        {
+          id: 'pro',
+          label: 'Refs + V2V',
+          title: 'Références et vidéo source O3 Pro',
+          description: 'À utiliser quand @Video1 guide le mouvement et @Image guide l’identité ou le style.',
+          copy: [
+            '@Video1 = [rythme caméra / mouvement / pacing]',
+            '@Image1 = [storyboard ou composition]',
+            '@Image2 = [personnage, produit ou style]',
+            '',
+            'Intent:',
+            '[Ce que la vidéo doit générer sans copier chaque frame source]',
+            '',
+            'Continuité:',
+            '[Ce qui ne doit pas dériver: visage, produit, décor, lumière]',
+            '',
+            'Audio:',
+            '[generate_audio ou keep_audio selon le besoin]',
+            '',
+            'Example:',
+            'Utilise @Video1 pour le rythme caméra, @Image1 pour la composition storyboard et @Image2 pour le style du personnage. Génère une séquence cinématique 12 s en trois beats avec continuité stable, ambiance native et aucun texte ajouté.',
+          ].join('\n'),
+        },
+        {
+          id: 'storyboard',
+          label: 'Timeline',
+          title: 'Timeline O3 Pro multi-shot',
+          description: 'À utiliser pour structurer une séquence avec références et continuité.',
+          copy: [
+            'Durée: [8-15 s]',
+            '',
+            'Shot 1 (0-4 s):',
+            '[Composition guidée par @Image1 + action lisible]',
+            '',
+            'Shot 2 (4-8 s):',
+            '[Mouvement ou caméra inspiré de @Video1]',
+            '',
+            'Shot 3 (8-12 s):',
+            '[Payoff / pose finale / insert produit]',
+            '',
+            'Ancres:',
+            '[Style @Image2, tenue, décor, lumière, audio]',
+            '',
+            'Example:',
+            'Shot 1: @Image1 définit la scène. Shot 2: @Video1 guide la vitesse caméra. Shot 3: @Image2 verrouille le style final. Ambiance native courte, continuité personnage et décor.',
+          ].join('\n'),
+        },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        {
+          id: 'quick',
+          label: 'Text',
+          title: 'Prompt text-to-video O3 Pro',
+          description: 'Úsalo cuando ningún asset debe guiar la escena.',
+          copy: [
+            'Sujeto:',
+            '[Personaje / producto / lugar + 2 rasgos visuales]',
+            '',
+            'Acción:',
+            '[Una acción legible o 2-3 beats cortos]',
+            '',
+            'Cámara:',
+            '[Movimiento de cámara + encuadre + continuidad]',
+            '',
+            'Estilo:',
+            '[Luz, textura, paleta, look cinematográfico]',
+            '',
+            'Audio:',
+            '[Ambiente nativo, SFX cortos, diálogo breve si aplica]',
+            '',
+            'Example:',
+            'Un diseñador cruza un estudio nocturno con un prototipo luminoso. Cámara: tracking bajo y leve push-in. Estilo: reflejos azules, metal cepillado, look premium. Audio: ambiente de estudio, hum eléctrico sutil, sin subtítulos.',
+          ].join('\n'),
+        },
+        {
+          id: 'structured',
+          label: 'Start/End',
+          title: 'Start/end opcionales con referencias',
+          description: 'Úsalo cuando la primera o última pose necesita control.',
+          copy: [
+            'Opening frame opcional:',
+            '[Qué debe estructurar el primer beat sin anular referencias]',
+            '',
+            'End frame opcional:',
+            '[Pose final / composición / distancia de cámara esperada]',
+            '',
+            'Referencias:',
+            '@Image1 = [composición o personaje]',
+            '@Image2 = [estilo, luz u objeto]',
+            '',
+            'Acción y cámara:',
+            '[Un movimiento legible entre apertura y final]',
+            '',
+            'Example:',
+            'Usa @Image1 como composición inicial y @Image2 como estilo de luz. El personaje avanza lentamente hacia cámara y termina en una pose estable cercana al end frame. Luz coherente, sin cambio de escenario.',
+          ].join('\n'),
+        },
+        {
+          id: 'pro',
+          label: 'Refs + V2V',
+          title: 'Referencias y video fuente O3 Pro',
+          description: 'Úsalo cuando @Video1 guía movimiento y @Image guía identidad o estilo.',
+          copy: [
+            '@Video1 = [ritmo de cámara / movimiento / pacing]',
+            '@Image1 = [storyboard o composición]',
+            '@Image2 = [personaje, producto o estilo]',
+            '',
+            'Intención:',
+            '[Qué debe generar el video sin copiar cada frame fuente]',
+            '',
+            'Continuidad:',
+            '[Qué no debe derivar: rostro, producto, lugar, luz]',
+            '',
+            'Audio:',
+            '[generate_audio o keep_audio según necesidad]',
+            '',
+            'Example:',
+            'Usa @Video1 para ritmo de cámara, @Image1 para composición storyboard y @Image2 para estilo de personaje. Genera una secuencia cinematográfica de 12 s en tres beats con continuidad estable, ambiente nativo y sin texto añadido.',
+          ].join('\n'),
+        },
+        {
+          id: 'storyboard',
+          label: 'Timeline',
+          title: 'Timeline O3 Pro multi-shot',
+          description: 'Úsalo para estructurar una secuencia con referencias y continuidad.',
+          copy: [
+            'Duración: [8-15 s]',
+            '',
+            'Shot 1 (0-4 s):',
+            '[Composición guiada por @Image1 + acción legible]',
+            '',
+            'Shot 2 (4-8 s):',
+            '[Movimiento o cámara inspirado por @Video1]',
+            '',
+            'Shot 3 (8-12 s):',
+            '[Payoff / pose final / insert de producto]',
+            '',
+            'Anclas:',
+            '[Estilo @Image2, vestuario, lugar, luz, audio]',
+            '',
+            'Example:',
+            'Shot 1: @Image1 define la escena. Shot 2: @Video1 guía velocidad de cámara. Shot 3: @Image2 fija el estilo final. Ambiente nativo corto, continuidad de personaje y lugar.',
+          ].join('\n'),
+        },
+      ];
+    }
+    return [
+      {
+        id: 'quick',
+        label: 'Text',
+        title: 'O3 Pro text-to-video prompt',
+        description: 'Use this when no uploaded asset should guide the scene.',
+        copy: [
+          'Subject:',
+          '[Character / product / place + 2 visual traits]',
+          '',
+          'Action:',
+          '[One readable action or 2-3 short beats]',
+          '',
+          'Camera:',
+          '[Camera move + framing + continuity]',
+          '',
+          'Style:',
+          '[Lighting, texture, palette, cinematic look]',
+          '',
+          'Audio:',
+          '[Native ambience, short SFX, brief dialogue if useful]',
+          '',
+          'Example:',
+          'A designer crosses a night studio holding a glowing prototype. Camera: low tracking shot into a slight push-in. Style: blue reflections, brushed metal, premium finish. Audio: studio ambience, subtle electric hum, no subtitles.',
+        ].join('\n'),
+      },
+      {
+        id: 'structured',
+        label: 'Start/End',
+        title: 'Optional start/end frames with references',
+        description: 'Use this when the opening or landing pose must stay controlled.',
+        copy: [
+          'Optional opening frame:',
+          '[What should structure the first beat without overriding references]',
+          '',
+          'Optional end frame:',
+          '[Expected final pose / composition / camera distance]',
+          '',
+          'References:',
+          '@Image1 = [composition or character]',
+          '@Image2 = [style, lighting, or object]',
+          '',
+          'Action and camera:',
+          '[One readable motion path between opening and ending]',
+          '',
+          'Example:',
+          'Use @Image1 as the opening composition and @Image2 as the lighting style. The character walks slowly toward camera, then lands in a stable pose close to the end frame. Consistent light, no location change.',
+        ].join('\n'),
+      },
+      {
+        id: 'pro',
+        label: 'Refs + V2V',
+        title: 'O3 Pro references and source video',
+        description: 'Use this when @Video1 guides motion and @Image guides identity or style.',
+        copy: [
+          '@Video1 = [camera rhythm / motion / pacing]',
+          '@Image1 = [storyboard or composition]',
+          '@Image2 = [character, product, or style]',
+          '',
+          'Intent:',
+          '[What the video should generate without copying every source frame]',
+          '',
+          'Continuity:',
+          '[What must not drift: face, product, location, lighting]',
+          '',
+          'Audio:',
+          '[generate_audio or keep_audio depending on the goal]',
+          '',
+          'Example:',
+          'Use @Video1 for camera rhythm, @Image1 for storyboard composition, and @Image2 for character style. Generate a 12s cinematic three-beat sequence with stable continuity, native ambience, and no added text.',
+        ].join('\n'),
+      },
+      {
+        id: 'storyboard',
+        label: 'Timeline',
+        title: 'O3 Pro multi-shot timeline',
+        description: 'Use this to structure a reference-guided sequence with continuity.',
+        copy: [
+          'Duration: [8-15s]',
+          '',
+          'Shot 1 (0-4s):',
+          '[Composition guided by @Image1 + readable action]',
+          '',
+          'Shot 2 (4-8s):',
+          '[Motion or camera inspired by @Video1]',
+          '',
+          'Shot 3 (8-12s):',
+          '[Payoff / final pose / product insert]',
+          '',
+          'Anchors:',
+          '[Style @Image2, wardrobe, location, lighting, audio]',
+          '',
+          'Example:',
+          'Shot 1: @Image1 defines the scene. Shot 2: @Video1 guides camera speed. Shot 3: @Image2 locks the final style. Short native ambience, character and location continuity.',
+        ].join('\n'),
+      },
+    ];
+  }
+
+  if (engineSlug === 'kling-o3-standard') {
+    const tabs = getKlingO3PromptingTabs(locale, 'kling-o3-pro');
+    if (locale === 'fr') {
+      return [
+        { ...tabs[0], title: 'Prompt text-to-video O3 Standard', description: 'Pour valider une idée à moindre coût sans assets.' },
+        { ...tabs[1], label: 'Refs', title: 'Draft reference-to-video O3 Standard', description: 'Pour tester style, sujet ou storyboard sans start frame forcée.' },
+        { ...tabs[2], label: 'V2V draft', title: 'V2V O3 Standard économique', description: 'Pour tester @Video1 et keep_audio avant de passer en Pro.' },
+        { ...tabs[3], label: 'Upgrade', title: 'Plan de passage vers Pro ou 4K', description: 'Pour documenter ce qui doit être conservé après le draft.' },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        { ...tabs[0], title: 'Prompt text-to-video O3 Standard', description: 'Para validar una idea con menor costo y sin assets.' },
+        { ...tabs[1], label: 'Refs', title: 'Draft reference-to-video O3 Standard', description: 'Para probar estilo, sujeto o storyboard sin start frame forzado.' },
+        { ...tabs[2], label: 'V2V draft', title: 'V2V O3 Standard económico', description: 'Para probar @Video1 y keep_audio antes de pasar a Pro.' },
+        { ...tabs[3], label: 'Upgrade', title: 'Plan de paso a Pro o 4K', description: 'Para documentar qué debe conservarse después del draft.' },
+      ];
+    }
+    return [
+      { ...tabs[0], title: 'O3 Standard text-to-video prompt', description: 'Use this to validate an idea cheaply without assets.' },
+      { ...tabs[1], label: 'Refs', title: 'O3 Standard reference-to-video draft', description: 'Use this to test style, subject, or storyboard without a forced start frame.' },
+      { ...tabs[2], label: 'V2V draft', title: 'Cost-controlled O3 Standard V2V', description: 'Use this to test @Video1 and keep_audio before moving to Pro.' },
+      { ...tabs[3], label: 'Upgrade', title: 'Promotion plan for Pro or 4K', description: 'Use this to record what must stay locked after the draft.' },
+    ];
+  }
+
+  if (engineSlug === 'kling-o3-4k') {
+    if (locale === 'fr') {
+      return [
+        {
+          id: 'quick',
+          label: 'Text',
+          title: 'Prompt final 4K sans vidéo source',
+          description: 'Pour une finale 4K guidée par texte et références.',
+          copy: 'Sujet:\\n[Produit / personnage / décor approuvé]\\n\\nAction:\\n[Un mouvement court et contrôlé]\\n\\nCaméra:\\n[Mouvement final: push-in / travelling léger / statique]\\n\\nStyle:\\n[Lumière et finition 4K]\\n\\nAudio:\\n[Ambiance générée si activée]\\n\\nExample:\\nUn produit premium flotte sur un socle graphite, mouvement push-in lent, reflets propres, textures nettes, finale 4K sans texte ajouté.',
+        },
+        {
+          id: 'structured',
+          label: 'Refs',
+          title: 'Références 4K approuvées',
+          description: 'Pour mapper les images au rendu final.',
+          copy: '@Image1 = [storyboard ou composition validée]\\n@Image2 = [style / produit / identité visuelle]\\n@Image3 = [détail matière ou couleur]\\n\\nRendu attendu:\\n[Ce que la finale 4K doit générer]\\n\\nContraintes:\\n[Pas de déformation, pas de texte ajouté, composition stable]\\n\\nExample:\\nUtilise @Image1 pour la composition, @Image2 pour le style lumière et @Image3 pour le détail produit. Rends une finale 4K stable, nette, prête montage.',
+        },
+        {
+          id: 'pro',
+          label: 'Start/End',
+          title: 'Start/end frame en 4K',
+          description: 'Pour contrôler la frontière visuelle du plan final.',
+          copy: 'Opening frame optionnel:\\n[Pose ou composition initiale attendue]\\n\\nEnd frame optionnel:\\n[Landing frame final]\\n\\nAction:\\n[Mouvement unique entre les deux états]\\n\\nRègle:\\nNe pas utiliser @Video1. La route 4K actuelle est reference-to-video, pas V2V source.\\n\\nExample:\\nDépart sur @Image1, léger travelling avant, fin proche de l’end frame. Même produit, même lumière, aucune rupture de décor.',
+        },
+        {
+          id: 'storyboard',
+          label: 'Final 4K',
+          title: 'Checklist de livraison 4K',
+          description: 'Pour transformer un draft validé en master.',
+          copy: 'Durée: [3-15 s]\\nRésolution: 4K native\\n\\nComposition validée:\\n[@Image1]\\n\\nStyle validé:\\n[@Image2]\\n\\nMouvement final:\\n[Simple, contrôlé, montage-ready]\\n\\nInterdits:\\n[@Video1, keep_audio, texte ajouté, changement de scène]\\n\\nExample:\\nRendre le plan approuvé en 4K native avec mouvement court, texture propre, identité stable et fin exploitable en montage.',
+        },
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        {
+          id: 'quick',
+          label: 'Text',
+          title: 'Prompt final 4K sin video fuente',
+          description: 'Para una final 4K guiada por texto y referencias.',
+          copy: 'Sujeto:\\n[Producto / personaje / lugar aprobado]\\n\\nAcción:\\n[Un movimiento corto y controlado]\\n\\nCámara:\\n[Movimiento final: push-in / travelling ligero / estático]\\n\\nEstilo:\\n[Luz y acabado 4K]\\n\\nAudio:\\n[Ambiente generado si está activado]\\n\\nExample:\\nUn producto premium flota sobre una base grafito, push-in lento, reflejos limpios, texturas nítidas, final 4K sin texto añadido.',
+        },
+        {
+          id: 'structured',
+          label: 'Refs',
+          title: 'Referencias 4K aprobadas',
+          description: 'Para mapear imágenes al render final.',
+          copy: '@Image1 = [storyboard o composición aprobada]\\n@Image2 = [estilo / producto / identidad visual]\\n@Image3 = [detalle de material o color]\\n\\nResultado esperado:\\n[Qué debe generar la final 4K]\\n\\nRestricciones:\\n[Sin deformación, sin texto añadido, composición estable]\\n\\nExample:\\nUsa @Image1 para composición, @Image2 para luz y @Image3 para detalle de producto. Renderiza una final 4K estable, nítida y lista para edición.',
+        },
+        {
+          id: 'pro',
+          label: 'Start/End',
+          title: 'Start/end frame en 4K',
+          description: 'Para controlar la frontera visual del plano final.',
+          copy: 'Opening frame opcional:\\n[Pose o composición inicial esperada]\\n\\nEnd frame opcional:\\n[Landing frame final]\\n\\nAcción:\\n[Movimiento único entre ambos estados]\\n\\nRegla:\\nNo usar @Video1. La ruta 4K actual es reference-to-video, no V2V fuente.\\n\\nExample:\\nEmpieza desde @Image1, travelling suave hacia adelante, final cercano al end frame. Mismo producto, misma luz, sin ruptura de escenario.',
+        },
+        {
+          id: 'storyboard',
+          label: 'Final 4K',
+          title: 'Checklist de entrega 4K',
+          description: 'Para transformar un draft aprobado en master.',
+          copy: 'Duración: [3-15 s]\\nResolución: 4K nativo\\n\\nComposición aprobada:\\n[@Image1]\\n\\nEstilo aprobado:\\n[@Image2]\\n\\nMovimiento final:\\n[Simple, controlado, listo para edición]\\n\\nProhibido:\\n[@Video1, keep_audio, texto añadido, cambio de escena]\\n\\nExample:\\nRenderizar el plano aprobado en 4K nativo con movimiento corto, textura limpia, identidad estable y final útil para edición.',
+        },
+      ];
+    }
+    return [
+      {
+        id: 'quick',
+        label: 'Text',
+        title: 'Final 4K prompt without source video',
+        description: 'Use this for a native 4K final guided by text and references.',
+        copy: 'Subject:\\n[Approved product / character / location]\\n\\nAction:\\n[One short controlled movement]\\n\\nCamera:\\n[Final move: push-in / subtle travel / static]\\n\\nStyle:\\n[Lighting and 4K finish]\\n\\nAudio:\\n[Generated ambience if enabled]\\n\\nExample:\\nA premium product floats on a graphite plinth, slow push-in, clean reflections, crisp textures, native 4K final with no added text.',
+      },
+      {
+        id: 'structured',
+        label: 'Refs',
+        title: 'Approved 4K references',
+        description: 'Use this to map images to the final render.',
+        copy: '@Image1 = [approved storyboard or composition]\\n@Image2 = [style / product / visual identity]\\n@Image3 = [material or color detail]\\n\\nExpected output:\\n[What the 4K final should generate]\\n\\nConstraints:\\n[No deformation, no added text, stable composition]\\n\\nExample:\\nUse @Image1 for composition, @Image2 for lighting style, and @Image3 for product detail. Render a stable, crisp, edit-ready 4K final.',
+      },
+      {
+        id: 'pro',
+        label: 'Start/End',
+        title: '4K start/end frame control',
+        description: 'Use this to control the visual boundary of the final shot.',
+        copy: 'Optional opening frame:\\n[Expected first pose or composition]\\n\\nOptional end frame:\\n[Final landing frame]\\n\\nAction:\\n[One motion path between both states]\\n\\nRule:\\nDo not use @Video1. The current 4K route is reference-to-video, not source-video V2V.\\n\\nExample:\\nStart from @Image1, subtle forward travel, land close to the end frame. Same product, same light, no location break.',
+      },
+      {
+        id: 'storyboard',
+        label: 'Final 4K',
+        title: '4K delivery checklist',
+        description: 'Use this to turn an approved draft into a master.',
+        copy: 'Duration: [3-15s]\\nResolution: native 4K\\n\\nApproved composition:\\n[@Image1]\\n\\nApproved style:\\n[@Image2]\\n\\nFinal motion:\\n[Simple, controlled, edit-ready]\\n\\nAvoid:\\n[@Video1, keep_audio, added text, scene changes]\\n\\nExample:\\nRender the approved shot in native 4K with short motion, clean texture, stable identity, and an edit-ready ending.',
+      },
+    ];
+  }
+
+  return [];
+}
+
+function getKlingO3PromptingGlobalPrinciples(locale: AppLocale, engineSlug: string): string[] {
+  if (!engineSlug.startsWith('kling-o3-')) return [];
+  if (engineSlug === 'kling-o3-4k') {
+    if (locale === 'fr') {
+      return [
+        'Assignez un rôle clair à chaque image : composition, style, produit, personnage ou détail.',
+        'Validez le mouvement en Standard ou Pro avant de payer une finale 4K.',
+        'N’utilisez pas @Video1 ni keep_audio sur la route 4K actuelle.',
+        'Décrivez caméra, action, continuité et intention de livraison dans le prompt.',
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        'Asigna un rol claro a cada imagen: composición, estilo, producto, personaje o detalle.',
+        'Valida el movimiento en Standard o Pro antes de pagar una final 4K.',
+        'No uses @Video1 ni keep_audio en la ruta 4K actual.',
+        'Describe cámara, acción, continuidad e intención de entrega en el prompt.',
+      ];
+    }
+    return [
+      'Give every image one job: composition, style, product, character, or detail.',
+      'Validate motion in Standard or Pro before paying for a native 4K final.',
+      'Do not use @Video1 or keep_audio on the current 4K route.',
+      'Specify camera, action, continuity, and delivery intent in the prompt.',
+    ];
+  }
+  if (locale === 'fr') {
+    return [
+      'Indiquez si chaque asset est une référence ou une frame visible.',
+      'Utilisez @Image1, @Image2 pour les images et @Video1 uniquement pour une vidéo source V2V.',
+      'Quand @Video1 est chargé, la logique devient V2V : les start/end frames ne doivent pas piloter le plan.',
+      'Gardez une action lisible par plan et une seule fonction par référence.',
+      'Utilisez keep_audio seulement si l’audio source doit vraiment rester.',
+    ];
+  }
+  if (locale === 'es') {
+    return [
+      'Aclara si cada asset es una referencia o un frame visible.',
+      'Usa @Image1, @Image2 para imágenes y @Video1 solo para un video fuente V2V.',
+      'Cuando @Video1 está cargado, el flujo pasa a V2V: start/end frames no deben dirigir la toma.',
+      'Mantén una acción legible por toma y una sola función por referencia.',
+      'Usa keep_audio solo si el audio fuente debe conservarse.',
+    ];
+  }
+  return [
+    'State whether each asset is a reference or a visible frame.',
+    'Use @Image1, @Image2 for images and @Video1 only for source-video V2V.',
+    'When @Video1 is loaded, the workflow becomes V2V; start/end frames should not drive the shot.',
+    'Keep one readable action per shot and one job per reference.',
+    'Use keep_audio only when the source soundtrack should remain.',
+  ];
+}
+
+function getKlingO3PromptingEngineWhy(locale: AppLocale, engineSlug: string): string[] {
+  if (engineSlug === 'kling-o3-pro') {
+    if (locale === 'fr') {
+      return [
+        'Pro est le bon choix quand références, storyboard et V2V doivent rester fidèles.',
+        'Les images ne sont pas forcées en start frame, sauf si vous choisissez explicitement une frame d’ouverture.',
+        '@Video1 sert au mouvement, au rythme caméra et à la continuité, pas à remplacer le prompt.',
+        'Audio natif et keep_audio doivent rester courts et liés aux actions visibles.',
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        'Pro es la opción correcta cuando referencias, storyboard y V2V deben mantener fidelidad.',
+        'Las imágenes no se fuerzan como start frame salvo que elijas explícitamente un frame inicial.',
+        '@Video1 sirve para movimiento, ritmo de cámara y continuidad, no para reemplazar el prompt.',
+        'Audio nativo y keep_audio deben ser cortos y ligados a acciones visibles.',
+      ];
+    }
+    return [
+      'Pro is the right route when references, storyboard, and V2V need stronger fidelity.',
+      'Images are not forced into the start frame unless you explicitly choose an opening frame.',
+      '@Video1 guides motion, camera rhythm, and continuity; it does not replace the prompt.',
+      'Native audio and keep_audio work best when short and tied to visible actions.',
+    ];
+  }
+  if (engineSlug === 'kling-o3-standard') {
+    if (locale === 'fr') {
+      return [
+        'Standard est la route de draft pour tester références et V2V à moindre coût.',
+        'Gardez les prompts plus courts et comparez une variable à la fois.',
+        'Passez en Pro pour fidélité finale ou en 4K une fois la direction validée.',
+        'Même en draft, chaque @Image et @Video1 doit avoir une fonction claire.',
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        'Standard es la ruta de draft para probar referencias y V2V con menor costo.',
+        'Mantén prompts más cortos y compara una variable por vez.',
+        'Pasa a Pro para fidelidad final o a 4K cuando la dirección esté aprobada.',
+        'Incluso en draft, cada @Image y @Video1 necesita una función clara.',
+      ];
+    }
+    return [
+      'Standard is the draft route for lower-cost reference and V2V tests.',
+      'Keep prompts shorter and compare one variable at a time.',
+      'Move to Pro for final fidelity or 4K after the direction is approved.',
+      'Even in draft mode, each @Image and @Video1 needs one clear job.',
+    ];
+  }
+  if (engineSlug === 'kling-o3-4k') {
+    if (locale === 'fr') {
+      return [
+        '4K est une route de livraison, pas le meilleur endroit pour explorer une direction.',
+        'La page doit guider les références image et le storyboard, sans promettre de V2V source.',
+        'Les prompts doivent verrouiller composition, texture, caméra et fin exploitable.',
+        'Si le workflow demande @Video1, revenez en O3 Pro ou Standard.',
+      ];
+    }
+    if (locale === 'es') {
+      return [
+        '4K es una ruta de entrega, no el mejor lugar para explorar dirección.',
+        'La página debe guiar referencias de imagen y storyboard, sin prometer V2V fuente.',
+        'Los prompts deben fijar composición, textura, cámara y final útil para edición.',
+        'Si el workflow necesita @Video1, vuelve a O3 Pro o Standard.',
+      ];
+    }
+    return [
+      '4K is a delivery route, not the best place to explore direction.',
+      'The page should guide image references and storyboard input without promising source-video V2V.',
+      'Prompts should lock composition, texture, camera motion, and an edit-ready ending.',
+      'If the workflow needs @Video1, move back to O3 Pro or Standard.',
+    ];
+  }
+  return [];
+}
+
+function getDemoTitle(copy: SoraCopy, modelName: string, locale: AppLocale, engineSlug: string) {
+  if (copy.demoTitle) return copy.demoTitle;
+  if (engineSlug === 'kling-o3-pro') {
+    if (locale === 'fr') return 'Prompt démo — O3 Pro V2V + références';
+    if (locale === 'es') return 'Prompt demo — O3 Pro V2V + referencias';
+    return 'Demo prompt — O3 Pro V2V + references';
+  }
+  if (engineSlug === 'kling-o3-standard') {
+    if (locale === 'fr') return 'Prompt démo — O3 Standard draft référence';
+    if (locale === 'es') return 'Prompt demo — O3 Standard draft con referencias';
+    return 'Demo prompt — O3 Standard reference draft';
+  }
+  if (engineSlug === 'kling-o3-4k') {
+    if (locale === 'fr') return 'Prompt démo — O3 4K finale référence';
+    if (locale === 'es') return 'Prompt demo — O3 4K final con referencias';
+    return 'Demo prompt — O3 4K reference final';
+  }
+  if (locale === 'fr') return `Prompt de démonstration — ${modelName}`;
+  if (locale === 'es') return `Prompt de demostración — ${modelName}`;
+  return `Demo prompt — ${modelName}`;
+}
+
 function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
   if (engineSlug === 'happy-horse-1-0') {
     if (locale === 'fr') {
@@ -694,6 +1289,153 @@ function getKling3ProDemoPrompt(locale: AppLocale) {
     '',
     'Audio: <<<voice_1>>> “Here is the next generation of our platform.” Quiet studio ambience, one soft UI chime. No text, no logos, no subtitles.',
   ].join('\n');
+}
+
+const KLING_O3_STANDARD_TEXT_DEMO_PROMPT = [
+  'Subject:',
+  'A giant origami whale made of folded newspaper, gliding through a dry European street like it is swimming underwater.',
+  '',
+  'Action:',
+  'The paper whale passes between buildings, creating a wave of loose paper. People step back in surprise as the whale’s tail gently sweeps newspapers into the air.',
+  '',
+  'Camera:',
+  'Low wide tracking shot moving alongside the whale, keeping the full body readable. Smooth forward motion, no sudden cuts.',
+  '',
+  'Style:',
+  'Cinematic magical realism, soft afternoon light, paper textures, muted beige and blue-gray palette, elegant surreal mood, realistic city with a poetic fantasy element.',
+  '',
+  'Audio:',
+  'Soft paper rustling, distant city ambience, deep whale-like paper creak, gentle wind swell.',
+].join('\n');
+
+const KLING_O3_PRO_TEXT_DEMO_PROMPT = [
+  'Subject:',
+  'A tiny lighthouse keeper no taller than a coffee cup, wearing a yellow raincoat and carrying a glowing lantern.',
+  '',
+  'Action:',
+  'He walks across a kitchen table during a storm, climbs a stack of books, and raises his lantern toward a toy lighthouse as the light begins to glow.',
+  '',
+  'Camera:',
+  'Macro close tracking shot at table height, following his small steps. End with a slight push-in on the lantern and lighthouse.',
+  '',
+  'Style:',
+  'Warm cinematic macro realism, cozy indoor storm atmosphere, shallow depth of field, raindrops on the window, golden lantern light against cool blue shadows.',
+  '',
+  'Audio:',
+  'Rain tapping on glass, tiny footsteps on wood, soft lantern hum, distant thunder.',
+].join('\n');
+
+const KLING_O3_4K_TEXT_DEMO_PROMPT = [
+  'Subject:',
+  'A handmade mechanical moon, brass and porcelain, floating above an old clockmaker’s workbench.',
+  '',
+  'Action:',
+  'Tiny gears begin turning inside the moon. It slowly opens like a pocket watch and releases a cloud of glowing fireflies that circle the room.',
+  '',
+  'Camera:',
+  'Medium close-up with a slow orbit around the floating moon, then a gentle upward tilt following the fireflies.',
+  '',
+  'Style:',
+  'Cinematic workshop fantasy, warm candlelight, brass reflections, dust in the air, rich brown and gold palette, handcrafted textures, elegant and mysterious.',
+  '',
+  'Audio:',
+  'Soft ticking gears, delicate metallic clicks, magical shimmer, quiet room tone.',
+].join('\n');
+
+function getKlingO3ProDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Gardien de phare miniature en imperméable jaune',
+      action: 'Traverse une table de cuisine, grimpe des livres et allume un phare jouet',
+      camera: 'Macro tracking à hauteur de table, léger push-in final',
+      style: 'Macro réalisme chaleureux, tempête cosy, lanterne dorée',
+      audio: 'Pluie sur la vitre, petits pas, hum de lanterne, tonnerre lointain',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Pequeño farero con impermeable amarillo',
+      action: 'Cruza una mesa, sube libros y enciende un faro de juguete',
+      camera: 'Macro tracking a altura de mesa, leve push-in final',
+      style: 'Macro realismo cálido, tormenta acogedora, luz dorada',
+      audio: 'Lluvia en vidrio, pasos pequeños, hum de linterna, trueno lejano',
+    };
+  }
+  return {
+    subject: 'Tiny lighthouse keeper in a yellow raincoat',
+    action: 'Crosses a kitchen table, climbs books, and lights a toy lighthouse',
+    camera: 'Macro table-height tracking with a slight final push-in',
+    style: 'Warm cinematic macro realism, cozy storm, golden lantern light',
+    audio: 'Rain on glass, tiny footsteps, lantern hum, distant thunder',
+  };
+}
+
+function getKlingO3ProDemoPrompt() {
+  return KLING_O3_PRO_TEXT_DEMO_PROMPT;
+}
+
+function getKlingO3StandardDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Baleine origami géante faite de papier journal',
+      action: 'Glisse dans une rue européenne sèche et soulève des feuilles de papier',
+      camera: 'Tracking bas et large le long de la baleine',
+      style: 'Réalisme magique cinématique, lumière douce, textures papier',
+      audio: 'Froissement papier, ville lointaine, vent doux',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Ballena origami gigante hecha de papel periódico',
+      action: 'Nada por una calle europea seca y levanta hojas de papel',
+      camera: 'Tracking bajo y amplio junto a la ballena',
+      style: 'Realismo mágico cinematográfico, luz suave, texturas de papel',
+      audio: 'Papel crujiendo, ciudad lejana, viento suave',
+    };
+  }
+  return {
+    subject: 'Giant origami whale made of folded newspaper',
+    action: 'Glides through a dry European street and lifts loose paper',
+    camera: 'Low wide tracking shot alongside the whale',
+    style: 'Cinematic magical realism, soft light, paper textures',
+    audio: 'Paper rustle, distant city ambience, gentle wind',
+  };
+}
+
+function getKlingO3StandardDemoPrompt() {
+  return KLING_O3_STANDARD_TEXT_DEMO_PROMPT;
+}
+
+function getKlingO34kDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Lune mécanique artisanale en laiton et porcelaine',
+      action: 'S’ouvre comme une montre et libère des lucioles lumineuses',
+      camera: 'Orbite lente puis tilt vers les lucioles',
+      style: 'Atelier fantasy cinématographique, bougie chaude, reflets laiton',
+      audio: 'Rendu sélectionné silencieux; le prompt contient des cues de tic-tac et shimmer',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Luna mecánica artesanal de latón y porcelana',
+      action: 'Se abre como reloj de bolsillo y libera luciérnagas luminosas',
+      camera: 'Órbita lenta y tilt hacia las luciérnagas',
+      style: 'Taller fantasy cinematográfico, vela cálida, reflejos de latón',
+      audio: 'Render seleccionado sin audio; el prompt incluye tic-tac y shimmer',
+    };
+  }
+  return {
+    subject: 'Handmade mechanical moon in brass and porcelain',
+    action: 'Opens like a pocket watch and releases glowing fireflies',
+    camera: 'Slow orbit, then upward tilt following the fireflies',
+    style: 'Cinematic workshop fantasy, candlelight, brass reflections',
+    audio: 'Selected render is silent; prompt includes ticking and shimmer cues',
+  };
+}
+
+function getKlingO34kDemoPrompt() {
+  return KLING_O3_4K_TEXT_DEMO_PROMPT;
 }
 
 function getSeedance15DemoSummary(locale: AppLocale) {
@@ -1527,6 +2269,9 @@ export function ModelDecisionPromptingSection({
   const isKling3ProRoute = engineSlug === 'kling-3-pro';
   const isKling3StandardRoute = engineSlug === 'kling-3-standard';
   const isKling34kRoute = engineSlug === 'kling-3-4k';
+  const isKlingO3ProRoute = engineSlug === 'kling-o3-pro';
+  const isKlingO3StandardRoute = engineSlug === 'kling-o3-standard';
+  const isKlingO34kRoute = engineSlug === 'kling-o3-4k';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getRouteDemoSummary(locale, engineSlug);
   const seedance15Demo = getSeedance15DemoSummary(locale);
@@ -1541,6 +2286,9 @@ export function ModelDecisionPromptingSection({
   const kling3ProDemo = getKling3ProDemoSummary(locale);
   const kling3StandardDemo = getKling3StandardDemoSummary(locale);
   const kling34kDemo = getKling34kDemoSummary(locale);
+  const klingO3ProDemo = getKlingO3ProDemoSummary(locale);
+  const klingO3StandardDemo = getKlingO3StandardDemoSummary(locale);
+  const klingO34kDemo = getKlingO34kDemoSummary(locale);
   const veo31Demo = getVeo31DemoSummary(locale);
   const veoFastDemo = getVeoFastDemoSummary(locale);
   const veoLiteDemo = getVeoLiteDemoSummary(locale);
@@ -1560,12 +2308,18 @@ export function ModelDecisionPromptingSection({
                 ? { ...sora2ProDemo, output: sora2ProDemo.audio }
                 : isLtx23FastRoute
                   ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
-                  : isLtx23ProRoute
-                    ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
-                    : isKling34kRoute
-                      ? { ...kling34kDemo, output: kling34kDemo.audio }
-                      : isKling3ProRoute
-                        ? { ...kling3ProDemo, output: kling3ProDemo.audio }
+                : isLtx23ProRoute
+                  ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
+                    : isKlingO34kRoute
+                      ? { ...klingO34kDemo, output: klingO34kDemo.audio }
+                      : isKlingO3ProRoute
+                        ? { ...klingO3ProDemo, output: klingO3ProDemo.audio }
+                        : isKlingO3StandardRoute
+                          ? { ...klingO3StandardDemo, output: klingO3StandardDemo.audio }
+                          : isKling34kRoute
+                            ? { ...kling34kDemo, output: kling34kDemo.audio }
+                            : isKling3ProRoute
+                              ? { ...kling3ProDemo, output: kling3ProDemo.audio }
                       : isKling3StandardRoute
                         ? { ...kling3StandardDemo, output: kling3StandardDemo.audio }
                       : isVeo31Route
@@ -1575,8 +2329,16 @@ export function ModelDecisionPromptingSection({
                           : isVeoLiteRoute
                             ? { ...veoLiteDemo, output: veoLiteDemo.audio }
                             : { ...standardDemo, output: standardDemo.audio };
-  const title = copy.promptingTitle ?? `Prompt Lab — ${modelName}`;
+  const title = copy.promptingTitle ?? getRoutePromptingTitle(locale, engineSlug, modelName);
+  const demoTitle = getDemoTitle(copy, modelName, locale, engineSlug);
   const intro = copy.promptingIntro ?? '';
+  const promptingTabs = copy.promptingTabs.length ? copy.promptingTabs : getKlingO3PromptingTabs(locale, engineSlug);
+  const promptingGlobalPrinciples = copy.promptingGlobalPrinciples.length
+    ? copy.promptingGlobalPrinciples
+    : getKlingO3PromptingGlobalPrinciples(locale, engineSlug);
+  const promptingEngineWhy = copy.promptingEngineWhy.length
+    ? copy.promptingEngineWhy
+    : getKlingO3PromptingEngineWhy(locale, engineSlug);
   const imageExamplesIntro =
     engineSlug === 'seedream'
       ? locale === 'fr'
@@ -1642,6 +2404,24 @@ export function ModelDecisionPromptingSection({
                 : locale === 'es'
                   ? 'Cómo LTX 2.3 Pro usa Generate, Audio, Extend y Retake'
                   : 'How LTX 2.3 Pro uses Generate, Audio, Extend and Retake'
+            : isKlingO34kRoute
+              ? locale === 'fr'
+                ? 'Comment O3 4K utilise les références finales'
+                : locale === 'es'
+                  ? 'Cómo O3 4K usa referencias finales'
+                  : 'How O3 4K uses final references'
+            : isKlingO3ProRoute
+              ? locale === 'fr'
+                ? 'Comment O3 Pro utilise références et vidéo source'
+                : locale === 'es'
+                  ? 'Cómo O3 Pro usa referencias y video fuente'
+                  : 'How O3 Pro uses references and source video'
+            : isKlingO3StandardRoute
+              ? locale === 'fr'
+                ? 'Comment O3 Standard structure les drafts référence'
+                : locale === 'es'
+                  ? 'Cómo O3 Standard estructura drafts con referencias'
+                  : 'How O3 Standard structures reference drafts'
             : isKling34kRoute
               ? locale === 'fr'
                 ? 'Comment Kling 3 4K utilise les references'
@@ -1716,6 +2496,12 @@ export function ModelDecisionPromptingSection({
         ? copy.demoPrompt.join('\n')
       : isVeoFastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isKlingO34kRoute
+        ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKlingO34kDemoPrompt())
+      : isKlingO3ProRoute
+        ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKlingO3ProDemoPrompt())
+      : isKlingO3StandardRoute
+        ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKlingO3StandardDemoPrompt())
       : isKling34kRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
       : isKling3ProRoute
@@ -1755,6 +2541,12 @@ export function ModelDecisionPromptingSection({
           : isLtx23FastRoute
             ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
           : isLtx23ProRoute
+            ? getDuration(demoMedia, locale)
+          : isKlingO34kRoute
+            ? getDuration(demoMedia, locale)
+          : isKlingO3ProRoute
+            ? getDuration(demoMedia, locale)
+          : isKlingO3StandardRoute
             ? getDuration(demoMedia, locale)
           : isKling34kRoute
             ? (locale === 'fr' || locale === 'es' ? '6 s' : '6s')
@@ -1802,6 +2594,13 @@ export function ModelDecisionPromptingSection({
           : 'Fast draft check'
     : isLtx23ProRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Generate' : locale === 'es' ? 'Prompt Generate' : 'Generate prompt'))
+    : isKlingO34kRoute
+      ? (copy.demoPromptLabel ??
+        (locale === 'fr' ? 'Prompt texte 4K' : locale === 'es' ? 'Prompt de texto 4K' : '4K text prompt'))
+    : isKlingO3ProRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt texte' : locale === 'es' ? 'Prompt de texto' : 'Text prompt'))
+    : isKlingO3StandardRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt texte' : locale === 'es' ? 'Prompt de texto' : 'Text prompt'))
     : isKling34kRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Master 4K final' : locale === 'es' ? 'Master 4K final' : 'Final 4K master'))
     : isKling3ProRoute
@@ -1845,6 +2644,8 @@ export function ModelDecisionPromptingSection({
       ? labels.demoAudio
     : labels.demoAudio;
   const demoOutputValue = isSilentPromptRoute || isSora2Route || isSora2ProRoute ? demo.output : demo.audio;
+  const audioOffChipLabel =
+    locale === 'fr' ? 'Audio désactivé' : locale === 'es' ? 'Audio desactivado' : 'Audio off';
   const demoAudioChipLabel = isSilentPromptRoute
     ? locale === 'fr'
       ? 'Silencieux'
@@ -1857,6 +2658,12 @@ export function ModelDecisionPromptingSection({
           : locale === 'es'
             ? 'Audio desactivado'
             : 'Audio off'
+      : isKlingO34kRoute
+        ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
+      : isKlingO3ProRoute
+        ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
+      : isKlingO3StandardRoute
+        ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
       : isKling34kRoute
         ? locale === 'fr'
           ? 'Audio off'
@@ -1916,6 +2723,24 @@ export function ModelDecisionPromptingSection({
           : locale === 'es'
             ? 'Render de aventura con brújula LTX 2.3 Pro'
             : 'LTX 2.3 Pro desert compass adventure render'
+      : isKlingO34kRoute
+        ? locale === 'fr'
+          ? 'Lune mécanique Kling 3.0 Omni 4K'
+          : locale === 'es'
+            ? 'Luna mecánica Kling 3.0 Omni 4K'
+            : 'Kling 3.0 Omni 4K mechanical moon render'
+      : isKlingO3ProRoute
+        ? locale === 'fr'
+          ? 'Rendu gardien de phare Kling 3.0 Omni Pro'
+          : locale === 'es'
+            ? 'Render de farero Kling 3.0 Omni Pro'
+            : 'Kling 3.0 Omni Pro tiny lighthouse keeper render'
+      : isKlingO3StandardRoute
+        ? locale === 'fr'
+          ? 'Rendu baleine origami Kling 3.0 Omni Standard'
+          : locale === 'es'
+            ? 'Render de ballena origami Kling 3.0 Omni Standard'
+            : 'Kling 3.0 Omni Standard origami whale render'
       : isKling34kRoute
         ? locale === 'fr'
           ? 'Master produit Kling 3 4K'
@@ -2018,7 +2843,7 @@ export function ModelDecisionPromptingSection({
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]">
           <ModelDecisionPromptTabs
-            tabs={copy.promptingTabs}
+            tabs={promptingTabs}
             locale={locale}
             exampleHref={demoMedia?.href ?? null}
             engineSlug={engineSlug}
@@ -2034,7 +2859,7 @@ export function ModelDecisionPromptingSection({
                 <h3 className="!text-left text-base font-semibold text-text-primary">{labels.global}</h3>
               </div>
               <ul className="space-y-2.5 text-[0.84rem] leading-5 text-text-secondary">
-                {copy.promptingGlobalPrinciples.map((item) => (
+                {promptingGlobalPrinciples.map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <UIIcon icon={BadgeCheck} size={15} className={`mt-0.5 shrink-0 ${MODEL_PAGE_ICON_MUTED}`} />
                     <span>{item}</span>
@@ -2051,7 +2876,7 @@ export function ModelDecisionPromptingSection({
                 <h3 className="!text-left text-base font-semibold text-text-primary">{labels.quirks}</h3>
               </div>
               <ul className="space-y-2.5 text-[0.84rem] leading-5 text-text-secondary">
-                {copy.promptingEngineWhy.map((item) => (
+                {promptingEngineWhy.map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <UIIcon icon={BadgeCheck} size={15} className={`mt-0.5 shrink-0 ${MODEL_PAGE_ICON_MUTED}`} />
                     <span>{item}</span>
@@ -2108,7 +2933,7 @@ export function ModelDecisionPromptingSection({
       ) : (
       <article className="grid gap-5 rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] lg:grid-cols-[minmax(0,0.86fr)_minmax(440px,1.14fr)]">
         <div>
-          <h2 className="!text-left text-2xl font-semibold text-text-primary">{copy.demoTitle ?? `Demo prompt — ${modelName}`}</h2>
+          <h2 className="!text-left text-2xl font-semibold text-text-primary">{demoTitle}</h2>
           <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:!bg-blue-500/[0.12] dark:text-blue-200">
             {demoModeLabel}
           </span>

@@ -1,9 +1,10 @@
 import type { EngineInputField } from '@/types/engines';
+import { Button } from '@/components/ui/Button';
 
 interface SettingsGenericAdvancedFieldsProps {
   fields: Array<{ field: EngineInputField; required: boolean }>;
   values: Record<string, unknown>;
-  onChange?: (field: EngineInputField, value: string) => void;
+  onChange?: (field: EngineInputField, value: unknown) => void;
 }
 
 export function SettingsGenericAdvancedFields({
@@ -35,9 +36,46 @@ function SettingsGenericAdvancedField({
   field: EngineInputField;
   required: boolean;
   value: unknown;
-  onChange?: (field: EngineInputField, value: string) => void;
+  onChange?: (field: EngineInputField, value: unknown) => void;
 }) {
   const label = `${field.label}${required ? ' *' : ''}`;
+  const toggleButtonClass = 'min-h-0 h-auto px-3 py-1.5 text-[13px]';
+  const activeToggleClass = (active: boolean) =>
+    active
+      ? 'border-brand bg-brand text-on-brand'
+      : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2';
+
+  if (field.type === 'boolean') {
+    const active =
+      typeof value === 'boolean'
+        ? value
+        : typeof value === 'string'
+          ? value.trim().toLowerCase() === 'true'
+          : typeof field.default === 'boolean'
+            ? field.default
+            : false;
+
+    return (
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
+        <div className="flex flex-wrap gap-2">
+          {[true, false].map((option) => (
+            <Button
+              key={`${field.id}-${option ? 'on' : 'off'}`}
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onChange?.(field, option)}
+              className={`${toggleButtonClass} ${activeToggleClass(option === active)}`}
+            >
+              {option ? 'On' : 'Off'}
+            </Button>
+          ))}
+        </div>
+        {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+      </label>
+    );
+  }
   if (field.type === 'enum') {
     const values = Array.isArray(field.values) ? field.values : [];
     return (

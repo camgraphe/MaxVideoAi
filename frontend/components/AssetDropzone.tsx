@@ -7,6 +7,7 @@ import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps }
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
+import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   readMediaDuration,
@@ -106,6 +107,12 @@ export function AssetDropzone({
       minCount,
     });
   }, [assets, maxCount, minCount]);
+  const renderSlots = useMemo(() => {
+    if (!isCollectionField || displaySlots.length <= 1) return displaySlots;
+    const emptySlots = displaySlots.filter((slot) => slot.asset == null);
+    const filledSlots = displaySlots.filter((slot) => slot.asset != null);
+    return [...emptySlots, ...filledSlots];
+  }, [displaySlots, isCollectionField]);
   const handleDisabledAttempt = useCallback(() => {
     if (disabledReason) {
       onError?.(disabledReason);
@@ -299,22 +306,26 @@ export function AssetDropzone({
         : role === 'frame'
           ? assetCopy.frameRoleDescription
           : null;
-  const detailsTooltip = [
+  const detailsTooltipLines = [
     roleDescription,
     field.description,
     referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) ? referenceWarning : null,
     helperLines.length ? helperLines.join(' • ') : null,
-  ]
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .join('\n');
+  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
   const fullBleedSingleAsset =
     !isCollectionField &&
     displaySlots.length === 1 &&
     displaySlots[0]?.asset != null &&
     displaySlots[0].asset?.kind !== 'audio';
   const remainingSlotCount = isCollectionField ? Math.max(0, maxCount - filledAssetCount) : 0;
+  const tooltipId = `asset-field-${engine.id}-${field.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const isSourceVideoDisabledState = disabledReason?.toLowerCase().includes('source video');
+  const disabledStatusLabel = isSourceVideoDisabledState ? 'Source video active' : 'Unavailable';
+  const compactCollectionLayout = isCollectionField && displaySlots.length > 1;
   const multiSlotGridClass = isCollectionField
-    ? displaySlots.length <= 1
+    ? compactCollectionLayout
+      ? 'grid-cols-2'
+      : displaySlots.length <= 1
       ? 'grid-cols-1'
       : 'grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3'
     : displaySlots.length >= 4
@@ -338,7 +349,7 @@ export function AssetDropzone({
         className={clsx(
           'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary dark:border-white/[0.07] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.018))] dark:text-white/68',
           fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : 'gap-4 p-4',
-          disabled && 'opacity-70'
+          disabled && disabledReason && 'border-warning-border/70 bg-warning-bg/30 dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.045]'
         )}
       >
         <div
@@ -347,7 +358,7 @@ export function AssetDropzone({
             fullBleedSingleAsset && 'absolute left-4 right-4 top-4 z-10'
           )}
         >
-          <div className="flex min-w-0 items-center gap-2">
+          <div className={clsx('flex min-w-0 items-center gap-2', disabled && disabledReason && 'flex-wrap')}>
             <span
               className={clsx(
                 'truncate text-sm font-medium',
@@ -356,31 +367,27 @@ export function AssetDropzone({
             >
               {fieldTitle}
             </span>
-            {detailsTooltip ? (
-              <button
-                type="button"
-                className={clsx(
-                  'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] transition',
-                  fullBleedSingleAsset
-                    ? 'border border-surface-on-media-25 bg-surface-on-media-dark-35 text-on-inverse backdrop-blur hover:bg-surface-on-media-dark-50'
-                    : 'border border-border/80 text-text-muted hover:border-text-muted hover:text-text-primary dark:border-white/10 dark:bg-white/[0.03] dark:text-white/55 dark:hover:border-white/16 dark:hover:bg-white/[0.06] dark:hover:text-white'
-                )}
-                title={detailsTooltip}
-                aria-label={detailsTooltip}
-                onClick={(event) => {
-                  event.stopPropagation();
-                }}
-              >
-                <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
-                  <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M10 9.1V13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <circle cx="10" cy="6.5" r="0.9" fill="currentColor" />
-                </svg>
-              </button>
+            <AssetFieldTooltip
+              tooltipId={tooltipId}
+              details={detailsTooltipLines}
+              fullBleedSingleAsset={fullBleedSingleAsset}
+            />
+            {disabled && disabledReason ? (
+              <span className="shrink-0 rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-warning dark:border-[#f6c667]/30 dark:bg-[#f6c667]/10 dark:text-[#f6c667]">
+                {disabledStatusLabel}
+              </span>
             ) : null}
           </div>
           {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
         </div>
+        {disabled && disabledReason && !isSourceVideoDisabledState ? (
+          <div
+            role="note"
+            className="rounded-input border border-warning-border bg-warning-bg px-3 py-2 text-left text-[11px] font-medium leading-4 text-warning dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.06] dark:text-white/76"
+          >
+            {disabledReason}
+          </div>
+        ) : null}
 
         <div
           className={clsx(
@@ -389,7 +396,7 @@ export function AssetDropzone({
             multiSlotGridClass
           )}
         >
-          {displaySlots.map(({ asset, slotIndex }) => {
+          {renderSlots.map(({ asset, slotIndex }) => {
             const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
             const slotLabel = resolveSlotLabel(field, role, slotIndex, assetCopy);
 
@@ -400,21 +407,19 @@ export function AssetDropzone({
                 asset={asset}
                 assetCopy={assetCopy}
                 canOpenLibrary={canOpenLibrary}
+                compactCollectionLayout={compactCollectionLayout}
                 disabled={disabled}
                 disabledReason={disabledReason}
                 displaySlotCount={displaySlots.length}
                 engineId={engine.id}
-                field={field}
                 filledAssetCount={filledAssetCount}
                 fullBleedSingleAsset={fullBleedSingleAsset}
-                helperLines={helperLines}
                 hideRequiredSlotCopy={hideRequiredSlotCopy}
                 inputRef={(element) => {
                   inputRefs.current[slotIndex] = element;
                 }}
                 isCollectionField={isCollectionField}
                 minCount={minCount}
-                roleDescription={roleDescription}
                 slotIndex={slotIndex}
                 slotLabel={slotLabel}
                 onDisabledAttempt={handleDisabledAttempt}

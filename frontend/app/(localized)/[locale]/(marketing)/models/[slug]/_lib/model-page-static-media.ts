@@ -43,6 +43,18 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'marketing-kling-3-4k-hero-6s',
     demo: 'marketing-kling-3-4k-demo-6s',
   },
+  'kling-o3-standard': {
+    hero: 'job_8836b967-bd47-49ed-8165-980611093802',
+    demo: 'job_b19833a3-0c69-4738-b825-87964d165da5',
+  },
+  'kling-o3-pro': {
+    hero: 'job_4975d7d3-7b53-480e-8d48-b88c4ce6902c',
+    demo: 'job_683201ab-b96a-4f54-9bb4-2907f9d0dc27',
+  },
+  'kling-o3-4k': {
+    hero: 'job_8af463de-b0e7-4b67-b791-b9687ca90a63',
+    demo: 'job_80b9d956-88c7-467b-97e3-a7bb71aa9294',
+  },
   'seedance-1-5-pro': {
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
     demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',

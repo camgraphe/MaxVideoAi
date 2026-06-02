@@ -6,11 +6,11 @@
     "description": "Use Kling 3 Standard on MaxVideoAI for lower-cost multi-shot AI video, native audio, and live specs and pricing before you render.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/bb896348-7394-4ef3-9cff-ff392639c8db-job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2.jpg"
   },
-  "overview": "Kling 3 Standard is the current lower-cost Kling AI model for multi-shot prompts, Kling image-to-video runs, reusable Kling Elements, optional end frames, and native audio draft workflows.",
+  "overview": "Kling 3 Standard is the current lower-cost Kling AI model for multi-shot prompts, start-frame Kling image-to-video runs, reusable Kling Elements, optional end frames, and native audio draft workflows.",
   "pricingNotes": "Member display estimates include the MaxVideoAI margin: about $0.16/s with audio, $0.11/s audio off, and $0.20/s with voice control.",
   "hero": {
     "title": "Kling 3 Standard — current Kling variant for lower-cost multi-shot video",
-    "intro": "Use Kling 3 Standard when you want the current lower-cost Kling AI model for multi-shot video, Kling image-to-video tests, reusable Kling Elements, optional end frames, and native audio before moving selected jobs into Kling 3 Pro.",
+    "intro": "Use Kling 3 Standard when you want the current lower-cost Kling AI model for multi-shot video, start-frame Kling image-to-video tests, reusable Kling Elements, optional end frames, and native audio before moving selected jobs into Kling 3 Pro. Use Kling 3.0 Omni Standard when images should guide the shot without becoming the first frame.",
     "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 3 Standard",
@@ -151,7 +151,7 @@
     },
     {
       "q": "Is Kling 3 Standard a good Kling AI model for image-to-video prompt testing?",
-      "a": "Yes. Kling 3 Standard is a strong lower-cost starting point for repeatable image-to-video tests, draft passes, and prompt comparisons before moving winning directions into Kling 3 Pro."
+      "a": "Yes, when the uploaded image should be the visible start frame. Use Kling 3.0 Omni Standard for lower-cost reference-to-video tests where storyboard images guide the shot without opening the clip."
     },
     {
       "q": "What is the difference vs Pro?",

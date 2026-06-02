@@ -116,45 +116,45 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   kling: {
     metaTitle: 'Ejemplos de video IA Kling, prompts y ajustes | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de video IA de Kling con prompts, ajustes y patrones image-to-video para Kling 3 Pro, Kling 3 Standard y renders finales Kling 3 4K nativos, y compara workflows Kling antiguos aún compatibles en MaxVideoAI.',
+      'Revisa ejemplos de video IA de Kling con prompts, referencias visuales, storyboard, V2V desde video fuente, image-to-video con frame inicial y precios para Kling 3.0 Omni y Kling 3.',
     heroTitle: 'Ejemplos de video IA Kling, prompts y ajustes',
     subtitle:
-      'Ejemplos de video IA Kling, prompts, ajustes, patrones image-to-video y guía de modelo para workflows Kling actuales y versiones anteriores aún compatibles.',
+      'Ejemplos de video IA Kling, prompts, ajustes, referencias, patrones de imagen a video y guía de modelo para Kling 3.0 Omni, Kling 3 y versiones anteriores aún compatibles.',
     intro:
-      'Revisa ejemplos de video IA de Kling, prompts, ajustes reutilizables y patrones image-to-video para Kling 3 Pro, Kling 3 Standard y renders finales Kling 3 4K nativos, y luego explora setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores rápidos. Usa esta página para comparar prompts de Kling AI, patrones de control de movimiento y ajustes específicos de cada modelo antes de abrir la página Kling correspondiente.',
+      'Revisa ejemplos de video IA de Kling, prompts y ajustes reutilizables para Kling 3.0 Omni Pro, Standard y 4K, y compáralos con las rutas Kling 3 con frame inicial visible y versiones anteriores aún compatibles. Usa esta página para separar prompts O3 guiados por referencias de prompts Kling 3 image-to-video clásicos antes de abrir la página de modelo correspondiente.',
     summary:
-      'Kling 3 Pro y Kling 3 Standard lideran esta página para ejemplos de video IA Kling de uso diario, mientras Kling 3 4K queda como ruta de entrega 4K nativa para renders finales aprobados. Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
+      'Kling 3.0 Omni Pro y Standard son las rutas actuales para imágenes de referencia, storyboards y V2V desde video fuente. Kling 3 Pro y Standard siguen siendo las rutas image-to-video con frame inicial visible, mientras Kling 3.0 Omni 4K sirve para entregas 4K nativas guiadas por referencias.',
     promptPatterns:
-      'Empieza con una acción clara, una instrucción de cámara y un objetivo visual. Los prompts de Kling AI se comparan mejor cuando la estructura del prompt se mantiene estable y solo cambian el modelo o el ajuste.',
+      'Empieza decidiendo si el medio subido debe guiar el render como referencia o convertirse en el primer frame visible. Usa @Image y @Video1 para O3; usa lenguaje de frame inicial cuando la toma corresponda a Kling 3.',
     strengthsLimits:
-      'Parte de una imagen fuente sólida, una sola instrucción de movimiento y un objetivo de cámara claro para que las salidas image-to-video de Kling AI sean más fáciles de comparar entre Pro y Standard.',
+      'O3 encaja mejor cuando las referencias guían estilo, identidad, estructura de storyboard o movimiento de un video fuente sin abrir el clip. Kling 3 encaja mejor cuando una imagen fuente debe aparecer como primer frame y el prompt debe animar desde esa imagen.',
     pricingNotes:
-      'Mantén alineados la duración, la relación de aspecto y los ajustes de salida al comparar resultados de video IA Kling. Así es más fácil evaluar el comportamiento del prompt, la elección de modelo y el coste por clip antes de abrir una página de modelo.',
+      'Mantén alineados duración, relación de aspecto, audio y resolución al comparar resultados Kling. Usa Standard para pruebas O3 de menor costo, Pro para pasadas con referencias/V2V más sólidas y 4K solo cuando la dirección ya esté aprobada.',
     faq: [
       {
         question: '¿Cuánto pueden durar los videos de Kling AI?',
         answer:
-          'Kling 3 Pro y Kling 3 Standard admiten renders de 3 a 15 segundos en 1080p. Kling 2.6 Pro encaja mejor en clips audio-ready más cortos de 5 a 10 segundos, y Kling 2.5 Turbo se usa sobre todo para borradores silenciosos rápidos de 5 o 10 segundos.',
+          'Kling 3.0 Omni Standard y Pro admiten renders 1080p guiados por referencias de hasta 15 segundos, con V2V desde video fuente en Standard y Pro. La ruta O3 4K es para entregas 4K nativas guiadas por referencias, mientras Kling 3 sigue siendo la ruta image-to-video con frame inicial.',
       },
       {
         question: '¿Cuánto tarda Kling AI en generar un video?',
         answer:
-          'El tiempo de render depende del modelo Kling, de la duración del clip, de los ajustes y de la cola. Las tandas de borrador más cortas en Kling 3 Standard o Kling 2.5 Turbo suelen ser la forma más rápida de probar prompts, mientras que los renders multi-shot o con audio tardan más.',
+          'El tiempo de render depende del modelo Kling, la duración, los medios subidos, el audio, la resolución y la cola. Las pruebas cortas en Standard suelen ser la forma más rápida de validar una dirección, mientras O3 V2V, audio activo y 4K nativo tardan más.',
       },
       {
         question: '¿Qué modelo de Kling AI debería usar para prompts y ejemplos?',
         answer:
-          'Empieza con Kling 3 Standard cuando quieras probar prompts a menor coste, hacer borradores repetibles y mantenerte en el comportamiento actual de Kling 3. Pasa a Kling 3 Pro para mayor control de escena y usa Kling 3 4K solo para renders finales nativos 4K aprobados.',
+          'Usa Kling 3.0 Omni Standard o Pro cuando referencias, storyboard o @Video1 deben guiar el render sin convertirse en la apertura del clip. Usa Kling 3 Standard o Pro cuando la imagen subida debe ser el frame inicial visible.',
       },
       {
         question: '¿Cómo debería usar Kling AI para pruebas de prompt en image-to-video?',
         answer:
-          'Parte de una imagen fuente clara, añade una sola instrucción de movimiento y un objetivo de cámara preciso. Las pruebas de Kling AI en image-to-video se leen mejor cuando la estructura del prompt se mantiene estable y solo cambian el modelo o el ajuste.',
+          'Para O3, asigna un rol claro a cada referencia con @Image1, @Image2 o @Video1. Para Kling 3, parte de una imagen fuente clara, una instrucción de movimiento y un objetivo de cámara, porque la imagen debe abrir el clip.',
       },
       {
         question: '¿Cómo debería adaptar prompts de Kling AI entre Kling 3 Pro y Kling 3 Standard?',
         answer:
-          'Mantén la misma estructura base en ambos modelos: un sujeto claro, una acción por toma y una dirección de cámara explícita. Kling 3 Pro soporta mejor instrucciones multi-shot más densas y continuidad más exigente, mientras que Kling 3 Standard funciona mejor cuando la estructura de la toma es más compacta.',
+          'Mantén el mismo sujeto, acción, dirección de cámara y duración al comparar tiers. Cambia solo la intención de ruta: O3 para referencias/storyboard/V2V, Kling 3 para frame inicial y 4K solo para renders de entrega aprobados.',
       },
     ],
   },

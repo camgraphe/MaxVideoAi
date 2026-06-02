@@ -103,7 +103,7 @@ export function SettingsKlingV3Controls({
   if (isCompact) {
     return (
       <div className="space-y-3">
-        <span className={labelClass}>Kling v3 controls</span>
+        <span className={labelClass}>Kling controls</span>
         <div className="grid gap-3 md:grid-cols-2">{body}</div>
       </div>
     );
@@ -111,7 +111,7 @@ export function SettingsKlingV3Controls({
 
   return (
     <div className="space-y-2">
-      <span className={labelClass}>Kling v3 controls</span>
+      <span className={labelClass}>Kling controls</span>
       <div className="space-y-2 rounded-input border border-border bg-surface p-3">{body}</div>
     </div>
   );
