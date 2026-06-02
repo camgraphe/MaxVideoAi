@@ -9,6 +9,8 @@ const contentPath = join(root, 'frontend/app/(core)/video/[id]/_components/Video
 const cardPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchCard.tsx');
 const relatedPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchRelatedExamples.tsx');
 const sidebarPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSidebar.tsx');
+const sourceImagesPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSourceImages.tsx');
+const sourceImagesClientPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSourceImages.client.tsx');
 const unavailablePath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoUnavailableState.tsx');
 const utilsPath = join(root, 'frontend/app/(core)/video/[id]/_lib/video-watch-page-utils.ts');
 
@@ -17,6 +19,8 @@ const contentSource = readFileSync(contentPath, 'utf8');
 const cardSource = readFileSync(cardPath, 'utf8');
 const relatedSource = readFileSync(relatedPath, 'utf8');
 const sidebarSource = readFileSync(sidebarPath, 'utf8');
+const sourceImagesSource = existsSync(sourceImagesPath) ? readFileSync(sourceImagesPath, 'utf8') : '';
+const sourceImagesClientSource = existsSync(sourceImagesClientPath) ? readFileSync(sourceImagesClientPath, 'utf8') : '';
 const unavailableSource = readFileSync(unavailablePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
 
@@ -26,6 +30,8 @@ test('video watch page stays a route orchestrator', () => {
   assert.ok(existsSync(cardPath), 'video watch card shell should exist');
   assert.ok(existsSync(relatedPath), 'video watch related examples component should exist');
   assert.ok(existsSync(sidebarPath), 'video watch sidebar component should exist');
+  assert.ok(existsSync(sourceImagesPath), 'video watch source images server wrapper should exist');
+  assert.ok(existsSync(sourceImagesClientPath), 'video watch source images lightbox should exist');
   assert.ok(existsSync(unavailablePath), 'video unavailable component should exist');
   assert.ok(existsSync(utilsPath), 'video watch helper module should exist');
 
@@ -54,6 +60,13 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /Prompt improvement notes/, 'watch page should include prompt improvement notes');
   assert.match(contentSource, /Compare this model/, 'watch page should include compare links');
   assert.match(contentSource, /Estimated price/, 'watch page should label the estimated render price');
+  assert.match(contentSource, /Visual workflow context/, 'public watch page should name editorial visual context without exposing SEO jargon');
+  assert.doesNotMatch(contentSource, /SEO context/, 'public watch page should not expose SEO implementation labels');
+  assert.doesNotMatch(contentSource, /signals\.seoPromptContext \? 'SEO context'/, 'editorial context should not be repeated as a table row');
+  assert.ok(
+    contentSource.indexOf('<VideoWatchSourceImages') < contentSource.indexOf('{promptContextTitle}'),
+    'storyboard and source images should render above the prompt breakdown card',
+  );
   assert.match(contentSource, /dangerouslySetInnerHTML/, 'content component should own JSON-LD script rendering');
   assert.match(contentSource, /from '\.\/VideoWatchCard'/, 'content component should compose the watch card shell');
   assert.match(contentSource, /from '\.\/VideoWatchRelatedExamples'/, 'content component should compose related examples');
@@ -65,6 +78,19 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(cardSource, /export function VideoWatchCard/, 'watch card shell should be exported');
   assert.match(relatedSource, /export function VideoWatchRelatedExamples/, 'related examples component should be exported');
   assert.match(sidebarSource, /export function VideoWatchSidebar/, 'sidebar component should be exported');
+  assert.match(sourceImagesSource, /VideoWatchSourceImagesClient/, 'server source image wrapper should compose the client lightbox');
+  assert.doesNotMatch(sourceImagesSource, /'use client'/, 'source image URL normalization should stay server-renderable');
+  assert.match(sourceImagesClientSource, /'use client'/, 'source image lightbox should own client interaction state');
+  assert.match(sourceImagesClientSource, /role="dialog"/, 'source image lightbox should use dialog semantics');
+  assert.match(sourceImagesClientSource, /aria-modal="true"/, 'source image lightbox should be modal to assistive tech');
+  assert.match(sourceImagesClientSource, /setSelectedIndex\(index\)/, 'source image thumbnails should open the selected image');
+  assert.match(sourceImagesClientSource, /setSelectedIndex\(null\)/, 'source image lightbox should expose close actions');
+  assert.match(sourceImagesClientSource, /Escape/, 'source image lightbox should close from the keyboard');
+  assert.match(sourceImagesClientSource, /ArrowLeft/, 'source image lightbox should support previous-image keyboard navigation');
+  assert.match(sourceImagesClientSource, /ArrowRight/, 'source image lightbox should support next-image keyboard navigation');
+  assert.match(sourceImagesClientSource, /View larger/, 'source image thumbnails should advertise the enlarged view affordance');
+  assert.match(sourceImagesClientSource, /object-contain/, 'source image previews should preserve storyboard and frame aspect ratios');
+  assert.match(sourceImagesClientSource, /Open original/, 'source image lightbox should expose the original asset URL');
   assert.match(sidebarSource, /function buildHighlightItems/, 'sidebar should own highlight view model');
   assert.match(sidebarSource, /function getDetailIcon/, 'sidebar should own detail icon mapping');
   assert.match(unavailableSource, /export function VideoUnavailableState/, 'unavailable component should be exported');

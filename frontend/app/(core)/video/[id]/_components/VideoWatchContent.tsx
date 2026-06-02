@@ -81,12 +81,16 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const costLabel = getDetailValue(detailRows, 'cost');
   const createdLabel = formatWatchDate(video.createdAt);
   const promptContextText = signals.seoPromptContext ?? signals.promptPreview;
+  const promptContextTitle = signals.seoPromptContext ? 'Visual workflow context' : 'Prompt breakdown';
+  const promptContextDescription = signals.seoPromptContext
+    ? 'Editorial notes for the source images and visual reference workflow.'
+    : 'Prompt used to generate this render.';
   const sourceImagesTitle = signals.seoPromptContext?.toLowerCase().includes('storyboard') ? 'Storyboard inputs' : 'Source images';
   const cameraHighlights = signals.capabilityTags
     .filter((tag) => ['push-in', 'tracking', 'drone', 'close-up', 'transition', 'camera-lock'].includes(tag))
     .map(humanizeTag);
   const promptBreakdownRows = [
-    { label: signals.seoPromptContext ? 'SEO context' : 'Subject', value: promptContextText },
+    ...(!signals.seoPromptContext ? [{ label: 'Subject', value: promptContextText }] : []),
     { label: 'Workflow', value: workflowLabel },
     { label: 'Camera', value: cameraHighlights.length ? cameraHighlights.join(', ') : humanizeTag(signals.primaryIntent) },
     { label: 'Output', value: [durationLabel, aspectLabel, resolutionLabel].filter(Boolean).join(' · ') },
@@ -195,16 +199,16 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
             </div>
           </VideoWatchCard>
 
+          <VideoWatchSourceImages title={sourceImagesTitle} sourceImages={signals.sourceImages} />
+
           <VideoWatchCard className="p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="inline-flex items-center gap-2">
                   <TextCursorInput className="h-4 w-4 text-brand" aria-hidden />
-                  <h2 className="text-lg font-semibold text-text-primary">Prompt breakdown</h2>
+                  <h2 className="text-lg font-semibold text-text-primary">{promptContextTitle}</h2>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {signals.seoPromptContext ? 'Editorial context for this visual workflow.' : 'Prompt used to generate this render.'}
-                </p>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{promptContextDescription}</p>
               </div>
               <CopyPromptButton promptElementId={fullPromptId} copyLabel="Copy full prompt" copiedLabel="Copied!" />
             </div>
@@ -240,8 +244,6 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               <p id={fullPromptId} className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
             </details>
           </VideoWatchCard>
-
-          <VideoWatchSourceImages title={sourceImagesTitle} sourceImages={signals.sourceImages} />
 
           {signals.promptImprovementNotes.length ? (
             <VideoWatchCard className="p-5 sm:p-6">
