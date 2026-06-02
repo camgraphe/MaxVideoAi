@@ -266,6 +266,35 @@ export function getExampleFamilyEngineAliases(familyId: string): string[] {
   return [...(FAMILY_STATE.engineAliasesByFamily.get(family.id as ModelFamilyId) ?? [])];
 }
 
+export function getExampleModelEngineAliases(modelSlug: string): string[] {
+  const normalizedModelSlug = modelSlug.trim().toLowerCase();
+  if (!normalizedModelSlug) return [];
+
+  const entry = FAL_ENGINES.find((candidate) => candidate.modelSlug === normalizedModelSlug || candidate.id === normalizedModelSlug);
+  if (!entry) {
+    return [normalizedModelSlug];
+  }
+
+  const aliases = new Set<string>();
+  const addAlias = (value: string | null | undefined) => {
+    if (!value) return;
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return;
+    aliases.add(normalized);
+    const canonical = normalizeEngineId(value)?.trim().toLowerCase();
+    if (canonical) {
+      aliases.add(canonical);
+    }
+  };
+
+  addAlias(entry.id);
+  addAlias(entry.modelSlug);
+  addAlias(entry.defaultFalModelId);
+  entry.modes.forEach((mode) => addAlias(mode.falModelId));
+
+  return Array.from(aliases);
+}
+
 export function getExampleFamilyVariantLabels(familyId: string): string[] {
   const family = getModelFamilyDefinition(familyId);
   if (!family) return [];

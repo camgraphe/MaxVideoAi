@@ -1,15 +1,19 @@
 import clsx from 'clsx';
 import { GROUP_LABELS } from './playlist-helpers';
-import type { EditablePlaylist, FamilyPlaylistHelperCard } from './playlist-types';
+import type { EditablePlaylist, FamilyPlaylistHelperCard, ModelPlaylistHelperCard } from './playlist-types';
 import { MissingFamilyCard } from './MissingFamilyCard';
+import { MissingModelCard } from './MissingModelCard';
 import { PlaylistRailCard } from './PlaylistRailCard';
 
 export function PlaylistsSidebar({
   emptyFamilyCount,
   familyHelpers,
+  modelHelpers,
   groupedPlaylists,
   onCreateMissingFamilyPlaylists,
+  onCreateMissingModelPlaylists,
   onSeedFamilyPlaylist,
+  onSeedModelPlaylist,
   onSelectPlaylist,
   onToggleFamilyCollections,
   onToggleModelCollections,
@@ -21,6 +25,7 @@ export function PlaylistsSidebar({
 }: {
   emptyFamilyCount: number;
   familyHelpers: FamilyPlaylistHelperCard[];
+  modelHelpers: ModelPlaylistHelperCard[];
   groupedPlaylists: {
     runtime: EditablePlaylist[];
     family: EditablePlaylist[];
@@ -28,7 +33,9 @@ export function PlaylistsSidebar({
     draft: EditablePlaylist[];
   };
   onCreateMissingFamilyPlaylists: (familyId?: string | null) => void;
+  onCreateMissingModelPlaylists: (modelSlug?: string | null) => void;
   onSeedFamilyPlaylist: (familyId: string) => void;
+  onSeedModelPlaylist: (modelSlug: string) => void;
   onSelectPlaylist: (playlistId: string) => void;
   onToggleFamilyCollections: () => void;
   onToggleModelCollections: () => void;
@@ -104,7 +111,7 @@ export function PlaylistsSidebar({
         ) : null}
       </section>
 
-      {groupedPlaylists.model.length ? (
+      {modelHelpers.length ? (
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -115,18 +122,34 @@ export function PlaylistsSidebar({
               <DisclosureIcon open={showModelCollections} />
               <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.model}</h2>
             </button>
-            <span className="text-xs text-text-muted">{groupedPlaylists.model.length}</span>
+            <span className="text-xs text-text-muted">{modelHelpers.length}</span>
           </div>
           {showModelCollections ? (
             <div className="space-y-2">
-              {groupedPlaylists.model.map((playlist) => (
-                <PlaylistRailCard
-                  key={playlist.id}
-                  playlist={playlist}
-                  isActive={playlist.id === selectedId}
-                  onSelect={onSelectPlaylist}
-                />
-              ))}
+              {modelHelpers.map((helper) => {
+                const playlist = helper.playlistId
+                  ? groupedPlaylists.model.find((entry) => entry.id === helper.playlistId) ?? null
+                  : null;
+                if (playlist) {
+                  return (
+                    <PlaylistRailCard
+                      key={playlist.id}
+                      playlist={playlist}
+                      isActive={playlist.id === selectedId}
+                      onSelect={onSelectPlaylist}
+                    />
+                  );
+                }
+                return (
+                  <MissingModelCard
+                    key={helper.modelSlug}
+                    helper={helper}
+                    onCreate={(modelSlug) => onCreateMissingModelPlaylists(modelSlug)}
+                    onSeed={onSeedModelPlaylist}
+                    pending={pending}
+                  />
+                );
+              })}
             </div>
           ) : null}
         </section>

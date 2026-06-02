@@ -65,3 +65,16 @@ export type FamilyPlaylistHelperCard = {
   status: 'ready' | 'missing' | 'empty';
   playlistId: string | null;
 };
+
+export type ModelPlaylistHelperCard = {
+  modelSlug: string;
+  label: string;
+  slug: string;
+  route: string;
+  familyId: string | null;
+  familyLabel: string | null;
+  familyRoute: string | null;
+  helperText: string;
+  status: 'ready' | 'missing' | 'empty';
+  playlistId: string | null;
+};

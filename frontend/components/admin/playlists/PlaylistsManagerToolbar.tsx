@@ -13,12 +13,15 @@ type PlaylistsManagerToolbarProps = {
   embedded: boolean;
   isPending: boolean;
   missingFamilyCount: number;
+  missingModelCount: number;
   onCreateDescriptionChange: (value: string) => void;
   onCreateNameChange: (value: string) => void;
   onCreateSlugChange: (value: string) => void;
   onCreateSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCreateMissingFamilyPlaylists: () => void;
+  onCreateMissingModelPlaylists: () => void;
   onSeedAllFamilyPlaylists: () => void;
+  onSeedAllModelPlaylists: () => void;
   onToggleCreateForm: () => void;
   onToggleDraftCollections: () => void;
   showCreateForm: boolean;
@@ -33,12 +36,15 @@ export function PlaylistsManagerToolbar({
   embedded,
   isPending,
   missingFamilyCount,
+  missingModelCount,
   onCreateDescriptionChange,
   onCreateNameChange,
   onCreateSlugChange,
   onCreateSubmit,
   onCreateMissingFamilyPlaylists,
+  onCreateMissingModelPlaylists,
   onSeedAllFamilyPlaylists,
+  onSeedAllModelPlaylists,
   onToggleCreateForm,
   onToggleDraftCollections,
   showCreateForm,
@@ -65,8 +71,14 @@ export function PlaylistsManagerToolbar({
           <Button type="button" variant="outline" size="sm" onClick={onCreateMissingFamilyPlaylists}>
             {missingFamilyCount > 0 ? `Create missing family playlists (${missingFamilyCount})` : 'Sync family playlists'}
           </Button>
+          <Button type="button" variant="outline" size="sm" onClick={onCreateMissingModelPlaylists}>
+            {missingModelCount > 0 ? `Create missing model playlists (${missingModelCount})` : 'Sync model playlists'}
+          </Button>
           <Button type="button" variant="outline" size="sm" onClick={onSeedAllFamilyPlaylists}>
             Seed all family playlists
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={onSeedAllModelPlaylists}>
+            Seed all model playlists
           </Button>
           <Button type="button" size="sm" onClick={onToggleCreateForm}>
             {showCreateForm ? 'Close new collection' : '+ New collection'}
