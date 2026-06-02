@@ -1,13 +1,17 @@
+import { listFalEngines } from '@/config/falEngines';
 import { getExampleFamilyDescriptor, getExampleFamilyIds, getExampleFamilyModelSlugs } from '@/lib/model-families';
 import type {
   EditablePlaylist,
   FamilyPlaylistHelperCard,
+  ModelPlaylistHelperCard,
   PlaylistGroup,
   PlaylistItemRecord,
   PlaylistSummary,
   PlaylistSurfaceRole,
   PlaylistSurfaceStatus,
 } from './playlist-types';
+
+const MODEL_LABEL_BY_SLUG = new Map(listFalEngines().map((entry) => [entry.modelSlug, entry.marketingName]));
 
 const PLACEHOLDER_MAP: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -152,6 +156,36 @@ export function buildFamilyHelpers(playlists: PlaylistSummary[]): FamilyPlaylist
       status: playlist ? (playlist.itemCount > 0 ? 'ready' : 'empty') : 'missing',
       playlistId: playlist?.id ?? null,
     };
+  });
+}
+
+export function buildModelHelpers(playlists: PlaylistSummary[]): ModelPlaylistHelperCard[] {
+  const byModelSlug = new Map<string, PlaylistSummary>();
+  playlists.forEach((playlist) => {
+    if (playlist.surfaceRole === 'model' && playlist.modelSlug) {
+      byModelSlug.set(playlist.modelSlug, playlist);
+    }
+  });
+
+  return getExampleFamilyIds().flatMap((familyId) => {
+    const descriptor = getExampleFamilyDescriptor(familyId);
+    return getExampleFamilyModelSlugs(familyId).map((modelSlug) => {
+      const playlist = byModelSlug.get(modelSlug) ?? null;
+      const label = MODEL_LABEL_BY_SLUG.get(modelSlug) ?? modelSlug;
+      const familyRoute = `/examples/${familyId}`;
+      return {
+        modelSlug,
+        label,
+        slug: buildHelperFallbackLabel(modelSlug),
+        route: `/models/${modelSlug}`,
+        familyId,
+        familyLabel: descriptor?.label ?? familyId,
+        familyRoute,
+        helperText: `Feeds /models/${modelSlug} and contributes to ${familyRoute} fallback.`,
+        status: playlist ? (playlist.itemCount > 0 ? 'ready' : 'empty') : 'missing',
+        playlistId: playlist?.id ?? null,
+      };
+    });
   });
 }
 

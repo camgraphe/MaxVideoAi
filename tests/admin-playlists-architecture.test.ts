@@ -11,6 +11,7 @@ const helpersPath = join(playlistsDir, 'playlist-helpers.ts');
 const statusPillPath = join(playlistsDir, 'PlaylistStatusPill.tsx');
 const railCardPath = join(playlistsDir, 'PlaylistRailCard.tsx');
 const missingFamilyCardPath = join(playlistsDir, 'MissingFamilyCard.tsx');
+const missingModelCardPath = join(playlistsDir, 'MissingModelCard.tsx');
 const sidebarPath = join(playlistsDir, 'PlaylistsSidebar.tsx');
 const createFormPath = join(playlistsDir, 'PlaylistCreateForm.tsx');
 const detailsPanelPath = join(playlistsDir, 'PlaylistDetailsPanel.tsx');
@@ -18,6 +19,7 @@ const feedbackBannersPath = join(playlistsDir, 'PlaylistFeedbackBanners.tsx');
 const itemsSectionPath = join(playlistsDir, 'PlaylistItemsSection.tsx');
 const toolbarPath = join(playlistsDir, 'PlaylistsManagerToolbar.tsx');
 const selectionPanelPath = join(playlistsDir, 'PlaylistsManagerSelectionPanel.tsx');
+const helperActionsHookPath = join(playlistsDir, 'usePlaylistHelperActions.ts');
 const dragHookPath = join(playlistsDir, 'usePlaylistDragReorder.ts');
 
 const managerSource = readFileSync(managerPath, 'utf8');
@@ -31,6 +33,7 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
     statusPillPath,
     railCardPath,
     missingFamilyCardPath,
+    missingModelCardPath,
     sidebarPath,
     createFormPath,
     detailsPanelPath,
@@ -38,6 +41,7 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
     itemsSectionPath,
     toolbarPath,
     selectionPanelPath,
+    helperActionsHookPath,
     dragHookPath,
   ]) {
     assert.ok(existsSync(file), `${file} should exist`);
@@ -50,6 +54,7 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistItemsSection'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsManagerToolbar'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsManagerSelectionPanel'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/usePlaylistHelperActions'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/usePlaylistDragReorder'/);
 });
 
@@ -57,8 +62,10 @@ test('admin playlists manager does not regain extracted ownership', () => {
   assert.doesNotMatch(managerSource, /type PlaylistSummary =/, 'playlist contracts belong in playlist-types.ts');
   assert.doesNotMatch(managerSource, /function buildFamilyHelpers\(/, 'family helper derivation belongs in playlist-helpers.ts');
   assert.doesNotMatch(managerSource, /getExampleFamilyIds/, 'model family catalog access belongs in playlist-helpers.ts');
+  assert.doesNotMatch(managerSource, /action: 'seed-family-playlist'/, 'playlist helper API orchestration belongs in usePlaylistHelperActions.ts');
   assert.doesNotMatch(managerSource, /function PlaylistRailCard\(/, 'rail card UI belongs in PlaylistRailCard.tsx');
   assert.doesNotMatch(managerSource, /function MissingFamilyCard\(/, 'missing family helper UI belongs in MissingFamilyCard.tsx');
+  assert.doesNotMatch(managerSource, /function MissingModelCard\(/, 'missing model helper UI belongs in MissingModelCard.tsx');
   assert.doesNotMatch(managerSource, /GROUP_LABELS\.runtime/, 'playlist rail grouping belongs in PlaylistsSidebar.tsx');
   assert.doesNotMatch(managerSource, /showModelCollections \? \(/, 'model rail disclosure belongs in PlaylistsSidebar.tsx');
   assert.doesNotMatch(managerSource, /placeholder="Homepage holiday edits"/, 'new collection form UI belongs in PlaylistCreateForm.tsx');
@@ -79,15 +86,17 @@ test('admin playlist helper modules expose the expected contract', () => {
   const itemsSectionSource = readFileSync(itemsSectionPath, 'utf8');
   const toolbarSource = readFileSync(toolbarPath, 'utf8');
   const selectionPanelSource = readFileSync(selectionPanelPath, 'utf8');
+  const helperActionsHookSource = readFileSync(helperActionsHookPath, 'utf8');
   const dragHookSource = readFileSync(dragHookPath, 'utf8');
 
-  for (const typeName of ['PlaylistSummary', 'PlaylistItemRecord', 'PlaylistsManagerProps', 'EditablePlaylist', 'FamilyPlaylistHelperCard']) {
+  for (const typeName of ['PlaylistSummary', 'PlaylistItemRecord', 'PlaylistsManagerProps', 'EditablePlaylist', 'FamilyPlaylistHelperCard', 'ModelPlaylistHelperCard']) {
     assert.match(typesSource, new RegExp(`export type ${typeName}\\b`), `${typeName} should be exported`);
   }
 
   assert.match(sidebarSource, /export function PlaylistsSidebar/, 'PlaylistsSidebar should be exported');
   assert.match(sidebarSource, /GROUP_LABELS\.runtime/, 'PlaylistsSidebar should own rail grouping labels');
   assert.match(sidebarSource, /MissingFamilyCard/, 'PlaylistsSidebar should compose missing family cards');
+  assert.match(sidebarSource, /MissingModelCard/, 'PlaylistsSidebar should compose missing model cards');
   assert.match(createFormSource, /export function PlaylistCreateForm/, 'PlaylistCreateForm should be exported');
   assert.match(createFormSource, /placeholder="Homepage holiday edits"/, 'PlaylistCreateForm should own new collection form fields');
   assert.match(detailsPanelSource, /export function PlaylistDetailsPanel/, 'PlaylistDetailsPanel should be exported');
@@ -100,6 +109,8 @@ test('admin playlist helper modules expose the expected contract', () => {
   assert.match(toolbarSource, /PlaylistCreateForm/, 'PlaylistsManagerToolbar should compose the create form');
   assert.match(selectionPanelSource, /export function PlaylistsManagerSelectionPanel/, 'PlaylistsManagerSelectionPanel should be exported');
   assert.match(selectionPanelSource, /PlaylistDetailsPanel/, 'PlaylistsManagerSelectionPanel should compose details');
+  assert.match(helperActionsHookSource, /export function usePlaylistHelperActions/, 'helper API actions should live in a dedicated hook');
+  assert.match(helperActionsHookSource, /seed-model-playlist/, 'model playlist helper action should stay in the helper hook');
   assert.match(dragHookSource, /export function usePlaylistDragReorder/, 'drag/drop behavior should live in a dedicated hook');
   assert.match(dragHookSource, /dragGhostRef/, 'drag/drop DOM state should stay out of PlaylistsManager');
 
@@ -113,6 +124,7 @@ test('admin playlist helper modules expose the expected contract', () => {
     'buildPlaylistUpdateFromItems',
     'getPlaylistGroup',
     'buildFamilyHelpers',
+    'buildModelHelpers',
     'sortItemsForDisplay',
     'getSurfaceRoleLabel',
     'getSurfaceRoleTone',

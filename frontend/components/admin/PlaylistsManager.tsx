@@ -15,9 +15,11 @@ import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItem
 import { PlaylistsManagerToolbar } from '@/components/admin/playlists/PlaylistsManagerToolbar';
 import { PlaylistsManagerSelectionPanel } from '@/components/admin/playlists/PlaylistsManagerSelectionPanel';
 import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
+import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
 import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
 import {
   buildFamilyHelpers,
+  buildModelHelpers,
   buildPlaylistUpdateFromItems,
   getPlaylistGroup,
   sortItemsForDisplay,
@@ -91,6 +93,7 @@ export function PlaylistsManager({
   );
 
   const familyHelpers = useMemo(() => buildFamilyHelpers(playlists), [playlists]);
+  const modelHelpers = useMemo(() => buildModelHelpers(playlists), [playlists]);
 
   const syncPlaylistDetail = useCallback(
     (playlistId: string, nextPlaylist: PlaylistSummary | undefined, nextItems: PlaylistItemRecord[], basePlaylists?: EditablePlaylist[]) => {
@@ -161,6 +164,21 @@ export function PlaylistsManager({
     },
     [clearDragState, refreshPlaylistItems]
   );
+
+  const {
+    handleCreateMissingFamilyPlaylists,
+    handleCreateMissingModelPlaylists,
+    handleSeedAllFamilyPlaylists,
+    handleSeedAllModelPlaylists,
+    handleSeedFamilyPlaylist,
+    handleSeedModelPlaylist,
+  } = usePlaylistHelperActions({
+    refreshPlaylistsState,
+    selectedId,
+    setError,
+    setFeedback,
+    startTransition,
+  });
 
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
@@ -336,85 +354,6 @@ export function PlaylistsManager({
     [refreshPlaylistItems, selectedId]
   );
 
-  const handleCreateMissingFamilyPlaylists = useCallback(
-    (preferredFamilyId?: string | null) => {
-      startTransition(async () => {
-        try {
-          setFeedback(null);
-          setError(null);
-          const res = await authFetch('/api/admin/playlists/helpers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'create-missing-family-playlists' }),
-          });
-          const json = await res.json().catch(() => ({ ok: false }));
-          if (!res.ok || !json?.ok || !Array.isArray(json.playlists)) {
-            throw new Error(json?.error ?? `Failed to create family playlists (${res.status})`);
-          }
-          const selectedFamilyPlaylistId =
-            preferredFamilyId
-              ? (json.playlists as PlaylistSummary[]).find((playlist) => playlist.familyId === preferredFamilyId)?.id ?? null
-              : null;
-          await refreshPlaylistsState(selectedFamilyPlaylistId ?? selectedId);
-          setFeedback('Family playlists synced');
-        } catch (helperError) {
-          console.error('[PlaylistsManager] create missing family playlists failed', helperError);
-          setError(helperError instanceof Error ? helperError.message : 'Failed to create family playlists');
-        }
-      });
-    },
-    [refreshPlaylistsState, selectedId]
-  );
-
-  const handleSeedFamilyPlaylist = useCallback(
-    (familyId: string) => {
-      startTransition(async () => {
-        try {
-          setFeedback(null);
-          setError(null);
-          const res = await authFetch('/api/admin/playlists/helpers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'seed-family-playlist', familyId }),
-          });
-          const json = await res.json().catch(() => ({ ok: false }));
-          if (!res.ok || !json?.ok || !json.result?.playlist?.id) {
-            throw new Error(json?.error ?? `Failed to seed family playlist (${res.status})`);
-          }
-          await refreshPlaylistsState(json.result.playlist.id as string);
-          setFeedback(`Family playlist seeded for ${familyId}`);
-        } catch (helperError) {
-          console.error('[PlaylistsManager] seed family playlist failed', helperError);
-          setError(helperError instanceof Error ? helperError.message : 'Failed to seed family playlist');
-        }
-      });
-    },
-    [refreshPlaylistsState]
-  );
-
-  const handleSeedAllFamilyPlaylists = useCallback(() => {
-    startTransition(async () => {
-      try {
-        setFeedback(null);
-        setError(null);
-        const res = await authFetch('/api/admin/playlists/helpers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'seed-all-family-playlists' }),
-        });
-        const json = await res.json().catch(() => ({ ok: false }));
-        if (!res.ok || !json?.ok) {
-          throw new Error(json?.error ?? `Failed to seed family playlists (${res.status})`);
-        }
-        await refreshPlaylistsState(selectedId);
-        setFeedback('All family playlists seeded from the current live order');
-      } catch (helperError) {
-        console.error('[PlaylistsManager] seed all family playlists failed', helperError);
-        setError(helperError instanceof Error ? helperError.message : 'Failed to seed family playlists');
-      }
-    });
-  }, [refreshPlaylistsState, selectedId]);
-
   const handleSaveItems = useCallback(() => {
     if (!selectedId) return;
     startTransition(async () => {
@@ -442,6 +381,7 @@ export function PlaylistsManager({
   }, [items, refreshPlaylistItems, selectedId]);
 
   const missingFamilyCount = familyHelpers.filter((helper) => helper.status === 'missing').length;
+  const missingModelCount = modelHelpers.filter((helper) => helper.status === 'missing').length;
   const emptyFamilyCount = familyHelpers.filter((helper) => helper.status === 'empty').length;
 
   return (
@@ -449,10 +389,13 @@ export function PlaylistsManager({
       <PlaylistsManagerToolbar
         createDescription={createDescription} createName={createName} createSlug={createSlug}
         draftCount={groupedPlaylists.draft.length} embedded={embedded} isPending={isPending}
-        missingFamilyCount={missingFamilyCount} onCreateDescriptionChange={setCreateDescription}
+        missingFamilyCount={missingFamilyCount} missingModelCount={missingModelCount}
+        onCreateDescriptionChange={setCreateDescription}
         onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
         onCreateNameChange={setCreateName} onCreateSlugChange={setCreateSlug} onCreateSubmit={handleCreatePlaylist}
-        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists} showCreateForm={showCreateForm}
+        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists} onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
+        showCreateForm={showCreateForm}
         onToggleCreateForm={() => setShowCreateForm((current) => !current)}
         onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
         showDraftCollections={showDraftCollections}
@@ -462,9 +405,12 @@ export function PlaylistsManager({
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
         <PlaylistsSidebar
-          emptyFamilyCount={emptyFamilyCount} familyHelpers={familyHelpers} groupedPlaylists={groupedPlaylists}
+          emptyFamilyCount={emptyFamilyCount} familyHelpers={familyHelpers} modelHelpers={modelHelpers}
+          groupedPlaylists={groupedPlaylists}
           onCreateMissingFamilyPlaylists={handleCreateMissingFamilyPlaylists}
-          onSeedFamilyPlaylist={handleSeedFamilyPlaylist} onSelectPlaylist={handleSelectPlaylist}
+          onCreateMissingModelPlaylists={handleCreateMissingModelPlaylists}
+          onSeedFamilyPlaylist={handleSeedFamilyPlaylist} onSeedModelPlaylist={handleSeedModelPlaylist}
+          onSelectPlaylist={handleSelectPlaylist}
           onToggleFamilyCollections={() => setShowFamilyCollections((current) => !current)}
           onToggleModelCollections={() => setShowModelCollections((current) => !current)}
           pending={isPending} selectedId={selectedId} showDraftCollections={showDraftCollections}

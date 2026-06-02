@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
+import { resolveExampleFamilyId } from '@/lib/model-families';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import {
   createMissingFamilyPlaylists,
+  createMissingModelPlaylists,
   seedAllFamilyPlaylistsFromCurrentOrder,
+  seedAllModelPlaylistsFromCurrentOrder,
   seedFamilyPlaylistFromCurrentOrder,
+  seedModelPlaylistFromCurrentOrder,
 } from '@/server/example-family-playlists';
 
-type HelpersAction = 'create-missing-family-playlists' | 'seed-family-playlist' | 'seed-all-family-playlists';
+type HelpersAction =
+  | 'create-missing-family-playlists'
+  | 'create-missing-model-playlists'
+  | 'seed-family-playlist'
+  | 'seed-model-playlist'
+  | 'seed-all-family-playlists'
+  | 'seed-all-model-playlists';
 
 export async function POST(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -41,6 +51,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, playlists });
     }
 
+    if (action === 'create-missing-model-playlists') {
+      const playlists = await createMissingModelPlaylists(adminId);
+      return NextResponse.json({ ok: true, playlists });
+    }
+
     if (action === 'seed-family-playlist') {
       const familyId = typeof (body as { familyId?: string }).familyId === 'string'
         ? (body as { familyId: string }).familyId.trim().toLowerCase()
@@ -54,10 +69,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, result });
     }
 
+    if (action === 'seed-model-playlist') {
+      const modelSlug = typeof (body as { modelSlug?: string }).modelSlug === 'string'
+        ? (body as { modelSlug: string }).modelSlug.trim().toLowerCase()
+        : '';
+      if (!modelSlug) {
+        return NextResponse.json({ ok: false, error: 'Missing modelSlug' }, { status: 400 });
+      }
+      const result = await seedModelPlaylistFromCurrentOrder(modelSlug, adminId);
+      const familyId = resolveExampleFamilyId(modelSlug);
+      await submitToIndexNow('/examples');
+      await submitToIndexNow(`/models/${modelSlug}`);
+      if (familyId) {
+        await submitToIndexNow(`/examples/${familyId}`);
+      }
+      return NextResponse.json({ ok: true, result });
+    }
+
     if (action === 'seed-all-family-playlists') {
       const results = await seedAllFamilyPlaylistsFromCurrentOrder(adminId);
       await submitToIndexNow('/examples');
       await Promise.all(results.map((result) => submitToIndexNow(`/examples/${result.familyId}`)));
+      return NextResponse.json({ ok: true, results });
+    }
+
+    if (action === 'seed-all-model-playlists') {
+      const results = await seedAllModelPlaylistsFromCurrentOrder(adminId);
+      await submitToIndexNow('/examples');
+      await Promise.all(
+        results.flatMap((result) => {
+          const familyId = resolveExampleFamilyId(result.modelSlug);
+          return [`/models/${result.modelSlug}`, ...(familyId ? [`/examples/${familyId}`] : [])].map((path) =>
+            submitToIndexNow(path)
+          );
+        })
+      );
       return NextResponse.json({ ok: true, results });
     }
 

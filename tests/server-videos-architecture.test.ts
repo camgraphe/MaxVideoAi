@@ -5,15 +5,18 @@ import test from 'node:test';
 const serverPath = 'frontend/server/videos.ts';
 const normalizationPath = 'frontend/server/videos-normalization.ts';
 const examplesPath = 'frontend/server/videos-examples.ts';
+const currentOrderPath = 'frontend/server/videos-current-order.ts';
 
 test('server videos module keeps row normalization and examples helpers focused', () => {
   assert.equal(existsSync(serverPath), true);
   assert.equal(existsSync(normalizationPath), true);
   assert.equal(existsSync(examplesPath), true);
+  assert.equal(existsSync(currentOrderPath), true);
 
   const serverSource = readFileSync(serverPath, 'utf8');
   const normalizationSource = readFileSync(normalizationPath, 'utf8');
   const examplesSource = readFileSync(examplesPath, 'utf8');
+  const currentOrderSource = readFileSync(currentOrderPath, 'utf8');
 
   assert.ok(serverSource.split('\n').length < 420, 'videos.ts should stay under 420 lines after helper extraction');
   assert.match(serverSource, /from '\.\/videos-normalization'/);
@@ -31,6 +34,10 @@ test('server videos module keeps row normalization and examples helpers focused'
   assert.match(examplesSource, /export function sortVideosByPreference/);
   assert.match(examplesSource, /export function paginateGalleryVideos/);
   assert.match(examplesSource, /export function resolveExampleGroupId/);
+
+  assert.match(currentOrderSource, /export async function listExampleFamilyCurrentPublicOrderFromSources/);
+  assert.match(currentOrderSource, /export async function listExampleModelCurrentPublicOrderFromSources/);
+  assert.match(currentOrderSource, /listLatestPublicModelVideos/);
 });
 
 test('server videos facade keeps public gallery and SEO contracts available', () => {
