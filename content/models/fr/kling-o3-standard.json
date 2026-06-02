@@ -7,6 +7,39 @@
   },
   "overview": "Kling 3.0 Omni Standard est la route Kling Omni moins coûteuse pour reference-to-video, drafts storyboard et essais video-to-video depuis une vidéo source.",
   "pricingNotes": "Coût provider approximatif avant marge MaxVideoAI : $0.126/s avec audio, $0.084/s audio off.",
+  "custom": {
+    "galleryTitle": "Drafts de référence Kling 3.0 Omni Standard",
+    "galleryIntro": "Consultez des exemples moins coûteux en storyboard, images de référence et V2V depuis vidéo source avant de passer les plans validés en Pro ou en 4K. Standard sert à tester le guidage visuel sans forcer la première image importée comme frame d’ouverture.",
+    "galleryAllCta": "Voir les exemples Kling ->",
+    "relatedTitle": "Choisir la bonne route Kling",
+    "relatedSubtitle": "Utilisez Standard pour les drafts O3 à moindre coût, Pro quand le V2V et la continuité priment, et Kling 3 Standard quand l’image doit vraiment ouvrir le clip.",
+    "relatedItems": [
+      {
+        "brand": "kling",
+        "title": "Kling 3.0 Omni Pro",
+        "description": "Passez en Pro quand le draft a besoin de continuité storyboard plus forte, de V2V depuis vidéo source, d’audio natif et d’un contrôle par références plus prêt pour production.",
+        "modelSlug": "kling-o3-pro",
+        "ctaLabel": "Comparer Standard vs Pro ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Standard",
+        "description": "Utilisez Kling 3 Standard quand l’image importée doit apparaître comme ouverture du clip au lieu d’être une référence ou un guide storyboard séparé.",
+        "modelSlug": "kling-3-standard",
+        "ctaLabel": "Ouvrir Kling 3 Standard ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Comparez avec Seedance quand la décision porte sur continuité multi-plan, audio natif et comportement storyboard-to-video.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparer avec Seedance 2.0 ->"
+      }
+    ],
+    "finalPara1": "Kling 3.0 Omni Standard est le premier choix pragmatique pour tester des références : storyboard, style et mouvement depuis vidéo source sans payer chaque itération au prix d’un rendu final 4K.",
+    "finalPara2": "Quand un draft Standard valide la composition, reprenez le même plan de références dans Kling 3.0 Omni Pro pour plus de continuité ou en 4K pour la livraison finale.",
+    "finalButton": "Générer avec Kling 3.0 Omni Standard"
+  },
   "hero": {
     "title": "Kling 3.0 Omni Standard pour drafts guidés par références",
     "intro": "Utilisez Kling 3.0 Omni Standard quand les images doivent guider le style, le sujet ou le storyboard sans devenir la première frame, ou quand une vidéo source doit guider le mouvement en V2V. Utilisez Kling 3 Standard quand l’image doit ouvrir le clip.",

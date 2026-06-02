@@ -7,6 +7,39 @@
   },
   "overview": "Kling 3.0 Omni Standard es la ruta Kling Omni de menor costo para reference-to-video, borradores storyboard y pruebas video-to-video desde video fuente.",
   "pricingNotes": "Costo aproximado del proveedor antes del margen MaxVideoAI: $0.126/s con audio y $0.084/s sin audio.",
+  "custom": {
+    "galleryTitle": "Borradores de referencia Kling 3.0 Omni Standard",
+    "galleryIntro": "Revisa ejemplos de menor costo con storyboard, imágenes de referencia y V2V desde video fuente antes de pasar los planos aprobados a Pro o 4K. Standard sirve para probar guía visual sin forzar la primera imagen subida como frame inicial.",
+    "galleryAllCta": "Ver ejemplos Kling ->",
+    "relatedTitle": "Elegir la ruta Kling correcta",
+    "relatedSubtitle": "Usa Standard para borradores O3 de menor costo, Pro cuando importan V2V y continuidad, y Kling 3 Standard cuando la imagen debe abrir el clip.",
+    "relatedItems": [
+      {
+        "brand": "kling",
+        "title": "Kling 3.0 Omni Pro",
+        "description": "Pasa a Pro cuando el borrador necesita más continuidad storyboard, V2V desde video fuente, audio nativo y control por referencias más listo para producción.",
+        "modelSlug": "kling-o3-pro",
+        "ctaLabel": "Comparar Standard vs Pro ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Standard",
+        "description": "Usa Kling 3 Standard cuando la imagen subida debe aparecer como apertura del clip en vez de funcionar como referencia o guía storyboard separada.",
+        "modelSlug": "kling-3-standard",
+        "ctaLabel": "Abrir Kling 3 Standard ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Compara con Seedance cuando la decisión depende de continuidad multi-plano, audio nativo y comportamiento storyboard-to-video.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparar con Seedance 2.0 ->"
+      }
+    ],
+    "finalPara1": "Kling 3.0 Omni Standard es el primer paso práctico para probar referencias: storyboard, estilo y movimiento desde video fuente sin pagar cada iteración como una entrega final 4K.",
+    "finalPara2": "Cuando un borrador Standard valida la composición, reutiliza el mismo plan de referencias en Kling 3.0 Omni Pro para más continuidad o en 4K para la entrega final.",
+    "finalButton": "Generar con Kling 3.0 Omni Standard"
+  },
   "hero": {
     "title": "Kling 3.0 Omni Standard para borradores guiados por referencias",
     "intro": "Usa Kling 3.0 Omni Standard cuando las imágenes deben guiar estilo, sujeto o storyboard sin convertirse en el primer frame, o cuando un video fuente debe guiar el movimiento en V2V. Usa Kling 3 Standard cuando la imagen debe abrir el clip.",

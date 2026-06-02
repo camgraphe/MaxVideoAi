@@ -7,6 +7,39 @@
   },
   "overview": "Kling 3.0 Omni Pro est la route Kling Omni à utiliser quand des images ou une vidéo source doivent guider la vidéo sans devenir automatiquement la première frame.",
   "pricingNotes": "Coût provider approximatif avant marge MaxVideoAI : $0.168/s avec audio, $0.112/s audio off.",
+  "custom": {
+    "galleryTitle": "Démos Kling 3.0 Omni Pro storyboard et V2V",
+    "galleryIntro": "Consultez des exemples Pro avec images de référence, storyboard, V2V depuis vidéo source et audio natif. Ces clips aident à comparer le guidage O3 avec les workflows Kling 3 où l’image importée devient la start frame.",
+    "galleryAllCta": "Voir les exemples Kling ->",
+    "relatedTitle": "Où placer Kling 3.0 Omni Pro",
+    "relatedSubtitle": "Pro est la route O3 principale quand les images de référence et la vidéo source doivent guider le plan sans imposer une frame d’ouverture fixe.",
+    "relatedItems": [
+      {
+        "brand": "kling",
+        "title": "Kling 3.0 Omni Standard",
+        "description": "Utilisez Standard pour des drafts O3 moins chers quand vous testez images de référence, direction storyboard ou V2V avant un passage Pro.",
+        "modelSlug": "kling-o3-standard",
+        "ctaLabel": "Comparer Pro vs Standard ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Utilisez Kling 3 Pro quand l’image importée doit être la frame d’ouverture et que le prompt doit animer depuis cette image précise.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Ouvrir Kling 3 Pro ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Comparez avec Seedance quand le choix porte sur continuité storyboard-to-video, audio natif, dialogue et structure multi-prompt.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparer avec Seedance 2.0 ->"
+      }
+    ],
+    "finalPara1": "Kling 3.0 Omni Pro est la route Kling par défaut quand les références doivent guider identité, style, storyboard, caméra ou mouvement depuis vidéo source sans devenir des frames d’ouverture obligatoires.",
+    "finalPara2": "Utilisez-le pour les prompts de production avec ancres @Image et @Video1, puis revenez à Kling 3 uniquement quand l’objectif est une vraie animation depuis start frame.",
+    "finalButton": "Générer avec Kling 3.0 Omni Pro"
+  },
   "hero": {
     "title": "Kling 3.0 Omni Pro pour références, storyboard et video-to-video",
     "intro": "Utilisez Kling 3.0 Omni Pro quand vos images doivent guider le style, les personnages, les objets ou la structure du storyboard sans être forcées comme frame d’ouverture. Utilisez le V2V avec une vidéo source quand @Video1 doit guider le mouvement, le langage caméra ou la continuité. Utilisez Kling 3 Pro quand l’image importée doit vraiment être la start frame.",

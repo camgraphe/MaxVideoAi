@@ -7,6 +7,39 @@
   },
   "overview": "Kling 3.0 Omni 4K est la route native 4K pour les rendus Kling guidés par références et storyboard.",
   "pricingNotes": "Coût provider approximatif avant marge MaxVideoAI : $0.42/s.",
+  "custom": {
+    "galleryTitle": "Démos Kling 3.0 Omni 4K pour livraison",
+    "galleryIntro": "Consultez des rendus O3 natifs 4K guidés par storyboard ou images de référence. Utilisez ces exemples quand la direction créative est validée et que la sortie finale doit être livrée en 4K plutôt qu’en V2V depuis vidéo source.",
+    "galleryAllCta": "Voir les exemples Kling ->",
+    "relatedTitle": "Passer du draft à la livraison finale",
+    "relatedSubtitle": "Utilisez 4K après validation du plan de références en Standard ou Pro. Gardez le V2V depuis vidéo source sur Standard ou Pro, car la route 4K actuelle est orientée références.",
+    "relatedItems": [
+      {
+        "brand": "kling",
+        "title": "Kling 3.0 Omni Pro",
+        "description": "Utilisez Pro quand le même storyboard demande V2V depuis vidéo source, audio natif ou tests de références plus flexibles avant la sortie 4K finale.",
+        "modelSlug": "kling-o3-pro",
+        "ctaLabel": "Ouvrir Kling 3.0 Omni Pro ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 4K",
+        "description": "Utilisez Kling 3 4K quand une image importée précise doit devenir la start frame d’une animation 4K.",
+        "modelSlug": "kling-3-4k",
+        "ctaLabel": "Ouvrir Kling 3 4K ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Comparez avec Veo quand le réalisme court premium et l’audio natif comptent plus que le contrôle par images de référence Kling.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Comparer avec Veo 3.1 ->"
+      }
+    ],
+    "finalPara1": "Kling 3.0 Omni 4K est la route de livraison pour les concepts guidés par références déjà validés : gardez le storyboard et les ancres visuelles stables, puis rendez le plan final en 4K native.",
+    "finalPara2": "Pour le V2V depuis vidéo source ou les tests exploratoires de références, restez d’abord sur Standard ou Pro et passez en 4K seulement quand la direction de scène est verrouillée.",
+    "finalButton": "Générer avec Kling 3.0 Omni 4K"
+  },
   "hero": {
     "title": "Kling 3.0 Omni 4K pour rendus 4K guidés par références",
     "intro": "Utilisez Kling 3.0 Omni 4K quand les images de référence ou de storyboard doivent guider un rendu Kling natif 4K sans être forcées comme frame d’ouverture. Cette route 4K n’est pas la route video-to-video depuis vidéo source.",
