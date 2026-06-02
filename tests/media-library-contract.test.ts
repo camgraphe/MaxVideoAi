@@ -120,6 +120,7 @@ test('normalizes library sources to the canonical allowed set', () => {
   assert.equal(normalizeMediaAssetSource('character'), 'character');
   assert.equal(normalizeMediaAssetSource('angle'), 'angle');
   assert.equal(normalizeMediaAssetSource('upscale'), 'upscale');
+  assert.equal(normalizeMediaAssetSource('storyboard'), 'storyboard');
   assert.equal(normalizeMediaAssetSource('upload'), 'upload');
   assert.equal(normalizeMediaAssetSource('anything-else'), 'import');
   assert.equal(normalizeMediaAssetSource(null), 'import');

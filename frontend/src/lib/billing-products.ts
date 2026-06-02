@@ -22,6 +22,7 @@ function normalizeUnitKind(value: unknown): BillingProductUnitKind {
 function normalizeSurface(value: unknown): JobSurface {
   return value === 'video' ||
     value === 'image' ||
+    value === 'storyboard' ||
     value === 'character' ||
     value === 'angle' ||
     value === 'audio' ||

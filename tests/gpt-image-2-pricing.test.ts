@@ -141,6 +141,52 @@ test('GPT Image 2 estimate is available to guests and returns the client price w
   assert.equal(payload.pricing?.vendorShareCents, 15);
 });
 
+test('GPT Image 2 storyboard estimates charge exactly 3x provider cost', async () => {
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 't2i',
+        numImages: 1,
+        resolution: '1024x768',
+        quality: 'medium',
+        source: 'storyboard',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      margin: { amountCents: number; percentApplied?: number };
+      platformFeeCents: number;
+      vendorShareCents: number;
+      meta?: {
+        pricing_model?: string;
+        source?: string;
+        storyboard_multiplier?: number;
+        storyboard_tier?: string;
+      };
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pricing?.base.amountCents, 4);
+  assert.equal(payload.pricing?.margin.amountCents, 8);
+  assert.equal(payload.pricing?.margin.percentApplied, 2);
+  assert.equal(payload.pricing?.totalCents, 12);
+  assert.equal(payload.pricing?.platformFeeCents, 8);
+  assert.equal(payload.pricing?.vendorShareCents, 4);
+  assert.equal(payload.pricing?.meta?.pricing_model, 'storyboard_gpt_image_2_x3');
+  assert.equal(payload.pricing?.meta?.source, 'storyboard');
+  assert.equal(payload.pricing?.meta?.storyboard_multiplier, 3);
+  assert.equal(payload.pricing?.meta?.storyboard_tier, 'normal');
+});
+
 test('GPT Image 2 auto edit pricing can follow reference image dimensions', async () => {
   const inferredSize = resolveGptImage2AutoInputImageSize([{ width: 3840, height: 2160 }]);
   assert.deepEqual(inferredSize, { width: 3840, height: 2160 });

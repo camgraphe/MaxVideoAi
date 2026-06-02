@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
+import { applyStoryboardPricing, resolveStoryboardTier, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
 import {
   parseGptImage2SizeKey,
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest) {
         referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
         quality?: string;
         enableWebSearch?: boolean;
+        source?: string;
       }
     | null = null;
   try {
@@ -35,6 +37,7 @@ export async function POST(req: NextRequest) {
       referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
       quality?: string;
       enableWebSearch?: boolean;
+      source?: string;
     } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
@@ -103,8 +106,18 @@ export async function POST(req: NextRequest) {
           ? { enable_web_search: true }
           : undefined,
     });
+    const finalPricing =
+      engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_SOURCE
+        ? applyStoryboardPricing(
+            pricing,
+            resolveStoryboardTier({
+              resolution: resolutionResult.resolution,
+              quality: body?.quality,
+            })
+          )
+        : pricing;
 
-    return NextResponse.json({ ok: true, pricing });
+    return NextResponse.json({ ok: true, pricing: finalPricing });
   } catch (error) {
     console.error('[images] price estimation failed', error);
     return NextResponse.json({ ok: false, error: 'pricing_error' }, { status: 500 });

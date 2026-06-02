@@ -93,7 +93,7 @@ export function LibraryPageClient() {
         : activeKind === 'audio'
           ? (['all', 'upload', 'generated'] as const)
         : toolsEnabled
-          ? (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const)
+          ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const)
           : (['all', 'upload', 'generated'] as const),
     [activeKind, toolsEnabled]
   );
@@ -105,6 +105,7 @@ export function LibraryPageClient() {
             upload: 'Uploaded videos',
             generated: 'Saved renders',
             recent: copy.tabs.recent,
+            storyboard: copy.tabs.storyboard,
             character: copy.tabs.character,
             angle: copy.tabs.angle,
             upscale: 'Upscale videos',
@@ -115,6 +116,7 @@ export function LibraryPageClient() {
               upload: 'Uploaded audio',
               generated: 'Saved audio renders',
               recent: copy.tabs.recent,
+              storyboard: copy.tabs.storyboard,
               character: copy.tabs.character,
               angle: copy.tabs.angle,
               upscale: copy.tabs.upscale,
@@ -126,11 +128,13 @@ export function LibraryPageClient() {
   const emptyLabel =
     activeView === 'review'
       ? copy.review.empty
-      : activeSource === 'generated'
-        ? copy.assets.emptyGenerated
+        : activeSource === 'generated'
+          ? copy.assets.emptyGenerated
         : activeSource === 'upload'
           ? copy.assets.emptyUploads
-          : activeSource === 'character'
+        : activeSource === 'storyboard'
+          ? copy.assets.emptyStoryboard
+        : activeSource === 'character'
             ? copy.assets.emptyCharacter
             : activeSource === 'angle'
               ? copy.assets.emptyAngle
@@ -141,6 +145,7 @@ export function LibraryPageClient() {
     activeKind === 'image' && toolsEnabled
       ? [
           { href: '/app/image', label: copy.hero.ctas.image },
+          { href: '/app/tools/storyboard', label: copy.tabs.storyboard.replace(/ assets?$/i, '') || 'Storyboard' },
           { href: '/app/tools/angle', label: copy.tabs.angle.replace(/ assets?$/i, '') || 'Angle' },
           { href: '/app/tools/character-builder', label: copy.tabs.character.replace(/ assets?$/i, '') || 'Character' },
           { href: '/app/tools/upscale', label: copy.tabs.upscale.replace(/ assets?$/i, '') || 'Upscale' },

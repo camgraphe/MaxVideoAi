@@ -62,7 +62,9 @@ export function useLibraryPageData({
   const assets = useMemo(
     () =>
       (assetsQuery.data?.assets ?? []).filter((asset) =>
-        toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
+        toolsEnabled
+          ? true
+          : asset.source !== 'storyboard' && asset.source !== 'character' && asset.source !== 'angle'
       ),
     [assetsQuery.data?.assets, toolsEnabled]
   );

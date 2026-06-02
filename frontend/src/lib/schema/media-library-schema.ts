@@ -66,7 +66,7 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
       width INTEGER,
       height INTEGER,
       size_bytes BIGINT,
-      source TEXT NOT NULL CHECK (source IN ('upload','saved_job_output','character','angle','upscale','import')),
+      source TEXT NOT NULL CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','import')),
       source_job_id TEXT,
       source_output_id TEXT,
       status TEXT NOT NULL DEFAULT 'ready',
@@ -75,6 +75,17 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       deleted_at TIMESTAMPTZ
     );
+  `);
+
+  await query(`
+    ALTER TABLE media_assets
+    DROP CONSTRAINT IF EXISTS media_assets_source_check;
+  `);
+
+  await query(`
+    ALTER TABLE media_assets
+    ADD CONSTRAINT media_assets_source_check
+    CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','import'));
   `);
 
   await query(`

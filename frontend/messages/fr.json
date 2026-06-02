@@ -3861,7 +3861,8 @@
         "tabs": {
           "all": "Toutes",
           "upload": "Images chargées",
-          "generated": "Images générées"
+          "generated": "Images générées",
+          "storyboard": "Assets storyboard"
         },
         "modal": {
           "title": "Choisir dans la bibliothèque",
@@ -3870,7 +3871,8 @@
           "error": "Impossible de charger les ressources. Réessayez.",
           "empty": "Aucune ressource enregistrée. Importez des références depuis le générateur ou via cette page.",
           "emptyUploads": "Aucune image chargée pour l’instant. Importez des références depuis le générateur ou via cette page.",
-          "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici."
+          "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici.",
+          "emptyStoryboard": "Aucun storyboard enregistré pour l’instant. Enregistrez une image storyboard pour la voir ici."
         }
       }
     },
@@ -3908,6 +3910,7 @@
         "upload": "Images importées",
         "generated": "Rendus enregistrés",
         "recent": "Rendus récents",
+        "storyboard": "Assets storyboard",
         "character": "Assets personnage",
         "angle": "Assets angle",
         "upscale": "Assets upscale"
@@ -3931,6 +3934,7 @@
         "empty": "Votre Bibliothèque est vide. Importez un média ou parcourez les rendus récents pour enregistrer des assets réutilisables.",
         "emptyUploads": "Aucun média importé pour le moment. Importez un fichier depuis votre appareil pour le voir ici.",
         "emptyGenerated": "Aucun rendu enregistré pour le moment. Parcourez les rendus récents et enregistrez les outputs utiles.",
+        "emptyStoryboard": "Aucun storyboard enregistré pour le moment. Enregistrez une image storyboard pour la voir ici.",
         "emptyCharacter": "Aucun asset personnage enregistré. Générez-en un dans Character Builder pour le voir ici.",
         "emptyAngle": "Aucun asset angle enregistré. Générez-en un dans l’outil Angle pour le voir ici.",
         "emptyUpscale": "Aucun asset upscale enregistré. Enregistrez un résultat upscale pour le voir ici.",
@@ -4031,11 +4035,64 @@
       "characterTitle": "Générateur de personnage cohérent",
       "characterBody": "Crée un portrait d’ancrage ou une planche personnage en 8 cases avec 4 vues full body et 4 close-ups avant de la réutiliser dans tes workflows image ou vidéo.",
       "characterBadge": "Planche 8 cases",
+      "storyboardEyebrow": "Planches de référence",
+      "storyboardTitle": "Outil Storyboard",
+      "storyboardBody": "Génère une référence storyboard avec GPT Image 2 pour Seedance et Kling. Utilise produit, cuisine, film ou animation pour Seedance 2 ; passe par Kling quand il faut des personnes réelles.",
+      "storyboardBadge": "Seedance + Kling",
       "angleEyebrow": "Contrôle de perspective",
       "angleTitle": "Angle / Perspective",
       "angleBody": "Importe une image, ajuste l’angle caméra, puis génère une première image prête pour les workflows image-to-video.",
       "angleBadge": "Nouvelle vue",
       "open": "Ouvrir l’outil"
+    },
+    "storyboard": {
+      "disabledTitle": "Les outils sont désactivés",
+      "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
+      "backToTools": "Outils",
+      "title": "Storyboarder",
+      "subtitle": "Crée une planche de référence claire avant d’envoyer la direction à Seedance ou Kling.",
+      "subjectLabel": "Sujet",
+      "subjectPlaceholder": "Lancement produit, scène cuisine, beat animé...",
+      "actionLabel": "Action",
+      "actionPlaceholder": "Reveal, versement, entrée caméra, rotation produit...",
+      "targetLabel": "Cible vidéo",
+      "targetSeedance": "Seedance",
+      "targetKling": "Kling",
+      "styleLabel": "Style",
+      "durationLabel": "Durée",
+      "frameCountLabel": "Frames",
+      "tierLabel": "Prix",
+      "normalTier": "Normal",
+      "hqTier": "HQ",
+      "generate": "Générer le storyboard",
+      "generating": "Génération...",
+      "editLabel": "Modification",
+      "editPlaceholder": "Changer cadrage, couleur produit, lumière...",
+      "editAction": "Appliquer la modification",
+      "emptyTitle": "Aperçu storyboard",
+      "emptyBody": "Remplis le brief court puis génère une planche de référence.",
+      "outputTitle": "Storyboard généré",
+      "download": "Télécharger",
+      "editImage": "Modifier l’image",
+      "saveToLibrary": "Enregistrer dans la bibliothèque Storyboard",
+      "savedToLibrary": "Enregistré dans la bibliothèque Storyboard.",
+      "missingSubject": "Ajoute d’abord un sujet.",
+      "generationFailed": "La génération storyboard a échoué.",
+      "authTitle": "Connecte-toi pour générer",
+      "authBody": "La génération storyboard et les sauvegardes bibliothèque utilisent ton wallet MaxVideoAI.",
+      "authPrimary": "Créer un compte",
+      "authSecondary": "Se connecter",
+      "close": "Fermer",
+      "targetNotes": {
+        "seedance": "Planche Seedance : produit, cuisine, accessoires film, animation, sujets stylisés ou non humains. Les personnes réelles sont exclues.",
+        "kling": "Planche Kling : à utiliser quand le storyboard nécessite des personnes réelles ou des scènes humaines réalistes."
+      },
+      "styles": {
+        "realistic": "Réaliste",
+        "anime": "Anime",
+        "ugc": "UGC",
+        "cinema": "Cinéma"
+      }
     },
     "audio": {
       "auth": {

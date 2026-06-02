@@ -1,9 +1,5 @@
 import { randomUUID } from 'crypto';
-import type {
-  ImageGenerationMode,
-  ImageGenerationRequest,
-  ImageGenerationResponse,
-} from '@/types/image-generation';
+import type { ImageGenerationMode, ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { getFalClient } from '@/lib/fal-client';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -13,11 +9,7 @@ import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import {
-  createSignedDownloadUrl,
-  extractStorageKeyFromUrl,
-  isStorageConfigured,
-} from '@/server/storage';
+import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
   canonicalizeImageFieldValue,
@@ -35,19 +27,14 @@ import {
 } from '@/lib/image/gptImage2';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
+import { applyStoryboardPricing, resolveStoryboardTier } from '@/lib/storyboard-pricing';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
-import {
-  extractImages,
-  parseRequestId,
-} from './image-provider-payload';
-import {
-  buildReceiptSnapshot,
-  type PendingReceipt,
-} from './image-generation-receipts';
+import { extractImages, parseRequestId } from './image-provider-payload';
+import { buildReceiptSnapshot, type PendingReceipt } from './image-generation-receipts';
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
 import { resolveImageGenerationRequestContext } from './image-generation-request-context';
 import { prepareImageGenerationReferences } from './image-generation-references';
@@ -291,6 +278,9 @@ export async function executeImageGeneration({
           currency: DISPLAY_CURRENCY,
           addons: enableWebSearch ? { enable_web_search: true } : undefined,
         });
+    if (jobSurface === 'storyboard' && engine.id === 'gpt-image-2') {
+      pricing = applyStoryboardPricing(pricing, resolveStoryboardTier({ resolution, quality }));
+    }
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
     fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, {

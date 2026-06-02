@@ -4,7 +4,7 @@ import { translateError } from '@/lib/error-messages';
 
 export type LibraryView = 'saved' | 'review';
 export type LibraryKind = 'image' | 'video' | 'audio';
-export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
+export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
 export type UserAsset = {
   id: string;
@@ -94,6 +94,7 @@ export interface LibraryCopy {
     upload: string;
     generated: string;
     recent: string;
+    storyboard: string;
     character: string;
     angle: string;
     upscale: string;
@@ -117,6 +118,7 @@ export interface LibraryCopy {
     empty: string;
     emptyUploads: string;
     emptyGenerated: string;
+    emptyStoryboard: string;
     emptyCharacter: string;
     emptyAngle: string;
     emptyUpscale: string;
@@ -172,6 +174,7 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     upload: 'Uploaded images',
     generated: 'Saved renders',
     recent: 'Recent renders',
+    storyboard: 'Storyboard assets',
     character: 'Character assets',
     angle: 'Angle assets',
     upscale: 'Upscale assets',
@@ -195,6 +198,7 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     empty: 'Your Library is empty. Import media or review recent renders to save reusable assets.',
     emptyUploads: 'No uploaded media yet. Import media from your device to see it here.',
     emptyGenerated: 'No saved renders yet. Review recent renders and save the outputs you want to reuse.',
+    emptyStoryboard: 'No storyboard assets saved yet. Save a storyboard image to see it here.',
     emptyCharacter: 'No character assets saved yet. Generate one in Character Builder to see it here.',
     emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool to see it here.',
     emptyUpscale: 'No upscale assets saved yet. Save an upscale result to see it here.',
@@ -297,7 +301,13 @@ function normalizeSourceForHref(source?: string | null): string | null {
 export function isMaxVideoGeneratedAsset(asset: Pick<AssetBrowserAsset, 'jobId' | 'source'>): boolean {
   if (!asset.jobId) return false;
   const source = normalizeSourceForHref(asset.source);
-  return source === 'generated' || source === 'recent' || source === 'character' || source === 'upscale';
+  return (
+    source === 'generated' ||
+    source === 'recent' ||
+    source === 'storyboard' ||
+    source === 'character' ||
+    source === 'upscale'
+  );
 }
 
 export function getAssetJobHref(asset: Pick<AssetBrowserAsset, 'jobId' | 'source' | 'kind'>): string | null {
@@ -308,6 +318,9 @@ export function getAssetJobHref(asset: Pick<AssetBrowserAsset, 'jobId' | 'source
   if (source === 'angle') return null;
   if (source === 'character') {
     return `/app/tools/character-builder?job=${encodeURIComponent(jobId)}`;
+  }
+  if (source === 'storyboard') {
+    return `/app/image?tool=storyboard&job=${encodeURIComponent(jobId)}`;
   }
   if (source === 'upscale') {
     return `/app/tools/upscale?job=${encodeURIComponent(jobId)}`;

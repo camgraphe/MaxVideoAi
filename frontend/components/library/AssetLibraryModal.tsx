@@ -11,7 +11,15 @@ import { translateError } from '@/lib/error-messages';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { normalizeUiLocale } from '@/lib/ltx-localization';
 
-export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
+export type AssetLibrarySource =
+  | 'all'
+  | 'upload'
+  | 'generated'
+  | 'recent'
+  | 'storyboard'
+  | 'character'
+  | 'angle'
+  | 'upscale';
 export type AssetLibraryKind = 'image' | 'video';
 
 export type UserAsset = {
@@ -71,6 +79,7 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
   emptyUploads: 'No uploaded images yet. Upload a reference image to see it here.',
   emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
   emptyRecent: 'No recent outputs yet. Run a generation to reuse an output here.',
+  emptyStoryboard: 'No storyboard assets saved yet. Save a storyboard image to see it here.',
   emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
   emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
   emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
@@ -79,12 +88,14 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
     upload: 'Uploaded',
     generated: 'Generated',
     recent: 'Recent outputs',
+    storyboard: 'Storyboard',
     character: 'Character',
     angle: 'Angle',
     upscale: 'Upscale',
   },
   shortcuts: {
     createImage: 'Create image',
+    storyboard: 'Storyboard',
     changeAngle: 'Change angle',
     characterBuilder: 'Character builder',
     upscale: 'Upscale',
@@ -251,19 +262,21 @@ export function AssetLibraryModal({
               ? 'Aun no hay videos subidos. Sube un video fuente para verlo aqui.'
               : 'No uploaded videos yet. Upload a source video to see it here.'
           : copyAssetLibrary.emptyUploads
-        : source === 'character'
-          ? copyAssetLibrary.emptyCharacter
-          : source === 'angle'
-            ? copyAssetLibrary.emptyAngle
-            : source === 'upscale'
-              ? copyAssetLibrary.emptyUpscale
-              : assetType === 'video'
-                ? uiLocale === 'fr'
-                  ? "Aucune video enregistree pour l'instant. Importez ou generez une video pour la voir ici."
-                  : uiLocale === 'es'
-                    ? 'Aun no hay videos guardados. Sube o genera un video para verlo aqui.'
-                    : 'No saved videos yet. Upload or generate a video to see it here.'
-                : copyAssetLibrary.empty;
+        : source === 'storyboard'
+          ? copyAssetLibrary.emptyStoryboard
+          : source === 'character'
+            ? copyAssetLibrary.emptyCharacter
+            : source === 'angle'
+              ? copyAssetLibrary.emptyAngle
+              : source === 'upscale'
+                ? copyAssetLibrary.emptyUpscale
+                : assetType === 'video'
+                  ? uiLocale === 'fr'
+                    ? "Aucune video enregistree pour l'instant. Importez ou generez une video pour la voir ici."
+                    : uiLocale === 'es'
+                      ? 'Aun no hay videos guardados. Sube o genera un video para verlo aqui.'
+                      : 'No saved videos yet. Upload or generate a video to see it here.'
+                  : copyAssetLibrary.empty;
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -324,7 +337,7 @@ export function AssetLibraryModal({
 
   const sourceOptions = assetType === 'video'
     ? (['all', 'upload', 'recent', 'generated', 'upscale'] as const)
-    : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
+    : (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const);
   const libraryTitle =
     assetType === 'video'
       ? (uiLocale === 'fr'
@@ -355,6 +368,9 @@ export function AssetLibraryModal({
     createImage:
       copyAssetLibrary.shortcuts?.createImage ??
       (uiLocale === 'fr' ? 'Creer une image' : uiLocale === 'es' ? 'Crear imagen' : 'Create image'),
+    storyboard:
+      copyAssetLibrary.shortcuts?.storyboard ??
+      (uiLocale === 'fr' ? 'Storyboard' : uiLocale === 'es' ? 'Storyboard' : 'Storyboard'),
     changeAngle:
       copyAssetLibrary.shortcuts?.changeAngle ??
       (uiLocale === 'fr' ? "Changer l'angle" : uiLocale === 'es' ? 'Cambiar angulo' : 'Change angle'),
@@ -369,6 +385,7 @@ export function AssetLibraryModal({
     assetType === 'image'
       ? [
           { href: '/app/image', label: shortcutLabels.createImage },
+          { href: '/app/tools/storyboard', label: shortcutLabels.storyboard },
           { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
           { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
           { href: '/app/tools/upscale', label: shortcutLabels.upscale },

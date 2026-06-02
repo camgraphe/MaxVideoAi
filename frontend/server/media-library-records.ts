@@ -2,7 +2,14 @@ import { parseStoredImageRenders } from '@/lib/image-renders';
 import { normalizeMediaUrl } from '@/lib/media';
 
 export type MediaKind = 'image' | 'video' | 'audio';
-export type MediaAssetSource = 'upload' | 'saved_job_output' | 'character' | 'angle' | 'upscale' | 'import';
+export type MediaAssetSource =
+  | 'upload'
+  | 'saved_job_output'
+  | 'storyboard'
+  | 'character'
+  | 'angle'
+  | 'upscale'
+  | 'import';
 
 export type LegacyJobMediaRow = {
   job_id: string;
@@ -163,7 +170,13 @@ function outputId(jobId: string, kind: MediaKind, position: number): string {
 export function normalizeMediaAssetSource(value: unknown): MediaAssetSource {
   if (typeof value !== 'string') return 'import';
   const normalized = value.trim().toLowerCase();
-  if (normalized === 'upload' || normalized === 'character' || normalized === 'angle' || normalized === 'upscale') {
+  if (
+    normalized === 'upload' ||
+    normalized === 'storyboard' ||
+    normalized === 'character' ||
+    normalized === 'angle' ||
+    normalized === 'upscale'
+  ) {
     return normalized;
   }
   if (normalized === 'generated' || normalized === 'job_output' || normalized === 'saved_job_output') {

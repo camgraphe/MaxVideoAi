@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { Camera, Maximize2, Sparkles, Wrench } from 'lucide-react';
+import { Camera, Clapperboard, Maximize2, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { ButtonLink } from '@/components/ui/Button';
@@ -21,6 +21,10 @@ const DEFAULT_TOOLS_COPY = {
   "characterTitle": "Consistent Character Builder",
   "characterBody": "Build a portrait anchor or an 8-panel character sheet with 4 full-body angles and 4 close-ups before reusing it in later image or video workflows.",
   "characterBadge": "8-panel sheet",
+  "storyboardEyebrow": "Reference boards",
+  "storyboardTitle": "Storyboard Tool",
+  "storyboardBody": "Generate a GPT Image 2 storyboard reference for Seedance and Kling. Use product, cooking, film, and animation boards for Seedance 2; use Kling when real people are required.",
+  "storyboardBadge": "Seedance + Kling",
   "angleEyebrow": "Perspective control",
   "angleTitle": "Angle / Perspective",
   "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
@@ -108,7 +112,7 @@ export default function ToolsPage() {
               <p className="mt-2 max-w-2xl text-sm text-text-secondary">{copy.subtitle}</p>
             </section>
 
-            <section className="grid gap-4 lg:grid-cols-3">
+            <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
               <Card className="overflow-hidden border border-border bg-surface p-0">
                 <ToolPreviewPanel className="aspect-[16/9] p-4">
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
@@ -137,6 +141,44 @@ export default function ToolsPage() {
                       {copy.characterBadge}
                     </span>
                     <ButtonLink href="/app/tools/character-builder" variant="primary" linkComponent={Link}>
+                      {copy.open}
+                    </ButtonLink>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden border border-border bg-surface p-0">
+                <ToolPreviewPanel className="aspect-[16/9] p-4">
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
+                  <div className="relative grid h-full grid-cols-3 gap-2 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
+                    {[CHARACTER_CARD_BACKGROUND_URL, ANGLE_CARD_BACKGROUND_URL, CHARACTER_CARD_BACKGROUND_URL].map((src, index) => (
+                      <div key={`${src}-${index}`} className="overflow-hidden rounded-[12px] border border-border bg-surface-2">
+                        <img
+                          src={src}
+                          alt=""
+                          className="h-full w-full object-cover object-top"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </ToolPreviewPanel>
+                <div className="p-5">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
+                      <Clapperboard className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.storyboardEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-text-primary">{copy.storyboardTitle}</h2>
+                    </div>
+                  </div>
+                  <p className="text-sm text-text-secondary">{copy.storyboardBody}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
+                      <Clapperboard className="h-3.5 w-3.5" />
+                      {copy.storyboardBadge}
+                    </span>
+                    <ButtonLink href="/app/tools/storyboard" variant="primary" linkComponent={Link}>
                       {copy.open}
                     </ButtonLink>
                   </div>

@@ -38,6 +38,9 @@ export function deriveJobSurface(params: {
   if (jobId.startsWith('tool_upscale_') || jobId.startsWith('upscale_')) {
     return 'upscale';
   }
+  if (jobId.startsWith('storyboard_')) {
+    return 'storyboard';
+  }
 
   const parsedRenders = parseStoredImageRenders(params.renderIds);
   if (parsedRenders.entries.length > 0) {
@@ -63,5 +66,5 @@ export function deriveJobSurface(params: {
 }
 
 export function isImageLikeSurface(surface: JobSurface): boolean {
-  return surface === 'image' || surface === 'character' || surface === 'angle' || surface === 'upscale';
+  return surface === 'image' || surface === 'storyboard' || surface === 'character' || surface === 'angle' || surface === 'upscale';
 }

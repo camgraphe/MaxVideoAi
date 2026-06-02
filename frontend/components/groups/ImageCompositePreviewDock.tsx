@@ -4,7 +4,7 @@
 
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
-import { Copy, Download, ExternalLink, Minus, Plus } from 'lucide-react';
+import { Copy, Download, ExternalLink, Minus, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { resolveCssAspectRatio } from '@/lib/aspect';
@@ -35,6 +35,7 @@ interface ImageCompositePreviewDockProps {
   onOpenModal?: () => void;
   onDownload?: (url: string) => void;
   onCopyLink?: (url: string) => void;
+  onEditImage?: (url: string) => void;
   onAddToLibrary?: (url: string) => void;
   onRemoveFromLibrary?: () => void;
   isInLibrary?: boolean;
@@ -55,6 +56,7 @@ export function ImageCompositePreviewDock({
   onOpenModal,
   onDownload,
   onCopyLink,
+  onEditImage,
   onAddToLibrary,
   onRemoveFromLibrary,
   isInLibrary = false,
@@ -70,6 +72,7 @@ export function ImageCompositePreviewDock({
   const copyLabel = t('workspace.image.preview.copyLink', 'Copy link');
   const copiedLabel = t('workspace.image.preview.copied', 'Copied');
   const downloadLabel = t('workspace.image.preview.download', 'Download');
+  const editImageLabel = t('workspace.image.preview.editImage', 'Edit this image');
   const modalLabel = t('workspace.image.preview.openModal', 'Open modal');
   const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Library');
   const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Library');
@@ -91,6 +94,7 @@ export function ImageCompositePreviewDock({
   const canOpenModal = Boolean(entry && images.length && onOpenModal);
   const canDownload = Boolean(selectedActionUrl && onDownload);
   const canCopy = Boolean(selectedActionUrl && onCopyLink);
+  const canEdit = Boolean(selectedActionUrl && onEditImage);
   const canAddToLibrary = Boolean(selectedActionUrl && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
   const canRemoveFromLibrary = Boolean(onRemoveFromLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && isInLibrary;
 
@@ -103,6 +107,22 @@ export function ImageCompositePreviewDock({
 
   const toolbar = (
     <div className="flex flex-wrap items-center justify-center gap-2">
+      <span title={editImageLabel}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => (selectedActionUrl && onEditImage ? onEditImage(selectedActionUrl) : undefined)}
+          disabled={!canEdit}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
+          aria-label={editImageLabel}
+        >
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={Pencil} size={16} />
+          </span>
+          <span className="sr-only">{editImageLabel}</span>
+        </Button>
+      </span>
       {isInLibrary ? (
         <span title={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}>
           <Button

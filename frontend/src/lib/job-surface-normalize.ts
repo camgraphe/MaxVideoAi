@@ -6,6 +6,7 @@ export function normalizeJobSurface(value: unknown): JobSurface | null {
   if (
     normalized === 'video' ||
     normalized === 'image' ||
+    normalized === 'storyboard' ||
     normalized === 'character' ||
     normalized === 'angle' ||
     normalized === 'audio' ||
@@ -25,6 +26,7 @@ export function normalizeUserAssetSource(value: unknown): UserAssetSource {
   if (
     normalized === 'upload' ||
     normalized === 'generated' ||
+    normalized === 'storyboard' ||
     normalized === 'character' ||
     normalized === 'angle' ||
     normalized === 'upscale'

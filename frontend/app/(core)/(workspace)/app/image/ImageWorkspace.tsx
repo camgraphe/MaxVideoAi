@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
 import { ImageWorkspaceEmptyState } from './_components/ImageWorkspaceEmptyState';
@@ -33,8 +33,7 @@ interface ImageWorkspaceProps {
 }
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
-  const { advancedSettingsTitle, loginRedirectTarget, resolvedCopy, searchParams, toolsEnabled } =
-    useImageWorkspaceRouteContext();
+  const { advancedSettingsTitle, loginRedirectTarget, resolvedCopy, searchParams, toolsEnabled } = useImageWorkspaceRouteContext();
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
@@ -59,8 +58,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const { closeViewer, handleOpenHistoryEntry, handleSaveVariantToLibrary, viewerGroup } = useImageWorkspaceViewer();
-  const { autoModeFromReferences, engineCapsList, selectedEngine, selectedEngineCaps } =
-    useImageWorkspaceSelectedEngine(engines, engineId);
+  const { autoModeFromReferences, engineCapsList, selectedEngine, selectedEngineCaps } = useImageWorkspaceSelectedEngine(engines, engineId);
   const {
     aspectRatioField,
     aspectRatioSelectOptions,
@@ -163,7 +161,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     engines,
     localHistory,
   });
-
   const referenceNoteText = resolvedCopy.composer.referenceNote;
 
   useImageWorkspaceModeSync({
@@ -212,7 +209,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setReferenceSlots,
   });
 
-  const { applyImageSettingsSnapshot } = useImageWorkspaceQueryHydration({
+  const { applyImageSettingsSnapshot, librarySource } = useImageWorkspaceQueryHydration({
     engines,
     genericError: resolvedCopy.errors.generic,
     searchParams,
@@ -238,6 +235,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setThinkingLevel,
     setWatermark,
   });
+
+  const handleEditSelectedPreview = useCallback(
+    (url: string) => {
+      handleReferenceUrl(0, url, 'library');
+      setMode(selectedEngine?.modes.includes('i2i') ? 'i2i' : selectedEngine?.modes[0] ?? 't2i');
+      setPrompt('');
+      setError(null);
+      setStatusMessage(null);
+    },
+    [handleReferenceUrl, selectedEngine?.modes, setMode, setPrompt]
+  );
 
   const { setNumImagesPreset, setResolutionPreset } = useImageWorkspacePresetHandlers({
     mode,
@@ -330,6 +338,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     resolvedCopy,
     selectedEngine,
     selectedPreviewEntryId,
+    suppressDefaultPreview: librarySource === 'storyboard',
   });
   const {
     copiedUrl,
@@ -343,6 +352,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   } = useImagePreviewActions({
     canUseWorkspace,
     genericError: resolvedCopy.errors.generic,
+    librarySource,
     previewEntry,
     removedFromLibraryMessage: resolvedCopy.messages.removedFromLibrary,
     savedToLibraryMessage: resolvedCopy.messages.savedToLibrary,
@@ -398,6 +408,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               handleAddToLibrary={handleAddToLibrary}
               handleCopy={handleCopy}
               handleDownload={handleDownload}
+              handleEditSelectedPreview={handleEditSelectedPreview}
               handleOpenHistoryEntry={handleOpenHistoryEntry}
               handleReferenceFile={handleReferenceFile}
               handleReferenceUrl={handleReferenceUrl}

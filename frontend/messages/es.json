@@ -3853,7 +3853,8 @@
         "tabs": {
           "all": "Todas",
           "upload": "Imágenes subidas",
-          "generated": "Imágenes generadas"
+          "generated": "Imágenes generadas",
+          "storyboard": "Recursos storyboard"
         },
         "modal": {
           "title": "Seleccionar desde la biblioteca",
@@ -3862,7 +3863,8 @@
           "error": "No se pudieron cargar los recursos. Intenta de nuevo.",
           "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
           "emptyUploads": "Aún no hay imágenes subidas. Sube imágenes desde el compositor o desde la página de Biblioteca.",
-          "emptyGenerated": "Aún no hay imágenes generadas guardadas. Guarda una imagen generada para verla aquí."
+          "emptyGenerated": "Aún no hay imágenes generadas guardadas. Guarda una imagen generada para verla aquí.",
+          "emptyStoryboard": "Aún no hay storyboards guardados. Guarda una imagen storyboard para verla aquí."
         }
       }
     },
@@ -3900,6 +3902,7 @@
         "upload": "Imágenes subidas",
         "generated": "Renders guardados",
         "recent": "Renders recientes",
+        "storyboard": "Recursos storyboard",
         "character": "Recursos de personaje",
         "angle": "Recursos de ángulo",
         "upscale": "Recursos upscale"
@@ -3923,6 +3926,7 @@
         "empty": "Tu Biblioteca está vacía. Importa medios o revisa renders recientes para guardar recursos reutilizables.",
         "emptyUploads": "Aún no hay medios subidos. Importa medios desde tu dispositivo para verlos aquí.",
         "emptyGenerated": "Aún no hay renders guardados. Revisa renders recientes y guarda los outputs que quieras reutilizar.",
+        "emptyStoryboard": "Aún no hay storyboards guardados. Guarda una imagen storyboard para verla aquí.",
         "emptyCharacter": "Aún no hay recursos de personaje guardados. Genera uno en Character Builder para verlo aquí.",
         "emptyAngle": "Aún no hay recursos de ángulo guardados. Genera uno en la herramienta Angle para verlo aquí.",
         "emptyUpscale": "Aún no hay recursos upscale guardados. Guarda un resultado upscale para verlo aquí.",
@@ -4023,11 +4027,64 @@
       "characterTitle": "Generador de personaje coherente",
       "characterBody": "Crea un retrato ancla o una hoja de personaje de 8 paneles con 4 ángulos full body y 4 close-ups antes de reutilizarla en flujos de imagen o video.",
       "characterBadge": "Hoja de 8 paneles",
+      "storyboardEyebrow": "Tableros de referencia",
+      "storyboardTitle": "Herramienta Storyboard",
+      "storyboardBody": "Genera una referencia de storyboard con GPT Image 2 para Seedance y Kling. Usa producto, cocina, film o animación para Seedance 2; usa Kling cuando necesites personas reales.",
+      "storyboardBadge": "Seedance + Kling",
       "angleEyebrow": "Control de perspectiva",
       "angleTitle": "Angle / Perspective",
       "angleBody": "Sube una imagen, ajusta el ángulo de cámara y genera una primera imagen lista para workflows image-to-video.",
       "angleBadge": "Nueva vista",
       "open": "Abrir herramienta"
+    },
+    "storyboard": {
+      "disabledTitle": "Las herramientas están desactivadas",
+      "disabledBody": "Activa `FEATURES.workflows.toolsSection` para acceder a esta sección.",
+      "backToTools": "Herramientas",
+      "title": "Storyboarder",
+      "subtitle": "Crea una referencia clara antes de enviar la dirección a Seedance o Kling.",
+      "subjectLabel": "Sujeto",
+      "subjectPlaceholder": "Lanzamiento de producto, escena de cocina, beat animado...",
+      "actionLabel": "Acción",
+      "actionPlaceholder": "Reveal, vertido, entrada de cámara, rotación de producto...",
+      "targetLabel": "Destino de video",
+      "targetSeedance": "Seedance",
+      "targetKling": "Kling",
+      "styleLabel": "Estilo",
+      "durationLabel": "Duración",
+      "frameCountLabel": "Frames",
+      "tierLabel": "Precio",
+      "normalTier": "Normal",
+      "hqTier": "HQ",
+      "generate": "Generar storyboard",
+      "generating": "Generando...",
+      "editLabel": "Edición",
+      "editPlaceholder": "Cambiar encuadre, color de producto, luz...",
+      "editAction": "Aplicar edición",
+      "emptyTitle": "Vista previa storyboard",
+      "emptyBody": "Completa el brief corto y genera una referencia.",
+      "outputTitle": "Storyboard generado",
+      "download": "Descargar",
+      "editImage": "Editar imagen",
+      "saveToLibrary": "Guardar en biblioteca Storyboard",
+      "savedToLibrary": "Guardado en la biblioteca Storyboard.",
+      "missingSubject": "Añade primero un sujeto.",
+      "generationFailed": "Falló la generación del storyboard.",
+      "authTitle": "Inicia sesión para generar",
+      "authBody": "La generación storyboard y los guardados en biblioteca usan tu wallet MaxVideoAI.",
+      "authPrimary": "Crear cuenta",
+      "authSecondary": "Iniciar sesión",
+      "close": "Cerrar",
+      "targetNotes": {
+        "seedance": "Storyboard Seedance: producto, cocina, props de film, animación, sujetos estilizados o no humanos. Se excluyen personas reales.",
+        "kling": "Storyboard Kling: úsalo cuando necesites personas reales o escenas humanas realistas."
+      },
+      "styles": {
+        "realistic": "Realista",
+        "anime": "Anime",
+        "ugc": "UGC",
+        "cinema": "Cinema"
+      }
     },
     "audio": {
       "auth": {

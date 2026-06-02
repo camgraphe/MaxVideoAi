@@ -36,6 +36,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   handleAddToLibrary: (url: string) => void;
   handleCopy: (url: string) => void;
   handleDownload: (url: string) => void;
+  handleEditSelectedPreview: (url: string) => void;
   handleOpenHistoryEntry: (entry: HistoryEntry) => void;
   handleReferenceFile: (slotIndex: number, file: File) => Promise<void> | void;
   handleReferenceUrl: (slotIndex: number, url: string, source: 'paste' | 'library') => void;
@@ -121,6 +122,7 @@ export function ImageWorkspaceComposerSurface({
   handleAddToLibrary,
   handleCopy,
   handleDownload,
+  handleEditSelectedPreview,
   handleOpenHistoryEntry,
   handleReferenceFile,
   handleReferenceUrl,
@@ -196,6 +198,7 @@ export function ImageWorkspaceComposerSurface({
         onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
         onDownload={handleDownload}
         onCopyLink={handleCopy}
+        onEditImage={handleEditSelectedPreview}
         onAddToLibrary={handleAddToLibrary}
         onRemoveFromLibrary={handleRemoveFromLibrary}
         isInLibrary={isInLibrary}

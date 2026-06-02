@@ -43,6 +43,7 @@ export const DEFAULT_DASHBOARD_COPY = {
       all: 'All',
       video: 'Video',
       image: 'Image',
+      storyboard: 'Storyboard',
       character: 'Character',
       angle: 'Angle',
       upscale: 'Upscale',
@@ -121,4 +122,3 @@ export const DEFAULT_DASHBOARD_COPY = {
 } as const;
 
 export type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
-

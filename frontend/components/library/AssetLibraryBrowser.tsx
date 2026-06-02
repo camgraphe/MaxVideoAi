@@ -8,7 +8,15 @@ import type { ReactNode } from 'react';
 import { AudioWaveform, Film } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
-export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
+export type AssetLibrarySource =
+  | 'all'
+  | 'upload'
+  | 'generated'
+  | 'recent'
+  | 'storyboard'
+  | 'character'
+  | 'angle'
+  | 'upscale';
 
 export type AssetBrowserAsset = {
   id: string;

@@ -98,7 +98,7 @@ export async function listLibraryAssets(params: {
           $4::text IS NULL
           OR (
             CASE
-              WHEN source IN ('upload', 'character', 'angle', 'upscale') THEN source
+              WHEN source IN ('upload', 'storyboard', 'character', 'angle', 'upscale') THEN source
               WHEN source = 'generated' THEN 'saved_job_output'
               ELSE 'import'
             END

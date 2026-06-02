@@ -46,9 +46,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const jobSurface = body?.source === 'storyboard' ? 'storyboard' : 'image';
     const result = await executeImageGeneration({
       userId,
       body,
+      jobSurface,
     });
     return NextResponse.json(result);
   } catch (error) {
