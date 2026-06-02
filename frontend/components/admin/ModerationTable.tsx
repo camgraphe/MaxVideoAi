@@ -10,6 +10,7 @@ import {
 } from '@/components/admin/moderation/moderation-table-utils';
 import { ModerationTableHeader } from '@/components/admin/moderation/ModerationTableHeader';
 import { ModerationTableView } from '@/components/admin/moderation/ModerationTableView';
+import { ModerationVideoSeoCandidateButton } from '@/components/admin/moderation/ModerationVideoSeoCandidateButton';
 import { ModerationWallView } from '@/components/admin/moderation/ModerationWallView';
 import type { ModerationBucket, ModerationSurface, ModerationVideo, ModerationViewMode } from '@/components/admin/moderation/moderation-types';
 import { Button } from '@/components/ui/Button';
@@ -39,6 +40,7 @@ export function ModerationTable({
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [isLoadingBucket, setLoadingBucket] = useState(false);
   const [viewMode, setViewMode] = useState<ModerationViewMode>('wall');
@@ -201,6 +203,11 @@ export function ModerationTable({
     [bucket, startTransition]
   );
 
+  const handleSeoCandidateCreated = useCallback((videoId: string) => {
+    setItems((current) => current.map((item) => (item.id === videoId ? { ...item, seoWatch: true } : item)));
+    setFeedback('Draft Video SEO candidate created');
+  }, []);
+
   const renderModerationActions = useCallback(
     (video: ModerationVideo, options?: { compact?: boolean }) => {
       if (isFailedVideo(video)) {
@@ -235,10 +242,18 @@ export function ModerationTable({
               Publish on site
             </Button>
           )}
+          <ModerationVideoSeoCandidateButton
+            compact={compact}
+            disabled={isPending}
+            enabled={surface === 'video'}
+            onCandidateCreated={handleSeoCandidateCreated}
+            onError={setError}
+            video={video}
+          />
         </>
       );
     },
-    [isPending, updateVisibility]
+    [handleSeoCandidateCreated, isPending, surface, updateVisibility]
   );
 
   return (
@@ -257,6 +272,8 @@ export function ModerationTable({
       {surface === 'video' && playlistFetchError ? (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">{playlistFetchError}</div>
       ) : null}
+
+      {feedback ? <div className="rounded-card border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{feedback}</div> : null}
 
       {error ? <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">{error}</div> : null}
 

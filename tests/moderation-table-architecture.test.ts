@@ -12,6 +12,7 @@ const wallViewPath = join(root, 'frontend/components/admin/moderation/Moderation
 const tableViewPath = join(root, 'frontend/components/admin/moderation/ModerationTableView.tsx');
 const playlistControlsPath = join(root, 'frontend/components/admin/moderation/ModerationPlaylistControls.tsx');
 const playlistHookPath = join(root, 'frontend/components/admin/moderation/useModerationPlaylists.tsx');
+const seoCandidateButtonPath = join(root, 'frontend/components/admin/moderation/ModerationVideoSeoCandidateButton.tsx');
 
 const tableSource = readFileSync(tablePath, 'utf8');
 const utilsSource = readFileSync(utilsPath, 'utf8');
@@ -21,6 +22,7 @@ const wallViewSource = readFileSync(wallViewPath, 'utf8');
 const tableViewSource = readFileSync(tableViewPath, 'utf8');
 const playlistControlsSource = readFileSync(playlistControlsPath, 'utf8');
 const playlistHookSource = readFileSync(playlistHookPath, 'utf8');
+const seoCandidateButtonSource = existsSync(seoCandidateButtonPath) ? readFileSync(seoCandidateButtonPath, 'utf8') : '';
 
 test('moderation table delegates helper pills, playlist controls, and playlist state', () => {
   assert.ok(existsSync(tablePath), 'moderation table should exist');
@@ -31,11 +33,13 @@ test('moderation table delegates helper pills, playlist controls, and playlist s
   assert.ok(existsSync(tableViewPath), 'moderation table view should live in a focused component');
   assert.ok(existsSync(playlistControlsPath), 'moderation playlist controls should exist');
   assert.ok(existsSync(playlistHookPath), 'moderation playlist state should live in a focused hook');
+  assert.ok(existsSync(seoCandidateButtonPath), 'moderation Video SEO candidate action should live in a focused component');
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/moderation-table-utils'/);
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/moderation-types'/);
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/ModerationTableHeader'/);
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/ModerationWallView'/);
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/ModerationTableView'/);
+  assert.match(tableSource, /from '@\/components\/admin\/moderation\/ModerationVideoSeoCandidateButton'/);
   assert.match(tableSource, /from '@\/components\/admin\/moderation\/useModerationPlaylists'/);
   assert.doesNotMatch(tableSource, /from '@\/components\/admin\/moderation\/ModerationPlaylistControls'/);
 });
@@ -105,4 +109,17 @@ test('moderation helper modules expose the expected contract', () => {
   assert.match(playlistHookSource, /appendPlaylistAssignments/);
   assert.match(playlistHookSource, /replacePlaylistAssignments/);
   assert.match(playlistHookSource, /renderPlaylistControls/);
+});
+
+test('moderation actions can send published videos to video SEO candidates', () => {
+  assert.match(tableSource, /ModerationVideoSeoCandidateButton/, 'moderation table should render the focused Video SEO action');
+  assert.match(tableSource, /surface === 'video'/, 'Video SEO candidate action should stay video-only');
+  assert.match(seoCandidateButtonSource, /\/api\/admin\/video-seo/, 'moderation should call the existing Video SEO candidate API');
+  assert.match(seoCandidateButtonSource, /Send to Video SEO/, 'published videos should expose a Video SEO candidate action');
+  assert.match(seoCandidateButtonSource, /video\.seoWatch/, 'moderation should avoid duplicate Video SEO candidate actions');
+  assert.match(seoCandidateButtonSource, /video\.isPublishedOnSite/, 'Video SEO candidate action should require a published item');
+  assert.doesNotMatch(tableSource, /seoStatus:\s*'approved'/, 'moderation must not directly approve or index Video SEO pages');
+  assert.doesNotMatch(tableSource, /include_?in_?sitemap/i, 'moderation must not expose a direct sitemap toggle');
+  assert.doesNotMatch(seoCandidateButtonSource, /seoStatus:\s*'approved'/, 'candidate action must not directly approve or index Video SEO pages');
+  assert.doesNotMatch(seoCandidateButtonSource, /include_?in_?sitemap/i, 'candidate action must not expose a direct sitemap toggle');
 });
