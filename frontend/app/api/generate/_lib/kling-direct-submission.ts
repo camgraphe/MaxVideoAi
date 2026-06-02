@@ -122,6 +122,76 @@ function falProviderJobIdFromResult(result: FalGenerateSubmissionResult, getLast
   return typeof bodyProviderJobId === 'string' && bodyProviderJobId.trim() ? bodyProviderJobId.trim() : getLastProviderJobId();
 }
 
+function cleanPayloadUrl(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length ? value.trim() : null;
+}
+
+function addUniqueUrl(urls: string[], value: unknown, maxCount?: number) {
+  const url = cleanPayloadUrl(value);
+  if (!url || urls.includes(url)) return;
+  if (typeof maxCount === 'number' && urls.length >= maxCount) return;
+  urls.push(url);
+}
+
+export function resolveKlingDirectSubmissionMediaInputs(params: {
+  imageUrl: string | null | undefined;
+  falPayload: GeneratePayload;
+}): {
+  sourceVideoUrl: string | null;
+  referenceImageUrls: string[];
+  startImageUrl: string | null;
+  keepAudio: boolean | null;
+} {
+  const attachments = params.falPayload.inputs ?? [];
+  let sourceVideoUrl = cleanPayloadUrl(params.falPayload.videoUrl);
+  let startImageUrl = cleanPayloadUrl(params.falPayload.extraInputValues?.start_image_url) ?? null;
+  const referenceImageUrls: string[] = [];
+
+  for (const url of params.falPayload.referenceImages ?? []) {
+    addUniqueUrl(referenceImageUrls, url);
+  }
+
+  for (const attachment of attachments) {
+    const url = cleanPayloadUrl(attachment.url) ?? cleanPayloadUrl(attachment.dataUrl);
+    if (!url) continue;
+    const slotId = attachment.slotId?.trim();
+
+    if (
+      !sourceVideoUrl &&
+      attachment.kind === 'video' &&
+      (slotId === 'video_url' ||
+        slotId === 'video_urls' ||
+        slotId === 'reference_video_urls' ||
+        slotId === 'reference_videos' ||
+        slotId === 'videos' ||
+        !slotId)
+    ) {
+      sourceVideoUrl = url;
+      continue;
+    }
+
+    if (!startImageUrl && attachment.kind === 'image' && (slotId === 'start_image_url' || slotId === 'image_url')) {
+      startImageUrl = url;
+      continue;
+    }
+
+    if (
+      attachment.kind === 'image' &&
+      (slotId === 'image_urls' || slotId === 'reference_images' || slotId === 'reference_image_urls')
+    ) {
+      addUniqueUrl(referenceImageUrls, url);
+    }
+  }
+
+  const keepAudioValue = params.falPayload.extraInputValues?.keep_audio;
+  return {
+    sourceVideoUrl,
+    referenceImageUrls,
+    startImageUrl: startImageUrl ?? cleanPayloadUrl(params.imageUrl),
+    keepAudio: typeof keepAudioValue === 'boolean' ? keepAudioValue : null,
+  };
+}
+
 export async function submitKlingDirectGenerateTask(params: {
   jobId: string;
   userId: string;
@@ -163,6 +233,10 @@ export async function submitKlingDirectGenerateTask(params: {
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
   const route = resolveKlingDirectModelRoute(params.engineId);
+  const mediaInputs = resolveKlingDirectSubmissionMediaInputs({
+    imageUrl: params.imageUrl,
+    falPayload: params.falPayload,
+  });
   const basePayload = buildKlingDirectPayload({
     engineId: params.engineId,
     jobId: params.jobId,
@@ -177,11 +251,16 @@ export async function submitKlingDirectGenerateTask(params: {
     audioEnabled: params.audioEnabled,
     imageUrl: params.imageUrl,
     endImageUrl: params.falPayload.endImageUrl ?? null,
+    startImageUrl: mediaInputs.startImageUrl,
+    sourceVideoUrl: mediaInputs.sourceVideoUrl,
+    referenceImageUrls: mediaInputs.referenceImageUrls,
+    keepAudio: mediaInputs.keepAudio,
     cfgScale: typeof params.cfgScale === 'number' ? params.cfgScale : null,
     extraInputValues: params.falPayload.extraInputValues ?? null,
   });
   const estimate = estimateKlingDirectCost({
     engineId: params.engineId,
+    mode: params.mode,
     durationSec: params.durationSec,
     audioEnabled: params.audioEnabled,
   });
@@ -203,6 +282,10 @@ export async function submitKlingDirectGenerateTask(params: {
       audioEnabled: params.audioEnabled === true,
       hasImage: Boolean(params.imageUrl),
       hasEndImage: Boolean(params.falPayload.endImageUrl),
+      hasStartImage: Boolean(mediaInputs.startImageUrl),
+      hasSourceVideo: Boolean(mediaInputs.sourceVideoUrl),
+      referenceImageCount: mediaInputs.referenceImageUrls.length,
+      keepAudio: mediaInputs.keepAudio,
       multiPromptCount: params.falPayload.multiPrompt?.length ?? 0,
       voiceCount: params.falPayload.voiceIds?.length ?? 0,
       hasCameraControl: Boolean(params.falPayload.extraInputValues?.camera_control),
@@ -249,6 +332,10 @@ export async function submitKlingDirectGenerateTask(params: {
       audioEnabled: params.audioEnabled,
       imageUrl: params.imageUrl,
       endImageUrl: params.falPayload.endImageUrl ?? null,
+      startImageUrl: mediaInputs.startImageUrl,
+      sourceVideoUrl: mediaInputs.sourceVideoUrl,
+      referenceImageUrls: mediaInputs.referenceImageUrls,
+      keepAudio: mediaInputs.keepAudio,
       elements: elementRegistration.elements ?? null,
       cfgScale: typeof params.cfgScale === 'number' ? params.cfgScale : null,
       extraInputValues: params.falPayload.extraInputValues ?? null,

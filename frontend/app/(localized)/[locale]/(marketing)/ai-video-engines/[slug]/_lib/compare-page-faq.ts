@@ -46,6 +46,7 @@ export function buildCompareFaqItems({
   pairHasKling3Native4k,
   pairHasNativeAudio,
   specLabels,
+  hasShowdownSlots = true,
 }: {
   activeLocale: AppLocale;
   compareCopy: ComparePageCopy;
@@ -60,6 +61,7 @@ export function buildCompareFaqItems({
   pairHasKling3Native4k: boolean;
   pairHasNativeAudio: boolean;
   specLabels: Record<string, string>;
+  hasShowdownSlots?: boolean;
 }): CompareFaqItem[] {
   if (pageOverride?.faq?.items) {
     return pageOverride.faq.items;
@@ -170,6 +172,28 @@ export function buildCompareFaqItems({
             a10: 'Even with similar instructions, models interpret constraints and settings differently. For Kling 3 4K, compare the specs and cost ladder first, then render only approved final shots in native 4K.',
           }
     : null;
+  const noShowdownFaqCopy = !hasShowdownSlots
+    ? activeLocale === 'fr'
+      ? {
+          a1: '{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare les specs clés, les prix, les contrôles et les données de performance ci-dessus.',
+          a2: 'Cela dépend de votre workflow. Utilisez la grille de scores et les specs pour comparer le contrôle, les références, l’audio, le prix et les limites de génération, puis ouvrez chaque profil pour les détails complets.',
+          q10: 'Pourquoi les résultats peuvent-ils différer entre ces modèles ?',
+          a10: 'Les modèles interprètent les instructions, les références visuelles et les contraintes de génération différemment. Les vidéos comparatives curées seront ajoutées quand des rendus dédiés seront disponibles.',
+        }
+      : activeLocale === 'es'
+        ? {
+            a1: '{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página compara especificaciones clave, precios, controles y los datos de rendimiento anteriores.',
+            a2: 'Depende de tu flujo de trabajo. Usa la puntuación y las especificaciones para comparar control, referencias, audio, precio y límites de generación, luego abre cada perfil para los detalles completos.',
+            q10: '¿Por qué pueden diferir los resultados entre estos modelos?',
+            a10: 'Los modelos interpretan instrucciones, referencias visuales y restricciones de generación de forma distinta. Los vídeos comparativos curados se añadirán cuando haya renders dedicados disponibles.',
+          }
+        : {
+            a1: '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares key specs, pricing, controls, and performance data shown above.',
+            a2: 'It depends on your workflow. Use the scorecard and specs to compare control, references, audio, pricing, and generation limits, then open each engine profile for full details.',
+            q10: 'Why can results differ between these models?',
+            a10: 'Models interpret instructions, visual references, and generation constraints differently. Curated side-by-side videos will be added once model-specific renders are available.',
+          }
+    : null;
 
   return [
     {
@@ -179,6 +203,7 @@ export function buildCompareFaqItems({
       ),
       answer: formatTemplate(
         kling3Native4kFaqCopy?.a1 ??
+          noShowdownFaqCopy?.a1 ??
           faqTemplates.a1 ??
           '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares them side-by-side using the same prompts, key specs, and performance data shown above.',
         { left: formatEngineName(left), right: formatEngineName(right) }
@@ -191,6 +216,7 @@ export function buildCompareFaqItems({
       ),
       answer:
         kling3Native4kFaqCopy?.a2 ??
+        noShowdownFaqCopy?.a2 ??
         faqTemplates.a2 ??
         'It depends on your workflow. Use the scorecard and the “same prompt” showdowns to compare prompt adherence, motion realism, human fidelity, and text legibility — then open each engine profile for full details.',
     },
@@ -295,10 +321,12 @@ export function buildCompareFaqItems({
     {
       question:
         kling3Native4kFaqCopy?.q10 ??
+        noShowdownFaqCopy?.q10 ??
         faqTemplates.q10 ??
         'Why do results look different with the same prompt?',
       answer:
         kling3Native4kFaqCopy?.a10 ??
+        noShowdownFaqCopy?.a10 ??
         faqTemplates.a10 ??
         'Even with identical prompts, models interpret instructions differently and use different training data and generation strategies. That’s why the Showdown section exists: same prompt, side-by-side outputs.',
     },

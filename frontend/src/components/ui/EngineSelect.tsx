@@ -35,6 +35,7 @@ export function EngineSelect({
   modeOptions,
   showBillingNote = true,
   modeLabelOverrides,
+  disabledEngineReasons,
   showModeSelect = true,
   modeLayout = 'inline',
   variant = 'card',
@@ -236,17 +237,26 @@ export function EngineSelect({
               <div className={clsx('flex flex-wrap', isCompact ? 'gap-1.5' : 'gap-2')}>
                 {variantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
+                  const disabledReason = disabledEngineReasons?.[entry.id];
+                  const disabled = Boolean(disabledReason);
                   return (
                     <button
                       key={entry.id}
                       type="button"
-                      onClick={() => onEngineChange(entry.id)}
+                      onClick={() => {
+                        if (disabled) return;
+                        onEngineChange(entry.id);
+                      }}
+                      disabled={disabled}
+                      title={disabledReason}
                       className={clsx(
                         'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-brand bg-brand text-on-brand'
-                          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
+                          : disabled
+                            ? 'cursor-not-allowed border-border bg-surface text-text-muted/60 opacity-70'
+                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
                       )}
                     >
                       {getVariantLabel(entry)}
@@ -304,6 +314,7 @@ export function EngineSelect({
               legacyToggleLabel={legacyToggleLabel}
               locale={locale}
               modeLabelOverrides={modeLabelOverrides}
+              disabledEngineReasons={disabledEngineReasons}
               onBrowse={() => {
                 setOpen(false);
                 setHighlightedIndex(-1);
@@ -378,11 +389,13 @@ export function EngineSelect({
           selectedEngineId={selectedEngine.id}
           onClose={() => setBrowseOpen(false)}
           onSelect={(engineToSelect) => {
+            if (disabledEngineReasons?.[engineToSelect]) return;
             onEngineChange(engineToSelect);
             setBrowseOpen(false);
           }}
           copy={copy}
           modeLabelOverrides={modeLabelOverrides}
+          disabledEngineReasons={disabledEngineReasons}
           engineMeta={registryMeta?.meta}
           showLegacy={showLegacy}
           onToggleLegacy={() => setShowLegacy((previous) => !previous)}

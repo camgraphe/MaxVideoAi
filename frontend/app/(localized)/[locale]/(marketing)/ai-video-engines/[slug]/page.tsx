@@ -128,6 +128,15 @@ export default async function CompareDetailPage(
     rightScore,
     rightSpecs,
   } = routeData;
+  const showdownSlots = await buildCompareShowdownSlots({
+    activeLocale,
+    canonicalSlug,
+    left,
+    pairHasKling3Native4k,
+    pairHasNativeAudio,
+    right,
+    shouldSwapDisplayOrder,
+  });
   const {
     exposeSourcePrompt,
     generateWithLabel,
@@ -148,15 +157,7 @@ export default async function CompareDetailPage(
     labels,
     pageHeroIntro: pageOverride?.heroIntro,
     pairHasKling3Native4k,
-  });
-  const showdownSlots = await buildCompareShowdownSlots({
-    activeLocale,
-    canonicalSlug,
-    left,
-    pairHasKling3Native4k,
-    pairHasNativeAudio,
-    right,
-    shouldSwapDisplayOrder,
+    hasShowdownSlots: showdownSlots.length > 0,
   });
   const leftAccent = getEngineAccent(left);
   const rightAccent = getEngineAccent(right);
@@ -197,6 +198,7 @@ export default async function CompareDetailPage(
     pairHasKling3Native4k,
     pairHasNativeAudio,
     specLabels,
+    hasShowdownSlots: showdownSlots.length > 0,
   });
   const faqJsonLd = buildCompareFaqJsonLd(faqItems);
 

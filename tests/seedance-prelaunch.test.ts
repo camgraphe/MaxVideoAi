@@ -230,13 +230,13 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'kling-3-pro', 'kling-3-4k']
+    ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'kling-o3-pro', 'kling-o3-4k']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
       'seedance-2-0-vs-veo-3-1',
-      'kling-3-pro-vs-veo-3-1',
+      'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
       'seedance-2-0-vs-seedance-2-0-fast',
       'ltx-2-3-fast-vs-ltx-2-3-pro',
@@ -265,8 +265,8 @@ test('Header model menu promotes Seedance Fast while keeping the Veo family expa
     'ltx-2-3-fast',
     'veo-3-1',
     'veo-3-1-lite',
-    'kling-3-pro',
-    'kling-3-4k',
+    'kling-o3-pro',
+    'kling-o3-4k',
   ]);
 });
 
@@ -295,13 +295,23 @@ test('Happy Horse has a crawlable examples family and appears in example family 
 
 test('Examples family current model groups do not classify new delivery models as older', () => {
   assert.deepEqual(getExampleFamilyModelSlugs('kling'), [
+    'kling-o3-pro',
+    'kling-o3-standard',
+    'kling-o3-4k',
     'kling-3-pro',
     'kling-3-standard',
     'kling-3-4k',
     'kling-2-6-pro',
     'kling-2-5-turbo',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), ['kling-3-pro', 'kling-3-standard', 'kling-3-4k']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), [
+    'kling-o3-pro',
+    'kling-o3-standard',
+    'kling-o3-4k',
+    'kling-3-pro',
+    'kling-3-standard',
+    'kling-3-4k',
+  ]);
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast']);
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
 });

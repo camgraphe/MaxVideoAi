@@ -32,7 +32,9 @@ export function formatEngineMetaName(entry: EngineCatalogEntry): string {
   let name = formatEngineName(entry);
   name = name.replace(/^(openai|google|minimax)\s+/i, '');
   name = name.replace(/\bVideo\s+(\d+(?:\.\d+)?)/i, '$1');
-  name = name.replace(/\b(\d+)\.0\b/g, '$1');
+  if (!/\bOmni\b/i.test(name)) {
+    name = name.replace(/\b(\d+)\.0\b/g, '$1');
+  }
   name = name.replace(/\s+text\s*&\s*image\s+to\s+video$/i, '');
   name = name.replace(/\s+text\s+to\s+video$/i, '');
   name = name.replace(/\s+image\s+to\s+video$/i, '');

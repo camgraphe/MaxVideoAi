@@ -134,3 +134,32 @@ test('kling library insertion targets frontal and reference slots', () => {
   assert.equal(elements[0].references[0]?.id, 'kling_second');
   assert.deepEqual(released, []);
 });
+
+test('kling library insertion targets video reference slots', () => {
+  const element: KlingElementState = {
+    id: 'element_1',
+    frontal: null,
+    references: [null, null, null],
+    video: null,
+  };
+  const video = buildKlingLibraryAsset(userAsset({
+    id: 'kling_video',
+    kind: 'video',
+    mime: 'video/mp4',
+    url: 'https://cdn.example.com/reference.mp4',
+  }));
+  const released: string[] = [];
+
+  const elements = insertKlingLibraryAsset(
+    [element],
+    { kind: 'kling', elementId: 'element_1', slot: 'video' },
+    video,
+    (asset) => {
+      if (asset) released.push(asset.id);
+    }
+  );
+
+  assert.equal(elements[0].video?.id, 'kling_video');
+  assert.equal(elements[0].video?.kind, 'video');
+  assert.deepEqual(released, []);
+});

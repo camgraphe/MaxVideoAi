@@ -6,6 +6,9 @@ import { kling26ProTemplateConfig } from './model-page-templates/kling-2-6-pro';
 import { kling34kTemplateConfig } from './model-page-templates/kling-3-4k';
 import { kling3ProTemplateConfig } from './model-page-templates/kling-3-pro';
 import { kling3StandardTemplateConfig } from './model-page-templates/kling-3-standard';
+import { klingO34kTemplateConfig } from './model-page-templates/kling-o3-4k';
+import { klingO3ProTemplateConfig } from './model-page-templates/kling-o3-pro';
+import { klingO3StandardTemplateConfig } from './model-page-templates/kling-o3-standard';
 import { lumaRay2TemplateConfig } from './model-page-templates/luma-ray-2';
 import { lumaRay2FlashTemplateConfig } from './model-page-templates/luma-ray-2-flash';
 import { ltx23ProTemplateConfig } from './model-page-templates/ltx-2-3-pro';
@@ -37,6 +40,9 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [kling34kTemplateConfig.slug]: kling34kTemplateConfig,
   [kling3ProTemplateConfig.slug]: kling3ProTemplateConfig,
   [kling3StandardTemplateConfig.slug]: kling3StandardTemplateConfig,
+  [klingO34kTemplateConfig.slug]: klingO34kTemplateConfig,
+  [klingO3ProTemplateConfig.slug]: klingO3ProTemplateConfig,
+  [klingO3StandardTemplateConfig.slug]: klingO3StandardTemplateConfig,
   [lumaRay2TemplateConfig.slug]: lumaRay2TemplateConfig,
   [lumaRay2FlashTemplateConfig.slug]: lumaRay2FlashTemplateConfig,
   [ltx2FastTemplateConfig.slug]: ltx2FastTemplateConfig,

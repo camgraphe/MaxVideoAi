@@ -10,7 +10,7 @@
   "pricingNotes": "Member display estimates include the MaxVideoAI margin: about $0.55/s for native 4K output, so use this route for approved final renders.",
   "hero": {
     "title": "Kling 3 4K - native 4K video generation",
-    "intro": "Use Kling 3 4K when a prompt, source frame or storyboard is already approved and the shot needs native 4K output for delivery, editing or large-screen review.",
+    "intro": "Use Kling 3 4K when a prompt or start frame is already approved and the shot needs native 4K output for delivery, editing or large-screen review. Use Kling 3.0 Omni 4K when reference images or storyboard frames should guide the 4K shot without becoming the opening frame.",
     "badge": "Native 4K · 3-15s · Text or image input · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 3 4K",
@@ -91,7 +91,7 @@
       "Validate composition in Standard or Pro",
       "Move the approved single-prompt or multi-prompt plan to Kling 3 4K",
       "Keep one clear action per shot",
-      "Use image references for final framing",
+      "Use start frames for final framing",
       "Render native 4K for delivery"
     ]
   },
@@ -170,7 +170,7 @@
     "finalButton": "Render a final Kling 3 4K shot",
     "promptingTitle": "Prompt Lab — Kling 3 4K",
     "promptingGuideLabel": "Official Kling 3 4K guide",
-    "promptingIntro": "Kling 3 4K works best as a final delivery pass. Start from an approved prompt or image reference, lock framing and duration, decide whether audio belongs in the master, then render only the selected shot in native 4K.",
+    "promptingIntro": "Kling 3 4K works best as a final delivery pass. Start from an approved prompt or start frame, lock framing and duration, decide whether audio belongs in the master, then render only the selected shot in native 4K.",
     "promptingTip": "Tip: validate timing, motion and framing in Kling 3 Standard or Pro before spending on the 4K master.",
     "promptingGlobalPrinciples": [
       "Use one approved shot brief instead of exploring multiple creative directions in 4K.",

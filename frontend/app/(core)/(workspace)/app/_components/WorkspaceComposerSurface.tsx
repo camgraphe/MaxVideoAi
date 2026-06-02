@@ -19,6 +19,13 @@ import {
   buildComposerAttachments,
   type ReferenceAsset,
 } from '../_lib/workspace-assets';
+import {
+  getKlingO3AssetState,
+  isKlingO3FrameFieldId,
+  KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE,
+  KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE,
+  supportsKlingO3VideoToVideo,
+} from '../_lib/kling-o3-unified-workflow';
 import type { FormState } from '../_lib/workspace-form-state';
 import { normalizeExtraInputValue } from '../_lib/workspace-form-state';
 import {
@@ -61,6 +68,8 @@ type WorkspaceComposerSurfaceProps = {
   inputSchemaSummary: WorkspaceInputSchemaSummary;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   isUnifiedSeedance: boolean;
+  isUnifiedKlingO3: boolean;
+  klingO3UnsupportedVideoReason: string | null;
   workflowCopy: WorkflowCopy;
   guestUploadLockedReason: string | null;
   uiLocale: string;
@@ -119,7 +128,7 @@ type WorkspaceComposerSurfaceProps = {
   handleKlingElementRemove: (id: string) => void;
   handleKlingElementAssetAdd: KlingElementsBuilderProps['onAddAsset'];
   handleKlingElementAssetRemove: KlingElementsBuilderProps['onRemoveAsset'];
-  handleOpenKlingAssetLibrary: (elementId: string, slot: 'frontal' | 'reference', slotIndex?: number) => void;
+  handleOpenKlingAssetLibrary: (elementId: string, slot: 'frontal' | 'reference' | 'video', slotIndex?: number) => void;
   setViewMode: Dispatch<SetStateAction<'single' | 'quad'>>;
 };
 
@@ -141,6 +150,8 @@ export function WorkspaceComposerSurface({
   inputSchemaSummary,
   inputAssets,
   isUnifiedSeedance,
+  isUnifiedKlingO3,
+  klingO3UnsupportedVideoReason,
   workflowCopy,
   guestUploadLockedReason,
   uiLocale,
@@ -199,6 +210,14 @@ export function WorkspaceComposerSurface({
   handleOpenKlingAssetLibrary,
   setViewMode,
 }: WorkspaceComposerSurfaceProps) {
+  const klingO3AssetState = useMemo(
+    () => getKlingO3AssetState({ inputAssets, klingElements }),
+    [inputAssets, klingElements]
+  );
+  const klingO3VideoToVideoSupported = supportsKlingO3VideoToVideo(selectedEngine);
+  const klingO3VideoReferenceDisabledReason =
+    isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
+
   const composerAssetFields = useMemo(() => {
     return inputSchemaSummary.assetFields.map((entry) => {
       const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
@@ -211,7 +230,13 @@ export function WorkspaceComposerSurface({
           : blockKey === 'clearStartEnd'
             ? workflowCopy.clearStartEndToUseReferences
             : null;
-      const disabledReason = workflowDisabledReason ?? guestUploadLockedReason;
+      const klingO3DisabledReason =
+        isUnifiedKlingO3 && entry.field.type === 'video' && entry.field.id === 'video_url' && !klingO3VideoToVideoSupported
+          ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE
+          : isUnifiedKlingO3 && klingO3AssetState.hasAnyVideoInput && isKlingO3FrameFieldId(entry.field.id)
+            ? KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE
+            : null;
+      const disabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
       return {
         ...entry,
         disabled: Boolean(disabledReason),
@@ -223,6 +248,9 @@ export function WorkspaceComposerSurface({
     inputAssets,
     inputSchemaSummary.assetFields,
     isUnifiedSeedance,
+    isUnifiedKlingO3,
+    klingO3AssetState.hasAnyVideoInput,
+    klingO3VideoToVideoSupported,
     workflowCopy.clearReferencesToUseStartEnd,
     workflowCopy.clearStartEndToUseReferences,
   ]);
@@ -272,6 +300,10 @@ export function WorkspaceComposerSurface({
   const durationSec = multiPromptActive ? multiPromptTotalSec : form.durationSec;
   const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
+  const showKlingElementsBuilder =
+    supportsKlingV3Controls &&
+    (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
+  const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
   const handleAudioChange = useCallback(
     (audio: boolean) => {
@@ -326,7 +358,7 @@ export function WorkspaceComposerSurface({
       modeToggles={composerModeToggles}
       activeManualMode={activeManualMode}
       onModeToggle={handleComposerModeToggle}
-      workflowNotice={composerWorkflowNotice}
+      workflowNotice={resolvedWorkflowNotice}
       promotedActions={composerPromotedActions}
       assetFields={composerAssetFields}
       assets={composerAssets}
@@ -350,7 +382,7 @@ export function WorkspaceComposerSurface({
             }
           : null
       }
-      disableGenerate={multiPromptInvalid || audioWorkflowUnsupported}
+      disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
       extraFields={
         <>
           {showRetakeWorkflowAction ? (
@@ -372,7 +404,7 @@ export function WorkspaceComposerSurface({
               </Button>
             </div>
           ) : null}
-          {supportsKlingV3Controls && activeMode === 'i2v' ? (
+          {showKlingElementsBuilder ? (
             <KlingElementsBuilder
               elements={klingElements}
               onAddElement={handleKlingElementAdd}
@@ -380,6 +412,7 @@ export function WorkspaceComposerSurface({
               onAddAsset={handleKlingElementAssetAdd}
               onRemoveAsset={handleKlingElementAssetRemove}
               onOpenLibrary={handleOpenKlingAssetLibrary}
+              videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
             />
           ) : null}
           <SettingsControls

@@ -106,7 +106,11 @@ export function buildGenerateValidationPayload(params: {
     }
   }
   if (params.mode === 'v2v' && params.normalizedReferenceImages.length) {
-    payload.reference_image_urls = params.normalizedReferenceImages;
+    if (params.engineId.startsWith('kling-o3')) {
+      payload.image_urls = params.normalizedReferenceImages;
+    } else {
+      payload.reference_image_urls = params.normalizedReferenceImages;
+    }
   }
   if (params.mode === 'r2v' && params.videoUrls.length) {
     payload.video_urls = params.videoUrls;

@@ -44,7 +44,8 @@ export function buildFalGenerationRequest(
       requestBody.aspect_ratio = payload.aspectRatio;
     }
 
-    if (typeof payload.audio === 'boolean') {
+    const isKlingO3VideoToVideo = payload.engineId.startsWith('kling-o3') && payload.mode === 'v2v';
+    if (typeof payload.audio === 'boolean' && !isKlingO3VideoToVideo) {
       requestBody.generate_audio = payload.audio;
     }
 
@@ -117,6 +118,7 @@ export function buildFalGenerationRequest(
   const arrayCollectors = new Map<string, Set<string>>();
   const expectsSingleSourceVideo =
     payload.mode === 'v2v' || payload.mode === 'reframe' || payload.mode === 'extend' || payload.mode === 'retake';
+  const expectsKlingO3VideoToVideoImages = payload.engineId.startsWith('kling-o3') && payload.mode === 'v2v';
   const expectsImageArray = payload.mode === 'ref2v';
   const expectsFirstLastFrames = payload.mode === 'fl2v';
   const forbidsPrimaryImage = payload.mode === 'ref2v';
@@ -207,7 +209,12 @@ export function buildFalGenerationRequest(
       requestBody[slotId] = urlCandidate;
       continue;
     }
-    if (slotId === 'first_frame_url' || slotId === 'last_frame_url' || slotId === 'end_image_url') {
+    if (
+      slotId === 'first_frame_url' ||
+      slotId === 'last_frame_url' ||
+      slotId === 'start_image_url' ||
+      slotId === 'end_image_url'
+    ) {
       requestBody[slotId] = urlCandidate;
       continue;
     }
@@ -242,6 +249,10 @@ export function buildFalGenerationRequest(
     const trimmed = url.trim();
     if (!trimmed) return;
     if (expectsImageArray) {
+      addToArray('image_urls', trimmed);
+      return;
+    }
+    if (expectsKlingO3VideoToVideoImages) {
       addToArray('image_urls', trimmed);
       return;
     }

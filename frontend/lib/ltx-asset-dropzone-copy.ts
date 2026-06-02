@@ -28,6 +28,10 @@ export type AssetDropzoneCopy = {
   sourceAudioSlot: string;
   slotSuffix: (label: string) => string;
   addFile: (details: string) => string;
+  addMedia: string;
+  chooseMedia: string;
+  chooseMediaHint: string;
+  dragDropHint: string;
   neededBeforeGenerating: string;
   upload: string;
   selectAsset: string;
@@ -84,6 +88,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     sourceAudioSlot: 'Source audio',
     slotSuffix: (label) => `${label} slot`,
     addFile: (details) => `Drag & drop or click to add.${details ? ` ${details}` : ''}`,
+    addMedia: 'Add media',
+    chooseMedia: 'Choose media',
+    chooseMediaHint: 'Upload a new file or choose an existing asset from your library.',
+    dragDropHint: 'You can still drag and drop a file onto this field.',
     neededBeforeGenerating: 'Needed before generating.',
     upload: 'Upload',
     selectAsset: 'Select asset',
@@ -138,6 +146,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     sourceAudioSlot: 'Audio source',
     slotSuffix: (label) => `Slot ${label}`,
     addFile: (details) => `Glissez-déposez ou cliquez pour ajouter.${details ? ` ${details}` : ''}`,
+    addMedia: 'Ajouter un média',
+    chooseMedia: 'Choisir un média',
+    chooseMediaHint: 'Uploadez un nouveau fichier ou choisissez un asset dans votre bibliothèque.',
+    dragDropHint: 'Vous pouvez aussi glisser-déposer un fichier sur ce champ.',
     neededBeforeGenerating: 'Nécessaire avant génération.',
     upload: 'Upload',
     selectAsset: 'Sélectionner un asset',
@@ -192,6 +204,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     sourceAudioSlot: 'Audio fuente',
     slotSuffix: (label) => `Slot de ${label}`,
     addFile: (details) => `Arrastra y suelta o haz clic para añadir.${details ? ` ${details}` : ''}`,
+    addMedia: 'Añadir medio',
+    chooseMedia: 'Elegir medio',
+    chooseMediaHint: 'Sube un archivo nuevo o elige un asset de tu biblioteca.',
+    dragDropHint: 'También puedes arrastrar y soltar un archivo en este campo.',
     neededBeforeGenerating: 'Necesario antes de generar.',
     upload: 'Subir',
     selectAsset: 'Seleccionar asset',

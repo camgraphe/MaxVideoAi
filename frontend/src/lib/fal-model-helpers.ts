@@ -14,7 +14,7 @@ const ENGINE_MODE_MODEL_MAP = (() => {
 })();
 
 const STRING_ENUM_DURATION_MODEL_PATTERN =
-  /^(?:bytedance\/seedance-2\.0(?:\/fast)?\/|wan\/v2\.6\/(?:text-to-video|image-to-video|reference-to-video)$|fal-ai\/kling-video\/v3\/(?:pro|standard|4k)\/(?:text-to-video|image-to-video)$)/i;
+  /^(?:bytedance\/seedance-2\.0(?:\/fast)?\/|wan\/v2\.6\/(?:text-to-video|image-to-video|reference-to-video)$|fal-ai\/kling-video\/(?:v3|o3)\/(?:pro|standard|4k)\/(?:text-to-video|image-to-video|reference-to-video)$)/i;
 
 function normalizeStringEnumDurationValue(duration: number | string): string {
   if (typeof duration === 'number') {
@@ -37,7 +37,7 @@ export function normalizeFalDurationValueForModel(
     return normalizeStringEnumDurationValue(duration);
   }
 
-  if (engineId.startsWith('kling-3')) {
+  if (engineId.startsWith('kling-3') || engineId.startsWith('kling-o3')) {
     return normalizeStringEnumDurationValue(duration);
   }
 

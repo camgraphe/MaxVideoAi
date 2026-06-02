@@ -52,9 +52,10 @@ export function useWorkspaceKlingElementAssets({
   }, []);
 
   const handleOpenKlingAssetLibrary = useCallback(
-    (elementId: string, slot: 'frontal' | 'reference', slotIndex?: number) => {
-      if (assetLibrarySource !== 'all') {
-        resetAssetLibraryForSource('all');
+    (elementId: string, slot: 'frontal' | 'reference' | 'video', slotIndex?: number) => {
+      const nextSource = slot === 'video' ? 'recent' : 'all';
+      if (assetLibrarySource !== nextSource) {
+        resetAssetLibraryForSource(nextSource);
       }
       setAssetPickerTarget({ kind: 'kling', elementId, slot, slotIndex });
     },

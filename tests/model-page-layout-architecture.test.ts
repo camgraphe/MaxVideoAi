@@ -22,6 +22,7 @@ const pageContentSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(m
 const decisionCardsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCardsSection.tsx');
 const decisionPromptingSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx');
 const decisionPromptTabsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx');
+const decisionCopyButtonPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCopyButton.client.tsx');
 const decisionTipsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionTipsSection.tsx');
 const decisionCompareSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCompareSection.tsx');
 const decisionSafetyFaqSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionSafetyFaqSection.tsx');
@@ -84,6 +85,7 @@ test('model page layout delegates template page ownership', () => {
     decisionCardsSectionPath,
     decisionPromptingSectionPath,
     decisionPromptTabsPath,
+    decisionCopyButtonPath,
     decisionTipsSectionPath,
     decisionCompareSectionPath,
     decisionSafetyFaqSectionPath,
@@ -103,6 +105,7 @@ test('model page layout delegates template page ownership', () => {
   const decisionCardsSource = readSource(decisionCardsSectionPath);
   const decisionPromptingSource = readSource(decisionPromptingSectionPath);
   const decisionPromptTabsSource = readSource(decisionPromptTabsPath);
+  const decisionCopyButtonSource = readSource(decisionCopyButtonPath);
   const decisionTipsSource = readSource(decisionTipsSectionPath);
   const decisionCompareSource = readSource(decisionCompareSectionPath);
   const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
@@ -152,7 +155,9 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptingSource, /ModelDecisionPromptTabs/, 'decision prompting should delegate interactive tabs');
   assert.match(decisionPromptingSource, /How Seedance 2\.0 uses references|referencesTitle/, 'decision prompting should render the reference workflow section');
   assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
-  assert.match(decisionPromptTabsSource, /navigator\.clipboard\.writeText|ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
+  assert.match(decisionPromptTabsSource, /ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
+  assert.match(decisionCopyButtonSource, /copyTextToClipboard/, 'decision copy button should use the clipboard helper fallback');
+  assert.match(decisionCopyButtonSource, /useEffect\(\(\)\s*=>\s*\{\s*setCopied\(false\)/, 'decision copy button should reset copied state when copy text changes');
   assert.match(decisionPromptTabsSource, /encodeURIComponent\(engineSlug\)/, 'decision prompt tabs should route Use Prompt to the active engine');
   assert.doesNotMatch(
     decisionPromptTabsSource,

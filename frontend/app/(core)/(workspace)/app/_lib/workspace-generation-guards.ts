@@ -66,6 +66,7 @@ export type GenerationIterationGuardOptions = {
   referenceAudioUrls: string[];
   inputsPayload?: GenerationAttachmentPayload[];
   primaryAttachment: GenerationAttachmentPayload | null;
+  hasKlingElements?: boolean;
   addReferenceMediaBeforeAudioMessage?: string;
   extendOrRetakeSourceVideoMessage: string;
 };
@@ -186,6 +187,9 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
           : 'Add at least one reference image or reference video before running Seedance Reference → Video.';
       }
     } else if (options.referenceImageUrls.length === 0) {
+      if (options.selectedEngineId.startsWith('kling-o3-') && options.hasKlingElements) {
+        return null;
+      }
       return options.selectedEngineId === 'happy-horse-1-0'
         ? 'Add 1–9 reference images before running Happy Horse R2V.'
         : 'Add 1–4 reference images before running Reference → Video.';

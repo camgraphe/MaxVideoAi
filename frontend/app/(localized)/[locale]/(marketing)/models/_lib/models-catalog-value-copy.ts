@@ -13,6 +13,9 @@ export const USE_CASE_MAP: Record<string, string> = {
   'kling-3-standard': 'multi-shot cinematic sequences with voice control',
   'kling-3-pro': 'multi-shot cinematic sequences with voice control',
   'kling-3-4k': 'native 4K final delivery renders',
+  'kling-o3-standard': 'lower-cost reference, storyboard, and source-video V2V tests',
+  'kling-o3-pro': 'reference-guided Kling video, storyboard inputs, and source-video V2V',
+  'kling-o3-4k': 'native 4K reference-guided delivery renders without source-video V2V',
   'kling-2-5-turbo': 'fast iterations with stable prompt adherence',
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
@@ -43,6 +46,12 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Idéal pour des séquences ciné multi-plans, avec contrôle vocal, audio natif, lip-sync précis et forte contrôlabilité, en texte-vers-vidéo comme en image-vers-vidéo.',
     'kling-3-4k':
       'Idéal pour les masters 4K natifs : sorties premium et grands écrans, après validation en Standard ou Pro.',
+    'kling-o3-standard':
+      'Idéal pour tester à moindre coût des références visuelles, storyboards et vidéos sources V2V avant de passer en O3 Pro.',
+    'kling-o3-pro':
+      'Idéal pour guider Kling avec des images de référence, des storyboards ou une vidéo source V2V sans forcer la première image en start frame.',
+    'kling-o3-4k':
+      'Idéal pour les rendus 4K natifs guidés par références ou storyboard, après validation en O3 Standard ou Pro.',
     'veo-3-1':
       'Idéal pour créer des plans pub maîtrisés : références, contrôle final et extension, avec un rendu fidèle et synchronisé.',
     'veo-3-1-fast':
@@ -89,6 +98,12 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Ideal para secuencias cinematográficas multi-planos con control de voz y mayor control.',
     'kling-3-4k':
       'Ideal para entregas finales en 4K nativo, salidas premium y grandes pantallas.',
+    'kling-o3-standard':
+      'Ideal para probar referencias visuales, storyboards y video fuente V2V con menor costo antes de pasar a O3 Pro.',
+    'kling-o3-pro':
+      'Ideal para guiar Kling con imágenes de referencia, storyboard o video fuente V2V sin forzar la primera imagen como frame inicial.',
+    'kling-o3-4k':
+      'Ideal para renders 4K nativos guiados por referencias o storyboard después de validar la dirección en O3 Standard o Pro.',
     'veo-3-1':
       'Ideal para tomas publicitarias con referencias, control del último frame y extensión.',
   },

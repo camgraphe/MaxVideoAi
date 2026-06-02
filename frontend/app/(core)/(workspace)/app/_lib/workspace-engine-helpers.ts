@@ -2,6 +2,7 @@ import { isLumaRay2EngineId, isLumaRay2GenerateMode } from '@/lib/luma-ray2';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
+import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import type { FormState } from './workspace-form-state';
 
 export function normalizeEngineToken(value?: string | null): string {
@@ -162,6 +163,9 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
   if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
     return undefined;
   }
+  if (isKlingO3EngineId(engine.id)) {
+    return undefined;
+  }
   if (engine.id === 'veo-3-1') {
     const order: Mode[] = ['ref2v', 'extend'];
     const available = filterAvailableWorkspaceModes(engine, order);
@@ -227,8 +231,11 @@ export function buildComposerModeToggles({
               ? (['extend'] as const)
               : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
                 ? ([] as const)
-                : null;
+                : isKlingO3EngineId(selectedEngine.id)
+                  ? ([] as const)
+                  : null;
   if (!explicitModes) return undefined;
+  if (explicitModes.length === 0) return undefined;
   const disabledReason = audioWorkflowLocked
     ? workflowCopy.removeAudioToUnlock
     : undefined;
@@ -304,6 +311,14 @@ export function resolveAudioDefault(engine: EngineCaps, mode: Mode): boolean {
   const field = findGenerateAudioField(engine, mode);
   const parsed = parseBooleanInput(field?.default);
   return parsed ?? true;
+}
+
+export function supportsModeAudioControl(
+  engine: EngineCaps,
+  mode: Mode,
+  capability: EngineModeUiCaps | undefined = getModeCaps(engine, mode)
+): boolean {
+  return Boolean(capability?.audioToggle && findGenerateAudioField(engine, mode));
 }
 
 export function resolveBooleanFieldDefault(

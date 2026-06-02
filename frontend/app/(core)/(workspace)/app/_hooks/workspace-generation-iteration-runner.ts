@@ -176,6 +176,7 @@ export async function runWorkspaceGenerationIteration({
     referenceAudioUrls,
     inputsPayload,
     primaryAttachment,
+    hasKlingElements: Boolean(klingElementsPayload?.length),
     addReferenceMediaBeforeAudioMessage: workflowCopy.addReferenceMediaBeforeAudio,
     extendOrRetakeSourceVideoMessage: workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)),
   });

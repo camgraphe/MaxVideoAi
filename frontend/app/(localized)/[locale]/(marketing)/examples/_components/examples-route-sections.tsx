@@ -54,14 +54,14 @@ function resolveExamplesPricingCallout(selectedEngine: string | null, locale: Ap
   }
   if (normalized === 'kling') {
     return {
-      href: `${pricingPath}#kling-3-pro-pricing`,
+      href: `${pricingPath}#kling-o3-pro-pricing`,
       title: locale === 'fr' ? 'Tarifs Kling' : locale === 'es' ? 'Precios de Kling' : 'Kling pricing',
       body:
         locale === 'fr'
-          ? 'Comparez les prix Kling 3 Standard, Kling 3 Pro et Kling 3 4K par durée, audio et résolution.'
+          ? 'Comparez les prix Kling 3.0 Omni Standard, Pro et 4K avec les routes Kling 3 start-frame encore prises en charge.'
           : locale === 'es'
-            ? 'Compara precios de Kling 3 Standard, Kling 3 Pro y Kling 3 4K por duración, audio y resolución.'
-            : 'Compare Kling 3 Standard, Kling 3 Pro and Kling 3 4K pricing by duration, audio and resolution.',
+            ? 'Compara precios de Kling 3.0 Omni Standard, Pro y 4K con las rutas Kling 3 start-frame aún compatibles.'
+            : 'Compare Kling 3.0 Omni Standard, Pro and 4K pricing with the supported Kling 3 start-frame routes.',
     };
   }
   return null;

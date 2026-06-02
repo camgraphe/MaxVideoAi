@@ -156,7 +156,8 @@ export function useSettingsControlState({
   const showAspectControl = aspectOptions.length > 0;
   const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
-  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle;
+  const modeCanExposeNativeAudio = caps?.audioToggle ?? true;
+  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle && modeCanExposeNativeAudio;
   const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
   const effectiveCfgScale =
     typeof cfgScale === 'number'

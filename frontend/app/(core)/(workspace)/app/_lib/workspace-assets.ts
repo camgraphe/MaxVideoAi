@@ -41,7 +41,7 @@ export type AssetLibraryKind = 'image' | 'video';
 
 export type AssetPickerTarget =
   | { kind: 'field'; field: EngineInputField; slotIndex?: number }
-  | { kind: 'kling'; elementId: string; slot: 'frontal' | 'reference'; slotIndex?: number };
+  | { kind: 'kling'; elementId: string; slot: 'frontal' | 'reference' | 'video'; slotIndex?: number };
 
 export const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
 export const PRIMARY_VIDEO_SLOT_IDS = ['video_url', 'input_video', 'video'] as const;
@@ -254,12 +254,13 @@ export function removeReferenceAsset(
 }
 
 export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
+  const isVideo = asset.kind === 'video';
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     assetId: asset.id,
-    previewUrl: asset.url,
-    kind: 'image',
-    name: asset.url.split('/').pop() ?? 'Image',
+    previewUrl: asset.previewUrl ?? asset.thumbUrl ?? asset.url,
+    kind: isVideo ? 'video' : 'image',
+    name: asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image'),
     status: 'ready',
     url: asset.url,
   };
@@ -277,6 +278,10 @@ export function insertKlingLibraryAsset(
     if (target.slot === 'frontal') {
       release?.(element.frontal);
       return { ...element, frontal: asset };
+    }
+    if (target.slot === 'video') {
+      release?.(element.video);
+      return { ...element, video: asset };
     }
 
     const references = [...element.references];

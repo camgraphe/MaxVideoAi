@@ -127,7 +127,9 @@ export function WorkspaceRuntimeModals({
               ? assetPickerTarget.field.label ?? fieldFallbackLabel
               : assetPickerTarget.slot === 'frontal'
                 ? 'Kling frontal image'
-                : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
+                : assetPickerTarget.slot === 'video'
+                  ? 'Kling video reference'
+                  : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
           }
           assetType={assetLibraryKind}
           assets={visibleAssetLibrary}

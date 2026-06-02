@@ -45,13 +45,28 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'kling-3-pro': {
     description:
-      'Kling 3 Pro adds multi-prompt sequencing, subject references, and native audio for long-form cinematic shots.',
-    badges: ['Multi-prompt', 'Subject refs', 'Audio native'],
+      'Kling 3 Pro adds multi-prompt sequencing, start-frame animation, Kling Elements, and native audio for long-form cinematic shots.',
+    badges: ['Multi-prompt', 'Start frame', 'Audio native'],
   },
   'kling-3-standard': {
     description:
-      'Kling 3 Standard brings multi-prompt sequencing and subject references at a lower per-second rate.',
-    badges: ['Multi-prompt', 'Subject refs', 'Audio native'],
+      'Kling 3 Standard brings multi-prompt sequencing and start-frame image-to-video at a lower per-second rate.',
+    badges: ['Multi-prompt', 'Start frame', 'Audio native'],
+  },
+  'kling-o3-standard': {
+    description:
+      'Kling 3.0 Omni Standard uses reference images, storyboard inputs, and source-video V2V without forcing the first upload to become the opening frame.',
+    badges: ['Reference mode', 'V2V', 'Audio native'],
+  },
+  'kling-o3-pro': {
+    description:
+      'Kling 3.0 Omni Pro is the reference-guided Kling route for storyboard, source-video V2V, style, character, and object inputs.',
+    badges: ['Reference mode', 'Source video', 'V2V'],
+  },
+  'kling-o3-4k': {
+    description:
+      'Kling 3.0 Omni 4K brings reference-guided Kling generation to native 4K delivery renders, without source-video V2V in the current route.',
+    badges: ['Reference mode', 'Native 4K', 'No V2V'],
   },
   'seedance-1-5-pro': {
     description:

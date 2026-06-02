@@ -132,7 +132,10 @@ export function WorkspaceAppReadyView({
     handleSafetyCheckerChange,
     handleSeedChange,
     isSeedance,
+    isUnifiedKlingO3,
     isUnifiedSeedance,
+    klingO3DisabledEngineReasons,
+    klingO3UnsupportedVideoReason,
     multiPromptActive,
     multiPromptError,
     multiPromptInvalid,
@@ -213,6 +216,7 @@ export function WorkspaceAppReadyView({
         modeLabelLocale={uiLocale}
         handleEngineChange={handleEngineChange}
         handleModeChange={handleModeChange}
+        disabledEngineReasons={klingO3DisabledEngineReasons}
         renderGroups={renderGroups}
         compositeOverrideSummary={compositeOverrideSummary}
         setViewerTarget={setViewerTarget}
@@ -235,6 +239,8 @@ export function WorkspaceAppReadyView({
             inputSchemaSummary={inputSchemaSummary}
             inputAssets={inputAssets}
             isUnifiedSeedance={isUnifiedSeedance}
+            isUnifiedKlingO3={isUnifiedKlingO3}
+            klingO3UnsupportedVideoReason={klingO3UnsupportedVideoReason}
             workflowCopy={workflowCopy}
             guestUploadLockedReason={guestUploadLockedReason}
             uiLocale={uiLocale}

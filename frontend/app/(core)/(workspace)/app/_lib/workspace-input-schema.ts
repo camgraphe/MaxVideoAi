@@ -5,6 +5,7 @@ import type {
 } from '@/components/Composer';
 import { localizeLtxField } from '@/lib/ltx-localization';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import {
   normalizeFieldId,
   parseBooleanInput,
@@ -30,7 +31,14 @@ export type WorkspaceInputSchemaSummary = {
 
 export function resolveAssetFieldRole(field: EngineInputField, required: boolean): AssetFieldRole {
   const id = (field.id ?? '').toLowerCase();
-  if (id.includes('first_frame') || id.includes('last_frame') || id.includes('end_image')) return 'frame';
+  if (
+    id.includes('first_frame') ||
+    id.includes('last_frame') ||
+    id.includes('start_image') ||
+    id.includes('end_image')
+  ) {
+    return 'frame';
+  }
   if (id === 'image_urls' || id.endsWith('_image_urls')) return 'reference';
   if (id === 'video_urls' || id.endsWith('_video_urls')) return 'reference';
   if (id === 'audio_urls' || id.endsWith('_audio_urls')) return 'reference';
@@ -39,6 +47,52 @@ export function resolveAssetFieldRole(field: EngineInputField, required: boolean
   if (required && field.type === 'image') return 'primary';
   if (field.type === 'image') return 'reference';
   return 'generic';
+}
+
+function assetDisplayPriority(field: EngineInputField): number {
+  const id = (field.id ?? '').toLowerCase();
+  if (id === 'image_url' || id === 'input_image' || id.includes('first_frame') || id.includes('start_image')) {
+    return 10;
+  }
+  if (id.includes('last_frame') || id.includes('end_image')) {
+    return 20;
+  }
+  if (id === 'video_url' || id === 'input_video' || id === 'video') {
+    return 30;
+  }
+  return 100;
+}
+
+function orderCrossModeAssetFields(assetFields: AssetFieldConfig[], activeMode: Mode): AssetFieldConfig[] {
+  if (activeMode !== 't2v') return assetFields;
+  const ids = new Set(assetFields.map(({ field }) => field.id));
+  if (!ids.has('video_url') || !ids.has('end_image_url')) return assetFields;
+  return assetFields
+    .map((entry, index) => ({ entry, index }))
+    .sort((left, right) => {
+      const priorityDelta = assetDisplayPriority(left.entry.field) - assetDisplayPriority(right.entry.field);
+      return priorityDelta || left.index - right.index;
+    })
+    .map(({ entry }) => entry);
+}
+
+function klingO3UnifiedAssetPriority(field: EngineInputField): number {
+  const id = (field.id ?? '').toLowerCase();
+  if (id === 'image_urls' || id === 'reference_image_urls' || id === 'reference_images') return 10;
+  if (id === 'image_url' || id === 'start_image_url' || id.includes('first_frame')) return 20;
+  if (id === 'end_image_url' || id.includes('last_frame')) return 30;
+  if (id === 'video_url' || id === 'input_video' || id === 'video') return 40;
+  return 100;
+}
+
+function orderKlingO3UnifiedAssetFields(assetFields: AssetFieldConfig[]): AssetFieldConfig[] {
+  return assetFields
+    .map((entry, index) => ({ entry, index }))
+    .sort((left, right) => {
+      const priorityDelta = klingO3UnifiedAssetPriority(left.entry.field) - klingO3UnifiedAssetPriority(right.entry.field);
+      return priorityDelta || left.index - right.index;
+    })
+    .map(({ entry }) => entry);
 }
 
 export function summarizeWorkspaceInputSchema({
@@ -76,8 +130,16 @@ export function summarizeWorkspaceInputSchema({
         (mode) => mode === 'i2v' || mode === 'v2v' || mode === 'reframe' || mode === 'r2v' || mode === 'a2v'
       )
     );
+  const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
   const appliesToMode = (field: EngineInputField) => {
     if (!field.modes || field.modes.includes(activeMode)) return true;
+    if (
+      isUnifiedKlingO3 &&
+      (field.type === 'image' || field.type === 'video') &&
+      (field.modes.includes('i2v') || field.modes.includes('ref2v') || field.modes.includes('v2v'))
+    ) {
+      return true;
+    }
     if (
       isUnifiedSeedance &&
       (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
@@ -157,6 +219,9 @@ export function summarizeWorkspaceInputSchema({
       }
       const required = isRequired(localizedField, origin);
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
+        if (isUnifiedKlingO3 && localizedField.id === 'start_image_url') {
+          return;
+        }
         const role = resolveAssetFieldRole(localizedField, required);
         assetFields.push({ field: localizedField, required, role });
         return;
@@ -186,7 +251,9 @@ export function summarizeWorkspaceInputSchema({
     : false;
 
   return {
-    assetFields,
+    assetFields: isUnifiedKlingO3
+      ? orderKlingO3UnifiedAssetFields(assetFields)
+      : orderCrossModeAssetFields(assetFields, activeMode),
     promotedFields,
     secondaryFields,
     promptField,

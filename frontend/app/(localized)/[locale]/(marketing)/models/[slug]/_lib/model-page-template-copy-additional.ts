@@ -468,10 +468,10 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'KLING LOWER-COST STORYBOARD ROUTE',
       title: 'Kling 3 Standard',
-      subtitle: 'Multi-shot drafts for 1080p storyboard tests, prompt planning, and native audio options.',
-      subtitleHighlights: ['multi-shot drafts', '1080p storyboard tests', 'native audio options'],
+      subtitle: 'Multi-shot drafts for 1080p start-frame tests, prompt planning, and native audio options.',
+      subtitleHighlights: ['multi-shot drafts', '1080p start-frame tests', 'native audio options'],
       paragraph:
-        'Use Kling 3 Standard when you want lower-cost Kling 3 storyboard testing in 1080p: structured prompts, image-to-video drafts, optional end frames and audio before moving winners into Pro.',
+        'Use Kling 3 Standard when you want lower-cost Kling 3 start-frame testing in 1080p: structured prompts, image-to-video drafts, optional end frames and audio before moving winners into Pro.',
       primaryCta: { label: 'Generate with Kling 3 Standard', href: '/app?engine=kling-3-standard' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'kling') },
       quickLinks: [
@@ -482,10 +482,10 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Kling 3 Standard example',
-      description: 'Lower-cost storyboard draft',
+      description: 'Lower-cost start-frame draft',
       renderLabel: 'View draft',
       badges: ['1080p', '15s max', 'Audio option'],
-      altContext: 'Kling 3 Standard storyboard-style draft',
+      altContext: 'Kling 3 Standard start-frame draft',
     },
     features: [
       { title: 'Multi-shot drafts', body: 'Plan scenes and beats before spending on the Pro route.', tone: 'continuity' },
@@ -498,7 +498,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: 'Standard or Pro?',
-        body: 'Use Standard for lower-cost storyboard testing. Use Kling 3 Pro when the approved shot needs stronger final fidelity.',
+        body: 'Use Standard for lower-cost start-frame testing. Use Kling 3 Pro when the approved shot needs stronger final fidelity.',
         cta: { label: 'Compare Standard vs Pro', href: compareHref('en', 'kling-3-standard', 'kling-3-pro') },
       },
       {
@@ -529,17 +529,17 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Kling 3 Standard: Pricing, 1080p Drafts & Examples | MaxVideoAI',
       description:
-        'Use Kling 3 Standard for lower-cost 1080p storyboard drafts, image-to-video tests, native audio options and 15 second Kling planning.',
+        'Use Kling 3 Standard for lower-cost 1080p start-frame drafts, image-to-video tests, native audio options and 15 second Kling planning.',
     },
   },
   fr: {
     hero: {
       eyebrow: 'ROUTE KLING STORYBOARD À MOINDRE COÛT',
       title: 'Kling 3 Standard',
-      subtitle: 'Des brouillons multi-plans pour tests storyboard 1080p, planification de prompts et options audio natives.',
-      subtitleHighlights: ['brouillons multi-plans', 'tests storyboard 1080p', 'options audio natives'],
+      subtitle: 'Des brouillons multi-plans pour tests start-frame 1080p, planification de prompts et options audio natives.',
+      subtitleHighlights: ['brouillons multi-plans', 'tests start-frame 1080p', 'options audio natives'],
       paragraph:
-        'Utilisez Kling 3 Standard pour tester des storyboards Kling 3 à moindre coût en 1080p : prompts structurés, brouillons image-vidéo, image de fin optionnelle et audio avant de passer les gagnants en Pro.',
+        'Utilisez Kling 3 Standard pour tester des start frames Kling 3 à moindre coût en 1080p : prompts structurés, brouillons image-vidéo, image de fin optionnelle et audio avant de passer les gagnants en Pro.',
       primaryCta: { label: 'Générer avec Kling 3 Standard', href: '/app?engine=kling-3-standard' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'kling') },
       quickLinks: [
@@ -550,10 +550,10 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Kling 3 Standard',
-      description: 'Brouillon storyboard à moindre coût',
+      description: 'Brouillon start-frame à moindre coût',
       renderLabel: 'Voir le brouillon',
       badges: ['1080p', '15 s max', 'Audio optionnel'],
-      altContext: 'brouillon storyboard Kling 3 Standard',
+      altContext: 'brouillon start-frame Kling 3 Standard',
     },
     features: [
       { title: 'Brouillons multi-plans', body: 'Planifiez scènes et beats avant de passer sur Pro.', tone: 'continuity' },
@@ -566,7 +566,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: 'Standard ou Pro ?',
-        body: 'Utilisez Standard pour les tests storyboard à moindre coût. Passez à Kling 3 Pro pour une fidélité finale plus forte.',
+        body: 'Utilisez Standard pour les tests start-frame à moindre coût. Passez à Kling 3 Pro pour une fidélité finale plus forte.',
         cta: { label: 'Comparer Standard vs Pro', href: compareHref('fr', 'kling-3-standard', 'kling-3-pro') },
       },
       {
@@ -597,17 +597,17 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Kling 3 Standard : tarifs, brouillons 1080p et exemples | MaxVideoAI',
       description:
-        'Utilisez Kling 3 Standard pour des brouillons storyboard 1080p à moindre coût, tests image-vidéo, options audio natives et séquences Kling jusqu’à 15 s.',
+        'Utilisez Kling 3 Standard pour des brouillons start-frame 1080p à moindre coût, tests image-vidéo, options audio natives et séquences Kling jusqu’à 15 s.',
     },
   },
   es: {
     hero: {
       eyebrow: 'RUTA KLING STORYBOARD DE MENOR COSTE',
       title: 'Kling 3 Standard',
-      subtitle: 'Borradores multi-shot para pruebas storyboard 1080p, planificación de prompts y opciones de audio nativo.',
-      subtitleHighlights: ['borradores multi-shot', 'pruebas storyboard 1080p', 'opciones de audio nativo'],
+      subtitle: 'Borradores multi-shot para pruebas start-frame 1080p, planificación de prompts y opciones de audio nativo.',
+      subtitleHighlights: ['borradores multi-shot', 'pruebas start-frame 1080p', 'opciones de audio nativo'],
       paragraph:
-        'Usa Kling 3 Standard para probar storyboards Kling 3 de menor coste en 1080p: prompts estructurados, borradores imagen a video, cuadro final opcional y audio antes de pasar ganadores a Pro.',
+        'Usa Kling 3 Standard para probar start frames Kling 3 de menor coste en 1080p: prompts estructurados, borradores imagen a video, cuadro final opcional y audio antes de pasar ganadores a Pro.',
       primaryCta: { label: 'Generar con Kling 3 Standard', href: '/app?engine=kling-3-standard' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'kling') },
       quickLinks: [
@@ -618,10 +618,10 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Kling 3 Standard',
-      description: 'Borrador storyboard de menor coste',
+      description: 'Borrador start-frame de menor coste',
       renderLabel: 'Ver borrador',
       badges: ['1080p', '15 s max', 'Audio opcional'],
-      altContext: 'borrador tipo storyboard con Kling 3 Standard',
+      altContext: 'borrador start-frame con Kling 3 Standard',
     },
     features: [
       { title: 'Borradores multi-shot', body: 'Planifica escenas y beats antes de pasar a Pro.', tone: 'continuity' },
@@ -634,7 +634,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     decisionCards: [
       {
         title: '¿Standard o Pro?',
-        body: 'Usa Standard para pruebas storyboard de menor coste. Usa Kling 3 Pro cuando la toma aprobada necesite más fidelidad final.',
+        body: 'Usa Standard para pruebas start-frame de menor coste. Usa Kling 3 Pro cuando la toma aprobada necesite más fidelidad final.',
         cta: { label: 'Comparar Standard vs Pro', href: compareHref('es', 'kling-3-standard', 'kling-3-pro') },
       },
       {
@@ -665,7 +665,7 @@ const KLING_3_STANDARD_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Kling 3 Standard: precios, borradores 1080p y ejemplos | MaxVideoAI',
       description:
-        'Usa Kling 3 Standard para borradores storyboard 1080p de menor coste, pruebas imagen a video, opciones de audio y planificación Kling hasta 15 s.',
+        'Usa Kling 3 Standard para borradores start-frame 1080p de menor coste, pruebas imagen a video, opciones de audio y planificación Kling hasta 15 s.',
     },
   },
 };
@@ -678,7 +678,7 @@ const KLING_3_4K_COPY: LocalizedTemplateCopy = {
       subtitle: 'Native 4K delivery for approved image-to-video shots, product masters, and final campaign renders.',
       subtitleHighlights: ['native 4K delivery', 'approved image-to-video shots', 'final campaign renders'],
       paragraph:
-        'Use Kling 3 4K after the prompt, reference image or storyboard is approved and the shot needs native 4K output for delivery, editing or large-screen review.',
+        'Use Kling 3 4K after the prompt or start frame is approved and the shot needs native 4K output for delivery, editing or large-screen review. Use Kling 3.0 Omni 4K when references should guide the shot without opening it.',
       primaryCta: { label: 'Generate with Kling 3 4K', href: '/app?engine=kling-3-4k' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'kling') },
       quickLinks: [
@@ -746,7 +746,7 @@ const KLING_3_4K_COPY: LocalizedTemplateCopy = {
       subtitle: 'Livraison 4K native pour plans image-vidéo approuvés, masters produit et rendus finaux de campagne.',
       subtitleHighlights: ['livraison 4K native', 'plans image-vidéo approuvés', 'rendus finaux de campagne'],
       paragraph:
-        'Utilisez Kling 3 4K une fois le prompt, l’image de référence ou le storyboard validé, quand le plan doit sortir en 4K native pour livraison, montage ou revue grand format.',
+        'Utilisez Kling 3 4K une fois le prompt ou la start frame validé, quand le plan doit sortir en 4K native pour livraison, montage ou revue grand format. Utilisez Kling 3.0 Omni 4K quand les references doivent guider le plan sans l ouvrir.',
       primaryCta: { label: 'Générer avec Kling 3 4K', href: '/app?engine=kling-3-4k' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'kling') },
       quickLinks: [
@@ -814,7 +814,7 @@ const KLING_3_4K_COPY: LocalizedTemplateCopy = {
       subtitle: 'Entrega 4K nativa para tomas imagen a video aprobadas, masters de producto y renders finales de campaña.',
       subtitleHighlights: ['entrega 4K nativa', 'tomas imagen a video aprobadas', 'renders finales de campaña'],
       paragraph:
-        'Usa Kling 3 4K cuando el prompt, la imagen de referencia o el storyboard ya están aprobados y la toma necesita salida 4K nativa para entrega, edición o revisión en pantalla grande.',
+        'Usa Kling 3 4K cuando el prompt o start frame ya estan aprobados y la toma necesita salida 4K nativa para entrega, edicion o revision en pantalla grande. Usa Kling 3.0 Omni 4K cuando las referencias deben guiar el plano sin abrirlo.',
       primaryCta: { label: 'Generar con Kling 3 4K', href: '/app?engine=kling-3-4k' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'kling') },
       quickLinks: [
@@ -2150,6 +2150,555 @@ const SORA_2_PRO_COPY: LocalizedTemplateCopy = {
       title: 'Sora 2 Pro: precios, 1080p y ejemplos | MaxVideoAI',
       description:
         'Explora precios de Sora 2 Pro, ejemplos 1080p, audio nativo sincronizado, texto a video e imagen a video. Compara Sora 2 Pro vs Sora 2.',
+    },
+  },
+};
+
+const KLING_O3_PRO_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'KLING 3.0 OMNI PRO',
+      title: 'Kling 3.0 Omni Pro',
+      subtitle: 'Reference-to-video, storyboard guidance and source-video V2V for Kling shots where uploaded media should guide the render instead of forcing the first frame.',
+      subtitleHighlights: ['Reference-to-video', 'storyboard guidance', 'source-video V2V'],
+      paragraph:
+        'Use Kling 3.0 Omni Pro when reference images, storyboard frames or a source video should steer style, character continuity, motion or camera language. Use Kling 3 Pro instead when the uploaded image must visibly open the clip as the start frame.',
+      primaryCta: { label: 'Generate with Kling 3.0 Omni Pro', href: '/app?engine=kling-o3-pro' },
+      secondaryCta: { label: 'Compare vs Kling 3 Pro', href: compareHref('en', 'kling-3-pro', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Compare vs Kling 3 Pro', href: compareHref('en', 'kling-3-pro', 'kling-o3-pro') },
+        { label: 'View pricing', href: pricingHref('en', 'kling-o3-pro-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Kling 3.0 Omni Pro example',
+      description: 'Storyboard-guided production render',
+      renderLabel: 'View render',
+      badges: ['Storyboard', '12s', 'Audio on'],
+      altContext: 'tiny lighthouse keeper storyboard-guided Kling 3.0 Omni Pro render',
+    },
+    features: [
+      { title: 'Reference images', body: 'Use @Image anchors for style, subject, storyboard or scene continuity without forcing the first image to open.', tone: 'reference' },
+      { title: 'Source-video V2V', body: 'Attach a source video and refer to @Video1 when motion, pacing or camera language should guide the shot.', tone: 'continuity' },
+      { title: 'Optional start/end frames', body: 'Combine references with opening or ending frames when the shot needs stronger structure.', tone: 'reference' },
+      { title: 'Native audio route', body: 'Generate with audio when the selected O3 route exposes audio controls.', tone: 'audio' },
+      { title: 'Up to 15s', body: 'Use Pro for longer reference-guided clips before moving final 4K work to the 4K route.', tone: 'duration' },
+      { title: 'Live quote', body: 'The app shows the exact price before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'O3 Pro or Kling 3 Pro?',
+        body: 'Choose O3 Pro when images are references or storyboard inputs. Choose Kling 3 Pro when an uploaded image should be the visible start frame.',
+        cta: { label: 'Compare O3 Pro vs Kling 3 Pro', href: compareHref('en', 'kling-3-pro', 'kling-o3-pro') },
+      },
+      {
+        title: 'Need source-video guidance?',
+        body: 'Use O3 Pro or Standard for source-video V2V. Prompt with @Video1 when the source clip should control motion or camera continuity.',
+        cta: { label: 'Open O3 Pro composer', href: '/app?engine=kling-o3-pro' },
+      },
+      {
+        title: 'Need native 4K?',
+        body: 'Use O3 4K after the reference direction is approved. Stay on Pro while testing source-video V2V and storyboard structure.',
+        cta: { label: 'View O3 4K', href: modelsHref('en', 'kling-o3-4k') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt only', body: 'Use text when no visual anchor is needed and O3 should generate from the scene brief.' },
+      { title: 'Reference images', body: 'Use @Image1, @Image2 and more for character, object, style or storyboard guidance.' },
+      { title: 'Start/end frames', body: 'Add optional opening or ending frames when the first or last pose must be controlled.' },
+      { title: 'Source video', body: 'Use @Video1 for video-to-video motion, pacing, composition or camera continuity.' },
+      { title: 'Reference plus V2V', body: 'Combine source video and reference images when motion and visual identity both matter.' },
+    ],
+    pricingCopy: {
+      title: 'Kling 3.0 Omni Pro pricing at a glance',
+      subtitle: 'Preset totals for reference-guided and video-to-video scenarios. Check the live quote before generating.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Pro: Reference, Storyboard & V2V | MaxVideoAI',
+      description:
+        'Use Kling 3.0 Omni Pro for reference-to-video, storyboard inputs, source-video V2V, @Image and @Video1 prompts, native audio and live pricing.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'KLING 3.0 OMNI PRO',
+      title: 'Kling 3.0 Omni Pro',
+      subtitle: 'Reference-to-video, storyboard et V2V depuis vidéo source pour les plans Kling où les médias importés doivent guider le rendu sans devenir la première frame.',
+      subtitleHighlights: ['Reference-to-video', 'storyboard', 'V2V depuis vidéo source'],
+      paragraph:
+        "Utilisez Kling 3.0 Omni Pro quand des images de référence, des frames storyboard ou une vidéo source doivent guider le style, la continuité, le mouvement ou le langage caméra. Utilisez Kling 3 Pro quand l'image importée doit vraiment ouvrir le clip comme start frame.",
+      primaryCta: { label: 'Générer avec Kling 3.0 Omni Pro', href: '/app?engine=kling-o3-pro' },
+      secondaryCta: { label: 'Comparer vs Kling 3 Pro', href: compareHref('fr', 'kling-3-pro', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparer vs Kling 3 Pro', href: compareHref('fr', 'kling-3-pro', 'kling-o3-pro') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'kling-o3-pro-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Kling 3.0 Omni Pro',
+      description: 'Rendu production guidé par storyboard',
+      renderLabel: 'Voir le rendu',
+      badges: ['Storyboard', '12 s', 'Audio activé'],
+      altContext: 'rendu Kling 3.0 Omni Pro guidé par storyboard avec petit gardien de phare',
+    },
+    features: [
+      { title: 'Images de référence', body: 'Utilisez les ancres @Image pour le style, le sujet, le storyboard ou la continuité sans forcer la première image en ouverture.', tone: 'reference' },
+      { title: 'V2V vidéo source', body: 'Ajoutez une vidéo source et citez @Video1 quand le mouvement, le rythme ou la caméra doivent guider le plan.', tone: 'continuity' },
+      { title: 'Start/end optionnels', body: 'Combinez références et frames de début/fin quand le plan doit être plus structuré.', tone: 'reference' },
+      { title: 'Route audio native', body: 'Générez avec audio quand la route O3 sélectionnée expose les contrôles audio.', tone: 'audio' },
+      { title: 'Jusqu’à 15 s', body: 'Utilisez Pro pour les clips guidés par références avant de passer les rendus finaux en 4K.', tone: 'duration' },
+      { title: 'Prix live', body: 'L’app affiche le prix exact avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'O3 Pro ou Kling 3 Pro ?',
+        body: 'Choisissez O3 Pro quand les images sont des références ou un storyboard. Choisissez Kling 3 Pro quand une image doit être la start frame visible.',
+        cta: { label: 'Comparer O3 Pro vs Kling 3 Pro', href: compareHref('fr', 'kling-3-pro', 'kling-o3-pro') },
+      },
+      {
+        title: 'Besoin de V2V ?',
+        body: 'Utilisez O3 Pro ou Standard pour le V2V depuis vidéo source. Citez @Video1 quand la source doit guider le mouvement ou la continuité caméra.',
+        cta: { label: 'Ouvrir le composer O3 Pro', href: '/app?engine=kling-o3-pro' },
+      },
+      {
+        title: 'Besoin de 4K native ?',
+        body: 'Utilisez O3 4K une fois la direction par références validée. Restez sur Pro pour tester le V2V et la structure storyboard.',
+        cta: { label: 'Voir O3 4K', href: modelsHref('fr', 'kling-o3-4k') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt seul', body: 'Utilisez le texte quand aucune ancre visuelle n’est nécessaire.' },
+      { title: 'Images de référence', body: 'Utilisez @Image1, @Image2 et plus pour le personnage, l’objet, le style ou le storyboard.' },
+      { title: 'Frames début/fin', body: 'Ajoutez une ouverture ou une fin optionnelle quand la pose doit être contrôlée.' },
+      { title: 'Vidéo source', body: 'Utilisez @Video1 pour guider mouvement, rythme, composition ou caméra en video-to-video.' },
+      { title: 'Référence plus V2V', body: 'Combinez vidéo source et images de référence quand le mouvement et l’identité visuelle comptent.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Kling 3.0 Omni Pro en un coup d’œil',
+      subtitle: 'Totaux par scénario référence ou video-to-video. Vérifiez le prix live avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Pro : références, storyboard et V2V | MaxVideoAI',
+      description:
+        'Utilisez Kling 3.0 Omni Pro pour reference-to-video, storyboard, V2V depuis vidéo source, prompts @Image et @Video1, audio natif et prix live.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'KLING 3.0 OMNI PRO',
+      title: 'Kling 3.0 Omni Pro',
+      subtitle: 'Reference-to-video, storyboard y V2V desde video fuente para tomas Kling donde los medios subidos deben guiar el render sin ser el primer frame.',
+      subtitleHighlights: ['Reference-to-video', 'storyboard', 'V2V desde video fuente'],
+      paragraph:
+        'Usa Kling 3.0 Omni Pro cuando imágenes de referencia, frames storyboard o un video fuente deben guiar estilo, continuidad, movimiento o lenguaje de cámara. Usa Kling 3 Pro cuando la imagen subida debe abrir el clip como start frame.',
+      primaryCta: { label: 'Generar con Kling 3.0 Omni Pro', href: '/app?engine=kling-o3-pro' },
+      secondaryCta: { label: 'Comparar con Kling 3 Pro', href: compareHref('es', 'kling-3-pro', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparar con Kling 3 Pro', href: compareHref('es', 'kling-3-pro', 'kling-o3-pro') },
+        { label: 'Ver precios', href: pricingHref('es', 'kling-o3-pro-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Kling 3.0 Omni Pro',
+      description: 'Render de producción guiado por storyboard',
+      renderLabel: 'Ver render',
+      badges: ['Storyboard', '12 s', 'Audio activo'],
+      altContext: 'render Kling 3.0 Omni Pro guiado por storyboard con un pequeño farero',
+    },
+    features: [
+      { title: 'Imágenes de referencia', body: 'Usa anclas @Image para estilo, sujeto, storyboard o continuidad sin forzar la primera imagen como apertura.', tone: 'reference' },
+      { title: 'V2V con video fuente', body: 'Adjunta un video fuente y cita @Video1 cuando movimiento, ritmo o cámara deben guiar la toma.', tone: 'continuity' },
+      { title: 'Start/end opcionales', body: 'Combina referencias con frames de inicio o final cuando la toma necesita más estructura.', tone: 'reference' },
+      { title: 'Ruta con audio nativo', body: 'Genera con audio cuando la ruta O3 seleccionada expone controles de audio.', tone: 'audio' },
+      { title: 'Hasta 15 s', body: 'Usa Pro para clips guiados por referencias antes de pasar finales a la ruta 4K.', tone: 'duration' },
+      { title: 'Precio en vivo', body: 'La app muestra el precio exacto antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿O3 Pro o Kling 3 Pro?',
+        body: 'Elige O3 Pro cuando las imágenes son referencias o storyboard. Elige Kling 3 Pro cuando una imagen debe ser el start frame visible.',
+        cta: { label: 'Comparar O3 Pro vs Kling 3 Pro', href: compareHref('es', 'kling-3-pro', 'kling-o3-pro') },
+      },
+      {
+        title: '¿Necesitas guía V2V?',
+        body: 'Usa O3 Pro o Standard para V2V desde video fuente. Cita @Video1 cuando la fuente debe controlar movimiento o continuidad de cámara.',
+        cta: { label: 'Abrir compositor O3 Pro', href: '/app?engine=kling-o3-pro' },
+      },
+      {
+        title: '¿Necesitas 4K nativo?',
+        body: 'Usa O3 4K cuando la dirección por referencias ya está aprobada. Mantente en Pro para probar V2V y estructura storyboard.',
+        cta: { label: 'Ver O3 4K', href: modelsHref('es', 'kling-o3-4k') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt solo', body: 'Usa texto cuando no se necesita ancla visual.' },
+      { title: 'Imágenes de referencia', body: 'Usa @Image1, @Image2 y más para personaje, objeto, estilo o storyboard.' },
+      { title: 'Frames inicio/final', body: 'Agrega apertura o final opcional cuando la pose debe controlarse.' },
+      { title: 'Video fuente', body: 'Usa @Video1 para guiar movimiento, ritmo, composición o cámara en video-to-video.' },
+      { title: 'Referencia más V2V', body: 'Combina video fuente e imágenes de referencia cuando importan movimiento e identidad visual.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Kling 3.0 Omni Pro de un vistazo',
+      subtitle: 'Totales por escenario con referencias o video-to-video. Revisa el precio en vivo antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Pro: referencias, storyboard y V2V | MaxVideoAI',
+      description:
+        'Usa Kling 3.0 Omni Pro para reference-to-video, storyboard, V2V desde video fuente, prompts @Image y @Video1, audio nativo y precio en vivo.',
+    },
+  },
+};
+
+const KLING_O3_STANDARD_COPY: LocalizedTemplateCopy = {
+  en: {
+    ...KLING_O3_PRO_COPY.en,
+    hero: {
+      ...KLING_O3_PRO_COPY.en.hero,
+      eyebrow: 'KLING 3.0 OMNI STANDARD',
+      title: 'Kling 3.0 Omni Standard',
+      subtitle: 'Lower-cost reference-to-video, storyboard drafts and source-video V2V before moving approved directions into O3 Pro.',
+      paragraph:
+        'Use Kling 3.0 Omni Standard for cheaper reference-guided iteration: storyboard images, style anchors, optional start/end frames and source-video V2V tests. Move winners into O3 Pro when the shot needs stronger final polish.',
+      primaryCta: { label: 'Generate with Kling 3.0 Omni Standard', href: '/app?engine=kling-o3-standard' },
+      secondaryCta: { label: 'View O3 Pro', href: modelsHref('en', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Compare vs O3 Pro', href: compareHref('en', 'kling-o3-standard', 'kling-o3-pro') },
+        { label: 'View pricing', href: pricingHref('en', 'kling-o3-standard-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      ...KLING_O3_PRO_COPY.en.media,
+      caption: 'Kling 3.0 Omni Standard example',
+      description: 'Lower-cost storyboard draft',
+      badges: ['Storyboard draft', '12s', 'Audio on'],
+      altContext: 'origami whale storyboard-guided Kling 3.0 Omni Standard draft',
+    },
+    decisionCards: [
+      {
+        title: 'Standard or Pro?',
+        body: 'Use Standard for lower-cost reference and V2V tests. Move to Pro when the selected direction needs final-quality fidelity.',
+        cta: { label: 'View O3 Pro', href: modelsHref('en', 'kling-o3-pro') },
+      },
+      ...KLING_O3_PRO_COPY.en.decisionCards.slice(1),
+    ],
+    pricingCopy: {
+      ...KLING_O3_PRO_COPY.en.pricingCopy,
+      title: 'Kling 3.0 Omni Standard pricing at a glance',
+      subtitle: 'Lower-cost preset totals for reference-guided drafts and source-video V2V tests.',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Standard: Reference Drafts & V2V | MaxVideoAI',
+      description:
+        'Use Kling 3.0 Omni Standard for lower-cost reference-to-video, storyboard drafts, source-video V2V, @Image and @Video1 prompts.',
+    },
+  },
+  fr: {
+    ...KLING_O3_PRO_COPY.fr,
+    hero: {
+      ...KLING_O3_PRO_COPY.fr.hero,
+      eyebrow: 'KLING 3.0 OMNI STANDARD',
+      title: 'Kling 3.0 Omni Standard',
+      subtitle: 'Reference-to-video moins coûteux, drafts storyboard et V2V depuis vidéo source avant de passer les directions validées en O3 Pro.',
+      paragraph:
+        'Utilisez Kling 3.0 Omni Standard pour itérer à moindre coût : images storyboard, ancres de style, frames début/fin optionnelles et tests V2V depuis vidéo source. Passez les gagnants en O3 Pro pour plus de finition.',
+      primaryCta: { label: 'Générer avec Kling 3.0 Omni Standard', href: '/app?engine=kling-o3-standard' },
+      secondaryCta: { label: 'Voir O3 Pro', href: modelsHref('fr', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparer vs O3 Pro', href: compareHref('fr', 'kling-o3-standard', 'kling-o3-pro') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'kling-o3-standard-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      ...KLING_O3_PRO_COPY.fr.media,
+      caption: 'Exemple Kling 3.0 Omni Standard',
+      description: 'Draft storyboard moins coûteux',
+      badges: ['Draft storyboard', '12 s', 'Audio activé'],
+      altContext: 'draft Kling 3.0 Omni Standard guidé par storyboard avec baleine origami',
+    },
+    decisionCards: [
+      {
+        title: 'Standard ou Pro ?',
+        body: 'Utilisez Standard pour tester références et V2V à moindre coût. Passez en Pro quand la direction choisie demande une fidélité finale plus forte.',
+        cta: { label: 'Voir O3 Pro', href: modelsHref('fr', 'kling-o3-pro') },
+      },
+      ...KLING_O3_PRO_COPY.fr.decisionCards.slice(1),
+    ],
+    pricingCopy: {
+      ...KLING_O3_PRO_COPY.fr.pricingCopy,
+      title: 'Prix Kling 3.0 Omni Standard en un coup d’œil',
+      subtitle: 'Totaux moins coûteux pour drafts guidés par références et tests V2V.',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Standard : drafts référence et V2V | MaxVideoAI',
+      description:
+        'Utilisez Kling 3.0 Omni Standard pour reference-to-video moins coûteux, drafts storyboard, V2V source, prompts @Image et @Video1.',
+    },
+  },
+  es: {
+    ...KLING_O3_PRO_COPY.es,
+    hero: {
+      ...KLING_O3_PRO_COPY.es.hero,
+      eyebrow: 'KLING 3.0 OMNI STANDARD',
+      title: 'Kling 3.0 Omni Standard',
+      subtitle: 'Reference-to-video de menor costo, borradores storyboard y V2V desde video fuente antes de mover direcciones aprobadas a O3 Pro.',
+      paragraph:
+        'Usa Kling 3.0 Omni Standard para iterar con menor costo: imágenes storyboard, anclas de estilo, frames inicio/final opcionales y pruebas V2V desde video fuente. Pasa ganadores a O3 Pro para más acabado.',
+      primaryCta: { label: 'Generar con Kling 3.0 Omni Standard', href: '/app?engine=kling-o3-standard' },
+      secondaryCta: { label: 'Ver O3 Pro', href: modelsHref('es', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparar con O3 Pro', href: compareHref('es', 'kling-o3-standard', 'kling-o3-pro') },
+        { label: 'Ver precios', href: pricingHref('es', 'kling-o3-standard-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      ...KLING_O3_PRO_COPY.es.media,
+      caption: 'Ejemplo Kling 3.0 Omni Standard',
+      description: 'Borrador storyboard de menor costo',
+      badges: ['Draft storyboard', '12 s', 'Audio activo'],
+      altContext: 'borrador Kling 3.0 Omni Standard guiado por storyboard con ballena origami',
+    },
+    decisionCards: [
+      {
+        title: '¿Standard o Pro?',
+        body: 'Usa Standard para pruebas de referencia y V2V con menor costo. Pasa a Pro cuando la dirección elegida necesita más fidelidad final.',
+        cta: { label: 'Ver O3 Pro', href: modelsHref('es', 'kling-o3-pro') },
+      },
+      ...KLING_O3_PRO_COPY.es.decisionCards.slice(1),
+    ],
+    pricingCopy: {
+      ...KLING_O3_PRO_COPY.es.pricingCopy,
+      title: 'Precios de Kling 3.0 Omni Standard de un vistazo',
+      subtitle: 'Totales de menor costo para borradores guiados por referencias y pruebas V2V.',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni Standard: borradores referencia y V2V | MaxVideoAI',
+      description:
+        'Usa Kling 3.0 Omni Standard para reference-to-video de menor costo, borradores storyboard, V2V fuente, prompts @Image y @Video1.',
+    },
+  },
+};
+
+const KLING_O3_4K_COPY: LocalizedTemplateCopy = {
+  en: {
+    ...KLING_O3_PRO_COPY.en,
+    hero: {
+      ...KLING_O3_PRO_COPY.en.hero,
+      eyebrow: 'KLING 3.0 OMNI 4K',
+      title: 'Kling 3.0 Omni 4K',
+      subtitle: 'Native 4K reference-guided Kling video for approved storyboard and visual-reference directions. This is not the source-video V2V route.',
+      subtitleHighlights: ['Native 4K', 'reference-guided Kling video', 'not source-video V2V'],
+      paragraph:
+        'Use Kling 3.0 Omni 4K when reference images or storyboard frames should guide a native 4K final without being forced as the opening frame. Use O3 Pro or Standard when the workflow needs a source video or @Video1 V2V.',
+      primaryCta: { label: 'Generate with Kling 3.0 Omni 4K', href: '/app?engine=kling-o3-4k' },
+      secondaryCta: { label: 'View O3 Pro', href: modelsHref('en', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Compare vs O3 Pro', href: compareHref('en', 'kling-o3-4k', 'kling-o3-pro') },
+        { label: 'View pricing', href: pricingHref('en', 'kling-o3-4k-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Kling 3.0 Omni 4K example',
+      description: 'Native 4K storyboard delivery render',
+      renderLabel: 'View render',
+      badges: ['Native 4K', '10s', 'Audio off'],
+      altContext: 'Kling 3.0 Omni 4K storyboard-guided native 4K render',
+    },
+    features: [
+      { title: 'Native 4K', body: 'Use this route for final reference-guided 4K delivery renders.', tone: 'quality' },
+      { title: 'Reference images', body: 'Use @Image anchors for style, subject, storyboard or visual continuity.', tone: 'reference' },
+      { title: 'Storyboard delivery', body: 'Move approved storyboard direction into 4K after cheaper Pro or Standard tests.', tone: 'continuity' },
+      { title: 'Optional start/end frames', body: 'Use opening or ending frames when the native 4K render needs a stronger structure.', tone: 'reference' },
+      { title: 'Not source-video V2V', body: 'Use O3 Pro or Standard when a source video and @Video1 are required.', tone: 'duration' },
+      { title: 'Final quote', body: 'The app shows the exact 4K price before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'When should you use O3 4K?',
+        body: 'Use O3 4K after the reference or storyboard direction is approved and the output needs native 4K delivery.',
+        cta: { label: 'Start O3 4K render', href: '/app?engine=kling-o3-4k' },
+      },
+      {
+        title: 'Need source-video V2V?',
+        body: 'Do not use 4K for source-video V2V. Use O3 Pro or Standard when @Video1 should guide motion or camera continuity.',
+        cta: { label: 'View O3 Pro', href: modelsHref('en', 'kling-o3-pro') },
+      },
+      {
+        title: 'Still choosing the direction?',
+        body: 'Draft the visual structure in Standard or Pro before paying for the native 4K delivery route.',
+        cta: { label: 'View O3 Standard', href: modelsHref('en', 'kling-o3-standard') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Reference images', body: 'Use @Image anchors for style, subject, product details or storyboard frames.' },
+      { title: 'Start/end frames', body: 'Add an opening or ending frame when the 4K render needs a defined boundary.' },
+      { title: 'Prompt structure', body: 'Keep the prompt explicit about camera, action, continuity and delivery intent.' },
+      { title: 'No source video', body: 'Use O3 Pro or Standard if the workflow requires @Video1.' },
+      { title: 'Final pass', body: 'Reserve 4K for approved shots, client review, campaign masters or edit-ready inserts.' },
+    ],
+    pricingCopy: {
+      title: 'Kling 3.0 Omni 4K pricing at a glance',
+      subtitle: 'Native 4K preset totals for approved reference-guided delivery renders.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Native 4K reference route',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni 4K: Native 4K Reference Video | MaxVideoAI',
+      description:
+        'Use Kling 3.0 Omni 4K for native 4K reference-guided and storyboard-guided video. Use O3 Pro or Standard for source-video V2V.',
+    },
+  },
+  fr: {
+    ...KLING_O3_PRO_COPY.fr,
+    hero: {
+      ...KLING_O3_PRO_COPY.fr.hero,
+      eyebrow: 'KLING 3.0 OMNI 4K',
+      title: 'Kling 3.0 Omni 4K',
+      subtitle: 'Vidéo Kling 4K native guidée par références pour directions storyboard validées. Ce n’est pas la route V2V depuis vidéo source.',
+      subtitleHighlights: ['4K native', 'guidage par références', 'pas de V2V source'],
+      paragraph:
+        'Utilisez Kling 3.0 Omni 4K quand des images de référence ou frames storyboard doivent guider une finale 4K native sans devenir la frame d’ouverture. Utilisez O3 Pro ou Standard quand il faut une vidéo source ou @Video1.',
+      primaryCta: { label: 'Générer avec Kling 3.0 Omni 4K', href: '/app?engine=kling-o3-4k' },
+      secondaryCta: { label: 'Voir O3 Pro', href: modelsHref('fr', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparer vs O3 Pro', href: compareHref('fr', 'kling-o3-4k', 'kling-o3-pro') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'kling-o3-4k-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Kling 3.0 Omni 4K',
+      description: 'Rendu de livraison 4K natif guidé par storyboard',
+      renderLabel: 'Voir le rendu',
+      badges: ['4K native', '10 s', 'Audio off'],
+      altContext: 'rendu Kling 3.0 Omni 4K natif guidé par storyboard',
+    },
+    features: [
+      { title: '4K native', body: 'Utilisez cette route pour les rendus finaux 4K guidés par références.', tone: 'quality' },
+      { title: 'Images de référence', body: 'Utilisez les ancres @Image pour style, sujet, storyboard ou continuité visuelle.', tone: 'reference' },
+      { title: 'Livraison storyboard', body: 'Passez une direction validée en 4K après les tests moins coûteux en Pro ou Standard.', tone: 'continuity' },
+      { title: 'Start/end optionnels', body: 'Ajoutez début ou fin quand le rendu 4K doit être mieux structuré.', tone: 'reference' },
+      { title: 'Pas de V2V source', body: 'Utilisez O3 Pro ou Standard quand une vidéo source et @Video1 sont requis.', tone: 'duration' },
+      { title: 'Prix final', body: 'L’app affiche le prix exact 4K avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand utiliser O3 4K ?',
+        body: 'Utilisez O3 4K après validation de la direction référence ou storyboard, quand la sortie doit être en 4K native.',
+        cta: { label: 'Lancer O3 4K', href: '/app?engine=kling-o3-4k' },
+      },
+      {
+        title: 'Besoin de V2V source ?',
+        body: 'N’utilisez pas 4K pour le V2V depuis vidéo source. Utilisez O3 Pro ou Standard quand @Video1 doit guider le mouvement.',
+        cta: { label: 'Voir O3 Pro', href: modelsHref('fr', 'kling-o3-pro') },
+      },
+      {
+        title: 'Direction encore à choisir ?',
+        body: 'Brouillonnez la structure en Standard ou Pro avant de payer la route de livraison 4K native.',
+        cta: { label: 'Voir O3 Standard', href: modelsHref('fr', 'kling-o3-standard') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Images de référence', body: 'Utilisez @Image pour style, sujet, détails produit ou frames storyboard.' },
+      { title: 'Frames début/fin', body: 'Ajoutez une ouverture ou fin quand le rendu 4K demande une limite claire.' },
+      { title: 'Structure du prompt', body: 'Soyez explicite sur caméra, action, continuité et intention de livraison.' },
+      { title: 'Pas de vidéo source', body: 'Utilisez O3 Pro ou Standard si le workflow demande @Video1.' },
+      { title: 'Passe finale', body: 'Réservez la 4K aux plans approuvés, revue client, masters campagne ou inserts montage.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Kling 3.0 Omni 4K en un coup d’œil',
+      subtitle: 'Totaux 4K natifs pour rendus de livraison guidés par références.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Route référence 4K native',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni 4K : vidéo référence 4K native | MaxVideoAI',
+      description:
+        'Utilisez Kling 3.0 Omni 4K pour vidéo 4K native guidée par références et storyboard. Utilisez O3 Pro ou Standard pour V2V source.',
+    },
+  },
+  es: {
+    ...KLING_O3_PRO_COPY.es,
+    hero: {
+      ...KLING_O3_PRO_COPY.es.hero,
+      eyebrow: 'KLING 3.0 OMNI 4K',
+      title: 'Kling 3.0 Omni 4K',
+      subtitle: 'Video Kling 4K nativo guiado por referencias para direcciones storyboard aprobadas. No es la ruta V2V desde video fuente.',
+      subtitleHighlights: ['4K nativo', 'guiado por referencias', 'sin V2V fuente'],
+      paragraph:
+        'Usa Kling 3.0 Omni 4K cuando imágenes de referencia o frames storyboard deben guiar una final 4K nativa sin convertirse en la apertura. Usa O3 Pro o Standard cuando necesitas video fuente o @Video1.',
+      primaryCta: { label: 'Generar con Kling 3.0 Omni 4K', href: '/app?engine=kling-o3-4k' },
+      secondaryCta: { label: 'Ver O3 Pro', href: modelsHref('es', 'kling-o3-pro') },
+      quickLinks: [
+        { label: 'Comparar con O3 Pro', href: compareHref('es', 'kling-o3-4k', 'kling-o3-pro') },
+        { label: 'Ver precios', href: pricingHref('es', 'kling-o3-4k-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Kling 3.0 Omni 4K',
+      description: 'Render de entrega 4K nativo guiado por storyboard',
+      renderLabel: 'Ver render',
+      badges: ['4K nativo', '10 s', 'Audio off'],
+      altContext: 'render Kling 3.0 Omni 4K nativo guiado por storyboard',
+    },
+    features: [
+      { title: '4K nativo', body: 'Usa esta ruta para renders finales 4K guiados por referencias.', tone: 'quality' },
+      { title: 'Imágenes de referencia', body: 'Usa anclas @Image para estilo, sujeto, storyboard o continuidad visual.', tone: 'reference' },
+      { title: 'Entrega storyboard', body: 'Mueve una dirección aprobada a 4K después de pruebas más baratas en Pro o Standard.', tone: 'continuity' },
+      { title: 'Start/end opcionales', body: 'Agrega inicio o final cuando el render 4K necesita más estructura.', tone: 'reference' },
+      { title: 'Sin V2V fuente', body: 'Usa O3 Pro o Standard cuando se requiere video fuente y @Video1.', tone: 'duration' },
+      { title: 'Precio final', body: 'La app muestra el precio exacto 4K antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Cuándo usar O3 4K?',
+        body: 'Usa O3 4K después de aprobar la dirección por referencias o storyboard, cuando la salida necesita 4K nativo.',
+        cta: { label: 'Iniciar O3 4K', href: '/app?engine=kling-o3-4k' },
+      },
+      {
+        title: '¿Necesitas V2V fuente?',
+        body: 'No uses 4K para V2V desde video fuente. Usa O3 Pro o Standard cuando @Video1 debe guiar el movimiento.',
+        cta: { label: 'Ver O3 Pro', href: modelsHref('es', 'kling-o3-pro') },
+      },
+      {
+        title: '¿Aún eliges dirección?',
+        body: 'Haz borradores de estructura en Standard o Pro antes de pagar la ruta 4K nativa.',
+        cta: { label: 'Ver O3 Standard', href: modelsHref('es', 'kling-o3-standard') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Imágenes de referencia', body: 'Usa @Image para estilo, sujeto, detalles de producto o frames storyboard.' },
+      { title: 'Frames inicio/final', body: 'Agrega apertura o final cuando el render 4K necesita un límite claro.' },
+      { title: 'Estructura del prompt', body: 'Sé explícito con cámara, acción, continuidad e intención de entrega.' },
+      { title: 'Sin video fuente', body: 'Usa O3 Pro o Standard si el workflow requiere @Video1.' },
+      { title: 'Pasada final', body: 'Reserva 4K para tomas aprobadas, revisión cliente, masters de campaña o inserts de edición.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Kling 3.0 Omni 4K de un vistazo',
+      subtitle: 'Totales 4K nativos para renders de entrega guiados por referencias.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Ruta referencia 4K nativa',
+    },
+    meta: {
+      title: 'Kling 3.0 Omni 4K: video referencia 4K nativo | MaxVideoAI',
+      description:
+        'Usa Kling 3.0 Omni 4K para video 4K nativo guiado por referencias y storyboard. Usa O3 Pro o Standard para V2V fuente.',
     },
   },
 };
@@ -4861,6 +5410,9 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-2-6-pro': KLING_26_PRO_COPY,
   'kling-3-4k': KLING_3_4K_COPY,
   'kling-3-standard': KLING_3_STANDARD_COPY,
+  'kling-o3-4k': KLING_O3_4K_COPY,
+  'kling-o3-pro': KLING_O3_PRO_COPY,
+  'kling-o3-standard': KLING_O3_STANDARD_COPY,
   'luma-ray-2': LUMA_RAY_2_COPY,
   'luma-ray-2-flash': LUMA_RAY_2_FLASH_COPY,
   'ltx-2': LTX_2_COPY,

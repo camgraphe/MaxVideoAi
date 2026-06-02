@@ -54,6 +54,6 @@ export interface SettingsControlsProps {
   showSafetyCheckerControl?: boolean;
   advancedFields?: Array<{ field: EngineInputField; required: boolean }>;
   advancedFieldValues?: Record<string, unknown>;
-  onAdvancedFieldChange?: (field: EngineInputField, value: string) => void;
+  onAdvancedFieldChange?: (field: EngineInputField, value: unknown) => void;
   variant?: 'full' | 'advanced';
 }

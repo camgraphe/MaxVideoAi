@@ -2,6 +2,51 @@ import type { EngineCaps, Mode } from '@/types/engines';
 
 const KLING_ENGINE_ID = 'kling-2-5-turbo';
 const HAPPY_HORSE_ENGINE_ID = 'happy-horse-1-0';
+const KLING_O3_V2V_PRICING: Record<
+  string,
+  { pricingDetails: EngineCaps['pricingDetails']; pricing: EngineCaps['pricing'] }
+> = {
+  'kling-o3-standard': {
+    pricingDetails: {
+      currency: 'USD',
+      perSecondCents: {
+        default: 12.6,
+        byResolution: {
+          '1080p': 12.6,
+        },
+      },
+    },
+    pricing: {
+      unit: 'USD/s',
+      base: 0.126,
+      byResolution: {
+        '1080p': 0.126,
+      },
+      currency: 'USD',
+      notes: 'Fal video-input rate: $0.126/s for Kling 3.0 Omni Standard V2V.',
+    },
+  },
+  'kling-o3-pro': {
+    pricingDetails: {
+      currency: 'USD',
+      perSecondCents: {
+        default: 16.8,
+        byResolution: {
+          '1080p': 16.8,
+        },
+      },
+    },
+    pricing: {
+      unit: 'USD/s',
+      base: 0.168,
+      byResolution: {
+        '1080p': 0.168,
+      },
+      currency: 'USD',
+      notes: 'Fal video-input rate: $0.168/s for Kling 3.0 Omni Pro V2V.',
+    },
+  },
+};
 const AUDIO_ADDON_KEYS = ['audio_off', 'audio'] as const;
 const VOICE_CONTROL_KEY = 'voice_control';
 
@@ -54,6 +99,14 @@ export function applyEngineVariantPricing(engine: EngineCaps, mode?: Mode): Engi
       ...engine,
       pricingDetails: HAPPY_HORSE_V2V_PRICING_DETAILS,
       pricing: HAPPY_HORSE_V2V_PRICING,
+    };
+  }
+  if (mode === 'v2v' && KLING_O3_V2V_PRICING[engine.id]) {
+    const override = KLING_O3_V2V_PRICING[engine.id];
+    return {
+      ...engine,
+      pricingDetails: override.pricingDetails,
+      pricing: override.pricing,
     };
   }
   return engine;

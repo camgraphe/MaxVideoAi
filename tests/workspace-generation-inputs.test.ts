@@ -299,3 +299,284 @@ test('prepareGenerationInputs builds Kling element and multi-prompt payloads', (
     { prompt: 'Close-up', duration: 7 },
   ]);
 });
+
+test('prepareGenerationInputs includes Kling 3.0 Omni elements in reference mode', () => {
+  const klingElements: KlingElementState[] = [
+    {
+      id: 'element_ref',
+      frontal: {
+        id: 'frontal',
+        assetId: 'asset_frontal',
+        previewUrl: 'https://cdn.example.com/frontal.jpg',
+        kind: 'image',
+        name: 'frontal.jpg',
+        status: 'ready',
+        url: 'https://cdn.example.com/frontal.jpg',
+      },
+      references: [
+        {
+          id: 'ref',
+          assetId: 'asset_ref',
+          previewUrl: 'https://cdn.example.com/ref.jpg',
+          kind: 'image',
+          name: 'ref.jpg',
+          status: 'ready',
+          url: 'https://cdn.example.com/ref.jpg',
+        },
+      ],
+      video: null,
+    },
+  ];
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-pro',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'kling-o3-pro', mode: 'ref2v' }),
+    inputSchema: { required: [], optional: [] },
+    inputSchemaSummary: { assetFields: [] },
+    extraInputFields: [],
+    inputAssets: {},
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements,
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(result.klingElementsPayload, [
+    {
+      id: 'element_ref',
+      frontalImageUrl: 'https://cdn.example.com/frontal.jpg',
+      frontalAssetId: 'asset_frontal',
+      referenceImageUrls: ['https://cdn.example.com/ref.jpg'],
+      referenceAssetIds: ['asset_ref'],
+      videoUrl: undefined,
+      videoAssetId: undefined,
+    },
+  ]);
+});
+
+test('prepareGenerationInputs keeps Kling 3.0 Omni elements when unified routing resolves reference mode', () => {
+  const klingElements: KlingElementState[] = [
+    {
+      id: 'element_ref',
+      frontal: {
+        id: 'frontal',
+        assetId: 'asset_frontal',
+        previewUrl: 'https://cdn.example.com/frontal.jpg',
+        kind: 'image',
+        name: 'frontal.jpg',
+        status: 'ready',
+        url: 'https://cdn.example.com/frontal.jpg',
+      },
+      references: [
+        {
+          id: 'ref',
+          assetId: 'asset_ref',
+          previewUrl: 'https://cdn.example.com/ref.jpg',
+          kind: 'image',
+          name: 'ref.jpg',
+          status: 'ready',
+          url: 'https://cdn.example.com/ref.jpg',
+        },
+      ],
+      video: null,
+    },
+  ];
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-pro',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'kling-o3-pro', mode: 't2v' }),
+    inputSchema: { required: [], optional: [] },
+    inputSchemaSummary: { assetFields: [] },
+    extraInputFields: [],
+    inputAssets: {},
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements,
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(result.klingElementsPayload, [
+    {
+      id: 'element_ref',
+      frontalImageUrl: 'https://cdn.example.com/frontal.jpg',
+      frontalAssetId: 'asset_frontal',
+      referenceImageUrls: ['https://cdn.example.com/ref.jpg'],
+      referenceAssetIds: ['asset_ref'],
+      videoUrl: undefined,
+      videoAssetId: undefined,
+    },
+  ]);
+});
+
+test('prepareGenerationInputs includes Kling 3.0 Omni elements in video-to-video mode', () => {
+  const klingElements: KlingElementState[] = [
+    {
+      id: 'element_video_ref',
+      frontal: null,
+      references: [],
+      video: {
+        id: 'video',
+        assetId: 'asset_video',
+        previewUrl: 'https://cdn.example.com/subject.mp4',
+        kind: 'video',
+        name: 'subject.mp4',
+        status: 'ready',
+        url: 'https://cdn.example.com/subject.mp4',
+      },
+    },
+  ];
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-pro',
+    activeMode: 'v2v',
+    submissionMode: 'v2v',
+    form: baseForm({ engineId: 'kling-o3-pro', mode: 'v2v' }),
+    inputSchema: { required: [], optional: [] },
+    inputSchemaSummary: { assetFields: [] },
+    extraInputFields: [],
+    inputAssets: {},
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements,
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(result.klingElementsPayload, [
+    {
+      id: 'element_video_ref',
+      frontalImageUrl: undefined,
+      frontalAssetId: undefined,
+      referenceImageUrls: undefined,
+      referenceAssetIds: undefined,
+      videoUrl: 'https://cdn.example.com/subject.mp4',
+      videoAssetId: 'asset_video',
+    },
+  ]);
+});
+
+test('prepareGenerationInputs ignores Kling 3.0 Omni opening and end frames in video-to-video mode', () => {
+  const sourceVideo = field('video_url', 'video', 'Source video');
+  const referenceImages = field('image_urls', 'image', 'Reference / storyboard images');
+  const openingFrame = field('image_url', 'image', 'Opening frame');
+  const endFrame = field('end_image_url', 'image', 'End frame');
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-pro',
+    activeMode: 'v2v',
+    submissionMode: 'v2v',
+    form: baseForm({ engineId: 'kling-o3-pro', mode: 't2v' }),
+    inputSchema: {
+      required: [sourceVideo, openingFrame],
+      optional: [referenceImages, endFrame],
+    },
+    inputSchemaSummary: {
+      assetFields: [
+        { field: referenceImages, required: false, role: 'reference' },
+        { field: openingFrame, required: false, role: 'primary' },
+        { field: endFrame, required: false, role: 'frame' },
+        { field: sourceVideo, required: true, role: 'generic' },
+      ],
+    },
+    extraInputFields: [],
+    inputAssets: {
+      image_urls: [asset({ id: 'storyboard', fieldId: 'image_urls', url: 'https://cdn.example.com/storyboard.jpg' })],
+      image_url: [asset({ id: 'opening', fieldId: 'image_url', url: 'https://cdn.example.com/opening.jpg' })],
+      end_image_url: [asset({ id: 'end', fieldId: 'end_image_url', url: 'https://cdn.example.com/end.jpg' })],
+      video_url: [
+        asset({
+          id: 'source_video',
+          fieldId: 'video_url',
+          kind: 'video',
+          url: 'https://cdn.example.com/source.mp4',
+        }),
+      ],
+    },
+    primaryAssetFieldIds: new Set(['image_url']),
+    referenceAssetFieldIds: new Set(['image_urls']),
+    genericImageFieldIds: new Set(['image_urls']),
+    frameAssetFieldIds: new Set(['end_image_url']),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(
+    result.inputsPayload?.map((entry) => entry.slotId),
+    ['image_urls', 'video_url']
+  );
+  assert.equal(result.primaryAttachment, null);
+  assert.deepEqual(result.referenceImageUrls, ['https://cdn.example.com/storyboard.jpg']);
+  assert.deepEqual(result.referenceVideoUrls, ['https://cdn.example.com/source.mp4']);
+  assert.equal(result.primaryImageUrl, undefined);
+  assert.equal(result.endImageUrl, undefined);
+});
+
+test('prepareGenerationInputs promotes a Kling 3.0 Omni subject video reference to source video input', () => {
+  const klingElements: KlingElementState[] = [
+    {
+      id: 'element_video_ref',
+      frontal: null,
+      references: [],
+      video: {
+        id: 'video',
+        assetId: 'asset_video',
+        previewUrl: 'https://cdn.example.com/subject.mp4',
+        kind: 'video',
+        name: 'subject.mp4',
+        status: 'ready',
+        url: 'https://cdn.example.com/subject.mp4',
+      },
+    },
+  ];
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-pro',
+    activeMode: 'v2v',
+    submissionMode: 'v2v',
+    form: baseForm({ engineId: 'kling-o3-pro', mode: 't2v' }),
+    inputSchema: { required: [], optional: [] },
+    inputSchemaSummary: { assetFields: [] },
+    extraInputFields: [],
+    inputAssets: {},
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements,
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(result.inputsPayload?.map((entry) => [entry.slotId, entry.url]), [
+    ['video_url', 'https://cdn.example.com/subject.mp4'],
+  ]);
+  assert.deepEqual(result.referenceVideoUrls, ['https://cdn.example.com/subject.mp4']);
+});

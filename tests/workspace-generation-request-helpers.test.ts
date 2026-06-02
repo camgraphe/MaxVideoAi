@@ -13,15 +13,22 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-guards';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 import type { GenerationAttachmentPayload } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
-import type { WorkspaceInputSchemaSummary } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
+import {
+  summarizeWorkspaceInputSchema,
+  type WorkspaceInputSchemaSummary,
+} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body';
+import { supportsAudioPricingToggle } from '../frontend/src/lib/pricing-addons';
 import { getBaseEngines } from '../frontend/src/lib/engines';
 import {
   buildComposerModeToggles,
   getEngineModeOptions,
+  getModeCaps,
   isWorkspaceModeAvailable,
   resolveSelectedWorkspaceEngine,
+  supportsModeAudioControl,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 const textField = (id: string, label: string): EngineInputField => ({ id, label, type: 'text' });
@@ -345,6 +352,166 @@ test('workspace exposes Veo 3.1 manual modes by variant', () => {
   assert.ok(veoLite);
   assert.deepEqual(getEngineModeOptions(veoFast), ['ref2v', 'extend']);
   assert.deepEqual(getEngineModeOptions(veoLite), ['extend']);
+});
+
+test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
+  const klingO3Pro = listFalEngines().find((entry) => entry.id === 'kling-o3-pro')?.engine;
+  const klingO34k = listFalEngines().find((entry) => entry.id === 'kling-o3-4k')?.engine;
+
+  assert.ok(klingO3Pro);
+  assert.ok(klingO34k);
+  assert.equal(getEngineModeOptions(klingO3Pro), undefined);
+  assert.equal(getEngineModeOptions(klingO34k), undefined);
+  assert.equal(
+    buildComposerModeToggles({
+      selectedEngine: klingO3Pro,
+      audioWorkflowLocked: false,
+      uiLocale: 'en',
+      workflowCopy: {
+        generateVideo: 'Generate Video',
+        removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported',
+        audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked',
+      },
+    }),
+    undefined
+  );
+  assert.equal(
+    buildComposerModeToggles({
+      selectedEngine: klingO34k,
+      audioWorkflowLocked: false,
+      uiLocale: 'en',
+      workflowCopy: {
+        generateVideo: 'Generate Video',
+        removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported',
+        audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked',
+      },
+    }),
+    undefined
+  );
+
+  const v2vSchema = summarizeWorkspaceInputSchema({
+    selectedEngine: klingO3Pro,
+    activeMode: 'v2v',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: false,
+    isUnifiedSeedance: false,
+    uiLocale: 'en',
+  });
+
+  assert.deepEqual(
+    v2vSchema.assetFields.map(({ field }) => field.id),
+    ['image_urls', 'image_url', 'end_image_url', 'video_url']
+  );
+  assert.ok(v2vSchema.secondaryFields.some(({ field }) => field.id === 'keep_audio' && field.type === 'boolean'));
+
+  const generateSchema = summarizeWorkspaceInputSchema({
+    selectedEngine: klingO3Pro,
+    activeMode: 't2v',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: false,
+    isUnifiedSeedance: false,
+    uiLocale: 'en',
+  });
+
+  assert.deepEqual(
+    generateSchema.assetFields.map(({ field }) => field.id),
+    ['image_urls', 'image_url', 'end_image_url', 'video_url']
+  );
+
+  const fourKSchema = summarizeWorkspaceInputSchema({
+    selectedEngine: klingO34k,
+    activeMode: 't2v',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: false,
+    isUnifiedSeedance: false,
+    uiLocale: 'en',
+  });
+
+  assert.deepEqual(
+    fourKSchema.assetFields.map(({ field }) => field.id),
+    ['image_urls', 'image_url', 'end_image_url']
+  );
+});
+
+test('workspace sends Kling 3.0 Omni 4K audio even without a pricing toggle', () => {
+  const klingO34k = listFalEngines().find((entry) => entry.id === 'kling-o3-4k')?.engine;
+  assert.ok(klingO34k);
+
+  const capability = getModeCaps(klingO34k, 't2v');
+  assert.equal(supportsAudioPricingToggle(klingO34k), false);
+  assert.equal(supportsModeAudioControl(klingO34k, 't2v', capability), true);
+
+  const result = buildWorkspaceGeneratePayload({
+    selectedEngineId: 'kling-o3-4k',
+    activeMode: 't2v',
+    submissionMode: 't2v',
+    form: baseForm({
+      engineId: 'kling-o3-4k',
+      mode: 't2v',
+      durationSec: 5,
+      durationOption: '5',
+      resolution: '4k',
+      audio: true,
+    }),
+    trimmedPrompt: 'A clean 4K cinematic product reveal with ambient sound.',
+    trimmedNegativePrompt: '',
+    effectiveDurationSec: 5,
+    memberTier: 'pro',
+    paymentMode: 'wallet',
+    capability,
+    supportsNegativePrompt: false,
+    supportsAudioToggle: supportsModeAudioControl(klingO34k, 't2v', capability),
+    isSeedance: false,
+    supportsKlingV3Controls: false,
+    supportsKlingV3VoiceControl: false,
+    voiceIds: [],
+    voiceControlEnabled: false,
+    shotType: 'customize',
+    localKey: 'local-o3-4k',
+    batchId: 'batch-o3-4k',
+    iterationIndex: 0,
+    iterationCount: 1,
+    friendlyMessage: 'Take 1',
+    lumaContext: getLumaRay2GenerationContext({
+      selectedEngineId: 'kling-o3-4k',
+      submissionMode: 't2v',
+      form: baseForm({ engineId: 'kling-o3-4k', mode: 't2v' }),
+    }),
+    inputsPayload: [],
+    referenceImageUrls: [],
+    extraInputValues: {},
+  });
+
+  assert.equal(result.payload.audio, true);
+
+  const falRequest = buildFalGenerationRequest(result.payload, 'fal-ai/kling-video/o3/4k/text-to-video');
+  assert.equal(falRequest.requestBody.generate_audio, true);
+});
+
+test('iteration guard allows Kling 3.0 Omni reference mode from subject elements only', () => {
+  const guardOptions = {
+    selectedEngineId: 'kling-o3-pro',
+    submissionMode: 'ref2v',
+    allowsUnifiedVeoFirstLast: false,
+    hasLastFrameInput: false,
+    isUnifiedSeedance: false,
+    primaryImageUrl: undefined,
+    primaryAudioUrl: undefined,
+    primaryAssetFieldLabel: 'Image',
+    referenceImageUrls: [],
+    referenceVideoUrls: [],
+    referenceAudioUrls: [],
+    inputsPayload: [],
+    primaryAttachment: null,
+    extendOrRetakeSourceVideoMessage: 'Add a source video before running this mode.',
+    hasKlingElements: true,
+  };
+
+  assert.equal(getGenerationIterationGuardMessage(guardOptions), null);
 });
 
 test('workspace hides Veo manual workflow toggles when the mode is not actually available', () => {

@@ -70,7 +70,7 @@ export function resolveVideoProviderRoutingPlan(params: {
   }
 
   if (isKlingDirectEngine(params.engineId)) {
-    if (!isKlingDirectModeSupported(params.mode)) return falOnly;
+    if (!isKlingDirectModeSupported(params.engineId, params.mode)) return falOnly;
     if (!flagEnabled(readEnv(params.env, 'KLING_DIRECT_ENABLED'))) return falOnly;
 
     const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'));

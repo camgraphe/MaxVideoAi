@@ -11,6 +11,7 @@ import { KLING_2_6_FAL_ENGINE_REGISTRY } from './kling-2-6';
 import { KLING_3_PRO_FAL_ENGINE_REGISTRY } from './kling-3-pro';
 import { KLING_3_STANDARD_FAL_ENGINE_REGISTRY } from './kling-3-standard';
 import { KLING_3_4K_FAL_ENGINE_REGISTRY } from './kling-3-4k';
+import { KLING_O3_FAL_ENGINE_REGISTRY } from './kling-o3';
 import { HAPPY_HORSE_FAL_ENGINE_REGISTRY } from './happy-horse';
 import { SEEDANCE_1_5_FAL_ENGINE_REGISTRY } from './seedance-1-5';
 import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
@@ -42,6 +43,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...KLING_3_PRO_FAL_ENGINE_REGISTRY,
   ...KLING_3_STANDARD_FAL_ENGINE_REGISTRY,
   ...KLING_3_4K_FAL_ENGINE_REGISTRY,
+  ...KLING_O3_FAL_ENGINE_REGISTRY,
   ...HAPPY_HORSE_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_1_5_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY,

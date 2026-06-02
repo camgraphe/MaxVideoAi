@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
+import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import {
   getSeedanceAssetState,
   getUnifiedSeedanceMode,
@@ -12,6 +12,12 @@ import {
 } from '@/lib/happy-horse-workflow';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import {
+  getKlingO3DisabledEngineReasons,
+  getKlingO3UnsupportedVideoReason,
+  isKlingO3EngineId,
+  resolveKlingO3UnifiedMode,
+} from '../_lib/kling-o3-unified-workflow';
+import {
   getReferenceInputStatus,
   hasInputAssetInSlots,
   PRIMARY_IMAGE_SLOT_IDS,
@@ -22,7 +28,6 @@ import type { FormState } from '../_lib/workspace-form-state';
 import {
   buildComposerModeToggles,
   coerceFormState,
-  findGenerateAudioField,
   getComposerWorkflowNotice,
   getEngineModeOptions,
   getModeCaps,
@@ -30,6 +35,7 @@ import {
   isWorkspaceModeAvailable,
   matchesEngineToken,
   resolveSelectedWorkspaceEngine,
+  supportsModeAudioControl,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { UNIFIED_VEO_FIRST_LAST_ENGINE_IDS } from '../_lib/workspace-client-helpers';
@@ -47,6 +53,7 @@ type UseWorkspaceEngineModeStateOptions = {
   form: FormState | null;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  klingElements: KlingElementState[];
   shotType: ShotType;
   setShotType: Dispatch<SetStateAction<ShotType>>;
   effectiveRequestedEngineToken: string | null;
@@ -70,6 +77,9 @@ type UseWorkspaceEngineModeStateResult = {
   isSeedance: boolean;
   isUnifiedSeedance: boolean;
   isUnifiedHappyHorse: boolean;
+  isUnifiedKlingO3: boolean;
+  klingO3UnsupportedVideoReason: string | null;
+  klingO3DisabledEngineReasons: Record<string, string>;
   referenceInputStatus: WorkspaceReferenceInputStatus;
   primaryAudioDurationSec: number | null;
   primaryVideoDurationSec: number | null;
@@ -117,6 +127,7 @@ export function useWorkspaceEngineModeState({
   form,
   setForm,
   inputAssets,
+  klingElements,
   shotType,
   setShotType,
   effectiveRequestedEngineToken,
@@ -145,11 +156,21 @@ export function useWorkspaceEngineModeState({
   const supportsKlingV3Controls =
     selectedEngine?.id === 'kling-3-pro' ||
     selectedEngine?.id === 'kling-3-standard' ||
-    selectedEngine?.id === 'kling-3-4k';
+    selectedEngine?.id === 'kling-3-4k' ||
+    Boolean(selectedEngine?.id.startsWith('kling-o3-'));
   const supportsKlingV3VoiceControl = false;
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
   const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
   const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
+  const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
+  const klingO3DisabledEngineReasons = useMemo(
+    () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
+    [engines, inputAssets, klingElements]
+  );
+  const klingO3UnsupportedVideoReason = useMemo(
+    () => getKlingO3UnsupportedVideoReason({ engine: selectedEngine, inputAssets, klingElements }),
+    [inputAssets, klingElements, selectedEngine]
+  );
 
   const primaryAudioDurationSec = useMemo(() => {
     for (const entries of Object.values(inputAssets)) {
@@ -201,6 +222,13 @@ export function useWorkspaceEngineModeState({
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
+    if (isUnifiedKlingO3) {
+      return resolveKlingO3UnifiedMode({
+        engine: selectedEngine,
+        inputAssets,
+        klingElements,
+      });
+    }
     if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
       return getUnifiedHappyHorseMode(inputAssets);
     }
@@ -216,7 +244,9 @@ export function useWorkspaceEngineModeState({
     form?.mode,
     inputAssets,
     isUnifiedHappyHorse,
+    isUnifiedKlingO3,
     isUnifiedSeedance,
+    klingElements,
     referenceInputStatus.hasAudio,
     referenceInputStatus.hasImage,
     referenceInputStatus.hasVideo,
@@ -234,6 +264,7 @@ export function useWorkspaceEngineModeState({
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
     if (isUnifiedSeedance) return null;
+    if (isUnifiedKlingO3) return null;
     if (referenceInputStatus.hasAudio && !isUnifiedSeedance) return null;
     const currentMode = form?.mode ?? null;
     if (
@@ -247,7 +278,7 @@ export function useWorkspaceEngineModeState({
       return currentMode;
     }
     return null;
-  }, [form?.mode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine]);
+  }, [form?.mode, isUnifiedKlingO3, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
   const allowsUnifiedVeoFirstLast = useMemo(() => {
@@ -296,18 +327,19 @@ export function useWorkspaceEngineModeState({
     return getModeCaps(selectedEngine, submissionMode);
   }, [selectedEngine, submissionMode]);
 
-  const generateAudioField = useMemo(() => {
-    if (!selectedEngine) return null;
-    return findGenerateAudioField(selectedEngine, submissionMode);
-  }, [selectedEngine, submissionMode]);
-
-  const supportsAudioToggle =
-    Boolean(selectedEngine && capability?.audioToggle && generateAudioField && supportsAudioPricingToggle(selectedEngine));
+  const supportsAudioToggle = Boolean(
+    selectedEngine && supportsModeAudioControl(selectedEngine, submissionMode, capability)
+  );
 
   const handleEngineChange = useCallback(
     (engineId: string) => {
       const nextEngine = engines.find((entry) => entry.id === engineId);
       if (!nextEngine) return;
+      const disabledReason = klingO3DisabledEngineReasons[nextEngine.id];
+      if (disabledReason) {
+        showNotice(disabledReason);
+        return;
+      }
       requestedEngineOverrideIdRef.current = null;
       requestedEngineOverrideTokenRef.current = null;
       requestedModeOverrideRef.current = null;
@@ -321,11 +353,13 @@ export function useWorkspaceEngineModeState({
     },
     [
       engines,
+      klingO3DisabledEngineReasons,
       preserveStoredDraftRef,
       requestedEngineOverrideIdRef,
       requestedEngineOverrideTokenRef,
       requestedModeOverrideRef,
       setForm,
+      showNotice,
     ]
   );
 
@@ -450,6 +484,9 @@ export function useWorkspaceEngineModeState({
     isSeedance,
     isUnifiedSeedance,
     isUnifiedHappyHorse,
+    isUnifiedKlingO3,
+    klingO3UnsupportedVideoReason,
+    klingO3DisabledEngineReasons,
     referenceInputStatus,
     primaryAudioDurationSec,
     primaryVideoDurationSec,

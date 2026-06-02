@@ -3,12 +3,13 @@
 
 import clsx from 'clsx';
 import type { ChangeEvent, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
-import { Lock, Trash2 } from 'lucide-react';
-import type { EngineInputField } from '@/types/engines';
+import { Lock, Trash2, X } from 'lucide-react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
+import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
 import type { AssetSlotAttachment } from './asset-dropzone-types';
+import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
 
 type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
 
@@ -17,19 +18,17 @@ type AssetDropzoneSlotProps = {
   asset: AssetSlotAttachment | null;
   assetCopy: AssetDropzoneCopy;
   canOpenLibrary: boolean;
+  compactCollectionLayout: boolean;
   disabled: boolean;
   disabledReason: string | null;
   displaySlotCount: number;
   engineId: string;
-  field: EngineInputField;
   filledAssetCount: number;
   fullBleedSingleAsset: boolean;
-  helperLines: string[];
   hideRequiredSlotCopy: boolean;
   inputRef: (element: HTMLInputElement | null) => void;
   isCollectionField: boolean;
   minCount: number;
-  roleDescription: string | null;
   slotIndex: number;
   slotLabel: string;
   onDisabledAttempt: () => void;
@@ -46,19 +45,17 @@ export function AssetDropzoneSlot({
   asset,
   assetCopy,
   canOpenLibrary,
+  compactCollectionLayout,
   disabled,
   disabledReason,
   displaySlotCount,
   engineId,
-  field,
   filledAssetCount,
   fullBleedSingleAsset,
-  helperLines,
   hideRequiredSlotCopy,
   inputRef,
   isCollectionField,
   minCount,
-  roleDescription,
   slotIndex,
   slotLabel,
   onDisabledAttempt,
@@ -71,43 +68,41 @@ export function AssetDropzoneSlot({
 }: AssetDropzoneSlotProps) {
   const slotRequired = slotIndex < minCount;
   const showRequiredHint = slotRequired && engineId !== 'wan-2-6' && !hideRequiredSlotCopy;
-  const flattenSlotSurface = displaySlotCount === 1 && !isCollectionField;
+  const isInitialCollectionSlot = isCollectionField && asset == null && filledAssetCount === 0 && displaySlotCount === 1;
+  const flattenSlotSurface = displaySlotCount === 1 && (!isCollectionField || isInitialCollectionSlot);
   const isCollectionAddTile = isCollectionField && asset == null && filledAssetCount > 0;
+  const isCompactCollectionAddTile = compactCollectionLayout && isCollectionAddTile;
+  const isCompactCollectionAsset = compactCollectionLayout && asset != null;
   const filledSingleSlot = flattenSlotSurface && asset != null;
   const allowClick = asset == null || asset?.kind !== 'audio';
   const isLockedEmptySlot = disabled && !asset;
-  const slotDescription =
-    isLockedEmptySlot
-      ? null
-      : displaySlotCount === 1
-        ? field.description ?? roleDescription
-        : isCollectionField && asset == null && filledAssetCount === 0
-          ? field.description ?? roleDescription
-          : null;
-  const slotMeta =
-    isLockedEmptySlot
-      ? null
-      : (displaySlotCount === 1 || (isCollectionField && asset == null && filledAssetCount === 0)
-          ? helperLines.slice(0, 2)
-          : []
-        )
-          .filter((value) => value.trim().length > 0)
-          .join(' • ') || null;
+  const visibleBadge = asset?.badge ?? (compactCollectionLayout && slotLabel ? slotLabel : null);
+  const compactAssetLabel = visibleBadge ?? slotLabel ?? assetCopy.imageSlot;
+  const { closePicker, mediaPickerId, openPicker, pickerOpen } = useExclusiveMediaPicker();
 
   const triggerFilePicker = () => {
     if (disabled) {
       onDisabledAttempt();
       return;
     }
+    closePicker();
     onSelectFileSlot(slotIndex);
   };
-
   const triggerLibrary = () => {
     if (disabled) {
       onDisabledAttempt();
       return;
     }
+    closePicker();
     onOpenLibrarySlot(slotIndex);
+  };
+
+  const openMediaPicker = () => {
+    if (disabled) {
+      onDisabledAttempt();
+      return;
+    }
+    openPicker();
   };
 
   const triggerSelection = () => {
@@ -124,15 +119,20 @@ export function AssetDropzoneSlot({
       triggerFilePicker();
       return;
     }
-    triggerFilePicker();
+    openMediaPicker();
   };
 
   return (
     <div
       tabIndex={0}
       className={clsx(
-        'relative flex w-full flex-col justify-center overflow-hidden text-center text-[12px] text-text-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-        filledSingleSlot
+        'relative flex w-full flex-col justify-center text-center text-[12px] text-text-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+        pickerOpen ? 'z-30 overflow-visible' : 'overflow-hidden',
+        compactCollectionLayout
+          ? isCollectionAddTile
+            ? 'col-span-full min-h-[72px] rounded-[16px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]'
+            : 'min-h-0 rounded-none border-0 bg-transparent p-0'
+          : filledSingleSlot
           ? fullBleedSingleAsset
             ? 'min-h-[260px] h-full rounded-none border-0 bg-transparent'
             : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
@@ -140,7 +140,9 @@ export function AssetDropzoneSlot({
             ? 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
             : 'h-40 rounded-[18px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]',
         allowClick
-          ? filledSingleSlot
+          ? isCompactCollectionAsset
+            ? 'cursor-pointer'
+            : filledSingleSlot
             ? 'cursor-pointer hover:border-brand/50'
             : flattenSlotSurface
               ? 'cursor-pointer hover:bg-surface-2/70 dark:hover:bg-white/[0.05]'
@@ -150,11 +152,20 @@ export function AssetDropzoneSlot({
       )}
       onClick={triggerSelection}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Escape' && pickerOpen) {
+          event.stopPropagation();
+          closePicker();
+          return;
+        }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
         triggerSelection();
       }}
-      title={asset ? undefined : disabledReason ?? assetCopy.upload}
+      role="button"
+      aria-haspopup={asset ? undefined : 'dialog'}
+      aria-expanded={asset ? undefined : pickerOpen}
+      aria-controls={asset || !pickerOpen ? undefined : mediaPickerId}
+      title={asset ? undefined : disabledReason ?? assetCopy.addMedia}
       onDragOver={(event) => {
         event.preventDefault();
       }}
@@ -190,29 +201,68 @@ export function AssetDropzoneSlot({
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
           ) : null}
           {asset.kind === 'image' ? (
-            <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-cover" />
+            <img
+              src={asset.previewUrl}
+              alt={asset.name}
+              className={clsx(
+                'bg-surface',
+                compactCollectionLayout
+                  ? 'relative aspect-video w-full rounded-[10px] bg-surface object-cover'
+                  : 'absolute inset-0 h-full w-full object-cover'
+              )}
+            />
           ) : asset.kind === 'audio' ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-surface p-4">
+            <div
+              className={clsx(
+                'flex items-center justify-center bg-surface',
+                compactCollectionLayout
+                  ? 'relative aspect-video w-full rounded-[10px] p-2'
+                  : 'absolute inset-0 p-4'
+              )}
+            >
               <audio src={asset.previewUrl} controls className="w-full" />
             </div>
           ) : (
             <>
-              <video src={asset.previewUrl} controls preload="metadata" className="absolute inset-0 h-full w-full bg-black object-cover" />
+              <video
+                src={asset.previewUrl} controls preload="metadata"
+                className={clsx(
+                  'bg-black object-cover',
+                  compactCollectionLayout
+                    ? 'relative aspect-video w-full rounded-[10px]'
+                    : 'absolute inset-0 h-full w-full'
+                )}
+              />
               <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
             </>
           )}
-          {asset.badge ? (
-            <div className="absolute left-3 top-3 z-10">
-              <span className="inline-flex items-center rounded-full border border-white/24 bg-black/58 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur">
-                {asset.badge}
+          {visibleBadge && !compactCollectionLayout ? (
+            <div className={clsx('absolute z-10', compactCollectionLayout ? 'left-2 top-2' : 'left-3 top-3')}>
+              <span className={clsx(
+                'inline-flex items-center rounded-full border border-white/24 bg-black/58 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur',
+                compactCollectionLayout ? 'px-2 py-0.5' : 'px-2.5 py-1'
+              )}>
+                {visibleBadge}
               </span>
+            </div>
+          ) : null}
+          {compactCollectionLayout ? (
+            <div className="relative z-10 mt-1 flex min-h-6 min-w-0 items-center text-left">
+              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary dark:text-white/78" title={compactAssetLabel}>
+                {compactAssetLabel}
+              </p>
             </div>
           ) : null}
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="absolute right-3 top-3 z-10 h-9 w-9 rounded-full border border-white/30 bg-black/62 p-0 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur transition hover:bg-black/78 focus-visible:ring-2 focus-visible:ring-white/70"
+            className={clsx(
+              'absolute z-10 min-h-0 min-w-0 rounded-full p-0 transition focus-visible:ring-2',
+              compactCollectionLayout
+                ? 'right-0.5 top-0.5 !h-4 !min-h-0 !w-4 !min-w-0 !px-0 !py-0 bg-black/60 text-white shadow-sm hover:bg-black/75 focus-visible:ring-ring'
+                : 'right-3 top-3 h-9 w-9 border border-white/30 bg-black/62 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur hover:bg-black/78 focus-visible:ring-white/70'
+            )}
             onClick={(event) => {
               event.stopPropagation();
               onRemoveSlot(slotIndex);
@@ -220,7 +270,7 @@ export function AssetDropzoneSlot({
             aria-label={assetCopy.remove}
             title={assetCopy.remove}
           >
-            <Trash2 className="h-4 w-4" aria-hidden />
+            {compactCollectionLayout ? <X className="h-2.5 w-2.5" aria-hidden /> : <Trash2 className="h-4 w-4" aria-hidden />}
           </Button>
           {asset.status === 'uploading' ? (
             <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-on-inverse">
@@ -248,27 +298,31 @@ export function AssetDropzoneSlot({
       ) : (
         <div
           className={clsx(
-            'flex h-full flex-col items-center justify-center px-4 text-center',
-            isCollectionAddTile ? 'gap-3 py-4' : 'gap-4'
+            'flex h-full',
+            isCompactCollectionAddTile
+              ? 'items-center justify-center px-3 py-3'
+              : 'flex-col items-center justify-center px-4 text-center',
+            !isCompactCollectionAddTile && (isCollectionAddTile ? 'gap-3 py-4' : 'gap-4')
           )}
         >
-          {isCollectionAddTile ? (
+          {isCollectionAddTile && !compactCollectionLayout ? (
             <span className="absolute left-3 top-3 inline-flex min-w-7 items-center justify-center rounded-full border border-border/70 bg-surface px-2 py-1 text-[10px] font-semibold text-text-muted dark:border-white/10 dark:bg-white/[0.06] dark:text-white/58">
               +
             </span>
           ) : null}
           <div
             className={clsx(
-              'flex h-8 w-8 items-center justify-center rounded-full border text-text-secondary',
+              'flex shrink-0 items-center justify-center rounded-full border text-text-secondary',
+              isCompactCollectionAddTile ? 'h-11 w-11' : 'h-12 w-12',
               isLockedEmptySlot
                 ? 'border-border/80 bg-surface text-text-muted dark:border-white/12 dark:bg-white/[0.04] dark:text-white/58'
                 : 'border-border/75 bg-surface-2/80 dark:border-brand/25 dark:bg-brand/15 dark:text-brand'
             )}
           >
             {isLockedEmptySlot ? (
-              <Lock className="h-3.5 w-3.5" aria-hidden />
+              <Lock className="h-4 w-4" aria-hidden />
             ) : (
-              <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
+              <svg aria-hidden viewBox="0 0 20 20" className="h-5 w-5">
                 <path
                   d="M10 4.5v11m-5.5-5.5h11"
                   fill="none"
@@ -279,30 +333,17 @@ export function AssetDropzoneSlot({
               </svg>
             )}
           </div>
-          <div className={clsx('space-y-1', isCollectionAddTile && 'space-y-0')}>
+          <div
+            className={clsx(
+              'space-y-1',
+              !isLockedEmptySlot && 'sr-only',
+              isCompactCollectionAddTile && 'min-w-0 flex-1 space-y-0',
+              isCollectionAddTile && !isCompactCollectionAddTile && 'space-y-0'
+            )}
+          >
             {slotLabel ? (
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary dark:text-white/86">
                 {slotLabel}
-              </p>
-            ) : null}
-            {isLockedEmptySlot && disabledReason ? (
-              <p className="max-w-[16rem] text-[11px] font-medium leading-4 text-text-secondary dark:text-white/72">
-                {disabledReason}
-              </p>
-            ) : null}
-            {slotDescription ? (
-              <p className="max-w-[16rem] text-[11px] leading-4 text-text-muted dark:text-white/58">
-                {slotDescription}
-              </p>
-            ) : null}
-            {slotMeta ? (
-              <p className="max-w-[16rem] text-[10px] leading-4 text-text-muted/90 dark:text-white/46">
-                {slotMeta}
-              </p>
-            ) : null}
-            {disabledReason && slotIndex === 0 && !isLockedEmptySlot ? (
-              <p className="max-w-[16rem] text-[10px] leading-4 text-text-muted dark:text-white/54">
-                {disabledReason}
               </p>
             ) : null}
             {showRequiredHint && !disabledReason ? (
@@ -310,38 +351,15 @@ export function AssetDropzoneSlot({
             ) : null}
           </div>
           {!isLockedEmptySlot ? (
-            <div className="flex w-full flex-wrap items-center justify-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary dark:border-white/14 dark:bg-white/[0.045] dark:text-white/78 dark:hover:border-brand/30 dark:hover:bg-white/[0.08] dark:hover:text-white"
-                disabled={disabled}
-                title={disabledReason ?? undefined}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  triggerFilePicker();
-                }}
-              >
-                {assetCopy.upload}
-              </Button>
-              {canOpenLibrary ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/78 dark:hover:bg-white/[0.08] dark:hover:text-white"
-                  disabled={disabled}
-                  title={disabledReason ?? undefined}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    triggerLibrary();
-                  }}
-                >
-                  {assetCopy.library}
-                </Button>
-              ) : null}
-            </div>
+            <AssetMediaPickerMenu
+              copy={assetCopy}
+              canOpenLibrary={canOpenLibrary}
+              menuId={mediaPickerId}
+              open={pickerOpen}
+              onClose={closePicker}
+              onLibrary={triggerLibrary}
+              onUpload={triggerFilePicker}
+            />
           ) : null}
         </div>
       )}

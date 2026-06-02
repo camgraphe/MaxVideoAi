@@ -325,6 +325,14 @@ export function AssetLibraryModal({
   const sourceOptions = assetType === 'video'
     ? (['all', 'upload', 'recent', 'generated', 'upscale'] as const)
     : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
+  const libraryTitle =
+    assetType === 'video'
+      ? (uiLocale === 'fr'
+          ? 'Selectionner une video de reference'
+          : uiLocale === 'es'
+            ? 'Seleccionar video de referencia'
+            : 'Select reference video')
+      : copyAssetLibrary.title;
   const searchPlaceholder =
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets...' : uiLocale === 'es' ? 'Buscar assets...' : 'Search assets...');
@@ -379,7 +387,7 @@ export function AssetLibraryModal({
       />
       <AssetLibraryBrowser
         className="relative z-10 h-[92svh] max-w-[1240px] sm:h-[84vh]"
-        title={copyAssetLibrary.title}
+        title={libraryTitle}
         subtitle={fieldLabel}
         onClose={onClose}
         closeLabel={copyAssetLibrary.close}

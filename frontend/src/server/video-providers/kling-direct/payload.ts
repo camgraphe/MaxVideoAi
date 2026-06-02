@@ -13,6 +13,17 @@ import {
 
 const SUPPORTED_ASPECT_RATIOS = new Set(['16:9', '9:16', '1:1']);
 
+type KlingDirectImageListItem = {
+  image_url: string;
+  type?: 'first_frame' | 'end_frame';
+};
+
+type KlingDirectVideoListItem = {
+  video_url: string;
+  refer_type: 'feature' | 'base';
+  keep_original_sound?: 'yes' | 'no';
+};
+
 export type KlingDirectPayloadBody = {
   model_name: string;
   prompt?: string;
@@ -24,6 +35,8 @@ export type KlingDirectPayloadBody = {
   external_task_id: string;
   image?: string;
   image_tail?: string;
+  image_list?: KlingDirectImageListItem[];
+  video_list?: KlingDirectVideoListItem[];
   cfg_scale?: number;
   multi_shot?: boolean;
   shot_type?: 'customize' | 'intelligence';
@@ -66,6 +79,34 @@ function normalizeMultiPrompt(
     }))
     .filter((entry) => entry.prompt.length > 0)
     .slice(0, 6);
+}
+
+function normalizeUrlList(values: string[] | null | undefined, maxCount: number): string[] {
+  const urls: string[] = [];
+  for (const value of values ?? []) {
+    const url = cleanString(value);
+    if (!url || urls.includes(url)) continue;
+    urls.push(url);
+    if (urls.length >= maxCount) break;
+  }
+  return urls;
+}
+
+function normalizeOmniPromptReferences(value: string): string {
+  return value
+    .replace(/(^|[^\w])@(Image|image)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
+      return `${prefix}<<<image_${index}>>>`;
+    })
+    .replace(/(^|[^\w])@(Video|video)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
+      return `${prefix}<<<video_${index}>>>`;
+    })
+    .replace(/(^|[^\w])@(Element|element)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
+      return `${prefix}<<<element_${index}>>>`;
+    });
+}
+
+function maybeNormalizePromptReferences(value: string, endpointFamily: string): string {
+  return endpointFamily === 'video-o3-omni' ? normalizeOmniPromptReferences(value) : value;
 }
 
 function normalizeShotType(value: 'customize' | 'intelligent' | 'intelligence' | null | undefined) {
@@ -207,6 +248,10 @@ export function buildKlingDirectPayload(params: {
   audioEnabled?: boolean;
   imageUrl?: string | null;
   endImageUrl?: string | null;
+  startImageUrl?: string | null;
+  sourceVideoUrl?: string | null;
+  referenceImageUrls?: string[] | null;
+  keepAudio?: boolean | null;
   elements?: MaxVideoProviderElement[] | null;
   cfgScale?: number | null;
   extraInputValues?: Record<string, unknown> | null;
@@ -216,30 +261,41 @@ export function buildKlingDirectPayload(params: {
   const pollPathPrefix = resolveKlingDirectPollPathPrefix(route, params.mode);
   const submitMode = resolveKlingDirectSubmitMode(params.mode);
   const capabilities = getKlingDirectRouteCapabilities(route)[submitMode];
+  if (!capabilities) {
+    throw new Error(`Kling direct route ${route.engineId} does not support ${submitMode}.`);
+  }
   const prompt = cleanString(params.prompt);
   const multiPrompt = normalizeMultiPrompt(params.multiPrompt);
   const isCustomizeMultiShot = multiPrompt.length > 0 && normalizeShotType(params.shotType) === 'customize';
   if (!prompt && !isCustomizeMultiShot) {
     throw new Error('Prompt is required for Kling direct.');
   }
-  if (params.mode !== 't2v' && params.mode !== 'i2v') {
-    throw new Error('Kling direct phase 1 supports only text-to-video and image-to-video.');
-  }
   const imageUrl = cleanString(params.imageUrl);
-  if (params.mode === 'i2v' && !imageUrl) {
+  if (submitMode === 'i2v' && !imageUrl) {
     throw new Error('Image URL is required for Kling direct image-to-video.');
+  }
+  const sourceVideoUrl = cleanString(params.sourceVideoUrl);
+  if (submitMode === 'v2v' && !sourceVideoUrl) {
+    throw new Error('Source video URL is required for Kling direct video-to-video.');
   }
 
   const voiceList = capabilities.voiceControl ? normalizeVoiceList(params.voiceIds) : [];
+  const hasVideoInput = submitMode === 'v2v';
+  const keepAudio =
+    typeof params.keepAudio === 'boolean'
+      ? params.keepAudio
+      : typeof params.extraInputValues?.keep_audio === 'boolean'
+        ? params.extraInputValues.keep_audio
+        : true;
   const body: KlingDirectPayloadBody = {
     model_name: route.providerModel,
     duration: normalizeDuration(params.durationSec),
     mode: route.mode,
-    sound: params.audioEnabled === true || voiceList.length > 0 ? 'on' : 'off',
+    sound: !hasVideoInput && (params.audioEnabled === true || voiceList.length > 0) ? 'on' : 'off',
     external_task_id: params.jobId,
   };
   if (prompt && !isCustomizeMultiShot) {
-    body.prompt = prompt;
+    body.prompt = maybeNormalizePromptReferences(prompt, route.endpointFamily);
   }
   const negativePrompt = cleanString(params.negativePrompt);
   if (negativePrompt) {
@@ -249,18 +305,55 @@ export function buildKlingDirectPayload(params: {
     body.multi_shot = true;
     body.shot_type = normalizeShotType(params.shotType);
     if (body.shot_type === 'customize') {
-      body.multi_prompt = multiPrompt;
+      body.multi_prompt = multiPrompt.map((entry) => ({
+        ...entry,
+        prompt: maybeNormalizePromptReferences(entry.prompt, route.endpointFamily),
+      }));
     }
   }
   if (params.aspectRatio && SUPPORTED_ASPECT_RATIOS.has(params.aspectRatio)) {
     body.aspect_ratio = params.aspectRatio;
   }
-  if (params.mode === 'i2v' && imageUrl) {
+  if (route.endpointFamily === 'video-v3' && submitMode === 'i2v' && imageUrl) {
     body.image = imageUrl;
   }
   const endImageUrl = cleanString(params.endImageUrl);
-  if (params.mode === 'i2v' && endImageUrl) {
+  if (route.endpointFamily === 'video-v3' && submitMode === 'i2v' && endImageUrl) {
     body.image_tail = endImageUrl;
+  }
+  if (route.endpointFamily === 'video-o3-omni') {
+    const referenceImageLimit = route.mode === '4k' ? 7 : 4;
+    const imageList: KlingDirectImageListItem[] = normalizeUrlList(
+      params.referenceImageUrls,
+      referenceImageLimit
+    ).map((image_url) => ({ image_url }));
+    const startImageUrl =
+      submitMode === 'v2v'
+        ? null
+        : submitMode === 'i2v'
+          ? imageUrl
+          : cleanString(params.startImageUrl);
+    if (startImageUrl) {
+      imageList.push({ image_url: startImageUrl, type: 'first_frame' });
+    }
+    if (submitMode !== 'v2v' && endImageUrl) {
+      imageList.push({ image_url: endImageUrl, type: 'end_frame' });
+    }
+    if (imageList.length) {
+      body.image_list = imageList;
+    }
+    if (submitMode === 'i2v' && !imageList.some((entry) => entry.type === 'first_frame')) {
+      throw new Error('Image URL is required for Kling direct image-to-video.');
+    }
+    if (submitMode === 'v2v' && sourceVideoUrl) {
+      body.video_list = [
+        {
+          video_url: sourceVideoUrl,
+          refer_type: 'feature',
+          keep_original_sound: keepAudio ? 'yes' : 'no',
+        },
+      ];
+    }
   }
   if (typeof params.cfgScale === 'number' && Number.isFinite(params.cfgScale)) {
     body.cfg_scale = Math.max(0, Math.min(1, params.cfgScale));

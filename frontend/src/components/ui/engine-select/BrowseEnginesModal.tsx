@@ -33,6 +33,7 @@ interface BrowseEnginesModalProps {
   onSelect: (engineId: string) => void;
   copy: EngineSelectCopy;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  disabledEngineReasons?: Record<string, string>;
   engineMeta?: Map<string, FalEngineEntry>;
   showLegacy: boolean;
   onToggleLegacy: () => void;
@@ -47,6 +48,7 @@ export function BrowseEnginesModal({
   onSelect,
   copy,
   modeLabelOverrides,
+  disabledEngineReasons,
   engineMeta,
   showLegacy,
   onToggleLegacy,
@@ -272,15 +274,24 @@ export function BrowseEnginesModal({
               const showExamplesLink = Boolean(examplesHref);
               const browseResolutionValues = getBrowseEngineResolutionValues(engine);
               const browseResolutionLabel = formatResolutionList(engine.id, browseResolutionValues).join(' / ');
+              const disabledReason = disabledEngineReasons?.[engine.id];
+              const disabled = Boolean(disabledReason);
 
               return (
                 <Card
                   key={engine.id}
                   className={clsx(
-                    'flex cursor-pointer flex-col gap-4 overflow-hidden p-5 transition hover:border-text-muted hover:bg-surface-2 hover:shadow-float',
+                    'flex flex-col gap-4 overflow-hidden p-5 transition',
+                    disabled
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer hover:border-text-muted hover:bg-surface-2 hover:shadow-float',
                     isSelected && 'border-brand bg-surface-2 shadow-float'
                   )}
-                  onClick={() => onSelect(engine.id)}
+                  title={disabledReason}
+                  onClick={() => {
+                    if (disabled) return;
+                    onSelect(engine.id);
+                  }}
                 >
                   <div className="flex flex-1 flex-col gap-4">
                     <div className="flex items-start gap-4">
@@ -318,6 +329,7 @@ export function BrowseEnginesModal({
                       ))}
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
+                      {disabledReason ? <span>{disabledReason}</span> : null}
                       <span>
                         Modes:{' '}
                         {getModeDisplayOrder(engine.id, engine.modes)

@@ -40,6 +40,9 @@ export function useWorkspaceAssetLibrary({
     if (assetPickerTarget.kind === 'field' && assetPickerTarget.field.type === 'video') {
       return 'video';
     }
+    if (assetPickerTarget.kind === 'kling' && assetPickerTarget.slot === 'video') {
+      return 'video';
+    }
     return 'image';
   }, [assetPickerTarget]);
   const assetLibraryRequestKey = assetPickerTarget

@@ -6,11 +6,11 @@
     "description": "Utilisez Kling 3 Standard sur MaxVideoAI pour une vidéo IA multi-plans à coût réduit, avec audio natif et specs et prix live avant de générer.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/bb896348-7394-4ef3-9cff-ff392639c8db-job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2.jpg"
   },
-  "overview": "Kling 3 Standard est le modèle Kling IA actuel à coût réduit pour les prompts multi-plans, les runs Kling en image-vers-video, les Kling Elements réutilisables, les images de fin optionnelles et les workflows de draft avec audio natif.",
+  "overview": "Kling 3 Standard est le modèle Kling IA actuel à coût réduit pour les prompts multi-plans, les runs Kling en image-vers-video avec start frame, les Kling Elements réutilisables, les images de fin optionnelles et les workflows de draft avec audio natif.",
   "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,16 $/s avec audio, 0,11 $/s audio off et 0,20 $/s avec voice control.",
   "hero": {
     "title": "Kling 3 Standard — variante Kling actuelle pour la vidéo multi-plans à coût réduit",
-    "intro": "Utilisez Kling 3 Standard quand vous voulez le modèle Kling IA actuel à coût réduit pour la vidéo multi-plans, les tests Kling en image-vers-video, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif avant de faire monter les jobs retenus sur Kling 3 Pro.",
+    "intro": "Utilisez Kling 3 Standard quand vous voulez le modèle Kling IA actuel à coût réduit pour la vidéo multi-plans, les tests Kling en image-vers-video avec start frame, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif. Utilisez Kling 3.0 Omni Standard quand les images doivent guider le plan sans devenir la premiere frame.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Générer avec Kling 3 Standard",
