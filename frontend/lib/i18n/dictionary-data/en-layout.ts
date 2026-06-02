@@ -22,6 +22,7 @@ export const nav: Dictionary['nav'] = {
 export const footer: Dictionary['footer'] = {
     links: [
       { label: 'Legal Center', href: '/legal' },
+      { label: 'Refund & Return Policy', href: '/return-policy' },
     ],
     brandNote:
       'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.',

@@ -17,6 +17,8 @@ const NON_LOCALIZED_PREFIXES = [
   '/generate',
   '/jobs',
   '/legal',
+  '/return-policy',
+  '/refund-policy',
   '/login',
   '/auth',
   '/settings',

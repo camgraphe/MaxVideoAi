@@ -241,6 +241,10 @@
       {
         "label": "Centro legal",
         "href": "/legal"
+      },
+      {
+        "label": "Refund & Return Policy",
+        "href": "/return-policy"
       }
     ],
     "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Seedance, Kling, Veo, LTX, Wan, Pika, Sora y más. Las marcas pertenecen a sus respectivos propietarios.",

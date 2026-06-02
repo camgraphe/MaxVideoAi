@@ -10,6 +10,7 @@ const { Client } = require('pg');
 const SITE_URL = 'https://maxvideoai.com';
 const LOCALES = ['en', 'fr', 'es'];
 const LOCALE_PREFIXES = { en: '', fr: 'fr', es: 'es' };
+const ENGLISH_ONLY_PATHS = new Set(['/return-policy']);
 const MARKETING_CORE_PATHS = [
   '/',
   '/models',
@@ -31,6 +32,7 @@ const MARKETING_CORE_PATHS = [
   '/legal',
   '/legal/privacy',
   '/legal/terms',
+  '/return-policy',
   '/changelog',
   '/status',
 ];
@@ -258,10 +260,9 @@ module.exports = {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     const englishPath = toEnglishPath(normalizedPath);
     const loc = `${SITE_URL}${normalizedPath === '/' ? '/' : normalizedPath}`;
+    const publishableLocales = ENGLISH_ONLY_PATHS.has(englishPath) ? ['en'] : LOCALES;
     const alternateRefs = [
-      { href: buildLocaleHref('en', englishPath), hreflang: 'en' },
-      { href: buildLocaleHref('fr', englishPath), hreflang: 'fr' },
-      { href: buildLocaleHref('es', englishPath), hreflang: 'es' },
+      ...publishableLocales.map((locale) => ({ href: buildLocaleHref(locale, englishPath), hreflang: locale })),
       { href: buildLocaleHref('en', englishPath), hreflang: 'x-default' },
     ];
 

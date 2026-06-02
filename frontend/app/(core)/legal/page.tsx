@@ -24,15 +24,17 @@ export async function generateMetadata(): Promise<Metadata> {
 type LinkKey =
   | 'terms'
   | 'privacy'
+  | 'returnPolicy'
   | 'cookies'
   | 'acceptableUse'
   | 'takedown'
   | 'mentions'
   | 'subprocessors';
 
-const LINKS: Array<{ href: string; key: LinkKey; docKey?: 'terms' | 'privacy' | 'cookies' }> = [
+const LINKS: Array<{ href: string; key: LinkKey; docKey?: 'terms' | 'privacy' | 'cookies'; localize?: boolean }> = [
   { href: '/legal/terms', key: 'terms', docKey: 'terms' },
   { href: '/legal/privacy', key: 'privacy', docKey: 'privacy' },
+  { href: '/return-policy', key: 'returnPolicy', localize: false },
   { href: '/legal/cookies-list', key: 'cookies', docKey: 'cookies' },
   { href: '/legal/acceptable-use', key: 'acceptableUse' },
   { href: '/legal/takedown', key: 'takedown' },
@@ -73,6 +75,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
     links: {
       terms: 'Terms of Service',
       privacy: 'Privacy Policy',
+      returnPolicy: 'Refund & Return Policy',
       cookies: 'Cookie Policy',
       acceptableUse: 'Acceptable Use Policy',
       takedown: 'Notice & Takedown',
@@ -101,6 +104,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
     links: {
       terms: "Conditions d’utilisation",
       privacy: 'Politique de confidentialité',
+      returnPolicy: 'Refund & Return Policy',
       cookies: 'Politique cookies',
       acceptableUse: 'Politique d’utilisation acceptable',
       takedown: 'Notification & retrait',
@@ -129,6 +133,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
     links: {
       terms: 'Términos del servicio',
       privacy: 'Política de privacidad',
+      returnPolicy: 'Refund & Return Policy',
       cookies: 'Política de cookies',
       acceptableUse: 'Política de uso aceptable',
       takedown: 'Notificación y retirada',
@@ -144,7 +149,7 @@ export default async function LegalIndexPage() {
   const documents = await getLegalDocuments(['terms', 'privacy', 'cookies']);
   const localizedLinks = LINKS.map((entry) => ({
     ...entry,
-    href: localizePathFromEnglish(locale, entry.href),
+    href: entry.localize === false ? entry.href : localizePathFromEnglish(locale, entry.href),
   }));
   const renderEmailText = (text: string) => {
     if (!text.includes(EMAIL_TOKEN)) {

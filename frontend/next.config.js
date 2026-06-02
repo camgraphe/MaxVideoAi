@@ -122,6 +122,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/refund-policy',
+        destination: '/return-policy',
+        permanent: true,
+      },
+      {
         source: '/fr/pricing-calculator',
         destination: '/fr/tarifs',
         statusCode: 301,

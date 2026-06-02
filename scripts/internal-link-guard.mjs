@@ -114,9 +114,15 @@ for (const localeFile of ['frontend/messages/en.json', 'frontend/messages/fr.jso
     ),
     `${localeFile}: nav.links must not include workflows or docs.`
   );
+  const legalLinks = footerLinks.filter((entry) => entry?.href === '/legal');
+  const returnPolicyLinks = footerLinks.filter((entry) => entry?.href === '/return-policy');
   assert(
-    footerLinks.length === 1 && footerLinks[0]?.href === '/legal',
+    legalLinks.length === 1,
     `${localeFile}: footer.links must contain exactly one /legal entry.`
+  );
+  assert(
+    returnPolicyLinks.length === 1,
+    `${localeFile}: footer.links must contain exactly one /return-policy entry.`
   );
   assert(!Object.prototype.hasOwnProperty.call(productItems, 'workflows'), `${localeFile}: footer product links must not include workflows.`);
   assert(!Object.prototype.hasOwnProperty.call(companyItems, 'about'), `${localeFile}: footer company links must not include about.`);

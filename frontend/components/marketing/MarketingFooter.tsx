@@ -37,10 +37,14 @@ export function MarketingFooter() {
 
   const modelSlugSet = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
-  const defaultPolicyLinks: PolicyLink[] = [{ label: 'Legal Center', href: '/legal', locale: false }];
+  const defaultPolicyLinks: PolicyLink[] = [
+    { label: 'Legal Center', href: '/legal', locale: false },
+    { label: 'Refund & Return Policy', href: '/return-policy', locale: false },
+  ];
   const maybeLinks = t('footer.links', defaultPolicyLinks);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultPolicyLinks;
-  const isPolicyLink = (item: PolicyLink) => typeof item.href === 'string' && item.href.startsWith('/legal');
+  const isPolicyLink = (item: PolicyLink) =>
+    typeof item.href === 'string' && (item.href.startsWith('/legal') || item.href === '/return-policy');
   const policyLinks = links.filter(isPolicyLink);
   const renderedPolicyLinks = policyLinks.length ? policyLinks : defaultPolicyLinks.filter(isPolicyLink);
   const localizedPolicyLinks = renderedPolicyLinks.map((item) => ({
