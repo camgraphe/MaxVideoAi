@@ -71,7 +71,7 @@ export function VideoThumbnailEditor({
         <div className="overflow-hidden rounded-card border border-hairline bg-black shadow-card">
           <video
             ref={videoRef}
-            className="aspect-video w-full object-cover"
+            className="aspect-video w-full object-contain"
             src={videoUrl}
             poster={thumbUrl ?? undefined}
             controls

@@ -73,7 +73,7 @@ function VideoSeoVideoCard({
       onClick={onSelect}
       className={`group min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${selected ? 'ring-2 ring-ring ring-offset-2 ring-offset-bg' : ''}`}
     >
-      <span className={`block overflow-hidden rounded-lg border bg-surface-2 transition ${frameClass}`}>
+      <span className={`block overflow-hidden rounded-lg border bg-black transition ${frameClass}`}>
         {row.video?.thumbUrl ? (
           <Image
             src={row.video.thumbUrl}
@@ -81,7 +81,7 @@ function VideoSeoVideoCard({
             width={360}
             height={203}
             unoptimized
-            className="aspect-video w-full object-cover transition group-hover:scale-[1.02]"
+            className="aspect-video w-full object-contain transition group-hover:brightness-105"
           />
         ) : (
           <span className="flex aspect-video items-center justify-center bg-bg text-xs font-medium text-text-muted">
@@ -411,7 +411,7 @@ function WatchPreview({
           width={960}
           height={540}
           unoptimized
-          className="aspect-video w-full object-cover transition group-hover:scale-[1.01]"
+          className="aspect-video w-full bg-black object-contain transition group-hover:brightness-105"
         />
       ) : (
         <div className="flex aspect-video items-center justify-center bg-bg text-xs font-medium text-text-muted">No thumbnail</div>
