@@ -3,9 +3,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Download, ImagePlus, Loader2, Pencil, Save } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AssetDropzone, type AssetSlotAttachment } from '@/components/AssetDropzone';
 import { HeaderBar } from '@/components/HeaderBar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -15,8 +17,14 @@ import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { DEFAULT_STORYBOARD_COPY } from './storyboard/_lib/storyboard-workspace-copy';
+import {
+  cleanupStoryboardReferenceImage,
+  uploadStoryboardReferenceImage,
+  type StoryboardReferenceImage,
+} from './storyboard/_lib/storyboard-reference-image';
 import {
   buildStoryboardPrompt,
   type StoryboardStyle,
@@ -32,6 +40,38 @@ const FRAME_COUNT_OPTIONS = [4, 6, 8] as const;
 const STORYBOARD_TIER_CONFIG: Record<StoryboardTier, { resolution: string; quality: 'medium' | 'high' }> = {
   normal: { resolution: '1024x768', quality: 'medium' },
   hq: { resolution: '3840x2160', quality: 'high' },
+};
+const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
+const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
+  id: 'storyboard_reference_images',
+  type: 'image',
+  label: 'Reference images',
+  description: 'Upload character, product, object, packaging, scene or style references.',
+  maxCount: STORYBOARD_REFERENCE_SLOT_COUNT,
+  minCount: 0,
+};
+const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
+  id: 'gpt-image-2',
+  label: 'GPT Image 2',
+  provider: 'OpenAI',
+  status: 'live',
+  latencyTier: 'standard',
+  modes: ['i2i'],
+  maxDurationSec: 0,
+  resolutions: ['1k'],
+  aspectRatios: ['4:3'],
+  fps: [],
+  audio: false,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: { imageMaxMB: 25 },
+  inputSchema: { constraints: { supportedFormats: ['png', 'jpg', 'jpeg', 'webp'], maxImageSizeMB: 25 } },
+  updatedAt: '2026-06-03',
+  ttlSec: 3600,
+  availability: 'available',
 };
 
 type PriceState = Record<StoryboardTier, { cents: number; currency: string } | null>;
@@ -62,11 +102,15 @@ export default function StoryboardWorkspace() {
   };
   const [subject, setSubject] = useState('');
   const [action, setAction] = useState('');
+  const [dialogue, setDialogue] = useState('');
   const [targetModel, setTargetModel] = useState<StoryboardTargetModel>('seedance');
   const [style, setStyle] = useState<StoryboardStyle>('cinema');
   const [durationSec, setDurationSec] = useState<number>(10);
   const [frameCount, setFrameCount] = useState<number>(6);
   const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>('normal');
+  const [referenceImages, setReferenceImages] = useState<(StoryboardReferenceImage | null)[]>(
+    () => Array.from({ length: STORYBOARD_REFERENCE_SLOT_COUNT }, () => null)
+  );
   const [editInstruction, setEditInstruction] = useState('');
   const [tierPrices, setTierPrices] = useState<PriceState>({ normal: null, hq: null });
   const [result, setResult] = useState<ImageGenerationResponse | null>(null);
@@ -75,6 +119,9 @@ export default function StoryboardWorkspace() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const referenceImagesRef = useRef(referenceImages);
+
+  referenceImagesRef.current = referenceImages;
 
   useEffect(() => {
     const requestedTarget = new URLSearchParams(window.location.search).get('target');
@@ -124,11 +171,105 @@ export default function StoryboardWorkspace() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      referenceImagesRef.current.forEach(cleanupStoryboardReferenceImage);
+    };
+  }, []);
+
   const selectedImage = result?.images[0] ?? null;
   const tierConfig = STORYBOARD_TIER_CONFIG[storyboardTier];
   const activePrice = useMemo(() => formatPrice(tierPrices[storyboardTier], locale), [locale, storyboardTier, tierPrices]);
-  const canRun = Boolean(subject.trim()) && !running;
+  const referenceUploading = referenceImages.some((image) => image?.status === 'uploading');
+  const readyReferenceImages = useMemo(
+    () => referenceImages.filter((image): image is StoryboardReferenceImage => Boolean(image?.url && image.status === 'ready')),
+    [referenceImages]
+  );
+  const storyboardReferenceField = useMemo<EngineInputField>(
+    () => ({
+      ...STORYBOARD_REFERENCE_FIELD,
+      label: copy.referenceImageLabel,
+      description: copy.referenceImageBody,
+    }),
+    [copy.referenceImageBody, copy.referenceImageLabel]
+  );
+  const storyboardReferenceAssets = useMemo<Record<string, (AssetSlotAttachment | null)[]>>(
+    () => ({
+      [STORYBOARD_REFERENCE_FIELD.id]: referenceImages.map((image) =>
+        image
+          ? {
+              kind: 'image',
+              name: image.name ?? copy.referenceSlotNameFallback,
+              size: image.size ?? 0,
+              type: image.type ?? 'image/*',
+              previewUrl: image.previewUrl,
+              status: image.status,
+              error: image.error ?? undefined,
+            }
+          : null
+      ),
+    }),
+    [copy.referenceSlotNameFallback, referenceImages]
+  );
+  const canRun = Boolean(subject.trim()) && !running && !referenceUploading;
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
+
+  async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setError(null);
+    setMessage(null);
+    setReferenceImages((current) => {
+      const next = current.slice();
+      cleanupStoryboardReferenceImage(next[slotIndex] ?? null);
+      next[slotIndex] = {
+        url: previewUrl,
+        previewUrl,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        status: 'uploading',
+      };
+      return next;
+    });
+    try {
+      const uploaded = await uploadStoryboardReferenceImage(file, copy);
+      setReferenceImages((current) => {
+        const next = current.slice();
+        next[slotIndex] = { ...uploaded, previewUrl, size: file.size, type: file.type, status: 'ready' };
+        return next;
+      });
+    } catch (uploadError) {
+      const messageText = uploadError instanceof Error ? uploadError.message : copy.uploadFailed;
+      setReferenceImages((current) => {
+        const next = current.slice();
+        next[slotIndex] = {
+          url: previewUrl,
+          previewUrl,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          status: 'error',
+          error: messageText,
+        };
+        return next;
+      });
+      setError(messageText);
+    }
+  }
+
+  function handleRemoveReferenceSlot(_field: EngineInputField, index: number) {
+    setReferenceImages((current) => {
+      const next = current.slice();
+      cleanupStoryboardReferenceImage(next[index] ?? null);
+      next[index] = null;
+      return next;
+    });
+  }
 
   async function runStoryboard(edit = false) {
     if (!user) {
@@ -145,24 +286,28 @@ export default function StoryboardWorkspace() {
     setError(null);
     setMessage(null);
     try {
+      const sourceImages = edit && selectedImage ? [selectedImage] : readyReferenceImages;
       const prompt = buildStoryboardPrompt({
         subject,
         action,
+        dialogue,
         style,
         targetModel,
         durationSec,
         frameCount,
+        referenceImageCount: edit ? 0 : readyReferenceImages.length,
         editInstruction: edit ? editInstruction : null,
       });
       const response = await runImageGeneration({
         jobId: `storyboard_${crypto.randomUUID()}`,
         engineId: 'gpt-image-2',
-        mode: edit ? 'i2i' : 't2i',
+        mode: sourceImages.length ? 'i2i' : 't2i',
         prompt,
         numImages: 1,
-        imageUrls: edit && selectedImage ? [selectedImage.url] : undefined,
-        referenceImageSizes:
-          edit && selectedImage ? [{ width: selectedImage.width ?? null, height: selectedImage.height ?? null }] : undefined,
+        imageUrls: sourceImages.length ? sourceImages.map((image) => image.url) : undefined,
+        referenceImageSizes: sourceImages.length
+          ? sourceImages.map((image) => ({ width: image.width ?? null, height: image.height ?? null }))
+          : undefined,
         resolution: tierConfig.resolution,
         quality: tierConfig.quality,
         outputFormat: 'png',
@@ -267,8 +412,31 @@ export default function StoryboardWorkspace() {
                       className="h-11 w-full rounded-input border border-border bg-bg px-3 text-sm text-text-primary outline-none transition focus:border-brand"
                     />
                   </Field>
+                  <Field label={copy.dialogueLabel}>
+                    <textarea
+                      value={dialogue}
+                      onChange={(event) => setDialogue(event.currentTarget.value)}
+                      placeholder={copy.dialoguePlaceholder}
+                      rows={3}
+                      className="min-h-[88px] w-full resize-y rounded-input border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand"
+                    />
+                  </Field>
 
-                  <Segmented label={copy.targetLabel}>
+                  <AssetDropzone
+                    engine={STORYBOARD_REFERENCE_ENGINE}
+                    field={storyboardReferenceField}
+                    required={false}
+                    role="reference"
+                    assets={storyboardReferenceAssets[STORYBOARD_REFERENCE_FIELD.id] ?? []}
+                    disabled={running}
+                    onSelect={(field, file, slotIndex) => {
+                      void handleReferenceFile(field, file, slotIndex);
+                    }}
+                    onRemove={handleRemoveReferenceSlot}
+                    onError={setError}
+                  />
+
+	                  <Segmented label={copy.targetLabel}>
                     {TARGET_OPTIONS.map((option) => (
                       <SegmentButton
                         key={option}
@@ -424,7 +592,7 @@ export default function StoryboardWorkspace() {
   );
 }
 
-function Field({ children, className = '', label }: { children: React.ReactNode; className?: string; label: string }) {
+function Field({ children, className = '', label }: { children: ReactNode; className?: string; label: string }) {
   return (
     <label className={`block space-y-2 ${className}`}>
       <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</span>
@@ -433,7 +601,7 @@ function Field({ children, className = '', label }: { children: React.ReactNode;
   );
 }
 
-function Segmented({ children, label }: { children: React.ReactNode; label: string }) {
+function Segmented({ children, label }: { children: ReactNode; label: string }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
@@ -442,7 +610,7 @@ function Segmented({ children, label }: { children: React.ReactNode; label: stri
   );
 }
 
-function SegmentButton({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+function SegmentButton({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) {
   return (
     <Button
       type="button"

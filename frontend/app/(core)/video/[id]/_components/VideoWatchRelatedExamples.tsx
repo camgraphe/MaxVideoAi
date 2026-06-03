@@ -5,11 +5,10 @@ import type { WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchCard } from './VideoWatchCard';
 
 type VideoWatchRelatedExamplesProps = {
-  engineLabel: string;
   related: WatchPageData['related'];
 };
 
-export function VideoWatchRelatedExamples({ engineLabel, related }: VideoWatchRelatedExamplesProps) {
+export function VideoWatchRelatedExamples({ related }: VideoWatchRelatedExamplesProps) {
   if (!related.length) return null;
 
   return (
@@ -40,7 +39,7 @@ export function VideoWatchRelatedExamples({ engineLabel, related }: VideoWatchRe
                   </div>
                 )}
                 <span className="absolute left-2 top-2 rounded-pill bg-surface-on-media-dark-70 px-2 py-1 text-[10px] font-semibold text-on-inverse">
-                  {engineLabel}
+                  {item.engineLabel}
                 </span>
               </div>
               <div className="space-y-1 px-3 py-3">

@@ -12,6 +12,8 @@ import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoWatchSidebar } from './VideoWatchSidebar';
 import { VideoWatchSourceImages } from './VideoWatchSourceImages';
 
+const PROMPT_CONTEXT_PREVIEW_MAX_CHARS = 280;
+
 export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
   const canonical = signals.canonicalUrl;
@@ -90,7 +92,6 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
     .filter((tag) => ['push-in', 'tracking', 'drone', 'close-up', 'transition', 'camera-lock'].includes(tag))
     .map(humanizeTag);
   const promptBreakdownRows = [
-    ...(!signals.seoPromptContext ? [{ label: 'Subject', value: promptContextText }] : []),
     { label: 'Workflow', value: workflowLabel },
     { label: 'Camera', value: cameraHighlights.length ? cameraHighlights.join(', ') : humanizeTag(signals.primaryIntent) },
     { label: 'Output', value: [durationLabel, aspectLabel, resolutionLabel].filter(Boolean).join(' · ') },
@@ -107,6 +108,12 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
     { key: 'cost', label: costLabel, Icon: Tag },
   ].filter((chip): chip is { key: string; label: string; Icon: LucideIcon } => Boolean(chip.label));
   const fullPromptId = `video-full-prompt-${video.id}`;
+  const promptContextIsLong = promptContextText.length > PROMPT_CONTEXT_PREVIEW_MAX_CHARS;
+  const promptContextPreviewText = promptContextIsLong ? `${promptContextText.slice(0, PROMPT_CONTEXT_PREVIEW_MAX_CHARS).trimEnd()}...` : promptContextText;
+  const promptExpandedText = signals.seoPromptContext || promptContextIsLong ? promptContextText : signals.promptText;
+  const promptIsExpandable = promptContextIsLong || Boolean(signals.promptText.trim() && signals.promptText.trim() !== promptContextText.trim());
+  const promptCollapsedLabel = signals.seoPromptContext ? 'Show full context' : 'Show full prompt';
+  const promptExpandedLabel = signals.seoPromptContext ? 'Hide full context' : 'Hide full prompt';
 
   return (
     <div className="mx-auto w-full max-w-[1280px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
@@ -210,11 +217,26 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
                 </div>
                 <p className="mt-2 text-sm leading-6 text-text-secondary">{promptContextDescription}</p>
               </div>
-              <CopyPromptButton promptElementId={fullPromptId} copyLabel="Copy full prompt" copiedLabel="Copied!" />
+              <CopyPromptButton prompt={signals.promptText} copyLabel="Copy full prompt" copiedLabel="Copied!" />
             </div>
 
             <div className="mt-5 overflow-hidden rounded-input border border-hairline">
-              <div className="border-b border-hairline bg-surface-2 px-4 py-3 text-sm leading-6 text-text-primary">{promptContextText}</div>
+              {promptIsExpandable ? (
+                <details className="group border-b border-hairline bg-surface-2">
+                  <summary className="cursor-pointer list-none px-4 py-3 text-sm leading-6 text-text-primary">
+                    <span className="block group-open:hidden">{promptContextPreviewText}</span>
+                    <span className="mt-2 inline-flex text-xs font-semibold text-brand transition group-open:hidden hover:text-brandHover">
+                      {promptCollapsedLabel}
+                    </span>
+                    <span className="hidden text-xs font-semibold text-brand transition group-open:inline hover:text-brandHover">
+                      {promptExpandedLabel}
+                    </span>
+                  </summary>
+                  <p id={fullPromptId} className="whitespace-pre-line px-4 pb-4 text-sm leading-6 text-text-secondary">{promptExpandedText}</p>
+                </details>
+              ) : (
+                <div id={fullPromptId} className="border-b border-hairline bg-surface-2 px-4 py-3 text-sm leading-6 text-text-primary">{promptContextText}</div>
+              )}
               <div className="grid divide-y divide-hairline md:grid-cols-2 md:divide-x md:divide-y-0">
                 {promptBreakdownRows.map((row) => (
                   <div key={row.label} className="grid grid-cols-[110px_minmax(0,1fr)] divide-x divide-hairline">
@@ -235,14 +257,6 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
                 ))}
               </div>
             ) : null}
-
-            <details className="group mt-4 rounded-input border border-hairline bg-surface px-4 py-3">
-              <summary className="cursor-pointer list-none text-xs font-semibold text-brand transition hover:text-brandHover">
-                <span className="group-open:hidden">{signals.seoPromptContext ? 'Show raw job prompt' : 'Show full prompt'}</span>
-                <span className="hidden group-open:inline">{signals.seoPromptContext ? 'Hide raw job prompt' : 'Hide full prompt'}</span>
-              </summary>
-              <p id={fullPromptId} className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
-            </details>
           </VideoWatchCard>
 
           {signals.promptImprovementNotes.length ? (
@@ -318,7 +332,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
             />
           </VideoWatchCard>
 
-          <VideoWatchRelatedExamples engineLabel={signals.engineLabel} related={related} />
+          <VideoWatchRelatedExamples related={related} />
         </div>
 
         <VideoWatchSidebar createdLabel={createdLabel} signals={signals} />

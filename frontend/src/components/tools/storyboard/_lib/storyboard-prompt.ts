@@ -4,10 +4,12 @@ export type StoryboardTargetModel = 'seedance' | 'kling';
 export type StoryboardPromptInput = {
   subject: string;
   action: string;
+  dialogue?: string;
   style: StoryboardStyle;
   targetModel: StoryboardTargetModel;
   durationSec: number;
   frameCount: number;
+  referenceImageCount?: number;
   editInstruction?: string | null;
 };
 
@@ -21,6 +23,7 @@ const STYLE_PROMPTS: Record<StoryboardStyle, string> = {
 export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
   const subject = input.subject.trim();
   const action = input.action.trim();
+  const dialogue = input.dialogue?.trim();
   const editInstruction = input.editInstruction?.trim();
   const targetGuidance =
     input.targetModel === 'seedance'
@@ -32,6 +35,12 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
     `Use ${input.frameCount} clearly separated panels with consistent continuity from left to right.`,
     `Subject: ${subject}.`,
     action ? `Action: ${action}.` : null,
+    dialogue
+      ? `Dialogue/audio direction: ${dialogue}. Use this only to plan dialogue timing, emotion, mouth and body performance, reaction beats, and audio pacing. Do not draw dialogue text, captions, subtitles, or speech bubbles inside the storyboard image.`
+      : null,
+    input.referenceImageCount
+      ? `Use the ${input.referenceImageCount} uploaded reference images as visual anchors for characters, products, material details, colors, silhouettes, and settings. Preserve recognizable design cues while building the storyboard panels.`
+      : null,
     `Style: ${STYLE_PROMPTS[input.style]}.`,
     targetGuidance,
     editInstruction ? `Edit request: ${editInstruction}.` : null,

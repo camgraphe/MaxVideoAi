@@ -61,8 +61,16 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /Compare this model/, 'watch page should include compare links');
   assert.match(contentSource, /Estimated price/, 'watch page should label the estimated render price');
   assert.match(contentSource, /Visual workflow context/, 'public watch page should name editorial visual context without exposing SEO jargon');
+  assert.match(contentSource, /promptIsExpandable/, 'long prompts should be expandable from the primary prompt panel');
+  assert.match(contentSource, /PROMPT_CONTEXT_PREVIEW_MAX_CHARS/, 'long visual workflow context should use a bounded preview length');
+  assert.match(contentSource, /promptContextIsLong/, 'visual workflow context should be expandable when the context itself is too long');
+  assert.match(contentSource, /promptContextPreviewText/, 'collapsed prompt panel should render the bounded visual context preview');
+  assert.match(contentSource, /signals\.seoPromptContext \? 'Show full context' : 'Show full prompt'/, 'visual workflow context disclosure should use context-specific expand copy');
+  assert.match(contentSource, /CopyPromptButton prompt=\{signals\.promptText\}/, 'copy action should copy the full prompt without relying on the removed bottom prompt block');
   assert.doesNotMatch(contentSource, /SEO context/, 'public watch page should not expose SEO implementation labels');
   assert.doesNotMatch(contentSource, /signals\.seoPromptContext \? 'SEO context'/, 'editorial context should not be repeated as a table row');
+  assert.doesNotMatch(contentSource, /label: 'Subject', value: promptContextText/, 'watch page should not repeat the prompt as a Subject row');
+  assert.doesNotMatch(contentSource, /className="group mt-4 rounded-input/, 'full prompt disclosure should not sit below the prompt breakdown table');
   assert.ok(
     contentSource.indexOf('<VideoWatchSourceImages') < contentSource.indexOf('{promptContextTitle}'),
     'storyboard and source images should render above the prompt breakdown card',
@@ -70,6 +78,7 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /dangerouslySetInnerHTML/, 'content component should own JSON-LD script rendering');
   assert.match(contentSource, /from '\.\/VideoWatchCard'/, 'content component should compose the watch card shell');
   assert.match(contentSource, /from '\.\/VideoWatchRelatedExamples'/, 'content component should compose related examples');
+  assert.doesNotMatch(contentSource, /<VideoWatchRelatedExamples engineLabel=/, 'related cards should not receive the current video engine as a shared badge label');
   assert.match(contentSource, /from '\.\/VideoWatchSidebar'/, 'content component should compose the sidebar');
   assert.doesNotMatch(contentSource, /function WatchCard/, 'watch card UI belongs in VideoWatchCard');
   assert.doesNotMatch(contentSource, /function buildHighlightItems/, 'highlight view model belongs in VideoWatchSidebar');
@@ -77,6 +86,8 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.ok(contentSource.split('\n').length <= 360, `video watch content should stay below 360 lines, got ${contentSource.split('\n').length}`);
   assert.match(cardSource, /export function VideoWatchCard/, 'watch card shell should be exported');
   assert.match(relatedSource, /export function VideoWatchRelatedExamples/, 'related examples component should be exported');
+  assert.match(relatedSource, /\{item\.engineLabel\}/, 'related example badges should use each related video engine label');
+  assert.doesNotMatch(relatedSource, /engineLabel:\s*string/, 'related examples should not accept a shared engine label prop');
   assert.match(sidebarSource, /export function VideoWatchSidebar/, 'sidebar component should be exported');
   assert.match(sourceImagesSource, /VideoWatchSourceImagesClient/, 'server source image wrapper should compose the client lightbox');
   assert.doesNotMatch(sourceImagesSource, /'use client'/, 'source image URL normalization should stay server-renderable');

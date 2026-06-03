@@ -18,6 +18,7 @@ const storyboardRoutePath = join(root, 'frontend/app/(core)/(workspace)/app/tool
 const storyboardWorkspacePath = join(root, 'frontend/src/components/tools/StoryboardWorkspace.tsx');
 const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-copy.ts');
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
+const storyboardReferenceImagePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-image.ts');
 
 test('storyboard tool exposes a focused image workspace preset for GPT Image 2', async () => {
   assert.equal(existsSync(storyboardPresetPath), true, 'storyboard preset helper should live under image _lib');
@@ -79,11 +80,13 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(storyboardWorkspacePath), true, 'storyboard workspace should be a dedicated app tool');
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
+  assert.equal(existsSync(storyboardReferenceImagePath), true, 'storyboard reference upload helper should stay colocated');
 
   const routeSource = readFileSync(storyboardRoutePath, 'utf8');
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
+  const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
 
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
@@ -92,14 +95,54 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /runImageGeneration/);
   assert.match(workspaceSource, /source:\s*'storyboard'/);
   assert.match(workspaceSource, /storyboardTier/);
+  assert.match(workspaceSource, /AssetDropzone/);
+  assert.match(workspaceSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
+  assert.match(workspaceSource, /STORYBOARD_REFERENCE_FIELD/);
+  assert.match(workspaceSource, /STORYBOARD_REFERENCE_ENGINE/);
+  assert.match(workspaceSource, /referenceImages/);
+  assert.match(workspaceSource, /readyReferenceImages/);
+  assert.match(workspaceSource, /uploadStoryboardReferenceImage/);
+  assert.match(workspaceSource, /mode:\s*sourceImages\.length \? 'i2i' : 't2i'/);
+  assert.match(workspaceSource, /imageUrls:\s*sourceImages\.length \? sourceImages\.map\(\(image\) => image\.url\) : undefined/);
+  assert.match(workspaceSource, /referenceImageSizes:\s*sourceImages\.length/);
+  assert.match(workspaceSource, /copy\.referenceImageLabel/);
+  assert.match(workspaceSource, /copy\.referenceImageBody/);
+  assert.match(workspaceSource, /dialogue/);
+  assert.match(workspaceSource, /copy\.dialogueLabel/);
+  assert.match(workspaceSource, /copy\.dialoguePlaceholder/);
+  assert.match(workspaceSource, /<textarea/);
   assert.match(workspaceSource, /Save to Storyboard library/);
   assert.doesNotMatch(workspaceSource, /promptField/);
-  assert.doesNotMatch(workspaceSource, /<textarea/);
   assert.match(promptSource, /buildStoryboardPrompt/);
+  assert.match(promptSource, /dialogue/);
+  assert.match(promptSource, /Dialogue\/audio direction/);
+  assert.match(promptSource, /referenceImageCount/);
+  assert.match(promptSource, /uploaded reference images/);
   assert.match(promptSource, /Seedance/);
   assert.match(promptSource, /Kling/);
   assert.match(promptSource, /real people/);
   assert.match(promptSource, /durationSec/);
+  assert.match(referenceImageSource, /prepareImageFileForUpload/);
+  assert.match(referenceImageSource, /\/api\/uploads\/image/);
+  assert.match(referenceImageSource, /cleanupStoryboardReferenceImage/);
+});
+
+test('storyboard prompt carries dialogue as video context without drawing text into the board', async () => {
+  const module = await import('../frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
+  const prompt = module.buildStoryboardPrompt({
+    subject: 'A chef presenting a product on a clean kitchen counter',
+    action: 'Hands reveal the package, then point to the texture',
+    dialogue: 'Chef: This sauce keeps the same rich texture.\\nVoiceover: Ready in thirty seconds.',
+    style: 'realistic',
+    targetModel: 'kling',
+    durationSec: 10,
+    frameCount: 6,
+  });
+
+  assert.match(prompt, /Dialogue\/audio direction:/);
+  assert.match(prompt, /Chef: This sauce keeps the same rich texture/);
+  assert.match(prompt, /Voiceover: Ready in thirty seconds/);
+  assert.match(prompt, /Do not draw dialogue text/);
 });
 
 test('video workspace exposes a storyboard launcher for Seedance and Kling models', () => {
