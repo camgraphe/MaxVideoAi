@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Download, ImagePlus, Loader2, Pencil, Save } from 'lucide-react';
+import { ArrowLeft, ImagePlus, Loader2 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AssetDropzone, type AssetSlotAttachment } from '@/components/AssetDropzone';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -19,6 +19,7 @@ import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
+import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
 import { DEFAULT_STORYBOARD_COPY } from './storyboard/_lib/storyboard-workspace-copy';
 import {
   cleanupStoryboardReferenceImage,
@@ -30,6 +31,7 @@ import {
   type StoryboardStyle,
   type StoryboardTargetModel,
 } from './storyboard/_lib/storyboard-prompt';
+import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
 
 type StoryboardTier = 'normal' | 'hq';
 
@@ -211,6 +213,20 @@ export default function StoryboardWorkspace() {
     }),
     [copy.referenceSlotNameFallback, referenceImages]
   );
+  const shotPlan = useMemo(
+    () =>
+      buildStoryboardShotPlan({
+        subject,
+        action,
+        dialogue,
+        style,
+        targetModel,
+        durationSec,
+        frameCount,
+        referenceImageCount: readyReferenceImages.length,
+      }),
+    [action, dialogue, durationSec, frameCount, readyReferenceImages.length, style, subject, targetModel]
+  );
   const canRun = Boolean(subject.trim()) && !running && !referenceUploading;
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
 
@@ -296,6 +312,7 @@ export default function StoryboardWorkspace() {
         durationSec,
         frameCount,
         referenceImageCount: edit ? 0 : readyReferenceImages.length,
+        shotPlan,
         editInstruction: edit ? editInstruction : null,
       });
       const response = await runImageGeneration({
@@ -436,7 +453,7 @@ export default function StoryboardWorkspace() {
                     onError={setError}
                   />
 
-	                  <Segmented label={copy.targetLabel}>
+                  <Segmented label={copy.targetLabel}>
                     {TARGET_OPTIONS.map((option) => (
                       <SegmentButton
                         key={option}
@@ -495,72 +512,22 @@ export default function StoryboardWorkspace() {
               </Card>
             </section>
 
-            <section className="min-w-0">
-              <Card className="flex min-h-[620px] flex-col border border-border bg-surface p-5">
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.outputTitle}</p>
-                    <h2 className="mt-1 text-lg font-semibold text-text-primary">{selectedImage ? result?.engineLabel : copy.emptyTitle}</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={!selectedImage}
-                      onClick={() => selectedImage && triggerAppDownload(selectedImage.url, suggestDownloadFilename(selectedImage.url, 'storyboard-reference'))}
-                    >
-                      <Download className="h-4 w-4" />
-                      {copy.download}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" disabled={!selectedImage || saving} onClick={() => void saveSelectedImage()}>
-                      <Save className="h-4 w-4" />
-                      {saving ? copy.generating : saveLabel}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex min-h-[420px] flex-1 items-center justify-center overflow-hidden rounded-card border border-border bg-bg">
-                  {selectedImage ? (
-                    <img src={selectedImage.url} alt="" className="max-h-[620px] w-full object-contain" />
-                  ) : running ? (
-                    <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {copy.generating}
-                    </div>
-                  ) : (
-                    <div className="max-w-sm px-6 text-center">
-                      <p className="text-sm font-medium text-text-primary">{copy.emptyTitle}</p>
-                      <p className="mt-2 text-xs text-text-muted">{copy.emptyBody}</p>
-                    </div>
-                  )}
-                </div>
-
-                {selectedImage ? (
-                  <div className="mt-4 rounded-card border border-border bg-bg p-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-end">
-                      <Field label={copy.editLabel} className="flex-1">
-                        <input
-                          value={editInstruction}
-                          onChange={(event) => setEditInstruction(event.currentTarget.value)}
-                          placeholder={copy.editPlaceholder}
-                          className="h-10 w-full rounded-input border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
-                        />
-                      </Field>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!editInstruction.trim() || running}
-                        onClick={() => void runStoryboard(true)}
-                      >
-                        {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
-                        {copy.editAction}
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-              </Card>
-            </section>
+            <StoryboardResultPanel
+              copy={copy}
+              editInstruction={editInstruction}
+              onApplyEdit={() => void runStoryboard(true)}
+              onDownload={() =>
+                selectedImage && triggerAppDownload(selectedImage.url, suggestDownloadFilename(selectedImage.url, 'storyboard-reference'))
+              }
+              onEditInstructionChange={setEditInstruction}
+              onSave={() => void saveSelectedImage()}
+              result={result}
+              running={running}
+              saveLabel={saveLabel}
+              saving={saving}
+              selectedImage={selectedImage}
+              shotPlan={shotPlan}
+            />
           </div>
         </main>
       </div>

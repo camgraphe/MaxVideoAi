@@ -19,6 +19,9 @@ const storyboardWorkspacePath = join(root, 'frontend/src/components/tools/Storyb
 const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-copy.ts');
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
 const storyboardReferenceImagePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-image.ts');
+const storyboardShotPlanPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-shot-plan.ts');
+const storyboardShotMapPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardShotMap.tsx');
+const storyboardResultPanelPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardResultPanel.tsx');
 
 test('storyboard tool exposes a focused image workspace preset for GPT Image 2', async () => {
   assert.equal(existsSync(storyboardPresetPath), true, 'storyboard preset helper should live under image _lib');
@@ -81,12 +84,18 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
   assert.equal(existsSync(storyboardReferenceImagePath), true, 'storyboard reference upload helper should stay colocated');
+  assert.equal(existsSync(storyboardShotPlanPath), true, 'storyboard shot planner should stay colocated');
+  assert.equal(existsSync(storyboardShotMapPath), true, 'storyboard shot map component should stay colocated');
+  assert.equal(existsSync(storyboardResultPanelPath), true, 'storyboard result panel component should stay colocated');
 
   const routeSource = readFileSync(storyboardRoutePath, 'utf8');
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
   const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
+  const shotPlanSource = readFileSync(storyboardShotPlanPath, 'utf8');
+  const shotMapSource = readFileSync(storyboardShotMapPath, 'utf8');
+  const resultPanelSource = readFileSync(storyboardResultPanelPath, 'utf8');
 
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
@@ -95,6 +104,10 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /runImageGeneration/);
   assert.match(workspaceSource, /source:\s*'storyboard'/);
   assert.match(workspaceSource, /storyboardTier/);
+  assert.match(workspaceSource, /buildStoryboardShotPlan/);
+  assert.match(workspaceSource, /const shotPlan = useMemo/);
+  assert.match(workspaceSource, /shotPlan,/);
+  assert.match(workspaceSource, /StoryboardResultPanel/);
   assert.match(workspaceSource, /AssetDropzone/);
   assert.match(workspaceSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
   assert.match(workspaceSource, /STORYBOARD_REFERENCE_FIELD/);
@@ -114,6 +127,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /Save to Storyboard library/);
   assert.doesNotMatch(workspaceSource, /promptField/);
   assert.match(promptSource, /buildStoryboardPrompt/);
+  assert.match(promptSource, /shotPlan/);
+  assert.match(promptSource, /Panel \$\{shot\.panel\}/);
   assert.match(promptSource, /dialogue/);
   assert.match(promptSource, /Dialogue\/audio direction/);
   assert.match(promptSource, /referenceImageCount/);
@@ -125,6 +140,13 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(referenceImageSource, /prepareImageFileForUpload/);
   assert.match(referenceImageSource, /\/api\/uploads\/image/);
   assert.match(referenceImageSource, /cleanupStoryboardReferenceImage/);
+  assert.match(shotPlanSource, /buildStoryboardShotPlan/);
+  assert.match(shotPlanSource, /StoryboardShotPlan/);
+  assert.match(shotMapSource, /shot\.dialogueBeat/);
+  assert.match(shotMapSource, /shot\.visualPriority/);
+  assert.match(shotMapSource, /Panel/);
+  assert.match(resultPanelSource, /StoryboardShotMap/);
+  assert.match(resultPanelSource, /onApplyEdit/);
 });
 
 test('storyboard prompt carries dialogue as video context without drawing text into the board', async () => {

@@ -1,3 +1,5 @@
+import type { StoryboardShotPlan } from './storyboard-shot-plan';
+
 export type StoryboardStyle = 'realistic' | 'anime' | 'ugc' | 'cinema';
 export type StoryboardTargetModel = 'seedance' | 'kling';
 
@@ -10,6 +12,7 @@ export type StoryboardPromptInput = {
   durationSec: number;
   frameCount: number;
   referenceImageCount?: number;
+  shotPlan?: StoryboardShotPlan;
   editInstruction?: string | null;
 };
 
@@ -43,6 +46,12 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
       : null,
     `Style: ${STYLE_PROMPTS[input.style]}.`,
     targetGuidance,
+    input.shotPlan ? 'Shot map:' : null,
+    ...(input.shotPlan?.shots.map((shot) =>
+      `Panel ${shot.panel}: ${shot.title}. Framing: ${shot.framing}. Beat: ${shot.actionBeat}. Visual priority: ${shot.visualPriority}${
+        shot.dialogueBeat ? `. Dialogue beat: ${shot.dialogueBeat}` : ''
+      }.`
+    ) ?? []),
     editInstruction ? `Edit request: ${editInstruction}.` : null,
     'Make the board immediately usable as an image reference: no UI chrome, no captions, no speech bubbles, no prompt text, no watermark.',
     'Prioritize readable staging, stable subject identity, coherent lighting, and clear start/middle/end motion beats.',
