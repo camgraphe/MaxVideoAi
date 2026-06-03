@@ -93,6 +93,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   const feedSurface: JobFeedSurface =
     options?.surface === 'video' ||
     options?.surface === 'image' ||
+    options?.surface === 'storyboard' ||
     options?.surface === 'audio' ||
     options?.surface === 'character' ||
     options?.surface === 'angle' ||

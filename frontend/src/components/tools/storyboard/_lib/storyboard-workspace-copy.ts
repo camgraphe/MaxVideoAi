@@ -28,6 +28,9 @@ export const DEFAULT_STORYBOARD_COPY = {
   targetLabel: 'Video target',
   targetSeedance: 'Seedance',
   targetKling: 'Kling',
+  targetRecommendedLabel: 'Recommended',
+  recognizablePeopleLabel: 'Recognizable people',
+  recognizablePeopleMeta: 'Use Kling when real or identifiable people are visible in the board.',
   styleLabel: 'Style',
   durationLabel: 'Duration',
   frameCountLabel: 'Frames',
@@ -83,8 +86,9 @@ export const DEFAULT_STORYBOARD_COPY = {
   authSecondary: 'Sign in',
   close: 'Close',
   targetNotes: {
-    seedance: 'Seedance: no real people. Best for product, cooking, film objects, animation and stylized scenes.',
-    kling: 'Kling: use this when the storyboard needs real people or realistic human scenes.',
+    seedance: 'Seedance is recommended for product, cooking, film props, animation, stylized or non-human subjects. Real people are excluded.',
+    kling: 'Kling is recommended when the storyboard shows real, recognizable or realistic human subjects.',
+    klingFallback: 'Kling can still be selected manually, but Seedance is recommended unless the board shows real or recognizable people.',
   },
   styles: {
     realistic: 'Realistic',

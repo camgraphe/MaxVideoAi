@@ -51,7 +51,7 @@ export function buildSurfaceFilterClause(surface: JobsRouteSurface, params: Jobs
         OR settings_snapshot->>'surface' = 'video'
       )
       AND NOT (
-        COALESCE(surface, '') = 'audio'
+        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale')
         OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale')
         OR job_id LIKE 'tool_angle_%'
         OR job_id LIKE 'tool_upscale_%'

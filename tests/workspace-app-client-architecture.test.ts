@@ -32,6 +32,7 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   assert.match(bootstrapSource, /export function useWorkspaceAppBootstrap/);
   assert.match(bootstrapSource, /useEngines/);
   assert.match(bootstrapSource, /useInfiniteJobs\(24, \{ type: 'video' \}\)/);
+  assert.match(bootstrapSource, /job\.surface !== 'storyboard'/);
   assert.match(bootstrapSource, /useRequireAuth\(\{ redirectIfLoggedOut: false \}\)/);
   assert.match(bootstrapSource, /useResultProvider/);
   assert.match(bootstrapSource, /normalizeUiLocale/);

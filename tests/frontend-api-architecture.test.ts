@@ -82,6 +82,7 @@ test('frontend api facade delegates engines, jobs, and media-library helpers', (
   assert.match(enginesApiSource, /export function useEngines/);
   assert.match(enginesApiSource, /loadFallbackEngines/);
   assert.match(jobsApiSource, /export function useInfiniteJobs/);
+  assert.match(jobsApiSource, /options\?\.surface === 'storyboard'/);
   assert.match(jobsApiSource, /export async function hideJob/);
   assert.doesNotMatch(jobsApiSource, /STATUS_RETRY_TIMERS/, 'status retry timers belong in api-job-status.ts');
   assert.match(jobStatusApiSource, /export async function getJobStatus/);

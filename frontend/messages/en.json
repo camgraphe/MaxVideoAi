@@ -3541,11 +3541,13 @@
         "video": "Video history",
         "audio": "Audio history",
         "image": "Image history",
+        "storyboard": "Storyboard history",
         "character": "Character history",
         "angle": "Angle history",
         "videoEmpty": "No video renders yet.",
         "audioEmpty": "No audio renders yet.",
         "imageEmpty": "No image renders yet.",
+        "storyboardEmpty": "No storyboard renders yet.",
         "characterEmpty": "No character renders yet.",
         "angleEmpty": "No angle renders yet."
       },
@@ -4040,6 +4042,9 @@
       "targetLabel": "Video target",
       "targetSeedance": "Seedance",
       "targetKling": "Kling",
+      "targetRecommendedLabel": "Recommended",
+      "recognizablePeopleLabel": "Recognizable people",
+      "recognizablePeopleMeta": "Use Kling when real or identifiable people are visible in the board.",
       "styleLabel": "Style",
       "durationLabel": "Duration",
       "frameCountLabel": "Frames",
@@ -4095,8 +4100,9 @@
       "authSecondary": "Sign in",
       "close": "Close",
       "targetNotes": {
-        "seedance": "Seedance board: product, cooking, film props, animation, stylized or non-human subjects. Real people are excluded.",
-        "kling": "Kling board: use when the storyboard needs real people or realistic human scenes."
+        "seedance": "Seedance is recommended for product, cooking, film props, animation, stylized or non-human subjects. Real people are excluded.",
+        "kling": "Kling is recommended when the storyboard shows real, recognizable or realistic human subjects.",
+        "klingFallback": "Kling can still be selected manually, but Seedance is recommended unless the board shows real or recognizable people."
       },
       "styles": {
         "realistic": "Realistic",

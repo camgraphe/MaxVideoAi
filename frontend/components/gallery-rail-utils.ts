@@ -169,5 +169,13 @@ export function resolveMediaUrl(group: GroupSummary, preferImage: boolean): stri
 
 export function filterGalleryFeedJobs(feedType: GalleryFeedType, jobs: Job[]): Job[] {
   if (feedType !== 'video') return jobs;
-  return jobs.filter((job) => job.surface !== 'audio');
+  return jobs.filter(
+    (job) =>
+      job.surface !== 'audio' &&
+      job.surface !== 'image' &&
+      job.surface !== 'storyboard' &&
+      job.surface !== 'character' &&
+      job.surface !== 'angle' &&
+      job.surface !== 'upscale'
+  );
 }

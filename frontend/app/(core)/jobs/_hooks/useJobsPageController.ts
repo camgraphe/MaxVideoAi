@@ -48,6 +48,14 @@ export function useJobsPageController() {
     mutate: mutateAudio,
   } = useInfiniteJobs(JOBS_PAGE_SIZE, { surface: 'audio' });
   const {
+    data: storyboardData,
+    error: storyboardError,
+    isLoading: storyboardIsLoading,
+    setSize: setStoryboardSize,
+    isValidating: storyboardIsValidating,
+    mutate: mutateStoryboard,
+  } = useInfiniteJobs(JOBS_PAGE_SIZE, { surface: 'storyboard' });
+  const {
     data: characterData,
     error: characterError,
     isLoading: characterIsLoading,
@@ -76,18 +84,21 @@ export function useJobsPageController() {
   const videoPages = videoData ?? [];
   const audioPages = audioData ?? [];
   const imagePages = imageData ?? [];
+  const storyboardPages = storyboardData ?? [];
   const characterPages = characterData ?? [];
   const anglePages = angleData ?? [];
   const upscalePages = upscaleData ?? [];
   const videoJobs = videoPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'video');
   const audioJobs = audioPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'audio');
   const imageJobs = imagePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'image');
+  const storyboardJobs = storyboardPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'storyboard');
   const characterJobs = characterPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'character');
   const angleJobs = anglePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'angle');
   const upscaleJobs = upscalePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'upscale');
   const videoHasMore = videoPages.length > 0 && videoPages[videoPages.length - 1].nextCursor !== null;
   const audioHasMore = audioPages.length > 0 && audioPages[audioPages.length - 1].nextCursor !== null;
   const imageHasMore = imagePages.length > 0 && imagePages[imagePages.length - 1].nextCursor !== null;
+  const storyboardHasMore = storyboardPages.length > 0 && storyboardPages[storyboardPages.length - 1].nextCursor !== null;
   const characterHasMore = characterPages.length > 0 && characterPages[characterPages.length - 1].nextCursor !== null;
   const angleHasMore = anglePages.length > 0 && anglePages[anglePages.length - 1].nextCursor !== null;
   const upscaleHasMore = upscalePages.length > 0 && upscalePages[upscalePages.length - 1].nextCursor !== null;
@@ -99,6 +110,10 @@ export function useJobsPageController() {
   const { groups: apiImageGroups } = useMemo(
     () => groupJobsIntoSummaries(imageJobs, { includeSinglesAsGroups: true }),
     [imageJobs]
+  );
+  const { groups: apiStoryboardGroups } = useMemo(
+    () => groupJobsIntoSummaries(storyboardJobs, { includeSinglesAsGroups: true }),
+    [storyboardJobs]
   );
   const { groups: apiAudioGroups } = useMemo(
     () => groupJobsIntoSummaries(audioJobs, { includeSinglesAsGroups: true }),
@@ -123,13 +138,14 @@ export function useJobsPageController() {
       void mutateVideo();
       void mutateAudio();
       void mutateImage();
+      void mutateStoryboard();
       void mutateCharacter();
       void mutateAngle();
       void mutateUpscale();
     };
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
-  }, [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateUpscale, mutateVideo]);
+  }, [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateStoryboard, mutateUpscale, mutateVideo]);
 
   const groupedVideoJobs = useMemo(
     () => [...apiVideoGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
@@ -142,6 +158,10 @@ export function useJobsPageController() {
   const groupedImageJobs = useMemo(
     () => [...apiImageGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [apiImageGroups]
+  );
+  const groupedStoryboardJobs = useMemo(
+    () => [...apiStoryboardGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiStoryboardGroups]
   );
   const groupedCharacterJobs = useMemo(
     () => [...apiCharacterGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
@@ -157,10 +177,24 @@ export function useJobsPageController() {
   );
   const groupedJobs = useMemo(
     () =>
-      [...groupedVideoJobs, ...groupedAudioJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs, ...groupedUpscaleJobs].sort(
-        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
-      ),
-    [groupedAngleJobs, groupedAudioJobs, groupedCharacterJobs, groupedImageJobs, groupedUpscaleJobs, groupedVideoJobs]
+      [
+        ...groupedVideoJobs,
+        ...groupedAudioJobs,
+        ...groupedImageJobs,
+        ...groupedStoryboardJobs,
+        ...groupedCharacterJobs,
+        ...groupedAngleJobs,
+        ...groupedUpscaleJobs,
+      ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [
+      groupedAngleJobs,
+      groupedAudioJobs,
+      groupedCharacterJobs,
+      groupedImageJobs,
+      groupedStoryboardJobs,
+      groupedUpscaleJobs,
+      groupedVideoJobs,
+    ]
   );
 
   const engineLookupById = useMemo(() => {
@@ -182,6 +216,7 @@ export function useJobsPageController() {
     video: true,
     audio: true,
     image: true,
+    storyboard: true,
     character: true,
     angle: true,
     upscale: true,
@@ -196,6 +231,7 @@ export function useJobsPageController() {
   const videoGroups = useMemo(() => normalizeGroupSummaries(groupedVideoJobs), [groupedVideoJobs]);
   const audioGroups = useMemo(() => normalizeGroupSummaries(groupedAudioJobs), [groupedAudioJobs]);
   const imageGroups = useMemo(() => normalizeGroupSummaries(groupedImageJobs), [groupedImageJobs]);
+  const storyboardGroups = useMemo(() => normalizeGroupSummaries(groupedStoryboardJobs), [groupedStoryboardJobs]);
   const characterGroups = useMemo(() => normalizeGroupSummaries(groupedCharacterJobs), [groupedCharacterJobs]);
   const angleGroups = useMemo(() => normalizeGroupSummaries(groupedAngleJobs), [groupedAngleJobs]);
   const upscaleGroups = useMemo(() => normalizeGroupSummaries(groupedUpscaleJobs), [groupedUpscaleJobs]);
@@ -204,11 +240,12 @@ export function useJobsPageController() {
     videoGroups.forEach((group) => map.set(group.id, group));
     audioGroups.forEach((group) => map.set(group.id, group));
     imageGroups.forEach((group) => map.set(group.id, group));
+    storyboardGroups.forEach((group) => map.set(group.id, group));
     characterGroups.forEach((group) => map.set(group.id, group));
     angleGroups.forEach((group) => map.set(group.id, group));
     upscaleGroups.forEach((group) => map.set(group.id, group));
     return map;
-  }, [angleGroups, audioGroups, characterGroups, imageGroups, upscaleGroups, videoGroups]);
+  }, [angleGroups, audioGroups, characterGroups, imageGroups, storyboardGroups, upscaleGroups, videoGroups]);
   const hasCuratedVideo = useMemo(
     () => videoGroups.some((group) => Boolean(group.hero.job?.curated)),
     [videoGroups]
@@ -248,6 +285,7 @@ export function useJobsPageController() {
           mutateVideo((pages) => removeFromPages(pages), false),
           mutateAudio((pages) => removeFromPages(pages), false),
           mutateImage((pages) => removeFromPages(pages), false),
+          mutateStoryboard((pages) => removeFromPages(pages), false),
           mutateCharacter((pages) => removeFromPages(pages), false),
           mutateAngle((pages) => removeFromPages(pages), false),
           mutateUpscale((pages) => removeFromPages(pages), false),
@@ -256,7 +294,7 @@ export function useJobsPageController() {
         console.error('Failed to hide job', error);
       }
     },
-    [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateUpscale, mutateVideo, summaryMap]
+    [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateStoryboard, mutateUpscale, mutateVideo, summaryMap]
   );
 
   const allowRemove = useCallback(
@@ -275,6 +313,7 @@ export function useJobsPageController() {
       console.warn('No media available to save for group', group.id);
       return;
     }
+    const groupSurface = group.hero.job ? resolveClientJobSurface(group.hero.job) : null;
     setSavingImageGroupIds((prev) => {
       const next = new Set(prev);
       next.add(group.id);
@@ -286,7 +325,7 @@ export function useJobsPageController() {
         kind: payload.kind,
         jobId: payload.jobId ?? group.id,
         label: payload.label ?? undefined,
-        source: 'generated',
+        source: groupSurface === 'storyboard' ? 'storyboard' : 'generated',
         thumbUrl: payload.thumbUrl ?? null,
         previewUrl: payload.previewUrl ?? null,
       });
@@ -392,6 +431,21 @@ export function useJobsPageController() {
         void mutateImage();
       },
       onLoadMore: () => setImageSize((prev) => prev + 1),
+    },
+    {
+      key: 'storyboard',
+      title: copy.sections.storyboard,
+      empty: copy.sections.storyboardEmpty,
+      groups: storyboardGroups,
+      hasMore: storyboardHasMore,
+      isInitialLoading: storyboardIsLoading && storyboardJobs.length === 0 && storyboardGroups.length === 0,
+      isValidating: storyboardIsValidating,
+      error: storyboardError,
+      forceImageGroup: true,
+      onRetry: () => {
+        void mutateStoryboard();
+      },
+      onLoadMore: () => setStoryboardSize((prev) => prev + 1),
     },
     {
       key: 'character',

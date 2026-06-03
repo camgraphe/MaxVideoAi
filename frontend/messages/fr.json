@@ -3464,11 +3464,13 @@
         "video": "Historique vidéo",
         "audio": "Historique audio",
         "image": "Historique image",
+        "storyboard": "Historique storyboard",
         "character": "Historique personnage",
         "angle": "Historique angle",
         "videoEmpty": "Aucun rendu vidéo pour le moment.",
         "audioEmpty": "Aucun rendu audio pour le moment.",
         "imageEmpty": "Aucun rendu image pour le moment.",
+        "storyboardEmpty": "Aucun storyboard pour le moment.",
         "characterEmpty": "Aucun rendu personnage pour le moment.",
         "angleEmpty": "Aucun rendu angle pour le moment."
       },
@@ -4075,6 +4077,9 @@
       "targetLabel": "Cible vidéo",
       "targetSeedance": "Seedance",
       "targetKling": "Kling",
+      "targetRecommendedLabel": "Recommandé",
+      "recognizablePeopleLabel": "Personnes reconnaissables",
+      "recognizablePeopleMeta": "Utilise Kling quand des personnes réelles ou identifiables sont visibles dans la planche.",
       "styleLabel": "Style",
       "durationLabel": "Durée",
       "frameCountLabel": "Frames",
@@ -4130,8 +4135,9 @@
       "authSecondary": "Se connecter",
       "close": "Fermer",
       "targetNotes": {
-        "seedance": "Planche Seedance : produit, cuisine, accessoires film, animation, sujets stylisés ou non humains. Les personnes réelles sont exclues.",
-        "kling": "Planche Kling : à utiliser quand le storyboard nécessite des personnes réelles ou des scènes humaines réalistes."
+        "seedance": "Seedance est recommandé pour produit, cuisine, accessoires film, animation, sujets stylisés ou non humains. Les personnes réelles sont exclues.",
+        "kling": "Kling est recommandé quand la planche montre des personnes réelles, reconnaissables ou des sujets humains réalistes.",
+        "klingFallback": "Kling peut rester sélectionné manuellement, mais Seedance est recommandé sauf si la planche montre des personnes réelles ou reconnaissables."
       },
       "styles": {
         "realistic": "Réaliste",

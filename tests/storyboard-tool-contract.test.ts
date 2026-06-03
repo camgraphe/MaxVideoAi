@@ -18,6 +18,7 @@ const storyboardRoutePath = join(root, 'frontend/app/(core)/(workspace)/app/tool
 const storyboardWorkspacePath = join(root, 'frontend/src/components/tools/StoryboardWorkspace.tsx');
 const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-copy.ts');
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
+const storyboardTargetPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
 const storyboardReferenceImagePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-image.ts');
 const storyboardShotPlanPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-shot-plan.ts');
 const storyboardReferenceLibraryPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-library.ts');
@@ -94,6 +95,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(storyboardWorkspacePath), true, 'storyboard workspace should be a dedicated app tool');
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
+  assert.equal(existsSync(storyboardTargetPath), true, 'storyboard target recommendation rules should stay colocated');
   assert.equal(existsSync(storyboardReferenceImagePath), true, 'storyboard reference upload helper should stay colocated');
   assert.equal(existsSync(storyboardReferenceLibraryPath), true, 'storyboard reference library helpers should stay colocated');
   assert.equal(existsSync(storyboardTemplatesPath), true, 'storyboard template helpers should stay colocated');
@@ -114,6 +116,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
+  const targetSource = readFileSync(storyboardTargetPath, 'utf8');
   const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
   const referenceLibrarySource = readFileSync(storyboardReferenceLibraryPath, 'utf8');
   const templatesSource = readFileSync(storyboardTemplatesPath, 'utf8');
@@ -146,6 +149,10 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /STORYBOARD_ORIENTATION_OPTIONS/);
   assert.match(workspaceSource, /STORYBOARD_TEMPLATE_SIZES/);
   assert.match(workspaceSource, /STORYBOARD_TIER_OPTIONS/);
+  assert.match(workspaceSource, /recognizablePeople/);
+  assert.match(workspaceSource, /resolveStoryboardRecommendedTarget/);
+  assert.match(workspaceSource, /copy\.targetRecommendedLabel/);
+  assert.match(workspaceSource, /copy\.recognizablePeopleLabel/);
   assert.match(workspaceSource, /getTierLabel/);
   assert.doesNotMatch(workspaceSource, /getTierMeta/);
   assert.match(workspaceSource, /getStoryboardOutputConfig/);
@@ -223,6 +230,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(promptSource, /Kling/);
   assert.match(promptSource, /real people/);
   assert.match(promptSource, /durationSec/);
+  assert.match(targetSource, /resolveStoryboardRecommendedTarget/);
+  assert.match(targetSource, /isStoryboardTargetRecommended/);
   assert.match(referenceImageSource, /prepareImageFileForUpload/);
   assert.match(referenceImageSource, /\/api\/uploads\/image/);
   assert.match(referenceImageSource, /cleanupStoryboardReferenceImage/);
@@ -273,6 +282,17 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(recentRailSource, /onSelect\(output\)/);
   assert.match(referenceLibraryModalSource, /ImageLibraryModal/);
   assert.match(referenceLibraryModalSource, /STORYBOARD_REFERENCE_SUPPORTED_FORMATS/);
+});
+
+test('storyboard target recommendation prefers Seedance unless recognizable people are visible', async () => {
+  const module = await import('../frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
+
+  assert.equal(module.resolveStoryboardRecommendedTarget(false), 'seedance');
+  assert.equal(module.resolveStoryboardRecommendedTarget(true), 'kling');
+  assert.equal(module.isStoryboardTargetRecommended('seedance', false), true);
+  assert.equal(module.isStoryboardTargetRecommended('kling', false), false);
+  assert.equal(module.isStoryboardTargetRecommended('seedance', true), false);
+  assert.equal(module.isStoryboardTargetRecommended('kling', true), true);
 });
 
 test('storyboard prompt carries dialogue into metadata rows without drawing thumbnail captions', async () => {

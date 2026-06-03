@@ -54,7 +54,16 @@ export function useWorkspaceAppBootstrap() {
     return map;
   }, [engines]);
   const recentJobs = useMemo(
-    () => (latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? []).filter((job) => job.surface !== 'audio'),
+    () =>
+      (latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? []).filter(
+        (job) =>
+          job.surface !== 'audio' &&
+          job.surface !== 'image' &&
+          job.surface !== 'storyboard' &&
+          job.surface !== 'character' &&
+          job.surface !== 'angle' &&
+          job.surface !== 'upscale'
+      ),
     [latestJobsPages]
   );
   const formatTakeLabel = useCallback(

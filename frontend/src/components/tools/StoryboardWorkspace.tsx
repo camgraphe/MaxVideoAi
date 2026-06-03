@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Camera, Clapperboard, Film, ImagePlus, Loader2, Sparkles, Smartphone } from 'lucide-react';
+import { ArrowLeft, Camera, Clapperboard, Film, ImagePlus, Loader2, Sparkles, Smartphone, UserRound } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AssetDropzone, type AssetSlotAttachment } from '@/components/AssetDropzone';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -46,6 +46,7 @@ import {
   type StoryboardLibraryModalState,
 } from './storyboard/_lib/storyboard-reference-library';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
+import { isStoryboardTargetRecommended, resolveStoryboardRecommendedTarget } from './storyboard/_lib/storyboard-target';
 import {
   STORYBOARD_LENGTH_PRESETS,
   STORYBOARD_ORIENTATION_OPTIONS,
@@ -131,6 +132,7 @@ export default function StoryboardWorkspace() {
   const [visualNotes, setVisualNotes] = useState('');
   const [activeOptionalField, setActiveOptionalField] = useState<StoryboardOptionalField | null>(null);
   const [targetModel, setTargetModel] = useState<StoryboardTargetModel>('seedance');
+  const [recognizablePeople, setRecognizablePeople] = useState(false);
   const [style, setStyle] = useState<StoryboardStyle>('cinema');
   const [lengthPresetId, setLengthPresetId] = useState<StoryboardLengthPresetId>('medium');
   const [storyboardOrientation, setStoryboardOrientation] = useState<StoryboardOrientation>('landscape');
@@ -216,6 +218,10 @@ export default function StoryboardWorkspace() {
   }, []);
 
   const lengthPreset = useMemo(() => getStoryboardLengthPreset(lengthPresetId), [lengthPresetId]);
+  const recommendedTarget = useMemo(
+    () => resolveStoryboardRecommendedTarget(recognizablePeople),
+    [recognizablePeople]
+  );
   const durationSec = lengthPreset.durationSec;
   const frameCount = lengthPreset.frameCount;
   const storyboardTemplateSize = STORYBOARD_TEMPLATE_SIZES[storyboardOrientation];
@@ -337,6 +343,12 @@ export default function StoryboardWorkspace() {
   );
   const canRun = Boolean(subject.trim()) && !running && !referenceUploading;
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
+
+  function handleRecognizablePeopleToggle() {
+    const next = !recognizablePeople;
+    setRecognizablePeople(next);
+    setTargetModel(resolveStoryboardRecommendedTarget(next));
+  }
 
   async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
     if (!user) {
@@ -709,16 +721,61 @@ export default function StoryboardWorkspace() {
                           <ChoiceButton
                             key={option}
                             active={targetModel === option}
-                            className="justify-start px-4"
+                            className="justify-between px-3"
                             onClick={() => setTargetModel(option)}
                           >
-                            {option === 'seedance' ? <Film className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
-                            <span>{option === 'seedance' ? copy.targetSeedance : copy.targetKling}</span>
+                            <span className="inline-flex min-w-0 items-center gap-2">
+                              {option === 'seedance' ? <Film className="h-4 w-4 shrink-0" /> : <Camera className="h-4 w-4 shrink-0" />}
+                              <span className="truncate">{option === 'seedance' ? copy.targetSeedance : copy.targetKling}</span>
+                            </span>
+                            {isStoryboardTargetRecommended(option, recognizablePeople) ? (
+                              <span
+                                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro ${
+                                  targetModel === option ? 'bg-on-inverse/15 text-on-inverse' : 'bg-surface-2 text-text-secondary'
+                                }`}
+                              >
+                                {copy.targetRecommendedLabel}
+                              </span>
+                            ) : null}
                           </ChoiceButton>
                         ))}
                       </div>
+                      <button
+                        type="button"
+                        aria-pressed={recognizablePeople}
+                        onClick={handleRecognizablePeopleToggle}
+                        className={`flex min-h-[38px] w-full items-center justify-between gap-3 rounded-[10px] border px-3 py-2 text-left text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+                          recognizablePeople
+                            ? 'border-text-primary bg-bg text-text-primary'
+                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
+                        }`}
+                      >
+                        <span className="inline-flex min-w-0 items-center gap-2">
+                          <UserRound className="h-4 w-4 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold">{copy.recognizablePeopleLabel}</span>
+                            <span className="mt-0.5 block leading-4 text-text-secondary">{copy.recognizablePeopleMeta}</span>
+                          </span>
+                        </span>
+                        <span
+                          className={`h-5 w-9 shrink-0 rounded-full border p-0.5 transition ${
+                            recognizablePeople ? 'border-text-primary bg-text-primary' : 'border-border bg-surface-2'
+                          }`}
+                          aria-hidden="true"
+                        >
+                          <span
+                            className={`block h-4 w-4 rounded-full bg-surface shadow-sm transition ${
+                              recognizablePeople ? 'translate-x-4' : 'translate-x-0'
+                            }`}
+                          />
+                        </span>
+                      </button>
                       <p className="text-xs leading-5 text-text-secondary">
-                        {targetModel === 'seedance' ? copy.targetNotes.seedance : copy.targetNotes.kling}
+                        {targetModel === 'seedance'
+                          ? copy.targetNotes.seedance
+                          : targetModel === recommendedTarget
+                            ? copy.targetNotes.kling
+                            : copy.targetNotes.klingFallback}
                       </p>
                     </div>
                   </BuilderStep>
