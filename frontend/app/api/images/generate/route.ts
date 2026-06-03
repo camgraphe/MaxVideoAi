@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import { isStoryboardBillingSource } from '@/lib/storyboard-pricing';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { executeImageGeneration, ImageGenerationExecutionError } from '@/server/images/execute-image-generation';
 import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const jobSurface = body?.source === 'storyboard' ? 'storyboard' : 'image';
+    const jobSurface = isStoryboardBillingSource(body?.source) ? 'storyboard' : 'image';
     const result = await executeImageGeneration({
       userId,
       body,

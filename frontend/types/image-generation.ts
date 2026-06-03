@@ -37,7 +37,7 @@ export interface ImageGenerationRequest {
   watermark?: boolean;
   engineId?: string;
   membershipTier?: string;
-  source?: 'storyboard';
+  source?: 'storyboard' | 'storyboard_edit';
   jobId?: string;
   aspectRatio?: string;
   resolution?: string;

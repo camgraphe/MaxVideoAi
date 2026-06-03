@@ -6,6 +6,7 @@ import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
 import { computeMarketingPricePoints, computeMarketingPriceRange } from '../frontend/src/lib/pricing-marketing.ts';
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { resolveGptImage2AutoInputImageSize } from '../frontend/lib/image/gptImage2.ts';
+import { getStoryboardOutputConfig } from '../frontend/src/components/tools/storyboard/_lib/storyboard-templates.ts';
 
 test('GPT Image 2 pricing responds to Fal quality and image_size', async () => {
   const engine = listFalEngines().find((entry) => entry.id === 'gpt-image-2')?.engine;
@@ -167,6 +168,11 @@ test('GPT Image 2 storyboard estimates charge exactly 3x provider cost', async (
       meta?: {
         pricing_model?: string;
         source?: string;
+        engineId?: string;
+        engineLabel?: string;
+        billingEngineId?: string;
+        billingEngineLabel?: string;
+        billingProductLabel?: string;
         storyboard_multiplier?: number;
         storyboard_tier?: string;
       };
@@ -181,10 +187,212 @@ test('GPT Image 2 storyboard estimates charge exactly 3x provider cost', async (
   assert.equal(payload.pricing?.totalCents, 12);
   assert.equal(payload.pricing?.platformFeeCents, 8);
   assert.equal(payload.pricing?.vendorShareCents, 4);
-  assert.equal(payload.pricing?.meta?.pricing_model, 'storyboard_gpt_image_2_x3');
+  assert.equal(payload.pricing?.meta?.pricing_model, 'storyboarder_x3');
   assert.equal(payload.pricing?.meta?.source, 'storyboard');
+  assert.equal(payload.pricing?.meta?.engineId, 'storyboarder');
+  assert.equal(payload.pricing?.meta?.engineLabel, 'Storyboarder');
+  assert.equal(payload.pricing?.meta?.billingEngineId, 'storyboarder');
+  assert.equal(payload.pricing?.meta?.billingEngineLabel, 'Storyboarder');
+  assert.equal(payload.pricing?.meta?.billingProductLabel, 'Storyboarder');
   assert.equal(payload.pricing?.meta?.storyboard_multiplier, 3);
-  assert.equal(payload.pricing?.meta?.storyboard_tier, 'normal');
+  assert.equal(payload.pricing?.meta?.storyboard_tier, 'hd');
+});
+
+test('GPT Image 2 storyboard edit estimates charge exactly 2x provider cost', async () => {
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 1600, height: 1000 }],
+        resolution: '1024x768',
+        quality: 'medium',
+        source: 'storyboard_edit',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      margin: { amountCents: number; percentApplied?: number };
+      platformFeeCents: number;
+      vendorShareCents: number;
+      meta?: {
+        pricing_model?: string;
+        source?: string;
+        engineId?: string;
+        engineLabel?: string;
+        billingEngineId?: string;
+        billingEngineLabel?: string;
+        billingProductLabel?: string;
+        storyboard_edit_multiplier?: number;
+      };
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pricing?.base.amountCents, 4);
+  assert.equal(payload.pricing?.margin.amountCents, 4);
+  assert.equal(payload.pricing?.margin.percentApplied, 1);
+  assert.equal(payload.pricing?.totalCents, 8);
+  assert.equal(payload.pricing?.platformFeeCents, 4);
+  assert.equal(payload.pricing?.vendorShareCents, 4);
+  assert.equal(payload.pricing?.meta?.pricing_model, 'storyboarder_edit_x2');
+  assert.equal(payload.pricing?.meta?.source, 'storyboard_edit');
+  assert.equal(payload.pricing?.meta?.engineId, 'storyboarder');
+  assert.equal(payload.pricing?.meta?.engineLabel, 'Storyboarder');
+  assert.equal(payload.pricing?.meta?.billingEngineId, 'storyboarder');
+  assert.equal(payload.pricing?.meta?.billingEngineLabel, 'Storyboarder');
+  assert.equal(payload.pricing?.meta?.billingProductLabel, 'Storyboarder edit');
+  assert.equal(payload.pricing?.meta?.storyboard_edit_multiplier, 2);
+});
+
+test('GPT Image 2 storyboard edit auto pricing follows the selected storyboard dimensions', async () => {
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 3840, height: 2160 }],
+        resolution: 'auto',
+        quality: 'medium',
+        source: 'storyboard_edit',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      margin: { amountCents: number; percentApplied?: number };
+      meta?: {
+        billed_image_size?: string;
+        requested_image_width?: number;
+        requested_image_height?: number;
+        source?: string;
+        storyboard_edit_multiplier?: number;
+      };
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pricing?.base.amountCents, 11);
+  assert.equal(payload.pricing?.margin.amountCents, 11);
+  assert.equal(payload.pricing?.margin.percentApplied, 1);
+  assert.equal(payload.pricing?.totalCents, 22);
+  assert.equal(payload.pricing?.meta?.billed_image_size, '3840x2160');
+  assert.equal(payload.pricing?.meta?.requested_image_width, 3840);
+  assert.equal(payload.pricing?.meta?.requested_image_height, 2160);
+  assert.equal(payload.pricing?.meta?.source, 'storyboard_edit');
+  assert.equal(payload.pricing?.meta?.storyboard_edit_multiplier, 2);
+});
+
+test('GPT Image 2 storyboard portrait HD estimate uses a valid 9:16 custom size', async () => {
+  const portraitHd = getStoryboardOutputConfig('hd', 'portrait');
+  assert.equal(portraitHd.resolution, 'custom');
+  assert.deepEqual(portraitHd.customImageSize, { width: 1152, height: 2048 });
+
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 1000, height: 1600 }],
+        resolution: portraitHd.resolution,
+        customImageSize: portraitHd.customImageSize,
+        quality: portraitHd.quality,
+        source: 'storyboard',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      margin: { amountCents: number; percentApplied?: number };
+      meta?: {
+        requested_image_width?: number;
+        requested_image_height?: number;
+        storyboard_tier?: string;
+      };
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pricing?.base.amountCents, 4);
+  assert.equal(payload.pricing?.margin.amountCents, 8);
+  assert.equal(payload.pricing?.totalCents, 12);
+  assert.equal(payload.pricing?.margin.percentApplied, 2);
+  assert.equal(payload.pricing?.meta?.requested_image_width, 1152);
+  assert.equal(payload.pricing?.meta?.requested_image_height, 2048);
+  assert.equal(payload.pricing?.meta?.storyboard_tier, 'hd');
+});
+
+test('GPT Image 2 storyboard 4K medium tier is cheaper than 4K ultra', async () => {
+  const fourK = getStoryboardOutputConfig('4k', 'landscape');
+  const ultra = getStoryboardOutputConfig('ultra', 'landscape');
+  assert.deepEqual(fourK, { resolution: '3840x2160', customImageSize: null, quality: 'medium' });
+  assert.deepEqual(ultra, { resolution: '3840x2160', customImageSize: null, quality: 'high' });
+
+  const fourKResponse = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 1600, height: 1000 }],
+        resolution: fourK.resolution,
+        quality: fourK.quality,
+        source: 'storyboard',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const ultraResponse = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 1600, height: 1000 }],
+        resolution: ultra.resolution,
+        quality: ultra.quality,
+        source: 'storyboard',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const fourKPayload = (await fourKResponse.json()) as {
+    pricing?: { totalCents: number; base: { amountCents: number }; meta?: { storyboard_tier?: string } };
+  };
+  const ultraPayload = (await ultraResponse.json()) as {
+    pricing?: { totalCents: number; base: { amountCents: number }; meta?: { storyboard_tier?: string } };
+  };
+
+  assert.equal(fourKPayload.pricing?.base.amountCents, 11);
+  assert.equal(fourKPayload.pricing?.totalCents, 33);
+  assert.equal(fourKPayload.pricing?.meta?.storyboard_tier, '4k');
+  assert.equal(ultraPayload.pricing?.base.amountCents, 41);
+  assert.equal(ultraPayload.pricing?.totalCents, 123);
+  assert.equal(ultraPayload.pricing?.meta?.storyboard_tier, 'ultra');
 });
 
 test('GPT Image 2 auto edit pricing can follow reference image dimensions', async () => {

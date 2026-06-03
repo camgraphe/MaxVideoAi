@@ -75,13 +75,14 @@ test('adds target, style, and reference guidance', () => {
   assert.match(plan.shots[3]?.visualPriority ?? '', /reference/i);
 });
 
-test('prompt includes shot map guidance while keeping dialogue out of the drawn board', () => {
+test('prompt includes shot map guidance and panel metadata rows', () => {
   const shotPlan = buildStoryboardShotPlan({
     subject: 'Founder in a product demo',
     action: 'Show the product and react',
     dialogue: 'Founder: This is ready for launch.',
     style: 'ugc',
     targetModel: 'kling',
+    orientation: 'landscape',
     durationSec: 10,
     frameCount: 4,
   });
@@ -89,14 +90,25 @@ test('prompt includes shot map guidance while keeping dialogue out of the drawn 
     subject: 'Founder in a product demo',
     action: 'Show the product and react',
     dialogue: 'Founder: This is ready for launch.',
+    visualNotes: 'Keep the office background bright and avoid text overlays.',
     style: 'ugc',
     targetModel: 'kling',
+    orientation: 'landscape',
     durationSec: 10,
     frameCount: 4,
+    templateReference: true,
     shotPlan,
   });
 
   assert.match(prompt, /Shot map:/);
   assert.match(prompt, /Panel 1:/);
-  assert.match(prompt, /Do not draw dialogue text/);
+  assert.match(prompt, /Landscape 16:9/);
+  assert.match(prompt, /blank landscape storyboard structure template/);
+  assert.match(prompt, /metadata rows below each thumbnail/);
+  assert.match(prompt, /Under every thumbnail, fill exactly these metadata rows/);
+  assert.match(prompt, /Shot type, Camera, Action, Dialogue/);
+  assert.match(prompt, /Metadata rows: Shot type:/);
+  assert.match(prompt, /Dialogue: Founder: This is ready for launch/);
+  assert.match(prompt, /Scene notes and constraints/);
+  assert.match(prompt, /no captions inside thumbnails/);
 });

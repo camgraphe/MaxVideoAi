@@ -132,13 +132,17 @@ function classify(status: number | null, code: string | null, message: string): 
 
 export function classifyGoogleVertexVeoError(error: unknown): NormalizedProviderError {
   if (error instanceof GoogleVertexVeoError) {
+    const rawCode = extractCode(error.raw);
+    const code = error.code ?? rawCode;
+    const message = extractMessage(error, error.raw);
+    const errorClass = error.errorClass === 'unknown' ? classify(error.status, code, message) : error.errorClass;
     return {
       provider: GOOGLE_VERTEX_VEO_PROVIDER,
-      message: error.message,
+      message,
       status: error.status,
-      code: error.code,
-      errorClass: error.errorClass,
-      fallbackEligible: isGoogleVertexVeoSubmitFallbackSafe(error.errorClass, error.status),
+      code,
+      errorClass,
+      fallbackEligible: isGoogleVertexVeoSubmitFallbackSafe(errorClass, error.status),
       raw: error.raw,
     };
   }
@@ -179,4 +183,3 @@ export function shouldFallbackFromGoogleVertexVeoSubmit(params: {
   const normalized = classifyGoogleVertexVeoError(params.error);
   return isGoogleVertexVeoSubmitFallbackSafe(normalized.errorClass, normalized.status);
 }
-

@@ -18,6 +18,7 @@ type AssetDropzoneSlotProps = {
   asset: AssetSlotAttachment | null;
   assetCopy: AssetDropzoneCopy;
   canOpenLibrary: boolean;
+  compactDensity: boolean;
   compactCollectionLayout: boolean;
   disabled: boolean;
   disabledReason: string | null;
@@ -45,6 +46,7 @@ export function AssetDropzoneSlot({
   asset,
   assetCopy,
   canOpenLibrary,
+  compactDensity,
   compactCollectionLayout,
   disabled,
   disabledReason,
@@ -130,15 +132,23 @@ export function AssetDropzoneSlot({
         pickerOpen ? 'z-30 overflow-visible' : 'overflow-hidden',
         compactCollectionLayout
           ? isCollectionAddTile
-            ? 'col-span-full min-h-[72px] rounded-[16px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]'
+            ? compactDensity
+              ? 'col-span-full min-h-[48px] rounded-[12px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]'
+              : 'col-span-full min-h-[72px] rounded-[16px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]'
             : 'min-h-0 rounded-none border-0 bg-transparent p-0'
           : filledSingleSlot
           ? fullBleedSingleAsset
             ? 'min-h-[260px] h-full rounded-none border-0 bg-transparent'
-            : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
+            : compactDensity
+              ? 'min-h-[144px] rounded-[14px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
+              : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
           : flattenSlotSurface
-            ? 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
-            : 'h-40 rounded-[18px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]',
+            ? compactDensity
+              ? 'min-h-[54px] rounded-[12px] border-0 bg-transparent'
+              : 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
+            : compactDensity
+              ? 'h-24 rounded-[12px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]'
+              : 'h-40 rounded-[18px] border border-border/60 bg-surface/80 dark:border-white/[0.09] dark:bg-white/[0.045]',
         allowClick
           ? isCompactCollectionAsset
             ? 'cursor-pointer'

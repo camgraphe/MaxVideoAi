@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
-import { applyStoryboardPricing, resolveStoryboardTier, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
+import {
+  applyStoryboardEditPricing,
+  applyStoryboardPricing,
+  resolveStoryboardTier,
+  STORYBOARD_EDIT_SOURCE,
+  STORYBOARD_SOURCE,
+} from '@/lib/storyboard-pricing';
 import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
 import {
   parseGptImage2SizeKey,
@@ -106,16 +112,19 @@ export async function POST(req: NextRequest) {
           ? { enable_web_search: true }
           : undefined,
     });
-    const finalPricing =
-      engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_SOURCE
-        ? applyStoryboardPricing(
-            pricing,
-            resolveStoryboardTier({
-              resolution: resolutionResult.resolution,
-              quality: body?.quality,
-            })
-          )
-        : pricing;
+    let finalPricing = pricing;
+    if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_SOURCE) {
+      finalPricing = applyStoryboardPricing(
+        pricing,
+        resolveStoryboardTier({
+          customImageSize,
+          resolution: resolutionResult.resolution,
+          quality: body?.quality,
+        })
+      );
+    } else if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_EDIT_SOURCE) {
+      finalPricing = applyStoryboardEditPricing(pricing);
+    }
 
     return NextResponse.json({ ok: true, pricing: finalPricing });
   } catch (error) {

@@ -402,6 +402,39 @@ test('Google Vertex Veo Extend maps a staged source MP4 to a fixed 7 second dire
 });
 
 test('Google Vertex Veo fallback classification is submit-only and safe before operation acceptance', () => {
+  const googleHttpNotFound = classifyGoogleVertexVeoError(
+    new GoogleVertexVeoError('Google Vertex Veo request failed.', {
+      status: 404,
+      raw: {
+        error: {
+          code: 404,
+          status: 'NOT_FOUND',
+          message: 'Publisher Model was not found.',
+        },
+      },
+    })
+  );
+  assert.equal(googleHttpNotFound.errorClass, 'provider_error');
+  assert.equal(googleHttpNotFound.code, 'NOT_FOUND');
+  assert.equal(googleHttpNotFound.fallbackEligible, false);
+  assert.match(googleHttpNotFound.message, /Publisher Model/);
+
+  const googleHttpUnavailable = classifyGoogleVertexVeoError(
+    new GoogleVertexVeoError('Google Vertex Veo request failed.', {
+      status: 503,
+      raw: {
+        error: {
+          code: 503,
+          status: 'UNAVAILABLE',
+          message: 'Service temporarily unavailable.',
+        },
+      },
+    })
+  );
+  assert.equal(googleHttpUnavailable.errorClass, 'provider_unavailable');
+  assert.equal(googleHttpUnavailable.code, 'UNAVAILABLE');
+  assert.equal(googleHttpUnavailable.fallbackEligible, true);
+
   assert.equal(
     classifyGoogleVertexVeoError(new GoogleVertexVeoError('rate limited', { status: 429 })).fallbackEligible,
     true

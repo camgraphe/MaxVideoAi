@@ -20,8 +20,19 @@ const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
 const storyboardReferenceImagePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-image.ts');
 const storyboardShotPlanPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-shot-plan.ts');
+const storyboardReferenceLibraryPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-library.ts');
+const storyboardTemplatesPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-templates.ts');
+const storyboardRecentOutputsHookPath = join(root, 'frontend/src/components/tools/storyboard/_hooks/useStoryboardRecentOutputs.ts');
 const storyboardShotMapPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardShotMap.tsx');
 const storyboardResultPanelPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardResultPanel.tsx');
+const storyboardRecentRailPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardRecentRail.tsx');
+const storyboardReferenceLibraryModalPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardReferenceLibraryModal.tsx');
+const storyboardTemplate4Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-4.png');
+const storyboardTemplate6Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-6.png');
+const storyboardTemplate8Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-8.png');
+const storyboardTemplatePortrait4Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-portrait-4.png');
+const storyboardTemplatePortrait6Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-portrait-6.png');
+const storyboardTemplatePortrait8Path = join(root, 'frontend/public/storyboard/templates/storyboard-template-portrait-8.png');
 
 test('storyboard tool exposes a focused image workspace preset for GPT Image 2', async () => {
   assert.equal(existsSync(storyboardPresetPath), true, 'storyboard preset helper should live under image _lib');
@@ -84,40 +95,103 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
   assert.equal(existsSync(storyboardReferenceImagePath), true, 'storyboard reference upload helper should stay colocated');
+  assert.equal(existsSync(storyboardReferenceLibraryPath), true, 'storyboard reference library helpers should stay colocated');
+  assert.equal(existsSync(storyboardTemplatesPath), true, 'storyboard template helpers should stay colocated');
+  assert.equal(existsSync(storyboardRecentOutputsHookPath), true, 'storyboard recent output loading should stay colocated');
   assert.equal(existsSync(storyboardShotPlanPath), true, 'storyboard shot planner should stay colocated');
   assert.equal(existsSync(storyboardShotMapPath), true, 'storyboard shot map component should stay colocated');
   assert.equal(existsSync(storyboardResultPanelPath), true, 'storyboard result panel component should stay colocated');
+  assert.equal(existsSync(storyboardRecentRailPath), true, 'storyboard recent rail should stay colocated');
+  assert.equal(existsSync(storyboardReferenceLibraryModalPath), true, 'storyboard library modal wrapper should stay colocated');
+  assert.equal(existsSync(storyboardTemplate4Path), true, '4-panel storyboard structure template should exist');
+  assert.equal(existsSync(storyboardTemplate6Path), true, '6-panel storyboard structure template should exist');
+  assert.equal(existsSync(storyboardTemplate8Path), true, '8-panel storyboard structure template should exist');
+  assert.equal(existsSync(storyboardTemplatePortrait4Path), true, '4-panel portrait storyboard structure template should exist');
+  assert.equal(existsSync(storyboardTemplatePortrait6Path), true, '6-panel portrait storyboard structure template should exist');
+  assert.equal(existsSync(storyboardTemplatePortrait8Path), true, '8-panel portrait storyboard structure template should exist');
 
   const routeSource = readFileSync(storyboardRoutePath, 'utf8');
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
   const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
+  const referenceLibrarySource = readFileSync(storyboardReferenceLibraryPath, 'utf8');
+  const templatesSource = readFileSync(storyboardTemplatesPath, 'utf8');
+  const recentOutputsHookSource = readFileSync(storyboardRecentOutputsHookPath, 'utf8');
   const shotPlanSource = readFileSync(storyboardShotPlanPath, 'utf8');
   const shotMapSource = readFileSync(storyboardShotMapPath, 'utf8');
   const resultPanelSource = readFileSync(storyboardResultPanelPath, 'utf8');
+  const recentRailSource = readFileSync(storyboardRecentRailPath, 'utf8');
+  const referenceLibraryModalSource = readFileSync(storyboardReferenceLibraryModalPath, 'utf8');
 
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
   assert.match(toolsPageSource, /storyboardTitle/);
   assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
   assert.match(workspaceSource, /runImageGeneration/);
-  assert.match(workspaceSource, /source:\s*'storyboard'/);
+  assert.match(workspaceSource, /STORYBOARD_SOURCE/);
+  assert.match(workspaceSource, /STORYBOARD_EDIT_SOURCE/);
+  assert.match(workspaceSource, /source:\s*edit \? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE/);
+  assert.match(workspaceSource, /source:\s*STORYBOARD_SOURCE/);
   assert.match(workspaceSource, /storyboardTier/);
+  assert.match(workspaceSource, /storyboardOrientation/);
+  assert.match(workspaceSource, /setStoryboardOrientation/);
+  assert.match(workspaceSource, /previewingTemplate/);
+  assert.match(workspaceSource, /setPreviewingTemplate/);
+  assert.match(workspaceSource, /const \[editPrice, setEditPrice\]/);
+  assert.match(workspaceSource, /editPriceLabel/);
+  assert.match(workspaceSource, /lengthPresetId/);
+  assert.match(workspaceSource, /visualNotes/);
+  assert.match(workspaceSource, /STORYBOARD_LENGTH_PRESETS/);
+  assert.match(workspaceSource, /STORYBOARD_ORIENTATION_OPTIONS/);
+  assert.match(workspaceSource, /STORYBOARD_TEMPLATE_SIZES/);
+  assert.match(workspaceSource, /STORYBOARD_TIER_OPTIONS/);
+  assert.match(workspaceSource, /getTierLabel/);
+  assert.doesNotMatch(workspaceSource, /getTierMeta/);
+  assert.match(workspaceSource, /getStoryboardOutputConfig/);
+  assert.match(workspaceSource, /getStoryboardEditOutputConfig/);
+  assert.match(workspaceSource, /getAbsoluteStoryboardTemplateUrl/);
+  assert.match(workspaceSource, /getStoryboardTemplatePath/);
+  assert.match(workspaceSource, /useStoryboardRecentOutputs/);
   assert.match(workspaceSource, /buildStoryboardShotPlan/);
   assert.match(workspaceSource, /const shotPlan = useMemo/);
-  assert.match(workspaceSource, /shotPlan,/);
   assert.match(workspaceSource, /StoryboardResultPanel/);
+  assert.match(workspaceSource, /templateImagePath/);
+  assert.match(workspaceSource, /recentOutputs/);
+  assert.match(workspaceSource, /selectedRecentOutput/);
+  assert.match(workspaceSource, /handleSelectRecentOutput/);
+  assert.match(workspaceSource, /function showTemplatePreview/);
+  assert.match(workspaceSource, /function handleLengthPresetSelect/);
+  assert.match(workspaceSource, /function handleOrientationSelect/);
+  assert.match(workspaceSource, /setLengthPresetId\(presetId\)/);
+  assert.match(workspaceSource, /setStoryboardOrientation\(orientation\)/);
+  assert.match(workspaceSource, /activeRecentOutputId=\{previewingTemplate \? null : selectedRecentOutput\?\.id \?\? null\}/);
+  assert.match(workspaceSource, /StoryboardReferenceLibraryModal/);
   assert.match(workspaceSource, /AssetDropzone/);
+  assert.match(workspaceSource, /StoryboardLibraryModalState/);
+  assert.match(workspaceSource, /StoryboardLibraryAsset/);
   assert.match(workspaceSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
   assert.match(workspaceSource, /STORYBOARD_REFERENCE_FIELD/);
   assert.match(workspaceSource, /STORYBOARD_REFERENCE_ENGINE/);
   assert.match(workspaceSource, /referenceImages/);
+  assert.match(workspaceSource, /libraryModal/);
+  assert.match(workspaceSource, /openReferenceLibrary/);
+  assert.match(workspaceSource, /handleReferenceLibrarySelect/);
+  assert.match(workspaceSource, /resolveStoryboardReferenceLibrarySlotIndex/);
+  assert.match(workspaceSource, /createStoryboardReferenceImageFromLibraryAsset/);
+  assert.match(workspaceSource, /onOpenLibrary=\{openReferenceLibrary\}/);
   assert.match(workspaceSource, /readyReferenceImages/);
   assert.match(workspaceSource, /uploadStoryboardReferenceImage/);
-  assert.match(workspaceSource, /mode:\s*sourceImages\.length \? 'i2i' : 't2i'/);
-  assert.match(workspaceSource, /imageUrls:\s*sourceImages\.length \? sourceImages\.map\(\(image\) => image\.url\) : undefined/);
-  assert.match(workspaceSource, /referenceImageSizes:\s*sourceImages\.length/);
+  assert.match(workspaceSource, /templateReference:\s*!edit/);
+  assert.match(workspaceSource, /orientation:\s*storyboardOrientation/);
+  assert.match(workspaceSource, /mode:\s*'i2i'/);
+  assert.match(workspaceSource, /imageUrls:\s*sourceImages\.map\(\(image\) => image\.url\)/);
+  assert.match(workspaceSource, /referenceImageSizes:\s*sourceImages\.map/);
+  assert.match(workspaceSource, /const outputConfig = edit \? editOutputConfig : tierConfig/);
+  assert.match(workspaceSource, /customImageSize:\s*outputConfig\.customImageSize/);
+  assert.match(workspaceSource, /copy\.formatLabel/);
+  assert.match(workspaceSource, /copy\.landscapeLabel/);
+  assert.match(workspaceSource, /copy\.portraitLabel/);
   assert.match(workspaceSource, /copy\.referenceImageLabel/);
   assert.match(workspaceSource, /copy\.referenceImageBody/);
   assert.match(workspaceSource, /dialogue/);
@@ -127,10 +201,22 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /Save to Storyboard library/);
   assert.doesNotMatch(workspaceSource, /promptField/);
   assert.match(promptSource, /buildStoryboardPrompt/);
+  assert.match(promptSource, /STORYBOARD_PANEL_METADATA_FIELDS/);
+  assert.match(promptSource, /STORYBOARD_THUMBNAIL_ASPECT_LABELS/);
   assert.match(promptSource, /shotPlan/);
   assert.match(promptSource, /Panel \$\{shot\.panel\}/);
+  assert.match(promptSource, /Metadata rows: Shot type:/);
   assert.match(promptSource, /dialogue/);
   assert.match(promptSource, /Dialogue\/audio direction/);
+  assert.match(promptSource, /visualNotes/);
+  assert.match(promptSource, /Scene notes and constraints/);
+  assert.match(promptSource, /templateReference/);
+  assert.match(promptSource, /blank \$\{orientation\} storyboard structure template/);
+  assert.match(promptSource, /metadata rows below each thumbnail/);
+  assert.match(promptSource, /Under every thumbnail, fill exactly these metadata rows/);
+  assert.match(promptSource, /no captions inside thumbnails/);
+  assert.match(promptSource, /Portrait 9:16/);
+  assert.match(promptSource, /Landscape 16:9/);
   assert.match(promptSource, /referenceImageCount/);
   assert.match(promptSource, /uploaded reference images/);
   assert.match(promptSource, /Seedance/);
@@ -140,16 +226,56 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(referenceImageSource, /prepareImageFileForUpload/);
   assert.match(referenceImageSource, /\/api\/uploads\/image/);
   assert.match(referenceImageSource, /cleanupStoryboardReferenceImage/);
+  assert.match(referenceLibrarySource, /CLOSED_STORYBOARD_LIBRARY_MODAL/);
+  assert.match(referenceLibrarySource, /resolveStoryboardReferenceLibrarySlotIndex/);
+  assert.match(referenceLibrarySource, /createStoryboardReferenceImageFromLibraryAsset/);
+  assert.match(templatesSource, /STORYBOARD_LENGTH_PRESETS/);
+  assert.match(templatesSource, /StoryboardTier = 'hd' \| '4k' \| 'ultra'/);
+  assert.match(templatesSource, /STORYBOARD_TIER_OPTIONS: StoryboardTier\[\] = \['hd', '4k', 'ultra'\]/);
+  assert.match(templatesSource, /StoryboardOrientation/);
+  assert.match(templatesSource, /STORYBOARD_ORIENTATION_OPTIONS/);
+  assert.match(templatesSource, /STORYBOARD_PANEL_METADATA_FIELDS/);
+  assert.match(templatesSource, /Shot type/);
+  assert.match(templatesSource, /Camera/);
+  assert.match(templatesSource, /Action/);
+  assert.match(templatesSource, /Dialogue/);
+  assert.match(templatesSource, /STORYBOARD_THUMBNAIL_ASPECT_LABELS/);
+  assert.match(templatesSource, /STORYBOARD_TEMPLATE_SIZES/);
+  assert.match(templatesSource, /STORYBOARD_OUTPUT_CONFIG/);
+  assert.match(templatesSource, /STORYBOARD_EDIT_OUTPUT_CONFIG/);
+  assert.match(templatesSource, /resolution: 'auto'/);
+  assert.match(templatesSource, /quality: 'medium'/);
+  assert.match(templatesSource, /quality: 'high'/);
+  assert.match(templatesSource, /getStoryboardOutputConfig/);
+  assert.match(templatesSource, /getStoryboardEditOutputConfig/);
+  assert.match(templatesSource, /storyboard-template-4\.png/);
+  assert.match(templatesSource, /storyboard-template-6\.png/);
+  assert.match(templatesSource, /storyboard-template-8\.png/);
+  assert.match(templatesSource, /storyboard-template\$\{orientationSegment\}-\$\{normalizedFrameCount\}\.png/);
+  assert.match(templatesSource, /getAbsoluteStoryboardTemplateUrl/);
+  assert.match(recentOutputsHookSource, /\/api\/media-library\/recent-outputs\?limit=18&kind=image&surface=storyboard/);
+  assert.match(recentOutputsHookSource, /authFetch/);
   assert.match(shotPlanSource, /buildStoryboardShotPlan/);
   assert.match(shotPlanSource, /StoryboardShotPlan/);
   assert.match(shotMapSource, /shot\.dialogueBeat/);
   assert.match(shotMapSource, /shot\.visualPriority/);
   assert.match(shotMapSource, /Panel/);
-  assert.match(resultPanelSource, /StoryboardShotMap/);
+  assert.match(resultPanelSource, /StoryboardRecentRail/);
+  assert.match(resultPanelSource, /StoryboardOrientation/);
+  assert.match(resultPanelSource, /aspect-\[9\/16\]/);
+  assert.match(resultPanelSource, /aspect-\[16\/9\]/);
+  assert.match(resultPanelSource, /templateImagePath/);
+  assert.match(resultPanelSource, /onSelectRecentOutput/);
+  assert.doesNotMatch(resultPanelSource, /StoryboardShotMap/);
   assert.match(resultPanelSource, /onApplyEdit/);
+  assert.match(resultPanelSource, /editPriceLabel/);
+  assert.match(recentRailSource, /export function StoryboardRecentRail/);
+  assert.match(recentRailSource, /onSelect\(output\)/);
+  assert.match(referenceLibraryModalSource, /ImageLibraryModal/);
+  assert.match(referenceLibraryModalSource, /STORYBOARD_REFERENCE_SUPPORTED_FORMATS/);
 });
 
-test('storyboard prompt carries dialogue as video context without drawing text into the board', async () => {
+test('storyboard prompt carries dialogue into metadata rows without drawing thumbnail captions', async () => {
   const module = await import('../frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
   const prompt = module.buildStoryboardPrompt({
     subject: 'A chef presenting a product on a clean kitchen counter',
@@ -157,14 +283,18 @@ test('storyboard prompt carries dialogue as video context without drawing text i
     dialogue: 'Chef: This sauce keeps the same rich texture.\\nVoiceover: Ready in thirty seconds.',
     style: 'realistic',
     targetModel: 'kling',
+    orientation: 'portrait',
     durationSec: 10,
     frameCount: 6,
   });
 
+  assert.match(prompt, /Portrait 9:16/);
   assert.match(prompt, /Dialogue\/audio direction:/);
+  assert.match(prompt, /Under every thumbnail, fill exactly these metadata rows/);
   assert.match(prompt, /Chef: This sauce keeps the same rich texture/);
   assert.match(prompt, /Voiceover: Ready in thirty seconds/);
-  assert.match(prompt, /Do not draw dialogue text/);
+  assert.match(prompt, /Dialogue metadata row/);
+  assert.match(prompt, /no captions inside thumbnails/);
 });
 
 test('video workspace exposes a storyboard launcher for Seedance and Kling models', () => {

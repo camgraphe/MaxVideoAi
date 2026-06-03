@@ -320,6 +320,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
       mode: params.mode,
       providerModel: route.providerModel,
       launchStage: route.launchStage,
+      location: (process.env.GOOGLE_VERTEX_LOCATION ?? 'us-central1').trim() || 'us-central1',
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
       resolution: params.effectiveResolution ?? params.falPayload.resolution ?? null,

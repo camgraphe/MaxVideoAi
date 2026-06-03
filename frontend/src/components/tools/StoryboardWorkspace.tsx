@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ImagePlus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Clapperboard, Film, ImagePlus, Loader2, Sparkles, Smartphone } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AssetDropzone, type AssetSlotAttachment } from '@/components/AssetDropzone';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -17,10 +17,16 @@ import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
+import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
 import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
-import { DEFAULT_STORYBOARD_COPY } from './storyboard/_lib/storyboard-workspace-copy';
+import {
+  useStoryboardRecentOutputs,
+  type StoryboardRecentOutput,
+} from './storyboard/_hooks/useStoryboardRecentOutputs';
+import { DEFAULT_STORYBOARD_COPY, type StoryboardCopy } from './storyboard/_lib/storyboard-workspace-copy';
 import {
   cleanupStoryboardReferenceImage,
   uploadStoryboardReferenceImage,
@@ -31,18 +37,34 @@ import {
   type StoryboardStyle,
   type StoryboardTargetModel,
 } from './storyboard/_lib/storyboard-prompt';
+import {
+  CLOSED_STORYBOARD_LIBRARY_MODAL,
+  STORYBOARD_REFERENCE_SUPPORTED_FORMATS,
+  createStoryboardReferenceImageFromLibraryAsset,
+  resolveStoryboardReferenceLibrarySlotIndex,
+  type StoryboardLibraryAsset,
+  type StoryboardLibraryModalState,
+} from './storyboard/_lib/storyboard-reference-library';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
+import {
+  STORYBOARD_LENGTH_PRESETS,
+  STORYBOARD_ORIENTATION_OPTIONS,
+  STORYBOARD_TEMPLATE_SIZES,
+  STORYBOARD_TIER_OPTIONS,
+  getAbsoluteStoryboardTemplateUrl,
+  getStoryboardEditOutputConfig,
+  getStoryboardOutputConfig,
+  getStoryboardLengthPreset,
+  getStoryboardTemplatePath,
+  type StoryboardLengthPresetId,
+  type StoryboardOrientation,
+  type StoryboardTier,
+} from './storyboard/_lib/storyboard-templates';
 
-type StoryboardTier = 'normal' | 'hq';
+type StoryboardOptionalField = 'action' | 'dialogue' | 'visualNotes';
 
 const STYLE_OPTIONS: StoryboardStyle[] = ['realistic', 'anime', 'ugc', 'cinema'];
 const TARGET_OPTIONS: StoryboardTargetModel[] = ['seedance', 'kling'];
-const DURATION_OPTIONS = [6, 10, 15] as const;
-const FRAME_COUNT_OPTIONS = [4, 6, 8] as const;
-const STORYBOARD_TIER_CONFIG: Record<StoryboardTier, { resolution: string; quality: 'medium' | 'high' }> = {
-  normal: { resolution: '1024x768', quality: 'medium' },
-  hq: { resolution: '3840x2160', quality: 'high' },
-};
 const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
 const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
   id: 'storyboard_reference_images',
@@ -70,15 +92,16 @@ const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
   keyframes: false,
   params: {},
   inputLimits: { imageMaxMB: 25 },
-  inputSchema: { constraints: { supportedFormats: ['png', 'jpg', 'jpeg', 'webp'], maxImageSizeMB: 25 } },
+  inputSchema: { constraints: { supportedFormats: STORYBOARD_REFERENCE_SUPPORTED_FORMATS, maxImageSizeMB: 25 } },
   updatedAt: '2026-06-03',
   ttlSec: 3600,
   availability: 'available',
 };
 
-type PriceState = Record<StoryboardTier, { cents: number; currency: string } | null>;
+type PriceValue = { cents: number; currency: string } | null;
+type PriceState = Record<StoryboardTier, PriceValue>;
 
-function formatPrice(value: PriceState[StoryboardTier], locale: string): string {
+function formatPrice(value: PriceValue, locale: string): string {
   if (!value) return '...';
   try {
     return new Intl.NumberFormat(locale, { style: 'currency', currency: value.currency }).format(value.cents / 100);
@@ -105,23 +128,34 @@ export default function StoryboardWorkspace() {
   const [subject, setSubject] = useState('');
   const [action, setAction] = useState('');
   const [dialogue, setDialogue] = useState('');
+  const [visualNotes, setVisualNotes] = useState('');
+  const [activeOptionalField, setActiveOptionalField] = useState<StoryboardOptionalField | null>(null);
   const [targetModel, setTargetModel] = useState<StoryboardTargetModel>('seedance');
   const [style, setStyle] = useState<StoryboardStyle>('cinema');
-  const [durationSec, setDurationSec] = useState<number>(10);
-  const [frameCount, setFrameCount] = useState<number>(6);
-  const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>('normal');
+  const [lengthPresetId, setLengthPresetId] = useState<StoryboardLengthPresetId>('medium');
+  const [storyboardOrientation, setStoryboardOrientation] = useState<StoryboardOrientation>('landscape');
+  const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>('hd');
   const [referenceImages, setReferenceImages] = useState<(StoryboardReferenceImage | null)[]>(
     () => Array.from({ length: STORYBOARD_REFERENCE_SLOT_COUNT }, () => null)
   );
   const [editInstruction, setEditInstruction] = useState('');
-  const [tierPrices, setTierPrices] = useState<PriceState>({ normal: null, hq: null });
+  const [tierPrices, setTierPrices] = useState<PriceState>({ hd: null, '4k': null, ultra: null });
+  const [editPrice, setEditPrice] = useState<PriceValue>(null);
   const [result, setResult] = useState<ImageGenerationResponse | null>(null);
+  const [previewingTemplate, setPreviewingTemplate] = useState(false);
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [libraryModal, setLibraryModal] = useState<StoryboardLibraryModalState>(CLOSED_STORYBOARD_LIBRARY_MODAL);
+  const [selectedRecentOutput, setSelectedRecentOutput] = useState<StoryboardRecentOutput | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const referenceImagesRef = useRef(referenceImages);
+  const {
+    outputs: recentOutputs,
+    loading: recentOutputsLoading,
+    refresh: refreshRecentOutputs,
+  } = useStoryboardRecentOutputs(Boolean(user));
 
   referenceImagesRef.current = referenceImages;
 
@@ -136,18 +170,20 @@ export default function StoryboardWorkspace() {
     let active = true;
     async function loadPrices() {
       const entries = await Promise.all(
-        (Object.keys(STORYBOARD_TIER_CONFIG) as StoryboardTier[]).map(async (tier) => {
-          const config = STORYBOARD_TIER_CONFIG[tier];
+        STORYBOARD_TIER_OPTIONS.map(async (tier) => {
+          const config = getStoryboardOutputConfig(tier, storyboardOrientation);
           const response = await authFetch('/api/images/estimate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               engineId: 'gpt-image-2',
-              mode: 't2i',
+              mode: 'i2i',
               numImages: 1,
+              referenceImageSizes: [STORYBOARD_TEMPLATE_SIZES[storyboardOrientation]],
               resolution: config.resolution,
+              customImageSize: config.customImageSize,
               quality: config.quality,
-              source: 'storyboard',
+              source: STORYBOARD_SOURCE,
             }),
           });
           const payload = (await response.json().catch(() => null)) as {
@@ -166,12 +202,12 @@ export default function StoryboardWorkspace() {
       setTierPrices(Object.fromEntries(entries) as PriceState);
     }
     void loadPrices().catch(() => {
-      if (active) setTierPrices({ normal: null, hq: null });
+      if (active) setTierPrices({ hd: null, '4k': null, ultra: null });
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [storyboardOrientation]);
 
   useEffect(() => {
     return () => {
@@ -179,14 +215,86 @@ export default function StoryboardWorkspace() {
     };
   }, []);
 
-  const selectedImage = result?.images[0] ?? null;
-  const tierConfig = STORYBOARD_TIER_CONFIG[storyboardTier];
+  const lengthPreset = useMemo(() => getStoryboardLengthPreset(lengthPresetId), [lengthPresetId]);
+  const durationSec = lengthPreset.durationSec;
+  const frameCount = lengthPreset.frameCount;
+  const storyboardTemplateSize = STORYBOARD_TEMPLATE_SIZES[storyboardOrientation];
+  const templateImagePath = useMemo(
+    () => getStoryboardTemplatePath(frameCount, storyboardOrientation),
+    [frameCount, storyboardOrientation]
+  );
+  const generatedImage = result?.images[0] ?? null;
+  const selectedRecentImage = selectedRecentOutput
+    ? {
+        url: selectedRecentOutput.url,
+        thumbUrl: selectedRecentOutput.thumbUrl ?? selectedRecentOutput.previewUrl ?? null,
+        width: selectedRecentOutput.width,
+        height: selectedRecentOutput.height,
+        mimeType: selectedRecentOutput.mime,
+      }
+    : null;
+  const selectedImage = previewingTemplate ? null : selectedRecentImage ?? generatedImage;
+  const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
+  const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
+  const editOutputConfig = getStoryboardEditOutputConfig();
   const activePrice = useMemo(() => formatPrice(tierPrices[storyboardTier], locale), [locale, storyboardTier, tierPrices]);
+  const editPriceLabel = useMemo(() => formatPrice(editPrice, locale), [editPrice, locale]);
   const referenceUploading = referenceImages.some((image) => image?.status === 'uploading');
   const readyReferenceImages = useMemo(
     () => referenceImages.filter((image): image is StoryboardReferenceImage => Boolean(image?.url && image.status === 'ready')),
     [referenceImages]
   );
+
+  useEffect(() => {
+    if (!selectedImage?.url) {
+      setEditPrice(null);
+      return;
+    }
+
+    let active = true;
+    const selectedImageWidth = selectedImage.width ?? null;
+    const selectedImageHeight = selectedImage.height ?? null;
+    async function loadEditPrice() {
+      const response = await authFetch('/api/images/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          engineId: 'gpt-image-2',
+          mode: 'i2i',
+          numImages: 1,
+          referenceImageSizes: [{ width: selectedImageWidth, height: selectedImageHeight }],
+          resolution: editOutputConfig.resolution,
+          customImageSize: editOutputConfig.customImageSize,
+          quality: editOutputConfig.quality,
+          source: STORYBOARD_EDIT_SOURCE,
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        pricing?: { totalCents?: number; currency?: string };
+      } | null;
+      if (!active) return;
+      setEditPrice(
+        payload?.ok && payload.pricing?.totalCents != null
+          ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD' }
+          : null
+      );
+    }
+    void loadEditPrice().catch(() => {
+      if (active) setEditPrice(null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [
+    selectedImage?.height,
+    selectedImage?.url,
+    selectedImage?.width,
+    editOutputConfig.customImageSize,
+    editOutputConfig.quality,
+    editOutputConfig.resolution,
+  ]);
+
   const storyboardReferenceField = useMemo<EngineInputField>(
     () => ({
       ...STORYBOARD_REFERENCE_FIELD,
@@ -287,6 +395,68 @@ export default function StoryboardWorkspace() {
     });
   }
 
+  function openReferenceLibrary(_field: EngineInputField, slotIndex = 0) {
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+    setError(null);
+    setMessage(null);
+    setLibraryModal({
+      open: true,
+      slotIndex,
+      selectionMode: 'reference',
+      initialSource: 'all',
+    });
+  }
+
+  function closeReferenceLibrary() {
+    setLibraryModal(CLOSED_STORYBOARD_LIBRARY_MODAL);
+  }
+
+  function handleReferenceLibrarySelect(asset: StoryboardLibraryAsset) {
+    if (!asset.url) return;
+    const slotIndex = resolveStoryboardReferenceLibrarySlotIndex(
+      referenceImages,
+      libraryModal.slotIndex,
+      STORYBOARD_REFERENCE_SLOT_COUNT
+    );
+    setError(null);
+    setMessage(null);
+    setReferenceImages((current) => {
+      const next = current.slice();
+      cleanupStoryboardReferenceImage(next[slotIndex] ?? null);
+      next[slotIndex] = createStoryboardReferenceImageFromLibraryAsset(asset, copy.referenceSlotNameFallback);
+      return next;
+    });
+    closeReferenceLibrary();
+  }
+
+  function handleSelectRecentOutput(output: StoryboardRecentOutput) {
+    setPreviewingTemplate(false);
+    setSelectedRecentOutput(output);
+    setError(null);
+    setMessage(null);
+  }
+
+  function showTemplatePreview() {
+    setPreviewingTemplate(true);
+    setSelectedRecentOutput(null);
+    setEditInstruction('');
+    setError(null);
+    setMessage(null);
+  }
+
+  function handleLengthPresetSelect(presetId: StoryboardLengthPresetId) {
+    setLengthPresetId(presetId);
+    showTemplatePreview();
+  }
+
+  function handleOrientationSelect(orientation: StoryboardOrientation) {
+    setStoryboardOrientation(orientation);
+    showTemplatePreview();
+  }
+
   async function runStoryboard(edit = false) {
     if (!user) {
       setAuthModalOpen(true);
@@ -302,15 +472,24 @@ export default function StoryboardWorkspace() {
     setError(null);
     setMessage(null);
     try {
-      const sourceImages = edit && selectedImage ? [selectedImage] : readyReferenceImages;
+      const templateReference = {
+        url: getAbsoluteStoryboardTemplateUrl(frameCount, storyboardOrientation, window.location.origin),
+        width: storyboardTemplateSize.width,
+        height: storyboardTemplateSize.height,
+      };
+      const sourceImages = edit && selectedImage ? [selectedImage] : [templateReference, ...readyReferenceImages];
+      const outputConfig = edit ? editOutputConfig : tierConfig;
       const prompt = buildStoryboardPrompt({
         subject,
         action,
         dialogue,
+        visualNotes,
         style,
         targetModel,
+        orientation: storyboardOrientation,
         durationSec,
         frameCount,
+        templateReference: !edit,
         referenceImageCount: edit ? 0 : readyReferenceImages.length,
         shotPlan,
         editInstruction: edit ? editInstruction : null,
@@ -318,21 +497,23 @@ export default function StoryboardWorkspace() {
       const response = await runImageGeneration({
         jobId: `storyboard_${crypto.randomUUID()}`,
         engineId: 'gpt-image-2',
-        mode: sourceImages.length ? 'i2i' : 't2i',
+        mode: 'i2i',
         prompt,
         numImages: 1,
-        imageUrls: sourceImages.length ? sourceImages.map((image) => image.url) : undefined,
-        referenceImageSizes: sourceImages.length
-          ? sourceImages.map((image) => ({ width: image.width ?? null, height: image.height ?? null }))
-          : undefined,
-        resolution: tierConfig.resolution,
-        quality: tierConfig.quality,
+        imageUrls: sourceImages.map((image) => image.url),
+        referenceImageSizes: sourceImages.map((image) => ({ width: image.width ?? null, height: image.height ?? null })),
+        resolution: outputConfig.resolution,
+        customImageSize: outputConfig.customImageSize,
+        quality: outputConfig.quality,
         outputFormat: 'png',
-        source: 'storyboard',
+        source: edit ? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE,
       });
       setResult(response);
-      setMessage(`${copy.outputTitle} · ${activePrice}`);
+      setPreviewingTemplate(false);
+      setSelectedRecentOutput(null);
+      setMessage(`${copy.outputTitle} · ${edit ? editPriceLabel : activePrice}`);
       if (edit) setEditInstruction('');
+      void refreshRecentOutputs();
     } catch (runError) {
       setError(runError instanceof Error ? runError.message : copy.generationFailed);
     } finally {
@@ -351,9 +532,9 @@ export default function StoryboardWorkspace() {
     try {
       await saveImageToLibrary({
         url: selectedImage.url,
-        jobId: result?.jobId ?? null,
+        jobId: selectedImageJobId,
         label: copy.outputTitle,
-        source: 'storyboard',
+        source: STORYBOARD_SOURCE,
       });
       setMessage(copy.savedToLibrary);
     } catch (saveError) {
@@ -400,134 +581,246 @@ export default function StoryboardWorkspace() {
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <div className="mx-auto grid w-full max-w-7xl gap-5 xl:grid-cols-[minmax(320px,430px)_minmax(0,1fr)]">
-            <section className="space-y-4">
+          <div className="mx-auto w-full max-w-[1540px]">
+            <div className="mb-4 max-w-xl">
               <ButtonLink href="/app/tools" variant="ghost" size="sm" linkComponent={Link} className="px-0">
                 <ArrowLeft className="h-4 w-4" />
                 {copy.backToTools}
               </ButtonLink>
-              <div>
+              <div className="mt-4">
                 <h1 className="text-3xl font-semibold text-text-primary">{copy.title}</h1>
                 <p className="mt-2 max-w-xl text-sm text-text-secondary">{copy.subtitle}</p>
               </div>
+            </div>
 
-              <Card className="border border-border bg-surface p-5">
-                <div className="space-y-5">
-                  <Field label={copy.subjectLabel}>
-                    <input
-                      value={subject}
-                      onChange={(event) => setSubject(event.currentTarget.value)}
-                      placeholder={copy.subjectPlaceholder}
-                      className="h-11 w-full rounded-input border border-border bg-bg px-3 text-sm text-text-primary outline-none transition focus:border-brand"
+            <div className="grid gap-5 xl:grid-cols-[minmax(360px,520px)_minmax(0,1fr)]">
+              <section>
+              <div className="rounded-[16px] border border-border bg-surface p-3.5 shadow-card">
+                <div className="space-y-3.5">
+                  <BuilderStep number={1} title={copy.subjectStepTitle}>
+                    <label className="relative block">
+                      <span className="sr-only">{copy.subjectLabel}</span>
+                      <textarea
+                        value={subject}
+                        onChange={(event) => setSubject(event.currentTarget.value)}
+                        placeholder={copy.subjectPlaceholder}
+                        rows={2}
+                        className="min-h-[72px] w-full resize-y rounded-[12px] border border-border bg-bg px-4 py-2.5 pr-10 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                      />
+                      <Sparkles className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-text-muted" />
+                    </label>
+                    <div className="space-y-2">
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <OptionalPromptButton
+                          active={activeOptionalField === 'action'}
+                          filled={Boolean(action.trim())}
+                          label={copy.actionLabel}
+                          onClick={() => setActiveOptionalField((current) => (current === 'action' ? null : 'action'))}
+                        />
+                        <OptionalPromptButton
+                          active={activeOptionalField === 'dialogue'}
+                          filled={Boolean(dialogue.trim())}
+                          label={copy.dialogueLabel}
+                          onClick={() => setActiveOptionalField((current) => (current === 'dialogue' ? null : 'dialogue'))}
+                        />
+                        <OptionalPromptButton
+                          active={activeOptionalField === 'visualNotes'}
+                          filled={Boolean(visualNotes.trim())}
+                          label={copy.visualNotesLabel}
+                          onClick={() =>
+                            setActiveOptionalField((current) => (current === 'visualNotes' ? null : 'visualNotes'))
+                          }
+                        />
+                      </div>
+                      {activeOptionalField === 'action' ? (
+                        <label className="block">
+                          <span className="sr-only">{copy.actionLabel}</span>
+                          <textarea
+                            autoFocus
+                            value={action}
+                            onChange={(event) => setAction(event.currentTarget.value)}
+                            placeholder={copy.actionPlaceholder}
+                            rows={3}
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                          />
+                        </label>
+                      ) : null}
+                      {activeOptionalField === 'dialogue' ? (
+                        <label className="block">
+                          <span className="sr-only">{copy.dialogueLabel}</span>
+                          <textarea
+                            autoFocus
+                            value={dialogue}
+                            onChange={(event) => setDialogue(event.currentTarget.value)}
+                            placeholder={copy.dialoguePlaceholder}
+                            rows={3}
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                          />
+                        </label>
+                      ) : null}
+                      {activeOptionalField === 'visualNotes' ? (
+                        <label className="block">
+                          <span className="sr-only">{copy.visualNotesLabel}</span>
+                          <textarea
+                            autoFocus
+                            value={visualNotes}
+                            onChange={(event) => setVisualNotes(event.currentTarget.value)}
+                            placeholder={copy.visualNotesPlaceholder}
+                            rows={3}
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  </BuilderStep>
+
+                  <BuilderStep hint={copy.optionalAutoLabel} number={2} title={copy.referenceStepTitle}>
+                    <AssetDropzone
+                      engine={STORYBOARD_REFERENCE_ENGINE}
+                      field={storyboardReferenceField}
+                      required={false}
+                      role="reference"
+                      assets={storyboardReferenceAssets[STORYBOARD_REFERENCE_FIELD.id] ?? []}
+                      disabled={running}
+                      density="compact"
+                      className="[&>div]:rounded-[12px]"
+                      onSelect={(field, file, slotIndex) => {
+                        void handleReferenceFile(field, file, slotIndex);
+                      }}
+                      onOpenLibrary={openReferenceLibrary}
+                      onRemove={handleRemoveReferenceSlot}
+                      onError={setError}
                     />
-                  </Field>
-                  <Field label={copy.actionLabel}>
-                    <input
-                      value={action}
-                      onChange={(event) => setAction(event.currentTarget.value)}
-                      placeholder={copy.actionPlaceholder}
-                      className="h-11 w-full rounded-input border border-border bg-bg px-3 text-sm text-text-primary outline-none transition focus:border-brand"
-                    />
-                  </Field>
-                  <Field label={copy.dialogueLabel}>
-                    <textarea
-                      value={dialogue}
-                      onChange={(event) => setDialogue(event.currentTarget.value)}
-                      placeholder={copy.dialoguePlaceholder}
-                      rows={3}
-                      className="min-h-[88px] w-full resize-y rounded-input border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand"
-                    />
-                  </Field>
+                  </BuilderStep>
 
-                  <AssetDropzone
-                    engine={STORYBOARD_REFERENCE_ENGINE}
-                    field={storyboardReferenceField}
-                    required={false}
-                    role="reference"
-                    assets={storyboardReferenceAssets[STORYBOARD_REFERENCE_FIELD.id] ?? []}
-                    disabled={running}
-                    onSelect={(field, file, slotIndex) => {
-                      void handleReferenceFile(field, file, slotIndex);
-                    }}
-                    onRemove={handleRemoveReferenceSlot}
-                    onError={setError}
-                  />
-
-                  <Segmented label={copy.targetLabel}>
-                    {TARGET_OPTIONS.map((option) => (
-                      <SegmentButton
-                        key={option}
-                        active={targetModel === option}
-                        onClick={() => setTargetModel(option)}
-                      >
-                        {option === 'seedance' ? copy.targetSeedance : copy.targetKling}
-                      </SegmentButton>
-                    ))}
-                  </Segmented>
-                  <p className="rounded-input border border-border bg-bg px-3 py-2 text-xs text-text-secondary">
-                    {targetModel === 'seedance' ? copy.targetNotes.seedance : copy.targetNotes.kling}
-                  </p>
-
-                  <Segmented label={copy.styleLabel}>
-                    {STYLE_OPTIONS.map((option) => (
-                      <SegmentButton key={option} active={style === option} onClick={() => setStyle(option)}>
-                        {copy.styles[option]}
-                      </SegmentButton>
-                    ))}
-                  </Segmented>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Segmented label={copy.durationLabel}>
-                      {DURATION_OPTIONS.map((option) => (
-                        <SegmentButton key={option} active={durationSec === option} onClick={() => setDurationSec(option)}>
-                          {option}s
-                        </SegmentButton>
+                  <BuilderStep number={3} title={copy.styleStepTitle}>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {STYLE_OPTIONS.map((option) => (
+                        <ChoiceButton key={option} active={style === option} onClick={() => setStyle(option)}>
+                          <StyleIcon style={option} />
+                          {copy.styles[option]}
+                        </ChoiceButton>
                       ))}
-                    </Segmented>
-                    <Segmented label={copy.frameCountLabel}>
-                      {FRAME_COUNT_OPTIONS.map((option) => (
-                        <SegmentButton key={option} active={frameCount === option} onClick={() => setFrameCount(option)}>
-                          {option}
-                        </SegmentButton>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.modelStepTitle}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {TARGET_OPTIONS.map((option) => (
+                          <ChoiceButton
+                            key={option}
+                            active={targetModel === option}
+                            className="justify-start px-4"
+                            onClick={() => setTargetModel(option)}
+                          >
+                            {option === 'seedance' ? <Film className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
+                            <span>{option === 'seedance' ? copy.targetSeedance : copy.targetKling}</span>
+                          </ChoiceButton>
+                        ))}
+                      </div>
+                      <p className="text-xs leading-5 text-text-secondary">
+                        {targetModel === 'seedance' ? copy.targetNotes.seedance : copy.targetNotes.kling}
+                      </p>
+                    </div>
+                  </BuilderStep>
+
+                  <BuilderStep number={4} title={copy.lengthStepTitle}>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.formatLabel}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {STORYBOARD_ORIENTATION_OPTIONS.map((option) => (
+                          <ChoiceButton
+                            key={option}
+                            active={storyboardOrientation === option}
+                            className="justify-start px-3 py-2 text-left"
+                            onClick={() => handleOrientationSelect(option)}
+                          >
+                            {option === 'landscape' ? <Film className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
+                            <span className="min-w-0">
+                              <span className="block truncate">
+                                {option === 'landscape' ? copy.landscapeLabel : copy.portraitLabel}
+                              </span>
+                              <span
+                                className={`mt-0.5 block text-xs font-medium ${
+                                  storyboardOrientation === option ? 'text-on-inverse/70' : 'text-text-secondary'
+                                }`}
+                              >
+                                {option === 'landscape' ? copy.landscapeMeta : copy.portraitMeta}
+                              </span>
+                            </span>
+                          </ChoiceButton>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {STORYBOARD_LENGTH_PRESETS.map((preset) => (
+                        <LengthPresetButton
+                          key={preset.id}
+                          active={lengthPresetId === preset.id}
+                          label={getLengthPresetLabel(copy, preset.id)}
+                          meta={getLengthPresetMeta(copy, preset.id)}
+                          onClick={() => handleLengthPresetSelect(preset.id)}
+                        />
                       ))}
-                    </Segmented>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {STORYBOARD_TIER_OPTIONS.map((tier) => (
+                        <TierButton
+                          key={tier}
+                          active={storyboardTier === tier}
+                          label={getTierLabel(copy, tier)}
+                          price={formatPrice(tierPrices[tier], locale)}
+                          onClick={() => setStoryboardTier(tier)}
+                        />
+                      ))}
+                    </div>
+                  </BuilderStep>
+
+                  <div className="border-t border-border pt-3">
+                    <button
+                      type="button"
+                      onClick={() => void runStoryboard(false)}
+                      disabled={!canRun}
+                      className="flex h-11 w-full items-center justify-between rounded-[12px] bg-text-primary px-5 text-sm font-semibold text-on-inverse transition hover:bg-text-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                        {running ? copy.generating : copy.generate}
+                      </span>
+                      <span>{activePrice}</span>
+                    </button>
+                    <p className="mt-2 text-center text-xs text-text-muted">{copy.generationFootnote}</p>
+                    {error ? <p className="mt-3 text-sm text-error">{error}</p> : null}
+                    {message ? <p className="mt-3 text-sm text-success">{message}</p> : null}
                   </div>
-
-                  <Segmented label={copy.tierLabel}>
-                    {(Object.keys(STORYBOARD_TIER_CONFIG) as StoryboardTier[]).map((tier) => (
-                      <SegmentButton key={tier} active={storyboardTier === tier} onClick={() => setStoryboardTier(tier)}>
-                        {tier === 'normal' ? copy.normalTier : copy.hqTier}
-                        <span className="text-[10px] opacity-80">{formatPrice(tierPrices[tier], locale)}</span>
-                      </SegmentButton>
-                    ))}
-                  </Segmented>
-
-                  <Button type="button" onClick={() => void runStoryboard(false)} disabled={!canRun} className="w-full">
-                    {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-                    {running ? copy.generating : `${copy.generate} · ${activePrice}`}
-                  </Button>
-                  {error ? <p className="text-sm text-error">{error}</p> : null}
-                  {message ? <p className="text-sm text-success">{message}</p> : null}
                 </div>
-              </Card>
+              </div>
             </section>
 
             <StoryboardResultPanel
+              activeRecentOutputId={previewingTemplate ? null : selectedRecentOutput?.id ?? null}
               copy={copy}
+              durationSec={durationSec}
               editInstruction={editInstruction}
+              editPriceLabel={editPriceLabel}
+              frameCount={frameCount}
+              orientation={storyboardOrientation}
               onApplyEdit={() => void runStoryboard(true)}
               onDownload={() =>
                 selectedImage && triggerAppDownload(selectedImage.url, suggestDownloadFilename(selectedImage.url, 'storyboard-reference'))
               }
               onEditInstructionChange={setEditInstruction}
               onSave={() => void saveSelectedImage()}
+              onSelectRecentOutput={handleSelectRecentOutput}
+              recentOutputs={recentOutputs}
+              recentOutputsLoading={recentOutputsLoading}
               result={result}
               running={running}
               saveLabel={saveLabel}
               saving={saving}
               selectedImage={selectedImage}
-              shotPlan={shotPlan}
+              templateImagePath={templateImagePath}
             />
+            </div>
           </div>
         </main>
       </div>
@@ -555,38 +848,174 @@ export default function StoryboardWorkspace() {
           </div>
         </div>
       ) : null}
+      <StoryboardReferenceLibraryModal
+        libraryModal={libraryModal}
+        onClose={closeReferenceLibrary}
+        onSelect={handleReferenceLibrarySelect}
+        toolsEnabled={FEATURES.workflows.toolsSection}
+      />
     </div>
   );
 }
 
-function Field({ children, className = '', label }: { children: ReactNode; className?: string; label: string }) {
+function BuilderStep({
+  children,
+  hint,
+  number,
+  title,
+}: {
+  children: ReactNode;
+  hint?: string;
+  number: number;
+  title: string;
+}) {
   return (
-    <label className={`block space-y-2 ${className}`}>
-      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Segmented({ children, label }: { children: ReactNode; label: string }) {
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
-      <div className="flex flex-wrap gap-2">{children}</div>
+    <div className="grid gap-2 border-t border-border pt-3.5 first:border-t-0 first:pt-0">
+      <div className="flex items-center gap-2.5">
+        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-secondary">
+          {number}
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
+          {hint ? <p className="mt-0.5 text-[11px] text-text-muted">{hint}</p> : null}
+        </div>
+      </div>
+      <div className="space-y-2">{children}</div>
     </div>
   );
 }
 
-function SegmentButton({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) {
+function OptionalPromptButton({
+  active,
+  filled,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  filled: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
-    <Button
+    <button
       type="button"
-      size="sm"
-      variant={active ? 'primary' : 'outline'}
+      aria-pressed={active}
       onClick={onClick}
-      className="min-h-0 h-9 rounded-full px-3 py-0 text-[11px]"
+      className={`inline-flex min-h-[38px] items-center justify-between gap-2 rounded-[10px] border px-3 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+        active
+          ? 'border-text-primary bg-text-primary text-on-inverse'
+          : filled
+            ? 'border-text-primary/40 bg-bg text-text-primary'
+            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
+      }`}
+    >
+      <span className="truncate">{label}</span>
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${filled ? 'bg-current' : 'bg-text-muted/35'}`} />
+    </button>
+  );
+}
+
+function ChoiceButton({
+  active,
+  children,
+  className = '',
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  className?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex min-h-[40px] items-center justify-center gap-2 rounded-[10px] border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+        active
+          ? 'border-text-primary bg-text-primary text-on-inverse'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+      } ${className}`}
     >
       {children}
-    </Button>
+    </button>
   );
+}
+
+function LengthPresetButton({
+  active,
+  label,
+  meta,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  meta: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[10px] border px-3 py-1.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+        active
+          ? 'border-text-primary bg-bg text-text-primary shadow-sm'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+      }`}
+    >
+      <span className="block text-sm font-semibold">{label}</span>
+      <span className="mt-0.5 block text-xs text-text-secondary">{meta}</span>
+    </button>
+  );
+}
+
+function TierButton({
+  active,
+  label,
+  onClick,
+  price,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  price: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex min-h-[46px] items-center justify-between gap-3 rounded-[10px] border px-3 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+        active
+          ? 'border-text-primary bg-text-primary text-on-inverse'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+      }`}
+    >
+      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-sm font-semibold">{price}</span>
+    </button>
+  );
+}
+
+function StyleIcon({ style }: { style: StoryboardStyle }) {
+  if (style === 'realistic') return <Camera className="h-4 w-4" />;
+  if (style === 'ugc') return <Smartphone className="h-4 w-4" />;
+  if (style === 'anime') return <Sparkles className="h-4 w-4" />;
+  return <Clapperboard className="h-4 w-4" />;
+}
+
+function getLengthPresetLabel(copy: StoryboardCopy, presetId: StoryboardLengthPresetId) {
+  if (presetId === 'short') return copy.shortPreset;
+  if (presetId === 'long') return copy.longPreset;
+  return copy.mediumPreset;
+}
+
+function getLengthPresetMeta(copy: StoryboardCopy, presetId: StoryboardLengthPresetId) {
+  if (presetId === 'short') return copy.shortPresetMeta;
+  if (presetId === 'long') return copy.longPresetMeta;
+  return copy.mediumPresetMeta;
+}
+
+function getTierLabel(copy: StoryboardCopy, tier: StoryboardTier) {
+  if (tier === '4k') return copy.fourKTier;
+  if (tier === 'ultra') return copy.ultraTier;
+  return copy.hdTier;
 }

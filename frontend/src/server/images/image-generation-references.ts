@@ -18,6 +18,7 @@ import {
   sanitizeCharacterReferences,
 } from './image-provider-payload';
 import type { ImageEngineEntry } from './image-generation-request-context';
+import { resolveStoryboardTemplateReferenceUrls } from './storyboard-template-reference';
 
 export type ImageGenerationReferenceContext = {
   characterReferences: CharacterReferenceSelection[];
@@ -42,9 +43,17 @@ export async function prepareImageGenerationReferences({
 }): Promise<ImageGenerationReferenceContext> {
   const engine = engineEntry.engine;
   const rawImageUrls = Array.isArray(body.imageUrls) ? body.imageUrls : [];
-  const imageUrls = rawImageUrls
+  const submittedImageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
+  const storyboardTemplateReferences =
+    body.source === 'storyboard'
+      ? await resolveStoryboardTemplateReferenceUrls({
+          urls: submittedImageUrls,
+          userId,
+        })
+      : { urls: submittedImageUrls, storedAssetInfoByUrl: new Map<string, StoredAssetInfo>() };
+  const imageUrls = storyboardTemplateReferences.urls;
   let characterReferences = sanitizeCharacterReferences(body.characterReferences);
   const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
   let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
@@ -70,6 +79,9 @@ export async function prepareImageGenerationReferences({
   let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
   if (supportedReferenceFormats.length && combinedImageUrls.length) {
     storedAssetInfoByUrl = await getStoredAssetInfoByUrl(userId, combinedImageUrls);
+    storyboardTemplateReferences.storedAssetInfoByUrl.forEach((value, key) => {
+      storedAssetInfoByUrl.set(key, value);
+    });
     const normalizedReferenceByUrl = new Map<string, { url: string; mime: string }>();
 
     for (const referenceUrl of [...new Set(combinedImageUrls)]) {
