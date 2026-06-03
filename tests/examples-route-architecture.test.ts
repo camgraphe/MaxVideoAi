@@ -139,6 +139,36 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
   assert.equal(metadata.description, description);
 });
 
+test('Seedance examples landing owns use-case-focused SERP metadata', () => {
+  const title = 'Seedance AI Video Examples, Prompts & Use Cases | MaxVideoAI';
+  const description =
+    'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, 2.0 Fast, or 1.5 Pro.';
+  const landing = getExampleModelLanding('en', 'seedance');
+
+  assert.ok(landing);
+  assert.equal(landing.metaTitle, title);
+  assert.equal(landing.metaDescription, description);
+  assert.doesNotMatch(landing.intro, /supported Seedance 1\.5 Pro setup for/i);
+  assert.doesNotMatch(landing.intro, /Read more/i);
+
+  const metadata = buildSeoMetadata({
+    locale: 'en',
+    title: landing.metaTitle,
+    description: landing.metaDescription,
+    englishPath: '/examples/seedance',
+  });
+
+  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+  assert.equal(metadata.description, description);
+  assert.equal(metadata.alternates?.canonical, 'https://maxvideoai.com/examples/seedance');
+  assert.deepEqual(metadata.alternates?.languages, {
+    en: 'https://maxvideoai.com/examples/seedance',
+    fr: 'https://maxvideoai.com/fr/galerie/seedance',
+    es: 'https://maxvideoai.com/es/galeria/seedance',
+    'x-default': 'https://maxvideoai.com/examples/seedance',
+  });
+});
+
 test('examples helper module exposes the route contract', () => {
   for (const exportName of [
     'ENGINE_META',
