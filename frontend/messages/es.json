@@ -4113,6 +4113,7 @@
       "recentEmpty": "Aún no hay renders de storyboard.",
       "recentItemFallback": "Storyboard",
       "outputTitle": "Storyboard generado",
+      "applyToGenerator": "Aplicar al generador",
       "download": "Descargar",
       "editImage": "Editar imagen",
       "saveToLibrary": "Guardar en biblioteca Storyboard",

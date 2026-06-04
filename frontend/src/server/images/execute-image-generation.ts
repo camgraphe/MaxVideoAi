@@ -44,6 +44,7 @@ import { buildReceiptSnapshot, type PendingReceipt } from './image-generation-re
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
 import { resolveImageGenerationRequestContext } from './image-generation-request-context';
 import { prepareImageGenerationReferences } from './image-generation-references';
+import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
@@ -529,13 +530,21 @@ export async function executeImageGeneration({
       ...image,
       url: normalizeMediaUrl(image.url) ?? image.url,
     }));
+    const stableImages =
+      jobSurface === 'storyboard'
+        ? await copyGeneratedImagesToStorage({
+            images: normalizedImages,
+            jobId,
+            userId,
+          })
+        : normalizedImages;
 
     const thumbUrls = await createImageThumbnailBatch({
       jobId,
       userId,
-      imageUrls: normalizedImages.map((image) => image.url),
+      imageUrls: stableImages.map((image) => image.url),
     });
-    const normalizedImagesWithThumbs = normalizedImages.map((image, index) => ({
+    const normalizedImagesWithThumbs = stableImages.map((image, index) => ({
       ...image,
       thumbUrl: thumbUrls[index] ?? null,
     }));

@@ -171,6 +171,8 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(bytePlusSeedreamExecutionSource, /buildBytePlusSeedreamPayload/);
   assert.match(bytePlusSeedreamExecutionSource, /extractBytePlusSeedreamImages/);
   assert.match(bytePlusSeedreamExecutionSource, /copyGeneratedImagesToStorage/);
+  assert.match(executorSource, /copyGeneratedImagesToStorage/);
+  assert.match(executorSource, /jobSurface === 'storyboard'/);
   assert.match(completionSource, /export async function persistCompletedImageGeneration/);
   assert.doesNotMatch(
     completionSource,

@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Camera, Clapperboard, Film, ImagePlus, Loader2, Sparkles, Smartphone, UserRound } from 'lucide-react';
@@ -17,6 +18,11 @@ import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import {
+  STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY,
+  buildStoryboardGeneratorHandoff,
+  buildStoryboardGeneratorHandoffUrl,
+} from '@/lib/storyboard-generator-handoff';
 import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
@@ -113,6 +119,7 @@ function formatPrice(value: PriceValue, locale: string): string {
 
 export default function StoryboardWorkspace() {
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const router = useRouter();
   const { locale, t } = useI18n();
   const copy = {
     ...DEFAULT_STORYBOARD_COPY,
@@ -556,6 +563,28 @@ export default function StoryboardWorkspace() {
     }
   }
 
+  function applySelectedImageToGenerator() {
+    if (!selectedImage?.url) return;
+
+    const handoffDraft = selectedRecentOutput?.storyboard ?? null;
+    const handoff = buildStoryboardGeneratorHandoff({
+      targetModel: handoffDraft?.targetModel ?? targetModel,
+      imageUrl: selectedImage.url,
+      thumbUrl: selectedImage.thumbUrl ?? null,
+      jobId: selectedImageJobId,
+      subject: handoffDraft?.subject ?? subject,
+      action: handoffDraft?.action ?? action,
+      dialogue: handoffDraft?.dialogue ?? dialogue,
+      durationSec: handoffDraft?.durationSec ?? durationSec,
+      frameCount: handoffDraft?.frameCount ?? frameCount,
+      orientation: handoffDraft?.orientation ?? storyboardOrientation,
+      width: selectedImage.width ?? null,
+      height: selectedImage.height ?? null,
+    });
+    window.sessionStorage.setItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY, JSON.stringify(handoff));
+    router.push(buildStoryboardGeneratorHandoffUrl(handoff));
+  }
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen flex-col bg-bg">
@@ -862,6 +891,7 @@ export default function StoryboardWorkspace() {
               frameCount={frameCount}
               orientation={storyboardOrientation}
               onApplyEdit={() => void runStoryboard(true)}
+              onApplyToGenerator={applySelectedImageToGenerator}
               onDownload={() =>
                 selectedImage && triggerAppDownload(selectedImage.url, suggestDownloadFilename(selectedImage.url, 'storyboard-reference'))
               }

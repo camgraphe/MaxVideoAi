@@ -47,6 +47,9 @@ export type JobOutputRecord = {
   createdAt?: string;
   savedAssetId?: string | null;
   isSaved?: boolean;
+  jobPrompt?: string | null;
+  jobDurationSec?: number | null;
+  jobAspectRatio?: string | null;
 };
 
 export type MediaAssetRecord = {
@@ -104,6 +107,9 @@ export type DbJobOutputRow = {
   metadata: unknown;
   created_at: string;
   saved_asset_id?: string | null;
+  job_prompt?: string | null;
+  job_duration_sec?: number | null;
+  job_aspect_ratio?: string | null;
 };
 
 export type DbMediaAssetRow = {
@@ -355,6 +361,9 @@ export function mapOutputRow(row: DbJobOutputRow): JobOutputRecord {
     createdAt: row.created_at,
     savedAssetId: row.saved_asset_id ?? null,
     isSaved: Boolean(row.saved_asset_id),
+    jobPrompt: typeof row.job_prompt === 'string' ? row.job_prompt : null,
+    jobDurationSec: normalizeInteger(row.job_duration_sec),
+    jobAspectRatio: typeof row.job_aspect_ratio === 'string' ? row.job_aspect_ratio : null,
   };
 }
 

@@ -126,6 +126,16 @@ test('normalizes library sources to the canonical allowed set', () => {
   assert.equal(normalizeMediaAssetSource(null), 'import');
 });
 
+test('library listings hide internal storyboard template reference assets', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+
+  const exclusions = source.match(/storyboard_template_reference/g) ?? [];
+  assert.ok(exclusions.length >= 2, 'canonical and legacy asset queries should exclude internal storyboard templates');
+});
+
 test('builds idempotent media asset identity from source output when available', () => {
   assert.equal(
     resolveLibraryAssetIdentity({
@@ -489,6 +499,30 @@ test('image upload and library routes return stable JSON errors for storage fail
   assert.match(assetsRoute, /error:\s*'LOAD_FAILED'/);
   assert.match(recentRoute, /failed to list recent outputs/);
   assert.match(recentRoute, /error:\s*'LOAD_FAILED'/);
+});
+
+test('storyboard recent outputs expose generator handoff metadata without leaking the full job prompt', () => {
+  const recentRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),
+    'utf8'
+  );
+  const jobOutputsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/job-outputs.ts'),
+    'utf8'
+  );
+  const recordsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library-records.ts'),
+    'utf8'
+  );
+
+  assert.match(jobOutputsSource, /j\.prompt\s+AS\s+job_prompt/i);
+  assert.match(jobOutputsSource, /j\.duration_sec\s+AS\s+job_duration_sec/i);
+  assert.match(jobOutputsSource, /j\.aspect_ratio\s+AS\s+job_aspect_ratio/i);
+  assert.match(recordsSource, /jobPrompt\?:\s*string\s*\|\s*null/);
+  assert.match(recentRoute, /extractStoryboardGeneratorDraftFromPrompt/);
+  assert.match(recentRoute, /surface\s*===\s*'storyboard'/);
+  assert.match(recentRoute, /storyboard:\s*surface\s*===\s*'storyboard'\s*\?\s*buildRecentOutputStoryboardHandoff/);
+  assert.doesNotMatch(recentRoute, /jobPrompt:\s*output\.jobPrompt/);
 });
 
 test('image upload UI maps storage error codes to actionable copy', () => {

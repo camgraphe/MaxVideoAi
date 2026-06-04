@@ -215,12 +215,14 @@ export function buildStoryboardShotPlan(input: StoryboardShotPlanInput): Storybo
     panel: index + 1,
     title: template.title,
     framing: template.framing,
-    actionBeat: `${template.actionBeat} Subject: ${subject}. Action: ${action}.`,
+    actionBeat: template.actionBeat,
     visualPriority: `${template.visualPriority}${referenceSuffix}`,
   }));
 
   return {
-    summary: `${frameCount} panel ${input.durationSec}s storyboard plan for ${input.targetModel === 'seedance' ? 'Seedance' : 'Kling'}.`,
+    summary: `${frameCount} panel ${input.durationSec}s storyboard plan for ${
+      input.targetModel === 'seedance' ? 'Seedance' : 'Kling'
+    }: ${subject}. ${action}.`,
     targetGuidance,
     styleGuidance,
     referenceGuidance,

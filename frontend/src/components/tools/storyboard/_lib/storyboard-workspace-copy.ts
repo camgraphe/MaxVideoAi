@@ -72,6 +72,7 @@ export const DEFAULT_STORYBOARD_COPY = {
   recentEmpty: 'No storyboard renders yet.',
   recentItemFallback: 'Storyboard',
   outputTitle: 'Generated storyboard',
+  applyToGenerator: 'Apply to generator',
   download: 'Download',
   editImage: 'Edit image',
   saveToLibrary: 'Save to Storyboard library',

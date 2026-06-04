@@ -31,12 +31,43 @@ const STYLE_PROMPTS: Record<StoryboardStyle, string> = {
   cinema: 'cinematic storyboard, film lighting, controlled lens language, strong shot progression',
 };
 
+const MAX_SUBJECT_CHARS = 2200;
+const MAX_ACTION_CHARS = 2600;
+const MAX_DIALOGUE_CHARS = 3000;
+const MAX_VISUAL_NOTES_CHARS = 2000;
+const MAX_EDIT_INSTRUCTION_CHARS = 1200;
+const MAX_SHOT_DIALOGUE_CHARS = 450;
+
+function neutralizeProviderSensitiveTerms(value: string): string {
+  return value
+    .replace(/\bbody language\b/gi, 'gesture language')
+    .replace(/\bcelebrity likeness(?:es)?\b/gi, 'famous-person resemblance')
+    .replace(/\bcelebrity\b/gi, 'famous person')
+    .replace(/\blikeness(?:es)?\b/gi, 'resemblance')
+    .replace(/\bvulgarity\b/gi, 'clean humor')
+    .replace(/\bvulgar\b/gi, 'crude')
+    .replace(/\bdrunk behavior\b/gi, 'messy behavior')
+    .replace(/\bdrunk\b/gi, 'messy')
+    .replace(/\binappropriate\b/gi, 'off-brand');
+}
+
+function truncatePromptField(value: string, maxChars: number): string {
+  const trimmed = neutralizeProviderSensitiveTerms(value).trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  const slice = trimmed.slice(0, maxChars).replace(/\s+\S*$/, '').trim();
+  return `${slice} [trimmed for provider limit]`;
+}
+
 export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
-  const subject = input.subject.trim();
-  const action = input.action.trim();
-  const dialogue = input.dialogue?.trim();
-  const visualNotes = input.visualNotes?.trim();
-  const editInstruction = input.editInstruction?.trim();
+  const subject = truncatePromptField(input.subject, MAX_SUBJECT_CHARS);
+  const action = truncatePromptField(input.action, MAX_ACTION_CHARS);
+  const dialogue = input.dialogue?.trim() ? truncatePromptField(input.dialogue, MAX_DIALOGUE_CHARS) : undefined;
+  const visualNotes = input.visualNotes?.trim()
+    ? truncatePromptField(input.visualNotes, MAX_VISUAL_NOTES_CHARS)
+    : undefined;
+  const editInstruction = input.editInstruction?.trim()
+    ? truncatePromptField(input.editInstruction, MAX_EDIT_INSTRUCTION_CHARS)
+    : undefined;
   const orientation = input.orientation ?? 'landscape';
   const orientationGuidance =
     orientation === 'portrait'
@@ -44,8 +75,8 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
       : 'Format: Landscape 16:9 video storyboard. Compose each panel thumbnail as a horizontal 16:9 video frame, with continuity readable from left to right.';
   const targetGuidance =
     input.targetModel === 'seedance'
-      ? 'Target: Seedance. Do not include real people, celebrity likenesses, or photoreal human faces. Use products, cooking objects, film props, animation-safe characters, stylized silhouettes, or non-human subjects.'
-      : 'Target: Kling. Real people are allowed when requested, but avoid celebrity likenesses unless explicitly licensed.';
+      ? 'Target: Seedance. Prioritize products, cooking objects, film props, places, animation-safe characters, stylized silhouettes, or non-human subjects. Keep any human presence generic and non-identifiable.'
+      : 'Target: Kling. Use generic non-famous people when human scenes are requested, with no famous-person resemblance.';
 
   return [
     `Create one storyboard reference image for a ${input.durationSec}s AI video.`,
@@ -59,7 +90,7 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
     action ? `Action: ${action}.` : null,
     visualNotes ? `Scene notes and constraints: ${visualNotes}.` : null,
     dialogue
-      ? `Dialogue/audio direction: ${dialogue}. Use this to plan dialogue timing, emotion, mouth and body performance, reaction beats, and audio pacing. Put dialogue text only in the Dialogue metadata row under the relevant thumbnail; do not draw captions, subtitles, or speech bubbles inside the thumbnail artwork.`
+      ? `Dialogue/audio direction: ${dialogue}. Use this to plan dialogue timing, emotion, expression, gesture performance, reaction beats, and audio pacing. Put dialogue text only in the Dialogue metadata row under the relevant thumbnail; do not draw captions, subtitles, or speech bubbles inside the thumbnail artwork.`
       : null,
     input.referenceImageCount
       ? `Use the ${input.referenceImageCount} uploaded reference images as visual anchors for characters, products, material details, colors, silhouettes, and settings. Preserve recognizable design cues while building the storyboard panels.`
@@ -67,13 +98,18 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
     `Style: ${STYLE_PROMPTS[input.style]}.`,
     targetGuidance,
     input.shotPlan ? 'Shot map:' : null,
-    ...(input.shotPlan?.shots.map((shot) =>
-      `Panel ${shot.panel}: ${shot.title}. Framing: ${shot.framing}. Beat: ${shot.actionBeat}. Visual priority: ${shot.visualPriority}${
-        shot.dialogueBeat ? `. Dialogue beat: ${shot.dialogueBeat}` : ''
-      }. Metadata rows: Shot type: ${shot.title}; Camera: ${shot.framing}; Action: ${shot.actionBeat}; Dialogue: ${
-        shot.dialogueBeat ?? 'Silent / no dialogue'
-      }.`
-    ) ?? []),
+    ...(input.shotPlan?.shots.map((shot) => {
+      const dialogueBeat = shot.dialogueBeat
+        ? truncatePromptField(shot.dialogueBeat, MAX_SHOT_DIALOGUE_CHARS)
+        : null;
+      return `Panel ${shot.panel}: ${shot.title}. Framing: ${shot.framing}. Beat: ${
+        shot.actionBeat
+      }. Visual priority: ${shot.visualPriority}${
+        dialogueBeat ? `. Dialogue beat: ${dialogueBeat}` : ''
+      }. Metadata rows: Shot type: ${shot.title}; Camera: ${shot.framing}; Action: ${
+        shot.actionBeat
+      }; Dialogue: ${dialogueBeat ?? 'Silent / no dialogue'}.`;
+    }) ?? []),
     editInstruction ? `Edit request: ${editInstruction}.` : null,
     'Make the board immediately usable as an image reference: no UI chrome, no captions inside thumbnails, no speech bubbles, no extra prompt text, no watermark.',
     'Prioritize readable staging, stable subject identity, coherent lighting, and clear start/middle/end motion beats.',

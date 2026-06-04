@@ -125,7 +125,10 @@ export async function listRecentOutputs(params: {
   const rows = await query<DbJobOutputRow>(
     `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
             o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
-            saved.id AS saved_asset_id
+            saved.id AS saved_asset_id,
+            j.prompt AS job_prompt,
+            j.duration_sec AS job_duration_sec,
+            j.aspect_ratio AS job_aspect_ratio
        FROM job_outputs o
        JOIN app_jobs j ON j.job_id = o.job_id
        LEFT JOIN media_assets saved

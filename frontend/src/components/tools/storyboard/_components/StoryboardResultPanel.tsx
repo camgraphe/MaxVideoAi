@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { Download, Loader2, Pencil, Save } from 'lucide-react';
+import { Download, Loader2, Pencil, Save, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import type { StoryboardCopy } from '../_lib/storyboard-workspace-copy';
@@ -19,6 +19,7 @@ type StoryboardResultPanelProps = {
   frameCount: number;
   orientation: StoryboardOrientation;
   onApplyEdit: () => void;
+  onApplyToGenerator: () => void;
   onDownload: () => void;
   onEditInstructionChange: (value: string) => void;
   onSave: () => void;
@@ -42,6 +43,7 @@ export function StoryboardResultPanel({
   frameCount,
   orientation,
   onApplyEdit,
+  onApplyToGenerator,
   onDownload,
   onEditInstructionChange,
   onSave,
@@ -78,6 +80,10 @@ export function StoryboardResultPanel({
             <p className="mt-1 text-sm text-text-secondary">{title} · {subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="primary" size="sm" disabled={!selectedImage} onClick={onApplyToGenerator}>
+              <Send className="h-4 w-4" />
+              {copy.applyToGenerator}
+            </Button>
             <Button type="button" variant="outline" size="sm" disabled={!selectedImage} onClick={onDownload}>
               <Download className="h-4 w-4" />
               {copy.download}

@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { listRecentOutputs, type MediaKind } from '@/server/media-library';
+import { listRecentOutputs, type JobOutputRecord, type MediaKind } from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
 function normalizeKind(value: string | null): MediaKind | null {
   if (value === 'image' || value === 'video' || value === 'audio') return value;
   return null;
+}
+
+function buildRecentOutputStoryboardHandoff(output: JobOutputRecord) {
+  if (!output.jobPrompt) return null;
+  return extractStoryboardGeneratorDraftFromPrompt(output.jobPrompt, {
+    durationSec: output.jobDurationSec ?? output.durationSec,
+    aspectRatio: output.jobAspectRatio,
+    width: output.width,
+    height: output.height,
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -16,11 +27,12 @@ export async function GET(req: NextRequest) {
   }
 
   let outputs: Awaited<ReturnType<typeof listRecentOutputs>>;
+  const surface = req.nextUrl.searchParams.get('surface');
   try {
     outputs = await listRecentOutputs({
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-      surface: req.nextUrl.searchParams.get('surface'),
+      surface,
       limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
     });
   } catch (error) {
@@ -46,6 +58,7 @@ export async function GET(req: NextRequest) {
       createdAt: output.createdAt,
       isSaved: Boolean(output.isSaved),
       savedAssetId: output.savedAssetId ?? null,
+      storyboard: surface === 'storyboard' ? buildRecentOutputStoryboardHandoff(output) : null,
     })),
   });
 }

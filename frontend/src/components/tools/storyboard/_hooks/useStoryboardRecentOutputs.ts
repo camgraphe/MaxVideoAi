@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
+import type { StoryboardGeneratorHandoffDraft } from '@/lib/storyboard-generator-handoff';
 
 export type StoryboardRecentOutput = {
   id: string;
@@ -14,6 +15,7 @@ export type StoryboardRecentOutput = {
   mime: string | null;
   createdAt: string | null;
   isSaved: boolean;
+  storyboard?: StoryboardGeneratorHandoffDraft | null;
 };
 
 type StoryboardRecentOutputsResponse = {
