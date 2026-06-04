@@ -3,6 +3,17 @@ import type { VideoProviderKey } from './types';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
 
+const MAX_SNAPSHOT_STRING_LENGTH = 4096;
+const MAX_SNAPSHOT_DEPTH = 12;
+const BINARY_SNAPSHOT_KEYS = new Set([
+  'base64',
+  'b64_json',
+  'bytes_base64_encoded',
+  'bytesbase64encoded',
+  'inline_data',
+  'inlinedata',
+]);
+
 export type ProviderAttemptStatus =
   | 'submit_started'
   | 'accepted'
@@ -18,8 +29,35 @@ export type ProviderAttemptRef = {
   requestSnapshot?: unknown;
 };
 
+function isBinarySnapshotKey(key: string): boolean {
+  return BINARY_SNAPSHOT_KEYS.has(key.replace(/[^a-z0-9_]/gi, '').toLowerCase());
+}
+
+function sanitizeSnapshotValue(value: unknown, depth = 0): unknown {
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string') {
+    if (value.length <= MAX_SNAPSHOT_STRING_LENGTH) return value;
+    return `[truncated string: ${value.length} chars]`;
+  }
+  if (typeof value !== 'object') return value;
+  if (depth >= MAX_SNAPSHOT_DEPTH) return '[truncated object: max depth reached]';
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeSnapshotValue(item, depth + 1));
+  }
+
+  const output: Record<string, unknown> = {};
+  Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => {
+    if (isBinarySnapshotKey(key) && typeof entry === 'string') {
+      output[key] = `[omitted binary string: ${entry.length} chars]`;
+      return;
+    }
+    output[key] = sanitizeSnapshotValue(entry, depth + 1);
+  });
+  return output;
+}
+
 function snapshotParam(value: unknown): string | null {
-  return value === undefined || value === null ? null : JSON.stringify(value);
+  return value === undefined || value === null ? null : JSON.stringify(sanitizeSnapshotValue(value));
 }
 
 export async function createProviderAttempt(params: {

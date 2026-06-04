@@ -1,0 +1,31 @@
+name: Neon Branch Guard
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  prune-preview-branches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_BRANCH_GUARD_PROJECT_ID: shy-flower-71253790
+      NEON_BRANCH_LIMIT: '8'
+      NEON_BRANCH_DELETE_ARCHIVED: '1'
+      NEON_BRANCH_DELETE_PATTERN: '^preview/'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          package-manager-cache: false
+
+      - name: Run Neon branch guard
+        run: node scripts/neon-branch-guard.mjs --delete-archived
