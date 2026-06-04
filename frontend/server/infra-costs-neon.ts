@@ -19,7 +19,6 @@ import {
 const DEFAULT_NEON_API_BASE_URL = 'https://console.neon.tech/api/v2';
 const DEFAULT_NEON_ORG_ID = 'org-red-feather-54991024';
 const DEFAULT_NEON_PROJECT_ID = 'shy-flower-71253790';
-
 const NEON_METRICS = [
   'compute_unit_seconds',
   'root_branch_bytes_month',
@@ -33,7 +32,6 @@ const NEON_METRICS = [
 
 type NeonMetricName = (typeof NEON_METRICS)[number];
 type NeonMetricMap = Record<NeonMetricName, number>;
-
 type NeonProjectUsage = {
   projectId: string;
   projectName: string | null;
@@ -85,9 +83,11 @@ export async function fetchNeonInfraCostReport({
       resolvedProjectIds.map((projectId) => fetchNeonBranchSummary({ apiBaseUrl, token, projectId, fetchFn }))
     );
     const totals = buildNeonTotals(usage, branches);
-    const projectedTotals = projectNeonTotals(totals, period.projectionFactor);
-    const costBreakdown = estimateNeonCosts(totals, rates);
-    const projectedCostBreakdown = estimateNeonCosts(projectedTotals, rates);
+    const monthHours = Math.max(1, (Date.parse(period.monthEndIso) - Date.parse(period.startIso)) / (1000 * 60 * 60));
+    const currentExtraBranchCount = branches.reduce((sum, branch) => sum + branch.nonPrimary, 0);
+    const projectedTotals = projectNeonTotals(totals, period, currentExtraBranchCount);
+    const costBreakdown = estimateNeonCosts(totals, rates, monthHours);
+    const projectedCostBreakdown = estimateNeonCosts(projectedTotals, rates, monthHours);
     const details: NeonInfraCostDetails = {
       orgId,
       projectIds: resolvedProjectIds,
@@ -100,7 +100,7 @@ export async function fetchNeonInfraCostReport({
       costBreakdown,
       projectedCostBreakdown,
       branches,
-      dailyRows: buildNeonDailyRows(usage, rates),
+      dailyRows: buildNeonDailyRows(usage, rates, monthHours),
     };
 
     return {
@@ -352,21 +352,22 @@ function buildNeonTotals(usage: NeonProjectUsage[], branches: NeonBranchSummary[
   };
 }
 
-function projectNeonTotals(totals: NeonUsageTotals, factor: number): NeonUsageTotals {
+function projectNeonTotals(totals: NeonUsageTotals, period: InfraCostPeriod, currentExtraBranchCount: number): NeonUsageTotals {
+  const remainingHours = Math.max(0, (Date.parse(period.monthEndIso) - Date.parse(period.endIso)) / (1000 * 60 * 60));
   return {
     ...totals,
-    computeCuHours: totals.computeCuHours * factor,
-    rootBranchGbMonth: totals.rootBranchGbMonth * factor,
-    childBranchGbMonth: totals.childBranchGbMonth * factor,
-    instantRestoreGbMonth: totals.instantRestoreGbMonth * factor,
-    snapshotStorageGbMonth: totals.snapshotStorageGbMonth * factor,
-    publicTransferGb: totals.publicTransferGb * factor,
-    privateTransferGb: totals.privateTransferGb * factor,
-    extraBranchesMonth: totals.extraBranchesMonth * factor,
+    computeCuHours: totals.computeCuHours * period.projectionFactor,
+    rootBranchGbMonth: totals.rootBranchGbMonth * period.projectionFactor,
+    childBranchGbMonth: totals.childBranchGbMonth * period.projectionFactor,
+    instantRestoreGbMonth: totals.instantRestoreGbMonth * period.projectionFactor,
+    snapshotStorageGbMonth: totals.snapshotStorageGbMonth * period.projectionFactor,
+    publicTransferGb: totals.publicTransferGb * period.projectionFactor,
+    privateTransferGb: totals.privateTransferGb * period.projectionFactor,
+    extraBranchesMonth: totals.extraBranchesMonth + currentExtraBranchCount * remainingHours,
   };
 }
 
-function estimateNeonCosts(totals: NeonUsageTotals, rates: NeonInfraCostDetails['rates']) {
+function estimateNeonCosts(totals: NeonUsageTotals, rates: NeonInfraCostDetails['rates'], monthHours: number) {
   return {
     computeUsd: totals.computeCuHours * rates.computeCuHourUsd,
     storageUsd: (totals.rootBranchGbMonth + totals.childBranchGbMonth) * rates.storageGbMonthUsd,
@@ -374,11 +375,11 @@ function estimateNeonCosts(totals: NeonUsageTotals, rates: NeonInfraCostDetails[
     snapshotStorageUsd: totals.snapshotStorageGbMonth * rates.snapshotStorageGbMonthUsd,
     publicTransferUsd: Math.max(0, totals.publicTransferGb - rates.includedPublicTransferGb) * rates.publicTransferGbUsd,
     privateTransferUsd: totals.privateTransferGb * rates.privateTransferGbUsd,
-    extraBranchUsd: totals.extraBranchesMonth * rates.extraBranchMonthUsd,
+    extraBranchUsd: (totals.extraBranchesMonth / monthHours) * rates.extraBranchMonthUsd,
   };
 }
 
-function buildNeonDailyRows(usage: NeonProjectUsage[], rates: NeonInfraCostDetails['rates']): NeonDailyUsageRow[] {
+function buildNeonDailyRows(usage: NeonProjectUsage[], rates: NeonInfraCostDetails['rates'], monthHours: number): NeonDailyUsageRow[] {
   return usage
     .flatMap((project) =>
       project.rows.map((row) => {
@@ -400,7 +401,7 @@ function buildNeonDailyRows(usage: NeonProjectUsage[], rates: NeonInfraCostDetai
           publicTransferGb: totals.publicTransferGb,
           privateTransferGb: totals.privateTransferGb,
           extraBranchesMonth: totals.extraBranchesMonth,
-          estimatedUsd: sumObjectValues(estimateNeonCosts({ ...totals, publicTransferGb: 0 }, { ...rates, includedPublicTransferGb: 0 })),
+          estimatedUsd: sumObjectValues(estimateNeonCosts({ ...totals, publicTransferGb: 0 }, { ...rates, includedPublicTransferGb: 0 }, monthHours)),
         };
       })
     )

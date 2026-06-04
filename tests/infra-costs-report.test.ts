@@ -42,7 +42,7 @@ test('infra costs report combines Neon estimates and Vercel billed charges with 
                       { metric_name: 'snapshot_storage_bytes_month', value: 0 },
                       { metric_name: 'public_network_transfer_bytes', value: 260 * GIB },
                       { metric_name: 'private_network_transfer_bytes', value: 0 },
-                      { metric_name: 'extra_branches_month', value: 2 },
+                      { metric_name: 'extra_branches_month', value: 720 },
                     ],
                   },
                 ],
@@ -115,7 +115,8 @@ test('infra costs report combines Neon estimates and Vercel billed charges with 
   assert.equal(report.providers.vercel.money.projectedMonthUsd, 150);
   assert.equal(report.providers.neon.details?.totals.currentBranchCount, 2);
   assert.equal(report.providers.neon.details?.projectedTotals.publicTransferGb, 520);
-  assert.ok(report.providers.neon.money.currentUsd > 3, 'Neon estimate should include branch and usage costs');
+  assert.ok(report.providers.neon.money.currentUsd > 1, 'Neon estimate should include branch and usage costs');
+  assert.ok(report.providers.neon.money.currentUsd < 10, 'Branch usage should be converted from branch-hours to branch-month pricing');
   assert.ok(report.providers.neon.money.projectedMonthUsd > report.providers.neon.money.currentUsd);
   assert.equal(report.notificationLevel, 'warning');
   assert.ok(report.alerts.some((alert) => alert.provider === 'total' && alert.kind === 'cost'));

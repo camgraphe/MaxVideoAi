@@ -307,7 +307,7 @@ function NeonDetails({ details }: { details: NeonInfraCostDetails }) {
     },
     {
       label: 'Extra branches',
-      usage: `${formatNumber(details.totals.extraBranchesMonth)} branch-month`,
+      usage: `${formatNumber(details.totals.extraBranchesMonth)} branch-hours`,
       current: details.costBreakdown.extraBranchUsd,
       projected: details.projectedCostBreakdown.extraBranchUsd,
     },
