@@ -4052,7 +4052,7 @@
       "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
       "backToTools": "Outils",
       "title": "Storyboarder",
-      "subtitle": "Crée une planche de référence claire avant d’envoyer la direction à Seedance ou Kling.",
+      "subtitle": "Crée une planche prête pour Seedance. L’envoi vers Kling est expérimental.",
       "subjectStepTitle": "Décris ton idée",
       "referenceStepTitle": "Références",
       "styleStepTitle": "Style vidéo",
@@ -4078,8 +4078,9 @@
       "targetSeedance": "Seedance",
       "targetKling": "Kling",
       "targetRecommendedLabel": "Recommandé",
+      "targetExperimentalLabel": "Expérimental",
       "recognizablePeopleLabel": "Personnes reconnaissables",
-      "recognizablePeopleMeta": "Utilise Kling quand des personnes réelles ou identifiables sont visibles dans la planche.",
+      "recognizablePeopleMeta": "Pour des personnes réelles ou identifiables, utilise Kling en expérimental avec une référence visuelle séparée.",
       "styleLabel": "Style",
       "durationLabel": "Durée",
       "frameCountLabel": "Frames",
@@ -4127,6 +4128,7 @@
       "saveToLibrary": "Enregistrer dans la bibliothèque Storyboard",
       "savedToLibrary": "Enregistré dans la bibliothèque Storyboard.",
       "missingSubject": "Ajoute d’abord un sujet.",
+      "klingFirstFrameMissing": "La first frame Kling manque. Regénère le storyboard pour préparer cette image d’ouverture.",
       "uploadFailed": "Impossible d’importer l’image de référence sélectionnée. Réessaie.",
       "uploadTooLarge": "L’image sélectionnée est trop lourde. Utilise une image de moins de {maxMB} Mo.",
       "generationFailed": "La génération storyboard a échoué.",
@@ -4136,9 +4138,9 @@
       "authSecondary": "Se connecter",
       "close": "Fermer",
       "targetNotes": {
-        "seedance": "Seedance est recommandé pour produit, cuisine, accessoires film, animation, sujets stylisés ou non humains. Les personnes réelles sont exclues.",
-        "kling": "Kling est recommandé quand la planche montre des personnes réelles, reconnaissables ou des sujets humains réalistes.",
-        "klingFallback": "Kling peut rester sélectionné manuellement, mais Seedance est recommandé sauf si la planche montre des personnes réelles ou reconnaissables."
+        "seedance": "Seedance est recommandé pour les planches storyboard : produit, cuisine, accessoires film, animation, sujets stylisés ou non humains. Les personnes réelles sont exclues.",
+        "kling": "Kling est expérimental : le prix storyboard inclut une first frame HD propre, puis Apply envoie cette image et la planche en référence.",
+        "klingFallback": "Expérimental : Apply envoie la first frame propre comme image de départ et la planche storyboard comme référence de shot plan."
       },
       "styles": {
         "realistic": "Réaliste",

@@ -22,6 +22,7 @@ const storyboardTargetPath = join(root, 'frontend/src/components/tools/storyboar
 const storyboardReferenceImagePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-image.ts');
 const storyboardShotPlanPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-shot-plan.ts');
 const storyboardReferenceLibraryPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-reference-library.ts');
+const storyboardFirstFramePath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-first-frame.ts');
 const storyboardTemplatesPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-templates.ts');
 const storyboardGeneratorHandoffPath = join(root, 'frontend/lib/storyboard-generator-handoff.ts');
 const workspaceStoryboardHandoffPath = join(root, 'frontend/app/(core)/(workspace)/app/_lib/workspace-storyboard-handoff.ts');
@@ -134,6 +135,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const resultPanelSource = readFileSync(storyboardResultPanelPath, 'utf8');
   const recentRailSource = readFileSync(storyboardRecentRailPath, 'utf8');
   const referenceLibraryModalSource = readFileSync(storyboardReferenceLibraryModalPath, 'utf8');
+  const firstFrameSource = readFileSync(storyboardFirstFramePath, 'utf8');
 
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
@@ -200,6 +202,11 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY/);
   assert.match(workspaceSource, /buildStoryboardGeneratorHandoff/);
   assert.match(workspaceSource, /buildStoryboardGeneratorHandoffUrl/);
+  assert.match(workspaceSource, /buildKlingStoryboardFirstFramePrompt/);
+  assert.match(workspaceSource, /klingFirstFrame/);
+  assert.match(workspaceSource, /startFrameImageUrl/);
+  assert.match(generatorHandoffSource, /start_image_url/);
+  assert.match(workspaceStoryboardHandoffSource, /buildStoryboardStartFrameAsset/);
   assert.match(workspaceSource, /applySelectedImageToGenerator/);
   assert.match(workspaceSource, /selectedRecentOutput\?\.storyboard/);
   assert.match(workspaceSource, /handoffDraft\?\.targetModel \?\? targetModel/);
@@ -208,6 +215,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /templateReference:\s*!edit/);
   assert.match(workspaceSource, /orientation:\s*storyboardOrientation/);
   assert.match(workspaceSource, /mode:\s*'i2i'/);
+  assert.match(firstFrameSource, /Create one clean full-frame opening image/);
+  assert.match(firstFrameSource, /Use the storyboard board reference to extract Panel 1/);
   assert.match(workspaceSource, /imageUrls:\s*sourceImages\.map\(\(image\) => image\.url\)/);
   assert.match(workspaceSource, /referenceImageSizes:\s*sourceImages\.map/);
   assert.match(workspaceSource, /const outputConfig = edit \? editOutputConfig : tierConfig/);
@@ -244,7 +253,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(promptSource, /uploaded reference images/);
   assert.match(promptSource, /Seedance/);
   assert.match(promptSource, /Kling/);
-  assert.match(promptSource, /generic non-famous people/);
+  assert.match(promptSource, /Kling experimental/);
   assert.match(promptSource, /durationSec/);
   assert.match(targetSource, /resolveStoryboardRecommendedTarget/);
   assert.match(targetSource, /isStoryboardTargetRecommended/);
@@ -318,15 +327,15 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(referenceLibraryModalSource, /STORYBOARD_REFERENCE_SUPPORTED_FORMATS/);
 });
 
-test('storyboard target recommendation prefers Seedance unless recognizable people are visible', async () => {
+test('storyboard target recommendation keeps Seedance first and treats Kling as experimental', async () => {
   const module = await import('../frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
 
   assert.equal(module.resolveStoryboardRecommendedTarget(false), 'seedance');
-  assert.equal(module.resolveStoryboardRecommendedTarget(true), 'kling');
+  assert.equal(module.resolveStoryboardRecommendedTarget(true), 'seedance');
   assert.equal(module.isStoryboardTargetRecommended('seedance', false), true);
   assert.equal(module.isStoryboardTargetRecommended('kling', false), false);
-  assert.equal(module.isStoryboardTargetRecommended('seedance', true), false);
-  assert.equal(module.isStoryboardTargetRecommended('kling', true), true);
+  assert.equal(module.isStoryboardTargetRecommended('seedance', true), true);
+  assert.equal(module.isStoryboardTargetRecommended('kling', true), false);
 });
 
 test('storyboard prompt carries dialogue into metadata rows without drawing thumbnail captions', async () => {

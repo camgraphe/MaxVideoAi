@@ -267,7 +267,7 @@ export function useWorkspaceVideoSettings({
       return;
     }
 
-    const handoffKey = `${handoff.createdAt}:${handoff.engineId}:${handoff.imageUrl}`;
+    const handoffKey = `${handoff.createdAt}:${handoff.engineId}:${handoff.mode}:${handoff.imageUrl ?? 'prompt-only'}`;
     if (appliedStoryboardHandoffRef.current === handoffKey) return;
     appliedStoryboardHandoffRef.current = handoffKey;
 

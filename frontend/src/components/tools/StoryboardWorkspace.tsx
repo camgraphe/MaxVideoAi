@@ -14,7 +14,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { runImageGeneration, saveImageToLibrary } from '@/lib/api';
+import { hideJob, runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -33,6 +33,10 @@ import {
   type StoryboardRecentOutput,
 } from './storyboard/_hooks/useStoryboardRecentOutputs';
 import { DEFAULT_STORYBOARD_COPY, type StoryboardCopy } from './storyboard/_lib/storyboard-workspace-copy';
+import {
+  KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX,
+  buildKlingStoryboardFirstFramePrompt,
+} from './storyboard/_lib/storyboard-first-frame';
 import {
   cleanupStoryboardReferenceImage,
   uploadStoryboardReferenceImage,
@@ -107,6 +111,15 @@ const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
 
 type PriceValue = { cents: number; currency: string } | null;
 type PriceState = Record<StoryboardTier, PriceValue>;
+type StoryboardGeneratedImage = ImageGenerationResponse['images'][number];
+type KlingFirstFrameState = {
+  storyboardJobId: string | null;
+  storyboardUrl: string;
+  image: StoryboardGeneratedImage;
+  jobId: string | null;
+};
+
+const KLING_FIRST_FRAME_STORAGE_KEY = 'maxvideoai.storyboard.klingFirstFrames.v1';
 
 function formatPrice(value: PriceValue, locale: string): string {
   if (!value) return '...';
@@ -115,6 +128,39 @@ function formatPrice(value: PriceValue, locale: string): string {
   } catch {
     return `${value.currency} ${(value.cents / 100).toFixed(2)}`;
   }
+}
+
+function addPriceValues(left: PriceValue, right: PriceValue): PriceValue {
+  if (!left || !right) return null;
+  return {
+    cents: left.cents + right.cents,
+    currency: left.currency || right.currency || 'USD',
+  };
+}
+
+function readStoredKlingFirstFrames(): Record<string, KlingFirstFrameState> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(KLING_FIRST_FRAME_STORAGE_KEY) ?? '{}') as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return parsed as Record<string, KlingFirstFrameState>;
+  } catch {
+    return {};
+  }
+}
+
+function writeStoredKlingFirstFrame(frame: KlingFirstFrameState) {
+  if (!frame.storyboardJobId || typeof window === 'undefined') return;
+  const frames = readStoredKlingFirstFrames();
+  frames[frame.storyboardJobId] = frame;
+  window.localStorage.setItem(KLING_FIRST_FRAME_STORAGE_KEY, JSON.stringify(frames));
+}
+
+function getStoredKlingFirstFrame(storyboardJobId: string | null, storyboardUrl: string): KlingFirstFrameState | null {
+  if (!storyboardJobId) return null;
+  const frame = readStoredKlingFirstFrames()[storyboardJobId];
+  if (!frame?.image?.url || frame.storyboardUrl !== storyboardUrl) return null;
+  return frame;
 }
 
 export default function StoryboardWorkspace() {
@@ -152,6 +198,7 @@ export default function StoryboardWorkspace() {
   const [editPrice, setEditPrice] = useState<PriceValue>(null);
   const [result, setResult] = useState<ImageGenerationResponse | null>(null);
   const [previewingTemplate, setPreviewingTemplate] = useState(false);
+  const [klingFirstFrame, setKlingFirstFrame] = useState<KlingFirstFrameState | null>(null);
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -250,13 +297,26 @@ export default function StoryboardWorkspace() {
   const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
   const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
   const editOutputConfig = getStoryboardEditOutputConfig();
-  const activePrice = useMemo(() => formatPrice(tierPrices[storyboardTier], locale), [locale, storyboardTier, tierPrices]);
+  const activePriceValue =
+    targetModel === 'kling' ? addPriceValues(tierPrices[storyboardTier], tierPrices.hd) : tierPrices[storyboardTier];
+  const activePrice = formatPrice(activePriceValue, locale);
   const editPriceLabel = useMemo(() => formatPrice(editPrice, locale), [editPrice, locale]);
   const referenceUploading = referenceImages.some((image) => image?.status === 'uploading');
   const readyReferenceImages = useMemo(
     () => referenceImages.filter((image): image is StoryboardReferenceImage => Boolean(image?.url && image.status === 'ready')),
     [referenceImages]
   );
+  const selectedKlingFirstFrame = useMemo(() => {
+    if (!selectedImage?.url || previewingTemplate) return null;
+    if (
+      klingFirstFrame?.image?.url &&
+      klingFirstFrame.storyboardUrl === selectedImage.url &&
+      (!selectedImageJobId || klingFirstFrame.storyboardJobId === selectedImageJobId)
+    ) {
+      return klingFirstFrame;
+    }
+    return getStoredKlingFirstFrame(selectedImageJobId, selectedImage.url);
+  }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId]);
 
   useEffect(() => {
     if (!selectedImage?.url) {
@@ -352,9 +412,7 @@ export default function StoryboardWorkspace() {
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
 
   function handleRecognizablePeopleToggle() {
-    const next = !recognizablePeople;
-    setRecognizablePeople(next);
-    setTargetModel(resolveStoryboardRecommendedTarget(next));
+    setRecognizablePeople((current) => !current);
   }
 
   async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
@@ -454,6 +512,7 @@ export default function StoryboardWorkspace() {
   function handleSelectRecentOutput(output: StoryboardRecentOutput) {
     setPreviewingTemplate(false);
     setSelectedRecentOutput(output);
+    setKlingFirstFrame(getStoredKlingFirstFrame(output.jobId, output.url));
     setError(null);
     setMessage(null);
   }
@@ -461,6 +520,7 @@ export default function StoryboardWorkspace() {
   function showTemplatePreview() {
     setPreviewingTemplate(true);
     setSelectedRecentOutput(null);
+    setKlingFirstFrame(null);
     setEditInstruction('');
     setError(null);
     setMessage(null);
@@ -530,6 +590,60 @@ export default function StoryboardWorkspace() {
       setResult(response);
       setPreviewingTemplate(false);
       setSelectedRecentOutput(null);
+      setKlingFirstFrame(null);
+
+      if (!edit && targetModel === 'kling') {
+        const storyboardImage = response.images[0] ?? null;
+        if (!storyboardImage?.url) {
+          throw new Error(copy.generationFailed);
+        }
+        const firstFrameConfig = getStoryboardOutputConfig('hd', storyboardOrientation);
+        const firstFrameJobId = `${KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX}${crypto.randomUUID()}`;
+        const firstFrameSourceImages = [storyboardImage, ...readyReferenceImages];
+        const firstFrameResponse = await runImageGeneration({
+          jobId: firstFrameJobId,
+          engineId: 'gpt-image-2',
+          mode: 'i2i',
+          prompt: buildKlingStoryboardFirstFramePrompt({
+            subject,
+            action,
+            dialogue,
+            visualNotes,
+            style,
+            orientation: storyboardOrientation,
+            durationSec,
+            frameCount,
+            shotPlan,
+            referenceImageCount: readyReferenceImages.length,
+          }),
+          numImages: 1,
+          imageUrls: firstFrameSourceImages.map((image) => image.url),
+          referenceImageSizes: firstFrameSourceImages.map((image) => ({
+            width: image.width ?? null,
+            height: image.height ?? null,
+          })),
+          resolution: firstFrameConfig.resolution,
+          customImageSize: firstFrameConfig.customImageSize,
+          quality: firstFrameConfig.quality,
+          outputFormat: 'png',
+          source: STORYBOARD_SOURCE,
+        });
+        const firstFrameImage = firstFrameResponse.images[0] ?? null;
+        if (!firstFrameImage?.url) {
+          throw new Error(copy.generationFailed);
+        }
+        const nextFirstFrame: KlingFirstFrameState = {
+          storyboardJobId: response.jobId ?? null,
+          storyboardUrl: storyboardImage.url,
+          image: firstFrameImage,
+          jobId: firstFrameResponse.jobId ?? firstFrameJobId,
+        };
+        setKlingFirstFrame(nextFirstFrame);
+        writeStoredKlingFirstFrame(nextFirstFrame);
+        if (firstFrameResponse.jobId) {
+          await hideJob(firstFrameResponse.jobId).catch(() => undefined);
+        }
+      }
       setMessage(`${copy.outputTitle} · ${edit ? editPriceLabel : activePrice}`);
       if (edit) setEditInstruction('');
       void refreshRecentOutputs();
@@ -567,11 +681,22 @@ export default function StoryboardWorkspace() {
     if (!selectedImage?.url) return;
 
     const handoffDraft = selectedRecentOutput?.storyboard ?? null;
+    const targetModelForHandoff = handoffDraft?.targetModel ?? targetModel;
+    if (targetModelForHandoff === 'kling' && !selectedKlingFirstFrame?.image?.url) {
+      setError(copy.klingFirstFrameMissing);
+      return;
+    }
     const handoff = buildStoryboardGeneratorHandoff({
-      targetModel: handoffDraft?.targetModel ?? targetModel,
+      targetModel: targetModelForHandoff,
       imageUrl: selectedImage.url,
       thumbUrl: selectedImage.thumbUrl ?? null,
       jobId: selectedImageJobId,
+      startFrameImageUrl: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.url ?? null : null,
+      startFrameThumbUrl:
+        targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.thumbUrl ?? null : null,
+      startFrameJobId: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.jobId ?? null : null,
+      startFrameWidth: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.width ?? null : null,
+      startFrameHeight: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.height ?? null : null,
       subject: handoffDraft?.subject ?? subject,
       action: handoffDraft?.action ?? action,
       dialogue: handoffDraft?.dialogue ?? dialogue,
@@ -764,6 +889,14 @@ export default function StoryboardWorkspace() {
                                 }`}
                               >
                                 {copy.targetRecommendedLabel}
+                              </span>
+                            ) : option === 'kling' ? (
+                              <span
+                                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro ${
+                                  targetModel === option ? 'bg-on-inverse/15 text-on-inverse' : 'bg-warning-bg text-warning'
+                                }`}
+                              >
+                                {copy.targetExperimentalLabel}
                               </span>
                             ) : null}
                           </ChoiceButton>

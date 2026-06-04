@@ -11,6 +11,12 @@ export type StoryboardGeneratorHandoff = {
   imageUrl: string;
   thumbUrl?: string | null;
   jobId?: string | null;
+  startFrameFieldId?: 'start_image_url' | null;
+  startFrameImageUrl?: string | null;
+  startFrameThumbUrl?: string | null;
+  startFrameJobId?: string | null;
+  startFrameWidth?: number | null;
+  startFrameHeight?: number | null;
   targetModel: StoryboardGeneratorTargetModel;
   prompt: string;
   audioEnabled: boolean;
@@ -24,9 +30,14 @@ export type StoryboardGeneratorHandoff = {
 
 export type BuildStoryboardGeneratorHandoffOptions = {
   targetModel: StoryboardGeneratorTargetModel;
-  imageUrl: string;
+  imageUrl?: string | null;
   thumbUrl?: string | null;
   jobId?: string | null;
+  startFrameImageUrl?: string | null;
+  startFrameThumbUrl?: string | null;
+  startFrameJobId?: string | null;
+  startFrameWidth?: number | null;
+  startFrameHeight?: number | null;
   subject?: string | null;
   action?: string | null;
   dialogue?: string | null;
@@ -205,8 +216,9 @@ function isFalMediaUrl(value: string): boolean {
   }
 }
 
-function resolveStoryboardReferenceImageUrl(options: BuildStoryboardGeneratorHandoffOptions): string {
-  const imageUrl = options.imageUrl.trim();
+function resolveStoryboardReferenceImageUrl(options: BuildStoryboardGeneratorHandoffOptions): string | null {
+  const imageUrl = normalizeOptionalText(options.imageUrl);
+  if (!imageUrl) return null;
   const thumbUrl = normalizeOptionalText(options.thumbUrl);
   if (isFalMediaUrl(imageUrl) && /^https?:\/\//i.test(thumbUrl)) {
     return thumbUrl;
@@ -221,18 +233,28 @@ function buildStoryboardGeneratorPrompt(options: BuildStoryboardGeneratorHandoff
   const aspectRatio = resolveStoryboardAspectRatio(options.orientation);
   const targetLabel = options.targetModel === 'kling' ? 'Kling' : 'Seedance';
   const isKling = options.targetModel === 'kling';
+  const hasReferenceImage = Boolean(normalizeOptionalText(options.imageUrl));
+  const hasStartFrame = Boolean(normalizeOptionalText(options.startFrameImageUrl));
   const referenceInstruction = isKling
-    ? 'Use @Image1 only as a planning board for shot order, framing, camera intent, action beats, and pacing, not as the first frame.'
+    ? hasReferenceImage
+      ? 'Use @Image1 as the storyboard reference and shot plan only: read the panel order, framing, camera intent, action beats, and continuity from it.'
+      : 'Use the storyboard shot plan as text direction for shot order, framing, camera intent, action beats, and pacing. No storyboard board image is attached to Kling.'
     : 'Follow the uploaded storyboard reference image as the structural guide for the video.';
   const cleanStartInstruction = isKling
-    ? 'Start the video with a clean full-screen shot of the requested subject and action; do not show @Image1 as a board, contact sheet, panel grid, layout, or reference sheet.'
+    ? hasStartFrame
+      ? 'Start from the attached clean first frame as the full-screen opening frame, then continue through the storyboard beats.'
+      : 'Start the video with a clean full-screen shot of the requested subject and action; do not show any storyboard board, contact sheet, panel grid, layout, or reference sheet.'
+    : null;
+  const klingShotPlanInstruction = isKling
+    ? 'Use the storyboard shot plan as text direction; preserve the planned shot order without rendering the storyboard layout itself.'
     : null;
   const artifactInstruction = isKling
-    ? 'Do not reproduce storyboard labels, panel numbers, metadata rows, captions, handwritten text, borders, gutters, or grid lines from @Image1 inside the final video.'
+    ? 'Do not reproduce storyboard labels, panel numbers, metadata rows, captions, handwritten text, borders, gutters, or grid lines inside the final video.'
     : 'Do not reproduce storyboard labels, panel numbers, metadata rows, captions, or handwritten text from the reference image inside the final video.';
   const lines = [
     referenceInstruction,
     `Target model: ${targetLabel}. Duration: ${options.durationSec}s. Format: ${aspectRatio}.`,
+    klingShotPlanInstruction,
     `Use the ${options.frameCount} storyboard panels as the shot order: preserve each panel's framing, shot type, camera intent, action beat, dialogue timing, and visual continuity.`,
     cleanStartInstruction,
     'Animate the scene naturally between panels while keeping the same subject, product, environment, lighting direction, and composition logic.',
@@ -257,9 +279,9 @@ export function buildStoryboardGeneratorHandoff(
 ): StoryboardGeneratorHandoff {
   const imageUrl = resolveStoryboardReferenceImageUrl(options);
   if (!imageUrl) {
-    throw new Error('A storyboard image URL is required.');
+    throw new Error(`A storyboard image URL is required for ${options.targetModel === 'kling' ? 'Kling' : 'Seedance'}.`);
   }
-
+  const startFrameImageUrl = normalizeOptionalText(options.startFrameImageUrl) || null;
   return {
     version: 1,
     engineId: resolveStoryboardGeneratorEngineId(options.targetModel),
@@ -268,6 +290,18 @@ export function buildStoryboardGeneratorHandoff(
     imageUrl,
     thumbUrl: options.thumbUrl ?? null,
     jobId: options.jobId ?? null,
+    startFrameFieldId: startFrameImageUrl ? 'start_image_url' : null,
+    startFrameImageUrl,
+    startFrameThumbUrl: options.startFrameThumbUrl ?? null,
+    startFrameJobId: options.startFrameJobId ?? null,
+    startFrameWidth:
+      typeof options.startFrameWidth === 'number' && Number.isFinite(options.startFrameWidth)
+        ? Math.round(options.startFrameWidth)
+        : null,
+    startFrameHeight:
+      typeof options.startFrameHeight === 'number' && Number.isFinite(options.startFrameHeight)
+        ? Math.round(options.startFrameHeight)
+        : null,
     targetModel: options.targetModel,
     prompt: buildStoryboardGeneratorPrompt(options),
     audioEnabled: resolveStoryboardGeneratorAudioEnabled(options.targetModel, options.dialogue),
@@ -297,8 +331,12 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
     if (raw.engineId !== 'seedance-2-0' && raw.engineId !== 'kling-o3-pro') return null;
     if (raw.mode !== 'ref2v') return null;
     if (raw.referenceFieldId !== 'image_urls') return null;
+    if (raw.startFrameFieldId != null && raw.startFrameFieldId !== 'start_image_url') return null;
     if (raw.targetModel !== 'seedance' && raw.targetModel !== 'kling') return null;
     if (typeof raw.imageUrl !== 'string' || !raw.imageUrl.trim()) return null;
+    if (raw.startFrameImageUrl != null && (typeof raw.startFrameImageUrl !== 'string' || !raw.startFrameImageUrl.trim())) {
+      return null;
+    }
     if (typeof raw.prompt !== 'string' || !raw.prompt.trim()) return null;
     const audioEnabled =
       typeof raw.audioEnabled === 'boolean'
@@ -315,6 +353,22 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
       imageUrl: raw.imageUrl.trim(),
       thumbUrl: typeof raw.thumbUrl === 'string' ? raw.thumbUrl : null,
       jobId: typeof raw.jobId === 'string' ? raw.jobId : null,
+      startFrameFieldId:
+        typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim() ? 'start_image_url' : null,
+      startFrameImageUrl:
+        typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim()
+          ? raw.startFrameImageUrl.trim()
+          : null,
+      startFrameThumbUrl: typeof raw.startFrameThumbUrl === 'string' ? raw.startFrameThumbUrl : null,
+      startFrameJobId: typeof raw.startFrameJobId === 'string' ? raw.startFrameJobId : null,
+      startFrameWidth:
+        typeof raw.startFrameWidth === 'number' && Number.isFinite(raw.startFrameWidth)
+          ? Math.round(raw.startFrameWidth)
+          : null,
+      startFrameHeight:
+        typeof raw.startFrameHeight === 'number' && Number.isFinite(raw.startFrameHeight)
+          ? Math.round(raw.startFrameHeight)
+          : null,
       targetModel: raw.targetModel,
       prompt: raw.prompt,
       audioEnabled,

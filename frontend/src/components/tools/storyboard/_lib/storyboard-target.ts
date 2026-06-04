@@ -1,7 +1,8 @@
 import type { StoryboardTargetModel } from './storyboard-prompt';
 
 export function resolveStoryboardRecommendedTarget(recognizablePeople: boolean): StoryboardTargetModel {
-  return recognizablePeople ? 'kling' : 'seedance';
+  void recognizablePeople;
+  return 'seedance';
 }
 
 export function isStoryboardTargetRecommended(

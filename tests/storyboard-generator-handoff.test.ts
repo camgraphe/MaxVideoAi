@@ -21,6 +21,13 @@ const baseEngine: Omit<EngineCaps, 'id' | 'label' | 'provider'> = {
   ttlSec: 600,
   availability: 'available',
   modeCaps: {
+    t2v: {
+      modes: ['t2v'],
+      duration: { options: ['auto', 4, 6, 10, 15], default: 'auto' },
+      resolution: ['480p', '720p', '1080p'],
+      aspectRatio: ['auto', '16:9', '9:16'],
+      audioToggle: true,
+    },
     ref2v: {
       modes: ['ref2v'],
       duration: { options: ['auto', 4, 6, 10, 15], default: 'auto' },
@@ -90,8 +97,8 @@ test('storyboard generator handoff sends the board as a reference image for vide
   assert.equal(klingHandoff.referenceFieldId, 'image_urls');
   assert.equal(klingHandoff.aspectRatio, '9:16');
   assert.equal(klingHandoff.audioEnabled, true);
-  assert.match(klingHandoff.prompt, /Use @Image1 only as a planning board/);
-  assert.match(klingHandoff.prompt, /not as the first frame/);
+  assert.match(klingHandoff.prompt, /Use @Image1 as the storyboard reference and shot plan/);
+  assert.match(klingHandoff.prompt, /Use the storyboard shot plan as text direction/);
   assert.match(klingHandoff.prompt, /Start the video with a clean full-screen shot/);
   assert.equal(module.buildStoryboardGeneratorHandoffUrl(klingHandoff), '/app?engine=kling-o3-pro&mode=ref2v&storyboard=1');
 });
@@ -129,6 +136,49 @@ test('video workspace converts storyboard handoff into form state and input asse
   assert.equal(state.inputAssets.image_urls?.[0]?.assetId, 'job_storyboard');
   assert.equal(state.inputAssets.image_urls?.[0]?.width, 4096);
   assert.equal(state.inputAssets.image_urls?.[0]?.height, 2304);
+});
+
+test('kling storyboard handoff applies a clean first frame plus the board reference', async () => {
+  const handoffModule = await import('../frontend/lib/storyboard-generator-handoff.ts');
+  const workspaceModule = await import(
+    '../frontend/app/(core)/(workspace)/app/_lib/workspace-storyboard-handoff.ts'
+  );
+
+  const handoff = handoffModule.buildStoryboardGeneratorHandoff({
+    targetModel: 'kling',
+    imageUrl: 'https://cdn.example.com/storyboard-board.png',
+    thumbUrl: 'https://cdn.example.com/storyboard-board-thumb.png',
+    jobId: 'job_storyboard',
+    startFrameImageUrl: 'https://cdn.example.com/storyboard-first-frame.png',
+    startFrameThumbUrl: 'https://cdn.example.com/storyboard-first-frame-thumb.png',
+    startFrameJobId: 'job_storyboard_first_frame',
+    subject: 'Realistic UGC creator presenting a soda can',
+    action: 'Walk toward camera, lift the can, reaction close-up',
+    dialogue: 'Talent: This is cold and loud.',
+    durationSec: 10,
+    frameCount: 6,
+    orientation: 'portrait',
+  });
+  const state = workspaceModule.buildWorkspaceStoryboardHandoffState(handoff, engines, null);
+
+  assert.equal(handoff.engineId, 'kling-o3-pro');
+  assert.equal(handoff.mode, 'ref2v');
+  assert.equal(handoff.referenceFieldId, 'image_urls');
+  assert.equal(handoff.imageUrl, 'https://cdn.example.com/storyboard-board.png');
+  assert.equal(handoff.startFrameFieldId, 'start_image_url');
+  assert.equal(handoff.startFrameImageUrl, 'https://cdn.example.com/storyboard-first-frame.png');
+  assert.match(handoff.prompt, /Use @Image1 as the storyboard reference and shot plan/);
+  assert.match(handoff.prompt, /Start from the attached clean first frame/);
+  assert.doesNotMatch(handoff.prompt, /No storyboard board image is attached/);
+  assert.equal(handoffModule.buildStoryboardGeneratorHandoffUrl(handoff), '/app?engine=kling-o3-pro&mode=ref2v&storyboard=1');
+  assert.equal(state.form.engineId, 'kling-o3-pro');
+  assert.equal(state.form.mode, 'ref2v');
+  assert.equal(state.form.audio, true);
+  assert.deepEqual(Object.keys(state.inputAssets).sort(), ['image_urls', 'start_image_url']);
+  assert.equal(state.inputAssets.image_urls?.[0]?.url, 'https://cdn.example.com/storyboard-board.png');
+  assert.equal(state.inputAssets.image_urls?.[0]?.assetId, 'job_storyboard');
+  assert.equal(state.inputAssets.start_image_url?.[0]?.url, 'https://cdn.example.com/storyboard-first-frame.png');
+  assert.equal(state.inputAssets.start_image_url?.[0]?.assetId, 'job_storyboard_first_frame');
 });
 
 test('storyboard generator handoff falls back from Fal media outputs to stable thumbnails', async () => {

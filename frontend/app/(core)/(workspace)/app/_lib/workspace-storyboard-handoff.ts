@@ -11,6 +11,10 @@ export type WorkspaceStoryboardHandoffState = {
 };
 
 function buildStoryboardReferenceAsset(handoff: StoryboardGeneratorHandoff): ReferenceAsset {
+  if (!handoff.imageUrl || !handoff.referenceFieldId) {
+    throw new Error('Storyboard reference image is unavailable.');
+  }
+
   return {
     id: handoff.jobId ?? `storyboard_${handoff.createdAt}`,
     fieldId: handoff.referenceFieldId,
@@ -23,6 +27,27 @@ function buildStoryboardReferenceAsset(handoff: StoryboardGeneratorHandoff): Ref
     width: handoff.width ?? null,
     height: handoff.height ?? null,
     assetId: handoff.jobId ?? undefined,
+    status: 'ready',
+  };
+}
+
+function buildStoryboardStartFrameAsset(handoff: StoryboardGeneratorHandoff): ReferenceAsset {
+  if (!handoff.startFrameImageUrl || !handoff.startFrameFieldId) {
+    throw new Error('Storyboard first frame is unavailable.');
+  }
+
+  return {
+    id: handoff.startFrameJobId ?? `storyboard_start_${handoff.createdAt}`,
+    fieldId: handoff.startFrameFieldId,
+    previewUrl: handoff.startFrameThumbUrl ?? handoff.startFrameImageUrl,
+    kind: 'image',
+    name: 'Storyboard first frame',
+    size: 0,
+    type: 'image/png',
+    url: handoff.startFrameImageUrl,
+    width: handoff.startFrameWidth ?? null,
+    height: handoff.startFrameHeight ?? null,
+    assetId: handoff.startFrameJobId ?? undefined,
     status: 'ready',
   };
 }
@@ -65,11 +90,17 @@ export function buildWorkspaceStoryboardHandoffState(
   };
   const form = coerceFormState(engine, mode, previousForm);
 
+  const inputAssets: Record<string, (ReferenceAsset | null)[]> = {};
+  if (handoff.imageUrl && handoff.referenceFieldId) {
+    inputAssets[handoff.referenceFieldId] = [buildStoryboardReferenceAsset(handoff)];
+  }
+  if (handoff.startFrameImageUrl && handoff.startFrameFieldId) {
+    inputAssets[handoff.startFrameFieldId] = [buildStoryboardStartFrameAsset(handoff)];
+  }
+
   return {
     form,
     prompt: handoff.prompt,
-    inputAssets: {
-      [handoff.referenceFieldId]: [buildStoryboardReferenceAsset(handoff)],
-    },
+    inputAssets,
   };
 }
