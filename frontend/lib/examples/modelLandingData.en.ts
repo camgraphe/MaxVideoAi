@@ -159,15 +159,15 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   seedance: {
-    metaTitle: 'Seedance AI Video Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'Seedance AI Video Examples, Prompts & Use Cases | MaxVideoAI',
     metaDescription:
-      'Browse Seedance AI video examples, prompts, settings, and per-clip pricing for Seedance 2.0, Seedance 2.0 Fast, and the supported Seedance 1.5 Pro workflow on MaxVideoAI.',
+      'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, 2.0 Fast, or 1.5 Pro.',
     heroTitle: 'Seedance AI Video Examples, Prompts & Settings',
     subtitle: 'Seedance AI video examples, prompts, settings, and outputs for current Seedance workflows and supported older runs.',
     intro:
-      'Browse Seedance AI video examples, prompts, and reusable settings for Seedance 2.0 and Seedance 2.0 Fast, then explore the supported Seedance 1.5 Pro setup for older workflows and shorter clip patterns. Use this page to compare Seedance video workflows, prompt structures, and output patterns before opening the matching Seedance model page.',
+      'Explore real Seedance video outputs for Seedance 2.0 and Seedance 2.0 Fast, then use Seedance 1.5 Pro examples as legacy references for shorter clip patterns. Compare prompt structure, model settings, duration, and output patterns before opening the matching Seedance model page.',
     summary:
-      'Seedance 2.0 and Seedance 2.0 Fast lead this Seedance AI video examples page, while Seedance 1.5 Pro stays available below as a supported older setup for shorter, repeatable clips.',
+      'Seedance 2.0 and Seedance 2.0 Fast lead this examples hub, while Seedance 1.5 Pro stays available as a legacy reference for shorter, repeatable clips.',
     promptPatterns:
       'Lead with one core action, then define camera and environment constraints. Seedance AI video runs respond best when the prompt sequence stays compact.',
     strengthsLimits:

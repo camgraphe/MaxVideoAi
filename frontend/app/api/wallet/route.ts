@@ -128,6 +128,14 @@ async function hasCompletedWalletTopUp(userId: string): Promise<boolean> {
   return Number(rows[0]?.topup_count ?? 0) > 0;
 }
 
+type WalletLedgerSummaryRow = {
+  topups_cents: number | string | null;
+  charges_cents: number | string | null;
+  refunds_cents: number | string | null;
+  completed_topups: number | string | null;
+  mismatched_currencies: string | null;
+};
+
 export async function GET(req: NextRequest) {
   const userId = await resolveAuthenticatedUser(req);
   if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
@@ -153,29 +161,24 @@ export async function GET(req: NextRequest) {
   const fallbackResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
 
   try {
-    const rows = await query<{ type: string; amount_cents: number | string | null; currency: string | null }>(
-      `SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = $1`,
-      [userId]
+    const walletCurrency = WALLET_DISPLAY_CURRENCY_LOWER as Currency;
+    const walletCurrencyUpper = WALLET_DISPLAY_CURRENCY;
+    const rows = await query<WalletLedgerSummaryRow>(
+      `SELECT
+          COALESCE(SUM(CASE WHEN type = 'topup' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS topups_cents,
+          COALESCE(SUM(CASE WHEN type = 'charge' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS charges_cents,
+          COALESCE(SUM(CASE WHEN type = 'refund' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS refunds_cents,
+          COUNT(*) FILTER (WHERE type = 'topup' AND amount_cents > 0)::int AS completed_topups,
+          COALESCE(STRING_AGG(DISTINCT LOWER(currency), ',') FILTER (WHERE currency IS NOT NULL AND LOWER(currency) <> $3), '') AS mismatched_currencies
+         FROM app_receipts
+        WHERE user_id = $1`,
+      [userId, walletCurrencyUpper, walletCurrency]
     );
-
-    let walletCurrency: Currency | null = preferredCurrency ?? null;
-    const mismatchedCurrencies = new Set<string>();
-
-    for (const row of rows) {
-      const normalized = normalizeCurrencyCode(row.currency);
-      if (!walletCurrency && normalized) {
-        walletCurrency = normalized;
-        continue;
-      }
-      if (walletCurrency && normalized && normalized !== walletCurrency) {
-        mismatchedCurrencies.add(normalized);
-      }
-    }
-
-    walletCurrency = WALLET_DISPLAY_CURRENCY_LOWER as Currency;
-    const normalizedMismatches = Array.from(mismatchedCurrencies).filter(
-      (currency) => currency !== walletCurrency
-    );
+    const summary = rows[0];
+    const normalizedMismatches = (summary?.mismatched_currencies ?? '')
+      .split(',')
+      .map((currency) => normalizeCurrencyCode(currency))
+      .filter((currency): currency is Currency => Boolean(currency) && currency !== walletCurrency);
 
     if (normalizedMismatches.length) {
       console.warn('[wallet] detected receipts with mismatched currency', {
@@ -185,25 +188,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const walletCurrencyUpper = WALLET_DISPLAY_CURRENCY;
-    let topups = 0;
-    let charges = 0;
-    let refunds = 0;
-    let completedTopups = 0;
-    for (const r of rows) {
-      const normalized = normalizeCurrencyCode(r.currency);
-      const amount = Number(r.amount_cents ?? 0);
-      if (r.type === 'topup' && amount > 0) {
-        completedTopups += 1;
-      }
-      if (normalized && normalized.toUpperCase() !== walletCurrencyUpper) {
-        continue;
-      }
-      if (!Number.isFinite(amount)) continue;
-      if (r.type === 'topup') topups += amount;
-      if (r.type === 'charge') charges += amount;
-      if (r.type === 'refund') refunds += amount;
-    }
+    const topups = Number(summary?.topups_cents ?? 0);
+    const charges = Number(summary?.charges_cents ?? 0);
+    const refunds = Number(summary?.refunds_cents ?? 0);
+    const completedTopups = Number(summary?.completed_topups ?? 0);
 
     const balanceCents = Math.max(0, topups + refunds - charges);
     return json({

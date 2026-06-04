@@ -164,3 +164,14 @@ test('wallet route honors bearer auth tokens sent by billing clients', () => {
   assert.match(routeSource, /getRouteAuthContext\(req\)/);
   assert.match(routeSource, /const userId = await resolveAuthenticatedUser\(req\);/);
 });
+
+test('wallet GET aggregates receipt rows in SQL instead of returning the ledger', () => {
+  const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+
+  assert.match(routeSource, /type WalletLedgerSummaryRow/);
+  assert.match(routeSource, /SUM\(CASE WHEN type = 'topup'/);
+  assert.match(routeSource, /SUM\(CASE WHEN type = 'charge'/);
+  assert.match(routeSource, /SUM\(CASE WHEN type = 'refund'/);
+  assert.match(routeSource, /STRING_AGG\(DISTINCT LOWER\(currency\)/);
+  assert.doesNotMatch(routeSource, /SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = \$1/);
+});

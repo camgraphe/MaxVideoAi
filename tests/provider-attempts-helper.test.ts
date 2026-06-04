@@ -74,3 +74,32 @@ test('provider attempt helper links fallback attempts explicitly', async () => {
   assert.match(queries[0]?.sql ?? '', /fallback_to_attempt_id = \$2/);
   assert.deepEqual(queries[0]?.params, [10, 11]);
 });
+
+test('provider attempt helper omits binary base64 payloads from stored snapshots', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  await markProviderAttemptFinished({
+    attemptId: 17,
+    status: 'completed',
+    responseSnapshot: {
+      name: 'operation_123',
+      response: {
+        videos: [
+          {
+            bytesBase64Encoded: 'a'.repeat(10_000),
+            mimeType: 'video/mp4',
+          },
+        ],
+      },
+    },
+    providerCostUsd: 0.42,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      return [];
+    },
+  });
+
+  const stored = JSON.parse(String(queries[0]?.params?.[2]));
+  assert.equal(stored.response.videos[0].bytesBase64Encoded, '[omitted binary string: 10000 chars]');
+  assert.equal(stored.response.videos[0].mimeType, 'video/mp4');
+  assert.equal(queries[0]?.params?.[4], 0.42);
+});

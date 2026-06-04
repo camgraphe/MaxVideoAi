@@ -98,6 +98,8 @@ test('Google Vertex Veo poll copies provider output before marking the job compl
   const attemptUpdate = queries.find((entry) => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
   assert.ok(attemptUpdate, 'provider_attempts should store estimated Google provider cost');
   assert.equal(attemptUpdate.params?.[1], 'completed');
+  assert.doesNotMatch(String(attemptUpdate.params?.[2]), new RegExp(Buffer.from('mp4-bytes').toString('base64')));
+  assert.match(String(attemptUpdate.params?.[2]), /omitted binary string/);
   assert.equal(attemptUpdate.params?.[4], 0.64);
 });
 
