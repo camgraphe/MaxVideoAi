@@ -255,10 +255,10 @@ export function useJobsPageController() {
     try {
       const status = await getJobStatus(jobId);
       if (status.status === 'failed') {
-        throw new Error(status.message ?? 'Provider reported this render as failed.');
+        throw new Error(status.message ?? 'MaxVideoAI could not complete this render.');
       }
       if (status.status !== 'completed' && !status.videoUrl && !status.audioUrl) {
-        throw new Error('The provider is still processing this render.');
+        throw new Error('This render is still processing.');
       }
     } catch (error) {
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');

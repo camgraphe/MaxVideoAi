@@ -23,6 +23,7 @@ import {
   markProviderAttemptFinished,
 } from '@/server/video-providers/provider-attempts';
 import { rollbackPendingPayment } from './payment-rollback';
+import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
 import type { FalInputSummary } from './fal-request';
@@ -66,13 +67,13 @@ export type KlingDirectGenerateSubmissionResult =
 
 function userSafeKlingDirectMessage(errorClass: string): string {
   if (errorClass === 'moderation') {
-    return 'The render service rejected this request. Adjust the prompt or inputs and try again.';
+    return 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.';
   }
   if (errorClass === 'invalid_request') {
-    return 'This Kling request is not supported with the selected inputs.';
+    return 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings and try again.';
   }
   if (errorClass === 'auth_error' || errorClass === 'insufficient_provider_credits' || errorClass === 'provider_access_denied') {
-    return 'Kling direct is temporarily unavailable. Please retry later.';
+    return 'This render option is temporarily unavailable. Please retry later.';
   }
   return 'The render could not start. Please retry later.';
 }
@@ -109,7 +110,11 @@ async function markJobFailedBeforeFallback(params: {
     await params.rollbackPendingPaymentFn({
       pendingReceipt: params.pendingReceipt,
       walletChargeReserved: params.walletChargeReserved,
-      refundDescription: `Refund ${params.engineLabel} - ${params.durationSec}s - Kling direct start failed`,
+      refundDescription: buildUserFacingRefundDescription({
+        engineLabel: params.engineLabel,
+        durationSec: params.durationSec,
+        reason: params.message,
+      }),
     });
   }
 }

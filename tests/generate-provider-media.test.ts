@@ -151,7 +151,7 @@ test('provider media helper defers provider copy miss when retry is allowed', as
     assert.equal(resolved.videoAsset, null);
     assert.equal(resolved.status, 'processing');
     assert.equal(resolved.progress, 90);
-    assert.equal(resolved.message, 'Generated video is ready. Copying it to MaxVideoAI storage.');
+    assert.equal(resolved.message, 'Generated video is ready. Preparing it for download.');
     assert.deepEqual(settingsSnapshot, {
       schemaVersion: 1,
       providerVideoCopy: { retryCount: 1 },
@@ -201,7 +201,7 @@ test('provider media helper fails provider copy miss when retry is not allowed',
     assert.equal(resolved.progress, 0);
     assert.equal(
       resolved.message,
-      'The provider finished this render, but the video could not be copied to MaxVideoAI storage. Please retry.'
+      'The render finished, but MaxVideoAI could not prepare the video for download. Please retry.'
     );
   } finally {
     console.warn = originalWarn;

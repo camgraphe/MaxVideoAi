@@ -395,6 +395,46 @@ test('GPT Image 2 storyboard 4K medium tier is cheaper than 4K ultra', async () 
   assert.equal(ultraPayload.pricing?.meta?.storyboard_tier, 'ultra');
 });
 
+test('GPT Image 2 Kling storyboard estimate bundles the included HD first frame into one charge', async () => {
+  const fourK = getStoryboardOutputConfig('4k', 'landscape');
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 'i2i',
+        numImages: 1,
+        referenceImageSizes: [{ width: 1600, height: 1000 }],
+        resolution: fourK.resolution,
+        quality: fourK.quality,
+        source: 'storyboard',
+        metadata: { storyboard: { role: 'board', targetModel: 'kling' } },
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      meta?: {
+        pricing_model?: string;
+        storyboard_includes_kling_first_frame?: boolean;
+        storyboard_board_total_cents?: number;
+        storyboard_kling_first_frame_total_cents?: number;
+      };
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.pricing?.base.amountCents, 15);
+  assert.equal(payload.pricing?.totalCents, 45);
+  assert.equal(payload.pricing?.meta?.pricing_model, 'storyboarder_kling_bundle_x3');
+  assert.equal(payload.pricing?.meta?.storyboard_includes_kling_first_frame, true);
+  assert.equal(payload.pricing?.meta?.storyboard_board_total_cents, 33);
+  assert.equal(payload.pricing?.meta?.storyboard_kling_first_frame_total_cents, 12);
+});
+
 test('GPT Image 2 auto edit pricing can follow reference image dimensions', async () => {
   const inferredSize = resolveGptImage2AutoInputImageSize([{ width: 3840, height: 2160 }]);
   assert.deepEqual(inferredSize, { width: 3840, height: 2160 });

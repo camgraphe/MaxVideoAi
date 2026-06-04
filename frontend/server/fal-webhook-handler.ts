@@ -21,6 +21,7 @@ import {
 } from '@/server/provider-output-policy';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
+import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import {
@@ -263,7 +264,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   let nextMessage =
     extractedErrorMessage ??
     (nextStatus === 'failed'
-      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+      ? 'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
       : null);
 
   if (nextMessage && /^video_[A-Za-z0-9_-]+$/i.test(nextMessage)) {
@@ -388,7 +389,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextStatus = 'failed';
     nextProgress = Math.min(nextProgress, 1);
     if (!nextMessage) {
-      nextMessage = 'The provider finished this render but returned no video. Please retry or contact support if it persists.';
+      nextMessage = 'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.';
     }
   }
 
@@ -444,9 +445,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextStatus === 'failed'
       ? nextMessage ??
         job.message ??
-        'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+        'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
       : nextMessage ?? null;
-  const normalizedMessage = messageToPersist ? messageToPersist.replace(/\s+/g, ' ').trim() : null;
+  const normalizedMessage = messageToPersist
+    ? (nextStatus === 'failed' ? toUserFacingFailureMessage(messageToPersist) : messageToPersist)
+        .replace(/\s+/g, ' ')
+        .trim()
+    : null;
   const engineIdForUpdate =
     effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
   const engineLabelForUpdate =

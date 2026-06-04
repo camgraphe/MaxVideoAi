@@ -25,6 +25,7 @@ export type StoryboardOutputConfig = {
 
 export const STORYBOARD_ORIENTATION_OPTIONS: StoryboardOrientation[] = ['landscape', 'portrait'];
 export const STORYBOARD_TIER_OPTIONS: StoryboardTier[] = ['hd', '4k', 'ultra'];
+export const DEFAULT_STORYBOARD_TIER: StoryboardTier = '4k';
 export const STORYBOARD_PANEL_METADATA_FIELDS = ['Shot type', 'Camera', 'Action', 'Dialogue'] as const;
 export const STORYBOARD_THUMBNAIL_ASPECT_LABELS: Record<StoryboardOrientation, string> = {
   landscape: '16:9',

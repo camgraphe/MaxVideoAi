@@ -15,9 +15,9 @@ test('Fal poll timeout failures remain wallet-refund eligible', () => {
   );
 
   for (const reason of [
-    'Unable to determine Fal engine for this job.',
-    'Fal status remained unavailable after timeout grace period.',
-    'Fal polling exceeded expected window after timeout grace period.',
+    'Unable to determine render engine for this job.',
+    'Render status remained unavailable after timeout grace period.',
+    'Render polling exceeded expected window after timeout grace period.',
   ]) {
     assert.match(
       falPollSource,
@@ -28,7 +28,7 @@ test('Fal poll timeout failures remain wallet-refund eligible', () => {
 
   assert.match(
     falPollSource,
-    /markRefundEligiblePollFailure\(providerError \?\? 'Fal returned no result after timeout grace period\.'\)/,
+    /markRefundEligiblePollFailure\(providerError \?\? 'Render returned no result after timeout grace period\.'\)/,
     'missing-result timeout failures should use the timeout refund helper'
   );
 });

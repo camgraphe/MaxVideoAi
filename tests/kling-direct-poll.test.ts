@@ -142,7 +142,7 @@ test('Kling direct poll defers completion when provider output cannot be copied'
   });
 
   assert.equal(queries.some((entry) => /SET status = 'completed'/.test(entry.sql)), false);
-  const retryUpdate = queries.find((entry) => /Generated video is ready\. Copying it to MaxVideoAI storage/.test(JSON.stringify(entry.params)));
+  const retryUpdate = queries.find((entry) => /Generated video is ready\. Preparing it for download\./.test(JSON.stringify(entry.params)));
   assert.ok(retryUpdate, 'copy failure should leave the job in a retry/admin-review state');
 });
 

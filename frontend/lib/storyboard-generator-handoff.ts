@@ -11,7 +11,7 @@ export type StoryboardGeneratorHandoff = {
   imageUrl: string;
   thumbUrl?: string | null;
   jobId?: string | null;
-  startFrameFieldId?: 'start_image_url' | null;
+  startFrameFieldId?: 'image_url' | 'start_image_url' | null;
   startFrameImageUrl?: string | null;
   startFrameThumbUrl?: string | null;
   startFrameJobId?: string | null;
@@ -230,8 +230,6 @@ function buildStoryboardGeneratorPrompt(options: BuildStoryboardGeneratorHandoff
   const subject = truncatePromptPart(normalizeOptionalText(options.subject), STORYBOARD_GENERATOR_SUBJECT_MAX_CHARS);
   const action = truncatePromptPart(normalizeOptionalText(options.action), STORYBOARD_GENERATOR_ACTION_MAX_CHARS);
   const dialogue = truncatePromptPart(normalizeOptionalText(options.dialogue), STORYBOARD_GENERATOR_DIALOGUE_MAX_CHARS);
-  const aspectRatio = resolveStoryboardAspectRatio(options.orientation);
-  const targetLabel = options.targetModel === 'kling' ? 'Kling' : 'Seedance';
   const isKling = options.targetModel === 'kling';
   const hasReferenceImage = Boolean(normalizeOptionalText(options.imageUrl));
   const hasStartFrame = Boolean(normalizeOptionalText(options.startFrameImageUrl));
@@ -253,7 +251,6 @@ function buildStoryboardGeneratorPrompt(options: BuildStoryboardGeneratorHandoff
     : 'Do not reproduce storyboard labels, panel numbers, metadata rows, captions, or handwritten text from the reference image inside the final video.';
   const lines = [
     referenceInstruction,
-    `Target model: ${targetLabel}. Duration: ${options.durationSec}s. Format: ${aspectRatio}.`,
     klingShotPlanInstruction,
     `Use the ${options.frameCount} storyboard panels as the shot order: preserve each panel's framing, shot type, camera intent, action beat, dialogue timing, and visual continuity.`,
     cleanStartInstruction,
@@ -290,7 +287,7 @@ export function buildStoryboardGeneratorHandoff(
     imageUrl,
     thumbUrl: options.thumbUrl ?? null,
     jobId: options.jobId ?? null,
-    startFrameFieldId: startFrameImageUrl ? 'start_image_url' : null,
+    startFrameFieldId: startFrameImageUrl ? 'image_url' : null,
     startFrameImageUrl,
     startFrameThumbUrl: options.startFrameThumbUrl ?? null,
     startFrameJobId: options.startFrameJobId ?? null,
@@ -331,7 +328,9 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
     if (raw.engineId !== 'seedance-2-0' && raw.engineId !== 'kling-o3-pro') return null;
     if (raw.mode !== 'ref2v') return null;
     if (raw.referenceFieldId !== 'image_urls') return null;
-    if (raw.startFrameFieldId != null && raw.startFrameFieldId !== 'start_image_url') return null;
+    if (raw.startFrameFieldId != null && raw.startFrameFieldId !== 'image_url' && raw.startFrameFieldId !== 'start_image_url') {
+      return null;
+    }
     if (raw.targetModel !== 'seedance' && raw.targetModel !== 'kling') return null;
     if (typeof raw.imageUrl !== 'string' || !raw.imageUrl.trim()) return null;
     if (raw.startFrameImageUrl != null && (typeof raw.startFrameImageUrl !== 'string' || !raw.startFrameImageUrl.trim())) {
@@ -354,7 +353,7 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
       thumbUrl: typeof raw.thumbUrl === 'string' ? raw.thumbUrl : null,
       jobId: typeof raw.jobId === 'string' ? raw.jobId : null,
       startFrameFieldId:
-        typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim() ? 'start_image_url' : null,
+        typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim() ? 'image_url' : null,
       startFrameImageUrl:
         typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim()
           ? raw.startFrameImageUrl.trim()

@@ -76,7 +76,7 @@ export function buildStoryboardPrompt(input: StoryboardPromptInput): string {
   const targetGuidance =
     input.targetModel === 'seedance'
       ? 'Target: Seedance. Prioritize products, cooking objects, film props, places, animation-safe characters, stylized silhouettes, or non-human subjects. Keep any human presence generic and non-identifiable.'
-      : 'Target: Kling experimental. Plan generic non-famous people for realistic human scenes when requested, avoiding famous-person resemblance. The generated board will be used to create a clean full-frame opening image, then as a storyboard reference for Kling.';
+      : 'Target: Kling. Plan generic non-famous people for realistic human scenes when requested, avoiding famous-person resemblance. The generated board will be used to create a clean full-frame opening image, then as a storyboard reference for Kling.';
 
   return [
     `Create one storyboard reference image for a ${input.durationSec}s AI video.`,

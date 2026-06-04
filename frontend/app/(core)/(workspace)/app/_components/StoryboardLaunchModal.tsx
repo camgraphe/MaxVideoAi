@@ -48,8 +48,8 @@ export function StoryboardLaunchModal({
                 Open Storyboarder
               </h2>
               <p className="mt-2 text-sm text-text-secondary">
-                Build a hidden GPT Image 2 reference board first, then use it as image direction for the selected video
-                model.
+                Build a hidden Storyboarder reference board first, then use it as image direction for the selected
+                video model.
               </p>
             </div>
           </div>

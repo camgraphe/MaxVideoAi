@@ -16,6 +16,17 @@ export type StoryboardRecentOutput = {
   createdAt: string | null;
   isSaved: boolean;
   storyboard?: StoryboardGeneratorHandoffDraft | null;
+  klingFirstFrame?: {
+    id: string;
+    jobId: string | null;
+    url: string;
+    thumbUrl: string | null;
+    previewUrl: string | null;
+    width: number | null;
+    height: number | null;
+    mime: string | null;
+    createdAt: string | null;
+  } | null;
 };
 
 type StoryboardRecentOutputsResponse = {

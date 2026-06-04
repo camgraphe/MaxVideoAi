@@ -41,5 +41,5 @@ test('Seedance runtime user messages do not expose provider names', () => {
 
   assert.match(runtimeCopy, /Render submitted\./);
   assert.match(runtimeCopy, /Render is in progress\./);
-  assert.match(runtimeCopy, /The render service reported this render as failed\./);
+  assert.match(runtimeCopy, /The render failed before producing a usable output\./);
 });

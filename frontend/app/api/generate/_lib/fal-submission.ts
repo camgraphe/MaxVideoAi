@@ -5,6 +5,10 @@ import { LUMA_RAY2_ERROR_UNSUPPORTED } from '@/lib/luma-ray2';
 import { rollbackPendingPayment } from './payment-rollback';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import {
+  buildUserFacingRefundDescription,
+  toUserFacingFailureMessage,
+} from '@/server/user-facing-failure-messages';
+import {
   condenseFalErrorMessage,
   extractFalProviderMessage,
   FalTimeoutError,
@@ -182,8 +186,8 @@ export async function submitFalGenerateTask(params: {
     const fallbackMessage = isTimeoutError
       ? 'Generation timed out'
       : isQuotaError
-        ? 'Provider is rate limiting'
-        : 'Fal request failed';
+        ? 'Render queue is temporarily busy'
+        : 'Render request failed';
     const rawErrorCode =
       typeof (error as { code?: string } | undefined)?.code === 'string'
         ? (error as { code?: string }).code
@@ -194,7 +198,7 @@ export async function submitFalGenerateTask(params: {
       message: effectiveProviderMessage ?? providerMessage ?? fallbackMessage,
       providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
     });
-    const failureMessage = translation.message;
+    const failureMessage = toUserFacingFailureMessage(translation.message);
     const errorCode = translation.code;
     const providerJobId: string | null =
       error instanceof FalGenerationError && error.providerJobId
@@ -208,9 +212,11 @@ export async function submitFalGenerateTask(params: {
         : params.pendingReceipt && params.paymentMode !== 'wallet'
           ? 'refunded'
           : null;
-    const baseRefundDescription = `Refund ${params.engineLabel} - ${params.durationSec}s`;
-    const refundNote = failureMessage ?? null;
-    const refundDescription = refundNote ? `${baseRefundDescription} - ${refundNote}` : baseRefundDescription;
+    const refundDescription = buildUserFacingRefundDescription({
+      engineLabel: params.engineLabel,
+      durationSec: params.durationSec,
+      reason: failureMessage,
+    });
 
     if (error instanceof FalGenerationError) {
       (error as { code?: string }).code = errorCode;
@@ -243,9 +249,7 @@ export async function submitFalGenerateTask(params: {
     if (isTimeoutError) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
-        effectiveProviderMessage && effectiveProviderMessage !== fallbackMessage
-          ? `Still processing: ${effectiveProviderMessage}. Your request is in progress; we will update you shortly.`
-          : 'Rendering in progress; awaiting provider after timeout. We will refresh as soon as the next status arrives.';
+        'Rendering is still in progress. We will refresh as soon as the next status arrives.';
 
       if (providerJobId) {
         await markJobAwaitingFalFn({
@@ -274,7 +278,7 @@ export async function submitFalGenerateTask(params: {
            WHERE job_id = $1`,
           [params.jobId, progressFloor, waitingMessage]
         ).catch((updateError) => {
-          console.error('[api/generate] failed to mark timeout job awaiting provider', updateError);
+          console.error('[api/generate] failed to mark timeout job awaiting status refresh', updateError);
         });
       }
 
@@ -284,9 +288,7 @@ export async function submitFalGenerateTask(params: {
     if (deferable && providerJobId) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
-        effectiveProviderMessage && effectiveProviderMessage !== fallbackMessage
-          ? `Still processing: ${effectiveProviderMessage}. Your request is in progress; we will update you shortly.`
-          : 'Rendering in progress; next update imminent. No action needed while we wait for the next status update.';
+        'Rendering is still in progress. No action is needed while we wait for the next status update.';
 
       await markJobAwaitingFalFn({
         jobId: params.jobId,
@@ -340,6 +342,7 @@ export async function submitFalGenerateTask(params: {
         providerMessage,
         isLumaRay2: params.isLumaRay2,
       });
+      const userMessage = toUserFacingFailureMessage(translated.userMessage);
 
       params.logMetricFn('failed', {
         errorCode: translated.errorCode,
@@ -351,9 +354,9 @@ export async function submitFalGenerateTask(params: {
         body: {
           ok: false,
           error: translated.errorCode,
-          message: translated.userMessage,
-          providerMessage: translated.providerMessage,
-          detail: detail ?? providerMessage,
+          message: userMessage,
+          providerMessage: null,
+          detail: null,
         },
       };
     }
@@ -373,8 +376,8 @@ export async function submitFalGenerateTask(params: {
         ok: false,
         error: errorCode,
         message: failureMessage,
-        providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
-        detail,
+        providerMessage: null,
+        detail: null,
       },
     };
   }

@@ -37,6 +37,7 @@ import {
   KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX,
   buildKlingStoryboardFirstFramePrompt,
 } from './storyboard/_lib/storyboard-first-frame';
+import { resolveStoryboardVisiblePrice } from './storyboard/_lib/storyboard-price-display';
 import {
   cleanupStoryboardReferenceImage,
   uploadStoryboardReferenceImage,
@@ -56,8 +57,9 @@ import {
   type StoryboardLibraryModalState,
 } from './storyboard/_lib/storyboard-reference-library';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
-import { isStoryboardTargetRecommended, resolveStoryboardRecommendedTarget } from './storyboard/_lib/storyboard-target';
+import { isStoryboardTargetRecommended } from './storyboard/_lib/storyboard-target';
 import {
+  DEFAULT_STORYBOARD_TIER,
   STORYBOARD_LENGTH_PRESETS,
   STORYBOARD_ORIENTATION_OPTIONS,
   STORYBOARD_TEMPLATE_SIZES,
@@ -76,6 +78,10 @@ type StoryboardOptionalField = 'action' | 'dialogue' | 'visualNotes';
 
 const STYLE_OPTIONS: StoryboardStyle[] = ['realistic', 'anime', 'ugc', 'cinema'];
 const TARGET_OPTIONS: StoryboardTargetModel[] = ['seedance', 'kling'];
+const STORYBOARD_TARGET_LOGOS: Record<StoryboardTargetModel, { src: string }> = {
+  seedance: { src: '/brand/partners/bytedance/bytedance-mark-light.svg' },
+  kling: { src: '/brand/partners/kling/kling-mark-light.png' },
+};
 const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
 const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
   id: 'storyboard_reference_images',
@@ -87,8 +93,8 @@ const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
 };
 const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
   id: 'gpt-image-2',
-  label: 'GPT Image 2',
-  provider: 'OpenAI',
+  label: 'Storyboarder',
+  provider: 'MaxVideoAI',
   status: 'live',
   latencyTier: 'standard',
   modes: ['i2i'],
@@ -130,14 +136,6 @@ function formatPrice(value: PriceValue, locale: string): string {
   }
 }
 
-function addPriceValues(left: PriceValue, right: PriceValue): PriceValue {
-  if (!left || !right) return null;
-  return {
-    cents: left.cents + right.cents,
-    currency: left.currency || right.currency || 'USD',
-  };
-}
-
 function readStoredKlingFirstFrames(): Record<string, KlingFirstFrameState> {
   if (typeof window === 'undefined') return {};
   try {
@@ -161,6 +159,23 @@ function getStoredKlingFirstFrame(storyboardJobId: string | null, storyboardUrl:
   const frame = readStoredKlingFirstFrames()[storyboardJobId];
   if (!frame?.image?.url || frame.storyboardUrl !== storyboardUrl) return null;
   return frame;
+}
+
+function buildKlingFirstFrameFromRecentOutput(output: StoryboardRecentOutput): KlingFirstFrameState | null {
+  const firstFrame = output.klingFirstFrame;
+  if (!firstFrame?.url) return null;
+  return {
+    storyboardJobId: output.jobId,
+    storyboardUrl: output.url,
+    image: {
+      url: firstFrame.url,
+      thumbUrl: firstFrame.thumbUrl ?? firstFrame.previewUrl ?? null,
+      width: firstFrame.width,
+      height: firstFrame.height,
+      mimeType: firstFrame.mime,
+    },
+    jobId: firstFrame.jobId,
+  };
 }
 
 export default function StoryboardWorkspace() {
@@ -189,7 +204,7 @@ export default function StoryboardWorkspace() {
   const [style, setStyle] = useState<StoryboardStyle>('cinema');
   const [lengthPresetId, setLengthPresetId] = useState<StoryboardLengthPresetId>('medium');
   const [storyboardOrientation, setStoryboardOrientation] = useState<StoryboardOrientation>('landscape');
-  const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>('hd');
+  const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>(DEFAULT_STORYBOARD_TIER);
   const [referenceImages, setReferenceImages] = useState<(StoryboardReferenceImage | null)[]>(
     () => Array.from({ length: STORYBOARD_REFERENCE_SLOT_COUNT }, () => null)
   );
@@ -272,10 +287,6 @@ export default function StoryboardWorkspace() {
   }, []);
 
   const lengthPreset = useMemo(() => getStoryboardLengthPreset(lengthPresetId), [lengthPresetId]);
-  const recommendedTarget = useMemo(
-    () => resolveStoryboardRecommendedTarget(recognizablePeople),
-    [recognizablePeople]
-  );
   const durationSec = lengthPreset.durationSec;
   const frameCount = lengthPreset.frameCount;
   const storyboardTemplateSize = STORYBOARD_TEMPLATE_SIZES[storyboardOrientation];
@@ -297,8 +308,12 @@ export default function StoryboardWorkspace() {
   const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
   const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
   const editOutputConfig = getStoryboardEditOutputConfig();
-  const activePriceValue =
-    targetModel === 'kling' ? addPriceValues(tierPrices[storyboardTier], tierPrices.hd) : tierPrices[storyboardTier];
+  const klingFirstFramePrice = tierPrices.hd;
+  const activePriceValue = resolveStoryboardVisiblePrice({
+    targetModel,
+    tierPrice: tierPrices[storyboardTier],
+    klingFirstFramePrice,
+  });
   const activePrice = formatPrice(activePriceValue, locale);
   const editPriceLabel = useMemo(() => formatPrice(editPrice, locale), [editPrice, locale]);
   const referenceUploading = referenceImages.some((image) => image?.status === 'uploading');
@@ -308,6 +323,10 @@ export default function StoryboardWorkspace() {
   );
   const selectedKlingFirstFrame = useMemo(() => {
     if (!selectedImage?.url || previewingTemplate) return null;
+    if (selectedRecentOutput) {
+      const recentFirstFrame = buildKlingFirstFrameFromRecentOutput(selectedRecentOutput);
+      if (recentFirstFrame) return recentFirstFrame;
+    }
     if (
       klingFirstFrame?.image?.url &&
       klingFirstFrame.storyboardUrl === selectedImage.url &&
@@ -316,7 +335,7 @@ export default function StoryboardWorkspace() {
       return klingFirstFrame;
     }
     return getStoredKlingFirstFrame(selectedImageJobId, selectedImage.url);
-  }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId]);
+  }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId, selectedRecentOutput]);
 
   useEffect(() => {
     if (!selectedImage?.url) {
@@ -412,7 +431,13 @@ export default function StoryboardWorkspace() {
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
 
   function handleRecognizablePeopleToggle() {
-    setRecognizablePeople((current) => !current);
+    setRecognizablePeople((current) => {
+      const nextValue = !current;
+      if (nextValue) {
+        setTargetModel('kling');
+      }
+      return nextValue;
+    });
   }
 
   async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
@@ -512,7 +537,7 @@ export default function StoryboardWorkspace() {
   function handleSelectRecentOutput(output: StoryboardRecentOutput) {
     setPreviewingTemplate(false);
     setSelectedRecentOutput(output);
-    setKlingFirstFrame(getStoredKlingFirstFrame(output.jobId, output.url));
+    setKlingFirstFrame(buildKlingFirstFrameFromRecentOutput(output) ?? getStoredKlingFirstFrame(output.jobId, output.url));
     setError(null);
     setMessage(null);
   }
@@ -586,6 +611,7 @@ export default function StoryboardWorkspace() {
         quality: outputConfig.quality,
         outputFormat: 'png',
         source: edit ? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE,
+        metadata: edit ? undefined : { storyboard: { role: 'board', targetModel } },
       });
       setResult(response);
       setPreviewingTemplate(false);
@@ -627,6 +653,13 @@ export default function StoryboardWorkspace() {
           quality: firstFrameConfig.quality,
           outputFormat: 'png',
           source: STORYBOARD_SOURCE,
+          metadata: {
+            storyboard: {
+              role: 'kling_first_frame',
+              parentJobId: response.jobId ?? null,
+              targetModel: 'kling',
+            },
+          },
         });
         const firstFrameImage = firstFrameResponse.images[0] ?? null;
         if (!firstFrameImage?.url) {
@@ -681,7 +714,9 @@ export default function StoryboardWorkspace() {
     if (!selectedImage?.url) return;
 
     const handoffDraft = selectedRecentOutput?.storyboard ?? null;
-    const targetModelForHandoff = handoffDraft?.targetModel ?? targetModel;
+    const targetModelForHandoff = selectedKlingFirstFrame?.image?.url
+      ? 'kling'
+      : handoffDraft?.targetModel ?? targetModel;
     if (targetModelForHandoff === 'kling' && !selectedKlingFirstFrame?.image?.url) {
       setError(copy.klingFirstFrameMissing);
       return;
@@ -742,7 +777,7 @@ export default function StoryboardWorkspace() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg dark:bg-transparent">
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
@@ -754,16 +789,16 @@ export default function StoryboardWorkspace() {
                 {copy.backToTools}
               </ButtonLink>
               <div className="mt-4">
-                <h1 className="text-3xl font-semibold text-text-primary">{copy.title}</h1>
-                <p className="mt-2 max-w-xl text-sm text-text-secondary">{copy.subtitle}</p>
+                <h1 className="text-3xl font-semibold text-text-primary dark:text-white">{copy.title}</h1>
+                <p className="mt-2 max-w-xl text-sm text-text-secondary dark:text-white/[0.68]">{copy.subtitle}</p>
               </div>
             </div>
 
             <div className="grid gap-5 xl:grid-cols-[minmax(360px,520px)_minmax(0,1fr)]">
               <section>
-              <div className="rounded-[16px] border border-border bg-surface p-3.5 shadow-card">
+              <div className="rounded-[16px] border border-border bg-surface p-3.5 shadow-card dark:border-white/[0.10] dark:bg-surface-glass-90 dark:shadow-[0_22px_70px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <div className="space-y-3.5">
-                  <BuilderStep number={1} title={copy.subjectStepTitle}>
+                  <BuilderStep title={copy.subjectStepTitle}>
                     <label className="relative block">
                       <span className="sr-only">{copy.subjectLabel}</span>
                       <textarea
@@ -771,9 +806,9 @@ export default function StoryboardWorkspace() {
                         onChange={(event) => setSubject(event.currentTarget.value)}
                         placeholder={copy.subjectPlaceholder}
                         rows={2}
-                        className="min-h-[72px] w-full resize-y rounded-[12px] border border-border bg-bg px-4 py-2.5 pr-10 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                        className="min-h-[72px] w-full resize-y rounded-[12px] border border-border bg-bg px-4 py-2.5 pr-10 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.92] dark:placeholder:text-white/[0.36] dark:focus:border-white/[0.38]"
                       />
-                      <Sparkles className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-text-muted" />
+                      <Sparkles className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-text-muted dark:text-white/[0.45]" />
                     </label>
                     <div className="space-y-2">
                       <div className="grid gap-2 sm:grid-cols-3">
@@ -807,7 +842,7 @@ export default function StoryboardWorkspace() {
                             onChange={(event) => setAction(event.currentTarget.value)}
                             placeholder={copy.actionPlaceholder}
                             rows={3}
-                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.92] dark:placeholder:text-white/[0.36] dark:focus:border-white/[0.38]"
                           />
                         </label>
                       ) : null}
@@ -820,7 +855,7 @@ export default function StoryboardWorkspace() {
                             onChange={(event) => setDialogue(event.currentTarget.value)}
                             placeholder={copy.dialoguePlaceholder}
                             rows={3}
-                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.92] dark:placeholder:text-white/[0.36] dark:focus:border-white/[0.38]"
                           />
                         </label>
                       ) : null}
@@ -833,14 +868,14 @@ export default function StoryboardWorkspace() {
                             onChange={(event) => setVisualNotes(event.currentTarget.value)}
                             placeholder={copy.visualNotesPlaceholder}
                             rows={3}
-                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary"
+                            className="min-h-[76px] w-full resize-y rounded-[10px] border border-border bg-bg px-3 py-2 text-sm leading-5 text-text-primary outline-none transition placeholder:text-text-muted focus:border-text-primary dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.92] dark:placeholder:text-white/[0.36] dark:focus:border-white/[0.38]"
                           />
                         </label>
                       ) : null}
                     </div>
                   </BuilderStep>
 
-                  <BuilderStep hint={copy.optionalAutoLabel} number={2} title={copy.referenceStepTitle}>
+                  <BuilderGroup>
                     <AssetDropzone
                       engine={STORYBOARD_REFERENCE_ENGINE}
                       field={storyboardReferenceField}
@@ -857,9 +892,9 @@ export default function StoryboardWorkspace() {
                       onRemove={handleRemoveReferenceSlot}
                       onError={setError}
                     />
-                  </BuilderStep>
+                  </BuilderGroup>
 
-                  <BuilderStep number={3} title={copy.styleStepTitle}>
+                  <BuilderGroup>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {STYLE_OPTIONS.map((option) => (
                         <ChoiceButton key={option} active={style === option} onClick={() => setStyle(option)}>
@@ -869,7 +904,7 @@ export default function StoryboardWorkspace() {
                       ))}
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.modelStepTitle}</p>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/[0.50]">{copy.modelStepTitle}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {TARGET_OPTIONS.map((option) => (
                           <ChoiceButton
@@ -879,24 +914,18 @@ export default function StoryboardWorkspace() {
                             onClick={() => setTargetModel(option)}
                           >
                             <span className="inline-flex min-w-0 items-center gap-2">
-                              {option === 'seedance' ? <Film className="h-4 w-4 shrink-0" /> : <Camera className="h-4 w-4 shrink-0" />}
+                              <StoryboardTargetLogo active={targetModel === option} target={option} />
                               <span className="truncate">{option === 'seedance' ? copy.targetSeedance : copy.targetKling}</span>
                             </span>
                             {isStoryboardTargetRecommended(option, recognizablePeople) ? (
                               <span
                                 className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro ${
-                                  targetModel === option ? 'bg-on-inverse/15 text-on-inverse' : 'bg-surface-2 text-text-secondary'
+                                  targetModel === option
+                                    ? 'bg-on-inverse/15 text-on-inverse dark:bg-[#030712]/10 dark:text-[#030712]'
+                                    : 'bg-surface-2 text-text-secondary dark:bg-white/[0.08] dark:text-white/[0.72]'
                                 }`}
                               >
                                 {copy.targetRecommendedLabel}
-                              </span>
-                            ) : option === 'kling' ? (
-                              <span
-                                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro ${
-                                  targetModel === option ? 'bg-on-inverse/15 text-on-inverse' : 'bg-warning-bg text-warning'
-                                }`}
-                              >
-                                {copy.targetExperimentalLabel}
                               </span>
                             ) : null}
                           </ChoiceButton>
@@ -908,26 +937,36 @@ export default function StoryboardWorkspace() {
                         onClick={handleRecognizablePeopleToggle}
                         className={`flex min-h-[38px] w-full items-center justify-between gap-3 rounded-[10px] border px-3 py-2 text-left text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
                           recognizablePeople
-                            ? 'border-text-primary bg-bg text-text-primary'
-                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
+                            ? 'border-text-primary bg-bg text-text-primary dark:border-white/[0.35] dark:bg-white/[0.08] dark:text-white'
+                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary dark:border-white/[0.18] dark:bg-white/[0.045] dark:text-white/[0.76] dark:hover:border-white/[0.30] dark:hover:bg-white/[0.075] dark:hover:text-white'
                         }`}
                       >
                         <span className="inline-flex min-w-0 items-center gap-2">
-                          <UserRound className="h-4 w-4 shrink-0" />
+                          <UserRound className="h-4 w-4 shrink-0 dark:text-white/[0.78]" />
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold">{copy.recognizablePeopleLabel}</span>
-                            <span className="mt-0.5 block leading-4 text-text-secondary">{copy.recognizablePeopleMeta}</span>
+                            <span
+                              className={`mt-0.5 block leading-4 ${
+                                recognizablePeople ? 'text-text-secondary dark:text-white/[0.68]' : 'text-text-secondary dark:text-white/[0.56]'
+                              }`}
+                            >
+                              {copy.recognizablePeopleMeta}
+                            </span>
                           </span>
                         </span>
                         <span
                           className={`h-5 w-9 shrink-0 rounded-full border p-0.5 transition ${
-                            recognizablePeople ? 'border-text-primary bg-text-primary' : 'border-border bg-surface-2'
+                            recognizablePeople
+                              ? 'border-text-primary bg-text-primary dark:border-white dark:bg-white'
+                              : 'border-border bg-surface-2 dark:border-white/[0.34] dark:bg-white/[0.14]'
                           }`}
                           aria-hidden="true"
                         >
                           <span
-                            className={`block h-4 w-4 rounded-full bg-surface shadow-sm transition ${
-                              recognizablePeople ? 'translate-x-4' : 'translate-x-0'
+                            className={`block h-4 w-4 rounded-full shadow-sm transition ${
+                              recognizablePeople
+                                ? 'translate-x-4 bg-surface dark:bg-[#050B14]'
+                                : 'translate-x-0 bg-surface dark:bg-white'
                             }`}
                           />
                         </span>
@@ -935,14 +974,12 @@ export default function StoryboardWorkspace() {
                       <p className="text-xs leading-5 text-text-secondary">
                         {targetModel === 'seedance'
                           ? copy.targetNotes.seedance
-                          : targetModel === recommendedTarget
-                            ? copy.targetNotes.kling
-                            : copy.targetNotes.klingFallback}
+                          : copy.targetNotes.kling}
                       </p>
                     </div>
-                  </BuilderStep>
+                  </BuilderGroup>
 
-                  <BuilderStep number={4} title={copy.lengthStepTitle}>
+                  <BuilderGroup>
                     <div className="space-y-1.5">
                       <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.formatLabel}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -960,7 +997,9 @@ export default function StoryboardWorkspace() {
                               </span>
                               <span
                                 className={`mt-0.5 block text-xs font-medium ${
-                                  storyboardOrientation === option ? 'text-on-inverse/70' : 'text-text-secondary'
+                                  storyboardOrientation === option
+                                    ? 'text-on-inverse/70 dark:text-[#030712]/70'
+                                    : 'text-text-secondary dark:text-white/[0.58]'
                                 }`}
                               >
                                 {option === 'landscape' ? copy.landscapeMeta : copy.portraitMeta}
@@ -987,19 +1026,26 @@ export default function StoryboardWorkspace() {
                           key={tier}
                           active={storyboardTier === tier}
                           label={getTierLabel(copy, tier)}
-                          price={formatPrice(tierPrices[tier], locale)}
+                          price={formatPrice(
+                            resolveStoryboardVisiblePrice({
+                              targetModel,
+                              tierPrice: tierPrices[tier],
+                              klingFirstFramePrice,
+                            }),
+                            locale
+                          )}
                           onClick={() => setStoryboardTier(tier)}
                         />
                       ))}
                     </div>
-                  </BuilderStep>
+                  </BuilderGroup>
 
                   <div className="border-t border-border pt-3">
                     <button
                       type="button"
                       onClick={() => void runStoryboard(false)}
                       disabled={!canRun}
-                      className="flex h-11 w-full items-center justify-between rounded-[12px] bg-text-primary px-5 text-sm font-semibold text-on-inverse transition hover:bg-text-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex h-11 w-full items-center justify-between rounded-[12px] bg-text-primary px-5 text-sm font-semibold text-on-inverse transition hover:bg-text-primary/90 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-[#030712] dark:hover:bg-white/[0.92]"
                     >
                       <span className="inline-flex items-center gap-2">
                         {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
@@ -1007,7 +1053,7 @@ export default function StoryboardWorkspace() {
                       </span>
                       <span>{activePrice}</span>
                     </button>
-                    <p className="mt-2 text-center text-xs text-text-muted">{copy.generationFootnote}</p>
+                    <p className="mt-2 text-center text-xs text-text-muted dark:text-white/[0.45]">{copy.generationFootnote}</p>
                     {error ? <p className="mt-3 text-sm text-error">{error}</p> : null}
                     {message ? <p className="mt-3 text-sm text-success">{message}</p> : null}
                   </div>
@@ -1038,6 +1084,7 @@ export default function StoryboardWorkspace() {
               saveLabel={saveLabel}
               saving={saving}
               selectedImage={selectedImage}
+              klingFirstFrame={selectedKlingFirstFrame?.image ?? null}
               templateImagePath={templateImagePath}
             />
             </div>
@@ -1080,29 +1127,32 @@ export default function StoryboardWorkspace() {
 
 function BuilderStep({
   children,
-  hint,
   number,
   title,
 }: {
   children: ReactNode;
-  hint?: string;
-  number: number;
+  number?: number;
   title: string;
 }) {
   return (
-    <div className="grid gap-2 border-t border-border pt-3.5 first:border-t-0 first:pt-0">
+    <div className="grid gap-2 border-t border-border pt-3.5 first:border-t-0 first:pt-0 dark:border-white/[0.08]">
       <div className="flex items-center gap-2.5">
-        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-secondary">
-          {number}
-        </span>
+        {number ? (
+          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-secondary">
+            {number}
+          </span>
+        ) : null}
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
-          {hint ? <p className="mt-0.5 text-[11px] text-text-muted">{hint}</p> : null}
+          <h2 className="text-sm font-semibold text-text-primary dark:text-white/[0.92]">{title}</h2>
         </div>
       </div>
       <div className="space-y-2">{children}</div>
     </div>
   );
+}
+
+function BuilderGroup({ children }: { children: ReactNode }) {
+  return <div className="space-y-2 border-t border-border pt-3 dark:border-white/[0.08]">{children}</div>;
 }
 
 function OptionalPromptButton({
@@ -1123,10 +1173,10 @@ function OptionalPromptButton({
       onClick={onClick}
       className={`inline-flex min-h-[38px] items-center justify-between gap-2 rounded-[10px] border px-3 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
         active
-          ? 'border-text-primary bg-text-primary text-on-inverse'
+          ? 'border-text-primary bg-text-primary text-on-inverse dark:border-white dark:bg-white dark:text-[#030712]'
           : filled
-            ? 'border-text-primary/40 bg-bg text-text-primary'
-            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
+            ? 'border-text-primary/40 bg-bg text-text-primary dark:border-white/[0.26] dark:bg-white/[0.07] dark:text-white/[0.90]'
+            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.66] dark:hover:border-white/[0.22] dark:hover:bg-white/[0.07] dark:hover:text-white'
       }`}
     >
       <span className="truncate">{label}</span>
@@ -1152,8 +1202,8 @@ function ChoiceButton({
       onClick={onClick}
       className={`inline-flex min-h-[40px] items-center justify-center gap-2 rounded-[10px] border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
         active
-          ? 'border-text-primary bg-text-primary text-on-inverse'
-          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+          ? 'border-text-primary bg-text-primary text-on-inverse dark:border-white dark:bg-white dark:text-[#030712]'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.86] dark:hover:border-white/[0.22] dark:hover:bg-white/[0.07] dark:hover:text-white'
       } ${className}`}
     >
       {children}
@@ -1178,12 +1228,14 @@ function LengthPresetButton({
       onClick={onClick}
       className={`rounded-[10px] border px-3 py-1.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
         active
-          ? 'border-text-primary bg-bg text-text-primary shadow-sm'
-          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+          ? 'border-text-primary bg-bg text-text-primary shadow-sm dark:border-white/[0.62] dark:bg-white/[0.10] dark:text-white dark:shadow-none'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.86] dark:hover:border-white/[0.22] dark:hover:bg-white/[0.07] dark:hover:text-white'
       }`}
     >
       <span className="block text-sm font-semibold">{label}</span>
-      <span className="mt-0.5 block text-xs text-text-secondary">{meta}</span>
+      <span className={`mt-0.5 block text-xs ${active ? 'text-text-secondary dark:text-white/[0.72]' : 'text-text-secondary dark:text-white/[0.58]'}`}>
+        {meta}
+      </span>
     </button>
   );
 }
@@ -1205,13 +1257,29 @@ function TierButton({
       onClick={onClick}
       className={`flex min-h-[46px] items-center justify-between gap-3 rounded-[10px] border px-3 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
         active
-          ? 'border-text-primary bg-text-primary text-on-inverse'
-          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover'
+          ? 'border-text-primary bg-text-primary text-on-inverse dark:border-white dark:bg-white dark:text-[#030712]'
+          : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-white/[0.86] dark:hover:border-white/[0.22] dark:hover:bg-white/[0.07] dark:hover:text-white'
       }`}
     >
       <span className="text-sm font-semibold">{label}</span>
       <span className="text-sm font-semibold">{price}</span>
     </button>
+  );
+}
+
+function StoryboardTargetLogo({ active, target }: { active: boolean; target: StoryboardTargetModel }) {
+  const logo = STORYBOARD_TARGET_LOGOS[target];
+
+  return (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
+      <img
+        src={logo.src}
+        alt=""
+        aria-hidden="true"
+        className={`h-4 w-4 select-none object-contain ${active ? 'brightness-0 invert dark:invert-0' : 'dark:brightness-0 dark:invert'}`}
+        draggable={false}
+      />
+    </span>
   );
 }
 

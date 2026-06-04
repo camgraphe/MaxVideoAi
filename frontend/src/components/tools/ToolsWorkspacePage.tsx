@@ -23,7 +23,7 @@ const DEFAULT_TOOLS_COPY = {
   "characterBadge": "8-panel sheet",
   "storyboardEyebrow": "Reference boards",
   "storyboardTitle": "Storyboard Tool",
-  "storyboardBody": "Generate a GPT Image 2 storyboard reference for Seedance and Kling. Use product, cooking, film, and animation boards for Seedance 2; use Kling when real people are required.",
+  "storyboardBody": "Generate a Storyboarder reference for Seedance and Kling. Use product, cooking, film, and animation boards for Seedance 2; use Kling when real people are required.",
   "storyboardBadge": "Seedance + Kling",
   "angleEyebrow": "Perspective control",
   "angleTitle": "Angle / Perspective",

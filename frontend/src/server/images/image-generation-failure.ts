@@ -20,6 +20,8 @@ export async function persistFailedImageGeneration(params: {
   pendingReceipt: PendingReceipt;
   priceOnlyReceipts: boolean;
   pricing: PricingSnapshot;
+  refundOnFailure?: boolean;
+  failedPaymentStatus?: string;
   providerJobId: string | null;
   providerMode: string;
   quality: string | null;
@@ -45,6 +47,8 @@ export async function persistFailedImageGeneration(params: {
     pendingReceipt,
     priceOnlyReceipts,
     pricing,
+    refundOnFailure = true,
+    failedPaymentStatus = 'refunded_wallet',
     providerJobId,
     providerMode,
     quality,
@@ -100,9 +104,9 @@ export async function persistFailedImageGeneration(params: {
            provider_job_id = COALESCE($3, provider_job_id),
            provisional = FALSE,
            updated_at = NOW(),
-           payment_status = 'refunded_wallet'
+           payment_status = $4
        WHERE job_id = $1`,
-      [jobId, message, providerJobId ?? null]
+      [jobId, message, providerJobId ?? null, failedPaymentStatus]
     );
   } catch (updateError) {
     console.warn('[images] failed to update failed job', updateError);
@@ -160,7 +164,9 @@ export async function persistFailedImageGeneration(params: {
     console.warn('[images] failed to record fal queue log', logError);
   }
 
-  await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
+  if (refundOnFailure) {
+    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
+  }
 
   return { message, providerBody, providerStatus };
 }

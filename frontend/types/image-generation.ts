@@ -38,6 +38,13 @@ export interface ImageGenerationRequest {
   engineId?: string;
   membershipTier?: string;
   source?: 'storyboard' | 'storyboard_edit';
+  metadata?: {
+    storyboard?: {
+      role?: 'board' | 'kling_first_frame';
+      parentJobId?: string | null;
+      targetModel?: 'seedance' | 'kling';
+    };
+  };
   jobId?: string;
   aspectRatio?: string;
   resolution?: string;

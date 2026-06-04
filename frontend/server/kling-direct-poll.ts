@@ -14,6 +14,10 @@ import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { formatAspectRatioLabel } from '@/server/fal-webhook-media';
+import {
+  buildUserFacingRefundDescription,
+  toUserFacingFailureMessage,
+} from '@/server/user-facing-failure-messages';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
 import { computeKlingDirectProviderCostUsd } from '@/server/video-providers/kling-direct/cost';
 import { classifyKlingDirectError } from '@/server/video-providers/kling-direct/errors';
@@ -66,7 +70,7 @@ type KlingDirectPollDeps = {
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
-const STALLED_MESSAGE = 'Kling direct polling stalled. Admin review is required before retrying or refunding.';
+const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
 const KLING_DIRECT_POLL_PATHS = new Set(['/v1/videos/text2video', '/v1/videos/image2video']);
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -116,7 +120,11 @@ async function recordWalletRefundOnce(job: KlingDirectPendingJob, reason: string
       job.user_id,
       job.final_price_cents,
       (job.currency ?? 'USD').toUpperCase(),
-      `Refund ${job.engine_label} - ${job.duration_sec}s - ${reason}`,
+      buildUserFacingRefundDescription({
+        engineLabel: job.engine_label,
+        durationSec: job.duration_sec,
+        reason,
+      }),
       job.job_id,
       JSON.stringify(job.pricing_snapshot ?? {}),
     ]
@@ -140,6 +148,7 @@ async function markJobFailed(
   providerStatus: string | null,
   queryFn: QueryFn
 ) {
+  const userMessage = toUserFacingFailureMessage(message);
   const rows = await queryFn<{ job_id: string }>(
     `UPDATE app_jobs
         SET status = 'failed',
@@ -150,10 +159,10 @@ async function markJobFailed(
       WHERE job_id = $1
         AND status = ANY($3::text[])
       RETURNING job_id`,
-    [job.job_id, message, ACTIVE_JOB_STATUSES]
+    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
   );
   if (!rows.length) return false;
-  const refunded = await recordWalletRefundOnce(job, message, queryFn);
+  const refunded = await recordWalletRefundOnce(job, userMessage, queryFn);
   await queryFn(
     `UPDATE app_jobs
         SET payment_status = CASE WHEN $2 THEN 'refunded_wallet' ELSE payment_status END,
@@ -173,7 +182,7 @@ async function markJobFailed(
       errorCode: providerStatus,
       errorClass: 'provider_terminal_failure',
       fallbackEligible: false,
-      responseSnapshot: { providerStatus, message },
+      responseSnapshot: { providerStatus, message: userMessage },
       queryFn,
     });
   }
@@ -223,7 +232,7 @@ async function deferStorageCopyRetry(
   if (!shouldRetryProviderVideoCopy({ state: nextCopyState, createdAt: job.created_at })) {
     await markJobFailed(
       job,
-      `The output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
+      `The output video could not be prepared for download after ${nextCopyState.attempts} attempts.`,
       task.rawStatus,
       queryFn
     );
@@ -360,7 +369,7 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
       if (task.status === 'failed') {
         const failed = await markJobFailed(
           job,
-          task.message ?? 'Kling direct reported this render as failed.',
+          task.message ?? 'The render failed before producing a usable output.',
           task.rawStatus,
           queryFn
         );
@@ -369,7 +378,7 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
       }
 
       if (!task.videoUrl) {
-        const failed = await markJobFailed(job, 'Kling direct completed but returned no video URL.', task.rawStatus, queryFn);
+        const failed = await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus, queryFn);
         if (failed) updates += 1;
         continue;
       }

@@ -1,5 +1,6 @@
 import type {
   CharacterReferenceSelection,
+  ImageGenerationRequest,
   ImageGenerationMode,
 } from '@/types/image-generation';
 import type { FalEngineEntry } from '@/config/falEngines';
@@ -25,6 +26,7 @@ export function buildDefaultSettingsSnapshot(args: {
   watermark: boolean;
   imageUrls: string[];
   characterReferences: CharacterReferenceSelection[];
+  metadata?: ImageGenerationRequest['metadata'] | null;
   membershipTier?: string;
   visibility: 'public' | 'private';
   indexable: boolean;
@@ -54,6 +56,7 @@ export function buildDefaultSettingsSnapshot(args: {
       imageUrls: args.imageUrls,
       characterReferences: args.characterReferences,
     },
+    ...(args.metadata?.storyboard ? { storyboard: args.metadata.storyboard } : {}),
     meta: {
       memberTier: args.membershipTier ?? null,
       visibility: args.visibility,

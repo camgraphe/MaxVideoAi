@@ -162,7 +162,7 @@ const STYLE_GUIDANCE: Record<StoryboardStyle, string> = {
 
 const TARGET_GUIDANCE: Record<StoryboardTargetModel, string> = {
   seedance: 'Seedance target: no real people, no celebrity likenesses, favor product, cooking, props, animation-safe, stylized or non-human subjects.',
-  kling: 'Kling experimental target: realistic people and human scenes can be planned; the board will create a clean first frame and remain a storyboard reference.',
+  kling: 'Kling target: realistic people and human scenes can be planned; the board will create a clean first frame and remain a storyboard reference.',
 };
 
 function normalizeFrameCount(frameCount: number): 4 | 6 | 8 {

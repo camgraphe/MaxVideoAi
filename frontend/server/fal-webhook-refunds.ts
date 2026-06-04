@@ -1,4 +1,8 @@
 import { query } from '@/lib/db';
+import {
+  buildUserFacingRefundDescription,
+  toUserFacingFailureMessage,
+} from '@/server/user-facing-failure-messages';
 
 function coerceNumber(value: number | string | null | undefined): number {
   if (typeof value === 'number') return value;
@@ -31,8 +35,9 @@ export async function maybeAutoRefundWalletCharge(
     user_id: string | null;
     engine_id: string | null;
     engine_label: string | null;
+    duration_sec: number | string | null;
   }>(
-    `SELECT payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, user_id, engine_id, engine_label
+    `SELECT payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, user_id, engine_id, engine_label, duration_sec
      FROM app_jobs
      WHERE job_id = $1
      LIMIT 1`,
@@ -79,17 +84,20 @@ export async function maybeAutoRefundWalletCharge(
   }
 
   const currency = normalizeCurrency(charge.currency ?? jobInfo.currency ?? 'USD');
-  const description =
-    charge.description ??
-    `Refund ${context.engineLabel ?? jobInfo.engine_label ?? jobInfo.engine_id ?? 'engine'} (auto)`;
+  const userFailureMessage = toUserFacingFailureMessage(context.failureMessage);
+  const description = buildUserFacingRefundDescription({
+    engineLabel: context.engineLabel ?? jobInfo.engine_label ?? jobInfo.engine_id ?? null,
+    durationSec: jobInfo.duration_sec,
+    reason: context.failureMessage,
+  });
   const pricingSnapshotJson =
     jobInfo.pricing_snapshot != null ? JSON.stringify(jobInfo.pricing_snapshot) : null;
   const vendorAccount = charge.vendor_account_id ?? jobInfo.vendor_account_id ?? null;
   const refundMetadata = {
-    reason: 'auto_fal_failure_refund',
+    reason: 'auto_render_failure_refund',
     provider_job_id: context.providerJobId ?? null,
     failure_origin: context.failureOrigin ?? null,
-    note: context.failureMessage ?? null,
+    note: userFailureMessage,
   };
 
   let refundId: number | null = null;
@@ -138,9 +146,9 @@ export async function maybeAutoRefundWalletCharge(
        SET payment_status = 'refunded_wallet',
            message = COALESCE(message, $2),
            updated_at = NOW()
-       WHERE job_id = $1
+      WHERE job_id = $1
          AND payment_status = 'paid_wallet'`,
-      [jobId, context.failureMessage ?? null]
+      [jobId, userFailureMessage]
     );
   } catch (error) {
     console.warn('[fal-webhook] auto-refund job update failed', { jobId }, error);

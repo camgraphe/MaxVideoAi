@@ -27,6 +27,8 @@ const storyboardTemplatesPath = join(root, 'frontend/src/components/tools/storyb
 const storyboardGeneratorHandoffPath = join(root, 'frontend/lib/storyboard-generator-handoff.ts');
 const workspaceStoryboardHandoffPath = join(root, 'frontend/app/(core)/(workspace)/app/_lib/workspace-storyboard-handoff.ts');
 const workspaceVideoSettingsHookPath = join(root, 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceVideoSettings.ts');
+const recentOutputsRoutePath = join(root, 'frontend/app/api/media-library/recent-outputs/route.ts');
+const jobOutputsServerPath = join(root, 'frontend/server/media-library/job-outputs.ts');
 const storyboardRecentOutputsHookPath = join(root, 'frontend/src/components/tools/storyboard/_hooks/useStoryboardRecentOutputs.ts');
 const storyboardShotMapPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardShotMap.tsx');
 const storyboardResultPanelPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardResultPanel.tsx');
@@ -129,6 +131,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const generatorHandoffSource = readFileSync(storyboardGeneratorHandoffPath, 'utf8');
   const workspaceStoryboardHandoffSource = readFileSync(workspaceStoryboardHandoffPath, 'utf8');
   const workspaceVideoSettingsHookSource = readFileSync(workspaceVideoSettingsHookPath, 'utf8');
+  const recentOutputsRouteSource = readFileSync(recentOutputsRoutePath, 'utf8');
+  const jobOutputsServerSource = readFileSync(jobOutputsServerPath, 'utf8');
   const recentOutputsHookSource = readFileSync(storyboardRecentOutputsHookPath, 'utf8');
   const shotPlanSource = readFileSync(storyboardShotPlanPath, 'utf8');
   const shotMapSource = readFileSync(storyboardShotMapPath, 'utf8');
@@ -160,8 +164,9 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /STORYBOARD_TEMPLATE_SIZES/);
   assert.match(workspaceSource, /STORYBOARD_TIER_OPTIONS/);
   assert.match(workspaceSource, /recognizablePeople/);
-  assert.match(workspaceSource, /resolveStoryboardRecommendedTarget/);
+  assert.match(workspaceSource, /setTargetModel\('kling'\)/);
   assert.match(workspaceSource, /copy\.targetRecommendedLabel/);
+  assert.doesNotMatch(workspaceSource, /targetExperimentalLabel/);
   assert.match(workspaceSource, /copy\.recognizablePeopleLabel/);
   assert.match(workspaceSource, /getTierLabel/);
   assert.doesNotMatch(workspaceSource, /getTierMeta/);
@@ -204,8 +209,13 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /buildStoryboardGeneratorHandoffUrl/);
   assert.match(workspaceSource, /buildKlingStoryboardFirstFramePrompt/);
   assert.match(workspaceSource, /klingFirstFrame/);
+  assert.match(workspaceSource, /buildKlingFirstFrameFromRecentOutput/);
+  assert.match(workspaceSource, /role: 'kling_first_frame'/);
+  assert.match(workspaceSource, /parentJobId:\s*response\.jobId/);
+  assert.match(workspaceSource, /selectedKlingFirstFrame\?\.image\?\.url\s*\?\s*'kling'/);
   assert.match(workspaceSource, /startFrameImageUrl/);
   assert.match(generatorHandoffSource, /start_image_url/);
+  assert.match(generatorHandoffSource, /startFrameFieldId:\s*startFrameImageUrl \? 'image_url' : null/);
   assert.match(workspaceStoryboardHandoffSource, /buildStoryboardStartFrameAsset/);
   assert.match(workspaceSource, /applySelectedImageToGenerator/);
   assert.match(workspaceSource, /selectedRecentOutput\?\.storyboard/);
@@ -253,7 +263,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(promptSource, /uploaded reference images/);
   assert.match(promptSource, /Seedance/);
   assert.match(promptSource, /Kling/);
-  assert.match(promptSource, /Kling experimental/);
+  assert.doesNotMatch(promptSource, /Kling experimental/);
   assert.match(promptSource, /durationSec/);
   assert.match(targetSource, /resolveStoryboardRecommendedTarget/);
   assert.match(targetSource, /isStoryboardTargetRecommended/);
@@ -266,6 +276,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(templatesSource, /STORYBOARD_LENGTH_PRESETS/);
   assert.match(templatesSource, /StoryboardTier = 'hd' \| '4k' \| 'ultra'/);
   assert.match(templatesSource, /STORYBOARD_TIER_OPTIONS: StoryboardTier\[\] = \['hd', '4k', 'ultra'\]/);
+  assert.match(templatesSource, /DEFAULT_STORYBOARD_TIER: StoryboardTier = '4k'/);
+  assert.match(workspaceSource, /useState<StoryboardTier>\(DEFAULT_STORYBOARD_TIER\)/);
   assert.match(templatesSource, /StoryboardOrientation/);
   assert.match(templatesSource, /STORYBOARD_ORIENTATION_OPTIONS/);
   assert.match(templatesSource, /STORYBOARD_PANEL_METADATA_FIELDS/);
@@ -305,6 +317,12 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(recentOutputsHookSource, /\/api\/media-library\/recent-outputs\?limit=18&kind=image&surface=storyboard/);
   assert.match(recentOutputsHookSource, /authFetch/);
   assert.match(recentOutputsHookSource, /storyboard\?:/);
+  assert.match(recentOutputsHookSource, /klingFirstFrame\?:/);
+  assert.match(recentOutputsRouteSource, /listStoryboardKlingFirstFrameOutputs/);
+  assert.match(recentOutputsRouteSource, /klingFirstFrame:/);
+  assert.match(jobOutputsServerSource, /listStoryboardKlingFirstFrameOutputs/);
+  assert.match(jobOutputsServerSource, /storyboard_kling_first_frame_%/);
+  assert.match(jobOutputsServerSource, /parentJobId/);
   assert.match(shotPlanSource, /buildStoryboardShotPlan/);
   assert.match(shotPlanSource, /StoryboardShotPlan/);
   assert.match(shotMapSource, /shot\.dialogueBeat/);
@@ -320,6 +338,8 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(resultPanelSource, /onApplyEdit/);
   assert.match(resultPanelSource, /onApplyToGenerator/);
   assert.match(resultPanelSource, /copy\.applyToGenerator/);
+  assert.match(resultPanelSource, /klingFirstFrame/);
+  assert.match(resultPanelSource, /copy\.klingFirstFrameTitle/);
   assert.match(resultPanelSource, /editPriceLabel/);
   assert.match(recentRailSource, /export function StoryboardRecentRail/);
   assert.match(recentRailSource, /onSelect\(output\)/);
@@ -327,7 +347,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(referenceLibraryModalSource, /STORYBOARD_REFERENCE_SUPPORTED_FORMATS/);
 });
 
-test('storyboard target recommendation keeps Seedance first and treats Kling as experimental', async () => {
+test('storyboard target recommendation keeps Seedance first while Kling remains available', async () => {
   const module = await import('../frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
 
   assert.equal(module.resolveStoryboardRecommendedTarget(false), 'seedance');

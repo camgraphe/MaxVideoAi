@@ -165,7 +165,7 @@ test('kling storyboard handoff applies a clean first frame plus the board refere
   assert.equal(handoff.mode, 'ref2v');
   assert.equal(handoff.referenceFieldId, 'image_urls');
   assert.equal(handoff.imageUrl, 'https://cdn.example.com/storyboard-board.png');
-  assert.equal(handoff.startFrameFieldId, 'start_image_url');
+  assert.equal(handoff.startFrameFieldId, 'image_url');
   assert.equal(handoff.startFrameImageUrl, 'https://cdn.example.com/storyboard-first-frame.png');
   assert.match(handoff.prompt, /Use @Image1 as the storyboard reference and shot plan/);
   assert.match(handoff.prompt, /Start from the attached clean first frame/);
@@ -174,11 +174,11 @@ test('kling storyboard handoff applies a clean first frame plus the board refere
   assert.equal(state.form.engineId, 'kling-o3-pro');
   assert.equal(state.form.mode, 'ref2v');
   assert.equal(state.form.audio, true);
-  assert.deepEqual(Object.keys(state.inputAssets).sort(), ['image_urls', 'start_image_url']);
+  assert.deepEqual(Object.keys(state.inputAssets).sort(), ['image_url', 'image_urls']);
   assert.equal(state.inputAssets.image_urls?.[0]?.url, 'https://cdn.example.com/storyboard-board.png');
   assert.equal(state.inputAssets.image_urls?.[0]?.assetId, 'job_storyboard');
-  assert.equal(state.inputAssets.start_image_url?.[0]?.url, 'https://cdn.example.com/storyboard-first-frame.png');
-  assert.equal(state.inputAssets.start_image_url?.[0]?.assetId, 'job_storyboard_first_frame');
+  assert.equal(state.inputAssets.image_url?.[0]?.url, 'https://cdn.example.com/storyboard-first-frame.png');
+  assert.equal(state.inputAssets.image_url?.[0]?.assetId, 'job_storyboard_first_frame');
 });
 
 test('storyboard generator handoff falls back from Fal media outputs to stable thumbnails', async () => {
@@ -264,7 +264,9 @@ test('storyboard recent output prompt metadata restores target model and dialogu
   assert.equal(handoff.engineId, 'kling-o3-pro');
   assert.equal(handoff.audioEnabled, true);
   assert.equal(handoff.aspectRatio, '9:16');
-  assert.match(handoff.prompt, /Target model: Kling/);
+  assert.doesNotMatch(handoff.prompt, /Target model:/);
+  assert.doesNotMatch(handoff.prompt, /Duration:\s*10s/);
+  assert.doesNotMatch(handoff.prompt, /Format:\s*9:16/);
   assert.match(handoff.prompt, /Dialogue\/audio summary: Spoken in English/);
 });
 

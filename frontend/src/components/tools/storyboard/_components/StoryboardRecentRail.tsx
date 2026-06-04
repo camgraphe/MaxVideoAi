@@ -22,9 +22,9 @@ export function StoryboardRecentRail({
   return (
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.recentTitle}</p>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/[0.50]">{copy.recentTitle}</p>
         {outputs.length ? (
-          <p className="text-[11px] text-text-muted">{copy.recentHint}</p>
+          <p className="text-[11px] text-text-muted dark:text-white/[0.45]">{copy.recentHint}</p>
         ) : null}
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
@@ -32,7 +32,7 @@ export function StoryboardRecentRail({
           ? Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={`storyboard-recent-skeleton-${index}`}
-                className="h-[86px] w-[136px] shrink-0 animate-pulse rounded-[10px] border border-border bg-bg"
+                className="h-[86px] w-[136px] shrink-0 animate-pulse rounded-[10px] border border-border bg-bg dark:border-white/[0.10] dark:bg-white/[0.035]"
               />
             ))
           : null}
@@ -51,13 +51,15 @@ export function StoryboardRecentRail({
                 >
                   <span
                     className={`block overflow-hidden rounded-[10px] border bg-bg transition ${
-                      active ? 'border-text-primary ring-2 ring-text-primary/10' : 'border-border group-hover:border-border-hover'
-                    }`}
-                  >
-                    <img src={thumbUrl} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" />
-                  </span>
-                  <span className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-text-secondary">
-                    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-surface-2 px-1 text-[10px] text-text-muted">
+                    active
+                      ? 'border-text-primary ring-2 ring-text-primary/10 dark:border-white dark:ring-white/[0.16]'
+                      : 'border-border group-hover:border-border-hover dark:border-white/[0.12] dark:group-hover:border-white/[0.24]'
+                  }`}
+                >
+                  <img src={thumbUrl} alt="" className="aspect-[16/10] w-full object-cover" loading="lazy" />
+                </span>
+                  <span className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-text-secondary dark:text-white/[0.62]">
+                    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-surface-2 px-1 text-[10px] text-text-muted dark:bg-white/[0.08] dark:text-white/[0.50]">
                       {index + 1}
                     </span>
                     <span className="truncate">{formatRecentLabel(output.createdAt, copy.recentItemFallback)}</span>
@@ -67,7 +69,7 @@ export function StoryboardRecentRail({
             })
           : null}
         {!loading && !outputs.length ? (
-          <div className="flex min-h-[86px] w-full items-center gap-2 rounded-[10px] border border-dashed border-border bg-bg px-4 text-sm text-text-muted">
+          <div className="flex min-h-[86px] w-full items-center gap-2 rounded-[10px] border border-dashed border-border bg-bg px-4 text-sm text-text-muted dark:border-white/[0.14] dark:bg-white/[0.035] dark:text-white/[0.50]">
             <ImageIcon className="h-4 w-4" />
             {copy.recentEmpty}
           </div>

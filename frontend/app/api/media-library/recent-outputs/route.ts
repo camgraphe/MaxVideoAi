@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { listRecentOutputs, type JobOutputRecord, type MediaKind } from '@/server/media-library';
+import {
+  listRecentOutputs,
+  listStoryboardKlingFirstFrameOutputs,
+  type JobOutputRecord,
+  type MediaKind,
+} from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
@@ -18,6 +23,21 @@ function buildRecentOutputStoryboardHandoff(output: JobOutputRecord) {
     width: output.width,
     height: output.height,
   });
+}
+
+function buildRecentOutputImage(output: JobOutputRecord | null | undefined) {
+  if (!output?.url) return null;
+  return {
+    id: output.id,
+    jobId: output.jobId,
+    url: output.url,
+    thumbUrl: output.thumbUrl,
+    previewUrl: output.previewUrl,
+    mime: output.mimeType,
+    width: output.width,
+    height: output.height,
+    createdAt: output.createdAt,
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -40,6 +60,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, outputs: [], error: 'LOAD_FAILED' }, { status: 500 });
   }
 
+  let klingFirstFramesByParentJobId = new Map<string, JobOutputRecord>();
+  if (surface === 'storyboard' && outputs.length) {
+    try {
+      klingFirstFramesByParentJobId = await listStoryboardKlingFirstFrameOutputs({
+        userId,
+        parentJobIds: outputs.map((output) => output.jobId),
+      });
+    } catch (error) {
+      console.error('[media-library] failed to list storyboard first frames', error);
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     outputs: outputs.map((output) => ({
@@ -59,6 +91,8 @@ export async function GET(req: NextRequest) {
       isSaved: Boolean(output.isSaved),
       savedAssetId: output.savedAssetId ?? null,
       storyboard: surface === 'storyboard' ? buildRecentOutputStoryboardHandoff(output) : null,
+      klingFirstFrame:
+        surface === 'storyboard' ? buildRecentOutputImage(klingFirstFramesByParentJobId.get(output.jobId)) : null,
     })),
   });
 }

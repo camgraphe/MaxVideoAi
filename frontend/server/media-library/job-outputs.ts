@@ -147,3 +147,71 @@ export async function listRecentOutputs(params: {
   );
   return rows.map(mapOutputRow);
 }
+
+export async function listStoryboardKlingFirstFrameOutputs(params: {
+  userId: string;
+  parentJobIds: string[];
+}): Promise<Map<string, JobOutputRecord>> {
+  await ensureMediaLibrarySchema();
+  const parentJobIds = Array.from(
+    new Set(
+      params.parentJobIds.filter(
+        (jobId) => jobId.startsWith('storyboard_') && !jobId.startsWith('storyboard_kling_first_frame_')
+      )
+    )
+  );
+  const outputs = new Map<string, JobOutputRecord>();
+  if (!parentJobIds.length) return outputs;
+
+  const rows = await query<DbJobOutputRow & { parent_job_id: string }>(
+    `SELECT parent.job_id AS parent_job_id,
+            o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
+            o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
+            NULL::text AS saved_asset_id,
+            child.prompt AS job_prompt,
+            child.duration_sec AS job_duration_sec,
+            child.aspect_ratio AS job_aspect_ratio
+       FROM app_jobs parent
+       JOIN LATERAL (
+         SELECT child.*
+           FROM app_jobs child
+          WHERE child.user_id = parent.user_id
+            AND child.job_id LIKE 'storyboard_kling_first_frame_%'
+            AND child.status = 'completed'
+            AND (
+              child.settings_snapshot->'storyboard'->>'parentJobId' = parent.job_id
+              OR (
+                child.settings_snapshot->'storyboard'->>'parentJobId' IS NULL
+                AND child.created_at >= parent.created_at
+                AND child.created_at <= parent.created_at + INTERVAL '20 minutes'
+                AND NOT EXISTS (
+                  SELECT 1
+                    FROM app_jobs next_parent
+                   WHERE next_parent.user_id = parent.user_id
+                     AND next_parent.job_id = ANY($2::text[])
+                     AND next_parent.job_id <> parent.job_id
+                     AND next_parent.job_id NOT LIKE 'storyboard_kling_first_frame_%'
+                     AND next_parent.created_at > parent.created_at
+                     AND next_parent.created_at < child.created_at
+                )
+              )
+            )
+          ORDER BY
+            CASE WHEN child.settings_snapshot->'storyboard'->>'parentJobId' = parent.job_id THEN 0 ELSE 1 END,
+            child.created_at ASC
+          LIMIT 1
+       ) child ON TRUE
+       JOIN job_outputs o
+         ON o.job_id = child.job_id
+        AND o.kind = 'image'
+        AND o.status = 'ready'
+      WHERE parent.user_id = $1
+        AND parent.job_id = ANY($2::text[])`,
+    [params.userId, parentJobIds]
+  );
+
+  rows.forEach((row) => {
+    outputs.set(row.parent_job_id, mapOutputRow(row));
+  });
+  return outputs;
+}
