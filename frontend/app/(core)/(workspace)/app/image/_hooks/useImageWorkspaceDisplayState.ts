@@ -16,6 +16,7 @@ type UseImageWorkspaceDisplayStateArgs = {
   resolvedCopy: ImageWorkspaceCopy;
   selectedEngine: ImageEngineOption | undefined;
   selectedPreviewEntryId: string | null;
+  suppressDefaultPreview?: boolean;
 };
 
 export function useImageWorkspaceDisplayState({
@@ -28,8 +29,10 @@ export function useImageWorkspaceDisplayState({
   resolvedCopy,
   selectedEngine,
   selectedPreviewEntryId,
+  suppressDefaultPreview = false,
 }: UseImageWorkspaceDisplayStateArgs) {
   const previewEntry = (() => {
+    if (suppressDefaultPreview && !selectedPreviewEntryId) return undefined;
     if (selectedPreviewEntryId) {
       const match = historyEntries.find((entry) => entry.id === selectedPreviewEntryId);
       if (match) return match;

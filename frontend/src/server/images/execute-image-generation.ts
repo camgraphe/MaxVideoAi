@@ -1,10 +1,5 @@
 import { randomUUID } from 'crypto';
-import type {
-  ImageGenerationMode,
-  ImageGenerationRequest,
-  ImageGenerationResponse,
-} from '@/types/image-generation';
-import { getFalClient } from '@/lib/fal-client';
+import type { ImageGenerationMode, ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
@@ -13,11 +8,6 @@ import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import {
-  createSignedDownloadUrl,
-  extractStorageKeyFromUrl,
-  isStorageConfigured,
-} from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
   canonicalizeImageFieldValue,
@@ -35,30 +25,31 @@ import {
 } from '@/lib/image/gptImage2';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
+import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
-import {
-  extractImages,
-  parseRequestId,
-} from './image-provider-payload';
-import {
-  buildReceiptSnapshot,
-  type PendingReceipt,
-} from './image-generation-receipts';
+import { extractImages, parseRequestId } from './image-provider-payload';
+import { buildReceiptSnapshot, type PendingReceipt } from './image-generation-receipts';
 import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapshot';
 import { resolveImageGenerationRequestContext } from './image-generation-request-context';
 import { prepareImageGenerationReferences } from './image-generation-references';
+import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
+import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
+import { runFalImageGeneration } from './image-fal-generation';
+import {
+  applyStoryboardImagePricing,
+  resolveIncludedKlingFirstFrameParentJobId,
+} from './storyboard-image-billing';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
-const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 
 type ExecuteImageGenerationOptions = {
   userId: string;
@@ -68,10 +59,6 @@ type ExecuteImageGenerationOptions = {
   billingProductKey?: BillingProductKey | null;
   billingQuantityMultiplier?: number;
 };
-
-function normalizeOptionalBoolean(value: unknown): boolean | null {
-  return typeof value === 'boolean' ? value : null;
-}
 
 function fail(
   mode: ImageGenerationMode,
@@ -103,33 +90,15 @@ export async function executeImageGeneration({
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
   }
 
-  const {
-    engineEntry,
-    engine,
-    mode,
-    modeConfig,
-    resolvedAspectRatio,
-    prompt,
-    numImages,
-    durationSec,
-  } = resolveImageGenerationRequestContext(body);
+  const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
+    resolveImageGenerationRequestContext(body);
 
-  const {
-    characterReferences,
-    normalizedImageUrls,
-    combinedImageUrls,
-    effectivePrompt,
-    storedAssetInfoByUrl,
-  } = await prepareImageGenerationReferences({
-    userId,
-    body,
-    engineEntry,
-    mode,
-    prompt,
-  });
+  const { characterReferences, normalizedImageUrls, combinedImageUrls, effectivePrompt, storedAssetInfoByUrl } =
+    await prepareImageGenerationReferences({ userId, body, engineEntry, mode, prompt });
 
   const requestId = typeof body.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
   const jobId = requestId ?? `img_${randomUUID()}`;
+  const requestMetadata = normalizeImageGenerationMetadata(body.metadata);
 
   const resolutionResult = resolveRequestedResolution(
     engine,
@@ -156,8 +125,12 @@ export async function executeImageGeneration({
   let providerImageSize: string | GptImage2ImageSize | null =
     parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
   if (engine.id === 'gpt-image-2' && mode === 'i2i' && resolution === 'auto') {
+    const storedReferenceSizes = combinedImageUrls
+      .map((url) => storedAssetInfoByUrl.get(url))
+      .filter((size) => typeof size?.width === 'number' && typeof size.height === 'number');
+    const clientReferenceImageSizes = Array.isArray(body.referenceImageSizes) ? body.referenceImageSizes : [];
     customImageSize = resolveGptImage2AutoInputImageSize(
-      combinedImageUrls.map((url) => storedAssetInfoByUrl.get(url))
+      storedReferenceSizes.length ? storedReferenceSizes : clientReferenceImageSizes
     );
   }
 
@@ -268,6 +241,15 @@ export async function executeImageGeneration({
   const watermark =
     Boolean(watermarkField) &&
     (normalizeOptionalBoolean(body.watermark) ?? getImageFieldDefaultBoolean(engine, 'watermark', mode) ?? false);
+  const includedKlingFirstFrameParentJobId = await resolveIncludedKlingFirstFrameParentJobId({
+    userId,
+    jobId,
+    mode,
+    engineId: engine.id,
+    jobSurface,
+    source: body.source,
+    metadata: requestMetadata,
+  });
 
   let pricing: PricingSnapshot;
   const membershipTier = typeof body.membershipTier === 'string' && body.membershipTier.trim().length
@@ -291,6 +273,20 @@ export async function executeImageGeneration({
           currency: DISPLAY_CURRENCY,
           addons: enableWebSearch ? { enable_web_search: true } : undefined,
         });
+    pricing = await applyStoryboardImagePricing({
+      pricing,
+      engine,
+      jobSurface,
+      source: body.source,
+      metadata: requestMetadata,
+      includedKlingFirstFrameParentJobId,
+      customImageSize,
+      resolution,
+      quality,
+      resolvedAspectRatio,
+      membershipTier,
+      currency: DISPLAY_CURRENCY,
+    });
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
     fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, {
@@ -303,15 +299,21 @@ export async function executeImageGeneration({
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
   const resolutionField = getImageInputField(engine, 'resolution', mode);
   const resolutionEngineParam = resolutionField?.engineParam;
+  const storyboardBillingIdentity =
+    jobSurface === 'storyboard' && engine.id === 'gpt-image-2' ? getStoryboardBillingIdentity(body.source) : null;
+  const billingEngineId = storyboardBillingIdentity?.engineId ?? engine.id;
+  const billingEngineLabel = storyboardBillingIdentity?.engineLabel ?? engine.label;
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
     surface: jobSurface,
     billingProductKey,
-    engineId: engine.id,
+    engineId: billingEngineId,
+    engineLabel: billingEngineLabel,
+    ...(storyboardBillingIdentity ? { billingProductLabel: storyboardBillingIdentity.productLabel } : {}),
     request: {
-      engineId: engine.id,
-      engineLabel: engine.label,
+      engineId: billingEngineId,
+      engineLabel: billingEngineLabel,
       mode,
       numImages,
       resolution,
@@ -340,6 +342,11 @@ export async function executeImageGeneration({
 
   const visibility: 'public' | 'private' = 'private';
   const indexable = false;
+  const walletChargeMode = includedKlingFirstFrameParentJobId ? 'included' : 'charge';
+  const imagePaymentStatus =
+    walletChargeMode === 'included' ? STORYBOARD_INCLUDED_PAYMENT_STATUS : 'paid_wallet';
+  const failedPaymentStatus =
+    walletChargeMode === 'included' ? STORYBOARD_INCLUDED_PAYMENT_STATUS : 'refunded_wallet';
 
   const settingsSnapshotJson = JSON.stringify(
     settingsSnapshot ??
@@ -362,6 +369,7 @@ export async function executeImageGeneration({
         watermark,
         imageUrls: normalizedImageUrls,
         characterReferences,
+        metadata: requestMetadata,
         membershipTier,
         visibility,
         indexable,
@@ -369,13 +377,14 @@ export async function executeImageGeneration({
   );
 
   const billingProductLabel =
-    pricing.meta && typeof pricing.meta.billingProductLabel === 'string' ? pricing.meta.billingProductLabel : null;
+    storyboardBillingIdentity?.productLabel ??
+    (pricing.meta && typeof pricing.meta.billingProductLabel === 'string' ? pricing.meta.billingProductLabel : null);
   const description = billingProductLabel
     ? `${billingProductLabel} - ${numImages} image${numImages > 1 ? 's' : ''}`
-    : `${engineEntry.marketingName} - ${numImages} image${numImages > 1 ? 's' : ''}`;
+    : `${billingEngineLabel} - ${numImages} image${numImages > 1 ? 's' : ''}`;
   const refundDescription = billingProductLabel
     ? `Refund ${billingProductLabel} - ${numImages} image${numImages > 1 ? 's' : ''}`
-    : `Refund ${engine.label} - ${numImages} images`;
+    : `Refund ${billingEngineLabel} - ${numImages} images`;
   const pendingReceipt: PendingReceipt = {
     userId,
     amountCents: pricing.totalCents,
@@ -391,7 +400,7 @@ export async function executeImageGeneration({
     stripeChargeId: null,
   };
   const preferredCurrency = await getUserPreferredCurrency(userId);
-  let shouldEnsurePreferredCurrency = !preferredCurrency;
+  let shouldEnsurePreferredCurrency = !preferredCurrency && walletChargeMode === 'charge';
   try {
     const initialJobState = await createAtomicInitialImageJob({
       userId,
@@ -405,8 +414,8 @@ export async function executeImageGeneration({
       pricingSnapshotJson,
       applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
       vendorAccountId,
-      engineId: engine.id,
-      engineLabel: engine.label,
+      engineId: billingEngineId,
+      engineLabel: billingEngineLabel,
       durationSec,
       prompt,
       aspectRatio: jobAspectRatio,
@@ -417,14 +426,16 @@ export async function executeImageGeneration({
       visibility,
       indexable,
       preferredCurrency,
+      walletChargeMode,
+      includedPaymentStatus: STORYBOARD_INCLUDED_PAYMENT_STATUS,
     });
 
     if (initialJobState.kind === 'existing_job') {
       return buildResponseFromExistingJob({
         job: initialJobState.job,
         mode,
-        engineId: engine.id,
-        engineLabel: engine.label,
+        engineId: billingEngineId,
+        engineLabel: billingEngineLabel,
         pricing,
         resolvedAspectRatio,
         resolution,
@@ -445,7 +456,6 @@ export async function executeImageGeneration({
     fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 
-  const falClient = getFalClient();
   const providerMode = getResultProviderMode();
   let providerJobId: string | undefined;
 
@@ -484,50 +494,27 @@ export async function executeImageGeneration({
   }
 
   try {
-    const resolvedReferenceUrls =
-      mode === 'i2i'
-        ? await Promise.all(
-            combinedImageUrls.map(async (url) => {
-              const key = extractStorageKeyFromUrl(url);
-              if (!key || !isStorageConfigured()) return url;
-              try {
-                return await createSignedDownloadUrl(key, {
-                  expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS,
-                });
-              } catch (signError) {
-                console.warn('[images] failed to sign reference image URL', signError);
-                return url;
-              }
-            })
-          )
-        : [];
-
-    const result = await falClient.subscribe(modeConfig.falModelId, {
-      input: {
-        prompt: effectivePrompt,
-        num_images: numImages,
-        ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
-        ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
-        ...(providerImageSize && resolutionEngineParam === 'image_size' ? { image_size: providerImageSize } : {}),
-        ...(providerImageSize && resolutionEngineParam !== 'image_size' ? { resolution: providerImageSize } : {}),
-        ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
-        ...(outputFormat ? { output_format: outputFormat } : {}),
-        ...(quality ? { quality } : {}),
-        ...(maskUrl ? { mask_url: maskUrl } : {}),
-        ...(enableWebSearch ? { enable_web_search: true } : {}),
-        ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
-        ...(limitGenerations ? { limit_generations: true } : {}),
-      },
-      mode: 'polling',
-      onEnqueue(requestId) {
+    const { result, providerJobId: completedProviderJobId } = await runFalImageGeneration({
+      falModelId: modeConfig.falModelId,
+      effectivePrompt,
+      numImages,
+      mode,
+      combinedImageUrls,
+      falAspectRatio,
+      providerImageSize,
+      resolutionEngineParam,
+      normalizedSeed,
+      outputFormat,
+      quality,
+      maskUrl,
+      enableWebSearch,
+      thinkingLevel,
+      limitGenerations,
+      onProviderJobId(requestId) {
         providerJobId = requestId;
       },
-      onQueueUpdate(update) {
-        if (update?.request_id) {
-          providerJobId = update.request_id;
-        }
-      },
     });
+    providerJobId = completedProviderJobId ?? providerJobId;
 
     const images = extractImages(result.data);
     if (!images.length) {
@@ -538,18 +525,27 @@ export async function executeImageGeneration({
       ...image,
       url: normalizeMediaUrl(image.url) ?? image.url,
     }));
+    const stableImages =
+      jobSurface === 'storyboard'
+        ? await copyGeneratedImagesToStorage({
+            images: normalizedImages,
+            jobId,
+            userId,
+          })
+        : normalizedImages;
 
     const thumbUrls = await createImageThumbnailBatch({
       jobId,
       userId,
-      imageUrls: normalizedImages.map((image) => image.url),
+      imageUrls: stableImages.map((image) => image.url),
     });
-    const normalizedImagesWithThumbs = normalizedImages.map((image, index) => ({
+    const normalizedImagesWithThumbs = stableImages.map((image, index) => ({
       ...image,
       thumbUrl: thumbUrls[index] ?? null,
     }));
-    const description =
-      (result.data && typeof result.data === 'object' && (result.data as { description?: string }).description) || null;
+    const resultDescription =
+      result.data && typeof result.data === 'object' ? (result.data as { description?: unknown }).description : null;
+    const description = typeof resultDescription === 'string' ? resultDescription : null;
     const providerRequestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
     providerJobId = providerRequestId ?? undefined;
 
@@ -573,6 +569,7 @@ export async function executeImageGeneration({
       outputFormat,
       pricing,
       pricingSnapshotJson,
+      paymentStatus: imagePaymentStatus,
       providerJobId: providerJobId ?? null,
       providerMode,
       quality,
@@ -590,13 +587,13 @@ export async function executeImageGeneration({
       mode,
       images: normalizedImagesWithThumbs,
       description,
-      requestId: providerJobId ?? result.requestId ?? null,
-      providerJobId: providerJobId ?? null,
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
+      requestId: providerJobId ?? result.requestId ?? undefined,
+      providerJobId: providerJobId ?? undefined,
+      engineId: billingEngineId,
+      engineLabel: billingEngineLabel,
       durationMs: undefined,
       pricing,
-      paymentStatus: 'paid_wallet',
+      paymentStatus: imagePaymentStatus,
       thumbUrl: heroThumb,
       aspectRatio: resolvedAspectRatio,
       resolution,
@@ -619,6 +616,8 @@ export async function executeImageGeneration({
       pendingReceipt,
       priceOnlyReceipts,
       pricing,
+      refundOnFailure: walletChargeMode === 'charge',
+      failedPaymentStatus,
       providerJobId: providerJobId ?? null,
       providerMode,
       quality,
@@ -630,10 +629,10 @@ export async function executeImageGeneration({
     });
 
     fail(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
+      engineId: billingEngineId,
+      engineLabel: billingEngineLabel,
       jobId,
-      paymentStatus: 'refunded_wallet',
+      paymentStatus: failedPaymentStatus,
     });
   }
 }

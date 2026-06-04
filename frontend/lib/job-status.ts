@@ -70,7 +70,7 @@ export function normalizeJobMessage(message: unknown): string | undefined {
     normalized.includes('prompt could not be submitted') &&
     (normalized.includes('responsible ai') || normalized.includes('sensitive words') || normalized.includes('safety'))
   ) {
-    return 'The provider refused this prompt for safety reasons. Try rephrasing it with safer, more neutral wording.';
+    return 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.';
   }
   return trimmed;
 }

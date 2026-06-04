@@ -72,7 +72,7 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     (normalizedStatus === 'completed'
       ? 'Render completed.'
       : normalizedStatus === 'failed'
-        ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+        ? 'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
         : pendingMessage);
   const jobThumb = job.thumbUrl && !isPlaceholderMediaUrl(job.thumbUrl) ? job.thumbUrl : null;
   const thumbUrl =

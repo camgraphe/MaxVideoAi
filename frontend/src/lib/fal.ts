@@ -108,7 +108,7 @@ async function generateViaFal(
       (error as { response?: unknown } | undefined)?.response ??
       (error as { data?: unknown } | undefined)?.data ??
       null;
-    const message = error instanceof Error ? error.message : 'Fal request failed';
+    const message = error instanceof Error ? error.message : 'Render request failed';
     const falError = new FalGenerationError(message, {
       status: statusCandidate,
       body: bodyCandidate,

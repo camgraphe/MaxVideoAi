@@ -9,7 +9,7 @@ import type { DashboardCopy } from '../_lib/dashboard-copy';
 
 export type RecentTypeTab = 'all' | JobSurface;
 
-const RECENT_TYPE_TABS: readonly RecentTypeTab[] = ['all', 'video', 'image', 'character', 'angle', 'upscale', 'audio'];
+const RECENT_TYPE_TABS: readonly RecentTypeTab[] = ['all', 'video', 'image', 'storyboard', 'character', 'angle', 'upscale', 'audio'];
 
 export function RecentGrid({
   copy,
@@ -238,4 +238,3 @@ function DashboardRecentPreviewCard({
     </Button>
   );
 }
-

@@ -32,6 +32,7 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   assert.match(bootstrapSource, /export function useWorkspaceAppBootstrap/);
   assert.match(bootstrapSource, /useEngines/);
   assert.match(bootstrapSource, /useInfiniteJobs\(24, \{ type: 'video' \}\)/);
+  assert.match(bootstrapSource, /job\.surface !== 'storyboard'/);
   assert.match(bootstrapSource, /useRequireAuth\(\{ redirectIfLoggedOut: false \}\)/);
   assert.match(bootstrapSource, /useResultProvider/);
   assert.match(bootstrapSource, /normalizeUiLocale/);
@@ -86,7 +87,7 @@ test('workspace app client delegates load state and job refresh surfaces', () =>
   assert.match(loadStateSource, /noEnginesError/);
   assert.match(jobRefreshSource, /export function useWorkspaceJobRefresh/);
   assert.match(jobRefreshSource, /getJobStatus/);
-  assert.match(jobRefreshSource, /Provider reported this render as failed/);
+  assert.match(jobRefreshSource, /MaxVideoAI could not complete this render/);
 });
 
 test('workspace app client delegates route form state to a route-local hook', () => {

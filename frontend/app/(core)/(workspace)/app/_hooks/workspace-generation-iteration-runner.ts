@@ -469,18 +469,8 @@ export async function runWorkspaceGenerationIteration({
       const userMessage =
         typeof payload.userMessage === 'string'
           ? payload.userMessage
-          : `The provider rejected this ${primaryAssetFieldLabel.toLowerCase()}. Please try with a different one.`;
-      const providerMessage =
-        typeof payload.providerMessage === 'string'
-          ? payload.providerMessage
-          : typeof payload.detail === 'string'
-            ? payload.detail
-            : undefined;
-      const composed =
-        providerMessage && providerMessage !== userMessage
-          ? `${userMessage}\n(${providerMessage})`
-          : userMessage;
-      showComposerError(composed);
+          : `This ${primaryAssetFieldLabel.toLowerCase()} could not be used. Please try with a different one.`;
+      showComposerError(userMessage);
       return;
     }
     const enrichedError = typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null;

@@ -30,6 +30,7 @@ export async function persistCompletedImageGeneration(params: {
   outputFormat: string | null;
   pricing: PricingSnapshot;
   pricingSnapshotJson: string;
+  paymentStatus?: string;
   providerJobId: string | null;
   providerMode: string;
   quality: string | null;
@@ -58,6 +59,7 @@ export async function persistCompletedImageGeneration(params: {
     outputFormat,
     pricing,
     pricingSnapshotJson,
+    paymentStatus,
     providerJobId,
     providerMode,
     quality,
@@ -87,7 +89,7 @@ export async function persistCompletedImageGeneration(params: {
          cost_breakdown_usd = $7::jsonb,
          currency = $8,
          vendor_account_id = $9,
-         payment_status = 'paid_wallet',
+         payment_status = $15,
          visibility = $10,
          indexable = $11,
          message = $12,
@@ -111,6 +113,7 @@ export async function persistCompletedImageGeneration(params: {
       description,
       renderIdsJson,
       hero,
+      paymentStatus ?? 'paid_wallet',
     ]
   );
 

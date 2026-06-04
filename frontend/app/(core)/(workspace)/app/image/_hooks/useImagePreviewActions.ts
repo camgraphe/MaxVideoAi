@@ -13,6 +13,7 @@ import type {
 type UseImagePreviewActionsParams = {
   canUseWorkspace: boolean;
   genericError: string;
+  librarySource?: string;
   previewEntry: HistoryEntry | undefined;
   removedFromLibraryMessage: string;
   savedToLibraryMessage: string;
@@ -24,6 +25,7 @@ type UseImagePreviewActionsParams = {
 export function useImagePreviewActions({
   canUseWorkspace,
   genericError,
+  librarySource = 'generated',
   previewEntry,
   removedFromLibraryMessage,
   savedToLibraryMessage,
@@ -38,7 +40,7 @@ export function useImagePreviewActions({
   const selectedPreviewUrl = resolveStableMediaUrl(selectedPreviewImage?.url, selectedPreviewImage?.thumbUrl);
   const savedAssetLookupKey =
     canUseWorkspace && selectedPreviewUrl
-      ? `/api/user-assets?limit=1&source=generated&originUrl=${encodeURIComponent(selectedPreviewUrl)}`
+      ? `/api/user-assets?limit=1&source=${encodeURIComponent(librarySource)}&originUrl=${encodeURIComponent(selectedPreviewUrl)}`
       : null;
   const {
     data: savedAssets,
@@ -91,6 +93,7 @@ export function useImagePreviewActions({
         url,
         jobId: previewEntry.jobId ?? previewEntry.id,
         label: previewEntry.prompt ?? undefined,
+        source: librarySource,
       })
         .then(() => {
           setStatusMessage(savedToLibraryMessage);
@@ -107,6 +110,7 @@ export function useImagePreviewActions({
       genericError,
       isRemovingFromLibrary,
       isSavingToLibrary,
+      librarySource,
       mutateSavedAssets,
       previewEntry,
       savedToLibraryMessage,

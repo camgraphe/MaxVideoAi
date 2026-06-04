@@ -32,10 +32,11 @@ export function buildSurfaceFilterClause(surface: JobsRouteSurface, params: Jobs
           OR render_ids IS NOT NULL
           OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
         )
-        AND COALESCE(surface, '') NOT IN ('character', 'angle', 'upscale')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'upscale', 'video')
+        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'video')
         AND job_id NOT LIKE 'tool_angle_%'
         AND job_id NOT LIKE 'tool_upscale_%'
+        AND job_id NOT LIKE 'storyboard_%'
       )
     )`;
   }
@@ -50,10 +51,11 @@ export function buildSurfaceFilterClause(surface: JobsRouteSurface, params: Jobs
         OR settings_snapshot->>'surface' = 'video'
       )
       AND NOT (
-        COALESCE(surface, '') = 'audio'
-        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
+        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale')
+        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale')
         OR job_id LIKE 'tool_angle_%'
         OR job_id LIKE 'tool_upscale_%'
+        OR job_id LIKE 'storyboard_%'
         OR render_ids IS NOT NULL
         OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
       )

@@ -190,16 +190,16 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
     assert.match(queries[0]?.sql ?? '', /UPDATE app_jobs/);
     assert.deepEqual(queries[0]?.params, [
       'job_123',
-      'Provider is temporarily unavailable',
+      'The render queue is temporarily busy. Please retry in a few moments.',
       'byteplus_modelark',
       'refunded_wallet',
     ]);
-    assert.deepEqual(rollbacks, [{ refundDescription: 'Refund Seedance 2.0 - 8s - BytePlus start failed' }]);
+    assert.deepEqual(rollbacks, [{ refundDescription: 'Refund Seedance 2.0 - 8s - Render queue was temporarily busy.' }]);
     assert.equal(logs[0]?.kind, 'failed');
     assert.deepEqual(result.body, {
       ok: false,
       error: 'BYTEPLUS_PROVIDER_ERROR',
-      message: 'Provider is temporarily unavailable',
+      message: 'The render queue is temporarily busy. Please retry in a few moments.',
     });
     assert.equal(result.status, 503);
   } finally {

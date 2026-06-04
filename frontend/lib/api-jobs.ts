@@ -34,7 +34,7 @@ function normalizeJobFromApi(job: Job): Job {
       ? undefined
       : messageFromApi ??
         (status === 'failed'
-          ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+          ? 'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
           : undefined);
 
   return {
@@ -93,6 +93,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   const feedSurface: JobFeedSurface =
     options?.surface === 'video' ||
     options?.surface === 'image' ||
+    options?.surface === 'storyboard' ||
     options?.surface === 'audio' ||
     options?.surface === 'character' ||
     options?.surface === 'angle' ||

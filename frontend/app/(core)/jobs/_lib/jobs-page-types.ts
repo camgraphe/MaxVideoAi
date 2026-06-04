@@ -3,7 +3,7 @@ import type { GroupSummary } from '@/types/groups';
 
 export type { GroupedJobAction };
 
-export type JobsSectionKey = 'video' | 'audio' | 'image' | 'character' | 'angle' | 'upscale';
+export type JobsSectionKey = 'video' | 'audio' | 'image' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
 export interface JobsPageSection {
   key: JobsSectionKey;

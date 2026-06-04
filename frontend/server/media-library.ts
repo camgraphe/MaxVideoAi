@@ -20,6 +20,7 @@ export {
   applyOutputsToJobPayload,
   listJobOutputsByJobIds,
   listRecentOutputs,
+  listStoryboardKlingFirstFrameOutputs,
   upsertJobOutputs,
   upsertLegacyJobOutputs,
 } from './media-library/job-outputs';

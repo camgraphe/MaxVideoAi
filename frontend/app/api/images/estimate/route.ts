@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
-import type { ImageGenerationMode } from '@/types/image-generation';
+import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
+import {
+  applyStoryboardEditPricing,
+  applyStoryboardKlingBundlePricing,
+  applyStoryboardPricing,
+  getStoryboardKlingFirstFramePricingConfig,
+  isKlingStoryboardBoardMetadata,
+  resolveStoryboardTier,
+  STORYBOARD_EDIT_SOURCE,
+  STORYBOARD_SOURCE,
+} from '@/lib/storyboard-pricing';
 import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
 import {
   parseGptImage2SizeKey,
@@ -23,6 +33,9 @@ export async function POST(req: NextRequest) {
         referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
         quality?: string;
         enableWebSearch?: boolean;
+        aspectRatio?: string;
+        metadata?: ImageGenerationRequest['metadata'];
+        source?: string;
       }
     | null = null;
   try {
@@ -35,6 +48,9 @@ export async function POST(req: NextRequest) {
       referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
       quality?: string;
       enableWebSearch?: boolean;
+      aspectRatio?: string;
+      metadata?: ImageGenerationRequest['metadata'];
+      source?: string;
     } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
@@ -103,8 +119,39 @@ export async function POST(req: NextRequest) {
           ? { enable_web_search: true }
           : undefined,
     });
+    let finalPricing = pricing;
+    if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_SOURCE) {
+      finalPricing = applyStoryboardPricing(
+        pricing,
+        resolveStoryboardTier({
+          customImageSize,
+          resolution: resolutionResult.resolution,
+          quality: body?.quality,
+        })
+      );
+      if (isKlingStoryboardBoardMetadata(body.metadata)) {
+        const firstFrameConfig = getStoryboardKlingFirstFramePricingConfig({
+          customImageSize,
+          aspectRatio: typeof body.aspectRatio === 'string' ? body.aspectRatio : null,
+        });
+        const firstFramePricing = applyStoryboardPricing(
+          await computePricingSnapshot({
+            engine: engineCaps,
+            durationSec: 1,
+            resolution: firstFrameConfig.resolution,
+            customImageSize: firstFrameConfig.customImageSize,
+            quality: firstFrameConfig.quality,
+            currency: engineCaps.pricing?.currency ?? 'USD',
+          }),
+          'hd'
+        );
+        finalPricing = applyStoryboardKlingBundlePricing(finalPricing, firstFramePricing);
+      }
+    } else if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_EDIT_SOURCE) {
+      finalPricing = applyStoryboardEditPricing(pricing);
+    }
 
-    return NextResponse.json({ ok: true, pricing });
+    return NextResponse.json({ ok: true, pricing: finalPricing });
   } catch (error) {
     console.error('[images] price estimation failed', error);
     return NextResponse.json({ ok: false, error: 'pricing_error' }, { status: 500 });

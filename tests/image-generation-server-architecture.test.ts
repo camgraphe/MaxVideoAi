@@ -9,6 +9,10 @@ const existingJobResponsePath = join(root, 'frontend/src/server/images/existing-
 const referenceNormalizationPath = join(root, 'frontend/src/server/images/image-reference-normalization.ts');
 const requestContextPath = join(root, 'frontend/src/server/images/image-generation-request-context.ts');
 const referencesPath = join(root, 'frontend/src/server/images/image-generation-references.ts');
+const storyboardTemplateReferencePath = join(root, 'frontend/src/server/images/storyboard-template-reference.ts');
+const storyboardPricingPath = join(root, 'frontend/src/lib/storyboard-pricing.ts');
+const storyboardImageBillingPath = join(root, 'frontend/src/server/images/storyboard-image-billing.ts');
+const imageGenerateRoutePath = join(root, 'frontend/app/api/images/generate/route.ts');
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
@@ -27,6 +31,10 @@ const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
 const referenceNormalizationSource = readFileSync(referenceNormalizationPath, 'utf8');
 const requestContextSource = readFileSync(requestContextPath, 'utf8');
 const referencesSource = readFileSync(referencesPath, 'utf8');
+const storyboardTemplateReferenceSource = readFileSync(storyboardTemplateReferencePath, 'utf8');
+const storyboardPricingSource = readFileSync(storyboardPricingPath, 'utf8');
+const storyboardImageBillingSource = readFileSync(storyboardImageBillingPath, 'utf8');
+const imageGenerateRouteSource = readFileSync(imageGenerateRoutePath, 'utf8');
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
@@ -41,6 +49,10 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(referenceNormalizationPath), 'image reference normalization should live in a focused module');
   assert.ok(existsSync(requestContextPath), 'image request context validation should live in a focused module');
   assert.ok(existsSync(referencesPath), 'image reference preparation should live in a focused module');
+  assert.ok(
+    existsSync(storyboardTemplateReferencePath),
+    'storyboard template reference publishing should live in a focused module'
+  );
   assert.ok(existsSync(initialJobPath), 'atomic initial image job creation should live in a focused module');
   assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
   assert.ok(existsSync(providerPayloadPath), 'provider payload parsing should live in a focused module');
@@ -108,6 +120,30 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.ok(lineCount <= 640, `image generation executor should stay below 640 lines after context extraction, got ${lineCount}`);
 });
 
+test('storyboard image billing uses storyboard identity instead of provider display name', () => {
+  assert.match(storyboardPricingSource, /STORYBOARD_BILLING_ENGINE_ID = 'storyboarder'/);
+  assert.match(storyboardPricingSource, /STORYBOARD_BILLING_LABEL = 'Storyboarder'/);
+  assert.match(storyboardPricingSource, /STORYBOARD_INCLUDED_PAYMENT_STATUS = 'included'/);
+  assert.match(storyboardPricingSource, /applyStoryboardKlingBundlePricing/);
+  assert.match(storyboardPricingSource, /createIncludedStoryboardKlingFirstFramePricing/);
+  assert.doesNotMatch(storyboardPricingSource, /storyboard_gpt_image_2/);
+  assert.match(storyboardPricingSource, /engineLabel: STORYBOARD_BILLING_LABEL/);
+  assert.match(imageGenerateRouteSource, /isStoryboardBillingSource\(body\?\.source\) \? 'storyboard' : 'image'/);
+  assert.match(executorSource, /getStoryboardBillingIdentity/);
+  assert.match(executorSource, /const billingEngineId = storyboardBillingIdentity\?\.engineId \?\? engine\.id/);
+  assert.match(executorSource, /const billingEngineLabel = storyboardBillingIdentity\?\.engineLabel \?\? engine\.label/);
+  assert.match(executorSource, /createAtomicInitialImageJob\(\{[\s\S]+engineId: billingEngineId,[\s\S]+engineLabel: billingEngineLabel/);
+  assert.match(executorSource, /description = billingProductLabel[\s\S]+billingEngineLabel/);
+  assert.match(executorSource, /body\.referenceImageSizes/);
+  assert.match(executorSource, /storedReferenceSizes\.length \? storedReferenceSizes : clientReferenceImageSizes/);
+  assert.match(executorSource, /applyStoryboardImagePricing/);
+  assert.match(executorSource, /resolveIncludedKlingFirstFrameParentJobId/);
+  assert.match(executorSource, /walletChargeMode === 'included'/);
+  assert.match(storyboardImageBillingSource, /applyStoryboardKlingBundlePricing/);
+  assert.match(storyboardImageBillingSource, /createIncludedStoryboardKlingFirstFramePricing/);
+  assert.match(storyboardImageBillingSource, /settings_snapshot->'storyboard'->>'targetModel' = 'kling'/);
+});
+
 test('existing image job response module exposes the expected contract', () => {
   assert.match(existingJobResponseSource, /export type ExistingImageJobRow/);
   assert.match(existingJobResponseSource, /export function parseResolutionFromSettingsSnapshot/);
@@ -125,9 +161,17 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(referencesSource, /export async function prepareImageGenerationReferences/);
   assert.match(referencesSource, /getStoredAssetInfoByUrl/);
   assert.match(referencesSource, /normalizeReferenceImageForEngine/);
+  assert.match(referencesSource, /resolveStoryboardTemplateReferenceUrls/);
   assert.match(referencesSource, /getReferenceConstraints/);
+  assert.match(storyboardTemplateReferenceSource, /export async function resolveStoryboardTemplateReferenceUrls/);
+  assert.match(storyboardTemplateReferenceSource, /storyboard-template-references/);
+  assert.match(storyboardTemplateReferenceSource, /storyboard_template_reference/);
+  assert.match(storyboardTemplateReferenceSource, /STORYBOARD_TEMPLATE_PATH_PATTERN/);
   assert.match(initialJobSource, /export const PLACEHOLDER_THUMB/);
   assert.match(initialJobSource, /export async function createAtomicInitialImageJob/);
+  assert.match(initialJobSource, /ImageWalletChargeMode = 'charge' \| 'included'/);
+  assert.match(initialJobSource, /walletChargeMode === 'charge'/);
+  assert.match(initialJobSource, /walletChargeMode === 'included'/);
   assert.match(initialJobSource, /async function insertProvisionalImageJob/);
   assert.match(initialJobSource, /withDbTransaction/);
   assert.match(initialJobSource, /reserveWalletChargeInExecutor/);
@@ -141,7 +185,11 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(bytePlusSeedreamExecutionSource, /buildBytePlusSeedreamPayload/);
   assert.match(bytePlusSeedreamExecutionSource, /extractBytePlusSeedreamImages/);
   assert.match(bytePlusSeedreamExecutionSource, /copyGeneratedImagesToStorage/);
+  assert.match(executorSource, /copyGeneratedImagesToStorage/);
+  assert.match(executorSource, /jobSurface === 'storyboard'/);
   assert.match(completionSource, /export async function persistCompletedImageGeneration/);
+  assert.match(completionSource, /paymentStatus\?: string/);
+  assert.match(completionSource, /payment_status = \$15/);
   assert.doesNotMatch(
     completionSource,
     /recordUserAsset/,
@@ -151,6 +199,9 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(completionSource, /ensureReusableAsset/);
   assert.match(completionSource, /status = 'completed'/);
   assert.match(failureSource, /export async function persistFailedImageGeneration/);
+  assert.match(failureSource, /refundOnFailure\?: boolean/);
+  assert.match(failureSource, /failedPaymentStatus\?: string/);
+  assert.match(failureSource, /if \(refundOnFailure\)/);
   assert.match(failureSource, /ApiError/);
   assert.match(failureSource, /ValidationError/);
   assert.match(failureSource, /recordRefundReceipt/);

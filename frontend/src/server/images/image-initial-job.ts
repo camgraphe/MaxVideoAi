@@ -8,6 +8,8 @@ import { ImageGenerationExecutionError } from './image-generation-error';
 
 export const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
+export type ImageWalletChargeMode = 'charge' | 'included';
+
 type ExistingImageChargeRow = {
   id: number;
   user_id: string;
@@ -163,8 +165,11 @@ export async function createAtomicInitialImageJob(params: {
   visibility: 'public' | 'private';
   indexable: boolean;
   preferredCurrency: Currency | null;
+  walletChargeMode?: ImageWalletChargeMode;
+  includedPaymentStatus?: string;
 }): Promise<AtomicImageJobResult> {
   return withDbTransaction(async (executor) => {
+    const walletChargeMode = params.walletChargeMode ?? 'charge';
     await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [params.jobId]);
 
     const existingJobs = await executor.query<ExistingImageJobRow>(
@@ -252,6 +257,15 @@ export async function createAtomicInitialImageJob(params: {
         });
       }
 
+      if (walletChargeMode === 'included') {
+        throw new ImageGenerationExecutionError('This included image job conflicts with an existing charge.', {
+          mode: params.mode,
+          status: 409,
+          code: 'job_charge_conflict',
+          extras: { jobId: params.jobId },
+        });
+      }
+
       const existingCurrency = (existingCharge.currency ?? 'USD').toUpperCase();
       if (
         existingCharge.amount_cents !== params.amountCents ||
@@ -266,7 +280,7 @@ export async function createAtomicInitialImageJob(params: {
           extras: { jobId: params.jobId },
         });
       }
-    } else {
+    } else if (walletChargeMode === 'charge') {
       const reserveResult = await reserveWalletChargeInExecutor(
         executor,
         {
@@ -310,6 +324,7 @@ export async function createAtomicInitialImageJob(params: {
       }
     }
 
+    const paymentStatus = walletChargeMode === 'included' ? (params.includedPaymentStatus ?? 'included') : 'paid_wallet';
     await insertProvisionalImageJob(executor, {
       userId: params.userId,
       jobId: params.jobId,
@@ -327,7 +342,7 @@ export async function createAtomicInitialImageJob(params: {
       settingsSnapshotJson: params.settingsSnapshotJson,
       currency: params.currency,
       vendorAccountId: params.vendorAccountId,
-      paymentStatus: 'paid_wallet',
+      paymentStatus,
       visibility: params.visibility,
       indexable: params.indexable,
     });

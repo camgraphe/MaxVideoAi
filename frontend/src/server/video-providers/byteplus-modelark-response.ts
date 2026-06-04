@@ -106,7 +106,7 @@ export function getBytePlusUserSafeErrorMessage(providerMessage: string): string
     normalized.includes('sensitive') ||
     normalized.includes('policy')
   ) {
-    return 'The render service rejected one of the input images. Try an image without identifiable people or private content.';
+    return 'One of the input images was blocked by safety checks. Try an image without identifiable people or private content.';
   }
   return 'The render could not start. Please retry later.';
 }

@@ -16,19 +16,22 @@ export function formatImageSizeLabel(value: string): string {
     auto: 'Auto',
     '2k': '2K',
     '3k': '3K',
-    square: 'Square',
-    square_hd: 'Square HD',
-    portrait_4_3: 'Portrait 4:3',
-    portrait_16_9: 'Portrait 16:9',
-    landscape_4_3: 'Landscape 4:3',
-    landscape_16_9: 'Landscape 16:9',
+    square: 'Square · 1024 x 1024',
+    square_hd: 'Square HD · 1024 x 1024',
+    portrait_4_3: 'Portrait 4:3 · 768 x 1024',
+    portrait_16_9: 'Portrait · 1024 x 1536',
+    landscape_4_3: 'Landscape 4:3 · 1024 x 768',
+    landscape_16_9: 'Landscape 16:9 · 1920 x 1080',
+    '3840x2160': '4K · 3840 x 2160',
+    '2560x1440': '2.5K · 2560 x 1440',
     custom: 'Custom size',
   };
+  if (labels[normalized]) return labels[normalized];
   const parsed = parseGptImage2SizeKey(normalized);
   if (parsed) {
     return `${parsed.width} x ${parsed.height}`;
   }
-  return labels[normalized] ?? value.toUpperCase();
+  return value.toUpperCase();
 }
 
 export function formatQualityLabel(value: string): string {

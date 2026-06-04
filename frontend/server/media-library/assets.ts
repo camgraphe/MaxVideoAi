@@ -37,9 +37,10 @@ export async function listLibraryAssets(params: {
   const rows = await query<DbMediaAssetRow>(
     `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
             source_job_id, source_output_id, status, metadata, created_at
-       FROM media_assets
+      FROM media_assets
       WHERE user_id = $1
         AND deleted_at IS NULL
+        AND COALESCE(source, '') <> 'storyboard_template_reference'
         AND ($3::text IS NULL OR kind = $3::text)
         AND (
           $4::text IS NULL
@@ -85,8 +86,9 @@ export async function listLibraryAssets(params: {
     created_at: string;
   }>(
     `SELECT asset_id, user_id, url, mime_type, width, height, size_bytes, source, metadata, created_at
-       FROM user_assets
+      FROM user_assets
       WHERE user_id = $1
+        AND COALESCE(source, '') <> 'storyboard_template_reference'
         AND ($3::text IS NULL OR (
           CASE
             WHEN COALESCE(mime_type, '') LIKE 'video/%' THEN 'video'
@@ -98,7 +100,7 @@ export async function listLibraryAssets(params: {
           $4::text IS NULL
           OR (
             CASE
-              WHEN source IN ('upload', 'character', 'angle', 'upscale') THEN source
+              WHEN source IN ('upload', 'storyboard', 'character', 'angle', 'upscale') THEN source
               WHEN source = 'generated' THEN 'saved_job_output'
               ELSE 'import'
             END

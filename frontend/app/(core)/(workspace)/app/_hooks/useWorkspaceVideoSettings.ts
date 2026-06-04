@@ -5,6 +5,10 @@ import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile } from '@/components/QuadPreviewPanel';
 import { authFetch } from '@/lib/authFetch';
 import {
+  STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY,
+  parseStoryboardGeneratorHandoff,
+} from '@/lib/storyboard-generator-handoff';
+import {
   mapSharedVideoToGroup,
   type SelectedVideoPreview,
   type SharedVideoPreview,
@@ -36,6 +40,7 @@ import {
   resolveVideoSettingsSnapshot,
   type VideoJobPayload,
 } from '../_lib/workspace-video-settings';
+import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
@@ -119,6 +124,7 @@ export function useWorkspaceVideoSettings({
 }: UseWorkspaceVideoSettingsOptions) {
   const hydratedJobRef = useRef<string | null>(null);
   const restoredPreviewJobRef = useRef<string | null>(null);
+  const appliedStoryboardHandoffRef = useRef<string | null>(null);
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
@@ -237,6 +243,97 @@ export function useWorkspaceVideoSettings({
     applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
   }, [applyVideoSettingsSnapshot, hydrateVideoSettingsFromJob, sharedVideoSettings]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!searchString.includes('storyboard=1')) return;
+    if (!authChecked) return;
+    if (!engines.length) return;
+    if (hydratedForScope !== storageScope) return;
+
+    const rawHandoff = window.sessionStorage.getItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+    const handoff = parseStoryboardGeneratorHandoff(rawHandoff);
+    const params = new URLSearchParams(searchString);
+    const stripStoryboardParam = () => {
+      params.delete('storyboard');
+      const next = params.toString();
+      replaceRoute(next ? `/app?${next}` : '/app');
+    };
+
+    if (!handoff) {
+      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      stripStoryboardParam();
+      setNotice('Storyboard handoff expired. Generate or select a storyboard again.');
+      return;
+    }
+
+    const handoffKey = `${handoff.createdAt}:${handoff.engineId}:${handoff.mode}:${handoff.imageUrl ?? 'prompt-only'}`;
+    if (appliedStoryboardHandoffRef.current === handoffKey) return;
+    appliedStoryboardHandoffRef.current = handoffKey;
+
+    try {
+      const applied = buildWorkspaceStoryboardHandoffState(handoff, engines, null);
+      setPrompt(applied.prompt);
+      setNegativePrompt('');
+      setVoiceIdsInput('');
+      setMultiPromptEnabled(false);
+      setMultiPromptScenes([createMultiPromptScene()]);
+      setShotType('customize');
+      setForm(applied.form);
+      setInputAssets((previous) => {
+        Object.values(previous).forEach((entries) => {
+          entries.forEach((asset) => revokeAssetPreview(asset));
+        });
+        return applied.inputAssets;
+      });
+      setKlingElements((previous) => {
+        previous.forEach((element) => {
+          revokeKlingAssetPreview(element.frontal);
+          element.references.forEach((asset) => revokeKlingAssetPreview(asset));
+          revokeKlingAssetPreview(element.video);
+        });
+        return [createKlingElement()];
+      });
+      setSelectedPreview(null);
+      setCompositeOverride(null);
+      setCompositeOverrideSummary(null);
+      setSharedPrompt(null);
+      setSharedVideoSettings(null);
+      setNotice(null);
+      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      stripStoryboardParam();
+      queueMicrotask(() => {
+        focusComposer();
+      });
+    } catch (error) {
+      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      stripStoryboardParam();
+      setNotice(error instanceof Error ? error.message : 'Failed to apply storyboard settings.');
+    }
+  }, [
+    authChecked,
+    engines,
+    focusComposer,
+    hydratedForScope,
+    replaceRoute,
+    searchString,
+    setCompositeOverride,
+    setCompositeOverrideSummary,
+    setForm,
+    setInputAssets,
+    setKlingElements,
+    setMultiPromptEnabled,
+    setMultiPromptScenes,
+    setNegativePrompt,
+    setNotice,
+    setPrompt,
+    setSelectedPreview,
+    setSharedPrompt,
+    setSharedVideoSettings,
+    setShotType,
+    setVoiceIdsInput,
+    storageScope,
+  ]);
 
   useEffect(() => {
     if (!fromVideoId) return undefined;

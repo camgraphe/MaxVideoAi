@@ -1,7 +1,7 @@
 export const PROVIDER_VIDEO_COPY_FAILURE_MESSAGE =
-  'The provider finished this render, but the video could not be copied to MaxVideoAI storage. Please retry.';
+  'The render finished, but MaxVideoAI could not prepare the video for download. Please retry.';
 export const PROVIDER_VIDEO_COPY_RETRY_MESSAGE =
-  'Generated video is ready. Copying it to MaxVideoAI storage.';
+  'Generated video is ready. Preparing it for download.';
 const DEFAULT_PROVIDER_VIDEO_COPY_MAX_ATTEMPTS = 6;
 const DEFAULT_PROVIDER_VIDEO_COPY_WINDOW_MS = 3 * 60 * 60_000;
 const PROVIDER_VIDEO_COPY_RETRY_DELAYS_MS = [2, 5, 15, 45, 90].map((minutes) => minutes * 60_000);

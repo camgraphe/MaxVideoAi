@@ -36,7 +36,15 @@ export type UserAsset = {
   sourceOutputId?: string | null;
 };
 
-export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'recent' | 'character' | 'angle' | 'upscale';
+export type AssetLibrarySource =
+  | 'all'
+  | 'upload'
+  | 'generated'
+  | 'recent'
+  | 'storyboard'
+  | 'character'
+  | 'angle'
+  | 'upscale';
 export type AssetLibraryKind = 'image' | 'video';
 
 export type AssetPickerTarget =

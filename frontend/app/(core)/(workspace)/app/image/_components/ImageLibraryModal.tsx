@@ -193,7 +193,9 @@ export function ImageLibraryModal({
   const assets = useMemo(() => {
     if (isCharacterMode) return [];
     return (((data ?? []) as LibraryAsset[])).filter((asset) =>
-      toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
+      toolsEnabled
+        ? true
+        : asset.source !== 'storyboard' && asset.source !== 'character' && asset.source !== 'angle'
     );
   }, [data, isCharacterMode, toolsEnabled]);
   const characters = useMemo(
@@ -205,7 +207,15 @@ export function ImageLibraryModal({
       isCharacterMode
         ? (['character'] as const satisfies readonly AssetLibrarySource[])
         : toolsEnabled
-          ? (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const satisfies readonly AssetLibrarySource[])
+          ? ([
+              'all',
+              'upload',
+              'generated',
+              'storyboard',
+              'character',
+              'angle',
+              'upscale',
+            ] as const satisfies readonly AssetLibrarySource[])
           : (['all', 'upload', 'generated'] as const satisfies readonly AssetLibrarySource[]),
     [isCharacterMode, toolsEnabled]
   );
@@ -267,13 +277,15 @@ export function ImageLibraryModal({
           ? copy.modal.emptyGenerated
           : activeSource === 'upload'
             ? copy.modal.emptyUploads
-            : activeSource === 'character'
-              ? copy.modal.emptyCharacter
-              : activeSource === 'angle'
-                ? copy.modal.emptyAngle
-                : activeSource === 'upscale'
-                  ? copy.modal.emptyUpscale
-                  : copy.modal.empty;
+            : activeSource === 'storyboard'
+              ? copy.modal.emptyStoryboard
+              : activeSource === 'character'
+                ? copy.modal.emptyCharacter
+                : activeSource === 'angle'
+                  ? copy.modal.emptyAngle
+                  : activeSource === 'upscale'
+                    ? copy.modal.emptyUpscale
+                    : copy.modal.empty;
   const supportedFormatsHint = isCharacterMode
     ? formatTemplate(characterCopy.limitLabel, {
         count: characterSelectionLimit,
@@ -285,6 +297,7 @@ export function ImageLibraryModal({
   const toolLinks = toolsEnabled
     ? [
         { href: '/app/image', label: 'Create image' },
+        { href: '/app/tools/storyboard', label: 'Storyboard' },
         { href: '/app/tools/angle', label: 'Change angle' },
         { href: '/app/tools/character-builder', label: 'Character builder' },
       ]

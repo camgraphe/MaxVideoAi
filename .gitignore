@@ -52,3 +52,6 @@ frontend/.tmp/
 # Local browser screenshots captured during manual QA
 /jobs-*.png
 /library-page.png
+
+# Local Superpowers brainstorming sessions
+.superpowers/

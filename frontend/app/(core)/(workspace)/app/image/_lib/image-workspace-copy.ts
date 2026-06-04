@@ -127,6 +127,7 @@ export interface ImageWorkspaceCopy {
       all: string;
       upload: string;
       generated: string;
+      storyboard: string;
       character: string;
       angle: string;
       upscale: string;
@@ -140,6 +141,7 @@ export interface ImageWorkspaceCopy {
       emptyCompatible: string;
       emptyUploads: string;
       emptyGenerated: string;
+      emptyStoryboard: string;
       emptyCharacter: string;
       emptyAngle: string;
       emptyUpscale: string;
@@ -293,6 +295,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
       all: 'All images',
       upload: 'Uploaded images',
       generated: 'Generated images',
+      storyboard: 'Storyboard assets',
       character: 'Character assets',
       angle: 'Angle assets',
       upscale: 'Upscale assets',
@@ -306,6 +309,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
       emptyCompatible: 'No compatible assets for this model yet.',
       emptyUploads: 'No uploaded images yet. Upload images from the composer or the Library page.',
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
+      emptyStoryboard: 'No storyboard assets saved yet. Save a storyboard image to see it here.',
       emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
       emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
       emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',

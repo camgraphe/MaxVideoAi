@@ -149,7 +149,7 @@ export function QuadSingleTilesGrid({
                   <span className="font-semibold uppercase tracking-micro text-error">Generation failed</span>
                   <span className="text-[11px] leading-snug text-error">
                     {failureMessage ??
-                      'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
+                      'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'}
                   </span>
                 </div>
               ) : tile.status !== 'completed' ? (
@@ -167,7 +167,7 @@ export function QuadSingleTilesGrid({
                   <p className="text-[10px] font-semibold uppercase tracking-micro text-error">Refund note</p>
                   <p className="mt-1 text-[11px] leading-snug text-error">
                     {failureMessage ??
-                      'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
+                      'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'}
                   </p>
                 </div>
               ) : null}

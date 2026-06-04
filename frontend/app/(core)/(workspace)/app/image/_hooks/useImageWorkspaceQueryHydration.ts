@@ -29,6 +29,7 @@ import {
   type ImageEngineOption,
   type ReferenceSlotValue,
 } from '../_lib/image-workspace-types';
+import { IMAGE_STORYBOARD_PRESET } from '../_lib/image-workspace-storyboard';
 
 type SearchParamsReader = {
   get(name: string): string | null;
@@ -103,6 +104,13 @@ export function useImageWorkspaceQueryHydration({
     return trimmed.length ? trimmed : null;
   }, [searchParams]);
 
+  const requestedTool = useMemo(() => {
+    const raw = searchParams?.get('tool');
+    if (!raw) return null;
+    const trimmed = raw.trim().toLowerCase();
+    return trimmed.length ? trimmed : null;
+  }, [searchParams]);
+
   useEffect(() => {
     if (!requestedEngineId) return;
     const engineMatch = findImageEngine(engines, requestedEngineId);
@@ -110,6 +118,21 @@ export function useImageWorkspaceQueryHydration({
     setEngineId(engineMatch.id);
     setMode((previous) => (engineMatch.modes.includes(previous) ? previous : engineMatch.modes[0] ?? 't2i'));
   }, [engines, requestedEngineId, setEngineId, setMode]);
+
+  useEffect(() => {
+    if (requestedTool !== IMAGE_STORYBOARD_PRESET.tool) return;
+    const engineMatch = findImageEngine(engines, IMAGE_STORYBOARD_PRESET.engineId);
+    if (!engineMatch) return;
+    setEngineId(engineMatch.id);
+    setMode(
+      engineMatch.modes.includes(IMAGE_STORYBOARD_PRESET.mode)
+        ? IMAGE_STORYBOARD_PRESET.mode
+        : engineMatch.modes[0] ?? 't2i'
+    );
+    setPrompt(IMAGE_STORYBOARD_PRESET.prompt);
+    setNumImages(1);
+    setReferenceSlots(() => Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>);
+  }, [engines, requestedTool, setEngineId, setMode, setNumImages, setPrompt, setReferenceSlots]);
 
   const applyImageSettingsSnapshot = useCallback(
     (snapshot: unknown, { selectJobId }: { selectJobId?: string } = {}) => {
@@ -345,5 +368,7 @@ export function useImageWorkspaceQueryHydration({
 
   return {
     applyImageSettingsSnapshot,
+    librarySource:
+      requestedTool === IMAGE_STORYBOARD_PRESET.tool ? IMAGE_STORYBOARD_PRESET.librarySource : 'generated',
   };
 }

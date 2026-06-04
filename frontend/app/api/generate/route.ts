@@ -20,6 +20,7 @@ import { submitGenerateProviderTask } from './_lib/video-provider-submission';
 import { buildResponseFromExistingVideoJob, createAtomicInitialVideoJob, VideoInitialJobError } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
+import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { resolveGenerateRouteContext } from './_lib/route-context';
 
@@ -548,11 +549,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (pendingReceipt) {
-      const refundDescription = `Refund ${engine.label} - ${durationSec}s - missing provider_job_id`;
       await rollbackPendingPayment({
         pendingReceipt,
         walletChargeReserved,
-        refundDescription,
+        refundDescription: buildUserFacingRefundDescription({ engineLabel: engine.label, durationSec, reason: failureMessage }),
       });
     }
 

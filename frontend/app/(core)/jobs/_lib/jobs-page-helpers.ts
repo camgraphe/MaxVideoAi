@@ -30,6 +30,9 @@ export function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forc
   if (surface === 'audio') {
     return `/app/audio?job=${encodeURIComponent(jobId)}`;
   }
+  if (surface === 'storyboard') {
+    return `/app/tools/storyboard?job=${encodeURIComponent(jobId)}`;
+  }
   if (forceImageGroup || surface === 'image') {
     return `/app/image?job=${encodeURIComponent(jobId)}`;
   }

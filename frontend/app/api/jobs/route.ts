@@ -101,15 +101,19 @@ export async function GET(req: NextRequest) {
             OR job_id LIKE 'tool_upscale_%'
             OR ${aliasClause}
             OR ${heuristicClause}
-          )`
+          )
+          AND COALESCE(surface, '') NOT IN ('storyboard')
+          AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard')
+          AND job_id NOT LIKE 'storyboard_%'`
         );
       } else if (feedType === 'video') {
         conditions.push(
           `NOT (
-            surface IN ('image', 'character', 'angle', 'audio', 'upscale')
-            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
+            surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale')
+            OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale')
             OR job_id LIKE 'tool_angle_%'
             OR job_id LIKE 'tool_upscale_%'
+            OR job_id LIKE 'storyboard_%'
             OR ${aliasClause}
             OR ${heuristicClause}
           )`

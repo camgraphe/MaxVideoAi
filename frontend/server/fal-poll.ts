@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
+import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 
 type FalPendingJob = {
   job_id: string;
@@ -74,6 +75,7 @@ export async function runFalPoll() {
 
     const markJobFailed = async (reason: string, options: MarkFailedOptions = {}) => {
       const autoRefundEligible = options.autoRefundEligible === true;
+      const userMessage = toUserFacingFailureMessage(reason);
       console.warn('[fal-poll] marking job as failed', {
         at: new Date().toISOString(),
         jobId: job.job_id,
@@ -87,8 +89,8 @@ export async function runFalPoll() {
         await updateJobFromFalWebhook({
           request_id: job.provider_job_id,
           status: 'failed',
-          response: { error: reason, status: 'failed' } as unknown,
-          result: { error: reason, status: 'failed' } as unknown,
+          response: { error: userMessage, status: 'failed' } as unknown,
+          result: { error: userMessage, status: 'failed' } as unknown,
           auto_refund_eligible: autoRefundEligible,
           failure_origin: options.failureOrigin ?? 'poll_internal',
         });
@@ -97,7 +99,7 @@ export async function runFalPoll() {
         try {
           await query(
             `UPDATE app_jobs SET status = 'failed', progress = LEAST(progress, 1), message = $1 WHERE job_id = $2`,
-            [reason, job.job_id]
+            [userMessage, job.job_id]
           );
         } catch (writeError) {
           console.warn('[fal-poll] db update failed', job.job_id, writeError);
@@ -177,7 +179,7 @@ export async function runFalPoll() {
           await recordPollEvent(
             'poll:timeout-grace',
             {
-              reason: 'Unable to determine Fal engine during timeout grace window.',
+              reason: 'Unable to determine render engine during timeout grace window.',
               ageMs,
               graceMs: POLL_TIMEOUT_GRACE_MS,
             },
@@ -185,7 +187,7 @@ export async function runFalPoll() {
           );
           continue;
         }
-        await markRefundEligiblePollFailure('Unable to determine Fal engine for this job.');
+        await markRefundEligiblePollFailure('Unable to determine render engine for this job.');
         continue;
       }
 
@@ -210,7 +212,7 @@ export async function runFalPoll() {
           await recordPollEvent(
             'poll:timeout-grace',
             {
-              reason: 'Fal status temporarily unavailable during timeout grace window.',
+              reason: 'Render status temporarily unavailable during timeout grace window.',
               ageMs,
               graceMs: POLL_TIMEOUT_GRACE_MS,
             },
@@ -219,10 +221,10 @@ export async function runFalPoll() {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure('Fal status remained unavailable after timeout grace period.');
+          await markRefundEligiblePollFailure('Render status remained unavailable after timeout grace period.');
           continue;
         }
-        await markJobFailed('Fal job status unavailable (possibly expired).');
+        await markJobFailed('Render status unavailable.');
         continue;
       }
 
@@ -239,7 +241,7 @@ export async function runFalPoll() {
         undefined;
 
       if (state && FAILURE_STATES.has(state)) {
-        await markJobFailed(providerError ?? 'Fal reported this job as failed.', {
+        await markJobFailed(providerError ?? 'The render failed before producing a usable output.', {
           autoRefundEligible: true,
           failureOrigin: 'provider_terminal',
         });
@@ -248,7 +250,7 @@ export async function runFalPoll() {
 
       if (state && !COMPLETED_STATES.has(state)) {
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure('Fal polling exceeded expected window after timeout grace period.');
+          await markRefundEligiblePollFailure('Render polling exceeded expected window after timeout grace period.');
           continue;
         }
         await updateJobFromFalWebhook({
@@ -260,7 +262,7 @@ export async function runFalPoll() {
           await recordPollEvent(
             'poll:timeout-grace',
             {
-              reason: 'Fal job still non-terminal during timeout grace window.',
+              reason: 'Render still processing during timeout grace window.',
               falStatus: state,
               ageMs,
               graceMs: POLL_TIMEOUT_GRACE_MS,
@@ -278,7 +280,7 @@ export async function runFalPoll() {
           await recordPollEvent(
             'poll:timeout-grace',
             {
-              reason: 'Fal result not ready during timeout grace window.',
+              reason: 'Render result not ready during timeout grace window.',
               falStatus: state ?? null,
               ageMs,
               graceMs: POLL_TIMEOUT_GRACE_MS,
@@ -288,10 +290,10 @@ export async function runFalPoll() {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure(providerError ?? 'Fal returned no result after timeout grace period.');
+          await markRefundEligiblePollFailure(providerError ?? 'Render returned no result after timeout grace period.');
           continue;
         }
-        await markJobFailed(providerError ?? 'Fal returned no result for this job.');
+        await markJobFailed(providerError ?? 'Render returned no result for this job.');
         continue;
       }
       await recordPollEvent(
@@ -321,7 +323,7 @@ export async function runFalPoll() {
       updates += 1;
     } catch (error) {
       console.warn('[fal-poll] failed to sync job', job.job_id, error);
-      await markJobFailed('Fal sync failed.');
+      await markJobFailed('Render sync failed.');
     }
   }
 
@@ -343,7 +345,7 @@ export async function runFalPoll() {
         `UPDATE app_jobs
             SET status = 'failed',
                 progress = 0,
-                message = 'The render could not start. Please retry.',
+                message = 'MaxVideoAI could not start this render. Please retry in a few moments.',
                 provisional = FALSE,
                 updated_at = NOW()
 	          WHERE job_id = $1

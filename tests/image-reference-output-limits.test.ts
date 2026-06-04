@@ -3,8 +3,16 @@ import test from 'node:test';
 
 import {
   buildImageCountOptionsWithinMax,
+  formatImageSizeLabel,
   resolveSeedreamMaxOutputImages,
 } from '../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-utils.ts';
+
+test('GPT Image 2 image size labels expose real dimensions and 4K clearly', () => {
+  assert.equal(formatImageSizeLabel('landscape_16_9'), 'Landscape 16:9 · 1920 x 1080');
+  assert.equal(formatImageSizeLabel('portrait_16_9'), 'Portrait · 1024 x 1536');
+  assert.equal(formatImageSizeLabel('3840x2160'), '4K · 3840 x 2160');
+  assert.equal(formatImageSizeLabel('1024x768'), '1024 x 768');
+});
 
 test('Seedream output count leaves room for selected reference images', () => {
   assert.equal(resolveSeedreamMaxOutputImages(0), 15);

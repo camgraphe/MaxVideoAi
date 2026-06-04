@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
-import { Composer, type MultiPromptScene } from '@/components/Composer';
+import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -36,6 +36,7 @@ import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
+import { StoryboardLaunchModal } from './StoryboardLaunchModal';
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
@@ -132,6 +133,11 @@ type WorkspaceComposerSurfaceProps = {
   setViewMode: Dispatch<SetStateAction<'single' | 'quad'>>;
 };
 
+function isStoryboardLaunchEngine(engineId: string): boolean {
+  const normalized = engineId.toLowerCase();
+  return normalized.includes('seedance') || normalized.includes('kling');
+}
+
 export function WorkspaceComposerSurface({
   selectedEngine,
   form,
@@ -210,6 +216,7 @@ export function WorkspaceComposerSurface({
   handleOpenKlingAssetLibrary,
   setViewMode,
 }: WorkspaceComposerSurfaceProps) {
+  const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
   const klingO3AssetState = useMemo(
     () => getKlingO3AssetState({ inputAssets, klingElements }),
     [inputAssets, klingElements]
@@ -273,15 +280,34 @@ export function WorkspaceComposerSurface({
   );
 
   const composerAssets = useMemo(() => buildComposerAttachments(inputAssets), [inputAssets]);
+  const storyboardLaunchAction = useMemo<ComposerPromotedAction | null>(() => {
+    if (!isStoryboardLaunchEngine(selectedEngine.id)) return null;
+    const tooltip =
+      uiLocale === 'fr'
+        ? 'Ouvre le Storyboarder avant de générer avec Seedance ou Kling.'
+        : uiLocale === 'es'
+          ? 'Abre Storyboarder antes de generar con Seedance o Kling.'
+          : 'Open Storyboarder before generating with Seedance or Kling.';
+    return {
+      id: 'storyboard-launch',
+      label: 'Storyboard',
+      tooltip,
+      active: false,
+      icon: 'sparkles',
+      onToggle: () => setStoryboardModalOpen(true),
+    };
+  }, [selectedEngine.id, uiLocale]);
   const composerPromotedActions = useMemo(
-    () =>
-      buildComposerPromotedActions({
+    () => {
+      const actions = buildComposerPromotedActions({
         form,
         promotedFields: inputSchemaSummary.promotedFields,
         uiLocale,
         onToggle: handleExtraInputValueChange,
-      }),
-    [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]
+      });
+      return storyboardLaunchAction ? [storyboardLaunchAction, ...actions] : actions;
+    },
+    [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, storyboardLaunchAction, uiLocale]
   );
 
   useEffect(() => {
@@ -337,87 +363,148 @@ export function WorkspaceComposerSurface({
   );
 
   return (
-    <Composer
-      engine={selectedEngine}
-      prompt={prompt}
-      onPromptChange={setPrompt}
-      negativePrompt={negativePrompt}
-      onNegativePromptChange={setNegativePrompt}
-      price={price}
-      currency={currency}
-      isLoading={isPricing}
-      error={preflightError}
-      messages={preflight?.ok ? preflight.messages : undefined}
-      textareaRef={composerRef}
-      onGenerate={startRender}
-      preflight={preflight}
-      promptField={inputSchemaSummary.promptField}
-      promptRequired={inputSchemaSummary.promptRequired}
-      negativePromptField={inputSchemaSummary.negativePromptField}
-      negativePromptRequired={inputSchemaSummary.negativePromptRequired}
-      modeToggles={composerModeToggles}
-      activeManualMode={activeManualMode}
-      onModeToggle={handleComposerModeToggle}
-      workflowNotice={resolvedWorkflowNotice}
-      promotedActions={composerPromotedActions}
-      assetFields={composerAssetFields}
-      assets={composerAssets}
-      onAssetAdd={handleAssetAdd}
-      onAssetRemove={handleAssetRemove}
-      onNotice={showNotice}
-      onOpenLibrary={handleOpenAssetLibrary}
-      multiPrompt={
-        supportsKlingV3Controls
-          ? {
-              enabled: multiPromptEnabled,
-              scenes: multiPromptScenes,
-              totalDurationSec: multiPromptTotalSec,
-              minDurationSec: MULTI_PROMPT_MIN_SEC,
-              maxDurationSec: MULTI_PROMPT_MAX_SEC,
-              onToggle: setMultiPromptEnabled,
-              onAddScene: handleMultiPromptAddScene,
-              onRemoveScene: handleMultiPromptRemoveScene,
-              onUpdateScene: handleMultiPromptUpdateScene,
-              error: multiPromptError,
-            }
-          : null
-      }
-      disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-      extraFields={
-        <>
-          {showRetakeWorkflowAction ? (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-0.5">
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Edit workflow</p>
-                <p className="text-xs text-text-secondary">Use retake when you want to reinterpret an existing clip.</p>
+    <>
+      <Composer
+        engine={selectedEngine}
+        prompt={prompt}
+        onPromptChange={setPrompt}
+        negativePrompt={negativePrompt}
+        onNegativePromptChange={setNegativePrompt}
+        price={price}
+        currency={currency}
+        isLoading={isPricing}
+        error={preflightError}
+        messages={preflight?.ok ? preflight.messages : undefined}
+        textareaRef={composerRef}
+        onGenerate={startRender}
+        preflight={preflight}
+        promptField={inputSchemaSummary.promptField}
+        promptRequired={inputSchemaSummary.promptRequired}
+        negativePromptField={inputSchemaSummary.negativePromptField}
+        negativePromptRequired={inputSchemaSummary.negativePromptRequired}
+        modeToggles={composerModeToggles}
+        activeManualMode={activeManualMode}
+        onModeToggle={handleComposerModeToggle}
+        workflowNotice={resolvedWorkflowNotice}
+        promotedActions={composerPromotedActions}
+        assetFields={composerAssetFields}
+        assets={composerAssets}
+        onAssetAdd={handleAssetAdd}
+        onAssetRemove={handleAssetRemove}
+        onNotice={showNotice}
+        onOpenLibrary={handleOpenAssetLibrary}
+        multiPrompt={
+          supportsKlingV3Controls
+            ? {
+                enabled: multiPromptEnabled,
+                scenes: multiPromptScenes,
+                totalDurationSec: multiPromptTotalSec,
+                minDurationSec: MULTI_PROMPT_MIN_SEC,
+                maxDurationSec: MULTI_PROMPT_MAX_SEC,
+                onToggle: setMultiPromptEnabled,
+                onAddScene: handleMultiPromptAddScene,
+                onRemoveScene: handleMultiPromptRemoveScene,
+                onUpdateScene: handleMultiPromptUpdateScene,
+                error: multiPromptError,
+              }
+            : null
+        }
+        disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
+        extraFields={
+          <>
+            {showRetakeWorkflowAction ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Edit workflow</p>
+                  <p className="text-xs text-text-secondary">Use retake when you want to reinterpret an existing clip.</p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={form.mode === 'retake' ? 'primary' : 'outline'}
+                  onClick={() => handleComposerModeToggle(form.mode === 'retake' ? null : 'retake')}
+                  disabled={audioWorkflowLocked}
+                  title={audioWorkflowLocked ? workflowCopy.removeAudioToUnlock : undefined}
+                  className="min-h-0 h-auto rounded-full px-3 py-2 text-[11px] font-semibold tracking-micro"
+                >
+                  {getLocalizedModeLabel('retake', uiLocale)}
+                </Button>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                variant={form.mode === 'retake' ? 'primary' : 'outline'}
-                onClick={() => handleComposerModeToggle(form.mode === 'retake' ? null : 'retake')}
-                disabled={audioWorkflowLocked}
-                title={audioWorkflowLocked ? workflowCopy.removeAudioToUnlock : undefined}
-                className="min-h-0 h-auto rounded-full px-3 py-2 text-[11px] font-semibold tracking-micro"
-              >
-                {getLocalizedModeLabel('retake', uiLocale)}
-              </Button>
-            </div>
-          ) : null}
-          {showKlingElementsBuilder ? (
-            <KlingElementsBuilder
-              elements={klingElements}
-              onAddElement={handleKlingElementAdd}
-              onRemoveElement={handleKlingElementRemove}
-              onAddAsset={handleKlingElementAssetAdd}
-              onRemoveAsset={handleKlingElementAssetRemove}
-              onOpenLibrary={handleOpenKlingAssetLibrary}
-              videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
+            ) : null}
+            {showKlingElementsBuilder ? (
+              <KlingElementsBuilder
+                elements={klingElements}
+                onAddElement={handleKlingElementAdd}
+                onRemoveElement={handleKlingElementRemove}
+                onAddAsset={handleKlingElementAssetAdd}
+                onRemoveAsset={handleKlingElementAssetRemove}
+                onOpenLibrary={handleOpenKlingAssetLibrary}
+                videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
+              />
+            ) : null}
+            <SettingsControls
+              engine={selectedEngine}
+              caps={capability}
+              durationSec={durationSec}
+              durationOption={form.durationOption ?? null}
+              onDurationChange={handleDurationChange}
+              numFrames={form.numFrames ?? undefined}
+              onNumFramesChange={handleFramesChange}
+              resolution={form.resolution}
+              onResolutionChange={handleResolutionChange}
+              aspectRatio={form.aspectRatio}
+              onAspectRatioChange={handleAspectRatioChange}
+              fps={form.fps}
+              onFpsChange={handleFpsChange}
+              mode={submissionMode}
+              showAudioControl={supportsAudioToggle}
+              audioEnabled={form.audio}
+              audioControlDisabled={voiceControlEnabled}
+              audioControlNote={audioControlNote}
+              onAudioChange={handleAudioChange}
+              showLoopControl={isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)}
+              loopEnabled={
+                isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)
+                  ? Boolean(form.loop)
+                  : undefined
+              }
+              onLoopChange={handleLoopChange}
+              showExtendControl={false}
+              seedLocked={form.seedLocked}
+              onSeedLockedChange={handleSeedLockedChange}
+              cfgScale={cfgScale}
+              onCfgScaleChange={setCfgScale}
+              durationManaged={multiPromptActive}
+              durationManagedLabel={durationManagedLabel}
+              showKlingV3Controls={supportsKlingV3Controls}
+              showKlingV3VoiceControls={supportsKlingV3VoiceControl}
+              klingShotType={shotType}
+              onKlingShotTypeChange={setShotType}
+              voiceIdsValue={voiceIdsInput}
+              onVoiceIdsChange={setVoiceIdsInput}
+              voiceControlActive={voiceControlEnabled}
+              showSeedanceControls={isSeedance}
+              seedValue={seedValue}
+              onSeedChange={handleSeedChange}
+              cameraFixed={cameraFixedValue}
+              onCameraFixedChange={handleCameraFixedChange}
+              safetyChecker={safetyCheckerValue}
+              onSafetyCheckerChange={handleSafetyCheckerChange}
+              showSafetyCheckerControl={showSafetyCheckerControl}
+              advancedFields={inputSchemaSummary.secondaryFields}
+              advancedFieldValues={form.extraInputValues}
+              onAdvancedFieldChange={handleExtraInputValueChange}
+              variant="advanced"
             />
-          ) : null}
-          <SettingsControls
+          </>
+        }
+        settingsBar={
+          <CoreSettingsBar
             engine={selectedEngine}
+            mode={submissionMode}
             caps={capability}
+            iterations={form.iterations}
+            onIterationsChange={handleIterationsChange}
             durationSec={durationSec}
             durationOption={form.durationOption ?? null}
             onDurationChange={handleDurationChange}
@@ -429,75 +516,22 @@ export function WorkspaceComposerSurface({
             onAspectRatioChange={handleAspectRatioChange}
             fps={form.fps}
             onFpsChange={handleFpsChange}
-            mode={submissionMode}
             showAudioControl={supportsAudioToggle}
             audioEnabled={form.audio}
             audioControlDisabled={voiceControlEnabled}
             audioControlNote={audioControlNote}
             onAudioChange={handleAudioChange}
-            showLoopControl={isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)}
-            loopEnabled={
-              isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)
-                ? Boolean(form.loop)
-                : undefined
-            }
-            onLoopChange={handleLoopChange}
-            showExtendControl={false}
-            seedLocked={form.seedLocked}
-            onSeedLockedChange={handleSeedLockedChange}
-            cfgScale={cfgScale}
-            onCfgScaleChange={setCfgScale}
             durationManaged={multiPromptActive}
             durationManagedLabel={durationManagedLabel}
-            showKlingV3Controls={supportsKlingV3Controls}
-            showKlingV3VoiceControls={supportsKlingV3VoiceControl}
-            klingShotType={shotType}
-            onKlingShotTypeChange={setShotType}
-            voiceIdsValue={voiceIdsInput}
-            onVoiceIdsChange={setVoiceIdsInput}
-            voiceControlActive={voiceControlEnabled}
-            showSeedanceControls={isSeedance}
-            seedValue={seedValue}
-            onSeedChange={handleSeedChange}
-            cameraFixed={cameraFixedValue}
-            onCameraFixedChange={handleCameraFixedChange}
-            safetyChecker={safetyCheckerValue}
-            onSafetyCheckerChange={handleSafetyCheckerChange}
-            showSafetyCheckerControl={showSafetyCheckerControl}
-            advancedFields={inputSchemaSummary.secondaryFields}
-            advancedFieldValues={form.extraInputValues}
-            onAdvancedFieldChange={handleExtraInputValueChange}
-            variant="advanced"
           />
-        </>
-      }
-      settingsBar={
-        <CoreSettingsBar
-          engine={selectedEngine}
-          mode={submissionMode}
-          caps={capability}
-          iterations={form.iterations}
-          onIterationsChange={handleIterationsChange}
-          durationSec={durationSec}
-          durationOption={form.durationOption ?? null}
-          onDurationChange={handleDurationChange}
-          numFrames={form.numFrames ?? undefined}
-          onNumFramesChange={handleFramesChange}
-          resolution={form.resolution}
-          onResolutionChange={handleResolutionChange}
-          aspectRatio={form.aspectRatio}
-          onAspectRatioChange={handleAspectRatioChange}
-          fps={form.fps}
-          onFpsChange={handleFpsChange}
-          showAudioControl={supportsAudioToggle}
-          audioEnabled={form.audio}
-          audioControlDisabled={voiceControlEnabled}
-          audioControlNote={audioControlNote}
-          onAudioChange={handleAudioChange}
-          durationManaged={multiPromptActive}
-          durationManagedLabel={durationManagedLabel}
-        />
-      }
-    />
+        }
+      />
+      <StoryboardLaunchModal
+        open={storyboardModalOpen}
+        selectedEngineId={selectedEngine.id}
+        selectedEngineLabel={selectedEngine.label}
+        onClose={() => setStoryboardModalOpen(false)}
+      />
+    </>
   );
 }

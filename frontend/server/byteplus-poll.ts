@@ -6,6 +6,10 @@ import { ensureFastStartVideo } from '@/server/video-faststart';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import {
+  buildUserFacingRefundDescription,
+  toUserFacingFailureMessage,
+} from '@/server/user-facing-failure-messages';
+import {
   BYTEPLUS_MODELARK_PROVIDER,
   PUBLIC_SEEDANCE_ENGINE_ID,
   getBytePlusArkConfig,
@@ -100,7 +104,11 @@ async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
       job.user_id,
       job.final_price_cents,
       (job.currency ?? 'USD').toUpperCase(),
-      `Refund ${job.engine_label} - ${job.duration_sec}s - ${reason}`,
+      buildUserFacingRefundDescription({
+        engineLabel: job.engine_label,
+        durationSec: job.duration_sec,
+        reason,
+      }),
       job.job_id,
       JSON.stringify(job.pricing_snapshot ?? {}),
     ]
@@ -119,6 +127,7 @@ async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
 }
 
 async function markJobFailed(job: BytePlusPendingJob, message: string, providerStatus?: string | null) {
+  const userMessage = toUserFacingFailureMessage(message);
   const claimed = await query<{ job_id: string }>(
     `UPDATE app_jobs
         SET status = 'failed',
@@ -129,7 +138,7 @@ async function markJobFailed(job: BytePlusPendingJob, message: string, providerS
       WHERE job_id = $1
         AND status = ANY($3::text[])
       RETURNING job_id`,
-    [job.job_id, message, ACTIVE_JOB_STATUSES]
+    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
   );
   if (!claimed.length) {
     await recordPollEvent(job, 'poll:failed:skipped', {
@@ -139,7 +148,7 @@ async function markJobFailed(job: BytePlusPendingJob, message: string, providerS
     return;
   }
 
-  const refunded = await recordWalletRefundOnce(job, message);
+  const refunded = await recordWalletRefundOnce(job, userMessage);
   await query(
     `UPDATE app_jobs
         SET payment_status = CASE WHEN $2 THEN 'refunded_wallet' ELSE payment_status END,
@@ -162,7 +171,7 @@ async function deferStorageCopyRetry(job: BytePlusPendingJob, state: BytePlusSto
         AND status = ANY($4::text[])`,
     [
       job.job_id,
-      'Generated video is ready. Copying it to MaxVideoAI storage.',
+      'Generated video is ready. Preparing it for download.',
       JSON.stringify(state),
       ACTIVE_JOB_STATUSES,
     ]
@@ -246,7 +255,7 @@ export async function runBytePlusPoll() {
       }
 
       if (task.status === 'failed') {
-        await markJobFailed(job, task.message ?? 'The render service reported this render as failed.', task.rawStatus);
+        await markJobFailed(job, task.message ?? 'The render failed before producing a usable output.', task.rawStatus);
         updates += 1;
         continue;
       }

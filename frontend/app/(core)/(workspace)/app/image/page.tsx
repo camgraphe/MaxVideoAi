@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
@@ -18,7 +18,22 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function ImageGeneratePage() {
+type ImageGeneratePageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function getSearchParam(params: Record<string, string | string[] | undefined> | undefined, key: string): string | null {
+  const value = params?.[key];
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+export default async function ImageGeneratePage({ searchParams }: ImageGeneratePageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  if (getSearchParam(resolvedSearchParams, 'tool') === 'storyboard') {
+    redirect('/app/tools/storyboard');
+  }
+
   const imageEntries = listFalEngines().filter((engine) => (engine.category ?? 'video') === 'image');
   if (!imageEntries.length) {
     notFound();

@@ -1,12 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { listRecentOutputs, type MediaKind } from '@/server/media-library';
+import {
+  listRecentOutputs,
+  listStoryboardKlingFirstFrameOutputs,
+  type JobOutputRecord,
+  type MediaKind,
+} from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
 function normalizeKind(value: string | null): MediaKind | null {
   if (value === 'image' || value === 'video' || value === 'audio') return value;
   return null;
+}
+
+function buildRecentOutputStoryboardHandoff(output: JobOutputRecord) {
+  if (!output.jobPrompt) return null;
+  return extractStoryboardGeneratorDraftFromPrompt(output.jobPrompt, {
+    durationSec: output.jobDurationSec ?? output.durationSec,
+    aspectRatio: output.jobAspectRatio,
+    width: output.width,
+    height: output.height,
+  });
+}
+
+function buildRecentOutputImage(output: JobOutputRecord | null | undefined) {
+  if (!output?.url) return null;
+  return {
+    id: output.id,
+    jobId: output.jobId,
+    url: output.url,
+    thumbUrl: output.thumbUrl,
+    previewUrl: output.previewUrl,
+    mime: output.mimeType,
+    width: output.width,
+    height: output.height,
+    createdAt: output.createdAt,
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -16,16 +47,29 @@ export async function GET(req: NextRequest) {
   }
 
   let outputs: Awaited<ReturnType<typeof listRecentOutputs>>;
+  const surface = req.nextUrl.searchParams.get('surface');
   try {
     outputs = await listRecentOutputs({
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-      surface: req.nextUrl.searchParams.get('surface'),
+      surface,
       limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
     });
   } catch (error) {
     console.error('[media-library] failed to list recent outputs', error);
     return NextResponse.json({ ok: false, outputs: [], error: 'LOAD_FAILED' }, { status: 500 });
+  }
+
+  let klingFirstFramesByParentJobId = new Map<string, JobOutputRecord>();
+  if (surface === 'storyboard' && outputs.length) {
+    try {
+      klingFirstFramesByParentJobId = await listStoryboardKlingFirstFrameOutputs({
+        userId,
+        parentJobIds: outputs.map((output) => output.jobId),
+      });
+    } catch (error) {
+      console.error('[media-library] failed to list storyboard first frames', error);
+    }
   }
 
   return NextResponse.json({
@@ -46,6 +90,9 @@ export async function GET(req: NextRequest) {
       createdAt: output.createdAt,
       isSaved: Boolean(output.isSaved),
       savedAssetId: output.savedAssetId ?? null,
+      storyboard: surface === 'storyboard' ? buildRecentOutputStoryboardHandoff(output) : null,
+      klingFirstFrame:
+        surface === 'storyboard' ? buildRecentOutputImage(klingFirstFramesByParentJobId.get(output.jobId)) : null,
     })),
   });
 }

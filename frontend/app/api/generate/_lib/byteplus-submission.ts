@@ -11,6 +11,10 @@ import {
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 import { rollbackPendingPayment } from './payment-rollback';
+import {
+  buildUserFacingRefundDescription,
+  toUserFacingFailureMessage,
+} from '@/server/user-facing-failure-messages';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
@@ -178,7 +182,7 @@ export async function submitBytePlusGenerateTask(params: {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
     const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
-    const failureMessage = getBytePlusUserSafeErrorMessageFn(providerMessage);
+    const failureMessage = toUserFacingFailureMessage(getBytePlusUserSafeErrorMessageFn(providerMessage));
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
       engineId: params.engineId,
@@ -211,7 +215,11 @@ export async function submitBytePlusGenerateTask(params: {
       await rollbackPendingPaymentFn({
         pendingReceipt: params.pendingReceipt,
         walletChargeReserved: params.walletChargeReserved,
-        refundDescription: `Refund ${params.engineLabel} - ${params.durationSec}s - BytePlus start failed`,
+        refundDescription: buildUserFacingRefundDescription({
+          engineLabel: params.engineLabel,
+          durationSec: params.durationSec,
+          reason: failureMessage,
+        }),
       });
     }
     logMetricFn?.('failed', {
