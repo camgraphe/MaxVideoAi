@@ -18,8 +18,8 @@ function textResponse(value: string) {
   });
 }
 
-test('infra costs report combines Neon estimates and Vercel billed charges with month-end projection', async () => {
-  const fetchFn = async (input: string | URL) => {
+test('infra costs report combines Neon estimates, Vercel billed charges, and S3 billing with month-end projection', async () => {
+  const fetchFn = async (input: string | URL, init?: RequestInit) => {
     const url = new URL(String(input));
 
     if (url.pathname === '/api/v2/consumption_history/v2/projects') {
@@ -93,6 +93,39 @@ test('infra costs report combines Neon estimates and Vercel billed charges with 
       );
     }
 
+    if (url.hostname === 'ce.us-east-1.amazonaws.com' && url.pathname === '/') {
+      assert.equal(init?.method, 'POST');
+      assert.match(String(init?.body ?? ''), /Amazon Simple Storage Service/);
+      return jsonResponse({
+        ResultsByTime: [
+          {
+            TimePeriod: { Start: '2026-06-01', End: '2026-06-02' },
+            Estimated: false,
+            Groups: [
+              {
+                Keys: ['EUW3-TimedStorage-ByteHrs'],
+                Metrics: { UnblendedCost: { Amount: '3', Unit: 'USD' } },
+              },
+              {
+                Keys: ['EUW3-DataTransfer-Out-Bytes'],
+                Metrics: { UnblendedCost: { Amount: '1', Unit: 'USD' } },
+              },
+            ],
+          },
+          {
+            TimePeriod: { Start: '2026-06-02', End: '2026-06-03' },
+            Estimated: true,
+            Groups: [
+              {
+                Keys: ['EUW3-DataTransfer-Out-Bytes'],
+                Metrics: { UnblendedCost: { Amount: '1', Unit: 'USD' } },
+              },
+            ],
+          },
+        ],
+      });
+    }
+
     throw new Error(`unexpected fetch ${url.pathname}`);
   };
 
@@ -107,12 +140,22 @@ test('infra costs report combines Neon estimates and Vercel billed charges with 
       NEON_PUBLIC_TRANSFER_INCLUDED_GB: '1000',
       NEON_USAGE_MONTHLY_CRITICAL_USD: '200',
       VERCEL_USAGE_MONTHLY_CRITICAL_USD: '300',
+      AWS_COST_EXPLORER_ACCESS_KEY_ID: 'aws-access-key',
+      AWS_COST_EXPLORER_SECRET_ACCESS_KEY: 'aws-secret',
+      S3_BUCKET: 'maxvideoai-renders',
+      S3_REGION: 'eu-west-3',
+      S3_USAGE_MONTHLY_CRITICAL_USD: '20',
     },
   });
 
   assert.equal(report.period.projectionFactor, 2);
   assert.equal(report.providers.vercel.money.currentUsd, 75);
   assert.equal(report.providers.vercel.money.projectedMonthUsd, 150);
+  assert.equal(report.providers.s3.money.currentUsd, 5);
+  assert.equal(report.providers.s3.money.projectedMonthUsd, 10);
+  assert.equal(report.providers.s3.details?.bucketName, 'maxvideoai-renders');
+  assert.equal(report.providers.s3.details?.usageRows[0]?.label, 'EUW3-TimedStorage-ByteHrs');
+  assert.equal(report.providers.s3.details?.estimated, true);
   assert.equal(report.providers.neon.details?.totals.currentBranchCount, 2);
   assert.equal(report.providers.neon.details?.projectedTotals.publicTransferGb, 520);
   assert.ok(report.providers.neon.money.currentUsd > 1, 'Neon estimate should include branch and usage costs');
@@ -133,8 +176,10 @@ test('infra costs report remains readable when provider credentials are missing'
 
   assert.equal(report.providers.neon.configured, false);
   assert.equal(report.providers.vercel.configured, false);
+  assert.equal(report.providers.s3.configured, false);
   assert.equal(report.money.currentUsd, 0);
   assert.equal(report.notificationLevel, 'ok');
   assert.ok(report.alerts.some((alert) => alert.kind === 'configuration' && alert.provider === 'neon'));
   assert.ok(report.alerts.some((alert) => alert.kind === 'configuration' && alert.provider === 'vercel'));
+  assert.ok(report.alerts.some((alert) => alert.kind === 'configuration' && alert.provider === 's3'));
 });

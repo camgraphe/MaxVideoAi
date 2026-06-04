@@ -1,4 +1,5 @@
 import { buildNeonAlerts, fetchNeonInfraCostReport } from '@/server/infra-costs-neon';
+import { buildS3Alerts, fetchS3InfraCostReport } from '@/server/infra-costs-s3';
 import type {
   EnvLike,
   FetchLike,
@@ -24,6 +25,9 @@ export type {
   NeonInfraCostDetails,
   NeonUsageCostBreakdown,
   NeonUsageTotals,
+  S3DailyCostRow,
+  S3InfraCostDetails,
+  S3UsageCostRow,
   VercelAggregateRow,
   VercelChargeRow,
   VercelDailyCostRow,
@@ -44,18 +48,23 @@ export async function fetchInfraCostsReport(options: FetchInfraCostsReportOption
   const fetchFn = options.fetchFn ?? fetch;
   const period = buildCurrentUtcMonthPeriod(now);
 
-  const [neon, vercel] = await Promise.all([
+  const [neon, vercel, s3] = await Promise.all([
     fetchNeonInfraCostReport({ env, fetchFn, period }),
     fetchVercelInfraCostReport({ env, fetchFn, period }),
+    fetchS3InfraCostReport({ env, fetchFn, period }),
   ]);
 
   const thresholds = readThresholds(env);
-  const providerAlerts = [...buildNeonAlerts(neon, thresholds), ...buildVercelAlerts(vercel, thresholds)];
+  const providerAlerts = [
+    ...buildNeonAlerts(neon, thresholds),
+    ...buildVercelAlerts(vercel, thresholds),
+    ...buildS3Alerts(s3, thresholds),
+  ];
   const money: InfraCostMoneySummary = {
-    currentUsd: neon.money.currentUsd + vercel.money.currentUsd,
-    projectedMonthUsd: neon.money.projectedMonthUsd + vercel.money.projectedMonthUsd,
+    currentUsd: neon.money.currentUsd + vercel.money.currentUsd + s3.money.currentUsd,
+    projectedMonthUsd: neon.money.projectedMonthUsd + vercel.money.projectedMonthUsd + s3.money.projectedMonthUsd,
     currency: 'USD',
-    source: resolveCombinedMoneySource(neon.money.source, vercel.money.source),
+    source: resolveCombinedMoneySource([neon.money.source, vercel.money.source, s3.money.source]),
   };
   const alerts = [...providerAlerts, ...buildTotalCostAlerts(money, thresholds)];
 
@@ -67,7 +76,7 @@ export async function fetchInfraCostsReport(options: FetchInfraCostsReportOption
     notificationLevel: maxAlertLevel(alerts.filter((alert) => alert.kind !== 'configuration')),
     alerts,
     thresholds,
-    providers: { neon, vercel },
+    providers: { neon, vercel, s3 },
     notifications: {
       emailConfigured: Boolean(readEnv(env, 'INFRA_COST_ALERT_EMAIL_TO')),
       slackConfigured: Boolean(readEnv(env, 'SLACK_WEBHOOK_URL')),
@@ -111,6 +120,13 @@ export function buildInfraCostAlertDigest(report: InfraCostsReport) {
         projectedMonthUsd: roundMoney(report.providers.vercel.money.projectedMonthUsd),
         chargesCount: report.providers.vercel.details?.chargesCount ?? 0,
       },
+      s3: {
+        configured: report.providers.s3.configured,
+        currentUsd: roundMoney(report.providers.s3.money.currentUsd),
+        projectedMonthUsd: roundMoney(report.providers.s3.money.projectedMonthUsd),
+        resultsCount: report.providers.s3.details?.resultsCount ?? 0,
+        bucketName: report.providers.s3.details?.bucketName ?? null,
+      },
       alerts: topAlerts.map((alert) => ({
         provider: alert.provider,
         level: alert.level,
@@ -149,6 +165,8 @@ function readThresholds(env: EnvLike): InfraCostThresholds {
     neonMonthlyCriticalUsd: readNumberEnv(env, ['NEON_USAGE_MONTHLY_CRITICAL_USD'], 150),
     vercelMonthlyWarningUsd: readNumberEnv(env, ['VERCEL_USAGE_MONTHLY_WARNING_USD'], 120),
     vercelMonthlyCriticalUsd: readNumberEnv(env, ['VERCEL_USAGE_MONTHLY_CRITICAL_USD'], 250),
+    s3MonthlyWarningUsd: readNumberEnv(env, ['S3_USAGE_MONTHLY_WARNING_USD', 'AWS_S3_USAGE_MONTHLY_WARNING_USD'], 40),
+    s3MonthlyCriticalUsd: readNumberEnv(env, ['S3_USAGE_MONTHLY_CRITICAL_USD', 'AWS_S3_USAGE_MONTHLY_CRITICAL_USD'], 80),
   };
 }
 
@@ -188,13 +206,10 @@ function pushCostAlert(
   }
 }
 
-function resolveCombinedMoneySource(
-  left: InfraCostMoneySummary['source'],
-  right: InfraCostMoneySummary['source']
-): InfraCostMoneySummary['source'] {
-  if (left === 'unconfigured' && right === 'unconfigured') return 'unconfigured';
-  if (left === 'partial' || right === 'partial') return 'partial';
-  if (left === right) return left;
+function resolveCombinedMoneySource(sources: InfraCostMoneySummary['source'][]): InfraCostMoneySummary['source'] {
+  if (sources.every((source) => source === 'unconfigured')) return 'unconfigured';
+  if (sources.some((source) => source === 'partial')) return 'partial';
+  if (sources.every((source) => source === sources[0])) return sources[0];
   return 'partial';
 }
 

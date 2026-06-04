@@ -213,7 +213,12 @@ The application expects the following environment variables (scoped per Vercel e
 | `NEON_USAGE_ORG_ID` / `NEON_USAGE_PROJECT_IDS` | Server (optional) | Neon org and comma-separated project IDs for the infra cost report. Defaults to the production project IDs when unset. |
 | `VERCEL_TOKEN` / `VERCEL_API_TOKEN` | Server (optional) | Enables `/admin/infra-costs` Vercel billing charge reporting. |
 | `VERCEL_TEAM_ID` / `VERCEL_TEAM_SLUG` | Server (optional) | Scopes Vercel billing charge reporting to the team account when needed. |
+| `AWS_COST_EXPLORER_ACCESS_KEY_ID` / `AWS_COST_EXPLORER_SECRET_ACCESS_KEY` | Server (optional) | Enables `/admin/infra-costs` AWS S3 cost reporting via Cost Explorer. Falls back to `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`; the IAM principal needs `ce:GetCostAndUsage`. |
+| `AWS_COST_EXPLORER_SESSION_TOKEN` | Server (optional) | Session token for temporary AWS billing credentials when using STS. |
+| `AWS_S3_COST_LINKED_ACCOUNT_IDS` | Server (optional) | Comma-separated linked AWS account IDs to include in S3 Cost Explorer reporting. Defaults to all accessible accounts. |
+| `AWS_S3_COST_TAG_KEY` / `AWS_S3_COST_TAG_VALUES` | Server (optional) | Optional Cost Explorer tag filter for S3 charges when AWS cost allocation tags are enabled. |
 | `INFRA_COST_MONTHLY_WARNING_USD` / `INFRA_COST_MONTHLY_CRITICAL_USD` | Server (optional) | Global projected month-end spend thresholds for the daily infra cost alert cron. |
+| `S3_USAGE_MONTHLY_WARNING_USD` / `S3_USAGE_MONTHLY_CRITICAL_USD` | Server (optional) | Projected month-end AWS S3 thresholds for infra cost alerts. |
 | `INFRA_COST_ALERT_EMAIL_TO` | Server (optional) | Email recipient for infra cost alerts when SMTP is configured. Slack alerts use `SLACK_WEBHOOK_URL`. |
 | `HEALTHCHECK_TOKEN` | Server (recommended) | Shared token required by protected health endpoints in Preview/Production. |
 

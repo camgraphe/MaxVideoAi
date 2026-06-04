@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import {
   BadgeDollarSign,
   BellRing,
+  Cloud,
   Database,
   GitBranch,
   Network,
@@ -15,6 +16,7 @@ import type {
   InfraCostAlert,
   InfraCostsReport,
   NeonInfraCostDetails,
+  S3InfraCostDetails,
   VercelInfraCostDetails,
 } from '@/server/infra-costs';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
@@ -45,13 +47,14 @@ type AdminInfraCostsViewProps = {
 export function AdminInfraCostsView({ report, auditLogs }: AdminInfraCostsViewProps) {
   const neon = report.providers.neon;
   const vercel = report.providers.vercel;
+  const s3 = report.providers.s3;
 
   return (
     <div className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Operations"
         title="Infra costs"
-        description="Suivi mensuel Neon et Vercel avec estimation en cours, projection fin de mois et alertes operationnelles."
+        description="Suivi mensuel Neon, Vercel et AWS S3 avec estimation en cours, projection fin de mois et alertes operationnelles."
         actions={
           <>
             <AdminActionLink href="/admin/audit?action=INFRA_COST_ALERT">Alerts</AdminActionLink>
@@ -68,7 +71,7 @@ export function AdminInfraCostsView({ report, auditLogs }: AdminInfraCostsViewPr
 
       <AdminSection
         title="Cost Pulse"
-        description="Montants month-to-date et projection fin de mois. Vercel vient de l'API billing; Neon est estime depuis les compteurs d'usage."
+        description="Montants month-to-date et projection fin de mois. Vercel et S3 viennent des APIs billing; Neon est estime depuis les compteurs d'usage."
         action={
           <AdminSectionMeta
             title="Projection"
@@ -79,7 +82,7 @@ export function AdminInfraCostsView({ report, auditLogs }: AdminInfraCostsViewPr
           />
         }
       >
-        <AdminMetricGrid items={buildSummaryMetrics(report)} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
+        <AdminMetricGrid items={buildSummaryMetrics(report)} columnsClassName="sm:grid-cols-2 xl:grid-cols-5" density="compact" />
       </AdminSection>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_360px] xl:items-start">
@@ -106,6 +109,17 @@ export function AdminInfraCostsView({ report, auditLogs }: AdminInfraCostsViewPr
             {vercel.details ? <VercelDetails details={vercel.details} /> : null}
           </ProviderCostSection>
 
+          <ProviderCostSection
+            title="AWS S3"
+            description="Object storage: couts Cost Explorer filtres sur Amazon Simple Storage Service."
+            configured={s3.configured}
+            error={s3.error}
+            setup={s3.setup}
+            metrics={buildS3Metrics(report)}
+          >
+            {s3.details ? <S3Details details={s3.details} /> : null}
+          </ProviderCostSection>
+
           <RecentAlerts auditLogs={auditLogs} />
         </div>
 
@@ -122,6 +136,8 @@ export function AdminInfraCostsView({ report, auditLogs }: AdminInfraCostsViewPr
                 <ThresholdRow label="Neon critical" value={formatUsd(report.thresholds.neonMonthlyCriticalUsd)} />
                 <ThresholdRow label="Vercel warning" value={formatUsd(report.thresholds.vercelMonthlyWarningUsd)} />
                 <ThresholdRow label="Vercel critical" value={formatUsd(report.thresholds.vercelMonthlyCriticalUsd)} />
+                <ThresholdRow label="S3 warning" value={formatUsd(report.thresholds.s3MonthlyWarningUsd)} />
+                <ThresholdRow label="S3 critical" value={formatUsd(report.thresholds.s3MonthlyCriticalUsd)} />
               </dl>
             </div>
 
@@ -167,6 +183,12 @@ function buildSummaryMetrics(report: InfraCostsReport): AdminMetricItem[] {
       value: formatUsd(report.providers.vercel.money.projectedMonthUsd),
       helper: report.providers.vercel.money.source === 'actual' ? 'Billing API charges' : report.providers.vercel.money.source,
       icon: Server,
+    },
+    {
+      label: 'S3 projected',
+      value: formatUsd(report.providers.s3.money.projectedMonthUsd),
+      helper: report.providers.s3.money.source === 'actual' ? 'Cost Explorer charges' : report.providers.s3.money.source,
+      icon: Cloud,
     },
   ];
 }
@@ -230,6 +252,37 @@ function buildVercelMetrics(report: InfraCostsReport): AdminMetricItem[] {
       value: details?.serviceRows[0]?.label ?? 'n/a',
       helper: details?.serviceRows[0] ? formatUsd(details.serviceRows[0].currentUsd) : 'No charges',
       icon: Server,
+    },
+  ];
+}
+
+function buildS3Metrics(report: InfraCostsReport): AdminMetricItem[] {
+  const provider = report.providers.s3;
+  const details = provider.details;
+  return [
+    {
+      label: 'Current',
+      value: formatUsd(provider.money.currentUsd),
+      helper: details ? `Cost Explorer through ${details.dataEndDateExclusive}` : provider.money.source,
+      icon: BadgeDollarSign,
+    },
+    {
+      label: 'Projected EOM',
+      value: formatUsd(provider.money.projectedMonthUsd),
+      helper: details ? `Projection x${formatNumber(details.projectionFactor)}` : 'Billing charges projected',
+      icon: TrendingUp,
+    },
+    {
+      label: 'Usage groups',
+      value: details ? formatNumber(details.usageRows.length, { integer: true }) : 'n/a',
+      helper: details ? `${formatNumber(details.resultsCount, { integer: true })} daily result rows` : 'Cost Explorer not available',
+      icon: Receipt,
+    },
+    {
+      label: 'Top usage',
+      value: details?.usageRows[0]?.label ?? 'n/a',
+      helper: details?.usageRows[0] ? formatUsd(details.usageRows[0].currentUsd) : 'No S3 charges',
+      icon: Cloud,
     },
   ];
 }
@@ -396,6 +449,77 @@ function VercelDetails({ details }: { details: VercelInfraCostDetails }) {
               <td className="px-4 py-3">{formatUsd(row.currentUsd)}</td>
               <td className="px-4 py-3 font-medium text-text-primary">{formatUsd(row.projectedMonthUsd)}</td>
               <td className="px-4 py-3">{row.chargeCount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </AdminDataTable>
+    </div>
+  );
+}
+
+function S3Details({ details }: { details: S3InfraCostDetails }) {
+  return (
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-hairline bg-bg/40 px-4 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Cost Explorer scope</p>
+          <dl className="mt-3 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+            <ThresholdRow label="Service" value={details.serviceName} />
+            <ThresholdRow label="Billing region" value={details.billingRegion} />
+            <ThresholdRow label="Bucket" value={details.bucketName ?? 'All S3'} />
+            <ThresholdRow label="Bucket region" value={details.bucketRegion ?? 'n/a'} />
+            <ThresholdRow label="From" value={details.dataStartDate} />
+            <ThresholdRow label="To exclusive" value={details.dataEndDateExclusive} />
+            <ThresholdRow label="Estimated rows" value={details.estimated ? 'Yes' : 'No'} />
+            <ThresholdRow label="Linked accounts" value={details.linkedAccountIds.length ? details.linkedAccountIds.join(', ') : 'All'} />
+          </dl>
+          {details.tagFilter ? (
+            <p className="mt-3 text-xs text-text-muted">
+              Tag filter: {details.tagFilter.key} = {details.tagFilter.values.join(', ')}
+            </p>
+          ) : null}
+        </div>
+
+        {details.usageRows.length ? (
+          <AdminDataTable>
+            <thead className="bg-surface">
+              <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <th className="px-4 py-3 font-semibold">Usage type</th>
+                <th className="px-4 py-3 font-semibold">Current</th>
+                <th className="px-4 py-3 font-semibold">Projected</th>
+                <th className="px-4 py-3 font-semibold">Days</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline bg-bg/30">
+              {details.usageRows.map((row) => (
+                <tr key={row.key} className="text-text-secondary">
+                  <td className="px-4 py-3 font-medium text-text-primary">{row.label}</td>
+                  <td className="px-4 py-3">{formatUsd(row.currentUsd)}</td>
+                  <td className="px-4 py-3 font-medium text-text-primary">{formatUsd(row.projectedMonthUsd)}</td>
+                  <td className="px-4 py-3">{formatNumber(row.days, { integer: true })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </AdminDataTable>
+        ) : (
+          <AdminEmptyState>No S3 Cost Explorer charges returned.</AdminEmptyState>
+        )}
+      </div>
+
+      <AdminDataTable>
+        <thead className="bg-surface">
+          <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+            <th className="px-4 py-3 font-semibold">Date</th>
+            <th className="px-4 py-3 font-semibold">Current</th>
+            <th className="px-4 py-3 font-semibold">Estimated</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-hairline bg-bg/30">
+          {details.dailyRows.map((row) => (
+            <tr key={row.date} className="text-text-secondary">
+              <td className="px-4 py-3 font-medium text-text-primary">{row.date}</td>
+              <td className="px-4 py-3">{formatUsd(row.billedUsd)}</td>
+              <td className="px-4 py-3">{row.estimated ? 'Yes' : 'No'}</td>
             </tr>
           ))}
         </tbody>

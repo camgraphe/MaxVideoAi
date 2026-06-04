@@ -1,5 +1,5 @@
 export type InfraCostAlertLevel = 'ok' | 'warning' | 'critical';
-export type InfraCostProviderId = 'neon' | 'vercel';
+export type InfraCostProviderId = 'neon' | 'vercel' | 's3';
 
 export type InfraCostPeriod = {
   startIso: string;
@@ -130,6 +130,39 @@ export type VercelInfraCostDetails = {
   dailyRows: VercelDailyCostRow[];
 };
 
+export type S3UsageCostRow = {
+  key: string;
+  label: string;
+  currentUsd: number;
+  projectedMonthUsd: number;
+  days: number;
+};
+
+export type S3DailyCostRow = {
+  date: string;
+  billedUsd: number;
+  estimated: boolean;
+};
+
+export type S3InfraCostDetails = {
+  serviceName: string;
+  billingRegion: string;
+  bucketName: string | null;
+  bucketRegion: string | null;
+  linkedAccountIds: string[];
+  tagFilter: {
+    key: string;
+    values: string[];
+  } | null;
+  dataStartDate: string;
+  dataEndDateExclusive: string;
+  projectionFactor: number;
+  resultsCount: number;
+  estimated: boolean;
+  usageRows: S3UsageCostRow[];
+  dailyRows: S3DailyCostRow[];
+};
+
 export type InfraCostProviderReport<TDetails> = {
   id: InfraCostProviderId;
   label: string;
@@ -148,6 +181,8 @@ export type InfraCostThresholds = {
   neonMonthlyCriticalUsd: number;
   vercelMonthlyWarningUsd: number;
   vercelMonthlyCriticalUsd: number;
+  s3MonthlyWarningUsd: number;
+  s3MonthlyCriticalUsd: number;
 };
 
 export type InfraCostsReport = {
@@ -161,6 +196,7 @@ export type InfraCostsReport = {
   providers: {
     neon: InfraCostProviderReport<NeonInfraCostDetails>;
     vercel: InfraCostProviderReport<VercelInfraCostDetails>;
+    s3: InfraCostProviderReport<S3InfraCostDetails>;
   };
   notifications: {
     emailConfigured: boolean;

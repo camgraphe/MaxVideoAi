@@ -10,6 +10,7 @@ const formatPath = join(root, 'frontend/app/(core)/admin/infra-costs/_lib/admin-
 const serverPath = join(root, 'frontend/server/infra-costs.ts');
 const neonServerPath = join(root, 'frontend/server/infra-costs-neon.ts');
 const vercelServerPath = join(root, 'frontend/server/infra-costs-vercel.ts');
+const s3ServerPath = join(root, 'frontend/server/infra-costs-s3.ts');
 const cronPath = join(root, 'frontend/app/api/cron/infra-costs-alert/route.ts');
 const navPath = join(root, 'frontend/lib/admin/navigation.ts');
 const sidebarPath = join(root, 'frontend/components/admin/SidebarNav.tsx');
@@ -21,6 +22,7 @@ const formatSource = readFileSync(formatPath, 'utf8');
 const serverSource = readFileSync(serverPath, 'utf8');
 const neonServerSource = readFileSync(neonServerPath, 'utf8');
 const vercelServerSource = readFileSync(vercelServerPath, 'utf8');
+const s3ServerSource = readFileSync(s3ServerPath, 'utf8');
 const cronSource = readFileSync(cronPath, 'utf8');
 const navSource = readFileSync(navPath, 'utf8');
 const sidebarSource = readFileSync(sidebarPath, 'utf8');
@@ -46,6 +48,7 @@ test('admin infra costs view owns dashboard sections and provider tables', () =>
   assert.match(viewSource, /AdminMetricGrid/, 'view should render metric grids');
   assert.match(viewSource, /function NeonDetails/, 'view should own Neon detail table');
   assert.match(viewSource, /function VercelDetails/, 'view should own Vercel detail table');
+  assert.match(viewSource, /function S3Details/, 'view should own S3 detail table');
   assert.match(viewSource, /function RecentAlerts/, 'view should own alert audit table');
 });
 
@@ -55,13 +58,15 @@ test('infra costs format helper owns display formatting', () => {
   }
 });
 
-test('infra costs server module fetches Neon and Vercel data without client exposure', () => {
+test('infra costs server module fetches Neon, Vercel, and S3 data without client exposure', () => {
   assert.match(serverSource, /fetchNeonInfraCostReport/, 'server report should compose the Neon provider module');
   assert.match(serverSource, /fetchVercelInfraCostReport/, 'server report should compose the Vercel provider module');
+  assert.match(serverSource, /fetchS3InfraCostReport/, 'server report should compose the S3 provider module');
   assert.match(neonServerSource, /consumption_history\/v2\/projects/, 'Neon provider should call consumption history');
   assert.match(vercelServerSource, /\/v1\/billing\/charges/, 'Vercel provider should call billing charges');
+  assert.match(s3ServerSource, /AWSInsightsIndexService\.GetCostAndUsage/, 'S3 provider should call AWS Cost Explorer');
   assert.match(serverSource, /buildInfraCostAlertDigest/, 'server report should expose alert digest');
-  assert.doesNotMatch(viewSource, /NEON_API_KEY|VERCEL_TOKEN|Authorization/, 'view must not reference provider secrets');
+  assert.doesNotMatch(viewSource, /NEON_API_KEY|VERCEL_TOKEN|AWS_SECRET_ACCESS_KEY|Authorization/, 'view must not reference provider secrets');
 });
 
 test('infra costs alert cron is authenticated and scheduled', () => {
