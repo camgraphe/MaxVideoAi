@@ -39,6 +39,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'jobs', label: 'Jobs', href: '/admin/jobs', icon: 'jobs' },
       { id: 'transactions', label: 'Transactions', href: '/admin/transactions', icon: 'transactions' },
       { id: 'checkout-report', label: 'Checkout guard', href: '/admin/checkout-report', icon: 'shield' },
+      { id: 'infra-costs', label: 'Infra costs', href: '/admin/infra-costs', icon: 'costs' },
       { id: 'audit-log', label: 'Audit log', href: '/admin/audit', icon: 'audit' },
       { id: 'engines', label: 'Engines', href: '/admin/engines', icon: 'engines' },
       { id: 'pricing', label: 'Pricing rules', href: '/admin/pricing', icon: 'pricing' },

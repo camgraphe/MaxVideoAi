@@ -38,6 +38,7 @@ const ADMIN_ICON_MAP: Record<string, LucideIcon> = {
   jobs: ListChecks,
   transactions: Receipt,
   shield: ShieldAlert,
+  costs: BadgeDollarSign,
   audit: ClipboardList,
   engines: Cpu,
   pricing: BadgeDollarSign,

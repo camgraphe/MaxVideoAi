@@ -209,6 +209,12 @@ The application expects the following environment variables (scoped per Vercel e
 | `GA4_MEASUREMENT_ID` | Server (optional) | GA4 Measurement ID used for server-side Measurement Protocol events. |
 | `GA4_API_SECRET` | Server (optional) | GA4 Measurement Protocol API secret for top-up completion tracking. |
 | `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET` / `SLACK_WEBHOOK_URL` | Server (optional) | Slack integration secrets if hooks/bots are enabled. |
+| `NEON_API_KEY` / `NEON_API_TOKEN` | Server (optional) | Enables `/admin/infra-costs` Neon usage estimates and branch guard alerts. |
+| `NEON_USAGE_ORG_ID` / `NEON_USAGE_PROJECT_IDS` | Server (optional) | Neon org and comma-separated project IDs for the infra cost report. Defaults to the production project IDs when unset. |
+| `VERCEL_TOKEN` / `VERCEL_API_TOKEN` | Server (optional) | Enables `/admin/infra-costs` Vercel billing charge reporting. |
+| `VERCEL_TEAM_ID` / `VERCEL_TEAM_SLUG` | Server (optional) | Scopes Vercel billing charge reporting to the team account when needed. |
+| `INFRA_COST_MONTHLY_WARNING_USD` / `INFRA_COST_MONTHLY_CRITICAL_USD` | Server (optional) | Global projected month-end spend thresholds for the daily infra cost alert cron. |
+| `INFRA_COST_ALERT_EMAIL_TO` | Server (optional) | Email recipient for infra cost alerts when SMTP is configured. Slack alerts use `SLACK_WEBHOOK_URL`. |
 | `HEALTHCHECK_TOKEN` | Server (recommended) | Shared token required by protected health endpoints in Preview/Production. |
 
 ### Health Endpoints
