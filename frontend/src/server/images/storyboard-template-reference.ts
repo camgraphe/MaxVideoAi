@@ -32,8 +32,11 @@ function getStoryboardTemplatePathname(url: string): string | null {
   }
 }
 
-function getStoryboardTemplateFilePath(pathname: string, cwd: string): string {
-  const publicRoot = join(cwd, 'public');
+function getStoryboardTemplatePublicRoots(cwd: string): string[] {
+  return Array.from(new Set([join(cwd, 'public'), join(cwd, 'frontend', 'public')]));
+}
+
+function getStoryboardTemplateFilePath(pathname: string, publicRoot: string): string {
   const relativePath = normalize(pathname.replace(/^\/+/, ''));
   const filePath = join(publicRoot, relativePath);
   const normalizedRoot = normalize(publicRoot + sep);
@@ -41,6 +44,32 @@ function getStoryboardTemplateFilePath(pathname: string, cwd: string): string {
     throw new Error('Invalid storyboard template path.');
   }
   return filePath;
+}
+
+function isMissingFileError(error: unknown): boolean {
+  return (
+    Boolean(error && typeof error === 'object') &&
+    ((error as NodeJS.ErrnoException).code === 'ENOENT' || (error as NodeJS.ErrnoException).code === 'ENOTDIR')
+  );
+}
+
+async function readStoryboardTemplateFile(params: {
+  pathname: string;
+  cwd: string;
+  readFileFn: typeof readFile;
+}): Promise<Buffer> {
+  let missingFileError: unknown = null;
+  for (const publicRoot of getStoryboardTemplatePublicRoots(params.cwd)) {
+    try {
+      return (await params.readFileFn(getStoryboardTemplateFilePath(params.pathname, publicRoot))) as Buffer;
+    } catch (error) {
+      if (!isMissingFileError(error)) {
+        throw error;
+      }
+      missingFileError = error;
+    }
+  }
+  throw missingFileError ?? new Error('Storyboard template file was not found.');
 }
 
 async function uploadStoryboardTemplateReference(params: {
@@ -57,7 +86,7 @@ async function uploadStoryboardTemplateReference(params: {
   const readFileFn = deps.readFileFn ?? readFile;
   const uploadImageToStorageFn = deps.uploadImageToStorageFn ?? uploadImageToStorage;
   const cwd = deps.cwd ?? process.cwd();
-  const data = (await readFileFn(getStoryboardTemplateFilePath(params.pathname, cwd))) as Buffer;
+  const data = await readStoryboardTemplateFile({ pathname: params.pathname, cwd, readFileFn });
 
   return uploadImageToStorageFn({
     data,
