@@ -23,10 +23,23 @@ type ResolveDeps = {
   cwd?: string;
 };
 
-function getStoryboardTemplatePathname(url: string): string | null {
+function isLocalTemplateHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '[::1]'
+  );
+}
+
+function getLocalStoryboardTemplatePathname(url: string): string | null {
   try {
     const parsed = new URL(url);
-    return STORYBOARD_TEMPLATE_PATH_PATTERN.test(parsed.pathname) ? parsed.pathname : null;
+    return isLocalTemplateHost(parsed.hostname) && STORYBOARD_TEMPLATE_PATH_PATTERN.test(parsed.pathname)
+      ? parsed.pathname
+      : null;
   } catch {
     return null;
   }
@@ -106,7 +119,7 @@ export async function resolveStoryboardTemplateReferenceUrls(params: {
   const recordUserAssetFn = params.deps?.recordUserAssetFn ?? recordUserAsset;
   const urls = await Promise.all(
     params.urls.map(async (url) => {
-      const pathname = getStoryboardTemplatePathname(url);
+      const pathname = getLocalStoryboardTemplatePathname(url);
       if (!pathname) return url;
 
       const upload = await uploadStoryboardTemplateReference({
