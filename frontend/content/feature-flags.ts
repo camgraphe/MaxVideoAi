@@ -37,4 +37,7 @@ export const FEATURES = {
     libraryDocs: false,
     apiPublicRefs: true,
   },
+  studio: {
+    maxVideoAiEditor: true,
+  },
 } as const;
