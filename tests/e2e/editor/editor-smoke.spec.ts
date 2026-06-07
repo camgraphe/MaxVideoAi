@@ -20,7 +20,7 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByTestId('editor-program-monitor')).toBeVisible();
   await expect(page.getByTestId('editor-program-frame')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Play timeline' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Cut tool' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Blade / Cut tool' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Toggle snapping' })).toBeVisible();
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
 

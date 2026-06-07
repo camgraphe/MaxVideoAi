@@ -22,7 +22,7 @@ type NodeSettingsPanelProps = {
   onPatchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   onPatchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   onGenerateShot: (nodeId: string) => void;
-  onSendOutputToTimeline: (nodeId: string, mode?: 'insert' | 'overwrite' | 'replace') => void;
+  onSendOutputToTimeline: (nodeId: string) => void;
   onOpenAssetLibrary: (nodeId: string) => void;
 };
 
@@ -222,15 +222,9 @@ function AssetInspector({
         </button>
       )}
       <div className={styles.timelineInsertActions}>
-        <button type="button" className={styles.primaryPanelButton} disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'insert')}>
+        <button type="button" className={styles.primaryPanelButton} disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id)}>
           <Send size={15} />
           Insert at playhead
-        </button>
-        <button type="button" disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'overwrite')}>
-          Overwrite
-        </button>
-        <button type="button" disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'replace')}>
-          Replace selected
         </button>
       </div>
       <div className={styles.infoGrid}>
@@ -521,15 +515,9 @@ function OutputInspector({
         <strong>{outputCount}</strong>
       </div>
       <div className={styles.timelineInsertActions}>
-        <button type="button" className={styles.primaryPanelButton} disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'insert')}>
+        <button type="button" className={styles.primaryPanelButton} disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id)}>
           <Send size={15} />
           Insert at playhead
-        </button>
-        <button type="button" disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'overwrite')}>
-          Overwrite
-        </button>
-        <button type="button" disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'replace')}>
-          Replace selected
         </button>
       </div>
       <ConnectionsList node={node} edges={edges} />

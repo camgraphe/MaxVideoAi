@@ -2,20 +2,28 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Lock, Magnet, MousePointer2, Music2, Pause, Play, Plus, Redo2, Scissors, SkipBack, SkipForward, Trash2, Undo2, Volume2, WandSparkles, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowLeftRight, Eye, EyeOff, FoldHorizontal, Link2, Lock, Magnet, MousePointer2, Play, Plus, Redo2, Scissors, SkipBack, SkipForward, SplitSquareHorizontal, StretchHorizontal, Trash2, Undo2, Unlink2, Unlock, Volume2, VolumeX, ZoomIn, ZoomOut } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
   CSSProperties,
+  DragEvent as ReactDragEvent,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import styles from '../maxvideoai-editor.module.css';
-import type { WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
-import type { WorkspaceTimelineInsertMode, WorkspaceTimelineTrimEdge, WorkspaceTimelineTrimMode } from '../_lib/workspace-timeline-editing';
+import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
 import {
+  moveWorkspaceTimelineSelectionWithMode,
+  type WorkspaceTimelineTrimEdge,
+  type WorkspaceTimelineTrimMode,
+} from '../_lib/workspace-timeline-editing';
+import {
+  isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
+  workspaceTimelineAudioTrackId,
+  workspaceTimelineAudioTrackIndex,
   workspaceTimelineVideoTrackId,
   workspaceTimelineVideoTrackIndex,
 } from '../_lib/workspace-timeline-tracks';
@@ -31,15 +39,12 @@ const DEFAULT_TIMELINE_FRAME_STEP_SECONDS = 1 / DEFAULT_TIMELINE_FPS;
 const TIMELINE_SECOND_PRECISION = 1_000_000;
 const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
 const SNAP_TARGET_THRESHOLD_PIXELS = 1;
-const AUDIO_TRACKS: Array<{ id: WorkspaceTimelineTrack; label: string; icon: React.ReactNode }> = [
-  { id: 'linked-audio', label: 'Linked audio', icon: <Volume2 size={14} /> },
-  { id: 'music', label: 'Music', icon: <Music2 size={14} /> },
-  { id: 'voiceover', label: 'Voice Over', icon: <Volume2 size={14} /> },
-  { id: 'sfx', label: 'SFX', icon: <WandSparkles size={14} /> },
-];
+const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
+const EXTERNAL_DROP_GHOST_DURATION_SEC = 5;
+const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 type TimelineInteractionKind = 'move' | 'resize-start' | 'resize-end';
-type TimelineTool = 'select' | 'cut';
+type TimelineTool = 'select' | 'blade' | WorkspaceTimelineTrimMode;
 
 type TimelineInteractionState = {
   itemId: string;
@@ -84,6 +89,37 @@ type TimelineMarqueeState = {
   }>;
 };
 
+type TimelineContextMenuState = {
+  canLink: boolean;
+  canUnlink: boolean;
+  itemIds: string[];
+  selectedClipCount: number;
+  x: number;
+  y: number;
+};
+
+type TimelineTrackContextMenuState = {
+  canAdd: boolean;
+  canDelete: boolean;
+  kind: 'video' | 'audio';
+  label: string;
+  trackId: WorkspaceTimelineTrack;
+  x: number;
+  y: number;
+};
+
+type TimelineExternalDropPreview = {
+  isValid: boolean;
+  mediaKind: 'audio' | 'image' | 'video';
+  startSec: number;
+  trackId: WorkspaceTimelineTrack;
+};
+
+type TimelineNodeDragPayload = {
+  mediaKind?: 'audio' | 'image' | 'video';
+  nodeId?: string;
+};
+
 type SnapCandidate = {
   startSec: number;
   guideSec: number | null;
@@ -116,8 +152,43 @@ function snapSeconds(seconds: number, snapStepSec = DEFAULT_TIMELINE_FRAME_STEP_
   return Math.round((Math.round(seconds / safeStepSec) * safeStepSec) * TIMELINE_SECOND_PRECISION) / TIMELINE_SECOND_PRECISION;
 }
 
+function trimModeForTimelineTool(tool: TimelineTool): WorkspaceTimelineTrimMode {
+  return tool === 'ripple' || tool === 'roll' ? tool : 'trim';
+}
+
 function isVideoTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineVideoTrack {
   return isWorkspaceTimelineVideoTrack(track);
+}
+
+function isAudioTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineAudioTrack {
+  return isWorkspaceTimelineAudioTrack(track);
+}
+
+function parseTimelineNodeDragPayload(dataTransfer: DataTransfer): TimelineNodeDragPayload | null {
+  if (!Array.from(dataTransfer.types).includes(TIMELINE_NODE_DRAG_TYPE)) return null;
+  try {
+    const payload = JSON.parse(dataTransfer.getData(TIMELINE_NODE_DRAG_TYPE)) as TimelineNodeDragPayload;
+    if (!payload.nodeId || !payload.mediaKind) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+function isExternalTimelineDropCompatible(mediaKind: TimelineExternalDropPreview['mediaKind'], track: WorkspaceTimelineTrack): boolean {
+  if (mediaKind === 'audio') return !isVideoTimelineTrack(track);
+  return isVideoTimelineTrack(track);
+}
+
+function insertionBoundaryForTimelineTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, requestedStartSec: number): number {
+  const targetItem = items
+    .filter((item) => item.track === track)
+    .filter((item) => requestedStartSec > item.startSec && requestedStartSec < item.startSec + item.durationSec)
+    .sort((left, right) => left.startSec - right.startSec)[0] ?? null;
+  if (!targetItem) return requestedStartSec;
+
+  const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
+  return snapSeconds(requestedStartSec < midpointSec ? targetItem.startSec : targetItem.startSec + targetItem.durationSec);
 }
 
 function timelineVideoTrackId(index: number): WorkspaceTimelineVideoTrack {
@@ -128,7 +199,15 @@ function timelineVideoTrackIndex(track: WorkspaceTimelineTrack): number {
   return workspaceTimelineVideoTrackIndex(track);
 }
 
-function buildTimelineTracks(videoTrackCount: number, items: WorkspaceTimelineItem[]): TimelineTrackDefinition[] {
+function timelineAudioTrackId(index: number): WorkspaceTimelineTrack {
+  return workspaceTimelineAudioTrackId(index);
+}
+
+function timelineAudioTrackIndex(track: WorkspaceTimelineTrack): number {
+  return workspaceTimelineAudioTrackIndex(track);
+}
+
+function buildTimelineTracks(videoTrackCount: number, audioTrackCount: number, items: WorkspaceTimelineItem[]): TimelineTrackDefinition[] {
   const requiredVideoTrackCount = Math.max(1, videoTrackCount, ...items.map((item) => timelineVideoTrackIndex(item.track)));
   const videoTracks = Array.from({ length: requiredVideoTrackCount }, (_, index): TimelineTrackDefinition => ({
     id: timelineVideoTrackId(index + 1),
@@ -136,8 +215,15 @@ function buildTimelineTracks(videoTrackCount: number, items: WorkspaceTimelineIt
     icon: <Play size={14} />,
     kind: 'video',
   }));
+  const requiredAudioTrackCount = Math.max(1, audioTrackCount, ...items.map((item) => timelineAudioTrackIndex(item.track)));
+  const audioTracks = Array.from({ length: requiredAudioTrackCount }, (_, index): TimelineTrackDefinition => ({
+    id: timelineAudioTrackId(index + 1),
+    label: `Audio ${index + 1}`,
+    icon: <Volume2 size={14} />,
+    kind: 'audio',
+  }));
   const displayedVideoTracks = [...videoTracks].reverse();
-  return [...displayedVideoTracks, ...AUDIO_TRACKS.map((track) => ({ ...track, kind: 'audio' as const }))];
+  return [...displayedVideoTracks, ...audioTracks];
 }
 
 function selectionKeyForTimelineItem(item: WorkspaceTimelineItem): string {
@@ -154,9 +240,10 @@ function selectionKeysForTimelineItemIds(items: WorkspaceTimelineItem[], itemIds
 }
 
 function trackForTimelineItem(item: WorkspaceTimelineItem, interaction: TimelineInteractionState | null): WorkspaceTimelineTrack {
-  if (!interaction || !interactionMatchesItem(interaction, item) || !isVideoTimelineTrack(item.track)) return item.track;
+  if (!interaction || !interactionMatchesItem(interaction, item)) return item.track;
   if (interaction.selectedKeys.length > 1) return item.track;
-  if (!isVideoTimelineTrack(interaction.previewTrack)) return item.track;
+  if (isVideoTimelineTrack(item.track) && !isVideoTimelineTrack(interaction.previewTrack)) return item.track;
+  if (isAudioTimelineTrack(item.track) && !isAudioTimelineTrack(interaction.previewTrack)) return item.track;
   return interaction.previewTrack;
 }
 
@@ -276,107 +363,6 @@ function sameTrackBlockers(items: WorkspaceTimelineItem[], interaction: Timeline
     .sort((left, right) => left.startSec - right.startSec);
 }
 
-function selectedItemsForInteraction(items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): WorkspaceTimelineItem[] {
-  return items.filter((item) => interactionMatchesItem(interaction, item));
-}
-
-function constrainSelectedMoveToTrackGaps(
-  startSec: number,
-  items: WorkspaceTimelineItem[],
-  interaction: TimelineInteractionState
-): TimelineTrackConstraint {
-  const requestedDeltaSec = snapSeconds(startSec - interaction.originStartSec, interaction.snapStepSec);
-  const selectedItems = selectedItemsForInteraction(items, interaction);
-  let minDeltaSec = Number.NEGATIVE_INFINITY;
-  let maxDeltaSec = Number.POSITIVE_INFINITY;
-
-  selectedItems.forEach((selectedItem) => {
-    const originLayout = interaction.originLayoutsById[selectedItem.id] ?? {
-      startSec: selectedItem.startSec,
-      durationSec: selectedItem.durationSec,
-    };
-    const selectedStartSec = originLayout.startSec;
-    const selectedEndSec = originLayout.startSec + originLayout.durationSec;
-    minDeltaSec = Math.max(minDeltaSec, -selectedStartSec);
-
-    items
-      .filter((blocker) => blocker.track === selectedItem.track && !interactionMatchesItem(interaction, blocker))
-      .forEach((blocker) => {
-        const blockerStartSec = blocker.startSec;
-        const blockerEndSec = blocker.startSec + blocker.durationSec;
-        if (blockerEndSec <= selectedStartSec) {
-          minDeltaSec = Math.max(minDeltaSec, blockerEndSec - selectedStartSec);
-          return;
-        }
-        if (blockerStartSec >= selectedEndSec) {
-          maxDeltaSec = Math.min(maxDeltaSec, blockerStartSec - selectedEndSec);
-        }
-      });
-  });
-
-  let constrainedDeltaSec = requestedDeltaSec;
-  if (Number.isFinite(minDeltaSec) && Number.isFinite(maxDeltaSec) && minDeltaSec > maxDeltaSec) {
-    constrainedDeltaSec = requestedDeltaSec >= 0 ? maxDeltaSec : minDeltaSec;
-  } else {
-    if (Number.isFinite(minDeltaSec)) constrainedDeltaSec = Math.max(constrainedDeltaSec, minDeltaSec);
-    if (Number.isFinite(maxDeltaSec)) constrainedDeltaSec = Math.min(constrainedDeltaSec, maxDeltaSec);
-  }
-
-  const snappedDeltaSec = snapSeconds(constrainedDeltaSec, interaction.snapStepSec);
-  return {
-    startSec: Math.max(0, snapSeconds(interaction.originStartSec + snappedDeltaSec, interaction.snapStepSec)),
-    guideSec: snappedDeltaSec !== requestedDeltaSec ? interaction.originStartSec + snappedDeltaSec : null,
-  };
-}
-
-function constrainMoveToTrackGaps(
-  startSec: number,
-  durationSec: number,
-  items: WorkspaceTimelineItem[],
-  interaction: TimelineInteractionState
-): TimelineTrackConstraint {
-  let constrainedStartSec = Math.max(0, startSec);
-  let guideSec: number | null = null;
-  const primaryItem = primaryItemForInteraction(items, interaction);
-
-  sameTrackBlockers(items, interaction).forEach((blocker) => {
-    const blockerStartSec = blocker.startSec;
-    const blockerEndSec = blocker.startSec + blocker.durationSec;
-    const candidateEndSec = constrainedStartSec + durationSec;
-    const overlapsBlocker = constrainedStartSec < blockerEndSec && candidateEndSec > blockerStartSec;
-    if (!overlapsBlocker) return;
-
-    const blockerMidSec = blockerStartSec + blocker.durationSec / 2;
-    const candidateMidSec = constrainedStartSec + durationSec / 2;
-    if (primaryItem && primaryItem.startSec > blockerStartSec && candidateMidSec <= blockerMidSec) {
-      constrainedStartSec = blockerStartSec;
-      guideSec = blockerStartSec;
-      return;
-    }
-    if (primaryItem && primaryItem.startSec < blockerStartSec && candidateMidSec >= blockerMidSec) {
-      constrainedStartSec = blockerEndSec;
-      guideSec = blockerEndSec;
-      return;
-    }
-
-    const beforeStartSec = blockerStartSec - durationSec;
-    const afterStartSec = blockerEndSec;
-    if (beforeStartSec >= 0 && Math.abs(constrainedStartSec - beforeStartSec) <= Math.abs(constrainedStartSec - afterStartSec)) {
-      constrainedStartSec = beforeStartSec;
-      guideSec = blockerStartSec;
-      return;
-    }
-
-    constrainedStartSec = afterStartSec;
-    guideSec = blockerEndSec;
-  });
-
-  return {
-    startSec: Math.max(0, snapSeconds(constrainedStartSec, interaction.snapStepSec)),
-    guideSec,
-  };
-}
-
 function constrainResizeStartToTrackGaps(startSec: number, items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): TimelineTrackConstraint {
   const previousEndSec = sameTrackBlockers(items, interaction)
     .filter((item) => item.startSec + item.durationSec <= interaction.originStartSec)
@@ -418,9 +404,7 @@ function nextInteractionState(
     const snapCandidate = snapEnabled
       ? closestSnapCandidate(rawStartSec, interaction.originDurationSec, snapTargets, interaction.snapStepSec, snapThresholdSec)
       : { startSec: rawStartSec, guideSec: null };
-    const trackConstraint = interaction.selectedKeys.length > 1
-      ? constrainSelectedMoveToTrackGaps(snapCandidate.startSec, items, interaction)
-      : constrainMoveToTrackGaps(snapCandidate.startSec, interaction.originDurationSec, items, interaction);
+    const trackConstraint = snapCandidate;
     return {
       ...interaction,
       previewStartSec: trackConstraint.startSec,
@@ -506,6 +490,7 @@ function TimelineClip({
   layout,
   index,
   isInteracting,
+  isLocked,
   isSelected,
   activeTool,
   total,
@@ -515,6 +500,7 @@ function TimelineClip({
   onBeginInteraction,
   onCut,
   onMove,
+  onOpenContextMenu,
   onPlayheadChange,
   onSelect,
 }: {
@@ -522,6 +508,7 @@ function TimelineClip({
   layout: TimelineClipLayout;
   index: number;
   isInteracting: boolean;
+  isLocked: boolean;
   isSelected: boolean;
   activeTool: TimelineTool;
   total: number;
@@ -531,6 +518,7 @@ function TimelineClip({
   onBeginInteraction: (event: ReactPointerEvent<HTMLElement> | MouseEvent<HTMLElement>, item: WorkspaceTimelineItem, kind: TimelineInteractionKind) => void;
   onCut: (itemId: string, splitOffsetSec?: number) => void;
   onMove: (itemId: string, direction: -1 | 1) => void;
+  onOpenContextMenu: (event: MouseEvent<HTMLDivElement>, item: WorkspaceTimelineItem) => void;
   onPlayheadChange: (seconds: number) => void;
   onSelect: (itemId: string, mode?: TimelineSelectionMode) => void;
 }) {
@@ -541,6 +529,7 @@ function TimelineClip({
   const left = Math.max(0, layout.startSec * pixelsPerSecond);
   const isAudio = item.mediaKind === 'audio' || !isVideoTimelineTrack(item.track);
   const canCutClip = layout.durationSec >= MIN_CLIP_DURATION_SEC * 2;
+  const canManipulateClip = !isLocked;
   const isCompactClip = width < 144;
   const showClipThumbnail = Boolean(item.thumbnailUrl && !isCompactClip);
   const showClipActions = !isCompactClip;
@@ -559,12 +548,13 @@ function TimelineClip({
   };
   const handleClipInteractionStart = (event: ReactPointerEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).closest('button')) return;
+    event.currentTarget.focus();
     suppressNextClickRef.current = true;
     selectionHandledOnPointerRef.current = false;
-    if (activeTool === 'cut') {
+    if (activeTool === 'blade') {
       event.preventDefault();
       event.stopPropagation();
-      if (!canCutClip) return;
+      if (!canCutClip || !canManipulateClip) return;
       const clipRect = event.currentTarget.getBoundingClientRect();
       const pointerOffsetSec = snapSeconds((event.clientX - clipRect.left) / pixelsPerSecond, snapStepSec);
       const splitOffsetSec = Math.max(
@@ -584,6 +574,14 @@ function TimelineClip({
       onSelect(item.id, 'toggle');
       return;
     }
+    if (!canManipulateClip) {
+      onSelect(item.id, 'replace');
+      return;
+    }
+    if (activeTool !== 'select') {
+      onSelect(item.id, 'replace');
+      return;
+    }
     onBeginInteraction(event, item, 'move');
   };
   const handleClipPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -596,23 +594,27 @@ function TimelineClip({
   };
   const beginPointerResize = (event: ReactPointerEvent<HTMLDivElement>, kind: TimelineInteractionKind) => {
     rememberPointerEvent();
+    if (!canManipulateClip) return;
     onBeginInteraction(event, item, kind);
   };
   const beginMouseResize = (event: MouseEvent<HTMLDivElement>, kind: TimelineInteractionKind) => {
     if (pointerEventHandledRef.current) return;
+    if (!canManipulateClip) return;
     onBeginInteraction(event, item, kind);
   };
   return (
     <div
-      className={`${styles.timelineClip} ${isCompactClip ? styles.timelineClipCompact : ''} ${isAudio ? styles.timelineClipAudio : ''} ${isSelected ? styles.timelineClipSelected : ''} ${isInteracting ? styles.timelineClipInteracting : ''} ${activeTool === 'cut' && canCutClip ? styles.timelineClipCutMode : ''}`}
+      className={`${styles.timelineClip} ${isCompactClip ? styles.timelineClipCompact : ''} ${isAudio ? styles.timelineClipAudio : ''} ${isSelected ? styles.timelineClipSelected : ''} ${isInteracting ? styles.timelineClipInteracting : ''} ${activeTool === 'blade' && canCutClip ? styles.timelineClipCutMode : ''}`}
       style={{ width, left, maxWidth: timelineWidth - left } as CSSProperties}
       role="button"
       tabIndex={0}
       data-linked-group={item.linkedGroupId ?? undefined}
+      data-timeline-locked={isLocked ? 'true' : 'false'}
       data-selected={isSelected ? 'true' : 'false'}
       data-timeline-duration={layout.durationSec}
       data-timeline-item={item.id}
       data-timeline-start={layout.startSec}
+      data-timeline-track-id={item.track}
       onClick={(event) => {
         if (suppressNextClickRef.current) {
           const shouldToggleFromClick = (event.shiftKey || event.metaKey || event.ctrlKey) && !selectionHandledOnPointerRef.current;
@@ -623,6 +625,7 @@ function TimelineClip({
         }
         onSelect(item.id, event.shiftKey || event.metaKey || event.ctrlKey ? 'toggle' : 'replace');
       }}
+      onContextMenu={(event) => onOpenContextMenu(event, item)}
       onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -631,7 +634,7 @@ function TimelineClip({
       }}
       onMouseDown={handleClipMouseDown}
       onPointerDown={handleClipPointerDown}
-      title={activeTool === 'cut' ? 'Click to cut this clip' : 'Drag to move this clip'}
+      title={isLocked ? 'Track locked' : activeTool === 'blade' ? 'Click to cut this clip' : activeTool === 'select' ? 'Drag to move this clip' : 'Use the trim handles for this tool'}
       aria-label={`${item.title} timeline clip`}
     >
       <div
@@ -668,7 +671,7 @@ function TimelineClip({
             type="button"
             onPointerDown={handleButtonPointer}
             onClick={(event) => { handleActionClick(event); onMove(item.id, -1); }}
-            disabled={index === 0}
+            disabled={isLocked || index === 0}
             title="Move clip left"
             aria-label="Move clip left"
           >
@@ -678,7 +681,7 @@ function TimelineClip({
             type="button"
             onPointerDown={handleButtonPointer}
             onClick={(event) => { handleActionClick(event); onMove(item.id, 1); }}
-            disabled={index === total - 1}
+            disabled={isLocked || index === total - 1}
             title="Move clip right"
             aria-label="Move clip right"
           >
@@ -703,19 +706,36 @@ function TimelineClip({
 type WorkspaceTimelineProps = {
   canRedo: boolean;
   canUndo: boolean;
-  isPlaying: boolean;
+  isShortcutActive: boolean;
+  audioTrackCount: number;
   items: WorkspaceTimelineItem[];
+  hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
+  isInsertIntoClipEnabled: boolean;
+  inPointSec: number | null;
+  lockedTracks: WorkspaceTimelineTrack[];
+  mutedAudioTracks: WorkspaceTimelineAudioTrack[];
+  maxAudioTrackCount: number;
+  maxPanelHeight: number;
   maxVideoTrackCount: number;
+  minAudioTrackCount: number;
+  minPanelHeight: number;
+  panelHeight: number | null;
   selectedItemId: string | null;
   selectedItemIds: string[];
+  outPointSec: number | null;
   videoTrackCount: number;
   playheadSec: number;
   projectFps: number;
-  timelineEditMode: WorkspaceTimelineInsertMode;
+  onAddAudioTrack: () => void;
   onAddVideoTrack: () => void;
   onCutItem: (itemId: string, splitOffsetSec?: number) => void;
   onDeleteItem: (ripple?: boolean) => void;
   onMoveItem: (itemId: string, direction: -1 | 1) => void;
+  onInvalidNodeDropToTimeline: (reason: 'incompatible' | 'locked-track' | 'occupied-clip') => void;
+  onMarkIn: () => void;
+  onMarkOut: () => void;
+  onNodeDropToTimeline: (nodeId: string, startSec: number, track: WorkspaceTimelineTrack) => void;
+  onPanelHeightChange: (height: number) => void;
   onPlaybackChange: (isPlaying: boolean) => void;
   onPlayheadChange: (seconds: number) => void;
   onPositionItem: (itemId: string, nextStartSec: number, nextTrack?: WorkspaceTimelineTrack, selectedItemIds?: string[]) => void;
@@ -724,31 +744,50 @@ type WorkspaceTimelineProps = {
   onResizeItem: (itemId: string, edge: WorkspaceTimelineTrimEdge, nextStartSec: number, nextDurationSec: number, mode: WorkspaceTimelineTrimMode) => void;
   onSelectItem: (itemId: string, mode?: TimelineSelectionMode) => void;
   onSelectItems: (itemIds: string[]) => void;
-  onTimelineEditModeChange: (mode: WorkspaceTimelineInsertMode) => void;
-  onTimelineTrimModeChange: (mode: WorkspaceTimelineTrimMode) => void;
+  onInsertIntoClipChange: (enabled: boolean) => void;
+  onLinkItems: (itemIds: string[]) => void;
+  onDeleteTrack: (track: WorkspaceTimelineTrack) => void;
+  onToggleAudioTrackMute: (track: WorkspaceTimelineAudioTrack) => void;
+  onToggleTrackLock: (track: WorkspaceTimelineTrack) => void;
+  onToggleVideoTrackVisibility: (track: WorkspaceTimelineVideoTrack) => void;
   onTogglePlayback: () => void;
-  onToggleTransition: () => void;
+  onUnlinkItems: (itemIds: string[]) => void;
   onUndo: () => void;
-  timelineTrimMode: WorkspaceTimelineTrimMode;
 };
 
 export function WorkspaceTimeline({
   canRedo,
   canUndo,
-  isPlaying,
+  isShortcutActive,
+  audioTrackCount,
   items,
+  hiddenVideoTracks,
+  isInsertIntoClipEnabled,
+  inPointSec,
+  lockedTracks,
+  mutedAudioTracks,
+  maxAudioTrackCount,
+  maxPanelHeight,
   maxVideoTrackCount,
+  minAudioTrackCount,
+  minPanelHeight,
+  panelHeight,
   selectedItemId,
   selectedItemIds,
+  outPointSec,
   videoTrackCount,
   playheadSec,
   projectFps,
-  timelineEditMode,
-  timelineTrimMode,
+  onAddAudioTrack,
   onAddVideoTrack,
   onCutItem,
   onDeleteItem,
+  onInvalidNodeDropToTimeline,
+  onMarkIn,
+  onMarkOut,
   onMoveItem,
+  onNodeDropToTimeline,
+  onPanelHeightChange,
   onPlaybackChange,
   onPlayheadChange,
   onPositionItem,
@@ -757,32 +796,54 @@ export function WorkspaceTimeline({
   onResizeItem,
   onSelectItem,
   onSelectItems,
-  onTimelineEditModeChange,
-  onTimelineTrimModeChange,
+  onInsertIntoClipChange,
+  onLinkItems,
+  onDeleteTrack,
+  onToggleAudioTrackMute,
+  onToggleTrackLock,
+  onToggleVideoTrackVisibility,
   onTogglePlayback,
-  onToggleTransition,
+  onUnlinkItems,
   onUndo,
 }: WorkspaceTimelineProps) {
   const [interaction, setInteraction] = useState<TimelineInteractionState | null>(null);
   const [marquee, setMarquee] = useState<TimelineMarqueeState | null>(null);
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
+  const [externalDropPreview, setExternalDropPreview] = useState<TimelineExternalDropPreview | null>(null);
+  const [contextMenu, setContextMenu] = useState<TimelineContextMenuState | null>(null);
+  const [trackContextMenu, setTrackContextMenu] = useState<TimelineTrackContextMenuState | null>(null);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
+  const timelinePanelRef = useRef<HTMLElement | null>(null);
+  const panelResizePointerHandledRef = useRef(false);
   const interactionRef = useRef<TimelineInteractionState | null>(null);
+  const suppressNextSurfaceClickRef = useRef(false);
   const frameStepSec = frameStepSeconds(projectFps);
   const totalDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec), interaction ? interaction.previewStartSec + interaction.previewDurationSec : 0);
   const timelineWidth = Math.max(MIN_TIMELINE_WIDTH, totalDuration * pixelsPerSecond + 64);
   const rulerTickSec = timelineRulerStepFor(pixelsPerSecond);
-  const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, items), [items, videoTrackCount]);
+  const safeInPointSec = typeof inPointSec === 'number' && Number.isFinite(inPointSec) ? inPointSec : null;
+  const safeOutPointSec = typeof outPointSec === 'number' && Number.isFinite(outPointSec) ? outPointSec : null;
+  const hasValidInOutRange = safeInPointSec !== null && safeOutPointSec !== null && safeOutPointSec > safeInPointSec;
+  const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items), [audioTrackCount, items, videoTrackCount]);
+  const hiddenVideoTrackSet = useMemo(() => new Set<WorkspaceTimelineVideoTrack>(hiddenVideoTracks), [hiddenVideoTracks]);
+  const lockedTrackSet = useMemo(() => new Set<WorkspaceTimelineTrack>(lockedTracks), [lockedTracks]);
+  const mutedAudioTrackSet = useMemo(() => new Set<WorkspaceTimelineAudioTrack>(mutedAudioTracks), [mutedAudioTracks]);
+  const highestVideoTrackId = timelineTracks.find((track) => track.kind === 'video')?.id ?? 'video';
+  const lowestAudioTrackId = [...timelineTracks].reverse().find((track) => track.kind === 'audio')?.id ?? 'audio';
   const clampedPlayheadSec = Math.max(0, Math.min(playheadSec, totalDuration));
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null;
   const selectedKeys = useMemo(() => selectionKeysForTimelineItemIds(items, selectedItemIds), [items, selectedItemIds]);
-  const selectedClipCount = selectedKeys.size;
+  const selectedTouchesLockedTrack = useMemo(
+    () => items.some((item) => selectedKeys.has(selectionKeyForTimelineItem(item)) && lockedTrackSet.has(item.track)),
+    [items, lockedTrackSet, selectedKeys]
+  );
   const selectedLayout = selectedItem ? layoutForItem(selectedItem, interaction) : null;
   const selectedSplitOffset = selectedLayout ? clampedPlayheadSec - selectedLayout.startSec : null;
   const canCutAtPlayhead = Boolean(
     selectedItem &&
     selectedLayout &&
+    !selectedTouchesLockedTrack &&
     selectedSplitOffset !== null &&
     selectedSplitOffset >= MIN_CLIP_DURATION_SEC &&
     selectedSplitOffset <= selectedLayout.durationSec - MIN_CLIP_DURATION_SEC
@@ -794,11 +855,89 @@ export function WorkspaceTimeline({
   const setTimelineZoom = useCallback((nextPixelsPerSecond: number) => {
     setPixelsPerSecond(Math.max(MIN_TIMELINE_PIXELS_PER_SECOND, Math.min(MAX_TIMELINE_PIXELS_PER_SECOND, nextPixelsPerSecond)));
   }, []);
+  const beginTimelinePanelResize = useCallback((
+    originClientY: number,
+    moveEventName: 'mousemove' | 'pointermove',
+    upEventName: 'mouseup' | 'pointerup'
+  ) => {
+    setContextMenu(null);
+    setTrackContextMenu(null);
+
+    const originHeight = timelinePanelRef.current?.getBoundingClientRect().height ?? panelHeight ?? minPanelHeight;
+    const clampPanelHeight = (height: number) => Math.max(minPanelHeight, Math.min(maxPanelHeight, Math.round(height)));
+    const updatePanelHeight = (clientY: number) => {
+      onPanelHeightChange(clampPanelHeight(originHeight - (clientY - originClientY)));
+    };
+    const handleMove = (dragEvent: PointerEvent | globalThis.MouseEvent) => {
+      updatePanelHeight(dragEvent.clientY);
+    };
+    const handleUp = (dragEvent: PointerEvent | globalThis.MouseEvent) => {
+      updatePanelHeight(dragEvent.clientY);
+      window.removeEventListener(moveEventName, handleMove as EventListener);
+      window.removeEventListener(upEventName, handleUp as EventListener);
+    };
+
+    window.addEventListener(moveEventName, handleMove as EventListener);
+    window.addEventListener(upEventName, handleUp as EventListener);
+  }, [maxPanelHeight, minPanelHeight, onPanelHeightChange, panelHeight]);
+  const handleBeginTimelinePanelPointerResize = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelResizePointerHandledRef.current = true;
+    window.setTimeout(() => {
+      panelResizePointerHandledRef.current = false;
+    }, 0);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    beginTimelinePanelResize(event.clientY, 'pointermove', 'pointerup');
+  }, [beginTimelinePanelResize]);
+  const handleBeginTimelinePanelMouseResize = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    if (panelResizePointerHandledRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    beginTimelinePanelResize(event.clientY, 'mousemove', 'mouseup');
+  }, [beginTimelinePanelResize]);
   const secondsFromTimelineElement = useCallback((clientX: number, element: HTMLElement): number => {
     const rect = element.getBoundingClientRect();
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
     return Math.max(0, Math.min(totalDuration, snapSeconds(rawSeconds, frameStepSec)));
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
+  const updateExternalDropPreview = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
+    const payload = parseTimelineNodeDragPayload(event.dataTransfer);
+    if (!payload?.nodeId || !payload.mediaKind) return null;
+    const rawStartSec = secondsFromTimelineElement(event.clientX, event.currentTarget);
+    const startSec = !isInsertIntoClipEnabled
+      ? insertionBoundaryForTimelineTrack(items, track, rawStartSec)
+      : rawStartSec;
+    const isCompatibleDrop = isExternalTimelineDropCompatible(payload.mediaKind, track) && !lockedTrackSet.has(track);
+    const preview: TimelineExternalDropPreview = {
+      isValid: isCompatibleDrop,
+      mediaKind: payload.mediaKind,
+      startSec,
+      trackId: track,
+    };
+    event.preventDefault();
+    event.dataTransfer.dropEffect = preview.isValid ? 'copy' : 'none';
+    setExternalDropPreview(preview);
+    return { payload, preview };
+  }, [isInsertIntoClipEnabled, items, lockedTrackSet, secondsFromTimelineElement]);
+  const handleExternalDropOver = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
+    updateExternalDropPreview(event, track);
+  }, [updateExternalDropPreview]);
+  const handleExternalDrop = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
+    const result = updateExternalDropPreview(event, track);
+    setExternalDropPreview(null);
+    if (!result?.payload.nodeId) return;
+    if (lockedTrackSet.has(track)) {
+      onInvalidNodeDropToTimeline('locked-track');
+      return;
+    }
+    if (!result.preview.isValid) {
+      onInvalidNodeDropToTimeline('incompatible');
+      return;
+    }
+    onPlaybackChange(false);
+    onNodeDropToTimeline(result.payload.nodeId, result.preview.startSec, result.preview.trackId);
+  }, [lockedTrackSet, onInvalidNodeDropToTimeline, onNodeDropToTimeline, onPlaybackChange, updateExternalDropPreview]);
   const handleBeginPlayheadDrag = useCallback((event: ReactPointerEvent<HTMLElement>, timelineElement: HTMLElement | null) => {
     if (!timelineElement) return;
     event.preventDefault();
@@ -829,6 +968,7 @@ export function WorkspaceTimeline({
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const laneElement = event.currentTarget;
+    onSelectItems([]);
     const viewportElement = laneElement.closest(`.${styles.timelineViewport}`) as HTMLElement | null;
     const viewportRect = viewportElement?.getBoundingClientRect() ?? laneElement.getBoundingClientRect();
     const itemRects = Array.from(document.querySelectorAll<HTMLElement>('[data-timeline-item]')).map((element) => {
@@ -872,17 +1012,92 @@ export function WorkspaceTimeline({
       };
       setMarquee(null);
       if (didDrag) {
+        suppressNextSurfaceClickRef.current = true;
+        window.setTimeout(() => {
+          suppressNextSurfaceClickRef.current = false;
+        }, 0);
         const marqueeItemIds = selectedItemIdsForMarquee(finalMarquee);
         onSelectItems(marqueeItemIds);
         return;
       }
       onPlaybackChange(false);
+      onSelectItems([]);
       onPlayheadChange(secondsFromTimelineElement(pointerEvent.clientX, laneElement));
     };
 
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
   }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
+  const handleTimelineSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('[data-timeline-item], [data-timeline-control="true"]')) return;
+    if (suppressNextSurfaceClickRef.current) {
+      suppressNextSurfaceClickRef.current = false;
+      return;
+    }
+    onPlaybackChange(false);
+    onSelectItems([]);
+    onPlayheadChange(secondsFromTimelineElement(event.clientX, event.currentTarget));
+  }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
+  const handleOpenClipContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, item: WorkspaceTimelineItem) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const clickedKey = selectionKeyForTimelineItem(item);
+    const isClickedSelected = selectedKeys.has(clickedKey);
+    const menuItemIds = isClickedSelected && selectedItemIds.length ? selectedItemIds : [item.id];
+    const menuKeys = selectionKeysForTimelineItemIds(items, menuItemIds);
+    const menuItems = items.filter((candidate) => menuKeys.has(selectionKeyForTimelineItem(candidate)));
+    const linkedGroupIds = new Set(
+      menuItems
+        .map((candidate) => candidate.linkedGroupId)
+        .filter((groupId): groupId is string => Boolean(groupId))
+    );
+    if (!isClickedSelected) {
+      onSelectItem(item.id, 'replace');
+    }
+    const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
+    const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight;
+    setContextMenu({
+      canLink: menuKeys.size > 1,
+      canUnlink: linkedGroupIds.size > 0,
+      itemIds: menuItemIds,
+      selectedClipCount: menuItems.length,
+      x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 224)) : event.clientX,
+      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 120)) : event.clientY,
+    });
+  }, [items, onSelectItem, selectedItemIds, selectedKeys]);
+  const handleContextMenuAction = useCallback((action: 'link' | 'unlink') => {
+    if (!contextMenu) return;
+    if (action === 'link') onLinkItems(contextMenu.itemIds);
+    else onUnlinkItems(contextMenu.itemIds);
+    setContextMenu(null);
+  }, [contextMenu, onLinkItems, onUnlinkItems]);
+  const handleOpenTrackContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, track: TimelineTrackDefinition) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu(null);
+    const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
+    const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight;
+    setTrackContextMenu({
+      canAdd: track.kind === 'video' ? videoTrackCount < maxVideoTrackCount : audioTrackCount < maxAudioTrackCount,
+      canDelete: track.kind === 'video' ? videoTrackCount > 1 : audioTrackCount > minAudioTrackCount,
+      kind: track.kind,
+      label: track.label,
+      trackId: track.id,
+      x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 212)) : event.clientX,
+      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 118)) : event.clientY,
+    });
+  }, [audioTrackCount, maxAudioTrackCount, maxVideoTrackCount, minAudioTrackCount, videoTrackCount]);
+  const handleTrackContextMenuAction = useCallback((action: 'add' | 'delete') => {
+    if (!trackContextMenu) return;
+    if (action === 'add') {
+      if (trackContextMenu.kind === 'video') onAddVideoTrack();
+      else onAddAudioTrack();
+    } else {
+      onDeleteTrack(trackContextMenu.trackId);
+    }
+    setTrackContextMenu(null);
+  }, [onAddAudioTrack, onAddVideoTrack, onDeleteTrack, trackContextMenu]);
   const seekBy = useCallback((deltaSec: number) => {
     onPlaybackChange(false);
     onPlayheadChange(Math.max(0, Math.min(totalDuration, clampedPlayheadSec + deltaSec)));
@@ -896,8 +1111,9 @@ export function WorkspaceTimeline({
     setInteraction(nextInteraction);
   };
   const trackAtClientY = useCallback((clientY: number, fallbackTrack: WorkspaceTimelineTrack): WorkspaceTimelineTrack => {
-    if (!isVideoTimelineTrack(fallbackTrack)) return fallbackTrack;
-    const videoTrackIds = new Set(timelineTracks.filter((track) => track.kind === 'video').map((track) => track.id));
+    const targetKind = isVideoTimelineTrack(fallbackTrack) ? 'video' : isAudioTimelineTrack(fallbackTrack) ? 'audio' : null;
+    if (!targetKind) return fallbackTrack;
+    const compatibleTrackIds = new Set(timelineTracks.filter((track) => track.kind === targetKind && !lockedTrackSet.has(track.id)).map((track) => track.id));
     const trackElements = Array.from(document.querySelectorAll<HTMLElement>('[data-timeline-track]'))
       .map((element) => {
         const track = element.dataset.timelineTrack as WorkspaceTimelineTrack | undefined;
@@ -905,7 +1121,7 @@ export function WorkspaceTimeline({
         return { element, rect, track };
       })
       .filter((entry): entry is { element: HTMLElement; rect: DOMRect; track: WorkspaceTimelineTrack } =>
-        Boolean(entry.track && videoTrackIds.has(entry.track))
+        Boolean(entry.track && compatibleTrackIds.has(entry.track))
       );
     const containingTrack = trackElements.find((entry) => clientY >= entry.rect.top && clientY <= entry.rect.bottom);
     if (containingTrack) return containingTrack.track;
@@ -913,7 +1129,7 @@ export function WorkspaceTimeline({
       .map((entry) => ({ ...entry, distance: Math.abs(clientY - (entry.rect.top + entry.rect.height / 2)) }))
       .sort((left, right) => left.distance - right.distance)[0];
     return nearestTrack?.track ?? fallbackTrack;
-  }, [timelineTracks]);
+  }, [lockedTrackSet, timelineTracks]);
   const handleBeginInteraction = (event: ReactPointerEvent<HTMLElement> | MouseEvent<HTMLElement>, item: WorkspaceTimelineItem, kind: TimelineInteractionKind) => {
     event.preventDefault();
     event.stopPropagation();
@@ -925,6 +1141,8 @@ export function WorkspaceTimeline({
     const isSelectedForDrag = selectedKeys.has(itemSelectionKey);
     const dragSelectedItemIds = kind === 'move' && isSelectedForDrag && selectedItemIds.length > 1 ? selectedItemIds : [item.id];
     const dragSelectedKeys = Array.from(selectionKeysForTimelineItemIds(items, dragSelectedItemIds));
+    const touchesLockedTrack = items.some((candidate) => dragSelectedKeys.includes(selectionKeyForTimelineItem(candidate)) && lockedTrackSet.has(candidate.track));
+    if (touchesLockedTrack) return;
     const originLayoutsById = items.reduce<Record<string, TimelineClipLayout>>((layouts, candidate) => {
       if (!dragSelectedKeys.includes(selectionKeyForTimelineItem(candidate))) return layouts;
       layouts[candidate.id] = layoutForItem(candidate, interactionRef.current);
@@ -1005,7 +1223,7 @@ export function WorkspaceTimeline({
         completedInteraction.kind === 'resize-start' ? 'start' : 'end',
         completedInteraction.previewStartSec,
         completedInteraction.previewDurationSec,
-        timelineTrimMode
+        trimModeForTimelineTool(activeTimelineTool)
       );
       onPlayheadChange(completedInteraction.previewStartSec);
       setPreviewInteraction(null);
@@ -1023,7 +1241,27 @@ export function WorkspaceTimeline({
     window.addEventListener('mouseup', handleMouseUp);
   };
   useEffect(() => {
+    if (!contextMenu && !trackContextMenu) return undefined;
+    const closeContextMenu = () => {
+      setContextMenu(null);
+      setTrackContextMenu(null);
+    };
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') closeContextMenu();
+    };
+    window.addEventListener('pointerdown', closeContextMenu);
+    window.addEventListener('scroll', closeContextMenu, true);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', closeContextMenu);
+      window.removeEventListener('scroll', closeContextMenu, true);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [contextMenu, trackContextMenu]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (!isShortcutActive) return;
       if (isTimelineShortcutTarget(event.target)) return;
       if ((event.metaKey || event.ctrlKey) && event.code === 'KeyZ') {
         event.preventDefault();
@@ -1058,7 +1296,7 @@ export function WorkspaceTimeline({
       }
       if (event.code === 'KeyC') {
         event.preventDefault();
-        setActiveTimelineTool((currentTool) => (currentTool === 'cut' ? 'select' : 'cut'));
+        setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'));
         return;
       }
       if (event.code === 'KeyV') {
@@ -1071,9 +1309,29 @@ export function WorkspaceTimeline({
         setSnapEnabled((value) => !value);
         return;
       }
+      if (event.code === 'KeyI') {
+        event.preventDefault();
+        onMarkIn();
+        return;
+      }
+      if (event.code === 'KeyO') {
+        event.preventDefault();
+        onMarkOut();
+        return;
+      }
       if (event.code === 'KeyT') {
         event.preventDefault();
-        onTimelineTrimModeChange(timelineTrimMode === 'trim' ? 'ripple' : timelineTrimMode === 'ripple' ? 'roll' : 'trim');
+        setActiveTimelineTool('trim');
+        return;
+      }
+      if (event.code === 'KeyR') {
+        event.preventDefault();
+        setActiveTimelineTool('ripple');
+        return;
+      }
+      if (event.code === 'KeyY') {
+        event.preventDefault();
+        setActiveTimelineTool('roll');
         return;
       }
       if (event.code === 'Delete' || event.code === 'Backspace') {
@@ -1089,30 +1347,57 @@ export function WorkspaceTimeline({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [frameStepSec, handleCutSelectedAtPlayhead, onDeleteItem, onRedo, onTimelineTrimModeChange, onTogglePlayback, onUndo, pixelsPerSecond, seekBy, setTimelineZoom, timelineTrimMode]);
+  }, [frameStepSec, handleCutSelectedAtPlayhead, isShortcutActive, onDeleteItem, onMarkIn, onMarkOut, onRedo, onTogglePlayback, onUndo, pixelsPerSecond, seekBy, setTimelineZoom]);
+  const resolvedPreviewTimelineItems = useMemo(() => {
+    if (!interaction || interaction.kind !== 'move') return null;
+    return moveWorkspaceTimelineSelectionWithMode({
+      items,
+      itemIds: interaction.selectedItemIds,
+      anchorItemId: interaction.itemId,
+      nextStartSec: interaction.previewStartSec,
+      nextTrack: interaction.previewTrack,
+      mode: 'insert',
+      idSeed: TIMELINE_PREVIEW_ID_SEED,
+      allowInsertIntoClip: isInsertIntoClipEnabled,
+    });
+  }, [interaction, isInsertIntoClipEnabled, items]);
   const previewItems = useMemo(
-    () => items.map((item) => ({
-      item,
-      layout: layoutForItem(item, interaction),
-      trackId: trackForTimelineItem(item, interaction),
-    })),
-    [interaction, items]
+    () => {
+      if (resolvedPreviewTimelineItems) {
+        return resolvedPreviewTimelineItems.map((item) => ({
+          item,
+          layout: { startSec: item.startSec, durationSec: item.durationSec },
+          trackId: item.track,
+        }));
+      }
+      return items.map((item) => ({
+        item,
+        layout: layoutForItem(item, interaction),
+        trackId: trackForTimelineItem(item, interaction),
+      }));
+    },
+    [interaction, items, resolvedPreviewTimelineItems]
   );
   const previewTimelineItems = useMemo(
-    () => interaction
-      ? items.map((item) => {
-        const layout = layoutForItem(item, interaction);
-        return {
-          ...item,
-          startSec: layout.startSec,
-          durationSec: layout.durationSec,
-          track: trackForTimelineItem(item, interaction),
-        };
-      })
-      : null,
-    [interaction, items]
+    () => {
+      if (resolvedPreviewTimelineItems) return resolvedPreviewTimelineItems;
+      return interaction
+        ? items.map((item) => {
+            const layout = layoutForItem(item, interaction);
+            return {
+              ...item,
+              startSec: layout.startSec,
+              durationSec: layout.durationSec,
+              track: trackForTimelineItem(item, interaction),
+            };
+          })
+        : null;
+    },
+    [interaction, items, resolvedPreviewTimelineItems]
   );
-  const previewPlayheadSec = interaction ? previewPlayheadForInteraction(interaction) : null;
+  const previewPlayheadSec = interaction
+    ? resolvedPreviewTimelineItems?.find((item) => item.id === interaction.itemId)?.startSec ?? previewPlayheadForInteraction(interaction)
+    : null;
   useEffect(() => {
     onPreviewItemsChange?.(previewTimelineItems, previewPlayheadSec);
   }, [onPreviewItemsChange, previewPlayheadSec, previewTimelineItems]);
@@ -1122,111 +1407,104 @@ export function WorkspaceTimeline({
 
   return (
     <section
+      ref={timelinePanelRef}
       className={styles.timelinePanel}
       style={timelinePanelStyle}
       aria-label="Video timeline"
       data-timeline-frame-step={frameStepSec}
       data-timeline-pixels-per-second={pixelsPerSecond}
     >
-      <div className={styles.timelineTopbar}>
-        <div>
-          <p>Montage timeline</p>
-          <span>
-            {formatWorkspaceTimecode(clampedPlayheadSec, projectFps)} / {formatWorkspaceTimecode(totalDuration, projectFps)}
-            {selectedClipCount > 1
-              ? ` · ${selectedClipCount} clips selected`
-              : selectedItem
-                ? ` · Selected ${selectedItem.title}`
-                : ''}
-          </span>
+      <button
+        type="button"
+        className={styles.timelineResizeHandle}
+        data-timeline-control="true"
+        data-timeline-resize-handle="true"
+        onMouseDown={handleBeginTimelinePanelMouseResize}
+        onPointerDown={handleBeginTimelinePanelPointerResize}
+        title="Drag to resize montage timeline"
+        aria-label="Resize montage timeline"
+      />
+      <div className={styles.timelineTopbar} data-timeline-topbar="true">
+        <div className={styles.timelineTimecodeCluster}>
+          <time
+            className={styles.timelineCurrentTimecode}
+            dateTime={`PT${clampedPlayheadSec}S`}
+            data-timeline-current-timecode="true"
+          >
+            {formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
+          </time>
         </div>
-        <div className={styles.timelineTransport}>
+        <div className={styles.timelineTransport} data-timeline-transport="true">
           <button type="button" data-tooltip="Undo (Cmd/Ctrl + Z)" title="Undo timeline edit (Cmd/Ctrl + Z)" aria-label="Undo timeline edit" disabled={!canUndo} onClick={onUndo}>
             <Undo2 size={15} />
           </button>
           <button type="button" data-tooltip="Redo (Cmd/Ctrl + Shift + Z)" title="Redo timeline edit (Cmd/Ctrl + Shift + Z)" aria-label="Redo timeline edit" disabled={!canRedo} onClick={onRedo}>
             <Redo2 size={15} />
           </button>
-          <button type="button" data-tooltip="Back 1s (Shift + Left)" title="Back 1s (Shift + Left)" aria-label="Previous" onClick={() => seekBy(-1)}>
-            <SkipBack size={15} />
-          </button>
-          <button
-            type="button"
-            data-tooltip={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
-            title={isPlaying ? 'Pause montage (Space)' : 'Play montage (Space)'}
-            aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
-            onClick={onTogglePlayback}
-          >
-            {isPlaying ? <Pause size={15} /> : <Play size={15} />}
-          </button>
-          <button type="button" data-tooltip="Forward 1s (Shift + Right)" title="Forward 1s (Shift + Right)" aria-label="Next" onClick={() => seekBy(1)}>
-            <SkipForward size={15} />
-          </button>
-          <button
-            type="button"
-            className={`${styles.timelineToolButton} ${activeTimelineTool === 'select' ? styles.timelineToolButtonActive : ''}`}
-            data-tooltip="Select, drag, marquee (V)"
-            title="Select and drag clips. Shift/Cmd-click toggles selection; drag empty timeline space for marquee selection. (V)"
-            onClick={() => setActiveTimelineTool('select')}
-            aria-label="Select tool"
-            aria-pressed={activeTimelineTool === 'select'}
-          >
-            <MousePointer2 size={15} />
-          </button>
-          <button
-            type="button"
-            className={`${styles.timelineToolButton} ${activeTimelineTool === 'cut' ? styles.timelineToolButtonActive : ''}`}
-            data-tooltip="Cut tool (C) / Split selected (S)"
-            title="Cut tool (C). Click a clip to split, or press S to split at the playhead."
-            onClick={() => setActiveTimelineTool((currentTool) => (currentTool === 'cut' ? 'select' : 'cut'))}
-            aria-label="Cut tool"
-            aria-pressed={activeTimelineTool === 'cut'}
-          >
-            <Scissors size={15} />
-          </button>
-          <button
-            type="button"
-            className={`${styles.timelineToolButton} ${snapEnabled ? styles.timelineToolButtonActive : ''}`}
-            data-tooltip="Snapping: clips, playhead, zero (M)"
-            title="Snapping to clip edges, playhead, and zero (M)"
-            onClick={() => setSnapEnabled((value) => !value)}
-            aria-label="Toggle snapping"
-            aria-pressed={snapEnabled}
-          >
-            <Magnet size={15} />
-          </button>
-          <button
-            type="button"
-            className={styles.timelineToolButton}
-            data-tooltip="Crossfade 1s on next cut"
-            title="Toggle a 1s crossfade from the selected clip to the next video clip"
-            aria-label="Toggle crossfade transition"
-            disabled={!selectedItem}
-            onClick={onToggleTransition}
-          >
-            Xf
-          </button>
-          <button
-            type="button"
-            data-tooltip="Delete selected (Delete). Ripple delete with Shift + Delete"
-            title="Delete selected clip. Hold Shift for ripple delete."
-            aria-label="Delete selected timeline clip"
-            disabled={!selectedItem}
-            onClick={() => onDeleteItem(false)}
-          >
-            <Trash2 size={15} />
-          </button>
-          <button
-            type="button"
-            className={styles.timelineToolButton}
-            data-tooltip="Add video track"
-            title="Add a video track for overlays, b-roll, or alternates"
-            aria-label="Add video track"
-            disabled={videoTrackCount >= maxVideoTrackCount}
-            onClick={onAddVideoTrack}
-          >
-            <Plus size={15} />
-          </button>
+          <div className={styles.timelineToolGroup} role="toolbar" aria-label="Timeline editing tools">
+            <button
+              type="button"
+              className={`${styles.timelineToolButton} ${activeTimelineTool === 'select' ? styles.timelineToolButtonActive : ''}`}
+              data-timeline-tool="select"
+              data-tooltip="Selection tool (V)"
+              title="Selection tool. Drag clips, marquee empty space, and Shift/Cmd-click to toggle selection. (V)"
+              onClick={() => setActiveTimelineTool('select')}
+              aria-label="Selection tool"
+              aria-pressed={activeTimelineTool === 'select'}
+            >
+              <MousePointer2 size={15} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.timelineToolButton} ${activeTimelineTool === 'blade' ? styles.timelineToolButtonActive : ''}`}
+              data-timeline-tool="blade"
+              data-tooltip="Blade / Cut tool (C)"
+              title="Blade / Cut tool. Click a clip to split, or press S to split selected at the playhead. (C)"
+              onClick={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
+              aria-label="Blade / Cut tool"
+              aria-pressed={activeTimelineTool === 'blade'}
+            >
+              <Scissors size={15} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.timelineToolButton} ${activeTimelineTool === 'trim' ? styles.timelineToolButtonActive : ''}`}
+              data-timeline-tool="trim"
+              data-tooltip="Trim tool (T)"
+              title="Trim tool. Drag clip edges without moving neighboring clips. (T)"
+              onClick={() => setActiveTimelineTool('trim')}
+              aria-label="Trim tool"
+              aria-pressed={activeTimelineTool === 'trim'}
+            >
+              <StretchHorizontal size={15} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.timelineToolButton} ${activeTimelineTool === 'ripple' ? styles.timelineToolButtonActive : ''}`}
+              data-timeline-tool="ripple"
+              data-tooltip="Ripple trim tool (R)"
+              title="Ripple trim tool. Drag a clip edge and shift later clips with the edit. (R)"
+              onClick={() => setActiveTimelineTool('ripple')}
+              aria-label="Ripple trim tool"
+              aria-pressed={activeTimelineTool === 'ripple'}
+            >
+              <FoldHorizontal size={15} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.timelineToolButton} ${activeTimelineTool === 'roll' ? styles.timelineToolButtonActive : ''}`}
+              data-timeline-tool="roll"
+              data-tooltip="Roll trim tool (Y)"
+              title="Roll trim tool. Move the cut between adjacent clips without changing sequence duration. (Y)"
+              onClick={() => setActiveTimelineTool('roll')}
+              aria-label="Roll trim tool"
+              aria-pressed={activeTimelineTool === 'roll'}
+            >
+              <ArrowLeftRight size={15} />
+            </button>
+          </div>
+        </div>
+        <div className={styles.timelineZoomSlot}>
           <div className={styles.timelineZoomControl} aria-label="Timeline zoom">
             <button
               type="button"
@@ -1258,76 +1536,77 @@ export function WorkspaceTimeline({
               <ZoomIn size={13} />
             </button>
           </div>
-          <div className={styles.timelineModeControl} role="radiogroup" aria-label="Timeline insert mode">
-            {(['insert', 'overwrite', 'replace'] as WorkspaceTimelineInsertMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                className={timelineEditMode === mode ? styles.timelineModeActive : ''}
-                data-tooltip={
-                  mode === 'insert'
-                    ? 'Insert: push later clips'
-                    : mode === 'overwrite'
-                      ? 'Overwrite: replace the time range'
-                      : 'Replace: swap selected clip'
-                }
-                title={
-                  mode === 'insert'
-                    ? 'Insert at playhead and push later clips'
-                    : mode === 'overwrite'
-                      ? 'Overwrite the range under the playhead'
-                      : 'Replace the selected clip slot'
-                }
-                onClick={() => onTimelineEditModeChange(mode)}
-                role="radio"
-                aria-checked={timelineEditMode === mode}
-                aria-label={`${mode} edit mode`}
-              >
-                {mode === 'insert' ? 'Ins' : mode === 'overwrite' ? 'Ovr' : 'Rep'}
-              </button>
-            ))}
-          </div>
-          <div className={styles.timelineModeControl} role="radiogroup" aria-label="Timeline trim mode">
-            {(['trim', 'ripple', 'roll'] as WorkspaceTimelineTrimMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                className={timelineTrimMode === mode ? styles.timelineModeActive : ''}
-                data-tooltip={
-                  mode === 'trim'
-                    ? 'Trim: leave gaps'
-                    : mode === 'ripple'
-                      ? 'Ripple: close/open the sequence'
-                      : 'Roll: move the cut between clips'
-                }
-                title={
-                  mode === 'trim'
-                    ? 'Normal trim leaves neighboring clips untouched'
-                    : mode === 'ripple'
-                      ? 'Ripple trim shifts later clips with the edit'
-                      : 'Roll trim moves the cut between adjacent clips'
-                }
-                onClick={() => onTimelineTrimModeChange(mode)}
-                role="radio"
-                aria-checked={timelineTrimMode === mode}
-                aria-label={`${mode} trim mode`}
-              >
-                {mode === 'trim' ? 'Trim' : mode === 'ripple' ? 'Rip' : 'Roll'}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
       <div className={styles.timelineViewport}>
-        <div className={styles.timelineRuler}>
-          <div className={styles.timelineRulerLabel} aria-hidden="true" />
+        <div className={styles.timelineRuler} data-timeline-ruler="true">
+          <div className={styles.timelineRulerLabel}>
+            <div className={styles.timelineRulerToolSlot} data-timeline-ruler-tool-slot="true">
+              <button
+                type="button"
+                className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${snapEnabled ? styles.timelineToolButtonActive : ''}`}
+                data-tooltip="Snapping: clips, playhead, zero (M)"
+                data-timeline-control="true"
+                title="Snapping to clip edges, playhead, and zero (M)"
+                onClick={() => setSnapEnabled((value) => !value)}
+                aria-label="Toggle snapping"
+                aria-pressed={snapEnabled}
+              >
+                <Magnet size={15} />
+              </button>
+              <button
+                type="button"
+                className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${isInsertIntoClipEnabled ? styles.timelineToolButtonActive : ''}`}
+                data-tooltip="Splice insert inside clips"
+                data-timeline-control="true"
+                title="Allow insert drags to split the clip under the drop point"
+                aria-label="Toggle insert into clip"
+                aria-pressed={isInsertIntoClipEnabled}
+                onClick={() => onInsertIntoClipChange(!isInsertIntoClipEnabled)}
+              >
+                <SplitSquareHorizontal size={15} />
+              </button>
+            </div>
+          </div>
           <div className={styles.timelineRulerLane}>
             <div
               className={styles.timelineRulerInner}
               style={{ width: timelineWidth }}
+              onClick={handleTimelineSurfaceClick}
               onPointerDown={handleBeginTimelineSurfacePointerDown}
               title="Drag to move the timeline playhead"
             >
+              {hasValidInOutRange ? (
+                <span
+                  className={styles.timelineInOutRange}
+                  data-timeline-in-out-range="true"
+                  style={{
+                    left: safeInPointSec * pixelsPerSecond,
+                    width: Math.max(1, (safeOutPointSec - safeInPointSec) * pixelsPerSecond),
+                  }}
+                  aria-hidden="true"
+                />
+              ) : null}
+              {safeInPointSec !== null ? (
+                <span
+                  className={`${styles.timelineInOutMarker} ${styles.timelineInMarker}`}
+                  data-timeline-in-marker="true"
+                  style={{ left: safeInPointSec * pixelsPerSecond }}
+                  aria-hidden="true"
+                >
+                  I
+                </span>
+              ) : null}
+              {safeOutPointSec !== null ? (
+                <span
+                  className={`${styles.timelineInOutMarker} ${styles.timelineOutMarker}`}
+                  data-timeline-out-marker="true"
+                  style={{ left: safeOutPointSec * pixelsPerSecond }}
+                  aria-hidden="true"
+                >
+                  O
+                </span>
+              ) : null}
               {Array.from({ length: Math.ceil(totalDuration / rulerTickSec) + 1 }, (_, index) => (
                 <span key={index} style={{ left: index * rulerTickSec * pixelsPerSecond }}>
                   {formatWorkspaceTimecode(index * rulerTickSec, projectFps)}
@@ -1368,21 +1647,124 @@ export function WorkspaceTimeline({
         </div>
         <div className={styles.timelineTracks}>
           {timelineTracks.map((track) => {
+            const audioTrackId = isAudioTimelineTrack(track.id) ? track.id : null;
+            const videoTrackId = isVideoTimelineTrack(track.id) ? track.id : null;
+            const isAudioTrack = track.kind === 'audio' && audioTrackId !== null;
+            const isVideoTrack = track.kind === 'video' && videoTrackId !== null;
+            const isTrackMuted = audioTrackId !== null && mutedAudioTrackSet.has(audioTrackId);
+            const isTrackHidden = videoTrackId !== null && hiddenVideoTrackSet.has(videoTrackId);
+            const isTrackLocked = lockedTrackSet.has(track.id);
             const trackItems = previewItems
               .filter(({ trackId }) => trackId === track.id)
               .sort((left, right) => left.layout.startSec - right.layout.startSec);
             return (
-              <div key={track.id} className={styles.timelineTrack}>
-                <div className={styles.trackLabel}>
-                  {track.icon}
-                  <span>{track.label}</span>
-                  <Lock size={12} />
+              <div
+                key={track.id}
+                className={`${styles.timelineTrack} ${isTrackHidden ? styles.timelineTrackHidden : ''} ${isTrackMuted ? styles.timelineTrackMuted : ''} ${isTrackLocked ? styles.timelineTrackLocked : ''}`}
+              >
+                <div
+                  className={`${styles.trackLabel} ${isVideoTrack ? styles.trackLabelVideo : ''} ${isAudioTrack ? styles.trackLabelAudio : ''}`}
+                  data-timeline-track-label={track.id}
+                  data-timeline-track-hidden={isTrackHidden ? 'true' : 'false'}
+                  data-timeline-track-locked={isTrackLocked ? 'true' : 'false'}
+                  data-timeline-track-muted={isTrackMuted ? 'true' : 'false'}
+                  onContextMenu={(event) => handleOpenTrackContextMenu(event, track)}
+                  title="Right-click for track actions"
+                >
+                  <div className={styles.trackLabelMain}>
+                    {track.icon}
+                    <span>{track.label}</span>
+                  </div>
+                  <div className={`${styles.trackLabelControls} ${isAudioTrack ? styles.trackLabelControlsAudio : ''}`} data-timeline-control="true">
+                    {track.kind === 'video' && track.id === highestVideoTrackId ? (
+                      <button
+                        type="button"
+                        className={styles.trackAddButton}
+                        data-timeline-add-track="video"
+                        disabled={videoTrackCount >= maxVideoTrackCount}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onAddVideoTrack();
+                        }}
+                        title="Add video track"
+                        aria-label="Add video track"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    ) : null}
+                    {isVideoTrack && videoTrackId !== null ? (
+                      <button
+                        type="button"
+                        className={`${styles.trackIconButton} ${isTrackHidden ? styles.trackIconButtonActive : ''} ${styles.trackVisibilityButton}`}
+                        data-timeline-video-visibility={videoTrackId}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onToggleVideoTrackVisibility(videoTrackId);
+                        }}
+                        title={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
+                        aria-label={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
+                        aria-pressed={isTrackHidden}
+                      >
+                        {isTrackHidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                      </button>
+                    ) : null}
+                    {isAudioTrack && audioTrackId !== null ? (
+                      <button
+                        type="button"
+                        className={`${styles.trackIconButton} ${isTrackMuted ? styles.trackIconButtonActive : ''} ${styles.trackMuteButton}`}
+                        data-timeline-audio-mute={audioTrackId}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onToggleAudioTrackMute(audioTrackId);
+                        }}
+                        title={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
+                        aria-label={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
+                        aria-pressed={isTrackMuted}
+                      >
+                        {isTrackMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={`${styles.trackIconButton} ${isTrackLocked ? styles.trackIconButtonActive : ''} ${styles.trackLockButton}`}
+                      data-timeline-track-lock={track.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onToggleTrackLock(track.id);
+                      }}
+                      title={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
+                      aria-label={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
+                      aria-pressed={isTrackLocked}
+                    >
+                      {isTrackLocked ? <Lock size={12} /> : <Unlock size={12} />}
+                    </button>
+                    {track.kind === 'audio' && track.id === lowestAudioTrackId ? (
+                      <button
+                        type="button"
+                        className={`${styles.trackAddButton} ${styles.trackAudioAddButton}`}
+                        data-timeline-add-track="audio"
+                        disabled={audioTrackCount >= maxAudioTrackCount}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onAddAudioTrack();
+                        }}
+                        title="Add audio track"
+                        aria-label="Add audio track"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <div className={styles.trackLane}>
                   <div
                     className={styles.trackLaneContent}
                     style={{ width: timelineWidth }}
                     data-timeline-track={track.id}
+                    onDragLeave={() => setExternalDropPreview(null)}
+                    onDragOver={(event) => handleExternalDropOver(event, track.id)}
+                    onDrop={(event) => handleExternalDrop(event, track.id)}
+                    onClick={handleTimelineSurfaceClick}
                     onPointerDown={handleBeginTimelineSurfacePointerDown}
                     title="Click empty timeline space to move the playhead, or drag to select clips"
                   >
@@ -1403,6 +1785,25 @@ export function WorkspaceTimeline({
                         aria-hidden="true"
                       />
                     ) : null}
+                    {externalDropPreview?.trackId === track.id ? (
+                      <>
+                        <span
+                          className={`${styles.timelineExternalDropGuide} ${externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
+                          style={{ left: externalDropPreview.startSec * pixelsPerSecond }}
+                          aria-hidden="true"
+                        />
+                        <span
+                          className={`${styles.timelineExternalDropGhost} ${externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
+                          style={{
+                            left: externalDropPreview.startSec * pixelsPerSecond,
+                            width: Math.max(36, EXTERNAL_DROP_GHOST_DURATION_SEC * pixelsPerSecond),
+                          }}
+                          aria-hidden="true"
+                        >
+                          {externalDropPreview.isValid ? 'Insert' : 'Invalid'}
+                        </span>
+                      </>
+                    ) : null}
                     {trackItems.length ? (
                       trackItems.map(({ item, layout }, index) => (
                         <TimelineClip
@@ -1411,6 +1812,7 @@ export function WorkspaceTimeline({
                           layout={layout}
                           index={index}
                           isInteracting={Boolean(interaction && interactionMatchesItem(interaction, item))}
+                          isLocked={lockedTrackSet.has(item.track)}
                           isSelected={selectedKeys.has(selectionKeyForTimelineItem(item))}
                           activeTool={activeTimelineTool}
                           total={trackItems.length}
@@ -1420,6 +1822,7 @@ export function WorkspaceTimeline({
                           onBeginInteraction={handleBeginInteraction}
                           onCut={onCutItem}
                           onMove={onMoveItem}
+                          onOpenContextMenu={handleOpenClipContextMenu}
                           onPlayheadChange={onPlayheadChange}
                           onSelect={onSelectItem}
                         />
@@ -1435,6 +1838,68 @@ export function WorkspaceTimeline({
         </div>
         {marquee ? <span className={styles.timelineMarquee} style={marqueeRectForState(marquee)} aria-hidden="true" /> : null}
       </div>
+      {contextMenu ? (
+        <div
+          className={styles.timelineContextMenu}
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          role="menu"
+          data-timeline-control="true"
+          onContextMenu={(event) => event.preventDefault()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <span>{contextMenu.selectedClipCount} clip{contextMenu.selectedClipCount > 1 ? 's' : ''} selected</span>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!contextMenu.canUnlink}
+            onClick={() => handleContextMenuAction('unlink')}
+          >
+            <Unlink2 size={14} />
+            Unlink selected clips
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!contextMenu.canLink}
+            onClick={() => handleContextMenuAction('link')}
+          >
+            <Link2 size={14} />
+            Link selected clips
+          </button>
+        </div>
+      ) : null}
+      {trackContextMenu ? (
+        <div
+          className={styles.timelineContextMenu}
+          style={{ left: trackContextMenu.x, top: trackContextMenu.y }}
+          role="menu"
+          data-timeline-control="true"
+          onContextMenu={(event) => event.preventDefault()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <span>{trackContextMenu.label} track</span>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!trackContextMenu.canAdd}
+            onClick={() => handleTrackContextMenuAction('add')}
+          >
+            <Plus size={14} />
+            Add {trackContextMenu.kind} track
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!trackContextMenu.canDelete}
+            onClick={() => handleTrackContextMenuAction('delete')}
+          >
+            <Trash2 size={14} />
+            Delete {trackContextMenu.kind} track
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

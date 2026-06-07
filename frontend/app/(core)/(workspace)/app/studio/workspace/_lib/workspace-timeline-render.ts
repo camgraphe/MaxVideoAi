@@ -5,12 +5,14 @@ import type {
   WorkspaceTimelineTrack,
 } from './workspace-types';
 import {
+  isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
+  workspaceTimelineAudioTrackIndex,
   workspaceTimelineVideoTrackIndex,
 } from './workspace-timeline-tracks';
+import { formatWorkspaceTimecode } from './workspace-timecode';
 
 const WORKSPACE_TIMELINE_RENDER_VERSION = 1;
-const AUDIO_TRACK_ORDER: WorkspaceTimelineTrack[] = ['linked-audio', 'music', 'voiceover', 'sfx'];
 
 type WorkspaceTimelineRenderIssueCode =
   | 'empty_timeline'
@@ -61,6 +63,15 @@ export type WorkspaceTimelineRenderTrack = {
   durationSec: number;
 };
 
+export type WorkspaceTimelineExportRangeMode = 'sequence' | 'in-out';
+
+export type WorkspaceTimelineRenderExportRange = {
+  mode: WorkspaceTimelineExportRangeMode;
+  startSec: number;
+  endSec: number;
+  durationSec: number;
+};
+
 export type WorkspaceTimelineRenderManifest = {
   version: typeof WORKSPACE_TIMELINE_RENDER_VERSION;
   source: 'maxvideoai-editor';
@@ -69,6 +80,7 @@ export type WorkspaceTimelineRenderManifest = {
   createdAt: string;
   status: 'ready' | 'blocked';
   durationSec: number;
+  exportRange: WorkspaceTimelineRenderExportRange;
   tracks: WorkspaceTimelineRenderTrack[];
   issues: WorkspaceTimelineRenderIssue[];
 };
@@ -92,7 +104,12 @@ function timelineVideoTrackIndex(track: WorkspaceTimelineTrack): number {
 function timelineTrackOrderForItems(items: WorkspaceTimelineItem[]): WorkspaceTimelineTrack[] {
   const videoTracks = Array.from(new Set(items.map((item) => item.track).filter(isVideoTimelineTrack)))
     .sort((left, right) => timelineVideoTrackIndex(left) - timelineVideoTrackIndex(right));
-  return [...(videoTracks.length ? videoTracks : ['video' as WorkspaceTimelineTrack]), ...AUDIO_TRACK_ORDER];
+  const audioTracks = Array.from(new Set(items.map((item) => item.track).filter(isWorkspaceTimelineAudioTrack)))
+    .sort((left, right) => workspaceTimelineAudioTrackIndex(left) - workspaceTimelineAudioTrackIndex(right));
+  return [
+    ...(videoTracks.length ? videoTracks : ['video' as WorkspaceTimelineTrack]),
+    ...(audioTracks.length ? audioTracks : ['audio' as WorkspaceTimelineTrack]),
+  ];
 }
 
 function mediaKindForItem(item: WorkspaceTimelineItem): WorkspaceTimelineRenderClip['mediaKind'] {
@@ -112,6 +129,63 @@ function mediaUrlForItem(nodes: WorkspaceGraphNode[], item: WorkspaceTimelineIte
   if (item.mediaUrl) return item.mediaUrl;
   const node = nodeForItem(nodes, item);
   return node?.data.output?.url ?? node?.data.asset?.url ?? null;
+}
+
+function timelineDurationForItems(items: WorkspaceTimelineItem[]): number {
+  return roundTimelineSeconds(items.reduce((durationSec, item) => Math.max(durationSec, itemEndSec(item)), 0));
+}
+
+function exportRangeForItems(
+  items: WorkspaceTimelineItem[],
+  requestedRange?: {
+    mode: WorkspaceTimelineExportRangeMode;
+    startSec?: number | null;
+    endSec?: number | null;
+  }
+): WorkspaceTimelineRenderExportRange {
+  const sequenceEndSec = timelineDurationForItems(items);
+  if (requestedRange?.mode === 'in-out') {
+    const startSec = roundTimelineSeconds(Math.max(0, Math.min(requestedRange.startSec ?? 0, sequenceEndSec)));
+    const endSec = roundTimelineSeconds(Math.max(startSec, Math.min(requestedRange.endSec ?? sequenceEndSec, sequenceEndSec)));
+    if (endSec > startSec) {
+      return {
+        mode: 'in-out',
+        startSec,
+        endSec,
+        durationSec: roundTimelineSeconds(endSec - startSec),
+      };
+    }
+  }
+
+  return {
+    mode: 'sequence',
+    startSec: 0,
+    endSec: sequenceEndSec,
+    durationSec: sequenceEndSec,
+  };
+}
+
+function trimItemToExportRange(item: WorkspaceTimelineItem, exportRange: WorkspaceTimelineRenderExportRange): WorkspaceTimelineItem | null {
+  const overlapStartSec = Math.max(item.startSec, exportRange.startSec);
+  const overlapEndSec = Math.min(itemEndSec(item), exportRange.endSec);
+  if (overlapEndSec <= overlapStartSec) return null;
+
+  const trimBeforeSec = roundTimelineSeconds(overlapStartSec - item.startSec);
+  const durationSec = roundTimelineSeconds(overlapEndSec - overlapStartSec);
+  return {
+    ...item,
+    startSec: roundTimelineSeconds(overlapStartSec - exportRange.startSec),
+    durationSec,
+    sourceStartSec: roundTimelineSeconds((item.sourceStartSec ?? 0) + trimBeforeSec),
+    transitionOut: overlapEndSec < itemEndSec(item) ? null : item.transitionOut,
+  };
+}
+
+function itemsForExportRange(items: WorkspaceTimelineItem[], exportRange: WorkspaceTimelineRenderExportRange): WorkspaceTimelineItem[] {
+  return items.flatMap((item) => {
+    const exportItem = trimItemToExportRange(item, exportRange);
+    return exportItem ? [exportItem] : [];
+  });
 }
 
 function issueForUnavailableItem(nodes: WorkspaceGraphNode[], item: WorkspaceTimelineItem): WorkspaceTimelineRenderIssue | null {
@@ -212,7 +286,7 @@ function overlapIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderI
 
 function linkedAudioIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderIssue[] {
   return items.flatMap((item) => {
-    if (item.track !== 'linked-audio' || !item.linkedGroupId) return [];
+    if (!isWorkspaceTimelineAudioTrack(item.track) || !item.linkedGroupId) return [];
     const linkedVideo = items.some((candidate) => isVideoTimelineTrack(candidate.track) && candidate.linkedGroupId === item.linkedGroupId);
     if (linkedVideo) return [];
     return [{
@@ -253,9 +327,16 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   projectName: string;
   projectSettings?: WorkspaceProjectSettings;
   createdAt?: string;
+  exportRange?: {
+    mode: WorkspaceTimelineExportRangeMode;
+    startSec?: number | null;
+    endSec?: number | null;
+  };
 }): WorkspaceTimelineRenderManifest {
+  const exportRange = exportRangeForItems(params.items, params.exportRange);
+  const exportItems = itemsForExportRange(params.items, exportRange);
   const issues: WorkspaceTimelineRenderIssue[] = [];
-  if (!params.items.length) {
+  if (!exportItems.length) {
     issues.push({
       code: 'empty_timeline',
       severity: 'blocking',
@@ -263,17 +344,17 @@ export function buildWorkspaceTimelineRenderManifest(params: {
     });
   }
 
-  params.items.forEach((item) => {
+  exportItems.forEach((item) => {
     const issue = issueForUnavailableItem(params.nodes, item);
     if (issue) issues.push(issue);
   });
-  issues.push(...overlapIssues(params.items), ...linkedAudioIssues(params.items), ...transitionIssues(params.items));
+  issues.push(...overlapIssues(exportItems), ...linkedAudioIssues(exportItems), ...transitionIssues(exportItems));
 
-  const tracks = timelineTrackOrderForItems(params.items).map((track): WorkspaceTimelineRenderTrack => {
-    const clips = params.items
+  const tracks = timelineTrackOrderForItems(exportItems).map((track): WorkspaceTimelineRenderTrack => {
+    const clips = exportItems
       .filter((item) => item.track === track)
       .sort((left, right) => left.startSec - right.startSec)
-      .map((item) => renderClipForItem(params.nodes, params.items, item))
+      .map((item) => renderClipForItem(params.nodes, exportItems, item))
       .filter((clip): clip is WorkspaceTimelineRenderClip => Boolean(clip));
     return {
       id: track,
@@ -281,7 +362,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
       durationSec: clips.reduce((durationSec, clip) => Math.max(durationSec, clip.endSec), 0),
     };
   });
-  const durationSec = roundTimelineSeconds(tracks.reduce((maxDurationSec, track) => Math.max(maxDurationSec, track.durationSec), 0));
+  const durationSec = exportRange.durationSec;
   const status = issues.some((issue) => issue.severity === 'blocking') ? 'blocked' : 'ready';
 
   return {
@@ -292,6 +373,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
     createdAt: params.createdAt ?? new Date().toISOString(),
     status,
     durationSec,
+    exportRange,
     tracks,
     issues,
   };
@@ -299,6 +381,36 @@ export function buildWorkspaceTimelineRenderManifest(params: {
 
 export function serializeWorkspaceTimelineRenderManifest(manifest: WorkspaceTimelineRenderManifest): string {
   return JSON.stringify(manifest, null, 2);
+}
+
+function edlClipSort(left: WorkspaceTimelineRenderClip, right: WorkspaceTimelineRenderClip): number {
+  return left.startSec - right.startSec || left.track.localeCompare(right.track) || left.id.localeCompare(right.id);
+}
+
+export function buildWorkspaceTimelineEdl(manifest: WorkspaceTimelineRenderManifest): string {
+  const fps = manifest.projectSettings?.fps ?? 24;
+  const clips = manifest.tracks
+    .flatMap((track) => track.clips)
+    .filter((clip) => clip.mediaKind !== 'audio')
+    .sort(edlClipSort);
+  const lines = [
+    `TITLE: ${manifest.projectName}`,
+    'FCM: NON-DROP FRAME',
+    `* EXPORT RANGE: ${manifest.exportRange.mode.toUpperCase()} ${formatWorkspaceTimecode(manifest.exportRange.startSec, fps)} - ${formatWorkspaceTimecode(manifest.exportRange.endSec, fps)}`,
+    '',
+  ];
+
+  clips.forEach((clip, index) => {
+    const eventNumber = String(index + 1).padStart(3, '0');
+    lines.push(
+      `${eventNumber}  TIMELINE V     C        ${formatWorkspaceTimecode(clip.sourceStartSec, fps)} ${formatWorkspaceTimecode(clip.sourceEndSec, fps)} ${formatWorkspaceTimecode(clip.startSec, fps)} ${formatWorkspaceTimecode(clip.endSec, fps)}`,
+      `* FROM CLIP: ${clip.title}`,
+      `* SOURCE FILE: ${clip.mediaUrl}`,
+      ''
+    );
+  });
+
+  return `${lines.join('\n').trimEnd()}\n`;
 }
 
 export function workspaceTimelineRenderReadinessLabel(manifest: WorkspaceTimelineRenderManifest): string {

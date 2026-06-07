@@ -1,7 +1,8 @@
 .editorShell {
   height: 100vh;
   display: grid;
-  grid-template-rows: 54px 36px minmax(440px, 1fr) 252px;
+  --timeline-panel-fallback-height: 252px;
+  grid-template-rows: 54px 36px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(9, 13, 24, 0.98), rgba(5, 9, 17, 1)),
@@ -36,7 +37,6 @@
 }
 
 .brandCluster p,
-.timelineTopbar p,
 .panelTitle,
 .nodeTitle {
   margin: 0;
@@ -1042,8 +1042,8 @@ button.assetBrowserCard {
   width: min(100%, 1040px);
   height: 100%;
   min-height: 0;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 8px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
 }
 
 .programMonitorHeader,
@@ -1118,6 +1118,85 @@ button.assetBrowserCard {
   overflow: auto;
   overscroll-behavior: contain;
   place-items: center;
+}
+
+.viewerPlaybackControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+}
+
+.viewerPlaybackControls button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #dbeafe;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.viewerPlaybackControls button:hover,
+.viewerPlaybackControls button:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: rgba(30, 41, 59, 0.96);
+  color: #f8fafc;
+  outline: none;
+}
+
+.viewerPlaybackControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.viewerPlaybackControls .viewerPlaybackPrimary {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(129, 140, 248, 0.3);
+  background: rgba(30, 41, 59, 0.92);
+}
+
+.viewerPlaybackDivider {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.viewerPlaybackControls .viewerMarkButton {
+  width: 30px;
+  height: 30px;
+  color: #c4b5fd;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.viewerPlaybackControls .viewerMarkClearButton {
+  width: auto;
+  height: 30px;
+  padding: 0 10px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.viewerInOutSummary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 16px;
+  color: #94a3b8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
 }
 
 .programFrame {
@@ -1238,6 +1317,10 @@ button.assetBrowserCard {
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
 }
 
+.exportDialog {
+  width: min(480px, 100%);
+}
+
 .sequenceSettingsHeader {
   display: flex;
   align-items: center;
@@ -1305,6 +1388,80 @@ button.assetBrowserCard {
   font: inherit;
   font-size: 12px;
   text-transform: none;
+}
+
+.exportDialogBody {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.exportRangeOptions {
+  display: grid;
+  gap: 8px;
+}
+
+.exportRangeOptions label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.62);
+  cursor: pointer;
+}
+
+.exportRangeOptions input {
+  accent-color: #8b5cf6;
+}
+
+.exportRangeOptions span {
+  display: grid;
+  gap: 3px;
+}
+
+.exportRangeOptions strong {
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.exportRangeOptions small {
+  color: #94a3b8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exportRangeDisabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.exportSummaryGrid {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 10px;
+  border-radius: 9px;
+  background: rgba(2, 6, 23, 0.38);
+}
+
+.exportSummaryGrid span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.exportSummaryGrid strong {
+  color: #f8fafc;
+  font-size: 11px;
+}
+
+.exportDialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 16px 16px;
 }
 
 .assetLibraryOverlay {
@@ -1492,6 +1649,14 @@ button.assetBrowserCard {
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--node-accent) 45%, transparent),
     0 26px 80px rgba(0, 0, 0, 0.42);
+}
+
+.graphNodeTimelineDraggable {
+  cursor: grab;
+}
+
+.graphNodeTimelineDraggable:active {
+  cursor: grabbing;
 }
 
 .nodeResizeControl {
@@ -2239,6 +2404,46 @@ button.assetBrowserCard {
   background: rgba(5, 10, 18, 0.98);
 }
 
+.timelineResizeHandle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.timelineResizeHandle::before {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 58px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.34);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.54), 0 0 12px rgba(99, 102, 241, 0.22);
+  content: '';
+  opacity: 0.72;
+  transform: translateX(-50%);
+}
+
+.timelineResizeHandle:hover::before,
+.timelineResizeHandle:focus-visible::before {
+  background: rgba(196, 181, 253, 0.74);
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, 0.28), 0 0 14px rgba(124, 58, 237, 0.48);
+  opacity: 1;
+}
+
+.timelineResizeHandle:focus-visible {
+  outline: 1px solid rgba(196, 181, 253, 0.72);
+  outline-offset: -2px;
+}
+
 .timelineMarquee {
   position: absolute;
   z-index: 30;
@@ -2249,25 +2454,80 @@ button.assetBrowserCard {
   pointer-events: none;
 }
 
+.timelineContextMenu {
+  position: fixed;
+  z-index: 120;
+  display: grid;
+  width: 212px;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.98);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(15, 23, 42, 0.8);
+}
+
+.timelineContextMenu > span {
+  padding: 3px 6px 5px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.timelineContextMenu button {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 760;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timelineContextMenu button:hover,
+.timelineContextMenu button:focus-visible {
+  background: rgba(59, 130, 246, 0.18);
+  color: #f8fafc;
+  outline: none;
+}
+
+.timelineContextMenu button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
 .timelineTopbar {
   flex: 0 0 44px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(118px, 1fr) auto minmax(118px, 1fr);
   height: 44px;
   align-items: center;
-  justify-content: space-between;
+  column-gap: 12px;
   padding: 0 18px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.timelineTopbar p {
-  color: #f8fafc;
-  font-size: 12px;
-  font-weight: 740;
+.timelineTimecodeCluster {
+  display: flex;
+  min-width: 118px;
+  align-items: center;
 }
 
-.timelineTopbar span {
-  color: #94a3b8;
-  font-size: 11px;
+.timelineCurrentTimecode {
+  color: #e2e8f0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .timelineTransport {
@@ -2275,10 +2535,18 @@ button.assetBrowserCard {
   flex-wrap: wrap;
   gap: 7px;
   align-items: center;
+  justify-content: center;
+  grid-column: 2;
+}
+
+.timelineZoomSlot {
+  display: flex;
+  grid-column: 3;
   justify-content: flex-end;
 }
 
-.timelineTransport button {
+.timelineTransport button,
+.timelineZoomControl button {
   position: relative;
   display: grid;
   width: 30px;
@@ -2291,7 +2559,8 @@ button.assetBrowserCard {
   cursor: pointer;
 }
 
-.timelineTransport button:disabled {
+.timelineTransport button:disabled,
+.timelineZoomControl button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
@@ -2303,7 +2572,7 @@ button.assetBrowserCard {
   background: rgba(79, 70, 229, 0.76);
 }
 
-.timelineModeControl {
+.timelineToolGroup {
   display: flex;
   gap: 2px;
   overflow: hidden;
@@ -2312,24 +2581,18 @@ button.assetBrowserCard {
   background: rgba(15, 23, 42, 0.72);
 }
 
-.timelineModeControl button {
-  width: auto;
-  min-width: 34px;
+.timelineToolGroup button {
+  width: 28px;
+  min-width: 28px;
   height: 28px;
-  padding: 0 7px;
+  padding: 0;
   border-radius: 0;
   background: transparent;
   color: #94a3b8;
-  font-size: 10px;
-  font-weight: 760;
 }
 
-.timelineModeControl .timelineModeActive {
-  background: rgba(99, 102, 241, 0.84);
-  color: #f8fafc;
-}
-
-.timelineTransport .timelineToolButtonActive {
+.timelineTransport .timelineToolButtonActive,
+.timelineRulerToolButton.timelineToolButtonActive {
   border: 1px solid rgba(129, 140, 248, 0.82);
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.92), rgba(37, 99, 235, 0.78));
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
@@ -2391,7 +2654,7 @@ button.assetBrowserCard {
   grid-template-columns: var(--timeline-track-label-width) minmax(0, 1fr);
   width: var(--timeline-scroll-width);
   min-width: 100%;
-  height: 24px;
+  height: 30px;
   background: rgba(5, 10, 18, 0.98);
   color: #94a3b8;
   font-size: 10px;
@@ -2405,6 +2668,33 @@ button.assetBrowserCard {
   background: rgba(5, 10, 18, 0.98);
 }
 
+.timelineRulerToolSlot {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.timelineRulerToolButton {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(30, 41, 59, 0.74);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.timelineRulerToolButton:focus-visible,
+.timelineRulerToolButton:hover {
+  background: rgba(51, 65, 85, 0.86);
+  color: #f8fafc;
+  outline: none;
+}
+
 .timelineRulerLane {
   min-width: 0;
   padding: 0 var(--timeline-track-lane-padding-x);
@@ -2412,18 +2702,43 @@ button.assetBrowserCard {
 
 .timelineRulerInner {
   position: relative;
-  height: 24px;
+  height: 30px;
   cursor: ew-resize;
   touch-action: none;
 }
 
 .timelineRulerInner span {
   position: absolute;
-  top: 4px;
+  top: 7px;
   transform: translateX(-50%);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.timelineRulerInner .timelineInOutRange {
+  top: 6px;
+  height: 22px;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 5px;
+  background: rgba(124, 58, 237, 0.12);
+  transform: none;
+}
+
+.timelineRulerInner .timelineInOutMarker {
+  top: 3px;
+  z-index: 4;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid rgba(196, 181, 253, 0.46);
+  border-radius: 5px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #f5f3ff;
+  font-size: 10px;
+  font-weight: 900;
+  transform: translateX(-50%);
 }
 
 .timelineScrubber {
@@ -2456,7 +2771,8 @@ button.assetBrowserCard {
   left: 0;
   z-index: 10;
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  justify-content: space-between;
   gap: 8px;
   padding: 0 14px;
   border-right: 1px solid rgba(148, 163, 184, 0.1);
@@ -2465,8 +2781,131 @@ button.assetBrowserCard {
   font-size: 11px;
 }
 
-.trackLabel span {
+.trackLabelMain {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
   flex: 1;
+}
+
+.trackLabelVideo .trackLabelMain {
+  align-self: flex-end;
+  padding-bottom: 6px;
+}
+
+.trackLabelAudio .trackLabelMain {
+  align-self: flex-start;
+  padding-top: 6px;
+}
+
+.trackLabelMain span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackLabelControls {
+  display: grid;
+  grid-template-columns: repeat(2, 18px);
+  grid-template-rows: repeat(2, 18px);
+  gap: 2px;
+  width: 40px;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-self: center;
+  place-items: center;
+}
+
+.trackAddButton,
+.trackIconButton {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid rgba(129, 140, 248, 0.34);
+  border-radius: 6px;
+  background: rgba(79, 70, 229, 0.42);
+  color: #e0e7ff;
+  cursor: pointer;
+}
+
+.trackAddButton {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.trackAudioAddButton {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.trackLabelControlsAudio .trackMuteButton,
+.trackLabelControlsAudio .trackLockButton {
+  grid-row: 1;
+}
+
+.trackVisibilityButton,
+.trackMuteButton {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.trackLockButton {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.trackAddButton:hover,
+.trackAddButton:focus-visible,
+.trackIconButton:hover,
+.trackIconButton:focus-visible {
+  border-color: rgba(167, 139, 250, 0.78);
+  background: rgba(124, 58, 237, 0.66);
+  color: #f8fafc;
+  outline: none;
+}
+
+.trackIconButton {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.62);
+  color: #94a3b8;
+}
+
+.trackIconButtonActive {
+  border-color: rgba(167, 139, 250, 0.72);
+  background: rgba(76, 29, 149, 0.72);
+  color: #f5f3ff;
+}
+
+.trackAddButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.timelineTrackHidden .trackLane {
+  overflow: visible;
+  background:
+    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.05) 0, rgba(148, 163, 184, 0.05) 1px, transparent 1px, transparent 72px),
+    rgba(15, 23, 42, 0.11);
+}
+
+.timelineTrackHidden .timelineClip {
+  opacity: 0.55;
+}
+
+.timelineTrackMuted .timelineClipAudio,
+.timelineTrackMuted .timelineWaveform {
+  opacity: 0.46;
+}
+
+.timelineTrackLocked .trackLabel {
+  color: #f1f5f9;
+}
+
+.timelineClip[data-timeline-locked='true'] {
+  cursor: default;
 }
 
 .trackLane {
@@ -2552,6 +2991,44 @@ button.assetBrowserCard {
   background: #38bdf8;
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.28), 0 0 18px rgba(14, 165, 233, 0.62);
   pointer-events: none;
+}
+
+.timelineExternalDropGuide {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  z-index: 6;
+  width: 2px;
+  border-radius: 999px;
+  background: #8b5cf6;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.34), 0 0 18px rgba(139, 92, 246, 0.62);
+  pointer-events: none;
+}
+
+.timelineExternalDropGhost {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  display: grid;
+  height: 34px;
+  place-items: center;
+  border: 1px dashed rgba(167, 139, 250, 0.76);
+  border-radius: 7px;
+  background: rgba(88, 28, 135, 0.28);
+  color: #ddd6fe;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.timelineExternalDropInvalid {
+  border-color: rgba(248, 113, 113, 0.78);
+  background: rgba(127, 29, 29, 0.34);
+  color: #fecaca;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.22);
 }
 
 .timelineClip {
@@ -2755,7 +3232,8 @@ button.assetBrowserCard {
 }
 
 .viewerFocus {
-  grid-template-rows: 54px 36px minmax(300px, 0.65fr) minmax(320px, 0.45fr);
+  --timeline-panel-fallback-height: minmax(320px, 0.45fr);
+  grid-template-rows: 54px 36px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
 }
 
 .viewerFocus .librarySidebar {
@@ -2794,7 +3272,8 @@ button.assetBrowserCard {
 
 @media (max-width: 1120px) {
   .editorShell {
-    grid-template-rows: auto 36px minmax(520px, 1fr) 260px;
+    --timeline-panel-fallback-height: 260px;
+    grid-template-rows: auto 36px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   }
 
   .editorTopbar {
@@ -2820,7 +3299,8 @@ button.assetBrowserCard {
 @media (max-width: 760px) {
   .editorShell {
     height: 100dvh;
-    grid-template-rows: auto auto 1fr 260px;
+    --timeline-panel-fallback-height: 260px;
+    grid-template-rows: auto auto minmax(260px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   }
 
   .editorTopbar {

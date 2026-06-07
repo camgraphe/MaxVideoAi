@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
 import { Download, GitBranch, PanelRight, Play, RefreshCcw, Settings, Settings2, Share2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
 import { WorkspaceCanvas, type WorkspaceHandleDropRequest, type WorkspacePaletteDropRequest } from './_components/WorkspaceCanvas.client';
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
+import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
 import { WorkspaceProjectSettingsDialog } from './_components/WorkspaceProjectSettingsDialog';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
@@ -34,8 +35,10 @@ import type {
   WorkspaceProjectSettings,
   WorkspaceShotSettings,
   WorkspaceTemplateId,
-  WorkspaceTimelineTrack,
   WorkspaceTimelineItem,
+  WorkspaceTimelineAudioTrack,
+  WorkspaceTimelineTrack,
+  WorkspaceTimelineVideoTrack,
 } from './_lib/workspace-types';
 import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from './_lib/workspace-handle-drop';
 import {
@@ -59,32 +62,44 @@ import {
   buildWorkspaceTimelineItemsForOutput,
   deleteWorkspaceTimelineItem,
   insertWorkspaceTimelineItems,
+  linkWorkspaceTimelineSelection,
   moveWorkspaceTimelineItem,
+  moveWorkspaceTimelineSelectionWithMode,
   normalizeWorkspaceTimelineIdentities,
-  positionWorkspaceTimelineItem,
-  positionWorkspaceTimelineItems,
   resizeWorkspaceTimelineItem,
   splitWorkspaceTimelineItem,
-  toggleWorkspaceTimelineCrossfade,
-  type WorkspaceTimelineInsertMode,
+  unlinkWorkspaceTimelineSelection,
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
 } from './_lib/workspace-timeline-editing';
 import {
+  buildWorkspaceTimelineEdl,
   buildWorkspaceTimelineRenderManifest,
   serializeWorkspaceTimelineRenderManifest,
+  type WorkspaceTimelineExportRangeMode,
   workspaceTimelineRenderReadinessLabel,
 } from './_lib/workspace-timeline-render';
 import {
+  isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
+  normalizeWorkspaceTimelineTrack,
+  workspaceTimelineAudioTrackId,
+  workspaceTimelineAudioTrackIndex,
+  workspaceTimelineTrackLabel,
+  workspaceTimelineVideoTrackId,
   workspaceTimelineVideoTrackIndex,
 } from './_lib/workspace-timeline-tracks';
+import { formatWorkspaceTimecode } from './_lib/workspace-timecode';
 import styles from './maxvideoai-editor.module.css';
 
 const STORAGE_KEY = 'maxvideoai.editor.workspace.v1';
 const RENDER_MANIFEST_STORAGE_KEY = 'maxvideoai.editor.timelineRender.v1';
 const TIMELINE_HISTORY_LIMIT = 50;
 const MAX_TIMELINE_VIDEO_TRACKS = 4;
+const MIN_TIMELINE_AUDIO_TRACKS = 3;
+const MAX_TIMELINE_AUDIO_TRACKS = 8;
+const MIN_TIMELINE_PANEL_HEIGHT = 220;
+const MAX_TIMELINE_PANEL_HEIGHT = 620;
 const STALE_EMPTY_DEMO_AUDIO_URL = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
 
 type PersistedWorkspaceState = {
@@ -94,7 +109,14 @@ type PersistedWorkspaceState = {
   activeTemplateId: WorkspaceTemplateId;
   projectSettings: WorkspaceProjectSettings;
   focusMode?: WorkspaceFocusMode;
+  audioTrackCount?: number;
+  hiddenVideoTracks?: WorkspaceTimelineVideoTrack[];
+  lockedTimelineTracks?: WorkspaceTimelineTrack[];
+  mutedAudioTracks?: WorkspaceTimelineAudioTrack[];
   videoTrackCount?: number;
+  timelinePanelHeight?: number | null;
+  timelineInPointSec?: number | null;
+  timelineOutPointSec?: number | null;
 };
 
 type TimelineHistoryState = {
@@ -103,6 +125,7 @@ type TimelineHistoryState = {
 };
 
 type WorkspaceFocusMode = 'canvas' | 'viewer';
+type WorkspaceEditorSurface = 'canvas' | 'timeline';
 
 const OUTPUT_ONLY_SOURCE_HANDLES: Partial<Record<WorkspaceNodeKind, WorkspaceEdgeKind>> = {
   'asset-image': 'reference',
@@ -143,6 +166,90 @@ function playableOutputTimelineUrl(output: WorkspaceOutputMetadata): string | nu
     return isPlayableImageUrl(imageUrl) ? imageUrl : null;
   }
   return isPlayableVideoUrl(output.url) ? output.url ?? null : null;
+}
+
+function workspaceTimelineItemsCompatibleWithTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): boolean {
+  const hasVisualItem = items.some((item) => isWorkspaceTimelineVideoTrack(item.track) && item.mediaKind !== 'audio');
+  const hasOnlyAudioItems = items.every((item) => item.mediaKind === 'audio' || isWorkspaceTimelineAudioTrack(item.track));
+  return isWorkspaceTimelineVideoTrack(track) ? hasVisualItem : isWorkspaceTimelineAudioTrack(track) && hasOnlyAudioItems;
+}
+
+function retargetWorkspaceTimelineItemsForTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): WorkspaceTimelineItem[] {
+  if (isWorkspaceTimelineVideoTrack(track)) {
+    return items.map((item) => (isWorkspaceTimelineVideoTrack(item.track) ? { ...item, track } : item));
+  }
+  if (isWorkspaceTimelineAudioTrack(track)) {
+    return items.map((item) => (item.mediaKind === 'audio' || isWorkspaceTimelineAudioTrack(item.track) ? { ...item, track } : item));
+  }
+  return items;
+}
+
+function deleteWorkspaceTimelineTrackItems(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): WorkspaceTimelineItem[] {
+  if (isWorkspaceTimelineVideoTrack(track)) {
+    const deletedIndex = workspaceTimelineVideoTrackIndex(track);
+    return items
+      .filter((item) => item.track !== track)
+      .map((item) => {
+        if (!isWorkspaceTimelineVideoTrack(item.track)) return item;
+        const itemTrackIndex = workspaceTimelineVideoTrackIndex(item.track);
+        if (itemTrackIndex <= deletedIndex) return item;
+        return {
+          ...item,
+          track: workspaceTimelineVideoTrackId(itemTrackIndex - 1),
+        };
+      });
+  }
+
+  const deletedIndex = workspaceTimelineAudioTrackIndex(track);
+  return items
+    .filter((item) => item.track !== track)
+    .map((item) => {
+      if (!isWorkspaceTimelineAudioTrack(item.track)) return item;
+      const itemTrackIndex = workspaceTimelineAudioTrackIndex(item.track);
+      if (itemTrackIndex <= deletedIndex) return item;
+      return {
+        ...item,
+        track: workspaceTimelineAudioTrackId(itemTrackIndex - 1),
+      };
+    });
+}
+
+function deleteWorkspaceTimelineTrackIds(trackIds: WorkspaceTimelineTrack[], track: WorkspaceTimelineTrack): WorkspaceTimelineTrack[] {
+  const nextTrackIds = trackIds
+    .filter((trackId) => trackId !== track)
+    .map((trackId) => {
+      if (isWorkspaceTimelineVideoTrack(track) && isWorkspaceTimelineVideoTrack(trackId)) {
+        const deletedIndex = workspaceTimelineVideoTrackIndex(track);
+        const trackIndex = workspaceTimelineVideoTrackIndex(trackId);
+        return trackIndex > deletedIndex ? workspaceTimelineVideoTrackId(trackIndex - 1) : trackId;
+      }
+      if (isWorkspaceTimelineAudioTrack(track) && isWorkspaceTimelineAudioTrack(trackId)) {
+        const deletedIndex = workspaceTimelineAudioTrackIndex(track);
+        const trackIndex = workspaceTimelineAudioTrackIndex(trackId);
+        return trackIndex > deletedIndex ? workspaceTimelineAudioTrackId(trackIndex - 1) : trackId;
+      }
+      return trackId;
+    });
+  return Array.from(new Set(nextTrackIds));
+}
+
+function timelineTrackHasClipAt(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, seconds: number): boolean {
+  return items.some((item) => (
+    item.track === track &&
+    seconds > item.startSec &&
+    seconds < item.startSec + item.durationSec
+  ));
+}
+
+function workspaceTimelineCutPoints(items: WorkspaceTimelineItem[]): number[] {
+  const cutPoints = new Set<number>([0]);
+  items
+    .filter((item) => isWorkspaceTimelineVideoTrack(item.track))
+    .forEach((item) => {
+      cutPoints.add(Math.round(item.startSec * 1_000_000) / 1_000_000);
+      cutPoints.add(Math.round((item.startSec + item.durationSec) * 1_000_000) / 1_000_000);
+    });
+  return Array.from(cutPoints).sort((left, right) => left - right);
 }
 
 function normalizePlayableAudioUrl(url?: string | null): string | null {
@@ -283,11 +390,13 @@ function normalizeWorkspaceEdgeTypes(edges: WorkspaceGraphEdge[]): WorkspaceGrap
 
 function normalizeTimelineMediaUrls(nodes: WorkspaceGraphNode[], items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
   return items.map((item) => {
+    const track = normalizeWorkspaceTimelineTrack(item.track);
     const normalizedItem: WorkspaceTimelineItem = {
       ...item,
+      track,
       sourceStartSec: item.sourceStartSec ?? 0,
       sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
-      mediaKind: item.mediaKind ?? (item.track === 'linked-audio' || item.track === 'music' || item.track === 'voiceover' || item.track === 'sfx' ? 'audio' : 'video'),
+      mediaKind: item.mediaKind ?? (isWorkspaceTimelineAudioTrack(track) ? 'audio' : 'video'),
     };
     if (normalizedItem.mediaUrl && normalizedItem.mediaUrl !== STALE_EMPTY_DEMO_AUDIO_URL) return normalizedItem;
     const sourceNode = nodes.find((node) => node.id === item.outputNodeId);
@@ -313,9 +422,98 @@ function videoTrackCountForTimelineItems(items: WorkspaceTimelineItem[]): number
   return Math.max(1, ...items.map((item) => workspaceTimelineVideoTrackIndex(item.track)));
 }
 
+function audioTrackCountForTimelineItems(items: WorkspaceTimelineItem[]): number {
+  return Math.max(MIN_TIMELINE_AUDIO_TRACKS, ...items.map((item) => workspaceTimelineAudioTrackIndex(item.track)));
+}
+
 function coerceVideoTrackCount(value: unknown, items: WorkspaceTimelineItem[]): number {
   const requestedCount = typeof value === 'number' ? value : 1;
   return Math.max(1, Math.min(MAX_TIMELINE_VIDEO_TRACKS, Math.max(requestedCount, videoTrackCountForTimelineItems(items))));
+}
+
+function coerceAudioTrackCount(value: unknown, items: WorkspaceTimelineItem[]): number {
+  const requestedCount = typeof value === 'number' ? value : MIN_TIMELINE_AUDIO_TRACKS;
+  return Math.max(MIN_TIMELINE_AUDIO_TRACKS, Math.min(MAX_TIMELINE_AUDIO_TRACKS, Math.max(requestedCount, audioTrackCountForTimelineItems(items))));
+}
+
+function coerceTimelinePanelHeight(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return Math.max(MIN_TIMELINE_PANEL_HEIGHT, Math.min(MAX_TIMELINE_PANEL_HEIGHT, Math.round(value)));
+}
+
+function coerceTimelineMarker(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * 1000) / 1000;
+}
+
+function coerceTimelineTrackList(value: unknown, videoTrackCount: number, audioTrackCount: number): WorkspaceTimelineTrack[] {
+  if (!Array.isArray(value)) return [];
+  const normalizedTracks = value
+    .map((track) => normalizeWorkspaceTimelineTrack(String(track)))
+    .filter((track) => {
+      if (isWorkspaceTimelineVideoTrack(track)) return workspaceTimelineVideoTrackIndex(track) <= videoTrackCount;
+      return workspaceTimelineAudioTrackIndex(track) <= audioTrackCount;
+    });
+  return Array.from(new Set(normalizedTracks));
+}
+
+function coerceHiddenVideoTracks(value: unknown, videoTrackCount: number): WorkspaceTimelineVideoTrack[] {
+  return coerceTimelineTrackList(value, videoTrackCount, MIN_TIMELINE_AUDIO_TRACKS)
+    .filter((track): track is WorkspaceTimelineVideoTrack => isWorkspaceTimelineVideoTrack(track));
+}
+
+function coerceMutedAudioTracks(value: unknown, audioTrackCount: number): WorkspaceTimelineAudioTrack[] {
+  return coerceTimelineTrackList(value, MAX_TIMELINE_VIDEO_TRACKS, audioTrackCount)
+    .filter((track): track is WorkspaceTimelineAudioTrack => isWorkspaceTimelineAudioTrack(track));
+}
+
+function timelineSelectionTouchesLockedTrack(items: WorkspaceTimelineItem[], itemIds: string[], lockedTracks: WorkspaceTimelineTrack[]): boolean {
+  if (!itemIds.length || !lockedTracks.length) return false;
+  const selectedItemIds = new Set(itemIds);
+  const selectedLinkedGroupIds = new Set(
+    items
+      .filter((item) => selectedItemIds.has(item.id) && item.linkedGroupId)
+      .map((item) => item.linkedGroupId as string)
+  );
+  const lockedTrackSet = new Set(lockedTracks);
+  return items.some((item) => (
+    lockedTrackSet.has(item.track) &&
+    (selectedItemIds.has(item.id) || Boolean(item.linkedGroupId && selectedLinkedGroupIds.has(item.linkedGroupId)))
+  ));
+}
+
+function filterHiddenVideoTrackItems(items: WorkspaceTimelineItem[], hiddenVideoTracks: WorkspaceTimelineVideoTrack[]): WorkspaceTimelineItem[] {
+  if (!hiddenVideoTracks.length) return items;
+  const hiddenVideoTrackSet = new Set<WorkspaceTimelineTrack>(hiddenVideoTracks);
+  return items.filter((item) => !isWorkspaceTimelineVideoTrack(item.track) || !hiddenVideoTrackSet.has(item.track));
+}
+
+function muteAudioTrackItems(items: WorkspaceTimelineItem[], mutedAudioTracks: WorkspaceTimelineAudioTrack[]): WorkspaceTimelineItem[] {
+  if (!mutedAudioTracks.length) return items;
+  const mutedAudioTrackSet = new Set<WorkspaceTimelineTrack>(mutedAudioTracks);
+  return items.map((item) => {
+    if (!isWorkspaceTimelineAudioTrack(item.track) || !mutedAudioTrackSet.has(item.track)) return item;
+    return {
+      ...item,
+      audioMix: {
+        volume: item.audioMix?.volume ?? 100,
+        muted: true,
+      },
+    };
+  });
+}
+
+function downloadWorkspaceTextFile(filename: string, contents: string, type: string): void {
+  if (typeof window === 'undefined') return;
+  const blob = new Blob([contents], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = window.document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  window.document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }
 
 function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
@@ -330,6 +528,8 @@ function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
       normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))
     );
     const timelineItems = normalizeWorkspaceTimelineIdentities(normalizeTimelineMediaUrls(nodes, parsed.timelineItems));
+    const audioTrackCount = coerceAudioTrackCount(parsed.audioTrackCount, timelineItems);
+    const videoTrackCount = coerceVideoTrackCount(parsed.videoTrackCount, timelineItems);
     return {
       nodes,
       edges,
@@ -337,7 +537,14 @@ function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
       activeTemplateId: parsed.activeTemplateId ?? 'product-ad',
       projectSettings: coerceWorkspaceProjectSettings(parsed.projectSettings),
       focusMode: parsed.focusMode === 'viewer' ? 'viewer' : 'canvas',
-      videoTrackCount: coerceVideoTrackCount(parsed.videoTrackCount, timelineItems),
+      audioTrackCount,
+      hiddenVideoTracks: coerceHiddenVideoTracks(parsed.hiddenVideoTracks, videoTrackCount),
+      lockedTimelineTracks: coerceTimelineTrackList(parsed.lockedTimelineTracks, videoTrackCount, audioTrackCount),
+      mutedAudioTracks: coerceMutedAudioTracks(parsed.mutedAudioTracks, audioTrackCount),
+      videoTrackCount,
+      timelinePanelHeight: coerceTimelinePanelHeight(parsed.timelinePanelHeight),
+      timelineInPointSec: coerceTimelineMarker(parsed.timelineInPointSec),
+      timelineOutPointSec: coerceTimelineMarker(parsed.timelineOutPointSec),
     };
   } catch {
     return null;
@@ -604,13 +811,22 @@ export default function WorkspacePage() {
   const [selectedTimelineItemIds, setSelectedTimelineItemIds] = useState<string[]>(defaultTimelineSelectionIds(defaultTemplate.timelineItems));
   const [playheadSec, setPlayheadSec] = useState(0);
   const [isTimelinePlaying, setIsTimelinePlaying] = useState(false);
-  const [timelineEditMode, setTimelineEditMode] = useState<WorkspaceTimelineInsertMode>('insert');
-  const [timelineTrimMode, setTimelineTrimMode] = useState<WorkspaceTimelineTrimMode>('trim');
+  const [timelineInsertIntoClipEnabled, setTimelineInsertIntoClipEnabled] = useState(false);
+  const [audioTrackCount, setAudioTrackCount] = useState(audioTrackCountForTimelineItems(defaultTemplate.timelineItems));
+  const [hiddenVideoTracks, setHiddenVideoTracks] = useState<WorkspaceTimelineVideoTrack[]>([]);
+  const [lockedTimelineTracks, setLockedTimelineTracks] = useState<WorkspaceTimelineTrack[]>([]);
+  const [mutedAudioTracks, setMutedAudioTracks] = useState<WorkspaceTimelineAudioTrack[]>([]);
   const [videoTrackCount, setVideoTrackCount] = useState(videoTrackCountForTimelineItems(defaultTemplate.timelineItems));
+  const [timelinePanelHeight, setTimelinePanelHeight] = useState<number | null>(null);
+  const [timelineInPointSec, setTimelineInPointSec] = useState<number | null>(null);
+  const [timelineOutPointSec, setTimelineOutPointSec] = useState<number | null>(null);
   const [projectSettings, setProjectSettings] = useState<WorkspaceProjectSettings>(DEFAULT_WORKSPACE_PROJECT_SETTINGS);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>('shot-03');
+  const [activeEditorSurface, setActiveEditorSurface] = useState<WorkspaceEditorSurface>('canvas');
   const [activeTemplateId, setActiveTemplateId] = useState<WorkspaceTemplateId>('product-ad');
   const [focusMode, setFocusMode] = useState<WorkspaceFocusMode>('canvas');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [exportRangeMode, setExportRangeMode] = useState<WorkspaceTimelineExportRangeMode>('sequence');
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
   const [notice, setNotice] = useState('Product Ad template loaded. Select Shot 03 to generate an output.');
@@ -624,11 +840,47 @@ export default function WorkspacePage() {
     [timelineItems]
   );
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
+  const viewerTimelineItems = useMemo(
+    () => muteAudioTrackItems(filterHiddenVideoTrackItems(previewTimelineItems, hiddenVideoTracks), mutedAudioTracks),
+    [hiddenVideoTracks, mutedAudioTracks, previewTimelineItems]
+  );
   const previewPlayheadSec = timelinePreview?.playheadSec ?? playheadSec;
+  const timelineCutPoints = useMemo(() => workspaceTimelineCutPoints(previewTimelineItems), [previewTimelineItems]);
+  const timelineCutToleranceSec = 1 / Math.max(1, projectSettings.fps || 24) / 2;
+  const canGoToPreviousTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec < previewPlayheadSec - timelineCutToleranceSec);
+  const canGoToNextTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec > previewPlayheadSec + timelineCutToleranceSec);
   const selectedTimelineItem = useMemo(
     () => previewTimelineItems.find((item) => item.id === selectedTimelineItemId) ?? null,
     [previewTimelineItems, selectedTimelineItemId]
   );
+  const exportTimelineItems = useMemo(
+    () => muteAudioTrackItems(filterHiddenVideoTrackItems(timelineItems, hiddenVideoTracks), mutedAudioTracks),
+    [hiddenVideoTracks, mutedAudioTracks, timelineItems]
+  );
+  const hasValidTimelineInOut = timelineInPointSec !== null && timelineOutPointSec !== null && timelineOutPointSec > timelineInPointSec;
+  const activeExportRange = useMemo(
+    () => (
+      exportRangeMode === 'in-out' && hasValidTimelineInOut
+        ? {
+            mode: 'in-out' as const,
+            startSec: timelineInPointSec,
+            endSec: timelineOutPointSec,
+          }
+        : { mode: 'sequence' as const }
+    ),
+    [exportRangeMode, hasValidTimelineInOut, timelineInPointSec, timelineOutPointSec]
+  );
+  const exportManifest = useMemo(
+    () => buildWorkspaceTimelineRenderManifest({
+      items: exportTimelineItems,
+      nodes,
+      projectName: activeTemplateName,
+      projectSettings,
+      exportRange: activeExportRange,
+    }),
+    [activeExportRange, activeTemplateName, exportTimelineItems, nodes, projectSettings]
+  );
+  const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(exportManifest), [exportManifest]);
 
   const handleToggleTimelinePlayback = useCallback(() => {
     if (timelineDurationSec <= 0) return;
@@ -640,6 +892,34 @@ export default function WorkspacePage() {
     });
   }, [playheadSec, timelineDurationSec]);
 
+  const handleGoToTimelineCut = useCallback((direction: -1 | 1) => {
+    const cutPointSec = direction > 0
+      ? timelineCutPoints.find((candidateSec) => candidateSec > playheadSec + timelineCutToleranceSec)
+      : [...timelineCutPoints].reverse().find((candidateSec) => candidateSec < playheadSec - timelineCutToleranceSec);
+    if (cutPointSec === undefined) return;
+    setIsTimelinePlaying(false);
+    setPlayheadSec(cutPointSec);
+  }, [playheadSec, timelineCutPoints, timelineCutToleranceSec]);
+
+  const handleMarkTimelineIn = useCallback(() => {
+    const nextInPointSec = Math.max(0, Math.min(playheadSec, timelineDurationSec));
+    setTimelineInPointSec(nextInPointSec);
+    setNotice(`In point set at ${formatWorkspaceTimecode(nextInPointSec, projectSettings.fps)}.`);
+  }, [playheadSec, projectSettings.fps, timelineDurationSec]);
+
+  const handleMarkTimelineOut = useCallback(() => {
+    const nextOutPointSec = Math.max(0, Math.min(playheadSec, timelineDurationSec));
+    setTimelineOutPointSec(nextOutPointSec);
+    setNotice(`Out point set at ${formatWorkspaceTimecode(nextOutPointSec, projectSettings.fps)}.`);
+  }, [playheadSec, projectSettings.fps, timelineDurationSec]);
+
+  const handleClearTimelineInOut = useCallback(() => {
+    setTimelineInPointSec(null);
+    setTimelineOutPointSec(null);
+    setExportRangeMode('sequence');
+    setNotice('In and Out points cleared.');
+  }, []);
+
   const applyTimelineSelection = useCallback((itemIds: string[]) => {
     const nextItemIds = uniqueTimelineSelectionIds(itemIds);
     setSelectedTimelineItemIds(nextItemIds);
@@ -647,6 +927,7 @@ export default function WorkspacePage() {
   }, []);
 
   const handleSelectTimelineItem = useCallback((itemId: string, mode: 'replace' | 'toggle' | 'focus' = 'replace') => {
+    setActiveEditorSurface('timeline');
     setSelectedTimelineItemIds((current) => {
       if (mode === 'focus') {
         const focusedItem = timelineItemsRef.current.find((item) => item.id === itemId);
@@ -670,6 +951,20 @@ export default function WorkspacePage() {
       setSelectedTimelineItemId(itemId);
       return [itemId];
     });
+  }, []);
+
+  const handleSelectTimelineItems = useCallback((itemIds: string[]) => {
+    setActiveEditorSurface('timeline');
+    applyTimelineSelection(itemIds);
+  }, [applyTimelineSelection]);
+
+  const handleCanvasInteraction = useCallback(() => {
+    setActiveEditorSurface('canvas');
+  }, []);
+
+  const handleSelectedCanvasNodeChange = useCallback((nodeId: string | null) => {
+    setActiveEditorSurface('canvas');
+    setSelectedNodeId(nodeId);
   }, []);
 
   useEffect(() => {
@@ -739,7 +1034,15 @@ export default function WorkspacePage() {
       setActiveTemplateId(persisted.activeTemplateId);
       setProjectSettings(persisted.projectSettings);
       setFocusMode(persisted.focusMode ?? 'canvas');
+      setActiveEditorSurface((persisted.focusMode ?? 'canvas') === 'viewer' ? 'timeline' : 'canvas');
+      setAudioTrackCount(coerceAudioTrackCount(persisted.audioTrackCount, persisted.timelineItems));
+      setHiddenVideoTracks(persisted.hiddenVideoTracks ?? []);
+      setLockedTimelineTracks(persisted.lockedTimelineTracks ?? []);
+      setMutedAudioTracks(persisted.mutedAudioTracks ?? []);
       setVideoTrackCount(coerceVideoTrackCount(persisted.videoTrackCount, persisted.timelineItems));
+      setTimelinePanelHeight(persisted.timelinePanelHeight ?? null);
+      setTimelineInPointSec(persisted.timelineInPointSec ?? null);
+      setTimelineOutPointSec(persisted.timelineOutPointSec ?? null);
       setCanvasRevision((value) => value + 1);
     }
     setHydrated(true);
@@ -747,9 +1050,24 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     if (!hydrated || typeof window === 'undefined') return;
-    const state: PersistedWorkspaceState = { nodes, edges, timelineItems, activeTemplateId, projectSettings, focusMode, videoTrackCount };
+    const state: PersistedWorkspaceState = {
+      nodes,
+      edges,
+      timelineItems,
+      activeTemplateId,
+      projectSettings,
+      focusMode,
+      audioTrackCount,
+      hiddenVideoTracks,
+      lockedTimelineTracks,
+      mutedAudioTracks,
+      videoTrackCount,
+      timelinePanelHeight,
+      timelineInPointSec,
+      timelineOutPointSec,
+    };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [activeTemplateId, edges, focusMode, hydrated, nodes, projectSettings, timelineItems, videoTrackCount]);
+  }, [activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectSettings, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
 
   useEffect(() => {
     if (!timelineItems.length) {
@@ -761,7 +1079,11 @@ export default function WorkspacePage() {
     }
     const existingItemIds = new Set(timelineItems.map((item) => item.id));
     const currentSelection = selectedTimelineItemIds.filter((itemId) => existingItemIds.has(itemId));
-    const nextSelection = currentSelection.length ? currentSelection : defaultTimelineSelectionIds(timelineItems);
+    const nextSelection = selectedTimelineItemIds.length
+      ? currentSelection.length
+        ? currentSelection
+        : defaultTimelineSelectionIds(timelineItems)
+      : [];
     if (
       nextSelection.length !== selectedTimelineItemIds.length ||
       nextSelection.some((itemId, index) => itemId !== selectedTimelineItemIds[index])
@@ -779,6 +1101,11 @@ export default function WorkspacePage() {
     if (playheadSec <= timelineDurationSec) return;
     setPlayheadSec(timelineDurationSec);
   }, [playheadSec, timelineDurationSec]);
+
+  useEffect(() => {
+    setTimelineInPointSec((current) => (current !== null && current > timelineDurationSec ? timelineDurationSec : current));
+    setTimelineOutPointSec((current) => (current !== null && current > timelineDurationSec ? timelineDurationSec : current));
+  }, [timelineDurationSec]);
 
   useEffect(() => {
     if (!isTimelinePlaying || timelineDurationSec <= 0 || typeof window === 'undefined') return undefined;
@@ -835,6 +1162,7 @@ export default function WorkspacePage() {
   }, []);
 
   const handleOpenAssetLibrary = useCallback((nodeId: string) => {
+    setActiveEditorSurface('canvas');
     setSelectedNodeId(nodeId);
     setAssetPickerNodeId(nodeId);
   }, []);
@@ -855,6 +1183,7 @@ export default function WorkspacePage() {
           : node
       )
     );
+    setActiveEditorSurface('canvas');
     setSelectedNodeId(nodeId);
     setAssetPickerNodeId(null);
     setNotice(`${asset.name} attached to the media block.`);
@@ -945,6 +1274,7 @@ export default function WorkspacePage() {
 
       setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
       setEdges((current) => addEdge(edge, current));
+      setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
       setNotice(`${node.data.title} created from the ${edge.data?.label ?? 'connector'} connector.`);
     },
@@ -958,6 +1288,7 @@ export default function WorkspacePage() {
         y: request.position.y - 48,
       });
       setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
+      setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
       setNotice(`${node.data.title} dropped onto the canvas.`);
     },
@@ -1025,6 +1356,7 @@ export default function WorkspacePage() {
       if (!existingOutputNode) {
         setEdges((current) => addEdge(pendingOutput.outputEdge, current));
       }
+      setActiveEditorSurface('canvas');
       setSelectedNodeId(pendingOutputNode.id);
       setNotice(`${shotNode.data.title} generation started${mockMode ? ' in mock mode' : ''}.`);
       try {
@@ -1069,6 +1401,7 @@ export default function WorkspacePage() {
             return node;
           })
         );
+        setActiveEditorSurface('canvas');
         setSelectedNodeId(pendingOutputNode.id);
         setNotice(
           result.output.status === 'ready'
@@ -1119,7 +1452,7 @@ export default function WorkspacePage() {
   );
 
   const handleSendOutputToTimeline = useCallback(
-    (nodeId: string, modeOverride?: WorkspaceTimelineInsertMode) => {
+    (nodeId: string) => {
       const mediaNode = nodes.find((node) => node.id === nodeId);
       if (!mediaNode) return;
 
@@ -1153,19 +1486,12 @@ export default function WorkspacePage() {
       }
 
       const timelineSeed = Date.now().toString(36);
-      const selectedTimelineItem = selectedTimelineItemId
-        ? timelineItemsRef.current.find((item) => item.id === selectedTimelineItemId) ?? null
-        : null;
-      const requestedMode = modeOverride ?? timelineEditMode;
-      const resolvedMode: WorkspaceTimelineInsertMode =
-        requestedMode === 'replace' && !selectedTimelineItem ? 'insert' : requestedMode;
-      const startSec = resolvedMode === 'replace' && selectedTimelineItem ? selectedTimelineItem.startSec : playheadSec;
       const nextItems = output
         ? buildWorkspaceTimelineItemsForOutput({
             outputNodeId: nodeId,
             title: mediaNode.data.title,
             output,
-            startSec,
+            startSec: playheadSec,
             idSeed: timelineSeed,
           })
         : asset
@@ -1173,7 +1499,7 @@ export default function WorkspacePage() {
               assetNodeId: nodeId,
               title: mediaNode.data.title,
               asset,
-              startSec,
+              startSec: playheadSec,
               idSeed: timelineSeed,
             })
           : [];
@@ -1182,24 +1508,30 @@ export default function WorkspacePage() {
         setNotice('This block cannot be placed on the timeline yet.');
         return;
       }
-      commitTimelineItems((current) => {
-        return insertWorkspaceTimelineItems({
-          items: current,
-          newItems: nextItems,
-          mode: resolvedMode,
-          playheadSec: resolvedMode === 'replace' ? startSec : playheadSec,
-          selectedItemId: selectedTimelineItemId,
-          idSeed: timelineSeed,
-        });
+      const targetTrack = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.track ?? nextItems[0]?.track ?? 'timeline';
+      const nextTimelineItems = insertWorkspaceTimelineItems({
+        items: timelineItemsRef.current,
+        newItems: nextItems,
+        mode: 'insert',
+        playheadSec,
+        selectedItemId: null,
+        idSeed: timelineSeed,
+        allowInsertIntoClip: timelineInsertIntoClipEnabled,
       });
+      const insertedItem = nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null;
+      if (!insertedItem) {
+        const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(timelineItemsRef.current, targetTrack, playheadSec);
+        setNotice(isBlockedClipInsert ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.' : 'This block could not be inserted on the timeline.');
+        return;
+      }
+      commitTimelineItems(() => nextTimelineItems);
       setSelectedTimelineItemId(nextTimelineItemId);
       setSelectedTimelineItemIds([nextTimelineItemId]);
-      setPlayheadSec(startSec);
+      setPlayheadSec(insertedItem.startSec);
       setIsTimelinePlaying(false);
-      const targetTrack = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.track ?? nextItems[0]?.track ?? 'timeline';
-      setNotice(`${mediaNode.data.title} ${resolvedMode === 'replace' ? 'replaced the selected clip' : resolvedMode === 'overwrite' ? 'overwrote the sequence' : 'inserted at the playhead'} on the ${targetTrack} track.`);
+      setNotice(`${mediaNode.data.title} inserted at the playhead on the ${targetTrack} track.`);
     },
-    [commitTimelineItems, nodes, playheadSec, selectedTimelineItemId, timelineEditMode]
+    [commitTimelineItems, nodes, playheadSec, timelineInsertIntoClipEnabled]
   );
 
   const renderNodes = useMemo(() => {
@@ -1257,6 +1589,7 @@ export default function WorkspacePage() {
     (kind: WorkspaceNodeKind) => {
       const node = createAdHocNode(kind, nodes.length, defaultModelId);
       setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
+      setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
       setNotice(`${node.data.title} added to the canvas.`);
     },
@@ -1273,19 +1606,38 @@ export default function WorkspacePage() {
     setPlayheadSec(0);
     setIsTimelinePlaying(false);
     resetTimelineHistory();
+    setActiveEditorSurface('canvas');
     setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
     setActiveTemplateId(template.id);
+    setAudioTrackCount(audioTrackCountForTimelineItems(template.timelineItems));
+    setHiddenVideoTracks([]);
+    setLockedTimelineTracks([]);
+    setMutedAudioTracks([]);
     setVideoTrackCount(videoTrackCountForTimelineItems(template.timelineItems));
+    setTimelineInPointSec(null);
+    setTimelineOutPointSec(null);
+    setExportRangeMode('sequence');
+    setIsExportDialogOpen(false);
     setCanvasRevision((value) => value + 1);
     setNotice(`${template.name} template loaded.`);
   }, [applyTimelineSelection, resetTimelineHistory]);
 
   const handleMoveTimelineItem = useCallback((itemId: string, direction: -1 | 1) => {
+    setActiveEditorSurface('timeline');
+    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
+      setNotice('Unlock the track before moving clips.');
+      return;
+    }
     handleSelectTimelineItem(itemId, 'focus');
     commitTimelineItems((current) => moveWorkspaceTimelineItem(current, itemId, direction));
-  }, [commitTimelineItems, handleSelectTimelineItem]);
+  }, [commitTimelineItems, handleSelectTimelineItem, lockedTimelineTracks]);
 
   const handleCutTimelineItem = useCallback((itemId: string, splitOffsetSec?: number) => {
+    setActiveEditorSurface('timeline');
+    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
+      setNotice('Unlock the track before cutting clips.');
+      return;
+    }
     const currentItems = timelineItemsRef.current;
     const currentItem = currentItems.find((item) => item.id === itemId);
     const nextSelectedItemId = currentItem && currentItem.durationSec >= 2
@@ -1294,26 +1646,197 @@ export default function WorkspacePage() {
     applyTimelineSelection([nextSelectedItemId]);
     setIsTimelinePlaying(false);
     commitTimelineItems((current) => splitWorkspaceTimelineItem(current, itemId, splitOffsetSec));
-  }, [applyTimelineSelection, commitTimelineItems]);
+  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks]);
 
   const handlePositionTimelineItem = useCallback((itemId: string, nextStartSec: number, nextTrack?: WorkspaceTimelineTrack, itemIds?: string[]) => {
+    setActiveEditorSurface('timeline');
     const nextSelectedItemIds = itemIds?.length ? uniqueTimelineSelectionIds(itemIds) : [itemId];
+    const currentItems = timelineItemsRef.current;
+    if ((nextTrack && lockedTimelineTracks.includes(nextTrack)) || timelineSelectionTouchesLockedTrack(currentItems, nextSelectedItemIds, lockedTimelineTracks)) {
+      setNotice('Unlock the track before moving clips.');
+      setIsTimelinePlaying(false);
+      return;
+    }
+    const nextItems = moveWorkspaceTimelineSelectionWithMode({
+      items: currentItems,
+      itemIds: nextSelectedItemIds,
+      anchorItemId: itemId,
+      nextStartSec,
+      nextTrack,
+      mode: 'insert',
+      idSeed: Date.now().toString(36),
+      allowInsertIntoClip: timelineInsertIntoClipEnabled,
+    });
+    const nextAnchorItem = nextItems.find((item) => item.id === itemId);
     setSelectedTimelineItemIds(nextSelectedItemIds);
     setSelectedTimelineItemId(itemId);
-    setPlayheadSec(nextStartSec);
+    setPlayheadSec(nextAnchorItem?.startSec ?? nextStartSec);
     setIsTimelinePlaying(false);
-    commitTimelineItems((current) =>
-      nextSelectedItemIds.length > 1
-        ? positionWorkspaceTimelineItems(current, nextSelectedItemIds, itemId, nextStartSec, nextTrack)
-        : positionWorkspaceTimelineItem(current, itemId, nextStartSec, nextTrack)
+    commitTimelineItems(() => nextItems);
+  }, [commitTimelineItems, lockedTimelineTracks, timelineInsertIntoClipEnabled]);
+
+  const handleDropNodeToTimeline = useCallback((nodeId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
+    setActiveEditorSurface('timeline');
+    if (lockedTimelineTracks.includes(targetTrack)) {
+      setNotice(`Unlock ${workspaceTimelineTrackLabel(targetTrack)} before dropping media on it.`);
+      return;
+    }
+    const mediaNode = nodes.find((node) => node.id === nodeId);
+    if (!mediaNode) return;
+    const output = mediaNode.data.output;
+    const asset = mediaNode.data.asset;
+    if (!output && !asset) {
+      setNotice('Only ready media blocks can be dropped on the timeline.');
+      return;
+    }
+    if (output && !playableOutputTimelineUrl(output)) {
+      setNotice('This generated output is not ready for timeline drop yet.');
+      return;
+    }
+
+    const timelineSeed = Date.now().toString(36);
+    const draftItems = output
+      ? buildWorkspaceTimelineItemsForOutput({
+          outputNodeId: nodeId,
+          title: mediaNode.data.title,
+          output,
+          startSec,
+          idSeed: timelineSeed,
+        })
+      : asset
+        ? buildWorkspaceTimelineItemsForAsset({
+            assetNodeId: nodeId,
+            title: mediaNode.data.title,
+            asset,
+            startSec,
+            idSeed: timelineSeed,
+          })
+        : [];
+    if (!draftItems.length) {
+      setNotice('This block cannot be placed on the timeline yet.');
+      return;
+    }
+    if (!workspaceTimelineItemsCompatibleWithTrack(draftItems, targetTrack)) {
+      setNotice(`${mediaNode.data.title} is not compatible with the ${targetTrack} track.`);
+      return;
+    }
+
+    const nextItems = retargetWorkspaceTimelineItemsForTrack(draftItems, targetTrack);
+    const currentItems = timelineItemsRef.current;
+    const nextTimelineItems = insertWorkspaceTimelineItems({
+      items: currentItems,
+      newItems: nextItems,
+      mode: 'insert',
+      playheadSec: startSec,
+      selectedItemId: null,
+      idSeed: timelineSeed,
+      allowInsertIntoClip: timelineInsertIntoClipEnabled,
+    });
+    const nextTimelineItemId = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.id ?? nextItems[0]?.id ?? null;
+    const insertedItem = nextTimelineItemId ? nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null : null;
+    if (!nextTimelineItemId || !insertedItem) {
+      const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(currentItems, targetTrack, startSec);
+      setNotice(isBlockedClipInsert ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.' : 'This block could not be inserted on the timeline.');
+      return;
+    }
+
+    commitTimelineItems(() => nextTimelineItems);
+    setSelectedTimelineItemId(nextTimelineItemId);
+    setSelectedTimelineItemIds([nextTimelineItemId]);
+    setPlayheadSec(insertedItem.startSec);
+    setIsTimelinePlaying(false);
+    setNotice(`${mediaNode.data.title} dropped on ${targetTrack} at ${insertedItem.startSec.toFixed(2)}s.`);
+  }, [commitTimelineItems, lockedTimelineTracks, nodes, timelineInsertIntoClipEnabled]);
+
+  const handleInvalidNodeDropToTimeline = useCallback((reason: 'incompatible' | 'locked-track' | 'occupied-clip') => {
+    setActiveEditorSurface('timeline');
+    setIsTimelinePlaying(false);
+    setNotice(
+      reason === 'locked-track'
+        ? 'Unlock the track before dropping media on it.'
+        : reason === 'occupied-clip'
+        ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.'
+        : 'This block is not compatible with that timeline track.'
     );
-  }, [commitTimelineItems]);
+  }, []);
 
   const handleAddTimelineVideoTrack = useCallback(() => {
     setVideoTrackCount((current) => Math.min(MAX_TIMELINE_VIDEO_TRACKS, current + 1));
   }, []);
 
+  const handleAddTimelineAudioTrack = useCallback(() => {
+    setAudioTrackCount((current) => Math.min(MAX_TIMELINE_AUDIO_TRACKS, current + 1));
+  }, []);
+
+  const handleToggleVideoTrackVisibility = useCallback((track: WorkspaceTimelineVideoTrack) => {
+    setHiddenVideoTracks((current) => (
+      current.includes(track)
+        ? current.filter((trackId) => trackId !== track)
+        : [...current, track]
+    ));
+    setIsTimelinePlaying(false);
+  }, []);
+
+  const handleToggleAudioTrackMute = useCallback((track: WorkspaceTimelineAudioTrack) => {
+    setMutedAudioTracks((current) => (
+      current.includes(track)
+        ? current.filter((trackId) => trackId !== track)
+        : [...current, track]
+    ));
+    setIsTimelinePlaying(false);
+  }, []);
+
+  const handleToggleTimelineTrackLock = useCallback((track: WorkspaceTimelineTrack) => {
+    setLockedTimelineTracks((current) => (
+      current.includes(track)
+        ? current.filter((trackId) => trackId !== track)
+        : [...current, track]
+    ));
+    setIsTimelinePlaying(false);
+  }, []);
+
+  const handleDeleteTimelineTrack = useCallback((track: WorkspaceTimelineTrack) => {
+    const isVideoTrack = isWorkspaceTimelineVideoTrack(track);
+    if (isVideoTrack && videoTrackCount <= 1) return;
+    if (!isVideoTrack && audioTrackCount <= MIN_TIMELINE_AUDIO_TRACKS) return;
+
+    const trackLabel = workspaceTimelineTrackLabel(track);
+    const hasClips = timelineItemsRef.current.some((item) => item.track === track);
+    const confirmed = typeof window === 'undefined' || window.confirm(
+      hasClips
+        ? `Delete ${trackLabel} and all clips on this track?`
+        : `Delete ${trackLabel}?`
+    );
+    if (!confirmed) return;
+
+    const nextItems = deleteWorkspaceTimelineTrackItems(timelineItemsRef.current, track);
+    setActiveEditorSurface('timeline');
+    setIsTimelinePlaying(false);
+    setHiddenVideoTracks((current) => (
+      deleteWorkspaceTimelineTrackIds(current, track)
+        .filter((trackId): trackId is WorkspaceTimelineVideoTrack => isWorkspaceTimelineVideoTrack(trackId))
+    ));
+    setLockedTimelineTracks((current) => deleteWorkspaceTimelineTrackIds(current, track));
+    setMutedAudioTracks((current) => (
+      deleteWorkspaceTimelineTrackIds(current, track)
+        .filter((trackId): trackId is WorkspaceTimelineAudioTrack => isWorkspaceTimelineAudioTrack(trackId))
+    ));
+    if (isVideoTrack) {
+      setVideoTrackCount((current) => Math.max(1, current - 1));
+    } else {
+      setAudioTrackCount((current) => Math.max(MIN_TIMELINE_AUDIO_TRACKS, current - 1));
+    }
+    commitTimelineItems(() => nextItems);
+    applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
+    setNotice(`${trackLabel} deleted.`);
+  }, [applyTimelineSelection, audioTrackCount, commitTimelineItems, videoTrackCount]);
+
   const handleResizeTimelineItem = useCallback((itemId: string, edge: WorkspaceTimelineTrimEdge, nextStartSec: number, nextDurationSec: number, mode: WorkspaceTimelineTrimMode) => {
+    setActiveEditorSurface('timeline');
+    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
+      setNotice('Unlock the track before trimming clips.');
+      return;
+    }
     applyTimelineSelection([itemId]);
     setPlayheadSec(nextStartSec);
     setIsTimelinePlaying(false);
@@ -1327,19 +1850,40 @@ export default function WorkspacePage() {
         mode,
       })
     );
-  }, [applyTimelineSelection, commitTimelineItems]);
+  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks]);
 
   const handleTimelinePreviewItemsChange = useCallback((items: WorkspaceTimelineItem[] | null, previewSec: number | null) => {
     setTimelinePreview(items && previewSec !== null ? { items, playheadSec: previewSec } : null);
   }, []);
 
-  const handleToggleTimelineCrossfade = useCallback(() => {
-    if (!selectedTimelineItemId) return;
+  const handleUnlinkTimelineItems = useCallback((itemIds: string[]) => {
+    if (!itemIds.length) return;
+    setActiveEditorSurface('timeline');
+    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
+      setNotice('Unlock the track before unlinking clips.');
+      return;
+    }
     setIsTimelinePlaying(false);
-    commitTimelineItems((current) => toggleWorkspaceTimelineCrossfade(current, selectedTimelineItemId, 1));
-  }, [commitTimelineItems, selectedTimelineItemId]);
+    commitTimelineItems((current) => unlinkWorkspaceTimelineSelection(current, itemIds));
+    applyTimelineSelection(itemIds);
+    setNotice('Selected timeline clips unlinked.');
+  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks]);
+
+  const handleLinkTimelineItems = useCallback((itemIds: string[]) => {
+    if (itemIds.length < 2) return;
+    setActiveEditorSurface('timeline');
+    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
+      setNotice('Unlock the track before linking clips.');
+      return;
+    }
+    setIsTimelinePlaying(false);
+    commitTimelineItems((current) => linkWorkspaceTimelineSelection(current, itemIds, `manual-link-${Date.now().toString(36)}`));
+    applyTimelineSelection(itemIds);
+    setNotice('Selected timeline clips linked.');
+  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks]);
 
   const handlePatchTimelineItem = useCallback((itemId: string, patch: Partial<WorkspaceTimelineItem>) => {
+    setActiveEditorSurface('timeline');
     commitTimelineItems((current) => current.map((item) => (item.id === itemId ? { ...item, ...patch } : item)));
   }, [commitTimelineItems]);
 
@@ -1352,31 +1896,34 @@ export default function WorkspacePage() {
   }, []);
 
   const handleExportTimelineRender = useCallback(() => {
-    const manifest = buildWorkspaceTimelineRenderManifest({
-      items: timelineItemsRef.current,
-      nodes,
-      projectName: activeTemplateName,
-      projectSettings,
-    });
-    const serializedManifest = serializeWorkspaceTimelineRenderManifest(manifest);
+    const serializedManifest = serializeWorkspaceTimelineRenderManifest(exportManifest);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(RENDER_MANIFEST_STORAGE_KEY, serializedManifest);
     }
-    setNotice(workspaceTimelineRenderReadinessLabel(manifest));
-    if (manifest.status === 'blocked' || typeof window === 'undefined') return;
+    setNotice(workspaceTimelineRenderReadinessLabel(exportManifest));
+    if (exportManifest.status === 'blocked') return;
 
-    const blob = new Blob([serializedManifest], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const link = window.document.createElement('a');
-    link.href = url;
-    link.download = 'maxvideoai-timeline-render.json';
-    window.document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
-  }, [activeTemplateName, nodes, projectSettings]);
+    downloadWorkspaceTextFile('maxvideoai-timeline-render.json', serializedManifest, 'application/json');
+  }, [exportManifest]);
+
+  const handleExportTimelineEdl = useCallback(() => {
+    const edl = buildWorkspaceTimelineEdl(exportManifest);
+    setNotice(
+      exportManifest.status === 'blocked'
+        ? workspaceTimelineRenderReadinessLabel(exportManifest)
+        : `EDL ready for ${exportManifest.exportRange.mode === 'in-out' ? 'In/Out' : 'sequence'} export.`
+    );
+    if (exportManifest.status === 'blocked') return;
+    downloadWorkspaceTextFile('maxvideoai-timeline.edl', edl, 'text/plain');
+  }, [exportManifest]);
+
+  const handleOpenExportDialog = useCallback(() => {
+    setExportRangeMode(hasValidTimelineInOut ? 'in-out' : 'sequence');
+    setIsExportDialogOpen(true);
+  }, [hasValidTimelineInOut]);
 
   const handleDeleteTimelineItem = useCallback((ripple = false) => {
+    setActiveEditorSurface('timeline');
     const currentItems = timelineItemsRef.current;
     const selectedItemIds = selectedTimelineItemIds.length
       ? selectedTimelineItemIds
@@ -1384,6 +1931,10 @@ export default function WorkspacePage() {
         ? [selectedTimelineItemId]
         : [];
     if (!selectedItemIds.length) return;
+    if (timelineSelectionTouchesLockedTrack(currentItems, selectedItemIds, lockedTimelineTracks)) {
+      setNotice('Unlock the track before deleting clips.');
+      return;
+    }
     const selectedItem = currentItems.find((item) => item.id === selectedItemIds[0]);
     const nextItems = selectedItemIds.reduce(
       (nextTimelineItems, itemId) => deleteWorkspaceTimelineItem(nextTimelineItems, itemId, { ripple }),
@@ -1393,10 +1944,22 @@ export default function WorkspacePage() {
     applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
     setPlayheadSec(selectedItem?.startSec ?? 0);
     setIsTimelinePlaying(false);
-  }, [applyTimelineSelection, commitTimelineItems, selectedTimelineItemId, selectedTimelineItemIds]);
+  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, selectedTimelineItemId, selectedTimelineItemIds]);
+
+  const handleTimelinePanelHeightChange = useCallback((height: number) => {
+    setTimelinePanelHeight(coerceTimelinePanelHeight(height));
+  }, []);
+
+  const editorShellStyle = timelinePanelHeight
+    ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties)
+    : undefined;
 
   return (
-    <main className={`${styles.editorShell} ${focusMode === 'viewer' ? styles.viewerFocus : ''}`}>
+    <main
+      className={`${styles.editorShell} ${focusMode === 'viewer' ? styles.viewerFocus : ''}`}
+      style={editorShellStyle}
+      data-active-editor-surface={activeEditorSurface}
+    >
       <header className={styles.editorTopbar}>
         <div className={styles.brandCluster}>
           <Image
@@ -1414,11 +1977,27 @@ export default function WorkspacePage() {
           </div>
         </div>
         <div className={styles.modeSwitch} aria-label="Workspace view">
-          <button type="button" className={focusMode === 'canvas' ? styles.modeActive : ''} aria-pressed={focusMode === 'canvas'} onClick={() => setFocusMode('canvas')}>
+          <button
+            type="button"
+            className={focusMode === 'canvas' ? styles.modeActive : ''}
+            aria-pressed={focusMode === 'canvas'}
+            onClick={() => {
+              setFocusMode('canvas');
+              setActiveEditorSurface('canvas');
+            }}
+          >
             <GitBranch size={14} />
             Canvas
           </button>
-          <button type="button" className={focusMode === 'viewer' ? styles.modeActive : ''} aria-pressed={focusMode === 'viewer'} onClick={() => setFocusMode('viewer')}>
+          <button
+            type="button"
+            className={focusMode === 'viewer' ? styles.modeActive : ''}
+            aria-pressed={focusMode === 'viewer'}
+            onClick={() => {
+              setFocusMode('viewer');
+              setActiveEditorSurface('timeline');
+            }}
+          >
             <PanelRight size={14} />
             Viewer
           </button>
@@ -1441,7 +2020,7 @@ export default function WorkspacePage() {
           >
             <Settings2 size={15} />
           </button>
-          <button type="button" className={`${styles.exportButton}`} onClick={handleExportTimelineRender} aria-label="Export timeline render">
+          <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
             <Download size={15} />
             Export
           </button>
@@ -1473,22 +2052,35 @@ export default function WorkspacePage() {
             key={`${activeTemplateId}-${canvasRevision}`}
             nodes={renderNodes}
             edges={renderEdges}
+            isKeyboardDeleteEnabled={activeEditorSurface === 'canvas'}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             isValidConnection={isValidConnection}
             onCreateNodeFromHandleDrop={handleCreateNodeFromHandleDrop}
             onCreateNodeFromPaletteDrop={handleCreateNodeFromPaletteDrop}
-            onSelectedNodeChange={setSelectedNodeId}
+            onCanvasInteraction={handleCanvasInteraction}
+            onSelectedNodeChange={handleSelectedCanvasNodeChange}
+            onSelectedNodeSync={setSelectedNodeId}
           />
         ) : (
           <WorkspaceVideoViewer
+            canGoToNextCut={canGoToNextTimelineCut}
+            canGoToPreviousCut={canGoToPreviousTimelineCut}
+            inPointSec={timelineInPointSec}
             isPlaying={isTimelinePlaying}
-            items={previewTimelineItems}
+            items={viewerTimelineItems}
+            outPointSec={timelineOutPointSec}
             playheadSec={previewPlayheadSec}
             projectSettings={projectSettings}
             selectedItemId={selectedTimelineItemId}
+            onClearInOut={handleClearTimelineInOut}
+            onGoToNextCut={() => handleGoToTimelineCut(1)}
+            onGoToPreviousCut={() => handleGoToTimelineCut(-1)}
+            onMarkIn={handleMarkTimelineIn}
+            onMarkOut={handleMarkTimelineOut}
             onSelectItem={(itemId) => handleSelectTimelineItem(itemId)}
+            onTogglePlayback={handleToggleTimelinePlayback}
           />
         )}
         {focusMode === 'canvas' ? (
@@ -1514,19 +2106,37 @@ export default function WorkspacePage() {
       <WorkspaceTimeline
         canRedo={timelineHistory.future.length > 0}
         canUndo={timelineHistory.past.length > 0}
-        isPlaying={isTimelinePlaying}
+        isShortcutActive={activeEditorSurface === 'timeline'}
+        audioTrackCount={audioTrackCount}
+        hiddenVideoTracks={hiddenVideoTracks}
         items={timelineItems}
+        isInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
+        inPointSec={timelineInPointSec}
+        lockedTracks={lockedTimelineTracks}
+        mutedAudioTracks={mutedAudioTracks}
+        maxAudioTrackCount={MAX_TIMELINE_AUDIO_TRACKS}
+        maxPanelHeight={MAX_TIMELINE_PANEL_HEIGHT}
         maxVideoTrackCount={MAX_TIMELINE_VIDEO_TRACKS}
+        minAudioTrackCount={MIN_TIMELINE_AUDIO_TRACKS}
+        minPanelHeight={MIN_TIMELINE_PANEL_HEIGHT}
         selectedItemId={selectedTimelineItemId}
         selectedItemIds={selectedTimelineItemIds}
+        outPointSec={timelineOutPointSec}
+        panelHeight={timelinePanelHeight}
         videoTrackCount={videoTrackCount}
         playheadSec={playheadSec}
         projectFps={projectSettings.fps}
+        onAddAudioTrack={handleAddTimelineAudioTrack}
         onAddVideoTrack={handleAddTimelineVideoTrack}
         onCutItem={handleCutTimelineItem}
         onDeleteItem={handleDeleteTimelineItem}
+        onMarkIn={handleMarkTimelineIn}
+        onMarkOut={handleMarkTimelineOut}
+        onPanelHeightChange={handleTimelinePanelHeightChange}
         onRedo={handleRedoTimeline}
+        onInvalidNodeDropToTimeline={handleInvalidNodeDropToTimeline}
         onMoveItem={handleMoveTimelineItem}
+        onNodeDropToTimeline={handleDropNodeToTimeline}
         onPlaybackChange={setIsTimelinePlaying}
         onPlayheadChange={setPlayheadSec}
         onPreviewItemsChange={handleTimelinePreviewItemsChange}
@@ -1534,19 +2144,34 @@ export default function WorkspacePage() {
         onPositionItem={handlePositionTimelineItem}
         onResizeItem={handleResizeTimelineItem}
         onSelectItem={handleSelectTimelineItem}
-        onSelectItems={applyTimelineSelection}
-        onTimelineEditModeChange={setTimelineEditMode}
-        onTimelineTrimModeChange={setTimelineTrimMode}
-        onToggleTransition={handleToggleTimelineCrossfade}
+        onSelectItems={handleSelectTimelineItems}
+        onInsertIntoClipChange={setTimelineInsertIntoClipEnabled}
+        onDeleteTrack={handleDeleteTimelineTrack}
+        onLinkItems={handleLinkTimelineItems}
+        onToggleAudioTrackMute={handleToggleAudioTrackMute}
+        onToggleTrackLock={handleToggleTimelineTrackLock}
+        onToggleVideoTrackVisibility={handleToggleVideoTrackVisibility}
+        onUnlinkItems={handleUnlinkTimelineItems}
         onUndo={handleUndoTimeline}
-        timelineEditMode={timelineEditMode}
-        timelineTrimMode={timelineTrimMode}
       />
       <WorkspaceProjectSettingsDialog
         isOpen={isProjectSettingsOpen}
         projectSettings={projectSettings}
         onOpenChange={setIsProjectSettingsOpen}
         onProjectSettingsChange={handleProjectSettingsChange}
+      />
+      <WorkspaceExportDialog
+        exportRangeMode={exportRangeMode}
+        inPointSec={timelineInPointSec}
+        isOpen={isExportDialogOpen}
+        manifest={exportManifest}
+        outPointSec={timelineOutPointSec}
+        readinessLabel={exportReadinessLabel}
+        sequenceDurationSec={timelineDurationSec}
+        onClose={() => setIsExportDialogOpen(false)}
+        onExportEdl={handleExportTimelineEdl}
+        onPrepareRender={handleExportTimelineRender}
+        onRangeModeChange={setExportRangeMode}
       />
       <WorkspaceAssetLibraryModal
         node={assetPickerNode}

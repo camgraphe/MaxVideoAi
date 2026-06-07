@@ -1,5 +1,5 @@
 import type { WorkspaceAssetRecord, WorkspaceOutputMetadata, WorkspaceTimelineItem, WorkspaceTimelineTrack } from './workspace-types';
-import { isWorkspaceTimelineVideoTrack } from './workspace-timeline-tracks';
+import { isWorkspaceTimelineAudioTrack, isWorkspaceTimelineVideoTrack } from './workspace-timeline-tracks';
 
 const MIN_CLIP_DURATION_SEC = 1;
 const TIMELINE_SECOND_PRECISION = 1_000_000;
@@ -34,7 +34,7 @@ function primaryTimelineItemFor(items: WorkspaceTimelineItem[], item: WorkspaceT
 }
 
 function shouldMirrorLinkedVideo(item: WorkspaceTimelineItem, items: WorkspaceTimelineItem[]): boolean {
-  if (!item.linkedGroupId || item.track !== 'linked-audio') return false;
+  if (!item.linkedGroupId || item.linkedGroupKind === 'manual' || !isWorkspaceTimelineAudioTrack(item.track)) return false;
   return items.some((candidate) => candidate.linkedGroupId === item.linkedGroupId && isWorkspaceTimelineVideoTrack(candidate.track));
 }
 
@@ -164,13 +164,27 @@ export function normalizeWorkspaceTimelineIdentities(items: WorkspaceTimelineIte
   });
 
   const usedGroupIds = new Set<string>();
-  const nextGroupIdByItemId = new Map<string, string>();
+  const nextGroupIdByItemId = new Map<string, string | null>();
   linkedGroups.forEach((groupItems, groupId) => {
+    if (groupItems.every((item) => item.linkedGroupKind === 'manual')) {
+      const manualGroupId = uniqueTimelineIdentifier(groupId, usedGroupIds);
+      groupItems.forEach((item) => {
+        nextGroupIdByItemId.set(item.id, manualGroupId);
+      });
+      return;
+    }
+
     const videoItems = groupItems.filter((item) => isWorkspaceTimelineVideoTrack(item.track)).sort(sortLinkedTimelineItems);
-    const audioItems = groupItems.filter((item) => item.track === 'linked-audio').sort(sortLinkedTimelineItems);
+    const audioItems = groupItems.filter((item) => isWorkspaceTimelineAudioTrack(item.track)).sort(sortLinkedTimelineItems);
     const remainingItems = groupItems
-      .filter((item) => !isWorkspaceTimelineVideoTrack(item.track) && item.track !== 'linked-audio')
+      .filter((item) => !isWorkspaceTimelineVideoTrack(item.track) && !isWorkspaceTimelineAudioTrack(item.track))
       .sort(sortLinkedTimelineItems);
+    if (!videoItems.length || !audioItems.length) {
+      groupItems.forEach((item) => {
+        nextGroupIdByItemId.set(item.id, null);
+      });
+      return;
+    }
     const pairCount = Math.max(videoItems.length, audioItems.length);
 
     for (let index = 0; index < pairCount; index += 1) {
@@ -190,11 +204,12 @@ export function normalizeWorkspaceTimelineIdentities(items: WorkspaceTimelineIte
   const repairedItems = uniqueItems.map((item) => {
     if (!item.linkedGroupId) return item;
     const nextGroupId = nextGroupIdByItemId.get(item.id);
-    if (!nextGroupId || nextGroupId === item.linkedGroupId) return item;
+    if (nextGroupId === undefined || nextGroupId === item.linkedGroupId) return item;
     changed = true;
     return {
       ...item,
       linkedGroupId: nextGroupId,
+      linkedGroupKind: nextGroupId ? item.linkedGroupKind : null,
     };
   });
 
@@ -258,13 +273,14 @@ function retimeNewItems(items: WorkspaceTimelineItem[], startSec: number, durati
 function hasLinkedVideoPeer(items: WorkspaceTimelineItem[], item: WorkspaceTimelineItem): boolean {
   return Boolean(item.linkedGroupId && items.some((candidate) => (
     candidate.linkedGroupId === item.linkedGroupId &&
+    item.linkedGroupKind !== 'manual' &&
     isWorkspaceTimelineVideoTrack(candidate.track)
   )));
 }
 
 function editTracksForPreparedItems(items: WorkspaceTimelineItem[]): WorkspaceTimelineTrack[] {
   return Array.from(new Set(items.flatMap((item) => {
-    if (item.track === 'linked-audio' && hasLinkedVideoPeer(items, item)) return [];
+    if (isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(items, item)) return [];
     return [item.track];
   })));
 }
@@ -275,7 +291,7 @@ function shouldEditTrackItem(params: {
   track: WorkspaceTimelineTrack;
 }): boolean {
   if (params.item.track === params.track) return true;
-  if (!isWorkspaceTimelineVideoTrack(params.track) || params.item.track !== 'linked-audio' || !params.item.linkedGroupId) {
+  if (!isWorkspaceTimelineVideoTrack(params.track) || !isWorkspaceTimelineAudioTrack(params.item.track) || !params.item.linkedGroupId) {
     return false;
   }
   return params.items.some((candidate) => (
@@ -367,6 +383,29 @@ function insertIntoTrackItems(params: {
   });
 }
 
+function insertReferenceTrackForPreparedItems(items: WorkspaceTimelineItem[]): WorkspaceTimelineTrack | null {
+  const tracks = editTracksForPreparedItems(items);
+  return tracks.find((track) => isWorkspaceTimelineVideoTrack(track)) ?? tracks[0] ?? null;
+}
+
+function insertionBoundaryForWholeClipInsert(params: {
+  items: WorkspaceTimelineItem[];
+  preparedItems: WorkspaceTimelineItem[];
+  requestedStartSec: number;
+}): number {
+  const referenceTrack = insertReferenceTrackForPreparedItems(params.preparedItems);
+  if (!referenceTrack) return params.requestedStartSec;
+
+  const targetItem = params.items
+    .filter((item) => shouldEditTrackItem({ items: params.items, item, track: referenceTrack }))
+    .filter((item) => params.requestedStartSec > item.startSec && params.requestedStartSec < itemEndSec(item))
+    .sort((left, right) => left.startSec - right.startSec)[0] ?? null;
+  if (!targetItem) return params.requestedStartSec;
+
+  const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
+  return snapTimelineValue(params.requestedStartSec < midpointSec ? targetItem.startSec : itemEndSec(targetItem));
+}
+
 export function normalizeWorkspaceTimelineStarts(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
   const tracks = Array.from(new Set(items.filter((item) => !shouldMirrorLinkedVideo(item, items)).map((item) => item.track)));
   const normalizedById = new Map<string, WorkspaceTimelineItem>();
@@ -427,6 +466,7 @@ export function deleteWorkspaceTimelineItem(
 }
 
 export function insertWorkspaceTimelineItems(params: {
+  allowInsertIntoClip?: boolean;
   items: WorkspaceTimelineItem[];
   newItems: WorkspaceTimelineItem[];
   mode: WorkspaceTimelineInsertMode;
@@ -446,13 +486,31 @@ export function insertWorkspaceTimelineItems(params: {
       ? selectedPrimaryItem.startSec
       : snapTimelineValue(params.playheadSec);
   const replaceDurationSec = params.mode === 'replace' && selectedPrimaryItem ? selectedPrimaryItem.durationSec : undefined;
-  const preparedItems = retimeNewItems(params.newItems, targetStartSec, replaceDurationSec);
+  const preliminaryItems = retimeNewItems(params.newItems, targetStartSec, replaceDurationSec);
+  const resolvedTargetStartSec = params.mode === 'insert' && !params.allowInsertIntoClip
+    ? insertionBoundaryForWholeClipInsert({
+        items: params.items,
+        preparedItems: preliminaryItems,
+        requestedStartSec: targetStartSec,
+      })
+    : targetStartSec;
+  const preparedItems = resolvedTargetStartSec === targetStartSec
+    ? preliminaryItems
+    : retimeNewItems(params.newItems, resolvedTargetStartSec, replaceDurationSec);
   const affectedTracks = editTracksForPreparedItems(preparedItems);
-  const insertDurationsByTrack = new Map<WorkspaceTimelineTrack, number>();
+  const insertRangesByTrack = new Map<WorkspaceTimelineTrack, { endSec: number; startSec: number }>();
   preparedItems.forEach((item) => {
-    if (item.track === 'linked-audio' && hasLinkedVideoPeer(preparedItems, item)) return;
-    insertDurationsByTrack.set(item.track, Math.max(insertDurationsByTrack.get(item.track) ?? 0, item.durationSec));
+    if (isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(preparedItems, item)) return;
+    const currentRange = insertRangesByTrack.get(item.track);
+    insertRangesByTrack.set(item.track, {
+      startSec: Math.min(currentRange?.startSec ?? item.startSec, item.startSec),
+      endSec: Math.max(currentRange?.endSec ?? itemEndSec(item), itemEndSec(item)),
+    });
   });
+  const insertDurationsByTrack = new Map(Array.from(insertRangesByTrack.entries()).map(([track, range]) => [
+    track,
+    snapTimelineValue(range.endSec - range.startSec),
+  ]));
 
   if (params.mode === 'replace' && selectedPrimaryItem) {
     return [
@@ -480,7 +538,7 @@ export function insertWorkspaceTimelineItems(params: {
     return insertIntoTrackItems({
       items: currentItems,
       track,
-      insertStartSec: targetStartSec,
+      insertStartSec: resolvedTargetStartSec,
       insertDurationSec,
       idSeed,
     });
@@ -707,6 +765,177 @@ function constrainTimelineSelectionDelta(
   return snapTimelineValue(safeDeltaSec);
 }
 
+function timelineSelectionItemsForKeys(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
+  return items.filter((candidate) => selectedKeys.has(timelineSelectionKeyForItem(candidate)));
+}
+
+export function unlinkWorkspaceTimelineSelection(items: WorkspaceTimelineItem[], itemIds: string[]): WorkspaceTimelineItem[] {
+  const selectedKeys = timelineSelectionKeysForItemIds(items, itemIds);
+  if (!selectedKeys.size) return items;
+  const selectedGroupIds = new Set(
+    timelineSelectionItemsForKeys(items, selectedKeys)
+      .map((item) => item.linkedGroupId)
+      .filter((groupId): groupId is string => Boolean(groupId))
+  );
+  if (!selectedGroupIds.size) return items;
+
+  return items.map((item) => {
+    if (!item.linkedGroupId || !selectedGroupIds.has(item.linkedGroupId)) return item;
+    return {
+      ...item,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    };
+  });
+}
+
+export function linkWorkspaceTimelineSelection(
+  items: WorkspaceTimelineItem[],
+  itemIds: string[],
+  idSeed = Date.now().toString(36)
+): WorkspaceTimelineItem[] {
+  const selectedKeys = timelineSelectionKeysForItemIds(items, itemIds);
+  if (selectedKeys.size < 2) return items;
+  const selectedItems = timelineSelectionItemsForKeys(items, selectedKeys);
+  if (selectedItems.length < 2) return items;
+  const selectedItemIds = new Set(selectedItems.map((item) => item.id));
+  const usedGroupIds = new Set(
+    items
+      .filter((item) => !selectedItemIds.has(item.id))
+      .map((item) => item.linkedGroupId)
+      .filter((groupId): groupId is string => Boolean(groupId))
+  );
+  const linkedGroupId = uniqueTimelineIdentifier(idSeed, usedGroupIds);
+
+  return items.map((item) => {
+    if (!selectedItemIds.has(item.id)) return item;
+    return {
+      ...item,
+      linkedGroupId,
+      linkedGroupKind: 'manual',
+    };
+  });
+}
+
+function packagePrimaryTimelineItemFor(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem | null {
+  return [...items]
+    .sort((left, right) => (
+      (isWorkspaceTimelineVideoTrack(left.track) ? 0 : 1) - (isWorkspaceTimelineVideoTrack(right.track) ? 0 : 1) ||
+      left.startSec - right.startSec ||
+      left.id.localeCompare(right.id)
+    ))[0] ?? null;
+}
+
+function timelineSelectionRemovalEvents(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): Array<{
+  durationSec: number;
+  startSec: number;
+  track: WorkspaceTimelineTrack;
+}> {
+  const selectedItems = timelineSelectionItemsForKeys(items, selectedKeys);
+  return selectedItems
+    .filter((item) => !(isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(selectedItems, item)))
+    .map((item) => ({
+      durationSec: item.durationSec,
+      startSec: item.startSec,
+      track: item.track,
+    }))
+    .sort((left, right) => left.startSec - right.startSec || left.track.localeCompare(right.track));
+}
+
+function removeTimelineSelectionWithRipple(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
+  const selectedIds = new Set(timelineSelectionItemsForKeys(items, selectedKeys).map((item) => item.id));
+  const removalEvents = timelineSelectionRemovalEvents(items, selectedKeys);
+  const removedDurationByTrack = new Map<WorkspaceTimelineTrack, number>();
+  let nextItems = items.filter((item) => !selectedIds.has(item.id));
+
+  removalEvents.forEach((event) => {
+    const removedBeforeSec = removedDurationByTrack.get(event.track) ?? 0;
+    const adjustedAfterSec = snapTimelineValue(event.startSec + event.durationSec - removedBeforeSec);
+    nextItems = shiftTrackItemsAfter(nextItems, event.track, adjustedAfterSec, -event.durationSec, new Set());
+    removedDurationByTrack.set(event.track, snapTimelineValue(removedBeforeSec + event.durationSec));
+  });
+
+  return nextItems;
+}
+
+function adjustInsertStartAfterSelectionRipple(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  targetTrack: WorkspaceTimelineTrack,
+  targetStartSec: number
+): number {
+  const removedBeforeSec = timelineSelectionRemovalEvents(items, selectedKeys)
+    .filter((event) => event.track === targetTrack && event.startSec < targetStartSec)
+    .reduce((durationSec, event) => durationSec + Math.min(event.durationSec, Math.max(0, targetStartSec - event.startSec)), 0);
+  return snapTimelineValue(Math.max(0, targetStartSec - removedBeforeSec));
+}
+
+function timelineSelectionContainsTarget(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  targetTrack: WorkspaceTimelineTrack,
+  targetStartSec: number
+): boolean {
+  return items.some((item) => (
+    selectedKeys.has(timelineSelectionKeyForItem(item)) &&
+    item.track === targetTrack &&
+    targetStartSec > item.startSec &&
+    targetStartSec < itemEndSec(item)
+  ));
+}
+
+function timelineSelectionHasExternalTarget(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  targetTrack: WorkspaceTimelineTrack,
+  targetStartSec: number
+): boolean {
+  return items.some((item) => (
+    !selectedKeys.has(timelineSelectionKeyForItem(item)) &&
+    item.track === targetTrack &&
+    targetStartSec > item.startSec &&
+    targetStartSec < itemEndSec(item)
+  ));
+}
+
+function replacementTargetItemIdFor(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  targetTrack: WorkspaceTimelineTrack,
+  targetStartSec: number
+): string | null {
+  return items
+    .filter((item) => (
+      !selectedKeys.has(timelineSelectionKeyForItem(item)) &&
+      item.track === targetTrack &&
+      targetStartSec >= item.startSec &&
+      targetStartSec < itemEndSec(item)
+    ))
+    .sort((left, right) => left.startSec - right.startSec)[0]?.id ?? null;
+}
+
+function retargetTimelineSelectionItems(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  anchorItem: WorkspaceTimelineItem,
+  targetTrack?: WorkspaceTimelineTrack
+): WorkspaceTimelineItem[] {
+  if (!targetTrack || selectedKeys.size > 1) return items;
+  return items.map((item) => {
+    if (isWorkspaceTimelineVideoTrack(item.track) && isWorkspaceTimelineVideoTrack(targetTrack)) {
+      return { ...item, track: targetTrack };
+    }
+    if (
+      isWorkspaceTimelineAudioTrack(item.track) &&
+      isWorkspaceTimelineAudioTrack(targetTrack) &&
+      (item.id === anchorItem.id || !hasLinkedVideoPeer(items, item))
+    ) {
+      return { ...item, track: targetTrack };
+    }
+    return item;
+  });
+}
+
 export function positionWorkspaceTimelineItems(
   items: WorkspaceTimelineItem[],
   itemIds: string[],
@@ -738,6 +967,68 @@ export function positionWorkspaceTimelineItems(
       ...candidate,
       startSec: snapTimelineValue(candidate.startSec + safeDeltaSec),
     };
+  });
+}
+
+export function moveWorkspaceTimelineSelectionWithMode(params: {
+  allowInsertIntoClip?: boolean;
+  anchorItemId: string;
+  idSeed?: string;
+  itemIds: string[];
+  items: WorkspaceTimelineItem[];
+  mode: WorkspaceTimelineInsertMode;
+  nextStartSec: number;
+  nextTrack?: WorkspaceTimelineTrack;
+}): WorkspaceTimelineItem[] {
+  const selectedKeys = timelineSelectionKeysForItemIds(params.items, params.itemIds);
+  const anchorItem = params.items.find((candidate) => candidate.id === params.anchorItemId);
+  if (!anchorItem) return params.items;
+
+  const anchorKey = timelineSelectionKeyForItem(anchorItem);
+  if (!selectedKeys.has(anchorKey)) {
+    return positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
+  }
+
+  const selectedItems = timelineSelectionItemsForKeys(params.items, selectedKeys);
+  const anchorPrimaryItem = primaryTimelineItemFor(params.items, anchorItem);
+  const packagePrimaryItem = packagePrimaryTimelineItemFor(selectedItems);
+  if (!packagePrimaryItem) return params.items;
+
+  const targetTrack = params.nextTrack && isWorkspaceTimelineVideoTrack(anchorPrimaryItem.track) && isWorkspaceTimelineVideoTrack(params.nextTrack)
+    ? params.nextTrack
+    : params.nextTrack && isWorkspaceTimelineAudioTrack(anchorItem.track) && isWorkspaceTimelineAudioTrack(params.nextTrack) && !hasLinkedVideoPeer(selectedItems, anchorItem)
+      ? params.nextTrack
+      : anchorPrimaryItem.track;
+  const anchorOffsetSec = snapTimelineValue(anchorPrimaryItem.startSec - packagePrimaryItem.startSec);
+  const packageTargetStartSec = snapTimelineValue(Math.max(0, params.nextStartSec - anchorOffsetSec));
+  const targetInsideSelection = timelineSelectionContainsTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
+  const targetInsideExternalClip = timelineSelectionHasExternalTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
+
+  if (params.mode === 'insert' && targetInsideSelection && !targetInsideExternalClip) {
+    return selectedKeys.size > 1
+      ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
+      : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
+  }
+  const movedItems = retargetTimelineSelectionItems(selectedItems, selectedKeys, anchorItem, params.nextTrack);
+  const baseItems = params.mode === 'insert'
+    ? removeTimelineSelectionWithRipple(params.items, selectedKeys)
+    : params.items.filter((item) => !selectedKeys.has(timelineSelectionKeyForItem(item)));
+  const replacementTargetItemId = params.mode === 'replace' && selectedKeys.size <= 1
+    ? replacementTargetItemIdFor(baseItems, new Set(), targetTrack, packageTargetStartSec)
+    : null;
+  const resolvedMode: WorkspaceTimelineInsertMode = params.mode === 'replace' && !replacementTargetItemId ? 'insert' : params.mode;
+  const insertStartSec = resolvedMode === 'insert'
+    ? adjustInsertStartAfterSelectionRipple(params.items, selectedKeys, targetTrack, packageTargetStartSec)
+    : packageTargetStartSec;
+
+  return insertWorkspaceTimelineItems({
+    items: baseItems,
+    newItems: movedItems,
+    mode: resolvedMode,
+    playheadSec: insertStartSec,
+    selectedItemId: replacementTargetItemId,
+    idSeed: params.idSeed ?? `move-${params.anchorItemId}`,
+    allowInsertIntoClip: params.allowInsertIntoClip,
   });
 }
 
@@ -916,7 +1207,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
       {
         ...common,
         id: baseId,
-        track: 'music',
+        track: 'audio',
         mediaKind: 'audio',
         mediaUrl,
       },
@@ -928,6 +1219,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
     id: baseId,
     track: 'video',
     linkedGroupId: workspaceAssetHasTimelineAudio(params.asset) ? baseId : null,
+    linkedGroupKind: workspaceAssetHasTimelineAudio(params.asset) ? 'video-audio' : null,
     mediaKind: params.asset.kind === 'video' ? 'video' : 'image',
     hasEmbeddedAudio: workspaceAssetHasTimelineAudio(params.asset),
     mediaUrl,
@@ -942,8 +1234,9 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
       ...common,
       id: `${baseId}-audio`,
       title: `${params.title} Audio`,
-      track: 'linked-audio',
+      track: 'audio',
       linkedGroupId: baseId,
+      linkedGroupKind: 'video-audio',
       mediaKind: 'audio',
       mediaUrl,
       thumbnailUrl: null,
@@ -978,7 +1271,7 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
       {
         ...common,
         id: baseId,
-        track: 'music',
+        track: 'audio',
         mediaKind: 'audio',
         mediaUrl: params.output.url ?? null,
       },
@@ -989,7 +1282,8 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
     ...common,
     id: baseId,
     track: 'video',
-    linkedGroupId: baseId,
+    linkedGroupId: workspaceOutputHasTimelineAudio(params.output) ? baseId : null,
+    linkedGroupKind: workspaceOutputHasTimelineAudio(params.output) ? 'video-audio' : null,
     mediaKind: params.output.kind === 'image' ? 'image' : 'video',
     hasEmbeddedAudio: workspaceOutputHasTimelineAudio(params.output),
     mediaUrl: params.output.url ?? null,
@@ -1004,8 +1298,9 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
       ...common,
       id: `${baseId}-audio`,
       title: `${params.title} Audio`,
-      track: 'linked-audio',
+      track: 'audio',
       linkedGroupId: baseId,
+      linkedGroupKind: 'video-audio',
       mediaKind: 'audio',
       mediaUrl: params.output.audioUrl ?? params.output.url ?? null,
       thumbnailUrl: null,

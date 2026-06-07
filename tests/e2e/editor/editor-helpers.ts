@@ -8,6 +8,11 @@ export type TimelineClipState = {
   start: number;
 };
 
+export type TimelineClipFullState = TimelineClipState & {
+  id: string;
+  track: string;
+};
+
 export function trackEditorClientErrors(page: Page): EditorClientErrors {
   return trackClientErrors(page);
 }
@@ -23,6 +28,11 @@ export async function openEditorWorkspace(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toBeVisible();
   await expect(page.getByLabel('Video timeline')).toBeVisible();
   await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => undefined);
+  const rejectCookies = page.getByRole('button', { name: 'Reject all' });
+  await rejectCookies.waitFor({ state: 'visible', timeout: 2_000 }).catch(() => undefined);
+  if (await rejectCookies.isVisible().catch(() => false)) {
+    await rejectCookies.click();
+  }
 }
 
 export async function openFreshEditorWorkspace(page: Page): Promise<void> {
@@ -40,6 +50,16 @@ export async function switchEditorFocus(page: Page, focus: 'Canvas' | 'Viewer'):
 
 export async function timelineItemCount(page: Page): Promise<number> {
   return page.locator('[data-timeline-item]').count();
+}
+
+export async function canvasNodeCount(page: Page): Promise<number> {
+  return page.locator('.react-flow__node').count();
+}
+
+export async function clickCanvasNode(page: Page, nodeId: string): Promise<void> {
+  const node = page.locator(`.react-flow__node[data-id="${nodeId}"]`);
+  await expect(node).toBeVisible();
+  await node.click();
 }
 
 export async function timelineFrameStep(page: Page): Promise<number> {
@@ -64,6 +84,25 @@ export async function timelineClipState(page: Page, itemId: string): Promise<Tim
   };
 }
 
+export async function timelineClipStates(page: Page): Promise<TimelineClipFullState[]> {
+  return page.locator('[data-timeline-item]').evaluateAll((clips) =>
+    clips.map((clip) => ({
+      id: clip.getAttribute('data-timeline-item') ?? '',
+      track: clip.getAttribute('data-timeline-track-id') ?? '',
+      duration: Number(clip.getAttribute('data-timeline-duration')),
+      selected: clip.getAttribute('data-selected') === 'true',
+      start: Number(clip.getAttribute('data-timeline-start')),
+    }))
+  );
+}
+
+export async function hasTimelineOverlap(page: Page, track: string): Promise<boolean> {
+  const clips = (await timelineClipStates(page))
+    .filter((clip) => clip.track === track)
+    .sort((left, right) => left.start - right.start);
+  return clips.some((clip, index) => index > 0 && clip.start < clips[index - 1].start + clips[index - 1].duration - 0.0001);
+}
+
 export async function dragTimelineClip(page: Page, itemId: string, deltaX: number, deltaY = 0): Promise<void> {
   const clip = page.locator(`[data-timeline-item="${itemId}"]`);
   await expect(clip).toBeVisible();
@@ -79,6 +118,46 @@ export async function dragTimelineClip(page: Page, itemId: string, deltaX: numbe
   await page.mouse.up();
 }
 
+export async function dragTimelineClipFromLeft(page: Page, itemId: string, deltaX: number, deltaY = 0): Promise<void> {
+  const clip = page.locator(`[data-timeline-item="${itemId}"]`);
+  await expect(clip).toBeVisible();
+  const box = await clip.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) return;
+
+  const startX = box.x + Math.min(Math.max(32, box.width * 0.2), box.width - 18);
+  const startY = box.y + box.height / 2;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX + deltaX, startY + deltaY, { steps: 8 });
+  await page.mouse.up();
+}
+
+export async function dropCanvasNodeOnTimelineTrack(page: Page, nodeTitle: string, track: string, seconds: number): Promise<void> {
+  const node = page.locator('[data-timeline-node-drag-kind]', { hasText: nodeTitle }).first();
+  await expect(node).toBeVisible();
+  const lane = page.locator(`[data-timeline-track="${track}"]`);
+  await expect(lane).toBeVisible();
+  const laneBox = await lane.boundingBox();
+  expect(laneBox).not.toBeNull();
+  if (!laneBox) return;
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  const targetX = laneBox.x + seconds * pixelsPerSecond;
+  const targetY = laneBox.y + laneBox.height / 2;
+  const payload = await node.evaluate((element) => {
+    const mediaKind = element.getAttribute('data-timeline-node-drag-kind');
+    const nodeId = element.closest('[data-id]')?.getAttribute('data-id');
+    if (!mediaKind || !nodeId) throw new Error('Missing timeline drag payload data.');
+    return { mediaKind, nodeId };
+  });
+  await lane.evaluate((target, { clientX, clientY, mediaKind, nodeId }) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({ nodeId, mediaKind }));
+    target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+    target.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+  }, { clientX: targetX, clientY: targetY, ...payload });
+}
+
 export async function clickTimelineClip(page: Page, itemId: string, options: { shift?: boolean } = {}): Promise<void> {
   const clip = page.locator(`[data-timeline-item="${itemId}"]`);
   await expect(clip).toBeVisible();
@@ -87,8 +166,18 @@ export async function clickTimelineClip(page: Page, itemId: string, options: { s
   if (!box) return;
 
   if (options.shift) await page.keyboard.down('Shift');
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.click(box.x + Math.min(28, Math.max(8, box.width - 8)), box.y + box.height / 2);
   if (options.shift) await page.keyboard.up('Shift');
+}
+
+export async function clickTimelineTrackAtSecond(page: Page, track: string, seconds: number): Promise<void> {
+  const lane = page.locator(`[data-timeline-track="${track}"]`);
+  await expect(lane).toBeVisible();
+  const laneBox = await lane.boundingBox();
+  expect(laneBox).not.toBeNull();
+  if (!laneBox) return;
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  await page.mouse.click(laneBox.x + seconds * pixelsPerSecond, laneBox.y + laneBox.height / 2);
 }
 
 export async function dragTimelineClipEnd(page: Page, itemId: string, deltaX: number): Promise<void> {
@@ -113,7 +202,7 @@ export async function cutTimelineClipAtRatio(page: Page, itemId: string, ratio: 
   expect(box).not.toBeNull();
   if (!box) return;
 
-  await page.getByRole('button', { name: 'Cut tool' }).click();
-  await expect(page.getByRole('button', { name: 'Cut tool' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Blade / Cut tool' }).click();
+  await expect(page.getByRole('button', { name: 'Blade / Cut tool' })).toHaveAttribute('aria-pressed', 'true');
   await page.mouse.click(box.x + box.width * ratio, box.y + box.height / 2);
 }

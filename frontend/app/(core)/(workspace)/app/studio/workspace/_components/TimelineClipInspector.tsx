@@ -140,17 +140,6 @@ export function TimelineClipInspector({
         </div>
       </div>
       <div className={styles.settingsBody}>
-        <div className={styles.infoGrid}>
-          <span>Start</span>
-          <strong>{formatWorkspaceTimecode(selectedItem.startSec, projectFps)}</strong>
-          <span>End</span>
-          <strong>{formatWorkspaceTimecode(itemEndSec(selectedItem), projectFps)}</strong>
-          <span>Duration</span>
-          <strong>{formatWorkspaceTimecode(selectedItem.durationSec, projectFps)}</strong>
-          <span>Source in</span>
-          <strong>{formatWorkspaceTimecode(selectedItem.sourceStartSec ?? 0, projectFps)}</strong>
-        </div>
-
         <label className={styles.settingsLabel}>
           Clip name
           <input
@@ -275,6 +264,17 @@ export function TimelineClipInspector({
             ) : null}
           </section>
         ) : null}
+
+        <div className={styles.infoGrid} data-timeline-clip-timing="true" aria-label="Clip timing details">
+          <span>Start</span>
+          <strong>{formatWorkspaceTimecode(selectedItem.startSec, projectFps)}</strong>
+          <span>End</span>
+          <strong>{formatWorkspaceTimecode(itemEndSec(selectedItem), projectFps)}</strong>
+          <span>Duration</span>
+          <strong>{formatWorkspaceTimecode(selectedItem.durationSec, projectFps)}</strong>
+          <span>Source in</span>
+          <strong>{formatWorkspaceTimecode(selectedItem.sourceStartSec ?? 0, projectFps)}</strong>
+        </div>
       </div>
     </aside>
   );

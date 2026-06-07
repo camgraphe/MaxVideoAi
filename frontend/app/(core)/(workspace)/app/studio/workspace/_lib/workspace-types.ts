@@ -46,8 +46,9 @@ export type WorkspaceShotStatus = 'draft' | 'ready' | 'incompatible' | 'generati
 export type WorkspaceOutputStatus = 'placeholder' | 'processing' | 'ready' | 'failed';
 export type WorkspacePromptRole = 'prompt' | 'negative_prompt' | 'style' | 'camera' | 'dialogue' | 'narration' | 'scene_description';
 export type WorkspaceTimelineVideoTrack = 'video' | `video-${number}`;
-export type WorkspaceTimelineAudioTrack = 'linked-audio' | 'music' | 'voiceover' | 'sfx';
+export type WorkspaceTimelineAudioTrack = 'audio' | `audio-${number}`;
 export type WorkspaceTimelineTrack = WorkspaceTimelineVideoTrack | WorkspaceTimelineAudioTrack;
+export type WorkspaceTimelineLinkedGroupKind = 'video-audio' | 'manual';
 
 export type WorkspaceProjectSettings = {
   aspectRatio: Extract<AspectRatio, '16:9' | '9:16' | '1:1' | '4:5' | '21:9'>;
@@ -199,7 +200,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   validation?: WorkspaceShotValidation;
   pricingEstimate?: WorkspacePricingEstimate;
   onGenerateShot?: (nodeId: string) => void;
-  onSendOutputToTimeline?: (nodeId: string, mode?: 'insert' | 'overwrite' | 'replace') => void;
+  onSendOutputToTimeline?: (nodeId: string) => void;
   onPromptChange?: (nodeId: string, value: string) => void;
   onOpenAssetLibrary?: (nodeId: string) => void;
 };
@@ -230,6 +231,7 @@ export type WorkspaceTimelineItem = {
   sourceStartSec?: number;
   sourceDurationSec?: number;
   linkedGroupId?: string | null;
+  linkedGroupKind?: WorkspaceTimelineLinkedGroupKind | null;
   mediaKind?: 'video' | 'audio' | 'image';
   hasEmbeddedAudio?: boolean;
   mediaUrl?: string | null;

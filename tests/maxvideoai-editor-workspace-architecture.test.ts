@@ -109,7 +109,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /normalizePlaceholderOutputNodes/, 'orchestrator should normalize stale fake output media into placeholders');
   assert.match(workspaceSource, /normalizeTimelineMediaUrls/, 'orchestrator should hydrate stale timeline clips with playable output media URLs');
   assert.match(workspaceSource, /isPlayableVideoUrl/, 'orchestrator should distinguish playable video URLs from image thumbnails');
-  assert.match(workspaceSource, /isPlayableAudioUrl/, 'orchestrator should hydrate playable audio URLs for music, voiceover, and linked audio timeline clips');
+  assert.match(workspaceSource, /isPlayableAudioUrl/, 'orchestrator should hydrate playable audio URLs for generic audio timeline clips');
   assert.match(workspaceSource, /normalizeGeneratedOutputEdges/, 'orchestrator should normalize stale output edge handles from persisted editor state');
   assert.match(workspaceSource, /normalizeShotOutputNodes/, 'orchestrator should normalize stale generated-shot output handles from persisted editor state');
   assert.match(workspaceSource, /normalizeShotOutputEdges/, 'orchestrator should normalize stale generated-shot source edge handles');
@@ -250,7 +250,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(typesSource, /sourceStartSec\?: number/, 'timeline clips should carry source in-points for trim editing');
   assert.match(typesSource, /sourceDurationSec\?: number/, 'timeline clips should remember their original source duration');
   assert.match(typesSource, /linkedGroupId\?: string \| null/, 'timeline clips should be able to link video and audio segments');
-  assert.match(typesSource, /'linked-audio'/, 'timeline should reserve a linked audio track for videos with sound');
+  assert.match(typesSource, /`audio-\$\{number\}`/, 'timeline audio tracks should allow Audio 2, Audio 3, and later audio lanes');
   assert.match(typesSource, /WorkspaceTimelineClipTransform/, 'timeline should type clip transform edit properties');
   assert.match(typesSource, /WorkspaceTimelineAudioMix/, 'timeline should type clip audio mix edit properties');
   assert.match(typesSource, /transform\?: WorkspaceTimelineClipTransform/, 'timeline clips should store per-clip transform settings');
@@ -285,6 +285,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /WorkspaceTimelineTrimMode/, 'timeline helper should type normal, ripple, and roll trim modes');
   assert.match(timelineEditingSource, /export function trimWorkspaceTimelineItem/, 'timeline helper should trim clip starts and ends');
   assert.match(timelineEditingSource, /export function positionWorkspaceTimelineItem/, 'timeline helper should support direct pointer-based clip moves');
+  assert.match(timelineEditingSource, /export function moveWorkspaceTimelineSelectionWithMode/, 'timeline helper should route pointer drags through insert, overwrite, and replace modes');
   assert.match(timelineEditingSource, /nextTrack\?: WorkspaceTimelineTrack/, 'timeline helper should support moving clips between video tracks');
   assert.match(timelineTracksSource, /isWorkspaceTimelineVideoTrack/, 'timeline track helper should distinguish video tracks from audio tracks');
   assert.match(timelineEditingSource, /isWorkspaceTimelineVideoTrack/, 'timeline editing should use the shared video-track helper');
@@ -479,8 +480,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /timelineHistory/, 'workspace should keep undo and redo history for timeline edits');
   assert.match(workspaceSource, /handleUndoTimeline/, 'workspace should support timeline undo');
   assert.match(workspaceSource, /handleRedoTimeline/, 'workspace should support timeline redo');
-  assert.match(workspaceSource, /timelineEditMode/, 'workspace should track insert, overwrite, and replace edit mode');
+  assert.doesNotMatch(workspaceSource, /timelineEditMode/, 'workspace should no longer expose selectable insert, overwrite, or replace timeline modes');
   assert.match(workspaceSource, /insertWorkspaceTimelineItems/, 'canvas outputs should enter the sequence through timeline insert operations');
+  assert.match(workspaceSource, /handleDropNodeToTimeline/, 'canvas media nodes should be droppable directly onto a timeline track');
+  assert.match(workspaceSource, /retargetWorkspaceTimelineItemsForTrack/, 'timeline drops should retarget visual and audio clips to the dropped lane');
   assert.match(workspaceSource, /selectedTimelineItem/, 'workspace should derive the selected timeline item for Viewer mode editing');
   assert.match(workspaceSource, /handlePatchTimelineItem/, 'workspace should expose timeline clip patching for the clip inspector');
   assert.match(workspaceSource, /projectSettings/, 'workspace should persist and pass project-level aspect ratio, resolution, and FPS');
@@ -506,7 +509,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /buildSnapTargets/, 'timeline should snap to clip edges, playhead, and zero');
   assert.match(timelineSource, /timelineSnapGuide/, 'timeline should render a visible snap guide while editing');
   assert.match(timelineSource, /activeTimelineTool/, 'timeline should keep a selected edit tool mode');
-  assert.match(timelineSource, /Cut tool/, 'cut should be a selected tool instead of only a per-clip duplicate action');
+  assert.match(timelineSource, /Blade \/ Cut tool/, 'cut should be a selected blade tool instead of only a per-clip duplicate action');
+  assert.match(timelineSource, /Timeline editing tools/, 'timeline should expose editing tools as a toolbar');
+  assert.match(timelineSource, /Selection tool/, 'timeline should expose selection as an editing tool');
+  assert.match(timelineSource, /Trim tool/, 'timeline should expose normal trim as an editing tool');
+  assert.match(timelineSource, /Ripple trim tool/, 'timeline should expose ripple trim as an editing tool');
+  assert.match(timelineSource, /Roll trim tool/, 'timeline should expose roll trim as an editing tool');
   assert.match(timelineSource, /data-tooltip/, 'timeline editing tools should expose shortcut tooltips');
   assert.match(timelineSource, /window\.addEventListener\('keydown'/, 'timeline should register basic keyboard shortcuts');
   assert.match(timelineSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
@@ -514,12 +522,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /event\.code === 'KeyC'/, 'C should activate the cut tool');
   assert.match(timelineSource, /event\.code === 'KeyV'/, 'V should return to the select and drag tool');
   assert.match(timelineSource, /event\.code === 'KeyM'/, 'M should toggle timeline snapping');
-  assert.match(timelineSource, /event\.code === 'KeyT'/, 'T should cycle timeline trim modes');
+  assert.match(timelineSource, /event\.code === 'KeyT'/, 'T should activate the normal trim tool');
+  assert.match(timelineSource, /event\.code === 'KeyR'/, 'R should activate the ripple trim tool');
+  assert.match(timelineSource, /event\.code === 'KeyY'/, 'Y should activate the roll trim tool');
   assert.match(timelineSource, /event\.code === 'Delete'/, 'Delete should remove the selected timeline clip');
   assert.match(timelineSource, /Cmd\/Ctrl \+ Z|KeyZ/, 'timeline should expose undo and redo shortcuts');
-  assert.match(timelineSource, /timelineModeControl/, 'timeline should expose insert, overwrite, and replace modes');
-  assert.match(timelineSource, /Timeline trim mode/, 'timeline should expose normal, ripple, and roll trim modes');
-  assert.match(timelineSource, /Toggle crossfade transition/, 'timeline should expose a transition toggle for the selected cut');
+  assert.doesNotMatch(timelineSource, /Timeline insert mode/, 'timeline toolbar should not expose insert, overwrite, or replace mode switches');
+  assert.doesNotMatch(timelineSource, /Timeline trim mode/, 'timeline should not expose trim, ripple, and roll as a text mode switch');
+  assert.doesNotMatch(timelineSource, /Toggle crossfade transition/, 'timeline toolbar should not expose ad hoc crossfade controls before the effects menu exists');
   assert.match(timelineSource, /event\.code === 'KeyS'|KeyB/, 'timeline should expose a keyboard split shortcut at the playhead');
   assert.match(timelineSource, /timelineClipCutMode/, 'clips should render a dedicated cut-mode pointer state');
   assert.match(timelineSource, /getBoundingClientRect/, 'cut tool should convert the mouse position on the clip into a split time');
@@ -544,6 +554,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /onPointerDown/, 'timeline should start mouse and pen edits from pointer events');
   assert.match(timelineSource, /pointermove/, 'timeline should preview clip movement while dragging');
   assert.match(timelineSource, /pointerup/, 'timeline should commit movement and resize edits on release');
+  assert.match(timelineSource, /application\/x-maxvideoai-timeline-node/, 'timeline should accept ready canvas media node drops');
+  assert.match(timelineSource, /timelineExternalDropGhost/, 'timeline should preview external block insertions before drop');
   assert.match(timelineSource, /setPointerCapture/, 'timeline should capture pointer drags instead of relying on HTML drag/drop');
   assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');
   assert.match(timelineSource, /onResizeItem/, 'timeline should commit direct clip resizing');
@@ -571,8 +583,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineClipInspectorSource, /Crossfade to next clip/, 'timeline clip inspector should expose selected-clip transition controls');
   assert.match(timelineClipInspectorSource, /onPatchItem\(selectedItem\.id/, 'timeline clip inspector should patch the selected timeline item only');
   assert.match(settingsSource, /Insert at playhead/, 'output inspector should expose insert at playhead');
-  assert.match(settingsSource, /Overwrite/, 'output inspector should expose overwrite edit');
-  assert.match(settingsSource, /Replace selected/, 'output inspector should expose replace selected edit');
+  assert.doesNotMatch(settingsSource, /Overwrite/, 'output inspector should not expose overwrite edit');
+  assert.doesNotMatch(settingsSource, /Replace selected/, 'output inspector should not expose replace selected edit');
   assert.match(assetLibraryBrowserSource, /export function WorkspaceAssetLibraryBrowser/, 'studio should wrap the app library structure in a route-local browser component');
   assert.match(assetLibraryBrowserSource, /searchQuery/, 'studio library browser should keep the app library search interaction');
   assert.match(assetLibraryBrowserSource, /filteredAssets/, 'studio library browser should filter visible assets from the search query');
@@ -651,7 +663,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(cssBlock(styleSource, '.trackLane'), /overflow:\s*visible/, 'individual timeline lanes should not render native horizontal scrollbars');
   assert.match(cssBlock(styleSource, '.trackLabel'), /position:\s*sticky/, 'timeline track labels should stay pinned while the shared viewport scrolls horizontally');
   assert.match(styleSource, /\.timelineToolButton/, 'timeline editing tools should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.timelineModeControl/, 'timeline insert mode control should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineToolGroup/, 'timeline editing tool group should be styled in isolated editor CSS');
+  assert.doesNotMatch(styleSource, /\.timelineModeControl/, 'timeline trim tools should not keep segmented mode control styling');
   assert.match(styleSource, /\.timelineInsertActions/, 'output inspector insert actions should be styled in isolated editor CSS');
   assert.match(styleSource, /\.timelineZoomControl/, 'timeline zoom control should be styled in isolated editor CSS');
   assert.match(styleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in isolated editor CSS');
@@ -692,7 +705,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
 
 test('MaxVideoAI editor timeline track helpers reject impossible video lanes', async () => {
   const {
+    isWorkspaceTimelineAudioTrack,
     isWorkspaceTimelineVideoTrack,
+    workspaceTimelineAudioTrackId,
+    workspaceTimelineAudioTrackIndex,
     workspaceTimelineVideoTrackId,
     workspaceTimelineTrackLabel,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-tracks');
@@ -706,6 +722,17 @@ test('MaxVideoAI editor timeline track helpers reject impossible video lanes', a
   );
   assert.equal(workspaceTimelineVideoTrackId(3), 'video-3', 'timeline should generate stable added video track ids');
   assert.equal(workspaceTimelineTrackLabel('video-2'), 'V2', 'timeline should label added video tracks as editing lanes');
+  assert.equal(isWorkspaceTimelineAudioTrack('audio'), true, 'base audio track should be treated as audio');
+  assert.equal(isWorkspaceTimelineAudioTrack('audio-3'), true, 'added audio tracks should be treated as audio');
+  assert.equal(
+    isWorkspaceTimelineAudioTrack('audio-0' as WorkspaceTimelineTrack),
+    false,
+    'timeline should reject impossible A0 tracks at runtime'
+  );
+  assert.equal(workspaceTimelineAudioTrackId(4), 'audio-4', 'timeline should generate stable added audio track ids');
+  assert.equal(workspaceTimelineAudioTrackIndex('audio-3'), 3, 'timeline should parse added audio track indexes');
+  assert.equal(workspaceTimelineTrackLabel('audio'), 'Audio 1', 'timeline should label the base audio lane generically');
+  assert.equal(workspaceTimelineTrackLabel('audio-3'), 'Audio 3', 'timeline should label added audio tracks generically');
 });
 
 test('MaxVideoAI editor render options reflect each engine audio capability', async () => {
@@ -1393,7 +1420,9 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     buildWorkspaceTimelineItemsForOutput,
     deleteWorkspaceTimelineItem,
     insertWorkspaceTimelineItems,
+    linkWorkspaceTimelineSelection,
     moveWorkspaceTimelineItem,
+    moveWorkspaceTimelineSelectionWithMode,
     normalizeWorkspaceTimelineIdentities,
     positionWorkspaceTimelineItem,
     positionWorkspaceTimelineItems,
@@ -1402,6 +1431,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     splitWorkspaceTimelineItem,
     toggleWorkspaceTimelineCrossfade,
     trimWorkspaceTimelineItem,
+    unlinkWorkspaceTimelineSelection,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
   const items: WorkspaceTimelineItem[] = [
     {
@@ -1421,7 +1451,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     {
       id: 'clip-a-audio',
       outputNodeId: 'output-a',
-      track: 'linked-audio',
+      track: 'audio',
       title: 'Clip A Audio',
       durationSec: 8,
       startSec: 0,
@@ -1443,7 +1473,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     {
       id: 'music-a',
       outputNodeId: 'audio-a',
-      track: 'music',
+      track: 'audio-2',
       title: 'Music',
       durationSec: 12,
       startSec: 0,
@@ -1460,12 +1490,12 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'moving a clip left should reorder only its track and recalculate video starts'
   );
   assert.deepEqual(
-    moved.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    moved.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec]),
     [['clip-a-audio', 6, 8]],
     'linked audio should stay synchronized when its video group moves'
   );
   assert.deepEqual(
-    moved.filter((item) => item.track === 'music').map((item) => [item.id, item.startSec]),
+    moved.filter((item) => item.track === 'audio-2').map((item) => [item.id, item.startSec]),
     [['music-a', 0]],
     'moving video clips should not disturb music track timing'
   );
@@ -1491,7 +1521,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'cut should split a clip at the requested offset, keep subsequent clips aligned, and preserve source in-points'
   );
   assert.deepEqual(
-    split.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec, item.linkedGroupId]),
+    split.filter((item) => item.track === 'audio').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec, item.linkedGroupId]),
     [
       ['clip-a-audio', 3, 0, 0, 'group-a'],
       ['clip-a-audio-split', 5, 3, 3, 'group-a-split'],
@@ -1526,11 +1556,11 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       .map(([groupId, tracks]) => [groupId, tracks.sort()])
       .sort((left, right) => String(left[0]).localeCompare(String(right[0]))),
     [
-      ['group-a', ['linked-audio', 'video']],
-      ['group-a-split', ['linked-audio', 'video']],
-      ['group-a-split-2', ['linked-audio', 'video']],
+      ['group-a', ['audio', 'video']],
+      ['group-a-split', ['audio', 'video']],
+      ['group-a-split-2', ['audio', 'video']],
     ],
-    'each split segment should keep exactly one video and one linked-audio item in its own linked group'
+    'each split segment should keep exactly one video and one linked audio item in its own linked group'
   );
 
   const repairedDuplicateSplit = normalizeWorkspaceTimelineIdentities([
@@ -1566,6 +1596,15 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       ['duplicate-audio', 0, 2],
     ],
     'dragging a repaired segment should not move the older segment from the same original clip'
+  );
+
+  const repairedOrphanAudioGroup = normalizeWorkspaceTimelineIdentities([
+    { ...items[1], id: 'orphan-audio', linkedGroupId: 'orphan-group' },
+  ]);
+  assert.deepEqual(
+    repairedOrphanAudioGroup.map((item) => [item.id, item.linkedGroupId ?? null, item.linkedGroupKind ?? null]),
+    [['orphan-audio', null, null]],
+    'persisted orphan audio links should be cleared when no corresponding video clip remains'
   );
 
   const trimmedEnd = trimWorkspaceTimelineItem(items, 'clip-a', 'end', 2);
@@ -1613,7 +1652,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'multi-select drag should move selected visual clips together while preserving their relative timing'
   );
   assert.deepEqual(
-    multiPositioned.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    multiPositioned.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec]),
     [['clip-a-audio', 2, 8]],
     'multi-select drag should keep linked audio synchronized with selected video groups'
   );
@@ -1638,7 +1677,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'dragging a clip past a neighboring midpoint should reorder the video track instead of leaving the clip blocked'
   );
   assert.deepEqual(
-    pointerReordered.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    pointerReordered.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec]),
     [['clip-a-audio', 6, 8]],
     'pointer reorder should keep linked audio aligned with its moved video group'
   );
@@ -1648,7 +1687,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     movedToOverlayTrack.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
     [
       ['clip-a', 'video-2', 1, 8],
-      ['clip-a-audio', 'linked-audio', 1, 8],
+      ['clip-a-audio', 'audio', 1, 8],
     ],
     'vertical drag should move the video clip to a target video track while keeping linked audio synchronized'
   );
@@ -1842,7 +1881,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     linkedOutputItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId, item.mediaKind, item.mediaUrl]),
     [
       ['video', 5, 14, 'timeline-output-c-test', 'video', '/hero/veo3.mp4'],
-      ['linked-audio', 5, 14, 'timeline-output-c-test', 'audio', '/hero/veo3.mp4'],
+      ['audio', 5, 14, 'timeline-output-c-test', 'audio', '/hero/veo3.mp4'],
     ],
     'video outputs with sound should create synchronized video and audio timeline clips'
   );
@@ -1866,9 +1905,48 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     importedVideoItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId, item.mediaKind, item.mediaUrl]),
     [
       ['video', 9, 4, 'timeline-asset-video-a-asset-test', 'video', '/uploads/phone-shot.mp4'],
-      ['linked-audio', 9, 4, 'timeline-asset-video-a-asset-test', 'audio', '/uploads/phone-shot.mp4'],
+      ['audio', 9, 4, 'timeline-asset-video-a-asset-test', 'audio', '/uploads/phone-shot.mp4'],
     ],
     'imported video assets should enter the timeline as synchronized video and linked audio clips'
+  );
+
+  const unlinkedImportedVideoItems = unlinkWorkspaceTimelineSelection(importedVideoItems, ['timeline-asset-video-a-asset-test']);
+  assert.deepEqual(
+    unlinkedImportedVideoItems.map((item) => [item.id, item.linkedGroupId ?? null, item.linkedGroupKind ?? null]),
+    [
+      ['timeline-asset-video-a-asset-test', null, null],
+      ['timeline-asset-video-a-asset-test-audio', null, null],
+    ],
+    'unlinking a selected video clip should detach its generated audio peer from the same linked group'
+  );
+  const unlinkedAudioMove = moveWorkspaceTimelineSelectionWithMode({
+    items: unlinkedImportedVideoItems,
+    itemIds: ['timeline-asset-video-a-asset-test-audio'],
+    anchorItemId: 'timeline-asset-video-a-asset-test-audio',
+    nextStartSec: 12,
+    mode: 'insert',
+    idSeed: 'unlinked-audio-drag',
+  });
+  assert.deepEqual(
+    unlinkedAudioMove.map((item) => [item.id, item.track, item.startSec]),
+    [
+      ['timeline-asset-video-a-asset-test', 'video', 4],
+      ['timeline-asset-video-a-asset-test-audio', 'audio', 12],
+    ],
+    'after unlink, dragging the audio peer should no longer move the video clip'
+  );
+
+  const relinkedImportedVideoItems = linkWorkspaceTimelineSelection(unlinkedImportedVideoItems, [
+    'timeline-asset-video-a-asset-test',
+    'timeline-asset-video-a-asset-test-audio',
+  ], 'manual-link');
+  assert.deepEqual(
+    relinkedImportedVideoItems.map((item) => [item.id, item.linkedGroupId ?? null, item.linkedGroupKind ?? null]),
+    [
+      ['timeline-asset-video-a-asset-test', 'manual-link', 'manual'],
+      ['timeline-asset-video-a-asset-test-audio', 'manual-link', 'manual'],
+    ],
+    'linking selected clips should create one manual linked group for the selection'
   );
 
   const importedAudioItems = buildWorkspaceTimelineItemsForAsset({
@@ -1888,7 +1966,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
   assert.deepEqual(
     importedAudioItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId ?? null, item.mediaKind, item.mediaUrl]),
     [
-      ['music', 22, 6, null, 'audio', '/uploads/track.wav'],
+      ['audio', 22, 6, null, 'audio', '/uploads/track.wav'],
     ],
     'imported audio assets should enter the timeline on an audio editing track'
   );
@@ -1925,21 +2003,92 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
   assert.deepEqual(
     insertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
     [
+      ['clip-a', 0, 8, 0],
+      ['timeline-output-c-test', 8, 5, 0],
+      ['clip-b', 13, 6, 0],
+    ],
+    'insert edit should resolve drops in the right half of a clip to the next edit point without shortening the target'
+  );
+  assert.deepEqual(
+    insertEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 8, 0, 'group-a'],
+      ['timeline-output-c-test-audio', 8, 5, 0, 'timeline-output-c-test'],
+    ],
+    'insert edit should preserve the linked audio duration while inserting at the resolved edit point'
+  );
+
+  const leftHalfInsertEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'insert',
+    playheadSec: 2,
+    selectedItemId: null,
+    idSeed: 'left-half-insert',
+  });
+  assert.deepEqual(
+    leftHalfInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['timeline-output-c-test', 0, 5, 0],
+      ['clip-a', 5, 8, 0],
+      ['clip-b', 13, 6, 0],
+    ],
+    'insert edit should resolve drops in the left half of a clip to the previous edit point and push every later clip'
+  );
+  assert.deepEqual(
+    leftHalfInsertEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['timeline-output-c-test-audio', 0, 5, 0, 'timeline-output-c-test'],
+      ['clip-a-audio', 5, 8, 0, 'group-a'],
+    ],
+    'left-half insert should keep linked audio synchronized after the whole target clip shifts'
+  );
+
+  const boundaryInsertEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'insert',
+    playheadSec: 8,
+    selectedItemId: null,
+    idSeed: 'boundary-insert',
+  });
+  assert.deepEqual(
+    boundaryInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 8, 0],
+      ['timeline-output-c-test', 8, 5, 0],
+      ['clip-b', 13, 6, 0],
+    ],
+    'insert edit should still insert at an edit point and push later clips'
+  );
+
+  const spliceInsertEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'insert',
+    playheadSec: 6,
+    selectedItemId: null,
+    idSeed: 'insert',
+    allowInsertIntoClip: true,
+  });
+  assert.deepEqual(
+    spliceInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
       ['clip-a', 0, 6, 0],
       ['timeline-output-c-test', 6, 5, 0],
       ['clip-a-tail-insert', 11, 2, 6],
       ['clip-b', 13, 6, 0],
     ],
-    'insert edit should split the clip under the playhead, insert the new output, and push later video clips'
+    'explicit splice insertion should split the clip under the playhead and push later clips'
   );
   assert.deepEqual(
-    insertEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    spliceInsertEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
     [
       ['clip-a-audio', 0, 6, 0, 'group-a'],
       ['timeline-output-c-test-audio', 6, 5, 0, 'timeline-output-c-test'],
       ['clip-a-audio-tail-insert', 11, 2, 6, 'group-a-tail-insert'],
     ],
-    'insert edit should split and shift linked audio exactly like its source video clip'
+    'explicit splice insertion should split linked audio with the source video clip'
   );
 
   const overwriteEdit = insertWorkspaceTimelineItems({
@@ -1961,7 +2110,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'overwrite edit should trim and split clips under the inserted range instead of allowing track overlap'
   );
   assert.deepEqual(
-    overwriteEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    overwriteEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
     [
       ['clip-a-audio', 0, 2, 0, 'group-a'],
       ['timeline-output-c-test-audio', 2, 5, 0, 'timeline-output-c-test'],
@@ -1987,7 +2136,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'replace edit should swap the selected clip slot without moving earlier clips'
   );
   assert.deepEqual(
-    replaceEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.linkedGroupId]),
+    replaceEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.linkedGroupId]),
     [
       ['clip-a-audio', 0, 8, 'group-a'],
       ['timeline-output-c-test-audio', 8, 5, 'timeline-output-c-test'],
@@ -2006,20 +2155,18 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
   assert.deepEqual(
     visualOnlyInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId ?? null]),
     [
-      ['clip-a', 0, 6, 0, 'group-a'],
-      ['timeline-asset-image-a-image-test', 6, 5, 0, null],
-      ['clip-a-tail-image-insert', 11, 2, 6, 'group-a-tail-image-insert'],
+      ['clip-a', 0, 8, 0, 'group-a'],
+      ['timeline-asset-image-a-image-test', 8, 5, 0, null],
       ['clip-b', 13, 6, 0, null],
     ],
-    'visual-only insert should split the source video clip without creating extra audio for the still'
+    'visual-only insert should snap an occupied drop to the nearest edit point without splitting the source video'
   );
   assert.deepEqual(
-    visualOnlyInsertEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    visualOnlyInsertEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
     [
-      ['clip-a-audio', 0, 6, 0, 'group-a'],
-      ['clip-a-audio-tail-image-insert', 11, 2, 6, 'group-a-tail-image-insert'],
+      ['clip-a-audio', 0, 8, 0, 'group-a'],
     ],
-    'visual-only insert should still split the original linked audio so video and audio tails stay paired'
+    'visual-only insert should preserve the original linked audio segment by default'
   );
 
   const visualOnlyOverwriteEdit = insertWorkspaceTimelineItems({
@@ -2031,12 +2178,123 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     idSeed: 'image-overwrite',
   });
   assert.deepEqual(
-    visualOnlyOverwriteEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    visualOnlyOverwriteEdit.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
     [
       ['clip-a-audio', 0, 2, 0, 'group-a'],
       ['clip-a-audio-tail-image-overwrite', 7, 1, 7, 'group-a-tail-image-overwrite'],
     ],
     'visual-only overwrite should remove the covered linked audio section instead of leaving stale full-length audio'
+  );
+
+  const insertedDragMove = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['clip-b'],
+    anchorItemId: 'clip-b',
+    nextStartSec: 2,
+    mode: 'insert',
+    idSeed: 'drag-insert',
+  });
+  assert.deepEqual(
+    insertedDragMove.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-b', 0, 6, 0],
+      ['clip-a', 6, 8, 0],
+    ],
+    'insert-mode drag should resolve an occupied left-half drop to before the whole target clip'
+  );
+  assert.deepEqual(
+    insertedDragMove.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 6, 8, 0, 'group-a'],
+    ],
+    'insert-mode drag should move the target linked audio without splitting it by default'
+  );
+
+  const spliceInsertedDragMove = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['clip-b'],
+    anchorItemId: 'clip-b',
+    nextStartSec: 4,
+    mode: 'insert',
+    idSeed: 'drag-insert',
+    allowInsertIntoClip: true,
+  });
+  assert.deepEqual(
+    spliceInsertedDragMove.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 4, 0],
+      ['clip-b', 4, 6, 0],
+      ['clip-a-tail-drag-insert', 10, 4, 4],
+    ],
+    'splice insert drag should split a long target clip when the explicit tool is enabled'
+  );
+  assert.deepEqual(
+    spliceInsertedDragMove.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 4, 0, 'group-a'],
+      ['clip-a-audio-tail-drag-insert', 10, 4, 4, 'group-a-tail-drag-insert'],
+    ],
+    'splice insert drag should split linked audio with the target video clip'
+  );
+
+  const multiDragItems: WorkspaceTimelineItem[] = [
+    { id: 'long-a', outputNodeId: 'long-a', track: 'video', title: 'Long A', durationSec: 10, startSec: 0, mediaKind: 'video' },
+    { id: 'move-b', outputNodeId: 'move-b', track: 'video', title: 'Move B', durationSec: 4, startSec: 10, mediaKind: 'video' },
+    { id: 'move-c', outputNodeId: 'move-c', track: 'video', title: 'Move C', durationSec: 4, startSec: 14, mediaKind: 'video' },
+    { id: 'tail-d', outputNodeId: 'tail-d', track: 'video', title: 'Tail D', durationSec: 4, startSec: 18, mediaKind: 'video' },
+  ];
+  const multiInsertedDragMove = moveWorkspaceTimelineSelectionWithMode({
+    items: multiDragItems,
+    itemIds: ['move-b', 'move-c'],
+    anchorItemId: 'move-b',
+    nextStartSec: 4,
+    mode: 'insert',
+    idSeed: 'multi-drag',
+  });
+  assert.deepEqual(
+    multiInsertedDragMove.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['move-b', 0, 4],
+      ['move-c', 4, 4],
+      ['long-a', 8, 10],
+      ['tail-d', 18, 4],
+    ],
+    'insert-mode multi-select drag should insert before the whole target clip when dropped in its left half'
+  );
+
+  const overwriteDragMove = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['clip-b'],
+    anchorItemId: 'clip-b',
+    nextStartSec: 2,
+    mode: 'overwrite',
+    idSeed: 'drag-overwrite',
+  });
+  assert.deepEqual(
+    overwriteDragMove.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 2, 0],
+      ['clip-b', 2, 6, 0],
+    ],
+    'overwrite-mode drag should rewrite the target range without pushing later clips'
+  );
+
+  const movedToV2WithMode = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['clip-a'],
+    anchorItemId: 'clip-a',
+    nextStartSec: 1,
+    nextTrack: 'video-2',
+    mode: 'insert',
+    idSeed: 'v2-drop',
+  });
+  assert.deepEqual(
+    movedToV2WithMode.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video-2', 1, 8],
+      ['clip-a-audio', 'audio', 1, 8],
+    ],
+    'insert-mode vertical drop should place the visual clip on V2 and keep linked audio synchronized'
   );
 
   const rippleDeleted = deleteWorkspaceTimelineItem(items, 'clip-a', { ripple: true });
@@ -2049,6 +2307,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
 
 test('MaxVideoAI editor timeline render manifest captures clips, assets, transitions, and blockers', async () => {
   const {
+    buildWorkspaceTimelineEdl,
     buildWorkspaceTimelineRenderManifest,
     serializeWorkspaceTimelineRenderManifest,
     workspaceTimelineRenderReadinessLabel,
@@ -2067,16 +2326,16 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
     createdAt: '2026-06-06T10:00:00.000Z',
   });
   const videoTrack = manifest.tracks.find((track) => track.id === 'video');
-  const linkedAudioTrack = manifest.tracks.find((track) => track.id === 'linked-audio');
-  const musicTrack = manifest.tracks.find((track) => track.id === 'music');
+  const linkedAudioTrack = manifest.tracks.find((track) => track.id === 'audio');
+  const musicTrack = manifest.tracks.find((track) => track.id === 'audio-2');
 
   assert.equal(manifest.status, 'ready', 'ready timelines should produce a renderable manifest');
   assert.equal(manifest.durationSec, 28, 'manifest duration should include audio beds, not only the video track');
   assert.deepEqual(
     videoTrack?.clips.map((clip) => [clip.id, clip.startSec, clip.endSec, clip.sourceStartSec, clip.sourceEndSec]),
     [
-      ['timeline-output-01', 0, 8, 0, 8],
-      ['timeline-output-02', 8, 16, 0, 8],
+      ['timeline-output-01', 0, 5, 0, 5],
+      ['timeline-output-02', 5, 13, 0, 8],
     ],
     'video clips should export ordered sequence timing and source in/out timing'
   );
@@ -2097,7 +2356,7 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
   });
   assert.deepEqual(
     clampedManifest.tracks.find((track) => track.id === 'video')?.clips[0]?.transitionOut,
-    { type: 'crossfade', durationSec: 4, nextClipId: 'timeline-output-02' },
+    { type: 'crossfade', durationSec: 2.5, nextClipId: 'timeline-output-02' },
     'render manifest should clamp stale crossfades to the same safe bounds as the viewer preview'
   );
   assert.equal(
@@ -2118,6 +2377,48 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
     workspaceTimelineRenderReadinessLabel(manifest),
     'Render manifest ready: 4 clips, 28s.',
     'export notice should summarize render readiness'
+  );
+
+  const rangeManifest = buildWorkspaceTimelineRenderManifest({
+    items,
+    nodes: template.nodes,
+    projectName: 'Product Ad',
+    createdAt: '2026-06-06T10:00:00.000Z',
+    exportRange: {
+      mode: 'in-out',
+      startSec: 4,
+      endSec: 10,
+    },
+  });
+  assert.deepEqual(
+    rangeManifest.exportRange,
+    {
+      mode: 'in-out',
+      startSec: 4,
+      endSec: 10,
+      durationSec: 6,
+    },
+    'render manifest should describe whether the export is the full sequence or an in/out range'
+  );
+  assert.equal(rangeManifest.durationSec, 6, 'in/out render duration should match the selected range');
+  assert.deepEqual(
+    rangeManifest.tracks.find((track) => track.id === 'video')?.clips.map((clip) => [
+      clip.id,
+      clip.startSec,
+      clip.endSec,
+      clip.sourceStartSec,
+      clip.sourceEndSec,
+    ]),
+    [
+      ['timeline-output-01', 0, 1, 4, 5],
+      ['timeline-output-02', 1, 6, 0, 5],
+    ],
+    'in/out export should trim overlapping clips and retime them from the range start'
+  );
+  assert.match(
+    buildWorkspaceTimelineEdl(rangeManifest),
+    /TITLE: Product Ad[\s\S]*FCM: NON-DROP FRAME[\s\S]*001\s+TIMELINE\s+V\s+C\s+00:00:04:00\s+00:00:05:00\s+00:00:00:00\s+00:00:01:00/,
+    'EDL export should serialize the same in/out edit decisions for NLE handoff'
   );
 
   const overlayManifest = buildWorkspaceTimelineRenderManifest({

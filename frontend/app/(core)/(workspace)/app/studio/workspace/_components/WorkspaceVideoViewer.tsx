@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Film } from 'lucide-react';
+import { Film, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import styles from '../maxvideoai-editor.module.css';
@@ -14,6 +14,7 @@ import {
   workspaceProjectDimensionsLabel,
 } from '../_lib/workspace-project-settings';
 import {
+  isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
   workspaceTimelineVideoTrackIndex,
 } from '../_lib/workspace-timeline-tracks';
@@ -55,12 +56,22 @@ type AudioPlaybackLayer = {
 };
 
 type WorkspaceVideoViewerProps = {
+  canGoToNextCut: boolean;
+  canGoToPreviousCut: boolean;
+  inPointSec: number | null;
   isPlaying: boolean;
   items: WorkspaceTimelineItem[];
+  outPointSec: number | null;
   playheadSec: number;
   projectSettings: WorkspaceProjectSettings;
   selectedItemId: string | null;
+  onClearInOut: () => void;
+  onGoToNextCut: () => void;
+  onGoToPreviousCut: () => void;
+  onMarkIn: () => void;
+  onMarkOut: () => void;
   onSelectItem: (itemId: string) => void;
+  onTogglePlayback: () => void;
 };
 
 function isPlayableVideoUrl(url?: string | null): boolean {
@@ -141,12 +152,22 @@ function clipVisualStyleFor(layer: PlaybackLayer): CSSProperties {
 }
 
 export function WorkspaceVideoViewer({
+  canGoToNextCut,
+  canGoToPreviousCut,
+  inPointSec,
   isPlaying,
   items,
+  outPointSec,
   playheadSec,
   projectSettings,
   selectedItemId,
+  onClearInOut,
+  onGoToNextCut,
+  onGoToPreviousCut,
+  onMarkIn,
+  onMarkOut,
   onSelectItem,
+  onTogglePlayback,
 }: WorkspaceVideoViewerProps) {
   const playbackVideoRefs = useRef(new Map<string, HTMLVideoElement>());
   const playbackAudioRefs = useRef(new Map<string, HTMLAudioElement>());
@@ -166,7 +187,7 @@ export function WorkspaceVideoViewer({
   const linkedAudioGroupIds = useMemo(
     () => new Set(
       audioItems
-        .filter((item) => item.track === 'linked-audio' && item.linkedGroupId && playableAudioUrlForItem(item))
+        .filter((item) => isWorkspaceTimelineAudioTrack(item.track) && item.linkedGroupId && playableAudioUrlForItem(item))
         .map((item) => item.linkedGroupId as string)
     ),
     [audioItems]
@@ -271,6 +292,11 @@ export function WorkspaceVideoViewer({
   const hasVisiblePlayableLayer = playbackLayers.some((layer) => layer.isVisible);
   const shouldShowEmptyState = items.length === 0 && !hasVisiblePlayableLayer;
   const projectDimensionsLabel = workspaceProjectDimensionsLabel(projectSettings);
+  const safeInPointSec = typeof inPointSec === 'number' && Number.isFinite(inPointSec) ? inPointSec : null;
+  const safeOutPointSec = typeof outPointSec === 'number' && Number.isFinite(outPointSec) ? outPointSec : null;
+  const hasInOutMarks = safeInPointSec !== null || safeOutPointSec !== null;
+  const inTimecode = safeInPointSec === null ? '--:--:--:--' : formatWorkspaceTimecode(safeInPointSec, projectSettings.fps);
+  const outTimecode = safeOutPointSec === null ? '--:--:--:--' : formatWorkspaceTimecode(safeOutPointSec, projectSettings.fps);
   const programFrameStyle = useMemo(() => {
     const [aspectWidth, aspectHeight] = workspaceProjectAspectParts(projectSettings.aspectRatio);
     const dimensions = workspaceProjectDimensions(projectSettings);
@@ -446,6 +472,9 @@ export function WorkspaceVideoViewer({
                   ref={registerPlaybackAudio}
                   className={styles.viewerAudioLayer}
                   data-playback-audio-item-id={layer.item.id}
+                  data-playback-audio-muted={layer.item.audioMix?.muted ? 'true' : 'false'}
+                  data-playback-audio-track-id={layer.item.track}
+                  muted={Boolean(layer.item.audioMix?.muted)}
                   onLoadedMetadata={syncPlaybackAudios}
                   preload="auto"
                   src={layer.url}
@@ -459,6 +488,68 @@ export function WorkspaceVideoViewer({
                 </div>
               ) : null}
             </div>
+          </div>
+          <div className={styles.viewerPlaybackControls} data-viewer-playback-controls="true">
+            <button
+              type="button"
+              onClick={onGoToPreviousCut}
+              disabled={!canGoToPreviousCut}
+              title="Go to previous edit cut"
+              aria-label="Previous cut"
+            >
+              <SkipBack size={17} />
+            </button>
+            <button
+              type="button"
+              className={styles.viewerPlaybackPrimary}
+              onClick={onTogglePlayback}
+              title={isPlaying ? 'Pause montage (Space)' : 'Play montage (Space)'}
+              aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
+            >
+              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+            <button
+              type="button"
+              onClick={onGoToNextCut}
+              disabled={!canGoToNextCut}
+              title="Go to next edit cut"
+              aria-label="Next cut"
+            >
+              <SkipForward size={17} />
+            </button>
+            <span className={styles.viewerPlaybackDivider} aria-hidden="true" />
+            <button
+              type="button"
+              className={styles.viewerMarkButton}
+              onClick={onMarkIn}
+              title="Mark In (I)"
+              aria-label="Mark In"
+            >
+              I
+            </button>
+            <button
+              type="button"
+              className={styles.viewerMarkButton}
+              onClick={onMarkOut}
+              title="Mark Out (O)"
+              aria-label="Mark Out"
+            >
+              O
+            </button>
+            <button
+              type="button"
+              className={styles.viewerMarkClearButton}
+              onClick={onClearInOut}
+              disabled={!hasInOutMarks}
+              title="Clear In and Out marks"
+              aria-label="Clear In and Out"
+            >
+              Clear
+            </button>
+          </div>
+          <div className={styles.viewerInOutSummary} data-viewer-in-out-summary="true" aria-label="Viewer in out marks">
+            <span>In {inTimecode}</span>
+            <span>Out {outTimecode}</span>
           </div>
         </div>
       </div>

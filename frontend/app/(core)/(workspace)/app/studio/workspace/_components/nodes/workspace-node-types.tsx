@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { memo, type MouseEvent } from 'react';
+import { memo, type DragEvent, type MouseEvent } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { Handle, NodeResizeControl, Position } from '@xyflow/react';
 import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, Video } from 'lucide-react';
@@ -22,6 +22,7 @@ const SOURCE_NODE_MIN_HEIGHT = 132;
 const SOURCE_NODE_MAX_WIDTH = 460;
 const SOURCE_NODE_MAX_HEIGHT = 380;
 const SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>(['asset-image', 'asset-video', 'asset-audio', 'text-prompt', 'output']);
+const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 
 function nodeAccent(data: WorkspaceGraphNode['data']): string {
   return typeof data.accent === 'string' ? data.accent : '#8b5cf6';
@@ -67,12 +68,34 @@ function isPlayableAudioUrl(url?: string | null): boolean {
   return /\.(mp3|wav|ogg|m4a|aac)(?:[?#].*)?$/i.test(url);
 }
 
+function isPlayableImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
+  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
+}
+
 function outputStatus(output: WorkspaceGraphNode['data']['output']): WorkspaceOutputStatus {
   if (!output) return 'placeholder';
   if (output.status) return output.status;
   if (output.kind === 'video') return isPlayableVideoUrl(output.url) ? 'ready' : 'placeholder';
   if (output.kind === 'audio') return isPlayableAudioUrl(output.url) ? 'ready' : 'placeholder';
   return output.url || output.thumbUrl ? 'ready' : 'placeholder';
+}
+
+function timelineDragMediaKind(data: WorkspaceGraphNode['data']): 'audio' | 'image' | 'video' | null {
+  if (data.asset) {
+    const assetUrl = data.asset.url ?? data.asset.thumbUrl ?? null;
+    if (data.asset.kind === 'video' && isPlayableVideoUrl(data.asset.url)) return 'video';
+    if (data.asset.kind === 'audio' && isPlayableAudioUrl(data.asset.url)) return 'audio';
+    if ((data.asset.kind === 'image' || data.asset.kind === 'logo') && isPlayableImageUrl(assetUrl)) return 'image';
+  }
+  if (data.output && outputStatus(data.output) === 'ready') {
+    const outputUrl = data.output.url ?? data.output.thumbUrl ?? null;
+    if (data.output.kind === 'video' && isPlayableVideoUrl(data.output.url)) return 'video';
+    if (data.output.kind === 'audio' && isPlayableAudioUrl(data.output.url)) return 'audio';
+    if (data.output.kind === 'image' && isPlayableImageUrl(outputUrl)) return 'image';
+  }
+  return null;
 }
 
 function VideoPreview({
@@ -187,9 +210,24 @@ function NodeFrame({
   const accent = nodeAccent(data);
   const targetHandles = data.kind === 'shot' ? [] : inputHandles(data);
   const isResizable = isSourceResizableNodeKind(data.kind);
+  const timelineMediaKind = timelineDragMediaKind(data);
+  const handleDragStart = (event: DragEvent<HTMLElement>) => {
+    if (!timelineMediaKind) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.effectAllowed = 'copyMove';
+    event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
+      nodeId,
+      mediaKind: timelineMediaKind,
+    }));
+  };
   return (
     <article
-      className={`${styles.graphNode} ${isResizable ? styles.sourceResizableNode : ''} ${selected ? styles.graphNodeSelected : ''} ${className}`}
+      className={`${styles.graphNode} ${isResizable ? styles.sourceResizableNode : ''} ${timelineMediaKind ? styles.graphNodeTimelineDraggable : ''} ${selected ? styles.graphNodeSelected : ''} ${className}`}
+      data-timeline-node-drag-kind={timelineMediaKind ?? undefined}
+      draggable={Boolean(timelineMediaKind)}
+      onDragStart={handleDragStart}
       style={{ '--node-accent': accent } as React.CSSProperties}
     >
       {isResizable ? (

@@ -89,38 +89,47 @@ type HandleDropPreview = {
 type WorkspaceCanvasProps = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
+  isKeyboardDeleteEnabled: boolean;
   onNodesChange: (changes: NodeChange<WorkspaceGraphNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<WorkspaceGraphEdge>[]) => void;
   onConnect: (connection: Connection) => void;
   isValidConnection: (connection: Connection | WorkspaceGraphEdge) => boolean;
   onCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
+  onCanvasInteraction: () => void;
   onSelectedNodeChange: (nodeId: string | null) => void;
+  onSelectedNodeSync: (nodeId: string | null) => void;
 };
 
 export function WorkspaceCanvas({
   nodes,
   edges,
+  isKeyboardDeleteEnabled,
   onNodesChange,
   onEdgesChange,
   onConnect,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
+  onCanvasInteraction,
   onSelectedNodeChange,
+  onSelectedNodeSync,
 }: WorkspaceCanvasProps) {
   return (
     <ReactFlowProvider>
       <WorkspaceCanvasInner
         nodes={nodes}
         edges={edges}
+        isKeyboardDeleteEnabled={isKeyboardDeleteEnabled}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         isValidConnection={isValidConnection}
         onCreateNodeFromHandleDrop={onCreateNodeFromHandleDrop}
         onCreateNodeFromPaletteDrop={onCreateNodeFromPaletteDrop}
+        onCanvasInteraction={onCanvasInteraction}
         onSelectedNodeChange={onSelectedNodeChange}
+        onSelectedNodeSync={onSelectedNodeSync}
       />
     </ReactFlowProvider>
   );
@@ -205,13 +214,16 @@ function WorkspacePaletteDropPreview({ preview }: { preview: PaletteDragPreview 
 function WorkspaceCanvasInner({
   nodes,
   edges,
+  isKeyboardDeleteEnabled,
   onNodesChange,
   onEdgesChange,
   onConnect,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
+  onCanvasInteraction,
   onSelectedNodeChange,
+  onSelectedNodeSync,
 }: WorkspaceCanvasProps) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const [handleDropPreview, setHandleDropPreview] = useState<HandleDropPreview | null>(null);
@@ -293,6 +305,7 @@ function WorkspaceCanvasInner({
 
   const handleConnectStart = useCallback<OnConnectStart>(
     (event, params) => {
+      onCanvasInteraction();
       const handleType = resolveHandleType(params.handleType);
       if (!params.nodeId || !params.handleId || !handleType) {
         updateHandleDropPreview(null);
@@ -317,7 +330,7 @@ function WorkspaceCanvasInner({
         position: flowPosition,
       });
     },
-    [reactFlow, updateHandleDropPreview]
+    [onCanvasInteraction, reactFlow, updateHandleDropPreview]
   );
 
   const handlePaneMouseMove = useCallback(
@@ -362,12 +375,13 @@ function WorkspaceCanvasInner({
       const nodeKind = event.dataTransfer.getData(WORKSPACE_NODE_KIND_DRAG_TYPE) || event.dataTransfer.getData('text/plain');
       if (!isWorkspaceNodeKind(nodeKind)) return;
       event.preventDefault();
+      onCanvasInteraction();
       onCreateNodeFromPaletteDrop({
         kind: nodeKind,
         position: reactFlow.screenToFlowPosition({ x: event.clientX, y: event.clientY }),
       });
     },
-    [onCreateNodeFromPaletteDrop, reactFlow]
+    [onCanvasInteraction, onCreateNodeFromPaletteDrop, reactFlow]
   );
 
   return (
@@ -386,10 +400,17 @@ function WorkspaceCanvasInner({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onPaneMouseMove={handlePaneMouseMove}
-        onNodeClick={(_, node) => onSelectedNodeChange(node.id)}
+        onNodeClick={(_, node) => {
+          onCanvasInteraction();
+          onSelectedNodeChange(node.id);
+        }}
+        onPaneClick={() => {
+          onCanvasInteraction();
+          onSelectedNodeChange(null);
+        }}
         onSelectionChange={({ nodes: selectedNodes }) => {
           if (selectedNodes[0]?.id) {
-            onSelectedNodeChange(selectedNodes[0].id);
+            onSelectedNodeSync(selectedNodes[0].id);
           }
         }}
         defaultEdgeOptions={defaultEdgeOptions}
@@ -397,7 +418,7 @@ function WorkspaceCanvasInner({
         maxZoom={1.65}
         fitView
         fitViewOptions={{ padding: 0.18, includeHiddenNodes: false }}
-        deleteKeyCode={['Backspace', 'Delete']}
+        deleteKeyCode={isKeyboardDeleteEnabled ? ['Backspace', 'Delete'] : null}
         multiSelectionKeyCode={['Meta', 'Shift']}
         selectionKeyCode="Shift"
         panOnScroll

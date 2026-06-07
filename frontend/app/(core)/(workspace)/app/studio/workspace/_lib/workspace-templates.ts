@@ -10,6 +10,9 @@ import type {
 } from './workspace-types';
 import { WORKSPACE_DEMO_AUDIO_URL } from './workspace-library-assets';
 
+const PRODUCT_AD_SHOT_01_DURATION_SEC = 5;
+const PRODUCT_AD_SHOT_02_DURATION_SEC = 8;
+
 export const WORKSPACE_TEMPLATE_SUMMARIES: WorkspaceTemplateSummary[] = [
   {
     id: 'product-ad',
@@ -165,10 +168,10 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'output-01',
       track: 'video',
       title: 'Shot 01 - Hero Reveal',
-      durationSec: 8,
+      durationSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       startSec: 0,
       sourceStartSec: 0,
-      sourceDurationSec: 8,
+      sourceDurationSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       linkedGroupId: 'timeline-output-01',
       mediaKind: 'video',
       mediaUrl: '/hero/pika-22.mp4',
@@ -181,10 +184,10 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'output-02',
       track: 'video',
       title: 'Shot 02 - Macro Details',
-      durationSec: 8,
-      startSec: 8,
+      durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
+      startSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       sourceStartSec: 0,
-      sourceDurationSec: 8,
+      sourceDurationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
       linkedGroupId: 'timeline-output-02',
       mediaKind: 'video',
       hasEmbeddedAudio: true,
@@ -196,12 +199,12 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
     {
       id: 'timeline-output-02-audio',
       outputNodeId: 'output-02',
-      track: 'linked-audio',
+      track: 'audio',
       title: 'Shot 02 - Macro Details Audio',
-      durationSec: 8,
-      startSec: 8,
+      durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
+      startSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       sourceStartSec: 0,
-      sourceDurationSec: 8,
+      sourceDurationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
       linkedGroupId: 'timeline-output-02',
       mediaKind: 'audio',
       mediaUrl: '/hero/veo3.mp4',
@@ -211,7 +214,7 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
     {
       id: 'timeline-music-01',
       outputNodeId: 'audio-music-01',
-      track: 'music',
+      track: 'audio-2',
       title: 'ambient_moody.mp3',
       durationSec: 28,
       startSec: 0,
@@ -245,7 +248,7 @@ function devBlocksTimeline(): WorkspaceTimelineItem[] {
     {
       id: 'timeline-dev-output-audio',
       outputNodeId: 'dev-output',
-      track: 'linked-audio',
+      track: 'audio',
       title: 'Dev Output Block Audio',
       durationSec: 6,
       startSec: 0,
@@ -347,7 +350,7 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 01',
         subtitle: 'Hero Reveal',
         accent: '#8b5cf6',
-        shot: shotSettings({ outputName: 'Hero Reveal', modelId: 'kling-3-pro', durationSec: 8 }),
+        shot: shotSettings({ outputName: 'Hero Reveal', modelId: 'kling-3-pro', durationSec: PRODUCT_AD_SHOT_01_DURATION_SEC }),
         targetHandles: ['prompt', 'start_image', 'reference', 'camera', 'previous_shot'],
         sourceHandles: ['generated_output'],
       },
@@ -359,14 +362,14 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
       data: {
         kind: 'output',
         title: 'Output 01',
-        subtitle: '8s · 16:9',
+        subtitle: '5s · 16:9',
         accent: '#f97316',
         output: {
           kind: 'video',
           modelId: 'kling-3-pro',
           modelLabel: 'Kling 3 Pro',
           workflowType: 'image_to_video',
-          durationSec: 8,
+          durationSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
           aspectRatio: '16:9',
           resolution: '1080p',
           createdAt: new Date('2026-06-05T09:00:00.000Z').toISOString(),
@@ -388,7 +391,7 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 02',
         subtitle: 'Macro Details',
         accent: '#3b82f6',
-        shot: shotSettings({ outputName: 'Macro Details', modelId: 'veo-3-1', durationSec: 8 }),
+        shot: shotSettings({ outputName: 'Macro Details', modelId: 'veo-3-1', durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC }),
         targetHandles: ['prompt', 'start_image', 'reference', 'camera', 'previous_shot'],
         sourceHandles: ['generated_output'],
       },
@@ -407,7 +410,7 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
           modelId: 'veo-3-1',
           modelLabel: 'Veo 3.1',
           workflowType: 'image_to_video',
-          durationSec: 8,
+          durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
           aspectRatio: '16:9',
           resolution: '1080p',
           createdAt: new Date('2026-06-05T09:03:00.000Z').toISOString(),
