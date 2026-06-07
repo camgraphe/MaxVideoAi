@@ -23,6 +23,7 @@ import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { resolveGenerateRouteContext } from './_lib/route-context';
+import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
@@ -101,13 +102,18 @@ export async function POST(req: NextRequest) {
     etaSeconds,
     etaLabel,
     rawExtraInputValues,
-    pricingResolution,
-    effectiveResolution,
     numFrames,
     loop,
     soraRequest,
   } = requestOptionsResult.options;
-  let { message } = requestOptionsResult.options;
+  let { message, pricingResolution, effectiveResolution } = requestOptionsResult.options;
+  ({ pricingResolution, effectiveResolution } = normalizeProviderRoutedResolution({
+    providerRoutingPlan,
+    engineId: engine.id,
+    mode,
+    pricingResolution,
+    effectiveResolution,
+  }));
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
 

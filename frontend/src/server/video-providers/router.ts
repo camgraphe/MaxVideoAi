@@ -11,7 +11,9 @@ type RoutingEnv = Partial<Record<
   | 'KLING_DIRECT_ADMIN_ONLY'
   | 'GOOGLE_VERTEX_VEO_ENABLED'
   | 'GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED'
+  | 'GOOGLE_VERTEX_VEO_PUBLIC_EXTEND_ROUTING_ENABLED'
   | 'GOOGLE_VERTEX_VEO_FALLBACK_TO_FAL_ENABLED'
+  | 'GOOGLE_VERTEX_VEO_INPUT_GCS_URI'
   | 'GOOGLE_VERTEX_VEO_ADMIN_ONLY',
   string | undefined
 >>;
@@ -45,6 +47,10 @@ function readEnv(env: RoutingEnv | undefined, key: keyof RoutingEnv): string | u
   return env?.[key] ?? process.env[key];
 }
 
+function isGcsUriConfigured(value: string | undefined): boolean {
+  return /^gs:\/\/[^/]+(?:\/.*)?$/i.test((value ?? '').trim());
+}
+
 export function resolveVideoProviderRoutingPlan(params: {
   engineId: string;
   mode: Mode | string;
@@ -57,9 +63,21 @@ export function resolveVideoProviderRoutingPlan(params: {
     if (!flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_VEO_ENABLED'))) return falOnly;
 
     const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED'));
+    const publicExtendRoutingEnabled = flagEnabled(
+      readEnv(params.env, 'GOOGLE_VERTEX_VEO_PUBLIC_EXTEND_ROUTING_ENABLED')
+    );
+    const publicExtendInputStagingConfigured = isGcsUriConfigured(
+      readEnv(params.env, 'GOOGLE_VERTEX_VEO_INPUT_GCS_URI')
+    );
+    const publicExtendRouteReady =
+      params.mode === 'extend' && publicExtendRoutingEnabled && publicExtendInputStagingConfigured;
+    const publicRoutingReadyForMode =
+      params.mode === 'extend'
+        ? (publicRoutingEnabled || publicExtendRoutingEnabled) && publicExtendInputStagingConfigured
+        : publicRoutingEnabled;
     const adminOnly = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_VEO_ADMIN_ONLY') ?? 'true');
-    if (adminOnly && !params.isAdmin) return falOnly;
-    if (!publicRoutingEnabled && !params.isAdmin) return falOnly;
+    if (adminOnly && !params.isAdmin && !publicExtendRouteReady) return falOnly;
+    if (!publicRoutingReadyForMode && !params.isAdmin) return falOnly;
 
     return {
       kind: 'google_vertex_veo_primary',

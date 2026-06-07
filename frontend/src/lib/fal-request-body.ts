@@ -30,7 +30,7 @@ export function buildFalGenerationRequest(
       requestBody.api_key = apiKey;
     }
   } else {
-    const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution);
+    const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution, model, payload.mode);
     requestBody = {
       fps: payload.fps,
     };

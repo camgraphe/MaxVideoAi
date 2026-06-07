@@ -15,6 +15,9 @@ const ENGINE_MODE_MODEL_MAP = (() => {
 
 const STRING_ENUM_DURATION_MODEL_PATTERN =
   /^(?:bytedance\/seedance-2\.0(?:\/fast)?\/|wan\/v2\.6\/(?:text-to-video|image-to-video|reference-to-video)$|fal-ai\/kling-video\/(?:v3|o3)\/(?:pro|standard|4k)\/(?:text-to-video|image-to-video|reference-to-video)$)/i;
+const FAL_GOOGLE_VEO_31_EXTEND_MODEL_PATTERN = /^fal-ai\/veo3\.1(?:\/(?:fast|lite))?\/extend-video$/i;
+const GOOGLE_VEO_31_ENGINE_PATTERN = /^veo-3-1(?:-(?:fast|lite))?$/i;
+const FAL_GOOGLE_VEO_31_EXTEND_RESOLUTION = '720p';
 
 function normalizeStringEnumDurationValue(duration: number | string): string {
   if (typeof duration === 'number') {
@@ -55,9 +58,20 @@ function normalizeFalVideoResolution(value: string | undefined): string | undefi
   return value;
 }
 
-export function resolveFalVideoResolutionInput(engineId: string, value: string | undefined): string | undefined {
+export function resolveFalVideoResolutionInput(
+  engineId: string,
+  value: string | undefined,
+  modelSlug?: string,
+  mode?: string
+): string | undefined {
   if (engineId.startsWith('kling-')) {
     return undefined;
+  }
+  if (
+    GOOGLE_VEO_31_ENGINE_PATTERN.test(engineId) &&
+    (mode === 'extend' || FAL_GOOGLE_VEO_31_EXTEND_MODEL_PATTERN.test(modelSlug ?? ''))
+  ) {
+    return FAL_GOOGLE_VEO_31_EXTEND_RESOLUTION;
   }
   return normalizeFalVideoResolution(value);
 }

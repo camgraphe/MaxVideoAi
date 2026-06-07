@@ -249,6 +249,47 @@ test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls on
   assert.equal(result.requestBody.generate_audio, true);
 });
 
+test('Fal request body clamps Veo 3.1 Extend resolution to 720p', () => {
+  const cases = [
+    ['veo-3-1', 'fal-ai/veo3.1', 'fal-ai/veo3.1/extend-video', '1080p'],
+    ['veo-3-1-fast', 'fal-ai/veo3.1/fast', 'fal-ai/veo3.1/fast/extend-video', '4k'],
+    ['veo-3-1-lite', 'fal-ai/veo3.1/lite', 'fal-ai/veo3.1/lite/extend-video', '1080p'],
+  ] as const;
+
+  for (const [engineId, fallbackModel, expectedModel, requestedResolution] of cases) {
+    const payload = {
+      engineId,
+      prompt: 'Continue the source video with the same camera movement.',
+      mode: 'extend',
+      durationOption: '7s',
+      resolution: requestedResolution,
+      aspectRatio: '9:16',
+      audio: false,
+      inputs: [
+        attachment({
+          name: 'source.mp4',
+          type: 'video/mp4',
+          size: 1200,
+          kind: 'video',
+          slotId: 'video_url',
+          url: 'https://cdn.maxvideoai.com/source.mp4',
+        }),
+      ],
+    };
+
+    const model = resolveFalModelSlug(payload, fallbackModel);
+    assert.equal(model, expectedModel);
+
+    const result = buildFalGenerationRequest(payload, model ?? '');
+    assert.equal(result.model, expectedModel);
+    assert.equal(result.requestBody.video_url, 'https://cdn.maxvideoai.com/source.mp4');
+    assert.equal(result.requestBody.duration, '7s');
+    assert.equal(result.requestBody.resolution, '720p');
+    assert.equal(result.requestBody.aspect_ratio, '9:16');
+    assert.equal(result.requestBody.generate_audio, false);
+  }
+});
+
 test('Fal request body routes Kling 3.0 Omni reference images without promoting them to a start frame', () => {
   const payload = {
     engineId: 'kling-o3-pro',
