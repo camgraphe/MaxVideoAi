@@ -2,21 +2,66 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Film, Play } from 'lucide-react';
+import { Film } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import styles from '../maxvideoai-editor.module.css';
-import type { WorkspaceTimelineItem } from '../_lib/workspace-types';
+import type { WorkspaceProjectSettings, WorkspaceTimelineItem } from '../_lib/workspace-types';
+import {
+  workspaceProjectAspectParts,
+  workspaceProjectAspectCssValue,
+  workspaceProjectDimensions,
+  workspaceProjectDimensionsLabel,
+} from '../_lib/workspace-project-settings';
+import {
+  isWorkspaceTimelineVideoTrack,
+  workspaceTimelineVideoTrackIndex,
+} from '../_lib/workspace-timeline-tracks';
+import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+
+type ProgramZoom = 'fit' | '50' | '100';
+
+const PROGRAM_ZOOM_OPTIONS: Array<{ value: ProgramZoom; label: string }> = [
+  { value: 'fit', label: 'Fit' },
+  { value: '50', label: '50%' },
+  { value: '100', label: '100%' },
+];
+const PLAYBACK_SEEK_TOLERANCE_SEC = 0.22;
+const PRELOAD_NEXT_CLIP_WINDOW_SEC = 1.5;
+const DEFAULT_CLIP_TRANSFORM = {
+  scale: 1,
+  positionX: 0,
+  positionY: 0,
+  rotation: 0,
+  opacity: 1,
+};
+
+type PlaybackLayer = {
+  item: WorkspaceTimelineItem;
+  url: string;
+  mediaKind: 'video' | 'image';
+  sourceTimeSec: number;
+  opacity: number;
+  isPreparing: boolean;
+  isVisible: boolean;
+  zIndex: number;
+};
+
+type AudioPlaybackLayer = {
+  item: WorkspaceTimelineItem;
+  url: string;
+  sourceTimeSec: number;
+  isAudible: boolean;
+};
 
 type WorkspaceVideoViewerProps = {
+  isPlaying: boolean;
   items: WorkspaceTimelineItem[];
+  playheadSec: number;
+  projectSettings: WorkspaceProjectSettings;
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
 };
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remaining = Math.max(0, Math.round(seconds % 60));
-  return `${minutes}:${remaining.toString().padStart(2, '0')}`;
-}
 
 function isPlayableVideoUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -24,55 +69,400 @@ function isPlayableVideoUrl(url?: string | null): boolean {
   return /\.(mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
 }
 
-export function WorkspaceVideoViewer({ items, selectedItemId, onSelectItem }: WorkspaceVideoViewerProps) {
-  const videoItems = items.filter((item) => item.track === 'video');
-  const selectedItem = videoItems.find((item) => item.id === selectedItemId) ?? videoItems[0] ?? null;
-  const playableUrl = isPlayableVideoUrl(selectedItem?.mediaUrl) ? selectedItem?.mediaUrl ?? null : null;
-  const totalDuration = videoItems.reduce((duration, item) => duration + item.durationSec, 0);
+function isPlayableAudioUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:') || url.startsWith('data:audio/')) return true;
+  return /\.(mp3|wav|ogg|m4a|aac|mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
+}
+
+function isPlayableImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
+  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
+}
+
+function playableVideoUrlForItem(item: WorkspaceTimelineItem | null): string | null {
+  if (!item || !isPlayableVideoUrl(item.mediaUrl)) return null;
+  return item.mediaUrl ?? null;
+}
+
+function playableImageUrlForItem(item: WorkspaceTimelineItem | null): string | null {
+  if (!item || item.mediaKind !== 'image') return null;
+  const imageUrl = isPlayableImageUrl(item.mediaUrl) ? item.mediaUrl : isPlayableImageUrl(item.thumbnailUrl) ? item.thumbnailUrl : null;
+  return imageUrl ?? null;
+}
+
+function playableAudioUrlForItem(item: WorkspaceTimelineItem | null): string | null {
+  if (!item || !isPlayableAudioUrl(item.mediaUrl)) return null;
+  return item.mediaUrl ?? null;
+}
+
+function clampSeconds(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function frameStepSeconds(fps: number): number {
+  return 1 / Math.max(1, fps || 24);
+}
+
+function itemEndSec(item: WorkspaceTimelineItem): number {
+  return item.startSec + item.durationSec;
+}
+
+function timelineVideoSort(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): number {
+  return left.startSec - right.startSec || workspaceTimelineVideoTrackIndex(left.track) - workspaceTimelineVideoTrackIndex(right.track);
+}
+
+function timelineLayerSort(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): number {
+  return workspaceTimelineVideoTrackIndex(left.track) - workspaceTimelineVideoTrackIndex(right.track) || left.startSec - right.startSec;
+}
+
+function sourceTimeForItem(item: WorkspaceTimelineItem, timelineSec: number): number {
+  return (item.sourceStartSec ?? 0) + clampSeconds(timelineSec - item.startSec, 0, item.durationSec);
+}
+
+function isAdjacentTimelineCut(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): boolean {
+  return Math.abs(itemEndSec(left) - right.startSec) <= 0.25;
+}
+
+function crossfadeDurationFor(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): number {
+  if (left.transitionOut?.type !== 'crossfade' || !isAdjacentTimelineCut(left, right)) return 0;
+  return Math.max(0, Math.min(left.transitionOut.durationSec, left.durationSec / 2, right.durationSec / 2));
+}
+
+function clipVisualStyleFor(layer: PlaybackLayer): CSSProperties {
+  const transform = layer.item.transform ?? DEFAULT_CLIP_TRANSFORM;
+  const opacity = clampSeconds(layer.opacity * transform.opacity, 0, 1);
+  return {
+    opacity,
+    zIndex: layer.zIndex,
+    transform: `translate(${transform.positionX}%, ${transform.positionY}%) scale(${transform.scale}) rotate(${transform.rotation}deg)`,
+  };
+}
+
+export function WorkspaceVideoViewer({
+  isPlaying,
+  items,
+  playheadSec,
+  projectSettings,
+  selectedItemId,
+  onSelectItem,
+}: WorkspaceVideoViewerProps) {
+  const playbackVideoRefs = useRef(new Map<string, HTMLVideoElement>());
+  const playbackAudioRefs = useRef(new Map<string, HTMLAudioElement>());
+  const playbackLayersRef = useRef<PlaybackLayer[]>([]);
+  const audioPlaybackLayersRef = useRef<AudioPlaybackLayer[]>([]);
+  const [programZoom, setProgramZoom] = useState<ProgramZoom>('fit');
+  const videoItems = useMemo(
+    () => items.filter((item) => isWorkspaceTimelineVideoTrack(item.track)).sort(timelineVideoSort),
+    [items]
+  );
+  const audioItems = useMemo(
+    () => items
+      .filter((item) => item.mediaKind === 'audio' || !isWorkspaceTimelineVideoTrack(item.track))
+      .sort((left, right) => left.startSec - right.startSec),
+    [items]
+  );
+  const linkedAudioGroupIds = useMemo(
+    () => new Set(
+      audioItems
+        .filter((item) => item.track === 'linked-audio' && item.linkedGroupId && playableAudioUrlForItem(item))
+        .map((item) => item.linkedGroupId as string)
+    ),
+    [audioItems]
+  );
+  const itemsAtPlayhead = videoItems
+    .filter((item) => playheadSec >= item.startSec && playheadSec < itemEndSec(item))
+    .sort(timelineLayerSort);
+  const audioItemsAtPlayhead = audioItems.filter((item) => playheadSec >= item.startSec && playheadSec < itemEndSec(item));
+  const itemAtPlayhead = itemsAtPlayhead.at(-1) ?? null;
+  const activePlaybackItem = itemAtPlayhead;
+  const nextVideoItem = activePlaybackItem
+    ? videoItems.find((item) => item.startSec >= itemEndSec(activePlaybackItem) - 0.25 && item.id !== activePlaybackItem.id) ?? null
+    : null;
+  const playbackLayers = useMemo(() => {
+    const layerByItemId = new Map<string, PlaybackLayer>();
+
+    videoItems.forEach((item) => {
+      const videoUrl = playableVideoUrlForItem(item);
+      const imageUrl = playableImageUrlForItem(item);
+      const url = videoUrl ?? imageUrl;
+      if (!url) return;
+      layerByItemId.set(item.id, {
+        item,
+        url,
+        mediaKind: imageUrl ? 'image' : 'video',
+        sourceTimeSec: item.sourceStartSec ?? 0,
+        opacity: 0,
+        isPreparing: false,
+        isVisible: false,
+        zIndex: 1,
+      });
+    });
+
+    itemsAtPlayhead.forEach((visibleItem) => {
+      const activeLayer = layerByItemId.get(visibleItem.id);
+      if (activeLayer) {
+        activeLayer.sourceTimeSec = sourceTimeForItem(visibleItem, playheadSec);
+        activeLayer.opacity = 1;
+        activeLayer.isPreparing = true;
+        activeLayer.isVisible = true;
+        activeLayer.zIndex = 2 + workspaceTimelineVideoTrackIndex(visibleItem.track);
+      }
+    });
+
+    if (activePlaybackItem && nextVideoItem && itemEndSec(activePlaybackItem) - playheadSec <= PRELOAD_NEXT_CLIP_WINDOW_SEC) {
+      const nextLayer = layerByItemId.get(nextVideoItem.id);
+      if (nextLayer && nextLayer.opacity === 0) {
+        nextLayer.sourceTimeSec = nextVideoItem.sourceStartSec ?? 0;
+        nextLayer.isPreparing = true;
+      }
+    }
+
+    videoItems.forEach((incomingItem) => {
+      const sameTrackItems = videoItems
+        .filter((candidate) => candidate.track === incomingItem.track)
+        .sort((left, right) => left.startSec - right.startSec);
+      const incomingIndex = sameTrackItems.findIndex((candidate) => candidate.id === incomingItem.id);
+      const outgoingItem = incomingIndex > 0 ? sameTrackItems[incomingIndex - 1] : null;
+      if (!outgoingItem) return;
+      const transitionDurationSec = crossfadeDurationFor(outgoingItem, incomingItem);
+      if (transitionDurationSec <= 0) return;
+      const elapsedTransitionSec = playheadSec - incomingItem.startSec;
+      if (elapsedTransitionSec < 0 || elapsedTransitionSec > transitionDurationSec) return;
+
+      const progress = clampSeconds(elapsedTransitionSec / transitionDurationSec, 0, 1);
+      const outgoingLayer = layerByItemId.get(outgoingItem.id);
+      const incomingLayer = layerByItemId.get(incomingItem.id);
+      if (outgoingLayer) {
+        outgoingLayer.sourceTimeSec = (outgoingItem.sourceStartSec ?? 0) + clampSeconds(
+          outgoingItem.durationSec - transitionDurationSec + elapsedTransitionSec,
+          0,
+          outgoingItem.durationSec
+        );
+        outgoingLayer.opacity = 1 - progress;
+        outgoingLayer.isPreparing = true;
+        outgoingLayer.isVisible = outgoingLayer.opacity > 0.001;
+        outgoingLayer.zIndex = 3 + workspaceTimelineVideoTrackIndex(outgoingItem.track);
+      }
+      if (incomingLayer) {
+        incomingLayer.sourceTimeSec = (incomingItem.sourceStartSec ?? 0) + clampSeconds(elapsedTransitionSec, 0, incomingItem.durationSec);
+        incomingLayer.opacity = progress;
+        incomingLayer.isPreparing = true;
+        incomingLayer.isVisible = incomingLayer.opacity > 0.001;
+        incomingLayer.zIndex = 4 + workspaceTimelineVideoTrackIndex(incomingItem.track);
+      }
+    });
+
+    return Array.from(layerByItemId.values());
+  }, [activePlaybackItem, itemsAtPlayhead, nextVideoItem, playheadSec, videoItems]);
+  const audioPlaybackLayers = useMemo(() => {
+    return audioItems.flatMap((item): AudioPlaybackLayer[] => {
+      const url = playableAudioUrlForItem(item);
+      if (!url) return [];
+      return [{
+        item,
+        url,
+        sourceTimeSec: sourceTimeForItem(item, playheadSec),
+        isAudible: audioItemsAtPlayhead.some((activeItem) => activeItem.id === item.id),
+      }];
+    });
+  }, [audioItems, audioItemsAtPlayhead, playheadSec]);
+  const hasVisiblePlayableLayer = playbackLayers.some((layer) => layer.isVisible);
+  const shouldShowEmptyState = items.length === 0 && !hasVisiblePlayableLayer;
+  const projectDimensionsLabel = workspaceProjectDimensionsLabel(projectSettings);
+  const programFrameStyle = useMemo(() => {
+    const [aspectWidth, aspectHeight] = workspaceProjectAspectParts(projectSettings.aspectRatio);
+    const dimensions = workspaceProjectDimensions(projectSettings);
+    const zoomScale = programZoom === 'fit' ? 1 : Number(programZoom) / 100;
+    return {
+      '--workspace-project-aspect-height': aspectHeight.toString(),
+      '--workspace-project-aspect-ratio': workspaceProjectAspectCssValue(projectSettings),
+      '--workspace-project-aspect-width': aspectWidth.toString(),
+      '--workspace-project-preview-height': `${dimensions.height}px`,
+      '--workspace-project-preview-width': `${dimensions.width}px`,
+      '--workspace-program-zoom-scale': zoomScale.toString(),
+    } as CSSProperties;
+  }, [programZoom, projectSettings]);
+
+  useEffect(() => {
+    if (selectedItemId || !itemAtPlayhead) return;
+    onSelectItem(itemAtPlayhead.id);
+  }, [itemAtPlayhead, onSelectItem, selectedItemId]);
+  const seekToleranceSec = isPlaying
+    ? PLAYBACK_SEEK_TOLERANCE_SEC
+    : Math.max(0.001, frameStepSeconds(projectSettings.fps) / 4);
+
+  const registerPlaybackVideo = useCallback((video: HTMLVideoElement | null) => {
+    const itemId = video?.dataset.playbackItemId;
+    if (video && itemId) {
+      playbackVideoRefs.current.set(itemId, video);
+    }
+  }, []);
+
+  const registerPlaybackAudio = useCallback((audio: HTMLAudioElement | null) => {
+    const itemId = audio?.dataset.playbackAudioItemId;
+    if (audio && itemId) {
+      playbackAudioRefs.current.set(itemId, audio);
+    }
+  }, []);
+
+  const syncPlaybackVideos = useCallback(() => {
+    const layerById = new Map(playbackLayersRef.current.filter((layer) => layer.mediaKind === 'video').map((layer) => [layer.item.id, layer]));
+    playbackVideoRefs.current.forEach((video, itemId) => {
+      const layer = layerById.get(itemId);
+      if (!layer) {
+        video.pause();
+        return;
+      }
+
+      if (video.readyState >= 1 && Math.abs(video.currentTime - layer.sourceTimeSec) > seekToleranceSec) {
+        video.currentTime = layer.sourceTimeSec;
+      }
+      const usesLinkedAudioTrack = Boolean(layer.item.linkedGroupId && linkedAudioGroupIds.has(layer.item.linkedGroupId));
+      video.volume = layer.item.audioMix?.muted || usesLinkedAudioTrack
+        ? 0
+        : clampSeconds((layer.item.audioMix?.volume ?? 100) / 100, 0, 1);
+
+      if (isPlaying && layer.isVisible) {
+        void video.play().catch(() => {
+          // The timeline clock stays authoritative even if a browser delays media playback.
+        });
+        return;
+      }
+
+      video.pause();
+    });
+  }, [isPlaying, linkedAudioGroupIds, seekToleranceSec]);
+
+  const syncPlaybackAudios = useCallback(() => {
+    const layerById = new Map(audioPlaybackLayersRef.current.map((layer) => [layer.item.id, layer]));
+    playbackAudioRefs.current.forEach((audio, itemId) => {
+      const layer = layerById.get(itemId);
+      if (!layer) {
+        audio.pause();
+        return;
+      }
+
+      if (audio.readyState >= 1 && Math.abs(audio.currentTime - layer.sourceTimeSec) > seekToleranceSec) {
+        audio.currentTime = layer.sourceTimeSec;
+      }
+      audio.volume = layer.item.audioMix?.muted ? 0 : clampSeconds((layer.item.audioMix?.volume ?? 100) / 100, 0, 1);
+
+      if (isPlaying && layer.isAudible) {
+        void audio.play().catch(() => {
+          // The sequence clock stays authoritative even if the browser delays audio playback.
+        });
+        return;
+      }
+
+      audio.pause();
+    });
+  }, [isPlaying, seekToleranceSec]);
+
+  useEffect(() => {
+    playbackLayersRef.current = playbackLayers;
+    const currentLayerIds = new Set(playbackLayers.filter((layer) => layer.mediaKind === 'video').map((layer) => layer.item.id));
+    playbackVideoRefs.current.forEach((_, itemId) => {
+      if (!currentLayerIds.has(itemId)) playbackVideoRefs.current.delete(itemId);
+    });
+    syncPlaybackVideos();
+  }, [playbackLayers, syncPlaybackVideos]);
+
+  useEffect(() => {
+    audioPlaybackLayersRef.current = audioPlaybackLayers;
+    const currentLayerIds = new Set(audioPlaybackLayers.map((layer) => layer.item.id));
+    playbackAudioRefs.current.forEach((_, itemId) => {
+      if (!currentLayerIds.has(itemId)) playbackAudioRefs.current.delete(itemId);
+    });
+    syncPlaybackAudios();
+  }, [audioPlaybackLayers, syncPlaybackAudios]);
 
   return (
-    <section className={styles.videoViewerShell} aria-label="Montage video viewer">
+    <section className={styles.videoViewerShell} aria-label="Montage video viewer" data-testid="editor-video-viewer">
       <div className={styles.viewerStage}>
-        {playableUrl ? (
-          <video
-            key={selectedItem?.id}
-            className={styles.viewerVideo}
-            controls
-            playsInline
-            preload="metadata"
-            poster={selectedItem?.thumbnailUrl ?? undefined}
-            src={playableUrl}
-          />
-        ) : (
-          <div className={styles.viewerEmpty}>
-            <Film size={34} />
-            <p>No playable clip selected</p>
-            <span>Send a generated video to the timeline, then select it for preview.</span>
+        <div className={styles.programMonitor} data-testid="editor-program-monitor">
+          <div className={styles.programMonitorHeader}>
+            <div className={styles.programMonitorTitle}>
+              <span>Program</span>
+              <small>{projectSettings.aspectRatio} · {projectDimensionsLabel} · {projectSettings.fps} fps</small>
+            </div>
+            <div className={styles.programMonitorActions}>
+              <label className={styles.programZoomControl}>
+                <span>Zoom</span>
+                <select
+                  value={programZoom}
+                  onChange={(event) => setProgramZoom(event.currentTarget.value as ProgramZoom)}
+                  title="Program monitor zoom. Fit shows the whole sequence frame; 100% maps sequence pixels to preview pixels."
+                  aria-label="Program monitor zoom"
+                >
+                  {PROGRAM_ZOOM_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <strong>{formatWorkspaceTimecode(playheadSec, projectSettings.fps)}</strong>
+            </div>
           </div>
-        )}
+          <div className={styles.programFrameViewport} data-testid="editor-program-viewport">
+            <div
+              className={`${styles.programFrame} ${programZoom === 'fit' ? styles.programFrameFit : styles.programFrameScaled}`}
+              data-testid="editor-program-frame"
+              data-program-playhead={playheadSec}
+              style={programFrameStyle}
+            >
+              {playbackLayers.map((layer) => (
+                layer.mediaKind === 'image' ? (
+                  <img
+                    key={layer.item.id}
+                    className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
+                    src={layer.url}
+                    alt=""
+                    style={clipVisualStyleFor(layer)}
+                  />
+                ) : (
+                  <video
+                    key={layer.item.id}
+                    ref={registerPlaybackVideo}
+                    className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
+                    controls={false}
+                    data-playback-item-id={layer.item.id}
+                    muted={
+                      layer.opacity <= 0.001 ||
+                      Boolean(layer.item.audioMix?.muted) ||
+                      Boolean(layer.item.linkedGroupId && linkedAudioGroupIds.has(layer.item.linkedGroupId))
+                    }
+                    onLoadedMetadata={syncPlaybackVideos}
+                    playsInline
+                    preload="auto"
+                    src={layer.url}
+                    style={clipVisualStyleFor(layer)}
+                  />
+                )
+              ))}
+              {audioPlaybackLayers.map((layer) => (
+                <audio
+                  key={layer.item.id}
+                  ref={registerPlaybackAudio}
+                  className={styles.viewerAudioLayer}
+                  data-playback-audio-item-id={layer.item.id}
+                  onLoadedMetadata={syncPlaybackAudios}
+                  preload="auto"
+                  src={layer.url}
+                />
+              ))}
+              {shouldShowEmptyState ? (
+                <div className={styles.viewerEmpty}>
+                  <Film size={34} />
+                  <p>No playable clip selected</p>
+                  <span>Send a generated video to the timeline, then select it for preview.</span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className={styles.viewerFooter}>
-        <div>
-          <p>{selectedItem?.title ?? 'Montage viewer'}</p>
-          <span>
-            {videoItems.length} clips · {formatDuration(totalDuration)}
-          </span>
-        </div>
-        <div className={styles.viewerStrip}>
-          {videoItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`${styles.viewerStripClip} ${item.id === selectedItem?.id ? styles.viewerStripClipActive : ''}`}
-              onClick={() => onSelectItem(item.id)}
-            >
-              {item.thumbnailUrl ? <img src={item.thumbnailUrl} alt="" /> : <Play size={14} />}
-              <span>{formatDuration(item.startSec)}</span>
-            </button>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }

@@ -20,6 +20,10 @@ type WorkspaceShotGenerateRequest = Parameters<typeof runGenerate>[0] & {
   imageUrl?: string;
   referenceImages?: string[];
 };
+type WorkspaceGenerationMediaResult = Awaited<ReturnType<typeof runGenerate>> & {
+  audioUrl?: string | null;
+  audio?: { url?: string | null } | null;
+};
 
 export type WorkspaceGenerationResult = {
   outputNode: WorkspaceGraphNode;
@@ -55,7 +59,35 @@ function textFromKinds(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[],
   );
 }
 
-function assetUrlsFromKinds(
+function stringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value : null;
+}
+
+function mediaUrlFromConnectedNode(node: WorkspaceGraphNode, kind: WorkspaceEdgeKind): string | null {
+  const assetUrl = stringOrNull(node.data.asset?.url);
+  if (assetUrl) return assetUrl;
+
+  const output = node.data.output;
+  if (!output || output.status === 'placeholder' || output.status === 'processing' || output.status === 'failed') {
+    return null;
+  }
+
+  const outputUrl = stringOrNull(output.url);
+  const audioUrl = stringOrNull(output.audioUrl);
+  const thumbUrl = stringOrNull(output.thumbUrl);
+  if (kind === 'audio' || kind === 'music' || kind === 'voiceover' || kind === 'sfx' || kind === 'dialogue' || kind === 'narration') {
+    return audioUrl ?? (output.kind === 'audio' ? outputUrl : null);
+  }
+  if (kind === 'video_reference' || kind === 'motion_reference' || kind === 'previous_shot' || kind === 'continuity') {
+    return output.kind === 'video' ? outputUrl : null;
+  }
+  if (kind === 'start_image' || kind === 'end_image' || kind === 'product' || kind === 'reference' || kind === 'style' || kind === 'character' || kind === 'logo') {
+    return output.kind === 'image' ? outputUrl ?? thumbUrl : thumbUrl;
+  }
+  return outputUrl ?? audioUrl ?? thumbUrl;
+}
+
+export function mediaUrlsFromKinds(
   nodes: WorkspaceGraphNode[],
   edges: WorkspaceGraphEdge[],
   shotNodeId: string,
@@ -63,8 +95,7 @@ function assetUrlsFromKinds(
 ): string[] {
   return kinds.flatMap((kind) =>
     findSourceNodes({ nodes, edges, shotNodeId, kind })
-      .map((node) => node.data.asset)
-      .map((asset) => (asset && typeof asset === 'object' && typeof asset.url === 'string' ? asset.url : null))
+      .map((node) => mediaUrlFromConnectedNode(node, kind))
       .filter((url): url is string => Boolean(url))
   );
 }
@@ -95,6 +126,13 @@ function outputSubtitle(output: WorkspaceOutputMetadata, settings: WorkspaceShot
   if (output.status === 'placeholder') return 'Waiting for generated media';
   if (output.status === 'failed') return 'Generation failed';
   return `${output.durationSec ?? settings.durationSec}s · ${output.aspectRatio ?? settings.aspectRatio}`;
+}
+
+function outputIncludesAudio(settings: WorkspaceShotSettings, capability: WorkspaceModelCapability | null): boolean {
+  const audioOption = capability?.render_options.find((option) => option.id === 'audio');
+  if (audioOption?.control === 'included') return true;
+  if (audioOption?.control === 'toggle') return settings.audioEnabled;
+  return false;
 }
 
 function buildOutputNode(params: {
@@ -149,6 +187,8 @@ export function createPendingWorkspaceOutput(params: {
     sourceShotId: params.shotNode.id,
     thumbUrl: null,
     url: null,
+    audioUrl: null,
+    hasAudio: outputIncludesAudio(params.settings, params.capability),
     jobId: null,
   };
   const outputNode = buildOutputNode({
@@ -182,7 +222,7 @@ export function createMockWorkspaceOutput(params: {
   siblingCount?: number;
 }): WorkspaceGenerationResult {
   const sourceImage =
-    assetUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, ['start_image', 'product', 'reference', 'style', 'logo'])[0] ??
+    mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, ['start_image', 'product', 'reference', 'style', 'logo'])[0] ??
     '/assets/placeholders/thumb-16x9.png';
   const resolvedWorkflowType = resolveWorkspaceWorkflowType({
     capability: params.capability,
@@ -203,6 +243,8 @@ export function createMockWorkspaceOutput(params: {
     sourceShotId: params.shotNode.id,
     thumbUrl: sourceImage,
     url: '/hero/veo3.mp4',
+    audioUrl: null,
+    hasAudio: outputIncludesAudio(params.settings, params.capability),
     jobId: `mock-${Date.now().toString(36)}`,
   };
   const outputNode = buildOutputNode({
@@ -287,6 +329,13 @@ export function buildWorkspaceShotGenerateRequest(params: {
   return request;
 }
 
+function outputStatusFromGenerationResult(result: WorkspaceGenerationMediaResult): WorkspaceOutputMetadata['status'] {
+  const videoUrl = result.videoUrl ?? result.video?.url ?? null;
+  if (result.status === 'failed') return 'failed';
+  if (result.status === 'completed' && videoUrl) return 'ready';
+  return 'processing';
+}
+
 export async function submitWorkspaceShotGeneration(params: {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
@@ -319,7 +368,7 @@ export async function submitWorkspaceShotGeneration(params: {
     connectedInputs,
     fallbackWorkflowType: settings.workflowType,
   });
-  const referenceImages = assetUrlsFromKinds(params.nodes, params.edges, shotNode.id, [
+  const referenceImages = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, [
     'start_image',
     'end_image',
     'product',
@@ -328,8 +377,8 @@ export async function submitWorkspaceShotGeneration(params: {
     'character',
     'logo',
   ]);
-  const videoReferences = assetUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['video_reference', 'motion_reference', 'previous_shot']);
-  const audioReferences = assetUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['audio', 'music', 'voiceover', 'sfx']);
+  const videoReferences = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['video_reference', 'motion_reference', 'previous_shot', 'continuity']);
+  const audioReferences = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['audio', 'music', 'voiceover', 'sfx']);
   const primaryImageUrl = referenceImages[0];
 
   try {
@@ -343,7 +392,7 @@ export async function submitWorkspaceShotGeneration(params: {
       audioReferences,
       shotNodeId: shotNode.id,
       outputName: settings.outputName,
-    }));
+    })) as WorkspaceGenerationMediaResult;
 
     const output: WorkspaceOutputMetadata = {
       kind: 'video',
@@ -354,11 +403,13 @@ export async function submitWorkspaceShotGeneration(params: {
       aspectRatio: settings.aspectRatio,
       resolution: settings.resolution,
       pricing: result.pricing ?? null,
-      status: 'ready',
+      status: outputStatusFromGenerationResult(result),
       createdAt: new Date().toISOString(),
       sourceShotId: shotNode.id,
       url: result.videoUrl ?? result.video?.url ?? null,
+      audioUrl: result.audioUrl ?? result.audio?.url ?? null,
       thumbUrl: result.thumbUrl ?? result.video?.thumbnailUrl ?? primaryImageUrl ?? null,
+      hasAudio: outputIncludesAudio(settings, params.capability),
       jobId: result.jobId,
     };
     const outputNode = buildOutputNode({

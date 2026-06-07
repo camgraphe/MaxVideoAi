@@ -34,7 +34,10 @@
     "test:admin-smoke": "playwright test -c playwright.admin.config.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
     "test-videos:serve": "node scripts/serve-video-gallery.mjs",
-    "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts"
+    "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts",
+    "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts",
+    "test:editor:e2e": "playwright test -c playwright.editor.config.ts",
+    "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check"
   },
   "pnpm": {
     "overrides": {

@@ -45,7 +45,15 @@ export type WorkspaceAssetKind = 'image' | 'video' | 'audio' | 'logo' | 'text';
 export type WorkspaceShotStatus = 'draft' | 'ready' | 'incompatible' | 'generating' | 'failed' | 'completed';
 export type WorkspaceOutputStatus = 'placeholder' | 'processing' | 'ready' | 'failed';
 export type WorkspacePromptRole = 'prompt' | 'negative_prompt' | 'style' | 'camera' | 'dialogue' | 'narration' | 'scene_description';
-export type WorkspaceTimelineTrack = 'video' | 'music' | 'voiceover' | 'sfx';
+export type WorkspaceTimelineVideoTrack = 'video' | `video-${number}`;
+export type WorkspaceTimelineAudioTrack = 'linked-audio' | 'music' | 'voiceover' | 'sfx';
+export type WorkspaceTimelineTrack = WorkspaceTimelineVideoTrack | WorkspaceTimelineAudioTrack;
+
+export type WorkspaceProjectSettings = {
+  aspectRatio: Extract<AspectRatio, '16:9' | '9:16' | '1:1' | '4:5' | '21:9'>;
+  resolution: Extract<Resolution, '720p' | '1080p' | '1440p' | '4k'>;
+  fps: 24 | 25 | 30 | 60;
+};
 
 export type WorkspaceAssetRecord = {
   id: string;
@@ -86,7 +94,9 @@ export type WorkspaceOutputMetadata = {
   createdAt: string;
   sourceShotId: string;
   url?: string | null;
+  audioUrl?: string | null;
   thumbUrl?: string | null;
+  hasAudio?: boolean;
   jobId?: string | null;
 };
 
@@ -189,13 +199,26 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   validation?: WorkspaceShotValidation;
   pricingEstimate?: WorkspacePricingEstimate;
   onGenerateShot?: (nodeId: string) => void;
-  onSendOutputToTimeline?: (nodeId: string) => void;
+  onSendOutputToTimeline?: (nodeId: string, mode?: 'insert' | 'overwrite' | 'replace') => void;
   onPromptChange?: (nodeId: string, value: string) => void;
   onOpenAssetLibrary?: (nodeId: string) => void;
 };
 
 export type WorkspaceGraphNode = Node<WorkspaceNodeData>;
 export type WorkspaceGraphEdge = Edge<WorkspaceGraphEdgeData>;
+
+export type WorkspaceTimelineClipTransform = {
+  scale: number;
+  positionX: number;
+  positionY: number;
+  rotation: number;
+  opacity: number;
+};
+
+export type WorkspaceTimelineAudioMix = {
+  volume: number;
+  muted: boolean;
+};
 
 export type WorkspaceTimelineItem = {
   id: string;
@@ -204,10 +227,21 @@ export type WorkspaceTimelineItem = {
   title: string;
   durationSec: number;
   startSec: number;
+  sourceStartSec?: number;
+  sourceDurationSec?: number;
+  linkedGroupId?: string | null;
+  mediaKind?: 'video' | 'audio' | 'image';
+  hasEmbeddedAudio?: boolean;
   mediaUrl?: string | null;
   thumbnailUrl?: string | null;
   modelId?: string;
   status?: WorkspaceShotStatus;
+  transform?: WorkspaceTimelineClipTransform;
+  audioMix?: WorkspaceTimelineAudioMix;
+  transitionOut?: {
+    type: 'crossfade';
+    durationSec: number;
+  } | null;
 };
 
 export type WorkspaceTemplateId =

@@ -22,7 +22,7 @@ type NodeSettingsPanelProps = {
   onPatchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   onPatchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   onGenerateShot: (nodeId: string) => void;
-  onSendOutputToTimeline: (nodeId: string) => void;
+  onSendOutputToTimeline: (nodeId: string, mode?: 'insert' | 'overwrite' | 'replace') => void;
   onOpenAssetLibrary: (nodeId: string) => void;
 };
 
@@ -105,6 +105,18 @@ function isPlayableVideoUrl(url?: string | null): boolean {
   return /\.(mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
 }
 
+function isPlayableAudioUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:') || url.startsWith('data:audio/')) return true;
+  return /\.(mp3|wav|ogg|m4a|aac|mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
+}
+
+function isPlayableImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
+  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
+}
+
 function outputStatus(output: WorkspaceOutputMetadata | undefined): WorkspaceOutputStatus {
   if (!output) return 'placeholder';
   if (output.status) return output.status;
@@ -122,11 +134,19 @@ function InspectorMediaPreview({
   url?: string | null;
 }) {
   const playableVideoUrl = kind === 'video' && isPlayableVideoUrl(url) ? url : null;
+  const playableAudioUrl = kind === 'audio' && isPlayableAudioUrl(url) ? url : null;
   const previewUrl = thumbUrl ?? url ?? null;
   if (playableVideoUrl) {
     return (
       <div className={styles.inspectorPreview}>
         <video className={`${styles.previewVideo} nodrag`} controls playsInline preload="metadata" poster={thumbUrl ?? undefined} src={playableVideoUrl} />
+      </div>
+    );
+  }
+  if (playableAudioUrl) {
+    return (
+      <div className={styles.inspectorPreview}>
+        <audio className={`${styles.previewAudio} nodrag`} controls preload="metadata" src={playableAudioUrl} />
       </div>
     );
   }
@@ -167,15 +187,26 @@ function ConnectionsList({ node, edges }: { node: WorkspaceGraphNode; edges: Wor
 function AssetInspector({
   node,
   edges,
+  onSendOutputToTimeline,
   onOpenAssetLibrary,
 }: {
   node: WorkspaceGraphNode;
   edges: WorkspaceGraphEdge[];
+  onSendOutputToTimeline: NodeSettingsPanelProps['onSendOutputToTimeline'];
   onOpenAssetLibrary: NodeSettingsPanelProps['onOpenAssetLibrary'];
 }) {
   const asset = node.data.asset;
   const inputCount = Array.isArray(node.data.targetHandles) ? node.data.targetHandles.length : 0;
   const outputCount = Array.isArray(node.data.sourceHandles) ? node.data.sourceHandles.length : 0;
+  const assetUrl = asset?.url ?? asset?.thumbUrl ?? null;
+  const canSendAssetToTimeline = Boolean(
+    asset &&
+      (
+        (asset.kind === 'video' && isPlayableVideoUrl(asset.url)) ||
+        (asset.kind === 'audio' && isPlayableAudioUrl(asset.url)) ||
+        ((asset.kind === 'image' || asset.kind === 'logo') && isPlayableImageUrl(assetUrl))
+      )
+  );
   return (
     <>
       <InspectorMediaPreview kind={asset?.kind} thumbUrl={asset?.thumbUrl ?? null} url={asset?.url ?? null} />
@@ -190,6 +221,18 @@ function AssetInspector({
           Replace media
         </button>
       )}
+      <div className={styles.timelineInsertActions}>
+        <button type="button" className={styles.primaryPanelButton} disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'insert')}>
+          <Send size={15} />
+          Insert at playhead
+        </button>
+        <button type="button" disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'overwrite')}>
+          Overwrite
+        </button>
+        <button type="button" disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'replace')}>
+          Replace selected
+        </button>
+      </div>
       <div className={styles.infoGrid}>
         <span>Filename</span>
         <strong>{asset?.filename ?? node.data.subtitle ?? node.data.title}</strong>
@@ -477,10 +520,18 @@ function OutputInspector({
         <span>Outputs</span>
         <strong>{outputCount}</strong>
       </div>
-      <button type="button" className={styles.primaryPanelButton} disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id)}>
-        <Send size={15} />
-        Send to timeline
-      </button>
+      <div className={styles.timelineInsertActions}>
+        <button type="button" className={styles.primaryPanelButton} disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'insert')}>
+          <Send size={15} />
+          Insert at playhead
+        </button>
+        <button type="button" disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'overwrite')}>
+          Overwrite
+        </button>
+        <button type="button" disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id, 'replace')}>
+          Replace selected
+        </button>
+      </div>
       <ConnectionsList node={node} edges={edges} />
     </>
   );
@@ -509,7 +560,7 @@ export function NodeSettingsPanel({
 
       <div className={styles.settingsBody}>
         {selectedNode.data.kind === 'asset-image' || selectedNode.data.kind === 'asset-video' || selectedNode.data.kind === 'asset-audio' ? (
-          <AssetInspector node={selectedNode} edges={edges} onOpenAssetLibrary={onOpenAssetLibrary} />
+          <AssetInspector node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} onOpenAssetLibrary={onOpenAssetLibrary} />
         ) : null}
         {selectedNode.data.kind === 'text-prompt' ? <PromptInspector node={selectedNode} edges={edges} onPatchNodeData={onPatchNodeData} /> : null}
         {selectedNode.data.kind === 'shot' ? (

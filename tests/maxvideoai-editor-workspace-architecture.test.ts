@@ -19,6 +19,7 @@ import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
   WorkspaceTimelineItem,
+  WorkspaceTimelineTrack,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import type { EngineCaps } from '../frontend/types/engines';
 
@@ -31,6 +32,8 @@ const assetLibraryModalPath = join(workspaceDir, '_components/WorkspaceAssetLibr
 const assetLibraryBrowserPath = join(workspaceDir, '_components/WorkspaceAssetLibraryBrowser.tsx');
 const libraryPath = join(workspaceDir, '_components/NodeLibrarySidebar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
+const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
+const projectSettingsDialogPath = join(workspaceDir, '_components/WorkspaceProjectSettingsDialog.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
@@ -40,7 +43,11 @@ const capabilitiesPath = join(workspaceDir, '_lib/workspace-capabilities.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
 const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
+const projectSettingsPath = join(workspaceDir, '_lib/workspace-project-settings.ts');
+const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
 const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.ts');
+const timelineRenderPath = join(workspaceDir, '_lib/workspace-timeline-render.ts');
+const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts');
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
@@ -68,6 +75,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(assetLibraryBrowserPath), 'asset picker browser should mirror the app library structure in route-local editor CSS');
   assert.ok(existsSync(libraryPath), 'block template sidebar should live in a route-local component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
+  assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
+  assert.ok(existsSync(projectSettingsDialogPath), 'project settings dialog should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
@@ -83,7 +92,12 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /WorkspaceVideoViewer/, 'orchestrator should compose a central montage video viewer');
   assert.match(workspaceSource, /NodeLibrarySidebar/, 'orchestrator should compose the block template library');
   assert.match(workspaceSource, /NodeSettingsPanel/, 'orchestrator should compose the settings inspector');
+  assert.match(workspaceSource, /TimelineClipInspector/, 'orchestrator should compose a timeline clip inspector for Viewer mode');
+  assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeSettingsPanel[\s\S]*TimelineClipInspector/, 'right inspector should switch from node settings in Canvas mode to clip settings in Viewer mode');
   assert.match(workspaceSource, /WorkspaceTimeline/, 'orchestrator should compose the bottom timeline');
+  assert.match(workspaceSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
+  assert.doesNotMatch(workspaceSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
+  assert.match(styleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor CSS');
   assert.match(workspaceSource, /focusMode,\s*setFocusMode\][\s\S]*'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
   assert.match(workspaceSource, />\s*Viewer\s*</, 'top switch should label the montage surface Viewer');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
@@ -95,6 +109,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /normalizePlaceholderOutputNodes/, 'orchestrator should normalize stale fake output media into placeholders');
   assert.match(workspaceSource, /normalizeTimelineMediaUrls/, 'orchestrator should hydrate stale timeline clips with playable output media URLs');
   assert.match(workspaceSource, /isPlayableVideoUrl/, 'orchestrator should distinguish playable video URLs from image thumbnails');
+  assert.match(workspaceSource, /isPlayableAudioUrl/, 'orchestrator should hydrate playable audio URLs for music, voiceover, and linked audio timeline clips');
   assert.match(workspaceSource, /normalizeGeneratedOutputEdges/, 'orchestrator should normalize stale output edge handles from persisted editor state');
   assert.match(workspaceSource, /normalizeShotOutputNodes/, 'orchestrator should normalize stale generated-shot output handles from persisted editor state');
   assert.match(workspaceSource, /normalizeShotOutputEdges/, 'orchestrator should normalize stale generated-shot source edge handles');
@@ -112,7 +127,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
   assert.ok(existsSync(handleDropPath), 'handle-drop node creation should live in a pure route-local helper');
+  assert.ok(existsSync(projectSettingsPath), 'project settings helpers should live in a pure route-local helper');
+  assert.ok(existsSync(timecodePath), 'timeline timecode helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineEditingPath), 'timeline editing helpers should live in a pure route-local helper');
+  assert.ok(existsSync(timelineRenderPath), 'timeline final-render manifest helpers should live in a pure route-local helper');
+  assert.ok(existsSync(timelineTracksPath), 'timeline track helpers should live in a pure route-local helper');
   assert.ok(existsSync(libraryAssetsPath), 'studio library assets should live in a pure route-local helper');
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
@@ -126,12 +145,18 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const assetLibraryModalSource = source(assetLibraryModalPath);
   const nodeSource = source(nodeTypesPath);
   const settingsSource = source(settingsPath);
+  const timelineClipInspectorSource = source(timelineClipInspectorPath);
+  const projectSettingsDialogSource = source(projectSettingsDialogPath);
   const workspaceSource = source(workspacePagePath);
   const capabilitySource = source(capabilitiesPath);
   const generationSource = source(generationPath);
   const pricingSource = source(pricingPath);
   const handleDropSource = source(handleDropPath);
+  const projectSettingsSource = source(projectSettingsPath);
+  const timecodeSource = source(timecodePath);
   const timelineEditingSource = source(timelineEditingPath);
+  const timelineRenderSource = source(timelineRenderPath);
+  const timelineTracksSource = source(timelineTracksPath);
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
@@ -215,7 +240,21 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(capabilitySource, /workspaceAudioEnabledForRequest/, 'capabilities should centralize when audio can be sent to generate and pricing');
   assert.match(typesSource, /WorkspaceOutputStatus/, 'workspace outputs should type placeholder, processing, and ready states');
   assert.match(typesSource, /WorkspaceRenderOption/, 'workspace capabilities should type render options separately from graph inputs');
+  assert.match(typesSource, /WorkspaceProjectSettings/, 'workspace should type project-level aspect ratio, resolution, and FPS');
+  assert.match(typesSource, /WorkspaceTimelineVideoTrack/, 'timeline should type multiple video tracks');
+  assert.match(typesSource, /`video-\$\{number\}`/, 'timeline video tracks should allow V2, V3, and later video lanes');
+  assert.match(typesSource, /WorkspaceTimelineAudioTrack/, 'timeline should keep audio track ids distinct from video track ids');
+  assert.match(typesSource, /hasAudio\?: boolean/, 'workspace video outputs should record whether generated media includes audio');
+  assert.match(typesSource, /audioUrl\?: string \| null/, 'workspace video outputs should optionally expose extracted or companion audio media');
   assert.match(typesSource, /mediaUrl\?: string \| null/, 'timeline clips should carry a playable media URL for the central viewer');
+  assert.match(typesSource, /sourceStartSec\?: number/, 'timeline clips should carry source in-points for trim editing');
+  assert.match(typesSource, /sourceDurationSec\?: number/, 'timeline clips should remember their original source duration');
+  assert.match(typesSource, /linkedGroupId\?: string \| null/, 'timeline clips should be able to link video and audio segments');
+  assert.match(typesSource, /'linked-audio'/, 'timeline should reserve a linked audio track for videos with sound');
+  assert.match(typesSource, /WorkspaceTimelineClipTransform/, 'timeline should type clip transform edit properties');
+  assert.match(typesSource, /WorkspaceTimelineAudioMix/, 'timeline should type clip audio mix edit properties');
+  assert.match(typesSource, /transform\?: WorkspaceTimelineClipTransform/, 'timeline clips should store per-clip transform settings');
+  assert.match(typesSource, /audioMix\?: WorkspaceTimelineAudioMix/, 'timeline clips should store per-clip audio mix settings');
   assert.match(typesSource, /render_options: WorkspaceRenderOption\[\]/, 'model capabilities should carry engine-derived render options');
 
   assert.match(generationSource, /runGenerate/, 'generation adapter should call the existing MaxVideoAI generation API');
@@ -229,10 +268,48 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(handleDropSource, /export function resolveWorkspaceHandleDropDraft/, 'handle-drop helper should resolve a connector into a matching source block draft');
   assert.match(handleDropSource, /export function createWorkspaceHandleDropNode/, 'handle-drop helper should create the matching graph node');
   assert.match(handleDropSource, /WorkspaceHandleDropDraft/, 'handle-drop helper should expose a typed drag draft contract');
+  assert.match(projectSettingsSource, /DEFAULT_WORKSPACE_PROJECT_SETTINGS/, 'project settings helper should expose stable default video settings');
+  assert.match(projectSettingsSource, /coerceWorkspaceProjectSettings/, 'project settings helper should sanitize persisted project settings');
+  assert.match(projectSettingsSource, /workspaceProjectAspectParts/, 'project settings helper should expose numeric aspect parts for contained program monitor sizing');
+  assert.match(projectSettingsSource, /workspaceProjectAspectCssValue/, 'project settings helper should convert project aspect ratio to CSS');
+  assert.match(projectSettingsSource, /workspaceProjectDimensionsLabel/, 'project settings helper should expose project output dimensions for the program monitor');
+  assert.match(timecodeSource, /secondsToWorkspaceFrame/, 'timecode helper should convert seconds into project frames');
+  assert.match(timecodeSource, /formatWorkspaceTimecode/, 'timecode helper should format HH:MM:SS:FF labels');
   assert.match(timelineEditingSource, /export function normalizeWorkspaceTimelineStarts/, 'timeline helper should recalculate clip start times per track');
   assert.match(timelineEditingSource, /export function moveWorkspaceTimelineItem/, 'timeline helper should reorder clips predictably');
   assert.match(timelineEditingSource, /export function reorderWorkspaceTimelineItem/, 'timeline helper should support drag/drop target positions');
   assert.match(timelineEditingSource, /export function splitWorkspaceTimelineItem/, 'timeline helper should split selected clips for cut editing');
+  assert.match(timelineEditingSource, /export function insertWorkspaceTimelineItems/, 'timeline helper should support insert, overwrite, and replace edits from the canvas');
+  assert.match(timelineEditingSource, /export function deleteWorkspaceTimelineItem/, 'timeline helper should delete selected linked clips with optional ripple behavior');
+  assert.match(timelineEditingSource, /WorkspaceTimelineInsertMode/, 'timeline helper should type insert, overwrite, and replace edit modes');
+  assert.match(timelineEditingSource, /WorkspaceTimelineTrimMode/, 'timeline helper should type normal, ripple, and roll trim modes');
+  assert.match(timelineEditingSource, /export function trimWorkspaceTimelineItem/, 'timeline helper should trim clip starts and ends');
+  assert.match(timelineEditingSource, /export function positionWorkspaceTimelineItem/, 'timeline helper should support direct pointer-based clip moves');
+  assert.match(timelineEditingSource, /nextTrack\?: WorkspaceTimelineTrack/, 'timeline helper should support moving clips between video tracks');
+  assert.match(timelineTracksSource, /isWorkspaceTimelineVideoTrack/, 'timeline track helper should distinguish video tracks from audio tracks');
+  assert.match(timelineEditingSource, /isWorkspaceTimelineVideoTrack/, 'timeline editing should use the shared video-track helper');
+  assert.match(timelineEditingSource, /targetTrack/, 'timeline helper should apply a drag target video track');
+  assert.match(timelineEditingSource, /export function resizeWorkspaceTimelineItem/, 'timeline helper should support direct pointer-based clip resizing');
+  assert.match(timelineEditingSource, /maxResizeDurationForTimelineItem/, 'timeline helper should cap trim expansion to source media duration');
+  assert.match(timelineEditingSource, /sourceRightRoomForTimelineItem/, 'timeline helper should know how much source media remains after a clip out-point');
+  assert.match(timelineEditingSource, /clampSourceStartForDuration/, 'timeline helper should keep clip source in/out inside the original media');
+  assert.match(timelineEditingSource, /export function toggleWorkspaceTimelineCrossfade/, 'timeline helper should toggle crossfade transitions between adjacent clips');
+  assert.match(timelineEditingSource, /export function buildWorkspaceTimelineItemsForOutput/, 'timeline helper should create linked audio and video clips from generated outputs');
+  assert.match(timelineEditingSource, /export function buildWorkspaceTimelineItemsForAsset/, 'timeline helper should create timeline clips from imported canvas media assets');
+  assert.match(timelineEditingSource, /workspaceAssetHasTimelineAudio/, 'timeline helper should treat imported video assets as video plus linked audio');
+  assert.match(timelineRenderSource, /export function buildWorkspaceTimelineRenderManifest/, 'timeline render helper should build a final-render manifest from timeline clips');
+  assert.match(timelineRenderSource, /WorkspaceTimelineRenderManifest/, 'timeline render helper should type the backend handoff contract');
+  assert.match(timelineRenderSource, /projectSettings/, 'timeline render manifest should carry project settings for final composition');
+  assert.match(timelineRenderSource, /timelineTrackOrderForItems/, 'timeline render helper should include dynamic video tracks in the final handoff');
+  assert.match(timelineRenderSource, /isWorkspaceTimelineVideoTrack/, 'timeline render helper should treat V2 and later tracks as video tracks');
+  assert.match(timelineRenderSource, /processing_media/, 'timeline render helper should block placeholder and processing media before export');
+  assert.match(timelineRenderSource, /overlapping_clips/, 'timeline render helper should detect same-track overlaps before export');
+  assert.match(timelineRenderSource, /transitionOut/, 'timeline render helper should preserve transition metadata for final render');
+  assert.match(timelineRenderSource, /transform\?: WorkspaceTimelineItem\['transform'\]/, 'timeline render helper should carry clip transform settings');
+  assert.match(timelineRenderSource, /audioMix\?: WorkspaceTimelineItem\['audioMix'\]/, 'timeline render helper should carry clip audio mix settings');
+  assert.match(timelineRenderSource, /transform: item\.transform/, 'timeline render manifest should serialize clip transform settings');
+  assert.match(timelineRenderSource, /audioMix: item\.audioMix/, 'timeline render manifest should serialize clip audio mix settings');
+  assert.match(timelineRenderSource, /node\?\.data\.output\?\.url \?\? node\?\.data\.asset\?\.url/, 'timeline render helper should resolve generated outputs and asset library media');
   assert.match(libraryAssetsSource, /WORKSPACE_LIBRARY_ASSETS/, 'studio library assets should be shared between sidebar and asset picker');
   assert.match(libraryAssetsSource, /buildWorkspaceUserLibraryUrl/, 'studio library helper should target the app media-library API');
   assert.match(libraryAssetsSource, /normalizeWorkspaceUserLibraryPayload/, 'studio library helper should normalize app user assets');
@@ -257,10 +334,25 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /isWorkspaceConnectionCompatible/, 'orchestrator should reject incompatible graph links before adding edges');
   assert.match(workspaceSource, /workspaceConnectionCapacity/, 'orchestrator should reject graph links when an input connector has no remaining capacity');
   assert.match(workspaceSource, /onCreateNodeFromPaletteDrop/, 'orchestrator should wire sidebar block-template drops into the canvas');
+  assert.match(workspaceSource, /appendSelectedWorkspaceGraphNode/, 'orchestrator should select newly added palette blocks so the inspector follows the new block');
   assert.match(workspaceSource, /WorkspaceAssetLibraryModal/, 'orchestrator should open the editor asset library from empty media nodes');
+  assert.match(workspaceSource, /buildWorkspaceTimelineItemsForAsset/, 'orchestrator should send imported canvas media blocks into the montage timeline');
+  const sendOutputToTimelineHandler = workspaceSource.match(/const handleSendOutputToTimeline = useCallback\([\s\S]*?\n  \);\n\n  const renderNodes/);
+  assert.ok(sendOutputToTimelineHandler, 'workspace should define a send-to-timeline handler');
+  assert.doesNotMatch(sendOutputToTimelineHandler[0], /setFocusMode\('viewer'\)/, 'sending a canvas item to the timeline should not automatically switch to Viewer mode');
+  assert.match(settingsSource, /AssetInspector[\s\S]*timelineInsertActions[\s\S]*Insert at playhead/, 'asset inspector should expose timeline insert actions for imported media blocks');
+  assert.match(videoViewerSource, /playableImageUrlForItem/, 'montage viewer should preview imported image assets as still clips');
+  assert.match(workspaceSource, /focusMode\?: WorkspaceFocusMode/, 'persisted workspace state should remember whether the user was in canvas or viewer mode');
+  assert.match(workspaceSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
   assert.match(workspaceSource, /selectedTimelineItemId/, 'orchestrator should track which timeline clip controls the montage viewer');
+  assert.match(workspaceSource, /playheadSec/, 'orchestrator should track the montage playhead');
   assert.match(workspaceSource, /handleCutTimelineItem/, 'orchestrator should wire basic cut editing from the bottom timeline');
-  assert.match(workspaceSource, /handleReorderTimelineItem/, 'orchestrator should wire drag/drop timeline reordering');
+  assert.match(workspaceSource, /handlePositionTimelineItem/, 'orchestrator should wire pointer-based clip movement');
+  assert.match(workspaceSource, /handleResizeTimelineItem/, 'orchestrator should wire pointer-based clip resizing');
+  assert.match(workspaceSource, /videoTrackCount/, 'workspace should remember added video timeline tracks');
+  assert.match(workspaceSource, /MAX_TIMELINE_VIDEO_TRACKS/, 'workspace should cap added video tracks to a small editor-friendly count');
+  assert.match(workspaceSource, /handleAddTimelineVideoTrack/, 'workspace should expose an add-video-track action to the timeline');
+  assert.match(workspaceSource, /onAddVideoTrack=\{handleAddTimelineVideoTrack\}/, 'workspace should let the timeline add video tracks without a separate panel');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary/, 'orchestrator should feed the picker from the signed-in user media library');
   assert.doesNotMatch(workspaceSource, /sidebarLibrary\s*=\s*useWorkspaceEditorAssetLibrary\(null\)/, 'orchestrator should not load the user media library directly in the sidebar');
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
@@ -315,13 +407,172 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(videoViewerSource, /export function WorkspaceVideoViewer/, 'viewer component should be exported');
   assert.match(videoViewerSource, /<video[\s\S]*controls/, 'viewer should play selected timeline video clips');
   assert.match(videoViewerSource, /selectedItemId/, 'viewer should follow timeline clip selection');
-  assert.match(videoViewerSource, /onSelectItem/, 'viewer should let montage strip selection update the active clip');
+  assert.match(videoViewerSource, /onSelectItem/, 'viewer should keep timeline selection synchronized with the active program clip');
+  assert.match(videoViewerSource, /playheadSec/, 'viewer should follow the shared timeline playhead');
+  assert.doesNotMatch(videoViewerSource, /onPlayheadChange/, 'viewer should not duplicate timeline scrubbing or thumbnail strip navigation');
+  assert.match(videoViewerSource, /isPlaying/, 'viewer should receive shared montage playback state from the workspace');
+  assert.doesNotMatch(videoViewerSource, /onPlaybackChange/, 'viewer should not duplicate play/pause controls already owned by the timeline toolbar');
+  assert.match(videoViewerSource, /sourceStartSec/, 'viewer should seek into split clips instead of replaying the media from zero');
+  assert.match(videoViewerSource, /currentTime/, 'viewer should seek the underlying video element to the clip source in-point');
+  assert.match(videoViewerSource, /PlaybackLayer/, 'viewer should build stable timeline playback layers instead of swapping one video source');
+  assert.match(videoViewerSource, /playbackVideoRefs/, 'viewer should keep one video element per timeline clip for smoother cut playback');
+  assert.match(videoViewerSource, /itemsAtPlayhead\.forEach/, 'viewer should reveal only video layers that cover the current playhead');
+  assert.doesNotMatch(videoViewerSource, /itemsAtPlayhead\.length \? itemsAtPlayhead : activeItem/, 'viewer should render video gaps as black instead of falling back to the selected clip');
+  assert.match(videoViewerSource, /activePlaybackItem = itemAtPlayhead/, 'viewer should only preload across actual timeline video clips, not selected fallback clips');
+  assert.match(videoViewerSource, /shouldShowEmptyState = items\.length === 0 && !hasVisiblePlayableLayer/, 'viewer should reserve the empty message for an empty timeline so audio-only or video-gap playback stays black');
+  assert.match(videoViewerSource, /AudioPlaybackLayer/, 'viewer should model audio timeline playback separately from visual video layers');
+  assert.match(videoViewerSource, /playbackAudioRefs/, 'viewer should keep audio track elements synchronized with the shared playhead');
+  assert.match(videoViewerSource, /isPlayableAudioUrl/, 'viewer should detect playable audio timeline sources');
+  assert.match(videoViewerSource, /<audio[\s\S]*data-playback-audio-item-id/, 'viewer should mount audio tracks for synchronized montage playback');
+  assert.match(videoViewerSource, /linkedAudioGroupIds/, 'viewer should mute video layers when a linked audio timeline track owns that sound');
+  assert.match(styleSource, /\.viewerAudioLayer/, 'hidden audio playback elements should be styled in isolated editor CSS');
+  assert.match(videoViewerSource, /PRELOAD_NEXT_CLIP_WINDOW_SEC/, 'viewer should preload the next cut before the playhead reaches it');
+  assert.match(videoViewerSource, /crossfadeDurationFor/, 'viewer should preview crossfade transitions between adjacent timeline clips');
+  assert.match(videoViewerSource, /viewerVideoLayerVisible/, 'viewer should use opacity layers for smooth visual transitions');
+  assert.match(videoViewerSource, /clipVisualStyleFor/, 'viewer should apply selected clip transform settings to program monitor layers');
+  assert.match(videoViewerSource, /layer\.item\.transform/, 'viewer should read transform settings from timeline clips');
+  assert.match(videoViewerSource, /video\.volume = layer\.item\.audioMix/, 'viewer should apply timeline clip volume during playback');
+  assert.match(videoViewerSource, /layer\.item\.audioMix\?\.muted/, 'viewer should support muting timeline clip playback');
+  assert.doesNotMatch(videoViewerSource, /onTimeUpdate/, 'viewer should not let native video timeupdate fight the sequence playhead clock');
+  assert.doesNotMatch(videoViewerSource, /key=\{playableUrl\}/, 'viewer should not swap a single keyed video source at every cut');
+  assert.match(videoViewerSource, /preload="auto"/, 'viewer should warm the next media source instead of flashing a timeline thumbnail poster');
+  assert.doesNotMatch(videoViewerSource, /poster=\{activeItem\?\.thumbnailUrl/, 'viewer should not show clip thumbnails as subliminal posters between shot changes');
+  assert.match(videoViewerSource, /projectSettings/, 'viewer should receive project-level playback settings');
+  assert.match(videoViewerSource, /programMonitor/, 'viewer should render a program monitor surface around the video');
+  assert.match(videoViewerSource, /programFrameViewport/, 'viewer should render the preview inside a contained program viewport');
+  assert.match(videoViewerSource, /programFrame/, 'viewer should constrain preview media to the project aspect-ratio frame');
+  assert.match(videoViewerSource, /ProgramZoom/, 'viewer should separate program monitor zoom from sequence resolution settings');
+  assert.match(videoViewerSource, /PROGRAM_ZOOM_OPTIONS/, 'viewer should expose standard program zoom options');
+  assert.match(videoViewerSource, /Program monitor zoom/, 'viewer should label zoom as a monitor display setting');
+  assert.match(videoViewerSource, /programFrameScaled/, 'viewer should support pixel-based sequence preview sizing outside Fit zoom');
+  assert.match(videoViewerSource, /workspaceProjectDimensions/, 'viewer should derive pixel preview size from project sequence dimensions');
+  assert.match(videoViewerSource, /workspaceProjectAspectParts/, 'viewer should use numeric aspect parts for contained program frame sizing');
+  assert.match(videoViewerSource, /workspaceProjectAspectCssValue/, 'viewer should derive program frame aspect ratio from project settings');
+  assert.match(videoViewerSource, /workspaceProjectDimensionsLabel/, 'viewer should show project output dimensions');
+  assert.doesNotMatch(videoViewerSource, /isSequenceSettingsOpen/, 'viewer should not own project settings dialog state');
+  assert.doesNotMatch(videoViewerSource, /sequenceSettingsButton/, 'viewer should not expose project settings in its footer');
+  assert.match(workspaceSource, /isProjectSettingsOpen/, 'workspace header should own project settings dialog state');
+  assert.match(workspaceSource, /WorkspaceProjectSettingsDialog/, 'workspace should render the project settings dialog at shell level');
+  assert.match(workspaceSource, /aria-label="Open project settings"/, 'topbar should expose project settings as a header action');
+  assert.match(projectSettingsDialogSource, /sequenceSettingsDialog/, 'project settings should render in a focused dialog');
+  assert.match(projectSettingsDialogSource, /Project sequence settings/, 'project settings dialog should label aspect, resolution, and FPS as sequence settings');
+  assert.match(projectSettingsDialogSource, /Sequence aspect ratio/, 'project settings dialog should expose a sequence aspect ratio selector');
+  assert.match(projectSettingsDialogSource, /Sequence resolution/, 'project settings dialog should expose a sequence resolution selector');
+  assert.match(projectSettingsDialogSource, /Sequence FPS/, 'project settings dialog should expose a sequence FPS selector');
+  assert.match(projectSettingsDialogSource, /event\.key !== 'Escape'/, 'project settings dialog should close from Escape');
+  assert.doesNotMatch(videoViewerSource, /viewerSequenceControls/, 'viewer should not keep sequence settings as always-visible footer controls');
+  assert.match(videoViewerSource, /formatWorkspaceTimecode/, 'viewer should display frame-based timecode');
+  assert.doesNotMatch(videoViewerSource, /viewerFooter/, 'viewer should not render a duplicate footer below the program monitor');
+  assert.doesNotMatch(videoViewerSource, /viewerStrip/, 'viewer should not render duplicate clip thumbnails when the timeline is visible');
+  assert.doesNotMatch(videoViewerSource, /viewerPlaybackButton/, 'viewer should not render duplicate playback controls when the timeline toolbar is visible');
+  assert.doesNotMatch(videoViewerSource, /activeItem\?\.title \?\? 'Montage viewer'/, 'viewer footer should not repeat the selected shot title as low-value summary text');
+  assert.doesNotMatch(videoViewerSource, /videoItems\.length\} clips/, 'viewer footer should not show a low-value clip count summary');
+  assert.match(videoViewerSource, /video\.play\(\)/, 'viewer should drive visible media layers from the shared montage playback state');
+  assert.match(videoViewerSource, /video\.pause\(\)/, 'viewer should pause inactive media layers cleanly');
+  assert.doesNotMatch(videoViewerSource, /data-tooltip/, 'viewer should not carry toolbar tooltip responsibilities');
+  assert.doesNotMatch(styleSource, /\.viewerFooter/, 'editor CSS should not keep a duplicate viewer footer');
+  assert.doesNotMatch(styleSource, /\.viewerStrip/, 'editor CSS should not keep duplicate viewer thumbnail strip styling');
+  assert.doesNotMatch(styleSource, /\.viewerPlaybackButton/, 'editor CSS should not keep duplicate viewer playback button styling');
+  assert.match(workspaceSource, /isTimelinePlaying/, 'workspace should own shared montage playback state');
+  assert.match(workspaceSource, /setInterval/, 'workspace should advance the playhead from a timeline clock, not only native video controls');
+  assert.match(workspaceSource, /handleToggleTimelinePlayback/, 'workspace should expose a shared play/pause toggle');
+  assert.match(workspaceSource, /timelineHistory/, 'workspace should keep undo and redo history for timeline edits');
+  assert.match(workspaceSource, /handleUndoTimeline/, 'workspace should support timeline undo');
+  assert.match(workspaceSource, /handleRedoTimeline/, 'workspace should support timeline redo');
+  assert.match(workspaceSource, /timelineEditMode/, 'workspace should track insert, overwrite, and replace edit mode');
+  assert.match(workspaceSource, /insertWorkspaceTimelineItems/, 'canvas outputs should enter the sequence through timeline insert operations');
+  assert.match(workspaceSource, /selectedTimelineItem/, 'workspace should derive the selected timeline item for Viewer mode editing');
+  assert.match(workspaceSource, /handlePatchTimelineItem/, 'workspace should expose timeline clip patching for the clip inspector');
+  assert.match(workspaceSource, /projectSettings/, 'workspace should persist and pass project-level aspect ratio, resolution, and FPS');
+  assert.match(workspaceSource, /handleProjectSettingsChange/, 'workspace should expose project settings changes from the project settings dialog');
+  assert.match(workspaceSource, /coerceWorkspaceProjectSettings/, 'workspace should sanitize persisted project settings before use');
+  assert.match(workspaceSource, /RENDER_MANIFEST_STORAGE_KEY/, 'workspace should persist the latest timeline render handoff locally');
+  assert.match(workspaceSource, /buildWorkspaceTimelineRenderManifest/, 'workspace export action should build a timeline render manifest');
+  assert.match(workspaceSource, /serializeWorkspaceTimelineRenderManifest/, 'workspace export action should serialize the render manifest contract');
+  assert.match(workspaceSource, /handleExportTimelineRender/, 'workspace should wire the topbar export action to timeline render handoff');
   assert.match(timelineSource, /Scissors/, 'timeline should expose a cut tool');
-  assert.match(timelineSource, /draggable/, 'timeline clips should be draggable');
-  assert.match(timelineSource, /onDragStart/, 'timeline should start drag reordering from clips');
-  assert.match(timelineSource, /onDrop/, 'timeline should accept dropped clips for reordering');
+  assert.match(timelineSource, /Magnet/, 'timeline should expose a snapping toggle');
+  assert.match(timelineSource, /ZoomIn/, 'timeline should expose compact zoom-in control');
+  assert.match(timelineSource, /ZoomOut/, 'timeline should expose compact zoom-out control');
+  assert.match(timelineSource, /Plus/, 'timeline should expose compact add-video-track control');
+  assert.match(timelineSource, /DEFAULT_TIMELINE_PIXELS_PER_SECOND/, 'timeline should own a default horizontal zoom scale');
+  assert.match(timelineSource, /MIN_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming out to a usable density');
+  assert.match(timelineSource, /MAX_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming in to a usable density');
+  assert.match(timelineSource, /buildTimelineTracks/, 'timeline should build video tracks dynamically before fixed audio tracks');
+  assert.match(timelineSource, /displayedVideoTracks = \[\.\.\.videoTracks\]\.reverse\(\)/, 'new video tracks should display above V1 while audio tracks stay below video tracks');
+  assert.match(timelineSource, /timelineVideoTrackId/, 'timeline should label added video tracks as V2, V3, and later');
+  assert.match(timelineSource, /snapEnabled/, 'timeline should keep snap mode state');
+  assert.match(timelineSource, /SNAP_TARGET_THRESHOLD_PIXELS/, 'timeline snapping should use a subtle proximity threshold');
+  assert.match(timelineSource, /buildSnapTargets/, 'timeline should snap to clip edges, playhead, and zero');
+  assert.match(timelineSource, /timelineSnapGuide/, 'timeline should render a visible snap guide while editing');
+  assert.match(timelineSource, /activeTimelineTool/, 'timeline should keep a selected edit tool mode');
+  assert.match(timelineSource, /Cut tool/, 'cut should be a selected tool instead of only a per-clip duplicate action');
+  assert.match(timelineSource, /data-tooltip/, 'timeline editing tools should expose shortcut tooltips');
+  assert.match(timelineSource, /window\.addEventListener\('keydown'/, 'timeline should register basic keyboard shortcuts');
+  assert.match(timelineSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
+  assert.match(timelineSource, /event\.key === ' '/, 'Space shortcut should tolerate browser key/code differences');
+  assert.match(timelineSource, /event\.code === 'KeyC'/, 'C should activate the cut tool');
+  assert.match(timelineSource, /event\.code === 'KeyV'/, 'V should return to the select and drag tool');
+  assert.match(timelineSource, /event\.code === 'KeyM'/, 'M should toggle timeline snapping');
+  assert.match(timelineSource, /event\.code === 'KeyT'/, 'T should cycle timeline trim modes');
+  assert.match(timelineSource, /event\.code === 'Delete'/, 'Delete should remove the selected timeline clip');
+  assert.match(timelineSource, /Cmd\/Ctrl \+ Z|KeyZ/, 'timeline should expose undo and redo shortcuts');
+  assert.match(timelineSource, /timelineModeControl/, 'timeline should expose insert, overwrite, and replace modes');
+  assert.match(timelineSource, /Timeline trim mode/, 'timeline should expose normal, ripple, and roll trim modes');
+  assert.match(timelineSource, /Toggle crossfade transition/, 'timeline should expose a transition toggle for the selected cut');
+  assert.match(timelineSource, /event\.code === 'KeyS'|KeyB/, 'timeline should expose a keyboard split shortcut at the playhead');
+  assert.match(timelineSource, /timelineClipCutMode/, 'clips should render a dedicated cut-mode pointer state');
+  assert.match(timelineSource, /getBoundingClientRect/, 'cut tool should convert the mouse position on the clip into a split time');
+  assert.match(timelineSource, /playheadSec/, 'timeline should render and control a playhead');
+  assert.match(timelineSource, /projectFps/, 'timeline should format playhead and ruler labels from project FPS');
+  assert.match(timelineSource, /formatWorkspaceTimecode/, 'timeline should display HH:MM:SS:FF timecode labels');
+  assert.match(timelineSource, /handleBeginPlayheadDrag/, 'timeline should let users drag the playhead line directly');
+  assert.match(timelineSource, /handleBeginTimelineSurfacePointerDown/, 'timeline should let users drag empty timeline space to scrub');
+  assert.match(timelineSource, /data-playhead-handle="true"/, 'timeline playhead should expose an interactive handle on the line');
+  assert.match(timelineSource, /Drag timeline playhead/, 'timeline playhead handle should have a clear accessible label');
+  assert.match(timelineSource, /Timeline scrubber/, 'timeline should expose a scrubber for playhead positioning');
+  assert.match(timelineSource, /onResizeItem/, 'timeline clips should wire resize controls');
+  assert.match(timelineSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
+  assert.match(timelineSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
+  assert.match(timelineSource, /TimelineInteractionState/, 'timeline should keep lightweight preview state during pointer edits');
+  assert.match(timelineSource, /originSourceStartSec/, 'timeline drag preview should remember the selected clip source in-point');
+  assert.match(timelineSource, /originSourceDurationSec/, 'timeline drag preview should remember the selected clip source duration');
+  assert.match(timelineSource, /previewTrack/, 'timeline drag preview should track the target video lane under the pointer');
+  assert.match(timelineSource, /trackAtClientY/, 'timeline should infer the destination video track from pointer position');
+  assert.match(timelineSource, /data-timeline-track/, 'timeline lanes should expose stable track ids for vertical clip dragging');
+  assert.match(timelineSource, /maxResizeDurationForInteraction/, 'timeline drag preview should cap handle extension to available source media');
+  assert.match(timelineSource, /onPointerDown/, 'timeline should start mouse and pen edits from pointer events');
+  assert.match(timelineSource, /pointermove/, 'timeline should preview clip movement while dragging');
+  assert.match(timelineSource, /pointerup/, 'timeline should commit movement and resize edits on release');
+  assert.match(timelineSource, /setPointerCapture/, 'timeline should capture pointer drags instead of relying on HTML drag/drop');
+  assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');
+  assert.match(timelineSource, /onResizeItem/, 'timeline should commit direct clip resizing');
+  assert.doesNotMatch(timelineSource, /draggable/, 'timeline clips should not use native HTML drag/drop for editor movement');
+  assert.doesNotMatch(styleSource, /\.timelineClip[\s\S]*min-width:\s*160px/, 'timeline clip widths should reflect time positions instead of overlapping cut segments with a large fixed minimum');
   assert.match(timelineSource, /selectedItemId/, 'timeline should expose selected clip state');
   assert.match(timelineSource, /onCutItem/, 'timeline should wire the cut tool to selected clips');
+  assert.match(timelineSource, /timelineZoomControl/, 'timeline should keep zoom controls visually compact');
+  assert.match(timelineSource, /timelineWaveform/, 'timeline audio clips should render lightweight waveform previews');
+  assert.match(workspaceSource, /WorkspaceVideoViewer[\s\S]*playheadSec=\{playheadSec\}/, 'workspace should pass the shared playhead into the montage viewer');
+  assert.doesNotMatch(workspaceSource, /<WorkspaceVideoViewer(?:(?!\/>)[\s\S])*onPlayheadChange=/, 'workspace should keep playhead editing in the timeline instead of the viewer');
+  assert.match(workspaceSource, /TimelineClipInspector[\s\S]*selectedItem=\{selectedTimelineItem\}/, 'viewer mode inspector should edit the selected timeline item');
+  assert.match(workspaceSource, /TimelineClipInspector[\s\S]*onPatchItem=\{handlePatchTimelineItem\}/, 'viewer mode inspector should patch timeline clip edit properties');
+  assert.match(timelineClipInspectorSource, /export function TimelineClipInspector/, 'timeline clip inspector should be exported');
+  assert.match(timelineClipInspectorSource, /Clip inspector/, 'timeline clip inspector should render a focused empty state');
+  assert.match(timelineClipInspectorSource, /formatWorkspaceTimecode/, 'timeline clip inspector should show frame-accurate clip timing');
+  assert.match(timelineClipInspectorSource, /Scale/, 'timeline clip inspector should expose video scale');
+  assert.match(timelineClipInspectorSource, /Position X/, 'timeline clip inspector should expose video horizontal position');
+  assert.match(timelineClipInspectorSource, /Position Y/, 'timeline clip inspector should expose video vertical position');
+  assert.match(timelineClipInspectorSource, /Rotation/, 'timeline clip inspector should expose video rotation');
+  assert.match(timelineClipInspectorSource, /Opacity/, 'timeline clip inspector should expose video opacity');
+  assert.match(timelineClipInspectorSource, /isWorkspaceTimelineVideoTrack/, 'timeline clip inspector should expose audio controls for every video track');
+  assert.match(timelineClipInspectorSource, /Volume/, 'timeline clip inspector should expose clip volume');
+  assert.match(timelineClipInspectorSource, /Mute clip/, 'timeline clip inspector should expose clip mute');
+  assert.match(timelineClipInspectorSource, /Crossfade to next clip/, 'timeline clip inspector should expose selected-clip transition controls');
+  assert.match(timelineClipInspectorSource, /onPatchItem\(selectedItem\.id/, 'timeline clip inspector should patch the selected timeline item only');
+  assert.match(settingsSource, /Insert at playhead/, 'output inspector should expose insert at playhead');
+  assert.match(settingsSource, /Overwrite/, 'output inspector should expose overwrite edit');
+  assert.match(settingsSource, /Replace selected/, 'output inspector should expose replace selected edit');
   assert.match(assetLibraryBrowserSource, /export function WorkspaceAssetLibraryBrowser/, 'studio should wrap the app library structure in a route-local browser component');
   assert.match(assetLibraryBrowserSource, /searchQuery/, 'studio library browser should keep the app library search interaction');
   assert.match(assetLibraryBrowserSource, /filteredAssets/, 'studio library browser should filter visible assets from the search query');
@@ -357,14 +608,71 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /\.assetBrowserSourceButton/, 'studio library source tabs should be styled with isolated editor CSS');
   assert.match(styleSource, /\.assetBrowserCard/, 'studio library asset cards should be styled with isolated editor CSS');
   assert.match(styleSource, /\.blockTemplateList/, 'sidebar block template list should be styled with isolated editor CSS');
+  assert.match(styleSource, /\.blockTemplateList[\s\S]*flex:\s*0 0 auto/, 'sidebar block templates should keep a bounded height when Viewer mode reduces available body space');
   assert.match(styleSource, /\.blockTemplateCard/, 'sidebar block template cards should be styled with isolated editor CSS');
+  assert.match(styleSource, /\.templateSection[\s\S]*flex:\s*1 1 auto[\s\S]*overflow:\s*hidden/, 'starter templates should own the flexible sidebar height instead of overlapping block templates');
+  assert.match(styleSource, /\.templateList[\s\S]*overflow:\s*auto/, 'starter templates should scroll inside the left sidebar when vertical space is tight');
+  assert.match(styleSource, /\.viewerFocus \.librarySidebar/, 'Viewer mode should compact the left sidebar to fit above the taller timeline');
+  assert.match(styleSource, /\.viewerFocus \.blockTemplateList[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'Viewer mode should move block templates to three columns to free starter-template height');
+  assert.match(styleSource, /\.viewerFocus \.blockTemplateCard[\s\S]*min-height:\s*52px/, 'Viewer mode should compact block template cards without hiding them');
+  assert.match(styleSource, /\.viewerFocus \.templateButton[\s\S]*padding:\s*8px/, 'Viewer mode should compact starter template buttons for responsive sidebar fit');
   assert.match(typesSource, /onOpenAssetLibrary\?:/, 'node data should carry a media library open handler');
   assert.match(styleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in isolated editor CSS');
   assert.match(styleSource, /\.processingPreview/, 'processing output placeholders should be styled in isolated editor CSS');
   assert.match(styleSource, /\.previewVideo/, 'playable video previews should be styled in isolated editor CSS');
   assert.match(styleSource, /\.videoViewerShell/, 'central montage viewer should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
+  assert.match(styleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');
+  assert.match(styleSource, /\.programFrameViewport[\s\S]*container-type:\s*size/, 'program monitor viewport should provide size containment for aspect-ratio fitting');
+  assert.match(styleSource, /\.programFrameViewport[\s\S]*overflow:\s*auto/, 'program monitor viewport should allow inspection of 100% sequence pixels without resizing the app shell');
+  assert.match(styleSource, /\.programFrame/, 'central viewer should style a project-ratio program frame');
+  assert.match(styleSource, /\.viewerVideoLayer/, 'program monitor should stack stable video layers for smoother sequence playback');
+  assert.match(styleSource, /\.viewerVideoLayer[\s\S]*transform-origin:\s*center/, 'program monitor layers should transform around the project frame center');
+  assert.match(styleSource, /\.viewerVideoLayerVisible/, 'program monitor should expose the active video layer without recreating the video source');
+  assert.match(styleSource, /\.programFrameFit/, 'program monitor should fit the full sequence frame by default');
+  assert.match(styleSource, /\.programFrameScaled/, 'program monitor should support pixel-based sequence zoom levels');
+  assert.match(styleSource, /--workspace-project-aspect-ratio/, 'program frame should use a project aspect-ratio CSS variable');
+  assert.match(styleSource, /--workspace-project-aspect-width/, 'program frame should use numeric aspect width for contained fitting');
+  assert.match(styleSource, /--workspace-project-aspect-height/, 'program frame should use numeric aspect height for contained fitting');
+  assert.match(styleSource, /--workspace-project-preview-width/, 'program frame should use project pixel width for non-Fit monitor zoom');
+  assert.match(styleSource, /--workspace-project-preview-height/, 'program frame should use project pixel height for non-Fit monitor zoom');
+  assert.match(styleSource, /--workspace-program-zoom-scale/, 'program frame should use monitor zoom scale separately from project resolution');
+  assert.doesNotMatch(styleSource, /\.viewerSettingsSlot/, 'viewer should not reserve a footer slot for project settings');
+  assert.doesNotMatch(styleSource, /\.sequenceSettingsButton/, 'viewer should not style a footer project settings button');
+  assert.match(styleSource, /\.sequenceSettingsOverlay/, 'viewer should style the project settings dialog overlay');
+  assert.match(styleSource, /\.sequenceSettingsDialog/, 'viewer should style the project settings dialog');
+  assert.match(styleSource, /\.sequenceSettingsFields/, 'viewer should style sequence fields inside the dialog');
+  assert.doesNotMatch(styleSource, /\.viewerSequenceControls/, 'viewer should not style always-visible sequence settings controls');
   assert.match(styleSource, /\.timelineClipSelected/, 'selected timeline clips should be visually distinct');
+  assert.match(cssBlock(styleSource, '.timelinePanel'), /min-width:\s*0/, 'timeline panel should shrink inside the app shell instead of widening the page when zoomed');
+  assert.match(cssBlock(styleSource, '.timelinePanel'), /overflow:\s*hidden/, 'timeline panel should keep horizontal zoom overflow inside timeline scrollers');
+  assert.match(styleSource, /\.timelineViewport/, 'timeline should use one shared scroll viewport for ruler and all tracks');
+  assert.match(cssBlock(styleSource, '.timelineViewport'), /overflow:\s*auto/, 'timeline zoom should create one shared scrollbar instead of per-track scrollbars');
+  assert.match(cssBlock(styleSource, '.trackLane'), /overflow:\s*visible/, 'individual timeline lanes should not render native horizontal scrollbars');
+  assert.match(cssBlock(styleSource, '.trackLabel'), /position:\s*sticky/, 'timeline track labels should stay pinned while the shared viewport scrolls horizontally');
   assert.match(styleSource, /\.timelineToolButton/, 'timeline editing tools should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineModeControl/, 'timeline insert mode control should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineInsertActions/, 'output inspector insert actions should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineZoomControl/, 'timeline zoom control should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineInspectorGroup/, 'timeline clip inspector groups should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineInspectorControlRow/, 'timeline clip inspector slider rows should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.settingsRange/, 'timeline clip inspector ranges should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineInspectorCheckbox/, 'timeline clip inspector toggles should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineInspectorResetButton/, 'timeline clip inspector reset button should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelinePlayhead/, 'timeline playhead should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelinePlayhead::before/, 'timeline playhead should draw the visible line from an interactive handle');
+  assert.match(styleSource, /\.timelinePlayhead[\s\S]*pointer-events:\s*auto/, 'timeline playhead should be directly draggable instead of decorative only');
+  assert.match(styleSource, /\.timelineRulerPlayhead/, 'timeline should expose a dedicated ruler playhead handle');
+  assert.match(styleSource, /--timeline-track-label-width:\s*150px/, 'timeline should define the track label width once for ruler and lane alignment');
+  assert.match(styleSource, /--timeline-track-lane-padding-x:\s*10px/, 'timeline should define the lane padding once for ruler and lane alignment');
+  assert.match(styleSource, /\.timelineRulerLane/, 'timeline ruler should align with track lane content after the sticky track label');
+  assert.match(styleSource, /\.timelineTrack[\s\S]*grid-template-columns:\s*var\(--timeline-track-label-width\) minmax\(0,\s*1fr\)/, 'timeline track layout should share the same label width variable as the ruler');
+  assert.match(styleSource, /\.timelineRulerInner span[\s\S]*font-variant-numeric:\s*tabular-nums/, 'timeline ruler timecodes should use tabular frame digits');
+  assert.match(styleSource, /\.trackLaneContent[\s\S]*cursor:\s*ew-resize/, 'empty timeline lanes should communicate playhead scrubbing');
+  assert.match(styleSource, /\.timelineSnapGuide/, 'timeline snap guide should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.timelineScrubber/, 'timeline scrubber should be styled in isolated editor CSS');
+  assert.match(styleSource, /\.trimHandle/, 'timeline trim handles should be styled in isolated editor CSS');
   assert.match(styleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in isolated editor CSS');
   assert.match(styleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in isolated editor CSS');
   for (const nodeType of ["type: 'asset-image'", "type: 'asset-video'", "type: 'asset-audio'", "type: 'text-prompt'", "type: 'shot'", "type: 'output'"]) {
@@ -380,6 +688,24 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   ]) {
     assert.match(typesSource, new RegExp(`export type ${typeName}`), `${typeName} should be exported`);
   }
+});
+
+test('MaxVideoAI editor timeline track helpers reject impossible video lanes', async () => {
+  const {
+    isWorkspaceTimelineVideoTrack,
+    workspaceTimelineVideoTrackId,
+    workspaceTimelineTrackLabel,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-tracks');
+
+  assert.equal(isWorkspaceTimelineVideoTrack('video'), true, 'base video track should be treated as video');
+  assert.equal(isWorkspaceTimelineVideoTrack('video-2'), true, 'added video tracks should be treated as video');
+  assert.equal(
+    isWorkspaceTimelineVideoTrack('video-0' as WorkspaceTimelineTrack),
+    false,
+    'timeline should reject impossible V0 tracks at runtime'
+  );
+  assert.equal(workspaceTimelineVideoTrackId(3), 'video-3', 'timeline should generate stable added video track ids');
+  assert.equal(workspaceTimelineTrackLabel('video-2'), 'V2', 'timeline should label added video tracks as editing lanes');
 });
 
 test('MaxVideoAI editor render options reflect each engine audio capability', async () => {
@@ -564,6 +890,38 @@ test('MaxVideoAI editor render options reflect each engine audio capability', as
     'audio' in buildWorkspaceShotGenerateRequest({ ...baseGenerateRequest, capability: silentCapability }),
     false,
     'generate request should omit audio for silent engines'
+  );
+});
+
+test('MaxVideoAI editor generation resolves connected output media references', async () => {
+  const { mediaUrlsFromKinds } = await import(
+    '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation'
+  );
+  const template = createProductAdWorkspaceTemplate();
+
+  assert.deepEqual(
+    mediaUrlsFromKinds(template.nodes, template.edges, 'shot-02', ['previous_shot']),
+    ['/hero/pika-22.mp4'],
+    'generated output blocks connected as previous shots should route their video URL into generation inputs'
+  );
+
+  const processingNodes = template.nodes.map((node) => {
+    if (node.id !== 'output-01' || !node.data.output) return node;
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        output: {
+          ...node.data.output,
+          status: 'processing' as const,
+        },
+      },
+    };
+  });
+  assert.deepEqual(
+    mediaUrlsFromKinds(processingNodes, template.edges, 'shot-02', ['previous_shot']),
+    [],
+    'processing output blocks should not be sent as ready generation references'
   );
 });
 
@@ -1031,9 +1389,19 @@ test('MaxVideoAI editor creates a processing output before generated media exist
 
 test('MaxVideoAI editor timeline editing supports drag ordering and cut splits', async () => {
   const {
+    buildWorkspaceTimelineItemsForAsset,
+    buildWorkspaceTimelineItemsForOutput,
+    deleteWorkspaceTimelineItem,
+    insertWorkspaceTimelineItems,
     moveWorkspaceTimelineItem,
+    normalizeWorkspaceTimelineIdentities,
+    positionWorkspaceTimelineItem,
+    positionWorkspaceTimelineItems,
     reorderWorkspaceTimelineItem,
+    resizeWorkspaceTimelineItem,
     splitWorkspaceTimelineItem,
+    toggleWorkspaceTimelineCrossfade,
+    trimWorkspaceTimelineItem,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
   const items: WorkspaceTimelineItem[] = [
     {
@@ -1043,6 +1411,24 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       title: 'Clip A',
       durationSec: 8,
       startSec: 0,
+      sourceStartSec: 0,
+      sourceDurationSec: 8,
+      linkedGroupId: 'group-a',
+      mediaKind: 'video',
+      hasEmbeddedAudio: true,
+      mediaUrl: '/hero/veo3.mp4',
+    },
+    {
+      id: 'clip-a-audio',
+      outputNodeId: 'output-a',
+      track: 'linked-audio',
+      title: 'Clip A Audio',
+      durationSec: 8,
+      startSec: 0,
+      sourceStartSec: 0,
+      sourceDurationSec: 8,
+      linkedGroupId: 'group-a',
+      mediaKind: 'audio',
       mediaUrl: '/hero/veo3.mp4',
     },
     {
@@ -1074,6 +1460,11 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'moving a clip left should reorder only its track and recalculate video starts'
   );
   assert.deepEqual(
+    moved.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    [['clip-a-audio', 6, 8]],
+    'linked audio should stay synchronized when its video group moves'
+  );
+  assert.deepEqual(
     moved.filter((item) => item.track === 'music').map((item) => [item.id, item.startSec]),
     [['music-a', 0]],
     'moving video clips should not disturb music track timing'
@@ -1091,13 +1482,685 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
 
   const split = splitWorkspaceTimelineItem(items, 'clip-a', 3);
   assert.deepEqual(
-    split.filter((item) => item.track === 'video').map((item) => [item.id, item.durationSec, item.startSec]),
+    split.filter((item) => item.track === 'video').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec ?? 0]),
     [
-      ['clip-a', 3, 0],
-      ['clip-a-split', 5, 3],
-      ['clip-b', 6, 8],
+      ['clip-a', 3, 0, 0],
+      ['clip-a-split', 5, 3, 3],
+      ['clip-b', 6, 8, 0],
     ],
-    'cut should split a clip at the requested offset and keep subsequent clips aligned'
+    'cut should split a clip at the requested offset, keep subsequent clips aligned, and preserve source in-points'
+  );
+  assert.deepEqual(
+    split.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 3, 0, 0, 'group-a'],
+      ['clip-a-audio-split', 5, 3, 3, 'group-a-split'],
+    ],
+    'cut should split linked audio with the same timing and a new right-side group'
+  );
+
+  const splitAgain = splitWorkspaceTimelineItem(split, 'clip-a', 1.5);
+  assert.equal(
+    new Set(splitAgain.map((item) => item.id)).size,
+    splitAgain.length,
+    'repeated cuts should keep every timeline item id unique'
+  );
+  assert.deepEqual(
+    splitAgain.filter((item) => item.track === 'video').map((item) => [item.id, item.linkedGroupId ?? null, item.durationSec, item.startSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 'group-a', 1.5, 0, 0],
+      ['clip-a-split-2', 'group-a-split-2', 1.5, 1.5, 1.5],
+      ['clip-a-split', 'group-a-split', 5, 3, 3],
+      ['clip-b', null, 6, 8, 0],
+    ],
+    'cutting an already split left segment should create a new right-side identity instead of colliding with the older split'
+  );
+  assert.deepEqual(
+    Array.from(splitAgain.reduce((groups, item) => {
+      if (!item.linkedGroupId) return groups;
+      const tracks = groups.get(item.linkedGroupId) ?? [];
+      tracks.push(item.track);
+      groups.set(item.linkedGroupId, tracks);
+      return groups;
+    }, new Map<string, WorkspaceTimelineTrack[]>()).entries())
+      .map(([groupId, tracks]) => [groupId, tracks.sort()])
+      .sort((left, right) => String(left[0]).localeCompare(String(right[0]))),
+    [
+      ['group-a', ['linked-audio', 'video']],
+      ['group-a-split', ['linked-audio', 'video']],
+      ['group-a-split-2', ['linked-audio', 'video']],
+    ],
+    'each split segment should keep exactly one video and one linked-audio item in its own linked group'
+  );
+
+  const repairedDuplicateSplit = normalizeWorkspaceTimelineIdentities([
+    { ...items[0], id: 'duplicate-video', linkedGroupId: 'duplicate-group', startSec: 0, durationSec: 2 },
+    { ...items[0], id: 'duplicate-video', linkedGroupId: 'duplicate-group', startSec: 2, durationSec: 2, sourceStartSec: 2 },
+    { ...items[1], id: 'duplicate-audio', linkedGroupId: 'duplicate-group', startSec: 0, durationSec: 2 },
+    { ...items[1], id: 'duplicate-audio', linkedGroupId: 'duplicate-group', startSec: 2, durationSec: 2, sourceStartSec: 2 },
+  ]);
+  assert.deepEqual(
+    repairedDuplicateSplit.map((item) => [item.id, item.linkedGroupId, item.startSec, item.durationSec]),
+    [
+      ['duplicate-video', 'duplicate-group', 0, 2],
+      ['duplicate-video-2', 'duplicate-group-2', 2, 2],
+      ['duplicate-audio', 'duplicate-group', 0, 2],
+      ['duplicate-audio-2', 'duplicate-group-2', 2, 2],
+    ],
+    'persisted timelines with stale duplicate split ids should be repaired into distinct linked clip pairs'
+  );
+
+  const movedRepairedSplit = positionWorkspaceTimelineItem(repairedDuplicateSplit, 'duplicate-video-2', 4);
+  assert.deepEqual(
+    movedRepairedSplit.filter((item) => item.linkedGroupId === 'duplicate-group-2').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['duplicate-video-2', 4, 2],
+      ['duplicate-audio-2', 4, 2],
+    ],
+    'dragging one repaired split segment should move only its video/audio pair'
+  );
+  assert.deepEqual(
+    movedRepairedSplit.filter((item) => item.linkedGroupId === 'duplicate-group').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['duplicate-video', 0, 2],
+      ['duplicate-audio', 0, 2],
+    ],
+    'dragging a repaired segment should not move the older segment from the same original clip'
+  );
+
+  const trimmedEnd = trimWorkspaceTimelineItem(items, 'clip-a', 'end', 2);
+  assert.deepEqual(
+    trimmedEnd.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec]),
+    [
+      ['clip-a', 6, 0, 0],
+      ['clip-a-audio', 6, 0, 0],
+    ],
+    'end trim should shorten linked video and audio together'
+  );
+  assert.equal(
+    trimmedEnd.find((item) => item.id === 'clip-b')?.startSec,
+    6,
+    'end trim should ripple the next video clip left'
+  );
+
+  const trimmedStart = trimWorkspaceTimelineItem(items, 'clip-a', 'start', 2);
+  assert.deepEqual(
+    trimmedStart.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.durationSec, item.startSec, item.sourceStartSec]),
+    [
+      ['clip-a', 6, 0, 2],
+      ['clip-a-audio', 6, 0, 2],
+    ],
+    'start trim should advance linked source in-points while keeping the group on the sequence line'
+  );
+
+  const positioned = positionWorkspaceTimelineItem(items, 'clip-a', 4);
+  assert.deepEqual(
+    positioned.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 4, 8],
+      ['clip-a-audio', 4, 8],
+    ],
+    'pointer move should reposition linked video and audio together'
+  );
+
+  const multiPositioned = positionWorkspaceTimelineItems(items, ['clip-a', 'clip-b'], 'clip-a', 2);
+  assert.deepEqual(
+    multiPositioned.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 2, 8],
+      ['clip-b', 10, 6],
+    ],
+    'multi-select drag should move selected visual clips together while preserving their relative timing'
+  );
+  assert.deepEqual(
+    multiPositioned.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    [['clip-a-audio', 2, 8]],
+    'multi-select drag should keep linked audio synchronized with selected video groups'
+  );
+  assert.deepEqual(
+    positionWorkspaceTimelineItems(items, ['clip-a', 'clip-b'], 'clip-a', -6)
+      .filter((item) => item.track === 'video')
+      .map((item) => [item.id, item.startSec]),
+    [
+      ['clip-a', 0],
+      ['clip-b', 8],
+    ],
+    'multi-select drag should clamp the whole selection at the start of the sequence'
+  );
+
+  const pointerReordered = positionWorkspaceTimelineItem(items, 'clip-b', 0);
+  assert.deepEqual(
+    pointerReordered.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec]),
+    [
+      ['clip-b', 0],
+      ['clip-a', 6],
+    ],
+    'dragging a clip past a neighboring midpoint should reorder the video track instead of leaving the clip blocked'
+  );
+  assert.deepEqual(
+    pointerReordered.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    [['clip-a-audio', 6, 8]],
+    'pointer reorder should keep linked audio aligned with its moved video group'
+  );
+
+  const movedToOverlayTrack = positionWorkspaceTimelineItem(items, 'clip-a', 1, 'video-2');
+  assert.deepEqual(
+    movedToOverlayTrack.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video-2', 1, 8],
+      ['clip-a-audio', 'linked-audio', 1, 8],
+    ],
+    'vertical drag should move the video clip to a target video track while keeping linked audio synchronized'
+  );
+
+  const resizedEnd = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 5,
+  });
+  assert.deepEqual(
+    resizedEnd.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec]),
+    [
+      ['clip-a', 0, 5, 0],
+      ['clip-a-audio', 0, 5, 0],
+    ],
+    'pointer end-resize should shorten linked video and audio together'
+  );
+
+  const resizedStart = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'start',
+    nextStartSec: 2,
+    nextDurationSec: 6,
+  });
+  assert.deepEqual(
+    resizedStart.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec]),
+    [
+      ['clip-a', 2, 6, 2],
+      ['clip-a-audio', 2, 6, 2],
+    ],
+    'pointer start-resize should advance linked in-points and keep the group synchronized'
+  );
+
+  const blockedEndExpansion = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 20,
+  });
+  assert.deepEqual(
+    blockedEndExpansion.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec]),
+    [
+      ['clip-a', 0, 8, 0],
+      ['clip-a-audio', 0, 8, 0],
+    ],
+    'end-resize should not extend a clip beyond its original source duration'
+  );
+
+  const restoredStartExpansion = resizeWorkspaceTimelineItem({
+    items: resizedStart,
+    itemId: 'clip-a',
+    edge: 'start',
+    nextStartSec: -10,
+    nextDurationSec: 20,
+  });
+  assert.deepEqual(
+    restoredStartExpansion.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec]),
+    [
+      ['clip-a', 0, 8, 0],
+      ['clip-a-audio', 0, 8, 0],
+    ],
+    'start-resize should restore earlier source frames but stop at the original media in-point'
+  );
+
+  const missingSourceDurationExpansion = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-b',
+    edge: 'end',
+    nextStartSec: 8,
+    nextDurationSec: 20,
+  });
+  assert.equal(
+    missingSourceDurationExpansion.find((item) => item.id === 'clip-b')?.durationSec,
+    6,
+    'clips without explicit source duration should treat their current duration as the source cap'
+  );
+
+  const rippleResizedEnd = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 5,
+    mode: 'ripple',
+  });
+  assert.deepEqual(
+    rippleResizedEnd.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 5],
+      ['clip-b', 5, 6],
+    ],
+    'ripple end trim should pull later video clips left when the selected clip is shortened'
+  );
+
+  const rippleResizedStart = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-b',
+    edge: 'start',
+    nextStartSec: 10,
+    nextDurationSec: 4,
+    mode: 'ripple',
+  });
+  assert.deepEqual(
+    rippleResizedStart.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 8, 0],
+      ['clip-b', 8, 4, 2],
+    ],
+    'ripple start trim should advance the source in-point while keeping the clip on the sequence line'
+  );
+
+  const rollItems: WorkspaceTimelineItem[] = items.map((item) => {
+    if (item.id === 'clip-a' || item.id === 'clip-a-audio') return { ...item, sourceDurationSec: 12 };
+    if (item.id === 'clip-b') return { ...item, sourceStartSec: 2, sourceDurationSec: 10 };
+    return item;
+  });
+  const rollResizedEnd = resizeWorkspaceTimelineItem({
+    items: rollItems,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 10,
+    mode: 'roll',
+  });
+  assert.deepEqual(
+    rollResizedEnd.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 10],
+      ['clip-b', 10, 4],
+    ],
+    'roll end trim should move the cut into the next clip without changing total sequence length'
+  );
+
+  const sourceBoundRollEnd = resizeWorkspaceTimelineItem({
+    items: rollItems,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 20,
+    mode: 'roll',
+  });
+  assert.deepEqual(
+    sourceBoundRollEnd.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 12, 0],
+      ['clip-b', 12, 2, 6],
+    ],
+    'roll trim should stop expanding the outgoing clip when its source media is exhausted'
+  );
+
+  const crossfaded = toggleWorkspaceTimelineCrossfade(items, 'clip-a', 1);
+  assert.deepEqual(
+    crossfaded.filter((item) => item.track === 'video').map((item) => [item.id, item.transitionOut?.type ?? null, item.transitionOut?.durationSec ?? null]),
+    [
+      ['clip-a', 'crossfade', 1],
+      ['clip-b', null, null],
+    ],
+    'crossfade toggle should mark the outgoing selected clip when an adjacent next clip exists'
+  );
+  const crossfadeRemoved = toggleWorkspaceTimelineCrossfade(crossfaded, 'clip-a', 1);
+  assert.equal(
+    crossfadeRemoved.find((item) => item.id === 'clip-a')?.transitionOut,
+    null,
+    'crossfade toggle should remove an existing matching transition'
+  );
+
+  const linkedOutputItems = buildWorkspaceTimelineItemsForOutput({
+    outputNodeId: 'output-c',
+    title: 'Generated Clip',
+    output: {
+      kind: 'video',
+      modelId: 'veo-3-1',
+      modelLabel: 'Veo 3.1',
+      workflowType: 'image_to_video',
+      durationSec: 5,
+      status: 'ready',
+      createdAt: '2026-06-05T10:00:00.000Z',
+      sourceShotId: 'shot-c',
+      url: '/hero/veo3.mp4',
+      thumbUrl: '/hero/showcase-veo-3-1.webp',
+      hasAudio: true,
+    },
+    startSec: 14,
+    idSeed: 'test',
+  });
+  assert.deepEqual(
+    linkedOutputItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId, item.mediaKind, item.mediaUrl]),
+    [
+      ['video', 5, 14, 'timeline-output-c-test', 'video', '/hero/veo3.mp4'],
+      ['linked-audio', 5, 14, 'timeline-output-c-test', 'audio', '/hero/veo3.mp4'],
+    ],
+    'video outputs with sound should create synchronized video and audio timeline clips'
+  );
+
+  const importedVideoItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'asset-video-a',
+    title: 'Imported Clip',
+    asset: {
+      id: 'imported-video',
+      kind: 'video',
+      filename: 'phone-shot.mp4',
+      subtitle: 'Video · upload',
+      url: '/uploads/phone-shot.mp4',
+      thumbUrl: '/uploads/phone-shot.jpg',
+      durationSec: 9,
+    },
+    startSec: 4,
+    idSeed: 'asset-test',
+  });
+  assert.deepEqual(
+    importedVideoItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId, item.mediaKind, item.mediaUrl]),
+    [
+      ['video', 9, 4, 'timeline-asset-video-a-asset-test', 'video', '/uploads/phone-shot.mp4'],
+      ['linked-audio', 9, 4, 'timeline-asset-video-a-asset-test', 'audio', '/uploads/phone-shot.mp4'],
+    ],
+    'imported video assets should enter the timeline as synchronized video and linked audio clips'
+  );
+
+  const importedAudioItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'asset-audio-a',
+    title: 'Imported Music',
+    asset: {
+      id: 'imported-audio',
+      kind: 'audio',
+      filename: 'track.wav',
+      subtitle: 'Audio · upload',
+      url: '/uploads/track.wav',
+      durationSec: 22,
+    },
+    startSec: 6,
+    idSeed: 'audio-test',
+  });
+  assert.deepEqual(
+    importedAudioItems.map((item) => [item.track, item.durationSec, item.startSec, item.linkedGroupId ?? null, item.mediaKind, item.mediaUrl]),
+    [
+      ['music', 22, 6, null, 'audio', '/uploads/track.wav'],
+    ],
+    'imported audio assets should enter the timeline on an audio editing track'
+  );
+
+  const importedImageItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'asset-image-a',
+    title: 'Imported Still',
+    asset: {
+      id: 'imported-image',
+      kind: 'image',
+      filename: 'reference.png',
+      subtitle: 'Image · upload',
+      url: '/uploads/reference.png',
+    },
+    startSec: 10,
+    idSeed: 'image-test',
+  });
+  assert.deepEqual(
+    importedImageItems.map((item) => [item.track, item.durationSec, item.startSec, item.mediaKind, item.mediaUrl]),
+    [
+      ['video', 5, 10, 'image', '/uploads/reference.png'],
+    ],
+    'imported images should enter the timeline as still visual clips'
+  );
+
+  const insertEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'insert',
+    playheadSec: 6,
+    selectedItemId: null,
+    idSeed: 'insert',
+  });
+  assert.deepEqual(
+    insertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 6, 0],
+      ['timeline-output-c-test', 6, 5, 0],
+      ['clip-a-tail-insert', 11, 2, 6],
+      ['clip-b', 13, 6, 0],
+    ],
+    'insert edit should split the clip under the playhead, insert the new output, and push later video clips'
+  );
+  assert.deepEqual(
+    insertEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 6, 0, 'group-a'],
+      ['timeline-output-c-test-audio', 6, 5, 0, 'timeline-output-c-test'],
+      ['clip-a-audio-tail-insert', 11, 2, 6, 'group-a-tail-insert'],
+    ],
+    'insert edit should split and shift linked audio exactly like its source video clip'
+  );
+
+  const overwriteEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'overwrite',
+    playheadSec: 2,
+    selectedItemId: null,
+    idSeed: 'overwrite',
+  });
+  assert.deepEqual(
+    overwriteEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
+    [
+      ['clip-a', 0, 2, 0],
+      ['timeline-output-c-test', 2, 5, 0],
+      ['clip-a-tail-overwrite', 7, 1, 7],
+      ['clip-b', 8, 6, 0],
+    ],
+    'overwrite edit should trim and split clips under the inserted range instead of allowing track overlap'
+  );
+  assert.deepEqual(
+    overwriteEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 2, 0, 'group-a'],
+      ['timeline-output-c-test-audio', 2, 5, 0, 'timeline-output-c-test'],
+      ['clip-a-audio-tail-overwrite', 7, 1, 7, 'group-a-tail-overwrite'],
+    ],
+    'overwrite edit should rewrite linked audio under the same range as its source video clip'
+  );
+
+  const replaceEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: linkedOutputItems,
+    mode: 'replace',
+    playheadSec: 0,
+    selectedItemId: 'clip-b',
+    idSeed: 'replace',
+  });
+  assert.deepEqual(
+    replaceEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 8],
+      ['timeline-output-c-test', 8, 5],
+    ],
+    'replace edit should swap the selected clip slot without moving earlier clips'
+  );
+  assert.deepEqual(
+    replaceEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 8, 'group-a'],
+      ['timeline-output-c-test-audio', 8, 5, 'timeline-output-c-test'],
+    ],
+    'replace edit should add linked audio for the replacement without disturbing earlier linked clips'
+  );
+
+  const visualOnlyInsertEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: importedImageItems,
+    mode: 'insert',
+    playheadSec: 6,
+    selectedItemId: null,
+    idSeed: 'image-insert',
+  });
+  assert.deepEqual(
+    visualOnlyInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId ?? null]),
+    [
+      ['clip-a', 0, 6, 0, 'group-a'],
+      ['timeline-asset-image-a-image-test', 6, 5, 0, null],
+      ['clip-a-tail-image-insert', 11, 2, 6, 'group-a-tail-image-insert'],
+      ['clip-b', 13, 6, 0, null],
+    ],
+    'visual-only insert should split the source video clip without creating extra audio for the still'
+  );
+  assert.deepEqual(
+    visualOnlyInsertEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 6, 0, 'group-a'],
+      ['clip-a-audio-tail-image-insert', 11, 2, 6, 'group-a-tail-image-insert'],
+    ],
+    'visual-only insert should still split the original linked audio so video and audio tails stay paired'
+  );
+
+  const visualOnlyOverwriteEdit = insertWorkspaceTimelineItems({
+    items,
+    newItems: importedImageItems,
+    mode: 'overwrite',
+    playheadSec: 2,
+    selectedItemId: null,
+    idSeed: 'image-overwrite',
+  });
+  assert.deepEqual(
+    visualOnlyOverwriteEdit.filter((item) => item.track === 'linked-audio').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0, item.linkedGroupId]),
+    [
+      ['clip-a-audio', 0, 2, 0, 'group-a'],
+      ['clip-a-audio-tail-image-overwrite', 7, 1, 7, 'group-a-tail-image-overwrite'],
+    ],
+    'visual-only overwrite should remove the covered linked audio section instead of leaving stale full-length audio'
+  );
+
+  const rippleDeleted = deleteWorkspaceTimelineItem(items, 'clip-a', { ripple: true });
+  assert.deepEqual(
+    rippleDeleted.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec]),
+    [['clip-b', 0]],
+    'ripple delete should remove linked clips and pull later clips left on the affected track'
+  );
+});
+
+test('MaxVideoAI editor timeline render manifest captures clips, assets, transitions, and blockers', async () => {
+  const {
+    buildWorkspaceTimelineRenderManifest,
+    serializeWorkspaceTimelineRenderManifest,
+    workspaceTimelineRenderReadinessLabel,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render');
+  const template = createProductAdWorkspaceTemplate();
+  const items = template.timelineItems.map((item) =>
+    item.id === 'timeline-output-01'
+      ? { ...item, transitionOut: { type: 'crossfade' as const, durationSec: 1 } }
+      : item
+  );
+
+  const manifest = buildWorkspaceTimelineRenderManifest({
+    items,
+    nodes: template.nodes,
+    projectName: 'Product Ad',
+    createdAt: '2026-06-06T10:00:00.000Z',
+  });
+  const videoTrack = manifest.tracks.find((track) => track.id === 'video');
+  const linkedAudioTrack = manifest.tracks.find((track) => track.id === 'linked-audio');
+  const musicTrack = manifest.tracks.find((track) => track.id === 'music');
+
+  assert.equal(manifest.status, 'ready', 'ready timelines should produce a renderable manifest');
+  assert.equal(manifest.durationSec, 28, 'manifest duration should include audio beds, not only the video track');
+  assert.deepEqual(
+    videoTrack?.clips.map((clip) => [clip.id, clip.startSec, clip.endSec, clip.sourceStartSec, clip.sourceEndSec]),
+    [
+      ['timeline-output-01', 0, 8, 0, 8],
+      ['timeline-output-02', 8, 16, 0, 8],
+    ],
+    'video clips should export ordered sequence timing and source in/out timing'
+  );
+  assert.deepEqual(
+    videoTrack?.clips[0]?.transitionOut,
+    { type: 'crossfade', durationSec: 1, nextClipId: 'timeline-output-02' },
+    'crossfades should export as metadata on the outgoing clip'
+  );
+  const clampedManifest = buildWorkspaceTimelineRenderManifest({
+    items: items.map((item) =>
+      item.id === 'timeline-output-01'
+        ? { ...item, transitionOut: { type: 'crossfade' as const, durationSec: 10 } }
+        : item
+    ),
+    nodes: template.nodes,
+    projectName: 'Product Ad',
+    createdAt: '2026-06-06T10:00:00.000Z',
+  });
+  assert.deepEqual(
+    clampedManifest.tracks.find((track) => track.id === 'video')?.clips[0]?.transitionOut,
+    { type: 'crossfade', durationSec: 4, nextClipId: 'timeline-output-02' },
+    'render manifest should clamp stale crossfades to the same safe bounds as the viewer preview'
+  );
+  assert.equal(
+    linkedAudioTrack?.clips[0]?.linkedGroupId,
+    'timeline-output-02',
+    'embedded generated audio should stay linked to its video clip in the manifest'
+  );
+  assert.ok(
+    musicTrack?.clips[0]?.mediaUrl,
+    'asset-library audio timeline items should resolve media from their source asset node'
+  );
+  assert.match(
+    serializeWorkspaceTimelineRenderManifest(manifest),
+    /"source": "maxvideoai-editor"/,
+    'serialized manifest should remain a plain JSON backend handoff'
+  );
+  assert.equal(
+    workspaceTimelineRenderReadinessLabel(manifest),
+    'Render manifest ready: 4 clips, 28s.',
+    'export notice should summarize render readiness'
+  );
+
+  const overlayManifest = buildWorkspaceTimelineRenderManifest({
+    items: [
+      ...items,
+      {
+        ...items.find((item) => item.id === 'timeline-output-01')!,
+        id: 'timeline-overlay-v2',
+        track: 'video-2',
+        title: 'Overlay V2',
+        startSec: 2,
+        durationSec: 3,
+      },
+    ],
+    nodes: template.nodes,
+    projectName: 'Product Ad Overlay',
+    createdAt: '2026-06-06T10:00:00.000Z',
+  });
+  assert.ok(
+    overlayManifest.tracks.some((track) => track.id === 'video-2' && track.clips.some((clip) => clip.id === 'timeline-overlay-v2')),
+    'render manifest should include added video tracks instead of dropping overlay clips'
+  );
+
+  const blockedManifest = buildWorkspaceTimelineRenderManifest({
+    items: [
+      {
+        id: 'blocked-clip',
+        outputNodeId: 'missing-output',
+        track: 'video',
+        title: 'Missing Clip',
+        durationSec: 4,
+        startSec: 0,
+      },
+    ],
+    nodes: template.nodes,
+    projectName: 'Blocked',
+    createdAt: '2026-06-06T10:00:00.000Z',
+  });
+  assert.equal(blockedManifest.status, 'blocked', 'missing media should block final render');
+  assert.deepEqual(
+    blockedManifest.issues.map((issue) => [issue.code, issue.severity, issue.itemId]),
+    [['missing_media', 'blocking', 'blocked-clip']],
+    'blocked manifests should explain which clip cannot render'
   );
 });
 

@@ -14,8 +14,7 @@ export type WorkspaceLibraryAsset = {
 export type WorkspaceLibraryKind = 'image' | 'video' | 'audio';
 export type WorkspaceLibrarySource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
-export const WORKSPACE_DEMO_AUDIO_URL =
-  'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
+export const WORKSPACE_DEMO_AUDIO_URL = '/studio/demo-ambient.wav';
 
 export const WORKSPACE_LIBRARY_SOURCE_OPTIONS = [
   'all',
