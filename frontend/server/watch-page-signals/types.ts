@@ -61,6 +61,7 @@ export type WatchPageSourceImage = {
   key: string;
   label: string;
   url: string;
+  thumbUrl?: string;
   alt: string;
 };
 

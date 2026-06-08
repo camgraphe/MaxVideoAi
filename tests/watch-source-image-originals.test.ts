@@ -65,5 +65,6 @@ test('watch source images replace storyboard thumbnails with original job output
   });
 
   assert.equal(resolved[0]?.url, originalUrl);
+  assert.equal(resolved[0]?.thumbUrl, thumbUrl);
   assert.equal(queries[0]?.params?.[0], 'storyboard_2502a543-8342-4b17-b9fe-a34bdf0efaea');
 });

@@ -100,6 +100,9 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(sourceImagesClientSource, /ArrowLeft/, 'source image lightbox should support previous-image keyboard navigation');
   assert.match(sourceImagesClientSource, /ArrowRight/, 'source image lightbox should support next-image keyboard navigation');
   assert.match(sourceImagesClientSource, /View larger/, 'source image thumbnails should advertise the enlarged view affordance');
+  assert.match(sourceImagesSource, /thumbnailUrl:\s*sourceImage\.thumbUrl/, 'server wrapper should keep thumbnail and original image URLs distinct');
+  assert.match(sourceImagesClientSource, /const thumbnailUrl = sourceImage\.thumbnailUrl \?\? sourceImage\.imageUrl/, 'source image grid should prefer the lightweight thumbnail URL');
+  assert.match(sourceImagesClientSource, /src=\{thumbnailUrl\}/, 'source image grid should render thumbnails without changing the original lightbox URL');
   assert.match(sourceImagesClientSource, /object-contain/, 'source image previews should preserve storyboard and frame aspect ratios');
   assert.match(sourceImagesClientSource, /Open original/, 'source image lightbox should expose the original asset URL');
   assert.match(sidebarSource, /function buildHighlightItems/, 'sidebar should own highlight view model');

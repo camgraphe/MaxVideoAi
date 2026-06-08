@@ -123,6 +123,7 @@ export async function resolveWatchSourceImageOriginalUrls({
     changed = true;
     return {
       ...image,
+      thumbUrl: image.thumbUrl ?? sourceUrl,
       url: originalUrl,
     };
   });
