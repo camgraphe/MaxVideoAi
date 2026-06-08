@@ -12,6 +12,7 @@ import { WORKSPACE_DEMO_AUDIO_URL } from './workspace-library-assets';
 
 const PRODUCT_AD_SHOT_01_DURATION_SEC = 5;
 const PRODUCT_AD_SHOT_02_DURATION_SEC = 8;
+const DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID = 'seedance-2-0';
 
 export const WORKSPACE_TEMPLATE_SUMMARIES: WorkspaceTemplateSummary[] = [
   {
@@ -145,7 +146,7 @@ export function createWorkspaceEdge(params: {
 
 function shotSettings(overrides: Partial<WorkspaceShotSettings>): WorkspaceShotSettings {
   return {
-    modelId: 'kling-3-pro',
+    modelId: DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID,
     workflowType: 'image_to_video',
     durationSec: 7,
     aspectRatio: '16:9',

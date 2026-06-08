@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { memo, type DragEvent, type MouseEvent } from 'react';
+import { memo, useRef, type DragEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { Handle, NodeResizeControl, Position } from '@xyflow/react';
 import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, Video } from 'lucide-react';
@@ -96,6 +96,26 @@ function timelineDragMediaKind(data: WorkspaceGraphNode['data']): 'audio' | 'ima
     if (data.output.kind === 'image' && isPlayableImageUrl(outputUrl)) return 'image';
   }
   return null;
+}
+
+function blocksTimelineNodeDrag(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest(
+      [
+        '.react-flow__handle',
+        '.nodrag',
+        '.nowheel',
+        'button',
+        'input',
+        'textarea',
+        'select',
+        'audio',
+        'video',
+        '[contenteditable="true"]',
+      ].join(', ')
+    )
+  );
 }
 
 function VideoPreview({
@@ -211,7 +231,18 @@ function NodeFrame({
   const targetHandles = data.kind === 'shot' ? [] : inputHandles(data);
   const isResizable = isSourceResizableNodeKind(data.kind);
   const timelineMediaKind = timelineDragMediaKind(data);
+  const suppressTimelineDragRef = useRef(false);
+  const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
+    suppressTimelineDragRef.current = blocksTimelineNodeDrag(event.target);
+  };
   const handleDragStart = (event: DragEvent<HTMLElement>) => {
+    const shouldSuppressTimelineDrag = suppressTimelineDragRef.current || blocksTimelineNodeDrag(event.target);
+    suppressTimelineDragRef.current = false;
+    if (shouldSuppressTimelineDrag) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (!timelineMediaKind) {
       event.preventDefault();
       return;
@@ -227,6 +258,7 @@ function NodeFrame({
       className={`${styles.graphNode} ${isResizable ? styles.sourceResizableNode : ''} ${timelineMediaKind ? styles.graphNodeTimelineDraggable : ''} ${selected ? styles.graphNodeSelected : ''} ${className}`}
       data-timeline-node-drag-kind={timelineMediaKind ?? undefined}
       draggable={Boolean(timelineMediaKind)}
+      onPointerDown={handlePointerDown}
       onDragStart={handleDragStart}
       style={{ '--node-accent': accent } as React.CSSProperties}
     >

@@ -2,15 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
-import { Download, GitBranch, PanelRight, Play, RefreshCcw, Settings, Settings2, Share2, Sparkles } from 'lucide-react';
+import { Download, GitBranch, PanelRight, Play, Settings, Settings2, Share2 } from 'lucide-react';
 import Image from 'next/image';
-import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
+import { authFetch } from '@/lib/authFetch';
+import { NodeLibrarySidebar, type WorkspaceUserCanvasTemplateSummary } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
+import { TimelineProjectSidebar, type WorkspaceProjectSequenceSummary } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
-import { WorkspaceCanvas, type WorkspaceHandleDropRequest, type WorkspacePaletteDropRequest } from './_components/WorkspaceCanvas.client';
+import {
+  WorkspaceCanvas,
+  type WorkspaceCanvasFileDropRequest,
+  type WorkspaceCanvasTextPasteRequest,
+  type WorkspaceHandleDropRequest,
+  type WorkspacePaletteDropRequest,
+} from './_components/WorkspaceCanvas.client';
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
 import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
+import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
 import { WorkspaceProjectSettingsDialog } from './_components/WorkspaceProjectSettingsDialog';
+import { StudioHeaderSession } from './_components/StudioHeaderSession';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
@@ -27,6 +37,7 @@ import {
 import { createPendingWorkspaceOutput, submitWorkspaceShotGeneration } from './_lib/workspace-generation';
 import type {
   WorkspaceEdgeKind,
+  WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceInputConnector,
@@ -75,7 +86,10 @@ import {
 import {
   buildWorkspaceTimelineEdl,
   buildWorkspaceTimelineRenderManifest,
+  buildWorkspaceTimelineVideoExportRequest,
+  serializeWorkspaceTimelineVideoExportRequest,
   serializeWorkspaceTimelineRenderManifest,
+  type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
   workspaceTimelineRenderReadinessLabel,
 } from './_lib/workspace-timeline-render';
@@ -93,19 +107,27 @@ import { formatWorkspaceTimecode } from './_lib/workspace-timecode';
 import styles from './maxvideoai-editor.module.css';
 
 const STORAGE_KEY = 'maxvideoai.editor.workspace.v1';
+const USER_CANVAS_TEMPLATES_STORAGE_KEY = 'maxvideoai.editor.canvasTemplates.v1';
+const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
 const RENDER_MANIFEST_STORAGE_KEY = 'maxvideoai.editor.timelineRender.v1';
+const VIDEO_EXPORT_REQUEST_STORAGE_KEY = 'maxvideoai.editor.videoExportRequest.v1';
 const TIMELINE_HISTORY_LIMIT = 50;
 const MAX_TIMELINE_VIDEO_TRACKS = 4;
 const MIN_TIMELINE_AUDIO_TRACKS = 3;
 const MAX_TIMELINE_AUDIO_TRACKS = 8;
 const MIN_TIMELINE_PANEL_HEIGHT = 220;
 const MAX_TIMELINE_PANEL_HEIGHT = 620;
+const DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0';
+const DEFAULT_WORKSPACE_SEQUENCE_ID = 'sequence-main';
 const STALE_EMPTY_DEMO_AUDIO_URL = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
 
 type PersistedWorkspaceState = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
+  projectAssets?: WorkspaceAssetRecord[];
   timelineItems: WorkspaceTimelineItem[];
+  activeSequenceId?: string;
+  sequences?: WorkspaceSequenceRecord[];
   activeTemplateId: WorkspaceTemplateId;
   projectSettings: WorkspaceProjectSettings;
   focusMode?: WorkspaceFocusMode;
@@ -119,6 +141,37 @@ type PersistedWorkspaceState = {
   timelineOutPointSec?: number | null;
 };
 
+type WorkspaceSequenceRecord = {
+  id: string;
+  name: string;
+  timelineItems: WorkspaceTimelineItem[];
+  projectSettings: WorkspaceProjectSettings;
+  audioTrackCount: number;
+  hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
+  lockedTimelineTracks: WorkspaceTimelineTrack[];
+  mutedAudioTracks: WorkspaceTimelineAudioTrack[];
+  videoTrackCount: number;
+  timelinePanelHeight: number | null;
+  timelineInPointSec: number | null;
+  timelineOutPointSec: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type WorkspaceUserCanvasTemplate = WorkspaceUserCanvasTemplateSummary & {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+  createdAt: string;
+};
+
+type StudioProjectStorageRecord = {
+  id: string;
+  name: string;
+  settings?: WorkspaceProjectSettings;
+  canvasTemplateId?: WorkspaceTemplateId;
+  workspaceState?: unknown;
+};
+
 type TimelineHistoryState = {
   past: WorkspaceTimelineItem[][];
   future: WorkspaceTimelineItem[][];
@@ -126,6 +179,26 @@ type TimelineHistoryState = {
 
 type WorkspaceFocusMode = 'canvas' | 'viewer';
 type WorkspaceEditorSurface = 'canvas' | 'timeline';
+type TimelineExportClientJobStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
+type TimelineExportClientEstimate = {
+  billingKind: 'free' | 'paid';
+  amountCents: number;
+  currency: string;
+  freeExportsRemaining: number;
+};
+type TimelineExportClientQuota = {
+  freeLimit: number;
+  usedFreeExports: number;
+  freeExportsRemaining: number;
+  billingKind: 'free' | 'paid';
+};
+type TimelineExportClientJob = {
+  id: string;
+  status: TimelineExportClientJobStatus;
+  progress: number;
+  message: string | null;
+  outputUrl: string | null;
+};
 
 const OUTPUT_ONLY_SOURCE_HANDLES: Partial<Record<WorkspaceNodeKind, WorkspaceEdgeKind>> = {
   'asset-image': 'reference',
@@ -166,6 +239,33 @@ function playableOutputTimelineUrl(output: WorkspaceOutputMetadata): string | nu
     return isPlayableImageUrl(imageUrl) ? imageUrl : null;
   }
   return isPlayableVideoUrl(output.url) ? output.url ?? null : null;
+}
+
+function createClientExportIdempotencyKey(): string {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `export_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function normalizeTimelineExportClientJob(value: unknown): TimelineExportClientJob | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Record<string, unknown>;
+  if (typeof record.id !== 'string') return null;
+  const status = typeof record.status === 'string' ? record.status : 'queued';
+  const safeStatus: TimelineExportClientJobStatus =
+    status === 'rendering' || status === 'completed' || status === 'failed' || status === 'canceled' ? status : 'queued';
+  const progress = Number(record.progress ?? 0);
+  const outputUrl = typeof record.output_url === 'string'
+    ? record.output_url
+    : typeof record.outputUrl === 'string'
+      ? record.outputUrl
+      : null;
+  return {
+    id: record.id,
+    status: safeStatus,
+    progress: Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress))) : 0,
+    message: typeof record.message === 'string' ? record.message : null,
+    outputUrl,
+  };
 }
 
 function workspaceTimelineItemsCompatibleWithTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): boolean {
@@ -516,36 +616,331 @@ function downloadWorkspaceTextFile(filename: string, contents: string, type: str
   window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }
 
-function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
+function cloneWorkspaceJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function createLocalStudioId(prefix: string): string {
+  if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
+  return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function workspaceSequenceDurationSec(sequence: Pick<WorkspaceSequenceRecord, 'timelineItems'>): number {
+  return Math.max(0, ...sequence.timelineItems.map((item) => item.startSec + item.durationSec));
+}
+
+function sequenceNameForIndex(index: number): string {
+  return index <= 1 ? 'Main sequence' : `Sequence ${index}`;
+}
+
+function createWorkspaceSequenceRecord(params: {
+  id: string;
+  name: string;
+  timelineItems: WorkspaceTimelineItem[];
+  projectSettings: WorkspaceProjectSettings;
+  audioTrackCount?: number;
+  hiddenVideoTracks?: WorkspaceTimelineVideoTrack[];
+  lockedTimelineTracks?: WorkspaceTimelineTrack[];
+  mutedAudioTracks?: WorkspaceTimelineAudioTrack[];
+  videoTrackCount?: number;
+  timelinePanelHeight?: number | null;
+  timelineInPointSec?: number | null;
+  timelineOutPointSec?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}): WorkspaceSequenceRecord {
+  const timelineItems = normalizeWorkspaceTimelineIdentities(params.timelineItems);
+  const audioTrackCount = coerceAudioTrackCount(params.audioTrackCount, timelineItems);
+  const videoTrackCount = coerceVideoTrackCount(params.videoTrackCount, timelineItems);
+  const timestamp = new Date().toISOString();
+  return {
+    id: params.id,
+    name: params.name.trim() || 'Untitled sequence',
+    timelineItems,
+    projectSettings: coerceWorkspaceProjectSettings(params.projectSettings),
+    audioTrackCount,
+    hiddenVideoTracks: coerceHiddenVideoTracks(params.hiddenVideoTracks, videoTrackCount),
+    lockedTimelineTracks: coerceTimelineTrackList(params.lockedTimelineTracks, videoTrackCount, audioTrackCount),
+    mutedAudioTracks: coerceMutedAudioTracks(params.mutedAudioTracks, audioTrackCount),
+    videoTrackCount,
+    timelinePanelHeight: coerceTimelinePanelHeight(params.timelinePanelHeight),
+    timelineInPointSec: coerceTimelineMarker(params.timelineInPointSec),
+    timelineOutPointSec: coerceTimelineMarker(params.timelineOutPointSec),
+    createdAt: params.createdAt ?? timestamp,
+    updatedAt: params.updatedAt ?? timestamp,
+  };
+}
+
+function normalizeWorkspaceSequenceRecord(value: unknown): WorkspaceSequenceRecord | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Partial<WorkspaceSequenceRecord>;
+  if (typeof record.id !== 'string' || !Array.isArray(record.timelineItems)) return null;
+  return createWorkspaceSequenceRecord({
+    id: record.id,
+    name: typeof record.name === 'string' ? record.name : 'Untitled sequence',
+    timelineItems: record.timelineItems,
+    projectSettings: coerceWorkspaceProjectSettings(record.projectSettings),
+    audioTrackCount: record.audioTrackCount,
+    hiddenVideoTracks: record.hiddenVideoTracks,
+    lockedTimelineTracks: record.lockedTimelineTracks,
+    mutedAudioTracks: record.mutedAudioTracks,
+    videoTrackCount: record.videoTrackCount,
+    timelinePanelHeight: record.timelinePanelHeight,
+    timelineInPointSec: record.timelineInPointSec,
+    timelineOutPointSec: record.timelineOutPointSec,
+    createdAt: typeof record.createdAt === 'string' ? record.createdAt : undefined,
+    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
+  });
+}
+
+function upsertWorkspaceSequence(
+  sequences: WorkspaceSequenceRecord[],
+  sequence: WorkspaceSequenceRecord
+): WorkspaceSequenceRecord[] {
+  const existingIndex = sequences.findIndex((candidate) => candidate.id === sequence.id);
+  if (existingIndex === -1) return [...sequences, sequence];
+  return sequences.map((candidate, index) => (index === existingIndex ? sequence : candidate));
+}
+
+function workspaceStorageKeyForProject(projectId?: string): string {
+  return projectId ? `${STORAGE_KEY}.${projectId}` : STORAGE_KEY;
+}
+
+function readStudioProject(projectId?: string): StudioProjectStorageRecord | null {
+  if (!projectId || typeof window === 'undefined') return null;
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(STUDIO_PROJECTS_STORAGE_KEY) ?? '[]') as StudioProjectStorageRecord[];
+    const project = Array.isArray(parsed) ? parsed.find((item) => item?.id === projectId) : null;
+    if (!project || typeof project.id !== 'string') return null;
+    return {
+      ...project,
+      name: typeof project.name === 'string' && project.name.trim() ? project.name.trim() : 'Untitled edit',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function normalizeStudioProjectTemplateId(value: unknown): WorkspaceTemplateId {
+  if (typeof value === 'string' && WORKSPACE_TEMPLATE_SUMMARIES.some((template) => template.id === value)) {
+    return value as WorkspaceTemplateId;
+  }
+  return 'product-ad';
+}
+
+function normalizeStudioProjectApiRecord(value: unknown): StudioProjectStorageRecord | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Partial<StudioProjectStorageRecord>;
+  if (typeof record.id !== 'string' || typeof record.name !== 'string') return null;
+  return {
+    id: record.id,
+    name: record.name.trim() || 'Untitled edit',
+    settings: coerceWorkspaceProjectSettings(record.settings),
+    canvasTemplateId: normalizeStudioProjectTemplateId(record.canvasTemplateId),
+    workspaceState: record.workspaceState,
+  };
+}
+
+async function readStudioProjectFromApi(projectId: string, signal?: AbortSignal): Promise<StudioProjectStorageRecord | null> {
+  try {
+    const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal,
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok) return null;
+    return normalizeStudioProjectApiRecord(payload.project);
+  } catch {
+    return null;
+  }
+}
+
+async function saveStudioProjectToApi(params: {
+  projectId: string;
+  name: string;
+  canvasTemplateId: WorkspaceTemplateId;
+  settings: WorkspaceProjectSettings;
+  workspaceState: PersistedWorkspaceState;
+  signal?: AbortSignal;
+}): Promise<void> {
+  try {
+    await authFetch(`/api/studio/projects/${encodeURIComponent(params.projectId)}`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        project: {
+          name: params.name,
+          canvasTemplateId: params.canvasTemplateId,
+          settings: params.settings,
+          workspaceState: params.workspaceState,
+        },
+      }),
+      signal: params.signal,
+    });
+  } catch {
+    // Server persistence is best effort; local workspace storage remains the fallback.
+  }
+}
+
+function describeCanvasTemplate(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): string {
+  return `${nodes.length} block${nodes.length === 1 ? '' : 's'} · ${edges.length} link${edges.length === 1 ? '' : 's'}`;
+}
+
+function normalizeUserCanvasTemplate(value: unknown): WorkspaceUserCanvasTemplate | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Partial<WorkspaceUserCanvasTemplate>;
+  if (typeof record.id !== 'string' || typeof record.name !== 'string') return null;
+  if (!Array.isArray(record.nodes) || !Array.isArray(record.edges)) return null;
+  const nodes = normalizePlaceholderOutputNodes(
+    normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(record.nodes)))
+  );
+  const edges = normalizeWorkspaceEdgeTypes(
+    normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, record.edges)))
+  );
+  return {
+    id: record.id,
+    name: record.name.trim() || 'Untitled canvas template',
+    description: typeof record.description === 'string' && record.description.trim()
+      ? record.description.trim()
+      : describeCanvasTemplate(nodes, edges),
+    nodes,
+    edges,
+    createdAt: typeof record.createdAt === 'string' ? record.createdAt : new Date().toISOString(),
+  };
+}
+
+function readUserCanvasTemplates(): WorkspaceUserCanvasTemplate[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(USER_CANVAS_TEMPLATES_STORAGE_KEY) ?? '[]') as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeUserCanvasTemplate).filter((template): template is WorkspaceUserCanvasTemplate => Boolean(template));
+  } catch {
+    return [];
+  }
+}
+
+function writeUserCanvasTemplates(templates: WorkspaceUserCanvasTemplate[]): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(USER_CANVAS_TEMPLATES_STORAGE_KEY, JSON.stringify(templates));
+}
+
+async function readUserCanvasTemplatesFromApi(signal?: AbortSignal): Promise<WorkspaceUserCanvasTemplate[] | null> {
+  try {
+    const response = await authFetch('/api/studio/canvas-templates', {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal,
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok || !Array.isArray(payload.templates)) return null;
+    return payload.templates
+      .map(normalizeUserCanvasTemplate)
+      .filter((template: WorkspaceUserCanvasTemplate | null): template is WorkspaceUserCanvasTemplate => Boolean(template));
+  } catch {
+    return null;
+  }
+}
+
+async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasTemplate): Promise<void> {
+  try {
+    await authFetch('/api/studio/canvas-templates', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ template }),
+    });
+  } catch {
+    // User templates are still persisted locally when the API is unavailable.
+  }
+}
+
+async function deleteUserCanvasTemplateFromApi(templateId: string): Promise<void> {
+  try {
+    await authFetch(`/api/studio/canvas-templates/${encodeURIComponent(templateId)}`, {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    });
+  } catch {
+    // User templates are still deleted locally when the API is unavailable.
+  }
+}
+
+function normalizePersistedWorkspaceState(value: unknown): PersistedWorkspaceState | null {
+  const parsed = value as Partial<PersistedWorkspaceState> | null;
+  if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
+  const nodes = normalizePlaceholderOutputNodes(
+    normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(parsed.nodes)))
+  );
+  const edges = normalizeWorkspaceEdgeTypes(
+    normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))
+  );
+  const timelineItems = normalizeWorkspaceTimelineIdentities(normalizeTimelineMediaUrls(nodes, parsed.timelineItems));
+  const audioTrackCount = coerceAudioTrackCount(parsed.audioTrackCount, timelineItems);
+  const videoTrackCount = coerceVideoTrackCount(parsed.videoTrackCount, timelineItems);
+  const activeSequenceId = typeof parsed.activeSequenceId === 'string' && parsed.activeSequenceId.trim()
+    ? parsed.activeSequenceId
+    : DEFAULT_WORKSPACE_SEQUENCE_ID;
+  const activeSequenceName = Array.isArray(parsed.sequences)
+    ? normalizeWorkspaceSequenceRecord(parsed.sequences.find((sequence) => (
+        Boolean(sequence) &&
+        typeof sequence === 'object' &&
+        (sequence as Partial<WorkspaceSequenceRecord>).id === activeSequenceId
+      )))?.name
+    : undefined;
+  const activeSequence = createWorkspaceSequenceRecord({
+    id: activeSequenceId,
+    name: activeSequenceName ?? sequenceNameForIndex(1),
+    timelineItems,
+    projectSettings: coerceWorkspaceProjectSettings(parsed.projectSettings),
+    audioTrackCount,
+    hiddenVideoTracks: parsed.hiddenVideoTracks,
+    lockedTimelineTracks: parsed.lockedTimelineTracks,
+    mutedAudioTracks: parsed.mutedAudioTracks,
+    videoTrackCount,
+    timelinePanelHeight: parsed.timelinePanelHeight,
+    timelineInPointSec: parsed.timelineInPointSec,
+    timelineOutPointSec: parsed.timelineOutPointSec,
+  });
+  const sequences = upsertWorkspaceSequence(
+    Array.isArray(parsed.sequences)
+      ? parsed.sequences
+          .map(normalizeWorkspaceSequenceRecord)
+          .filter((sequence): sequence is WorkspaceSequenceRecord => Boolean(sequence))
+      : [],
+    activeSequence
+  );
+  return {
+    nodes,
+    edges,
+    projectAssets: normalizePersistedProjectAssets(parsed.projectAssets),
+    timelineItems,
+    activeSequenceId,
+    sequences,
+    activeTemplateId: normalizeStudioProjectTemplateId(parsed.activeTemplateId),
+    projectSettings: coerceWorkspaceProjectSettings(parsed.projectSettings),
+    focusMode: parsed.focusMode === 'viewer' ? 'viewer' : 'canvas',
+    audioTrackCount,
+    hiddenVideoTracks: coerceHiddenVideoTracks(parsed.hiddenVideoTracks, videoTrackCount),
+    lockedTimelineTracks: coerceTimelineTrackList(parsed.lockedTimelineTracks, videoTrackCount, audioTrackCount),
+    mutedAudioTracks: coerceMutedAudioTracks(parsed.mutedAudioTracks, audioTrackCount),
+    videoTrackCount,
+    timelinePanelHeight: coerceTimelinePanelHeight(parsed.timelinePanelHeight),
+    timelineInPointSec: coerceTimelineMarker(parsed.timelineInPointSec),
+    timelineOutPointSec: coerceTimelineMarker(parsed.timelineOutPointSec),
+  };
+}
+
+function readPersistedWorkspaceState(storageKey: string): PersistedWorkspaceState | null {
   if (typeof window === 'undefined') return null;
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<PersistedWorkspaceState> | null;
-    if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
-    const nodes = normalizePlaceholderOutputNodes(
-      normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(parsed.nodes)))
-    );
-    const edges = normalizeWorkspaceEdgeTypes(
-      normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))
-    );
-    const timelineItems = normalizeWorkspaceTimelineIdentities(normalizeTimelineMediaUrls(nodes, parsed.timelineItems));
-    const audioTrackCount = coerceAudioTrackCount(parsed.audioTrackCount, timelineItems);
-    const videoTrackCount = coerceVideoTrackCount(parsed.videoTrackCount, timelineItems);
-    return {
-      nodes,
-      edges,
-      timelineItems,
-      activeTemplateId: parsed.activeTemplateId ?? 'product-ad',
-      projectSettings: coerceWorkspaceProjectSettings(parsed.projectSettings),
-      focusMode: parsed.focusMode === 'viewer' ? 'viewer' : 'canvas',
-      audioTrackCount,
-      hiddenVideoTracks: coerceHiddenVideoTracks(parsed.hiddenVideoTracks, videoTrackCount),
-      lockedTimelineTracks: coerceTimelineTrackList(parsed.lockedTimelineTracks, videoTrackCount, audioTrackCount),
-      mutedAudioTracks: coerceMutedAudioTracks(parsed.mutedAudioTracks, audioTrackCount),
-      videoTrackCount,
-      timelinePanelHeight: coerceTimelinePanelHeight(parsed.timelinePanelHeight),
-      timelineInPointSec: coerceTimelineMarker(parsed.timelineInPointSec),
-      timelineOutPointSec: coerceTimelineMarker(parsed.timelineOutPointSec),
-    };
+    return normalizePersistedWorkspaceState(JSON.parse(window.localStorage.getItem(storageKey) ?? 'null'));
   } catch {
     return null;
   }
@@ -676,6 +1071,92 @@ function nextAvailableTimelineItemId(baseId: string, items: WorkspaceTimelineIte
   return nextId;
 }
 
+function workspaceNodeKindForCanvasFile(file: File): WorkspaceNodeKind | null {
+  const mime = file.type.toLowerCase();
+  const name = file.name.toLowerCase();
+  if (mime.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif|svg)$/i.test(name)) return 'asset-image';
+  if (mime.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(name)) return 'asset-video';
+  if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac)$/i.test(name)) return 'asset-audio';
+  if (mime.startsWith('text/') || mime === 'application/json' || /\.(txt|md|json|csv|srt|vtt)$/i.test(name)) return 'text-prompt';
+  return null;
+}
+
+function workspaceAssetKindForCanvasNodeKind(kind: WorkspaceNodeKind): WorkspaceAssetRecord['kind'] | null {
+  if (kind === 'asset-image') return 'image';
+  if (kind === 'asset-video') return 'video';
+  if (kind === 'asset-audio') return 'audio';
+  return null;
+}
+
+function localCanvasImportFallbackName(kind: WorkspaceNodeKind): string {
+  if (kind === 'asset-image') return 'local-image';
+  if (kind === 'asset-video') return 'local-video';
+  if (kind === 'asset-audio') return 'local-audio';
+  return 'local-prompt.txt';
+}
+
+function formatCanvasImportFileSize(size: number): string {
+  if (!Number.isFinite(size) || size <= 0) return 'Local import';
+  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+  return `${(size / (1024 * 1024)).toFixed(size < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+}
+
+function canvasImportAssetSubtitle(file: File, kind: WorkspaceNodeKind): string {
+  const label = kind === 'asset-image' ? 'Image' : kind === 'asset-video' ? 'Video' : 'Audio';
+  return `${label} · ${formatCanvasImportFileSize(file.size)}`;
+}
+
+function workspaceAssetRecordFromCanvasFile(file: File, kind: WorkspaceNodeKind, objectUrl: string, idSeed: string): WorkspaceAssetRecord | null {
+  const assetKind = workspaceAssetKindForCanvasNodeKind(kind);
+  if (!assetKind) return null;
+  const filename = file.name || localCanvasImportFallbackName(kind);
+  return {
+    id: `local-${idSeed}-${filename}`,
+    kind: assetKind,
+    filename,
+    subtitle: canvasImportAssetSubtitle(file, kind),
+    url: objectUrl,
+    thumbUrl: assetKind === 'image' ? objectUrl : undefined,
+  };
+}
+
+function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Partial<WorkspaceAssetRecord>;
+  const kind = record.kind;
+  if (kind !== 'image' && kind !== 'video' && kind !== 'audio' && kind !== 'logo' && kind !== 'text') return null;
+  if (typeof record.id !== 'string' || !record.id.trim()) return null;
+  if (typeof record.filename !== 'string' || !record.filename.trim()) return null;
+  return {
+    id: record.id,
+    kind,
+    filename: record.filename,
+    subtitle: typeof record.subtitle === 'string' && record.subtitle.trim() ? record.subtitle : kind,
+    url: typeof record.url === 'string' ? record.url : undefined,
+    thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : undefined,
+    durationSec: typeof record.durationSec === 'number' && Number.isFinite(record.durationSec) ? record.durationSec : undefined,
+    dimensions: typeof record.dimensions === 'string' ? record.dimensions : undefined,
+  };
+}
+
+function normalizePersistedProjectAssets(value: unknown): WorkspaceAssetRecord[] {
+  if (!Array.isArray(value)) return [];
+  const assets = value
+    .map(normalizePersistedProjectAsset)
+    .filter((asset): asset is WorkspaceAssetRecord => Boolean(asset));
+  const seenIds = new Set<string>();
+  return assets.filter((asset) => {
+    if (seenIds.has(asset.id)) return false;
+    seenIds.add(asset.id);
+    return true;
+  });
+}
+
+function projectAssetTimelineNodeId(asset: WorkspaceAssetRecord): string {
+  const safeId = asset.id.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'asset';
+  return `project-asset-${safeId}`;
+}
+
 function createAdHocNode(kind: WorkspaceNodeKind, index: number, modelId: string, positionOverride?: { x: number; y: number }): WorkspaceGraphNode {
   const position = positionOverride ?? { x: -220 + (index % 4) * 180, y: -120 + Math.floor(index / 4) * 140 };
   const id = `${kind}-${Date.now().toString(36)}-${index}`;
@@ -796,14 +1277,35 @@ function appendSelectedWorkspaceGraphNode(nodes: WorkspaceGraphNode[], node: Wor
   ];
 }
 
-export default function WorkspacePage() {
+type WorkspacePageProps = {
+  projectId?: string;
+};
+
+export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const defaultTemplate = useMemo(() => createStarterWorkspaceTemplate('product-ad'), []);
+  const defaultSequence = useMemo(
+    () => createWorkspaceSequenceRecord({
+      id: DEFAULT_WORKSPACE_SEQUENCE_ID,
+      name: sequenceNameForIndex(1),
+      timelineItems: defaultTemplate.timelineItems,
+      projectSettings: DEFAULT_WORKSPACE_PROJECT_SETTINGS,
+    }),
+    [defaultTemplate.timelineItems]
+  );
   const capabilities = useMemo(() => getWorkspaceModelCapabilities(), []);
-  const defaultModelId = capabilities.find((capability) => capability.id === 'kling-3-pro')?.id ?? capabilities[0]?.id ?? 'kling-3-pro';
+  const defaultModelId =
+    capabilities.find((capability) => capability.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID)?.id ??
+    capabilities[0]?.id ??
+    DEFAULT_WORKSPACE_SHOT_MODEL_ID;
   const playbackFrameRef = useRef<number | null>(null);
+  const canvasImportSequenceRef = useRef(0);
+  const localCanvasObjectUrlsRef = useRef<string[]>([]);
   const timelineItemsRef = useRef<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
   const [nodes, setNodes] = useState<WorkspaceGraphNode[]>(defaultTemplate.nodes);
   const [edges, setEdges] = useState<WorkspaceGraphEdge[]>(defaultTemplate.edges);
+  const [projectAssets, setProjectAssets] = useState<WorkspaceAssetRecord[]>([]);
+  const [sequences, setSequences] = useState<WorkspaceSequenceRecord[]>([defaultSequence]);
+  const [activeSequenceId, setActiveSequenceId] = useState(DEFAULT_WORKSPACE_SEQUENCE_ID);
   const [timelineItems, setTimelineItems] = useState<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
   const [timelinePreview, setTimelinePreview] = useState<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>(null);
   const [timelineHistory, setTimelineHistory] = useState<TimelineHistoryState>({ past: [], future: [] });
@@ -824,21 +1326,68 @@ export default function WorkspacePage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>('shot-03');
   const [activeEditorSurface, setActiveEditorSurface] = useState<WorkspaceEditorSurface>('canvas');
   const [activeTemplateId, setActiveTemplateId] = useState<WorkspaceTemplateId>('product-ad');
+  const [activeUserCanvasTemplateId, setActiveUserCanvasTemplateId] = useState<string | null>(null);
+  const [userCanvasTemplates, setUserCanvasTemplates] = useState<WorkspaceUserCanvasTemplate[]>([]);
+  const [storedProjectName, setStoredProjectName] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState<WorkspaceFocusMode>('canvas');
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportRangeMode, setExportRangeMode] = useState<WorkspaceTimelineExportRangeMode>('sequence');
+  const [exportQualityPreset, setExportQualityPreset] = useState<WorkspaceTimelineExportQualityPreset>('standard');
+  const [exportVideoFeedback, setExportVideoFeedback] = useState<string | null>(null);
+  const [exportEstimate, setExportEstimate] = useState<TimelineExportClientEstimate | null>(null);
+  const [exportQuota, setExportQuota] = useState<TimelineExportClientQuota | null>(null);
+  const [activeExportJob, setActiveExportJob] = useState<TimelineExportClientJob | null>(null);
+  const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string | null>(null);
+  const [isExportEstimateLoading, setIsExportEstimateLoading] = useState(false);
+  const [isExportVideoStarting, setIsExportVideoStarting] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
-  const [notice, setNotice] = useState('Product Ad template loaded. Select Shot 03 to generate an output.');
+  const [notice, setNotice] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [canvasRevision, setCanvasRevision] = useState(0);
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<string | null>(null);
-  const activeTemplateName = WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId)?.name ?? 'Workspace';
+  const [isProjectMediaPickerOpen, setIsProjectMediaPickerOpen] = useState(false);
+  const workspaceStorageKey = useMemo(() => workspaceStorageKeyForProject(projectId), [projectId]);
+  const activeUserCanvasTemplate = userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId) ?? null;
+  const activeTemplateName =
+    storedProjectName ??
+    activeUserCanvasTemplate?.name ??
+    WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId)?.name ??
+    'Workspace';
   const pricingEstimates = useWorkspaceShotPricing({ nodes, edges, capabilities });
   const timelineDurationSec = useMemo(
     () => Math.max(0, ...timelineItems.map((item) => item.startSec + item.durationSec)),
     [timelineItems]
   );
+  const liveActiveSequence = useMemo(() => {
+    const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
+    return createWorkspaceSequenceRecord({
+      id: activeSequenceId,
+      name: storedSequence?.name ?? sequenceNameForIndex(Math.max(1, sequences.findIndex((sequence) => sequence.id === activeSequenceId) + 1)),
+      timelineItems,
+      projectSettings,
+      audioTrackCount,
+      hiddenVideoTracks,
+      lockedTimelineTracks,
+      mutedAudioTracks,
+      videoTrackCount,
+      timelinePanelHeight,
+      timelineInPointSec,
+      timelineOutPointSec,
+      createdAt: storedSequence?.createdAt,
+      updatedAt: storedSequence?.updatedAt,
+    });
+  }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
+  const sequenceSummaries = useMemo<WorkspaceProjectSequenceSummary[]>(() => {
+    return upsertWorkspaceSequence(sequences, liveActiveSequence).map((sequence) => ({
+      id: sequence.id,
+      name: sequence.name,
+      durationSec: workspaceSequenceDurationSec(sequence),
+      clipCount: sequence.timelineItems.length,
+      settings: sequence.projectSettings,
+      isActive: sequence.id === activeSequenceId,
+    }));
+  }, [activeSequenceId, liveActiveSequence, sequences]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
   const viewerTimelineItems = useMemo(
     () => muteAudioTrackItems(filterHiddenVideoTrackItems(previewTimelineItems, hiddenVideoTracks), mutedAudioTracks),
@@ -881,6 +1430,96 @@ export default function WorkspacePage() {
     [activeExportRange, activeTemplateName, exportTimelineItems, nodes, projectSettings]
   );
   const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(exportManifest), [exportManifest]);
+
+  useEffect(() => {
+    return () => {
+      localCanvasObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      localCanvasObjectUrlsRef.current = [];
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isExportDialogOpen || !exportIdempotencyKey) return;
+    if (exportManifest.status === 'blocked') {
+      setExportEstimate(null);
+      setExportQuota(null);
+      setIsExportEstimateLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const request = buildWorkspaceTimelineVideoExportRequest(exportManifest, {
+      qualityPreset: exportQualityPreset,
+      includeAudio: true,
+      idempotencyKey: exportIdempotencyKey,
+    });
+    setIsExportEstimateLoading(true);
+    fetch('/api/studio/timeline-exports/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? 'EXPORT_ESTIMATE_FAILED');
+        }
+        setExportEstimate(payload.estimate ?? null);
+        setExportQuota(payload.quota ?? null);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        setExportEstimate(null);
+        setExportQuota(null);
+        setExportVideoFeedback(error instanceof Error ? error.message : 'Export estimate failed.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsExportEstimateLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [exportIdempotencyKey, exportManifest, exportQualityPreset, isExportDialogOpen]);
+
+  useEffect(() => {
+    if (!activeExportJob || activeExportJob.status === 'completed' || activeExportJob.status === 'failed' || activeExportJob.status === 'canceled') {
+      return;
+    }
+
+    let cancelled = false;
+    const pollExportJob = async () => {
+      try {
+        const response = await fetch(`/api/studio/timeline-exports/${activeExportJob.id}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok || cancelled) return;
+        const nextJob = normalizeTimelineExportClientJob(payload.export);
+        if (!nextJob) return;
+        setActiveExportJob(nextJob);
+        if (nextJob.status === 'completed') {
+          const message = nextJob.outputUrl ? 'Export ready. Download available.' : 'Export completed.';
+          setExportVideoFeedback(message);
+          setNotice(message);
+        } else if (nextJob.status === 'failed') {
+          const message = nextJob.message ?? 'Server export failed.';
+          setExportVideoFeedback(message);
+          setNotice(message);
+        } else {
+          setExportVideoFeedback(`${nextJob.message ?? 'Server export rendering.'} ${nextJob.progress}%`);
+        }
+      } catch {
+        // Keep the current job state. The next poll can recover from a transient network miss.
+      }
+    };
+
+    const interval = window.setInterval(pollExportJob, 2000);
+    void pollExportJob();
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [activeExportJob]);
 
   const handleToggleTimelinePlayback = useCallback(() => {
     if (timelineDurationSec <= 0) return;
@@ -971,6 +1610,12 @@ export default function WorkspacePage() {
     timelineItemsRef.current = timelineItems;
   }, [timelineItems]);
 
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timeoutId = window.setTimeout(() => setNotice(null), 5200);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice]);
+
   const commitTimelineItems = useCallback((updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => {
     setTimelineItems((current) => {
       const nextItems = normalizeWorkspaceTimelineIdentities(updater(current));
@@ -987,6 +1632,46 @@ export default function WorkspacePage() {
   const resetTimelineHistory = useCallback(() => {
     setTimelineHistory({ past: [], future: [] });
   }, []);
+
+  const snapshotActiveSequence = useCallback((): WorkspaceSequenceRecord => {
+    const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
+    return createWorkspaceSequenceRecord({
+      id: activeSequenceId,
+      name: storedSequence?.name ?? sequenceNameForIndex(Math.max(1, sequences.findIndex((sequence) => sequence.id === activeSequenceId) + 1)),
+      timelineItems,
+      projectSettings,
+      audioTrackCount,
+      hiddenVideoTracks,
+      lockedTimelineTracks,
+      mutedAudioTracks,
+      videoTrackCount,
+      timelinePanelHeight,
+      timelineInPointSec,
+      timelineOutPointSec,
+      createdAt: storedSequence?.createdAt,
+    });
+  }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
+
+  const applyWorkspaceSequence = useCallback((sequence: WorkspaceSequenceRecord) => {
+    const nextItems = normalizeWorkspaceTimelineIdentities(sequence.timelineItems);
+    setTimelineItems(nextItems);
+    timelineItemsRef.current = nextItems;
+    applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
+    setPlayheadSec(0);
+    setIsTimelinePlaying(false);
+    setTimelinePreview(null);
+    resetTimelineHistory();
+    setProjectSettings(sequence.projectSettings);
+    setAudioTrackCount(coerceAudioTrackCount(sequence.audioTrackCount, nextItems));
+    setHiddenVideoTracks(sequence.hiddenVideoTracks);
+    setLockedTimelineTracks(sequence.lockedTimelineTracks);
+    setMutedAudioTracks(sequence.mutedAudioTracks);
+    setVideoTrackCount(coerceVideoTrackCount(sequence.videoTrackCount, nextItems));
+    setTimelinePanelHeight(sequence.timelinePanelHeight);
+    setTimelineInPointSec(sequence.timelineInPointSec);
+    setTimelineOutPointSec(sequence.timelineOutPointSec);
+    setExportRangeMode('sequence');
+  }, [applyTimelineSelection, resetTimelineHistory]);
 
   const handleUndoTimeline = useCallback(() => {
     setTimelineHistory((history) => {
@@ -1021,10 +1706,32 @@ export default function WorkspacePage() {
   }, [applyTimelineSelection]);
 
   useEffect(() => {
-    const persisted = readPersistedWorkspaceState();
-    if (persisted) {
+    let cancelled = false;
+
+    const applyPersistedWorkspace = (persisted: PersistedWorkspaceState) => {
+      if (cancelled) return;
+      const persistedActiveSequenceId = persisted.activeSequenceId ?? DEFAULT_WORKSPACE_SEQUENCE_ID;
+      const persistedSequences = persisted.sequences?.length
+        ? persisted.sequences
+        : [createWorkspaceSequenceRecord({
+            id: persistedActiveSequenceId,
+            name: sequenceNameForIndex(1),
+            timelineItems: persisted.timelineItems,
+            projectSettings: persisted.projectSettings,
+            audioTrackCount: persisted.audioTrackCount,
+            hiddenVideoTracks: persisted.hiddenVideoTracks,
+            lockedTimelineTracks: persisted.lockedTimelineTracks,
+            mutedAudioTracks: persisted.mutedAudioTracks,
+            videoTrackCount: persisted.videoTrackCount,
+            timelinePanelHeight: persisted.timelinePanelHeight,
+            timelineInPointSec: persisted.timelineInPointSec,
+            timelineOutPointSec: persisted.timelineOutPointSec,
+          })];
       setNodes(persisted.nodes);
       setEdges(persisted.edges);
+      setProjectAssets(persisted.projectAssets ?? []);
+      setSequences(persistedSequences);
+      setActiveSequenceId(persistedActiveSequenceId);
       setTimelineItems(persisted.timelineItems);
       timelineItemsRef.current = persisted.timelineItems;
       applyTimelineSelection(defaultTimelineSelectionIds(persisted.timelineItems));
@@ -1044,16 +1751,102 @@ export default function WorkspacePage() {
       setTimelineInPointSec(persisted.timelineInPointSec ?? null);
       setTimelineOutPointSec(persisted.timelineOutPointSec ?? null);
       setCanvasRevision((value) => value + 1);
+    };
+
+    const applyStoredProjectWorkspace = (project: StudioProjectStorageRecord) => {
+      if (cancelled) return;
+      const template = createStarterWorkspaceTemplate(project.canvasTemplateId ?? 'product-ad');
+      const emptyTimelineItems: WorkspaceTimelineItem[] = [];
+      const cleanSequence = createWorkspaceSequenceRecord({
+        id: DEFAULT_WORKSPACE_SEQUENCE_ID,
+        name: sequenceNameForIndex(1),
+        timelineItems: emptyTimelineItems,
+        projectSettings: coerceWorkspaceProjectSettings(project.settings),
+      });
+      setNodes(template.nodes);
+      setEdges(template.edges);
+      setProjectAssets([]);
+      setSequences([cleanSequence]);
+      setActiveSequenceId(cleanSequence.id);
+      setTimelineItems(emptyTimelineItems);
+      timelineItemsRef.current = emptyTimelineItems;
+      applyTimelineSelection([]);
+      setPlayheadSec(0);
+      setIsTimelinePlaying(false);
+      resetTimelineHistory();
+      setActiveTemplateId(template.id);
+      setActiveUserCanvasTemplateId(null);
+      setProjectSettings(coerceWorkspaceProjectSettings(project.settings));
+      setFocusMode('canvas');
+      setActiveEditorSurface('canvas');
+      setAudioTrackCount(audioTrackCountForTimelineItems(emptyTimelineItems));
+      setHiddenVideoTracks([]);
+      setLockedTimelineTracks([]);
+      setMutedAudioTracks([]);
+      setVideoTrackCount(videoTrackCountForTimelineItems(emptyTimelineItems));
+      setTimelinePanelHeight(null);
+      setTimelineInPointSec(null);
+      setTimelineOutPointSec(null);
+      setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
+      setCanvasRevision((value) => value + 1);
+      setNotice(`${project.name} project loaded with a clean sequence.`);
+    };
+
+    const localUserTemplates = readUserCanvasTemplates();
+    setUserCanvasTemplates(localUserTemplates);
+    const templatesController = new AbortController();
+    void readUserCanvasTemplatesFromApi(templatesController.signal).then((serverTemplates) => {
+      if (cancelled || !serverTemplates) return;
+      setUserCanvasTemplates(serverTemplates);
+      writeUserCanvasTemplates(serverTemplates);
+    });
+
+    const storedProject = readStudioProject(projectId);
+    setStoredProjectName(storedProject?.name ?? null);
+    const persisted = readPersistedWorkspaceState(workspaceStorageKey);
+    if (persisted) {
+      applyPersistedWorkspace(persisted);
+    } else if (storedProject) {
+      applyStoredProjectWorkspace(storedProject);
     }
     setHydrated(true);
-  }, [applyTimelineSelection, resetTimelineHistory]);
+
+    const projectController = new AbortController();
+    if (projectId) {
+      void readStudioProjectFromApi(projectId, projectController.signal).then((serverProject) => {
+        if (cancelled || !serverProject) return;
+        setStoredProjectName(serverProject.name);
+        const serverPersisted = normalizePersistedWorkspaceState(serverProject.workspaceState);
+        if (serverPersisted) {
+          applyPersistedWorkspace(serverPersisted);
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(workspaceStorageKey, JSON.stringify(serverPersisted));
+          }
+          return;
+        }
+        if (!persisted && !storedProject) {
+          applyStoredProjectWorkspace(serverProject);
+        }
+      });
+    }
+
+    return () => {
+      cancelled = true;
+      templatesController.abort();
+      projectController.abort();
+    };
+  }, [applyTimelineSelection, projectId, resetTimelineHistory, workspaceStorageKey]);
 
   useEffect(() => {
     if (!hydrated || typeof window === 'undefined') return;
+    const sequenceSnapshot = snapshotActiveSequence();
     const state: PersistedWorkspaceState = {
       nodes,
       edges,
+      projectAssets,
       timelineItems,
+      activeSequenceId,
+      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
       activeTemplateId,
       projectSettings,
       focusMode,
@@ -1066,8 +1859,48 @@ export default function WorkspacePage() {
       timelineInPointSec,
       timelineOutPointSec,
     };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectSettings, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
+    window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
+  }, [activeSequenceId, activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount, workspaceStorageKey]);
+
+  useEffect(() => {
+    if (!hydrated || !projectId || typeof window === 'undefined') return undefined;
+    const sequenceSnapshot = snapshotActiveSequence();
+    const state: PersistedWorkspaceState = {
+      nodes,
+      edges,
+      projectAssets,
+      timelineItems,
+      activeSequenceId,
+      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
+      activeTemplateId,
+      projectSettings,
+      focusMode,
+      audioTrackCount,
+      hiddenVideoTracks,
+      lockedTimelineTracks,
+      mutedAudioTracks,
+      videoTrackCount,
+      timelinePanelHeight,
+      timelineInPointSec,
+      timelineOutPointSec,
+    };
+    const controller = new AbortController();
+    const saveTimer = window.setTimeout(() => {
+      void saveStudioProjectToApi({
+        projectId,
+        name: activeTemplateName,
+        canvasTemplateId: activeTemplateId,
+        settings: projectSettings,
+        workspaceState: state,
+        signal: controller.signal,
+      });
+    }, 900);
+
+    return () => {
+      window.clearTimeout(saveTimer);
+      controller.abort();
+    };
+  }, [activeSequenceId, activeTemplateId, activeTemplateName, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectId, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
 
   useEffect(() => {
     if (!timelineItems.length) {
@@ -1189,6 +2022,16 @@ export default function WorkspacePage() {
     setNotice(`${asset.name} attached to the media block.`);
   }, []);
 
+  const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
+    const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
+    setProjectAssets((current) => [
+      assetRecord,
+      ...current.filter((candidate) => candidate.id !== assetRecord.id),
+    ].slice(0, 120));
+    setIsProjectMediaPickerOpen(false);
+    setNotice(`${asset.name} imported into Project media.`);
+  }, []);
+
   const onNodesChange = useCallback((changes: NodeChange<WorkspaceGraphNode>[]) => {
     setNodes((current) => applyNodeChanges(changes, current));
   }, []);
@@ -1293,6 +2136,126 @@ export default function WorkspacePage() {
       setNotice(`${node.data.title} dropped onto the canvas.`);
     },
     [defaultModelId, nodes.length]
+  );
+
+  const applyCanvasImportedNodeData = useCallback(
+    (params: {
+      kind: WorkspaceNodeKind;
+      nodeData: Partial<WorkspaceGraphNode['data']>;
+      notice: string;
+      position: { x: number; y: number };
+      targetNodeId: string | null;
+    }) => {
+      const targetNode = params.targetNodeId
+        ? nodes.find((node) => node.id === params.targetNodeId && node.data.kind === params.kind)
+        : null;
+      if (targetNode) {
+        patchNodeData(targetNode.id, params.nodeData);
+        setActiveEditorSurface('canvas');
+        setSelectedNodeId(targetNode.id);
+        setNotice(params.notice);
+        return;
+      }
+
+      const importIndex = nodes.length + canvasImportSequenceRef.current;
+      canvasImportSequenceRef.current += 1;
+      const node = createAdHocNode(params.kind, importIndex, defaultModelId, {
+        x: params.position.x - 105,
+        y: params.position.y - 48,
+      });
+      const importedNode = {
+        ...node,
+        data: {
+          ...node.data,
+          ...params.nodeData,
+        },
+      };
+      setNodes((current) => appendSelectedWorkspaceGraphNode(current, importedNode));
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(importedNode.id);
+      setNotice(params.notice);
+    },
+    [defaultModelId, nodes, patchNodeData]
+  );
+
+  const handleCanvasTextPaste = useCallback(
+    (request: WorkspaceCanvasTextPasteRequest, sourceLabel = 'pasted-text.txt') => {
+      const text = request.text.trim();
+      if (!text) return;
+      applyCanvasImportedNodeData({
+        kind: 'text-prompt',
+        nodeData: {
+          subtitle: sourceLabel,
+          promptRole: 'prompt',
+          promptText: text,
+        },
+        notice: request.targetNodeId ? `${sourceLabel} pasted into the prompt block.` : `${sourceLabel} added to the canvas.`,
+        position: request.position,
+        targetNodeId: request.targetNodeId,
+      });
+    },
+    [applyCanvasImportedNodeData]
+  );
+
+  const handleCanvasFileDrop = useCallback(
+    (request: WorkspaceCanvasFileDropRequest) => {
+      const unsupportedFiles: string[] = [];
+      request.files.forEach((file, index) => {
+        const kind = workspaceNodeKindForCanvasFile(file);
+        const position = {
+          x: request.position.x + index * 28,
+          y: request.position.y + index * 22,
+        };
+        const targetNodeId = index === 0 ? request.targetNodeId : null;
+        if (!kind) {
+          unsupportedFiles.push(file.name || 'Untitled file');
+          return;
+        }
+
+        if (kind === 'text-prompt') {
+          void file
+            .text()
+            .then((text) => {
+              handleCanvasTextPaste(
+                {
+                  text,
+                  position,
+                  targetNodeId,
+                },
+                file.name || localCanvasImportFallbackName(kind)
+              );
+            })
+            .catch(() => {
+              setNotice(`Could not read ${file.name || 'the text file'}.`);
+            });
+          return;
+        }
+
+        const idSeed = `${Date.now().toString(36)}-${index}-${canvasImportSequenceRef.current}`;
+        const objectUrl = URL.createObjectURL(file);
+        localCanvasObjectUrlsRef.current.push(objectUrl);
+        const asset = workspaceAssetRecordFromCanvasFile(file, kind, objectUrl, idSeed);
+        if (!asset) {
+          unsupportedFiles.push(file.name || 'Untitled file');
+          return;
+        }
+        applyCanvasImportedNodeData({
+          kind,
+          nodeData: {
+            subtitle: asset.filename,
+            asset,
+          },
+          notice: targetNodeId ? `${asset.filename} attached to the media block.` : `${asset.filename} added to the canvas.`,
+          position,
+          targetNodeId,
+        });
+      });
+
+      if (unsupportedFiles.length) {
+        setNotice(`Unsupported file${unsupportedFiles.length > 1 ? 's' : ''}: ${unsupportedFiles.join(', ')}.`);
+      }
+    },
+    [applyCanvasImportedNodeData, handleCanvasTextPaste]
   );
 
   const handleGenerateShot = useCallback(
@@ -1584,43 +2547,217 @@ export default function WorkspacePage() {
   const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;
   const assetPickerNode = renderNodes.find((node) => node.id === assetPickerNodeId) ?? null;
   const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined);
+  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined);
 
-  const handleAddNode = useCallback(
-    (kind: WorkspaceNodeKind) => {
-      const node = createAdHocNode(kind, nodes.length, defaultModelId);
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
-      setActiveEditorSurface('canvas');
-      setSelectedNodeId(node.id);
-      setNotice(`${node.data.title} added to the canvas.`);
-    },
-    [defaultModelId, nodes.length]
-  );
-
-  const handleApplyTemplate = useCallback((templateId: WorkspaceTemplateId) => {
+  const handleApplyCanvasTemplate = useCallback((templateId: WorkspaceTemplateId) => {
     const template = createStarterWorkspaceTemplate(templateId);
     setNodes(template.nodes);
     setEdges(template.edges);
-    setTimelineItems(template.timelineItems);
-    timelineItemsRef.current = template.timelineItems;
-    applyTimelineSelection(defaultTimelineSelectionIds(template.timelineItems));
-    setPlayheadSec(0);
-    setIsTimelinePlaying(false);
-    resetTimelineHistory();
     setActiveEditorSurface('canvas');
     setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
     setActiveTemplateId(template.id);
-    setAudioTrackCount(audioTrackCountForTimelineItems(template.timelineItems));
-    setHiddenVideoTracks([]);
-    setLockedTimelineTracks([]);
-    setMutedAudioTracks([]);
-    setVideoTrackCount(videoTrackCountForTimelineItems(template.timelineItems));
-    setTimelineInPointSec(null);
-    setTimelineOutPointSec(null);
-    setExportRangeMode('sequence');
-    setIsExportDialogOpen(false);
+    setActiveUserCanvasTemplateId(null);
     setCanvasRevision((value) => value + 1);
-    setNotice(`${template.name} template loaded.`);
-  }, [applyTimelineSelection, resetTimelineHistory]);
+    setNotice(`${template.name} canvas template applied.`);
+  }, []);
+
+  const updateUserCanvasTemplates = useCallback((updater: (templates: WorkspaceUserCanvasTemplate[]) => WorkspaceUserCanvasTemplate[]) => {
+    setUserCanvasTemplates((currentTemplates) => {
+      const nextTemplates = updater(currentTemplates);
+      writeUserCanvasTemplates(nextTemplates);
+      return nextTemplates;
+    });
+  }, []);
+
+  const handleSaveCanvasTemplate = useCallback((name: string) => {
+    const trimmedName = name.trim();
+    const templateName = trimmedName || `Canvas template ${userCanvasTemplates.length + 1}`;
+    const createdAt = new Date().toISOString();
+    const template: WorkspaceUserCanvasTemplate = {
+      id: createLocalStudioId('canvas_template'),
+      name: templateName,
+      description: describeCanvasTemplate(nodes, edges),
+      nodes: cloneWorkspaceJson(nodes),
+      edges: cloneWorkspaceJson(edges),
+      createdAt,
+    };
+    updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
+    void saveUserCanvasTemplateToApi(template);
+    setActiveUserCanvasTemplateId(template.id);
+    setActiveEditorSurface('canvas');
+    setNotice(`${template.name} saved as a canvas template.`);
+  }, [edges, nodes, updateUserCanvasTemplates, userCanvasTemplates.length]);
+
+  const handleApplyUserCanvasTemplate = useCallback((templateId: string) => {
+    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+    if (!template) {
+      setNotice('Canvas template not found.');
+      return;
+    }
+    const nextNodes = cloneWorkspaceJson(template.nodes);
+    const nextEdges = cloneWorkspaceJson(template.edges);
+    setNodes(nextNodes);
+    setEdges(nextEdges);
+    setActiveEditorSurface('canvas');
+    setSelectedNodeId(defaultSelectedNodeId(nextNodes, activeTemplateId));
+    setActiveUserCanvasTemplateId(template.id);
+    setCanvasRevision((value) => value + 1);
+    setNotice(`${template.name} canvas template applied.`);
+  }, [activeTemplateId, userCanvasTemplates]);
+
+  const handleDuplicateUserCanvasTemplate = useCallback((templateId: string) => {
+    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+    if (!template) return;
+    const duplicate: WorkspaceUserCanvasTemplate = {
+      ...template,
+      id: createLocalStudioId('canvas_template'),
+      name: `${template.name} copy`,
+      nodes: cloneWorkspaceJson(template.nodes),
+      edges: cloneWorkspaceJson(template.edges),
+      createdAt: new Date().toISOString(),
+    };
+    updateUserCanvasTemplates((templates) => [duplicate, ...templates].slice(0, 24));
+    void saveUserCanvasTemplateToApi(duplicate);
+    setNotice(`${duplicate.name} saved.`);
+  }, [updateUserCanvasTemplates, userCanvasTemplates]);
+
+  const handleDeleteUserCanvasTemplate = useCallback((templateId: string) => {
+    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+    if (!template) return;
+    if (typeof window !== 'undefined' && !window.confirm(`Delete "${template.name}"?`)) return;
+    updateUserCanvasTemplates((templates) => templates.filter((candidate) => candidate.id !== templateId));
+    void deleteUserCanvasTemplateFromApi(templateId);
+    if (activeUserCanvasTemplateId === templateId) {
+      setActiveUserCanvasTemplateId(null);
+    }
+    setNotice(`${template.name} deleted.`);
+  }, [activeUserCanvasTemplateId, updateUserCanvasTemplates, userCanvasTemplates]);
+
+  const handleImportProjectMedia = useCallback(() => {
+    setIsProjectMediaPickerOpen(true);
+    setActiveEditorSurface('timeline');
+  }, []);
+
+  const insertProjectAssetIntoTimeline = useCallback((assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
+    const asset = projectAssets.find((candidate) => candidate.id === assetId);
+    if (!asset) {
+      setNotice('Project media asset not found.');
+      return;
+    }
+
+    const assetUrl = asset.url ?? asset.thumbUrl ?? null;
+    const canInsertAsset =
+      (asset.kind === 'video' && isPlayableVideoUrl(asset.url)) ||
+      (asset.kind === 'audio' && isPlayableAudioUrl(asset.url)) ||
+      ((asset.kind === 'image' || asset.kind === 'logo') && isPlayableImageUrl(assetUrl));
+    if (!canInsertAsset) {
+      setNotice(`${asset.filename} is not a playable timeline media asset.`);
+      return;
+    }
+    if (targetTrack && lockedTimelineTracks.includes(targetTrack)) {
+      setNotice(`Unlock ${workspaceTimelineTrackLabel(targetTrack)} before dropping media on it.`);
+      return;
+    }
+
+    const timelineSeed = Date.now().toString(36);
+    const draftItems = buildWorkspaceTimelineItemsForAsset({
+      assetNodeId: projectAssetTimelineNodeId(asset),
+      title: asset.filename,
+      asset,
+      startSec,
+      idSeed: timelineSeed,
+    });
+    if (!draftItems.length) {
+      setNotice(`${asset.filename} cannot be placed on the timeline.`);
+      return;
+    }
+    if (targetTrack && !workspaceTimelineItemsCompatibleWithTrack(draftItems, targetTrack)) {
+      setNotice(`${asset.filename} is not compatible with the ${targetTrack} track.`);
+      return;
+    }
+
+    const nextItems = targetTrack ? retargetWorkspaceTimelineItemsForTrack(draftItems, targetTrack) : draftItems;
+    const nextTimelineItemId = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.id ?? nextItems[0]?.id ?? null;
+    const resolvedTargetTrack = targetTrack ?? nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.track ?? nextItems[0]?.track ?? null;
+    if (!nextTimelineItemId || !resolvedTargetTrack) {
+      setNotice(`${asset.filename} cannot be placed on the timeline.`);
+      return;
+    }
+    if (nextItems.some((item) => lockedTimelineTracks.includes(item.track))) {
+      setNotice('Unlock the target track before inserting project media.');
+      return;
+    }
+
+    const currentItems = timelineItemsRef.current;
+    const nextTimelineItems = insertWorkspaceTimelineItems({
+      items: currentItems,
+      newItems: nextItems,
+      mode: 'insert',
+      playheadSec: startSec,
+      selectedItemId: null,
+      idSeed: timelineSeed,
+      allowInsertIntoClip: timelineInsertIntoClipEnabled,
+    });
+    const insertedItem = nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null;
+    if (!insertedItem) {
+      const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(currentItems, resolvedTargetTrack, startSec);
+      setNotice(isBlockedClipInsert ? 'Place the playhead on an edit point or enable Insert into clip.' : `${asset.filename} could not be inserted on the timeline.`);
+      return;
+    }
+
+    commitTimelineItems(() => nextTimelineItems);
+    setActiveEditorSurface('timeline');
+    setSelectedTimelineItemId(nextTimelineItemId);
+    setSelectedTimelineItemIds([nextTimelineItemId]);
+    setPlayheadSec(insertedItem.startSec);
+    setIsTimelinePlaying(false);
+    setNotice(
+      targetTrack
+        ? `${asset.filename} dropped on ${resolvedTargetTrack} at ${insertedItem.startSec.toFixed(2)}s.`
+        : `${asset.filename} inserted at the playhead on the ${resolvedTargetTrack} track.`
+    );
+  }, [commitTimelineItems, lockedTimelineTracks, projectAssets, timelineInsertIntoClipEnabled]);
+
+  const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
+    insertProjectAssetIntoTimeline(assetId, playheadSec);
+  }, [insertProjectAssetIntoTimeline, playheadSec]);
+
+  const handleDropProjectAssetToTimeline = useCallback((assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
+    setActiveEditorSurface('timeline');
+    insertProjectAssetIntoTimeline(assetId, startSec, targetTrack);
+  }, [insertProjectAssetIntoTimeline]);
+
+  const handleSelectSequence = useCallback((sequenceId: string) => {
+    if (sequenceId === activeSequenceId) return;
+    const targetSequence = sequences.find((sequence) => sequence.id === sequenceId);
+    if (!targetSequence) {
+      setNotice('Sequence not found.');
+      return;
+    }
+    const currentSequence = snapshotActiveSequence();
+    setSequences((current) => upsertWorkspaceSequence(current, currentSequence));
+    setActiveSequenceId(targetSequence.id);
+    applyWorkspaceSequence(targetSequence);
+    setActiveEditorSurface('timeline');
+    setFocusMode('viewer');
+    setNotice(`${targetSequence.name} selected.`);
+  }, [activeSequenceId, applyWorkspaceSequence, sequences, snapshotActiveSequence]);
+
+  const handleCreateSequence = useCallback(() => {
+    const currentSequence = snapshotActiveSequence();
+    const nextSequence = createWorkspaceSequenceRecord({
+      id: createLocalStudioId('sequence'),
+      name: sequenceNameForIndex(sequences.length + 1),
+      timelineItems: [],
+      projectSettings,
+    });
+    setSequences((current) => upsertWorkspaceSequence(upsertWorkspaceSequence(current, currentSequence), nextSequence));
+    setActiveSequenceId(nextSequence.id);
+    applyWorkspaceSequence(nextSequence);
+    setActiveEditorSurface('timeline');
+    setFocusMode('viewer');
+    setNotice(`${nextSequence.name} created.`);
+  }, [applyWorkspaceSequence, projectSettings, sequences.length, snapshotActiveSequence]);
 
   const handleMoveTimelineItem = useCallback((itemId: string, direction: -1 | 1) => {
     setActiveEditorSurface('timeline');
@@ -1906,6 +3043,51 @@ export default function WorkspacePage() {
     downloadWorkspaceTextFile('maxvideoai-timeline-render.json', serializedManifest, 'application/json');
   }, [exportManifest]);
 
+  const handleExportTimelineVideo = useCallback(async () => {
+    const idempotencyKey = exportIdempotencyKey ?? createClientExportIdempotencyKey();
+    if (!exportIdempotencyKey) setExportIdempotencyKey(idempotencyKey);
+    const request = buildWorkspaceTimelineVideoExportRequest(exportManifest, {
+      qualityPreset: exportQualityPreset,
+      includeAudio: true,
+      idempotencyKey,
+    });
+    const serializedRequest = serializeWorkspaceTimelineVideoExportRequest(request);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(VIDEO_EXPORT_REQUEST_STORAGE_KEY, serializedRequest);
+    }
+    if (request.status === 'blocked') {
+      const blockedMessage = workspaceTimelineRenderReadinessLabel(exportManifest);
+      setExportVideoFeedback(blockedMessage);
+      setNotice(blockedMessage);
+      return;
+    }
+    setIsExportVideoStarting(true);
+    setExportVideoFeedback('Queueing server export.');
+    try {
+      const response = await fetch('/api/studio/timeline-exports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error ?? 'EXPORT_CREATE_FAILED');
+      }
+      const job = normalizeTimelineExportClientJob(payload.export);
+      if (!job) throw new Error('EXPORT_JOB_INVALID');
+      setActiveExportJob(job);
+      const feedbackMessage = payload.reused ? 'Server export already queued.' : 'Server export queued.';
+      setExportVideoFeedback(feedbackMessage);
+      setNotice(feedbackMessage);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Server export failed to start.';
+      setExportVideoFeedback(message);
+      setNotice(message);
+    } finally {
+      setIsExportVideoStarting(false);
+    }
+  }, [exportIdempotencyKey, exportManifest, exportQualityPreset]);
+
   const handleExportTimelineEdl = useCallback(() => {
     const edl = buildWorkspaceTimelineEdl(exportManifest);
     setNotice(
@@ -1918,9 +3100,32 @@ export default function WorkspacePage() {
   }, [exportManifest]);
 
   const handleOpenExportDialog = useCallback(() => {
+    setExportVideoFeedback(null);
+    setExportEstimate(null);
+    setExportQuota(null);
+    setActiveExportJob(null);
+    setExportIdempotencyKey(createClientExportIdempotencyKey());
     setExportRangeMode(hasValidTimelineInOut ? 'in-out' : 'sequence');
     setIsExportDialogOpen(true);
   }, [hasValidTimelineInOut]);
+
+  const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
+    setExportVideoFeedback(null);
+    setExportEstimate(null);
+    setExportQuota(null);
+    setActiveExportJob(null);
+    setExportIdempotencyKey(createClientExportIdempotencyKey());
+    setExportRangeMode(mode);
+  }, []);
+
+  const handleExportQualityPresetChange = useCallback((preset: WorkspaceTimelineExportQualityPreset) => {
+    setExportVideoFeedback(null);
+    setExportEstimate(null);
+    setExportQuota(null);
+    setActiveExportJob(null);
+    setExportIdempotencyKey(createClientExportIdempotencyKey());
+    setExportQualityPreset(preset);
+  }, []);
 
   const handleDeleteTimelineItem = useCallback((ripple = false) => {
     setActiveEditorSurface('timeline');
@@ -2002,51 +3207,71 @@ export default function WorkspacePage() {
             Viewer
           </button>
         </div>
-        <div className={styles.topbarActions}>
-          <button type="button" className={styles.iconButton} onClick={() => selectedNode?.data.kind === 'shot' && void handleGenerateShot(selectedNode.id)} aria-label="Generate selected shot">
-            <Play size={15} />
-          </button>
-          <button type="button" className={styles.iconButton} aria-label="Share project">
-            <Share2 size={15} />
-          </button>
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={handleOpenProjectSettings}
-            title="Open project settings"
-            aria-haspopup="dialog"
-            aria-expanded={isProjectSettingsOpen}
-            aria-label="Open project settings"
-          >
-            <Settings2 size={15} />
-          </button>
-          <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
-            <Download size={15} />
-            Export
-          </button>
-          <button type="button" className={styles.iconButton} onClick={() => setMockMode((value) => !value)} aria-label="Toggle mock generation">
-            <Settings size={15} />
-            <span>{mockMode ? 'Mock' : 'Live'}</span>
-          </button>
+        <div className={styles.topbarRight}>
+          <StudioHeaderSession />
+          <div className={styles.topbarActions}>
+            <button type="button" className={styles.iconButton} onClick={() => selectedNode?.data.kind === 'shot' && void handleGenerateShot(selectedNode.id)} aria-label="Generate selected shot">
+              <Play size={15} />
+            </button>
+            <button type="button" className={styles.iconButton} aria-label="Share project">
+              <Share2 size={15} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={handleOpenProjectSettings}
+              title="Open project settings"
+              aria-haspopup="dialog"
+              aria-expanded={isProjectSettingsOpen}
+              aria-label="Open project settings"
+            >
+              <Settings2 size={15} />
+            </button>
+            <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
+              <Download size={15} />
+              Export
+            </button>
+            <button type="button" className={styles.iconButton} onClick={() => setMockMode((value) => !value)} aria-label="Toggle mock generation">
+              <Settings size={15} />
+              <span>{mockMode ? 'Mock' : 'Live'}</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className={styles.noticeBar}>
-        <Sparkles size={14} />
-        <span>{notice}</span>
-        <button type="button" onClick={() => handleApplyTemplate(activeTemplateId)}>
-          <RefreshCcw size={13} />
-          Reset template
-        </button>
-      </div>
+      {notice ? (
+        <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">
+          {notice}
+        </div>
+      ) : null}
 
       <div className={styles.editorBody}>
-        <NodeLibrarySidebar
-          templates={WORKSPACE_TEMPLATE_SUMMARIES}
-          activeTemplateId={activeTemplateId}
-          onAddNode={handleAddNode}
-          onApplyTemplate={handleApplyTemplate}
-        />
+        {focusMode === 'canvas' ? (
+          <NodeLibrarySidebar
+            templates={WORKSPACE_TEMPLATE_SUMMARIES}
+            activeTemplateId={activeUserCanvasTemplateId ? null : activeTemplateId}
+            userTemplates={userCanvasTemplates}
+            activeUserTemplateId={activeUserCanvasTemplateId}
+            onApplyTemplate={handleApplyCanvasTemplate}
+            onApplyUserTemplate={handleApplyUserCanvasTemplate}
+            onDeleteUserTemplate={handleDeleteUserCanvasTemplate}
+            onDuplicateUserTemplate={handleDuplicateUserCanvasTemplate}
+            onSaveCanvasTemplate={handleSaveCanvasTemplate}
+          />
+        ) : (
+          <TimelineProjectSidebar
+            nodes={renderNodes}
+            projectAssets={projectAssets}
+            projectName={activeTemplateName}
+            sequences={sequenceSummaries}
+            timelineItems={timelineItems}
+            onImportMedia={handleImportProjectMedia}
+            onInsertGeneratedClip={handleSendOutputToTimeline}
+            onInsertProjectAsset={handleInsertProjectAssetToTimeline}
+            onNewSequence={handleCreateSequence}
+            onSelectSequence={handleSelectSequence}
+          />
+        )}
         {focusMode === 'canvas' ? (
           <WorkspaceCanvas
             key={`${activeTemplateId}-${canvasRevision}`}
@@ -2059,6 +3284,8 @@ export default function WorkspacePage() {
             isValidConnection={isValidConnection}
             onCreateNodeFromHandleDrop={handleCreateNodeFromHandleDrop}
             onCreateNodeFromPaletteDrop={handleCreateNodeFromPaletteDrop}
+            onCanvasFileDrop={handleCanvasFileDrop}
+            onCanvasTextPaste={handleCanvasTextPaste}
             onCanvasInteraction={handleCanvasInteraction}
             onSelectedNodeChange={handleSelectedCanvasNodeChange}
             onSelectedNodeSync={setSelectedNodeId}
@@ -2132,6 +3359,7 @@ export default function WorkspacePage() {
         onDeleteItem={handleDeleteTimelineItem}
         onMarkIn={handleMarkTimelineIn}
         onMarkOut={handleMarkTimelineOut}
+        onGoToCut={handleGoToTimelineCut}
         onPanelHeightChange={handleTimelinePanelHeightChange}
         onRedo={handleRedoTimeline}
         onInvalidNodeDropToTimeline={handleInvalidNodeDropToTimeline}
@@ -2139,6 +3367,7 @@ export default function WorkspacePage() {
         onNodeDropToTimeline={handleDropNodeToTimeline}
         onPlaybackChange={setIsTimelinePlaying}
         onPlayheadChange={setPlayheadSec}
+        onProjectAssetDropToTimeline={handleDropProjectAssetToTimeline}
         onPreviewItemsChange={handleTimelinePreviewItemsChange}
         onTogglePlayback={handleToggleTimelinePlayback}
         onPositionItem={handlePositionTimelineItem}
@@ -2161,8 +3390,15 @@ export default function WorkspacePage() {
         onProjectSettingsChange={handleProjectSettingsChange}
       />
       <WorkspaceExportDialog
+        activeExportJob={activeExportJob}
+        exportEstimate={exportEstimate}
+        exportQuota={exportQuota}
         exportRangeMode={exportRangeMode}
+        exportQualityPreset={exportQualityPreset}
+        exportVideoFeedback={exportVideoFeedback}
         inPointSec={timelineInPointSec}
+        isEstimateLoading={isExportEstimateLoading}
+        isExportStarting={isExportVideoStarting}
         isOpen={isExportDialogOpen}
         manifest={exportManifest}
         outPointSec={timelineOutPointSec}
@@ -2170,8 +3406,10 @@ export default function WorkspacePage() {
         sequenceDurationSec={timelineDurationSec}
         onClose={() => setIsExportDialogOpen(false)}
         onExportEdl={handleExportTimelineEdl}
+        onExportVideo={handleExportTimelineVideo}
         onPrepareRender={handleExportTimelineRender}
-        onRangeModeChange={setExportRangeMode}
+        onQualityPresetChange={handleExportQualityPresetChange}
+        onRangeModeChange={handleExportRangeModeChange}
       />
       <WorkspaceAssetLibraryModal
         node={assetPickerNode}
@@ -2185,6 +3423,19 @@ export default function WorkspacePage() {
         onClose={() => setAssetPickerNodeId(null)}
         onSelectAsset={handleSelectLibraryAsset}
         onSourceChange={assetPickerLibrary.setSource}
+      />
+      <WorkspaceProjectMediaLibraryModal
+        isOpen={isProjectMediaPickerOpen}
+        assets={projectMediaLibrary.assets}
+        isLoading={projectMediaLibrary.isLoading}
+        error={projectMediaLibrary.error}
+        usingFallback={projectMediaLibrary.usingFallback}
+        source={projectMediaLibrary.source}
+        sourceOptions={projectMediaLibrary.sourceOptions}
+        sourceLabels={projectMediaLibrary.sourceLabels}
+        onClose={() => setIsProjectMediaPickerOpen(false)}
+        onSelectAsset={handleSelectProjectMediaAsset}
+        onSourceChange={projectMediaLibrary.setSource}
       />
     </main>
   );

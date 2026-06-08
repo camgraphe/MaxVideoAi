@@ -1005,6 +1005,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
   const targetInsideExternalClip = timelineSelectionHasExternalTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
 
   if (params.mode === 'insert' && targetInsideSelection && !targetInsideExternalClip) {
+    if (isWorkspaceTimelineVideoTrack(targetTrack)) return params.items;
     return selectedKeys.size > 1
       ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
       : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);

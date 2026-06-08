@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
-import { FileText, ImagePlus, Music2, Plus, RefreshCcw, Video } from 'lucide-react';
+import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { Copy, FileText, ImagePlus, Music2, Plus, RefreshCcw, Save, Trash2, Video } from 'lucide-react';
 import styles from '../maxvideoai-editor.module.css';
 import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../_lib/workspace-types';
 
@@ -14,47 +14,81 @@ const BLOCK_TEMPLATES: Array<{ kind: WorkspaceNodeKind; label: string; descripti
 ];
 const PALETTE_DRAG_START_EVENT = 'maxvideoai:palette-drag-start';
 
+function clearTextSelection(): void {
+  window.getSelection()?.removeAllRanges();
+}
+
+export type WorkspaceUserCanvasTemplateSummary = {
+  id: string;
+  name: string;
+  description: string;
+};
+
 type NodeLibrarySidebarProps = {
   templates: WorkspaceTemplateSummary[];
-  activeTemplateId: WorkspaceTemplateId;
-  onAddNode: (kind: WorkspaceNodeKind) => void;
+  activeTemplateId: WorkspaceTemplateId | null;
+  userTemplates: WorkspaceUserCanvasTemplateSummary[];
+  activeUserTemplateId: string | null;
   onApplyTemplate: (templateId: WorkspaceTemplateId) => void;
+  onApplyUserTemplate: (templateId: string) => void;
+  onDeleteUserTemplate: (templateId: string) => void;
+  onDuplicateUserTemplate: (templateId: string) => void;
+  onSaveCanvasTemplate: (name: string) => void;
 };
 
 export function NodeLibrarySidebar({
   templates,
   activeTemplateId,
-  onAddNode,
+  userTemplates,
+  activeUserTemplateId,
   onApplyTemplate,
+  onApplyUserTemplate,
+  onDeleteUserTemplate,
+  onDuplicateUserTemplate,
+  onSaveCanvasTemplate,
 }: NodeLibrarySidebarProps) {
-  const suppressClickRef = useRef(false);
+  const [templateName, setTemplateName] = useState('');
 
   const handleTemplateMouseDown = (event: ReactMouseEvent, kind: WorkspaceNodeKind) => {
     if (event.button !== 0) return;
+    event.preventDefault();
+    clearTextSelection();
     const startX = event.clientX;
     const startY = event.clientY;
-    suppressClickRef.current = false;
+    let hasStartedDrag = false;
 
     const handleMove = (moveEvent: MouseEvent) => {
-      if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 8) {
-        suppressClickRef.current = true;
-      }
+      moveEvent.preventDefault();
+      if (hasStartedDrag || Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) <= 8) return;
+      hasStartedDrag = true;
+      clearTextSelection();
+      window.dispatchEvent(
+        new CustomEvent(PALETTE_DRAG_START_EVENT, {
+          detail: {
+            kind,
+            clientX: moveEvent.clientX,
+            clientY: moveEvent.clientY,
+          },
+        })
+      );
+    };
+    const handleSelectStart = (selectEvent: Event) => {
+      selectEvent.preventDefault();
     };
     const handleUp = () => {
       document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('selectstart', handleSelectStart);
+      clearTextSelection();
     };
 
     document.addEventListener('mousemove', handleMove);
+    document.addEventListener('selectstart', handleSelectStart);
     document.addEventListener('mouseup', handleUp, { once: true });
-    window.dispatchEvent(
-      new CustomEvent(PALETTE_DRAG_START_EVENT, {
-        detail: {
-          kind,
-          clientX: event.clientX,
-          clientY: event.clientY,
-        },
-      })
-    );
+  };
+
+  const handleSaveTemplate = () => {
+    onSaveCanvasTemplate(templateName);
+    setTemplateName('');
   };
 
   return (
@@ -70,29 +104,10 @@ export function NodeLibrarySidebar({
         {BLOCK_TEMPLATES.map((template) => (
           <div
             key={template.kind}
-            role="button"
-            tabIndex={0}
-            draggable
+            data-block-template-kind={template.kind}
             title={`${template.label} - ${template.description}`}
             className={styles.blockTemplateCard}
             onMouseDown={(event) => handleTemplateMouseDown(event, template.kind)}
-            onClick={() => {
-              if (suppressClickRef.current) {
-                suppressClickRef.current = false;
-                return;
-              }
-              onAddNode(template.kind);
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter' && event.key !== ' ') return;
-              event.preventDefault();
-              onAddNode(template.kind);
-            }}
-            onDragStart={(event) => {
-              event.dataTransfer.effectAllowed = 'copy';
-              event.dataTransfer.setData('application/x-maxvideoai-node-kind', template.kind);
-              event.dataTransfer.setData('text/plain', template.kind);
-            }}
           >
             <span className={styles.blockTemplateIcon}>{template.icon}</span>
             <span>
@@ -105,7 +120,7 @@ export function NodeLibrarySidebar({
 
       <div className={styles.templateSection}>
         <div className={styles.sectionHeading}>
-          <span>Starter templates</span>
+          <span>Canvas templates</span>
           <RefreshCcw size={14} />
         </div>
         <div className={styles.templateList}>
@@ -121,6 +136,50 @@ export function NodeLibrarySidebar({
             </button>
           ))}
         </div>
+      </div>
+
+      <div className={styles.myCanvasTemplatesSection}>
+        <div className={styles.sectionHeading}>
+          <span>My canvas templates</span>
+        </div>
+        <div className={styles.myCanvasTemplateForm}>
+          <input
+            type="text"
+            value={templateName}
+            onChange={(event) => setTemplateName(event.target.value)}
+            placeholder="Template name"
+            aria-label="Canvas template name"
+          />
+          <button type="button" onClick={handleSaveTemplate}>
+            <Save size={13} />
+            Save
+          </button>
+        </div>
+        {userTemplates.length ? (
+          <div className={styles.myCanvasTemplateList}>
+            {userTemplates.map((template) => (
+              <div
+                key={template.id}
+                className={`${styles.myCanvasTemplateItem} ${template.id === activeUserTemplateId ? styles.myCanvasTemplateItemActive : ''}`}
+              >
+                <button type="button" className={styles.myCanvasTemplateMain} onClick={() => onApplyUserTemplate(template.id)}>
+                  <strong>{template.name}</strong>
+                  <span>{template.description}</span>
+                </button>
+                <div className={styles.myCanvasTemplateActions}>
+                  <button type="button" onClick={() => onDuplicateUserTemplate(template.id)} aria-label={`Duplicate ${template.name}`}>
+                    <Copy size={12} />
+                  </button>
+                  <button type="button" onClick={() => onDeleteUserTemplate(template.id)} aria-label={`Delete ${template.name}`}>
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No saved canvas templates yet.</p>
+        )}
       </div>
     </aside>
   );

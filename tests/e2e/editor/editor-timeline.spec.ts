@@ -100,21 +100,14 @@ test('timeline zoom control sits at the far right of the toolbar', async ({ page
   await expect(editingTools).toBeVisible();
   const selectionTool = editingTools.getByRole('button', { exact: true, name: 'Selection tool' });
   const bladeTool = editingTools.getByRole('button', { exact: true, name: 'Blade / Cut tool' });
-  const trimTool = editingTools.getByRole('button', { exact: true, name: 'Trim tool' });
-  const rippleTool = editingTools.getByRole('button', { exact: true, name: 'Ripple trim tool' });
-  const rollTool = editingTools.getByRole('button', { exact: true, name: 'Roll trim tool' });
   await expect(selectionTool).toHaveAttribute('aria-pressed', 'true');
   await expect(bladeTool).toHaveAttribute('aria-pressed', 'false');
-  await expect(trimTool).toHaveAttribute('aria-pressed', 'false');
-  await expect(rippleTool).toHaveAttribute('aria-pressed', 'false');
-  await expect(rollTool).toHaveAttribute('aria-pressed', 'false');
-  await trimTool.click();
-  await expect(trimTool).toHaveAttribute('aria-pressed', 'true');
+  await expect(editingTools.getByRole('button', { exact: true, name: 'Trim tool' })).toHaveCount(0);
+  await expect(editingTools.getByRole('button', { exact: true, name: 'Ripple trim tool' })).toHaveCount(0);
+  await expect(editingTools.getByRole('button', { exact: true, name: 'Roll trim tool' })).toHaveCount(0);
+  await bladeTool.click();
+  await expect(bladeTool).toHaveAttribute('aria-pressed', 'true');
   await expect(selectionTool).toHaveAttribute('aria-pressed', 'false');
-  await rippleTool.click();
-  await expect(rippleTool).toHaveAttribute('aria-pressed', 'true');
-  await rollTool.click();
-  await expect(rollTool).toHaveAttribute('aria-pressed', 'true');
   await selectionTool.click();
   await expect(selectionTool).toHaveAttribute('aria-pressed', 'true');
   await expect(zoomControl).toBeVisible();
@@ -136,10 +129,8 @@ test('timeline zoom control sits at the far right of the toolbar', async ({ page
   expect(topbarBox).not.toBeNull();
   if (!transportBox || !toolsBox || !zoomBox || !topbarBox) return;
 
-  const topbarCenterX = topbarBox.x + topbarBox.width / 2;
-  const transportCenterX = transportBox.x + transportBox.width / 2;
-  expect(Math.abs(transportCenterX - topbarCenterX)).toBeLessThanOrEqual(8);
   expect(zoomBox.x).toBeGreaterThan(transportBox.x + transportBox.width);
+  expect(zoomBox.x - (transportBox.x + transportBox.width)).toBeLessThanOrEqual(10);
   expect(Math.abs((zoomBox.x + zoomBox.width) - (topbarBox.x + topbarBox.width - 18))).toBeLessThanOrEqual(2);
 
   assertNoEditorClientErrors(errors);
@@ -190,6 +181,22 @@ test('viewer playback controls sit under the video and jump between cuts', async
   assertNoEditorClientErrors(errors);
 });
 
+test('timeline arrow up and down shortcuts jump between edit cuts', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+  await clickTimelineClip(page, 'timeline-output-01');
+
+  await page.keyboard.press('ArrowDown');
+  await expect.poll(async () => Number(await page.getByTestId('editor-program-frame').getAttribute('data-program-playhead'))).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+
+  await page.keyboard.press('ArrowUp');
+  await expect.poll(async () => Number(await page.getByTestId('editor-program-frame').getAttribute('data-program-playhead'))).toBe(0);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('viewer supports in and out marks with keyboard shortcuts and export dialog range options', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -210,12 +217,112 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
   await page.keyboard.press('o');
   await expect(inOutSummary).toContainText('Out 00:00:05:00');
 
+  await page.route('**/api/studio/timeline-exports/estimate', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        quota: {
+          freeLimit: 2,
+          usedFreeExports: 0,
+          freeExportsRemaining: 2,
+          billingKind: 'free',
+        },
+        estimate: {
+          billingKind: 'free',
+          amountCents: 0,
+          currency: 'USD',
+          freeExportsRemaining: 2,
+          unitCentsPerSecond: 4,
+          multiplier: 1.5,
+        },
+      }),
+    });
+  });
+  await page.route('**/api/studio/timeline-exports/tlx_e2e_export', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        export: {
+          id: 'tlx_e2e_export',
+          status: 'completed',
+          progress: 100,
+          message: 'Export ready.',
+          output_url: 'https://cdn.maxvideoai.test/timeline-exports/tlx_e2e_export.mp4',
+        },
+      }),
+    });
+  });
+  await page.route('**/api/studio/timeline-exports', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        reused: false,
+        export: {
+          id: 'tlx_e2e_export',
+          status: 'queued',
+          progress: 0,
+          message: 'Queued for server render.',
+          output_url: null,
+        },
+        billing: {
+          billingKind: 'free',
+          freeExportsRemaining: 1,
+        },
+      }),
+    });
+  });
+
   await page.getByRole('button', { name: 'Open export dialog' }).click();
   const dialog = page.getByRole('dialog', { name: 'Export sequence' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('radio', { name: 'In/Out range' })).toBeChecked();
   await expect(dialog).toContainText('00:00:00:00');
   await expect(dialog).toContainText('00:00:05:00');
+  await expect(dialog.getByRole('button', { name: 'Export video' })).toBeVisible();
+  await expect(dialog.getByRole('radio', { name: 'Standard' })).toBeChecked();
+  await expect(dialog.getByRole('radio', { name: 'Draft' })).toBeVisible();
+  await expect(dialog.getByRole('radio', { name: 'High' })).toBeVisible();
+  await expect(dialog).toContainText('MP4 H.264');
+  await expect(dialog).toContainText('Preflight');
+  await expect(dialog).toContainText('Server render');
+  await expect(dialog).toContainText('Free export');
+  await expect(dialog).toContainText('Advanced');
+  await dialog.getByRole('button', { name: 'Export video' }).click();
+  await expect(dialog.getByRole('status')).toContainText(/Server export queued|Export ready/);
+  await expect(dialog.getByRole('link', { name: 'Download server export' })).toHaveAttribute(
+    'href',
+    'https://cdn.maxvideoai.test/timeline-exports/tlx_e2e_export.mp4'
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const rawRequest = window.localStorage.getItem('maxvideoai.editor.videoExportRequest.v1');
+        if (!rawRequest) return null;
+        return JSON.parse(rawRequest) as {
+          exportSettings?: { format?: string; qualityPreset?: string; serverRenderMode?: string };
+          idempotencyKey?: string;
+          source?: string;
+        };
+      })
+    )
+    .toMatchObject({
+      exportSettings: {
+        format: 'mp4-h264',
+        qualityPreset: 'standard',
+        serverRenderMode: 'server',
+      },
+      source: 'maxvideoai-editor',
+    });
+  const storedExportRequest = await page.evaluate(() => JSON.parse(window.localStorage.getItem('maxvideoai.editor.videoExportRequest.v1') ?? '{}'));
+  expect(typeof storedExportRequest.idempotencyKey).toBe('string');
+  expect(storedExportRequest.idempotencyKey.length).toBeGreaterThan(0);
   await expect(dialog.getByRole('button', { name: 'Prepare render JSON' })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Export EDL' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Close export dialog' }).click();
@@ -388,7 +495,7 @@ test('timeline panel height can be resized with the top drag handle and persists
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline drag keeps linked video and audio clips synchronized', async ({ page }) => {
+test('timeline ambiguous linked video drag reverts video and audio together', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -399,10 +506,12 @@ test('timeline drag keeps linked video and audio clips synchronized', async ({ p
 
   await dragTimelineClip(page, 'timeline-output-02', 68);
 
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
@@ -441,9 +550,11 @@ test('timeline context menu unlinks video audio pairs and links selected clips',
   await expect(page.getByRole('menuitem', { name: 'Link selected clips', exact: true })).toBeEnabled();
   await page.getByRole('menuitem', { name: 'Link selected clips', exact: true }).click();
 
-  await dragTimelineClip(page, 'timeline-output-02', 68);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC + PRODUCT_FIXTURE_TWO_SECOND_DRAG_SEC);
+  await dragTimelineClip(page, 'timeline-output-02', -204);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_TWO_SECOND_DRAG_SEC);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
@@ -602,6 +713,30 @@ test('delete key only applies to the active canvas or timeline surface', async (
   assertNoEditorClientErrors(errors);
 });
 
+test('timeline undo and redo shortcuts work after focus returns to the canvas', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await dragTimelineClipEnd(page, 'timeline-output-01', -34);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+  await expect(page.getByRole('button', { name: 'Undo timeline edit' })).toBeEnabled();
+
+  await switchEditorFocus(page, 'Canvas');
+  await clickCanvasNode(page, 'asset-product-image');
+  await expect(page.locator('[data-active-editor-surface="canvas"]')).toBeVisible();
+
+  await page.keyboard.press('Control+Z');
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
+  await expect(page.getByRole('button', { name: 'Redo timeline edit' })).toBeEnabled();
+
+  await page.keyboard.press('Control+Shift+Z');
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('insert-mode timeline drag resolves occupied drops to clip boundaries by default', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -611,6 +746,7 @@ test('insert-mode timeline drag resolves occupied drops to clip boundaries by de
   await dragTimelineClip(page, 'timeline-output-02', -204);
 
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(8);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect.poll(async () => {
@@ -618,6 +754,22 @@ test('insert-mode timeline drag resolves occupied drops to clip boundaries by de
     return states.some((clip) => clip.id.startsWith('timeline-output-01-tail-') && clip.track === 'video');
   }).toBe(false);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('insert-mode timeline drag reverts ambiguous self-overlap drops', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await dragTimelineClip(page, 'timeline-output-01', 34);
+
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
@@ -721,15 +873,17 @@ test('dragging linked audio keeps the video clip visible during preview', async 
   const startY = audioBox.y + audioBox.height / 2;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(startX + 68, startY, { steps: 8 });
+  await page.mouse.move(startX - 204, startY, { steps: 8 });
 
   await expect(videoClip).toBeVisible();
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
 
   await page.mouse.up();
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
@@ -875,7 +1029,7 @@ test('viewer video frame updates on one-frame keyboard step while paused', async
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline multi-select drag preserves relative offsets and linked audio sync', async ({ page }) => {
+test('timeline ambiguous multi-select drag reverts relative offsets and linked audio sync', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -889,11 +1043,13 @@ test('timeline multi-select drag preserves relative offsets and linked audio syn
 
   await dragTimelineClip(page, 'timeline-output-01', 34);
 
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(1);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC + 1);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC + 1);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });

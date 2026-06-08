@@ -34,6 +34,8 @@
     "test:admin-smoke": "playwright test -c playwright.admin.config.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
     "test-videos:serve": "node scripts/serve-video-gallery.mjs",
+    "timeline-exports:worker": "pnpm --prefix frontend run timeline-exports:worker",
+    "timeline-exports:worker:once": "pnpm --prefix frontend run timeline-exports:worker:once",
     "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts",
     "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts",
     "test:editor:e2e": "playwright test -c playwright.editor.config.ts",

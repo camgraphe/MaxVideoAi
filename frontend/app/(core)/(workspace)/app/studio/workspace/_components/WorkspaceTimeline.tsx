@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowLeftRight, Eye, EyeOff, FoldHorizontal, Link2, Lock, Magnet, MousePointer2, Play, Plus, Redo2, Scissors, SkipBack, SkipForward, SplitSquareHorizontal, StretchHorizontal, Trash2, Undo2, Unlink2, Unlock, Volume2, VolumeX, ZoomIn, ZoomOut } from 'lucide-react';
+import { Eye, EyeOff, Link2, Lock, Magnet, MousePointer2, Play, Plus, Redo2, Scissors, SkipBack, SkipForward, SplitSquareHorizontal, Trash2, Undo2, Unlink2, Unlock, Volume2, VolumeX, ZoomIn, ZoomOut } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -44,7 +44,7 @@ const EXTERNAL_DROP_GHOST_DURATION_SEC = 5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 type TimelineInteractionKind = 'move' | 'resize-start' | 'resize-end';
-type TimelineTool = 'select' | 'blade' | WorkspaceTimelineTrimMode;
+type TimelineTool = 'select' | 'blade';
 
 type TimelineInteractionState = {
   itemId: string;
@@ -116,6 +116,7 @@ type TimelineExternalDropPreview = {
 };
 
 type TimelineNodeDragPayload = {
+  assetId?: string;
   mediaKind?: 'audio' | 'image' | 'video';
   nodeId?: string;
 };
@@ -152,10 +153,6 @@ function snapSeconds(seconds: number, snapStepSec = DEFAULT_TIMELINE_FRAME_STEP_
   return Math.round((Math.round(seconds / safeStepSec) * safeStepSec) * TIMELINE_SECOND_PRECISION) / TIMELINE_SECOND_PRECISION;
 }
 
-function trimModeForTimelineTool(tool: TimelineTool): WorkspaceTimelineTrimMode {
-  return tool === 'ripple' || tool === 'roll' ? tool : 'trim';
-}
-
 function isVideoTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineVideoTrack {
   return isWorkspaceTimelineVideoTrack(track);
 }
@@ -168,7 +165,7 @@ function parseTimelineNodeDragPayload(dataTransfer: DataTransfer): TimelineNodeD
   if (!Array.from(dataTransfer.types).includes(TIMELINE_NODE_DRAG_TYPE)) return null;
   try {
     const payload = JSON.parse(dataTransfer.getData(TIMELINE_NODE_DRAG_TYPE)) as TimelineNodeDragPayload;
-    if (!payload.nodeId || !payload.mediaKind) return null;
+    if ((!payload.nodeId && !payload.assetId) || !payload.mediaKind) return null;
     return payload;
   } catch {
     return null;
@@ -732,12 +729,14 @@ type WorkspaceTimelineProps = {
   onDeleteItem: (ripple?: boolean) => void;
   onMoveItem: (itemId: string, direction: -1 | 1) => void;
   onInvalidNodeDropToTimeline: (reason: 'incompatible' | 'locked-track' | 'occupied-clip') => void;
+  onGoToCut: (direction: -1 | 1) => void;
   onMarkIn: () => void;
   onMarkOut: () => void;
   onNodeDropToTimeline: (nodeId: string, startSec: number, track: WorkspaceTimelineTrack) => void;
   onPanelHeightChange: (height: number) => void;
   onPlaybackChange: (isPlaying: boolean) => void;
   onPlayheadChange: (seconds: number) => void;
+  onProjectAssetDropToTimeline: (assetId: string, startSec: number, track: WorkspaceTimelineTrack) => void;
   onPositionItem: (itemId: string, nextStartSec: number, nextTrack?: WorkspaceTimelineTrack, selectedItemIds?: string[]) => void;
   onPreviewItemsChange?: (items: WorkspaceTimelineItem[] | null, playheadSec: number | null) => void;
   onRedo: () => void;
@@ -782,6 +781,7 @@ export function WorkspaceTimeline({
   onAddVideoTrack,
   onCutItem,
   onDeleteItem,
+  onGoToCut,
   onInvalidNodeDropToTimeline,
   onMarkIn,
   onMarkOut,
@@ -790,6 +790,7 @@ export function WorkspaceTimeline({
   onPanelHeightChange,
   onPlaybackChange,
   onPlayheadChange,
+  onProjectAssetDropToTimeline,
   onPositionItem,
   onPreviewItemsChange,
   onRedo,
@@ -903,7 +904,7 @@ export function WorkspaceTimeline({
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
   const updateExternalDropPreview = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     const payload = parseTimelineNodeDragPayload(event.dataTransfer);
-    if (!payload?.nodeId || !payload.mediaKind) return null;
+    if ((!payload?.nodeId && !payload?.assetId) || !payload.mediaKind) return null;
     const rawStartSec = secondsFromTimelineElement(event.clientX, event.currentTarget);
     const startSec = !isInsertIntoClipEnabled
       ? insertionBoundaryForTimelineTrack(items, track, rawStartSec)
@@ -926,7 +927,7 @@ export function WorkspaceTimeline({
   const handleExternalDrop = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     const result = updateExternalDropPreview(event, track);
     setExternalDropPreview(null);
-    if (!result?.payload.nodeId) return;
+    if (!result?.payload.nodeId && !result?.payload.assetId) return;
     if (lockedTrackSet.has(track)) {
       onInvalidNodeDropToTimeline('locked-track');
       return;
@@ -936,8 +937,12 @@ export function WorkspaceTimeline({
       return;
     }
     onPlaybackChange(false);
-    onNodeDropToTimeline(result.payload.nodeId, result.preview.startSec, result.preview.trackId);
-  }, [lockedTrackSet, onInvalidNodeDropToTimeline, onNodeDropToTimeline, onPlaybackChange, updateExternalDropPreview]);
+    if (result.payload.nodeId) {
+      onNodeDropToTimeline(result.payload.nodeId, result.preview.startSec, result.preview.trackId);
+    } else if (result.payload.assetId) {
+      onProjectAssetDropToTimeline(result.payload.assetId, result.preview.startSec, result.preview.trackId);
+    }
+  }, [lockedTrackSet, onInvalidNodeDropToTimeline, onNodeDropToTimeline, onPlaybackChange, onProjectAssetDropToTimeline, updateExternalDropPreview]);
   const handleBeginPlayheadDrag = useCallback((event: ReactPointerEvent<HTMLElement>, timelineElement: HTMLElement | null) => {
     if (!timelineElement) return;
     event.preventDefault();
@@ -1223,7 +1228,7 @@ export function WorkspaceTimeline({
         completedInteraction.kind === 'resize-start' ? 'start' : 'end',
         completedInteraction.previewStartSec,
         completedInteraction.previewDurationSec,
-        trimModeForTimelineTool(activeTimelineTool)
+        'trim'
       );
       onPlayheadChange(completedInteraction.previewStartSec);
       setPreviewInteraction(null);
@@ -1261,14 +1266,18 @@ export function WorkspaceTimeline({
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (!isShortcutActive) return;
-      if (isTimelineShortcutTarget(event.target)) return;
       if ((event.metaKey || event.ctrlKey) && event.code === 'KeyZ') {
+        if (isTimelineShortcutTarget(event.target)) return;
         event.preventDefault();
-        if (event.shiftKey) onRedo();
-        else onUndo();
+        if (event.shiftKey) {
+          if (canRedo) onRedo();
+        } else if (canUndo) {
+          onUndo();
+        }
         return;
       }
+      if (!isShortcutActive) return;
+      if (isTimelineShortcutTarget(event.target)) return;
       if ((event.metaKey || event.ctrlKey) && (event.code === 'Equal' || event.code === 'NumpadAdd')) {
         event.preventDefault();
         setTimelineZoom(pixelsPerSecond + 8);
@@ -1292,6 +1301,16 @@ export function WorkspaceTimeline({
       if (event.code === 'ArrowRight') {
         event.preventDefault();
         seekBy(event.shiftKey ? 1 : frameStepSec);
+        return;
+      }
+      if (event.code === 'ArrowUp') {
+        event.preventDefault();
+        onGoToCut(-1);
+        return;
+      }
+      if (event.code === 'ArrowDown') {
+        event.preventDefault();
+        onGoToCut(1);
         return;
       }
       if (event.code === 'KeyC') {
@@ -1319,21 +1338,6 @@ export function WorkspaceTimeline({
         onMarkOut();
         return;
       }
-      if (event.code === 'KeyT') {
-        event.preventDefault();
-        setActiveTimelineTool('trim');
-        return;
-      }
-      if (event.code === 'KeyR') {
-        event.preventDefault();
-        setActiveTimelineTool('ripple');
-        return;
-      }
-      if (event.code === 'KeyY') {
-        event.preventDefault();
-        setActiveTimelineTool('roll');
-        return;
-      }
       if (event.code === 'Delete' || event.code === 'Backspace') {
         event.preventDefault();
         onDeleteItem(event.shiftKey);
@@ -1347,7 +1351,7 @@ export function WorkspaceTimeline({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [frameStepSec, handleCutSelectedAtPlayhead, isShortcutActive, onDeleteItem, onMarkIn, onMarkOut, onRedo, onTogglePlayback, onUndo, pixelsPerSecond, seekBy, setTimelineZoom]);
+  }, [canRedo, canUndo, frameStepSec, handleCutSelectedAtPlayhead, isShortcutActive, onDeleteItem, onGoToCut, onMarkIn, onMarkOut, onRedo, onTogglePlayback, onUndo, pixelsPerSecond, seekBy, setTimelineZoom]);
   const resolvedPreviewTimelineItems = useMemo(() => {
     if (!interaction || interaction.kind !== 'move') return null;
     return moveWorkspaceTimelineSelectionWithMode({
@@ -1434,77 +1438,41 @@ export function WorkspaceTimeline({
             {formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
           </time>
         </div>
-        <div className={styles.timelineTransport} data-timeline-transport="true">
-          <button type="button" data-tooltip="Undo (Cmd/Ctrl + Z)" title="Undo timeline edit (Cmd/Ctrl + Z)" aria-label="Undo timeline edit" disabled={!canUndo} onClick={onUndo}>
-            <Undo2 size={15} />
-          </button>
-          <button type="button" data-tooltip="Redo (Cmd/Ctrl + Shift + Z)" title="Redo timeline edit (Cmd/Ctrl + Shift + Z)" aria-label="Redo timeline edit" disabled={!canRedo} onClick={onRedo}>
-            <Redo2 size={15} />
-          </button>
-          <div className={styles.timelineToolGroup} role="toolbar" aria-label="Timeline editing tools">
-            <button
-              type="button"
-              className={`${styles.timelineToolButton} ${activeTimelineTool === 'select' ? styles.timelineToolButtonActive : ''}`}
-              data-timeline-tool="select"
-              data-tooltip="Selection tool (V)"
-              title="Selection tool. Drag clips, marquee empty space, and Shift/Cmd-click to toggle selection. (V)"
-              onClick={() => setActiveTimelineTool('select')}
-              aria-label="Selection tool"
-              aria-pressed={activeTimelineTool === 'select'}
-            >
-              <MousePointer2 size={15} />
-            </button>
-            <button
-              type="button"
-              className={`${styles.timelineToolButton} ${activeTimelineTool === 'blade' ? styles.timelineToolButtonActive : ''}`}
-              data-timeline-tool="blade"
-              data-tooltip="Blade / Cut tool (C)"
-              title="Blade / Cut tool. Click a clip to split, or press S to split selected at the playhead. (C)"
-              onClick={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
-              aria-label="Blade / Cut tool"
-              aria-pressed={activeTimelineTool === 'blade'}
-            >
-              <Scissors size={15} />
-            </button>
-            <button
-              type="button"
-              className={`${styles.timelineToolButton} ${activeTimelineTool === 'trim' ? styles.timelineToolButtonActive : ''}`}
-              data-timeline-tool="trim"
-              data-tooltip="Trim tool (T)"
-              title="Trim tool. Drag clip edges without moving neighboring clips. (T)"
-              onClick={() => setActiveTimelineTool('trim')}
-              aria-label="Trim tool"
-              aria-pressed={activeTimelineTool === 'trim'}
-            >
-              <StretchHorizontal size={15} />
-            </button>
-            <button
-              type="button"
-              className={`${styles.timelineToolButton} ${activeTimelineTool === 'ripple' ? styles.timelineToolButtonActive : ''}`}
-              data-timeline-tool="ripple"
-              data-tooltip="Ripple trim tool (R)"
-              title="Ripple trim tool. Drag a clip edge and shift later clips with the edit. (R)"
-              onClick={() => setActiveTimelineTool('ripple')}
-              aria-label="Ripple trim tool"
-              aria-pressed={activeTimelineTool === 'ripple'}
-            >
-              <FoldHorizontal size={15} />
-            </button>
-            <button
-              type="button"
-              className={`${styles.timelineToolButton} ${activeTimelineTool === 'roll' ? styles.timelineToolButtonActive : ''}`}
-              data-timeline-tool="roll"
-              data-tooltip="Roll trim tool (Y)"
-              title="Roll trim tool. Move the cut between adjacent clips without changing sequence duration. (Y)"
-              onClick={() => setActiveTimelineTool('roll')}
-              aria-label="Roll trim tool"
-              aria-pressed={activeTimelineTool === 'roll'}
-            >
-              <ArrowLeftRight size={15} />
-            </button>
-          </div>
-        </div>
         <div className={styles.timelineZoomSlot}>
+          <div className={styles.timelineTransport} data-timeline-transport="true">
+            <button type="button" data-tooltip="Undo (Cmd/Ctrl + Z)" title="Undo timeline edit (Cmd/Ctrl + Z)" aria-label="Undo timeline edit" disabled={!canUndo} onClick={onUndo}>
+              <Undo2 size={15} />
+            </button>
+            <button type="button" data-tooltip="Redo (Cmd/Ctrl + Shift + Z)" title="Redo timeline edit (Cmd/Ctrl + Shift + Z)" aria-label="Redo timeline edit" disabled={!canRedo} onClick={onRedo}>
+              <Redo2 size={15} />
+            </button>
+            <div className={styles.timelineToolGroup} role="toolbar" aria-label="Timeline editing tools">
+              <button
+                type="button"
+                className={`${styles.timelineToolButton} ${activeTimelineTool === 'select' ? styles.timelineToolButtonActive : ''}`}
+                data-timeline-tool="select"
+                data-tooltip="Selection tool (V)"
+                title="Selection tool. Drag clips, marquee empty space, and Shift/Cmd-click to toggle selection. (V)"
+                onClick={() => setActiveTimelineTool('select')}
+                aria-label="Selection tool"
+                aria-pressed={activeTimelineTool === 'select'}
+              >
+                <MousePointer2 size={15} />
+              </button>
+              <button
+                type="button"
+                className={`${styles.timelineToolButton} ${activeTimelineTool === 'blade' ? styles.timelineToolButtonActive : ''}`}
+                data-timeline-tool="blade"
+                data-tooltip="Blade / Cut tool (C)"
+                title="Blade / Cut tool. Click a clip to split, or press S to split selected at the playhead. (C)"
+                onClick={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
+                aria-label="Blade / Cut tool"
+                aria-pressed={activeTimelineTool === 'blade'}
+              >
+                <Scissors size={15} />
+              </button>
+            </div>
+          </div>
           <div className={styles.timelineZoomControl} aria-label="Timeline zoom">
             <button
               type="button"

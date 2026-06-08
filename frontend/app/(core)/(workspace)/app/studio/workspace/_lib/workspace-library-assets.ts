@@ -12,12 +12,13 @@ export type WorkspaceLibraryAsset = {
 };
 
 export type WorkspaceLibraryKind = 'image' | 'video' | 'audio';
-export type WorkspaceLibrarySource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
+export type WorkspaceLibrarySource = 'all' | 'recent' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
 export const WORKSPACE_DEMO_AUDIO_URL = '/studio/demo-ambient.wav';
 
 export const WORKSPACE_LIBRARY_SOURCE_OPTIONS = [
   'all',
+  'recent',
   'upload',
   'generated',
   'storyboard',
@@ -28,6 +29,7 @@ export const WORKSPACE_LIBRARY_SOURCE_OPTIONS = [
 
 export const WORKSPACE_LIBRARY_SOURCE_LABELS = {
   all: 'All',
+  recent: 'Recent',
   upload: 'Uploaded',
   generated: 'Generated',
   storyboard: 'Storyboard',
@@ -136,14 +138,15 @@ export function workspaceUploadAcceptForNodeKind(kind: WorkspaceNodeKind): strin
 }
 
 export function workspaceLibrarySourceOptionsForKind(kind: WorkspaceLibraryKind | null): readonly WorkspaceLibrarySource[] {
-  if (kind === 'audio') return ['all', 'upload', 'generated'];
-  if (kind === 'video') return ['all', 'upload', 'generated', 'upscale'];
+  if (kind === 'audio') return ['all', 'recent', 'upload', 'generated'];
+  if (kind === 'video') return ['all', 'recent', 'upload', 'generated', 'upscale'];
   return WORKSPACE_LIBRARY_SOURCE_OPTIONS;
 }
 
 export function buildWorkspaceUserLibraryUrl(kind: WorkspaceLibraryKind | null, source: WorkspaceLibrarySource = 'all'): string {
   const params = new URLSearchParams({ limit: '60' });
   if (kind) params.set('kind', kind);
+  if (source === 'recent') return `/api/media-library/recent-outputs?${params.toString()}`;
   if (source !== 'all') params.set('source', source);
   return `/api/media-library/assets?${params.toString()}`;
 }
@@ -200,9 +203,9 @@ export function normalizeWorkspaceUserLibraryPayload(
   payload: unknown,
   kind: WorkspaceLibraryKind | null
 ): WorkspaceLibraryAsset[] {
-  const record = payload && typeof payload === 'object' ? (payload as { assets?: unknown }) : {};
-  if (!Array.isArray(record.assets)) return [];
-  return record.assets
+  const record = payload && typeof payload === 'object' ? (payload as { assets?: unknown; outputs?: unknown }) : {};
+  const rawItems = Array.isArray(record.assets) ? record.assets : Array.isArray(record.outputs) ? record.outputs : [];
+  return rawItems
     .map((item) => workspaceLibraryAssetFromUploadedAsset(item, kind))
     .filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset));
 }

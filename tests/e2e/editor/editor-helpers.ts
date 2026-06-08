@@ -21,7 +21,85 @@ export function assertNoEditorClientErrors(errors: EditorClientErrors): void {
   assertNoClientErrors(errors);
 }
 
+async function mockEditorHeaderAccountApi(page: Page): Promise<void> {
+  await page.route('**/api/wallet', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ balance: 42.5, balanceCents: 4250, currency: 'USD' }),
+    });
+  });
+  await page.route('**/api/admin/access', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false }),
+    });
+  });
+}
+
+async function mockEditorStudioPersistenceApi(page: Page): Promise<void> {
+  await page.route('**/api/studio/canvas-templates', async (route) => {
+    if (route.request().method() === 'POST') {
+      const payload = route.request().postDataJSON() as { template?: Record<string, unknown> } | null;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, template: payload?.template ?? {} }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, templates: [] }),
+    });
+  });
+  await page.route('**/api/studio/canvas-templates/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true }),
+    });
+  });
+  await page.route('**/api/studio/projects', async (route) => {
+    if (route.request().method() === 'POST') {
+      const now = new Date().toISOString();
+      const payload = route.request().postDataJSON() as { project?: Record<string, unknown> } | null;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          project: {
+            createdAt: now,
+            updatedAt: now,
+            ...payload?.project,
+          },
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, projects: [] }),
+    });
+  });
+  await page.route('**/api/studio/projects/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false }),
+    });
+  });
+}
+
 export async function openEditorWorkspace(page: Page): Promise<void> {
+  await mockEditorHeaderAccountApi(page);
+  await mockEditorStudioPersistenceApi(page);
   await page.goto('/app/studio/workspace', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toBeVisible();
@@ -39,6 +117,8 @@ export async function openFreshEditorWorkspace(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1');
     window.localStorage.removeItem('maxvideoai.editor.timelineRender.v1');
+    window.localStorage.removeItem('maxvideoai.editor.canvasTemplates.v1');
+    window.localStorage.removeItem('maxvideoai.editor.projects.v1');
   });
   await openEditorWorkspace(page);
 }
@@ -153,6 +233,31 @@ export async function dropCanvasNodeOnTimelineTrack(page: Page, nodeTitle: strin
   await lane.evaluate((target, { clientX, clientY, mediaKind, nodeId }) => {
     const dataTransfer = new DataTransfer();
     dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({ nodeId, mediaKind }));
+    target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+    target.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+  }, { clientX: targetX, clientY: targetY, ...payload });
+}
+
+export async function dropProjectMediaAssetOnTimelineTrack(page: Page, assetName: string, track: string, seconds: number): Promise<void> {
+  const row = page.locator('[data-project-media-asset-id]', { hasText: assetName }).first();
+  await expect(row).toBeVisible();
+  const lane = page.locator(`[data-timeline-track="${track}"]`);
+  await expect(lane).toBeVisible();
+  const laneBox = await lane.boundingBox();
+  expect(laneBox).not.toBeNull();
+  if (!laneBox) return;
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  const targetX = laneBox.x + seconds * pixelsPerSecond;
+  const targetY = laneBox.y + laneBox.height / 2;
+  const payload = await row.evaluate((element) => {
+    const mediaKind = element.getAttribute('data-project-media-drag-kind');
+    const assetId = element.getAttribute('data-project-media-asset-id');
+    if (!mediaKind || !assetId) throw new Error('Missing project media timeline drag payload data.');
+    return { assetId, mediaKind };
+  });
+  await lane.evaluate((target, { clientX, clientY, mediaKind, assetId }) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({ assetId, mediaKind }));
     target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
     target.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
   }, { clientX: targetX, clientY: targetY, ...payload });

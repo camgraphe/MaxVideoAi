@@ -1,14 +1,43 @@
 'use client';
 
-import { Download, FileJson, X } from 'lucide-react';
+import { Download, FileJson, Film, X } from 'lucide-react';
 import { useEffect } from 'react';
 import styles from '../maxvideoai-editor.module.css';
-import type { WorkspaceTimelineExportRangeMode, WorkspaceTimelineRenderManifest } from '../_lib/workspace-timeline-render';
+import {
+  WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS,
+  workspaceTimelineExportReadinessChecks,
+  type WorkspaceTimelineExportQualityPreset,
+  type WorkspaceTimelineExportRangeMode,
+  type WorkspaceTimelineRenderManifest,
+} from '../_lib/workspace-timeline-render';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 
 type WorkspaceExportDialogProps = {
+  activeExportJob: {
+    id: string;
+    status: 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
+    progress: number;
+    message: string | null;
+    outputUrl: string | null;
+  } | null;
+  exportEstimate: {
+    billingKind: 'free' | 'paid';
+    amountCents: number;
+    currency: string;
+    freeExportsRemaining: number;
+  } | null;
+  exportQuota: {
+    freeLimit: number;
+    usedFreeExports: number;
+    freeExportsRemaining: number;
+    billingKind: 'free' | 'paid';
+  } | null;
   exportRangeMode: WorkspaceTimelineExportRangeMode;
+  exportQualityPreset: WorkspaceTimelineExportQualityPreset;
+  exportVideoFeedback: string | null;
   inPointSec: number | null;
+  isEstimateLoading: boolean;
+  isExportStarting: boolean;
   isOpen: boolean;
   manifest: WorkspaceTimelineRenderManifest;
   outPointSec: number | null;
@@ -16,7 +45,9 @@ type WorkspaceExportDialogProps = {
   sequenceDurationSec: number;
   onClose: () => void;
   onExportEdl: () => void;
+  onExportVideo: () => void;
   onPrepareRender: () => void;
+  onQualityPresetChange: (preset: WorkspaceTimelineExportQualityPreset) => void;
   onRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
 };
 
@@ -25,8 +56,15 @@ function nullableTimecode(seconds: number | null, fps: number): string {
 }
 
 export function WorkspaceExportDialog({
+  activeExportJob,
+  exportEstimate,
+  exportQuota,
   exportRangeMode,
+  exportQualityPreset,
+  exportVideoFeedback,
   inPointSec,
+  isEstimateLoading,
+  isExportStarting,
   isOpen,
   manifest,
   outPointSec,
@@ -34,11 +72,27 @@ export function WorkspaceExportDialog({
   sequenceDurationSec,
   onClose,
   onExportEdl,
+  onExportVideo,
   onPrepareRender,
+  onQualityPresetChange,
   onRangeModeChange,
 }: WorkspaceExportDialogProps) {
   const fps = manifest.projectSettings?.fps ?? 24;
   const hasValidInOut = inPointSec !== null && outPointSec !== null && outPointSec > inPointSec;
+  const readinessChecks = workspaceTimelineExportReadinessChecks(manifest);
+  const hasBlockingChecks = readinessChecks.some((check) => check.status === 'blocking');
+  const isServerJobActive = activeExportJob?.status === 'queued' || activeExportJob?.status === 'rendering';
+  const exportPriceLabel = exportEstimate
+    ? exportEstimate.billingKind === 'free'
+      ? `Free export ${Math.max(0, exportEstimate.freeExportsRemaining)}/${exportQuota?.freeLimit ?? 2}`
+      : `${exportEstimate.currency.toUpperCase()} ${(exportEstimate.amountCents / 100).toFixed(2)}`
+    : isEstimateLoading
+      ? 'Estimating...'
+      : 'Estimate unavailable';
+  const exportJobMessage = activeExportJob?.message ?? (isServerJobActive ? 'Render job is waiting for the server worker.' : null);
+  const dimensionsLabel = manifest.projectSettings
+    ? `${manifest.projectSettings.aspectRatio} · ${manifest.projectSettings.resolution} · ${manifest.projectSettings.fps} fps`
+    : `${fps} fps`;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,51 +136,154 @@ export function WorkspaceExportDialog({
           </button>
         </div>
         <div className={styles.exportDialogBody}>
-          <div className={styles.exportRangeOptions} role="radiogroup" aria-label="Export range">
-            <label>
-              <input
-                type="radio"
-                checked={exportRangeMode === 'sequence'}
-                onChange={() => onRangeModeChange('sequence')}
-              />
-              <span>
-                <strong>Full sequence</strong>
-                <small>{formatWorkspaceTimecode(0, fps)} - {formatWorkspaceTimecode(sequenceDurationSec, fps)}</small>
-              </span>
-            </label>
-            <label className={!hasValidInOut ? styles.exportRangeDisabled : undefined}>
-              <input
-                type="radio"
-                checked={exportRangeMode === 'in-out'}
-                disabled={!hasValidInOut}
-                onChange={() => onRangeModeChange('in-out')}
-              />
-              <span>
-                <strong>In/Out range</strong>
-                <small>{nullableTimecode(inPointSec, fps)} - {nullableTimecode(outPointSec, fps)}</small>
-              </span>
-            </label>
-          </div>
-          <div className={styles.exportSummaryGrid}>
-            <span>Range</span>
-            <strong>{manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Sequence'}</strong>
-            <span>Duration</span>
-            <strong>{formatWorkspaceTimecode(manifest.durationSec, fps)}</strong>
-            <span>Tracks</span>
-            <strong>{manifest.tracks.length}</strong>
-            <span>Status</span>
-            <strong>{manifest.status === 'ready' ? 'Ready' : 'Blocked'}</strong>
-          </div>
-        </div>
-        <div className={styles.exportDialogFooter}>
-          <button type="button" className={styles.secondaryPanelButton} onClick={onExportEdl}>
-            <Download size={14} />
-            Export EDL
+          <section className={styles.exportSection}>
+            <div className={styles.exportSectionHeader}>
+              <strong>Video export</strong>
+              <span>MP4 H.264</span>
+            </div>
+            <div className={styles.exportSummaryGrid}>
+              <span>Project</span>
+              <strong>{dimensionsLabel}</strong>
+              <span>Range</span>
+              <strong>{manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Sequence'}</strong>
+              <span>Duration</span>
+              <strong>{formatWorkspaceTimecode(manifest.durationSec, fps)}</strong>
+              <span>Tracks</span>
+              <strong>{manifest.tracks.length}</strong>
+            </div>
+          </section>
+
+          <section className={styles.exportSection}>
+            <div className={styles.exportSectionHeader}>
+              <strong>Range</strong>
+            </div>
+            <div className={styles.exportRangeOptions} role="radiogroup" aria-label="Export range">
+              <label>
+                <input
+                  type="radio"
+                  checked={exportRangeMode === 'sequence'}
+                  onChange={() => onRangeModeChange('sequence')}
+                />
+                <span>
+                  <strong>Full sequence</strong>
+                  <small>{formatWorkspaceTimecode(0, fps)} - {formatWorkspaceTimecode(sequenceDurationSec, fps)}</small>
+                </span>
+              </label>
+              <label className={!hasValidInOut ? styles.exportRangeDisabled : undefined}>
+                <input
+                  type="radio"
+                  checked={exportRangeMode === 'in-out'}
+                  disabled={!hasValidInOut}
+                  onChange={() => onRangeModeChange('in-out')}
+                />
+                <span>
+                  <strong>In/Out range</strong>
+                  <small>{nullableTimecode(inPointSec, fps)} - {nullableTimecode(outPointSec, fps)}</small>
+                </span>
+              </label>
+            </div>
+          </section>
+
+          <section className={styles.exportSection}>
+            <div className={styles.exportSectionHeader}>
+              <strong>Quality preset</strong>
+            </div>
+            <div className={styles.exportPresetGrid} role="radiogroup" aria-label="Quality preset">
+              {WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS.map((preset) => (
+                <label
+                  key={preset.id}
+                  className={`${styles.exportPresetCard} ${exportQualityPreset === preset.id ? styles.exportPresetCardActive : ''}`}
+                >
+                  <input
+                    type="radio"
+                    checked={exportQualityPreset === preset.id}
+                    onChange={() => onQualityPresetChange(preset.id)}
+                  />
+                  <span>
+                    <strong>{preset.label}</strong>
+                    <small>{preset.description}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.exportSection}>
+            <div className={styles.exportSectionHeader}>
+              <strong>Preflight</strong>
+              <span>{manifest.status === 'ready' ? 'Ready' : 'Blocked'}</span>
+            </div>
+            <div className={styles.exportReadinessList}>
+              {readinessChecks.map((check) => (
+                <div key={check.id} className={styles.exportReadinessItem} data-status={check.status}>
+                  <strong>{check.label}</strong>
+                  <span>{check.message}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <button
+            type="button"
+            className={`${styles.primaryPanelButton} ${styles.exportPrimaryAction}`}
+            disabled={hasBlockingChecks || isExportStarting || isServerJobActive}
+            onClick={onExportVideo}
+          >
+            <Film size={15} />
+            {isExportStarting ? 'Queueing...' : isServerJobActive ? 'Export queued' : 'Export video'}
           </button>
-          <button type="button" className={styles.primaryPanelButton} onClick={onPrepareRender}>
-            <FileJson size={14} />
-            Prepare render JSON
-          </button>
+          <section className={`${styles.exportSection} ${styles.exportServerSection}`}>
+            <div className={styles.exportSectionHeader}>
+              <strong>Server render</strong>
+              <span>{exportPriceLabel}</span>
+            </div>
+            <div className={styles.exportServerCard}>
+              <div>
+                <strong>{exportEstimate?.billingKind === 'paid' ? 'Paid export' : 'Server MP4'}</strong>
+                <span>
+                  {exportQuota
+                    ? `${exportQuota.freeExportsRemaining} free server export${exportQuota.freeExportsRemaining === 1 ? '' : 's'} remaining`
+                    : 'Final render job runs on MaxVideoAI servers.'}
+                </span>
+                {exportJobMessage ? <small>{exportJobMessage}</small> : null}
+              </div>
+              {activeExportJob ? (
+                <div className={styles.exportJobStatus}>
+                  <span>{activeExportJob.status}</span>
+                  <strong>{activeExportJob.progress}%</strong>
+                </div>
+              ) : null}
+            </div>
+            {activeExportJob ? (
+              <div className={styles.exportProgressTrack} aria-label="Server export progress">
+                <span style={{ width: `${activeExportJob.progress}%` }} />
+              </div>
+            ) : null}
+            {activeExportJob?.outputUrl ? (
+              <a className={styles.exportDownloadLink} href={activeExportJob.outputUrl} target="_blank" rel="noreferrer">
+                Download server export
+              </a>
+            ) : null}
+          </section>
+          {exportVideoFeedback ? (
+            <p className={styles.exportStatusBanner} role="status">
+              {exportVideoFeedback}
+            </p>
+          ) : null}
+
+          <details className={styles.exportAdvancedPanel} open>
+            <summary>Advanced</summary>
+            <div className={styles.exportAdvancedActions}>
+              <button type="button" className={styles.secondaryPanelButton} disabled={hasBlockingChecks} onClick={onExportEdl}>
+                <Download size={14} />
+                Export EDL
+              </button>
+              <button type="button" className={styles.secondaryPanelButton} onClick={onPrepareRender}>
+                <FileJson size={14} />
+                Prepare render JSON
+              </button>
+            </div>
+          </details>
         </div>
       </div>
     </div>
