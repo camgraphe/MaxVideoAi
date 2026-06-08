@@ -32,11 +32,40 @@ function resolveLayout(group: GroupSummary): VideoGroupLayout {
   }
 }
 
+function normalizeHttpMediaUrl(value?: string | null): string | null {
+  const normalized = normalizeMediaUrl(value);
+  return normalized && /^https?:\/\//i.test(normalized) ? normalized : null;
+}
+
+function resolveImageRenderIndex(member: GroupMemberSummary): number {
+  if (typeof member.iterationIndex === 'number' && Number.isFinite(member.iterationIndex) && member.iterationIndex >= 0) {
+    return Math.floor(member.iterationIndex);
+  }
+  const match = member.id.match(/-image-(\d+)$/);
+  if (!match) return 0;
+  const parsed = Number(match[1]);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function resolveImageRenderUrl(member: GroupMemberSummary): string | undefined {
+  const job = member.job;
+  if (!job || !Array.isArray(job.renderIds)) return undefined;
+  const renderIds = job.renderIds
+    .map((value) => normalizeHttpMediaUrl(value))
+    .filter((value): value is string => Boolean(value));
+  if (!renderIds.length) return undefined;
+
+  const index = resolveImageRenderIndex(member);
+  const heroRender = normalizeHttpMediaUrl(job.heroRenderId);
+  return renderIds[index] ?? heroRender ?? renderIds[0];
+}
+
 function toVideoItem(member: GroupMemberSummary): VideoItem {
   const videoUrl = normalizeMediaUrl(member.videoUrl) ?? undefined;
   const previewUrl = normalizeMediaUrl(member.previewVideoUrl) ?? undefined;
   const audioUrl = normalizeMediaUrl(member.audioUrl) ?? undefined;
   const thumb = normalizeMediaUrl(member.thumbUrl) ?? undefined;
+  const imageUrl = !videoUrl && !audioUrl ? resolveImageRenderUrl(member) : undefined;
   const { aspect, original } = normalizeAspect(member.aspectRatio);
 
   const meta: Record<string, unknown> = {};
@@ -68,7 +97,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
     meta.mediaType = 'video';
   } else if (audioUrl) {
     meta.mediaType = 'audio';
-  } else if (thumb) {
+  } else if (imageUrl || thumb) {
     meta.mediaType = 'image';
   }
   if (member.status) {
@@ -97,7 +126,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
 
   return {
     id: member.id,
-    url: videoUrl ?? thumb ?? '',
+    url: videoUrl ?? imageUrl ?? thumb ?? '',
     previewUrl,
     audioUrl,
     aspect,
