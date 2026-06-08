@@ -24,11 +24,9 @@ import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-m
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
-
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
   const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
-
   const body = await req
     .json()
     .catch((error) => {
@@ -36,7 +34,6 @@ export async function POST(req: NextRequest) {
       return null;
     });
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
-
   const routeContext = await resolveGenerateRouteContext({ body, req });
   if (!routeContext.ok) {
     return NextResponse.json(routeContext.body, { status: routeContext.status });
@@ -55,7 +52,6 @@ export async function POST(req: NextRequest) {
   metricState.engineLabel = engine.label;
   metricState.jobId = jobId;
   metricState.mode = mode;
-
   const requestOptionsResult = buildGenerateRequestOptions({
     body,
     engine,

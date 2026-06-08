@@ -123,7 +123,7 @@ export async function resolveWatchSourceImageOriginalUrls({
     changed = true;
     return {
       ...image,
-      thumbUrl: image.thumbUrl ?? sourceUrl,
+      thumbUrl: image.thumbUrl ?? sourceUrl ?? undefined,
       url: originalUrl,
     };
   });
