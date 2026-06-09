@@ -155,6 +155,53 @@ test('Luma Agents submission routes fal-compatible direct-unsupported payloads s
   assert.equal(queries.some((entry) => /INSERT INTO provider_attempts/.test(entry.sql)), false);
 });
 
+test('Luma Agents submission routes looped end-frame i2v straight to fal', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  let directCalled = false;
+  let falCalled = false;
+  const falResult: GenerateResult = {
+    provider: 'fal',
+    thumbUrl: '/assets/frames/thumb-16x9.svg',
+    providerJobId: 'fal_loop_end_frame',
+    status: 'queued',
+    progress: 10,
+  };
+  const { params } = baseParams({
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    falPayload: {
+      ...falPayload,
+      mode: 'i2v',
+      imageUrl: 'https://cdn.maxvideoai.com/start.png',
+      endImageUrl: 'https://cdn.maxvideoai.com/end.png',
+      loop: true,
+    },
+    falInputSummary: { hasImage: true, hasVideo: false, imageCount: 2, videoCount: 0 },
+    deps: {
+      queryFn,
+      getLumaAgentsClientFn: () => ({
+        createGeneration: async () => {
+          directCalled = true;
+          return acceptedTask();
+        },
+        getGeneration: async () => acceptedTask(),
+      }),
+      submitFalGenerateTaskFn: async () => {
+        falCalled = true;
+        return { ok: true, generationResult: falResult };
+      },
+    },
+  });
+
+  const result = await submitLumaAgentsGenerateTask(params);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.kind, 'fal_result');
+  assert.equal(falCalled, true);
+  assert.equal(directCalled, false);
+  assert.equal(queries.some((entry) => /INSERT INTO provider_attempts/.test(entry.sql)), false);
+});
+
 test('Luma Agents submission falls back to fal for rate limits before direct acceptance', async () => {
   const { queries, queryFn } = createQueryRecorder();
   let falCalled = false;

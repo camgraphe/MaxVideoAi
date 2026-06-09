@@ -165,3 +165,29 @@ test('Luma Ray 3.2 only emits HDR and EXR when direct-only advanced controls are
   assert.equal(advancedPayload.video.hdr, true);
   assert.equal(advancedPayload.video.exr_export, true);
 });
+
+test('Luma Ray 3.2 direct payload rejects extend instead of dropping the source video', () => {
+  assert.throws(
+    () =>
+      buildLumaAgentsVideoPayload({
+        engineId: 'luma-ray-3-2',
+        mode: 'extend',
+        prompt: 'Continue this clip',
+        durationSec: 5,
+        durationOption: '5s',
+        aspectRatio: '16:9',
+        resolution: '720p',
+        loop: false,
+        imageUrl: null,
+        endImageUrl: null,
+        videoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+        referenceImageUrls: [],
+        extraInputValues: null,
+        advancedDirectOnlyEnabled: true,
+      }),
+    (error) =>
+      error instanceof LumaAgentsError &&
+      error.errorClass === 'invalid_request' &&
+      error.code === 'LUMA_AGENTS_EXTEND_UNSUPPORTED'
+  );
+});

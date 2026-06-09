@@ -150,8 +150,15 @@ export function buildLumaAgentsVideoPayload(params: {
   extraInputValues?: Record<string, unknown> | null;
   advancedDirectOnlyEnabled?: boolean;
 }): LumaAgentsVideoPayload {
+  if (params.mode === 'extend') {
+    invalidRequest(
+      'Luma Ray 3.2 direct does not support extend mode.',
+      'LUMA_AGENTS_EXTEND_UNSUPPORTED'
+    );
+  }
+
   const route = resolveLumaAgentsModelRoute({ engineId: params.engineId, mode: params.mode });
-  if ((params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend') && !params.advancedDirectOnlyEnabled) {
+  if ((params.mode === 'v2v' || params.mode === 'reframe') && !params.advancedDirectOnlyEnabled) {
     invalidRequest('Advanced Luma Agents direct video modes are disabled.', 'LUMA_AGENTS_ADVANCED_DISABLED');
   }
 

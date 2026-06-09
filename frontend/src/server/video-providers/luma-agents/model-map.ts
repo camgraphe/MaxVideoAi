@@ -1,5 +1,5 @@
 import type { GeneratePayload } from '@/lib/fal';
-import { isLumaRay32AdvancedMode, isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
+import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import type { Mode } from '@/types/engines';
 import {
   LUMA_AGENTS_RAY_32_DIRECT_ASPECT_RATIOS,
@@ -43,7 +43,7 @@ export function isLumaAgentsVideoModeSupported(
   options?: { advancedDirectOnlyEnabled?: boolean }
 ): boolean {
   if (isLumaRay32PublicMode(mode)) return true;
-  return options?.advancedDirectOnlyEnabled === true && isLumaRay32AdvancedMode(mode);
+  return options?.advancedDirectOnlyEnabled === true && (mode === 'v2v' || mode === 'reframe');
 }
 
 export function resolveLumaAgentsModelRoute(params: {
@@ -146,7 +146,8 @@ export function resolveLumaAgentsVideoSupport(params: {
   const extra = params.falPayload.extraInputValues ?? {};
   const hdrRequested = booleanValue(extra.hdr);
   const exrRequested = booleanValue(extra.exr_export ?? extra.exrExport);
-  if (duration === '10s' && (params.mode === 'i2v' || hasEndImage(params.falPayload) || params.falPayload.loop === true)) {
+  const hasEndFrame = hasEndImage(params.falPayload);
+  if (duration === '10s' && (params.mode === 'i2v' || hasEndFrame || params.falPayload.loop === true)) {
     return {
       supported: false,
       route,
@@ -154,10 +155,20 @@ export function resolveLumaAgentsVideoSupport(params: {
       fallbackCompatible: route.fallbackCompatible,
     };
   }
+  if (params.falPayload.loop === true && hasEndFrame) {
+    return {
+      supported: false,
+      route,
+      reason: 'loop_incompatible_with_end_frame',
+      fallbackCompatible:
+        route.fallbackCompatible &&
+        !(params.advancedDirectOnlyEnabled === true && (hdrRequested || exrRequested)),
+    };
+  }
   if (params.advancedDirectOnlyEnabled && duration === '10s' && (hdrRequested || exrRequested)) {
     return { supported: false, route, reason: 'duration_10s_incompatible_with_hdr', fallbackCompatible: false };
   }
-  if (params.advancedDirectOnlyEnabled && params.falPayload.loop === true && (hdrRequested || hasEndImage(params.falPayload))) {
+  if (params.advancedDirectOnlyEnabled && params.falPayload.loop === true && hdrRequested) {
     return { supported: false, route, reason: 'loop_incompatible_with_direct_options', fallbackCompatible: false };
   }
 
