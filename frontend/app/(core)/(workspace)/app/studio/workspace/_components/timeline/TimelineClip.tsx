@@ -12,21 +12,15 @@ import type {
 } from 'react';
 
 import styles from '../../_styles/timeline.module.css';
+import {
+  MIN_CLIP_DURATION_SEC,
+  snapTimelineSeconds,
+  type TimelineClipLayout,
+  type TimelineInteractionKind,
+} from '../../_lib/timeline/timeline-interaction';
 import type { WorkspaceTimelineItem } from '../../_lib/workspace-types';
 import { isWorkspaceTimelineVideoTrack } from '../../_lib/workspace-timeline-tracks';
 import type { TimelineTool } from './TimelineToolbar';
-
-const MIN_CLIP_DURATION_SEC = 1;
-const DEFAULT_TIMELINE_FPS = 24;
-const DEFAULT_TIMELINE_FRAME_STEP_SECONDS = 1 / DEFAULT_TIMELINE_FPS;
-const TIMELINE_SECOND_PRECISION = 1_000_000;
-
-export type TimelineInteractionKind = 'move' | 'resize-start' | 'resize-end';
-
-export type TimelineClipLayout = {
-  startSec: number;
-  durationSec: number;
-};
 
 export type TimelineSelectionMode = 'replace' | 'toggle' | 'focus';
 
@@ -54,11 +48,6 @@ function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.max(0, Math.round(seconds % 60));
   return `${minutes}:${remaining.toString().padStart(2, '0')}`;
-}
-
-function snapSeconds(seconds: number, snapStepSec = DEFAULT_TIMELINE_FRAME_STEP_SECONDS): number {
-  const safeStepSec = snapStepSec > 0 ? snapStepSec : DEFAULT_TIMELINE_FRAME_STEP_SECONDS;
-  return Math.round((Math.round(seconds / safeStepSec) * safeStepSec) * TIMELINE_SECOND_PRECISION) / TIMELINE_SECOND_PRECISION;
 }
 
 function waveformBarsForItem(item: WorkspaceTimelineItem): number[] {
@@ -123,7 +112,7 @@ export const TimelineClip = memo(function TimelineClip({
       event.stopPropagation();
       if (!canCutClip || !canManipulateClip) return;
       const clipRect = event.currentTarget.getBoundingClientRect();
-      const pointerOffsetSec = snapSeconds((event.clientX - clipRect.left) / pixelsPerSecond, snapStepSec);
+      const pointerOffsetSec = snapTimelineSeconds((event.clientX - clipRect.left) / pixelsPerSecond, snapStepSec);
       const splitOffsetSec = Math.max(
         MIN_CLIP_DURATION_SEC,
         Math.min(layout.durationSec - MIN_CLIP_DURATION_SEC, pointerOffsetSec)

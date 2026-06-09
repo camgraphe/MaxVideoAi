@@ -17,10 +17,12 @@ import {
   isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
 } from '../../_lib/workspace-timeline-tracks';
+import type {
+  TimelineClipLayout,
+  TimelineInteractionKind,
+} from '../../_lib/timeline/timeline-interaction';
 import {
   TimelineClip,
-  type TimelineClipLayout,
-  type TimelineInteractionKind,
   type TimelineSelectionMode,
 } from './TimelineClip';
 import { TimelineTrackRow } from './TimelineTrackRow';

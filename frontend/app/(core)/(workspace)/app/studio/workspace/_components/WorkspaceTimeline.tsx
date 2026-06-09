@@ -19,6 +19,27 @@ import {
   type WorkspaceTimelineTrimMode,
 } from '../_lib/workspace-timeline-editing';
 import {
+  frameStepSeconds,
+  interactionMatchesTimelineItem,
+  layoutForTimelineItem,
+  marqueeRectForState,
+  MIN_CLIP_DURATION_SEC,
+  previewPlayheadForInteraction,
+  selectedItemIdsForMarquee,
+  selectionKeyForTimelineItem,
+  selectionKeysForTimelineItemIds,
+  snapTimelineSeconds,
+  sourceDurationForTimelineItem,
+  sourceStartForTimelineItem,
+  timelineRulerStepFor,
+  trackForTimelineItem,
+  nextTimelineInteractionState,
+  type TimelineClipLayout,
+  type TimelineInteractionKind,
+  type TimelineInteractionState,
+  type TimelineMarqueeState,
+} from '../_lib/timeline/timeline-interaction';
+import {
   isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
   workspaceTimelineAudioTrackId,
@@ -28,8 +49,6 @@ import {
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import type {
-  TimelineClipLayout,
-  TimelineInteractionKind,
   TimelineSelectionMode,
 } from './timeline/TimelineClip';
 import {
@@ -48,56 +67,15 @@ const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
 const MAX_TIMELINE_PIXELS_PER_SECOND = 92;
 const MIN_TIMELINE_WIDTH = 760;
-const MIN_CLIP_DURATION_SEC = 1;
-const DEFAULT_TIMELINE_FPS = 24;
-const DEFAULT_TIMELINE_FRAME_STEP_SECONDS = 1 / DEFAULT_TIMELINE_FPS;
-const TIMELINE_SECOND_PRECISION = 1_000_000;
 const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
-const SNAP_TARGET_THRESHOLD_PIXELS = 1;
 const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 const EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC = 5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 const TIMELINE_VISIBLE_RANGE_BUFFER_PX = 360;
 
-type TimelineInteractionState = {
-  itemId: string;
-  linkedGroupId: string | null;
-  selectedItemIds: string[];
-  selectedKeys: string[];
-  originLayoutsById: Record<string, TimelineClipLayout>;
-  kind: TimelineInteractionKind;
-  originClientX: number;
-  originTrack: WorkspaceTimelineTrack;
-  originStartSec: number;
-  originDurationSec: number;
-  originSourceStartSec: number;
-  originSourceDurationSec: number;
-  snapStepSec: number;
-  previewTrack: WorkspaceTimelineTrack;
-  previewStartSec: number;
-  previewDurationSec: number;
-  snapGuideSec: number | null;
-};
-
 type TimelineVisibleRange = {
   startSec: number;
   endSec: number;
-};
-
-type TimelineMarqueeState = {
-  originClientX: number;
-  originClientY: number;
-  currentClientX: number;
-  currentClientY: number;
-  containerLeft: number;
-  containerTop: number;
-  itemRects: Array<{
-    id: string;
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  }>;
 };
 
 type TimelineExternalDropPreview = {
@@ -119,29 +97,10 @@ type TimelineNodeDragPayload = {
   title?: string | null;
 };
 
-type SnapCandidate = {
-  startSec: number;
-  guideSec: number | null;
-};
-
-type TimelineTrackConstraint = {
-  startSec: number;
-  guideSec: number | null;
-};
-
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.max(0, Math.round(seconds % 60));
   return `${minutes}:${remaining.toString().padStart(2, '0')}`;
-}
-
-function frameStepSeconds(projectFps: number): number {
-  return 1 / Math.max(1, projectFps || DEFAULT_TIMELINE_FPS);
-}
-
-function snapSeconds(seconds: number, snapStepSec = DEFAULT_TIMELINE_FRAME_STEP_SECONDS): number {
-  const safeStepSec = snapStepSec > 0 ? snapStepSec : DEFAULT_TIMELINE_FRAME_STEP_SECONDS;
-  return Math.round((Math.round(seconds / safeStepSec) * safeStepSec) * TIMELINE_SECOND_PRECISION) / TIMELINE_SECOND_PRECISION;
 }
 
 function isVideoTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineVideoTrack {
@@ -189,7 +148,7 @@ function insertionBoundaryForTimelineTrack(items: WorkspaceTimelineItem[], track
   if (!targetItem) return requestedStartSec;
 
   const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
-  return snapSeconds(requestedStartSec < midpointSec ? targetItem.startSec : targetItem.startSec + targetItem.durationSec);
+  return snapTimelineSeconds(requestedStartSec < midpointSec ? targetItem.startSec : targetItem.startSec + targetItem.durationSec);
 }
 
 function timelineVideoTrackId(index: number): WorkspaceTimelineVideoTrack {
@@ -227,260 +186,15 @@ function buildTimelineTracks(videoTrackCount: number, audioTrackCount: number, i
   return [...displayedVideoTracks, ...audioTracks];
 }
 
-function selectionKeyForTimelineItem(item: WorkspaceTimelineItem): string {
-  return item.linkedGroupId ? `group:${item.linkedGroupId}` : `item:${item.id}`;
-}
-
-function selectionKeysForTimelineItemIds(items: WorkspaceTimelineItem[], itemIds: string[]): Set<string> {
-  const keys = new Set<string>();
-  itemIds.forEach((itemId) => {
-    const item = items.find((candidate) => candidate.id === itemId);
-    if (item) keys.add(selectionKeyForTimelineItem(item));
-  });
-  return keys;
-}
-
-function trackForTimelineItem(item: WorkspaceTimelineItem, interaction: TimelineInteractionState | null): WorkspaceTimelineTrack {
-  if (!interaction || !interactionMatchesItem(interaction, item)) return item.track;
-  if (interaction.selectedKeys.length > 1) return item.track;
-  if (isVideoTimelineTrack(item.track) && !isVideoTimelineTrack(interaction.previewTrack)) return item.track;
-  if (isAudioTimelineTrack(item.track) && !isAudioTimelineTrack(interaction.previewTrack)) return item.track;
-  return interaction.previewTrack;
-}
-
-function timelineRulerStepFor(pixelsPerSecond: number): number {
-  if (pixelsPerSecond >= 72) return 1;
-  if (pixelsPerSecond >= 42) return 2;
-  return 4;
-}
-
 function isTimelineShortcutTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
-}
-
-function interactionMatchesItem(interaction: TimelineInteractionState, item: WorkspaceTimelineItem): boolean {
-  if (interaction.selectedKeys.length > 1) return interaction.selectedKeys.includes(selectionKeyForTimelineItem(item));
-  if (interaction.linkedGroupId) return item.linkedGroupId === interaction.linkedGroupId;
-  return item.id === interaction.itemId;
-}
-
-function layoutForItem(item: WorkspaceTimelineItem, interaction: TimelineInteractionState | null): TimelineClipLayout {
-  if (!interaction || !interactionMatchesItem(interaction, item)) {
-    return { startSec: item.startSec, durationSec: item.durationSec };
-  }
-  if (interaction.selectedKeys.length > 1) {
-    const originLayout = interaction.originLayoutsById[item.id];
-    const startDeltaSec = interaction.previewStartSec - interaction.originStartSec;
-    return {
-      startSec: Math.max(0, snapSeconds((originLayout?.startSec ?? item.startSec) + startDeltaSec, interaction.snapStepSec)),
-      durationSec: originLayout?.durationSec ?? item.durationSec,
-    };
-  }
-  return {
-    startSec: interaction.previewStartSec,
-    durationSec: interaction.previewDurationSec,
-  };
-}
-
-function sourceDurationForTimelineItem(item: WorkspaceTimelineItem): number {
-  const sourceStartSec = item.sourceStartSec ?? 0;
-  return Math.max(MIN_CLIP_DURATION_SEC, item.sourceDurationSec ?? sourceStartSec + item.durationSec);
-}
-
-function sourceStartForTimelineItem(item: WorkspaceTimelineItem): number {
-  const sourceDurationSec = sourceDurationForTimelineItem(item);
-  return Math.max(0, Math.min(sourceDurationSec - MIN_CLIP_DURATION_SEC, item.sourceStartSec ?? 0));
 }
 
 function markTimelinePerformance(name: 'drag-start' | 'drag-frame' | 'drag-commit' | 'playhead-frame' | 'playhead-commit') {
   if (process.env.NODE_ENV === 'production') return;
   if (typeof performance === 'undefined' || typeof performance.mark !== 'function') return;
   performance.mark(`maxvideoai.timeline.${name}`);
-}
-
-function maxResizeDurationForInteraction(interaction: TimelineInteractionState, edge: WorkspaceTimelineTrimEdge): number {
-  if (edge === 'start') return Math.max(MIN_CLIP_DURATION_SEC, interaction.originDurationSec + interaction.originSourceStartSec);
-  return Math.max(MIN_CLIP_DURATION_SEC, interaction.originSourceDurationSec - interaction.originSourceStartSec);
-}
-
-function buildSnapTargets(items: WorkspaceTimelineItem[], interaction: TimelineInteractionState, playheadSec: number): number[] {
-  const targets = new Set<number>([0, snapSeconds(playheadSec, interaction.snapStepSec)]);
-  items.forEach((item) => {
-    if (interactionMatchesItem(interaction, item)) return;
-    targets.add(snapSeconds(item.startSec, interaction.snapStepSec));
-    targets.add(snapSeconds(item.startSec + item.durationSec, interaction.snapStepSec));
-  });
-  return Array.from(targets).sort((left, right) => left - right);
-}
-
-function closestSnapCandidate(
-  startSec: number,
-  durationSec: number,
-  snapTargets: number[],
-  snapStepSec: number,
-  snapThresholdSec: number
-): SnapCandidate {
-  let bestCandidate: SnapCandidate = { startSec, guideSec: null };
-  let bestDistance = snapThresholdSec;
-
-  snapTargets.forEach((targetSec) => {
-    const startDistance = Math.abs(startSec - targetSec);
-    if (startDistance <= bestDistance) {
-      bestDistance = startDistance;
-      bestCandidate = { startSec: targetSec, guideSec: targetSec };
-    }
-
-    const endDistance = Math.abs(startSec + durationSec - targetSec);
-    if (endDistance <= bestDistance) {
-      bestDistance = endDistance;
-      bestCandidate = { startSec: targetSec - durationSec, guideSec: targetSec };
-    }
-  });
-
-  return {
-    startSec: Math.max(0, snapSeconds(bestCandidate.startSec, snapStepSec)),
-    guideSec: bestCandidate.guideSec,
-  };
-}
-
-function primaryItemForInteraction(items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): WorkspaceTimelineItem | null {
-  const activeItem = items.find((item) => item.id === interaction.itemId);
-  if (!activeItem?.linkedGroupId) return activeItem ?? null;
-  return items.find((item) => item.linkedGroupId === activeItem.linkedGroupId && isVideoTimelineTrack(item.track)) ?? activeItem;
-}
-
-function sameTrackBlockers(items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): WorkspaceTimelineItem[] {
-  const primaryItem = primaryItemForInteraction(items, interaction);
-  if (!primaryItem) return [];
-  const blockerTrack = interaction.kind === 'move' && isVideoTimelineTrack(primaryItem.track) && isVideoTimelineTrack(interaction.previewTrack)
-    ? interaction.previewTrack
-    : primaryItem.track;
-  return items
-    .filter((item) => item.track === blockerTrack && !interactionMatchesItem(interaction, item))
-    .sort((left, right) => left.startSec - right.startSec);
-}
-
-function constrainResizeStartToTrackGaps(startSec: number, items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): TimelineTrackConstraint {
-  const previousEndSec = sameTrackBlockers(items, interaction)
-    .filter((item) => item.startSec + item.durationSec <= interaction.originStartSec)
-    .reduce((maxEndSec, item) => Math.max(maxEndSec, item.startSec + item.durationSec), 0);
-  const constrainedStartSec = Math.max(previousEndSec, startSec);
-  return {
-    startSec: snapSeconds(constrainedStartSec, interaction.snapStepSec),
-    guideSec: constrainedStartSec !== startSec ? previousEndSec : null,
-  };
-}
-
-function constrainResizeEndToTrackGaps(endSec: number, items: WorkspaceTimelineItem[], interaction: TimelineInteractionState): TimelineTrackConstraint {
-  const nextStartSec = sameTrackBlockers(items, interaction)
-    .filter((item) => item.startSec >= interaction.originStartSec + interaction.originDurationSec)
-    .reduce((minStartSec, item) => Math.min(minStartSec, item.startSec), Number.POSITIVE_INFINITY);
-  if (!Number.isFinite(nextStartSec) || endSec <= nextStartSec) {
-    return { startSec: snapSeconds(endSec, interaction.snapStepSec), guideSec: null };
-  }
-  return {
-    startSec: snapSeconds(nextStartSec, interaction.snapStepSec),
-    guideSec: nextStartSec,
-  };
-}
-
-function nextInteractionState(
-  interaction: TimelineInteractionState,
-  clientX: number,
-  items: WorkspaceTimelineItem[],
-  playheadSec: number,
-  snapEnabled: boolean,
-  pixelsPerSecond: number
-): TimelineInteractionState {
-  const deltaSec = snapSeconds((clientX - interaction.originClientX) / pixelsPerSecond, interaction.snapStepSec);
-  const snapTargets = snapEnabled ? buildSnapTargets(items, interaction, playheadSec) : [];
-  const snapThresholdSec = SNAP_TARGET_THRESHOLD_PIXELS / pixelsPerSecond;
-
-  if (interaction.kind === 'move') {
-    const rawStartSec = Math.max(0, snapSeconds(interaction.originStartSec + deltaSec, interaction.snapStepSec));
-    const snapCandidate = snapEnabled
-      ? closestSnapCandidate(rawStartSec, interaction.originDurationSec, snapTargets, interaction.snapStepSec, snapThresholdSec)
-      : { startSec: rawStartSec, guideSec: null };
-    const trackConstraint = snapCandidate;
-    return {
-      ...interaction,
-      previewStartSec: trackConstraint.startSec,
-      previewDurationSec: interaction.originDurationSec,
-      snapGuideSec: trackConstraint.guideSec ?? snapCandidate.guideSec,
-    };
-  }
-
-  if (interaction.kind === 'resize-start') {
-    const originEndSec = interaction.originStartSec + interaction.originDurationSec;
-    const maxDurationSec = maxResizeDurationForInteraction(interaction, 'start');
-    const minStartSec = Math.max(0, snapSeconds(originEndSec - maxDurationSec, interaction.snapStepSec));
-    const maxStartSec = originEndSec - MIN_CLIP_DURATION_SEC;
-    const rawStartSec = Math.max(minStartSec, Math.min(maxStartSec, snapSeconds(interaction.originStartSec + deltaSec, interaction.snapStepSec)));
-    const snapCandidate = snapEnabled
-      ? closestSnapCandidate(rawStartSec, originEndSec - rawStartSec, snapTargets, interaction.snapStepSec, snapThresholdSec)
-      : { startSec: rawStartSec, guideSec: null };
-    const trackConstraint = constrainResizeStartToTrackGaps(snapCandidate.startSec, items, interaction);
-    const nextStartSec = Math.max(minStartSec, Math.min(maxStartSec, trackConstraint.startSec));
-    return {
-      ...interaction,
-      previewStartSec: nextStartSec,
-      previewDurationSec: Math.min(
-        maxDurationSec,
-        Math.max(MIN_CLIP_DURATION_SEC, snapSeconds(originEndSec - nextStartSec, interaction.snapStepSec))
-      ),
-      snapGuideSec: trackConstraint.guideSec ?? snapCandidate.guideSec,
-    };
-  }
-
-  const maxDurationSec = maxResizeDurationForInteraction(interaction, 'end');
-  const rawDurationSec = Math.max(
-    MIN_CLIP_DURATION_SEC,
-    Math.min(maxDurationSec, snapSeconds(interaction.originDurationSec + deltaSec, interaction.snapStepSec))
-  );
-  const rawEndSec = interaction.originStartSec + rawDurationSec;
-  const snapCandidate = snapEnabled
-    ? closestSnapCandidate(rawEndSec, 0, snapTargets, interaction.snapStepSec, snapThresholdSec)
-    : { startSec: rawEndSec, guideSec: null };
-  const nextDurationSec = snapEnabled && snapCandidate.guideSec !== null
-    ? Math.max(MIN_CLIP_DURATION_SEC, Math.min(maxDurationSec, snapSeconds(snapCandidate.startSec - interaction.originStartSec, interaction.snapStepSec)))
-    : rawDurationSec;
-  const trackConstraint = constrainResizeEndToTrackGaps(interaction.originStartSec + nextDurationSec, items, interaction);
-
-  return {
-    ...interaction,
-    previewStartSec: interaction.originStartSec,
-    previewDurationSec: Math.max(
-      MIN_CLIP_DURATION_SEC,
-      Math.min(maxDurationSec, snapSeconds(trackConstraint.startSec - interaction.originStartSec, interaction.snapStepSec))
-    ),
-    snapGuideSec: trackConstraint.guideSec ?? snapCandidate.guideSec,
-  };
-}
-
-function marqueeRectForState(marquee: TimelineMarqueeState): CSSProperties {
-  const left = Math.min(marquee.originClientX, marquee.currentClientX) - marquee.containerLeft;
-  const top = Math.min(marquee.originClientY, marquee.currentClientY) - marquee.containerTop;
-  const width = Math.abs(marquee.currentClientX - marquee.originClientX);
-  const height = Math.abs(marquee.currentClientY - marquee.originClientY);
-  return { left, top, width, height };
-}
-
-function selectedItemIdsForMarquee(marquee: TimelineMarqueeState): string[] {
-  const left = Math.min(marquee.originClientX, marquee.currentClientX);
-  const right = Math.max(marquee.originClientX, marquee.currentClientX);
-  const top = Math.min(marquee.originClientY, marquee.currentClientY);
-  const bottom = Math.max(marquee.originClientY, marquee.currentClientY);
-  return marquee.itemRects
-    .filter((itemRect) => itemRect.left < right && itemRect.right > left && itemRect.top < bottom && itemRect.bottom > top)
-    .map((itemRect) => itemRect.id);
-}
-
-function previewPlayheadForInteraction(interaction: TimelineInteractionState): number {
-  if (interaction.kind === 'resize-end') {
-    return Math.max(interaction.previewStartSec, interaction.previewStartSec + interaction.previewDurationSec - interaction.snapStepSec);
-  }
-  return interaction.previewStartSec;
 }
 
 type WorkspaceTimelineProps = {
@@ -630,7 +344,7 @@ export function WorkspaceTimeline({
     () => items.some((item) => selectedKeys.has(selectionKeyForTimelineItem(item)) && lockedTrackSet.has(item.track)),
     [items, lockedTrackSet, selectedKeys]
   );
-  const selectedLayout = selectedItem ? layoutForItem(selectedItem, interaction) : null;
+  const selectedLayout = selectedItem ? layoutForTimelineItem(selectedItem, interaction) : null;
   const selectedSplitOffset = selectedLayout ? clampedPlayheadSec - selectedLayout.startSec : null;
   const canCutAtPlayhead = Boolean(
     selectedItem &&
@@ -724,7 +438,7 @@ export function WorkspaceTimeline({
   const secondsFromTimelineElement = useCallback((clientX: number, element: HTMLElement): number => {
     const rect = element.getBoundingClientRect();
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
-    return Math.max(0, Math.min(totalDuration, snapSeconds(rawSeconds, frameStepSec)));
+    return Math.max(0, Math.min(totalDuration, snapTimelineSeconds(rawSeconds, frameStepSec)));
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
   const updateExternalDropPreview = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     const payload = parseTimelineNodeDragPayload(event.dataTransfer);
@@ -1001,10 +715,10 @@ export function WorkspaceTimeline({
     if (touchesLockedTrack) return;
     const originLayoutsById = items.reduce<Record<string, TimelineClipLayout>>((layouts, candidate) => {
       if (!dragSelectedKeys.includes(selectionKeyForTimelineItem(candidate))) return layouts;
-      layouts[candidate.id] = layoutForItem(candidate, interactionRef.current);
+      layouts[candidate.id] = layoutForTimelineItem(candidate, interactionRef.current);
       return layouts;
     }, {});
-    const currentLayout = layoutForItem(item, interactionRef.current);
+    const currentLayout = layoutForTimelineItem(item, interactionRef.current);
     const initialInteraction: TimelineInteractionState = {
       itemId: item.id,
       linkedGroupId: item.linkedGroupId ?? null,
@@ -1039,7 +753,7 @@ export function WorkspaceTimeline({
         ? { ...activeInteraction, previewTrack: trackAtClientY(clientY, activeInteraction.originTrack) }
         : activeInteraction;
       markTimelinePerformance('drag-frame');
-      setPreviewInteraction(nextInteractionState(interactionWithTrack, clientX, items, clampedPlayheadSec, snapEnabled, pixelsPerSecond));
+      setPreviewInteraction(nextTimelineInteractionState(interactionWithTrack, clientX, items, clampedPlayheadSec, snapEnabled, pixelsPerSecond));
     };
     const handlePointerMove = (pointerEvent: PointerEvent) => {
       updateInteractionAtClientX(pointerEvent.clientX, pointerEvent.clientY);
@@ -1261,7 +975,7 @@ export function WorkspaceTimeline({
       }
       return items.map((item) => ({
         item,
-        layout: layoutForItem(item, interaction),
+        layout: layoutForTimelineItem(item, interaction),
         trackId: trackForTimelineItem(item, interaction),
       }));
     },
@@ -1272,7 +986,7 @@ export function WorkspaceTimeline({
       if (resolvedPreviewTimelineItems) return resolvedPreviewTimelineItems;
       return interaction
         ? items.map((item) => {
-            const layout = layoutForItem(item, interaction);
+            const layout = layoutForTimelineItem(item, interaction);
             return {
               ...item,
               startSec: layout.startSec,
@@ -1291,7 +1005,7 @@ export function WorkspaceTimeline({
     setExternalDropPreview(null);
   }, []);
   const handleTimelineItemInteracting = useCallback(
-    (item: WorkspaceTimelineItem) => Boolean(interaction && interactionMatchesItem(interaction, item)),
+    (item: WorkspaceTimelineItem) => Boolean(interaction && interactionMatchesTimelineItem(interaction, item)),
     [interaction]
   );
   useEffect(() => {

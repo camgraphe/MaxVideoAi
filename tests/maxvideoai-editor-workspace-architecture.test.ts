@@ -96,6 +96,7 @@ const timelineDropsPath = join(workspaceDir, '_lib/workspace-timeline-drops.ts')
 const timelineSelectionPath = join(workspaceDir, '_lib/workspace-timeline-selection.ts');
 const projectMediaTimelinePath = join(workspaceDir, '_lib/workspace-project-media-timeline.ts');
 const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts');
+const timelineInteractionPath = join(workspaceDir, '_lib/timeline/timeline-interaction.ts');
 const timelineCollisionsPath = join(workspaceDir, '_lib/timeline/timeline-collisions.ts');
 const timelineInsertPath = join(workspaceDir, '_lib/timeline/timeline-insert.ts');
 const timelineTrimPath = join(workspaceDir, '_lib/timeline/timeline-trim.ts');
@@ -389,6 +390,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timelineRenderPath), 'timeline final-render manifest helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineTracksPath), 'timeline track helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineFramesPath), 'timeline frame math should live under _lib/timeline');
+  assert.ok(existsSync(timelineInteractionPath), 'timeline pointer interaction math should live under _lib/timeline');
   assert.ok(existsSync(timelineCollisionsPath), 'timeline overlap detection should live under _lib/timeline');
   assert.ok(existsSync(timelineInsertPath), 'timeline insert and move package helpers should live under _lib/timeline');
   assert.ok(existsSync(timelineTrimPath), 'timeline trim and split math should live under _lib/timeline');
@@ -452,6 +454,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineSelectionSource = source(timelineSelectionPath);
   const projectMediaTimelineSource = source(projectMediaTimelinePath);
   const timelineFramesSource = source(timelineFramesPath);
+  const timelineInteractionSource = source(timelineInteractionPath);
   const timelineCollisionsSource = source(timelineCollisionsPath);
   const timelineInsertSource = source(timelineInsertPath);
   const timelineTrimSource = source(timelineTrimPath);
@@ -626,6 +629,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-linked-audio'/, 'timeline editing facade should import linked audio helpers from the timeline domain');
   assert.match(timelineFramesSource, /secondsToTimelineFrame/, 'timeline frame helper should expose seconds-to-frame conversion');
   assert.match(timelineFramesSource, /snapSecondsToTimelineFrame/, 'timeline frame helper should expose frame-accurate second snapping');
+  assert.match(timelineInteractionSource, /export function nextTimelineInteractionState/, 'timeline interaction helper should own pointer drag and resize projection');
+  assert.match(timelineInteractionSource, /export function selectedItemIdsForMarquee/, 'timeline interaction helper should own marquee selection hit testing');
+  assert.match(timelineSource, /timeline\/timeline-interaction/, 'timeline component should import pointer interaction helpers from the timeline domain');
+  assert.match(timelineClipSource, /timeline\/timeline-interaction/, 'timeline clips should share frame snap and interaction contracts from the timeline domain');
+  assert.doesNotMatch(timelineSource, /function nextInteractionState/, 'timeline component should not own pointer interaction projection inline');
+  assert.doesNotMatch(timelineSource, /function selectedItemIdsForMarquee/, 'timeline component should not own marquee hit testing inline');
   assert.match(timelineCollisionsSource, /timelineRangeOverlapsItem/, 'timeline collision helper should expose range overlap checks');
   assert.match(timelineCollisionsSource, /timelineTrackHasOverlap/, 'timeline collision helper should expose same-track no-overlap assertions');
   assert.match(timelineInsertSource, /editTracksForPreparedItems/, 'timeline insert helper should determine affected tracks for insert packages');
@@ -977,8 +986,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineTrackRowSource, /data-timeline-audio-mute/, 'timeline track row should own audio track mute toggles');
   assert.match(timelineTrackRowSource, /data-timeline-track-lock/, 'timeline track row should own track lock toggles');
   assert.match(timelineSource, /snapEnabled/, 'timeline should keep snap mode state');
-  assert.match(timelineSource, /SNAP_TARGET_THRESHOLD_PIXELS/, 'timeline snapping should use a subtle proximity threshold');
-  assert.match(timelineSource, /buildSnapTargets/, 'timeline should snap to clip edges, playhead, and zero');
+  assert.match(timelineInteractionSource, /SNAP_TARGET_THRESHOLD_PIXELS/, 'timeline snapping should use a subtle proximity threshold');
+  assert.match(timelineInteractionSource, /buildSnapTargets/, 'timeline should snap to clip edges, playhead, and zero');
+  assert.doesNotMatch(timelineSource, /function buildSnapTargets/, 'timeline component should not own snap-target calculation inline');
   assert.match(timelineRulerSource, /timelineSnapGuide/, 'timeline ruler should render a visible snap guide while editing');
   assert.match(timelineTrackRowSource, /timelineSnapGuide/, 'timeline track rows should render visible snap guides while editing');
   assert.match(timelineSource, /activeTimelineTool/, 'timeline should keep a selected edit tool mode');
@@ -1044,7 +1054,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /previewTrack/, 'timeline drag preview should track the target video lane under the pointer');
   assert.match(timelineSource, /trackAtClientY/, 'timeline should infer the destination video track from pointer position');
   assert.match(timelineSource, /data-timeline-track/, 'timeline lanes should expose stable track ids for vertical clip dragging');
-  assert.match(timelineSource, /maxResizeDurationForInteraction/, 'timeline drag preview should cap handle extension to available source media');
+  assert.match(timelineInteractionSource, /maxResizeDurationForInteraction/, 'timeline drag preview should cap handle extension to available source media');
   assert.match(timelineSource, /onPointerDown/, 'timeline should start mouse and pen edits from pointer events');
   assert.match(timelineSource, /pointermove/, 'timeline should preview clip movement while dragging');
   assert.match(timelineSource, /pointerup/, 'timeline should commit movement and resize edits on release');
