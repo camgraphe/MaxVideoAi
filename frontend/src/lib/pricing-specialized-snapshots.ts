@@ -54,7 +54,7 @@ function buildCentsSnapshotFromProviderReference(params: {
   vendorAccountId?: string | null;
   meta?: Record<string, unknown>;
 }): PricingSnapshot {
-  const baseSubtotalCents = Math.max(0, Math.round(params.baseSubtotalUsd * 100));
+  const baseSubtotalCents = Math.max(0, Math.ceil(params.baseSubtotalUsd * 100 - CENT_EPSILON));
   const marginPercent = params.rule.marginPercent;
   const marginFlatCents = params.rule.marginFlatCents;
   const exactSubtotalBeforeDiscountCents = params.baseSubtotalUsd * 100 * (1 + marginPercent) + marginFlatCents;
