@@ -241,6 +241,38 @@ function normalizePollError(params: {
   });
 }
 
+function assertStableLumaImageCopies(params: {
+  originalImages: GeneratedImage[];
+  copiedImages: GeneratedImage[];
+  mode: ImageGenerationMode;
+  providerJobId: string;
+}): void {
+  const failedIndex = params.originalImages.findIndex((original, index) => {
+    const copied = params.copiedImages[index];
+    if (!copied?.url) return true;
+    if (extractStorageKeyFromUrl(copied.url)) return false;
+    return copied.url.trim() === original.url.trim();
+  });
+
+  if (failedIndex >= 0) {
+    throw new ImageGenerationExecutionError('Luma Agents image output was not copied to stable storage.', {
+      mode: params.mode,
+      code: 'luma_agents_image_copy_unstable',
+      status: 502,
+      detail: {
+        providerJobId: params.providerJobId,
+        failedIndex,
+        originalUrl: params.originalImages[failedIndex]?.url ?? null,
+        copiedUrl: params.copiedImages[failedIndex]?.url ?? null,
+      },
+      extras: {
+        providerJobId: params.providerJobId,
+        requestId: params.providerJobId,
+      },
+    });
+  }
+}
+
 async function waitForCompletedGeneration(params: {
   client: LumaAgentsImageClientLike;
   initialTask: NormalizedLumaAgentsImageGeneration;
@@ -341,6 +373,12 @@ export async function executeLumaAgentsImageGenerationWithFalFallback(
     images: completed.images,
     jobId: params.jobId,
     userId: params.userId,
+  });
+  assertStableLumaImageCopies({
+    originalImages: completed.images,
+    copiedImages,
+    mode: params.mode,
+    providerJobId: acceptedProviderJobId,
   });
 
   return {

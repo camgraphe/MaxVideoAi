@@ -177,6 +177,58 @@ test('Luma image accepted job failure does not fallback to fal', async () => {
   assert.equal(falCalls, 0);
 });
 
+test('Luma image direct success fails when copied output remains an expiring provider URL', async () => {
+  let falCalls = 0;
+  const providerUrl = 'https://assets.luma.ai/output.png?expires=soon';
+
+  await assert.rejects(
+    () =>
+      executeLumaAgentsImageGenerationWithFalFallback({
+        ...baseParams(),
+        client: {
+          async createGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            return {
+              providerJobId: 'gen_luma_uncopied',
+              status: 'queued',
+              rawStatus: 'queued',
+              images: [],
+              message: null,
+              raw: { id: 'gen_luma_uncopied' },
+            };
+          },
+          async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            return {
+              providerJobId: 'gen_luma_uncopied',
+              status: 'completed',
+              rawStatus: 'completed',
+              images: [
+                {
+                  url: providerUrl,
+                  width: 1024,
+                  height: 1024,
+                  mimeType: 'image/png',
+                },
+              ],
+              message: null,
+              raw: { id: 'gen_luma_uncopied' },
+            };
+          },
+        },
+        copyGeneratedImagesToStorage: async ({ images }) => images,
+        runFalImageGeneration: async () => {
+          falCalls += 1;
+          throw new Error('Fal should not run after Luma acceptance');
+        },
+      }),
+    (error) =>
+      error instanceof ImageGenerationExecutionError &&
+      error.code === 'luma_agents_image_copy_unstable' &&
+      /stable storage/.test(error.message)
+  );
+
+  assert.equal(falCalls, 0);
+});
+
 test('Luma image invalid direct payload does not fallback to fal', async () => {
   let falCalls = 0;
 
