@@ -39,6 +39,7 @@
     "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts",
     "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts",
     "test:editor:e2e": "playwright test -c playwright.editor.config.ts",
+    "test:editor:perf": "frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts tests/e2e/editor/editor-performance.spec.ts",
     "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check"
   },
   "pnpm": {
