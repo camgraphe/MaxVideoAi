@@ -22,6 +22,7 @@ import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjec
 import { StudioHeaderSession } from './_components/StudioHeaderSession';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer, type WorkspaceProgramSnapshotPayload } from './_components/WorkspaceVideoViewer';
+import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import {
@@ -81,14 +82,9 @@ import {
   type WorkspaceTimelineTrimMode,
 } from './_lib/workspace-timeline-editing';
 import {
-  buildWorkspaceTimelineEdl,
   buildWorkspaceTimelineRenderManifest,
-  buildWorkspaceTimelineVideoExportRequest,
-  serializeWorkspaceTimelineVideoExportRequest,
-  serializeWorkspaceTimelineRenderManifest,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
-  workspaceTimelineRenderReadinessLabel,
 } from './_lib/workspace-timeline-render';
 import {
   isWorkspaceTimelineAudioTrack,
@@ -104,9 +100,7 @@ import {
   MAX_TIMELINE_VIDEO_TRACKS,
   MIN_TIMELINE_AUDIO_TRACKS,
   MIN_TIMELINE_PANEL_HEIGHT,
-  RENDER_MANIFEST_STORAGE_KEY,
   TIMELINE_HISTORY_LIMIT,
-  VIDEO_EXPORT_REQUEST_STORAGE_KEY,
   audioTrackCountForTimelineItems,
   coerceAudioTrackCount,
   coerceHiddenVideoTracks,
@@ -123,10 +117,6 @@ import {
   videoTrackCountForTimelineItems,
   type PersistedWorkspaceState,
   type StudioProjectStorageRecord,
-  type TimelineExportClientEstimate,
-  type TimelineExportClientJob,
-  type TimelineExportClientJobStatus,
-  type TimelineExportClientQuota,
   type TimelineHistoryState,
   type WorkspaceEditorSurface,
   type WorkspaceFocusMode,
@@ -167,33 +157,6 @@ import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
 const styles = { ...baseStyles, ...shellStyles };
-
-function createClientExportIdempotencyKey(): string {
-  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
-  return `export_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-function normalizeTimelineExportClientJob(value: unknown): TimelineExportClientJob | null {
-  if (!value || typeof value !== 'object') return null;
-  const record = value as Record<string, unknown>;
-  if (typeof record.id !== 'string') return null;
-  const status = typeof record.status === 'string' ? record.status : 'queued';
-  const safeStatus: TimelineExportClientJobStatus =
-    status === 'rendering' || status === 'completed' || status === 'failed' || status === 'canceled' ? status : 'queued';
-  const progress = Number(record.progress ?? 0);
-  const outputUrl = typeof record.output_url === 'string'
-    ? record.output_url
-    : typeof record.outputUrl === 'string'
-      ? record.outputUrl
-      : null;
-  return {
-    id: record.id,
-    status: safeStatus,
-    progress: Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress))) : 0,
-    message: typeof record.message === 'string' ? record.message : null,
-    outputUrl,
-  };
-}
 
 function workspaceTimelineItemsCompatibleWithTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): boolean {
   const hasVisualItem = items.some((item) => isWorkspaceTimelineVideoTrack(item.track) && item.mediaKind !== 'audio');
@@ -264,19 +227,6 @@ function muteAudioTrackItems(items: WorkspaceTimelineItem[], mutedAudioTracks: W
       },
     };
   });
-}
-
-function downloadWorkspaceTextFile(filename: string, contents: string, type: string): void {
-  if (typeof window === 'undefined') return;
-  const blob = new Blob([contents], { type });
-  const url = window.URL.createObjectURL(blob);
-  const link = window.document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  window.document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }
 
 function cloneWorkspaceJson<T>(value: T): T {
@@ -872,16 +822,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [userCanvasTemplates, setUserCanvasTemplates] = useState<WorkspaceUserCanvasTemplate[]>([]);
   const [storedProjectName, setStoredProjectName] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState<WorkspaceFocusMode>('canvas');
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportRangeMode, setExportRangeMode] = useState<WorkspaceTimelineExportRangeMode>('sequence');
   const [exportQualityPreset, setExportQualityPreset] = useState<WorkspaceTimelineExportQualityPreset>('standard');
-  const [exportVideoFeedback, setExportVideoFeedback] = useState<string | null>(null);
-  const [exportEstimate, setExportEstimate] = useState<TimelineExportClientEstimate | null>(null);
-  const [exportQuota, setExportQuota] = useState<TimelineExportClientQuota | null>(null);
-  const [activeExportJob, setActiveExportJob] = useState<TimelineExportClientJob | null>(null);
-  const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string | null>(null);
-  const [isExportEstimateLoading, setIsExportEstimateLoading] = useState(false);
-  const [isExportVideoStarting, setIsExportVideoStarting] = useState(false);
   const [inspectedSequenceId, setInspectedSequenceId] = useState<string | null>(null);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
   const [notice, setNotice] = useState<string | null>(null);
@@ -968,7 +910,26 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     }),
     [activeExportRange, activeTemplateName, exportTimelineItems, nodes, projectSettings]
   );
-  const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(exportManifest), [exportManifest]);
+  const {
+    activeExportJob,
+    closeExportDialog,
+    exportEstimate,
+    exportQuota,
+    exportReadinessLabel,
+    exportTimelineEdl,
+    exportTimelineRender,
+    exportTimelineVideo,
+    exportVideoFeedback,
+    isExportDialogOpen,
+    isExportEstimateLoading,
+    isExportVideoStarting,
+    openExportDialog,
+    resetExportSession,
+  } = useExportController({
+    manifest: exportManifest,
+    qualityPreset: exportQualityPreset,
+    onNotice: setNotice,
+  });
 
   useEffect(() => {
     return () => {
@@ -976,89 +937,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       localCanvasObjectUrlsRef.current = [];
     };
   }, []);
-
-  useEffect(() => {
-    if (!isExportDialogOpen || !exportIdempotencyKey) return;
-    if (exportManifest.status === 'blocked') {
-      setExportEstimate(null);
-      setExportQuota(null);
-      setIsExportEstimateLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-    const request = buildWorkspaceTimelineVideoExportRequest(exportManifest, {
-      qualityPreset: exportQualityPreset,
-      includeAudio: true,
-      idempotencyKey: exportIdempotencyKey,
-    });
-    setIsExportEstimateLoading(true);
-    fetch('/api/studio/timeline-exports/estimate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ request }),
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? 'EXPORT_ESTIMATE_FAILED');
-        }
-        setExportEstimate(payload.estimate ?? null);
-        setExportQuota(payload.quota ?? null);
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        setExportEstimate(null);
-        setExportQuota(null);
-        setExportVideoFeedback(error instanceof Error ? error.message : 'Export estimate failed.');
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsExportEstimateLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [exportIdempotencyKey, exportManifest, exportQualityPreset, isExportDialogOpen]);
-
-  useEffect(() => {
-    if (!activeExportJob || activeExportJob.status === 'completed' || activeExportJob.status === 'failed' || activeExportJob.status === 'canceled') {
-      return;
-    }
-
-    let cancelled = false;
-    const pollExportJob = async () => {
-      try {
-        const response = await fetch(`/api/studio/timeline-exports/${activeExportJob.id}`, {
-          headers: { Accept: 'application/json' },
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok || cancelled) return;
-        const nextJob = normalizeTimelineExportClientJob(payload.export);
-        if (!nextJob) return;
-        setActiveExportJob(nextJob);
-        if (nextJob.status === 'completed') {
-          const message = nextJob.outputUrl ? 'Export ready. Download available.' : 'Export completed.';
-          setExportVideoFeedback(message);
-          setNotice(message);
-        } else if (nextJob.status === 'failed') {
-          const message = nextJob.message ?? 'Server export failed.';
-          setExportVideoFeedback(message);
-          setNotice(message);
-        } else {
-          setExportVideoFeedback(`${nextJob.message ?? 'Server export rendering.'} ${nextJob.progress}%`);
-        }
-      } catch {
-        // Keep the current job state. The next poll can recover from a transient network miss.
-      }
-    };
-
-    const interval = window.setInterval(pollExportJob, 2000);
-    void pollExportJob();
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, [activeExportJob]);
 
   const handleToggleTimelinePlayback = useCallback(() => {
     if (timelineDurationSec <= 0) return;
@@ -2650,82 +2528,10 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     }));
   }, [snapshotActiveSequence]);
 
-  const handleExportTimelineRender = useCallback(() => {
-    const serializedManifest = serializeWorkspaceTimelineRenderManifest(exportManifest);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(RENDER_MANIFEST_STORAGE_KEY, serializedManifest);
-    }
-    setNotice(workspaceTimelineRenderReadinessLabel(exportManifest));
-    if (exportManifest.status === 'blocked') return;
-
-    downloadWorkspaceTextFile('maxvideoai-timeline-render.json', serializedManifest, 'application/json');
-  }, [exportManifest]);
-
-  const handleExportTimelineVideo = useCallback(async () => {
-    const idempotencyKey = exportIdempotencyKey ?? createClientExportIdempotencyKey();
-    if (!exportIdempotencyKey) setExportIdempotencyKey(idempotencyKey);
-    const request = buildWorkspaceTimelineVideoExportRequest(exportManifest, {
-      qualityPreset: exportQualityPreset,
-      includeAudio: true,
-      idempotencyKey,
-    });
-    const serializedRequest = serializeWorkspaceTimelineVideoExportRequest(request);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(VIDEO_EXPORT_REQUEST_STORAGE_KEY, serializedRequest);
-    }
-    if (request.status === 'blocked') {
-      const blockedMessage = workspaceTimelineRenderReadinessLabel(exportManifest);
-      setExportVideoFeedback(blockedMessage);
-      setNotice(blockedMessage);
-      return;
-    }
-    setIsExportVideoStarting(true);
-    setExportVideoFeedback('Queueing server export.');
-    try {
-      const response = await fetch('/api/studio/timeline-exports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? 'EXPORT_CREATE_FAILED');
-      }
-      const job = normalizeTimelineExportClientJob(payload.export);
-      if (!job) throw new Error('EXPORT_JOB_INVALID');
-      setActiveExportJob(job);
-      const feedbackMessage = payload.reused ? 'Server export already queued.' : 'Server export queued.';
-      setExportVideoFeedback(feedbackMessage);
-      setNotice(feedbackMessage);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Server export failed to start.';
-      setExportVideoFeedback(message);
-      setNotice(message);
-    } finally {
-      setIsExportVideoStarting(false);
-    }
-  }, [exportIdempotencyKey, exportManifest, exportQualityPreset]);
-
-  const handleExportTimelineEdl = useCallback(() => {
-    const edl = buildWorkspaceTimelineEdl(exportManifest);
-    setNotice(
-      exportManifest.status === 'blocked'
-        ? workspaceTimelineRenderReadinessLabel(exportManifest)
-        : `EDL ready for ${exportManifest.exportRange.mode === 'in-out' ? 'In/Out' : 'sequence'} export.`
-    );
-    if (exportManifest.status === 'blocked') return;
-    downloadWorkspaceTextFile('maxvideoai-timeline.edl', edl, 'text/plain');
-  }, [exportManifest]);
-
   const handleOpenExportDialog = useCallback(() => {
-    setExportVideoFeedback(null);
-    setExportEstimate(null);
-    setExportQuota(null);
-    setActiveExportJob(null);
-    setExportIdempotencyKey(createClientExportIdempotencyKey());
     setExportRangeMode(hasValidTimelineInOut ? 'in-out' : 'sequence');
-    setIsExportDialogOpen(true);
-  }, [hasValidTimelineInOut]);
+    openExportDialog();
+  }, [hasValidTimelineInOut, openExportDialog]);
 
   const handleExitToProjects = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -2752,22 +2558,14 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
-    setExportVideoFeedback(null);
-    setExportEstimate(null);
-    setExportQuota(null);
-    setActiveExportJob(null);
-    setExportIdempotencyKey(createClientExportIdempotencyKey());
+    resetExportSession();
     setExportRangeMode(mode);
-  }, []);
+  }, [resetExportSession]);
 
   const handleExportQualityPresetChange = useCallback((preset: WorkspaceTimelineExportQualityPreset) => {
-    setExportVideoFeedback(null);
-    setExportEstimate(null);
-    setExportQuota(null);
-    setActiveExportJob(null);
-    setExportIdempotencyKey(createClientExportIdempotencyKey());
+    resetExportSession();
     setExportQualityPreset(preset);
-  }, []);
+  }, [resetExportSession]);
 
   const handleDeleteTimelineItem = useCallback((ripple = false) => {
     setActiveEditorSurface('timeline');
@@ -3032,10 +2830,10 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
         outPointSec={timelineOutPointSec}
         readinessLabel={exportReadinessLabel}
         sequenceDurationSec={timelineDurationSec}
-        onClose={() => setIsExportDialogOpen(false)}
-        onExportEdl={handleExportTimelineEdl}
-        onExportVideo={handleExportTimelineVideo}
-        onPrepareRender={handleExportTimelineRender}
+        onClose={closeExportDialog}
+        onExportEdl={exportTimelineEdl}
+        onExportVideo={exportTimelineVideo}
+        onPrepareRender={exportTimelineRender}
         onQualityPresetChange={handleExportQualityPresetChange}
         onRangeModeChange={handleExportRangeModeChange}
       />

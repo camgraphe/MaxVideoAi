@@ -89,7 +89,13 @@ export function WorkspaceExportDialog({
     : isEstimateLoading
       ? 'Estimating...'
       : 'Estimate unavailable';
-  const exportJobMessage = activeExportJob?.message ?? (isServerJobActive ? 'Render job is waiting for the server worker.' : null);
+  const exportJobMessage = activeExportJob?.message ?? (
+    activeExportJob?.status === 'queued'
+      ? 'Queued on the server. A running export worker with storage access is required to render the MP4.'
+      : isServerJobActive
+        ? 'Server worker is rendering the MP4.'
+        : null
+  );
   const dimensionsLabel = manifest.projectSettings
     ? `${manifest.projectSettings.aspectRatio} · ${manifest.projectSettings.resolution} · ${manifest.projectSettings.fps} fps`
     : `${fps} fps`;
