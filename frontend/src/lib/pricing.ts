@@ -3,6 +3,7 @@ import type { PricingEngineDefinition, PricingSnapshot } from '@maxvideoai/prici
 import { computePricingSnapshot as computeKernelSnapshot } from '@maxvideoai/pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getPricingDetails } from '@/lib/fal-catalog';
+import { isLumaAgentsImageEngineId, isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import type { LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
@@ -21,6 +22,8 @@ import { loadPricingRules, selectPricingRuleForBilling } from '@/lib/pricing-rul
 import {
   buildDefinitionFromEngine,
   buildGptImage2Snapshot,
+  buildLumaAgentsImageSnapshot,
+  buildLumaRay32Snapshot,
   buildLumaRay2EditSnapshot,
   buildLumaRay2Snapshot,
   buildSeedance2Snapshot,
@@ -49,6 +52,7 @@ export type PricingContext = {
   currency?: string;
   loop?: boolean;
   durationOption?: number | string | null;
+  referenceImageCount?: number;
   addons?: Record<string, boolean | number | undefined>;
 };
 
@@ -76,7 +80,34 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
   const memberTier = (context.membershipTier ?? 'member').toLowerCase() as 'member' | 'plus' | 'pro';
   let snapshot: PricingSnapshot;
 
-  if (isLumaRay2EngineId(engine.id) && isLumaRay2GenerateMode(lumaMode)) {
+  if (isLumaAgentsImageEngineId(engine.id) && (lumaMode === 't2i' || lumaMode === 'i2i')) {
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    const addonReferenceImageCount =
+      typeof context.addons?.reference_image_count === 'number' && Number.isFinite(context.addons.reference_image_count)
+        ? context.addons.reference_image_count
+        : 0;
+    snapshot = buildLumaAgentsImageSnapshot({
+      engineId: engine.id,
+      mode: lumaMode,
+      referenceImageCount: context.referenceImageCount ?? addonReferenceImageCount,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+  } else if (isLumaRay32EngineId(engine.id) && isLumaRay32PublicMode(lumaMode)) {
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    snapshot = buildLumaRay32Snapshot({
+      duration: context.durationOption ?? durationSec,
+      resolution,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+  } else if (isLumaRay2EngineId(engine.id) && isLumaRay2GenerateMode(lumaMode)) {
     const baseRaw = getLumaRay2BasePriceEnv(engine.id);
     const baseUsd = Number(baseRaw);
     if (!Number.isFinite(baseUsd) || baseUsd <= 0) {

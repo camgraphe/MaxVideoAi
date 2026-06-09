@@ -26,6 +26,7 @@ import {
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
@@ -255,6 +256,11 @@ export async function executeImageGeneration({
   const membershipTier = typeof body.membershipTier === 'string' && body.membershipTier.trim().length
     ? body.membershipTier.trim()
     : undefined;
+  const lumaAgentsReferenceImageCount = isLumaAgentsImageEngineId(engine.id)
+    ? mode === 'i2i'
+      ? Math.max(0, combinedImageUrls.length - 1)
+      : combinedImageUrls.length
+    : undefined;
   try {
     pricing = billingProductKey
       ? await computeBillingProductSnapshot({
@@ -267,8 +273,10 @@ export async function executeImageGeneration({
           engine,
           durationSec,
           resolution,
+          mode,
           customImageSize,
           quality,
+          referenceImageCount: lumaAgentsReferenceImageCount,
           membershipTier,
           currency: DISPLAY_CURRENCY,
           addons: enableWebSearch ? { enable_web_search: true } : undefined,

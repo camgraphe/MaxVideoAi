@@ -1,6 +1,13 @@
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import type { PricingEngineDefinition, PricingSnapshot } from '@maxvideoai/pricing';
 import { ENV } from '@/lib/env';
+import type { LumaAgentsImageEngineId, LumaAgentsImageMode } from '@/lib/luma-agents';
+import {
+  calculateLumaAgentsImageReferencePrice,
+  calculateLumaRay32ReferencePrice,
+  type LumaAgentsImageReferencePricingBreakdown,
+  type LumaRay32ReferencePricingBreakdown,
+} from '@/lib/luma-agents-pricing';
 import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
 import { computeSeedance2TokenQuote, roundUsdUpToCents } from '@/lib/seedance-2-pricing';
 import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
@@ -34,6 +41,139 @@ export function computeRoundedUpMarginCents(baseCents: number, marginPercent = 0
     return 1;
   }
   return Math.max(0, margin);
+}
+
+function buildCentsSnapshotFromProviderReference(params: {
+  baseSubtotalUsd: number;
+  breakdown: LumaAgentsImageReferencePricingBreakdown | LumaRay32ReferencePricingBreakdown;
+  base: PricingSnapshot['base'];
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+  meta?: Record<string, unknown>;
+}): PricingSnapshot {
+  const baseSubtotalCents = Math.max(0, Math.round(params.baseSubtotalUsd * 100));
+  const marginPercent = params.rule.marginPercent;
+  const marginFlatCents = params.rule.marginFlatCents;
+  const marginAmount = computeRoundedUpMarginCents(baseSubtotalCents, marginPercent, marginFlatCents);
+  const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
+
+  const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
+  const discountAmount = discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
+  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmount);
+  const discountAppliedToMargin = Math.min(marginAmount, discountAmount);
+  const platformFeeCents = Math.max(0, marginAmount - discountAppliedToMargin);
+  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+
+  return {
+    currency: params.currency,
+    totalCents,
+    subtotalBeforeDiscountCents,
+    base: {
+      ...params.base,
+      amountCents: baseSubtotalCents,
+    },
+    addons: [],
+    margin: {
+      amountCents: marginAmount,
+      percentApplied: marginPercent,
+      flatCents: marginFlatCents,
+    },
+    discount: discountAmount
+      ? {
+          amountCents: discountAmount,
+          percentApplied: discountPercent,
+          tier: params.memberTier,
+        }
+      : undefined,
+    membershipTier: params.memberTier,
+    platformFeeCents,
+    vendorShareCents,
+    vendorAccountId: params.vendorAccountId ?? undefined,
+    meta: {
+      pricing_model: 'fal_reference_plus_margin',
+      provider_cost_source: 'fal_reference_price',
+      cost_breakdown_usd: params.breakdown,
+      ...params.meta,
+    },
+  };
+}
+
+export function buildLumaAgentsImageSnapshot(params: {
+  engineId: LumaAgentsImageEngineId;
+  mode: LumaAgentsImageMode;
+  referenceImageCount: number;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const { baseSubtotalUsd, breakdown } = calculateLumaAgentsImageReferencePrice({
+    engineId: params.engineId,
+    mode: params.mode,
+    referenceImageCount: params.referenceImageCount,
+  });
+
+  return buildCentsSnapshotFromProviderReference({
+    baseSubtotalUsd,
+    breakdown,
+    base: {
+      seconds: 1,
+      rate: baseSubtotalUsd,
+      unit: 'image',
+      amountCents: 0,
+    },
+    rule: params.rule,
+    memberTier: params.memberTier,
+    memberTierDiscounts: params.memberTierDiscounts,
+    currency: params.currency,
+    vendorAccountId: params.vendorAccountId,
+    meta: {
+      mode: breakdown.mode,
+      source_or_reference_image_count: breakdown.source_or_reference_image_count,
+      fal_reference_source: breakdown.falReferenceSource,
+    },
+  });
+}
+
+export function buildLumaRay32Snapshot(params: {
+  duration: number | string | null | undefined;
+  resolution: string;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const { baseSubtotalUsd, breakdown } = calculateLumaRay32ReferencePrice({
+    duration: params.duration,
+    resolution: params.resolution,
+  });
+  const seconds = breakdown.duration === '10s' ? 10 : 5;
+
+  return buildCentsSnapshotFromProviderReference({
+    baseSubtotalUsd,
+    breakdown,
+    base: {
+      seconds,
+      rate: seconds > 0 ? Number((baseSubtotalUsd / seconds).toFixed(4)) : baseSubtotalUsd,
+      unit: 'sec',
+      amountCents: 0,
+    },
+    rule: params.rule,
+    memberTier: params.memberTier,
+    memberTierDiscounts: params.memberTierDiscounts,
+    currency: params.currency,
+    vendorAccountId: params.vendorAccountId,
+    meta: {
+      duration_label: breakdown.duration,
+      resolution: breakdown.resolution,
+      fal_reference_source: breakdown.falReferenceSource,
+    },
+  });
 }
 
 export function buildLumaRay2Snapshot(params: {
