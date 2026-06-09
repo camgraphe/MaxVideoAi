@@ -110,6 +110,16 @@ function hasEndImage(payload: GeneratePayload): boolean {
   });
 }
 
+function hasAdvancedDirectOnlyRequest(params: {
+  mode: Mode | string;
+  advancedDirectOnlyEnabled?: boolean;
+  hdrRequested: boolean;
+  exrRequested: boolean;
+}): boolean {
+  if (params.advancedDirectOnlyEnabled !== true) return false;
+  return params.mode === 'v2v' || params.mode === 'reframe' || params.hdrRequested || params.exrRequested;
+}
+
 export function resolveLumaAgentsVideoSupport(params: {
   engineId: string;
   mode: Mode | string;
@@ -120,39 +130,67 @@ export function resolveLumaAgentsVideoSupport(params: {
     return { supported: false, route: null, reason: 'unsupported_engine', fallbackCompatible: false };
   }
   const route = resolveLumaAgentsModelRoute({ engineId: params.engineId, mode: params.mode });
+  const extra = params.falPayload.extraInputValues ?? {};
+  const hdrRequested = booleanValue(extra.hdr);
+  const exrRequested = booleanValue(extra.exr_export ?? extra.exrExport);
+  const advancedDirectOnlyRequest = hasAdvancedDirectOnlyRequest({
+    mode: params.mode,
+    advancedDirectOnlyEnabled: params.advancedDirectOnlyEnabled,
+    hdrRequested,
+    exrRequested,
+  });
+  const unsupportedFallbackCompatible = advancedDirectOnlyRequest ? false : route.fallbackCompatible;
+
   if (!isLumaAgentsVideoModeSupported(params.mode, params)) {
-    return { supported: false, route, reason: 'unsupported_mode', fallbackCompatible: route.fallbackCompatible };
+    return { supported: false, route, reason: 'unsupported_mode', fallbackCompatible: unsupportedFallbackCompatible };
   }
 
   const aspectRatio = cleanString(params.falPayload.aspectRatio);
   if (aspectRatio && !DIRECT_ASPECT_RATIOS.has(aspectRatio)) {
-    return { supported: false, route, reason: 'aspect_ratio_not_supported', fallbackCompatible: route.fallbackCompatible };
+    return {
+      supported: false,
+      route,
+      reason: 'aspect_ratio_not_supported',
+      fallbackCompatible: unsupportedFallbackCompatible,
+    };
   }
 
   const resolution = cleanString(params.falPayload.resolution);
   if (resolution && !DIRECT_RESOLUTIONS.has(resolution)) {
-    return { supported: false, route, reason: 'resolution_not_supported', fallbackCompatible: route.fallbackCompatible };
+    return {
+      supported: false,
+      route,
+      reason: 'resolution_not_supported',
+      fallbackCompatible: unsupportedFallbackCompatible,
+    };
   }
 
   const duration = normalizeDurationOption(params.falPayload);
   if (!DIRECT_DURATIONS.has(duration)) {
-    return { supported: false, route, reason: 'duration_not_supported', fallbackCompatible: route.fallbackCompatible };
+    return {
+      supported: false,
+      route,
+      reason: 'duration_not_supported',
+      fallbackCompatible: unsupportedFallbackCompatible,
+    };
   }
 
   if (hasReferenceImages(params.falPayload)) {
-    return { supported: false, route, reason: 'reference_images_not_supported', fallbackCompatible: route.fallbackCompatible };
+    return {
+      supported: false,
+      route,
+      reason: 'reference_images_not_supported',
+      fallbackCompatible: unsupportedFallbackCompatible,
+    };
   }
 
-  const extra = params.falPayload.extraInputValues ?? {};
-  const hdrRequested = booleanValue(extra.hdr);
-  const exrRequested = booleanValue(extra.exr_export ?? extra.exrExport);
   const hasEndFrame = hasEndImage(params.falPayload);
   if (duration === '10s' && (params.mode === 'i2v' || hasEndFrame || params.falPayload.loop === true)) {
     return {
       supported: false,
       route,
       reason: 'duration_10s_incompatible_with_frames_or_loop',
-      fallbackCompatible: route.fallbackCompatible,
+      fallbackCompatible: unsupportedFallbackCompatible,
     };
   }
   if (params.falPayload.loop === true && hasEndFrame) {
@@ -160,9 +198,7 @@ export function resolveLumaAgentsVideoSupport(params: {
       supported: false,
       route,
       reason: 'loop_incompatible_with_end_frame',
-      fallbackCompatible:
-        route.fallbackCompatible &&
-        !(params.advancedDirectOnlyEnabled === true && (hdrRequested || exrRequested)),
+      fallbackCompatible: unsupportedFallbackCompatible,
     };
   }
   if (params.advancedDirectOnlyEnabled && duration === '10s' && (hdrRequested || exrRequested)) {

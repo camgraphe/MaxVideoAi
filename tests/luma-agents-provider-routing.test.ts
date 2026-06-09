@@ -178,3 +178,26 @@ test('Luma Agents support marks loop plus end frame as fal-compatible direct uns
     assert.equal(support.fallbackCompatible, true);
   }
 });
+
+test('Luma Agents support keeps direct-only HDR off fal fallback for unsupported public options', () => {
+  const support = resolveLumaAgentsVideoSupport({
+    engineId: 'luma-ray-3-2',
+    mode: 't2v',
+    falPayload: {
+      engineId: 'luma-ray-3-2',
+      prompt: 'A high dynamic range city',
+      mode: 't2v',
+      durationSec: 5,
+      durationOption: '5s',
+      aspectRatio: '3:1',
+      resolution: '720p',
+      loop: false,
+      extraInputValues: { hdr: true },
+    },
+    advancedDirectOnlyEnabled: true,
+  });
+
+  assert.equal(support.supported, false);
+  assert.equal(support.reason, 'aspect_ratio_not_supported');
+  assert.equal(support.fallbackCompatible, false);
+});

@@ -327,3 +327,48 @@ test('Luma Agents submission keeps direct-only advanced controls off fal fallbac
   assert.equal(result.status, 503);
   assert.equal(falCalled, false);
 });
+
+test('Luma Agents submission does not route HDR requests with fal-only options to fal', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  let directCalled = false;
+  let falCalled = false;
+  const { params } = baseParams({
+    aspectRatio: '3:1',
+    advancedDirectOnlyEnabled: true,
+    falPayload: {
+      ...falPayload,
+      aspectRatio: '3:1',
+      loop: false,
+      extraInputValues: { hdr: true },
+    },
+    deps: {
+      queryFn,
+      getLumaAgentsClientFn: () => ({
+        createGeneration: async () => {
+          directCalled = true;
+          return acceptedTask();
+        },
+        getGeneration: async () => acceptedTask(),
+      }),
+      submitFalGenerateTaskFn: async () => {
+        falCalled = true;
+        return { ok: true, generationResult: { provider: 'fal', thumbUrl: '/thumb.svg' } };
+      },
+    },
+  });
+
+  const result = await submitLumaAgentsGenerateTask(params);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.equal(falCalled, false);
+  assert.equal(directCalled, false);
+  assert.equal(
+    queries.some((entry) => /INSERT INTO provider_attempts/.test(entry.sql) && entry.params[2] === 'luma_agents_direct'),
+    true
+  );
+  assert.equal(
+    queries.some((entry) => /INSERT INTO provider_attempts/.test(entry.sql) && entry.params[2] === 'fal'),
+    false
+  );
+});
