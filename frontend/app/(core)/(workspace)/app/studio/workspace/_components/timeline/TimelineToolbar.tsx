@@ -1,4 +1,5 @@
 import { MousePointer2, Redo2, Scissors, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
+import { memo } from 'react';
 
 import styles from '../../maxvideoai-editor.module.css';
 
@@ -22,7 +23,7 @@ type TimelineToolbarProps = {
 
 const TIMELINE_ZOOM_STEP = 8;
 
-export function TimelineToolbar({
+export const TimelineToolbar = memo(function TimelineToolbar({
   activeTimelineTool,
   canRedo,
   canUndo,
@@ -131,4 +132,4 @@ export function TimelineToolbar({
       </div>
     </div>
   );
-}
+});

@@ -4,6 +4,7 @@ import type {
   MouseEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
+import { memo, useMemo } from 'react';
 
 import styles from '../../maxvideoai-editor.module.css';
 import { formatWorkspaceTimecode } from '../../_lib/workspace-timecode';
@@ -30,7 +31,7 @@ type TimelineRulerProps = {
   totalDuration: number;
 };
 
-export function TimelineRuler({
+export const TimelineRuler = memo(function TimelineRuler({
   clampedPlayheadSec,
   frameStepSec,
   hasValidInOutRange,
@@ -51,6 +52,11 @@ export function TimelineRuler({
   timelineWidth,
   totalDuration,
 }: TimelineRulerProps) {
+  const rulerTicks = useMemo(
+    () => Array.from({ length: Math.ceil(totalDuration / rulerTickSec) + 1 }, (_, index) => index * rulerTickSec),
+    [rulerTickSec, totalDuration]
+  );
+
   return (
     <div className={styles.timelineRuler} data-timeline-ruler="true">
       <div className={styles.timelineRulerLabel}>
@@ -120,9 +126,9 @@ export function TimelineRuler({
               O
             </span>
           ) : null}
-          {Array.from({ length: Math.ceil(totalDuration / rulerTickSec) + 1 }, (_, index) => (
-            <span key={index} style={{ left: index * rulerTickSec * pixelsPerSecond }}>
-              {formatWorkspaceTimecode(index * rulerTickSec, projectFps)}
+          {rulerTicks.map((tickSec) => (
+            <span key={tickSec} style={{ left: tickSec * pixelsPerSecond }}>
+              {formatWorkspaceTimecode(tickSec, projectFps)}
             </span>
           ))}
           <button
@@ -159,4 +165,4 @@ export function TimelineRuler({
       </div>
     </div>
   );
-}
+});

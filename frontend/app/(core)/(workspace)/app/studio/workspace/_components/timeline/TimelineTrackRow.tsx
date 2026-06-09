@@ -5,6 +5,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
+import { memo } from 'react';
 
 import styles from '../../maxvideoai-editor.module.css';
 import type {
@@ -66,7 +67,7 @@ type TimelineTrackRowProps = {
   videoTrackId: WorkspaceTimelineVideoTrack | null;
 };
 
-export function TimelineTrackRow({
+export const TimelineTrackRow = memo(function TimelineTrackRow({
   audioTrackCount,
   audioTrackId,
   children,
@@ -274,4 +275,4 @@ export function TimelineTrackRow({
       </div>
     </div>
   );
-}
+});

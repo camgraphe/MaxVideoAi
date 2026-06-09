@@ -4,6 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
+import { memo, useMemo } from 'react';
 
 import styles from '../../maxvideoai-editor.module.css';
 import type {
@@ -48,6 +49,11 @@ type TimelineExternalDropPreview = {
   trackId: WorkspaceTimelineTrack;
 };
 
+type TimelineRenderedTrackItem = TimelinePreviewTrackItem & {
+  trackIndex: number;
+  trackTotal: number;
+};
+
 type TimelineTrackListProps = {
   activeTool: TimelineTool;
   audioTrackCount: number;
@@ -88,10 +94,17 @@ type TimelineTrackListProps = {
   snapStepSec: number;
   timelineWidth: number;
   tracks: TimelineTrackDefinition[];
+  visibleEndSec: number;
+  visibleStartSec: number;
   videoTrackCount: number;
 };
 
-export function TimelineTrackList({
+function timelineRangesIntersect(startSec: number, durationSec: number, visibleStartSec: number, visibleEndSec: number): boolean {
+  const endSec = startSec + durationSec;
+  return endSec >= visibleStartSec && startSec <= visibleEndSec;
+}
+
+export const TimelineTrackList = memo(function TimelineTrackList({
   activeTool,
   audioTrackCount,
   clampedPlayheadSec,
@@ -131,8 +144,43 @@ export function TimelineTrackList({
   snapStepSec,
   timelineWidth,
   tracks,
+  visibleEndSec,
+  visibleStartSec,
   videoTrackCount,
 }: TimelineTrackListProps) {
+  const visibleItemsByTrack = useMemo(() => {
+    const allItemsByTrack = new Map<WorkspaceTimelineTrack, TimelinePreviewTrackItem[]>();
+    const nextItemsByTrack = new Map<WorkspaceTimelineTrack, TimelineRenderedTrackItem[]>();
+
+    previewItems.forEach((previewItem) => {
+      const trackItems = allItemsByTrack.get(previewItem.trackId);
+      if (trackItems) {
+        trackItems.push(previewItem);
+      } else {
+        allItemsByTrack.set(previewItem.trackId, [previewItem]);
+      }
+    });
+
+    allItemsByTrack.forEach((trackItems, trackId) => {
+      trackItems.sort((left, right) => left.layout.startSec - right.layout.startSec);
+      const trackTotal = trackItems.length;
+      const visibleTrackItems = trackItems
+        .map((trackItem, trackIndex) => ({ ...trackItem, trackIndex, trackTotal }))
+        .filter((trackItem) => timelineRangesIntersect(
+          trackItem.layout.startSec,
+          trackItem.layout.durationSec,
+          visibleStartSec,
+          visibleEndSec
+        ));
+
+      if (visibleTrackItems.length) {
+        nextItemsByTrack.set(trackId, visibleTrackItems);
+      }
+    });
+
+    return nextItemsByTrack;
+  }, [previewItems, visibleEndSec, visibleStartSec]);
+
   return (
     <div className={styles.timelineTracks}>
       {tracks.map((track) => {
@@ -143,9 +191,7 @@ export function TimelineTrackList({
         const isTrackMuted = audioTrackId !== null && mutedAudioTrackSet.has(audioTrackId);
         const isTrackHidden = videoTrackId !== null && hiddenVideoTrackSet.has(videoTrackId);
         const isTrackLocked = lockedTrackSet.has(track.id);
-        const trackItems = previewItems
-          .filter(({ trackId }) => trackId === track.id)
-          .sort((left, right) => left.layout.startSec - right.layout.startSec);
+        const trackItems = visibleItemsByTrack.get(track.id) ?? [];
 
         return (
           <TimelineTrackRow
@@ -184,17 +230,17 @@ export function TimelineTrackList({
             videoTrackId={videoTrackId}
           >
             {trackItems.length ? (
-              trackItems.map(({ item, layout }, index) => (
+              trackItems.map(({ item, layout, trackIndex, trackTotal }) => (
                 <TimelineClip
                   key={item.id}
                   item={item}
                   layout={layout}
-                  index={index}
+                  index={trackIndex}
                   isInteracting={isItemInteracting(item)}
                   isLocked={lockedTrackSet.has(item.track)}
                   isSelected={selectedKeys.has(selectionKeyForItem(item))}
                   activeTool={activeTool}
-                  total={trackItems.length}
+                  total={trackTotal}
                   timelineWidth={timelineWidth}
                   pixelsPerSecond={pixelsPerSecond}
                   snapStepSec={snapStepSec}
@@ -214,4 +260,4 @@ export function TimelineTrackList({
       })}
     </div>
   );
-}
+});

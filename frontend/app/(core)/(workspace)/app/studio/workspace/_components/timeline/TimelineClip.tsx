@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { SkipBack, SkipForward } from 'lucide-react';
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import type {
   CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
@@ -70,7 +70,7 @@ function waveformBarsForItem(item: WorkspaceTimelineItem): number[] {
   });
 }
 
-export function TimelineClip({
+export const TimelineClip = memo(function TimelineClip({
   item,
   layout,
   index,
@@ -269,4 +269,4 @@ export function TimelineClip({
       />
     </div>
   );
-}
+});

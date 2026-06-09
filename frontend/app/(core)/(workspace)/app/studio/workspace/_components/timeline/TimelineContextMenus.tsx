@@ -1,4 +1,5 @@
 import { Link2, Plus, Trash2, Unlink2 } from 'lucide-react';
+import { memo } from 'react';
 import type { MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from '../../maxvideoai-editor.module.css';
@@ -34,7 +35,7 @@ function stopMenuPointer(event: MouseEvent<HTMLDivElement> | ReactPointerEvent<H
   event.stopPropagation();
 }
 
-export function TimelineContextMenus({
+export const TimelineContextMenus = memo(function TimelineContextMenus({
   clipMenu,
   onClipMenuAction,
   onTrackMenuAction,
@@ -106,4 +107,4 @@ export function TimelineContextMenus({
       ) : null}
     </>
   );
-}
+});
