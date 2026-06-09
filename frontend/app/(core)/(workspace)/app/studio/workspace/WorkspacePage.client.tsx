@@ -1386,6 +1386,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       clipCount: sequence.timelineItems.length,
       settings: sequence.projectSettings,
       isActive: sequence.id === activeSequenceId,
+      previewUrl: sequence.timelineItems.find((item) => isWorkspaceTimelineVideoTrack(item.track) && (item.thumbnailUrl || item.mediaUrl))?.thumbnailUrl
+        ?? sequence.timelineItems.find((item) => isWorkspaceTimelineVideoTrack(item.track) && (item.thumbnailUrl || item.mediaUrl))?.mediaUrl
+        ?? null,
     }));
   }, [activeSequenceId, liveActiveSequence, sequences]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
@@ -2722,6 +2725,44 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     insertProjectAssetIntoTimeline(assetId, playheadSec);
   }, [insertProjectAssetIntoTimeline, playheadSec]);
 
+  const handleDeleteProjectAsset = useCallback((assetId: string) => {
+    const asset = projectAssets.find((candidate) => candidate.id === assetId);
+    if (!asset) {
+      setNotice('Project media asset not found.');
+      return;
+    }
+    if (typeof window !== 'undefined' && !window.confirm(`Delete "${asset.filename}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
+    setProjectAssets((current) => current.filter((candidate) => candidate.id !== assetId));
+    setNotice(`${asset.filename} removed from Project media.`);
+  }, [projectAssets]);
+
+  const handleDeleteGeneratedClip = useCallback((nodeId: string) => {
+    const node = nodes.find((candidate) => candidate.id === nodeId);
+    if (!node?.data.output) {
+      setNotice('Generated clip not found.');
+      return;
+    }
+    if (typeof window !== 'undefined' && !window.confirm(`Delete "${node.data.title}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
+    setNodes((current) =>
+      current.map((candidate) => {
+        if (candidate.id !== nodeId) return candidate;
+        return {
+          ...candidate,
+          data: {
+            ...candidate.data,
+            output: undefined,
+            subtitle: candidate.data.subtitle ?? 'Generated output',
+          },
+        };
+      })
+    );
+    setNotice(`${node.data.title} removed from Project media.`);
+  }, [nodes]);
+
+  const handleCreateProjectMediaFolder = useCallback(() => {
+    setNotice('Project media folders are ready in the UI. Backend folder persistence will be wired in the media library pass.');
+  }, []);
+
   const handleDropProjectAssetToTimeline = useCallback((assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
     setActiveEditorSurface('timeline');
     insertProjectAssetIntoTimeline(assetId, startSec, targetTrack);
@@ -3265,9 +3306,12 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
             projectName={activeTemplateName}
             sequences={sequenceSummaries}
             timelineItems={timelineItems}
+            onDeleteGeneratedClip={handleDeleteGeneratedClip}
+            onDeleteProjectAsset={handleDeleteProjectAsset}
             onImportMedia={handleImportProjectMedia}
             onInsertGeneratedClip={handleSendOutputToTimeline}
             onInsertProjectAsset={handleInsertProjectAssetToTimeline}
+            onNewFolder={handleCreateProjectMediaFolder}
             onNewSequence={handleCreateSequence}
             onSelectSequence={handleSelectSequence}
           />

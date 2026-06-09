@@ -21,6 +21,14 @@ import {
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
 import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
 
+function inferLegacyAssetKind(url: string, mimeType: string | null): MediaKind {
+  const normalizedMime = mimeType?.toLowerCase() ?? '';
+  const normalizedUrl = url.split(/[?#]/)[0]?.toLowerCase() ?? '';
+  if (normalizedMime.startsWith('video/') || /\.(mp4|webm|mov|m4v|avi|mkv)$/.test(normalizedUrl)) return 'video';
+  if (normalizedMime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/.test(normalizedUrl)) return 'audio';
+  return 'image';
+}
+
 export async function listLibraryAssets(params: {
   userId: string;
   kind?: MediaKind | null;
@@ -91,8 +99,10 @@ export async function listLibraryAssets(params: {
         AND COALESCE(source, '') <> 'storyboard_template_reference'
         AND ($3::text IS NULL OR (
           CASE
-            WHEN COALESCE(mime_type, '') LIKE 'video/%' THEN 'video'
-            WHEN COALESCE(mime_type, '') LIKE 'audio/%' THEN 'audio'
+            WHEN COALESCE(mime_type, '') LIKE 'video/%'
+              OR url ~* '\\.(mp4|webm|mov|m4v|avi|mkv)([?#].*)?$' THEN 'video'
+            WHEN COALESCE(mime_type, '') LIKE 'audio/%'
+              OR url ~* '\\.(mp3|wav|ogg|m4a|aac|flac)([?#].*)?$' THEN 'audio'
             ELSE 'image'
           END
         ) = $3::text)
@@ -122,11 +132,7 @@ export async function listLibraryAssets(params: {
 
   legacyRows.forEach((row) => {
     if (seen.has(row.asset_id)) return;
-    const kind: MediaKind = row.mime_type?.startsWith('video/')
-      ? 'video'
-      : row.mime_type?.startsWith('audio/')
-        ? 'audio'
-        : 'image';
+    const kind = inferLegacyAssetKind(row.url, row.mime_type);
     const metadata = normalizeMetadata(row.metadata);
     const legacyAsset: MediaAssetRecord = {
       id: row.asset_id,

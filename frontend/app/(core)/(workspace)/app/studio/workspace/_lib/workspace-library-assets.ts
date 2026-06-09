@@ -119,9 +119,47 @@ function metaForUserAsset(asset: {
   return kind;
 }
 
-function resolveUserAssetKind(asset: { kind?: unknown; mime?: string | null }): WorkspaceLibraryKind {
-  if (asset.kind === 'video' || asset.mime?.startsWith('video/')) return 'video';
-  if (asset.kind === 'audio' || asset.mime?.startsWith('audio/')) return 'audio';
+function stringValue(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function mediaKindFromMime(mime: string | null): WorkspaceLibraryKind | null {
+  const normalizedMime = mime?.toLowerCase() ?? null;
+  if (normalizedMime?.startsWith('video/')) return 'video';
+  if (normalizedMime?.startsWith('audio/')) return 'audio';
+  if (normalizedMime?.startsWith('image/')) return 'image';
+  return null;
+}
+
+function mediaKindFromUrl(url: string | null): WorkspaceLibraryKind | null {
+  const normalizedUrl = url?.split(/[?#]/)[0]?.toLowerCase() ?? '';
+  if (/\.(mp4|webm|mov|m4v|avi|mkv)$/.test(normalizedUrl)) return 'video';
+  if (/\.(mp3|wav|ogg|m4a|aac|flac)$/.test(normalizedUrl)) return 'audio';
+  if (/\.(png|jpe?g|webp|gif|avif|heic)$/.test(normalizedUrl)) return 'image';
+  return null;
+}
+
+function mediaKindFromLabel(value: unknown): WorkspaceLibraryKind | null {
+  const normalizedValue = stringValue(value)?.toLowerCase() ?? null;
+  if (!normalizedValue) return null;
+  if (normalizedValue === 'video' || normalizedValue === 'asset-video' || normalizedValue === 'video_asset') return 'video';
+  if (normalizedValue === 'audio' || normalizedValue === 'asset-audio' || normalizedValue === 'audio_asset') return 'audio';
+  if (normalizedValue === 'image' || normalizedValue === 'logo' || normalizedValue === 'asset-image' || normalizedValue === 'image_asset') return 'image';
+  return null;
+}
+
+function resolveUserAssetKind(asset: {
+  kind?: unknown;
+  mediaType?: unknown;
+  mime?: string | null;
+  url?: string | null;
+}): WorkspaceLibraryKind {
+  const mimeKind = mediaKindFromMime(asset.mime ?? null);
+  if (mimeKind) return mimeKind;
+  const urlKind = mediaKindFromUrl(asset.url ?? null);
+  if (urlKind) return urlKind;
+  const labelKind = mediaKindFromLabel(asset.kind) ?? mediaKindFromLabel(asset.mediaType);
+  if (labelKind) return labelKind;
   return 'image';
 }
 
@@ -161,7 +199,11 @@ export function workspaceLibraryAssetFromUploadedAsset(
     thumbUrl?: unknown;
     previewUrl?: unknown;
     kind?: unknown;
+    mediaType?: unknown;
     mime?: unknown;
+    mimeType?: unknown;
+    type?: unknown;
+    contentType?: unknown;
     width?: unknown;
     height?: unknown;
     durationSec?: unknown;
@@ -170,8 +212,17 @@ export function workspaceLibraryAssetFromUploadedAsset(
   };
   const url = typeof asset.url === 'string' ? asset.url : '';
   if (!url) return null;
-  const mime = typeof asset.mime === 'string' ? asset.mime : null;
-  const resolvedKind = resolveUserAssetKind({ kind: asset.kind, mime });
+  const mime =
+    stringValue(asset.mime) ??
+    stringValue(asset.mimeType) ??
+    stringValue(asset.type) ??
+    stringValue(asset.contentType);
+  const resolvedKind = resolveUserAssetKind({
+    kind: asset.kind,
+    mediaType: asset.mediaType,
+    mime,
+    url,
+  });
   if (kind && resolvedKind !== kind) return null;
   const width = typeof asset.width === 'number' ? asset.width : null;
   const height = typeof asset.height === 'number' ? asset.height : null;

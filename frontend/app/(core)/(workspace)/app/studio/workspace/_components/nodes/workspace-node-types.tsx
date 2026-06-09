@@ -15,6 +15,7 @@ import type {
   WorkspaceOutputStatus,
   WorkspaceShotStatus,
 } from '../../_lib/workspace-types';
+import { workspaceAssetTimelineDuration, workspaceOutputTimelineDuration } from '../../_lib/workspace-timeline-editing';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 
 const SOURCE_NODE_MIN_WIDTH = 190;
@@ -95,6 +96,18 @@ function timelineDragMediaKind(data: WorkspaceGraphNode['data']): 'audio' | 'ima
     if (data.output.kind === 'audio' && isPlayableAudioUrl(data.output.url)) return 'audio';
     if (data.output.kind === 'image' && isPlayableImageUrl(outputUrl)) return 'image';
   }
+  return null;
+}
+
+function timelineDragDuration(data: WorkspaceGraphNode['data']): number | null {
+  if (data.asset) return workspaceAssetTimelineDuration(data.asset);
+  if (data.output && outputStatus(data.output) === 'ready') return workspaceOutputTimelineDuration(data.output);
+  return null;
+}
+
+function timelineDragPreviewUrl(data: WorkspaceGraphNode['data']): string | null {
+  if (data.asset) return data.asset.thumbUrl ?? data.asset.url ?? null;
+  if (data.output) return data.output.thumbUrl ?? data.output.url ?? null;
   return null;
 }
 
@@ -249,9 +262,13 @@ function NodeFrame({
     }
     event.dataTransfer.effectAllowed = 'copyMove';
     event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
+      durationSec: timelineDragDuration(data),
       nodeId,
       mediaKind: timelineMediaKind,
+      previewUrl: timelineDragPreviewUrl(data),
+      title: data.title,
     }));
+    event.dataTransfer.setData('text/plain', data.title);
   };
   return (
     <article

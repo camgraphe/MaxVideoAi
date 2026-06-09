@@ -252,12 +252,14 @@ export async function dropProjectMediaAssetOnTimelineTrack(page: Page, assetName
   const payload = await row.evaluate((element) => {
     const mediaKind = element.getAttribute('data-project-media-drag-kind');
     const assetId = element.getAttribute('data-project-media-asset-id');
+    const durationSec = Number(element.getAttribute('data-project-media-duration-sec') ?? 0);
+    const title = element.getAttribute('data-project-media-title');
     if (!mediaKind || !assetId) throw new Error('Missing project media timeline drag payload data.');
-    return { assetId, mediaKind };
+    return { assetId, durationSec, mediaKind, title };
   });
-  await lane.evaluate((target, { clientX, clientY, mediaKind, assetId }) => {
+  await lane.evaluate((target, { clientX, clientY, durationSec, mediaKind, assetId, title }) => {
     const dataTransfer = new DataTransfer();
-    dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({ assetId, mediaKind }));
+    dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({ assetId, durationSec, mediaKind, title }));
     target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
     target.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
   }, { clientX: targetX, clientY: targetY, ...payload });

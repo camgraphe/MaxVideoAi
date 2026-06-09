@@ -707,6 +707,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /pointerup/, 'timeline should commit movement and resize edits on release');
   assert.match(timelineSource, /application\/x-maxvideoai-timeline-node/, 'timeline should accept ready canvas media node drops');
   assert.match(timelineSource, /timelineExternalDropGhost/, 'timeline should preview external block insertions before drop');
+  assert.match(timelineSource, /data-timeline-external-drop-duration/, 'timeline external drop preview should expose the incoming clip duration for browser tests');
+  assert.match(timelineProjectSidebarSource, /data-project-media-duration-sec/, 'viewer media cards should include clip duration in their timeline drag payload');
   assert.match(timelineSource, /setPointerCapture/, 'timeline should capture pointer drags instead of relying on HTML drag/drop');
   assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');
   assert.match(timelineSource, /onResizeItem/, 'timeline should commit direct clip resizing');
@@ -797,9 +799,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /onInsertProjectAsset/, 'viewer sidebar should insert imported project media at the playhead');
   assert.match(timelineProjectSidebarSource, /data-project-media-asset-id/, 'viewer sidebar should expose imported media as timeline-draggable project assets');
   assert.match(timelineProjectSidebarSource, /assetId/, 'viewer sidebar timeline drag payload should identify the imported project asset');
-  assert.match(timelineProjectSidebarSource, /Sequences/, 'viewer sidebar should list project sequences');
-  assert.match(timelineProjectSidebarSource, /Imports/, 'viewer sidebar should list imported project media');
-  assert.match(timelineProjectSidebarSource, /Generated clips/, 'viewer sidebar should list generated clips');
+  assert.match(timelineProjectSidebarSource, /projectMediaGrid/, 'viewer sidebar should present sequences, imports, and generated clips in one media grid');
+  assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');
+  assert.match(timelineProjectSidebarSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
+  assert.match(timelineProjectSidebarSource, /New folder/, 'viewer sidebar should expose project media folder creation in the footer');
+  assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
+  assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
+  assert.match(timelineProjectSidebarSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin');
+  assert.match(timelineProjectSidebarSource, /onDeleteGeneratedClip/, 'viewer sidebar should let generated clips be removed from project media');
   assert.match(workspaceSource, /projectAssets\?: WorkspaceAssetRecord\[\]/, 'persisted workspace state should remember imported project media assets');
   assert.match(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should open a project media import modal in Viewer mode');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
@@ -2806,8 +2813,7 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
           id: 'user-video-1',
           url: 'https://cdn.example.com/video-one.mp4',
           thumbUrl: 'https://cdn.example.com/video-one.jpg',
-          kind: 'video',
-          mime: 'video/mp4',
+          kind: 'image',
           source: 'generated',
         },
       ],
@@ -2818,6 +2824,58 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
     normalized.map((asset) => ({ id: asset.id, name: asset.name, kind: asset.kind, meta: asset.meta })),
     [{ id: 'user-image-1', name: 'image-one.png', kind: 'image', meta: 'Image · 1200x800' }],
     'studio library should normalize and filter signed-in user assets from the app media-library API'
+  );
+
+  const projectMediaAssets = normalizeWorkspaceUserLibraryPayload(
+    {
+      ok: true,
+      assets: [
+        {
+          id: 'legacy-video-without-mime',
+          url: 'https://cdn.example.com/legacy-video.mp4?token=abc',
+          thumbUrl: 'https://cdn.example.com/legacy-video.jpg',
+          kind: 'image',
+          duration: 12,
+          source: 'upload',
+        },
+        {
+          id: 'typed-video-with-alt-shape',
+          url: 'https://cdn.example.com/typed-video',
+          previewUrl: 'https://cdn.example.com/typed-video-preview.jpg',
+          mediaType: 'asset-video',
+          mimeType: 'video/mp4',
+          durationSec: 8,
+          source: 'upload',
+        },
+      ],
+    },
+    null
+  );
+  assert.deepEqual(
+    projectMediaAssets.map((asset) => ({
+      id: asset.id,
+      name: asset.name,
+      kind: asset.kind,
+      durationSec: asset.durationSec,
+      meta: asset.meta,
+    })),
+    [
+      {
+        id: 'legacy-video-without-mime',
+        name: 'legacy-video.mp4',
+        kind: 'video',
+        durationSec: 12,
+        meta: 'Video · upload',
+      },
+      {
+        id: 'typed-video-with-alt-shape',
+        name: 'typed-video',
+        kind: 'video',
+        durationSec: 8,
+        meta: 'Video · upload',
+      },
+    ],
+    'project media import should keep videos visible when API rows use legacy URLs or alternate MIME fields'
   );
 
   const recentVideoAssets = normalizeWorkspaceUserLibraryPayload(

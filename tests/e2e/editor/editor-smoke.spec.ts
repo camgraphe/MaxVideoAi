@@ -137,9 +137,8 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toBeVisible();
   await expect(page.getByText('Project media')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Import media' })).toBeVisible();
-  await expect(page.getByText('Sequences', { exact: true })).toBeVisible();
-  await expect(page.getByText('Imports', { exact: true })).toBeVisible();
-  await expect(page.getByText('Generated clips', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New folder' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New sequence' })).toBeVisible();
   await expect(page.getByText('Block templates')).toHaveCount(0);
   await expect(page.getByText('Canvas templates', { exact: true })).toHaveCount(0);
   await expect(page.getByTestId('editor-video-viewer')).toBeVisible();
@@ -231,9 +230,10 @@ test('viewer project media import inserts a library asset into the timeline', as
   await page.getByRole('button', { name: 'Use storyboarder-product-reference.jpg' }).click();
   await expect(page.getByText('storyboarder-product-reference.jpg imported into Project media.')).toBeVisible();
 
-  const importedRow = page.locator('div[class*="projectMediaRow__"]', { hasText: 'storyboarder-product-reference.jpg' });
-  await expect(importedRow).toBeVisible();
-  await importedRow.getByRole('button', { name: 'Insert' }).click();
+  const importedCard = page.locator('[data-project-media-asset-id]', { hasText: 'storyboarder-product-reference.jpg' });
+  await expect(importedCard).toBeVisible();
+  await importedCard.click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Insert at playhead' }).click();
 
   await expect(page.getByText('storyboarder-product-reference.jpg inserted at the playhead')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 1);
@@ -252,12 +252,14 @@ test('viewer project media can be dragged into a compatible timeline track', asy
         ok: true,
         assets: [
           {
-            id: 'client-drag-board',
-            url: '/storyboard/examples/storyboarder-product-reference.jpg',
-            thumbUrl: '/storyboard/examples/storyboarder-product-reference.jpg',
-            kind: 'image',
-            width: 2048,
-            height: 2048,
+            durationSec: 8,
+            id: 'client-drag-video',
+            mediaType: 'asset-video',
+            mimeType: 'video/mp4',
+            thumbUrl: '/assets/marketing/reference-workflow-final-video.webp',
+            url: '/assets/gallery/aerial-road.mp4',
+            width: 1920,
+            height: 1080,
             source: 'upload',
           },
         ],
@@ -271,13 +273,40 @@ test('viewer project media can be dragged into a compatible timeline track', asy
   const initialTimelineItems = await timelineItemCount(page);
   await page.getByRole('button', { name: 'Add video track' }).click();
   await page.getByRole('button', { name: 'Import media' }).click();
-  await page.getByRole('button', { name: 'Use storyboarder-product-reference.jpg' }).click();
-  await expect(page.getByText('storyboarder-product-reference.jpg imported into Project media.')).toBeVisible();
+  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
 
-  await dropProjectMediaAssetOnTimelineTrack(page, 'storyboarder-product-reference.jpg', 'video-2', 1);
+  const importedVideoCard = page.locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' }).first();
+  await expect(importedVideoCard).toHaveAttribute('data-project-media-drag-kind', 'video');
+  await expect(importedVideoCard).toHaveAttribute('data-project-media-duration-sec', '8');
+  const videoLane = page.locator('[data-timeline-track="video-2"]');
+  const videoLaneBox = await videoLane.boundingBox();
+  expect(videoLaneBox).not.toBeNull();
+  if (videoLaneBox) {
+    await videoLane.evaluate((target, { clientX, clientY }) => {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({
+        assetId: 'client-drag-video',
+        durationSec: 8,
+        mediaKind: 'video',
+        title: 'aerial-road.mp4',
+      }));
+      target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+    }, {
+      clientX: videoLaneBox.x + 120,
+      clientY: videoLaneBox.y + videoLaneBox.height / 2,
+    });
+    const dropGhost = page.locator('[data-timeline-external-drop-ghost="true"]');
+    await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-kind', 'video');
+    await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-duration', '8');
+    await expect(dropGhost).toContainText('aerial-road.mp4');
+    await expect(dropGhost).toContainText('0:08');
+  }
 
-  await expect(page.getByText('storyboarder-product-reference.jpg dropped on video-2')).toBeVisible();
-  await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 1);
+  await dropProjectMediaAssetOnTimelineTrack(page, 'aerial-road.mp4', 'video-2', 1);
+
+  await expect(page.getByText('aerial-road.mp4 dropped on video-2')).toBeVisible();
+  await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 2);
   assertNoEditorClientErrors(errors);
 });
 
@@ -358,7 +387,7 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await expect(page.locator('.react-flow__node', { hasText: 'Dev Image Block' })).toBeVisible();
 
   await switchEditorFocus(page, 'Viewer');
-  await expect(page.locator('[data-project-sequence-id="sequence-main"]')).toContainText('Client Cut · 00:00 · 0 clips · 9:16');
+  await expect(page.locator('[data-project-media-card="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 9:16');
   await expect(page.getByText('9:16 · 720x1280 · 24 fps')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });

@@ -40,7 +40,7 @@ const TIMELINE_SECOND_PRECISION = 1_000_000;
 const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
 const SNAP_TARGET_THRESHOLD_PIXELS = 1;
 const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
-const EXTERNAL_DROP_GHOST_DURATION_SEC = 5;
+const EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC = 5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 type TimelineInteractionKind = 'move' | 'resize-start' | 'resize-end';
@@ -109,16 +109,22 @@ type TimelineTrackContextMenuState = {
 };
 
 type TimelineExternalDropPreview = {
+  durationSec: number;
   isValid: boolean;
   mediaKind: 'audio' | 'image' | 'video';
+  previewUrl?: string | null;
   startSec: number;
+  title: string;
   trackId: WorkspaceTimelineTrack;
 };
 
 type TimelineNodeDragPayload = {
   assetId?: string;
+  durationSec?: number | null;
   mediaKind?: 'audio' | 'image' | 'video';
   nodeId?: string;
+  previewUrl?: string | null;
+  title?: string | null;
 };
 
 type SnapCandidate = {
@@ -170,6 +176,19 @@ function parseTimelineNodeDragPayload(dataTransfer: DataTransfer): TimelineNodeD
   } catch {
     return null;
   }
+}
+
+function durationForTimelineDropPayload(payload: TimelineNodeDragPayload): number {
+  const durationSec = Number(payload.durationSec);
+  if (Number.isFinite(durationSec) && durationSec > 0) return Math.max(MIN_CLIP_DURATION_SEC, durationSec);
+  return EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC;
+}
+
+function titleForTimelineDropPayload(payload: TimelineNodeDragPayload): string {
+  if (payload.title && payload.title.trim()) return payload.title.trim();
+  if (payload.mediaKind === 'audio') return 'Audio clip';
+  if (payload.mediaKind === 'image') return 'Image clip';
+  return 'Video clip';
 }
 
 function isExternalTimelineDropCompatible(mediaKind: TimelineExternalDropPreview['mediaKind'], track: WorkspaceTimelineTrack): boolean {
@@ -910,10 +929,14 @@ export function WorkspaceTimeline({
       ? insertionBoundaryForTimelineTrack(items, track, rawStartSec)
       : rawStartSec;
     const isCompatibleDrop = isExternalTimelineDropCompatible(payload.mediaKind, track) && !lockedTrackSet.has(track);
+    const durationSec = durationForTimelineDropPayload(payload);
     const preview: TimelineExternalDropPreview = {
+      durationSec,
       isValid: isCompatibleDrop,
       mediaKind: payload.mediaKind,
+      previewUrl: payload.previewUrl,
       startSec,
+      title: titleForTimelineDropPayload(payload),
       trackId: track,
     };
     event.preventDefault();
@@ -1761,14 +1784,34 @@ export function WorkspaceTimeline({
                           aria-hidden="true"
                         />
                         <span
-                          className={`${styles.timelineExternalDropGhost} ${externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
+                          className={[
+                            styles.timelineExternalDropGhost,
+                            externalDropPreview.mediaKind === 'audio' ? styles.timelineExternalDropGhostAudio : '',
+                            externalDropPreview.mediaKind === 'image' ? styles.timelineExternalDropGhostImage : '',
+                            externalDropPreview.previewUrl && externalDropPreview.mediaKind !== 'audio' ? styles.timelineExternalDropGhostWithPreview : '',
+                            externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid,
+                          ].filter(Boolean).join(' ')}
+                          data-timeline-external-drop-ghost="true"
+                          data-timeline-external-drop-duration={externalDropPreview.durationSec}
+                          data-timeline-external-drop-kind={externalDropPreview.mediaKind}
                           style={{
                             left: externalDropPreview.startSec * pixelsPerSecond,
-                            width: Math.max(36, EXTERNAL_DROP_GHOST_DURATION_SEC * pixelsPerSecond),
+                            width: Math.max(36, externalDropPreview.durationSec * pixelsPerSecond),
                           }}
                           aria-hidden="true"
                         >
-                          {externalDropPreview.isValid ? 'Insert' : 'Invalid'}
+                          {externalDropPreview.previewUrl && externalDropPreview.mediaKind !== 'audio' ? (
+                            <span
+                              className={styles.timelineExternalDropGhostThumb}
+                              style={{ backgroundImage: `url(${externalDropPreview.previewUrl})` }}
+                            />
+                          ) : null}
+                          <span className={styles.timelineExternalDropGhostTitle}>
+                            {externalDropPreview.isValid ? externalDropPreview.title : 'Invalid drop'}
+                          </span>
+                          <span className={styles.timelineExternalDropGhostDuration}>
+                            {formatDuration(externalDropPreview.durationSec)}
+                          </span>
                         </span>
                       </>
                     ) : null}

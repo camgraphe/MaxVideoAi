@@ -136,6 +136,18 @@ test('library listings hide internal storyboard template reference assets', () =
   assert.ok(exclusions.length >= 2, 'canonical and legacy asset queries should exclude internal storyboard templates');
 });
 
+test('legacy media library rows infer video and audio kind from URLs when MIME is missing', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+
+  assert.match(source, /function\s+inferLegacyAssetKind/);
+  assert.match(source, /\\\.\(mp4\|webm\|mov\|m4v\|avi\|mkv\)/);
+  assert.match(source, /url\s*~\*\s*'\\\\\.\(mp4\|webm\|mov\|m4v\|avi\|mkv\)\(\[\?#\]\.\*\)\?\$'/);
+  assert.match(source, /const\s+kind\s*=\s*inferLegacyAssetKind\(row\.url,\s*row\.mime_type\)/);
+});
+
 test('builds idempotent media asset identity from source output when available', () => {
   assert.equal(
     resolveLibraryAssetIdentity({
