@@ -71,6 +71,10 @@ const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
 const capabilitiesPath = join(workspaceDir, '_lib/workspace-capabilities.ts');
+const modelCapabilityRegistryPath = join(workspaceDir, '_lib/models/model-capability-registry.ts');
+const modelEngineFieldsPath = join(workspaceDir, '_lib/models/model-engine-fields.ts');
+const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-connectors.ts');
+const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
 const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
@@ -299,7 +303,11 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
 
 test('MaxVideoAI editor owns graph, node, generation, and capability contracts', () => {
   assert.ok(existsSync(typesPath), 'workspace graph and timeline contracts should live in _lib/workspace-types.ts');
-  assert.ok(existsSync(capabilitiesPath), 'model capability mapping should live in _lib/workspace-capabilities.ts');
+  assert.ok(existsSync(capabilitiesPath), 'workspace capabilities should keep a narrow public facade');
+  assert.ok(existsSync(modelCapabilityRegistryPath), 'model capability mapping should live in _lib/models/model-capability-registry.ts');
+  assert.ok(existsSync(modelEngineFieldsPath), 'engine field scanning helpers should live in _lib/models/model-engine-fields.ts');
+  assert.ok(existsSync(modelInputConnectorsPath), 'model input connectors should live in _lib/models/model-input-connectors.ts');
+  assert.ok(existsSync(modelPricingAdapterPath), 'model render pricing options should live in _lib/models/model-pricing-adapter.ts');
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
   assert.ok(existsSync(handleDropPath), 'handle-drop node creation should live in a pure route-local helper');
@@ -349,6 +357,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineClipInspectorSource = source(timelineClipInspectorPath);
   const workspaceSource = source(workspacePagePath);
   const capabilitySource = source(capabilitiesPath);
+  const modelCapabilityRegistrySource = source(modelCapabilityRegistryPath);
+  const modelEngineFieldsSource = source(modelEngineFieldsPath);
+  const modelInputConnectorsSource = source(modelInputConnectorsPath);
+  const modelPricingAdapterSource = source(modelPricingAdapterPath);
   const generationSource = source(generationPath);
   const pricingSource = source(pricingPath);
   const handleDropSource = source(handleDropPath);
@@ -464,19 +476,27 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /height:\s*138px/, 'audio source nodes should keep a compact standard height until manually resized');
   assert.match(styleSource, /\.nodePreview img[\s\S]*object-fit:\s*contain/, 'media previews should scale inside the block while preserving their source ratio');
 
-  assert.match(capabilitySource, /getBaseEngines|listFalEngines/, 'capabilities should derive from existing engine config');
+  assert.match(capabilitySource, /models\/model-capability-registry/, 'capabilities facade should re-export the model registry');
+  assert.match(capabilitySource, /models\/model-input-connectors/, 'capabilities facade should re-export connector helpers');
+  assert.match(capabilitySource, /models\/model-pricing-adapter/, 'capabilities facade should re-export render option helpers');
+  assert.doesNotMatch(capabilitySource, /getBaseEngines|listFalEngines/, 'capabilities facade should not own engine provider mapping');
   assert.doesNotMatch(capabilitySource, /const WORKSPACE_ENGINE_CAPABILITIES = \[/, 'capabilities should not be a copied fake engine roster');
-  assert.match(capabilitySource, /export function getWorkspaceModelCapabilities/, 'capabilities helper should expose model capabilities');
+  assert.match(modelCapabilityRegistrySource, /getBaseEngines|listFalEngines/, 'model registry should derive from existing engine config');
+  assert.match(modelCapabilityRegistrySource, /function buildCapability/, 'model registry should build capabilities from engine schemas');
+  assert.match(modelCapabilityRegistrySource, /input_connectors/, 'model registry should expose engine-derived editor input connectors');
+  assert.match(modelCapabilityRegistrySource, /required_inputs/, 'model registry should expose required connector kinds');
+  assert.match(modelCapabilityRegistrySource, /optional_inputs/, 'model registry should expose optional connector kinds');
+  assert.match(modelEngineFieldsSource, /export function fieldsFor/, 'engine field helpers should centralize schema scanning');
+  assert.match(modelInputConnectorsSource, /sanitizeConnectorLabel/, 'input connector helpers should remove copied "up to N" counts from labels');
+  assert.match(modelInputConnectorsSource, /export function isWorkspaceConnectionCompatible/, 'input connector helpers should reject graph links between incompatible media families');
+  assert.match(modelInputConnectorsSource, /export function workspaceConnectionCapacity/, 'input connector helpers should expose per-input remaining connection capacity');
+  assert.match(modelInputConnectorsSource, /export function getWorkspaceShotTargetHandles/, 'input connector helpers should expose shot target handles for the selected engine');
+  assert.match(modelInputConnectorsSource, /export function resolveWorkspaceWorkflowType/, 'input connector helpers should infer the internal generation workflow from connected inputs');
+  assert.match(modelPricingAdapterSource, /export function resolveWorkspaceRenderOptions/, 'pricing adapter should expose engine-derived render options');
+  assert.match(modelPricingAdapterSource, /export function workspaceAudioEnabledForRequest/, 'pricing adapter should centralize when audio can be sent to generate and pricing');
+  assert.match(capabilitySource, /getWorkspaceModelCapabilities/, 'capabilities facade should expose model capabilities');
   assert.match(capabilitySource, /export function validateShotConnections/, 'capabilities helper should validate connected shot inputs');
-  assert.match(capabilitySource, /export function isWorkspaceConnectionCompatible/, 'capabilities helper should reject graph links between incompatible media families');
-  assert.match(capabilitySource, /export function workspaceConnectionCapacity/, 'capabilities helper should expose per-input remaining connection capacity');
-  assert.match(capabilitySource, /sanitizeConnectorLabel/, 'capabilities should remove copied "up to N" counts from connector labels');
   assert.match(capabilitySource, /export function suggestWorkspaceModels/, 'capabilities helper should suggest compatible models');
-  assert.match(capabilitySource, /input_connectors/, 'capabilities should expose engine-derived editor input connectors');
-  assert.match(capabilitySource, /getWorkspaceShotTargetHandles/, 'capabilities should expose shot target handles for the selected engine');
-  assert.match(capabilitySource, /resolveWorkspaceWorkflowType/, 'capabilities should infer the internal generation workflow from connected inputs');
-  assert.match(capabilitySource, /resolveWorkspaceRenderOptions/, 'capabilities should expose engine-derived render options');
-  assert.match(capabilitySource, /workspaceAudioEnabledForRequest/, 'capabilities should centralize when audio can be sent to generate and pricing');
   assert.match(typesSource, /WorkspaceOutputStatus/, 'workspace outputs should type placeholder, processing, and ready states');
   assert.match(typesSource, /WorkspaceRenderOption/, 'workspace capabilities should type render options separately from graph inputs');
   assert.match(workspaceStateSource, /type WorkspaceSequenceRecord/, 'workspace state module should own persisted sequence contracts');
@@ -1297,6 +1317,48 @@ test('MaxVideoAI editor render options reflect each engine audio capability', as
     false,
     'generate request should omit audio for silent engines'
   );
+});
+
+test('MaxVideoAI editor active model capabilities expose additive engine contracts', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  assert.ok(capabilities.length > 0, 'active engine registry should expose at least one workspace capability');
+
+  for (const capability of capabilities) {
+    assert.ok(capability.id, 'each capability should have a stable model id');
+    assert.ok(capability.workflows.length > 0, `${capability.id} should expose at least one generation workflow`);
+    assert.ok(capability.input_connectors.length > 0, `${capability.id} should expose editor input connectors`);
+    assert.ok(capability.supported_aspect_ratios.length > 0, `${capability.id} should expose supported aspect ratios`);
+    assert.ok(capability.supported_resolutions.length > 0, `${capability.id} should expose supported resolutions`);
+    assert.ok(capability.supported_fps.length > 0, `${capability.id} should expose supported FPS values`);
+
+    const connectorKinds = new Set(capability.input_connectors.map((connector) => connector.kind));
+    const requiredKinds = new Set(capability.required_inputs);
+    const optionalKinds = new Set(capability.optional_inputs);
+
+    for (const required of requiredKinds) {
+      assert.ok(connectorKinds.has(required), `${capability.id} should render required connector ${required}`);
+      assert.equal(optionalKinds.has(required), false, `${capability.id} should not mark ${required} required and optional`);
+    }
+
+    for (const optional of optionalKinds) {
+      assert.ok(connectorKinds.has(optional), `${capability.id} should render optional connector ${optional}`);
+    }
+
+    for (const unsupported of capability.unsupported_inputs) {
+      assert.equal(connectorKinds.has(unsupported), false, `${capability.id} should not render unsupported connector ${unsupported}`);
+    }
+
+    assert.equal(
+      capability.audio_generation,
+      capability.render_options.some((option) => option.id === 'audio'),
+      `${capability.id} should derive audio_generation from render options`
+    );
+    assert.equal(
+      capability.lip_sync,
+      capability.render_options.some((option) => option.id === 'lip_sync'),
+      `${capability.id} should derive lip_sync from render options`
+    );
+  }
 });
 
 test('MaxVideoAI editor generation resolves connected output media references', async () => {
