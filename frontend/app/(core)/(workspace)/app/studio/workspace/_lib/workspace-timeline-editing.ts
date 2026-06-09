@@ -1,20 +1,39 @@
 import type { WorkspaceAssetRecord, WorkspaceOutputMetadata, WorkspaceTimelineItem, WorkspaceTimelineTrack } from './workspace-types';
 import { isWorkspaceTimelineAudioTrack, isWorkspaceTimelineVideoTrack } from './workspace-timeline-tracks';
+import {
+  MIN_CLIP_DURATION_SEC,
+  clampTimelineValue,
+  snapTimelineValue,
+  workspaceTimelineItemEndSec as itemEndSec,
+} from './timeline/timeline-frames';
+import {
+  groupItemsFor,
+  hasLinkedVideoPeer,
+  primaryTimelineItemFor,
+  shouldMirrorLinkedVideo,
+  syncLinkedAudioWithVideo,
+} from './timeline/timeline-linked-audio';
+import {
+  editTracksForPreparedItems,
+  insertIntoTrackItems,
+  insertionBoundaryForWholeClipInsert,
+  retimeNewItems,
+  rewriteOverlappedTrackItems,
+} from './timeline/timeline-insert';
+import {
+  clampSourceStartForDuration,
+  resolveResizeTarget,
+  resolveTimelineSplitOffset,
+  resolveTimelineTrimAmount,
+  sourceRightRoomForTimelineItem,
+  sourceStartForTimelineItem,
+  type WorkspaceTimelineTrimEdge,
+} from './timeline/timeline-trim';
+import { timelineRangeOverlapsItem } from './timeline/timeline-collisions';
 
-const MIN_CLIP_DURATION_SEC = 1;
-const TIMELINE_SECOND_PRECISION = 1_000_000;
-
-export type WorkspaceTimelineTrimEdge = 'start' | 'end';
+export type { WorkspaceTimelineTrimEdge } from './timeline/timeline-trim';
 export type WorkspaceTimelineInsertMode = 'insert' | 'overwrite' | 'replace';
 export type WorkspaceTimelineTrimMode = 'trim' | 'ripple' | 'roll';
-
-function clampTimelineValue(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function snapTimelineValue(value: number): number {
-  return Math.round(value * TIMELINE_SECOND_PRECISION) / TIMELINE_SECOND_PRECISION;
-}
 
 function trackOrder(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): string[] {
   return items
@@ -26,24 +45,6 @@ function trackOrder(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrac
 function orderedTrackItems(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, order: string[]): WorkspaceTimelineItem[] {
   const itemById = new Map(items.filter((item) => item.track === track).map((item) => [item.id, item]));
   return order.map((id) => itemById.get(id)).filter((item): item is WorkspaceTimelineItem => Boolean(item));
-}
-
-function primaryTimelineItemFor(items: WorkspaceTimelineItem[], item: WorkspaceTimelineItem): WorkspaceTimelineItem {
-  if (!item.linkedGroupId) return item;
-  return items.find((candidate) => candidate.linkedGroupId === item.linkedGroupId && isWorkspaceTimelineVideoTrack(candidate.track)) ?? item;
-}
-
-function shouldMirrorLinkedVideo(item: WorkspaceTimelineItem, items: WorkspaceTimelineItem[]): boolean {
-  if (!item.linkedGroupId || item.linkedGroupKind === 'manual' || !isWorkspaceTimelineAudioTrack(item.track)) return false;
-  return items.some((candidate) => candidate.linkedGroupId === item.linkedGroupId && isWorkspaceTimelineVideoTrack(candidate.track));
-}
-
-function groupItemsFor(items: WorkspaceTimelineItem[], item: WorkspaceTimelineItem): WorkspaceTimelineItem[] {
-  return item.linkedGroupId ? items.filter((candidate) => candidate.linkedGroupId === item.linkedGroupId) : [item];
-}
-
-function itemEndSec(item: WorkspaceTimelineItem): number {
-  return item.startSec + item.durationSec;
 }
 
 function uniqueTimelineIdentifier(baseId: string, usedIds: Set<string>): string {
@@ -69,77 +70,6 @@ function sortLinkedTimelineItems(left: WorkspaceTimelineItem, right: WorkspaceTi
     left.durationSec - right.durationSec ||
     left.id.localeCompare(right.id)
   );
-}
-
-function sourceDurationForTimelineItem(item: WorkspaceTimelineItem): number {
-  const sourceStartSec = item.sourceStartSec ?? 0;
-  return Math.max(MIN_CLIP_DURATION_SEC, item.sourceDurationSec ?? sourceStartSec + item.durationSec);
-}
-
-function sourceStartForTimelineItem(item: WorkspaceTimelineItem): number {
-  const sourceDurationSec = sourceDurationForTimelineItem(item);
-  return clampTimelineValue(item.sourceStartSec ?? 0, 0, Math.max(0, sourceDurationSec - MIN_CLIP_DURATION_SEC));
-}
-
-function sourceRightRoomForTimelineItem(item: WorkspaceTimelineItem): number {
-  return Math.max(0, sourceDurationForTimelineItem(item) - sourceStartForTimelineItem(item) - item.durationSec);
-}
-
-function maxResizeDurationForTimelineItem(item: WorkspaceTimelineItem, edge: WorkspaceTimelineTrimEdge): number {
-  if (edge === 'start') return Math.max(MIN_CLIP_DURATION_SEC, item.durationSec + sourceStartForTimelineItem(item));
-  return Math.max(MIN_CLIP_DURATION_SEC, item.durationSec + sourceRightRoomForTimelineItem(item));
-}
-
-function clampSourceStartForDuration(item: WorkspaceTimelineItem, sourceStartSec: number, durationSec: number): number {
-  return clampTimelineValue(
-    sourceStartSec,
-    0,
-    Math.max(0, sourceDurationForTimelineItem(item) - durationSec)
-  );
-}
-
-function resolveResizeTarget(params: {
-  item: WorkspaceTimelineItem;
-  edge: WorkspaceTimelineTrimEdge;
-  nextDurationSec: number;
-}): { safeDurationSec: number; safeStartSec: number; sourceDeltaSec: number } {
-  const itemEnd = itemEndSec(params.item);
-  const maxDurationSec = maxResizeDurationForTimelineItem(params.item, params.edge);
-  const requestedDurationSec = snapTimelineValue(clampTimelineValue(params.nextDurationSec, MIN_CLIP_DURATION_SEC, maxDurationSec));
-
-  if (params.edge === 'end') {
-    return {
-      safeDurationSec: requestedDurationSec,
-      safeStartSec: params.item.startSec,
-      sourceDeltaSec: 0,
-    };
-  }
-
-  const safeStartSec = snapTimelineValue(clampTimelineValue(
-    itemEnd - requestedDurationSec,
-    0,
-    itemEnd - MIN_CLIP_DURATION_SEC
-  ));
-  return {
-    safeDurationSec: snapTimelineValue(itemEnd - safeStartSec),
-    safeStartSec,
-    sourceDeltaSec: snapTimelineValue(safeStartSec - params.item.startSec),
-  };
-}
-
-function syncLinkedAudioWithVideo(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
-  return items.map((item) => {
-    if (!shouldMirrorLinkedVideo(item, items)) return item;
-    const videoItem = items.find((candidate) => candidate.linkedGroupId === item.linkedGroupId && isWorkspaceTimelineVideoTrack(candidate.track));
-    if (!videoItem) return item;
-    return {
-      ...item,
-      startSec: videoItem.startSec,
-      durationSec: videoItem.durationSec,
-      sourceStartSec: videoItem.sourceStartSec,
-      sourceDurationSec: videoItem.sourceDurationSec,
-    };
-  });
 }
 
 export function normalizeWorkspaceTimelineIdentities(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
@@ -256,154 +186,6 @@ function nearestTrackItemBefore(items: WorkspaceTimelineItem[], item: WorkspaceT
   return primaryTrackItems(items, item.track)
     .filter((candidate) => candidate.id !== item.id && itemEndSec(candidate) <= item.startSec + 0.25)
     .at(-1) ?? null;
-}
-
-function retimeNewItems(items: WorkspaceTimelineItem[], startSec: number, durationSec?: number): WorkspaceTimelineItem[] {
-  const primaryItem = items.find((item) => isWorkspaceTimelineVideoTrack(item.track)) ?? items[0] ?? null;
-  const startDeltaSec = primaryItem ? startSec - primaryItem.startSec : 0;
-  return items.map((item) => ({
-    ...item,
-    startSec: snapTimelineValue(item.startSec + startDeltaSec),
-    durationSec: durationSec ? Math.max(MIN_CLIP_DURATION_SEC, Math.min(item.durationSec, durationSec)) : item.durationSec,
-    sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
-    sourceStartSec: item.sourceStartSec ?? 0,
-  }));
-}
-
-function hasLinkedVideoPeer(items: WorkspaceTimelineItem[], item: WorkspaceTimelineItem): boolean {
-  return Boolean(item.linkedGroupId && items.some((candidate) => (
-    candidate.linkedGroupId === item.linkedGroupId &&
-    item.linkedGroupKind !== 'manual' &&
-    isWorkspaceTimelineVideoTrack(candidate.track)
-  )));
-}
-
-function editTracksForPreparedItems(items: WorkspaceTimelineItem[]): WorkspaceTimelineTrack[] {
-  return Array.from(new Set(items.flatMap((item) => {
-    if (isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(items, item)) return [];
-    return [item.track];
-  })));
-}
-
-function shouldEditTrackItem(params: {
-  items: WorkspaceTimelineItem[];
-  item: WorkspaceTimelineItem;
-  track: WorkspaceTimelineTrack;
-}): boolean {
-  if (params.item.track === params.track) return true;
-  if (!isWorkspaceTimelineVideoTrack(params.track) || !isWorkspaceTimelineAudioTrack(params.item.track) || !params.item.linkedGroupId) {
-    return false;
-  }
-  return params.items.some((candidate) => (
-    candidate.linkedGroupId === params.item.linkedGroupId &&
-    candidate.track === params.track
-  ));
-}
-
-function rewriteOverlappedTrackItems(params: {
-  items: WorkspaceTimelineItem[];
-  track: WorkspaceTimelineTrack;
-  rangeStartSec: number;
-  rangeEndSec: number;
-  idSeed: string;
-}): WorkspaceTimelineItem[] {
-  return params.items.flatMap((item) => {
-    if (!shouldEditTrackItem({ items: params.items, item, track: params.track })) return [item];
-    const itemStartSec = item.startSec;
-    const itemEnd = itemEndSec(item);
-    if (itemEnd <= params.rangeStartSec || itemStartSec >= params.rangeEndSec) return [item];
-
-    const leftDurationSec = Math.max(0, params.rangeStartSec - itemStartSec);
-    const rightDurationSec = Math.max(0, itemEnd - params.rangeEndSec);
-    const nextItems: WorkspaceTimelineItem[] = [];
-
-    if (leftDurationSec >= MIN_CLIP_DURATION_SEC) {
-      nextItems.push({
-        ...item,
-        durationSec: snapTimelineValue(leftDurationSec),
-      });
-    }
-
-    if (rightDurationSec >= MIN_CLIP_DURATION_SEC) {
-      nextItems.push({
-        ...item,
-        id: `${item.id}-tail-${params.idSeed}`,
-        title: `${item.title} Tail`,
-        startSec: snapTimelineValue(params.rangeEndSec),
-        durationSec: snapTimelineValue(rightDurationSec),
-        sourceStartSec: snapTimelineValue((item.sourceStartSec ?? 0) + (params.rangeEndSec - itemStartSec)),
-        linkedGroupId: item.linkedGroupId ? `${item.linkedGroupId}-tail-${params.idSeed}` : item.linkedGroupId,
-      });
-    }
-
-    return nextItems;
-  });
-}
-
-function insertIntoTrackItems(params: {
-  items: WorkspaceTimelineItem[];
-  track: WorkspaceTimelineTrack;
-  insertStartSec: number;
-  insertDurationSec: number;
-  idSeed: string;
-}): WorkspaceTimelineItem[] {
-  return params.items.flatMap((item) => {
-    if (!shouldEditTrackItem({ items: params.items, item, track: params.track })) return [item];
-    const itemStartSec = item.startSec;
-    const itemEnd = itemEndSec(item);
-    if (itemEnd <= params.insertStartSec) return [item];
-    if (itemStartSec >= params.insertStartSec) {
-      return [{
-        ...item,
-        startSec: snapTimelineValue(item.startSec + params.insertDurationSec),
-      }];
-    }
-
-    const leftDurationSec = params.insertStartSec - itemStartSec;
-    const rightDurationSec = itemEnd - params.insertStartSec;
-    const nextItems: WorkspaceTimelineItem[] = [];
-    if (leftDurationSec >= MIN_CLIP_DURATION_SEC) {
-      nextItems.push({
-        ...item,
-        durationSec: snapTimelineValue(leftDurationSec),
-      });
-    }
-    if (rightDurationSec >= MIN_CLIP_DURATION_SEC) {
-      nextItems.push({
-        ...item,
-        id: `${item.id}-tail-${params.idSeed}`,
-        title: `${item.title} Tail`,
-        startSec: snapTimelineValue(params.insertStartSec + params.insertDurationSec),
-        durationSec: snapTimelineValue(rightDurationSec),
-        sourceStartSec: snapTimelineValue((item.sourceStartSec ?? 0) + leftDurationSec),
-        linkedGroupId: item.linkedGroupId ? `${item.linkedGroupId}-tail-${params.idSeed}` : item.linkedGroupId,
-      });
-    }
-    return nextItems;
-  });
-}
-
-function insertReferenceTrackForPreparedItems(items: WorkspaceTimelineItem[]): WorkspaceTimelineTrack | null {
-  const tracks = editTracksForPreparedItems(items);
-  return tracks.find((track) => isWorkspaceTimelineVideoTrack(track)) ?? tracks[0] ?? null;
-}
-
-function insertionBoundaryForWholeClipInsert(params: {
-  items: WorkspaceTimelineItem[];
-  preparedItems: WorkspaceTimelineItem[];
-  requestedStartSec: number;
-}): number {
-  const referenceTrack = insertReferenceTrackForPreparedItems(params.preparedItems);
-  if (!referenceTrack) return params.requestedStartSec;
-
-  const targetItem = params.items
-    .filter((item) => shouldEditTrackItem({ items: params.items, item, track: referenceTrack }))
-    .filter((item) => params.requestedStartSec > item.startSec && params.requestedStartSec < itemEndSec(item))
-    .sort((left, right) => left.startSec - right.startSec)[0] ?? null;
-  if (!targetItem) return params.requestedStartSec;
-
-  const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
-  return snapTimelineValue(params.requestedStartSec < midpointSec ? targetItem.startSec : itemEndSec(targetItem));
 }
 
 export function normalizeWorkspaceTimelineStarts(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
@@ -602,14 +384,8 @@ export function splitWorkspaceTimelineItem(
   const groupId = item.linkedGroupId ?? null;
   const groupItems = groupId ? items.filter((candidate) => candidate.linkedGroupId === groupId) : [item];
   const primaryItem = primaryTimelineItemFor(items, item);
-  if (primaryItem.durationSec < MIN_CLIP_DURATION_SEC * 2) return items;
-
-  const splitAt = clampTimelineValue(
-    snapTimelineValue(splitOffsetSec ?? primaryItem.durationSec / 2),
-    MIN_CLIP_DURATION_SEC,
-    primaryItem.durationSec - MIN_CLIP_DURATION_SEC
-  );
-  if (splitAt <= 0 || splitAt >= primaryItem.durationSec) return items;
+  const splitAt = resolveTimelineSplitOffset(primaryItem, splitOffsetSec);
+  if (splitAt === null) return items;
   const usedItemIds = new Set(items.map((candidate) => candidate.id));
   const usedLinkedGroupIds = new Set(
     items.map((candidate) => candidate.linkedGroupId).filter((candidate): candidate is string => Boolean(candidate))
@@ -649,7 +425,7 @@ export function trimWorkspaceTimelineItem(
   const groupId = item.linkedGroupId ?? null;
   const groupItems = groupId ? items.filter((candidate) => candidate.linkedGroupId === groupId) : [item];
   const primaryItem = primaryTimelineItemFor(items, item);
-  const trimBy = Math.max(0, Math.min(primaryItem.durationSec - MIN_CLIP_DURATION_SEC, snapTimelineValue(deltaSec)));
+  const trimBy = resolveTimelineTrimAmount(primaryItem, deltaSec);
   if (trimBy <= 0) return items;
 
   const nextItems = items.map((candidate) => {
@@ -685,7 +461,7 @@ export function positionWorkspaceTimelineItem(
     .sort((left, right) => left.startSec - right.startSec);
   const crossedTrackNeighbor = trackItems.some((candidate) => {
     if (candidate.id === primaryItem.id) return false;
-    if (safeStartSec >= itemEndSec(candidate) || safeStartSec + primaryItem.durationSec <= candidate.startSec) return false;
+    if (!timelineRangeOverlapsItem(candidate, safeStartSec, safeStartSec + primaryItem.durationSec)) return false;
     const candidateMidSec = candidate.startSec + candidate.durationSec / 2;
     if (primaryItem.startSec < candidate.startSec) return primaryCenterSec >= candidateMidSec;
     if (primaryItem.startSec > candidate.startSec) return primaryCenterSec <= candidateMidSec;

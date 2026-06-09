@@ -67,6 +67,11 @@ const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
 const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.ts');
 const timelineRenderPath = join(workspaceDir, '_lib/workspace-timeline-render.ts');
 const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts');
+const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts');
+const timelineCollisionsPath = join(workspaceDir, '_lib/timeline/timeline-collisions.ts');
+const timelineInsertPath = join(workspaceDir, '_lib/timeline/timeline-insert.ts');
+const timelineTrimPath = join(workspaceDir, '_lib/timeline/timeline-trim.ts');
+const timelineLinkedAudioPath = join(workspaceDir, '_lib/timeline/timeline-linked-audio.ts');
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
@@ -270,6 +275,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timelineEditingPath), 'timeline editing helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineRenderPath), 'timeline final-render manifest helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineTracksPath), 'timeline track helpers should live in a pure route-local helper');
+  assert.ok(existsSync(timelineFramesPath), 'timeline frame math should live under _lib/timeline');
+  assert.ok(existsSync(timelineCollisionsPath), 'timeline overlap detection should live under _lib/timeline');
+  assert.ok(existsSync(timelineInsertPath), 'timeline insert and move package helpers should live under _lib/timeline');
+  assert.ok(existsSync(timelineTrimPath), 'timeline trim and split math should live under _lib/timeline');
+  assert.ok(existsSync(timelineLinkedAudioPath), 'timeline linked audio sync helpers should live under _lib/timeline');
   assert.ok(existsSync(libraryAssetsPath), 'studio library assets should live in a pure route-local helper');
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
@@ -301,6 +311,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineEditingSource = source(timelineEditingPath);
   const timelineRenderSource = source(timelineRenderPath);
   const timelineTracksSource = source(timelineTracksPath);
+  const timelineFramesSource = source(timelineFramesPath);
+  const timelineCollisionsSource = source(timelineCollisionsPath);
+  const timelineInsertSource = source(timelineInsertPath);
+  const timelineTrimSource = source(timelineTrimPath);
+  const timelineLinkedAudioSource = source(timelineLinkedAudioPath);
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
@@ -413,6 +428,21 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceNormalizersSource, /function normalizePlaceholderOutputNodes/, 'workspace normalizers should own stale output placeholder cleanup');
   assert.match(workspaceNormalizersSource, /function normalizeTimelineMediaUrls/, 'workspace normalizers should own timeline media URL hydration');
   assert.match(workspaceNormalizersSource, /function playableOutputTimelineUrl/, 'workspace normalizers should own playable output media detection');
+  assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-frames'/, 'timeline editing facade should import frame math from the timeline domain');
+  assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-collisions'/, 'timeline editing facade should import overlap checks from the timeline domain');
+  assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-insert'/, 'timeline editing facade should import insertion helpers from the timeline domain');
+  assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-trim'/, 'timeline editing facade should import trim helpers from the timeline domain');
+  assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-linked-audio'/, 'timeline editing facade should import linked audio helpers from the timeline domain');
+  assert.match(timelineFramesSource, /secondsToTimelineFrame/, 'timeline frame helper should expose seconds-to-frame conversion');
+  assert.match(timelineFramesSource, /snapSecondsToTimelineFrame/, 'timeline frame helper should expose frame-accurate second snapping');
+  assert.match(timelineCollisionsSource, /timelineRangeOverlapsItem/, 'timeline collision helper should expose range overlap checks');
+  assert.match(timelineCollisionsSource, /timelineTrackHasOverlap/, 'timeline collision helper should expose same-track no-overlap assertions');
+  assert.match(timelineInsertSource, /editTracksForPreparedItems/, 'timeline insert helper should determine affected tracks for insert packages');
+  assert.match(timelineInsertSource, /insertionBoundaryForWholeClipInsert/, 'timeline insert helper should resolve whole-clip insertion boundaries');
+  assert.match(timelineTrimSource, /resolveResizeTarget/, 'timeline trim helper should resolve source-capped resize targets');
+  assert.match(timelineTrimSource, /resolveTimelineSplitOffset/, 'timeline trim helper should resolve frame-safe split offsets');
+  assert.match(timelineLinkedAudioSource, /syncLinkedAudioWithVideo/, 'timeline linked audio helper should synchronize linked audio from its video peer');
+  assert.match(timelineLinkedAudioSource, /hasLinkedVideoPeer/, 'timeline linked audio helper should detect video/audio pairs');
   assert.match(typesSource, /WorkspaceProjectSettings/, 'workspace should type project-level aspect ratio, resolution, and FPS');
   assert.match(typesSource, /WorkspaceTimelineVideoTrack/, 'timeline should type multiple video tracks');
   assert.match(typesSource, /`video-\$\{number\}`/, 'timeline video tracks should allow V2, V3, and later video lanes');
@@ -464,7 +494,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /isWorkspaceTimelineVideoTrack/, 'timeline editing should use the shared video-track helper');
   assert.match(timelineEditingSource, /targetTrack/, 'timeline helper should apply a drag target video track');
   assert.match(timelineEditingSource, /export function resizeWorkspaceTimelineItem/, 'timeline helper should support direct pointer-based clip resizing');
-  assert.match(timelineEditingSource, /maxResizeDurationForTimelineItem/, 'timeline helper should cap trim expansion to source media duration');
+  assert.match(timelineTrimSource, /maxResizeDurationForTimelineItem/, 'timeline trim helper should cap trim expansion to source media duration');
   assert.match(timelineEditingSource, /sourceRightRoomForTimelineItem/, 'timeline helper should know how much source media remains after a clip out-point');
   assert.match(timelineEditingSource, /clampSourceStartForDuration/, 'timeline helper should keep clip source in/out inside the original media');
   assert.match(timelineEditingSource, /export function toggleWorkspaceTimelineCrossfade/, 'timeline helper should toggle crossfade transitions between adjacent clips');
@@ -1671,6 +1701,10 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     trimWorkspaceTimelineItem,
     unlinkWorkspaceTimelineSelection,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
+  const { timelineTrackHasOverlap } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions');
+  const assertNoTimelineOverlap = (candidateItems: WorkspaceTimelineItem[], message: string) => {
+    assert.equal(timelineTrackHasOverlap(candidateItems), false, message);
+  };
   const items: WorkspaceTimelineItem[] = [
     {
       id: 'clip-a',
@@ -2238,6 +2272,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     selectedItemId: null,
     idSeed: 'insert',
   });
+  assertNoTimelineOverlap(insertEdit, 'insert edit should not leave overlapping clips on any same-type timeline track');
   assert.deepEqual(
     insertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
     [
@@ -2309,6 +2344,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     idSeed: 'insert',
     allowInsertIntoClip: true,
   });
+  assertNoTimelineOverlap(spliceInsertEdit, 'explicit splice insertion should not leave same-track overlaps after splitting');
   assert.deepEqual(
     spliceInsertEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
     [
@@ -2337,6 +2373,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     selectedItemId: null,
     idSeed: 'overwrite',
   });
+  assertNoTimelineOverlap(overwriteEdit, 'overwrite edit should rewrite the target range without same-track overlaps');
   assert.deepEqual(
     overwriteEdit.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec ?? 0]),
     [
@@ -2456,6 +2493,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     mode: 'insert',
     idSeed: 'ambiguous-self-drag',
   });
+  assertNoTimelineOverlap(ambiguousSelfOverlapDrag, 'ambiguous self-overlap drag should revert to a no-overlap timeline');
   assert.deepEqual(
     ambiguousSelfOverlapDrag.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
     [
@@ -2511,6 +2549,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     mode: 'insert',
     idSeed: 'multi-drag',
   });
+  assertNoTimelineOverlap(multiInsertedDragMove, 'insert-mode multi-select drag should push enough space for the moved package');
   assert.deepEqual(
     multiInsertedDragMove.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
     [
