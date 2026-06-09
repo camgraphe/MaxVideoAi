@@ -3,8 +3,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import {
+  WORKSPACE_TEMPLATE_SUMMARIES,
   createDevBlocksWorkspaceTemplate,
   createProductAdWorkspaceTemplate,
+  createStarterWorkspaceTemplate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import {
   getWorkspaceModelCapabilities,
@@ -85,6 +87,15 @@ const timelineLinkedAudioPath = join(workspaceDir, '_lib/timeline/timeline-linke
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
+const templateCorePath = join(workspaceDir, '_lib/templates/template-core.ts');
+const templateRegistryPath = join(workspaceDir, '_lib/templates/registry.ts');
+const templateProductAdPath = join(workspaceDir, '_lib/templates/product-ad.ts');
+const templateDevBlocksPath = join(workspaceDir, '_lib/templates/dev-blocks.ts');
+const templateCharacterDialoguePath = join(workspaceDir, '_lib/templates/character-dialogue.ts');
+const templateStoryboardToVideoPath = join(workspaceDir, '_lib/templates/storyboard-to-video.ts');
+const templateUgcAdPath = join(workspaceDir, '_lib/templates/ugc-ad.ts');
+const templateCinematicScenePath = join(workspaceDir, '_lib/templates/cinematic-scene.ts');
+const templateVariantBasePath = join(workspaceDir, '_lib/templates/variant-base.ts');
 const workspaceStatePath = join(workspaceDir, '_state/workspace-state.ts');
 const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts');
 const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
@@ -217,6 +228,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(applyCanvasTemplateHandler, 'workspace should define a canvas-only template application handler');
   assert.match(applyCanvasTemplateHandler[0], /setNodes\(template\.nodes\)[\s\S]*setEdges\(template\.edges\)/, 'applying a canvas template should update the graph');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /setTimelineItems/, 'applying a canvas template should not reset or replace the montage timeline');
+  assert.doesNotMatch(applyCanvasTemplateHandler[0], /setSequences/, 'applying a canvas template should not replace project sequences');
+  assert.doesNotMatch(applyCanvasTemplateHandler[0], /timelineItems/, 'applying a canvas template should not copy template demo timeline items into the active sequence');
   assert.doesNotMatch(workspaceSource, /Reset template/, 'workspace should not expose a global reset template button that can erase project context');
   assert.match(workspaceSource, /NodeSettingsPanel/, 'orchestrator should compose the settings inspector');
   assert.match(workspaceSource, /TimelineClipInspector/, 'orchestrator should compose a timeline clip inspector for Viewer mode');
@@ -306,6 +319,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
+  assert.ok(existsSync(templateCorePath), 'template core edge and shot helpers should live in the templates domain');
+  assert.ok(existsSync(templateRegistryPath), 'canvas templates should be exposed through a focused registry');
+  assert.ok(existsSync(templateProductAdPath), 'Product Ad canvas template should live in its own builder file');
+  assert.ok(existsSync(templateDevBlocksPath), 'Dev Blocks canvas template should live in its own builder file');
+  assert.ok(existsSync(templateCharacterDialoguePath), 'Character Dialogue canvas template should live in its own builder file');
+  assert.ok(existsSync(templateStoryboardToVideoPath), 'Storyboard canvas template should live in its own builder file');
+  assert.ok(existsSync(templateUgcAdPath), 'UGC canvas template should live in its own builder file');
+  assert.ok(existsSync(templateCinematicScenePath), 'Cinematic canvas template should live in its own builder file');
+  assert.ok(existsSync(templateVariantBasePath), 'variant canvas templates should share a focused builder helper');
   assert.ok(existsSync(workspaceStatePath), 'workspace persisted state contracts should live in _state/workspace-state.ts');
   assert.ok(existsSync(workspaceSelectorsPath), 'workspace derived state selectors should live in _state/workspace-selectors.ts');
   assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
@@ -345,6 +367,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const pricingHookSource = source(pricingHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
+  const templateCoreSource = source(templateCorePath);
+  const templateRegistrySource = source(templateRegistryPath);
+  const templateProductAdSource = source(templateProductAdPath);
+  const templateDevBlocksSource = source(templateDevBlocksPath);
+  const templateCharacterDialogueSource = source(templateCharacterDialoguePath);
+  const templateStoryboardToVideoSource = source(templateStoryboardToVideoPath);
+  const templateUgcAdSource = source(templateUgcAdPath);
+  const templateCinematicSceneSource = source(templateCinematicScenePath);
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceSelectorsSource = source(workspaceSelectorsPath);
   const workspacePersistenceSource = source(workspacePersistencePath);
@@ -590,7 +620,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /handleResizeTimelineItem/, 'orchestrator should wire pointer-based clip resizing');
   assert.match(workspaceStateSource, /DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0'/, 'new shot blocks should default to Seedance 2.0');
   assert.match(workspaceSource, /capability\.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID/, 'orchestrator should resolve the default shot model from the current capabilities');
-  assert.match(templateSource, /DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID = 'seedance-2-0'/, 'template shot defaults should use Seedance 2.0');
+  assert.match(templateSource, /from '\.\/templates\/registry'/, 'workspace template facade should export the focused registry');
+  assert.match(templateSource, /from '\.\/templates\/template-core'/, 'workspace template facade should export shared edge helpers');
+  assert.match(templateCoreSource, /DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID = 'seedance-2-0'/, 'template shot defaults should use Seedance 2.0');
   assert.match(workspaceSource, /videoTrackCount/, 'workspace should remember added video timeline tracks');
   assert.match(workspaceSource, /MAX_TIMELINE_VIDEO_TRACKS/, 'workspace should cap added video tracks to a small editor-friendly count');
   assert.match(workspaceSource, /handleAddTimelineVideoTrack/, 'workspace should expose an add-video-track action to the timeline');
@@ -604,13 +636,18 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(renderEdgesSource, /filterRenderableWorkspaceEdges/, 'renderable edge helper should omit edges whose handles are unavailable');
   assert.match(renderEdgesSource, /isWorkspaceConnectionCompatible/, 'renderable edge helper should omit persisted incompatible media-family edges');
   assert.match(workspaceSource, /filterRenderableWorkspaceEdges/, 'orchestrator should avoid passing invalid handle edges to React Flow');
-  assert.match(templateSource, /createProductAdWorkspaceTemplate/, 'Product Ad starter template should be implemented');
+  assert.match(templateProductAdSource, /createProductAdWorkspaceTemplate/, 'Product Ad starter template should be implemented in its own builder');
   assert.match(typesSource, /thumbnailUrl\?: string/, 'canvas template summaries should support visual thumbnails');
-  assert.match(templateSource, /flow: 'Product ref -> style clip -> 4 shots'/, 'canvas template summaries should expose an AI workflow path');
+  assert.match(templateRegistrySource, /flow: 'Product ref -> style clip -> 4 shots'/, 'canvas template summaries should expose an AI workflow path');
   assert.match(librarySource, /template\.thumbnailUrl/, 'canvas template sidebar should render image-backed template cards');
-  assert.match(templateSource, /type: 'workspace-smart'/, 'workspace edges should use the custom smart edge type');
-  assert.match(templateSource, /createDevBlocksWorkspaceTemplate/, 'Dev Blocks starter template should be implemented');
-  assert.match(templateSource, /id: 'dev-blocks'/, 'Dev Blocks should be exposed as a starter template');
+  assert.match(templateCoreSource, /type: 'workspace-smart'/, 'workspace edges should use the custom smart edge type');
+  assert.match(templateDevBlocksSource, /createDevBlocksWorkspaceTemplate/, 'Dev Blocks starter template should be implemented in its own builder');
+  assert.match(templateRegistrySource, /id: 'dev-blocks'/, 'Dev Blocks should be exposed as a starter template');
+  assert.match(templateRegistrySource, /WORKSPACE_TEMPLATE_REGISTRY/, 'canvas templates should be routed through an additive registry');
+  assert.match(templateCharacterDialogueSource, /createCharacterDialogueWorkspaceTemplate/, 'Character Dialogue should have a focused template builder');
+  assert.match(templateStoryboardToVideoSource, /createStoryboardToVideoWorkspaceTemplate/, 'Storyboard should have a focused template builder');
+  assert.match(templateUgcAdSource, /createUgcAdWorkspaceTemplate/, 'UGC should have a focused template builder');
+  assert.match(templateCinematicSceneSource, /createCinematicSceneWorkspaceTemplate/, 'Cinematic Scene should have a focused template builder');
   assert.match(workspaceSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
   assert.match(workspaceSource, /sourceHandles:\s*\[GENERATED_OUTPUT_TARGET_HANDLE\]/, 'rendered shot nodes should expose one reusable generated-output source handle');
   assert.match(workspaceSource, /inputConnectors/, 'rendered shot nodes should receive connector labels and metadata');
@@ -1009,7 +1046,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in isolated editor CSS');
   assert.match(styleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in isolated editor CSS');
   for (const nodeType of ["type: 'asset-image'", "type: 'asset-video'", "type: 'asset-audio'", "type: 'text-prompt'", "type: 'shot'", "type: 'output'"]) {
-    assert.match(templateSource, new RegExp(nodeType), `Dev Blocks template should include ${nodeType}`);
+    assert.match(templateDevBlocksSource, new RegExp(nodeType), `Dev Blocks template should include ${nodeType}`);
   }
 
   for (const typeName of [
@@ -1020,6 +1057,28 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
     'WorkspaceModelCapability',
   ]) {
     assert.match(typesSource, new RegExp(`export type ${typeName}`), `${typeName} should be exported`);
+  }
+});
+
+test('MaxVideoAI editor canvas template registry exposes complete additive templates', () => {
+  assert.equal(new Set(WORKSPACE_TEMPLATE_SUMMARIES.map((summary) => summary.id)).size, WORKSPACE_TEMPLATE_SUMMARIES.length, 'template summaries should use unique ids');
+
+  for (const summary of WORKSPACE_TEMPLATE_SUMMARIES) {
+    assert.ok(summary.description.trim().length > 0, `${summary.id} should describe the template outcome`);
+    assert.ok(summary.thumbnailUrl?.trim(), `${summary.id} should provide an image thumbnail for template cards`);
+    assert.ok(summary.flow?.trim(), `${summary.id} should expose the AI workflow path`);
+
+    const template = createStarterWorkspaceTemplate(summary.id);
+    assert.equal(template.id, summary.id, `${summary.id} builder should return the requested template id`);
+    assert.equal(template.name, summary.name, `${summary.id} builder should keep the summary display name`);
+    assert.ok(template.nodes.length > 0, `${summary.id} should create canvas nodes`);
+    assert.ok(template.edges.length > 0, `${summary.id} should create canvas edges`);
+
+    const nodeIds = new Set(template.nodes.map((node) => node.id));
+    for (const edge of template.edges) {
+      assert.ok(nodeIds.has(edge.source), `${summary.id} edge ${edge.id} should reference an existing source node`);
+      assert.ok(nodeIds.has(edge.target), `${summary.id} edge ${edge.id} should reference an existing target node`);
+    }
   }
 });
 
