@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Link2, Play, Plus, Trash2, Unlink2, Volume2 } from 'lucide-react';
+import { Play, Volume2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -33,6 +33,11 @@ import {
   type TimelineInteractionKind,
   type TimelineSelectionMode,
 } from './timeline/TimelineClip';
+import {
+  TimelineContextMenus,
+  type TimelineContextMenuState,
+  type TimelineTrackContextMenuState,
+} from './timeline/TimelineContextMenus';
 import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineTrackRow } from './timeline/TimelineTrackRow';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
@@ -85,25 +90,6 @@ type TimelineMarqueeState = {
     top: number;
     bottom: number;
   }>;
-};
-
-type TimelineContextMenuState = {
-  canLink: boolean;
-  canUnlink: boolean;
-  itemIds: string[];
-  selectedClipCount: number;
-  x: number;
-  y: number;
-};
-
-type TimelineTrackContextMenuState = {
-  canAdd: boolean;
-  canDelete: boolean;
-  kind: 'video' | 'audio';
-  label: string;
-  trackId: WorkspaceTimelineTrack;
-  x: number;
-  y: number;
 };
 
 type TimelineExternalDropPreview = {
@@ -1339,68 +1325,12 @@ export function WorkspaceTimeline({
         </div>
         {marquee ? <span className={styles.timelineMarquee} style={marqueeRectForState(marquee)} aria-hidden="true" /> : null}
       </div>
-      {contextMenu ? (
-        <div
-          className={styles.timelineContextMenu}
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          role="menu"
-          data-timeline-control="true"
-          onContextMenu={(event) => event.preventDefault()}
-          onMouseDown={(event) => event.stopPropagation()}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <span>{contextMenu.selectedClipCount} clip{contextMenu.selectedClipCount > 1 ? 's' : ''} selected</span>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!contextMenu.canUnlink}
-            onClick={() => handleContextMenuAction('unlink')}
-          >
-            <Unlink2 size={14} />
-            Unlink selected clips
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!contextMenu.canLink}
-            onClick={() => handleContextMenuAction('link')}
-          >
-            <Link2 size={14} />
-            Link selected clips
-          </button>
-        </div>
-      ) : null}
-      {trackContextMenu ? (
-        <div
-          className={styles.timelineContextMenu}
-          style={{ left: trackContextMenu.x, top: trackContextMenu.y }}
-          role="menu"
-          data-timeline-control="true"
-          onContextMenu={(event) => event.preventDefault()}
-          onMouseDown={(event) => event.stopPropagation()}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <span>{trackContextMenu.label} track</span>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!trackContextMenu.canAdd}
-            onClick={() => handleTrackContextMenuAction('add')}
-          >
-            <Plus size={14} />
-            Add {trackContextMenu.kind} track
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!trackContextMenu.canDelete}
-            onClick={() => handleTrackContextMenuAction('delete')}
-          >
-            <Trash2 size={14} />
-            Delete {trackContextMenu.kind} track
-          </button>
-        </div>
-      ) : null}
+      <TimelineContextMenus
+        clipMenu={contextMenu}
+        onClipMenuAction={handleContextMenuAction}
+        onTrackMenuAction={handleTrackContextMenuAction}
+        trackMenu={trackContextMenu}
+      />
     </section>
   );
 }

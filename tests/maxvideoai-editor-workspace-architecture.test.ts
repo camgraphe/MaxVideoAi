@@ -55,6 +55,7 @@ const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
 const timelineClipPath = join(workspaceDir, '_components/timeline/TimelineClip.tsx');
+const timelineContextMenusPath = join(workspaceDir, '_components/timeline/TimelineContextMenus.tsx');
 const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler.tsx');
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
@@ -126,6 +127,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
   assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
+  assert.ok(existsSync(timelineContextMenusPath), 'timeline context menus should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineRulerPath), 'timeline ruler should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
@@ -336,6 +338,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const typesSource = source(typesPath);
   const styleSource = source(stylesPath);
   const timelineClipSource = source(timelineClipPath);
+  const timelineContextMenusSource = source(timelineContextMenusPath);
   const timelineSource = source(timelinePath);
   const timelineRulerSource = source(timelineRulerPath);
   const timelineTrackRowSource = source(timelineTrackRowPath);
@@ -726,6 +729,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /handleExportTimelineVideo/, 'workspace should wire the primary export video action');
   assert.match(workspaceSource, /handleExportTimelineRender/, 'workspace should wire the topbar export action to timeline render handoff');
   assert.match(timelineSource, /TimelineClip/, 'timeline should compose focused clip components instead of owning clip JSX inline');
+  assert.match(timelineSource, /TimelineContextMenus/, 'timeline should compose focused context menu components instead of owning menu JSX inline');
   assert.match(timelineSource, /TimelineRuler/, 'timeline should compose a focused ruler component instead of owning ruler JSX inline');
   assert.match(timelineSource, /TimelineTrackRow/, 'timeline should compose focused track row components instead of owning track label and lane JSX inline');
   assert.match(timelineSource, /TimelineToolbar/, 'timeline should compose a focused toolbar component instead of owning toolbar JSX inline');
@@ -734,7 +738,6 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineRulerSource, /SplitSquareHorizontal/, 'timeline ruler should expose the insert-into-clip toggle beside snapping');
   assert.match(timelineToolbarSource, /ZoomIn/, 'timeline toolbar should expose compact zoom-in control');
   assert.match(timelineToolbarSource, /ZoomOut/, 'timeline toolbar should expose compact zoom-out control');
-  assert.match(timelineSource, /Plus/, 'timeline should expose compact add-video-track control');
   assert.match(timelineSource, /DEFAULT_TIMELINE_PIXELS_PER_SECOND/, 'timeline should own a default horizontal zoom scale');
   assert.match(timelineSource, /MIN_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming out to a usable density');
   assert.match(timelineSource, /MAX_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming in to a usable density');
@@ -799,6 +802,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /onResizeItem/, 'timeline clips should wire resize controls');
   assert.match(timelineClipSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
   assert.match(timelineClipSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
+  assert.match(timelineContextMenusSource, /Unlink selected clips/, 'timeline context menus should expose clip unlink actions');
+  assert.match(timelineContextMenusSource, /Link selected clips/, 'timeline context menus should expose clip link actions');
+  assert.match(timelineContextMenusSource, /Add \{trackMenu\.kind\} track/, 'timeline context menus should expose track add actions');
+  assert.match(timelineContextMenusSource, /Delete \{trackMenu\.kind\} track/, 'timeline context menus should expose track delete actions');
   assert.match(timelineSource, /TimelineInteractionState/, 'timeline should keep lightweight preview state during pointer edits');
   assert.match(timelineSource, /originSourceStartSec/, 'timeline drag preview should remember the selected clip source in-point');
   assert.match(timelineSource, /originSourceDurationSec/, 'timeline drag preview should remember the selected clip source duration');
