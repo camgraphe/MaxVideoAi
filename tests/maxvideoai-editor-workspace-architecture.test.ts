@@ -57,6 +57,7 @@ const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
 const timelineClipPath = join(workspaceDir, '_components/timeline/TimelineClip.tsx');
 const timelineContextMenusPath = join(workspaceDir, '_components/timeline/TimelineContextMenus.tsx');
 const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler.tsx');
+const timelineTrackListPath = join(workspaceDir, '_components/timeline/TimelineTrackList.tsx');
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
@@ -129,6 +130,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineContextMenusPath), 'timeline context menus should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineRulerPath), 'timeline ruler should live in a focused route-local timeline component');
+  assert.ok(existsSync(timelineTrackListPath), 'timeline track list should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
@@ -341,6 +343,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineContextMenusSource = source(timelineContextMenusPath);
   const timelineSource = source(timelinePath);
   const timelineRulerSource = source(timelineRulerPath);
+  const timelineTrackListSource = source(timelineTrackListPath);
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
@@ -731,7 +734,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /TimelineClip/, 'timeline should compose focused clip components instead of owning clip JSX inline');
   assert.match(timelineSource, /TimelineContextMenus/, 'timeline should compose focused context menu components instead of owning menu JSX inline');
   assert.match(timelineSource, /TimelineRuler/, 'timeline should compose a focused ruler component instead of owning ruler JSX inline');
-  assert.match(timelineSource, /TimelineTrackRow/, 'timeline should compose focused track row components instead of owning track label and lane JSX inline');
+  assert.match(timelineSource, /TimelineTrackList/, 'timeline should compose a focused track list component instead of owning track mapping JSX inline');
+  assert.match(timelineTrackListSource, /TimelineTrackRow/, 'timeline track list should compose focused track row components');
+  assert.match(timelineTrackListSource, /TimelineClip/, 'timeline track list should compose focused clip components');
   assert.match(timelineSource, /TimelineToolbar/, 'timeline should compose a focused toolbar component instead of owning toolbar JSX inline');
   assert.match(timelineToolbarSource, /Scissors/, 'timeline toolbar should expose a cut tool');
   assert.match(timelineRulerSource, /Magnet/, 'timeline ruler should expose a snapping toggle');

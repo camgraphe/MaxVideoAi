@@ -27,11 +27,10 @@ import {
   workspaceTimelineVideoTrackIndex,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
-import {
-  TimelineClip,
-  type TimelineClipLayout,
-  type TimelineInteractionKind,
-  type TimelineSelectionMode,
+import type {
+  TimelineClipLayout,
+  TimelineInteractionKind,
+  TimelineSelectionMode,
 } from './timeline/TimelineClip';
 import {
   TimelineContextMenus,
@@ -39,7 +38,10 @@ import {
   type TimelineTrackContextMenuState,
 } from './timeline/TimelineContextMenus';
 import { TimelineRuler } from './timeline/TimelineRuler';
-import { TimelineTrackRow } from './timeline/TimelineTrackRow';
+import {
+  TimelineTrackList,
+  type TimelineTrackDefinition,
+} from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
@@ -119,13 +121,6 @@ type SnapCandidate = {
 type TimelineTrackConstraint = {
   startSec: number;
   guideSec: number | null;
-};
-
-type TimelineTrackDefinition = {
-  id: WorkspaceTimelineTrack;
-  label: string;
-  icon: React.ReactNode;
-  kind: 'video' | 'audio';
 };
 
 function formatDuration(seconds: number): string {
@@ -1245,84 +1240,48 @@ export function WorkspaceTimeline({
           timelineWidth={timelineWidth}
           totalDuration={totalDuration}
         />
-        <div className={styles.timelineTracks}>
-          {timelineTracks.map((track) => {
-            const audioTrackId = isAudioTimelineTrack(track.id) ? track.id : null;
-            const videoTrackId = isVideoTimelineTrack(track.id) ? track.id : null;
-            const isAudioTrack = track.kind === 'audio' && audioTrackId !== null;
-            const isVideoTrack = track.kind === 'video' && videoTrackId !== null;
-            const isTrackMuted = audioTrackId !== null && mutedAudioTrackSet.has(audioTrackId);
-            const isTrackHidden = videoTrackId !== null && hiddenVideoTrackSet.has(videoTrackId);
-            const isTrackLocked = lockedTrackSet.has(track.id);
-            const trackItems = previewItems
-              .filter(({ trackId }) => trackId === track.id)
-              .sort((left, right) => left.layout.startSec - right.layout.startSec);
-            return (
-              <TimelineTrackRow
-                key={track.id}
-                audioTrackCount={audioTrackCount}
-                audioTrackId={audioTrackId}
-                clampedPlayheadSec={clampedPlayheadSec}
-                externalDropPreview={externalDropPreview}
-                formatDropDuration={formatDuration}
-                isAudioTrack={isAudioTrack}
-                isHighestVideoTrack={track.id === highestVideoTrackId}
-                isLowestAudioTrack={track.id === lowestAudioTrackId}
-                isTrackHidden={isTrackHidden}
-                isTrackLocked={isTrackLocked}
-                isTrackMuted={isTrackMuted}
-                isVideoTrack={isVideoTrack}
-                maxAudioTrackCount={maxAudioTrackCount}
-                maxVideoTrackCount={maxVideoTrackCount}
-                onAddAudioTrack={onAddAudioTrack}
-                onAddVideoTrack={onAddVideoTrack}
-                onBeginPlayheadDrag={handleBeginPlayheadDrag}
-                onClearExternalDropPreview={() => setExternalDropPreview(null)}
-                onDropExternal={handleExternalDrop}
-                onExternalDropOver={handleExternalDropOver}
-                onOpenTrackContextMenu={handleOpenTrackContextMenu}
-                onSurfaceClick={handleTimelineSurfaceClick}
-                onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
-                onToggleAudioTrackMute={onToggleAudioTrackMute}
-                onToggleTrackLock={onToggleTrackLock}
-                onToggleVideoTrackVisibility={onToggleVideoTrackVisibility}
-                pixelsPerSecond={pixelsPerSecond}
-                snapGuideSec={interaction?.snapGuideSec ?? null}
-                timelineWidth={timelineWidth}
-                track={track}
-                videoTrackCount={videoTrackCount}
-                videoTrackId={videoTrackId}
-              >
-                {trackItems.length ? (
-                  trackItems.map(({ item, layout }, index) => (
-                    <TimelineClip
-                      key={item.id}
-                      item={item}
-                      layout={layout}
-                      index={index}
-                      isInteracting={Boolean(interaction && interactionMatchesItem(interaction, item))}
-                      isLocked={lockedTrackSet.has(item.track)}
-                      isSelected={selectedKeys.has(selectionKeyForTimelineItem(item))}
-                      activeTool={activeTimelineTool}
-                      total={trackItems.length}
-                      timelineWidth={timelineWidth}
-                      pixelsPerSecond={pixelsPerSecond}
-                      snapStepSec={frameStepSec}
-                      onBeginInteraction={handleBeginInteraction}
-                      onCut={onCutItem}
-                      onMove={onMoveItem}
-                      onOpenContextMenu={handleOpenClipContextMenu}
-                      onPlayheadChange={onPlayheadChange}
-                      onSelect={onSelectItem}
-                    />
-                  ))
-                ) : (
-                  <span className={styles.trackEmpty}>Drop generated outputs here</span>
-                )}
-              </TimelineTrackRow>
-            );
-          })}
-        </div>
+        <TimelineTrackList
+          activeTool={activeTimelineTool}
+          audioTrackCount={audioTrackCount}
+          clampedPlayheadSec={clampedPlayheadSec}
+          externalDropPreview={externalDropPreview}
+          formatDropDuration={formatDuration}
+          hiddenVideoTrackSet={hiddenVideoTrackSet}
+          highestVideoTrackId={highestVideoTrackId}
+          isItemInteracting={(item) => Boolean(interaction && interactionMatchesItem(interaction, item))}
+          lockedTrackSet={lockedTrackSet}
+          lowestAudioTrackId={lowestAudioTrackId}
+          maxAudioTrackCount={maxAudioTrackCount}
+          maxVideoTrackCount={maxVideoTrackCount}
+          mutedAudioTrackSet={mutedAudioTrackSet}
+          onAddAudioTrack={onAddAudioTrack}
+          onAddVideoTrack={onAddVideoTrack}
+          onBeginClipInteraction={handleBeginInteraction}
+          onBeginPlayheadDrag={handleBeginPlayheadDrag}
+          onClearExternalDropPreview={() => setExternalDropPreview(null)}
+          onCutItem={onCutItem}
+          onDropExternal={handleExternalDrop}
+          onExternalDropOver={handleExternalDropOver}
+          onMoveItem={onMoveItem}
+          onOpenClipContextMenu={handleOpenClipContextMenu}
+          onOpenTrackContextMenu={handleOpenTrackContextMenu}
+          onPlayheadChange={onPlayheadChange}
+          onSelectItem={onSelectItem}
+          onSurfaceClick={handleTimelineSurfaceClick}
+          onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
+          onToggleAudioTrackMute={onToggleAudioTrackMute}
+          onToggleTrackLock={onToggleTrackLock}
+          onToggleVideoTrackVisibility={onToggleVideoTrackVisibility}
+          pixelsPerSecond={pixelsPerSecond}
+          previewItems={previewItems}
+          selectedKeys={selectedKeys}
+          selectionKeyForItem={selectionKeyForTimelineItem}
+          snapGuideSec={interaction?.snapGuideSec ?? null}
+          snapStepSec={frameStepSec}
+          timelineWidth={timelineWidth}
+          tracks={timelineTracks}
+          videoTrackCount={videoTrackCount}
+        />
         {marquee ? <span className={styles.timelineMarquee} style={marqueeRectForState(marquee)} aria-hidden="true" /> : null}
       </div>
       <TimelineContextMenus
