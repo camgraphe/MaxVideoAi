@@ -1,7 +1,7 @@
 'use client';
 
-import { AudioLines, FileVideo2, Film, FolderPlus, ImageIcon, Layers3, MoreHorizontal, Plus, Sparkles, Trash2, Upload, Video } from 'lucide-react';
-import { useEffect, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { AudioLines, FileVideo2, Film, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
+import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import styles from '../maxvideoai-editor.module.css';
 import type {
   WorkspaceAssetRecord,
@@ -30,11 +30,13 @@ type TimelineProjectSidebarProps = {
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteProjectAsset: (assetId: string) => void;
   onImportMedia: () => void;
+  onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
   onNewFolder: () => void;
   onNewSequence: () => void;
   onSelectSequence: (sequenceId: string) => void;
+  onClearSequenceInspector: () => void;
 };
 
 const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
@@ -339,19 +341,45 @@ export function TimelineProjectSidebar({
   onDeleteGeneratedClip,
   onDeleteProjectAsset,
   onImportMedia,
+  onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
   onNewFolder,
   onNewSequence,
   onSelectSequence,
+  onClearSequenceInspector,
 }: TimelineProjectSidebarProps) {
   const generatedNodes = generatedClipNodes(nodes);
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaSelection>(null);
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const totalItems = sequences.length + projectAssets.length + generatedNodes.length;
   const selectedKey = selectedMedia ? selectionKey(selectedMedia.type, selectedMedia.id) : null;
   const selectedCanDelete = selectedMedia?.type === 'asset' || selectedMedia?.type === 'generated';
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const matchesSearch = useMemo(() => {
+    return (title: string, subtitle: string, kind: string) => {
+      if (!normalizedSearchQuery) return true;
+      return `${title} ${subtitle} ${kind}`.toLowerCase().includes(normalizedSearchQuery);
+    };
+  }, [normalizedSearchQuery]);
+  const visibleSequences = useMemo(
+    () => sequences.filter((sequence) => matchesSearch(
+      sequence.name,
+      `${formatDuration(sequence.durationSec)} ${sequence.clipCount} clips ${sequence.settings.aspectRatio}`,
+      'sequence'
+    )),
+    [matchesSearch, sequences]
+  );
+  const visibleProjectAssets = useMemo(
+    () => projectAssets.filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind)),
+    [matchesSearch, projectAssets]
+  );
+  const visibleGeneratedNodes = useMemo(
+    () => generatedNodes.filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated')),
+    [generatedNodes, matchesSearch]
+  );
 
   const openContextMenu = (event: ReactMouseEvent<HTMLElement>, menu: Omit<ProjectMediaContextMenu, 'x' | 'y'>) => {
     event.preventDefault();
@@ -405,16 +433,36 @@ export function TimelineProjectSidebar({
       <div className={styles.projectMediaHeader}>
         <div className={styles.projectMediaHeaderCopy}>
           <p className={styles.projectMediaTitle}>Project media</p>
-          <span className={styles.projectMediaSubtitle}>Assets, sequences, clips</span>
+          <span className={styles.projectMediaSubtitle}>Assets, sequences and generated clips</span>
         </div>
         <button type="button" className={styles.projectMediaActionButton} onClick={onImportMedia}>
           <Upload size={16} />
           Import media
         </button>
       </div>
+      <div className={styles.projectMediaControls}>
+        <label className={styles.projectMediaSearch}>
+          <Search size={14} />
+          <span>Search media</span>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            placeholder="Search media..."
+          />
+        </label>
+        <div className={styles.projectMediaViewTools} aria-label="Project media view tools">
+          <button type="button" aria-label="Filter media">
+            <ListFilter size={14} />
+          </button>
+          <button type="button" aria-label="Grid view" aria-pressed="true">
+            <LayoutGrid size={14} />
+          </button>
+        </div>
+      </div>
 
       <div className={styles.projectMediaGrid} aria-label={`${projectName} project media`}>
-        {sequences.map((sequence) => (
+        {visibleSequences.map((sequence) => (
           <ProjectMediaCard
             key={sequence.id}
             ariaPressed={sequence.isActive}
@@ -424,6 +472,7 @@ export function TimelineProjectSidebar({
             kind="sequence"
             onClick={() => {
               setSelectedMedia({ id: sequence.id, type: 'sequence' });
+              onInspectSequence(sequence.id);
               onSelectSequence(sequence.id);
             }}
             subtitle={`${formatDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} clip${sequence.clipCount === 1 ? '' : 's'}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
@@ -432,7 +481,7 @@ export function TimelineProjectSidebar({
           />
         ))}
 
-        {projectAssets.map((asset) => {
+        {visibleProjectAssets.map((asset) => {
           const mediaKind = timelineMediaKindForProjectAsset(asset);
           const cardKind = mediaCardKindForAsset(asset);
           const timelineDurationSec = workspaceAssetTimelineDuration(asset);
@@ -451,7 +500,10 @@ export function TimelineProjectSidebar({
                 id={key}
                 isSelected={selectedKey === key}
                 kind={cardKind}
-                onClick={() => setSelectedMedia({ id: asset.id, type: 'asset' })}
+                onClick={() => {
+                  setSelectedMedia({ id: asset.id, type: 'asset' });
+                  onClearSequenceInspector();
+                }}
                 onContextMenu={(event) => openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
                 onDragStart={mediaKind ? (event) => beginProjectAssetTimelineDrag(event, asset) : undefined}
                 durationSec={asset.durationSec}
@@ -463,7 +515,7 @@ export function TimelineProjectSidebar({
           );
         })}
 
-        {generatedNodes.map((node) => {
+        {visibleGeneratedNodes.map((node) => {
           const mediaKind = timelineMediaKindForGeneratedNode(node);
           const output = node.data.output;
           const timelineDurationSec = output ? workspaceOutputTimelineDuration(output) : undefined;
@@ -482,7 +534,10 @@ export function TimelineProjectSidebar({
                 id={key}
                 isSelected={selectedKey === key}
                 kind="generated"
-                onClick={() => setSelectedMedia({ id: node.id, type: 'generated' })}
+                onClick={() => {
+                  setSelectedMedia({ id: node.id, type: 'generated' });
+                  onClearSequenceInspector();
+                }}
                 onContextMenu={(event) => openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
                 onDragStart={mediaKind ? (event) => beginGeneratedNodeTimelineDrag(event, node) : undefined}
                 durationSec={node.data.output?.durationSec}
@@ -494,8 +549,10 @@ export function TimelineProjectSidebar({
           );
         })}
 
-        {!totalItems ? (
-          <p className={styles.projectMediaEmpty}>Import media or create a sequence to start.</p>
+        {!totalItems || (!visibleSequences.length && !visibleProjectAssets.length && !visibleGeneratedNodes.length) ? (
+          <p className={styles.projectMediaEmpty}>
+            {totalItems ? 'No media matches this search.' : 'Import media or create a sequence to start.'}
+          </p>
         ) : null}
       </div>
 

@@ -77,7 +77,9 @@
 .modeSwitch button,
 .iconButton,
 .exportButton,
-.studioSessionSignOut,
+.studioSessionPill,
+.studioSessionExit,
+.studioSessionMenuAction,
 .libraryActionButton,
 .blockTemplateCard,
 .templateButton,
@@ -141,7 +143,7 @@
 
 .studioWalletPill,
 .studioSessionPill,
-.studioSessionSignOut {
+.studioSessionExit {
   min-height: 34px;
   border: 1px solid rgba(148, 163, 184, 0.13);
   border-radius: 8px;
@@ -185,6 +187,13 @@
   align-items: center;
   gap: 8px;
   padding: 0 10px 0 7px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.studioSessionMenuShell {
+  position: relative;
+  min-width: 0;
 }
 
 .studioSessionAvatar {
@@ -216,7 +225,7 @@
   font-weight: 760;
 }
 
-.studioSessionSignOut {
+.studioSessionExit {
   display: inline-grid;
   width: 34px;
   padding: 0;
@@ -225,10 +234,95 @@
 }
 
 .studioWalletPill:hover,
-.studioSessionSignOut:hover {
+.studioSessionPill:hover,
+.studioSessionExit:hover {
   border-color: rgba(147, 197, 253, 0.32);
   background: rgba(30, 41, 59, 0.84);
   color: #ffffff;
+}
+
+.studioSessionMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 70;
+  width: 250px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(8, 13, 26, 0.98)),
+    #0b1020;
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.studioSessionMenuHeader {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(2, 6, 23, 0.62);
+}
+
+.studioSessionMenuHeader span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.studioSessionMenuHeader strong {
+  overflow: hidden;
+  color: #f8fafc;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.studioSessionMenuNav {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.studioSessionMenuItem,
+.studioSessionMenuAction {
+  display: flex;
+  min-height: 34px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: #dbeafe;
+  padding: 0 10px;
+  text-align: left;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.studioSessionMenuItem:hover,
+.studioSessionMenuAction:hover {
+  background: rgba(30, 41, 59, 0.82);
+  color: #ffffff;
+}
+
+.studioSessionMenuItem small,
+.studioSessionMenuAction kbd {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.11);
+  color: #94a3b8;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .iconButton,
@@ -451,7 +545,7 @@
 .libraryActionButton:hover,
 .templateButton:hover,
 .iconButton:hover,
-.studioSessionSignOut:hover,
+.studioSessionExit:hover,
 .nodeActionButton:hover,
 .primaryPanelButton:hover {
   background: rgba(51, 65, 85, 0.92);
@@ -965,11 +1059,10 @@ button.assetBrowserCard {
 
 .projectMediaHeader {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(142px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.82fr);
   gap: 14px;
   align-items: center;
-  padding: 22px 18px 18px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.13);
+  padding: 19px 18px 14px;
 }
 
 .projectMediaHeaderCopy {
@@ -979,32 +1072,32 @@ button.assetBrowserCard {
 .projectMediaTitle {
   margin: 0;
   color: #f8fafc;
-  font-size: 21px;
+  font-size: 18px;
   font-weight: 820;
   letter-spacing: 0;
 }
 
 .projectMediaSubtitle {
   display: block;
-  margin-top: 6px;
+  margin-top: 5px;
   color: #a3adc2;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
 .projectMediaActionButton {
   display: inline-flex;
   flex: 0 0 auto;
-  min-height: 42px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   border: 0;
   border-radius: 9px;
   background: linear-gradient(135deg, #7c3aed, #2563eb);
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 16px 38px rgba(37, 99, 235, 0.22);
@@ -1014,24 +1107,95 @@ button.assetBrowserCard {
   filter: brightness(1.08);
 }
 
+.projectMediaControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 0 18px 14px;
+}
+
+.projectMediaSearch {
+  display: flex;
+  min-width: 0;
+  height: 34px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 8px;
+  background: rgba(6, 11, 22, 0.74);
+  color: #64748b;
+  padding: 0 10px;
+}
+
+.projectMediaSearch span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.projectMediaSearch input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #dbeafe;
+  font: inherit;
+  font-size: 12px;
+}
+
+.projectMediaSearch input::placeholder {
+  color: #64748b;
+}
+
+.projectMediaViewTools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.projectMediaViewTools button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 8px;
+  background: rgba(9, 15, 29, 0.82);
+  color: #a7b4cc;
+  cursor: pointer;
+}
+
+.projectMediaViewTools button:hover,
+.projectMediaViewTools button:focus-visible,
+.projectMediaViewTools button[aria-pressed="true"] {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: rgba(59, 46, 132, 0.62);
+  color: #ffffff;
+  outline: none;
+}
+
 .projectMediaGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   min-height: 0;
   flex: 1 1 auto;
   align-content: start;
-  gap: 12px 10px;
+  gap: 10px;
   overflow-y: auto;
-  padding: 16px 16px 20px;
+  padding: 0 18px 18px;
 }
 
 .projectMediaTile {
   position: relative;
   min-width: 0;
   border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 9px;
+  border-radius: 8px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(8, 13, 24, 0.94));
+  background: linear-gradient(180deg, rgba(12, 21, 36, 0.82), rgba(7, 12, 23, 0.96));
   color: #f8fafc;
   text-align: left;
   cursor: pointer;
@@ -1065,9 +1229,7 @@ button.assetBrowserCard {
   aspect-ratio: 16 / 9;
   height: auto;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(2, 6, 23, 0.94)),
-    #020617;
+  background: #050a14;
 }
 
 .projectMediaArtwork img {
@@ -1123,11 +1285,11 @@ button.assetBrowserCard {
 
 .projectMediaBadge {
   position: absolute;
-  top: 9px;
-  left: 9px;
+  top: 8px;
+  left: 8px;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   place-items: center;
   border-radius: 8px;
   color: #fff;
@@ -1153,9 +1315,9 @@ button.assetBrowserCard {
 
 .projectMediaDurationBadge {
   position: absolute;
-  right: 9px;
-  bottom: 8px;
-  padding: 4px 7px;
+  right: 7px;
+  bottom: 7px;
+  padding: 4px 6px;
   border-radius: 7px;
   background: rgba(2, 6, 23, 0.78);
   color: #f8fafc;
@@ -1166,7 +1328,7 @@ button.assetBrowserCard {
 
 .projectMediaTileBody {
   min-width: 0;
-  padding: 9px 34px 12px 12px;
+  padding: 9px 32px 11px 11px;
 }
 
 .projectMediaTileBody strong,
@@ -1180,7 +1342,7 @@ button.assetBrowserCard {
 
 .projectMediaTileBody strong {
   color: #f8fafc;
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0;
 }
@@ -1188,7 +1350,7 @@ button.assetBrowserCard {
 .projectMediaTileBody span {
   margin-top: 4px;
   color: #a3adc2;
-  font-size: 11.5px;
+  font-size: 10.5px;
 }
 
 .projectMediaMoreButton {
@@ -1767,16 +1929,16 @@ button.assetBrowserCard {
   display: grid;
   min-height: 0;
   place-items: center;
-  padding: 22px;
+  padding: 22px 24px;
 }
 
 .programMonitor {
   display: grid;
-  width: min(100%, 1040px);
+  width: min(100%, 1100px);
   height: 100%;
   min-height: 0;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 14px;
 }
 
 .programMonitorHeader,
@@ -1813,6 +1975,21 @@ button.assetBrowserCard {
   font-variant-numeric: tabular-nums;
 }
 
+.programModelPill {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid rgba(129, 140, 248, 0.26);
+  border-radius: 7px;
+  background: rgba(88, 28, 135, 0.32);
+  color: #c4b5fd;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 8px;
+}
+
 .programMonitorHeader strong {
   color: #f8fafc;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -1832,15 +2009,35 @@ button.assetBrowserCard {
 }
 
 .programZoomControl select {
-  height: 26px;
-  min-width: 70px;
+  height: 30px;
+  min-width: 78px;
   border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 7px;
+  border-radius: 8px;
   background: rgba(15, 23, 42, 0.9);
   color: #e5e7eb;
   font: inherit;
   font-size: 11px;
   text-transform: none;
+}
+
+.programFullscreenButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.programFullscreenButton:hover,
+.programFullscreenButton:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: rgba(30, 41, 59, 0.96);
+  color: #ffffff;
+  outline: none;
 }
 
 .programFrameViewport {
@@ -1853,18 +2050,69 @@ button.assetBrowserCard {
   place-items: center;
 }
 
+.viewerProgramControlsPanel {
+  display: grid;
+  gap: 12px;
+  padding: 12px 18px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.viewerScrubRow {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  color: #dbeafe;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerScrubTrack {
+  position: relative;
+  height: 14px;
+  overflow: hidden;
+}
+
+.viewerScrubTrack::before {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.22) 0 2px, transparent 2px 7px),
+    rgba(148, 163, 184, 0.12);
+  content: "";
+}
+
+.viewerScrubTrack > span {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.46);
+}
+
 .viewerPlaybackControls {
   display: flex;
+  min-height: 42px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 38px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .viewerPlaybackControls button {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 8px;
@@ -1888,16 +2136,16 @@ button.assetBrowserCard {
 }
 
 .viewerPlaybackControls .viewerPlaybackPrimary {
-  width: 40px;
-  height: 40px;
+  width: 54px;
+  height: 38px;
   border-color: rgba(129, 140, 248, 0.3);
   background: rgba(30, 41, 59, 0.92);
 }
 
 .viewerPlaybackDivider {
   width: 1px;
-  height: 22px;
-  margin: 0 2px;
+  height: 26px;
+  margin: 0 4px;
   background: rgba(148, 163, 184, 0.16);
 }
 
@@ -1910,14 +2158,45 @@ button.assetBrowserCard {
   font-weight: 800;
 }
 
+.viewerMarkField {
+  display: inline-flex;
+  height: 30px;
+  min-width: 106px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.62);
+  color: #cbd5e1;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerPlaybackControls .viewerSnapshotButton {
+  display: inline-flex;
+  width: auto;
+  min-width: 96px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 780;
+}
+
 .viewerPlaybackControls .viewerMarkClearButton {
   width: auto;
-  height: 30px;
-  padding: 0 10px;
-  color: #94a3b8;
-  font-size: 10px;
+  height: 28px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 9px;
   font-weight: 760;
   text-transform: uppercase;
+  box-shadow: none;
 }
 
 .viewerInOutSummary {
@@ -1938,10 +2217,12 @@ button.assetBrowserCard {
   aspect-ratio: var(--workspace-project-aspect-ratio, 16 / 9);
   place-self: center;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 9px;
   background: #020617;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .programFrameFit {

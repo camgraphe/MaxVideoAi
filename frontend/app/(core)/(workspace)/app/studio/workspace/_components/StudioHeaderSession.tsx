@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LogOut, UserRound, Wallet } from 'lucide-react';
+import { NAV_ITEMS } from '@/components/AppSidebar';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import styles from '../maxvideoai-editor.module.css';
 
 function initialsFromEmail(email: string | null): string {
@@ -15,11 +18,53 @@ function initialsFromEmail(email: string | null): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-export function StudioHeaderSession() {
-  const { authResolved, email, wallet, signOut } = useHeaderAccountState();
+type StudioHeaderSessionProps = {
+  onExitToProjects: () => void;
+};
+
+export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionProps) {
+  const { t } = useI18n();
+  const { authResolved, email, wallet, isAdmin, signOut } = useHeaderAccountState();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const sessionButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
   const sessionLabel = email ?? (authResolved ? 'No session' : 'Loading session');
   const initials = initialsFromEmail(email);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const handlePointer = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (sessionButtonRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setAccountMenuOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('touchstart', handlePointer, { passive: true });
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('touchstart', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [accountMenuOpen]);
+
+  const handleAdminNavigation = useCallback((event: ReactMouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setAccountMenuOpen(false);
+    window.location.assign('/admin');
+  }, []);
+
+  const handleSignOut = useCallback(() => {
+    setAccountMenuOpen(false);
+    signOut();
+  }, [signOut]);
 
   return (
     <div className={styles.studioSessionCluster} aria-label="Studio account status">
@@ -33,26 +78,77 @@ export function StudioHeaderSession() {
         <span>Wallet</span>
         <strong>{walletAmount}</strong>
       </Link>
-      <div
-        className={styles.studioSessionPill}
-        title={sessionLabel}
-        data-auth-state={email ? 'signed-in' : authResolved ? 'signed-out' : 'loading'}
-      >
-        <span className={styles.studioSessionAvatar} aria-hidden="true">
-          {initials ? initials : <UserRound size={14} />}
-        </span>
-        <span className={styles.studioSessionText}>
-          <span>Session</span>
-          <strong>{sessionLabel}</strong>
-        </span>
+      <div className={styles.studioSessionMenuShell}>
+        <button
+          ref={sessionButtonRef}
+          type="button"
+          className={styles.studioSessionPill}
+          title={sessionLabel}
+          data-auth-state={email ? 'signed-in' : authResolved ? 'signed-out' : 'loading'}
+          aria-haspopup={email ? 'menu' : undefined}
+          aria-expanded={email ? accountMenuOpen : undefined}
+          onClick={() => {
+            if (email) setAccountMenuOpen((open) => !open);
+          }}
+        >
+          <span className={styles.studioSessionAvatar} aria-hidden="true">
+            {initials ? initials : <UserRound size={14} />}
+          </span>
+          <span className={styles.studioSessionText}>
+            <span>Session</span>
+            <strong>{sessionLabel}</strong>
+          </span>
+        </button>
+        {accountMenuOpen && email ? (
+          <div ref={menuRef} className={styles.studioSessionMenu} role="menu">
+            <div className={styles.studioSessionMenuHeader}>
+              <span>{t('workspace.header.signedIn', 'Signed in')}</span>
+              <strong>{email}</strong>
+            </div>
+            <nav className={styles.studioSessionMenuNav} aria-label={t('workspace.header.primaryNav', 'Primary navigation')}>
+              {NAV_ITEMS.map((item) => {
+                const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+                const badgeLabel = item.badge ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge) : null;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    prefetch={false}
+                    role="menuitem"
+                    className={styles.studioSessionMenuItem}
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
+                    <span>{label}</span>
+                    {badgeLabel ? <small>{badgeLabel}</small> : null}
+                  </Link>
+                );
+              })}
+              {isAdmin ? (
+                <Link
+                  href="/admin"
+                  prefetch={false}
+                  role="menuitem"
+                  className={styles.studioSessionMenuItem}
+                  onClick={handleAdminNavigation}
+                >
+                  <span>Admin</span>
+                </Link>
+              ) : null}
+            </nav>
+            <button type="button" className={styles.studioSessionMenuAction} onClick={handleSignOut}>
+              <span>{t('workspace.header.signOut', 'Sign out')}</span>
+              <kbd>⌘⇧Q</kbd>
+            </button>
+          </div>
+        ) : null}
       </div>
       {email ? (
         <button
           type="button"
-          className={styles.studioSessionSignOut}
-          onClick={signOut}
-          aria-label="Sign out of Studio"
-          title="Sign out"
+          className={styles.studioSessionExit}
+          onClick={onExitToProjects}
+          aria-label="Exit to projects"
+          title="Save and return to projects"
         >
           <LogOut size={13} />
         </button>

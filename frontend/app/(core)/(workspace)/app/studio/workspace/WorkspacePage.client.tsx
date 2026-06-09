@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
-import { Download, GitBranch, PanelRight, Play, Settings, Settings2, Share2 } from 'lucide-react';
+import { Download, GitBranch, PanelRight, Play, Settings, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { authFetch } from '@/lib/authFetch';
 import { NodeLibrarySidebar, type WorkspaceUserCanvasTemplateSummary } from './_components/NodeLibrarySidebar';
@@ -19,10 +19,9 @@ import {
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
 import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
 import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
-import { WorkspaceProjectSettingsDialog } from './_components/WorkspaceProjectSettingsDialog';
 import { StudioHeaderSession } from './_components/StudioHeaderSession';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
-import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
+import { WorkspaceVideoViewer, type WorkspaceProgramSnapshotPayload } from './_components/WorkspaceVideoViewer';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import {
@@ -1340,7 +1339,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string | null>(null);
   const [isExportEstimateLoading, setIsExportEstimateLoading] = useState(false);
   const [isExportVideoStarting, setIsExportVideoStarting] = useState(false);
-  const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
+  const [inspectedSequenceId, setInspectedSequenceId] = useState<string | null>(null);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
   const [notice, setNotice] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -1405,6 +1404,18 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     () => previewTimelineItems.find((item) => item.id === selectedTimelineItemId) ?? null,
     [previewTimelineItems, selectedTimelineItemId]
   );
+  const selectedSequenceForInspector = useMemo(() => {
+    if (!inspectedSequenceId) return null;
+    const sequence = sequenceSummaries.find((candidate) => candidate.id === inspectedSequenceId);
+    if (!sequence) return null;
+    return {
+      clipCount: sequence.clipCount,
+      durationSec: sequence.durationSec,
+      id: sequence.id,
+      name: sequence.name,
+      settings: sequence.settings,
+    };
+  }, [inspectedSequenceId, sequenceSummaries]);
   const exportTimelineItems = useMemo(
     () => muteAudioTrackItems(filterHiddenVideoTrackItems(timelineItems, hiddenVideoTracks), mutedAudioTracks),
     [hiddenVideoTracks, mutedAudioTracks, timelineItems]
@@ -1570,6 +1581,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
 
   const handleSelectTimelineItem = useCallback((itemId: string, mode: 'replace' | 'toggle' | 'focus' = 'replace') => {
     setActiveEditorSurface('timeline');
+    setInspectedSequenceId(null);
     setSelectedTimelineItemIds((current) => {
       if (mode === 'focus') {
         const focusedItem = timelineItemsRef.current.find((item) => item.id === itemId);
@@ -1597,8 +1609,19 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
 
   const handleSelectTimelineItems = useCallback((itemIds: string[]) => {
     setActiveEditorSurface('timeline');
+    if (itemIds.length) setInspectedSequenceId(null);
     applyTimelineSelection(itemIds);
   }, [applyTimelineSelection]);
+
+  const handleInspectSequence = useCallback((sequenceId: string) => {
+    setActiveEditorSurface('timeline');
+    setInspectedSequenceId(sequenceId);
+    applyTimelineSelection([]);
+  }, [applyTimelineSelection]);
+
+  const handleClearSequenceInspector = useCallback(() => {
+    setInspectedSequenceId(null);
+  }, []);
 
   const handleCanvasInteraction = useCallback(() => {
     setActiveEditorSurface('canvas');
@@ -1654,6 +1677,29 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       createdAt: storedSequence?.createdAt,
     });
   }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
+
+  const buildPersistedWorkspaceState = useCallback((): PersistedWorkspaceState => {
+    const sequenceSnapshot = snapshotActiveSequence();
+    return {
+      nodes,
+      edges,
+      projectAssets,
+      timelineItems,
+      activeSequenceId,
+      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
+      activeTemplateId,
+      projectSettings,
+      focusMode,
+      audioTrackCount,
+      hiddenVideoTracks,
+      lockedTimelineTracks,
+      mutedAudioTracks,
+      videoTrackCount,
+      timelinePanelHeight,
+      timelineInPointSec,
+      timelineOutPointSec,
+    };
+  }, [activeSequenceId, activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
 
   const applyWorkspaceSequence = useCallback((sequence: WorkspaceSequenceRecord) => {
     const nextItems = normalizeWorkspaceTimelineIdentities(sequence.timelineItems);
@@ -1842,58 +1888,20 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
 
   useEffect(() => {
     if (!hydrated || typeof window === 'undefined') return;
-    const sequenceSnapshot = snapshotActiveSequence();
-    const state: PersistedWorkspaceState = {
-      nodes,
-      edges,
-      projectAssets,
-      timelineItems,
-      activeSequenceId,
-      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
-      activeTemplateId,
-      projectSettings,
-      focusMode,
-      audioTrackCount,
-      hiddenVideoTracks,
-      lockedTimelineTracks,
-      mutedAudioTracks,
-      videoTrackCount,
-      timelinePanelHeight,
-      timelineInPointSec,
-      timelineOutPointSec,
-    };
+    const state = buildPersistedWorkspaceState();
     window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-  }, [activeSequenceId, activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount, workspaceStorageKey]);
+  }, [buildPersistedWorkspaceState, hydrated, workspaceStorageKey]);
 
   useEffect(() => {
     if (!hydrated || !projectId || typeof window === 'undefined') return undefined;
-    const sequenceSnapshot = snapshotActiveSequence();
-    const state: PersistedWorkspaceState = {
-      nodes,
-      edges,
-      projectAssets,
-      timelineItems,
-      activeSequenceId,
-      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
-      activeTemplateId,
-      projectSettings,
-      focusMode,
-      audioTrackCount,
-      hiddenVideoTracks,
-      lockedTimelineTracks,
-      mutedAudioTracks,
-      videoTrackCount,
-      timelinePanelHeight,
-      timelineInPointSec,
-      timelineOutPointSec,
-    };
+    const state = buildPersistedWorkspaceState();
     const controller = new AbortController();
     const saveTimer = window.setTimeout(() => {
       void saveStudioProjectToApi({
         projectId,
         name: activeTemplateName,
         canvasTemplateId: activeTemplateId,
-        settings: projectSettings,
+        settings: state.projectSettings,
         workspaceState: state,
         signal: controller.signal,
       });
@@ -1903,7 +1911,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       window.clearTimeout(saveTimer);
       controller.abort();
     };
-  }, [activeSequenceId, activeTemplateId, activeTemplateName, audioTrackCount, edges, focusMode, hiddenVideoTracks, hydrated, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectId, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, hydrated, projectId]);
 
   useEffect(() => {
     if (!timelineItems.length) {
@@ -2260,6 +2268,45 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     },
     [applyCanvasImportedNodeData, handleCanvasTextPaste]
   );
+
+  const handleSendProgramSnapshotToCanvas = useCallback((snapshot: WorkspaceProgramSnapshotPayload) => {
+    const snapshotUrl = snapshot.dataUrl ?? snapshot.sourceUrl;
+    if (!snapshotUrl) {
+      setNotice('No visible program frame is available for a snapshot.');
+      return;
+    }
+
+    const importIndex = nodes.length + canvasImportSequenceRef.current;
+    canvasImportSequenceRef.current += 1;
+    const asset: WorkspaceAssetRecord = {
+      id: createLocalStudioId('program_snapshot'),
+      kind: 'image',
+      filename: snapshot.filename,
+      subtitle: `Snapshot · ${snapshot.timecode}`,
+      url: snapshotUrl,
+      thumbUrl: snapshotUrl,
+      dimensions: `${snapshot.width}x${snapshot.height}`,
+    };
+    const node = createAdHocNode('asset-image', importIndex, defaultModelId, {
+      x: -260 + (importIndex % 4) * 180,
+      y: -170 + Math.floor(importIndex / 4) * 140,
+    });
+    const snapshotNode: WorkspaceGraphNode = {
+      ...node,
+      data: {
+        ...node.data,
+        title: 'Program Snapshot',
+        subtitle: asset.filename,
+        asset,
+      },
+    };
+
+    setNodes((current) => appendSelectedWorkspaceGraphNode(current, snapshotNode));
+    setFocusMode('canvas');
+    setActiveEditorSurface('canvas');
+    setSelectedNodeId(snapshotNode.id);
+    setNotice(`${asset.filename} sent to the canvas.`);
+  }, [defaultModelId, nodes.length]);
 
   const handleGenerateShot = useCallback(
     async (nodeId: string): Promise<void> => {
@@ -2779,10 +2826,11 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSequences((current) => upsertWorkspaceSequence(current, currentSequence));
     setActiveSequenceId(targetSequence.id);
     applyWorkspaceSequence(targetSequence);
+    applyTimelineSelection([]);
     setActiveEditorSurface('timeline');
     setFocusMode('viewer');
     setNotice(`${targetSequence.name} selected.`);
-  }, [activeSequenceId, applyWorkspaceSequence, sequences, snapshotActiveSequence]);
+  }, [activeSequenceId, applyTimelineSelection, applyWorkspaceSequence, sequences, snapshotActiveSequence]);
 
   const handleCreateSequence = useCallback(() => {
     const currentSequence = snapshotActiveSequence();
@@ -2795,6 +2843,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSequences((current) => upsertWorkspaceSequence(upsertWorkspaceSequence(current, currentSequence), nextSequence));
     setActiveSequenceId(nextSequence.id);
     applyWorkspaceSequence(nextSequence);
+    setInspectedSequenceId(nextSequence.id);
     setActiveEditorSurface('timeline');
     setFocusMode('viewer');
     setNotice(`${nextSequence.name} created.`);
@@ -3069,9 +3118,12 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setProjectSettings((current) => coerceWorkspaceProjectSettings({ ...current, ...patch }));
   }, []);
 
-  const handleOpenProjectSettings = useCallback(() => {
-    setIsProjectSettingsOpen(true);
-  }, []);
+  const handleRenameActiveSequence = useCallback((name: string) => {
+    setSequences((current) => upsertWorkspaceSequence(current, {
+      ...snapshotActiveSequence(),
+      name,
+    }));
+  }, [snapshotActiveSequence]);
 
   const handleExportTimelineRender = useCallback(() => {
     const serializedManifest = serializeWorkspaceTimelineRenderManifest(exportManifest);
@@ -3149,6 +3201,30 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setExportRangeMode(hasValidTimelineInOut ? 'in-out' : 'sequence');
     setIsExportDialogOpen(true);
   }, [hasValidTimelineInOut]);
+
+  const handleExitToProjects = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const state = buildPersistedWorkspaceState();
+    window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
+    setNotice('Workspace saved. Returning to projects.');
+
+    const navigateToProjects = () => {
+      window.location.assign('/app/studio/projects');
+    };
+
+    if (!projectId) {
+      navigateToProjects();
+      return;
+    }
+
+    void saveStudioProjectToApi({
+      projectId,
+      name: activeTemplateName,
+      canvasTemplateId: activeTemplateId,
+      settings: state.projectSettings,
+      workspaceState: state,
+    }).finally(navigateToProjects);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     setExportVideoFeedback(null);
@@ -3249,24 +3325,13 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
           </button>
         </div>
         <div className={styles.topbarRight}>
-          <StudioHeaderSession />
+          <StudioHeaderSession onExitToProjects={handleExitToProjects} />
           <div className={styles.topbarActions}>
             <button type="button" className={styles.iconButton} onClick={() => selectedNode?.data.kind === 'shot' && void handleGenerateShot(selectedNode.id)} aria-label="Generate selected shot">
               <Play size={15} />
             </button>
             <button type="button" className={styles.iconButton} aria-label="Share project">
               <Share2 size={15} />
-            </button>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={handleOpenProjectSettings}
-              title="Open project settings"
-              aria-haspopup="dialog"
-              aria-expanded={isProjectSettingsOpen}
-              aria-label="Open project settings"
-            >
-              <Settings2 size={15} />
             </button>
             <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
               <Download size={15} />
@@ -3309,11 +3374,13 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
             onDeleteGeneratedClip={handleDeleteGeneratedClip}
             onDeleteProjectAsset={handleDeleteProjectAsset}
             onImportMedia={handleImportProjectMedia}
+            onInspectSequence={handleInspectSequence}
             onInsertGeneratedClip={handleSendOutputToTimeline}
             onInsertProjectAsset={handleInsertProjectAssetToTimeline}
             onNewFolder={handleCreateProjectMediaFolder}
             onNewSequence={handleCreateSequence}
             onSelectSequence={handleSelectSequence}
+            onClearSequenceInspector={handleClearSequenceInspector}
           />
         )}
         {focusMode === 'canvas' ? (
@@ -3351,6 +3418,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
             onMarkIn={handleMarkTimelineIn}
             onMarkOut={handleMarkTimelineOut}
             onSelectItem={(itemId) => handleSelectTimelineItem(itemId)}
+            onSendSnapshotToCanvas={handleSendProgramSnapshotToCanvas}
             onTogglePlayback={handleToggleTimelinePlayback}
           />
         )}
@@ -3368,8 +3436,11 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
         ) : (
           <TimelineClipInspector
             selectedItem={selectedTimelineItem}
+            selectedSequence={selectedSequenceForInspector}
             projectFps={projectSettings.fps}
             onPatchItem={handlePatchTimelineItem}
+            onRenameSequence={handleRenameActiveSequence}
+            onSequenceSettingsChange={handleProjectSettingsChange}
           />
         )}
       </div>
@@ -3426,12 +3497,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
         onToggleVideoTrackVisibility={handleToggleVideoTrackVisibility}
         onUnlinkItems={handleUnlinkTimelineItems}
         onUndo={handleUndoTimeline}
-      />
-      <WorkspaceProjectSettingsDialog
-        isOpen={isProjectSettingsOpen}
-        projectSettings={projectSettings}
-        onOpenChange={setIsProjectSettingsOpen}
-        onProjectSettingsChange={handleProjectSettingsChange}
       />
       <WorkspaceExportDialog
         activeExportJob={activeExportJob}

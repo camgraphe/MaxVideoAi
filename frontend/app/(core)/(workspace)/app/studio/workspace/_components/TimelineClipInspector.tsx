@@ -3,10 +3,17 @@
 import { RotateCcw, Sparkles } from 'lucide-react';
 import styles from '../maxvideoai-editor.module.css';
 import type {
+  WorkspaceProjectSettings,
   WorkspaceTimelineAudioMix,
   WorkspaceTimelineClipTransform,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
+import {
+  WORKSPACE_PROJECT_ASPECT_RATIOS,
+  WORKSPACE_PROJECT_FPS_OPTIONS,
+  WORKSPACE_PROJECT_RESOLUTIONS,
+  workspaceProjectDimensionsLabel,
+} from '../_lib/workspace-project-settings';
 import {
   isWorkspaceTimelineVideoTrack,
   workspaceTimelineTrackLabel,
@@ -28,8 +35,17 @@ const DEFAULT_AUDIO_MIX: WorkspaceTimelineAudioMix = {
 
 type TimelineClipInspectorProps = {
   selectedItem: WorkspaceTimelineItem | null;
+  selectedSequence: {
+    clipCount: number;
+    durationSec: number;
+    id: string;
+    name: string;
+    settings: WorkspaceProjectSettings;
+  } | null;
   projectFps: number;
   onPatchItem: (itemId: string, patch: Partial<WorkspaceTimelineItem>) => void;
+  onRenameSequence: (name: string) => void;
+  onSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
 };
 
 function itemEndSec(item: WorkspaceTimelineItem): number {
@@ -109,11 +125,113 @@ function InspectorSlider({
   );
 }
 
+function SequenceInspector({
+  sequence,
+  onRenameSequence,
+  onSequenceSettingsChange,
+}: {
+  sequence: NonNullable<TimelineClipInspectorProps['selectedSequence']>;
+  onRenameSequence: (name: string) => void;
+  onSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
+}) {
+  const dimensionsLabel = workspaceProjectDimensionsLabel(sequence.settings);
+
+  return (
+    <aside className={styles.settingsPanel} aria-label="Sequence settings">
+      <div className={styles.panelHeader}>
+        <div>
+          <p className={styles.panelTitle}>{sequence.name}</p>
+          <span className={styles.panelSubtitle}>Sequence settings</span>
+        </div>
+      </div>
+      <div className={styles.settingsBody}>
+        <label className={styles.settingsLabel}>
+          Sequence name
+          <input
+            className={styles.settingsInput}
+            value={sequence.name}
+            onChange={(event) => onRenameSequence(event.currentTarget.value)}
+          />
+        </label>
+
+        <section className={styles.timelineInspectorGroup} aria-label="Sequence format">
+          <div className={styles.sectionHeading}>
+            <span>Format</span>
+          </div>
+          <label className={styles.settingsLabel}>
+            Aspect ratio
+            <select
+              className={styles.settingsInput}
+              value={sequence.settings.aspectRatio}
+              onChange={(event) => onSequenceSettingsChange({ aspectRatio: event.currentTarget.value as WorkspaceProjectSettings['aspectRatio'] })}
+              aria-label="Sequence aspect ratio"
+            >
+              {WORKSPACE_PROJECT_ASPECT_RATIOS.map((aspectRatio) => (
+                <option key={aspectRatio} value={aspectRatio}>{aspectRatio}</option>
+              ))}
+            </select>
+          </label>
+          <label className={styles.settingsLabel}>
+            Resolution
+            <select
+              className={styles.settingsInput}
+              value={sequence.settings.resolution}
+              onChange={(event) => onSequenceSettingsChange({ resolution: event.currentTarget.value as WorkspaceProjectSettings['resolution'] })}
+              aria-label="Sequence resolution"
+            >
+              {WORKSPACE_PROJECT_RESOLUTIONS.map((resolution) => (
+                <option key={resolution} value={resolution}>{resolution}</option>
+              ))}
+            </select>
+          </label>
+          <label className={styles.settingsLabel}>
+            FPS
+            <select
+              className={styles.settingsInput}
+              value={sequence.settings.fps}
+              onChange={(event) => onSequenceSettingsChange({ fps: Number(event.currentTarget.value) as WorkspaceProjectSettings['fps'] })}
+              aria-label="Sequence FPS"
+            >
+              {WORKSPACE_PROJECT_FPS_OPTIONS.map((fps) => (
+                <option key={fps} value={fps}>{fps}</option>
+              ))}
+            </select>
+          </label>
+        </section>
+
+        <div className={styles.infoGrid} data-sequence-settings-summary="true" aria-label="Sequence details">
+          <span>Duration</span>
+          <strong>{formatWorkspaceTimecode(sequence.durationSec, sequence.settings.fps)}</strong>
+          <span>Clips</span>
+          <strong>{sequence.clipCount}</strong>
+          <span>Frame</span>
+          <strong>{dimensionsLabel}</strong>
+          <span>FPS</span>
+          <strong>{sequence.settings.fps}</strong>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function TimelineClipInspector({
   selectedItem,
+  selectedSequence,
   projectFps,
   onPatchItem,
+  onRenameSequence,
+  onSequenceSettingsChange,
 }: TimelineClipInspectorProps) {
+  if (!selectedItem && selectedSequence) {
+    return (
+      <SequenceInspector
+        sequence={selectedSequence}
+        onRenameSequence={onRenameSequence}
+        onSequenceSettingsChange={onSequenceSettingsChange}
+      />
+    );
+  }
+
   if (!selectedItem) return <InspectorEmptyState />;
 
   const isVideoTrack = isWorkspaceTimelineVideoTrack(selectedItem.track);

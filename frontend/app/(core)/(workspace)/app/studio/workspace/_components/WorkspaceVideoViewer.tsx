@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Film, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
+import { Camera, Film, Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import styles from '../maxvideoai-editor.module.css';
@@ -29,6 +29,7 @@ const PROGRAM_ZOOM_OPTIONS: Array<{ value: ProgramZoom; label: string }> = [
 ];
 const PLAYBACK_SEEK_TOLERANCE_SEC = 0.22;
 const PRELOAD_NEXT_CLIP_WINDOW_SEC = 1.5;
+const PROGRAM_SNAPSHOT_PREVIEW_MAX_WIDTH = 960;
 const DEFAULT_CLIP_TRANSFORM = {
   scale: 1,
   positionX: 0,
@@ -71,7 +72,19 @@ type WorkspaceVideoViewerProps = {
   onMarkIn: () => void;
   onMarkOut: () => void;
   onSelectItem: (itemId: string) => void;
+  onSendSnapshotToCanvas: (snapshot: WorkspaceProgramSnapshotPayload) => void;
   onTogglePlayback: () => void;
+};
+
+export type WorkspaceProgramSnapshotPayload = {
+  dataUrl?: string;
+  filename: string;
+  height: number;
+  playheadSec: number;
+  sourceUrl?: string;
+  timecode: string;
+  title: string;
+  width: number;
 };
 
 function isPlayableVideoUrl(url?: string | null): boolean {
@@ -151,6 +164,38 @@ function clipVisualStyleFor(layer: PlaybackLayer): CSSProperties {
   };
 }
 
+function snapshotFilenameForTimecode(timecode: string): string {
+  return `program-snapshot-${timecode.replace(/[^0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'frame'}.png`;
+}
+
+function snapshotPreviewDimensions(width: number, height: number): { height: number; width: number } {
+  if (width <= PROGRAM_SNAPSHOT_PREVIEW_MAX_WIDTH) return { height, width };
+  const scale = PROGRAM_SNAPSHOT_PREVIEW_MAX_WIDTH / width;
+  return {
+    height: Math.max(1, Math.round(height * scale)),
+    width: PROGRAM_SNAPSHOT_PREVIEW_MAX_WIDTH,
+  };
+}
+
+function programModelLabel(modelId?: string): string | null {
+  if (!modelId) return null;
+  const knownLabels: Record<string, string> = {
+    'kling-3-pro': 'Kling 3 Pro',
+    'kling-3-omni-standard': 'Kling 3.0 Omni',
+    'seedance-2': 'Seedance 2.0',
+    'seedance-2-pro': 'Seedance 2.0 Pro',
+    'veo-3-1': 'Veo 3.1',
+    'veo-3-1-fast': 'Veo 3.1 Fast',
+    'veo-3-1-lite': 'Veo 3.1 Lite',
+  };
+  if (knownLabels[modelId]) return knownLabels[modelId];
+  return modelId
+    .split('-')
+    .filter(Boolean)
+    .map((part) => (/^\d/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join(' ');
+}
+
 export function WorkspaceVideoViewer({
   canGoToNextCut,
   canGoToPreviousCut,
@@ -167,6 +212,7 @@ export function WorkspaceVideoViewer({
   onMarkIn,
   onMarkOut,
   onSelectItem,
+  onSendSnapshotToCanvas,
   onTogglePlayback,
 }: WorkspaceVideoViewerProps) {
   const playbackVideoRefs = useRef(new Map<string, HTMLVideoElement>());
@@ -291,12 +337,16 @@ export function WorkspaceVideoViewer({
   }, [audioItems, audioItemsAtPlayhead, playheadSec]);
   const hasVisiblePlayableLayer = playbackLayers.some((layer) => layer.isVisible);
   const shouldShowEmptyState = items.length === 0 && !hasVisiblePlayableLayer;
+  const timelineDurationSec = Math.max(0, ...items.map((item) => item.startSec + item.durationSec));
   const projectDimensionsLabel = workspaceProjectDimensionsLabel(projectSettings);
   const safeInPointSec = typeof inPointSec === 'number' && Number.isFinite(inPointSec) ? inPointSec : null;
   const safeOutPointSec = typeof outPointSec === 'number' && Number.isFinite(outPointSec) ? outPointSec : null;
   const hasInOutMarks = safeInPointSec !== null || safeOutPointSec !== null;
   const inTimecode = safeInPointSec === null ? '--:--:--:--' : formatWorkspaceTimecode(safeInPointSec, projectSettings.fps);
   const outTimecode = safeOutPointSec === null ? '--:--:--:--' : formatWorkspaceTimecode(safeOutPointSec, projectSettings.fps);
+  const playheadTimecode = formatWorkspaceTimecode(playheadSec, projectSettings.fps);
+  const timelineDurationTimecode = formatWorkspaceTimecode(timelineDurationSec, projectSettings.fps);
+  const activeModelLabel = programModelLabel(activePlaybackItem?.modelId);
   const programFrameStyle = useMemo(() => {
     const [aspectWidth, aspectHeight] = workspaceProjectAspectParts(projectSettings.aspectRatio);
     const dimensions = workspaceProjectDimensions(projectSettings);
@@ -332,6 +382,59 @@ export function WorkspaceVideoViewer({
       playbackAudioRefs.current.set(itemId, audio);
     }
   }, []);
+
+  const handleSendSnapshotToCanvas = useCallback(() => {
+    const visibleLayer = [...playbackLayersRef.current]
+      .filter((layer) => layer.isVisible && layer.opacity > 0.001)
+      .sort((left, right) => right.zIndex - left.zIndex)[0] ?? null;
+    if (!visibleLayer) return;
+
+    const dimensions = workspaceProjectDimensions(projectSettings);
+    const timecode = formatWorkspaceTimecode(playheadSec, projectSettings.fps);
+    const basePayload: WorkspaceProgramSnapshotPayload = {
+      filename: snapshotFilenameForTimecode(timecode),
+      height: dimensions.height,
+      playheadSec,
+      sourceUrl: visibleLayer.url,
+      timecode,
+      title: `${visibleLayer.item.title} snapshot`,
+      width: dimensions.width,
+    };
+
+    try {
+      const previewDimensions = snapshotPreviewDimensions(dimensions.width, dimensions.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = previewDimensions.width;
+      canvas.height = previewDimensions.height;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        onSendSnapshotToCanvas(basePayload);
+        return;
+      }
+
+      if (visibleLayer.mediaKind === 'video') {
+        const video = playbackVideoRefs.current.get(visibleLayer.item.id);
+        if (!video || video.readyState < 2) {
+          onSendSnapshotToCanvas(basePayload);
+          return;
+        }
+        context.drawImage(video, 0, 0, previewDimensions.width, previewDimensions.height);
+        onSendSnapshotToCanvas({ ...basePayload, dataUrl: canvas.toDataURL('image/jpeg', 0.82) });
+        return;
+      }
+
+      const image = Array.from(document.querySelectorAll<HTMLImageElement>('[data-playback-image-item-id]'))
+        .find((element) => element.dataset.playbackImageItemId === visibleLayer.item.id);
+      if (!image?.complete) {
+        onSendSnapshotToCanvas(basePayload);
+        return;
+      }
+      context.drawImage(image, 0, 0, previewDimensions.width, previewDimensions.height);
+      onSendSnapshotToCanvas({ ...basePayload, dataUrl: canvas.toDataURL('image/jpeg', 0.82) });
+    } catch {
+      onSendSnapshotToCanvas(basePayload);
+    }
+  }, [onSendSnapshotToCanvas, playheadSec, projectSettings]);
 
   const syncPlaybackVideos = useCallback(() => {
     const layerById = new Map(playbackLayersRef.current.filter((layer) => layer.mediaKind === 'video').map((layer) => [layer.item.id, layer]));
@@ -412,6 +515,7 @@ export function WorkspaceVideoViewer({
             <div className={styles.programMonitorTitle}>
               <span>Program</span>
               <small>{projectSettings.aspectRatio} · {projectDimensionsLabel} · {projectSettings.fps} fps</small>
+              {activeModelLabel ? <em className={styles.programModelPill}>{activeModelLabel}</em> : null}
             </div>
             <div className={styles.programMonitorActions}>
               <label className={styles.programZoomControl}>
@@ -427,7 +531,16 @@ export function WorkspaceVideoViewer({
                   ))}
                 </select>
               </label>
-              <strong>{formatWorkspaceTimecode(playheadSec, projectSettings.fps)}</strong>
+              <strong>{playheadTimecode}</strong>
+              <button
+                type="button"
+                className={styles.programFullscreenButton}
+                onClick={() => setProgramZoom((current) => (current === 'fit' ? '100' : 'fit'))}
+                aria-label="Toggle program zoom"
+                title="Toggle program zoom"
+              >
+                <Maximize2 size={14} />
+              </button>
             </div>
           </div>
           <div className={styles.programFrameViewport} data-testid="editor-program-viewport">
@@ -442,6 +555,7 @@ export function WorkspaceVideoViewer({
                   <img
                     key={layer.item.id}
                     className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
+                    data-playback-image-item-id={layer.item.id}
                     src={layer.url}
                     alt=""
                     style={clipVisualStyleFor(layer)}
@@ -489,67 +603,85 @@ export function WorkspaceVideoViewer({
               ) : null}
             </div>
           </div>
-          <div className={styles.viewerPlaybackControls} data-viewer-playback-controls="true">
-            <button
-              type="button"
-              onClick={onGoToPreviousCut}
-              disabled={!canGoToPreviousCut}
-              title="Go to previous edit cut"
-              aria-label="Previous cut"
-            >
-              <SkipBack size={17} />
-            </button>
-            <button
-              type="button"
-              className={styles.viewerPlaybackPrimary}
-              onClick={onTogglePlayback}
-              title={isPlaying ? 'Pause montage (Space)' : 'Play montage (Space)'}
-              aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
-            >
-              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-            </button>
-            <button
-              type="button"
-              onClick={onGoToNextCut}
-              disabled={!canGoToNextCut}
-              title="Go to next edit cut"
-              aria-label="Next cut"
-            >
-              <SkipForward size={17} />
-            </button>
-            <span className={styles.viewerPlaybackDivider} aria-hidden="true" />
-            <button
-              type="button"
-              className={styles.viewerMarkButton}
-              onClick={onMarkIn}
-              title="Mark In (I)"
-              aria-label="Mark In"
-            >
-              I
-            </button>
-            <button
-              type="button"
-              className={styles.viewerMarkButton}
-              onClick={onMarkOut}
-              title="Mark Out (O)"
-              aria-label="Mark Out"
-            >
-              O
-            </button>
-            <button
-              type="button"
-              className={styles.viewerMarkClearButton}
-              onClick={onClearInOut}
-              disabled={!hasInOutMarks}
-              title="Clear In and Out marks"
-              aria-label="Clear In and Out"
-            >
-              Clear
-            </button>
-          </div>
-          <div className={styles.viewerInOutSummary} data-viewer-in-out-summary="true" aria-label="Viewer in out marks">
-            <span>In {inTimecode}</span>
-            <span>Out {outTimecode}</span>
+          <div className={styles.viewerProgramControlsPanel}>
+            <div className={styles.viewerScrubRow} aria-label="Program scrub preview">
+              <span>{playheadTimecode}</span>
+              <div className={styles.viewerScrubTrack} aria-hidden="true">
+                <span style={{ width: `${timelineDurationSec > 0 ? Math.min(100, Math.max(0, (playheadSec / timelineDurationSec) * 100)) : 0}%` }} />
+              </div>
+              <span>{timelineDurationTimecode}</span>
+            </div>
+            <div className={styles.viewerPlaybackControls} data-viewer-playback-controls="true">
+              <button
+                type="button"
+                onClick={onGoToPreviousCut}
+                disabled={!canGoToPreviousCut}
+                title="Go to previous edit cut"
+                aria-label="Previous cut"
+              >
+                <SkipBack size={16} />
+              </button>
+              <button
+                type="button"
+                className={styles.viewerPlaybackPrimary}
+                onClick={onTogglePlayback}
+                title={isPlaying ? 'Pause montage (Space)' : 'Play montage (Space)'}
+                aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
+              >
+                {isPlaying ? <Pause size={17} /> : <Play size={17} />}
+              </button>
+              <button
+                type="button"
+                onClick={onGoToNextCut}
+                disabled={!canGoToNextCut}
+                title="Go to next edit cut"
+                aria-label="Next cut"
+              >
+                <SkipForward size={16} />
+              </button>
+              <span className={styles.viewerPlaybackDivider} aria-hidden="true" />
+              <button
+                type="button"
+                className={styles.viewerMarkButton}
+                onClick={onMarkIn}
+                title="Mark In (I)"
+                aria-label="Mark In"
+              >
+                I
+              </button>
+              <span className={styles.viewerMarkField}>In {inTimecode}</span>
+              <button
+                type="button"
+                className={styles.viewerMarkButton}
+                onClick={onMarkOut}
+                title="Mark Out (O)"
+                aria-label="Mark Out"
+              >
+                O
+              </button>
+              <span className={styles.viewerMarkField}>Out {outTimecode}</span>
+              <button
+                type="button"
+                className={styles.viewerSnapshotButton}
+                onClick={handleSendSnapshotToCanvas}
+                disabled={!hasVisiblePlayableLayer}
+                title="Send current frame snapshot to canvas"
+                aria-label="Send snapshot to canvas"
+              >
+                <Camera size={16} />
+                Snapshot
+              </button>
+              <button
+                type="button"
+                className={styles.viewerMarkClearButton}
+                onClick={onClearInOut}
+                disabled={!hasInOutMarks}
+                title="Clear In and Out marks"
+                aria-label="Clear In and Out"
+              >
+                Clear
+              </button>
+            </div>
           </div>
         </div>
       </div>
