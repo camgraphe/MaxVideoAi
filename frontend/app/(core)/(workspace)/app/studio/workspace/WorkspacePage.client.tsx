@@ -88,6 +88,14 @@ import {
   type WorkspaceTimelineTrimMode,
 } from './_lib/workspace-timeline-editing';
 import {
+  resolveProjectAssetTimelineInsert,
+} from './_lib/workspace-project-media-timeline';
+import {
+  retargetWorkspaceTimelineItemsForTrack,
+  timelineTrackHasClipAt,
+  workspaceTimelineItemsCompatibleWithTrack,
+} from './_lib/workspace-timeline-drops';
+import {
   buildWorkspaceTimelineRenderManifest,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
@@ -157,30 +165,6 @@ import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
 const styles = { ...baseStyles, ...shellStyles };
-
-function workspaceTimelineItemsCompatibleWithTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): boolean {
-  const hasVisualItem = items.some((item) => isWorkspaceTimelineVideoTrack(item.track) && item.mediaKind !== 'audio');
-  const hasOnlyAudioItems = items.every((item) => item.mediaKind === 'audio' || isWorkspaceTimelineAudioTrack(item.track));
-  return isWorkspaceTimelineVideoTrack(track) ? hasVisualItem : isWorkspaceTimelineAudioTrack(track) && hasOnlyAudioItems;
-}
-
-function retargetWorkspaceTimelineItemsForTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): WorkspaceTimelineItem[] {
-  if (isWorkspaceTimelineVideoTrack(track)) {
-    return items.map((item) => (isWorkspaceTimelineVideoTrack(item.track) ? { ...item, track } : item));
-  }
-  if (isWorkspaceTimelineAudioTrack(track)) {
-    return items.map((item) => (item.mediaKind === 'audio' || isWorkspaceTimelineAudioTrack(item.track) ? { ...item, track } : item));
-  }
-  return items;
-}
-
-function timelineTrackHasClipAt(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, seconds: number): boolean {
-  return items.some((item) => (
-    item.track === track &&
-    seconds > item.startSec &&
-    seconds < item.startSec + item.durationSec
-  ));
-}
 
 function workspaceTimelineCutPoints(items: WorkspaceTimelineItem[]): number[] {
   const cutPoints = new Set<number>([0]);
@@ -361,11 +345,6 @@ function nextAvailableTimelineItemId(baseId: string, items: WorkspaceTimelineIte
     nextId = `${baseId}-${suffix}`;
   }
   return nextId;
-}
-
-function projectAssetTimelineNodeId(asset: WorkspaceAssetRecord): string {
-  const safeId = asset.id.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'asset';
-  return `project-asset-${safeId}`;
 }
 
 function defaultSelectedNodeId(nodes: WorkspaceGraphNode[], templateId: WorkspaceTemplateId): string | null {
@@ -1684,83 +1663,29 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   }, []);
 
   const insertProjectAssetIntoTimeline = useCallback((assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
-    const asset = projectAssets.find((candidate) => candidate.id === assetId);
-    if (!asset) {
-      setNotice('Project media asset not found.');
-      return;
-    }
-
-    const assetUrl = asset.url ?? asset.thumbUrl ?? null;
-    const canInsertAsset =
-      (asset.kind === 'video' && isPlayableVideoUrl(asset.url)) ||
-      (asset.kind === 'audio' && isPlayableAudioUrl(asset.url)) ||
-      ((asset.kind === 'image' || asset.kind === 'logo') && isPlayableImageUrl(assetUrl));
-    if (!canInsertAsset) {
-      setNotice(`${asset.filename} is not a playable timeline media asset.`);
-      return;
-    }
-    if (targetTrack && lockedTimelineTracks.includes(targetTrack)) {
-      setNotice(`Unlock ${workspaceTimelineTrackLabel(targetTrack)} before dropping media on it.`);
-      return;
-    }
-
     const timelineSeed = Date.now().toString(36);
-    const draftItems = buildWorkspaceTimelineItemsForAsset({
-      assetNodeId: projectAssetTimelineNodeId(asset),
-      title: asset.filename,
-      asset,
+    const result = resolveProjectAssetTimelineInsert({
+      assetId,
+      projectAssets,
+      currentItems: timelineItemsRef.current,
       startSec,
-      idSeed: timelineSeed,
-    });
-    if (!draftItems.length) {
-      setNotice(`${asset.filename} cannot be placed on the timeline.`);
-      return;
-    }
-    if (targetTrack && !workspaceTimelineItemsCompatibleWithTrack(draftItems, targetTrack)) {
-      setNotice(`${asset.filename} is not compatible with the ${targetTrack} track.`);
-      return;
-    }
-
-    const nextItems = targetTrack ? retargetWorkspaceTimelineItemsForTrack(draftItems, targetTrack) : draftItems;
-    const nextTimelineItemId = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.id ?? nextItems[0]?.id ?? null;
-    const resolvedTargetTrack = targetTrack ?? nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.track ?? nextItems[0]?.track ?? null;
-    if (!nextTimelineItemId || !resolvedTargetTrack) {
-      setNotice(`${asset.filename} cannot be placed on the timeline.`);
-      return;
-    }
-    if (nextItems.some((item) => lockedTimelineTracks.includes(item.track))) {
-      setNotice('Unlock the target track before inserting project media.');
-      return;
-    }
-
-    const currentItems = timelineItemsRef.current;
-    const nextTimelineItems = insertWorkspaceTimelineItems({
-      items: currentItems,
-      newItems: nextItems,
-      mode: 'insert',
-      playheadSec: startSec,
-      selectedItemId: null,
-      idSeed: timelineSeed,
+      targetTrack,
+      lockedTimelineTracks,
       allowInsertIntoClip: timelineInsertIntoClipEnabled,
+      idSeed: timelineSeed,
     });
-    const insertedItem = nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null;
-    if (!insertedItem) {
-      const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(currentItems, resolvedTargetTrack, startSec);
-      setNotice(isBlockedClipInsert ? 'Place the playhead on an edit point or enable Insert into clip.' : `${asset.filename} could not be inserted on the timeline.`);
+    if (!result.ok) {
+      setNotice(result.notice);
       return;
     }
 
-    commitTimelineItems(() => nextTimelineItems);
+    commitTimelineItems(() => result.items);
     setActiveEditorSurface('timeline');
-    setSelectedTimelineItemId(nextTimelineItemId);
-    setSelectedTimelineItemIds([nextTimelineItemId]);
-    setPlayheadSec(insertedItem.startSec);
+    setSelectedTimelineItemId(result.selectedItemId);
+    setSelectedTimelineItemIds([result.selectedItemId]);
+    setPlayheadSec(result.playheadSec);
     setIsTimelinePlaying(false);
-    setNotice(
-      targetTrack
-        ? `${asset.filename} dropped on ${resolvedTargetTrack} at ${insertedItem.startSec.toFixed(2)}s.`
-        : `${asset.filename} inserted at the playhead on the ${resolvedTargetTrack} track.`
-    );
+    setNotice(result.notice);
   }, [commitTimelineItems, lockedTimelineTracks, projectAssets, timelineInsertIntoClipEnabled]);
 
   const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
