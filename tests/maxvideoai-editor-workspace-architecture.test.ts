@@ -54,6 +54,7 @@ const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSess
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
+const timelineClipPath = join(workspaceDir, '_components/timeline/TimelineClip.tsx');
 const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler.tsx');
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
@@ -124,6 +125,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
+  assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineRulerPath), 'timeline ruler should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
@@ -333,6 +335,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const workspaceNormalizersSource = source(workspaceNormalizersPath);
   const typesSource = source(typesPath);
   const styleSource = source(stylesPath);
+  const timelineClipSource = source(timelineClipPath);
   const timelineSource = source(timelinePath);
   const timelineRulerSource = source(timelineRulerPath);
   const timelineTrackRowSource = source(timelineTrackRowPath);
@@ -722,6 +725,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /exportQualityPreset/, 'workspace export action should keep the selected video quality preset');
   assert.match(workspaceSource, /handleExportTimelineVideo/, 'workspace should wire the primary export video action');
   assert.match(workspaceSource, /handleExportTimelineRender/, 'workspace should wire the topbar export action to timeline render handoff');
+  assert.match(timelineSource, /TimelineClip/, 'timeline should compose focused clip components instead of owning clip JSX inline');
   assert.match(timelineSource, /TimelineRuler/, 'timeline should compose a focused ruler component instead of owning ruler JSX inline');
   assert.match(timelineSource, /TimelineTrackRow/, 'timeline should compose focused track row components instead of owning track label and lane JSX inline');
   assert.match(timelineSource, /TimelineToolbar/, 'timeline should compose a focused toolbar component instead of owning toolbar JSX inline');
@@ -780,7 +784,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(timelineSource, /Timeline trim mode/, 'timeline should not expose trim, ripple, and roll as a text mode switch');
   assert.doesNotMatch(timelineSource, /Toggle crossfade transition/, 'timeline toolbar should not expose ad hoc crossfade controls before the effects menu exists');
   assert.match(timelineSource, /event\.code === 'KeyS'|KeyB/, 'timeline should expose a keyboard split shortcut at the playhead');
-  assert.match(timelineSource, /timelineClipCutMode/, 'clips should render a dedicated cut-mode pointer state');
+  assert.match(timelineClipSource, /timelineClipCutMode/, 'timeline clip should render a dedicated cut-mode pointer state');
   assert.match(timelineSource, /getBoundingClientRect/, 'cut tool should convert the mouse position on the clip into a split time');
   assert.match(timelineSource, /playheadSec/, 'timeline should render and control a playhead');
   assert.match(timelineSource, /projectFps/, 'timeline should format playhead and ruler labels from project FPS');
@@ -793,8 +797,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineTrackRowSource, /Drag timeline playhead/, 'timeline row playhead handles should have clear accessible labels');
   assert.match(timelineRulerSource, /Timeline scrubber/, 'timeline ruler should expose a scrubber for playhead positioning');
   assert.match(timelineSource, /onResizeItem/, 'timeline clips should wire resize controls');
-  assert.match(timelineSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
-  assert.match(timelineSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
+  assert.match(timelineClipSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
+  assert.match(timelineClipSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
   assert.match(timelineSource, /TimelineInteractionState/, 'timeline should keep lightweight preview state during pointer edits');
   assert.match(timelineSource, /originSourceStartSec/, 'timeline drag preview should remember the selected clip source in-point');
   assert.match(timelineSource, /originSourceDurationSec/, 'timeline drag preview should remember the selected clip source duration');
@@ -817,7 +821,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /selectedItemId/, 'timeline should expose selected clip state');
   assert.match(timelineSource, /onCutItem/, 'timeline should wire the cut tool to selected clips');
   assert.match(timelineToolbarSource, /timelineZoomControl/, 'timeline toolbar should keep zoom controls visually compact');
-  assert.match(timelineSource, /timelineWaveform/, 'timeline audio clips should render lightweight waveform previews');
+  assert.match(timelineClipSource, /timelineWaveform/, 'timeline audio clips should render lightweight waveform previews');
   assert.match(workspaceSource, /WorkspaceVideoViewer[\s\S]*playheadSec=\{playheadSec\}/, 'workspace should pass the shared playhead into the montage viewer');
   assert.doesNotMatch(workspaceSource, /<WorkspaceVideoViewer(?:(?!\/>)[\s\S])*onPlayheadChange=/, 'workspace should keep playhead editing in the timeline instead of the viewer');
   assert.match(workspaceSource, /TimelineClipInspector[\s\S]*selectedItem=\{selectedTimelineItem\}/, 'viewer mode inspector should edit the selected timeline item');
