@@ -1,0 +1,366 @@
+.videoViewerShell {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.14), transparent 34%),
+    rgba(3, 7, 18, 0.96);
+}
+
+.viewerStage {
+  display: grid;
+  min-height: 0;
+  place-items: center;
+  padding: 22px 24px;
+}
+
+.programMonitor {
+  display: grid;
+  width: min(100%, 1100px);
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+}
+
+.programMonitorHeader,
+.programMonitorMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.programMonitorTitle,
+.programMonitorActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.programMonitorTitle {
+  flex-wrap: wrap;
+}
+
+.programMonitorHeader span {
+  color: #cbd5e1;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.programMonitorTitle small {
+  color: #64748b;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.programModelPill {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid rgba(129, 140, 248, 0.26);
+  border-radius: 7px;
+  background: rgba(88, 28, 135, 0.32);
+  color: #c4b5fd;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.programMonitorHeader strong {
+  color: #f8fafc;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+}
+
+.programZoomControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.programZoomControl select {
+  height: 30px;
+  min-width: 78px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font: inherit;
+  font-size: 11px;
+  text-transform: none;
+}
+
+.programFullscreenButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.programFullscreenButton:hover,
+.programFullscreenButton:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: rgba(30, 41, 59, 0.96);
+  color: #ffffff;
+  outline: none;
+}
+
+.programFrameViewport {
+  container-type: size;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  place-items: center;
+}
+
+.viewerProgramControlsPanel {
+  display: grid;
+  gap: 12px;
+  padding: 12px 18px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.viewerScrubRow {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  color: #dbeafe;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerScrubTrack {
+  position: relative;
+  height: 14px;
+  overflow: hidden;
+}
+
+.viewerScrubTrack::before {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.22) 0 2px, transparent 2px 7px),
+    rgba(148, 163, 184, 0.12);
+  content: "";
+}
+
+.viewerScrubTrack > span {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.46);
+}
+
+.viewerPlaybackControls {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.viewerPlaybackControls button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #dbeafe;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.viewerPlaybackControls button:hover,
+.viewerPlaybackControls button:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: rgba(30, 41, 59, 0.96);
+  color: #f8fafc;
+  outline: none;
+}
+
+.viewerPlaybackControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.viewerPlaybackControls .viewerPlaybackPrimary {
+  width: 54px;
+  height: 38px;
+  border-color: rgba(129, 140, 248, 0.3);
+  background: rgba(30, 41, 59, 0.92);
+}
+
+.viewerPlaybackDivider {
+  width: 1px;
+  height: 26px;
+  margin: 0 4px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.viewerPlaybackControls .viewerMarkButton {
+  width: 30px;
+  height: 30px;
+  color: #c4b5fd;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.viewerMarkField {
+  display: inline-flex;
+  height: 30px;
+  min-width: 106px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.62);
+  color: #cbd5e1;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerPlaybackControls .viewerSnapshotButton {
+  display: inline-flex;
+  width: auto;
+  min-width: 96px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.viewerPlaybackControls .viewerMarkClearButton {
+  width: auto;
+  height: 28px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 760;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+.viewerInOutSummary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 16px;
+  color: #94a3b8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.programFrame {
+  position: relative;
+  display: grid;
+  aspect-ratio: var(--workspace-project-aspect-ratio, 16 / 9);
+  place-self: center;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 9px;
+  background: #020617;
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.programFrameFit {
+  width: min(100cqw, calc(100cqh * var(--workspace-project-aspect-width, 16) / var(--workspace-project-aspect-height, 9)));
+  height: min(100cqh, calc(100cqw * var(--workspace-project-aspect-height, 9) / var(--workspace-project-aspect-width, 16)));
+}
+
+.programFrameScaled {
+  width: calc(var(--workspace-project-preview-width, 1920px) * var(--workspace-program-zoom-scale, 1));
+  height: calc(var(--workspace-project-preview-height, 1080px) * var(--workspace-program-zoom-scale, 1));
+}
+
+.viewerVideoLayer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #020617;
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.viewerVideoLayerVisible {
+  pointer-events: auto;
+}
+
+.viewerAudioLayer {
+  display: none;
+}
+
+.viewerEmpty {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.viewerEmpty p {
+  margin: 0;
+}
+
+.viewerEmpty p {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.viewerEmpty span {
+  color: #94a3b8;
+  font-size: 11px;
+}

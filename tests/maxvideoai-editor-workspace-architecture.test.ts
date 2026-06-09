@@ -113,6 +113,7 @@ const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditor
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
+const viewerStylesPath = join(workspaceDir, '_styles/viewer.module.css');
 const visitorAccessPath = join(root, 'frontend/lib/visitor-access.ts');
 
 function source(path: string): string {
@@ -176,6 +177,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
 
   const pageSource = source(pagePath);
   const studioArchitectureGuideSource = source(studioArchitectureGuidePath);
@@ -420,6 +422,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
   const mediaStyleSource = source(mediaStylesPath);
+  const viewerStyleSource = source(viewerStylesPath);
   const programMonitorSource = source(programMonitorPath);
   const programPlaybackLayersSource = source(programPlaybackLayersPath);
   const programControlsSource = source(programControlsPath);
@@ -755,7 +758,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(programPlaybackSyncSource, /isPlayableAudioUrl/, 'playback sync should detect playable audio timeline sources');
   assert.match(programPlaybackLayersSource, /<audio[\s\S]*data-playback-audio-item-id/, 'playback layers should mount audio tracks for synchronized montage playback');
   assert.match(programPlaybackLayersSource, /linkedAudioGroupIds/, 'playback layers should mute video layers when a linked audio timeline track owns that sound');
-  assert.match(styleSource, /\.viewerAudioLayer/, 'hidden audio playback elements should be styled in isolated editor CSS');
+  assert.match(videoViewerSource, /_styles\/viewer\.module\.css/, 'viewer shell should import its focused viewer CSS module');
+  assert.match(programMonitorSource, /_styles\/viewer\.module\.css/, 'program monitor should import its focused viewer CSS module');
+  assert.match(programPlaybackLayersSource, /_styles\/viewer\.module\.css/, 'program playback layers should import their focused viewer CSS module');
+  assert.match(programControlsSource, /_styles\/viewer\.module\.css/, 'program controls should import their focused viewer CSS module');
+  assert.match(viewerStyleSource, /\.viewerAudioLayer/, 'hidden audio playback elements should be styled in focused viewer CSS');
   assert.match(programPlaybackSyncSource, /PRELOAD_NEXT_CLIP_WINDOW_SEC/, 'playback sync should preload the next cut before the playhead reaches it');
   assert.match(programPlaybackSyncSource, /crossfadeDurationFor/, 'playback sync should preview crossfade transitions between adjacent timeline clips');
   assert.match(programPlaybackLayersSource, /viewerVideoLayerVisible/, 'playback layers should use opacity layers for smooth visual transitions');
@@ -1049,23 +1056,26 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in isolated editor CSS');
   assert.match(styleSource, /\.processingPreview/, 'processing output placeholders should be styled in isolated editor CSS');
   assert.match(styleSource, /\.previewVideo/, 'playable video previews should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.videoViewerShell/, 'central montage viewer should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
-  assert.match(styleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');
-  assert.match(styleSource, /\.programFrameViewport[\s\S]*container-type:\s*size/, 'program monitor viewport should provide size containment for aspect-ratio fitting');
-  assert.match(styleSource, /\.programFrameViewport[\s\S]*overflow:\s*auto/, 'program monitor viewport should allow inspection of 100% sequence pixels without resizing the app shell');
-  assert.match(styleSource, /\.programFrame/, 'central viewer should style a project-ratio program frame');
-  assert.match(styleSource, /\.viewerVideoLayer/, 'program monitor should stack stable video layers for smoother sequence playback');
-  assert.match(styleSource, /\.viewerVideoLayer[\s\S]*transform-origin:\s*center/, 'program monitor layers should transform around the project frame center');
-  assert.match(styleSource, /\.viewerVideoLayerVisible/, 'program monitor should expose the active video layer without recreating the video source');
-  assert.match(styleSource, /\.programFrameFit/, 'program monitor should fit the full sequence frame by default');
-  assert.match(styleSource, /\.programFrameScaled/, 'program monitor should support pixel-based sequence zoom levels');
-  assert.match(styleSource, /--workspace-project-aspect-ratio/, 'program frame should use a project aspect-ratio CSS variable');
-  assert.match(styleSource, /--workspace-project-aspect-width/, 'program frame should use numeric aspect width for contained fitting');
-  assert.match(styleSource, /--workspace-project-aspect-height/, 'program frame should use numeric aspect height for contained fitting');
-  assert.match(styleSource, /--workspace-project-preview-width/, 'program frame should use project pixel width for non-Fit monitor zoom');
-  assert.match(styleSource, /--workspace-project-preview-height/, 'program frame should use project pixel height for non-Fit monitor zoom');
-  assert.match(styleSource, /--workspace-program-zoom-scale/, 'program frame should use monitor zoom scale separately from project resolution');
+  assert.match(viewerStyleSource, /\.videoViewerShell/, 'central montage viewer should be styled in focused viewer CSS');
+  assert.match(viewerStyleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
+  assert.match(viewerStyleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');
+  assert.match(viewerStyleSource, /\.programFrameViewport[\s\S]*container-type:\s*size/, 'program monitor viewport should provide size containment for aspect-ratio fitting');
+  assert.match(viewerStyleSource, /\.programFrameViewport[\s\S]*overflow:\s*auto/, 'program monitor viewport should allow inspection of 100% sequence pixels without resizing the app shell');
+  assert.match(viewerStyleSource, /\.programFrame/, 'central viewer should style a project-ratio program frame');
+  assert.match(viewerStyleSource, /\.viewerVideoLayer/, 'program monitor should stack stable video layers for smoother sequence playback');
+  assert.match(viewerStyleSource, /\.viewerVideoLayer[\s\S]*transform-origin:\s*center/, 'program monitor layers should transform around the project frame center');
+  assert.match(viewerStyleSource, /\.viewerVideoLayerVisible/, 'program monitor should expose the active video layer without recreating the video source');
+  assert.match(viewerStyleSource, /\.programFrameFit/, 'program monitor should fit the full sequence frame by default');
+  assert.match(viewerStyleSource, /\.programFrameScaled/, 'program monitor should support pixel-based sequence zoom levels');
+  assert.match(viewerStyleSource, /--workspace-project-aspect-ratio/, 'program frame should use a project aspect-ratio CSS variable');
+  assert.match(viewerStyleSource, /--workspace-project-aspect-width/, 'program frame should use numeric aspect width for contained fitting');
+  assert.match(viewerStyleSource, /--workspace-project-aspect-height/, 'program frame should use numeric aspect height for contained fitting');
+  assert.match(viewerStyleSource, /--workspace-project-preview-width/, 'program frame should use project pixel width for non-Fit monitor zoom');
+  assert.match(viewerStyleSource, /--workspace-project-preview-height/, 'program frame should use project pixel height for non-Fit monitor zoom');
+  assert.match(viewerStyleSource, /--workspace-program-zoom-scale/, 'program frame should use monitor zoom scale separately from project resolution');
+  assert.doesNotMatch(styleSource, /\.videoViewerShell/, 'main editor CSS should no longer own viewer shell styles after modularization');
+  assert.doesNotMatch(styleSource, /\.programMonitor/, 'main editor CSS should no longer own program monitor styles after modularization');
+  assert.ok(lineCount(viewerStyleSource) <= 1200, 'program viewer CSS module should stay under the focused module size threshold');
   assert.doesNotMatch(styleSource, /\.viewerSettingsSlot/, 'viewer should not reserve a footer slot for project settings');
   assert.doesNotMatch(styleSource, /\.sequenceSettingsButton/, 'viewer should not style a footer project settings button');
   assert.match(styleSource, /\.sequenceSettingsOverlay/, 'viewer should style the project settings dialog overlay');

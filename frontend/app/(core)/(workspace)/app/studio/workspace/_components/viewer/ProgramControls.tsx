@@ -1,7 +1,7 @@
 'use client';
 
 import { Camera, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/viewer.module.css';
 
 type ProgramControlsProps = {
   canGoToNextCut: boolean;

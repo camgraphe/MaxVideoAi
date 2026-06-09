@@ -3,7 +3,7 @@
 import { Maximize2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/viewer.module.css';
 import type { WorkspaceProjectSettings } from '../../_lib/workspace-types';
 import {
   workspaceProjectAspectParts,

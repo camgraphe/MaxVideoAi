@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { Film } from 'lucide-react';
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/viewer.module.css';
 import { clipVisualStyleFor } from './useProgramPlaybackSync';
 import type { AudioPlaybackLayer, PlaybackLayer } from './useProgramPlaybackSync';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import styles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/viewer.module.css';
 import type { WorkspaceProjectSettings, WorkspaceTimelineItem } from '../_lib/workspace-types';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import { ProgramControls } from './viewer/ProgramControls';
