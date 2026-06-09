@@ -30,17 +30,23 @@ import {
   getWorkspaceModelCapabilities,
   getWorkspaceShotInputConnectors,
   getWorkspaceShotTargetHandles,
-  isWorkspaceConnectionCompatible,
   validateShotConnections,
   workspaceConnectionCapacity,
 } from './_lib/workspace-capabilities';
+import {
+  appendSelectedWorkspaceGraphNode,
+  connectedInputCounts,
+  connectedInputKinds,
+  defaultSelectedNodeId,
+  findGeneratedOutputNodeForShot,
+  outputNodeSubtitle,
+  workspaceConnectionRejectionReason,
+} from './_lib/workspace-graph-helpers';
 import { createPendingWorkspaceOutput, submitWorkspaceShotGeneration } from './_lib/workspace-generation';
 import type {
-  WorkspaceEdgeKind,
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
-  WorkspaceInputConnector,
   WorkspaceNodeKind,
   WorkspaceProjectSettings,
   WorkspaceShotSettings,
@@ -183,127 +189,6 @@ function cloneWorkspaceJson<T>(value: T): T {
 function createLocalStudioId(prefix: string): string {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-function connectedInputKinds(nodeId: string, edges: WorkspaceGraphEdge[]): WorkspaceEdgeKind[] {
-  return edges
-    .filter((edge) => edge.target === nodeId)
-    .map((edge) => edge.data?.kind ?? inferWorkspaceEdgeKind(edge.sourceHandle, edge.targetHandle))
-    .filter((kind) => kind !== 'generated_output' && kind !== 'output_to_timeline');
-}
-
-function connectedInputCounts(nodeId: string, edges: WorkspaceGraphEdge[]): Map<WorkspaceEdgeKind, number> {
-  return edges
-    .filter((edge) => edge.target === nodeId)
-    .reduce((counts, edge) => {
-      const kind = edge.data?.kind ?? inferWorkspaceEdgeKind(edge.sourceHandle, edge.targetHandle);
-      counts.set(kind, (counts.get(kind) ?? 0) + 1);
-      return counts;
-    }, new Map<WorkspaceEdgeKind, number>());
-}
-
-function findGeneratedOutputNodeForShot(
-  shotNodeId: string,
-  nodes: WorkspaceGraphNode[],
-  edges: WorkspaceGraphEdge[]
-): WorkspaceGraphNode | null {
-  const outputEdge = edges.find(
-    (edge) =>
-      edge.source === shotNodeId &&
-      (edge.data?.kind === GENERATED_OUTPUT_TARGET_HANDLE || edge.targetHandle === GENERATED_OUTPUT_TARGET_HANDLE)
-  );
-  if (!outputEdge) return null;
-  return nodes.find((node) => node.id === outputEdge.target && node.data.kind === 'output') ?? null;
-}
-
-function outputNodeSubtitle(output: NonNullable<WorkspaceGraphNode['data']['output']>): string {
-  if (output.status === 'processing') return 'Processing render...';
-  if (output.status === 'placeholder') return 'Waiting for generated media';
-  if (output.status === 'failed') return 'Generation failed';
-  if (output.durationSec && output.aspectRatio) return `${output.durationSec}s · ${output.aspectRatio}`;
-  return 'Generated media';
-}
-
-function connectorForTarget({
-  targetNode,
-  targetHandle,
-  capabilities,
-}: {
-  targetNode: WorkspaceGraphNode | null;
-  targetHandle: WorkspaceEdgeKind;
-  capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
-}): WorkspaceInputConnector | null {
-  if (!targetNode) return null;
-  if (targetNode.data.kind === 'shot' && targetNode.data.shot) {
-    const capability = getWorkspaceModelCapability(targetNode.data.shot.modelId, capabilities);
-    return getWorkspaceShotInputConnectors(capability).find((connector) => connector.kind === targetHandle) ?? null;
-  }
-  if (targetNode.data.kind === 'output' && targetHandle === 'generated_output') {
-    return {
-      kind: 'generated_output',
-      label: 'Output',
-      required: true,
-      maxCount: 1,
-      sourceType: 'video',
-    };
-  }
-  return null;
-}
-
-function workspaceConnectionRejectionReason({
-  connection,
-  nodes,
-  edges,
-  capabilities,
-}: {
-  connection: Pick<Connection, 'source' | 'target'> & { sourceHandle?: string | null; targetHandle?: string | null };
-  nodes: WorkspaceGraphNode[];
-  edges: WorkspaceGraphEdge[];
-  capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
-}): string | null {
-  if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle) {
-    return 'This link needs a source and a target connector.';
-  }
-  if (connection.source === connection.target) {
-    return 'A block cannot link to itself.';
-  }
-  if (!isWorkspaceConnectionCompatible({ sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle })) {
-    return 'These block connectors are not compatible.';
-  }
-  const targetHandle = inferWorkspaceEdgeKind(connection.sourceHandle, connection.targetHandle);
-  const targetNode = nodes.find((node) => node.id === connection.target) ?? null;
-  const connector = connectorForTarget({ targetNode, targetHandle, capabilities });
-  if (!connector) return null;
-  const capacity = workspaceConnectionCapacity({
-    connector,
-    connectedCount: connectedInputCounts(connection.target, edges).get(targetHandle) ?? 0,
-  });
-  if (capacity.isFull) {
-    return `${connector.label} is full.`;
-  }
-  return null;
-}
-
-function defaultSelectedNodeId(nodes: WorkspaceGraphNode[], templateId: WorkspaceTemplateId): string | null {
-  if (templateId === 'product-ad' && nodes.some((node) => node.id === 'shot-03')) return 'shot-03';
-  return nodes[0]?.id ?? null;
-}
-
-function selectWorkspaceGraphNode(nodes: WorkspaceGraphNode[], nodeId: string): WorkspaceGraphNode[] {
-  return nodes.map((node) => ({
-    ...node,
-    selected: node.id === nodeId,
-  }));
-}
-
-function appendSelectedWorkspaceGraphNode(nodes: WorkspaceGraphNode[], node: WorkspaceGraphNode): WorkspaceGraphNode[] {
-  return [
-    ...selectWorkspaceGraphNode(nodes, node.id),
-    {
-      ...node,
-      selected: true,
-    },
-  ];
 }
 
 type WorkspacePageProps = {
