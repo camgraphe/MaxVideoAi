@@ -85,6 +85,7 @@ const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-ad
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
 const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
+const canvasImportsPath = join(workspaceDir, '_lib/workspace-canvas-imports.ts');
 const projectSettingsPath = join(workspaceDir, '_lib/workspace-project-settings.ts');
 const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
 const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.ts');
@@ -372,6 +373,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
   assert.ok(existsSync(handleDropPath), 'handle-drop node creation should live in a pure route-local helper');
+  assert.ok(existsSync(canvasImportsPath), 'canvas import helpers should live in a pure route-local helper');
   assert.ok(existsSync(projectSettingsPath), 'project settings helpers should live in a pure route-local helper');
   assert.ok(existsSync(timecodePath), 'timeline timecode helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineEditingPath), 'timeline editing helpers should live in a pure route-local helper');
@@ -429,6 +431,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const generationSource = source(generationPath);
   const pricingSource = source(pricingPath);
   const handleDropSource = source(handleDropPath);
+  const canvasImportsSource = source(canvasImportsPath);
   const projectSettingsSource = source(projectSettingsPath);
   const timecodeSource = source(timecodePath);
   const timelineEditingSource = source(timelineEditingPath);
@@ -509,9 +512,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasSource, /WorkspaceCanvasFileDropRequest/, 'canvas should expose local file drops as a typed request to the orchestrator');
   assert.match(canvasControllerSource, /dataTransfer\.files/, 'canvas controller should accept files dragged from the operating system');
   assert.match(canvasControllerSource, /clipboardData/, 'canvas controller should accept pasted files and text from the clipboard');
+  assert.match(canvasImportsSource, /workspaceNodeKindForCanvasFile/, 'canvas import helper should classify local dropped and pasted files');
+  assert.match(canvasImportsSource, /workspaceAssetRecordFromCanvasFile/, 'canvas import helper should build local asset records from browser object URLs');
+  assert.match(canvasImportsSource, /createAdHocWorkspaceNode/, 'canvas import helper should build ad hoc canvas nodes for drops and snapshots');
   assert.match(workspaceSource, /handleCanvasFileDrop/, 'orchestrator should convert dropped local files into matching workspace nodes');
   assert.match(workspaceSource, /handleCanvasTextPaste/, 'orchestrator should convert pasted plain text into prompt nodes');
   assert.match(workspaceSource, /URL\.createObjectURL/, 'local file drops should use browser object URLs for immediate preview');
+  assert.doesNotMatch(workspaceSource, /function workspaceNodeKindForCanvasFile/, 'orchestrator should not own local file type detection');
+  assert.doesNotMatch(workspaceSource, /function workspaceAssetRecordFromCanvasFile/, 'orchestrator should not own browser-local asset record builders');
+  assert.doesNotMatch(workspaceSource, /function createAdHocNode/, 'orchestrator should not own default ad hoc canvas node builders');
   assert.match(canvasHandleDropPreviewSource, /ViewportPortal/, 'canvas should render handle-drag previews in flow coordinates');
   assert.match(canvasHandleDropPreviewSource, /workspaceGhostNode/, 'canvas should show a ghost block while dragging from a connector');
   assert.match(canvasHandleDropPreviewSource, /workspaceGhostLink/, 'canvas should show a ghost link while dragging from a connector');

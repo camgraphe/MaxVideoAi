@@ -111,10 +111,13 @@ async function mockStudioPersistenceApi(page: Page): Promise<void> {
 }
 
 async function dismissCookieBanner(page: Page): Promise<void> {
-  const rejectCookies = page.getByRole('button', { name: 'Reject all' });
-  await rejectCookies.waitFor({ state: 'visible', timeout: 2_000 }).catch(() => undefined);
-  if (await rejectCookies.isVisible().catch(() => false)) {
-    await rejectCookies.click();
+  for (const label of ['Reject all', 'Accept all']) {
+    const consentButton = page.getByRole('button', { name: label }).first();
+    await consentButton.waitFor({ state: 'visible', timeout: 2_000 }).catch(() => undefined);
+    if (await consentButton.isVisible().catch(() => false)) {
+      await consentButton.click();
+      return;
+    }
   }
 }
 
