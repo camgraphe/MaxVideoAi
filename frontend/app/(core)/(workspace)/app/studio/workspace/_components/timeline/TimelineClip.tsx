@@ -11,7 +11,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/timeline.module.css';
 import type { WorkspaceTimelineItem } from '../../_lib/workspace-types';
 import { isWorkspaceTimelineVideoTrack } from '../../_lib/workspace-timeline-tracks';
 import type { TimelineTool } from './TimelineToolbar';

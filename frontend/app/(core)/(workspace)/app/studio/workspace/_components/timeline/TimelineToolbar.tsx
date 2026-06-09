@@ -1,7 +1,7 @@
 import { MousePointer2, Redo2, Scissors, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
 import { memo } from 'react';
 
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/timeline.module.css';
 
 export type TimelineTool = 'select' | 'blade';
 

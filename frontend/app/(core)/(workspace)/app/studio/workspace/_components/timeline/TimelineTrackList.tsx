@@ -6,7 +6,7 @@ import type {
 } from 'react';
 import { memo, useMemo } from 'react';
 
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/timeline.module.css';
 import type {
   WorkspaceTimelineAudioTrack,
   WorkspaceTimelineItem,
