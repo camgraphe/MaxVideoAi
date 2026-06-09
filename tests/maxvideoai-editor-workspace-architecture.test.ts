@@ -115,6 +115,7 @@ const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistenc
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
+const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
 const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
@@ -388,6 +389,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
+  assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
   assert.ok(existsSync(templateCorePath), 'template core edge and shot helpers should live in the templates domain');
@@ -445,6 +447,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
+  const timelineHistoryHookSource = source(timelineHistoryHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
   const templateCoreSource = source(templateCorePath);
@@ -892,7 +895,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /isTimelinePlaying/, 'workspace should own shared montage playback state');
   assert.match(workspaceSource, /setInterval/, 'workspace should advance the playhead from a timeline clock, not only native video controls');
   assert.match(workspaceSource, /handleToggleTimelinePlayback/, 'workspace should expose a shared play/pause toggle');
-  assert.match(workspaceSource, /timelineHistory/, 'workspace should keep undo and redo history for timeline edits');
+  assert.match(workspaceSource, /useWorkspaceTimelineHistory/, 'workspace should delegate timeline undo and redo history to a route-local hook');
+  assert.match(timelineHistoryHookSource, /TimelineHistoryState/, 'timeline history hook should own the undo and redo history state');
+  assert.match(timelineHistoryHookSource, /TIMELINE_HISTORY_LIMIT/, 'timeline history hook should enforce the shared history limit');
+  assert.match(timelineHistoryHookSource, /normalizeWorkspaceTimelineIdentities/, 'timeline history hook should normalize committed timeline item identities');
+  assert.doesNotMatch(workspaceSource, /useState<TimelineHistoryState>/, 'orchestrator should not own the timeline history state container');
+  assert.doesNotMatch(workspaceSource, /\bsetTimelineHistory\s*\(/, 'orchestrator should not mutate timeline history directly');
   assert.match(workspaceSource, /handleUndoTimeline/, 'workspace should support timeline undo');
   assert.match(workspaceSource, /handleRedoTimeline/, 'workspace should support timeline redo');
   assert.doesNotMatch(workspaceSource, /timelineEditMode/, 'workspace should no longer expose selectable insert, overwrite, or replace timeline modes');

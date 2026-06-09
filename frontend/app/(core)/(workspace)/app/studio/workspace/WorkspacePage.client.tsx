@@ -24,6 +24,7 @@ import { WorkspaceVideoViewer, type WorkspaceProgramSnapshotPayload } from './_c
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
+import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
 import {
   getWorkspaceModelCapability,
   getWorkspaceModelCapabilities,
@@ -105,7 +106,6 @@ import {
   MAX_TIMELINE_VIDEO_TRACKS,
   MIN_TIMELINE_AUDIO_TRACKS,
   MIN_TIMELINE_PANEL_HEIGHT,
-  TIMELINE_HISTORY_LIMIT,
   audioTrackCountForTimelineItems,
   coerceAudioTrackCount,
   coerceTimelinePanelHeight,
@@ -117,7 +117,6 @@ import {
   videoTrackCountForTimelineItems,
   type PersistedWorkspaceState,
   type StudioProjectStorageRecord,
-  type TimelineHistoryState,
   type WorkspaceEditorSurface,
   type WorkspaceFocusMode,
   type WorkspaceSequenceRecord,
@@ -422,7 +421,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [activeSequenceId, setActiveSequenceId] = useState(DEFAULT_WORKSPACE_SEQUENCE_ID);
   const [timelineItems, setTimelineItems] = useState<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
   const [timelinePreview, setTimelinePreview] = useState<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>(null);
-  const [timelineHistory, setTimelineHistory] = useState<TimelineHistoryState>({ past: [], future: [] });
   const [selectedTimelineItemId, setSelectedTimelineItemId] = useState<string | null>(defaultTimelineSelection(defaultTemplate.timelineItems));
   const [selectedTimelineItemIds, setSelectedTimelineItemIds] = useState<string[]>(defaultTimelineSelectionIds(defaultTemplate.timelineItems));
   const [playheadSec, setPlayheadSec] = useState(0);
@@ -604,6 +602,27 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemId(nextItemIds.at(-1) ?? null);
   }, []);
 
+  const applyDefaultTimelineSelection = useCallback((items: WorkspaceTimelineItem[]) => {
+    applyTimelineSelection(defaultTimelineSelectionIds(items));
+  }, [applyTimelineSelection]);
+
+  const stopTimelinePlayback = useCallback(() => {
+    setIsTimelinePlaying(false);
+  }, []);
+
+  const {
+    timelineHistory,
+    commitTimelineItems,
+    resetTimelineHistory,
+    undoTimeline: handleUndoTimeline,
+    redoTimeline: handleRedoTimeline,
+  } = useWorkspaceTimelineHistory({
+    timelineItemsRef,
+    setTimelineItems,
+    selectDefaultItems: applyDefaultTimelineSelection,
+    stopPlayback: stopTimelinePlayback,
+  });
+
   const handleSelectTimelineItem = useCallback((itemId: string, mode: 'replace' | 'toggle' | 'focus' = 'replace') => {
     setActiveEditorSurface('timeline');
     setInspectedSequenceId(null);
@@ -667,23 +686,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     return () => window.clearTimeout(timeoutId);
   }, [notice]);
 
-  const commitTimelineItems = useCallback((updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => {
-    setTimelineItems((current) => {
-      const nextItems = normalizeWorkspaceTimelineIdentities(updater(current));
-      if (nextItems === current) return current;
-      timelineItemsRef.current = nextItems;
-      setTimelineHistory((history) => ({
-        past: [...history.past, current].slice(-TIMELINE_HISTORY_LIMIT),
-        future: [],
-      }));
-      return nextItems;
-    });
-  }, []);
-
-  const resetTimelineHistory = useCallback(() => {
-    setTimelineHistory({ past: [], future: [] });
-  }, []);
-
   const snapshotActiveSequence = useCallback((): WorkspaceSequenceRecord => {
     const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
     return createWorkspaceSequenceRecord({
@@ -746,38 +748,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setTimelineOutPointSec(sequence.timelineOutPointSec);
     setExportRangeMode('sequence');
   }, [applyTimelineSelection, resetTimelineHistory]);
-
-  const handleUndoTimeline = useCallback(() => {
-    setTimelineHistory((history) => {
-      const previousItems = history.past.at(-1);
-      if (!previousItems) return history;
-      const currentItems = timelineItemsRef.current;
-      timelineItemsRef.current = previousItems;
-      setTimelineItems(previousItems);
-      applyTimelineSelection(defaultTimelineSelectionIds(previousItems));
-      setIsTimelinePlaying(false);
-      return {
-        past: history.past.slice(0, -1),
-        future: [currentItems, ...history.future].slice(0, TIMELINE_HISTORY_LIMIT),
-      };
-    });
-  }, [applyTimelineSelection]);
-
-  const handleRedoTimeline = useCallback(() => {
-    setTimelineHistory((history) => {
-      const nextItems = history.future[0];
-      if (!nextItems) return history;
-      const currentItems = timelineItemsRef.current;
-      timelineItemsRef.current = nextItems;
-      setTimelineItems(nextItems);
-      applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
-      setIsTimelinePlaying(false);
-      return {
-        past: [...history.past, currentItems].slice(-TIMELINE_HISTORY_LIMIT),
-        future: history.future.slice(1),
-      };
-    });
-  }, [applyTimelineSelection]);
 
   useEffect(() => {
     let cancelled = false;
