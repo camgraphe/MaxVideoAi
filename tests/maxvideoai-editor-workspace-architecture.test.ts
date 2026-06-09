@@ -109,6 +109,7 @@ const templateCinematicScenePath = join(workspaceDir, '_lib/templates/cinematic-
 const templateVariantBasePath = join(workspaceDir, '_lib/templates/variant-base.ts');
 const workspaceStatePath = join(workspaceDir, '_state/workspace-state.ts');
 const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts');
+const workspaceApiPersistencePath = join(workspaceDir, '_state/workspace-api-persistence.ts');
 const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
@@ -199,6 +200,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const dynamicWorkspacePageSource = source(dynamicWorkspacePagePath);
   const workspaceSource = source(workspacePagePath);
   const workspaceStateSource = source(workspaceStatePath);
+  const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
@@ -268,6 +270,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
   assert.match(workspaceSource, /workspaceStorageKeyForProject/, 'workspace persistence should be scoped by project id when present');
+  assert.doesNotMatch(workspaceSource, /from '@\/lib\/authFetch'/, 'workspace orchestrator should not own Studio API fetch plumbing');
+  assert.match(workspaceApiPersistenceSource, /authFetch/, 'Studio API persistence should own authenticated API fetches');
+  assert.match(workspaceApiPersistenceSource, /normalizePersistedWorkspaceState/, 'Studio API persistence should own persisted workspace state normalization');
   assert.match(workspaceSource, /readStudioProject\(projectId\)/, 'workspace should hydrate new project settings from the local project fallback');
   assert.match(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace should hydrate project state from the Studio API when available');
   assert.match(workspaceSource, /saveStudioProjectToApi/, 'workspace should autosave project state to the Studio API when available');
@@ -303,17 +308,17 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
   assert.doesNotMatch(workspaceSource, /HeaderBar|AppSidebar|WorkspaceChrome/, 'editor chrome should not inherit app shell chrome');
   assert.doesNotMatch(workspaceSource, /selected:\s*node\.id === selectedNodeId/, 'orchestrator should not manually control React Flow selected flags');
-  assert.match(workspaceSource, /normalizeOutputOnlySourceNodes/, 'orchestrator should normalize stale source-block handles from persisted editor state');
-  assert.match(workspaceSource, /normalizeOutputOnlySourceEdges/, 'orchestrator should normalize stale source edge handles from persisted editor state');
-  assert.match(workspaceSource, /normalizeGeneratedOutputNodes/, 'orchestrator should normalize stale output-block handles from persisted editor state');
-  assert.match(workspaceSource, /normalizePlaceholderOutputNodes/, 'orchestrator should normalize stale fake output media into placeholders');
-  assert.match(workspaceSource, /normalizeTimelineMediaUrls/, 'orchestrator should hydrate stale timeline clips with playable output media URLs');
+  assert.match(workspaceApiPersistenceSource, /normalizeOutputOnlySourceNodes/, 'persisted workspace normalization should normalize stale source-block handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeOutputOnlySourceEdges/, 'persisted workspace normalization should normalize stale source edge handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeGeneratedOutputNodes/, 'persisted workspace normalization should normalize stale output-block handles');
+  assert.match(workspaceApiPersistenceSource, /normalizePlaceholderOutputNodes/, 'persisted workspace normalization should normalize stale fake output media into placeholders');
+  assert.match(workspaceApiPersistenceSource, /normalizeTimelineMediaUrls/, 'persisted workspace normalization should hydrate stale timeline clips with playable output media URLs');
   assert.match(workspaceSource, /isPlayableVideoUrl/, 'orchestrator should distinguish playable video URLs from image thumbnails');
   assert.match(workspaceSource, /isPlayableAudioUrl/, 'orchestrator should hydrate playable audio URLs for generic audio timeline clips');
-  assert.match(workspaceSource, /normalizeGeneratedOutputEdges/, 'orchestrator should normalize stale output edge handles from persisted editor state');
-  assert.match(workspaceSource, /normalizeShotOutputNodes/, 'orchestrator should normalize stale generated-shot output handles from persisted editor state');
-  assert.match(workspaceSource, /normalizeShotOutputEdges/, 'orchestrator should normalize stale generated-shot source edge handles');
-  assert.match(workspaceSource, /normalizeWorkspaceEdgeTypes/, 'orchestrator should normalize stale saved edge types');
+  assert.match(workspaceApiPersistenceSource, /normalizeGeneratedOutputEdges/, 'persisted workspace normalization should normalize stale output edge handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeShotOutputNodes/, 'persisted workspace normalization should normalize stale generated-shot output handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeShotOutputEdges/, 'persisted workspace normalization should normalize stale generated-shot source edge handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeWorkspaceEdgeTypes/, 'persisted workspace normalization should normalize stale saved edge types');
   assert.match(canvasStyleSource, /react-flow__handle-left/, 'focused canvas CSS should position left handles without inheriting React Flow global CSS');
   assert.match(canvasStyleSource, /react-flow__handle-right/, 'focused canvas CSS should position right handles without inheriting React Flow global CSS');
 
@@ -394,6 +399,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(templateVariantBasePath), 'variant canvas templates should share a focused builder helper');
   assert.ok(existsSync(workspaceStatePath), 'workspace persisted state contracts should live in _state/workspace-state.ts');
   assert.ok(existsSync(workspaceSelectorsPath), 'workspace derived state selectors should live in _state/workspace-selectors.ts');
+  assert.ok(existsSync(workspaceApiPersistencePath), 'workspace API persistence and persisted state normalization should live in _state/workspace-api-persistence.ts');
   assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
   assert.ok(existsSync(workspaceNormalizersPath), 'workspace graph and media normalization should live in _state/workspace-normalizers.ts');
 
@@ -448,6 +454,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const templateCinematicSceneSource = source(templateCinematicScenePath);
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceSelectorsSource = source(workspaceSelectorsPath);
+  const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const workspacePersistenceSource = source(workspacePersistencePath);
   const workspaceNormalizersSource = source(workspaceNormalizersPath);
   const typesSource = source(typesPath);
@@ -577,6 +584,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceStateSource, /type PersistedWorkspaceState/, 'workspace state module should own persisted workspace contracts');
   assert.match(workspaceSelectorsSource, /buildWorkspaceSequenceSummaries/, 'workspace selectors should derive sidebar sequence summaries outside the orchestrator');
   assert.match(workspaceSelectorsSource, /selectedWorkspaceTimelineItem/, 'workspace selectors should derive selected timeline items outside the orchestrator');
+  assert.match(workspaceApiPersistenceSource, /\/api\/studio\/projects\/\$\{encodeURIComponent\(projectId\)\}/, 'workspace API persistence should read project-scoped Studio workspaces');
+  assert.match(workspaceApiPersistenceSource, /\/api\/studio\/canvas-templates/, 'workspace API persistence should sync user canvas templates through the Studio API');
+  assert.match(workspaceApiPersistenceSource, /normalizePersistedProjectAssets/, 'workspace API persistence should normalize persisted project media assets');
   assert.match(workspacePersistenceSource, /function workspaceStorageKeyForProject/, 'workspace persistence module should own project-scoped local storage keys');
   assert.match(workspacePersistenceSource, /function readPersistedWorkspaceState/, 'workspace persistence module should own persisted workspace local reads');
   assert.match(workspacePersistenceSource, /function readUserCanvasTemplates/, 'workspace persistence module should own local canvas template reads');
