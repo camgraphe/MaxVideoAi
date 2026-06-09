@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LogOut, UserRound, Wallet } from 'lucide-react';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
@@ -26,6 +26,10 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
   const { t } = useI18n();
   const { authResolved, email, wallet, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [walletPromptOpen, setWalletPromptOpen] = useState(false);
+  const walletPromptId = useId();
+  const walletButtonRef = useRef<HTMLButtonElement>(null);
+  const walletPromptRef = useRef<HTMLDivElement>(null);
   const sessionButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
@@ -33,15 +37,19 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
   const initials = initialsFromEmail(email);
 
   useEffect(() => {
-    if (!accountMenuOpen) return;
+    if (!accountMenuOpen && !walletPromptOpen) return;
     const handlePointer = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
+      if (walletButtonRef.current?.contains(target)) return;
+      if (walletPromptRef.current?.contains(target)) return;
       if (sessionButtonRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
+      setWalletPromptOpen(false);
       setAccountMenuOpen(false);
     };
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        setWalletPromptOpen(false);
         setAccountMenuOpen(false);
       }
     };
@@ -53,7 +61,7 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
       document.removeEventListener('touchstart', handlePointer);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [accountMenuOpen]);
+  }, [accountMenuOpen, walletPromptOpen]);
 
   const handleAdminNavigation = useCallback((event: ReactMouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -68,16 +76,38 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
 
   return (
     <div className={styles.studioSessionCluster} aria-label="Studio account status">
-      <Link
-        href="/billing"
-        prefetch={false}
-        className={styles.studioWalletPill}
-        aria-label={`Studio wallet balance ${walletAmount}`}
-      >
-        <Wallet size={14} />
-        <span>Wallet</span>
-        <strong>{walletAmount}</strong>
-      </Link>
+      <div className={styles.studioWalletShell}>
+        <button
+          ref={walletButtonRef}
+          type="button"
+          className={styles.studioWalletPill}
+          aria-label={`Studio wallet balance ${walletAmount}`}
+          aria-expanded={walletPromptOpen}
+          aria-describedby={walletPromptOpen ? walletPromptId : undefined}
+          onClick={() => {
+            setAccountMenuOpen(false);
+            setWalletPromptOpen((open) => !open);
+          }}
+        >
+          <Wallet size={14} />
+          <span>Wallet</span>
+          <strong>{walletAmount}</strong>
+        </button>
+        {walletPromptOpen ? (
+          <div
+            ref={walletPromptRef}
+            id={walletPromptId}
+            role="status"
+            className={styles.studioWalletPrompt}
+          >
+            <p>{t('workspace.header.walletTopUp.label', 'Top up available')}</p>
+            <span>{t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}</span>
+            <Link href="/billing" prefetch={false} className={styles.studioWalletPromptCta}>
+              {t('workspace.header.walletTopUp.cta', 'Top up now')}
+            </Link>
+          </div>
+        ) : null}
+      </div>
       <div className={styles.studioSessionMenuShell}>
         <button
           ref={sessionButtonRef}
@@ -88,7 +118,10 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
           aria-haspopup={email ? 'menu' : undefined}
           aria-expanded={email ? accountMenuOpen : undefined}
           onClick={() => {
-            if (email) setAccountMenuOpen((open) => !open);
+            if (email) {
+              setWalletPromptOpen(false);
+              setAccountMenuOpen((open) => !open);
+            }
           }}
         >
           <span className={styles.studioSessionAvatar} aria-hidden="true">

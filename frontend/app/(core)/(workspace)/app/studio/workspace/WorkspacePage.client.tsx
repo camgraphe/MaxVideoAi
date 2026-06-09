@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
-import { Download, GitBranch, PanelRight, Play, Settings, Share2 } from 'lucide-react';
+import { Download, GitBranch, PanelRight, Play, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { authFetch } from '@/lib/authFetch';
 import { NodeLibrarySidebar, type WorkspaceUserCanvasTemplateSummary } from './_components/NodeLibrarySidebar';
@@ -3329,9 +3329,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
           <div className={styles.topbarActions}>
             <button type="button" className={styles.iconButton} onClick={() => selectedNode?.data.kind === 'shot' && void handleGenerateShot(selectedNode.id)} aria-label="Generate selected shot">
               <Play size={15} />
-            </button>
-            <button type="button" className={styles.iconButton} aria-label="Share project">
-              <Share2 size={15} />
             </button>
             <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
               <Download size={15} />

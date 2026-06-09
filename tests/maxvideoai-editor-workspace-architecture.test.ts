@@ -143,11 +143,14 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /TimelineProjectSidebar/, 'orchestrator should compose a project media sidebar for Viewer mode');
   assert.match(workspaceSource, /StudioHeaderSession/, 'orchestrator should compose Studio session and wallet status in the header');
   assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
-  assert.match(studioHeaderSessionSource, /\/billing/, 'Studio wallet status should link to billing top-up');
+  assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
+  assert.match(studioHeaderSessionSource, /workspace\.header\.walletTopUp\.cta/, 'Studio wallet prompt should reuse the main app top-up copy contract');
+  assert.match(studioHeaderSessionSource, /href="\/billing"/, 'Studio wallet prompt CTA should link to billing top-up');
   assert.match(studioHeaderSessionSource, /NAV_ITEMS\.map/, 'Studio session pill should expose the same account navigation menu as the main app');
   assert.match(studioHeaderSessionSource, /handleSignOut/, 'Studio session menu should keep the shared sign-out action inside the account menu');
   assert.match(studioHeaderSessionSource, /aria-label="Exit to projects"/, 'Studio header exit control should return to project selection instead of signing out');
   assert.doesNotMatch(studioHeaderSessionSource, /aria-label="Sign out of Studio"/, 'Studio header should not expose a direct sign-out button beside the session pill');
+  assert.doesNotMatch(workspaceSource, /aria-label="Share project"/, 'Studio header should not expose inactive share controls');
   assert.match(workspaceSource, /handleExitToProjects/, 'workspace should own the save-and-return-to-projects action');
   assert.match(workspaceSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
