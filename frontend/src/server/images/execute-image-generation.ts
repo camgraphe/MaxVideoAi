@@ -40,7 +40,10 @@ import { prepareImageGenerationReferences } from './image-generation-references'
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
 import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
-import { runFalImageGeneration } from './image-fal-generation';
+import {
+  executeImageProviderWithLumaAgentsDirectFallback,
+  lumaAgentsImageDirectEnabled,
+} from './luma-agents-execution';
 import {
   applyStoryboardImagePricing,
   resolveIncludedKlingFirstFrameParentJobId,
@@ -464,7 +467,7 @@ export async function executeImageGeneration({
     fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 
-  const providerMode = getResultProviderMode();
+  let providerMode: string = getResultProviderMode();
   let providerJobId: string | undefined;
 
   if (engine.id === 'seedream' && engine.providerMeta?.provider === 'byteplus_modelark') {
@@ -502,26 +505,16 @@ export async function executeImageGeneration({
   }
 
   try {
-    const { result, providerJobId: completedProviderJobId } = await runFalImageGeneration({
-      falModelId: modeConfig.falModelId,
-      effectivePrompt,
-      numImages,
-      mode,
-      combinedImageUrls,
-      falAspectRatio,
-      providerImageSize,
-      resolutionEngineParam,
-      normalizedSeed,
-      outputFormat,
-      quality,
-      maskUrl,
-      enableWebSearch,
-      thinkingLevel,
-      limitGenerations,
-      onProviderJobId(requestId) {
-        providerJobId = requestId;
-      },
-    });
+    const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
+      await executeImageProviderWithLumaAgentsDirectFallback({
+        falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
+        providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
+        thinkingLevel, limitGenerations, engine, engineEntry, jobId, userId, requestId: jobId,
+        useLumaDirect: isLumaAgentsImageEngineId(engine.id) && lumaAgentsImageDirectEnabled(),
+        onProviderJobId(requestId) { providerJobId = requestId; },
+        onProviderMode(nextProviderMode) { providerMode = nextProviderMode; },
+      });
+    providerMode = completedProviderMode;
     providerJobId = completedProviderJobId ?? providerJobId;
 
     const images = extractImages(result.data);
