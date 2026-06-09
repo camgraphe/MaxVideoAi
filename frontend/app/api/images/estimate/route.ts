@@ -113,10 +113,14 @@ export async function POST(req: NextRequest) {
     const submittedReferenceImageCount = Array.isArray(body?.imageUrls)
       ? body.imageUrls.filter((entry) => typeof entry === 'string' && entry.trim().length).length
       : 0;
+    const submittedReferenceSizeCount = Array.isArray(body?.referenceImageSizes)
+      ? body.referenceImageSizes.filter((entry) => entry && typeof entry === 'object').length
+      : 0;
+    const estimatedReferenceCount = submittedReferenceImageCount || submittedReferenceSizeCount;
     const lumaAgentsReferenceImageCount = isLumaAgentsImageEngineId(engineCaps.id)
       ? mode === 'i2i'
-        ? Math.max(0, submittedReferenceImageCount - 1)
-        : submittedReferenceImageCount
+        ? Math.max(0, estimatedReferenceCount - 1)
+        : estimatedReferenceCount
       : undefined;
     const pricing = await computePricingSnapshot({
       engine: engineCaps,

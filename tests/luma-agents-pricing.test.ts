@@ -5,6 +5,7 @@ import {
   calculateLumaAgentsImageReferencePrice,
   calculateLumaRay32ReferencePrice,
 } from '../frontend/src/lib/luma-agents-pricing';
+import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
 
@@ -127,6 +128,21 @@ test('Luma Uni-1 t2i snapshot charges all text references', async () => {
   );
 });
 
+test('Luma Uni-1 Max t2i snapshot applies margin to exact fal reference cost', async () => {
+  const snapshot = await computePricingSnapshot({
+    engine: getEngine('luma-uni-1-max'),
+    mode: 't2i',
+    durationSec: 1,
+    resolution: '2K',
+    currency: 'USD',
+    referenceImageCount: 0,
+  });
+
+  assert.equal(snapshot.base.amountCents, 10);
+  assert.equal(snapshot.margin.amountCents, 4);
+  assert.equal(snapshot.totalCents, 14);
+});
+
 test('Luma Uni-1 Max i2i snapshot charges source plus extra references', async () => {
   const snapshot = await computePricingSnapshot({
     engine: getEngine('luma-uni-1-max'),
@@ -141,6 +157,56 @@ test('Luma Uni-1 Max i2i snapshot charges source plus extra references', async (
   assert.equal(snapshot.margin.amountCents, 4);
   assert.equal(snapshot.totalCents, 15);
   assert.equal(snapshot.meta?.source_or_reference_image_count, 3);
+});
+
+test('Luma Uni t2i estimate counts reference image sizes when image URLs are not posted', async () => {
+  const withUrlsResponse = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'luma-uni-1',
+        mode: 't2i',
+        numImages: 1,
+        resolution: '2K',
+        imageUrls: ['https://cdn.example.com/a.png', 'https://cdn.example.com/b.png'],
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const withSizesResponse = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'luma-uni-1',
+        mode: 't2i',
+        numImages: 1,
+        resolution: '2K',
+        referenceImageSizes: [
+          { width: 1024, height: 1024 },
+          { width: 1024, height: 1024 },
+        ],
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const withUrlsPayload = (await withUrlsResponse.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      meta?: { source_or_reference_image_count?: number };
+    };
+  };
+  const withSizesPayload = (await withSizesResponse.json()) as typeof withUrlsPayload;
+
+  assert.equal(withUrlsResponse.status, 200);
+  assert.equal(withSizesResponse.status, 200);
+  assert.equal(withUrlsPayload.ok, true);
+  assert.equal(withSizesPayload.ok, true);
+  assert.equal(withSizesPayload.pricing?.base.amountCents, withUrlsPayload.pricing?.base.amountCents);
+  assert.equal(withSizesPayload.pricing?.totalCents, withUrlsPayload.pricing?.totalCents);
+  assert.equal(withSizesPayload.pricing?.totalCents, 7);
+  assert.equal(withSizesPayload.pricing?.meta?.source_or_reference_image_count, 2);
 });
 
 test('Luma Ray 3.2 snapshot uses fal reference totals with rounded-up margin', async () => {

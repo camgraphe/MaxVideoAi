@@ -57,8 +57,9 @@ function buildCentsSnapshotFromProviderReference(params: {
   const baseSubtotalCents = Math.max(0, Math.round(params.baseSubtotalUsd * 100));
   const marginPercent = params.rule.marginPercent;
   const marginFlatCents = params.rule.marginFlatCents;
-  const marginAmount = computeRoundedUpMarginCents(baseSubtotalCents, marginPercent, marginFlatCents);
-  const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
+  const exactSubtotalBeforeDiscountCents = params.baseSubtotalUsd * 100 * (1 + marginPercent) + marginFlatCents;
+  const subtotalBeforeDiscountCents = Math.max(0, Math.ceil(exactSubtotalBeforeDiscountCents - CENT_EPSILON));
+  const marginAmount = Math.max(0, subtotalBeforeDiscountCents - baseSubtotalCents);
 
   const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
   const discountAmount = discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
