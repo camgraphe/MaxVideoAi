@@ -33,7 +33,7 @@ test('Luma Uni-1 fal-reference pricing uses source/reference image counts', () =
   );
 });
 
-test('Luma Uni-1 Max fal-reference pricing keeps max tier separate', () => {
+test('Luma Uni-1 Max fal-reference pricing charges source plus references separately', () => {
   assert.equal(
     calculateLumaAgentsImageReferencePrice({
       engineId: 'luma-uni-1-max',
@@ -46,9 +46,9 @@ test('Luma Uni-1 Max fal-reference pricing keeps max tier separate', () => {
     calculateLumaAgentsImageReferencePrice({
       engineId: 'luma-uni-1-max',
       mode: 'i2i',
-      referenceImageCount: 1,
+      referenceImageCount: 2,
     }).totalUsd,
-    0.108
+    0.111
   );
 });
 
@@ -68,6 +68,14 @@ test('Luma Ray 3.2 rejects non-public fallback-safe pricing combinations', () =>
   );
   assert.throws(
     () => calculateLumaRay32ReferencePrice({ duration: '5s', resolution: '4k' }),
+    /Luma Ray 3.2 supports 540p, 720p, or 1080p/
+  );
+  assert.throws(
+    () => calculateLumaRay32ReferencePrice({ duration: undefined, resolution: '720p' }),
+    /Luma Ray 3.2 supports 5s or 10s/
+  );
+  assert.throws(
+    () => calculateLumaRay32ReferencePrice({ duration: '5s', resolution: undefined }),
     /Luma Ray 3.2 supports 540p, 720p, or 1080p/
   );
 });

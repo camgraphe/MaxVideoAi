@@ -89,12 +89,12 @@ export function calculateLumaRay32ReferencePrice(params: {
   const duration =
     typeof params.duration === 'number'
       ? (`${Math.round(params.duration)}s` as string)
-      : (params.duration ?? '5s').trim().toLowerCase();
+      : params.duration?.trim().toLowerCase();
   if (!LUMA_RAY_32_DURATIONS.includes(duration as '5s' | '10s')) {
     throw new Error('Luma Ray 3.2 supports 5s or 10s public fallback-safe durations.');
   }
 
-  const resolution = (params.resolution ?? '720p').trim().toLowerCase();
+  const resolution = params.resolution?.trim().toLowerCase();
   if (!LUMA_RAY_32_RESOLUTIONS.includes(resolution as '540p' | '720p' | '1080p')) {
     throw new Error('Luma Ray 3.2 supports 540p, 720p, or 1080p public fallback-safe resolutions.');
   }
