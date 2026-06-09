@@ -4,6 +4,7 @@ import {
   isLumaRay2GenerateMode,
   toLumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
+import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } from '@/lib/fal-model-helpers';
 import { buildSoraFalInput } from '@/lib/sora';
 import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
@@ -109,6 +110,10 @@ export function buildFalGenerationRequest(
     if (typeof payload.loop === 'boolean') {
       requestBody.loop = payload.loop;
     }
+  }
+  const isLumaRay32PublicRequest = isLumaRay32EngineId(payload.engineId) && isLumaRay32PublicMode(payload.mode);
+  if (isLumaRay32PublicRequest && typeof payload.loop === 'boolean') {
+    requestBody.loop = payload.loop;
   }
 
   if (typeof payload.cfgScale === 'number') {
@@ -260,6 +265,10 @@ export function buildFalGenerationRequest(
     }
     if (expectsKlingO3VideoToVideoImages) {
       addToArray('image_urls', trimmed);
+      return;
+    }
+    if (isLumaRay32PublicRequest) {
+      addToArray('reference_image_urls', trimmed);
       return;
     }
     if (expectsSingleSourceVideo && (payload.engineId === 'happy-horse-1-0' || requestBody.reference_image_urls)) {

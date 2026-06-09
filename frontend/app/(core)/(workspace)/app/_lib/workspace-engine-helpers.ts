@@ -321,6 +321,11 @@ export function supportsModeAudioControl(
   return Boolean(capability?.audioToggle && findGenerateAudioField(engine, mode));
 }
 
+export function supportsModeLoopControl(engine: EngineCaps, mode: Mode): boolean {
+  const field = findInputFieldById(engine, mode, 'loop');
+  return field?.type === 'boolean';
+}
+
 export function resolveBooleanFieldDefault(
   engine: EngineCaps,
   mode: Mode,
@@ -370,7 +375,6 @@ export function framesToSeconds(frames: number): number {
 
 export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
   const capability = getModeCaps(engine, mode);
-  const isLumaRay2Engine = isLumaRay2EngineId(engine.id);
   const resetFastDefaultsOnEngineSwitch =
     (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') &&
     Boolean(previous?.engineId) &&
@@ -501,7 +505,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   })();
 
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
-  const loop = isLumaRay2Engine && isLumaRay2GenerateMode(mode) ? Boolean(previous?.loop) : undefined;
+  const loop = supportsModeLoopControl(engine, mode) ? Boolean(previous?.loop) : undefined;
   const audio = (() => {
     const previousAudio = typeof previous?.audio === 'boolean' ? previous.audio : null;
     if (previousAudio !== null) return previousAudio;

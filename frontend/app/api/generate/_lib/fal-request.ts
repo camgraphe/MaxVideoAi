@@ -1,4 +1,5 @@
 import type { GenerateAttachment, GeneratePayload } from '@/lib/fal';
+import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import type { SoraRequest } from '@/lib/sora';
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
 import type { Mode } from '@/types/engines';
@@ -137,7 +138,10 @@ export function buildFalRequestParts(params: {
     soraRequest: params.soraRequest ?? undefined,
     jobId: params.jobId,
     localKey: params.localKey,
-    loop: params.isLumaRay2 ? params.loop : undefined,
+    loop:
+      params.isLumaRay2 || (isLumaRay32EngineId(params.engineId) && isLumaRay32PublicMode(params.mode))
+        ? params.loop
+        : undefined,
     multiPrompt: params.multiPrompt ?? undefined,
     shotType: params.mode === 'i2v' ? 'customize' : params.shotType ?? undefined,
     seed: typeof params.seed === 'number' ? params.seed : undefined,

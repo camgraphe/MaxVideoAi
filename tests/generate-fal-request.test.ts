@@ -408,6 +408,63 @@ test('Fal request body maps Kling 3.0 Omni reference image_url slot to start_ima
   assert.deepEqual(result.requestBody.image_urls, ['https://cdn.maxvideoai.com/reference.png']);
 });
 
+test('Fal request body sends Luma Ray 3.2 public controls and reference image URLs', () => {
+  const payload = {
+    engineId: 'luma-ray-3-2',
+    prompt: 'Cinematic product reveal',
+    mode: 't2v',
+    durationOption: '5s',
+    resolution: '720p',
+    aspectRatio: '3:1',
+    loop: true,
+    referenceImages: ['https://cdn.maxvideoai.com/ref-normalized.png'],
+    inputs: [
+      attachment({
+        name: 'style.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'reference_image_urls',
+        url: 'https://cdn.maxvideoai.com/ref-slot.png',
+      }),
+    ],
+  };
+
+  const model = resolveFalModelSlug(payload, 'luma/agent/ray/v3.2/text-to-video');
+  assert.equal(model, 'luma/agent/ray/v3.2/text-to-video');
+
+  const result = buildFalGenerationRequest(payload, model ?? '');
+  assert.equal(result.requestBody.duration, '5s');
+  assert.equal(result.requestBody.resolution, '720p');
+  assert.equal(result.requestBody.aspect_ratio, '3:1');
+  assert.equal(result.requestBody.loop, true);
+  assert.deepEqual(result.requestBody.reference_image_urls, [
+    'https://cdn.maxvideoai.com/ref-slot.png',
+    'https://cdn.maxvideoai.com/ref-normalized.png',
+  ]);
+  assert.equal(result.requestBody.reference_images, undefined);
+});
+
+test('Fal request helper includes Luma Ray 3.2 loop in fal payload', () => {
+  const result = baseFalRequest({
+    engineId: 'luma-ray-3-2',
+    mode: 'i2v',
+    needsImage: true,
+    initialImageUrl: 'https://cdn.maxvideoai.com/start.png',
+    normalizedReferenceImages: ['https://cdn.maxvideoai.com/ref.png'],
+    isLumaRay2: false,
+    loop: true,
+    durationSec: 5,
+    durationOption: '5s',
+    resolution: '540p',
+    aspectRatio: '16:9',
+  });
+
+  assert.equal(result.falPayload.loop, true);
+  assert.equal(result.falPayload.durationOption, '5s');
+  assert.deepEqual(result.falPayload.referenceImages, ['https://cdn.maxvideoai.com/ref.png']);
+});
+
 test('Fal request body routes Kling 3.0 Omni video-to-video through the reference video endpoint', () => {
   const payload = {
     engineId: 'kling-o3-pro',

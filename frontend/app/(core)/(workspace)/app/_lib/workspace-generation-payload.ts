@@ -146,7 +146,7 @@ export function buildWorkspaceGeneratePayload(
     etaLabel: options.etaLabel,
     visibility: 'private',
     indexable: false,
-    ...(options.lumaContext.isLumaRay2GenerateWorkflow ? { loop: Boolean(options.form.loop) } : {}),
+    ...(typeof options.form.loop === 'boolean' ? { loop: options.form.loop } : {}),
   };
 
   return {

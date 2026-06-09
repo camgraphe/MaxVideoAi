@@ -24,11 +24,13 @@ import { supportsAudioPricingToggle } from '../frontend/src/lib/pricing-addons';
 import { getBaseEngines } from '../frontend/src/lib/engines';
 import {
   buildComposerModeToggles,
+  coerceFormState,
   getEngineModeOptions,
   getModeCaps,
   isWorkspaceModeAvailable,
   resolveSelectedWorkspaceEngine,
   supportsModeAudioControl,
+  supportsModeLoopControl,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 const textField = (id: string, label: string): EngineInputField => ({ id, label, type: 'text' });
@@ -342,6 +344,56 @@ test('workspace generate payload resolves provider-specific options', () => {
   assert.equal(result.payload.imageUrl, 'https://cdn.example.com/start.png');
   assert.deepEqual(result.payload.referenceImages, ['https://cdn.example.com/ref.png']);
   assert.deepEqual(result.payload.extraInputValues, { style: 'cinematic' });
+});
+
+test('workspace initializes and sends mode-scoped Luma Ray 3.2 loop controls', () => {
+  const ray32 = listFalEngines().find((entry) => entry.id === 'luma-ray-3-2')?.engine;
+  assert.ok(ray32);
+
+  assert.equal(supportsModeLoopControl(ray32, 't2v'), true);
+  assert.equal(supportsModeLoopControl(ray32, 'i2v'), true);
+
+  const form = coerceFormState(ray32, 't2v', null);
+  assert.equal(form.loop, false);
+
+  const capability = getModeCaps(ray32, 't2v');
+  const result = buildWorkspaceGeneratePayload({
+    selectedEngineId: 'luma-ray-3-2',
+    activeMode: 't2v',
+    submissionMode: 't2v',
+    form: { ...form, loop: true },
+    trimmedPrompt: 'Cinematic product reveal',
+    trimmedNegativePrompt: '',
+    effectiveDurationSec: 5,
+    memberTier: 'pro',
+    paymentMode: 'wallet',
+    capability,
+    supportsNegativePrompt: false,
+    supportsAudioToggle: false,
+    isSeedance: false,
+    supportsKlingV3Controls: false,
+    supportsKlingV3VoiceControl: false,
+    voiceIds: [],
+    voiceControlEnabled: false,
+    shotType: 'customize',
+    localKey: 'local-ray32',
+    batchId: 'batch-ray32',
+    iterationIndex: 0,
+    iterationCount: 1,
+    friendlyMessage: 'Take 1',
+    lumaContext: getLumaRay2GenerationContext({
+      selectedEngineId: 'luma-ray-3-2',
+      submissionMode: 't2v',
+      form: { ...form, loop: true },
+    }),
+    inputsPayload: [],
+    referenceImageUrls: ['https://cdn.example.com/ref.png'],
+    extraInputValues: {},
+  });
+
+  assert.equal(result.payload.loop, true);
+  assert.equal(result.payload.durationOption, '5s');
+  assert.deepEqual(result.payload.referenceImages, ['https://cdn.example.com/ref.png']);
 });
 
 test('workspace exposes Veo 3.1 manual modes by variant', () => {

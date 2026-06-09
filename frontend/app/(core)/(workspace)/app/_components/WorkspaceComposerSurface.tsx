@@ -8,10 +8,6 @@ import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
-import {
-  isLumaRay2EngineId,
-  isLumaRay2GenerateMode,
-} from '@/lib/luma-ray2';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -32,6 +28,7 @@ import {
   buildComposerPromotedActions,
   type WorkspaceInputSchemaSummary,
 } from '../_lib/workspace-input-schema';
+import { supportsModeLoopControl } from '../_lib/workspace-engine-helpers';
 import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
@@ -326,6 +323,7 @@ export function WorkspaceComposerSurface({
   const durationSec = multiPromptActive ? multiPromptTotalSec : form.durationSec;
   const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
+  const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
@@ -462,12 +460,8 @@ export function WorkspaceComposerSurface({
               audioControlDisabled={voiceControlEnabled}
               audioControlNote={audioControlNote}
               onAudioChange={handleAudioChange}
-              showLoopControl={isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)}
-              loopEnabled={
-                isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)
-                  ? Boolean(form.loop)
-                  : undefined
-              }
+              showLoopControl={showLoopControl}
+              loopEnabled={showLoopControl ? Boolean(form.loop) : undefined}
               onLoopChange={handleLoopChange}
               showExtendControl={false}
               seedLocked={form.seedLocked}
