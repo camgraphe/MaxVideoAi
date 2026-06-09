@@ -649,7 +649,6 @@ export function WorkspaceVideoViewer({
               >
                 I
               </button>
-              <span className={styles.viewerMarkField}>In {inTimecode}</span>
               <button
                 type="button"
                 className={styles.viewerMarkButton}
@@ -659,7 +658,10 @@ export function WorkspaceVideoViewer({
               >
                 O
               </button>
-              <span className={styles.viewerMarkField}>Out {outTimecode}</span>
+              <span className={styles.viewerInOutSummary} data-viewer-in-out-summary="true">
+                <span className={styles.viewerMarkField}>In {inTimecode}</span>
+                <span className={styles.viewerMarkField}>Out {outTimecode}</span>
+              </span>
               <button
                 type="button"
                 className={styles.viewerSnapshotButton}

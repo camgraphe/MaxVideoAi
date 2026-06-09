@@ -4260,11 +4260,11 @@ button.assetBrowserCard {
 }
 
 .trackLabelVideo .trackAddButton {
-  top: 3px;
+  top: -3px;
 }
 
 .trackAudioAddButton {
-  bottom: 3px;
+  bottom: -3px;
 }
 
 .trackVisibilityButton,
