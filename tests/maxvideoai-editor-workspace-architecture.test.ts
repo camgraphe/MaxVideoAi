@@ -24,6 +24,7 @@ import type {
 import type { EngineCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
+const studioArchitectureGuidePath = join(root, 'docs/engineering/studio-editor-architecture.md');
 const studioDir = join(root, 'frontend/app/(core)/(workspace)/app/studio');
 const studioAgentsPath = join(studioDir, 'AGENTS.md');
 const studioApiDir = join(root, 'frontend/app/api/studio');
@@ -69,6 +70,10 @@ const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
+const workspaceStatePath = join(workspaceDir, '_state/workspace-state.ts');
+const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts');
+const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
+const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
@@ -87,6 +92,7 @@ function cssBlock(sourceText: string, selector: string): string {
 
 test('MaxVideoAI editor workspace is an isolated authenticated app route', () => {
   assert.ok(existsSync(pagePath), 'editor workspace route should live under the authenticated /app studio workspace');
+  assert.ok(existsSync(studioArchitectureGuidePath), 'studio editor should have an engineering architecture guide for additive changes');
   assert.ok(existsSync(studioAgentsPath), 'studio editor should provide a route-local AGENTS guide for additive feature work');
   assert.ok(existsSync(projectsPagePath), 'studio should expose an upstream projects page before the workspace editor');
   assert.ok(existsSync(projectsClientPath), 'studio projects should keep project creation in a route-local client component');
@@ -116,13 +122,23 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
 
   const pageSource = source(pagePath);
+  const studioArchitectureGuideSource = source(studioArchitectureGuidePath);
   const studioAgentsSource = source(studioAgentsPath);
   const projectsPageSource = source(projectsPagePath);
   const projectsClientSource = source(projectsClientPath);
   const dynamicWorkspacePageSource = source(dynamicWorkspacePagePath);
   const workspaceSource = source(workspacePagePath);
+  const workspaceStateSource = source(workspaceStatePath);
   const studioHeaderSessionSource = source(studioHeaderSessionPath);
   const styleSource = source(stylesPath);
+  assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
+  assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
+  assert.match(studioArchitectureGuideSource, /Add A Canvas Block/, 'studio architecture guide should explain additive block work');
+  assert.match(studioArchitectureGuideSource, /Add A Generation Model/, 'studio architecture guide should explain additive model capability work');
+  assert.match(studioArchitectureGuideSource, /Add A Canvas Template/, 'studio architecture guide should explain additive template work');
+  assert.match(studioArchitectureGuideSource, /Add Timeline Behavior/, 'studio architecture guide should route timeline behavior through pure helpers');
+  assert.match(studioArchitectureGuideSource, /Add Export Behavior/, 'studio architecture guide should define server export behavior');
+  assert.match(studioArchitectureGuideSource, /Performance Rules/, 'studio architecture guide should define interaction performance rules');
   assert.match(studioAgentsSource, /Project.*Sequence.*Canvas template/s, 'studio AGENTS guide should document the product entities');
   assert.match(studioAgentsSource, /Additive Rules/, 'studio AGENTS guide should document additive implementation rules');
   assert.match(studioAgentsSource, /Applying a canvas template must never reset the timeline/, 'studio AGENTS guide should preserve canvas/timeline separation');
@@ -151,6 +167,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(studioHeaderSessionSource, /aria-label="Exit to projects"/, 'Studio header exit control should return to project selection instead of signing out');
   assert.doesNotMatch(studioHeaderSessionSource, /aria-label="Sign out of Studio"/, 'Studio header should not expose a direct sign-out button beside the session pill');
   assert.doesNotMatch(workspaceSource, /aria-label="Share project"/, 'Studio header should not expose inactive share controls');
+  assert.doesNotMatch(workspaceSource, /aria-label="Generate selected shot"/, 'Studio header should not expose an inactive global generation control');
   assert.match(workspaceSource, /handleExitToProjects/, 'workspace should own the save-and-return-to-projects action');
   assert.match(workspaceSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
@@ -160,7 +177,12 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /saveStudioProjectToApi/, 'workspace should autosave project state to the Studio API when available');
   assert.match(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace should hydrate user canvas templates from the Studio API when available');
   assert.match(workspaceSource, /saveUserCanvasTemplateToApi/, 'workspace should save user canvas templates to the Studio API when available');
-  assert.match(workspaceSource, /type WorkspaceSequenceRecord/, 'workspace should model montage sequences as first-class persisted records');
+  assert.match(workspaceSource, /from '\.\/_state\/workspace-state'/, 'workspace should import persisted state contracts from the route-local state module');
+  assert.match(workspaceSource, /from '\.\/_state\/workspace-selectors'/, 'workspace should import derived sequence selectors from the route-local state module');
+  assert.match(workspaceStateSource, /function createWorkspaceSequenceRecord/, 'workspace state module should own sequence record creation');
+  assert.match(workspaceStateSource, /function normalizeWorkspaceSequenceRecord/, 'workspace state module should own sequence persistence normalization');
+  assert.match(workspaceStateSource, /function upsertWorkspaceSequence/, 'workspace state module should own sequence list updates');
+  assert.match(workspaceStateSource, /function deleteWorkspaceTimelineTrackItems/, 'workspace state module should own timeline track deletion retargeting');
   assert.match(workspaceSource, /activeSequenceId/, 'workspace should track the active montage sequence');
   assert.match(workspaceSource, /sequences: upsertWorkspaceSequence/, 'workspace autosave should include every project sequence');
   assert.match(workspaceSource, /handleCreateSequence/, 'viewer project sidebar should create real empty sequences');
@@ -254,6 +276,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
+  assert.ok(existsSync(workspaceStatePath), 'workspace persisted state contracts should live in _state/workspace-state.ts');
+  assert.ok(existsSync(workspaceSelectorsPath), 'workspace derived state selectors should live in _state/workspace-selectors.ts');
+  assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
+  assert.ok(existsSync(workspaceNormalizersPath), 'workspace graph and media normalization should live in _state/workspace-normalizers.ts');
 
   const canvasSource = source(canvasPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
@@ -280,6 +306,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const pricingHookSource = source(pricingHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
+  const workspaceStateSource = source(workspaceStatePath);
+  const workspaceSelectorsSource = source(workspaceSelectorsPath);
+  const workspacePersistenceSource = source(workspacePersistencePath);
+  const workspaceNormalizersSource = source(workspaceNormalizersPath);
   const typesSource = source(typesPath);
   const styleSource = source(stylesPath);
   const timelineSource = source(timelinePath);
@@ -371,6 +401,18 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(capabilitySource, /workspaceAudioEnabledForRequest/, 'capabilities should centralize when audio can be sent to generate and pricing');
   assert.match(typesSource, /WorkspaceOutputStatus/, 'workspace outputs should type placeholder, processing, and ready states');
   assert.match(typesSource, /WorkspaceRenderOption/, 'workspace capabilities should type render options separately from graph inputs');
+  assert.match(workspaceStateSource, /type WorkspaceSequenceRecord/, 'workspace state module should own persisted sequence contracts');
+  assert.match(workspaceStateSource, /type PersistedWorkspaceState/, 'workspace state module should own persisted workspace contracts');
+  assert.match(workspaceSelectorsSource, /buildWorkspaceSequenceSummaries/, 'workspace selectors should derive sidebar sequence summaries outside the orchestrator');
+  assert.match(workspaceSelectorsSource, /selectedWorkspaceTimelineItem/, 'workspace selectors should derive selected timeline items outside the orchestrator');
+  assert.match(workspacePersistenceSource, /function workspaceStorageKeyForProject/, 'workspace persistence module should own project-scoped local storage keys');
+  assert.match(workspacePersistenceSource, /function readPersistedWorkspaceState/, 'workspace persistence module should own persisted workspace local reads');
+  assert.match(workspacePersistenceSource, /function readUserCanvasTemplates/, 'workspace persistence module should own local canvas template reads');
+  assert.match(workspacePersistenceSource, /function writeUserCanvasTemplates/, 'workspace persistence module should own local canvas template writes');
+  assert.match(workspaceNormalizersSource, /function normalizeOutputOnlySourceNodes/, 'workspace normalizers should own stale source-node handle cleanup');
+  assert.match(workspaceNormalizersSource, /function normalizePlaceholderOutputNodes/, 'workspace normalizers should own stale output placeholder cleanup');
+  assert.match(workspaceNormalizersSource, /function normalizeTimelineMediaUrls/, 'workspace normalizers should own timeline media URL hydration');
+  assert.match(workspaceNormalizersSource, /function playableOutputTimelineUrl/, 'workspace normalizers should own playable output media detection');
   assert.match(typesSource, /WorkspaceProjectSettings/, 'workspace should type project-level aspect ratio, resolution, and FPS');
   assert.match(typesSource, /WorkspaceTimelineVideoTrack/, 'timeline should type multiple video tracks');
   assert.match(typesSource, /`video-\$\{number\}`/, 'timeline video tracks should allow V2, V3, and later video lanes');
@@ -476,14 +518,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(sendOutputToTimelineHandler[0], /setFocusMode\('viewer'\)/, 'sending a canvas item to the timeline should not automatically switch to Viewer mode');
   assert.match(settingsSource, /AssetInspector[\s\S]*timelineInsertActions[\s\S]*Insert at playhead/, 'asset inspector should expose timeline insert actions for imported media blocks');
   assert.match(videoViewerSource, /playableImageUrlForItem/, 'montage viewer should preview imported image assets as still clips');
-  assert.match(workspaceSource, /focusMode\?: WorkspaceFocusMode/, 'persisted workspace state should remember whether the user was in canvas or viewer mode');
+  assert.match(workspaceStateSource, /focusMode\?: WorkspaceFocusMode/, 'persisted workspace state should remember whether the user was in canvas or viewer mode');
   assert.match(workspaceSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
   assert.match(workspaceSource, /selectedTimelineItemId/, 'orchestrator should track which timeline clip controls the montage viewer');
   assert.match(workspaceSource, /playheadSec/, 'orchestrator should track the montage playhead');
   assert.match(workspaceSource, /handleCutTimelineItem/, 'orchestrator should wire basic cut editing from the bottom timeline');
   assert.match(workspaceSource, /handlePositionTimelineItem/, 'orchestrator should wire pointer-based clip movement');
   assert.match(workspaceSource, /handleResizeTimelineItem/, 'orchestrator should wire pointer-based clip resizing');
-  assert.match(workspaceSource, /DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0'/, 'new shot blocks should default to Seedance 2.0');
+  assert.match(workspaceStateSource, /DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0'/, 'new shot blocks should default to Seedance 2.0');
   assert.match(workspaceSource, /capability\.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID/, 'orchestrator should resolve the default shot model from the current capabilities');
   assert.match(templateSource, /DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID = 'seedance-2-0'/, 'template shot defaults should use Seedance 2.0');
   assert.match(workspaceSource, /videoTrackCount/, 'workspace should remember added video timeline tracks');
@@ -500,6 +542,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(renderEdgesSource, /isWorkspaceConnectionCompatible/, 'renderable edge helper should omit persisted incompatible media-family edges');
   assert.match(workspaceSource, /filterRenderableWorkspaceEdges/, 'orchestrator should avoid passing invalid handle edges to React Flow');
   assert.match(templateSource, /createProductAdWorkspaceTemplate/, 'Product Ad starter template should be implemented');
+  assert.match(typesSource, /thumbnailUrl\?: string/, 'canvas template summaries should support visual thumbnails');
+  assert.match(templateSource, /flow: 'Product ref -> style clip -> 4 shots'/, 'canvas template summaries should expose an AI workflow path');
+  assert.match(librarySource, /template\.thumbnailUrl/, 'canvas template sidebar should render image-backed template cards');
   assert.match(templateSource, /type: 'workspace-smart'/, 'workspace edges should use the custom smart edge type');
   assert.match(templateSource, /createDevBlocksWorkspaceTemplate/, 'Dev Blocks starter template should be implemented');
   assert.match(templateSource, /id: 'dev-blocks'/, 'Dev Blocks should be exposed as a starter template');
@@ -790,7 +835,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(librarySource, /onApplyUserTemplate/, 'canvas sidebar should let users re-apply a saved personal canvas template');
   assert.match(librarySource, /onDuplicateUserTemplate/, 'canvas sidebar should let users duplicate a saved canvas template');
   assert.match(librarySource, /onDeleteUserTemplate/, 'canvas sidebar should let users delete a saved canvas template');
-  assert.match(workspaceSource, /USER_CANVAS_TEMPLATES_STORAGE_KEY/, 'workspace should keep personal canvas templates in local storage until backend persistence exists');
+  assert.match(workspacePersistenceSource, /USER_CANVAS_TEMPLATES_STORAGE_KEY/, 'workspace should keep personal canvas templates in local storage until backend persistence exists');
   assert.match(workspaceSource, /handleSaveCanvasTemplate/, 'workspace should own saving the current graph as a personal canvas template');
   assert.match(workspaceSource, /handleApplyUserCanvasTemplate/, 'workspace should own applying personal templates without touching timeline state');
   assert.match(styleSource, /\.templateSection[\s\S]*flex:\s*1 1 auto[\s\S]*overflow:\s*hidden/, 'starter templates should own the flexible sidebar height instead of overlapping block templates');
@@ -811,7 +856,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
   assert.match(timelineProjectSidebarSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin');
   assert.match(timelineProjectSidebarSource, /onDeleteGeneratedClip/, 'viewer sidebar should let generated clips be removed from project media');
-  assert.match(workspaceSource, /projectAssets\?: WorkspaceAssetRecord\[\]/, 'persisted workspace state should remember imported project media assets');
+  assert.match(workspaceStateSource, /projectAssets\?: WorkspaceAssetRecord\[\]/, 'persisted workspace state should remember imported project media assets');
   assert.match(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should open a project media import modal in Viewer mode');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');

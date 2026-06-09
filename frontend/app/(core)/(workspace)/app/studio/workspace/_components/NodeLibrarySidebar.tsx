@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
-import { Copy, FileText, ImagePlus, Music2, Plus, RefreshCcw, Save, Trash2, Video } from 'lucide-react';
+import { useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { Copy, FileText, ImagePlus, Music2, Plus, RefreshCcw, Save, Sparkles, Trash2, Video } from 'lucide-react';
 import styles from '../maxvideoai-editor.module.css';
 import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../_lib/workspace-types';
 
-const BLOCK_TEMPLATES: Array<{ kind: WorkspaceNodeKind; label: string; description: string; icon: ReactNode }> = [
-  { kind: 'asset-image', label: 'Image reference', description: 'Empty image source with one reusable output.', icon: <ImagePlus size={16} /> },
-  { kind: 'asset-video', label: 'Video reference', description: 'Empty video source for motion or continuity.', icon: <Video size={16} /> },
-  { kind: 'asset-audio', label: 'Audio reference', description: 'Music, voiceover, or SFX source block.', icon: <Music2 size={16} /> },
-  { kind: 'text-prompt', label: 'Prompt block', description: 'Text source for prompt, style, camera, or dialogue.', icon: <FileText size={16} /> },
-  { kind: 'shot', label: 'Generate block', description: 'Unified video generation block with model inputs.', icon: <Plus size={16} /> },
+const BLOCK_TEMPLATES: Array<{ kind: WorkspaceNodeKind; label: string; description: string; icon: ReactNode; accent: string }> = [
+  { kind: 'asset-image', label: 'Image reference', description: 'Drop image, logo, style frame, or board panel.', icon: <ImagePlus size={17} />, accent: '#8b5cf6' },
+  { kind: 'asset-video', label: 'Video reference', description: 'Motion, source video, continuity, or B-roll reference.', icon: <Video size={17} />, accent: '#3b82f6' },
+  { kind: 'asset-audio', label: 'Audio reference', description: 'Music, voiceover, ambience, or SFX source.', icon: <Music2 size={17} />, accent: '#22c55e' },
+  { kind: 'text-prompt', label: 'Prompt block', description: 'Prompt, camera note, dialogue, style, or narration.', icon: <FileText size={17} />, accent: '#60a5fa' },
+  { kind: 'shot', label: 'Generate block', description: 'Unified generation block with model-aware inputs.', icon: <Plus size={17} />, accent: '#f97316' },
 ];
 const PALETTE_DRAG_START_EVENT = 'maxvideoai:palette-drag-start';
+
+type LibraryTemplateCardStyle = CSSProperties & {
+  '--template-accent'?: string;
+  '--template-thumbnail'?: string;
+};
 
 function clearTextSelection(): void {
   window.getSelection()?.removeAllRanges();
@@ -107,10 +112,11 @@ export function NodeLibrarySidebar({
             data-block-template-kind={template.kind}
             title={`${template.label} - ${template.description}`}
             className={styles.blockTemplateCard}
+            style={{ '--template-accent': template.accent } as LibraryTemplateCardStyle}
             onMouseDown={(event) => handleTemplateMouseDown(event, template.kind)}
           >
             <span className={styles.blockTemplateIcon}>{template.icon}</span>
-            <span>
+            <span className={styles.blockTemplateCopy}>
               <strong>{template.label}</strong>
               <small>{template.description}</small>
             </span>
@@ -129,10 +135,23 @@ export function NodeLibrarySidebar({
               key={template.id}
               type="button"
               className={`${styles.templateButton} ${template.id === activeTemplateId ? styles.templateButtonActive : ''}`}
+              style={{
+                '--template-accent': template.accent ?? '#8b5cf6',
+                '--template-thumbnail': template.thumbnailUrl ? `url("${template.thumbnailUrl}")` : undefined,
+              } as LibraryTemplateCardStyle}
               onClick={() => onApplyTemplate(template.id)}
             >
-              <strong>{template.name}</strong>
-              <span>{template.description}</span>
+              <span className={styles.templateThumbnail} aria-hidden="true">
+                <Sparkles size={15} />
+              </span>
+              <span className={styles.templateButtonBody}>
+                <span className={styles.templateButtonTitleRow}>
+                  <strong>{template.name}</strong>
+                  {template.badge ? <em>{template.badge}</em> : null}
+                </span>
+                <span>{template.description}</span>
+                {template.flow ? <small>{template.flow}</small> : null}
+              </span>
             </button>
           ))}
         </div>

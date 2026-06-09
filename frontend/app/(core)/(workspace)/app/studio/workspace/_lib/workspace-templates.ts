@@ -2,6 +2,7 @@ import type {
   WorkspaceEdgeKind,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspacePromptRole,
   WorkspaceShotSettings,
   WorkspaceTemplate,
   WorkspaceTemplateId,
@@ -18,32 +19,56 @@ export const WORKSPACE_TEMPLATE_SUMMARIES: WorkspaceTemplateSummary[] = [
   {
     id: 'product-ad',
     name: 'Product Ad',
-    description: 'Product image, logo, style, music, four shot blocks, and a simple launch timeline.',
+    description: 'Product image, logo, style, music, four shot blocks, and launch timeline.',
+    thumbnailUrl: '/assets/model-examples/seedream/product.webp',
+    badge: 'Pro',
+    flow: 'Product ref -> style clip -> 4 shots',
+    accent: '#8b5cf6',
   },
   {
     id: 'dev-blocks',
     name: 'Dev Blocks',
-    description: 'Every editor block type on the central canvas for focused component work.',
+    description: 'Focused component development and testing workflow.',
+    thumbnailUrl: '/assets/marketing/app-dashboard.webp',
+    badge: 'Pro',
+    flow: 'Every block -> connectors -> output QA',
+    accent: '#7c3aed',
   },
   {
     id: 'character-dialogue',
     name: 'Character Dialogue',
-    description: 'Character reference, dialogue prompt, voiceover, and two continuity shots.',
+    description: 'Character reference, dialogue prompt, voiceover, and continuity shots.',
+    thumbnailUrl: '/assets/blog/character-builder/consistent-character-portrait-anchor.webp',
+    badge: 'Pro',
+    flow: 'Character anchor -> dialogue -> voice',
+    accent: '#ec4899',
   },
   {
     id: 'storyboard-to-video',
-    name: 'Storyboard to Video',
-    description: 'Board frames, camera notes, continuity links, and empty video outputs.',
+    name: 'Storyboard Flow',
+    description: 'Board frames, camera notes, continuity links, and empty outputs.',
+    thumbnailUrl: '/storyboard/templates/storyboard-template-6.png',
+    badge: 'Pro',
+    flow: 'Panels -> shot plan -> sequence',
+    accent: '#38bdf8',
   },
   {
     id: 'ugc-ad',
-    name: 'UGC Ad',
-    description: 'Talking-head reference, hook script, b-roll shots, voice and music tracks.',
+    name: 'UGC Hook',
+    description: 'Talking-head reference, hook script, b-roll shots, voice and music.',
+    thumbnailUrl: '/assets/tools/character-builder-workspace.png',
+    badge: 'Pro',
+    flow: 'Hook script -> avatar -> b-roll',
+    accent: '#f97316',
   },
   {
     id: 'cinematic-scene',
-    name: 'Cinematic Scene',
-    description: 'Style plate, camera plan, scene prompts, sound design, and sequence timeline.',
+    name: 'Cinematic Trailer',
+    description: 'Style plate, camera plan, scene prompts, sound design, and sequence.',
+    thumbnailUrl: '/hero/best-for-cinematic-realism.webp',
+    badge: 'Pro',
+    flow: 'Mood plate -> camera -> trailer shots',
+    accent: '#22c55e',
   },
 ];
 
@@ -676,28 +701,257 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
   };
 }
 
-export function createStarterWorkspaceTemplate(templateId: WorkspaceTemplateId): WorkspaceTemplate {
-  if (templateId === 'dev-blocks') return createDevBlocksWorkspaceTemplate();
-  if (templateId === 'product-ad') return createProductAdWorkspaceTemplate();
+type WorkspaceTemplateVariantConfig = {
+  productTitle: string;
+  productFilename: string;
+  productUrl: string;
+  productDimensions: string;
+  styleTitle: string;
+  styleFilename: string;
+  styleThumbUrl: string;
+  promptTitle: string;
+  promptSubtitle: string;
+  promptRole: WorkspacePromptRole;
+  promptText: string;
+  voiceTitle: string;
+  voiceText: string;
+  audioTitle: string;
+  audioFilename: string;
+  shotSubtitles: [string, string, string, string];
+  outputThumbs: [string, string];
+  timelineTitles: [string, string];
+};
+
+const WORKSPACE_TEMPLATE_VARIANTS: Partial<Record<WorkspaceTemplateId, WorkspaceTemplateVariantConfig>> = {
+  'character-dialogue': {
+    productTitle: 'Character Anchor',
+    productFilename: 'character_anchor.png',
+    productUrl: '/assets/blog/character-builder/consistent-character-portrait-anchor.webp',
+    productDimensions: '1024x1536',
+    styleTitle: 'Performance Reference',
+    styleFilename: 'dialogue_tone.mp4',
+    styleThumbUrl: '/assets/blog/character-builder/ai-character-sheet-portrait-anchor.webp',
+    promptTitle: 'Dialogue Direction',
+    promptSubtitle: 'dialogue_prompt.txt',
+    promptRole: 'dialogue',
+    promptText: 'A close, emotional two-line exchange. Keep the same character identity, soft eye movement, natural pauses, and grounded delivery.',
+    voiceTitle: 'Voice Cue',
+    voiceText: 'A quiet but decisive voiceover that bridges both shots without breaking character continuity.',
+    audioTitle: 'Room Tone',
+    audioFilename: 'dialogue_room_tone.wav',
+    shotSubtitles: ['Character Close-up', 'Reverse Angle', 'Reaction Beat', 'Final Line'],
+    outputThumbs: ['/assets/blog/character-builder/consistent-character-portrait-anchor.webp', '/hero/showcase-veo-3-1.webp'],
+    timelineTitles: ['Dialogue Close-up', 'Reaction Beat'],
+  },
+  'storyboard-to-video': {
+    productTitle: 'Storyboard Frames',
+    productFilename: 'six_panel_board.png',
+    productUrl: '/storyboard/templates/storyboard-template-6.png',
+    productDimensions: '1920x1080',
+    styleTitle: 'Motion Board',
+    styleFilename: 'animatic_reference.mp4',
+    styleThumbUrl: '/storyboard/examples/storyboarder-product-reference.jpg',
+    promptTitle: 'Panel Continuity',
+    promptSubtitle: 'panel_timing.txt',
+    promptRole: 'camera',
+    promptText: 'Follow the storyboard order exactly. Use each panel as a beat, preserve screen direction, and make transitions feel like a planned animatic.',
+    voiceTitle: 'Scene Notes',
+    voiceText: 'Use the storyboard as timing authority: establish, push in, action beat, detail, transition, end frame.',
+    audioTitle: 'Temp Score',
+    audioFilename: 'storyboard_temp_score.mp3',
+    shotSubtitles: ['Panel 01 Establish', 'Panel 02 Action', 'Panel 03 Insert', 'Panel 04 End Frame'],
+    outputThumbs: ['/storyboard/templates/storyboard-template-6.png', '/hero/showcase-seedance-2-0.webp'],
+    timelineTitles: ['Storyboard Beat 01', 'Storyboard Beat 02'],
+  },
+  'ugc-ad': {
+    productTitle: 'Creator Reference',
+    productFilename: 'creator_anchor.png',
+    productUrl: '/assets/tools/character-builder-workspace.png',
+    productDimensions: '1400x900',
+    styleTitle: 'B-roll Reference',
+    styleFilename: 'ugc_broll_style.mp4',
+    styleThumbUrl: '/hero/best-for-fast-drafts-city.webp',
+    promptTitle: 'Hook Script',
+    promptSubtitle: 'ugc_hook.txt',
+    promptRole: 'prompt',
+    promptText: 'Open with a direct hook, show the product in use, cut to one proof point, then close with a clean visual payoff.',
+    voiceTitle: 'Creator VO',
+    voiceText: 'Conversational voiceover: fast hook, believable benefit, no over-polished ad language.',
+    audioTitle: 'Social Bed',
+    audioFilename: 'ugc_social_bed.mp3',
+    shotSubtitles: ['Hook Opener', 'Product Proof', 'B-roll Detail', 'CTA Moment'],
+    outputThumbs: ['/hero/best-for-fast-drafts-city.webp', '/assets/tools/character-builder-workspace.png'],
+    timelineTitles: ['UGC Hook', 'Proof B-roll'],
+  },
+  'cinematic-scene': {
+    productTitle: 'Mood Plate',
+    productFilename: 'cinematic_mood.png',
+    productUrl: '/hero/best-for-cinematic-realism.webp',
+    productDimensions: '1920x1080',
+    styleTitle: 'Camera Language',
+    styleFilename: 'trailer_motion_ref.mp4',
+    styleThumbUrl: '/hero/kling-3-4k-demo.jpg',
+    promptTitle: 'Scene Prompt',
+    promptSubtitle: 'trailer_scene.txt',
+    promptRole: 'scene_description',
+    promptText: 'Build a cinematic trailer beat: wide establishing image, controlled camera push, character reveal, atmosphere, and dramatic final frame.',
+    voiceTitle: 'Trailer VO',
+    voiceText: 'Sparse narration with tension: one line before the reveal, one line on the final frame.',
+    audioTitle: 'Trailer Pulse',
+    audioFilename: 'trailer_pulse.wav',
+    shotSubtitles: ['Wide Establishing', 'Character Reveal', 'Action Insert', 'Final Frame'],
+    outputThumbs: ['/hero/best-for-cinematic-realism.webp', '/hero/showcase-kling-3-pro.webp'],
+    timelineTitles: ['Trailer Establish', 'Trailer Reveal'],
+  },
+};
+
+function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, summary: WorkspaceTemplateSummary): WorkspaceTemplate {
+  const config = WORKSPACE_TEMPLATE_VARIANTS[templateId];
   const base = createProductAdWorkspaceTemplate();
-  const summary = WORKSPACE_TEMPLATE_SUMMARIES.find((entry) => entry.id === templateId) ?? WORKSPACE_TEMPLATE_SUMMARIES[0];
-  return {
-    ...base,
-    id: summary.id,
-    name: summary.name,
-    nodes: base.nodes.map((node) => {
-      if (node.id !== 'shot-01') return node;
+  if (!config) {
+    return {
+      ...base,
+      id: summary.id,
+      name: summary.name,
+    };
+  }
+
+  const nodes = base.nodes.map((node) => {
+    if (node.id === 'asset-product-image') {
       return {
         ...node,
         data: {
           ...node.data,
-          subtitle: summary.name,
-          shot: {
-            ...(node.data.shot as WorkspaceShotSettings),
-            outputName: summary.name,
+          title: config.productTitle,
+          subtitle: config.productFilename,
+          accent: summary.accent ?? node.data.accent,
+          asset: {
+            ...node.data.asset,
+            id: `${templateId}-primary-reference`,
+            kind: 'image' as const,
+            filename: config.productFilename,
+            subtitle: `Image · ${config.productDimensions}`,
+            url: config.productUrl,
+            thumbUrl: config.productUrl,
+            dimensions: config.productDimensions,
           },
         },
       };
+    }
+    if (node.id === 'asset-style-reference') {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          title: config.styleTitle,
+          subtitle: config.styleFilename,
+          asset: {
+            ...node.data.asset,
+            id: `${templateId}-style-reference`,
+            kind: 'video' as const,
+            filename: config.styleFilename,
+            subtitle: 'Video · reference',
+            thumbUrl: config.styleThumbUrl,
+          },
+        },
+      };
+    }
+    if (node.id === 'prompt-camera') {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          title: config.promptTitle,
+          subtitle: config.promptSubtitle,
+          promptRole: config.promptRole,
+          promptText: config.promptText,
+        },
+      };
+    }
+    if (node.id === 'audio-music-01') {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          title: config.audioTitle,
+          subtitle: config.audioFilename,
+          asset: {
+            ...node.data.asset,
+            id: `${templateId}-audio-reference`,
+            kind: 'audio' as const,
+            filename: config.audioFilename,
+            subtitle: 'Audio · reference',
+          },
+        },
+      };
+    }
+    if (node.id === 'prompt-voiceover') {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          title: config.voiceTitle,
+          promptText: config.voiceText,
+        },
+      };
+    }
+    if (node.id.startsWith('shot-')) {
+      const shotIndex = Number(node.id.replace('shot-0', '')) - 1;
+      const subtitle = config.shotSubtitles[shotIndex] ?? summary.name;
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          subtitle,
+          shot: {
+            ...(node.data.shot as WorkspaceShotSettings),
+            outputName: subtitle,
+          },
+        },
+      };
+    }
+    if (node.id === 'output-01' || node.id === 'output-02') {
+      const outputIndex = node.id === 'output-01' ? 0 : 1;
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          output: node.data.output
+            ? {
+                ...node.data.output,
+                thumbUrl: config.outputThumbs[outputIndex],
+                modelLabel: node.id === 'output-01' ? 'Seedance 2.0' : node.data.output.modelLabel,
+              }
+            : node.data.output,
+        },
+      };
+    }
+    return node;
+  });
+
+  return {
+    ...base,
+    id: summary.id,
+    name: summary.name,
+    nodes,
+    timelineItems: base.timelineItems.map((item) => {
+      if (item.id === 'timeline-output-01') {
+        return { ...item, title: config.timelineTitles[0], thumbnailUrl: config.outputThumbs[0] };
+      }
+      if (item.id === 'timeline-output-02' || item.id === 'timeline-output-02-audio') {
+        return { ...item, title: item.mediaKind === 'audio' ? `${config.timelineTitles[1]} Audio` : config.timelineTitles[1], thumbnailUrl: config.outputThumbs[1] };
+      }
+      if (item.id === 'timeline-music-01') {
+        return { ...item, title: config.audioFilename };
+      }
+      return item;
     }),
   };
+}
+
+export function createStarterWorkspaceTemplate(templateId: WorkspaceTemplateId): WorkspaceTemplate {
+  if (templateId === 'dev-blocks') return createDevBlocksWorkspaceTemplate();
+  if (templateId === 'product-ad') return createProductAdWorkspaceTemplate();
+  const summary = WORKSPACE_TEMPLATE_SUMMARIES.find((entry) => entry.id === templateId) ?? WORKSPACE_TEMPLATE_SUMMARIES[0];
+  return createVariantWorkspaceTemplate(templateId, summary);
 }

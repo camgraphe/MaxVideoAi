@@ -258,6 +258,10 @@ export type WorkspaceTemplateSummary = {
   id: WorkspaceTemplateId;
   name: string;
   description: string;
+  thumbnailUrl?: string;
+  badge?: string;
+  flow?: string;
+  accent?: string;
 };
 
 export type WorkspaceTemplate = {

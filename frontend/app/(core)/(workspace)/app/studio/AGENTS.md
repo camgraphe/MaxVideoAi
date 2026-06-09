@@ -9,6 +9,8 @@ This folder owns the MaxVideoAI Studio product surface:
 
 The Studio editor is intentionally separate from the main generation workspace. Do not import or recreate the existing app chrome here unless a feature is explicitly shared outside Studio.
 
+Read `docs/engineering/studio-editor-architecture.md` before changing Studio entities, adding a block/model/template, or moving timeline/viewer responsibilities.
+
 ## Product Model
 
 Keep these entities distinct:

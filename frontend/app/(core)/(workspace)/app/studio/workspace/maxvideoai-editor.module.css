@@ -523,31 +523,36 @@
   flex: 0 0 auto;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
-  gap: 8px;
+  gap: 9px;
   user-select: none;
 }
 
 .blockTemplateCard {
   position: relative;
   display: flex;
-  min-height: 74px;
+  min-height: 88px;
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 7px;
-  padding: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.62);
+  background:
+    radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--template-accent, #8b5cf6) 20%, transparent), transparent 42%),
+    linear-gradient(150deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.72));
   color: #e2e8f0;
   text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   cursor: grab;
 }
 
 .blockTemplateCard:hover {
-  border-color: rgba(124, 58, 237, 0.5);
-  background: rgba(30, 41, 59, 0.9);
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 62%, rgba(148, 163, 184, 0.18));
+  background:
+    radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--template-accent, #8b5cf6) 28%, transparent), transparent 44%),
+    linear-gradient(150deg, rgba(22, 32, 51, 0.98), rgba(15, 23, 42, 0.84));
 }
 
 .blockTemplateCard:active {
@@ -556,12 +561,19 @@
 
 .blockTemplateIcon {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  border-radius: 7px;
-  background: rgba(124, 58, 237, 0.16);
-  color: #a78bfa;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, rgba(15, 23, 42, 0.92));
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 80%, #ffffff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--template-accent, #8b5cf6) 26%, transparent);
+}
+
+.blockTemplateCopy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
 .blockTemplateCard strong,
@@ -573,9 +585,9 @@
 
 .blockTemplateCard strong {
   color: #f8fafc;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 740;
-  line-height: 1.15;
+  line-height: 1.12;
 }
 
 .blockTemplateCard small {
@@ -947,39 +959,129 @@ button.assetBrowserCard {
   min-height: 0;
   overflow: auto;
   padding-right: 2px;
-  gap: 7px;
+  gap: 8px;
 }
 
 .templateButton {
-  display: block;
-  padding: 10px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.66);
+  display: grid;
+  min-height: 76px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 9px;
+  background:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--template-accent, #8b5cf6) 14%, transparent), transparent 42%),
+    rgba(15, 23, 42, 0.68);
   color: #cbd5e1;
   text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
   cursor: pointer;
 }
 
+.templateThumbnail {
+  position: relative;
+  display: grid;
+  min-height: 58px;
+  place-items: start;
+  overflow: hidden;
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.1), rgba(2, 6, 23, 0.42)),
+    var(--template-thumbnail),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(17, 24, 39, 0.95));
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.08);
+}
+
+.templateThumbnail::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(180deg, transparent 42%, rgba(2, 6, 23, 0.48));
+  pointer-events: none;
+}
+
+.templateThumbnail svg {
+  position: relative;
+  z-index: 1;
+  margin: 7px;
+  padding: 5px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 78%, rgba(15, 23, 42, 0.88));
+  color: #ffffff;
+  box-sizing: content-box;
+  box-shadow: 0 8px 16px rgba(2, 6, 23, 0.22);
+}
+
+.templateButtonBody {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  gap: 4px;
+}
+
+.templateButtonTitleRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
 .templateButton strong,
-.templateButton span {
+.templateButtonBody > span:not(.templateButtonTitleRow),
+.templateButton small,
+.templateButton em {
   display: block;
 }
 
 .templateButton strong {
+  min-width: 0;
+  overflow: hidden;
   color: #f8fafc;
   font-size: 12px;
+  font-weight: 760;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.templateButton span {
-  margin-top: 4px;
+.templateButton em {
+  flex: 0 0 auto;
+  padding: 1px 5px 2px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.28);
+  color: #d8b4fe;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.templateButtonBody > span:not(.templateButtonTitleRow) {
   color: #94a3b8;
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.templateButton small {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 72%, #cbd5e1);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .templateButtonActive {
-  outline: 1px solid rgba(124, 58, 237, 0.78);
-  background: rgba(88, 28, 135, 0.32);
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 74%, rgba(148, 163, 184, 0.22));
+  outline: 1px solid color-mix(in srgb, var(--template-accent, #8b5cf6) 78%, transparent);
+  background:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--template-accent, #8b5cf6) 28%, transparent), transparent 46%),
+    rgba(88, 28, 135, 0.3);
 }
 
 .myCanvasTemplatesSection {

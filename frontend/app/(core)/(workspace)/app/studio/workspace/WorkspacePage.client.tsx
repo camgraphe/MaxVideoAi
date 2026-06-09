@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
-import { Download, GitBranch, PanelRight, Play, Settings } from 'lucide-react';
+import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { authFetch } from '@/lib/authFetch';
-import { NodeLibrarySidebar, type WorkspaceUserCanvasTemplateSummary } from './_components/NodeLibrarySidebar';
+import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineProjectSidebar, type WorkspaceProjectSequenceSummary } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
@@ -41,7 +41,6 @@ import type {
   WorkspaceGraphNode,
   WorkspaceInputConnector,
   WorkspaceNodeKind,
-  WorkspaceOutputMetadata,
   WorkspaceProjectSettings,
   WorkspaceShotSettings,
   WorkspaceTemplateId,
@@ -52,7 +51,6 @@ import type {
 } from './_lib/workspace-types';
 import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from './_lib/workspace-handle-drop';
 import {
-  WORKSPACE_DEMO_AUDIO_URL,
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
 } from './_lib/workspace-library-assets';
@@ -95,150 +93,77 @@ import {
 import {
   isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
-  normalizeWorkspaceTimelineTrack,
-  workspaceTimelineAudioTrackId,
-  workspaceTimelineAudioTrackIndex,
   workspaceTimelineTrackLabel,
-  workspaceTimelineVideoTrackId,
-  workspaceTimelineVideoTrackIndex,
 } from './_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from './_lib/workspace-timecode';
+import {
+  DEFAULT_WORKSPACE_SEQUENCE_ID,
+  DEFAULT_WORKSPACE_SHOT_MODEL_ID,
+  MAX_TIMELINE_AUDIO_TRACKS,
+  MAX_TIMELINE_PANEL_HEIGHT,
+  MAX_TIMELINE_VIDEO_TRACKS,
+  MIN_TIMELINE_AUDIO_TRACKS,
+  MIN_TIMELINE_PANEL_HEIGHT,
+  RENDER_MANIFEST_STORAGE_KEY,
+  TIMELINE_HISTORY_LIMIT,
+  VIDEO_EXPORT_REQUEST_STORAGE_KEY,
+  audioTrackCountForTimelineItems,
+  coerceAudioTrackCount,
+  coerceHiddenVideoTracks,
+  coerceMutedAudioTracks,
+  coerceTimelineMarker,
+  coerceTimelinePanelHeight,
+  coerceTimelineTrackList,
+  coerceVideoTrackCount,
+  createWorkspaceSequenceRecord,
+  deleteWorkspaceTimelineTrackIds,
+  deleteWorkspaceTimelineTrackItems,
+  normalizeWorkspaceSequenceRecord,
+  upsertWorkspaceSequence,
+  videoTrackCountForTimelineItems,
+  type PersistedWorkspaceState,
+  type StudioProjectStorageRecord,
+  type TimelineExportClientEstimate,
+  type TimelineExportClientJob,
+  type TimelineExportClientJobStatus,
+  type TimelineExportClientQuota,
+  type TimelineHistoryState,
+  type WorkspaceEditorSurface,
+  type WorkspaceFocusMode,
+  type WorkspaceSequenceRecord,
+  type WorkspaceUserCanvasTemplate,
+} from './_state/workspace-state';
+import {
+  GENERATED_OUTPUT_TARGET_HANDLE,
+  isPlayableAudioUrl,
+  isPlayableImageUrl,
+  isPlayableVideoUrl,
+  normalizeGeneratedOutputEdges,
+  normalizeGeneratedOutputNodes,
+  normalizeOutputOnlySourceEdges,
+  normalizeOutputOnlySourceNodes,
+  normalizePlaceholderOutputNodes,
+  normalizeShotOutputEdges,
+  normalizeShotOutputNodes,
+  normalizeTimelineMediaUrls,
+  normalizeWorkspaceEdgeTypes,
+  playableOutputTimelineUrl,
+} from './_state/workspace-normalizers';
+import {
+  buildWorkspaceSequenceSummaries,
+  selectedWorkspaceSequenceInspectorSummary,
+  selectedWorkspaceTimelineItem,
+  sequenceNameForIndex,
+  workspaceTimelineDurationSec,
+} from './_state/workspace-selectors';
+import {
+  readPersistedWorkspaceState,
+  readStudioProject,
+  readUserCanvasTemplates,
+  workspaceStorageKeyForProject,
+  writeUserCanvasTemplates,
+} from './_state/workspace-persistence';
 import styles from './maxvideoai-editor.module.css';
-
-const STORAGE_KEY = 'maxvideoai.editor.workspace.v1';
-const USER_CANVAS_TEMPLATES_STORAGE_KEY = 'maxvideoai.editor.canvasTemplates.v1';
-const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
-const RENDER_MANIFEST_STORAGE_KEY = 'maxvideoai.editor.timelineRender.v1';
-const VIDEO_EXPORT_REQUEST_STORAGE_KEY = 'maxvideoai.editor.videoExportRequest.v1';
-const TIMELINE_HISTORY_LIMIT = 50;
-const MAX_TIMELINE_VIDEO_TRACKS = 4;
-const MIN_TIMELINE_AUDIO_TRACKS = 3;
-const MAX_TIMELINE_AUDIO_TRACKS = 8;
-const MIN_TIMELINE_PANEL_HEIGHT = 220;
-const MAX_TIMELINE_PANEL_HEIGHT = 620;
-const DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0';
-const DEFAULT_WORKSPACE_SEQUENCE_ID = 'sequence-main';
-const STALE_EMPTY_DEMO_AUDIO_URL = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
-
-type PersistedWorkspaceState = {
-  nodes: WorkspaceGraphNode[];
-  edges: WorkspaceGraphEdge[];
-  projectAssets?: WorkspaceAssetRecord[];
-  timelineItems: WorkspaceTimelineItem[];
-  activeSequenceId?: string;
-  sequences?: WorkspaceSequenceRecord[];
-  activeTemplateId: WorkspaceTemplateId;
-  projectSettings: WorkspaceProjectSettings;
-  focusMode?: WorkspaceFocusMode;
-  audioTrackCount?: number;
-  hiddenVideoTracks?: WorkspaceTimelineVideoTrack[];
-  lockedTimelineTracks?: WorkspaceTimelineTrack[];
-  mutedAudioTracks?: WorkspaceTimelineAudioTrack[];
-  videoTrackCount?: number;
-  timelinePanelHeight?: number | null;
-  timelineInPointSec?: number | null;
-  timelineOutPointSec?: number | null;
-};
-
-type WorkspaceSequenceRecord = {
-  id: string;
-  name: string;
-  timelineItems: WorkspaceTimelineItem[];
-  projectSettings: WorkspaceProjectSettings;
-  audioTrackCount: number;
-  hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
-  lockedTimelineTracks: WorkspaceTimelineTrack[];
-  mutedAudioTracks: WorkspaceTimelineAudioTrack[];
-  videoTrackCount: number;
-  timelinePanelHeight: number | null;
-  timelineInPointSec: number | null;
-  timelineOutPointSec: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type WorkspaceUserCanvasTemplate = WorkspaceUserCanvasTemplateSummary & {
-  nodes: WorkspaceGraphNode[];
-  edges: WorkspaceGraphEdge[];
-  createdAt: string;
-};
-
-type StudioProjectStorageRecord = {
-  id: string;
-  name: string;
-  settings?: WorkspaceProjectSettings;
-  canvasTemplateId?: WorkspaceTemplateId;
-  workspaceState?: unknown;
-};
-
-type TimelineHistoryState = {
-  past: WorkspaceTimelineItem[][];
-  future: WorkspaceTimelineItem[][];
-};
-
-type WorkspaceFocusMode = 'canvas' | 'viewer';
-type WorkspaceEditorSurface = 'canvas' | 'timeline';
-type TimelineExportClientJobStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
-type TimelineExportClientEstimate = {
-  billingKind: 'free' | 'paid';
-  amountCents: number;
-  currency: string;
-  freeExportsRemaining: number;
-};
-type TimelineExportClientQuota = {
-  freeLimit: number;
-  usedFreeExports: number;
-  freeExportsRemaining: number;
-  billingKind: 'free' | 'paid';
-};
-type TimelineExportClientJob = {
-  id: string;
-  status: TimelineExportClientJobStatus;
-  progress: number;
-  message: string | null;
-  outputUrl: string | null;
-};
-
-const OUTPUT_ONLY_SOURCE_HANDLES: Partial<Record<WorkspaceNodeKind, WorkspaceEdgeKind>> = {
-  'asset-image': 'reference',
-  'asset-video': 'video_reference',
-  'asset-audio': 'audio',
-  'text-prompt': 'prompt',
-};
-
-const GENERATED_OUTPUT_TARGET_HANDLE: WorkspaceEdgeKind = 'generated_output';
-const GENERATED_OUTPUT_SOURCE_HANDLE: WorkspaceEdgeKind = 'video_reference';
-const WORKSPACE_EDGE_TYPE = 'workspace-smart';
-
-function isPlayableVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:video/')) return true;
-  return /\.(mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableAudioUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:audio/')) return true;
-  return /\.(mp3|wav|ogg|m4a|aac|mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableImageUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
-  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
-}
-
-function playableOutputTimelineUrl(output: WorkspaceOutputMetadata): string | null {
-  if (output.kind === 'audio') {
-    const audioUrl = output.audioUrl ?? output.url ?? null;
-    return isPlayableAudioUrl(audioUrl) ? audioUrl : null;
-  }
-  if (output.kind === 'image') {
-    const imageUrl = output.url ?? output.thumbUrl ?? null;
-    return isPlayableImageUrl(imageUrl) ? imageUrl : null;
-  }
-  return isPlayableVideoUrl(output.url) ? output.url ?? null : null;
-}
 
 function createClientExportIdempotencyKey(): string {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -283,55 +208,6 @@ function retargetWorkspaceTimelineItemsForTrack(items: WorkspaceTimelineItem[], 
   return items;
 }
 
-function deleteWorkspaceTimelineTrackItems(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): WorkspaceTimelineItem[] {
-  if (isWorkspaceTimelineVideoTrack(track)) {
-    const deletedIndex = workspaceTimelineVideoTrackIndex(track);
-    return items
-      .filter((item) => item.track !== track)
-      .map((item) => {
-        if (!isWorkspaceTimelineVideoTrack(item.track)) return item;
-        const itemTrackIndex = workspaceTimelineVideoTrackIndex(item.track);
-        if (itemTrackIndex <= deletedIndex) return item;
-        return {
-          ...item,
-          track: workspaceTimelineVideoTrackId(itemTrackIndex - 1),
-        };
-      });
-  }
-
-  const deletedIndex = workspaceTimelineAudioTrackIndex(track);
-  return items
-    .filter((item) => item.track !== track)
-    .map((item) => {
-      if (!isWorkspaceTimelineAudioTrack(item.track)) return item;
-      const itemTrackIndex = workspaceTimelineAudioTrackIndex(item.track);
-      if (itemTrackIndex <= deletedIndex) return item;
-      return {
-        ...item,
-        track: workspaceTimelineAudioTrackId(itemTrackIndex - 1),
-      };
-    });
-}
-
-function deleteWorkspaceTimelineTrackIds(trackIds: WorkspaceTimelineTrack[], track: WorkspaceTimelineTrack): WorkspaceTimelineTrack[] {
-  const nextTrackIds = trackIds
-    .filter((trackId) => trackId !== track)
-    .map((trackId) => {
-      if (isWorkspaceTimelineVideoTrack(track) && isWorkspaceTimelineVideoTrack(trackId)) {
-        const deletedIndex = workspaceTimelineVideoTrackIndex(track);
-        const trackIndex = workspaceTimelineVideoTrackIndex(trackId);
-        return trackIndex > deletedIndex ? workspaceTimelineVideoTrackId(trackIndex - 1) : trackId;
-      }
-      if (isWorkspaceTimelineAudioTrack(track) && isWorkspaceTimelineAudioTrack(trackId)) {
-        const deletedIndex = workspaceTimelineAudioTrackIndex(track);
-        const trackIndex = workspaceTimelineAudioTrackIndex(trackId);
-        return trackIndex > deletedIndex ? workspaceTimelineAudioTrackId(trackIndex - 1) : trackId;
-      }
-      return trackId;
-    });
-  return Array.from(new Set(nextTrackIds));
-}
-
 function timelineTrackHasClipAt(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, seconds: number): boolean {
   return items.some((item) => (
     item.track === track &&
@@ -349,221 +225,6 @@ function workspaceTimelineCutPoints(items: WorkspaceTimelineItem[]): number[] {
       cutPoints.add(Math.round((item.startSec + item.durationSec) * 1_000_000) / 1_000_000);
     });
   return Array.from(cutPoints).sort((left, right) => left - right);
-}
-
-function normalizePlayableAudioUrl(url?: string | null): string | null {
-  if (url === STALE_EMPTY_DEMO_AUDIO_URL) return WORKSPACE_DEMO_AUDIO_URL;
-  return isPlayableAudioUrl(url) ? url ?? null : null;
-}
-
-function outputOnlySourceHandle(node: WorkspaceGraphNode): WorkspaceEdgeKind | null {
-  return OUTPUT_ONLY_SOURCE_HANDLES[node.data.kind] ?? null;
-}
-
-function normalizeOutputOnlySourceNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.map((node) => {
-    const sourceHandle = outputOnlySourceHandle(node);
-    if (!sourceHandle) return node;
-    if (node.data.sourceHandles?.length === 1 && node.data.sourceHandles[0] === sourceHandle && !node.data.targetHandles?.length) {
-      return node;
-    }
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        targetHandles: [],
-        sourceHandles: [sourceHandle],
-      },
-    };
-  });
-}
-
-function normalizeOutputOnlySourceEdges(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): WorkspaceGraphEdge[] {
-  const sourceHandleByNodeId = new Map(
-    nodes
-      .map((node): [string, WorkspaceEdgeKind] | null => {
-        const sourceHandle = outputOnlySourceHandle(node);
-        return sourceHandle ? [node.id, sourceHandle] : null;
-      })
-      .filter((entry): entry is [string, WorkspaceEdgeKind] => Boolean(entry))
-  );
-
-  return edges.map((edge) => {
-    const sourceHandle = sourceHandleByNodeId.get(edge.source);
-    if (!sourceHandle || edge.sourceHandle === sourceHandle) return edge;
-    return {
-      ...edge,
-      sourceHandle,
-    };
-  });
-}
-
-function normalizeGeneratedOutputNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.map((node) => {
-    if (node.data.kind !== 'output') return node;
-    if (
-      node.data.targetHandles?.length === 1 &&
-      node.data.targetHandles[0] === GENERATED_OUTPUT_TARGET_HANDLE &&
-      node.data.sourceHandles?.length === 1 &&
-      node.data.sourceHandles[0] === GENERATED_OUTPUT_SOURCE_HANDLE
-    ) {
-      return node;
-    }
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        targetHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
-        sourceHandles: [GENERATED_OUTPUT_SOURCE_HANDLE],
-      },
-    };
-  });
-}
-
-function normalizeGeneratedOutputEdges(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): WorkspaceGraphEdge[] {
-  const outputNodeIds = new Set(nodes.filter((node) => node.data.kind === 'output').map((node) => node.id));
-  return edges.map((edge) => {
-    const nextEdge = { ...edge };
-    if (outputNodeIds.has(edge.target) && edge.data?.kind === GENERATED_OUTPUT_TARGET_HANDLE) {
-      nextEdge.targetHandle = GENERATED_OUTPUT_TARGET_HANDLE;
-    }
-    if (outputNodeIds.has(edge.source)) {
-      nextEdge.sourceHandle = GENERATED_OUTPUT_SOURCE_HANDLE;
-    }
-    return nextEdge;
-  });
-}
-
-function normalizePlaceholderOutputNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.map((node) => {
-    const output = node.data.output;
-    if (node.data.kind !== 'output' || !output || output.status || output.kind !== 'video' || isPlayableVideoUrl(output.url)) {
-      return node;
-    }
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        subtitle: 'Waiting for generated media',
-        output: {
-          ...output,
-          status: 'placeholder',
-          thumbUrl: null,
-          url: null,
-        },
-      },
-    };
-  });
-}
-
-function normalizeShotOutputNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.map((node) => {
-    if (node.data.kind !== 'shot') return node;
-    if (node.data.sourceHandles?.length === 1 && node.data.sourceHandles[0] === GENERATED_OUTPUT_TARGET_HANDLE) {
-      return node;
-    }
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        sourceHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
-      },
-    };
-  });
-}
-
-function normalizeShotOutputEdges(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): WorkspaceGraphEdge[] {
-  const shotNodeIds = new Set(nodes.filter((node) => node.data.kind === 'shot').map((node) => node.id));
-  return edges.map((edge) => {
-    if (!shotNodeIds.has(edge.source) || edge.sourceHandle === GENERATED_OUTPUT_TARGET_HANDLE) return edge;
-    return {
-      ...edge,
-      sourceHandle: GENERATED_OUTPUT_TARGET_HANDLE,
-    };
-  });
-}
-
-function normalizeWorkspaceEdgeTypes(edges: WorkspaceGraphEdge[]): WorkspaceGraphEdge[] {
-  return edges.map((edge) => (edge.type === WORKSPACE_EDGE_TYPE ? edge : { ...edge, type: WORKSPACE_EDGE_TYPE }));
-}
-
-function normalizeTimelineMediaUrls(nodes: WorkspaceGraphNode[], items: WorkspaceTimelineItem[]): WorkspaceTimelineItem[] {
-  return items.map((item) => {
-    const track = normalizeWorkspaceTimelineTrack(item.track);
-    const normalizedItem: WorkspaceTimelineItem = {
-      ...item,
-      track,
-      sourceStartSec: item.sourceStartSec ?? 0,
-      sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
-      mediaKind: item.mediaKind ?? (isWorkspaceTimelineAudioTrack(track) ? 'audio' : 'video'),
-    };
-    if (normalizedItem.mediaUrl && normalizedItem.mediaUrl !== STALE_EMPTY_DEMO_AUDIO_URL) return normalizedItem;
-    const sourceNode = nodes.find((node) => node.id === item.outputNodeId);
-    const output = sourceNode?.data.output;
-    const asset = sourceNode?.data.asset;
-    const mediaUrl = normalizedItem.mediaKind === 'audio'
-      ? [output?.audioUrl, output?.url, asset?.url]
-        .map((url) => normalizePlayableAudioUrl(url))
-        .find((url): url is string => Boolean(url)) ?? null
-      : normalizedItem.mediaKind === 'image'
-        ? [output?.url, output?.thumbUrl, asset?.url, asset?.thumbUrl].find(isPlayableImageUrl) ?? null
-        : [output?.url, asset?.url].find(isPlayableVideoUrl) ?? null;
-    if (!mediaUrl) return normalizedItem;
-    return {
-      ...normalizedItem,
-      mediaUrl,
-      thumbnailUrl: item.thumbnailUrl ?? output?.thumbUrl ?? asset?.thumbUrl ?? null,
-    };
-  });
-}
-
-function videoTrackCountForTimelineItems(items: WorkspaceTimelineItem[]): number {
-  return Math.max(1, ...items.map((item) => workspaceTimelineVideoTrackIndex(item.track)));
-}
-
-function audioTrackCountForTimelineItems(items: WorkspaceTimelineItem[]): number {
-  return Math.max(MIN_TIMELINE_AUDIO_TRACKS, ...items.map((item) => workspaceTimelineAudioTrackIndex(item.track)));
-}
-
-function coerceVideoTrackCount(value: unknown, items: WorkspaceTimelineItem[]): number {
-  const requestedCount = typeof value === 'number' ? value : 1;
-  return Math.max(1, Math.min(MAX_TIMELINE_VIDEO_TRACKS, Math.max(requestedCount, videoTrackCountForTimelineItems(items))));
-}
-
-function coerceAudioTrackCount(value: unknown, items: WorkspaceTimelineItem[]): number {
-  const requestedCount = typeof value === 'number' ? value : MIN_TIMELINE_AUDIO_TRACKS;
-  return Math.max(MIN_TIMELINE_AUDIO_TRACKS, Math.min(MAX_TIMELINE_AUDIO_TRACKS, Math.max(requestedCount, audioTrackCountForTimelineItems(items))));
-}
-
-function coerceTimelinePanelHeight(value: unknown): number | null {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
-  return Math.max(MIN_TIMELINE_PANEL_HEIGHT, Math.min(MAX_TIMELINE_PANEL_HEIGHT, Math.round(value)));
-}
-
-function coerceTimelineMarker(value: unknown): number | null {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null;
-  return Math.round(value * 1000) / 1000;
-}
-
-function coerceTimelineTrackList(value: unknown, videoTrackCount: number, audioTrackCount: number): WorkspaceTimelineTrack[] {
-  if (!Array.isArray(value)) return [];
-  const normalizedTracks = value
-    .map((track) => normalizeWorkspaceTimelineTrack(String(track)))
-    .filter((track) => {
-      if (isWorkspaceTimelineVideoTrack(track)) return workspaceTimelineVideoTrackIndex(track) <= videoTrackCount;
-      return workspaceTimelineAudioTrackIndex(track) <= audioTrackCount;
-    });
-  return Array.from(new Set(normalizedTracks));
-}
-
-function coerceHiddenVideoTracks(value: unknown, videoTrackCount: number): WorkspaceTimelineVideoTrack[] {
-  return coerceTimelineTrackList(value, videoTrackCount, MIN_TIMELINE_AUDIO_TRACKS)
-    .filter((track): track is WorkspaceTimelineVideoTrack => isWorkspaceTimelineVideoTrack(track));
-}
-
-function coerceMutedAudioTracks(value: unknown, audioTrackCount: number): WorkspaceTimelineAudioTrack[] {
-  return coerceTimelineTrackList(value, MAX_TIMELINE_VIDEO_TRACKS, audioTrackCount)
-    .filter((track): track is WorkspaceTimelineAudioTrack => isWorkspaceTimelineAudioTrack(track));
 }
 
 function timelineSelectionTouchesLockedTrack(items: WorkspaceTimelineItem[], itemIds: string[], lockedTracks: WorkspaceTimelineTrack[]): boolean {
@@ -622,102 +283,6 @@ function cloneWorkspaceJson<T>(value: T): T {
 function createLocalStudioId(prefix: string): string {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-function workspaceSequenceDurationSec(sequence: Pick<WorkspaceSequenceRecord, 'timelineItems'>): number {
-  return Math.max(0, ...sequence.timelineItems.map((item) => item.startSec + item.durationSec));
-}
-
-function sequenceNameForIndex(index: number): string {
-  return index <= 1 ? 'Main sequence' : `Sequence ${index}`;
-}
-
-function createWorkspaceSequenceRecord(params: {
-  id: string;
-  name: string;
-  timelineItems: WorkspaceTimelineItem[];
-  projectSettings: WorkspaceProjectSettings;
-  audioTrackCount?: number;
-  hiddenVideoTracks?: WorkspaceTimelineVideoTrack[];
-  lockedTimelineTracks?: WorkspaceTimelineTrack[];
-  mutedAudioTracks?: WorkspaceTimelineAudioTrack[];
-  videoTrackCount?: number;
-  timelinePanelHeight?: number | null;
-  timelineInPointSec?: number | null;
-  timelineOutPointSec?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
-}): WorkspaceSequenceRecord {
-  const timelineItems = normalizeWorkspaceTimelineIdentities(params.timelineItems);
-  const audioTrackCount = coerceAudioTrackCount(params.audioTrackCount, timelineItems);
-  const videoTrackCount = coerceVideoTrackCount(params.videoTrackCount, timelineItems);
-  const timestamp = new Date().toISOString();
-  return {
-    id: params.id,
-    name: params.name.trim() || 'Untitled sequence',
-    timelineItems,
-    projectSettings: coerceWorkspaceProjectSettings(params.projectSettings),
-    audioTrackCount,
-    hiddenVideoTracks: coerceHiddenVideoTracks(params.hiddenVideoTracks, videoTrackCount),
-    lockedTimelineTracks: coerceTimelineTrackList(params.lockedTimelineTracks, videoTrackCount, audioTrackCount),
-    mutedAudioTracks: coerceMutedAudioTracks(params.mutedAudioTracks, audioTrackCount),
-    videoTrackCount,
-    timelinePanelHeight: coerceTimelinePanelHeight(params.timelinePanelHeight),
-    timelineInPointSec: coerceTimelineMarker(params.timelineInPointSec),
-    timelineOutPointSec: coerceTimelineMarker(params.timelineOutPointSec),
-    createdAt: params.createdAt ?? timestamp,
-    updatedAt: params.updatedAt ?? timestamp,
-  };
-}
-
-function normalizeWorkspaceSequenceRecord(value: unknown): WorkspaceSequenceRecord | null {
-  if (!value || typeof value !== 'object') return null;
-  const record = value as Partial<WorkspaceSequenceRecord>;
-  if (typeof record.id !== 'string' || !Array.isArray(record.timelineItems)) return null;
-  return createWorkspaceSequenceRecord({
-    id: record.id,
-    name: typeof record.name === 'string' ? record.name : 'Untitled sequence',
-    timelineItems: record.timelineItems,
-    projectSettings: coerceWorkspaceProjectSettings(record.projectSettings),
-    audioTrackCount: record.audioTrackCount,
-    hiddenVideoTracks: record.hiddenVideoTracks,
-    lockedTimelineTracks: record.lockedTimelineTracks,
-    mutedAudioTracks: record.mutedAudioTracks,
-    videoTrackCount: record.videoTrackCount,
-    timelinePanelHeight: record.timelinePanelHeight,
-    timelineInPointSec: record.timelineInPointSec,
-    timelineOutPointSec: record.timelineOutPointSec,
-    createdAt: typeof record.createdAt === 'string' ? record.createdAt : undefined,
-    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
-  });
-}
-
-function upsertWorkspaceSequence(
-  sequences: WorkspaceSequenceRecord[],
-  sequence: WorkspaceSequenceRecord
-): WorkspaceSequenceRecord[] {
-  const existingIndex = sequences.findIndex((candidate) => candidate.id === sequence.id);
-  if (existingIndex === -1) return [...sequences, sequence];
-  return sequences.map((candidate, index) => (index === existingIndex ? sequence : candidate));
-}
-
-function workspaceStorageKeyForProject(projectId?: string): string {
-  return projectId ? `${STORAGE_KEY}.${projectId}` : STORAGE_KEY;
-}
-
-function readStudioProject(projectId?: string): StudioProjectStorageRecord | null {
-  if (!projectId || typeof window === 'undefined') return null;
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STUDIO_PROJECTS_STORAGE_KEY) ?? '[]') as StudioProjectStorageRecord[];
-    const project = Array.isArray(parsed) ? parsed.find((item) => item?.id === projectId) : null;
-    if (!project || typeof project.id !== 'string') return null;
-    return {
-      ...project,
-      name: typeof project.name === 'string' && project.name.trim() ? project.name.trim() : 'Untitled edit',
-    };
-  } catch {
-    return null;
-  }
 }
 
 function normalizeStudioProjectTemplateId(value: unknown): WorkspaceTemplateId {
@@ -810,22 +375,6 @@ function normalizeUserCanvasTemplate(value: unknown): WorkspaceUserCanvasTemplat
     edges,
     createdAt: typeof record.createdAt === 'string' ? record.createdAt : new Date().toISOString(),
   };
-}
-
-function readUserCanvasTemplates(): WorkspaceUserCanvasTemplate[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(USER_CANVAS_TEMPLATES_STORAGE_KEY) ?? '[]') as unknown[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map(normalizeUserCanvasTemplate).filter((template): template is WorkspaceUserCanvasTemplate => Boolean(template));
-  } catch {
-    return [];
-  }
-}
-
-function writeUserCanvasTemplates(templates: WorkspaceUserCanvasTemplate[]): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(USER_CANVAS_TEMPLATES_STORAGE_KEY, JSON.stringify(templates));
 }
 
 async function readUserCanvasTemplatesFromApi(signal?: AbortSignal): Promise<WorkspaceUserCanvasTemplate[] | null> {
@@ -934,15 +483,6 @@ function normalizePersistedWorkspaceState(value: unknown): PersistedWorkspaceSta
     timelineInPointSec: coerceTimelineMarker(parsed.timelineInPointSec),
     timelineOutPointSec: coerceTimelineMarker(parsed.timelineOutPointSec),
   };
-}
-
-function readPersistedWorkspaceState(storageKey: string): PersistedWorkspaceState | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return normalizePersistedWorkspaceState(JSON.parse(window.localStorage.getItem(storageKey) ?? 'null'));
-  } catch {
-    return null;
-  }
 }
 
 function connectedInputKinds(nodeId: string, edges: WorkspaceGraphEdge[]): WorkspaceEdgeKind[] {
@@ -1354,10 +894,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId)?.name ??
     'Workspace';
   const pricingEstimates = useWorkspaceShotPricing({ nodes, edges, capabilities });
-  const timelineDurationSec = useMemo(
-    () => Math.max(0, ...timelineItems.map((item) => item.startSec + item.durationSec)),
-    [timelineItems]
-  );
+  const timelineDurationSec = useMemo(() => workspaceTimelineDurationSec(timelineItems), [timelineItems]);
   const liveActiveSequence = useMemo(() => {
     const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
     return createWorkspaceSequenceRecord({
@@ -1378,17 +915,10 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     });
   }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
   const sequenceSummaries = useMemo<WorkspaceProjectSequenceSummary[]>(() => {
-    return upsertWorkspaceSequence(sequences, liveActiveSequence).map((sequence) => ({
-      id: sequence.id,
-      name: sequence.name,
-      durationSec: workspaceSequenceDurationSec(sequence),
-      clipCount: sequence.timelineItems.length,
-      settings: sequence.projectSettings,
-      isActive: sequence.id === activeSequenceId,
-      previewUrl: sequence.timelineItems.find((item) => isWorkspaceTimelineVideoTrack(item.track) && (item.thumbnailUrl || item.mediaUrl))?.thumbnailUrl
-        ?? sequence.timelineItems.find((item) => isWorkspaceTimelineVideoTrack(item.track) && (item.thumbnailUrl || item.mediaUrl))?.mediaUrl
-        ?? null,
-    }));
+    return buildWorkspaceSequenceSummaries({
+      sequences: upsertWorkspaceSequence(sequences, liveActiveSequence),
+      activeSequenceId,
+    });
   }, [activeSequenceId, liveActiveSequence, sequences]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
   const viewerTimelineItems = useMemo(
@@ -1401,21 +931,13 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const canGoToPreviousTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec < previewPlayheadSec - timelineCutToleranceSec);
   const canGoToNextTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec > previewPlayheadSec + timelineCutToleranceSec);
   const selectedTimelineItem = useMemo(
-    () => previewTimelineItems.find((item) => item.id === selectedTimelineItemId) ?? null,
+    () => selectedWorkspaceTimelineItem(previewTimelineItems, selectedTimelineItemId),
     [previewTimelineItems, selectedTimelineItemId]
   );
-  const selectedSequenceForInspector = useMemo(() => {
-    if (!inspectedSequenceId) return null;
-    const sequence = sequenceSummaries.find((candidate) => candidate.id === inspectedSequenceId);
-    if (!sequence) return null;
-    return {
-      clipCount: sequence.clipCount,
-      durationSec: sequence.durationSec,
-      id: sequence.id,
-      name: sequence.name,
-      settings: sequence.settings,
-    };
-  }, [inspectedSequenceId, sequenceSummaries]);
+  const selectedSequenceForInspector = useMemo(
+    () => selectedWorkspaceSequenceInspectorSummary({ inspectedSequenceId, sequenceSummaries }),
+    [inspectedSequenceId, sequenceSummaries]
+  );
   const exportTimelineItems = useMemo(
     () => muteAudioTrackItems(filterHiddenVideoTrackItems(timelineItems, hiddenVideoTracks), mutedAudioTracks),
     [hiddenVideoTracks, mutedAudioTracks, timelineItems]
@@ -1841,7 +1363,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       setNotice(`${project.name} project loaded with a clean sequence.`);
     };
 
-    const localUserTemplates = readUserCanvasTemplates();
+    const localUserTemplates = readUserCanvasTemplates(normalizeUserCanvasTemplate);
     setUserCanvasTemplates(localUserTemplates);
     const templatesController = new AbortController();
     void readUserCanvasTemplatesFromApi(templatesController.signal).then((serverTemplates) => {
@@ -1852,7 +1374,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
 
     const storedProject = readStudioProject(projectId);
     setStoredProjectName(storedProject?.name ?? null);
-    const persisted = readPersistedWorkspaceState(workspaceStorageKey);
+    const persisted = readPersistedWorkspaceState(workspaceStorageKey, normalizePersistedWorkspaceState);
     if (persisted) {
       applyPersistedWorkspace(persisted);
     } else if (storedProject) {
@@ -3327,9 +2849,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
         <div className={styles.topbarRight}>
           <StudioHeaderSession onExitToProjects={handleExitToProjects} />
           <div className={styles.topbarActions}>
-            <button type="button" className={styles.iconButton} onClick={() => selectedNode?.data.kind === 'shot' && void handleGenerateShot(selectedNode.id)} aria-label="Generate selected shot">
-              <Play size={15} />
-            </button>
             <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
               <Download size={15} />
               Export
