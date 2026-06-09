@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Eye, EyeOff, Link2, Lock, Magnet, MousePointer2, Play, Plus, Redo2, Scissors, SkipBack, SkipForward, SplitSquareHorizontal, Trash2, Undo2, Unlink2, Unlock, Volume2, VolumeX, ZoomIn, ZoomOut } from 'lucide-react';
+import { Eye, EyeOff, Link2, Lock, Magnet, Play, Plus, SkipBack, SkipForward, SplitSquareHorizontal, Trash2, Unlink2, Unlock, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -28,6 +28,7 @@ import {
   workspaceTimelineVideoTrackIndex,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
@@ -44,7 +45,6 @@ const EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC = 5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 type TimelineInteractionKind = 'move' | 'resize-start' | 'resize-end';
-type TimelineTool = 'select' | 'blade';
 
 type TimelineInteractionState = {
   itemId: string;
@@ -1451,84 +1451,21 @@ export function WorkspaceTimeline({
         title="Drag to resize montage timeline"
         aria-label="Resize montage timeline"
       />
-      <div className={styles.timelineTopbar} data-timeline-topbar="true">
-        <div className={styles.timelineTimecodeCluster}>
-          <time
-            className={styles.timelineCurrentTimecode}
-            dateTime={`PT${clampedPlayheadSec}S`}
-            data-timeline-current-timecode="true"
-          >
-            {formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
-          </time>
-        </div>
-        <div className={styles.timelineZoomSlot}>
-          <div className={styles.timelineTransport} data-timeline-transport="true">
-            <button type="button" data-tooltip="Undo (Cmd/Ctrl + Z)" title="Undo timeline edit (Cmd/Ctrl + Z)" aria-label="Undo timeline edit" disabled={!canUndo} onClick={onUndo}>
-              <Undo2 size={15} />
-            </button>
-            <button type="button" data-tooltip="Redo (Cmd/Ctrl + Shift + Z)" title="Redo timeline edit (Cmd/Ctrl + Shift + Z)" aria-label="Redo timeline edit" disabled={!canRedo} onClick={onRedo}>
-              <Redo2 size={15} />
-            </button>
-            <div className={styles.timelineToolGroup} role="toolbar" aria-label="Timeline editing tools">
-              <button
-                type="button"
-                className={`${styles.timelineToolButton} ${activeTimelineTool === 'select' ? styles.timelineToolButtonActive : ''}`}
-                data-timeline-tool="select"
-                data-tooltip="Selection tool (V)"
-                title="Selection tool. Drag clips, marquee empty space, and Shift/Cmd-click to toggle selection. (V)"
-                onClick={() => setActiveTimelineTool('select')}
-                aria-label="Selection tool"
-                aria-pressed={activeTimelineTool === 'select'}
-              >
-                <MousePointer2 size={15} />
-              </button>
-              <button
-                type="button"
-                className={`${styles.timelineToolButton} ${activeTimelineTool === 'blade' ? styles.timelineToolButtonActive : ''}`}
-                data-timeline-tool="blade"
-                data-tooltip="Blade / Cut tool (C)"
-                title="Blade / Cut tool. Click a clip to split, or press S to split selected at the playhead. (C)"
-                onClick={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
-                aria-label="Blade / Cut tool"
-                aria-pressed={activeTimelineTool === 'blade'}
-              >
-                <Scissors size={15} />
-              </button>
-            </div>
-          </div>
-          <div className={styles.timelineZoomControl} aria-label="Timeline zoom">
-            <button
-              type="button"
-              data-tooltip="Zoom out (Cmd/Ctrl + -)"
-              title="Zoom out timeline (Cmd/Ctrl + -)"
-              aria-label="Zoom out timeline"
-              onClick={() => setTimelineZoom(pixelsPerSecond - 8)}
-              disabled={pixelsPerSecond <= MIN_TIMELINE_PIXELS_PER_SECOND}
-            >
-              <ZoomOut size={13} />
-            </button>
-            <input
-              type="range"
-              min={MIN_TIMELINE_PIXELS_PER_SECOND}
-              max={MAX_TIMELINE_PIXELS_PER_SECOND}
-              step={2}
-              value={pixelsPerSecond}
-              onChange={(event) => setTimelineZoom(Number(event.currentTarget.value))}
-              aria-label="Timeline zoom level"
-            />
-            <button
-              type="button"
-              data-tooltip="Zoom in (Cmd/Ctrl + +)"
-              title="Zoom in timeline (Cmd/Ctrl + +)"
-              aria-label="Zoom in timeline"
-              onClick={() => setTimelineZoom(pixelsPerSecond + 8)}
-              disabled={pixelsPerSecond >= MAX_TIMELINE_PIXELS_PER_SECOND}
-            >
-              <ZoomIn size={13} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <TimelineToolbar
+        activeTimelineTool={activeTimelineTool}
+        canRedo={canRedo}
+        canUndo={canUndo}
+        currentTimecode={formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
+        maxPixelsPerSecond={MAX_TIMELINE_PIXELS_PER_SECOND}
+        minPixelsPerSecond={MIN_TIMELINE_PIXELS_PER_SECOND}
+        onRedo={onRedo}
+        onSelectTool={() => setActiveTimelineTool('select')}
+        onToggleBladeTool={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
+        onUndo={onUndo}
+        onZoomChange={setTimelineZoom}
+        pixelsPerSecond={pixelsPerSecond}
+        playheadSec={clampedPlayheadSec}
+      />
       <div className={styles.timelineViewport}>
         <div className={styles.timelineRuler} data-timeline-ruler="true">
           <div className={styles.timelineRulerLabel}>

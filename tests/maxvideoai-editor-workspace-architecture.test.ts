@@ -54,6 +54,7 @@ const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSess
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
+const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
@@ -121,6 +122,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
+  assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
@@ -328,6 +330,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const typesSource = source(typesPath);
   const styleSource = source(stylesPath);
   const timelineSource = source(timelinePath);
+  const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
   const shotInputDockStyle = cssBlock(styleSource, '.shotInputDock');
 
@@ -713,10 +716,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /exportQualityPreset/, 'workspace export action should keep the selected video quality preset');
   assert.match(workspaceSource, /handleExportTimelineVideo/, 'workspace should wire the primary export video action');
   assert.match(workspaceSource, /handleExportTimelineRender/, 'workspace should wire the topbar export action to timeline render handoff');
-  assert.match(timelineSource, /Scissors/, 'timeline should expose a cut tool');
+  assert.match(timelineSource, /TimelineToolbar/, 'timeline should compose a focused toolbar component instead of owning toolbar JSX inline');
+  assert.match(timelineToolbarSource, /Scissors/, 'timeline toolbar should expose a cut tool');
   assert.match(timelineSource, /Magnet/, 'timeline should expose a snapping toggle');
-  assert.match(timelineSource, /ZoomIn/, 'timeline should expose compact zoom-in control');
-  assert.match(timelineSource, /ZoomOut/, 'timeline should expose compact zoom-out control');
+  assert.match(timelineToolbarSource, /ZoomIn/, 'timeline toolbar should expose compact zoom-in control');
+  assert.match(timelineToolbarSource, /ZoomOut/, 'timeline toolbar should expose compact zoom-out control');
   assert.match(timelineSource, /Plus/, 'timeline should expose compact add-video-track control');
   assert.match(timelineSource, /DEFAULT_TIMELINE_PIXELS_PER_SECOND/, 'timeline should own a default horizontal zoom scale');
   assert.match(timelineSource, /MIN_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming out to a usable density');
@@ -729,18 +733,18 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /buildSnapTargets/, 'timeline should snap to clip edges, playhead, and zero');
   assert.match(timelineSource, /timelineSnapGuide/, 'timeline should render a visible snap guide while editing');
   assert.match(timelineSource, /activeTimelineTool/, 'timeline should keep a selected edit tool mode');
-  assert.match(timelineSource, /Blade \/ Cut tool/, 'cut should be a selected blade tool instead of only a per-clip duplicate action');
-  assert.match(timelineSource, /Timeline editing tools/, 'timeline should expose editing tools as a toolbar');
+  assert.match(timelineToolbarSource, /Blade \/ Cut tool/, 'cut should be a selected blade tool instead of only a per-clip duplicate action');
+  assert.match(timelineToolbarSource, /Timeline editing tools/, 'timeline should expose editing tools as a toolbar');
   assert.match(
-    timelineSource,
+    timelineToolbarSource,
     /timelineZoomSlot[\s\S]*timelineTransport[\s\S]*timelineToolGroup[\s\S]*timelineZoomControl/,
     'timeline undo, redo, and editing tools should sit in the right action slot immediately before zoom'
   );
-  assert.match(timelineSource, /Selection tool/, 'timeline should expose selection as an editing tool');
-  assert.doesNotMatch(timelineSource, /aria-label="Trim tool"/, 'timeline toolbar should not expose trim as a selected tool while clip handles own simple trimming');
-  assert.doesNotMatch(timelineSource, /aria-label="Ripple trim tool"/, 'timeline toolbar should not expose ripple trim for now');
-  assert.doesNotMatch(timelineSource, /aria-label="Roll trim tool"/, 'timeline toolbar should not expose roll trim for now');
-  assert.match(timelineSource, /data-tooltip/, 'timeline editing tools should expose shortcut tooltips');
+  assert.match(timelineToolbarSource, /Selection tool/, 'timeline should expose selection as an editing tool');
+  assert.doesNotMatch(timelineToolbarSource, /aria-label="Trim tool"/, 'timeline toolbar should not expose trim as a selected tool while clip handles own simple trimming');
+  assert.doesNotMatch(timelineToolbarSource, /aria-label="Ripple trim tool"/, 'timeline toolbar should not expose ripple trim for now');
+  assert.doesNotMatch(timelineToolbarSource, /aria-label="Roll trim tool"/, 'timeline toolbar should not expose roll trim for now');
+  assert.match(timelineToolbarSource, /data-tooltip/, 'timeline editing tools should expose shortcut tooltips');
   assert.match(timelineSource, /window\.addEventListener\('keydown'/, 'timeline should register basic keyboard shortcuts');
   assert.match(timelineSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
   assert.match(timelineSource, /event\.key === ' '/, 'Space shortcut should tolerate browser key/code differences');
@@ -795,7 +799,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.timelineClip[\s\S]*min-width:\s*160px/, 'timeline clip widths should reflect time positions instead of overlapping cut segments with a large fixed minimum');
   assert.match(timelineSource, /selectedItemId/, 'timeline should expose selected clip state');
   assert.match(timelineSource, /onCutItem/, 'timeline should wire the cut tool to selected clips');
-  assert.match(timelineSource, /timelineZoomControl/, 'timeline should keep zoom controls visually compact');
+  assert.match(timelineToolbarSource, /timelineZoomControl/, 'timeline toolbar should keep zoom controls visually compact');
   assert.match(timelineSource, /timelineWaveform/, 'timeline audio clips should render lightweight waveform previews');
   assert.match(workspaceSource, /WorkspaceVideoViewer[\s\S]*playheadSec=\{playheadSec\}/, 'workspace should pass the shared playhead into the montage viewer');
   assert.doesNotMatch(workspaceSource, /<WorkspaceVideoViewer(?:(?!\/>)[\s\S])*onPlayheadChange=/, 'workspace should keep playhead editing in the timeline instead of the viewer');
