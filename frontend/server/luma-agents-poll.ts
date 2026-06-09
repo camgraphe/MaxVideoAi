@@ -110,7 +110,7 @@ function getNestedString(snapshot: unknown, key: string): string | null {
 }
 
 function getModeFromJob(job: LumaAgentsPendingJob): string {
-  return getNestedString(job.settings_snapshot, 'mode') ?? 't2v';
+  return getNestedString(job.settings_snapshot, 'inputMode') ?? getNestedString(job.settings_snapshot, 'mode') ?? 't2v';
 }
 
 function getResolutionFromJob(job: LumaAgentsPendingJob): string | null {
@@ -284,7 +284,7 @@ async function markJobFailed(
 }
 
 async function markJobPollingStalled(job: LumaAgentsPendingJob, queryFn: QueryFn) {
-  await queryFn(
+  const rows = await queryFn<{ job_id: string }>(
     `UPDATE app_jobs
         SET status = 'provider_polling_stalled',
             progress = GREATEST(progress, 90),
@@ -292,9 +292,11 @@ async function markJobPollingStalled(job: LumaAgentsPendingJob, queryFn: QueryFn
             provisional = FALSE,
             updated_at = NOW()
       WHERE job_id = $1
-        AND status = ANY($3::text[])`,
+        AND status = ANY($3::text[])
+      RETURNING job_id`,
     [job.job_id, STALLED_MESSAGE, ACTIVE_JOB_STATUSES]
   );
+  if (!rows.length) return false;
 
   await markAttemptFailedWithCost({
     job,
@@ -305,6 +307,7 @@ async function markJobPollingStalled(job: LumaAgentsPendingJob, queryFn: QueryFn
     responseSnapshot: { message: STALLED_MESSAGE },
     queryFn,
   });
+  return true;
 }
 
 async function deferStorageCopyRetry(
@@ -390,8 +393,9 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
     }
     const createdAtMs = Date.parse(job.created_at);
     if (Number.isFinite(createdAtMs) && now - createdAtMs > pollMaxDurationMs) {
-      await markJobPollingStalled(job, queryFn);
-      updates += 1;
+      if (await markJobPollingStalled(job, queryFn)) {
+        updates += 1;
+      }
       continue;
     }
 

@@ -25,7 +25,7 @@ const baseJob = {
   has_audio: true,
   final_price_cents: 1200,
   pricing_snapshot: { provider: 'fal', totalCents: 1200, currency: 'USD' },
-  settings_snapshot: { core: { mode: 't2v', durationSec: 10, aspectRatio: '16:9', resolution: '1080p' } },
+  settings_snapshot: { inputMode: 'i2v', core: { durationSec: 10, aspectRatio: '16:9', resolution: '1080p' } },
   currency: 'USD',
   payment_status: 'paid_wallet',
   updated_at: new Date(Date.now() - 20_000).toISOString(),
@@ -87,8 +87,10 @@ test('Luma Agents poll copies provider output before marking the job completed',
   assert.ok(completedUpdate, 'completed app_jobs update should run');
   assert.equal(completedUpdate.params?.[1], 'https://cdn.maxvideoai.com/renders/job_luma_123-faststart.mp4');
   assert.notEqual(completedUpdate.params?.[1], 'https://providers.lumalabs.ai/output/job_luma_123.mp4');
-  assert.match(String(completedUpdate.params?.[3]), /luma_agents_public_pricing_estimate/);
-  assert.match(String(completedUpdate.params?.[3]), /3\.6/);
+  const costBreakdown = JSON.parse(String(completedUpdate.params?.[3]));
+  assert.equal(costBreakdown.provider_cost_source, 'luma_agents_public_pricing_estimate');
+  assert.equal(costBreakdown.provider_cost_usd, 3.6);
+  assert.equal(costBreakdown.mode, 'i2v');
   assert.equal(completedUpdate.params?.[4], '16:9');
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
   assert.deepEqual(
@@ -189,6 +191,9 @@ test('Luma Agents poll marks stalled jobs and provider attempts as polling_stall
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
           return [stalledJob] as never;
         }
+        if (/UPDATE app_jobs/.test(sql) && /SET status = 'provider_polling_stalled'/.test(sql)) {
+          return [{ job_id: 'job_luma_123' }] as never;
+        }
         if (/FROM provider_attempts/.test(sql)) {
           return [{ id: 25, attempt_index: 1 }] as never;
         }
@@ -230,6 +235,54 @@ test('Luma Agents poll marks stalled jobs and provider attempts as polling_stall
   assert.ok(costAttemptUpdate, 'stalled provider attempt should store estimated Luma provider cost');
   assert.equal(costAttemptUpdate.params?.[1], 'polling_stalled');
   assert.equal(costAttemptUpdate.params?.[4], 3.6);
+});
+
+test('Luma Agents poll does not mark attempts when stalled job transition loses the race', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const stalledJob = {
+    ...baseJob,
+    created_at: new Date(Date.now() - 36 * 60_000).toISOString(),
+  };
+
+  const response = await runLumaAgentsPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [stalledJob] as never;
+        }
+        if (/UPDATE app_jobs/.test(sql) && /SET status = 'provider_polling_stalled'/.test(sql)) {
+          return [] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 26, attempt_index: 1 }] as never;
+        }
+        return [] as never;
+      },
+      getLumaAgentsClientFn: () => ({
+        getGeneration: async () => {
+          throw new Error('not used');
+        },
+      }),
+      ensureFastStartVideoFn: async () => null,
+      ensureJobThumbnailFn: async () => null,
+      upsertLegacyJobOutputsFn: async () => undefined,
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    },
+  });
+
+  const body = await response.json();
+  assert.equal(body.updates, 0);
+  assert.ok(
+    queries.some((entry) => /SET status = 'provider_polling_stalled'/.test(entry.sql)),
+    'stalled app_jobs transition should be attempted'
+  );
+  assert.equal(
+    queries.some((entry) => /UPDATE provider_attempts/.test(entry.sql)),
+    false,
+    'provider_attempts should not be updated when app_jobs transition returns no rows'
+  );
 });
 
 test('Luma Agents poll is disabled by env unless dependencies are injected', async () => {
