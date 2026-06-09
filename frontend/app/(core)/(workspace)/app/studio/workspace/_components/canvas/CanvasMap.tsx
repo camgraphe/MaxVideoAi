@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, type MouseEvent as ReactMouseEvent, type 
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
 
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/canvas.module.css';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceNodeKind } from '../../_lib/workspace-types';
 
 const CANVAS_MINI_MAP_WIDTH = 164;

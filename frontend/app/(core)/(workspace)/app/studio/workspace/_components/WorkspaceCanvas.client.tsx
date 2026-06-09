@@ -23,7 +23,7 @@ import {
   useReactFlow,
   type XYPosition,
 } from '@xyflow/react';
-import styles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/canvas.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphEdge, WorkspaceGraphNode } from '../_lib/workspace-types';
 import {
   useCanvasController,

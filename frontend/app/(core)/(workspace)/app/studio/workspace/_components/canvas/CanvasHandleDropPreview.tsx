@@ -3,7 +3,7 @@
 import { ViewportPortal, type XYPosition } from '@xyflow/react';
 import type { CSSProperties } from 'react';
 
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/canvas.module.css';
 import type { WorkspaceEdgeKind } from '../../_lib/workspace-types';
 import type {
   WorkspaceHandleDropDirection,

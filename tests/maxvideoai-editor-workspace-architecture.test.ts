@@ -308,8 +308,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /normalizeShotOutputNodes/, 'orchestrator should normalize stale generated-shot output handles from persisted editor state');
   assert.match(workspaceSource, /normalizeShotOutputEdges/, 'orchestrator should normalize stale generated-shot source edge handles');
   assert.match(workspaceSource, /normalizeWorkspaceEdgeTypes/, 'orchestrator should normalize stale saved edge types');
-  assert.match(styleSource, /react-flow__handle-left/, 'local editor CSS should position left handles without inheriting React Flow global CSS');
-  assert.match(styleSource, /react-flow__handle-right/, 'local editor CSS should position right handles without inheriting React Flow global CSS');
+  assert.match(canvasStyleSource, /react-flow__handle-left/, 'focused canvas CSS should position left handles without inheriting React Flow global CSS');
+  assert.match(canvasStyleSource, /react-flow__handle-right/, 'focused canvas CSS should position right handles without inheriting React Flow global CSS');
 
   const visitorAccessSource = source(visitorAccessPath);
   assert.match(visitorAccessSource, /normalized === '\/app\/studio\/workspace'/, 'editor route should follow existing visitor workspace browse access');
@@ -462,9 +462,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const programPlaybackLayersSource = source(programPlaybackLayersPath);
   const programControlsSource = source(programControlsPath);
   const programPlaybackSyncSource = source(programPlaybackSyncPath);
-  const shotInputDockStyle = cssBlock(styleSource, '.shotInputDock');
+  const shotInputDockStyle = cssBlock(canvasStyleSource, '.shotInputDock');
 
   assert.match(canvasSource, /@xyflow\/react/, 'canvas should use React Flow for pan, zoom, nodes, handles, and edges');
+  assert.match(canvasSource, /_styles\/canvas\.module\.css/, 'canvas surface should import focused canvas CSS');
+  assert.match(canvasMapSource, /_styles\/canvas\.module\.css/, 'canvas map should import focused canvas CSS');
+  assert.match(canvasHandleDropPreviewSource, /_styles\/canvas\.module\.css/, 'canvas handle previews should import focused canvas CSS');
+  assert.match(canvasPaletteDragPreviewSource, /_styles\/canvas\.module\.css/, 'canvas palette previews should import focused canvas CSS');
+  assert.match(nodeSource, /_styles\/canvas\.module\.css/, 'workspace nodes should import focused canvas CSS');
   assert.match(timelineProjectSidebarSource, /WorkspaceProjectSequenceSummary/, 'viewer sidebar should receive summarized project sequences');
   assert.match(timelineProjectSidebarSource, /onSelectSequence/, 'viewer sidebar should expose sequence switching');
   assert.match(timelineProjectSidebarSource, /onNewSequence/, 'viewer sidebar should expose sequence creation');
@@ -507,9 +512,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(edgeSource, /selected/, 'smart edge renderer should read React Flow edge selection state');
   assert.match(edgeSource, /selectedEdgeStyle/, 'smart edge renderer should apply selection to the line path itself');
   assert.match(edgeSource, /selected \? selectedEdgeStyle/, 'selected workspace edges should highlight the line path instead of relying on the edge container');
-  assert.match(styleSource, /react-flow__edge\.selected/, 'editor CSS should target selected edge containers');
-  assert.match(styleSource, /react-flow__edge:focus/, 'editor CSS should remove the selected edge container focus box');
-  assert.match(styleSource, /react-flow__edge\.selected[\s\S]*react-flow__edge-path/, 'editor CSS should render selected edge glow from the line path');
+  assert.match(canvasStyleSource, /react-flow__edge\.selected/, 'canvas CSS should target selected edge containers');
+  assert.match(canvasStyleSource, /react-flow__edge:focus/, 'canvas CSS should remove the selected edge container focus box');
+  assert.match(canvasStyleSource, /react-flow__edge\.selected[\s\S]*react-flow__edge-path/, 'canvas CSS should render selected edge glow from the line path');
 
   for (const nodeName of ['AssetImageNode', 'AssetVideoNode', 'AssetAudioNode', 'TextPromptNode', 'ShotNode', 'OutputNode']) {
     assert.match(nodeSource, new RegExp(`export function ${nodeName}`), `${nodeName} should be exported`);
@@ -523,19 +528,19 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeSource, /styles\.sourceResizableNode/, 'resizable source nodes should opt into fluid card sizing');
   assert.match(nodeSource, /minWidth=\{SOURCE_NODE_MIN_WIDTH\}/, 'resize control should keep a standard minimum width');
   assert.match(nodeSource, /minHeight=\{SOURCE_NODE_MIN_HEIGHT\}/, 'resize control should keep a standard minimum height');
-  assert.match(styleSource, /\.sourceResizableNode/, 'resizable source node sizing should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.nodeResizeControl/, 'bottom-left resize selector should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.nodeResizeGrip/, 'resize selector should have a discreet visual grip');
-  assert.match(styleSource, /\.nodeResizeControl[\s\S]*position:\s*absolute/, 'resize selector should be absolutely positioned by editor CSS');
-  assert.match(styleSource, /\.nodeResizeControl[\s\S]*bottom:\s*-8px/, 'resize selector should sit on the bottom edge');
-  assert.match(styleSource, /\.nodeResizeControl[\s\S]*left:\s*-8px/, 'resize selector should sit on the left edge');
-  assert.match(styleSource, /cursor:\s*nwse-resize/, 'resize selector should communicate diagonal resize affordance');
-  assert.match(styleSource, /react-flow__node-asset-image[\s\S]*react-flow__node-asset-video[\s\S]*react-flow__node-text-prompt[\s\S]*react-flow__node-output/, 'media, prompt, and output blocks should have explicit default node dimensions');
-  assert.match(styleSource, /react-flow__node-asset-audio/, 'audio blocks should have explicit default node dimensions');
-  assert.match(styleSource, /width:\s*210px/, 'source node defaults should keep a compact standard width until manually resized');
-  assert.match(styleSource, /height:\s*166px/, 'visual and prompt source nodes should keep a compact standard height until manually resized');
-  assert.match(styleSource, /height:\s*138px/, 'audio source nodes should keep a compact standard height until manually resized');
-  assert.match(styleSource, /\.nodePreview img[\s\S]*object-fit:\s*contain/, 'media previews should scale inside the block while preserving their source ratio');
+  assert.match(canvasStyleSource, /\.sourceResizableNode/, 'resizable source node sizing should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.nodeResizeControl/, 'bottom-left resize selector should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.nodeResizeGrip/, 'resize selector should have a discreet visual grip');
+  assert.match(canvasStyleSource, /\.nodeResizeControl[\s\S]*position:\s*absolute/, 'resize selector should be absolutely positioned by canvas CSS');
+  assert.match(canvasStyleSource, /\.nodeResizeControl[\s\S]*bottom:\s*-8px/, 'resize selector should sit on the bottom edge');
+  assert.match(canvasStyleSource, /\.nodeResizeControl[\s\S]*left:\s*-8px/, 'resize selector should sit on the left edge');
+  assert.match(canvasStyleSource, /cursor:\s*nwse-resize/, 'resize selector should communicate diagonal resize affordance');
+  assert.match(canvasStyleSource, /react-flow__node-asset-image[\s\S]*react-flow__node-asset-video[\s\S]*react-flow__node-text-prompt[\s\S]*react-flow__node-output/, 'media, prompt, and output blocks should have explicit default node dimensions');
+  assert.match(canvasStyleSource, /react-flow__node-asset-audio/, 'audio blocks should have explicit default node dimensions');
+  assert.match(canvasStyleSource, /width:\s*210px/, 'source node defaults should keep a compact standard width until manually resized');
+  assert.match(canvasStyleSource, /height:\s*166px/, 'visual and prompt source nodes should keep a compact standard height until manually resized');
+  assert.match(canvasStyleSource, /height:\s*138px/, 'audio source nodes should keep a compact standard height until manually resized');
+  assert.match(canvasStyleSource, /\.nodePreview img[\s\S]*object-fit:\s*contain/, 'media previews should scale inside the block while preserving their source ratio');
 
   assert.match(capabilitySource, /models\/model-capability-registry/, 'capabilities facade should re-export the model registry');
   assert.match(capabilitySource, /models\/model-input-connectors/, 'capabilities facade should re-export connector helpers');
@@ -741,7 +746,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(shotInputDockStyle, /position:\s*absolute/, 'generate block connector dock should not be side-mounted');
   assert.match(shotInputDockStyle, /background:\s*transparent/, 'generate block connector dock should not render as a separate box');
   assert.doesNotMatch(shotInputDockStyle, /border:\s*1px/, 'generate block connector dock should not draw a boxed border');
-  assert.match(styleSource, /\.shotInputRow/, 'generate block connector rows should be styled in the isolated editor CSS');
+  assert.match(canvasStyleSource, /\.shotInputRow/, 'generate block connector rows should be styled in focused canvas CSS');
   assert.match(nodeSource, /left:\s*-12/, 'generate block input handles should sit on the card edge, not inside the label row');
   assert.match(typesSource, /pricingEstimate\?: WorkspacePricingEstimate/, 'shot nodes should carry a live parameter-based pricing estimate');
   assert.match(nodeSource, /pricingEstimate/, 'shot nodes should render live parameter-based pricing estimates');
@@ -1107,9 +1112,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.brandLogo/, 'main editor CSS should no longer own brand logo styles after shell extraction');
   assert.ok(lineCount(shellStyleSource) <= 1200, 'editor shell CSS module should stay under the focused module size threshold');
   assert.ok(lineCount(canvasStyleSource) <= 1200, 'canvas CSS module should stay under the focused module size threshold');
-  assert.match(styleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.processingPreview/, 'processing output placeholders should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.previewVideo/, 'playable video previews should be styled in isolated editor CSS');
+  assert.match(canvasStyleSource, /\.canvasShell/, 'canvas surface should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.graphNode/, 'workspace nodes should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.processingPreview/, 'processing output placeholders should be styled in focused canvas CSS');
+  assert.match(canvasStyleSource, /\.previewVideo/, 'playable video previews should be styled in focused canvas CSS');
+  assert.doesNotMatch(styleSource, /\.canvasShell/, 'main editor CSS should no longer own canvas surface styles after canvas extraction');
+  assert.doesNotMatch(styleSource, /\.graphNode/, 'main editor CSS should no longer own workspace node styles after canvas extraction');
+  assert.doesNotMatch(styleSource, /\.shotInputDock/, 'main editor CSS should no longer own generate block connector styles after canvas extraction');
+  assert.doesNotMatch(styleSource, /\.mediaPickerEmpty/, 'main editor CSS should no longer own media picker node styles after canvas extraction');
   assert.match(viewerStyleSource, /\.videoViewerShell/, 'central montage viewer should be styled in focused viewer CSS');
   assert.match(viewerStyleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
   assert.match(viewerStyleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');

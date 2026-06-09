@@ -6,7 +6,7 @@ import { memo, useRef, type DragEvent, type MouseEvent, type PointerEvent as Rea
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { Handle, NodeResizeControl, Position } from '@xyflow/react';
 import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, Video } from 'lucide-react';
-import styles from '../../maxvideoai-editor.module.css';
+import styles from '../../_styles/canvas.module.css';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphNode,
