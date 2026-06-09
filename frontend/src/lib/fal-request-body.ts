@@ -206,6 +206,12 @@ export function buildFalGenerationRequest(
         }
         continue;
       }
+      if (payload.engineId.startsWith('kling-o3') && payload.mode === 'ref2v' && slotId === 'image_url') {
+        if (!requestBody.start_image_url) {
+          requestBody.start_image_url = urlCandidate;
+        }
+        continue;
+      }
       requestBody[slotId] = urlCandidate;
       continue;
     }

@@ -366,6 +366,48 @@ test('Fal request body sends Kling 3.0 Omni optional reference start frame expli
   assert.deepEqual(result.requestBody.image_urls, ['https://cdn.maxvideoai.com/reference.png']);
 });
 
+test('Fal request body maps Kling 3.0 Omni reference image_url slot to start_image_url', () => {
+  const payload = {
+    engineId: 'kling-o3-standard',
+    prompt: 'Use @Image1 as style guidance, then animate between the supplied start and end frames.',
+    mode: 'ref2v',
+    durationOption: '11',
+    inputs: [
+      attachment({
+        name: 'legacy-start.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'image_url',
+        url: 'https://cdn.maxvideoai.com/legacy-start.png',
+      }),
+      attachment({
+        name: 'reference.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'image_urls',
+        url: 'https://cdn.maxvideoai.com/reference.png',
+      }),
+      attachment({
+        name: 'end.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'end_image_url',
+        url: 'https://cdn.maxvideoai.com/end.png',
+      }),
+    ],
+  };
+
+  const result = buildFalGenerationRequest(payload, 'fal-ai/kling-video/o3/standard/reference-to-video');
+
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.equal(result.requestBody.start_image_url, 'https://cdn.maxvideoai.com/legacy-start.png');
+  assert.equal(result.requestBody.end_image_url, 'https://cdn.maxvideoai.com/end.png');
+  assert.deepEqual(result.requestBody.image_urls, ['https://cdn.maxvideoai.com/reference.png']);
+});
+
 test('Fal request body routes Kling 3.0 Omni video-to-video through the reference video endpoint', () => {
   const payload = {
     engineId: 'kling-o3-pro',

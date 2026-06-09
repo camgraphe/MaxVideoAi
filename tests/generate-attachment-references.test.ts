@@ -67,6 +67,7 @@ test('attachment reference helper derives primary image, media lists, and frame 
     resolvedAudioUrl: 'https://cdn.maxvideoai.com/audio.mp3',
     initialImageUrl: undefined,
     resolvedFirstFrameUrl: 'https://cdn.maxvideoai.com/body-image.png',
+    startImageUrl: undefined,
     sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
   });
 });

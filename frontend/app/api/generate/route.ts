@@ -112,7 +112,6 @@ export async function POST(req: NextRequest) {
   }));
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
-
   const userGate = await resolveGenerateUserGate({ req, body });
   if (userGate.kind === 'response') {
     if (userGate.metric) {
@@ -145,6 +144,7 @@ export async function POST(req: NextRequest) {
     resolvedAudioUrl,
     initialImageUrl,
     resolvedFirstFrameUrl,
+    startImageUrl,
     sourceInputVideoUrl,
   } = deriveGenerationAttachmentReferences({
     attachments: processedAttachments,
@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
     sourceInputVideoUrl,
     elements,
     endImageUrl,
+    startImageUrl,
     isLumaRay2,
     initialImageUrl,
   });

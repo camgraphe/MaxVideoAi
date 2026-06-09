@@ -38,6 +38,7 @@ const baseParams = {
   endImageUrl: null,
   isLumaRay2: false,
   initialImageUrl: null,
+  startImageUrl: null,
 };
 
 test('generate route delegates validation payload and required input checks', () => {
@@ -193,4 +194,30 @@ test('validation payload helper includes image-to-video end frame for provider c
   assert.equal(result.ok, true);
   assert.equal(capturedPayload?.image_url, 'https://cdn.maxvideoai.com/start.png');
   assert.equal(capturedPayload?.end_image_url, 'https://cdn.maxvideoai.com/end.png');
+});
+
+test('validation payload helper rejects Kling 3.0 Omni reference end frame without start frame', () => {
+  for (const engineId of ['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']) {
+    const result = buildGenerateValidationPayload({
+      ...baseParams,
+      engineId,
+      mode: 'ref2v',
+      normalizedReferenceImages: ['https://cdn.maxvideoai.com/reference.png'],
+      endImageUrl: 'https://cdn.maxvideoai.com/end.png',
+      deps: {
+        validateRequestFn: () => ({ ok: true }),
+      },
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 400);
+    assert.deepEqual(result.metric, {
+      errorCode: 'START_IMAGE_URL_REQUIRED',
+      meta: { engineId, mode: 'ref2v' },
+    });
+    assert.deepEqual(result.body, {
+      ok: false,
+      error: 'End frame requires a start frame for Kling 3.0 Omni reference-to-video.',
+    });
+  }
 });

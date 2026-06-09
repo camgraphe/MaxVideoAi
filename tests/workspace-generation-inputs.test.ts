@@ -362,6 +362,47 @@ test('prepareGenerationInputs includes Kling 3.0 Omni elements in reference mode
   ]);
 });
 
+test('prepareGenerationInputs rejects Kling 3.0 Omni reference end frame without opening frame', () => {
+  const referenceImages = field('image_urls', 'image', 'Reference / storyboard images');
+  const endFrame = field('end_image_url', 'image', 'End frame');
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-standard',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'kling-o3-standard', mode: 'ref2v' }),
+    inputSchema: {
+      required: [],
+      optional: [referenceImages, endFrame],
+    },
+    inputSchemaSummary: {
+      assetFields: [
+        { field: referenceImages, required: false, role: 'reference' },
+        { field: endFrame, required: false, role: 'frame' },
+      ],
+    },
+    extraInputFields: [],
+    inputAssets: {
+      image_urls: [asset({ id: 'reference', fieldId: 'image_urls', url: 'https://cdn.example.com/reference.jpg' })],
+      end_image_url: [asset({ id: 'end', fieldId: 'end_image_url', url: 'https://cdn.example.com/end.jpg' })],
+    },
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(['image_urls']),
+    genericImageFieldIds: new Set(['image_urls']),
+    frameAssetFieldIds: new Set(['end_image_url']),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    message: 'End frame requires a start frame for Kling 3.0 Omni reference-to-video.',
+  });
+});
+
 test('prepareGenerationInputs keeps Kling 3.0 Omni elements when unified routing resolves reference mode', () => {
   const klingElements: KlingElementState[] = [
     {

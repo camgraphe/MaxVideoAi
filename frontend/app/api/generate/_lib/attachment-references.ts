@@ -24,6 +24,7 @@ type AttachmentReferenceResult = {
   resolvedAudioUrl: string | undefined;
   initialImageUrl: string | undefined;
   resolvedFirstFrameUrl: string | undefined;
+  startImageUrl: string | undefined;
   sourceInputVideoUrl: string | undefined;
 };
 
@@ -100,6 +101,11 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       ? requestedPrimaryImageUrl
       : undefined;
   const resolvedFirstFrameUrl = params.mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
+  const explicitStartImageUrl =
+    params.attachments.find((attachment) => attachment.slotId === 'start_image_url')?.url?.trim() ?? undefined;
+  const startImageUrl =
+    explicitStartImageUrl ??
+    (params.engineId.startsWith('kling-o3') && params.mode === 'ref2v' ? requestedPrimaryImageUrl : undefined);
   const sourceInputVideoUrl = videoUrls[0];
 
   return {
@@ -113,6 +119,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     resolvedAudioUrl,
     initialImageUrl,
     resolvedFirstFrameUrl,
+    startImageUrl,
     sourceInputVideoUrl,
   };
 }

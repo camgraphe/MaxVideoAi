@@ -8,6 +8,9 @@ export const KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE =
 export const KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE =
   'Source video controls this Omni workflow. Opening and end frames are ignored for video-to-video.';
 
+export const KLING_O3_END_FRAME_REQUIRES_START_FRAME_MESSAGE =
+  'End frame requires a start frame for Kling 3.0 Omni reference-to-video.';
+
 const OPENING_FRAME_FIELD_IDS = new Set(['image_url', 'start_image_url', 'first_frame_url']);
 const END_FRAME_FIELD_IDS = new Set(['end_image_url', 'last_frame_url']);
 const REFERENCE_IMAGE_FIELD_IDS = new Set(['image_urls', 'reference_image_urls', 'reference_images']);
