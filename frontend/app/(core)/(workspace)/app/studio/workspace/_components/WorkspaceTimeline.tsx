@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Eye, EyeOff, Link2, Lock, Magnet, Play, Plus, SkipBack, SkipForward, SplitSquareHorizontal, Trash2, Unlink2, Unlock, Volume2, VolumeX } from 'lucide-react';
+import { Eye, EyeOff, Link2, Lock, Play, Plus, SkipBack, SkipForward, Trash2, Unlink2, Unlock, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -28,6 +28,7 @@ import {
   workspaceTimelineVideoTrackIndex,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
@@ -1467,112 +1468,27 @@ export function WorkspaceTimeline({
         playheadSec={clampedPlayheadSec}
       />
       <div className={styles.timelineViewport}>
-        <div className={styles.timelineRuler} data-timeline-ruler="true">
-          <div className={styles.timelineRulerLabel}>
-            <div className={styles.timelineRulerToolSlot} data-timeline-ruler-tool-slot="true">
-              <button
-                type="button"
-                className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${snapEnabled ? styles.timelineToolButtonActive : ''}`}
-                data-tooltip="Snapping: clips, playhead, zero (M)"
-                data-timeline-control="true"
-                title="Snapping to clip edges, playhead, and zero (M)"
-                onClick={() => setSnapEnabled((value) => !value)}
-                aria-label="Toggle snapping"
-                aria-pressed={snapEnabled}
-              >
-                <Magnet size={15} />
-              </button>
-              <button
-                type="button"
-                className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${isInsertIntoClipEnabled ? styles.timelineToolButtonActive : ''}`}
-                data-tooltip="Splice insert inside clips"
-                data-timeline-control="true"
-                title="Allow insert drags to split the clip under the drop point"
-                aria-label="Toggle insert into clip"
-                aria-pressed={isInsertIntoClipEnabled}
-                onClick={() => onInsertIntoClipChange(!isInsertIntoClipEnabled)}
-              >
-                <SplitSquareHorizontal size={15} />
-              </button>
-            </div>
-          </div>
-          <div className={styles.timelineRulerLane}>
-            <div
-              className={styles.timelineRulerInner}
-              style={{ width: timelineWidth }}
-              onClick={handleTimelineSurfaceClick}
-              onPointerDown={handleBeginTimelineSurfacePointerDown}
-              title="Drag to move the timeline playhead"
-            >
-              {hasValidInOutRange ? (
-                <span
-                  className={styles.timelineInOutRange}
-                  data-timeline-in-out-range="true"
-                  style={{
-                    left: safeInPointSec * pixelsPerSecond,
-                    width: Math.max(1, (safeOutPointSec - safeInPointSec) * pixelsPerSecond),
-                  }}
-                  aria-hidden="true"
-                />
-              ) : null}
-              {safeInPointSec !== null ? (
-                <span
-                  className={`${styles.timelineInOutMarker} ${styles.timelineInMarker}`}
-                  data-timeline-in-marker="true"
-                  style={{ left: safeInPointSec * pixelsPerSecond }}
-                  aria-hidden="true"
-                >
-                  I
-                </span>
-              ) : null}
-              {safeOutPointSec !== null ? (
-                <span
-                  className={`${styles.timelineInOutMarker} ${styles.timelineOutMarker}`}
-                  data-timeline-out-marker="true"
-                  style={{ left: safeOutPointSec * pixelsPerSecond }}
-                  aria-hidden="true"
-                >
-                  O
-                </span>
-              ) : null}
-              {Array.from({ length: Math.ceil(totalDuration / rulerTickSec) + 1 }, (_, index) => (
-                <span key={index} style={{ left: index * rulerTickSec * pixelsPerSecond }}>
-                  {formatWorkspaceTimecode(index * rulerTickSec, projectFps)}
-                </span>
-              ))}
-              <button
-                type="button"
-                className={`${styles.timelinePlayhead} ${styles.timelineRulerPlayhead}`}
-                style={{ left: clampedPlayheadSec * pixelsPerSecond }}
-                onPointerDown={(event) => handleBeginPlayheadDrag(event, event.currentTarget.parentElement)}
-                data-playhead-handle="true"
-                data-timeline-control="true"
-                title="Drag timeline playhead"
-                aria-label="Drag timeline playhead"
-              />
-              {interaction?.snapGuideSec !== null && interaction?.snapGuideSec !== undefined ? (
-                <span
-                  className={styles.timelineSnapGuide}
-                  style={{ left: interaction.snapGuideSec * pixelsPerSecond }}
-                  aria-hidden="true"
-                />
-              ) : null}
-              <input
-                className={styles.timelineScrubber}
-                type="range"
-                min={0}
-                max={totalDuration}
-                step={frameStepSec}
-                value={clampedPlayheadSec}
-                onChange={handleScrub}
-                onPointerDown={(event) => handleBeginPlayheadDrag(event, event.currentTarget.parentElement)}
-                data-timeline-control="true"
-                aria-label="Timeline scrubber"
-                aria-valuetext={formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
-              />
-            </div>
-          </div>
-        </div>
+        <TimelineRuler
+          clampedPlayheadSec={clampedPlayheadSec}
+          frameStepSec={frameStepSec}
+          hasValidInOutRange={hasValidInOutRange}
+          isInsertIntoClipEnabled={isInsertIntoClipEnabled}
+          onBeginPlayheadDrag={handleBeginPlayheadDrag}
+          onInsertIntoClipChange={onInsertIntoClipChange}
+          onScrub={handleScrub}
+          onSurfaceClick={handleTimelineSurfaceClick}
+          onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
+          onToggleSnap={() => setSnapEnabled((value) => !value)}
+          pixelsPerSecond={pixelsPerSecond}
+          projectFps={projectFps}
+          rulerTickSec={rulerTickSec}
+          safeInPointSec={safeInPointSec}
+          safeOutPointSec={safeOutPointSec}
+          snapEnabled={snapEnabled}
+          snapGuideSec={interaction?.snapGuideSec ?? null}
+          timelineWidth={timelineWidth}
+          totalDuration={totalDuration}
+        />
         <div className={styles.timelineTracks}>
           {timelineTracks.map((track) => {
             const audioTrackId = isAudioTimelineTrack(track.id) ? track.id : null;

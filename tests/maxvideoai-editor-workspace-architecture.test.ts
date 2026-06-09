@@ -54,6 +54,7 @@ const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSess
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
+const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
@@ -122,6 +123,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
+  assert.ok(existsSync(timelineRulerPath), 'timeline ruler should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
@@ -330,6 +332,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const typesSource = source(typesPath);
   const styleSource = source(stylesPath);
   const timelineSource = source(timelinePath);
+  const timelineRulerSource = source(timelineRulerPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
   const shotInputDockStyle = cssBlock(styleSource, '.shotInputDock');
@@ -716,9 +719,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /exportQualityPreset/, 'workspace export action should keep the selected video quality preset');
   assert.match(workspaceSource, /handleExportTimelineVideo/, 'workspace should wire the primary export video action');
   assert.match(workspaceSource, /handleExportTimelineRender/, 'workspace should wire the topbar export action to timeline render handoff');
+  assert.match(timelineSource, /TimelineRuler/, 'timeline should compose a focused ruler component instead of owning ruler JSX inline');
   assert.match(timelineSource, /TimelineToolbar/, 'timeline should compose a focused toolbar component instead of owning toolbar JSX inline');
   assert.match(timelineToolbarSource, /Scissors/, 'timeline toolbar should expose a cut tool');
-  assert.match(timelineSource, /Magnet/, 'timeline should expose a snapping toggle');
+  assert.match(timelineRulerSource, /Magnet/, 'timeline ruler should expose a snapping toggle');
+  assert.match(timelineRulerSource, /SplitSquareHorizontal/, 'timeline ruler should expose the insert-into-clip toggle beside snapping');
   assert.match(timelineToolbarSource, /ZoomIn/, 'timeline toolbar should expose compact zoom-in control');
   assert.match(timelineToolbarSource, /ZoomOut/, 'timeline toolbar should expose compact zoom-out control');
   assert.match(timelineSource, /Plus/, 'timeline should expose compact add-video-track control');
@@ -774,7 +779,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /handleBeginTimelineSurfacePointerDown/, 'timeline should let users drag empty timeline space to scrub');
   assert.match(timelineSource, /data-playhead-handle="true"/, 'timeline playhead should expose an interactive handle on the line');
   assert.match(timelineSource, /Drag timeline playhead/, 'timeline playhead handle should have a clear accessible label');
-  assert.match(timelineSource, /Timeline scrubber/, 'timeline should expose a scrubber for playhead positioning');
+  assert.match(timelineRulerSource, /Timeline scrubber/, 'timeline ruler should expose a scrubber for playhead positioning');
   assert.match(timelineSource, /onResizeItem/, 'timeline clips should wire resize controls');
   assert.match(timelineSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
   assert.match(timelineSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
