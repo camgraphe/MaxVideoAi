@@ -112,6 +112,7 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
+const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const viewerStylesPath = join(workspaceDir, '_styles/viewer.module.css');
@@ -177,6 +178,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
+  assert.ok(existsSync(shellStylesPath), 'editor shell styles should live in a focused route-local CSS module');
   assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
   assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
@@ -192,6 +194,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const studioHeaderSessionSource = source(studioHeaderSessionPath);
   const styleSource = source(stylesPath);
+  const shellStyleSource = source(shellStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
   assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Block/, 'studio architecture guide should explain additive block work');
@@ -219,6 +222,19 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /NodeLibrarySidebar/, 'orchestrator should compose the block template library');
   assert.match(workspaceSource, /TimelineProjectSidebar/, 'orchestrator should compose a project media sidebar for Viewer mode');
   assert.match(workspaceSource, /StudioHeaderSession/, 'orchestrator should compose Studio session and wallet status in the header');
+  assert.match(workspaceSource, /from '\.\/_styles\/shell\.module\.css'/, 'workspace shell should import focused shell CSS');
+  assert.match(studioHeaderSessionSource, /from '\.\.\/_styles\/shell\.module\.css'/, 'Studio header session should import focused shell CSS directly');
+  assert.match(shellStyleSource, /\.editorShell/, 'shell CSS should own the editor shell layout');
+  assert.match(shellStyleSource, /\.editorTopbar/, 'shell CSS should own the topbar layout');
+  assert.match(shellStyleSource, /\.editorBody/, 'shell CSS should own the main body grid');
+  assert.match(shellStyleSource, /\.studioWalletPill/, 'shell CSS should own wallet header styles');
+  assert.match(shellStyleSource, /\.studioSessionPill/, 'shell CSS should own account session styles');
+  assert.match(shellStyleSource, /\.viewerFocus/, 'shell CSS should own Viewer-mode shell grid rules');
+  assert.doesNotMatch(styleSource, /\.editorShell/, 'main editor CSS should no longer own shell layout after modularization');
+  assert.doesNotMatch(styleSource, /\.editorTopbar/, 'main editor CSS should no longer own topbar layout after modularization');
+  assert.doesNotMatch(styleSource, /\.studioWalletPill/, 'main editor CSS should no longer own wallet header styles after modularization');
+  assert.doesNotMatch(styleSource, /\.studioSessionPill/, 'main editor CSS should no longer own account header styles after modularization');
+  assert.match(styleSource, /\.viewerFocus \.librarySidebar/, 'main CSS should keep only the temporary Viewer compatibility sidebar rule until sidebar styles are extracted');
   assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
   assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
   assert.match(studioHeaderSessionSource, /workspace\.header\.walletTopUp\.cta/, 'Studio wallet prompt should reuse the main app top-up copy contract');
@@ -262,7 +278,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /WorkspaceTimeline/, 'orchestrator should compose the bottom timeline');
   assert.match(workspaceSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
   assert.doesNotMatch(workspaceSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
-  assert.match(styleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor CSS');
+  assert.match(shellStyleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor shell CSS');
   assert.match(workspaceSource, /focusMode,\s*setFocusMode\][\s\S]*'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
   assert.match(workspaceSource, />\s*Viewer\s*</, 'top switch should label the montage surface Viewer');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
@@ -423,6 +439,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
+  const shellStyleSource = source(shellStylesPath);
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
   const viewerStyleSource = source(viewerStylesPath);
@@ -1061,6 +1078,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /retargetWorkspaceTimelineItemsForTrack\(draftItems, targetTrack\)/, 'project media drops should honor the compatible target timeline track');
   assert.match(timelineSource, /onProjectAssetDropToTimeline/, 'timeline should route project media drops separately from canvas node drops');
   assert.match(typesSource, /onOpenAssetLibrary\?:/, 'node data should carry a media library open handler');
+  assert.match(shellStyleSource, /\.editorShell/, 'shell CSS module should own workspace shell layout');
+  assert.match(shellStyleSource, /\.modeSwitch/, 'shell CSS module should own Canvas/Viewer switch styling');
+  assert.match(shellStyleSource, /\.exportButton/, 'shell CSS module should own header export button styling');
+  assert.match(shellStyleSource, /\.iconButton/, 'shell CSS module should own compact header icon buttons');
+  assert.doesNotMatch(styleSource, /\.brandLogo/, 'main editor CSS should no longer own brand logo styles after shell extraction');
+  assert.ok(lineCount(shellStyleSource) <= 1200, 'editor shell CSS module should stay under the focused module size threshold');
   assert.match(styleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in isolated editor CSS');
   assert.match(styleSource, /\.processingPreview/, 'processing output placeholders should be styled in isolated editor CSS');
   assert.match(styleSource, /\.previewVideo/, 'playable video previews should be styled in isolated editor CSS');

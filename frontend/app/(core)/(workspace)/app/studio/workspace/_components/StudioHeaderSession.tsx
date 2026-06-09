@@ -6,7 +6,7 @@ import { LogOut, UserRound, Wallet } from 'lucide-react';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import styles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/shell.module.css';
 
 function initialsFromEmail(email: string | null): string {
   if (!email) return '';

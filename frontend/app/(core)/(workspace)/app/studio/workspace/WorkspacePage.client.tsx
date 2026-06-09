@@ -163,7 +163,10 @@ import {
   workspaceStorageKeyForProject,
   writeUserCanvasTemplates,
 } from './_state/workspace-persistence';
-import styles from './maxvideoai-editor.module.css';
+import baseStyles from './maxvideoai-editor.module.css';
+import shellStyles from './_styles/shell.module.css';
+
+const styles = { ...baseStyles, ...shellStyles };
 
 function createClientExportIdempotencyKey(): string {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -2800,7 +2803,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
 
   return (
     <main
-      className={`${styles.editorShell} ${focusMode === 'viewer' ? styles.viewerFocus : ''}`}
+      className={`${styles.editorShell} ${focusMode === 'viewer' ? `${baseStyles.viewerFocus} ${shellStyles.viewerFocus}` : ''}`}
       style={editorShellStyle}
       data-active-editor-surface={activeEditorSurface}
     >
