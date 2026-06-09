@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Eye, EyeOff, Link2, Lock, Play, Plus, SkipBack, SkipForward, Trash2, Unlink2, Unlock, Volume2, VolumeX } from 'lucide-react';
+import { Link2, Play, Plus, SkipBack, SkipForward, Trash2, Unlink2, Volume2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -29,6 +29,7 @@ import {
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import { TimelineRuler } from './timeline/TimelineRuler';
+import { TimelineTrackRow } from './timeline/TimelineTrackRow';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
@@ -1502,201 +1503,68 @@ export function WorkspaceTimeline({
               .filter(({ trackId }) => trackId === track.id)
               .sort((left, right) => left.layout.startSec - right.layout.startSec);
             return (
-              <div
+              <TimelineTrackRow
                 key={track.id}
-                className={`${styles.timelineTrack} ${isTrackHidden ? styles.timelineTrackHidden : ''} ${isTrackMuted ? styles.timelineTrackMuted : ''} ${isTrackLocked ? styles.timelineTrackLocked : ''}`}
+                audioTrackCount={audioTrackCount}
+                audioTrackId={audioTrackId}
+                clampedPlayheadSec={clampedPlayheadSec}
+                externalDropPreview={externalDropPreview}
+                formatDropDuration={formatDuration}
+                isAudioTrack={isAudioTrack}
+                isHighestVideoTrack={track.id === highestVideoTrackId}
+                isLowestAudioTrack={track.id === lowestAudioTrackId}
+                isTrackHidden={isTrackHidden}
+                isTrackLocked={isTrackLocked}
+                isTrackMuted={isTrackMuted}
+                isVideoTrack={isVideoTrack}
+                maxAudioTrackCount={maxAudioTrackCount}
+                maxVideoTrackCount={maxVideoTrackCount}
+                onAddAudioTrack={onAddAudioTrack}
+                onAddVideoTrack={onAddVideoTrack}
+                onBeginPlayheadDrag={handleBeginPlayheadDrag}
+                onClearExternalDropPreview={() => setExternalDropPreview(null)}
+                onDropExternal={handleExternalDrop}
+                onExternalDropOver={handleExternalDropOver}
+                onOpenTrackContextMenu={handleOpenTrackContextMenu}
+                onSurfaceClick={handleTimelineSurfaceClick}
+                onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
+                onToggleAudioTrackMute={onToggleAudioTrackMute}
+                onToggleTrackLock={onToggleTrackLock}
+                onToggleVideoTrackVisibility={onToggleVideoTrackVisibility}
+                pixelsPerSecond={pixelsPerSecond}
+                snapGuideSec={interaction?.snapGuideSec ?? null}
+                timelineWidth={timelineWidth}
+                track={track}
+                videoTrackCount={videoTrackCount}
+                videoTrackId={videoTrackId}
               >
-                <div
-                  className={`${styles.trackLabel} ${isVideoTrack ? styles.trackLabelVideo : ''} ${isAudioTrack ? styles.trackLabelAudio : ''}`}
-                  data-timeline-track-label={track.id}
-                  data-timeline-track-hidden={isTrackHidden ? 'true' : 'false'}
-                  data-timeline-track-locked={isTrackLocked ? 'true' : 'false'}
-                  data-timeline-track-muted={isTrackMuted ? 'true' : 'false'}
-                  onContextMenu={(event) => handleOpenTrackContextMenu(event, track)}
-                  title="Right-click for track actions"
-                >
-                  <div className={styles.trackLabelMain}>
-                    {track.icon}
-                    <span>{track.label}</span>
-                  </div>
-                  <div className={`${styles.trackLabelControls} ${isAudioTrack ? styles.trackLabelControlsAudio : ''}`} data-timeline-control="true">
-                    {track.kind === 'video' && track.id === highestVideoTrackId ? (
-                      <button
-                        type="button"
-                        className={styles.trackAddButton}
-                        data-timeline-add-track="video"
-                        disabled={videoTrackCount >= maxVideoTrackCount}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onAddVideoTrack();
-                        }}
-                        title="Add video track"
-                        aria-label="Add video track"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    ) : null}
-                    {isVideoTrack && videoTrackId !== null ? (
-                      <button
-                        type="button"
-                        className={`${styles.trackIconButton} ${isTrackHidden ? styles.trackIconButtonActive : ''} ${styles.trackVisibilityButton}`}
-                        data-timeline-video-visibility={videoTrackId}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onToggleVideoTrackVisibility(videoTrackId);
-                        }}
-                        title={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
-                        aria-label={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
-                        aria-pressed={isTrackHidden}
-                      >
-                        {isTrackHidden ? <EyeOff size={12} /> : <Eye size={12} />}
-                      </button>
-                    ) : null}
-                    {isAudioTrack && audioTrackId !== null ? (
-                      <button
-                        type="button"
-                        className={`${styles.trackIconButton} ${isTrackMuted ? styles.trackIconButtonActive : ''} ${styles.trackMuteButton}`}
-                        data-timeline-audio-mute={audioTrackId}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onToggleAudioTrackMute(audioTrackId);
-                        }}
-                        title={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
-                        aria-label={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
-                        aria-pressed={isTrackMuted}
-                      >
-                        {isTrackMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      className={`${styles.trackIconButton} ${isTrackLocked ? styles.trackIconButtonActive : ''} ${styles.trackLockButton}`}
-                      data-timeline-track-lock={track.id}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onToggleTrackLock(track.id);
-                      }}
-                      title={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
-                      aria-label={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
-                      aria-pressed={isTrackLocked}
-                    >
-                      {isTrackLocked ? <Lock size={12} /> : <Unlock size={12} />}
-                    </button>
-                    {track.kind === 'audio' && track.id === lowestAudioTrackId ? (
-                      <button
-                        type="button"
-                        className={`${styles.trackAddButton} ${styles.trackAudioAddButton}`}
-                        data-timeline-add-track="audio"
-                        disabled={audioTrackCount >= maxAudioTrackCount}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onAddAudioTrack();
-                        }}
-                        title="Add audio track"
-                        aria-label="Add audio track"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-                <div className={styles.trackLane}>
-                  <div
-                    className={styles.trackLaneContent}
-                    style={{ width: timelineWidth }}
-                    data-timeline-track={track.id}
-                    onDragLeave={() => setExternalDropPreview(null)}
-                    onDragOver={(event) => handleExternalDropOver(event, track.id)}
-                    onDrop={(event) => handleExternalDrop(event, track.id)}
-                    onClick={handleTimelineSurfaceClick}
-                    onPointerDown={handleBeginTimelineSurfacePointerDown}
-                    title="Click empty timeline space to move the playhead, or drag to select clips"
-                  >
-                    <button
-                      type="button"
-                      className={styles.timelinePlayhead}
-                      style={{ left: clampedPlayheadSec * pixelsPerSecond }}
-                      onPointerDown={(event) => handleBeginPlayheadDrag(event, event.currentTarget.parentElement)}
-                      data-playhead-handle="true"
-                      data-timeline-control="true"
-                      title="Drag timeline playhead"
-                      aria-label={`Drag timeline playhead on ${track.label} track`}
+                {trackItems.length ? (
+                  trackItems.map(({ item, layout }, index) => (
+                    <TimelineClip
+                      key={item.id}
+                      item={item}
+                      layout={layout}
+                      index={index}
+                      isInteracting={Boolean(interaction && interactionMatchesItem(interaction, item))}
+                      isLocked={lockedTrackSet.has(item.track)}
+                      isSelected={selectedKeys.has(selectionKeyForTimelineItem(item))}
+                      activeTool={activeTimelineTool}
+                      total={trackItems.length}
+                      timelineWidth={timelineWidth}
+                      pixelsPerSecond={pixelsPerSecond}
+                      snapStepSec={frameStepSec}
+                      onBeginInteraction={handleBeginInteraction}
+                      onCut={onCutItem}
+                      onMove={onMoveItem}
+                      onOpenContextMenu={handleOpenClipContextMenu}
+                      onPlayheadChange={onPlayheadChange}
+                      onSelect={onSelectItem}
                     />
-                    {interaction?.snapGuideSec !== null && interaction?.snapGuideSec !== undefined ? (
-                      <span
-                        className={styles.timelineSnapGuide}
-                        style={{ left: interaction.snapGuideSec * pixelsPerSecond }}
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    {externalDropPreview?.trackId === track.id ? (
-                      <>
-                        <span
-                          className={`${styles.timelineExternalDropGuide} ${externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
-                          style={{ left: externalDropPreview.startSec * pixelsPerSecond }}
-                          aria-hidden="true"
-                        />
-                        <span
-                          className={[
-                            styles.timelineExternalDropGhost,
-                            externalDropPreview.mediaKind === 'audio' ? styles.timelineExternalDropGhostAudio : '',
-                            externalDropPreview.mediaKind === 'image' ? styles.timelineExternalDropGhostImage : '',
-                            externalDropPreview.previewUrl && externalDropPreview.mediaKind !== 'audio' ? styles.timelineExternalDropGhostWithPreview : '',
-                            externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid,
-                          ].filter(Boolean).join(' ')}
-                          data-timeline-external-drop-ghost="true"
-                          data-timeline-external-drop-duration={externalDropPreview.durationSec}
-                          data-timeline-external-drop-kind={externalDropPreview.mediaKind}
-                          style={{
-                            left: externalDropPreview.startSec * pixelsPerSecond,
-                            width: Math.max(36, externalDropPreview.durationSec * pixelsPerSecond),
-                          }}
-                          aria-hidden="true"
-                        >
-                          {externalDropPreview.previewUrl && externalDropPreview.mediaKind !== 'audio' ? (
-                            <span
-                              className={styles.timelineExternalDropGhostThumb}
-                              style={{ backgroundImage: `url(${externalDropPreview.previewUrl})` }}
-                            />
-                          ) : null}
-                          <span className={styles.timelineExternalDropGhostTitle}>
-                            {externalDropPreview.isValid ? externalDropPreview.title : 'Invalid drop'}
-                          </span>
-                          <span className={styles.timelineExternalDropGhostDuration}>
-                            {formatDuration(externalDropPreview.durationSec)}
-                          </span>
-                        </span>
-                      </>
-                    ) : null}
-                    {trackItems.length ? (
-                      trackItems.map(({ item, layout }, index) => (
-                        <TimelineClip
-                          key={item.id}
-                          item={item}
-                          layout={layout}
-                          index={index}
-                          isInteracting={Boolean(interaction && interactionMatchesItem(interaction, item))}
-                          isLocked={lockedTrackSet.has(item.track)}
-                          isSelected={selectedKeys.has(selectionKeyForTimelineItem(item))}
-                          activeTool={activeTimelineTool}
-                          total={trackItems.length}
-                          timelineWidth={timelineWidth}
-                          pixelsPerSecond={pixelsPerSecond}
-                          snapStepSec={frameStepSec}
-                          onBeginInteraction={handleBeginInteraction}
-                          onCut={onCutItem}
-                          onMove={onMoveItem}
-                          onOpenContextMenu={handleOpenClipContextMenu}
-                          onPlayheadChange={onPlayheadChange}
-                          onSelect={onSelectItem}
-                        />
-                      ))
-                    ) : (
-                      <span className={styles.trackEmpty}>Drop generated outputs here</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                  ))
+                ) : (
+                  <span className={styles.trackEmpty}>Drop generated outputs here</span>
+                )}
+              </TimelineTrackRow>
             );
           })}
         </div>
