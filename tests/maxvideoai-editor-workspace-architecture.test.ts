@@ -112,6 +112,7 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
+const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const visitorAccessPath = join(root, 'frontend/lib/visitor-access.ts');
 
 function source(path: string): string {
@@ -123,6 +124,10 @@ function cssBlock(sourceText: string, selector: string): string {
   const match = sourceText.match(new RegExp(`${escapedSelector}\\s*\\{[^}]*\\}`));
   assert.ok(match, `${selector} should be present in editor CSS`);
   return match[0];
+}
+
+function lineCount(sourceText: string): number {
+  return sourceText.split(/\r?\n/).length;
 }
 
 test('MaxVideoAI editor workspace is an isolated authenticated app route', () => {
@@ -170,6 +175,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
+  assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
 
   const pageSource = source(pagePath);
   const studioArchitectureGuideSource = source(studioArchitectureGuidePath);
@@ -413,6 +419,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
+  const mediaStyleSource = source(mediaStylesPath);
   const programMonitorSource = source(programMonitorPath);
   const programPlaybackLayersSource = source(programPlaybackLayersPath);
   const programControlsSource = source(programControlsPath);
@@ -784,6 +791,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /WorkspaceProjectSettingsDialog/, 'workspace should not render a project settings dialog at shell level');
   assert.match(workspaceSource, /selectedSequence=\{selectedSequenceForInspector\}/, 'viewer mode inspector should receive selected sequence settings');
   assert.match(timelineProjectSidebarSource, /useProjectMediaController/, 'project media sidebar should delegate media behavior to the project media controller');
+  assert.match(timelineProjectSidebarSource, /_styles\/media\.module\.css/, 'project media sidebar should import its focused media CSS module');
   assert.match(projectMediaControllerSource, /onInspectSequence\(sequenceId\)/, 'project media sequence cards should route sequence selection into the inspector');
   assert.match(timelineClipInspectorSource, /Sequence settings/, 'timeline inspector should expose selected sequence settings');
   assert.match(timelineClipInspectorSource, /Sequence aspect ratio/, 'timeline inspector should expose a sequence aspect ratio selector');
@@ -1015,6 +1023,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(projectMediaControllerSource, /assetId/, 'viewer sidebar timeline drag payload should identify the imported project asset');
   assert.match(projectMediaControllerSource, /TIMELINE_NODE_DRAG_TYPE/, 'project media controller should own timeline drag payload creation');
   assert.match(timelineProjectSidebarSource, /projectMediaGrid/, 'viewer sidebar should present sequences, imports, and generated clips in one media grid');
+  assert.match(mediaStyleSource, /\.timelineProjectSidebar/, 'project media CSS module should own the viewer media sidebar shell styles');
+  assert.match(mediaStyleSource, /\.projectMediaGrid/, 'project media CSS module should own the media grid styles');
+  assert.match(mediaStyleSource, /\.projectMediaTile/, 'project media CSS module should own media card styles');
+  assert.doesNotMatch(styleSource, /\.projectMediaGrid/, 'main editor CSS should no longer own project media grid styles after modularization');
+  assert.ok(lineCount(mediaStyleSource) <= 1200, 'project media CSS module should stay under the focused module size threshold');
   assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');
   assert.match(projectMediaControllerSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
   assert.match(timelineProjectSidebarSource, /New folder/, 'viewer sidebar should expose project media folder creation in the footer');

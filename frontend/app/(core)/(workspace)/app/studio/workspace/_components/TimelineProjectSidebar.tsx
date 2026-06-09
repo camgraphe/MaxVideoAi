@@ -2,7 +2,8 @@
 
 import { AudioLines, FileVideo2, Film, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
 import { type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
-import styles from '../maxvideoai-editor.module.css';
+import baseStyles from '../maxvideoai-editor.module.css';
+import mediaStyles from '../_styles/media.module.css';
 import {
   formatProjectMediaDuration,
   projectMediaSelectionKey,
@@ -17,6 +18,8 @@ import type {
 } from '../_lib/workspace-types';
 
 export type { WorkspaceProjectSequenceSummary };
+
+const styles = { ...baseStyles, ...mediaStyles };
 
 type TimelineProjectSidebarProps = {
   nodes: WorkspaceGraphNode[];
