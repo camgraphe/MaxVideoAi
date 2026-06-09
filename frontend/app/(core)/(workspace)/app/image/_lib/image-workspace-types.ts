@@ -17,7 +17,7 @@ export const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_P
   : 25;
 
 export const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
-export const IMAGE_COMPOSER_STORAGE_VERSION = 4;
+export const IMAGE_COMPOSER_STORAGE_VERSION = 5;
 export const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
 
 export type PromptPreset = {
@@ -90,6 +90,7 @@ export type PersistedImageComposerState = {
   seed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  style: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;

@@ -96,6 +96,47 @@ test('Luma image direct success copies expiring provider image URLs before retur
   assert.equal(result.requestId, 'gen_luma_123');
 });
 
+test('Luma image direct sends selected style to the Luma payload', async () => {
+  let submittedStyle: unknown = null;
+  const client = {
+    async createGeneration(payload: { style?: unknown }): Promise<NormalizedLumaAgentsImageGeneration> {
+      submittedStyle = payload.style;
+      return {
+        providerJobId: 'gen_luma_style',
+        status: 'completed',
+        rawStatus: 'completed',
+        images: [
+          {
+            url: 'https://assets.luma.ai/manga.png?expires=soon',
+            width: 1024,
+            height: 1536,
+            mimeType: 'image/png',
+          },
+        ],
+        message: null,
+        raw: { id: 'gen_luma_style' },
+      };
+    },
+    async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+      throw new Error('Completed submit should not poll');
+    },
+  };
+
+  await executeLumaAgentsImageGenerationWithFalFallback({
+    ...baseParams(),
+    falAspectRatio: '9:16',
+    style: 'manga',
+    client,
+    copyGeneratedImagesToStorage: async ({ images }) =>
+      images.map((image) => ({
+        ...image,
+        url: 'https://media.maxvideoai.com/renders/images/user_test/manga.png',
+      })),
+  });
+
+  assert.equal(submittedStyle, 'manga');
+});
+
 test('Luma image submit rate limit falls back to fal before provider acceptance', async () => {
   let falCalls = 0;
   const { result, providerJobId, providerMode } = await executeLumaAgentsImageGenerationWithFalFallback({
@@ -229,6 +270,99 @@ test('Luma image direct success fails when copied output remains an expiring pro
   assert.equal(falCalls, 0);
 });
 
+test('Luma image direct success fails when copied output is a different non-storage URL', async () => {
+  const providerUrl = 'https://assets.luma.ai/output.png?expires=soon';
+
+  await assert.rejects(
+    () =>
+      executeLumaAgentsImageGenerationWithFalFallback({
+        ...baseParams(),
+        client: {
+          async createGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            return {
+              providerJobId: 'gen_luma_changed_url',
+              status: 'completed',
+              rawStatus: 'completed',
+              images: [
+                {
+                  url: providerUrl,
+                  width: 1024,
+                  height: 1024,
+                  mimeType: 'image/png',
+                },
+              ],
+              message: null,
+              raw: { id: 'gen_luma_changed_url' },
+            };
+          },
+          async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            throw new Error('Completed submit should not poll');
+          },
+        },
+        copyGeneratedImagesToStorage: async ({ images }) =>
+          images.map((image) => ({
+            ...image,
+            url: 'https://temporary.example.com/copied-output.png',
+          })),
+      }),
+    (error) =>
+      error instanceof ImageGenerationExecutionError &&
+      error.code === 'luma_agents_image_copy_unstable' &&
+      /stable storage/.test(error.message)
+  );
+});
+
+test('Luma image polling does not accept completion after sync timeout elapses during sleep', async () => {
+  let pollCalls = 0;
+  let currentTime = 0;
+
+  await assert.rejects(
+    () =>
+      executeLumaAgentsImageGenerationWithFalFallback({
+        ...baseParams(),
+        syncTimeoutMs: 50,
+        pollIntervalMs: 50,
+        now: () => currentTime,
+        sleep: async (ms) => {
+          currentTime += ms;
+        },
+        client: {
+          async createGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            return {
+              providerJobId: 'gen_luma_timeout',
+              status: 'running',
+              rawStatus: 'dreaming',
+              images: [],
+              message: null,
+              raw: { id: 'gen_luma_timeout' },
+            };
+          },
+          async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            pollCalls += 1;
+            return {
+              providerJobId: 'gen_luma_timeout',
+              status: 'completed',
+              rawStatus: 'completed',
+              images: [
+                {
+                  url: 'https://assets.luma.ai/late.png?expires=soon',
+                  width: 1024,
+                  height: 1024,
+                  mimeType: 'image/png',
+                },
+              ],
+              message: null,
+              raw: { id: 'gen_luma_timeout' },
+            };
+          },
+        },
+      }),
+    (error) => error instanceof ImageGenerationExecutionError && error.code === 'luma_agents_image_timeout'
+  );
+
+  assert.equal(pollCalls, 0);
+});
+
 test('Luma image invalid direct payload does not fallback to fal', async () => {
   let falCalls = 0;
 
@@ -254,6 +388,36 @@ test('Luma image invalid direct payload does not fallback to fal', async () => {
       error instanceof LumaAgentsImageError &&
       error.errorClass === 'invalid_request' &&
       error.code === 'LUMA_AGENTS_IMAGE_OUTPUT_FORMAT_UNSUPPORTED'
+  );
+
+  assert.equal(falCalls, 0);
+});
+
+test('Luma image invalid style does not fallback to fal', async () => {
+  let falCalls = 0;
+
+  await assert.rejects(
+    () =>
+      executeLumaAgentsImageGenerationWithFalFallback({
+        ...baseParams(),
+        style: 'oil-paint',
+        client: {
+          async createGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            throw new Error('Submit should not run for invalid style');
+          },
+          async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            throw new Error('Poll should not run for invalid style');
+          },
+        },
+        runFalImageGeneration: async () => {
+          falCalls += 1;
+          throw new Error('Fal should not run for invalid style');
+        },
+      }),
+    (error) =>
+      error instanceof LumaAgentsImageError &&
+      error.errorClass === 'invalid_request' &&
+      error.code === 'LUMA_AGENTS_IMAGE_STYLE_UNSUPPORTED'
   );
 
   assert.equal(falCalls, 0);

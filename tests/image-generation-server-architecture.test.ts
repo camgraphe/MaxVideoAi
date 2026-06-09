@@ -30,6 +30,9 @@ const failurePath = join(root, 'frontend/src/server/images/image-generation-fail
 const receiptsPath = join(root, 'frontend/src/server/images/image-generation-receipts.ts');
 const settingsSnapshotPath = join(root, 'frontend/src/server/images/image-generation-settings-snapshot.ts');
 const outputStoragePath = join(root, 'frontend/src/server/images/image-output-storage.ts');
+const imageGenerationTypesPath = join(root, 'frontend/types/image-generation.ts');
+const imageWorkspacePath = join(root, 'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx');
+const imageGenerationRunnerPath = join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageGenerationRunner.ts');
 
 const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
@@ -53,6 +56,9 @@ const completionSource = readFileSync(completionPath, 'utf8');
 const failureSource = readFileSync(failurePath, 'utf8');
 const receiptsSource = readFileSync(receiptsPath, 'utf8');
 const settingsSnapshotSource = readFileSync(settingsSnapshotPath, 'utf8');
+const imageGenerationTypesSource = readFileSync(imageGenerationTypesPath, 'utf8');
+const imageWorkspaceSource = readFileSync(imageWorkspacePath, 'utf8');
+const imageGenerationRunnerSource = readFileSync(imageGenerationRunnerPath, 'utf8');
 
 test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');
@@ -236,4 +242,18 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(receiptsSource, /export function buildReceiptSnapshot/);
   assert.match(receiptsSource, /export async function recordRefundReceipt/);
   assert.match(settingsSnapshotSource, /export function buildDefaultSettingsSnapshot/);
+});
+
+test('Luma image style stays wired from workspace request to direct payload', () => {
+  assert.match(imageGenerationTypesSource, /style\?: string/);
+  assert.match(imageWorkspaceSource, /const \[style, setStyle\] = useState<string \| null>\(null\)/);
+  assert.match(imageWorkspaceSource, /styleField/);
+  assert.match(imageWorkspaceSource, /hasStyleField: Boolean\(styleField\)/);
+  assert.match(imageGenerationRunnerSource, /hasStyleField: boolean/);
+  assert.match(imageGenerationRunnerSource, /style: hasStyleField \? style \?\? undefined : undefined/);
+  assert.match(executorSource, /getImageFieldValues\(engine, 'style', mode\)/);
+  assert.match(executorSource, /body\.style/);
+  assert.match(executorSource, /\.\.\.\(style \? \{ style \} : \{\}\)/);
+  assert.match(executorSource, /style, engine, engineEntry/);
+  assert.match(settingsSnapshotSource, /style: args\.style/);
 });

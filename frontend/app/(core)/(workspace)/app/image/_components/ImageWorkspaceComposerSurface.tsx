@@ -68,6 +68,8 @@ interface ImageWorkspaceComposerSurfaceProps {
   selectedEngineCaps: EngineCaps;
   selectedEngineId: string;
   selectedPreviewImageIndex: number;
+  style: string | null;
+  styleSelectOptions: ControlOption[];
   setAspectRatio: (value: string | null) => void;
   setCustomImageHeight: (value: string) => void;
   setCustomImageWidth: (value: string) => void;
@@ -84,6 +86,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   setResolutionPreset: (value: string) => void;
   setSeed: (value: string) => void;
   setSelectedPreviewImageIndex: (value: number) => void;
+  setStyle: (value: string | null) => void;
   setThinkingLevel: (value: string | null) => void;
   setWatermark: (value: boolean) => void;
   showAspectRatioControl: boolean;
@@ -96,6 +99,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   showQualityControl: boolean;
   showResolutionControl: boolean;
   showSeedControl: boolean;
+  showStyleControl: boolean;
   showThinkingLevelControl: boolean;
   showWatermarkControl: boolean;
   statusMessage: string | null;
@@ -154,6 +158,8 @@ export function ImageWorkspaceComposerSurface({
   selectedEngineCaps,
   selectedEngineId,
   selectedPreviewImageIndex,
+  style,
+  styleSelectOptions,
   setAspectRatio,
   setCustomImageHeight,
   setCustomImageWidth,
@@ -170,6 +176,7 @@ export function ImageWorkspaceComposerSurface({
   setResolutionPreset,
   setSeed,
   setSelectedPreviewImageIndex,
+  setStyle,
   setThinkingLevel,
   setWatermark,
   showAspectRatioControl,
@@ -182,6 +189,7 @@ export function ImageWorkspaceComposerSurface({
   showQualityControl,
   showResolutionControl,
   showSeedControl,
+  showStyleControl,
   showThinkingLevelControl,
   showWatermarkControl,
   statusMessage,
@@ -311,6 +319,15 @@ export function ImageWorkspaceComposerSurface({
                       value: quality ?? String(qualitySelectOptions[0]?.value ?? ''),
                       options: qualitySelectOptions,
                       onChange: setQuality,
+                    }
+                  : undefined
+              }
+              style={
+                showStyleControl
+                  ? {
+                      value: style ?? String(styleSelectOptions[0]?.value ?? ''),
+                      options: styleSelectOptions,
+                      onChange: setStyle,
                     }
                   : undefined
               }

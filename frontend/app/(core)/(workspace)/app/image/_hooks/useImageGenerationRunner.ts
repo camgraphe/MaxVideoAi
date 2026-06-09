@@ -42,6 +42,7 @@ interface UseImageGenerationRunnerParams {
   hasOutputFormatField: boolean;
   hasQualityField: boolean;
   hasSeedField: boolean;
+  hasStyleField: boolean;
   hasThinkingLevelField: boolean;
   hasWatermarkField: boolean;
   limitGenerations: boolean;
@@ -60,6 +61,7 @@ interface UseImageGenerationRunnerParams {
   seed: string;
   selectedCharacterReferences: CharacterReferenceSelection[];
   selectedEngine: ImageEngineOption | undefined;
+  style: string | null;
   setAuthModalOpen: Dispatch<SetStateAction<boolean>>;
   setError: Dispatch<SetStateAction<string | null>>;
   setLocalHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
@@ -84,6 +86,7 @@ export function useImageGenerationRunner({
   hasOutputFormatField,
   hasQualityField,
   hasSeedField,
+  hasStyleField,
   hasThinkingLevelField,
   hasWatermarkField,
   limitGenerations,
@@ -102,6 +105,7 @@ export function useImageGenerationRunner({
   seed,
   selectedCharacterReferences,
   selectedEngine,
+  style,
   setAuthModalOpen,
   setError,
   setLocalHistory,
@@ -192,6 +196,7 @@ export function useImageGenerationRunner({
             ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
             : undefined,
           quality: hasQualityField ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
+          style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
           thinkingLevel: hasThinkingLevelField
@@ -259,6 +264,7 @@ export function useImageGenerationRunner({
       hasOutputFormatField,
       hasQualityField,
       hasSeedField,
+      hasStyleField,
       hasThinkingLevelField,
       hasWatermarkField,
       limitGenerations,
@@ -280,6 +286,7 @@ export function useImageGenerationRunner({
       seed,
       selectedCharacterReferences,
       selectedEngine,
+      style,
       setAuthModalOpen,
       setError,
       setLocalHistory,

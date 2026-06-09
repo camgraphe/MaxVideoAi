@@ -19,6 +19,7 @@ export function buildDefaultSettingsSnapshot(args: {
   normalizedSeed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  style: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
@@ -46,6 +47,7 @@ export function buildDefaultSettingsSnapshot(args: {
       seed: args.normalizedSeed,
       outputFormat: args.outputFormat,
       quality: args.quality,
+      style: args.style,
       maskUrl: args.maskUrl,
       enableWebSearch: args.enableWebSearch,
       thinkingLevel: args.thinkingLevel,

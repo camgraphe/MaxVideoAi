@@ -171,6 +171,7 @@ async function runFalFallback(params: ExecuteLumaAgentsImageGenerationParams): P
     normalizedSeed: params.normalizedSeed,
     outputFormat: params.outputFormat,
     quality: params.quality,
+    style: params.style,
     maskUrl: params.maskUrl,
     enableWebSearch: params.enableWebSearch,
     thinkingLevel: params.thinkingLevel,
@@ -247,11 +248,9 @@ function assertStableLumaImageCopies(params: {
   mode: ImageGenerationMode;
   providerJobId: string;
 }): void {
-  const failedIndex = params.originalImages.findIndex((original, index) => {
+  const failedIndex = params.originalImages.findIndex((_original, index) => {
     const copied = params.copiedImages[index];
-    if (!copied?.url) return true;
-    if (extractStorageKeyFromUrl(copied.url)) return false;
-    return copied.url.trim() === original.url.trim();
+    return !copied?.url || !isStableMaxVideoAiImageUrl(copied.url);
   });
 
   if (failedIndex >= 0) {
@@ -270,6 +269,21 @@ function assertStableLumaImageCopies(params: {
         requestId: params.providerJobId,
       },
     });
+  }
+}
+
+function isStableMaxVideoAiImageUrl(url: string): boolean {
+  if (extractStorageKeyFromUrl(url)) return true;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.replace(/^\/+/, '');
+    return (
+      (host === 'media.maxvideoai.com' || host === 'cdn.maxvideoai.com') &&
+      path.startsWith('renders/images/')
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -302,6 +316,13 @@ async function waitForCompletedGeneration(params: {
       });
     }
     await params.sleep(Math.min(params.pollIntervalMs, Math.max(0, deadline - params.now())));
+    if (params.now() >= deadline) {
+      terminalTimeout({
+        mode: params.mode,
+        providerJobId: params.providerJobId,
+        timeoutMs: params.syncTimeoutMs,
+      });
+    }
     try {
       task = await params.client.getGeneration(params.providerJobId);
     } catch (error) {

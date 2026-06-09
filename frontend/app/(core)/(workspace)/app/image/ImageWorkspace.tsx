@@ -45,6 +45,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
   const [quality, setQuality] = useState<string | null>(null);
+  const [style, setStyle] = useState<string | null>(null);
   const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
@@ -83,9 +84,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     showQualityControl,
     showResolutionControl,
     showSeedControl,
+    showStyleControl,
     showThinkingLevelControl,
     supportedReferenceFormats,
     supportedReferenceFormatsLabel,
+    styleField,
+    styleSelectOptions,
     thinkingLevelField,
     thinkingLevelSelectOptions,
     watermarkField,
@@ -106,6 +110,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setQuality,
     setResolution,
     setSeed,
+    setStyle,
     setThinkingLevel,
     setWatermark,
   });
@@ -184,6 +189,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     seed,
     outputFormat,
     quality,
+    style,
     maskUrl,
     enableWebSearch,
     thinkingLevel,
@@ -201,6 +207,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setSeed,
     setOutputFormat,
     setQuality,
+    setStyle,
     setMaskUrl,
     setEnableWebSearch,
     setThinkingLevel,
@@ -229,6 +236,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setReferenceSlots,
     setResolution,
     setSeed,
+    setStyle,
     setSelectedPreviewEntryId,
     setSelectedPreviewImageIndex,
     setStatusMessage,
@@ -277,6 +285,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     hasOutputFormatField: Boolean(outputFormatField),
     hasQualityField: Boolean(qualityField),
     hasSeedField: Boolean(seedField),
+    hasStyleField: Boolean(styleField),
     hasThinkingLevelField: Boolean(thinkingLevelField),
     hasWatermarkField: Boolean(watermarkField),
     limitGenerations,
@@ -295,6 +304,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     seed,
     selectedCharacterReferences,
     selectedEngine,
+    style,
     setAuthModalOpen,
     setError,
     setLocalHistory,
@@ -440,6 +450,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               selectedEngineCaps={selectedEngineCaps}
               selectedEngineId={selectedEngine.id}
               selectedPreviewImageIndex={selectedPreviewImageIndex}
+              style={style}
+              styleSelectOptions={styleSelectOptions}
               setAspectRatio={setAspectRatio}
               setCustomImageHeight={setCustomImageHeight}
               setCustomImageWidth={setCustomImageWidth}
@@ -456,6 +468,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               setResolutionPreset={setResolutionPreset}
               setSeed={setSeed}
               setSelectedPreviewImageIndex={setSelectedPreviewImageIndex}
+              setStyle={setStyle}
               setThinkingLevel={setThinkingLevel}
               showAspectRatioControl={showAspectRatioControl}
               showCustomImageSizeControl={showCustomImageSizeControl}
@@ -467,6 +480,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               showQualityControl={showQualityControl}
               showResolutionControl={showResolutionControl}
               showSeedControl={showSeedControl}
+              showStyleControl={showStyleControl}
               showThinkingLevelControl={showThinkingLevelControl}
               statusMessage={statusMessage}
               thinkingLevel={thinkingLevel}
