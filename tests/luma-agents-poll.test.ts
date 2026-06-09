@@ -176,6 +176,51 @@ test('Luma Agents poll refunds failed paid wallet jobs once and marks the attemp
   assert.equal(costAttemptUpdate.params?.[4], 3.6);
 });
 
+test('Luma Agents poll does not mark attempts polling when progress update loses the race', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+
+  const response = await runLumaAgentsPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [baseJob] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 27, attempt_index: 1 }] as never;
+        }
+        if (/UPDATE app_jobs/.test(sql) && /Render is in progress/.test(JSON.stringify(params))) {
+          return [] as never;
+        }
+        return [] as never;
+      },
+      getLumaAgentsClientFn: () => ({
+        getGeneration: async () => ({
+          id: 'gen_luma_123',
+          state: 'processing',
+        }),
+      }),
+      ensureFastStartVideoFn: async () => null,
+      ensureJobThumbnailFn: async () => null,
+      upsertLegacyJobOutputsFn: async () => undefined,
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    },
+  });
+
+  const body = await response.json();
+  assert.equal(body.updates, 0);
+  assert.ok(
+    queries.some((entry) => /UPDATE app_jobs/.test(entry.sql) && /Render is in progress/.test(JSON.stringify(entry.params))),
+    'progress app_jobs update should be attempted'
+  );
+  assert.equal(
+    queries.some((entry) => /UPDATE provider_attempts/.test(entry.sql)),
+    false,
+    'provider_attempts should not be moved back to polling when app_jobs update returns no rows'
+  );
+});
+
 test('Luma Agents poll marks stalled jobs and provider attempts as polling_stalled', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   let clientCalled = false;

@@ -406,14 +406,15 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
       const estimate = estimateCostForJob(job);
 
       if (task.status === 'queued' || task.status === 'running') {
-        await queryFn(
+        const progressRows = await queryFn<{ job_id: string }>(
           `UPDATE app_jobs
               SET status = $2,
                   progress = GREATEST(progress, $3),
                   message = $4,
                   updated_at = NOW()
             WHERE job_id = $1
-              AND status = ANY($5::text[])`,
+              AND status = ANY($5::text[])
+            RETURNING job_id`,
           [
             job.job_id,
             task.status === 'running' ? 'running' : 'queued',
@@ -422,6 +423,9 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
             ACTIVE_JOB_STATUSES,
           ]
         );
+        if (!progressRows.length) {
+          continue;
+        }
         if (attempt) {
           await markProviderAttemptFinished({
             attemptId: attempt.id,
