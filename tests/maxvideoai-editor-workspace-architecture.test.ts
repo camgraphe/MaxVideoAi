@@ -112,6 +112,7 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
+const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const viewerStylesPath = join(workspaceDir, '_styles/viewer.module.css');
 const visitorAccessPath = join(root, 'frontend/lib/visitor-access.ts');
@@ -176,6 +177,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
+  assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
   assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
 
@@ -421,6 +423,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const videoViewerSource = source(videoViewerPath);
+  const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
   const viewerStyleSource = source(viewerStylesPath);
   const programMonitorSource = source(programMonitorPath);
@@ -730,7 +733,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(settingsSource, /styles\.recommendationList|<span>Recommended models<\/span>/, 'shot inspector should not render a separate recommended models section');
   assert.doesNotMatch(styleSource, /\.recommendationList/, 'editor CSS should not keep styling for the removed recommendation section');
   assert.match(settingsSource, /styles\.pricingActionSummary[\s\S]*pricingEstimate[\s\S]*styles\.primaryPanelButton[\s\S]*<span>Routing<\/span>[\s\S]*Available inputs/, 'shot inspector should keep routing and available inputs below the price and generate action');
-  assert.match(styleSource, /\.pricingActionSummary/, 'shot inspector price action summary should be styled in isolated editor CSS');
+  assert.match(settingsSource, /_styles\/inspector\.module\.css/, 'node settings inspector should import its focused inspector CSS module');
+  assert.match(timelineClipInspectorSource, /_styles\/inspector\.module\.css/, 'timeline clip inspector should import its focused inspector CSS module');
+  assert.match(inspectorStyleSource, /\.settingsPanel/, 'inspector CSS module should own the settings panel shell');
+  assert.match(inspectorStyleSource, /\.settingsInput/, 'inspector CSS module should own form controls');
+  assert.match(inspectorStyleSource, /\.pricingActionSummary/, 'shot inspector price action summary should be styled in focused inspector CSS');
+  assert.doesNotMatch(styleSource, /\.pricingActionSummary/, 'main editor CSS should no longer own inspector price summary styles after modularization');
   assert.match(settingsSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
   assert.match(settingsSource, /disabled=\{!canSendOutputToTimeline\}/, 'output inspector should disable timeline send for placeholder and processing outputs');
   assert.match(settingsSource, /onOpenAssetLibrary/, 'asset inspector should expose the same library picker action');
@@ -1095,11 +1103,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /\.timelineInsertActions/, 'output inspector insert actions should be styled in isolated editor CSS');
   assert.match(styleSource, /\.timelineZoomControl/, 'timeline zoom control should be styled in isolated editor CSS');
   assert.match(styleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.timelineInspectorGroup/, 'timeline clip inspector groups should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.timelineInspectorControlRow/, 'timeline clip inspector slider rows should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.settingsRange/, 'timeline clip inspector ranges should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.timelineInspectorCheckbox/, 'timeline clip inspector toggles should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.timelineInspectorResetButton/, 'timeline clip inspector reset button should be styled in isolated editor CSS');
+  assert.match(inspectorStyleSource, /\.timelineInspectorGroup/, 'timeline clip inspector groups should be styled in focused inspector CSS');
+  assert.match(inspectorStyleSource, /\.timelineInspectorControlRow/, 'timeline clip inspector slider rows should be styled in focused inspector CSS');
+  assert.match(inspectorStyleSource, /\.settingsRange/, 'timeline clip inspector ranges should be styled in focused inspector CSS');
+  assert.match(inspectorStyleSource, /\.timelineInspectorCheckbox/, 'timeline clip inspector toggles should be styled in focused inspector CSS');
+  assert.match(inspectorStyleSource, /\.timelineInspectorResetButton/, 'timeline clip inspector reset button should be styled in focused inspector CSS');
+  assert.match(inspectorStyleSource, /\.infoGrid/, 'inspector CSS module should own timing and metadata grids');
+  assert.doesNotMatch(styleSource, /\.timelineInspectorGroup/, 'main editor CSS should no longer own timeline inspector group styles after modularization');
+  assert.doesNotMatch(styleSource, /\.infoGrid/, 'main editor CSS should no longer own inspector metadata grid styles after modularization');
+  assert.ok(lineCount(inspectorStyleSource) <= 1200, 'inspector CSS module should stay under the focused module size threshold');
   assert.match(styleSource, /\.timelinePlayhead/, 'timeline playhead should be styled in isolated editor CSS');
   assert.match(styleSource, /\.timelinePlayhead::before/, 'timeline playhead should draw the visible line from an interactive handle');
   assert.match(styleSource, /\.timelinePlayhead[\s\S]*pointer-events:\s*auto/, 'timeline playhead should be directly draggable instead of decorative only');

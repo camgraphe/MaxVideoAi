@@ -3,7 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { AlertTriangle, CheckCircle2, Plus, Send, Sparkles } from 'lucide-react';
-import styles from '../maxvideoai-editor.module.css';
+import baseStyles from '../maxvideoai-editor.module.css';
+import inspectorStyles from '../_styles/inspector.module.css';
 import type {
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
@@ -14,6 +15,8 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import { edgeLabel } from '../_lib/workspace-templates';
+
+const styles = { ...baseStyles, ...inspectorStyles };
 
 type NodeSettingsPanelProps = {
   selectedNode: WorkspaceGraphNode | null;

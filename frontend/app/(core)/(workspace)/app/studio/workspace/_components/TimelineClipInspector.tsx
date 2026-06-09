@@ -1,7 +1,8 @@
 'use client';
 
 import { RotateCcw, Sparkles } from 'lucide-react';
-import styles from '../maxvideoai-editor.module.css';
+import baseStyles from '../maxvideoai-editor.module.css';
+import inspectorStyles from '../_styles/inspector.module.css';
 import type {
   WorkspaceProjectSettings,
   WorkspaceTimelineAudioMix,
@@ -19,6 +20,8 @@ import {
   workspaceTimelineTrackLabel,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+
+const styles = { ...baseStyles, ...inspectorStyles };
 
 const DEFAULT_TRANSFORM: WorkspaceTimelineClipTransform = {
   scale: 1,
