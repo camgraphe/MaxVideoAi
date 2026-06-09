@@ -19,6 +19,7 @@ import {
 import {
   buildCustomImageSize,
 } from '../_lib/image-workspace-utils';
+import { shouldSendImageReferenceUrlsForMode } from '../_lib/image-workspace-generation-request';
 import {
   formatTemplate,
   type ImageWorkspaceCopy,
@@ -173,14 +174,15 @@ export function useImageGenerationRunner({
           const parsed = Number(trimmed);
           return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
         })();
+        const shouldSendImageUrls = shouldSendImageReferenceUrlsForMode(selectedEngine.engineCaps, mode);
         const response = await runImageGeneration({
           jobId: pendingId,
           engineId: selectedEngine.id,
           mode,
           prompt: trimmedPrompt,
           numImages,
-          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
-          referenceImageSizes: mode === 'i2i' ? readyReferenceSizes : undefined,
+          imageUrls: shouldSendImageUrls ? readyReferenceUrls : undefined,
+          referenceImageSizes: shouldSendImageUrls ? readyReferenceSizes : undefined,
           characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,

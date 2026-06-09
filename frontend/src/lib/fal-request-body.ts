@@ -142,13 +142,6 @@ export function buildFalGenerationRequest(
     const urlCandidate = attachment.url?.trim() ?? attachment.dataUrl?.trim();
     if (!urlCandidate) continue;
 
-    if (!primaryImageUrl && attachment.kind === 'image') {
-      primaryImageUrl = urlCandidate;
-    }
-    if (!primaryAudioUrl && attachment.kind === 'audio') {
-      primaryAudioUrl = urlCandidate;
-    }
-
     const slotId = attachment.slotId?.trim();
     if (
       slotId === 'reference_images' ||
@@ -166,6 +159,12 @@ export function buildFalGenerationRequest(
         addToArray(slotId === 'images' ? 'image_urls' : slotId, urlCandidate);
       }
       continue;
+    }
+    if (!primaryImageUrl && attachment.kind === 'image') {
+      primaryImageUrl = urlCandidate;
+    }
+    if (!primaryAudioUrl && attachment.kind === 'audio') {
+      primaryAudioUrl = urlCandidate;
     }
     if (
       slotId === 'video_urls' ||

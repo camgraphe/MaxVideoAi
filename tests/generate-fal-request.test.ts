@@ -438,6 +438,7 @@ test('Fal request body sends Luma Ray 3.2 public controls and reference image UR
   assert.equal(result.requestBody.resolution, '720p');
   assert.equal(result.requestBody.aspect_ratio, '3:1');
   assert.equal(result.requestBody.loop, true);
+  assert.equal(result.requestBody.image_url, undefined);
   assert.deepEqual(result.requestBody.reference_image_urls, [
     'https://cdn.maxvideoai.com/ref-slot.png',
     'https://cdn.maxvideoai.com/ref-normalized.png',
