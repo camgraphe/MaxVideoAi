@@ -92,6 +92,7 @@ const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.
 const timelineRenderPath = join(workspaceDir, '_lib/workspace-timeline-render.ts');
 const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts');
 const timelineDropsPath = join(workspaceDir, '_lib/workspace-timeline-drops.ts');
+const timelineSelectionPath = join(workspaceDir, '_lib/workspace-timeline-selection.ts');
 const projectMediaTimelinePath = join(workspaceDir, '_lib/workspace-project-media-timeline.ts');
 const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts');
 const timelineCollisionsPath = join(workspaceDir, '_lib/timeline/timeline-collisions.ts');
@@ -176,6 +177,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
   assert.ok(existsSync(timelineDropsPath), 'timeline drop compatibility should live in a pure route-local helper');
+  assert.ok(existsSync(timelineSelectionPath), 'timeline selection and preview projection helpers should live in a pure route-local helper');
   assert.ok(existsSync(projectMediaTimelinePath), 'project media timeline insertion should live in a pure route-local helper');
   assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineContextMenusPath), 'timeline context menus should live in a focused route-local timeline component');
@@ -444,6 +446,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineRenderSource = source(timelineRenderPath);
   const timelineTracksSource = source(timelineTracksPath);
   const timelineDropsSource = source(timelineDropsPath);
+  const timelineSelectionSource = source(timelineSelectionPath);
   const projectMediaTimelineSource = source(projectMediaTimelinePath);
   const timelineFramesSource = source(timelineFramesPath);
   const timelineCollisionsSource = source(timelineCollisionsPath);
@@ -676,6 +679,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /export function moveWorkspaceTimelineSelectionWithMode/, 'timeline helper should route pointer drags through insert, overwrite, and replace modes');
   assert.match(timelineEditingSource, /nextTrack\?: WorkspaceTimelineTrack/, 'timeline helper should support moving clips between video tracks');
   assert.match(timelineTracksSource, /isWorkspaceTimelineVideoTrack/, 'timeline track helper should distinguish video tracks from audio tracks');
+  assert.match(timelineSelectionSource, /timelineSelectionTouchesLockedTrack/, 'timeline selection helper should own linked lock selection checks');
+  assert.match(timelineSelectionSource, /filterHiddenVideoTrackItems/, 'timeline selection helper should own hidden-track preview filtering');
+  assert.match(timelineSelectionSource, /muteAudioTrackItems/, 'timeline selection helper should own muted-track preview projection');
+  assert.match(timelineSelectionSource, /defaultTimelineSelectionIds/, 'timeline selection helper should own default timeline selection ids');
+  assert.doesNotMatch(workspaceSource, /function timelineSelectionTouchesLockedTrack/, 'orchestrator should not own linked lock selection checks inline');
+  assert.doesNotMatch(workspaceSource, /function filterHiddenVideoTrackItems/, 'orchestrator should not own hidden-track preview filtering inline');
   assert.match(timelineEditingSource, /isWorkspaceTimelineVideoTrack/, 'timeline editing should use the shared video-track helper');
   assert.match(timelineEditingSource, /targetTrack/, 'timeline helper should apply a drag target video track');
   assert.match(timelineEditingSource, /export function resizeWorkspaceTimelineItem/, 'timeline helper should support direct pointer-based clip resizing');

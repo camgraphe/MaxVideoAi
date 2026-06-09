@@ -105,6 +105,16 @@ import {
   isWorkspaceTimelineVideoTrack,
   workspaceTimelineTrackLabel,
 } from './_lib/workspace-timeline-tracks';
+import {
+  defaultTimelineSelection,
+  defaultTimelineSelectionIds,
+  filterHiddenVideoTrackItems,
+  muteAudioTrackItems,
+  nextAvailableTimelineItemId,
+  timelineSelectionTouchesLockedTrack,
+  uniqueTimelineSelectionIds,
+  workspaceTimelineCutPoints,
+} from './_lib/workspace-timeline-selection';
 import { formatWorkspaceTimecode } from './_lib/workspace-timecode';
 import {
   DEFAULT_WORKSPACE_SEQUENCE_ID,
@@ -165,53 +175,6 @@ import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
 const styles = { ...baseStyles, ...shellStyles };
-
-function workspaceTimelineCutPoints(items: WorkspaceTimelineItem[]): number[] {
-  const cutPoints = new Set<number>([0]);
-  items
-    .filter((item) => isWorkspaceTimelineVideoTrack(item.track))
-    .forEach((item) => {
-      cutPoints.add(Math.round(item.startSec * 1_000_000) / 1_000_000);
-      cutPoints.add(Math.round((item.startSec + item.durationSec) * 1_000_000) / 1_000_000);
-    });
-  return Array.from(cutPoints).sort((left, right) => left - right);
-}
-
-function timelineSelectionTouchesLockedTrack(items: WorkspaceTimelineItem[], itemIds: string[], lockedTracks: WorkspaceTimelineTrack[]): boolean {
-  if (!itemIds.length || !lockedTracks.length) return false;
-  const selectedItemIds = new Set(itemIds);
-  const selectedLinkedGroupIds = new Set(
-    items
-      .filter((item) => selectedItemIds.has(item.id) && item.linkedGroupId)
-      .map((item) => item.linkedGroupId as string)
-  );
-  const lockedTrackSet = new Set(lockedTracks);
-  return items.some((item) => (
-    lockedTrackSet.has(item.track) &&
-    (selectedItemIds.has(item.id) || Boolean(item.linkedGroupId && selectedLinkedGroupIds.has(item.linkedGroupId)))
-  ));
-}
-
-function filterHiddenVideoTrackItems(items: WorkspaceTimelineItem[], hiddenVideoTracks: WorkspaceTimelineVideoTrack[]): WorkspaceTimelineItem[] {
-  if (!hiddenVideoTracks.length) return items;
-  const hiddenVideoTrackSet = new Set<WorkspaceTimelineTrack>(hiddenVideoTracks);
-  return items.filter((item) => !isWorkspaceTimelineVideoTrack(item.track) || !hiddenVideoTrackSet.has(item.track));
-}
-
-function muteAudioTrackItems(items: WorkspaceTimelineItem[], mutedAudioTracks: WorkspaceTimelineAudioTrack[]): WorkspaceTimelineItem[] {
-  if (!mutedAudioTracks.length) return items;
-  const mutedAudioTrackSet = new Set<WorkspaceTimelineTrack>(mutedAudioTracks);
-  return items.map((item) => {
-    if (!isWorkspaceTimelineAudioTrack(item.track) || !mutedAudioTrackSet.has(item.track)) return item;
-    return {
-      ...item,
-      audioMix: {
-        volume: item.audioMix?.volume ?? 100,
-        muted: true,
-      },
-    };
-  });
-}
 
 function cloneWorkspaceJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -319,32 +282,6 @@ function workspaceConnectionRejectionReason({
     return `${connector.label} is full.`;
   }
   return null;
-}
-
-function defaultTimelineSelection(items: WorkspaceTimelineItem[]): string | null {
-  return items.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.id ?? items[0]?.id ?? null;
-}
-
-function defaultTimelineSelectionIds(items: WorkspaceTimelineItem[]): string[] {
-  const itemId = defaultTimelineSelection(items);
-  return itemId ? [itemId] : [];
-}
-
-function uniqueTimelineSelectionIds(itemIds: string[]): string[] {
-  return Array.from(new Set(itemIds.filter(Boolean)));
-}
-
-function nextAvailableTimelineItemId(baseId: string, items: WorkspaceTimelineItem[]): string {
-  const usedIds = new Set(items.map((item) => item.id));
-  if (!usedIds.has(baseId)) return baseId;
-
-  let suffix = 2;
-  let nextId = `${baseId}-${suffix}`;
-  while (usedIds.has(nextId)) {
-    suffix += 1;
-    nextId = `${baseId}-${suffix}`;
-  }
-  return nextId;
 }
 
 function defaultSelectedNodeId(nodes: WorkspaceGraphNode[], templateId: WorkspaceTemplateId): string | null {
