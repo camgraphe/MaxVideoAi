@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { ENV } from '../frontend/src/lib/env';
+import { getLumaAgentsConfig } from '../frontend/src/server/video-providers/luma-agents/client';
 import {
   classifyLumaAgentsError,
   LumaAgentsError,
@@ -41,6 +43,32 @@ test('Luma Agents response normalizes queued and running states', () => {
     }).status,
     'running'
   );
+});
+
+test('Luma Agents config keeps submit and poll request timeouts separate', () => {
+  const original = {
+    apiKey: ENV.LUMA_AGENTS_API_KEY,
+    submitTimeoutMs: ENV.LUMA_AGENTS_SUBMIT_TIMEOUT_MS,
+    pollIntervalMs: ENV.LUMA_AGENTS_POLL_INTERVAL_MS,
+    pollTimeoutMs: ENV.LUMA_AGENTS_POLL_TIMEOUT_MS,
+  };
+
+  try {
+    ENV.LUMA_AGENTS_API_KEY = 'test-luma-key';
+    ENV.LUMA_AGENTS_SUBMIT_TIMEOUT_MS = '41000';
+    ENV.LUMA_AGENTS_POLL_INTERVAL_MS = '7000';
+    ENV.LUMA_AGENTS_POLL_TIMEOUT_MS = '11000';
+
+    const config = getLumaAgentsConfig();
+
+    assert.equal(config.submitTimeoutMs, 41000);
+    assert.equal(config.pollTimeoutMs, 11000);
+  } finally {
+    ENV.LUMA_AGENTS_API_KEY = original.apiKey;
+    ENV.LUMA_AGENTS_SUBMIT_TIMEOUT_MS = original.submitTimeoutMs;
+    ENV.LUMA_AGENTS_POLL_INTERVAL_MS = original.pollIntervalMs;
+    ENV.LUMA_AGENTS_POLL_TIMEOUT_MS = original.pollTimeoutMs;
+  }
 });
 
 test('Luma Agents response extracts video output URLs and failure messages', () => {

@@ -43,7 +43,7 @@ export function getLumaAgentsConfig(): LumaAgentsClientConfig {
     apiKey: ENV.LUMA_AGENTS_API_KEY,
     baseUrl: normalizeLumaAgentsBaseUrl(ENV.LUMA_AGENTS_BASE_URL),
     submitTimeoutMs: positiveInt(ENV.LUMA_AGENTS_SUBMIT_TIMEOUT_MS, DEFAULT_SUBMIT_TIMEOUT_MS),
-    pollTimeoutMs: positiveInt(ENV.LUMA_AGENTS_SUBMIT_TIMEOUT_MS, DEFAULT_POLL_TIMEOUT_MS),
+    pollTimeoutMs: positiveInt(ENV.LUMA_AGENTS_POLL_TIMEOUT_MS, DEFAULT_POLL_TIMEOUT_MS),
   };
 }
 

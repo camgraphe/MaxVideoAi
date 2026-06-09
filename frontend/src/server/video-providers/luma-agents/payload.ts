@@ -5,7 +5,6 @@ import {
   LUMA_AGENTS_DEFAULT_VIDEO_DURATION,
   LUMA_AGENTS_DEFAULT_VIDEO_RESOLUTION,
   LUMA_AGENTS_RAY_32_DIRECT_ASPECT_RATIOS,
-  LUMA_AGENTS_RAY_32_DIRECT_DURATIONS,
   LUMA_AGENTS_RAY_32_DIRECT_RESOLUTIONS,
   type LumaAgentsRay32DirectDuration,
   type LumaAgentsRay32DirectResolution,
@@ -33,7 +32,6 @@ export type LumaAgentsVideoPayload = {
 };
 
 const DIRECT_ASPECT_RATIOS = new Set<string>(LUMA_AGENTS_RAY_32_DIRECT_ASPECT_RATIOS);
-const DIRECT_DURATIONS = new Set<string>(LUMA_AGENTS_RAY_32_DIRECT_DURATIONS);
 const DIRECT_RESOLUTIONS = new Set<string>(LUMA_AGENTS_RAY_32_DIRECT_RESOLUTIONS);
 
 function cleanString(value: unknown): string | null {
