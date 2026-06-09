@@ -40,7 +40,20 @@ export const LUMA_UNI_STYLES = ['auto', 'manga'] as const;
 export const LUMA_UNI_OUTPUT_FORMATS = ['png', 'jpeg'] as const;
 export const LUMA_RAY_32_DURATIONS = ['5s', '10s'] as const;
 export const LUMA_RAY_32_RESOLUTIONS = ['540p', '720p', '1080p'] as const;
-export const LUMA_RAY_32_ASPECT_RATIOS = ['9:16', '3:4', '1:1', '4:3', '16:9', '21:9'] as const;
+export const LUMA_RAY_32_ASPECT_RATIOS = [
+  '3:1',
+  '2:1',
+  '21:9',
+  '16:9',
+  '4:3',
+  '3:2',
+  '1:1',
+  '3:4',
+  '2:3',
+  '9:16',
+  '1:2',
+  '1:3',
+] as const;
 
 export function isLumaAgentsEngineId(value: string | null | undefined): value is LumaAgentsEngineId {
   return Boolean(value && LUMA_AGENTS_ENGINE_IDS.includes(value as LumaAgentsEngineId));
