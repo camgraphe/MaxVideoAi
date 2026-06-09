@@ -1,25 +1,22 @@
 'use client';
 
 import { AudioLines, FileVideo2, Film, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
-import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import styles from '../maxvideoai-editor.module.css';
+import {
+  formatProjectMediaDuration,
+  projectMediaSelectionKey,
+  useProjectMediaController,
+  type ProjectMediaContextMenu,
+  type WorkspaceProjectSequenceSummary,
+} from '../_controllers/useProjectMediaController';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
-  WorkspaceProjectSettings,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
-import { workspaceAssetTimelineDuration, workspaceOutputTimelineDuration } from '../_lib/workspace-timeline-editing';
 
-export type WorkspaceProjectSequenceSummary = {
-  id: string;
-  name: string;
-  durationSec: number;
-  clipCount: number;
-  settings: WorkspaceProjectSettings;
-  isActive: boolean;
-  previewUrl?: string | null;
-};
+export type { WorkspaceProjectSequenceSummary };
 
 type TimelineProjectSidebarProps = {
   nodes: WorkspaceGraphNode[];
@@ -39,95 +36,8 @@ type TimelineProjectSidebarProps = {
   onClearSequenceInspector: () => void;
 };
 
-const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 const AUDIO_WAVEFORM_BARS = [34, 58, 42, 76, 48, 68, 92, 50, 74, 44, 82, 60, 96, 54, 70, 38, 64, 88, 46, 72, 56, 84];
-
-type ProjectMediaSelection =
-  | { id: string; type: 'asset' | 'generated' | 'sequence' }
-  | null;
-
-type ProjectMediaContextMenu = {
-  id: string;
-  title: string;
-  type: 'asset' | 'generated';
-  x: number;
-  y: number;
-};
-
-function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds <= 0) return '00:00';
-  const totalSeconds = Math.ceil(seconds);
-  const minutes = Math.floor(totalSeconds / 60);
-  const remainingSeconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-function generatedClipNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.filter((node) => node.data.kind === 'output' && Boolean(node.data.output));
-}
-
-function timelineMediaKindForProjectAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' | 'video' | null {
-  if (asset.kind === 'audio') return 'audio';
-  if (asset.kind === 'video') return 'video';
-  if (asset.kind === 'image' || asset.kind === 'logo') return 'image';
-  return null;
-}
-
-function timelineMediaKindForGeneratedNode(node: WorkspaceGraphNode): 'audio' | 'image' | 'video' | null {
-  const output = node.data.output;
-  if (!output || output.status === 'placeholder' || output.status === 'processing' || output.status === 'failed') return null;
-  if (output.kind === 'audio') return output.url ? 'audio' : null;
-  if (output.kind === 'image') return output.url || output.thumbUrl ? 'image' : null;
-  return output.url ? 'video' : null;
-}
-
-function beginProjectAssetTimelineDrag(event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord): void {
-  const mediaKind = timelineMediaKindForProjectAsset(asset);
-  if (!mediaKind) return;
-  const title = asset.filename;
-  event.dataTransfer.effectAllowed = 'copy';
-  event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
-    assetId: asset.id,
-    durationSec: workspaceAssetTimelineDuration(asset),
-    mediaKind,
-    previewUrl: assetThumbnailUrl(asset),
-    title,
-  }));
-  event.dataTransfer.setData('text/plain', title);
-}
-
-function beginGeneratedNodeTimelineDrag(event: ReactDragEvent<HTMLElement>, node: WorkspaceGraphNode): void {
-  const mediaKind = timelineMediaKindForGeneratedNode(node);
-  const output = node.data.output;
-  if (!mediaKind || !output) return;
-  const title = node.data.title;
-  event.dataTransfer.effectAllowed = 'copy';
-  event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
-    durationSec: workspaceOutputTimelineDuration(output),
-    nodeId: node.id,
-    mediaKind,
-    previewUrl: generatedThumbnailUrl(node),
-    title,
-  }));
-  event.dataTransfer.setData('text/plain', title);
-}
-
-function mediaSubtitleForAsset(asset: WorkspaceAssetRecord): string {
-  if (asset.kind === 'audio') {
-    return [asset.durationSec ? formatDuration(asset.durationSec) : null, '48kHz'].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
-  }
-  if (asset.kind === 'video') {
-    return [asset.durationSec ? formatDuration(asset.durationSec) : null, asset.dimensions, '16:9'].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
-  }
-  return asset.dimensions ?? asset.subtitle;
-}
-
-function mediaSubtitleForGeneratedNode(node: WorkspaceGraphNode): string {
-  const output = node.data.output;
-  if (!output) return node.data.subtitle ?? 'Generated clip';
-  return [output.durationSec ? formatDuration(output.durationSec) : null, output.modelLabel].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
-}
 
 function ProjectMediaBadge({ kind }: { kind: 'audio' | 'generated' | 'image' | 'sequence' | 'video' }) {
   const icon =
@@ -171,7 +81,7 @@ function ProjectMediaArtwork({
       )}
       <ProjectMediaBadge kind={kind} />
       {durationSec && kind !== 'audio' ? (
-        <span className={styles.projectMediaDurationBadge}>{formatDuration(durationSec)}</span>
+        <span className={styles.projectMediaDurationBadge}>{formatProjectMediaDuration(durationSec)}</span>
       ) : null}
     </div>
   );
@@ -313,26 +223,6 @@ function ProjectMediaFooterAction({
   );
 }
 
-function mediaCardKindForAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' | 'video' {
-  if (asset.kind === 'audio') return 'audio';
-  if (asset.kind === 'video') return 'video';
-  return 'image';
-}
-
-function generatedThumbnailUrl(node: WorkspaceGraphNode): string | null {
-  const output = node.data.output;
-  return output?.thumbUrl ?? output?.url ?? null;
-}
-
-function assetThumbnailUrl(asset: WorkspaceAssetRecord): string | null {
-  if (asset.kind === 'audio') return null;
-  return asset.thumbUrl ?? asset.url ?? null;
-}
-
-function selectionKey(type: NonNullable<ProjectMediaSelection>['type'], id: string): string {
-  return `${type}:${id}`;
-}
-
 export function TimelineProjectSidebar({
   nodes,
   projectAssets,
@@ -349,84 +239,19 @@ export function TimelineProjectSidebar({
   onSelectSequence,
   onClearSequenceInspector,
 }: TimelineProjectSidebarProps) {
-  const generatedNodes = generatedClipNodes(nodes);
-  const [selectedMedia, setSelectedMedia] = useState<ProjectMediaSelection>(null);
-  const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const totalItems = sequences.length + projectAssets.length + generatedNodes.length;
-  const selectedKey = selectedMedia ? selectionKey(selectedMedia.type, selectedMedia.id) : null;
-  const selectedCanDelete = selectedMedia?.type === 'asset' || selectedMedia?.type === 'generated';
-  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-  const matchesSearch = useMemo(() => {
-    return (title: string, subtitle: string, kind: string) => {
-      if (!normalizedSearchQuery) return true;
-      return `${title} ${subtitle} ${kind}`.toLowerCase().includes(normalizedSearchQuery);
-    };
-  }, [normalizedSearchQuery]);
-  const visibleSequences = useMemo(
-    () => sequences.filter((sequence) => matchesSearch(
-      sequence.name,
-      `${formatDuration(sequence.durationSec)} ${sequence.clipCount} clips ${sequence.settings.aspectRatio}`,
-      'sequence'
-    )),
-    [matchesSearch, sequences]
-  );
-  const visibleProjectAssets = useMemo(
-    () => projectAssets.filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind)),
-    [matchesSearch, projectAssets]
-  );
-  const visibleGeneratedNodes = useMemo(
-    () => generatedNodes.filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated')),
-    [generatedNodes, matchesSearch]
-  );
-
-  const openContextMenu = (event: ReactMouseEvent<HTMLElement>, menu: Omit<ProjectMediaContextMenu, 'x' | 'y'>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setSelectedMedia({ id: menu.id, type: menu.type });
-    setContextMenu({
-      ...menu,
-      x: event.clientX,
-      y: event.clientY,
-    });
-  };
-
-  const handleInsertMenuItem = (menu: ProjectMediaContextMenu) => {
-    if (menu.type === 'asset') onInsertProjectAsset(menu.id);
-    else onInsertGeneratedClip(menu.id);
-  };
-
-  const handleDeleteMenuItem = (menu: ProjectMediaContextMenu) => {
-    if (menu.type === 'asset') onDeleteProjectAsset(menu.id);
-    else onDeleteGeneratedClip(menu.id);
-    setSelectedMedia(null);
-  };
-
-  const handleDeleteSelected = () => {
-    if (!selectedMedia || !selectedCanDelete) return;
-    if (selectedMedia.type === 'asset') onDeleteProjectAsset(selectedMedia.id);
-    if (selectedMedia.type === 'generated') onDeleteGeneratedClip(selectedMedia.id);
-    setSelectedMedia(null);
-  };
-
-  useEffect(() => {
-    if (!contextMenu) return undefined;
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (target instanceof Element && target.closest('[data-project-media-menu="true"]')) return;
-      setContextMenu(null);
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setContextMenu(null);
-    };
-    window.addEventListener('pointerdown', handlePointerDown);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [contextMenu]);
+  const projectMedia = useProjectMediaController({
+    nodes,
+    projectAssets,
+    sequences,
+    onClearSequenceInspector,
+    onDeleteGeneratedClip,
+    onDeleteProjectAsset,
+    onImportMedia,
+    onInspectSequence,
+    onInsertGeneratedClip,
+    onInsertProjectAsset,
+    onSelectSequence,
+  });
 
   return (
     <aside className={`${styles.librarySidebar} ${styles.timelineProjectSidebar}`} aria-label="Project media library">
@@ -435,7 +260,7 @@ export function TimelineProjectSidebar({
           <p className={styles.projectMediaTitle}>Project media</p>
           <span className={styles.projectMediaSubtitle}>Assets, sequences and generated clips</span>
         </div>
-        <button type="button" className={styles.projectMediaActionButton} onClick={onImportMedia}>
+        <button type="button" className={styles.projectMediaActionButton} onClick={projectMedia.importMedia}>
           <Upload size={16} />
           Import media
         </button>
@@ -446,8 +271,8 @@ export function TimelineProjectSidebar({
           <span>Search media</span>
           <input
             type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            value={projectMedia.searchQuery}
+            onChange={(event) => projectMedia.setSearchQuery(event.currentTarget.value)}
             placeholder="Search media..."
           />
         </label>
@@ -462,30 +287,22 @@ export function TimelineProjectSidebar({
       </div>
 
       <div className={styles.projectMediaGrid} aria-label={`${projectName} project media`}>
-        {visibleSequences.map((sequence) => (
+        {projectMedia.visibleSequences.map((sequence) => (
           <ProjectMediaCard
             key={sequence.id}
             ariaPressed={sequence.isActive}
             dataProjectSequenceId={sequence.id}
-            id={selectionKey('sequence', sequence.id)}
-            isSelected={selectedKey === selectionKey('sequence', sequence.id) || sequence.isActive}
+            id={projectMediaSelectionKey('sequence', sequence.id)}
+            isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
             kind="sequence"
-            onClick={() => {
-              setSelectedMedia({ id: sequence.id, type: 'sequence' });
-              onInspectSequence(sequence.id);
-              onSelectSequence(sequence.id);
-            }}
-            subtitle={`${formatDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} clip${sequence.clipCount === 1 ? '' : 's'}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
+            onClick={() => projectMedia.selectSequence(sequence.id)}
+            subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} clip${sequence.clipCount === 1 ? '' : 's'}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
             thumbnailUrl={sequence.previewUrl}
             title={sequence.name}
           />
         ))}
 
-        {visibleProjectAssets.map((asset) => {
-          const mediaKind = timelineMediaKindForProjectAsset(asset);
-          const cardKind = mediaCardKindForAsset(asset);
-          const timelineDurationSec = workspaceAssetTimelineDuration(asset);
-          const key = selectionKey('asset', asset.id);
+        {projectMedia.visibleProjectAssets.map(({ asset, cardKind, key, mediaKind, subtitle, thumbnailUrl, timelineDurationSec }) => {
           return (
             <div
               key={asset.id}
@@ -498,28 +315,21 @@ export function TimelineProjectSidebar({
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
-                isSelected={selectedKey === key}
+                isSelected={projectMedia.selectedKey === key}
                 kind={cardKind}
-                onClick={() => {
-                  setSelectedMedia({ id: asset.id, type: 'asset' });
-                  onClearSequenceInspector();
-                }}
-                onContextMenu={(event) => openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
-                onDragStart={mediaKind ? (event) => beginProjectAssetTimelineDrag(event, asset) : undefined}
+                onClick={() => projectMedia.selectProjectAsset(asset.id)}
+                onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
+                onDragStart={mediaKind ? (event) => projectMedia.beginProjectAssetTimelineDrag(event, asset) : undefined}
                 durationSec={asset.durationSec}
-                subtitle={mediaSubtitleForAsset(asset)}
-                thumbnailUrl={assetThumbnailUrl(asset)}
+                subtitle={subtitle}
+                thumbnailUrl={thumbnailUrl}
                 title={asset.filename}
               />
             </div>
           );
         })}
 
-        {visibleGeneratedNodes.map((node) => {
-          const mediaKind = timelineMediaKindForGeneratedNode(node);
-          const output = node.data.output;
-          const timelineDurationSec = output ? workspaceOutputTimelineDuration(output) : undefined;
-          const key = selectionKey('generated', node.id);
+        {projectMedia.visibleGeneratedNodes.map(({ key, mediaKind, node, subtitle, thumbnailUrl, timelineDurationSec }) => {
           return (
             <div
               key={node.id}
@@ -532,26 +342,23 @@ export function TimelineProjectSidebar({
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
-                isSelected={selectedKey === key}
+                isSelected={projectMedia.selectedKey === key}
                 kind="generated"
-                onClick={() => {
-                  setSelectedMedia({ id: node.id, type: 'generated' });
-                  onClearSequenceInspector();
-                }}
-                onContextMenu={(event) => openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
-                onDragStart={mediaKind ? (event) => beginGeneratedNodeTimelineDrag(event, node) : undefined}
+                onClick={() => projectMedia.selectGeneratedNode(node.id)}
+                onContextMenu={(event) => projectMedia.openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
+                onDragStart={mediaKind ? (event) => projectMedia.beginGeneratedNodeTimelineDrag(event, node) : undefined}
                 durationSec={node.data.output?.durationSec}
-                subtitle={mediaSubtitleForGeneratedNode(node)}
-                thumbnailUrl={generatedThumbnailUrl(node)}
+                subtitle={subtitle}
+                thumbnailUrl={thumbnailUrl}
                 title={node.data.title}
               />
             </div>
           );
         })}
 
-        {!totalItems || (!visibleSequences.length && !visibleProjectAssets.length && !visibleGeneratedNodes.length) ? (
+        {!projectMedia.totalItems || (!projectMedia.visibleSequences.length && !projectMedia.visibleProjectAssets.length && !projectMedia.visibleGeneratedNodes.length) ? (
           <p className={styles.projectMediaEmpty}>
-            {totalItems ? 'No media matches this search.' : 'Import media or create a sequence to start.'}
+            {projectMedia.totalItems ? 'No media matches this search.' : 'Import media or create a sequence to start.'}
           </p>
         ) : null}
       </div>
@@ -559,7 +366,7 @@ export function TimelineProjectSidebar({
       <div className={styles.projectMediaFooterBar}>
         <div className={styles.projectMediaItemCount}>
           <Layers3 size={16} />
-          <span>{totalItems} item{totalItems === 1 ? '' : 's'}</span>
+          <span>{projectMedia.totalItems} item{projectMedia.totalItems === 1 ? '' : 's'}</span>
         </div>
         <div className={styles.projectMediaFooterActions}>
           <ProjectMediaFooterAction onClick={onNewFolder}>
@@ -570,7 +377,7 @@ export function TimelineProjectSidebar({
             <FileVideo2 size={15} />
             New sequence
           </ProjectMediaFooterAction>
-          <ProjectMediaFooterAction danger disabled={!selectedCanDelete} onClick={handleDeleteSelected}>
+          <ProjectMediaFooterAction danger disabled={!projectMedia.selectedCanDelete} onClick={projectMedia.deleteSelected}>
             <Trash2 size={15} />
             Delete
           </ProjectMediaFooterAction>
@@ -578,10 +385,10 @@ export function TimelineProjectSidebar({
       </div>
 
       <ProjectMediaContextMenu
-        menu={contextMenu}
-        onClose={() => setContextMenu(null)}
-        onDelete={handleDeleteMenuItem}
-        onInsert={handleInsertMenuItem}
+        menu={projectMedia.contextMenu}
+        onClose={() => projectMedia.setContextMenu(null)}
+        onDelete={projectMedia.deleteMenuItem}
+        onInsert={projectMedia.insertMenuItem}
       />
     </aside>
   );
