@@ -56,6 +56,7 @@ const canvasTimelineActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCan
 const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTemplateActions.ts');
 const generationActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGenerationActions.ts');
 const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts');
+const selectionActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSelectionActions.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
@@ -186,6 +187,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasTemplateActionsHookPath), 'canvas template actions should live in a focused route-local hook');
   assert.ok(existsSync(generationActionsHookPath), 'shot generation actions should live in a focused route-local hook');
   assert.ok(existsSync(graphActionsHookPath), 'canvas graph mutation actions should live in a focused route-local hook');
+  assert.ok(existsSync(selectionActionsHookPath), 'workspace selection actions should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
@@ -451,6 +453,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(generationActionsHookPath), 'workspace shot generation actions should live in a route-local hook');
   assert.ok(existsSync(graphActionsHookPath), 'workspace graph actions should live in a route-local hook');
+  assert.ok(existsSync(selectionActionsHookPath), 'workspace timeline and canvas selection actions should live in a route-local hook');
   assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
@@ -483,6 +486,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const generationActionsHookSource = source(generationActionsHookPath);
   const graphActionsHookSource = source(graphActionsHookPath);
+  const selectionActionsHookSource = source(selectionActionsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
   const librarySource = source(libraryPath);
@@ -776,6 +780,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSelectionSource, /filterHiddenVideoTrackItems/, 'timeline selection helper should own hidden-track preview filtering');
   assert.match(timelineSelectionSource, /muteAudioTrackItems/, 'timeline selection helper should own muted-track preview projection');
   assert.match(timelineSelectionSource, /defaultTimelineSelectionIds/, 'timeline selection helper should own default timeline selection ids');
+  assert.match(workspaceSource, /useWorkspaceSelectionActions/, 'workspace should delegate canvas and timeline selection actions to a route-local hook');
+  assert.match(selectionActionsHookSource, /applyTimelineSelection/, 'selection action hook should own multi-selection normalization');
+  assert.match(selectionActionsHookSource, /handleSelectTimelineItem/, 'selection action hook should own single timeline item selection');
+  assert.match(selectionActionsHookSource, /handleInspectSequence/, 'selection action hook should own sequence inspector selection');
+  assert.match(selectionActionsHookSource, /handleSelectedCanvasNodeChange/, 'selection action hook should own canvas node selection surface changes');
+  assert.match(selectionActionsHookSource, /uniqueTimelineSelectionIds/, 'selection action hook should reuse the pure timeline selection normalizer');
+  assert.doesNotMatch(workspaceSource, /const applyTimelineSelection = useCallback/, 'workspace orchestrator should not own selection normalization internals');
+  assert.doesNotMatch(workspaceSource, /const handleSelectTimelineItem = useCallback/, 'workspace orchestrator should not own timeline item selection internals');
   assert.doesNotMatch(workspaceSource, /function timelineSelectionTouchesLockedTrack/, 'orchestrator should not own linked lock selection checks inline');
   assert.doesNotMatch(workspaceSource, /function filterHiddenVideoTrackItems/, 'orchestrator should not own hidden-track preview filtering inline');
   assert.match(timelineEditingSource, /isWorkspaceTimelineVideoTrack/, 'timeline editing should use the shared video-track helper');

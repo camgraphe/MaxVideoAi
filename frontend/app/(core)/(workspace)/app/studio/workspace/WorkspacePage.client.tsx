@@ -22,6 +22,7 @@ import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAsset
 import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
 import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
+import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
@@ -74,7 +75,6 @@ import {
   defaultTimelineSelectionIds,
   filterHiddenVideoTrackItems,
   muteAudioTrackItems,
-  uniqueTimelineSelectionIds,
   workspaceTimelineCutPoints,
 } from './_lib/workspace-timeline-selection';
 import {
@@ -192,9 +192,25 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const timelineDurationSec = useMemo(() => workspaceTimelineDurationSec(timelineItems), [timelineItems]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
   const timelineCutPoints = useMemo(() => workspaceTimelineCutPoints(previewTimelineItems), [previewTimelineItems]);
-  const handleResetExportRangeMode = useCallback(() => {
-    setExportRangeMode('sequence');
-  }, []);
+  const {
+    applyDefaultTimelineSelection,
+    applyTimelineSelection,
+    handleCanvasInteraction,
+    handleClearSequenceInspector,
+    handleInspectSequence,
+    handleResetExportRangeMode,
+    handleSelectTimelineItem,
+    handleSelectTimelineItems,
+    handleSelectedCanvasNodeChange,
+  } = useWorkspaceSelectionActions({
+    setActiveEditorSurface,
+    setExportRangeMode,
+    setInspectedSequenceId,
+    setSelectedNodeId,
+    setSelectedTimelineItemId,
+    setSelectedTimelineItemIds,
+    timelineItemsRef,
+  });
   const {
     handleClearTimelineInOut,
     handleGoToTimelineCut,
@@ -304,16 +320,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     onNotice: setNotice,
   });
 
-  const applyTimelineSelection = useCallback((itemIds: string[]) => {
-    const nextItemIds = uniqueTimelineSelectionIds(itemIds);
-    setSelectedTimelineItemIds(nextItemIds);
-    setSelectedTimelineItemId(nextItemIds.at(-1) ?? null);
-  }, []);
-
-  const applyDefaultTimelineSelection = useCallback((items: WorkspaceTimelineItem[]) => {
-    applyTimelineSelection(defaultTimelineSelectionIds(items));
-  }, [applyTimelineSelection]);
-
   const {
     timelineHistory,
     commitTimelineItems,
@@ -326,59 +332,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     selectDefaultItems: applyDefaultTimelineSelection,
     stopPlayback: stopTimelinePlayback,
   });
-
-  const handleSelectTimelineItem = useCallback((itemId: string, mode: 'replace' | 'toggle' | 'focus' = 'replace') => {
-    setActiveEditorSurface('timeline');
-    setInspectedSequenceId(null);
-    setSelectedTimelineItemIds((current) => {
-      if (mode === 'focus') {
-        const focusedItem = timelineItemsRef.current.find((item) => item.id === itemId);
-        const focusedGroupId = focusedItem?.linkedGroupId ?? null;
-        const isAlreadyInSelection = current.some((currentItemId) => {
-          if (currentItemId === itemId) return true;
-          if (!focusedGroupId) return false;
-          return timelineItemsRef.current.find((item) => item.id === currentItemId)?.linkedGroupId === focusedGroupId;
-        });
-        const nextItemIds = isAlreadyInSelection ? current : [itemId];
-        setSelectedTimelineItemId(itemId);
-        return nextItemIds;
-      }
-      if (mode === 'toggle') {
-        const nextItemIds = current.includes(itemId)
-          ? current.filter((candidateId) => candidateId !== itemId)
-          : [...current, itemId];
-        setSelectedTimelineItemId(nextItemIds.at(-1) ?? null);
-        return nextItemIds;
-      }
-      setSelectedTimelineItemId(itemId);
-      return [itemId];
-    });
-  }, []);
-
-  const handleSelectTimelineItems = useCallback((itemIds: string[]) => {
-    setActiveEditorSurface('timeline');
-    if (itemIds.length) setInspectedSequenceId(null);
-    applyTimelineSelection(itemIds);
-  }, [applyTimelineSelection]);
-
-  const handleInspectSequence = useCallback((sequenceId: string) => {
-    setActiveEditorSurface('timeline');
-    setInspectedSequenceId(sequenceId);
-    applyTimelineSelection([]);
-  }, [applyTimelineSelection]);
-
-  const handleClearSequenceInspector = useCallback(() => {
-    setInspectedSequenceId(null);
-  }, []);
-
-  const handleCanvasInteraction = useCallback(() => {
-    setActiveEditorSurface('canvas');
-  }, []);
-
-  const handleSelectedCanvasNodeChange = useCallback((nodeId: string | null) => {
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(nodeId);
-  }, []);
 
   useEffect(() => {
     timelineItemsRef.current = timelineItems;
