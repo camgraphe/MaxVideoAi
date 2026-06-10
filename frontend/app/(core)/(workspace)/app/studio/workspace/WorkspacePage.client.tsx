@@ -130,17 +130,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const timelineDurationSec = useMemo(() => workspaceTimelineDurationSec(timelineItems), [timelineItems]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
   const timelineCutPoints = useMemo(() => workspaceTimelineCutPoints(previewTimelineItems), [previewTimelineItems]);
-  const {
-    applyDefaultTimelineSelection,
-    applyTimelineSelection,
-    handleCanvasInteraction,
-    handleClearSequenceInspector,
-    handleInspectSequence,
-    handleResetExportRangeMode,
-    handleSelectTimelineItem,
-    handleSelectTimelineItems,
-    handleSelectedCanvasNodeChange,
-  } = useWorkspaceSelectionActions({
+  const selectionActions = useWorkspaceSelectionActions({
     setActiveEditorSurface,
     setExportRangeMode,
     setInspectedSequenceId,
@@ -149,34 +139,14 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemIds,
     timelineItemsRef,
   });
-  const {
-    handleClearTimelineInOut,
-    handleGoToTimelineCut,
-    handleMarkTimelineIn,
-    handleMarkTimelineOut,
-    handleToggleTimelinePlayback,
-    isTimelinePlaying,
-    playheadSec,
-    setIsTimelinePlaying,
-    setPlayheadSec,
-    setTimelineInPointSec,
-    setTimelineOutPointSec,
-    stopTimelinePlayback,
-    timelineCutToleranceSec,
-    timelineInPointSec,
-    timelineOutPointSec,
-  } = useWorkspaceTimelinePlayback({
+  const timelinePlayback = useWorkspaceTimelinePlayback({
     onNotice: setNotice,
-    onResetExportRangeMode: handleResetExportRangeMode,
+    onResetExportRangeMode: selectionActions.handleResetExportRangeMode,
     projectFps: projectSettings.fps,
     timelineCutPoints,
     timelineDurationSec,
   });
-  const {
-    buildPersistedWorkspaceState,
-    sequenceSummaries,
-    snapshotActiveSequence,
-  } = useWorkspaceSequenceSnapshots({
+  const sequenceSnapshots = useWorkspaceSequenceSnapshots({
     activeSequenceId,
     activeTemplateId,
     audioTrackCount,
@@ -189,19 +159,13 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     projectAssets,
     projectSettings,
     sequences,
-    timelineInPointSec,
+    timelineInPointSec: timelinePlayback.timelineInPointSec,
     timelineItems,
-    timelineOutPointSec,
+    timelineOutPointSec: timelinePlayback.timelineOutPointSec,
     timelinePanelHeight,
     videoTrackCount,
   });
-  const {
-    exportManifest,
-    hasValidTimelineInOut,
-    selectedSequenceForInspector,
-    selectedTimelineItem,
-    viewerTimelineItems,
-  } = useWorkspaceExportState({
+  const exportState = useWorkspaceExportState({
     activeTemplateName,
     exportRangeMode,
     hiddenVideoTracks,
@@ -211,57 +175,32 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     previewTimelineItems,
     projectSettings,
     selectedTimelineItemId,
-    sequenceSummaries,
-    timelineInPointSec,
+    sequenceSummaries: sequenceSnapshots.sequenceSummaries,
+    timelineInPointSec: timelinePlayback.timelineInPointSec,
     timelineItems,
-    timelineOutPointSec,
+    timelineOutPointSec: timelinePlayback.timelineOutPointSec,
   });
-  const previewPlayheadSec = timelinePreview?.playheadSec ?? playheadSec;
-  const canGoToPreviousTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec < previewPlayheadSec - timelineCutToleranceSec);
-  const canGoToNextTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec > previewPlayheadSec + timelineCutToleranceSec);
-  const {
-    activeExportJob,
-    closeExportDialog,
-    exportEstimate,
-    exportQuota,
-    exportReadinessLabel,
-    exportTimelineEdl,
-    exportTimelineRender,
-    exportTimelineVideo,
-    exportVideoFeedback,
-    isExportDialogOpen,
-    isExportEstimateLoading,
-    isExportVideoStarting,
-    openExportDialog,
-    resetExportSession,
-  } = useExportController({
-    manifest: exportManifest,
+  const previewPlayheadSec = timelinePreview?.playheadSec ?? timelinePlayback.playheadSec;
+  const canGoToPreviousTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec < previewPlayheadSec - timelinePlayback.timelineCutToleranceSec);
+  const canGoToNextTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec > previewPlayheadSec + timelinePlayback.timelineCutToleranceSec);
+  const exportController = useExportController({
+    manifest: exportState.exportManifest,
     qualityPreset: exportQualityPreset,
     onNotice: setNotice,
   });
 
-  const {
-    timelineHistory,
-    commitTimelineItems,
-    resetTimelineHistory,
-    undoTimeline: handleUndoTimeline,
-    redoTimeline: handleRedoTimeline,
-  } = useWorkspaceTimelineHistory({
+  const timelineHistoryController = useWorkspaceTimelineHistory({
     timelineItemsRef,
     setTimelineItems,
-    selectDefaultItems: applyDefaultTimelineSelection,
-    stopPlayback: stopTimelinePlayback,
+    selectDefaultItems: selectionActions.applyDefaultTimelineSelection,
+    stopPlayback: timelinePlayback.stopTimelinePlayback,
   });
 
-  const {
-    handleCreateSequence,
-    handleRenameActiveSequence,
-    handleSelectSequence,
-  } = useWorkspaceSequenceActions({
+  const sequenceActions = useWorkspaceSequenceActions({
     activeSequenceId,
-    applyTimelineSelection,
+    applyTimelineSelection: selectionActions.applyTimelineSelection,
     projectSettings,
-    resetTimelineHistory,
+    resetTimelineHistory: timelineHistoryController.resetTimelineHistory,
     sequences,
     setActiveEditorSurface,
     setActiveSequenceId,
@@ -270,31 +209,31 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setFocusMode,
     setHiddenVideoTracks,
     setInspectedSequenceId,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setLockedTimelineTracks,
     setMutedAudioTracks,
     setNotice,
-    setPlayheadSec,
+    setPlayheadSec: timelinePlayback.setPlayheadSec,
     setProjectSettings,
     setSequences,
-    setTimelineInPointSec,
+    setTimelineInPointSec: timelinePlayback.setTimelineInPointSec,
     setTimelineItems,
-    setTimelineOutPointSec,
+    setTimelineOutPointSec: timelinePlayback.setTimelineOutPointSec,
     setTimelinePanelHeight,
     setTimelinePreview,
     setVideoTrackCount,
-    snapshotActiveSequence,
+    snapshotActiveSequence: sequenceSnapshots.snapshotActiveSequence,
     timelineItemsRef,
   });
 
   useWorkspacePersistenceEffects({
     activeTemplateId,
     activeTemplateName,
-    applyTimelineSelection,
-    buildPersistedWorkspaceState,
+    applyTimelineSelection: selectionActions.applyTimelineSelection,
+    buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
     hydrated,
     projectId,
-    resetTimelineHistory,
+    resetTimelineHistory: timelineHistoryController.resetTimelineHistory,
     setActiveEditorSurface,
     setActiveSequenceId,
     setActiveTemplateId,
@@ -305,20 +244,20 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setFocusMode,
     setHiddenVideoTracks,
     setHydrated,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setLockedTimelineTracks,
     setMutedAudioTracks,
     setNodes,
     setNotice,
-    setPlayheadSec,
+    setPlayheadSec: timelinePlayback.setPlayheadSec,
     setProjectAssets,
     setProjectSettings,
     setSelectedNodeId,
     setSequences,
     setStoredProjectName,
-    setTimelineInPointSec,
+    setTimelineInPointSec: timelinePlayback.setTimelineInPointSec,
     setTimelineItems,
-    setTimelineOutPointSec,
+    setTimelineOutPointSec: timelinePlayback.setTimelineOutPointSec,
     setTimelinePanelHeight,
     setUserCanvasTemplates,
     setVideoTrackCount,
@@ -327,57 +266,28 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   });
 
   useWorkspaceTimelineSelectionSync({
-    applyTimelineSelection,
+    applyTimelineSelection: selectionActions.applyTimelineSelection,
     selectedTimelineItemId,
     selectedTimelineItemIds,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setSelectedTimelineItemId,
     timelineItems,
     timelineItemsRef,
   });
 
-  const {
-    handleCreateNodeFromHandleDrop,
-    handleCreateNodeFromPaletteDrop,
-    handleApplyCanvasTemplate,
-    handleApplyUserCanvasTemplate,
-    handleCanvasFileDrop,
-    handleCanvasTextPaste,
-    handleDeleteUserCanvasTemplate,
-    handleOpenAssetLibrary,
-    handleDropNodeToTimeline,
-    handleDuplicateUserCanvasTemplate,
-    handleGenerateShot,
-    handleInvalidNodeDropToTimeline,
-    handleSaveCanvasTemplate,
-    handleSelectLibraryAsset,
-    handleSendOutputToTimeline,
-    handleSendProgramSnapshotToCanvas,
-    isValidConnection,
-    onConnect,
-    onEdgesChange,
-    onNodesChange,
-    assetPickerLibrary,
-    assetPickerNode,
-    patchNodeData,
-    patchShot,
-    projectMediaLibrary,
-    renderEdges,
-    renderNodes,
-    selectedNode,
-  } = useWorkspaceCanvasController({
+  const canvasController = useWorkspaceCanvasController({
     activeTemplateId,
     activeUserCanvasTemplateId,
     assetPickerNodeId,
     capabilities,
-    commitTimelineItems,
+    commitTimelineItems: timelineHistoryController.commitTimelineItems,
     defaultModelId,
     edges,
     isProjectMediaPickerOpen,
     lockedTimelineTracks,
     mockMode,
     nodes,
-    playheadSec,
+    playheadSec: timelinePlayback.playheadSec,
     pricingEstimates,
     selectedNodeId,
     setActiveEditorSurface,
@@ -387,10 +297,10 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setCanvasRevision,
     setEdges,
     setFocusMode,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setNodes,
     setNotice,
-    setPlayheadSec,
+    setPlayheadSec: timelinePlayback.setPlayheadSec,
     setSelectedNodeId,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
@@ -400,26 +310,18 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     userCanvasTemplates,
   });
 
-  const {
-    handleCreateProjectMediaFolder,
-    handleDeleteGeneratedClip,
-    handleDeleteProjectAsset,
-    handleDropProjectAssetToTimeline,
-    handleImportProjectMedia,
-    handleInsertProjectAssetToTimeline,
-    handleSelectProjectMediaAsset,
-  } = useWorkspaceProjectMediaActions({
-    commitTimelineItems,
+  const projectMediaActions = useWorkspaceProjectMediaActions({
+    commitTimelineItems: timelineHistoryController.commitTimelineItems,
     lockedTimelineTracks,
     nodes,
-    playheadSec,
+    playheadSec: timelinePlayback.playheadSec,
     projectAssets,
     setActiveEditorSurface,
     setIsProjectMediaPickerOpen,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setNodes,
     setNotice,
-    setPlayheadSec,
+    setPlayheadSec: timelinePlayback.setPlayheadSec,
     setProjectAssets,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
@@ -427,27 +329,17 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  const {
-    handleCutTimelineItem,
-    handleDeleteTimelineItem,
-    handleLinkTimelineItems,
-    handleMoveTimelineItem,
-    handlePatchTimelineItem,
-    handlePositionTimelineItem,
-    handleResizeTimelineItem,
-    handleTimelinePreviewItemsChange,
-    handleUnlinkTimelineItems,
-  } = useWorkspaceTimelineClipActions({
-    applyTimelineSelection,
-    commitTimelineItems,
-    handleSelectTimelineItem,
+  const timelineClipActions = useWorkspaceTimelineClipActions({
+    applyTimelineSelection: selectionActions.applyTimelineSelection,
+    commitTimelineItems: timelineHistoryController.commitTimelineItems,
+    handleSelectTimelineItem: selectionActions.handleSelectTimelineItem,
     lockedTimelineTracks,
     selectedTimelineItemId,
     selectedTimelineItemIds,
     setActiveEditorSurface,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setNotice,
-    setPlayheadSec,
+    setPlayheadSec: timelinePlayback.setPlayheadSec,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     setTimelinePreview,
@@ -455,21 +347,14 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  const {
-    handleAddTimelineAudioTrack,
-    handleAddTimelineVideoTrack,
-    handleDeleteTimelineTrack,
-    handleToggleAudioTrackMute,
-    handleToggleTimelineTrackLock,
-    handleToggleVideoTrackVisibility,
-  } = useWorkspaceTimelineTrackActions({
-    applyTimelineSelection,
+  const timelineTrackActions = useWorkspaceTimelineTrackActions({
+    applyTimelineSelection: selectionActions.applyTimelineSelection,
     audioTrackCount,
-    commitTimelineItems,
+    commitTimelineItems: timelineHistoryController.commitTimelineItems,
     setActiveEditorSurface,
     setAudioTrackCount,
     setHiddenVideoTracks,
-    setIsTimelinePlaying,
+    setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setLockedTimelineTracks,
     setMutedAudioTracks,
     setNotice,
@@ -478,21 +363,14 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     videoTrackCount,
   });
 
-  const {
-    handleExitToProjects,
-    handleExportQualityPresetChange,
-    handleExportRangeModeChange,
-    handleOpenExportDialog,
-    handleProjectSettingsChange,
-    handleTimelinePanelHeightChange,
-  } = useWorkspaceShellActions({
+  const shellActions = useWorkspaceShellActions({
     activeTemplateId,
     activeTemplateName,
-    buildPersistedWorkspaceState,
-    hasValidTimelineInOut,
-    openExportDialog,
+    buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
+    hasValidTimelineInOut: exportState.hasValidTimelineInOut,
+    openExportDialog: exportController.openExportDialog,
     projectId,
-    resetExportSession,
+    resetExportSession: exportController.resetExportSession,
     setExportQualityPreset,
     setExportRangeMode,
     setNotice,
@@ -504,178 +382,57 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   return (
     <WorkspaceEditorLayout
       activeEditorSurface={activeEditorSurface}
-      canvasKey={`${activeTemplateId}-${canvasRevision}`}
+      activeTemplateId={activeTemplateId}
+      activeTemplateName={activeTemplateName}
+      activeUserCanvasTemplateId={activeUserCanvasTemplateId}
+      audioTrackCount={audioTrackCount}
+      canvasRevision={canvasRevision}
+      canGoToNextTimelineCut={canGoToNextTimelineCut}
+      canGoToPreviousTimelineCut={canGoToPreviousTimelineCut}
+      capabilities={capabilities}
+      controllers={{
+        canvas: canvasController,
+        export: exportController,
+        projectMedia: projectMediaActions,
+        selection: selectionActions,
+        sequence: sequenceActions,
+        shell: shellActions,
+        timelineClip: timelineClipActions,
+        timelineHistory: timelineHistoryController,
+        timelinePlayback,
+        timelineTrack: timelineTrackActions,
+      }}
+      edges={edges}
+      exportQualityPreset={exportQualityPreset}
+      exportRangeMode={exportRangeMode}
+      exportState={exportState}
       focusMode={focusMode}
+      hiddenVideoTracks={hiddenVideoTracks}
+      isProjectMediaPickerOpen={isProjectMediaPickerOpen}
+      lockedTimelineTracks={lockedTimelineTracks}
+      mockMode={mockMode}
+      mutedAudioTracks={mutedAudioTracks}
       notice={notice}
+      playheadSec={timelinePlayback.playheadSec}
+      previewPlayheadSec={previewPlayheadSec}
+      projectAssets={projectAssets}
+      projectSettings={projectSettings}
+      selectedTimelineItemId={selectedTimelineItemId}
+      selectedTimelineItemIds={selectedTimelineItemIds}
+      sequenceSnapshots={sequenceSnapshots}
+      setActiveEditorSurface={setActiveEditorSurface}
+      setAssetPickerNodeId={setAssetPickerNodeId}
+      setFocusMode={setFocusMode}
+      setIsProjectMediaPickerOpen={setIsProjectMediaPickerOpen}
+      setMockMode={setMockMode}
+      setSelectedNodeId={setSelectedNodeId}
+      setTimelineInsertIntoClipEnabled={setTimelineInsertIntoClipEnabled}
+      timelineDurationSec={timelineDurationSec}
+      timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
+      timelineItems={timelineItems}
       timelinePanelHeight={timelinePanelHeight}
-      topbarProps={{
-        activeTemplateName,
-        focusMode,
-        mockMode,
-        onEditorSurfaceChange: setActiveEditorSurface,
-        onExitToProjects: handleExitToProjects,
-        onFocusModeChange: setFocusMode,
-        onOpenExportDialog: handleOpenExportDialog,
-        onToggleMockMode: () => setMockMode((value) => !value),
-      }}
-      nodeLibraryProps={{
-        activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
-        userTemplates: userCanvasTemplates,
-        activeUserTemplateId: activeUserCanvasTemplateId,
-        onApplyTemplate: handleApplyCanvasTemplate,
-        onApplyUserTemplate: handleApplyUserCanvasTemplate,
-        onDeleteUserTemplate: handleDeleteUserCanvasTemplate,
-        onDuplicateUserTemplate: handleDuplicateUserCanvasTemplate,
-        onSaveCanvasTemplate: handleSaveCanvasTemplate,
-      }}
-      timelineProjectSidebarProps={{
-        nodes: renderNodes,
-        projectAssets,
-        projectName: activeTemplateName,
-        sequences: sequenceSummaries,
-        timelineItems,
-        onDeleteGeneratedClip: handleDeleteGeneratedClip,
-        onDeleteProjectAsset: handleDeleteProjectAsset,
-        onImportMedia: handleImportProjectMedia,
-        onInspectSequence: handleInspectSequence,
-        onInsertGeneratedClip: handleSendOutputToTimeline,
-        onInsertProjectAsset: handleInsertProjectAssetToTimeline,
-        onNewFolder: handleCreateProjectMediaFolder,
-        onNewSequence: handleCreateSequence,
-        onSelectSequence: handleSelectSequence,
-        onClearSequenceInspector: handleClearSequenceInspector,
-      }}
-      canvasProps={{
-        nodes: renderNodes,
-        edges: renderEdges,
-        isKeyboardDeleteEnabled: activeEditorSurface === 'canvas',
-        onNodesChange,
-        onEdgesChange,
-        onConnect,
-        isValidConnection,
-        onCreateNodeFromHandleDrop: handleCreateNodeFromHandleDrop,
-        onCreateNodeFromPaletteDrop: handleCreateNodeFromPaletteDrop,
-        onCanvasFileDrop: handleCanvasFileDrop,
-        onCanvasTextPaste: handleCanvasTextPaste,
-        onCanvasInteraction: handleCanvasInteraction,
-        onSelectedNodeChange: handleSelectedCanvasNodeChange,
-        onSelectedNodeSync: setSelectedNodeId,
-      }}
-      videoViewerProps={{
-        canGoToNextCut: canGoToNextTimelineCut,
-        canGoToPreviousCut: canGoToPreviousTimelineCut,
-        inPointSec: timelineInPointSec,
-        isPlaying: isTimelinePlaying,
-        items: viewerTimelineItems,
-        outPointSec: timelineOutPointSec,
-        playheadSec: previewPlayheadSec,
-        projectSettings,
-        selectedItemId: selectedTimelineItemId,
-        onClearInOut: handleClearTimelineInOut,
-        onGoToNextCut: () => handleGoToTimelineCut(1),
-        onGoToPreviousCut: () => handleGoToTimelineCut(-1),
-        onMarkIn: handleMarkTimelineIn,
-        onMarkOut: handleMarkTimelineOut,
-        onSelectItem: (itemId) => handleSelectTimelineItem(itemId),
-        onSendSnapshotToCanvas: handleSendProgramSnapshotToCanvas,
-        onTogglePlayback: handleToggleTimelinePlayback,
-      }}
-      nodeSettingsProps={{
-        selectedNode,
-        edges,
-        capabilities,
-        onPatchNodeData: patchNodeData,
-        onPatchShot: patchShot,
-        onGenerateShot: handleGenerateShot,
-        onSendOutputToTimeline: handleSendOutputToTimeline,
-        onOpenAssetLibrary: handleOpenAssetLibrary,
-      }}
-      timelineClipInspectorProps={{
-        selectedItem: selectedTimelineItem,
-        selectedSequence: selectedSequenceForInspector,
-        projectFps: projectSettings.fps,
-        onPatchItem: handlePatchTimelineItem,
-        onRenameSequence: handleRenameActiveSequence,
-        onSequenceSettingsChange: handleProjectSettingsChange,
-      }}
-      timelineProps={{
-        canRedo: timelineHistory.future.length > 0,
-        canUndo: timelineHistory.past.length > 0,
-        isShortcutActive: activeEditorSurface === 'timeline',
-        audioTrackCount,
-        hiddenVideoTracks,
-        items: timelineItems,
-        isInsertIntoClipEnabled: timelineInsertIntoClipEnabled,
-        inPointSec: timelineInPointSec,
-        lockedTracks: lockedTimelineTracks,
-        mutedAudioTracks,
-        selectedItemId: selectedTimelineItemId,
-        selectedItemIds: selectedTimelineItemIds,
-        outPointSec: timelineOutPointSec,
-        panelHeight: timelinePanelHeight,
-        videoTrackCount,
-        playheadSec,
-        projectFps: projectSettings.fps,
-        onAddAudioTrack: handleAddTimelineAudioTrack,
-        onAddVideoTrack: handleAddTimelineVideoTrack,
-        onCutItem: handleCutTimelineItem,
-        onDeleteItem: handleDeleteTimelineItem,
-        onMarkIn: handleMarkTimelineIn,
-        onMarkOut: handleMarkTimelineOut,
-        onGoToCut: handleGoToTimelineCut,
-        onPanelHeightChange: handleTimelinePanelHeightChange,
-        onRedo: handleRedoTimeline,
-        onInvalidNodeDropToTimeline: handleInvalidNodeDropToTimeline,
-        onMoveItem: handleMoveTimelineItem,
-        onNodeDropToTimeline: handleDropNodeToTimeline,
-        onPlaybackChange: setIsTimelinePlaying,
-        onPlayheadChange: setPlayheadSec,
-        onProjectAssetDropToTimeline: handleDropProjectAssetToTimeline,
-        onPreviewItemsChange: handleTimelinePreviewItemsChange,
-        onTogglePlayback: handleToggleTimelinePlayback,
-        onPositionItem: handlePositionTimelineItem,
-        onResizeItem: handleResizeTimelineItem,
-        onSelectItem: handleSelectTimelineItem,
-        onSelectItems: handleSelectTimelineItems,
-        onInsertIntoClipChange: setTimelineInsertIntoClipEnabled,
-        onDeleteTrack: handleDeleteTimelineTrack,
-        onLinkItems: handleLinkTimelineItems,
-        onToggleAudioTrackMute: handleToggleAudioTrackMute,
-        onToggleTrackLock: handleToggleTimelineTrackLock,
-        onToggleVideoTrackVisibility: handleToggleVideoTrackVisibility,
-        onUnlinkItems: handleUnlinkTimelineItems,
-        onUndo: handleUndoTimeline,
-      }}
-      runtimeModalsProps={{
-        activeExportJob,
-        assetPickerLibrary,
-        assetPickerNode,
-        exportEstimate,
-        exportQuota,
-        exportRangeMode,
-        exportQualityPreset,
-        exportVideoFeedback,
-        inPointSec: timelineInPointSec,
-        isExportDialogOpen,
-        isExportEstimateLoading,
-        isExportVideoStarting,
-        isProjectMediaPickerOpen,
-        manifest: exportManifest,
-        outPointSec: timelineOutPointSec,
-        projectMediaLibrary,
-        readinessLabel: exportReadinessLabel,
-        sequenceDurationSec: timelineDurationSec,
-        onAssetPickerClose: () => setAssetPickerNodeId(null),
-        onCloseExportDialog: closeExportDialog,
-        onExportEdl: exportTimelineEdl,
-        onExportVideo: exportTimelineVideo,
-        onPrepareRender: exportTimelineRender,
-        onProjectMediaPickerClose: () => setIsProjectMediaPickerOpen(false),
-        onQualityPresetChange: handleExportQualityPresetChange,
-        onRangeModeChange: handleExportRangeModeChange,
-        onSelectAsset: handleSelectLibraryAsset,
-        onSelectProjectMediaAsset: handleSelectProjectMediaAsset,
-      }}
+      userCanvasTemplates={userCanvasTemplates}
+      videoTrackCount={videoTrackCount}
     />
   );
 }
