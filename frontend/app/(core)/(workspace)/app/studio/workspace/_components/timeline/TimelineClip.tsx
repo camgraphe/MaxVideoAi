@@ -11,7 +11,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 
-import styles from '../../_styles/timeline.module.css';
+import styles from '../../_styles/timeline-clips.module.css';
 import {
   MIN_CLIP_DURATION_SEC,
   snapTimelineSeconds,
@@ -167,6 +167,7 @@ export const TimelineClip = memo(function TimelineClip({
       tabIndex={0}
       data-linked-group={item.linkedGroupId ?? undefined}
       data-timeline-locked={isLocked ? 'true' : 'false'}
+      data-timeline-media-kind={isAudio ? 'audio' : 'video'}
       data-selected={isSelected ? 'true' : 'false'}
       data-timeline-duration={layout.durationSec}
       data-timeline-item={item.id}
@@ -206,7 +207,7 @@ export const TimelineClip = memo(function TimelineClip({
       />
       {showClipThumbnail ? <img src={item.thumbnailUrl ?? ''} alt="" /> : null}
       {isAudio ? (
-        <div className={styles.timelineWaveform} aria-hidden="true">
+        <div className={styles.timelineWaveform} data-timeline-waveform="true" aria-hidden="true">
           {waveformBars.map((height, index) => (
             <span key={index} style={{ height: `${height}%` }} />
           ))}

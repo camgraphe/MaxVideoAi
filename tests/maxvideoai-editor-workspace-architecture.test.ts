@@ -174,6 +174,7 @@ const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
 const canvasNodeStylesPath = join(workspaceDir, '_styles/canvas-nodes.module.css');
 const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
+const timelineClipStylesPath = join(workspaceDir, '_styles/timeline-clips.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const exportStylesPath = join(workspaceDir, '_styles/export.module.css');
@@ -318,6 +319,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasNodeStyleSource = source(canvasNodeStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
+  const timelineClipStyleSource = source(timelineClipStylesPath);
   const exportStyleSource = source(exportStylesPath);
   const assetLibraryStyleSource = source(assetLibraryStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
@@ -360,6 +362,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(canvasStyleSource, /\.blockTemplateList/, 'canvas CSS should own block template list styling');
   assert.match(canvasNodeStyleSource, /\.graphNode/, 'canvas node CSS should own workspace node card styling');
   assert.match(timelineStyleSource, /\.timelinePanel/, 'timeline CSS should own the timeline panel layout');
+  assert.match(timelineClipStyleSource, /\.timelineClip/, 'timeline clip CSS should own clip card styling');
   assert.match(shellStyleSource, /\.editorTopbar/, 'shell CSS should own the topbar layout');
   assert.match(shellStyleSource, /\.editorBody/, 'shell CSS should own the main body grid');
   assert.match(studioSessionStyleSource, /\.studioWalletPill/, 'Studio session CSS should own wallet header styles');
@@ -702,6 +705,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasNodeStyleSource = source(canvasNodeStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
+  const timelineClipStyleSource = source(timelineClipStylesPath);
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
   const exportStyleSource = source(exportStylesPath);
@@ -1374,7 +1378,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineToolbarSource, /_styles\/timeline\.module\.css/, 'timeline toolbar should import focused timeline CSS');
   assert.match(timelineRulerSource, /_styles\/timeline\.module\.css/, 'timeline ruler should import focused timeline CSS');
   assert.match(timelineTrackRowSource, /_styles\/timeline\.module\.css/, 'timeline track rows should import focused timeline CSS');
-  assert.match(timelineClipSource, /_styles\/timeline\.module\.css/, 'timeline clips should import focused timeline CSS');
+  assert.match(timelineClipSource, /_styles\/timeline-clips\.module\.css/, 'timeline clips should import focused timeline clip CSS');
   assert.match(timelineKeyboardShortcutsSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
   assert.match(timelineKeyboardShortcutsSource, /event\.key === ' '/, 'Space shortcut should tolerate browser key/code differences');
   assert.match(timelineKeyboardShortcutsSource, /event\.code === 'KeyC'/, 'C should activate the cut tool');
@@ -1431,7 +1435,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');
   assert.match(timelineSource, /onResizeItem/, 'timeline should commit direct clip resizing');
   assert.doesNotMatch(timelineSource, /draggable/, 'timeline clips should not use native HTML drag/drop for editor movement');
-  assert.doesNotMatch(timelineStyleSource, /\.timelineClip[\s\S]*min-width:\s*160px/, 'timeline clip widths should reflect time positions instead of overlapping cut segments with a large fixed minimum');
+  assert.doesNotMatch(timelineClipStyleSource, /\.timelineClip[\s\S]*min-width:\s*160px/, 'timeline clip widths should reflect time positions instead of overlapping cut segments with a large fixed minimum');
   assert.match(timelineSource, /selectedItemId/, 'timeline should expose selected clip state');
   assert.match(timelineSource, /onCutItem/, 'timeline should wire the cut tool to selected clips');
   assert.match(timelineToolbarSource, /timelineZoomControl/, 'timeline toolbar should keep zoom controls visually compact');
@@ -1622,7 +1626,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.sequenceSettingsOverlay/, 'main editor CSS should no longer own removed project settings dialog styles');
   assert.doesNotMatch(styleSource, /\.exportServerCard/, 'main editor CSS should no longer own export server render styles');
   assert.doesNotMatch(styleSource, /\.viewerSequenceControls/, 'viewer should not style always-visible sequence settings controls');
-  assert.match(timelineStyleSource, /\.timelineClipSelected/, 'selected timeline clips should be visually distinct');
+  assert.match(timelineClipStyleSource, /\.timelineClipSelected/, 'selected timeline clips should be visually distinct');
   assert.match(cssBlock(timelineStyleSource, '.timelinePanel'), /min-width:\s*0/, 'timeline panel should shrink inside the app shell instead of widening the page when zoomed');
   assert.match(cssBlock(timelineStyleSource, '.timelinePanel'), /overflow:\s*hidden/, 'timeline panel should keep horizontal zoom overflow inside timeline scrollers');
   assert.match(timelineStyleSource, /\.timelineViewport/, 'timeline should use one shared scroll viewport for ruler and all tracks');
@@ -1634,9 +1638,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.timelineModeControl/, 'timeline trim tools should not keep segmented mode control styling');
   assert.match(styleSource, /\.timelineInsertActions/, 'output inspector insert actions should be styled in isolated editor CSS');
   assert.match(timelineStyleSource, /\.timelineZoomControl/, 'timeline zoom control should be styled in focused timeline CSS');
-  assert.match(timelineStyleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in focused timeline CSS');
+  assert.match(timelineClipStyleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in focused timeline clip CSS');
   assert.doesNotMatch(styleSource, /\.timelineClipSelected/, 'main editor CSS should no longer own timeline clip selection styles after modularization');
-  assert.ok(lineCount(timelineStyleSource) <= 1200, 'timeline CSS module should stay under the focused module size threshold');
+  assert.doesNotMatch(timelineStyleSource, /\.timelineClipSelected/, 'timeline shell CSS should no longer own selected timeline clip styles after clip extraction');
+  assert.ok(lineCount(timelineStyleSource) <= 760, 'timeline CSS module should stay under the focused shell/ruler/track threshold');
+  assert.ok(lineCount(timelineClipStyleSource) <= 260, 'timeline clip CSS module should stay under the focused clip styling threshold');
   assert.match(inspectorStyleSource, /\.timelineInspectorGroup/, 'timeline clip inspector groups should be styled in focused inspector CSS');
   assert.match(inspectorStyleSource, /\.timelineInspectorControlRow/, 'timeline clip inspector slider rows should be styled in focused inspector CSS');
   assert.match(inspectorStyleSource, /\.settingsRange/, 'timeline clip inspector ranges should be styled in focused inspector CSS');
@@ -1658,7 +1664,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineStyleSource, /\.trackLaneContent[\s\S]*cursor:\s*ew-resize/, 'empty timeline lanes should communicate playhead scrubbing');
   assert.match(timelineStyleSource, /\.timelineSnapGuide/, 'timeline snap guide should be styled in focused timeline CSS');
   assert.match(timelineStyleSource, /\.timelineScrubber/, 'timeline scrubber should be styled in focused timeline CSS');
-  assert.match(timelineStyleSource, /\.trimHandle/, 'timeline trim handles should be styled in focused timeline CSS');
+  assert.match(timelineClipStyleSource, /\.trimHandle/, 'timeline trim handles should be styled in focused timeline clip CSS');
   assert.match(assetLibraryStyleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in focused asset library CSS');
   assert.match(assetLibraryStyleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in focused asset library CSS');
   assert.ok(lineCount(assetLibraryStyleSource) <= 420, 'asset library CSS module should stay small and focused');

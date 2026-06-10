@@ -1,0 +1,200 @@
+.clipActions button {
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.timelineClip strong {
+  margin: 0;
+}
+
+.timelineClip {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.48);
+  border-radius: 7px;
+  background: linear-gradient(135deg, rgba(91, 33, 182, 0.42), rgba(30, 64, 175, 0.34));
+  transform: translateY(-50%);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  will-change: left, width;
+}
+
+.timelineClip img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.timelineClipCompact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0 15px;
+}
+
+.timelineClip strong {
+  display: block;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timelineClip span {
+  color: #cbd5e1;
+  font-size: 10px;
+}
+
+.timelineClipText {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.timelineClipCompact .timelineClipText {
+  display: block;
+}
+
+.timelineTransitionBadge {
+  position: absolute;
+  right: 10px;
+  bottom: 3px;
+  z-index: 2;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  padding: 1px 5px;
+  border: 1px solid rgba(251, 191, 36, 0.42);
+  border-radius: 5px;
+  background: rgba(120, 53, 15, 0.72);
+  color: #fde68a;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.1;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clipActions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  padding-right: 5px;
+}
+
+.clipActions button {
+  display: grid;
+  width: 18px;
+  height: 20px;
+  place-items: center;
+  border-radius: 5px;
+  background: rgba(15, 23, 42, 0.66);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.clipActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.timelineClipAudio {
+  grid-template-columns: 0 minmax(0, 1fr) 64px;
+  border-color: rgba(20, 184, 166, 0.44);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.22), rgba(34, 197, 94, 0.18));
+}
+
+.timelineWaveform {
+  position: absolute;
+  inset: 8px 56px 7px 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.76;
+  pointer-events: none;
+}
+
+.timelineWaveform span {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.82), rgba(34, 197, 94, 0.42));
+}
+
+.timelineClipAudio.timelineClipCompact {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.timelineClipAudio img {
+  display: none;
+}
+
+.timelineClipInteracting {
+  border-color: rgba(167, 139, 250, 0.95);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2), 0 12px 26px rgba(15, 23, 42, 0.28);
+  cursor: grabbing;
+}
+
+.timelineClipCutMode {
+  border-color: rgba(248, 113, 113, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.2), 0 0 0 1px rgba(248, 113, 113, 0.18);
+  cursor: crosshair;
+}
+
+.timelineClipSelected {
+  border-color: rgba(96, 165, 250, 0.95);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.56), rgba(6, 182, 212, 0.28));
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.24);
+}
+
+.trimHandle {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  z-index: 3;
+  width: 14px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(226, 232, 240, 0.18);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.trimHandle::after {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 50%;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.78);
+  content: '';
+}
+
+.trimHandle:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.trimHandleStart {
+  left: 0;
+}
+
+.trimHandleEnd {
+  right: 0;
+}
