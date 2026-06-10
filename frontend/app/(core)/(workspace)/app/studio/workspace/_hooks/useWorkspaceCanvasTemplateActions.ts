@@ -1,0 +1,177 @@
+import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { defaultSelectedNodeId } from '../_lib/workspace-graph-helpers';
+import { createStarterWorkspaceTemplate } from '../_lib/workspace-templates';
+import type {
+  WorkspaceEditorSurface,
+  WorkspaceUserCanvasTemplate,
+} from '../_state/workspace-state';
+import type {
+  WorkspaceGraphEdge,
+  WorkspaceGraphNode,
+  WorkspaceTemplateId,
+} from '../_lib/workspace-types';
+import { writeUserCanvasTemplates } from '../_state/workspace-persistence';
+import {
+  deleteUserCanvasTemplateFromApi,
+  describeCanvasTemplate,
+  saveUserCanvasTemplateToApi,
+} from '../_state/workspace-api-persistence';
+
+function cloneWorkspaceJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function createLocalCanvasTemplateId(): string {
+  if (globalThis.crypto?.randomUUID) return `canvas_template_${globalThis.crypto.randomUUID()}`;
+  return `canvas_template_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+type UseWorkspaceCanvasTemplateActionsParams = {
+  activeTemplateId: WorkspaceTemplateId;
+  activeUserCanvasTemplateId: string | null;
+  edges: WorkspaceGraphEdge[];
+  nodes: WorkspaceGraphNode[];
+  setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
+  setActiveTemplateId: Dispatch<SetStateAction<WorkspaceTemplateId>>;
+  setActiveUserCanvasTemplateId: Dispatch<SetStateAction<string | null>>;
+  setCanvasRevision: Dispatch<SetStateAction<number>>;
+  setEdges: Dispatch<SetStateAction<WorkspaceGraphEdge[]>>;
+  setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
+  setNotice: Dispatch<SetStateAction<string | null>>;
+  setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
+  userCanvasTemplates: WorkspaceUserCanvasTemplate[];
+};
+
+export function useWorkspaceCanvasTemplateActions({
+  activeTemplateId,
+  activeUserCanvasTemplateId,
+  edges,
+  nodes,
+  setActiveEditorSurface,
+  setActiveTemplateId,
+  setActiveUserCanvasTemplateId,
+  setCanvasRevision,
+  setEdges,
+  setNodes,
+  setNotice,
+  setSelectedNodeId,
+  setUserCanvasTemplates,
+  userCanvasTemplates,
+}: UseWorkspaceCanvasTemplateActionsParams): {
+  handleApplyCanvasTemplate: (templateId: WorkspaceTemplateId) => void;
+  handleApplyUserCanvasTemplate: (templateId: string) => void;
+  handleDeleteUserCanvasTemplate: (templateId: string) => void;
+  handleDuplicateUserCanvasTemplate: (templateId: string) => void;
+  handleSaveCanvasTemplate: (name: string) => void;
+} {
+  const updateUserCanvasTemplates = useCallback(
+    (updater: (templates: WorkspaceUserCanvasTemplate[]) => WorkspaceUserCanvasTemplate[]) => {
+      setUserCanvasTemplates((currentTemplates) => {
+        const nextTemplates = updater(currentTemplates);
+        writeUserCanvasTemplates(nextTemplates);
+        return nextTemplates;
+      });
+    },
+    [setUserCanvasTemplates]
+  );
+
+  const handleApplyCanvasTemplate = useCallback(
+    (templateId: WorkspaceTemplateId) => {
+      const template = createStarterWorkspaceTemplate(templateId);
+      setNodes(template.nodes);
+      setEdges(template.edges);
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
+      setActiveTemplateId(template.id);
+      setActiveUserCanvasTemplateId(null);
+      setCanvasRevision((value) => value + 1);
+      setNotice(`${template.name} canvas template applied.`);
+    },
+    [setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId]
+  );
+
+  const handleSaveCanvasTemplate = useCallback(
+    (name: string) => {
+      const trimmedName = name.trim();
+      const templateName = trimmedName || `Canvas template ${userCanvasTemplates.length + 1}`;
+      const createdAt = new Date().toISOString();
+      const template: WorkspaceUserCanvasTemplate = {
+        id: createLocalCanvasTemplateId(),
+        name: templateName,
+        description: describeCanvasTemplate(nodes, edges),
+        nodes: cloneWorkspaceJson(nodes),
+        edges: cloneWorkspaceJson(edges),
+        createdAt,
+      };
+      updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
+      void saveUserCanvasTemplateToApi(template);
+      setActiveUserCanvasTemplateId(template.id);
+      setActiveEditorSurface('canvas');
+      setNotice(`${template.name} saved as a canvas template.`);
+    },
+    [edges, nodes, setActiveEditorSurface, setActiveUserCanvasTemplateId, setNotice, updateUserCanvasTemplates, userCanvasTemplates.length]
+  );
+
+  const handleApplyUserCanvasTemplate = useCallback(
+    (templateId: string) => {
+      const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+      if (!template) {
+        setNotice('Canvas template not found.');
+        return;
+      }
+      const nextNodes = cloneWorkspaceJson(template.nodes);
+      const nextEdges = cloneWorkspaceJson(template.edges);
+      setNodes(nextNodes);
+      setEdges(nextEdges);
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(defaultSelectedNodeId(nextNodes, activeTemplateId));
+      setActiveUserCanvasTemplateId(template.id);
+      setCanvasRevision((value) => value + 1);
+      setNotice(`${template.name} canvas template applied.`);
+    },
+    [activeTemplateId, setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, userCanvasTemplates]
+  );
+
+  const handleDuplicateUserCanvasTemplate = useCallback(
+    (templateId: string) => {
+      const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+      if (!template) return;
+      const duplicate: WorkspaceUserCanvasTemplate = {
+        ...template,
+        id: createLocalCanvasTemplateId(),
+        name: `${template.name} copy`,
+        nodes: cloneWorkspaceJson(template.nodes),
+        edges: cloneWorkspaceJson(template.edges),
+        createdAt: new Date().toISOString(),
+      };
+      updateUserCanvasTemplates((templates) => [duplicate, ...templates].slice(0, 24));
+      void saveUserCanvasTemplateToApi(duplicate);
+      setNotice(`${duplicate.name} saved.`);
+    },
+    [setNotice, updateUserCanvasTemplates, userCanvasTemplates]
+  );
+
+  const handleDeleteUserCanvasTemplate = useCallback(
+    (templateId: string) => {
+      const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+      if (!template) return;
+      if (typeof window !== 'undefined' && !window.confirm(`Delete "${template.name}"?`)) return;
+      updateUserCanvasTemplates((templates) => templates.filter((candidate) => candidate.id !== templateId));
+      void deleteUserCanvasTemplateFromApi(templateId);
+      if (activeUserCanvasTemplateId === templateId) {
+        setActiveUserCanvasTemplateId(null);
+      }
+      setNotice(`${template.name} deleted.`);
+    },
+    [activeUserCanvasTemplateId, setActiveUserCanvasTemplateId, setNotice, updateUserCanvasTemplates, userCanvasTemplates]
+  );
+
+  return {
+    handleApplyCanvasTemplate,
+    handleApplyUserCanvasTemplate,
+    handleDeleteUserCanvasTemplate,
+    handleDuplicateUserCanvasTemplate,
+    handleSaveCanvasTemplate,
+  };
+}

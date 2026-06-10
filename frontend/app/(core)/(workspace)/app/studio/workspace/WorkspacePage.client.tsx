@@ -21,6 +21,7 @@ import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImportActions';
+import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTemplateActions';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
@@ -162,23 +163,16 @@ import {
   writeUserCanvasTemplates,
 } from './_state/workspace-persistence';
 import {
-  deleteUserCanvasTemplateFromApi,
-  describeCanvasTemplate,
   normalizePersistedWorkspaceState,
   normalizeUserCanvasTemplate,
   readStudioProjectFromApi,
   readUserCanvasTemplatesFromApi,
   saveStudioProjectToApi,
-  saveUserCanvasTemplateToApi,
 } from './_state/workspace-api-persistence';
 import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
 const styles = { ...baseStyles, ...shellStyles };
-
-function cloneWorkspaceJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
 
 function createLocalStudioId(prefix: string): string {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
@@ -1173,89 +1167,28 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined);
   const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined);
 
-  const handleApplyCanvasTemplate = useCallback((templateId: WorkspaceTemplateId) => {
-    const template = createStarterWorkspaceTemplate(templateId);
-    setNodes(template.nodes);
-    setEdges(template.edges);
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
-    setActiveTemplateId(template.id);
-    setActiveUserCanvasTemplateId(null);
-    setCanvasRevision((value) => value + 1);
-    setNotice(`${template.name} canvas template applied.`);
-  }, []);
-
-  const updateUserCanvasTemplates = useCallback((updater: (templates: WorkspaceUserCanvasTemplate[]) => WorkspaceUserCanvasTemplate[]) => {
-    setUserCanvasTemplates((currentTemplates) => {
-      const nextTemplates = updater(currentTemplates);
-      writeUserCanvasTemplates(nextTemplates);
-      return nextTemplates;
-    });
-  }, []);
-
-  const handleSaveCanvasTemplate = useCallback((name: string) => {
-    const trimmedName = name.trim();
-    const templateName = trimmedName || `Canvas template ${userCanvasTemplates.length + 1}`;
-    const createdAt = new Date().toISOString();
-    const template: WorkspaceUserCanvasTemplate = {
-      id: createLocalStudioId('canvas_template'),
-      name: templateName,
-      description: describeCanvasTemplate(nodes, edges),
-      nodes: cloneWorkspaceJson(nodes),
-      edges: cloneWorkspaceJson(edges),
-      createdAt,
-    };
-    updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
-    void saveUserCanvasTemplateToApi(template);
-    setActiveUserCanvasTemplateId(template.id);
-    setActiveEditorSurface('canvas');
-    setNotice(`${template.name} saved as a canvas template.`);
-  }, [edges, nodes, updateUserCanvasTemplates, userCanvasTemplates.length]);
-
-  const handleApplyUserCanvasTemplate = useCallback((templateId: string) => {
-    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
-    if (!template) {
-      setNotice('Canvas template not found.');
-      return;
-    }
-    const nextNodes = cloneWorkspaceJson(template.nodes);
-    const nextEdges = cloneWorkspaceJson(template.edges);
-    setNodes(nextNodes);
-    setEdges(nextEdges);
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(defaultSelectedNodeId(nextNodes, activeTemplateId));
-    setActiveUserCanvasTemplateId(template.id);
-    setCanvasRevision((value) => value + 1);
-    setNotice(`${template.name} canvas template applied.`);
-  }, [activeTemplateId, userCanvasTemplates]);
-
-  const handleDuplicateUserCanvasTemplate = useCallback((templateId: string) => {
-    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
-    if (!template) return;
-    const duplicate: WorkspaceUserCanvasTemplate = {
-      ...template,
-      id: createLocalStudioId('canvas_template'),
-      name: `${template.name} copy`,
-      nodes: cloneWorkspaceJson(template.nodes),
-      edges: cloneWorkspaceJson(template.edges),
-      createdAt: new Date().toISOString(),
-    };
-    updateUserCanvasTemplates((templates) => [duplicate, ...templates].slice(0, 24));
-    void saveUserCanvasTemplateToApi(duplicate);
-    setNotice(`${duplicate.name} saved.`);
-  }, [updateUserCanvasTemplates, userCanvasTemplates]);
-
-  const handleDeleteUserCanvasTemplate = useCallback((templateId: string) => {
-    const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
-    if (!template) return;
-    if (typeof window !== 'undefined' && !window.confirm(`Delete "${template.name}"?`)) return;
-    updateUserCanvasTemplates((templates) => templates.filter((candidate) => candidate.id !== templateId));
-    void deleteUserCanvasTemplateFromApi(templateId);
-    if (activeUserCanvasTemplateId === templateId) {
-      setActiveUserCanvasTemplateId(null);
-    }
-    setNotice(`${template.name} deleted.`);
-  }, [activeUserCanvasTemplateId, updateUserCanvasTemplates, userCanvasTemplates]);
+  const {
+    handleApplyCanvasTemplate,
+    handleApplyUserCanvasTemplate,
+    handleDeleteUserCanvasTemplate,
+    handleDuplicateUserCanvasTemplate,
+    handleSaveCanvasTemplate,
+  } = useWorkspaceCanvasTemplateActions({
+    activeTemplateId,
+    activeUserCanvasTemplateId,
+    edges,
+    nodes,
+    setActiveEditorSurface,
+    setActiveTemplateId,
+    setActiveUserCanvasTemplateId,
+    setCanvasRevision,
+    setEdges,
+    setNodes,
+    setNotice,
+    setSelectedNodeId,
+    setUserCanvasTemplates,
+    userCanvasTemplates,
+  });
 
   const handleImportProjectMedia = useCallback(() => {
     setIsProjectMediaPickerOpen(true);

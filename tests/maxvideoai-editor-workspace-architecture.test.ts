@@ -52,6 +52,7 @@ const canvasHandleDropPreviewPath = join(workspaceDir, '_components/canvas/Canva
 const canvasPaletteDragPreviewPath = join(workspaceDir, '_components/canvas/CanvasPaletteDragPreview.tsx');
 const canvasControllerPath = join(workspaceDir, '_controllers/useCanvasController.ts');
 const canvasImportActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasImportActions.ts');
+const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTemplateActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
 const exportControllerPath = join(workspaceDir, '_controllers/useExportController.ts');
 const assetLibraryModalPath = join(workspaceDir, '_components/WorkspaceAssetLibraryModal.tsx');
@@ -174,6 +175,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasPaletteDragPreviewPath), 'canvas palette drag preview should live in a focused route-local canvas component');
   assert.ok(existsSync(canvasControllerPath), 'canvas drop and paste controller should live in a focused route-local controller');
   assert.ok(existsSync(canvasImportActionsHookPath), 'canvas local file, paste, and snapshot imports should live in a focused route-local hook');
+  assert.ok(existsSync(canvasTemplateActionsHookPath), 'canvas template actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
@@ -220,6 +222,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceSource = source(workspacePagePath);
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
+  const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
@@ -296,7 +299,11 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace should hydrate project state from the Studio API when available');
   assert.match(workspaceSource, /saveStudioProjectToApi/, 'workspace should autosave project state to the Studio API when available');
   assert.match(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace should hydrate user canvas templates from the Studio API when available');
-  assert.match(workspaceSource, /saveUserCanvasTemplateToApi/, 'workspace should save user canvas templates to the Studio API when available');
+  assert.match(workspaceSource, /useWorkspaceCanvasTemplateActions/, 'workspace should delegate user canvas template actions to a route-local hook');
+  assert.match(canvasTemplateActionsHookSource, /saveUserCanvasTemplateToApi/, 'canvas template action hook should save user canvas templates to the Studio API when available');
+  assert.match(canvasTemplateActionsHookSource, /deleteUserCanvasTemplateFromApi/, 'canvas template action hook should delete user canvas templates through the Studio API when available');
+  assert.match(canvasTemplateActionsHookSource, /writeUserCanvasTemplates/, 'canvas template action hook should keep local personal template fallback storage in sync');
+  assert.doesNotMatch(workspaceSource, /saveUserCanvasTemplateToApi/, 'workspace orchestrator should not own user canvas template API mutations');
   assert.match(workspaceSource, /from '\.\/_state\/workspace-state'/, 'workspace should import persisted state contracts from the route-local state module');
   assert.match(workspaceSource, /from '\.\/_state\/workspace-selectors'/, 'workspace should import derived sequence selectors from the route-local state module');
   assert.match(workspaceStateSource, /function createWorkspaceSequenceRecord/, 'workspace state module should own sequence record creation');
@@ -308,8 +315,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /handleCreateSequence/, 'viewer project sidebar should create real empty sequences');
   assert.match(workspaceSource, /handleSelectSequence/, 'viewer project sidebar should switch between stored sequences');
   assert.match(workspaceSource, /emptyTimelineItems: WorkspaceTimelineItem\[\] = \[\]/, 'new project canvas templates should start with a clean sequence instead of template demo timeline clips');
-  const applyCanvasTemplateHandler = workspaceSource.match(/const handleApplyCanvasTemplate = useCallback\([\s\S]*?\n  \}, \[\]\);\n/);
-  assert.ok(applyCanvasTemplateHandler, 'workspace should define a canvas-only template application handler');
+  const applyCanvasTemplateHandler = canvasTemplateActionsHookSource.match(/const handleApplyCanvasTemplate = useCallback\([\s\S]*?\n  \);\n/);
+  assert.ok(applyCanvasTemplateHandler, 'canvas template action hook should define a canvas-only template application handler');
   assert.match(applyCanvasTemplateHandler[0], /setNodes\(template\.nodes\)[\s\S]*setEdges\(template\.edges\)/, 'applying a canvas template should update the graph');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /setTimelineItems/, 'applying a canvas template should not reset or replace the montage timeline');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /setSequences/, 'applying a canvas template should not replace project sequences');
@@ -435,6 +442,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasPaletteDragPreviewSource = source(canvasPaletteDragPreviewPath);
   const canvasControllerSource = source(canvasControllerPath);
   const canvasImportActionsHookSource = source(canvasImportActionsHookPath);
+  const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
   const librarySource = source(libraryPath);
@@ -1174,8 +1182,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(librarySource, /onDuplicateUserTemplate/, 'canvas sidebar should let users duplicate a saved canvas template');
   assert.match(librarySource, /onDeleteUserTemplate/, 'canvas sidebar should let users delete a saved canvas template');
   assert.match(workspacePersistenceSource, /USER_CANVAS_TEMPLATES_STORAGE_KEY/, 'workspace should keep personal canvas templates in local storage until backend persistence exists');
-  assert.match(workspaceSource, /handleSaveCanvasTemplate/, 'workspace should own saving the current graph as a personal canvas template');
-  assert.match(workspaceSource, /handleApplyUserCanvasTemplate/, 'workspace should own applying personal templates without touching timeline state');
+  assert.match(workspaceSource, /handleSaveCanvasTemplate/, 'workspace should wire saving the current graph as a personal canvas template');
+  assert.match(workspaceSource, /handleApplyUserCanvasTemplate/, 'workspace should wire applying personal templates without touching timeline state');
+  assert.match(canvasTemplateActionsHookSource, /handleSaveCanvasTemplate/, 'canvas template action hook should own saving the current graph as a personal canvas template');
+  assert.match(canvasTemplateActionsHookSource, /handleApplyUserCanvasTemplate/, 'canvas template action hook should own applying personal templates without touching timeline state');
   assert.match(canvasStyleSource, /\.templateSection[\s\S]*flex:\s*1 1 auto[\s\S]*overflow:\s*hidden/, 'starter templates should own the flexible sidebar height instead of overlapping block templates');
   assert.match(canvasStyleSource, /\.templateList[\s\S]*overflow:\s*auto/, 'starter templates should scroll inside the left sidebar when vertical space is tight');
   assert.doesNotMatch(styleSource, /\.viewerFocus \.blockTemplateList/, 'Viewer mode should not compact canvas block templates because they are not mounted there');
