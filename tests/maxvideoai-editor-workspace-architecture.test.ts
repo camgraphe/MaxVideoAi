@@ -170,6 +170,7 @@ const timelineSelectionSyncHookPath = join(workspaceDir, '_hooks/useWorkspaceTim
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
 const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
+const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
@@ -271,6 +272,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
   assert.ok(existsSync(shellStylesPath), 'editor shell styles should live in a focused route-local CSS module');
   assert.ok(existsSync(canvasStylesPath), 'canvas sidebar styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(canvasMapStylesPath), 'canvas map styles should live in a focused route-local CSS module');
   assert.ok(existsSync(timelineStylesPath), 'timeline styles should live in a focused route-local CSS module');
   assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
@@ -305,6 +307,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const styleSource = source(stylesPath);
   const shellStyleSource = source(shellStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
+  const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
   assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
@@ -681,6 +684,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
+  const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
@@ -693,7 +697,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
 
   assert.match(canvasSource, /@xyflow\/react/, 'canvas should use React Flow for pan, zoom, nodes, handles, and edges');
   assert.match(canvasSource, /_styles\/canvas\.module\.css/, 'canvas surface should import focused canvas CSS');
-  assert.match(canvasMapSource, /_styles\/canvas\.module\.css/, 'canvas map should import focused canvas CSS');
+  assert.match(canvasMapSource, /_styles\/canvas-map\.module\.css/, 'canvas map should import focused canvas map CSS');
   assert.match(canvasHandleDropPreviewSource, /_styles\/canvas\.module\.css/, 'canvas handle previews should import focused canvas CSS');
   assert.match(canvasPaletteDragPreviewSource, /_styles\/canvas\.module\.css/, 'canvas palette previews should import focused canvas CSS');
   assert.match(nodeSource, /_styles\/canvas\.module\.css/, 'workspace nodes should import focused canvas CSS');
@@ -1538,7 +1542,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.brandLogo/, 'main editor CSS should no longer own brand logo styles after shell extraction');
   assert.ok(lineCount(shellStyleSource) <= 1200, 'editor shell CSS module should stay under the focused module size threshold');
   assert.ok(lineCount(canvasStyleSource) <= 1200, 'canvas CSS module should stay under the focused module size threshold');
+  assert.ok(lineCount(canvasMapStyleSource) <= 300, 'canvas map CSS module should stay small and focused');
   assert.match(canvasStyleSource, /\.canvasShell/, 'canvas surface should be styled in focused canvas CSS');
+  assert.match(canvasMapStyleSource, /\.canvasNavigator/, 'canvas map CSS should own canvas navigation shell styles');
+  assert.match(canvasMapStyleSource, /\.canvasMiniMapViewport/, 'canvas map CSS should own the draggable viewport styles');
+  assert.doesNotMatch(canvasStyleSource, /\.canvasNavigator/, 'canvas CSS should no longer own canvas map shell styles');
+  assert.doesNotMatch(canvasStyleSource, /\.canvasMiniMap/, 'canvas CSS should no longer own canvas map miniature styles');
   assert.match(canvasStyleSource, /\.graphNode/, 'workspace nodes should be styled in focused canvas CSS');
   assert.match(canvasStyleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in focused canvas CSS');
   assert.match(canvasStyleSource, /\.processingPreview/, 'processing output placeholders should be styled in focused canvas CSS');
