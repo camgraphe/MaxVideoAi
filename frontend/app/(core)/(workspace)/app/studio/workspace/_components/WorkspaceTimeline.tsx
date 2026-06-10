@@ -10,7 +10,6 @@ import type {
 import styles from '../_styles/timeline.module.css';
 import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
 import {
-  moveWorkspaceTimelineSelectionWithMode,
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
 } from '../_lib/workspace-timeline-editing';
@@ -18,12 +17,10 @@ import {
   frameStepSeconds,
   layoutForTimelineItem,
   MIN_CLIP_DURATION_SEC,
-  previewPlayheadForInteraction,
   selectionKeyForTimelineItem,
   selectionKeysForTimelineItemIds,
   snapTimelineSeconds,
   timelineRulerStepFor,
-  trackForTimelineItem,
 } from '../_lib/timeline/timeline-interaction';
 import { buildTimelineTracks } from './timeline/timelineTrackDefinitions';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
@@ -40,6 +37,7 @@ import { useTimelineExternalDrop } from './timeline/useTimelineExternalDrop';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
 import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
+import { useTimelinePreviewItems } from './timeline/useTimelinePreviewItems';
 import { useTimelineSurfaceSelection } from './timeline/useTimelineSurfaceSelection';
 import { useTimelineVisibleRange } from './timeline/useTimelineVisibleRange';
 
@@ -47,7 +45,6 @@ const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
 const MAX_TIMELINE_PIXELS_PER_SECOND = 92;
 const MIN_TIMELINE_WIDTH = 760;
-const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -344,56 +341,15 @@ export function WorkspaceTimeline({
     onUndo,
     onZoomBy: handleZoomBy,
   });
-  const resolvedPreviewTimelineItems = useMemo(() => {
-    if (!interaction || interaction.kind !== 'move') return null;
-    return moveWorkspaceTimelineSelectionWithMode({
-      items,
-      itemIds: interaction.selectedItemIds,
-      anchorItemId: interaction.itemId,
-      nextStartSec: interaction.previewStartSec,
-      nextTrack: interaction.previewTrack,
-      mode: 'insert',
-      idSeed: TIMELINE_PREVIEW_ID_SEED,
-      allowInsertIntoClip: isInsertIntoClipEnabled,
-    });
-  }, [interaction, isInsertIntoClipEnabled, items]);
-  const previewItems = useMemo(
-    () => {
-      if (resolvedPreviewTimelineItems) {
-        return resolvedPreviewTimelineItems.map((item) => ({
-          item,
-          layout: { startSec: item.startSec, durationSec: item.durationSec },
-          trackId: item.track,
-        }));
-      }
-      return items.map((item) => ({
-        item,
-        layout: layoutForTimelineItem(item, interaction),
-        trackId: trackForTimelineItem(item, interaction),
-      }));
-    },
-    [interaction, items, resolvedPreviewTimelineItems]
-  );
-  const previewTimelineItems = useMemo(
-    () => {
-      if (resolvedPreviewTimelineItems) return resolvedPreviewTimelineItems;
-      return interaction
-        ? items.map((item) => {
-            const layout = layoutForTimelineItem(item, interaction);
-            return {
-              ...item,
-              startSec: layout.startSec,
-              durationSec: layout.durationSec,
-              track: trackForTimelineItem(item, interaction),
-            };
-          })
-        : null;
-    },
-    [interaction, items, resolvedPreviewTimelineItems]
-  );
-  const previewPlayheadSec = interaction
-    ? resolvedPreviewTimelineItems?.find((item) => item.id === interaction.itemId)?.startSec ?? previewPlayheadForInteraction(interaction)
-    : null;
+  const {
+    previewItems,
+    previewPlayheadSec,
+    previewTimelineItems,
+  } = useTimelinePreviewItems({
+    interaction,
+    isInsertIntoClipEnabled,
+    items,
+  });
   useEffect(() => {
     onPreviewItemsChange?.(previewTimelineItems, previewPlayheadSec);
   }, [onPreviewItemsChange, previewPlayheadSec, previewTimelineItems]);
