@@ -6,6 +6,7 @@ import type {
 } from 'react';
 import { memo, useMemo } from 'react';
 
+import controlStyles from '../../_styles/timeline-controls.module.css';
 import styles from '../../_styles/timeline.module.css';
 import { formatWorkspaceTimecode } from '../../_lib/workspace-timecode';
 
@@ -63,7 +64,7 @@ export const TimelineRuler = memo(function TimelineRuler({
         <div className={styles.timelineRulerToolSlot} data-timeline-ruler-tool-slot="true">
           <button
             type="button"
-            className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${snapEnabled ? styles.timelineToolButtonActive : ''}`}
+            className={`${styles.timelineRulerToolButton} ${controlStyles.timelineToolButton} ${snapEnabled ? controlStyles.timelineToolButtonActive : ''}`}
             data-tooltip="Snapping: clips, playhead, zero (M)"
             data-timeline-control="true"
             title="Snapping to clip edges, playhead, and zero (M)"
@@ -75,7 +76,7 @@ export const TimelineRuler = memo(function TimelineRuler({
           </button>
           <button
             type="button"
-            className={`${styles.timelineRulerToolButton} ${styles.timelineToolButton} ${isInsertIntoClipEnabled ? styles.timelineToolButtonActive : ''}`}
+            className={`${styles.timelineRulerToolButton} ${controlStyles.timelineToolButton} ${isInsertIntoClipEnabled ? controlStyles.timelineToolButtonActive : ''}`}
             data-tooltip="Splice insert inside clips"
             data-timeline-control="true"
             title="Allow insert drags to split the clip under the drop point"
