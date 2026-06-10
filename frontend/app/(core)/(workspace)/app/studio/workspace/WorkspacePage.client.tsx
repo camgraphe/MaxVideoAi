@@ -27,6 +27,7 @@ import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMed
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
+import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineTrackActions';
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
 import {
   getWorkspaceModelCapability,
@@ -100,7 +101,6 @@ import {
   type WorkspaceTimelineExportRangeMode,
 } from './_lib/workspace-timeline-render';
 import {
-  isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
   workspaceTimelineTrackLabel,
 } from './_lib/workspace-timeline-tracks';
@@ -127,8 +127,6 @@ import {
   coerceTimelinePanelHeight,
   coerceVideoTrackCount,
   createWorkspaceSequenceRecord,
-  deleteWorkspaceTimelineTrackIds,
-  deleteWorkspaceTimelineTrackItems,
   upsertWorkspaceSequence,
   videoTrackCountForTimelineItems,
   type PersistedWorkspaceState,
@@ -1360,76 +1358,28 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     );
   }, [setIsTimelinePlaying]);
 
-  const handleAddTimelineVideoTrack = useCallback(() => {
-    setVideoTrackCount((current) => Math.min(MAX_TIMELINE_VIDEO_TRACKS, current + 1));
-  }, []);
-
-  const handleAddTimelineAudioTrack = useCallback(() => {
-    setAudioTrackCount((current) => Math.min(MAX_TIMELINE_AUDIO_TRACKS, current + 1));
-  }, []);
-
-  const handleToggleVideoTrackVisibility = useCallback((track: WorkspaceTimelineVideoTrack) => {
-    setHiddenVideoTracks((current) => (
-      current.includes(track)
-        ? current.filter((trackId) => trackId !== track)
-        : [...current, track]
-    ));
-    setIsTimelinePlaying(false);
-  }, [setIsTimelinePlaying]);
-
-  const handleToggleAudioTrackMute = useCallback((track: WorkspaceTimelineAudioTrack) => {
-    setMutedAudioTracks((current) => (
-      current.includes(track)
-        ? current.filter((trackId) => trackId !== track)
-        : [...current, track]
-    ));
-    setIsTimelinePlaying(false);
-  }, [setIsTimelinePlaying]);
-
-  const handleToggleTimelineTrackLock = useCallback((track: WorkspaceTimelineTrack) => {
-    setLockedTimelineTracks((current) => (
-      current.includes(track)
-        ? current.filter((trackId) => trackId !== track)
-        : [...current, track]
-    ));
-    setIsTimelinePlaying(false);
-  }, [setIsTimelinePlaying]);
-
-  const handleDeleteTimelineTrack = useCallback((track: WorkspaceTimelineTrack) => {
-    const isVideoTrack = isWorkspaceTimelineVideoTrack(track);
-    if (isVideoTrack && videoTrackCount <= 1) return;
-    if (!isVideoTrack && audioTrackCount <= MIN_TIMELINE_AUDIO_TRACKS) return;
-
-    const trackLabel = workspaceTimelineTrackLabel(track);
-    const hasClips = timelineItemsRef.current.some((item) => item.track === track);
-    const confirmed = typeof window === 'undefined' || window.confirm(
-      hasClips
-        ? `Delete ${trackLabel} and all clips on this track?`
-        : `Delete ${trackLabel}?`
-    );
-    if (!confirmed) return;
-
-    const nextItems = deleteWorkspaceTimelineTrackItems(timelineItemsRef.current, track);
-    setActiveEditorSurface('timeline');
-    setIsTimelinePlaying(false);
-    setHiddenVideoTracks((current) => (
-      deleteWorkspaceTimelineTrackIds(current, track)
-        .filter((trackId): trackId is WorkspaceTimelineVideoTrack => isWorkspaceTimelineVideoTrack(trackId))
-    ));
-    setLockedTimelineTracks((current) => deleteWorkspaceTimelineTrackIds(current, track));
-    setMutedAudioTracks((current) => (
-      deleteWorkspaceTimelineTrackIds(current, track)
-        .filter((trackId): trackId is WorkspaceTimelineAudioTrack => isWorkspaceTimelineAudioTrack(trackId))
-    ));
-    if (isVideoTrack) {
-      setVideoTrackCount((current) => Math.max(1, current - 1));
-    } else {
-      setAudioTrackCount((current) => Math.max(MIN_TIMELINE_AUDIO_TRACKS, current - 1));
-    }
-    commitTimelineItems(() => nextItems);
-    applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
-    setNotice(`${trackLabel} deleted.`);
-  }, [applyTimelineSelection, audioTrackCount, commitTimelineItems, setIsTimelinePlaying, videoTrackCount]);
+  const {
+    handleAddTimelineAudioTrack,
+    handleAddTimelineVideoTrack,
+    handleDeleteTimelineTrack,
+    handleToggleAudioTrackMute,
+    handleToggleTimelineTrackLock,
+    handleToggleVideoTrackVisibility,
+  } = useWorkspaceTimelineTrackActions({
+    applyTimelineSelection,
+    audioTrackCount,
+    commitTimelineItems,
+    setActiveEditorSurface,
+    setAudioTrackCount,
+    setHiddenVideoTracks,
+    setIsTimelinePlaying,
+    setLockedTimelineTracks,
+    setMutedAudioTracks,
+    setNotice,
+    setVideoTrackCount,
+    timelineItemsRef,
+    videoTrackCount,
+  });
 
   const handleResizeTimelineItem = useCallback((itemId: string, edge: WorkspaceTimelineTrimEdge, nextStartSec: number, nextDurationSec: number, mode: WorkspaceTimelineTrimMode) => {
     setActiveEditorSurface('timeline');

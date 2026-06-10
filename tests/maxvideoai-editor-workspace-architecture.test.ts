@@ -129,6 +129,7 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
+const timelineTrackActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineTrackActions.ts');
 const timelinePlaybackHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelinePlayback.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
@@ -441,6 +442,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
+  assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelinePlaybackHookPath), 'timeline playback clock and in-out controls should live in a route-local hook');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
@@ -510,6 +512,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
   const timelineHistoryHookSource = source(timelineHistoryHookPath);
+  const timelineTrackActionsHookSource = source(timelineTrackActionsHookPath);
   const timelinePlaybackHookSource = source(timelinePlaybackHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
@@ -834,8 +837,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(templateCoreSource, /DEFAULT_WORKSPACE_TEMPLATE_SHOT_MODEL_ID = 'seedance-2-0'/, 'template shot defaults should use Seedance 2.0');
   assert.match(workspaceSource, /videoTrackCount/, 'workspace should remember added video timeline tracks');
   assert.match(workspaceSource, /MAX_TIMELINE_VIDEO_TRACKS/, 'workspace should cap added video tracks to a small editor-friendly count');
+  assert.match(workspaceSource, /useWorkspaceTimelineTrackActions/, 'workspace should delegate timeline track mutations to a route-local hook');
   assert.match(workspaceSource, /handleAddTimelineVideoTrack/, 'workspace should expose an add-video-track action to the timeline');
   assert.match(workspaceSource, /onAddVideoTrack=\{handleAddTimelineVideoTrack\}/, 'workspace should let the timeline add video tracks without a separate panel');
+  assert.match(timelineTrackActionsHookSource, /handleAddTimelineVideoTrack/, 'timeline track action hook should own video track creation');
+  assert.match(timelineTrackActionsHookSource, /handleToggleVideoTrackVisibility/, 'timeline track action hook should own video track visibility');
+  assert.match(timelineTrackActionsHookSource, /handleToggleAudioTrackMute/, 'timeline track action hook should own audio track mute');
+  assert.match(timelineTrackActionsHookSource, /handleDeleteTimelineTrack/, 'timeline track action hook should own track deletion');
+  assert.match(timelineTrackActionsHookSource, /deleteWorkspaceTimelineTrackItems/, 'timeline track action hook should reuse state-level track deletion retargeting');
+  assert.doesNotMatch(workspaceSource, /const handleAddTimelineVideoTrack = useCallback/, 'workspace orchestrator should not own video track creation internals');
+  assert.doesNotMatch(workspaceSource, /const handleDeleteTimelineTrack = useCallback/, 'workspace orchestrator should not own timeline track deletion internals');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary/, 'orchestrator should feed the picker from the signed-in user media library');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined\)/, 'orchestrator should load the signed-in media library only when the picker modal is open');
   assert.doesNotMatch(workspaceSource, /selectedMediaNodeKind/, 'selecting a media node should not preload the signed-in media library before the picker opens');
