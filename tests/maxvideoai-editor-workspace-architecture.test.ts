@@ -159,6 +159,7 @@ const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistenc
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const editorNoticeHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorNotice.ts');
+const canvasControllerHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasController.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const timelineClipActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineClipActions.ts');
 const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
@@ -283,6 +284,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceSource = source(workspacePagePath);
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
+  const canvasControllerHookSource = source(canvasControllerHookPath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
@@ -378,7 +380,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(persistenceEffectsHookSource, /readUserCanvasTemplatesFromApi/, 'workspace persistence hook should hydrate user canvas templates from the Studio API when available');
   assert.doesNotMatch(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace orchestrator should not own project API hydration');
   assert.doesNotMatch(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace orchestrator should not own user canvas template hydration');
-  assert.match(workspaceSource, /useWorkspaceCanvasTemplateActions/, 'workspace should delegate user canvas template actions to a route-local hook');
+  assert.match(workspaceSource, /useWorkspaceCanvasController/, 'workspace should delegate canvas orchestration to a route-local controller hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceCanvasTemplateActions/, 'canvas controller should delegate user canvas template actions to the template actions hook');
   assert.match(canvasTemplateActionsHookSource, /saveUserCanvasTemplateToApi/, 'canvas template action hook should save user canvas templates to the Studio API when available');
   assert.match(canvasTemplateActionsHookSource, /deleteUserCanvasTemplateFromApi/, 'canvas template action hook should delete user canvas templates through the Studio API when available');
   assert.match(canvasTemplateActionsHookSource, /writeUserCanvasTemplates/, 'canvas template action hook should keep local personal template fallback storage in sync');
@@ -523,6 +526,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(libraryAssetsPath), 'studio library assets should live in a pure route-local helper');
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(editorNoticeHookPath), 'editor notice auto-clear should live in a route-local hook');
+  assert.ok(existsSync(canvasControllerHookPath), 'workspace canvas controller should live in a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(generationActionsHookPath), 'workspace shot generation actions should live in a route-local hook');
@@ -577,6 +581,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const assetLibraryModalSource = source(assetLibraryModalPath);
   const projectMediaLibraryModalSource = source(projectMediaLibraryModalPath);
   const editorNoticeHookSource = source(editorNoticeHookPath);
+  const canvasControllerHookSource = source(canvasControllerHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const exportControllerSource = source(exportControllerPath);
@@ -713,7 +718,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasImportsSource, /workspaceNodeKindForCanvasFile/, 'canvas import helper should classify local dropped and pasted files');
   assert.match(canvasImportsSource, /workspaceAssetRecordFromCanvasFile/, 'canvas import helper should build local asset records from browser object URLs');
   assert.match(canvasImportsSource, /createAdHocWorkspaceNode/, 'canvas import helper should build ad hoc canvas nodes for drops and snapshots');
-  assert.match(workspaceSource, /useWorkspaceCanvasImportActions/, 'orchestrator should delegate local canvas import actions to a route-local hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceCanvasImportActions/, 'canvas controller should delegate local canvas import actions to a route-local hook');
   assert.match(canvasImportActionsHookSource, /handleCanvasFileDrop/, 'canvas import hook should convert dropped local files into matching workspace nodes');
   assert.match(canvasImportActionsHookSource, /handleCanvasTextPaste/, 'canvas import hook should convert pasted plain text into prompt nodes');
   assert.match(canvasImportActionsHookSource, /handleSendProgramSnapshotToCanvas/, 'canvas import hook should convert program snapshots into image nodes');
@@ -1005,7 +1010,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(editorAssetLibraryHookSource, /setSource/, 'studio user library hook should expose a source setter to the browser UI');
   assert.match(pricingHookSource, /runPreflight/, 'workspace pricing hook should call the existing generate video preflight API');
   assert.match(workspaceSource, /useWorkspaceShotPricing/, 'orchestrator should inject live shot pricing estimates into nodes');
-  assert.match(workspaceSource, /useWorkspaceGenerationActions/, 'orchestrator should delegate shot generation actions to a route-local hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceGenerationActions/, 'canvas controller should delegate shot generation actions to a route-local hook');
   assert.match(generationActionsHookSource, /handleGenerateShot/, 'generation action hook should own shot generation submission');
   assert.match(generationActionsHookSource, /createPendingWorkspaceOutput/, 'generation action hook should create or reuse an output placeholder as soon as generation starts');
   assert.match(generationActionsHookSource, /findGeneratedOutputNodeForShot/, 'generation action hook should reuse an upstream output block when one already exists');
@@ -1017,7 +1022,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(graphHelpersSource, /isWorkspaceConnectionCompatible/, 'graph helper should reject incompatible graph links before adding edges');
   assert.match(graphHelpersSource, /workspaceConnectionCapacity/, 'graph helper should reject graph links when an input connector has no remaining capacity');
   assert.doesNotMatch(workspaceSource, /function workspaceConnectionRejectionReason/, 'orchestrator should not own graph connection rejection rules inline');
-  assert.match(workspaceSource, /useWorkspaceGraphActions/, 'orchestrator should delegate canvas graph mutations to a route-local hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceGraphActions/, 'canvas controller should delegate canvas graph mutations to a route-local hook');
   assert.match(graphActionsHookSource, /workspaceConnectionRejectionReason/, 'graph action hook should own connection rejection handling');
   assert.match(graphActionsHookSource, /handleCreateNodeFromHandleDrop/, 'graph action hook should own handle-drop node creation');
   assert.match(graphActionsHookSource, /handleCreateNodeFromPaletteDrop/, 'graph action hook should own palette node creation');
@@ -1031,7 +1036,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /WorkspaceRuntimeModals/, 'orchestrator should delegate runtime modal rendering to a route-local component');
   assert.doesNotMatch(workspaceSource, /WorkspaceAssetLibraryModal/, 'orchestrator should not render the editor asset library modal inline');
   assert.match(runtimeModalsSource, /WorkspaceAssetLibraryModal/, 'runtime modals should open the editor asset library from empty media nodes');
-  assert.match(workspaceSource, /useWorkspaceCanvasTimelineActions/, 'workspace should delegate canvas media timeline actions to a route-local hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceCanvasTimelineActions/, 'canvas controller should delegate canvas media timeline actions to a route-local hook');
   assert.match(canvasTimelineActionsHookSource, /handleSendOutputToTimeline/, 'canvas timeline action hook should own send-to-timeline insertion');
   assert.match(canvasTimelineActionsHookSource, /handleDropNodeToTimeline/, 'canvas timeline action hook should own canvas node timeline drops');
   assert.match(canvasTimelineActionsHookSource, /handleInvalidNodeDropToTimeline/, 'canvas timeline action hook should own rejected canvas node timeline drops');
@@ -1077,8 +1082,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineTrackActionsHookSource, /deleteWorkspaceTimelineTrackItems/, 'timeline track action hook should reuse state-level track deletion retargeting');
   assert.doesNotMatch(workspaceSource, /const handleAddTimelineVideoTrack = useCallback/, 'workspace orchestrator should not own video track creation internals');
   assert.doesNotMatch(workspaceSource, /const handleDeleteTimelineTrack = useCallback/, 'workspace orchestrator should not own timeline track deletion internals');
-  assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary/, 'orchestrator should feed the picker from the signed-in user media library');
-  assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined\)/, 'orchestrator should load the signed-in media library only when the picker modal is open');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary/, 'canvas controller should feed the picker from the signed-in user media library');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined\)/, 'canvas controller should load the signed-in media library only when the picker modal is open');
   assert.doesNotMatch(workspaceSource, /selectedMediaNodeKind/, 'selecting a media node should not preload the signed-in media library before the picker opens');
   assert.doesNotMatch(workspaceSource, /sidebarLibrary\s*=\s*useWorkspaceEditorAssetLibrary\(null\)/, 'orchestrator should not load the user media library directly in the sidebar');
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
@@ -1088,7 +1093,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /workspaceAssetRecordFromLibraryAsset/, 'workspace orchestrator should not convert library assets inline');
   assert.match(renderEdgesSource, /filterRenderableWorkspaceEdges/, 'renderable edge helper should omit edges whose handles are unavailable');
   assert.match(renderEdgesSource, /isWorkspaceConnectionCompatible/, 'renderable edge helper should omit persisted incompatible media-family edges');
-  assert.match(workspaceSource, /filterRenderableWorkspaceEdges/, 'orchestrator should avoid passing invalid handle edges to React Flow');
+  assert.match(canvasControllerHookSource, /filterRenderableWorkspaceEdges/, 'canvas controller should avoid passing invalid handle edges to React Flow');
   assert.match(templateProductAdSource, /createProductAdWorkspaceTemplate/, 'Product Ad starter template should be implemented in its own builder');
   assert.match(typesSource, /thumbnailUrl\?: string/, 'canvas template summaries should support visual thumbnails');
   assert.match(templateRegistrySource, /flow: 'Product ref -> style clip -> 4 shots'/, 'canvas template summaries should expose an AI workflow path');
@@ -1101,7 +1106,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(templateStoryboardToVideoSource, /createStoryboardToVideoWorkspaceTemplate/, 'Storyboard should have a focused template builder');
   assert.match(templateUgcAdSource, /createUgcAdWorkspaceTemplate/, 'UGC should have a focused template builder');
   assert.match(templateCinematicSceneSource, /createCinematicSceneWorkspaceTemplate/, 'Cinematic Scene should have a focused template builder');
-  assert.match(workspaceSource, /useWorkspaceRenderNodes/, 'orchestrator should delegate graph node render enrichment to a focused hook');
+  assert.match(canvasControllerHookSource, /useWorkspaceRenderNodes/, 'canvas controller should delegate graph node render enrichment to a focused hook');
   assert.doesNotMatch(workspaceSource, /getWorkspaceShotTargetHandles/, 'orchestrator should not derive rendered shot target handles inline');
   assert.match(renderNodesHookSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
   assert.match(renderNodesHookSource, /sourceHandles:\s*\[GENERATED_OUTPUT_TARGET_HANDLE\]/, 'rendered shot nodes should expose one reusable generated-output source handle');
@@ -1506,7 +1511,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should not render the project media import modal inline');
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
-  assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
   assert.match(projectMediaLibraryModalSource, /workspaceLibraryAssetFromUploadedAsset/, 'project media uploads should normalize into reusable library assets');

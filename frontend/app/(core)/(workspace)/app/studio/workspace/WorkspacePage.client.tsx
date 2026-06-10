@@ -11,13 +11,8 @@ import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useExportController } from './_controllers/useExportController';
-import { useWorkspaceCanvasTimelineActions } from './_hooks/useWorkspaceCanvasTimelineActions';
-import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImportActions';
-import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTemplateActions';
-import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
+import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
 import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
-import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
-import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
 import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
 import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
@@ -26,7 +21,6 @@ import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceAction
 import { useWorkspaceSequenceSnapshots } from './_hooks/useWorkspaceSequenceSnapshots';
 import { useWorkspaceShellActions } from './_hooks/useWorkspaceShellActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
-import { useWorkspaceRenderNodes } from './_hooks/useWorkspaceRenderNodes';
 import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
 import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineTrackActions';
@@ -48,7 +42,6 @@ import {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createStarterWorkspaceTemplate,
 } from './_lib/workspace-templates';
-import { filterRenderableWorkspaceEdges } from './_lib/workspace-render-edges';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
 } from './_lib/workspace-project-settings';
@@ -363,111 +356,64 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const {
     handleCreateNodeFromHandleDrop,
     handleCreateNodeFromPaletteDrop,
+    handleApplyCanvasTemplate,
+    handleApplyUserCanvasTemplate,
+    handleCanvasFileDrop,
+    handleCanvasTextPaste,
+    handleDeleteUserCanvasTemplate,
     handleOpenAssetLibrary,
+    handleDropNodeToTimeline,
+    handleDuplicateUserCanvasTemplate,
+    handleGenerateShot,
+    handleInvalidNodeDropToTimeline,
+    handleSaveCanvasTemplate,
     handleSelectLibraryAsset,
+    handleSendOutputToTimeline,
+    handleSendProgramSnapshotToCanvas,
     isValidConnection,
     onConnect,
     onEdgesChange,
     onNodesChange,
+    assetPickerLibrary,
+    assetPickerNode,
     patchNodeData,
     patchShot,
-  } = useWorkspaceGraphActions({
-    capabilities,
-    defaultModelId,
-    edges,
-    nodes,
-    setActiveEditorSurface,
-    setAssetPickerNodeId,
-    setEdges,
-    setNodes,
-    setNotice,
-    setSelectedNodeId,
-  });
-
-  const {
-    handleCanvasFileDrop,
-    handleCanvasTextPaste,
-    handleSendProgramSnapshotToCanvas,
-  } = useWorkspaceCanvasImportActions({
-    defaultModelId,
-    nodes,
-    patchNodeData,
-    setActiveEditorSurface,
-    setFocusMode,
-    setNodes,
-    setNotice,
-    setSelectedNodeId,
-  });
-
-  const { handleGenerateShot } = useWorkspaceGenerationActions({
-    capabilities,
-    edges,
-    mockMode,
-    nodes,
-    patchShot,
-    setActiveEditorSurface,
-    setEdges,
-    setNodes,
-    setNotice,
-    setSelectedNodeId,
-  });
-
-  const {
-    handleDropNodeToTimeline,
-    handleInvalidNodeDropToTimeline,
-    handleSendOutputToTimeline,
-  } = useWorkspaceCanvasTimelineActions({
-    commitTimelineItems,
-    lockedTimelineTracks,
-    nodes,
-    playheadSec,
-    setActiveEditorSurface,
-    setIsTimelinePlaying,
-    setNotice,
-    setPlayheadSec,
-    setSelectedTimelineItemId,
-    setSelectedTimelineItemIds,
-    timelineInsertIntoClipEnabled,
-    timelineItemsRef,
-  });
-
-  const renderNodes = useWorkspaceRenderNodes({
-    capabilities,
-    edges,
-    nodes,
-    pricingEstimates,
-    onGenerateShot: handleGenerateShot,
-    onOpenAssetLibrary: handleOpenAssetLibrary,
-    onPatchNodeData: patchNodeData,
-    onSendOutputToTimeline: handleSendOutputToTimeline,
-  });
-
-  const renderEdges = useMemo(() => filterRenderableWorkspaceEdges(renderNodes, edges), [edges, renderNodes]);
-  const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;
-  const assetPickerNode = renderNodes.find((node) => node.id === assetPickerNodeId) ?? null;
-  const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined);
-  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined);
-
-  const {
-    handleApplyCanvasTemplate,
-    handleApplyUserCanvasTemplate,
-    handleDeleteUserCanvasTemplate,
-    handleDuplicateUserCanvasTemplate,
-    handleSaveCanvasTemplate,
-  } = useWorkspaceCanvasTemplateActions({
+    projectMediaLibrary,
+    renderEdges,
+    renderNodes,
+    selectedNode,
+  } = useWorkspaceCanvasController({
     activeTemplateId,
     activeUserCanvasTemplateId,
+    assetPickerNodeId,
+    capabilities,
+    commitTimelineItems,
+    defaultModelId,
     edges,
+    isProjectMediaPickerOpen,
+    lockedTimelineTracks,
+    mockMode,
     nodes,
+    playheadSec,
+    pricingEstimates,
+    selectedNodeId,
     setActiveEditorSurface,
     setActiveTemplateId,
     setActiveUserCanvasTemplateId,
+    setAssetPickerNodeId,
     setCanvasRevision,
     setEdges,
+    setFocusMode,
+    setIsTimelinePlaying,
     setNodes,
     setNotice,
+    setPlayheadSec,
     setSelectedNodeId,
+    setSelectedTimelineItemId,
+    setSelectedTimelineItemIds,
     setUserCanvasTemplates,
+    timelineInsertIntoClipEnabled,
+    timelineItemsRef,
     userCanvasTemplates,
   });
 
