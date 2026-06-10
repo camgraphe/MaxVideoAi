@@ -162,6 +162,7 @@ const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts
 const workspaceSequenceSnapshotPath = join(workspaceDir, '_state/workspace-sequence-snapshot.ts');
 const workspaceSequenceOperationsPath = join(workspaceDir, '_state/workspace-sequence-operations.ts');
 const workspaceApiPersistencePath = join(workspaceDir, '_state/workspace-api-persistence.ts');
+const workspaceSequenceApiPersistencePath = join(workspaceDir, '_state/workspace-sequence-api-persistence.ts');
 const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
@@ -311,6 +312,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceSequenceOperationsSource = source(workspaceSequenceOperationsPath);
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
+  const workspaceSequenceApiPersistenceSource = source(workspaceSequenceApiPersistencePath);
   const canvasControllerHookSource = source(canvasControllerHookPath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
@@ -425,6 +427,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, /from '@\/lib\/authFetch'/, 'workspace orchestrator should not own Studio API fetch plumbing');
   assert.match(workspaceApiPersistenceSource, /authFetch/, 'Studio API persistence should own authenticated API fetches');
   assert.match(workspaceApiPersistenceSource, /normalizePersistedWorkspaceState/, 'Studio API persistence should own persisted workspace state normalization');
+  assert.match(workspaceApiPersistenceSource, /workspace-sequence-api-persistence/, 'Studio API persistence should delegate sequence network sync to a focused helper');
   assert.match(workspaceSource, /useWorkspacePersistenceEffects/, 'workspace should delegate hydration and autosave side effects to a route-local hook');
   assert.match(persistenceEffectsHookSource, /readStudioProject\(projectId\)/, 'workspace persistence hook should hydrate new project settings from the local project fallback');
   assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi\(projectId/, 'workspace persistence hook should hydrate project state from the Studio API when available');
@@ -432,7 +435,10 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(persistenceEffectsHookSource, /shouldApplyStudioProjectWorkspaceState/, 'workspace persistence hook should ignore stripped project timeline snapshots when sequence hydration is unavailable');
   assert.match(persistenceEffectsHookSource, /mergePersistedWorkspaceWithServerSequences/, 'workspace persistence hook should merge server sequences into project state instead of using two timeline sources');
   assert.match(persistenceEffectsHookSource, /saveStudioWorkspaceToApi/, 'workspace persistence hook should autosave project and sequence state through one API boundary');
-  assert.match(workspaceApiPersistenceSource, /saveStudioSequencesToApi/, 'Studio API persistence should own sequence record synchronization');
+  assert.match(workspaceSequenceApiPersistenceSource, /saveStudioSequencesToApi/, 'Studio sequence API persistence should own sequence record synchronization');
+  assert.match(workspaceSequenceApiPersistenceSource, /readStudioSequencesFromApi/, 'Studio sequence API persistence should own sequence hydration requests');
+  assert.match(workspaceSequenceApiPersistenceSource, /workspaceSequenceTimelineState/, 'Studio sequence API persistence should serialize sequence timeline state');
+  assert.match(workspaceSequenceApiPersistenceSource, /\/sequences/, 'Studio sequence API persistence should own sequence API endpoints');
   assert.match(workspaceApiPersistenceSource, /stripWorkspaceSequencesForProjectApi/, 'Studio API persistence should strip timeline records from project workspaceState after sequence sync succeeds');
   assert.match(workspaceApiPersistenceSource, /shouldApplyStudioProjectWorkspaceState/, 'Studio API persistence should define stripped workspace fallback rules');
   assert.match(workspaceApiPersistenceSource, /mergePersistedWorkspaceWithServerSequences/, 'Studio API persistence should define the sequence merge rule');
@@ -638,6 +644,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(workspaceSequenceSnapshotPath), 'active sequence snapshots should live in a pure route-local state helper');
   assert.ok(existsSync(workspaceSequenceOperationsPath), 'workspace sequence list operations should live in a pure route-local state helper');
   assert.ok(existsSync(workspaceApiPersistencePath), 'workspace API persistence and persisted state normalization should live in _state/workspace-api-persistence.ts');
+  assert.ok(existsSync(workspaceSequenceApiPersistencePath), 'workspace sequence API synchronization should live in a focused route-local state helper');
   assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
   assert.ok(existsSync(workspaceNormalizersPath), 'workspace graph and media normalization should live in _state/workspace-normalizers.ts');
 
