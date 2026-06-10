@@ -169,6 +169,7 @@ const timelinePlaybackHookPath = join(workspaceDir, '_hooks/useWorkspaceTimeline
 const timelineSelectionSyncHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineSelectionSync.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
+const studioSessionStylesPath = join(workspaceDir, '_styles/studio-session.module.css');
 const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
 const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
@@ -271,6 +272,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
   assert.ok(existsSync(shellStylesPath), 'editor shell styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(studioSessionStylesPath), 'Studio header session styles should live in a focused route-local CSS module');
   assert.ok(existsSync(canvasStylesPath), 'canvas sidebar styles should live in a focused route-local CSS module');
   assert.ok(existsSync(canvasMapStylesPath), 'canvas map styles should live in a focused route-local CSS module');
   assert.ok(existsSync(timelineStylesPath), 'timeline styles should live in a focused route-local CSS module');
@@ -306,6 +308,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const librarySource = source(libraryPath);
   const styleSource = source(stylesPath);
   const shellStyleSource = source(shellStylesPath);
+  const studioSessionStyleSource = source(studioSessionStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
@@ -343,15 +346,17 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceEditorTopbarSource, /StudioHeaderSession/, 'workspace topbar should compose Studio session and wallet status in the header');
   assert.match(workspaceEditorTopbarSource, /onEditorSurfaceChange\('timeline'\)/, 'workspace topbar should switch Viewer mode into timeline editing surface');
   assert.match(workspaceEditorLayoutSource, /from '\.\.\/_styles\/shell\.module\.css'/, 'workspace shell layout should import focused shell CSS');
-  assert.match(studioHeaderSessionSource, /from '\.\.\/_styles\/shell\.module\.css'/, 'Studio header session should import focused shell CSS directly');
+  assert.match(studioHeaderSessionSource, /from '\.\.\/_styles\/studio-session\.module\.css'/, 'Studio header session should import focused session CSS directly');
   assert.match(librarySource, /from '\.\.\/_styles\/canvas\.module\.css'/, 'canvas sidebar should import focused canvas sidebar CSS');
   assert.match(shellStyleSource, /\.editorShell/, 'shell CSS should own the editor shell layout');
   assert.match(canvasStyleSource, /\.blockTemplateList/, 'canvas CSS should own block template list styling');
   assert.match(timelineStyleSource, /\.timelinePanel/, 'timeline CSS should own the timeline panel layout');
   assert.match(shellStyleSource, /\.editorTopbar/, 'shell CSS should own the topbar layout');
   assert.match(shellStyleSource, /\.editorBody/, 'shell CSS should own the main body grid');
-  assert.match(shellStyleSource, /\.studioWalletPill/, 'shell CSS should own wallet header styles');
-  assert.match(shellStyleSource, /\.studioSessionPill/, 'shell CSS should own account session styles');
+  assert.match(studioSessionStyleSource, /\.studioWalletPill/, 'Studio session CSS should own wallet header styles');
+  assert.match(studioSessionStyleSource, /\.studioSessionPill/, 'Studio session CSS should own account session styles');
+  assert.doesNotMatch(shellStyleSource, /\.studioWalletPill/, 'shell CSS should no longer own wallet header styles');
+  assert.doesNotMatch(shellStyleSource, /\.studioSessionPill/, 'shell CSS should no longer own account session styles');
   assert.match(shellStyleSource, /\.viewerFocus/, 'shell CSS should own Viewer-mode shell grid rules');
   assert.doesNotMatch(styleSource, /\.editorShell/, 'main editor CSS should no longer own shell layout after modularization');
   assert.doesNotMatch(styleSource, /\.editorTopbar/, 'main editor CSS should no longer own topbar layout after modularization');
@@ -683,6 +688,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackDefinitionsSource = source(timelineTrackDefinitionsPath);
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
+  const studioSessionStyleSource = source(studioSessionStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
@@ -1541,6 +1547,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(shellStyleSource, /\.iconButton/, 'shell CSS module should own compact header icon buttons');
   assert.doesNotMatch(styleSource, /\.brandLogo/, 'main editor CSS should no longer own brand logo styles after shell extraction');
   assert.ok(lineCount(shellStyleSource) <= 1200, 'editor shell CSS module should stay under the focused module size threshold');
+  assert.ok(lineCount(studioSessionStyleSource) <= 320, 'Studio session CSS module should stay under the focused module size threshold');
+  assert.match(studioSessionStyleSource, /\.studioSessionCluster/, 'Studio session CSS module should own session header layout');
+  assert.match(studioSessionStyleSource, /\.studioWalletPrompt/, 'Studio session CSS module should own wallet top-up prompt styles');
   assert.ok(lineCount(canvasStyleSource) <= 1200, 'canvas CSS module should stay under the focused module size threshold');
   assert.ok(lineCount(canvasMapStyleSource) <= 300, 'canvas map CSS module should stay small and focused');
   assert.match(canvasStyleSource, /\.canvasShell/, 'canvas surface should be styled in focused canvas CSS');
