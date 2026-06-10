@@ -1391,8 +1391,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /Render backend pending/, 'export action should no longer present a fake pending backend');
   assert.doesNotMatch(workspaceSource, /buildWorkspaceTimelineRenderManifest\(/, 'workspace orchestrator should not build timeline render manifests inline');
   assert.match(exportStateHookSource, /buildWorkspaceTimelineRenderManifest/, 'workspace export state hook should build a timeline render manifest');
+  assert.match(exportStateHookSource, /activeSequenceId/, 'workspace export state should attach the active sequence identity to render manifests');
   assert.match(exportStateHookSource, /filterHiddenVideoTrackItems/, 'workspace export state hook should filter hidden video tracks for viewer and export state');
   assert.match(exportStateHookSource, /muteAudioTrackItems/, 'workspace export state hook should apply muted audio tracks for viewer and export state');
+  assert.match(timelineRenderSource, /sequenceId/, 'timeline render manifests should include the source Studio sequence id');
+  assert.match(timelineRenderSource, /sequenceName/, 'timeline render manifests should include the source Studio sequence name');
   assert.match(exportControllerSource, /serializeWorkspaceTimelineRenderManifest/, 'export controller should serialize the render manifest contract');
   assert.match(exportControllerSource, /workspace-timeline-export/, 'export controller should import export-specific contracts from the timeline export helper');
   assert.match(exportControllerSource, /buildWorkspaceTimelineVideoExportRequest/, 'export controller should build the MP4 video export request contract');
@@ -3492,6 +3495,8 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
     items,
     nodes: template.nodes,
     projectName: 'Product Ad',
+    sequenceId: 'sequence-main',
+    sequenceName: 'Main sequence',
     createdAt: '2026-06-06T10:00:00.000Z',
   });
   const videoTrack = manifest.tracks.find((track) => track.id === 'video');
@@ -3499,6 +3504,8 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
   const musicTrack = manifest.tracks.find((track) => track.id === 'audio-2');
 
   assert.equal(manifest.status, 'ready', 'ready timelines should produce a renderable manifest');
+  assert.equal(manifest.sequenceId, 'sequence-main', 'render manifests should carry the active Studio sequence id');
+  assert.equal(manifest.sequenceName, 'Main sequence', 'render manifests should carry the active Studio sequence name');
   assert.equal(manifest.durationSec, 28, 'manifest duration should include audio beds, not only the video track');
   assert.deepEqual(
     videoTrack?.clips.map((clip) => [clip.id, clip.startSec, clip.endSec, clip.sourceStartSec, clip.sourceEndSec]),
@@ -3576,6 +3583,7 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
       serverRenderMode: videoExportRequest.exportSettings.serverRenderMode,
       hasIdempotencyKey: typeof videoExportRequest.idempotencyKey === 'string' && videoExportRequest.idempotencyKey.length > 0,
       rangeMode: videoExportRequest.manifest.exportRange.mode,
+      sequenceId: videoExportRequest.manifest.sequenceId,
     },
     {
       source: 'maxvideoai-editor',
@@ -3586,6 +3594,7 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
       serverRenderMode: 'server',
       hasIdempotencyKey: true,
       rangeMode: 'sequence',
+      sequenceId: 'sequence-main',
     },
     'video export request should wrap the manifest with MP4/H.264 settings and selected quality'
   );

@@ -170,6 +170,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     videoTrackCount,
   });
   const exportState = useWorkspaceExportState({
+    activeSequenceId,
     activeTemplateName,
     exportRangeMode,
     hiddenVideoTracks,

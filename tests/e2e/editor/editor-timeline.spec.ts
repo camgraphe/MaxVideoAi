@@ -239,21 +239,6 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
       }),
     });
   });
-  await page.route('**/api/studio/timeline-exports/tlx_e2e_export', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        export: {
-          id: 'tlx_e2e_export',
-          status: 'completed',
-          progress: 100,
-          message: 'Export ready.',
-          output_url: 'https://cdn.maxvideoai.test/timeline-exports/tlx_e2e_export.mp4',
-        },
-      }),
-    });
-  });
   await page.route('**/api/studio/timeline-exports', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
@@ -278,6 +263,21 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
       }),
     });
   });
+  await page.route('**/api/studio/timeline-exports/tlx_e2e_export', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        export: {
+          id: 'tlx_e2e_export',
+          status: 'completed',
+          progress: 100,
+          message: 'Export ready.',
+          output_url: 'https://cdn.maxvideoai.test/timeline-exports/tlx_e2e_export.mp4',
+        },
+      }),
+    });
+  });
 
   await page.getByRole('button', { name: 'Open export dialog' }).click();
   const dialog = page.getByRole('dialog', { name: 'Export sequence' });
@@ -296,7 +296,8 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
   await expect(dialog).toContainText('Advanced');
   await dialog.getByRole('button', { name: 'Export video' }).click();
   await expect(dialog.getByRole('status')).toContainText(/Server export queued|Export ready/);
-  await expect(dialog.getByRole('link', { name: 'Download server export' })).toHaveAttribute(
+  await expect(dialog.getByRole('status')).toContainText('Export ready. Download available.');
+  await expect(dialog.getByRole('link', { name: 'Download MP4' })).toHaveAttribute(
     'href',
     'https://cdn.maxvideoai.test/timeline-exports/tlx_e2e_export.mp4'
   );
@@ -308,6 +309,7 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
         return JSON.parse(rawRequest) as {
           exportSettings?: { format?: string; qualityPreset?: string; serverRenderMode?: string };
           idempotencyKey?: string;
+          manifest?: { sequenceId?: string; sequenceName?: string };
           source?: string;
         };
       })
@@ -317,6 +319,10 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
         format: 'mp4-h264',
         qualityPreset: 'standard',
         serverRenderMode: 'server',
+      },
+      manifest: {
+        sequenceId: 'sequence-main',
+        sequenceName: 'Main sequence',
       },
       source: 'maxvideoai-editor',
     });

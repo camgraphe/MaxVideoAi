@@ -164,6 +164,8 @@ export function WorkspaceExportDialog({
               <span>MP4 H.264</span>
             </div>
             <div className={styles.exportSummaryGrid}>
+              <span>Sequence</span>
+              <strong>{manifest.sequenceName}</strong>
               <span>Project</span>
               <strong>{dimensionsLabel}</strong>
               <span>Range</span>

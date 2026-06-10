@@ -75,6 +75,8 @@ export type WorkspaceTimelineRenderManifest = {
   version: typeof WORKSPACE_TIMELINE_RENDER_VERSION;
   source: 'maxvideoai-editor';
   projectName: string;
+  sequenceId: string;
+  sequenceName: string;
   projectSettings?: WorkspaceProjectSettings;
   createdAt: string;
   status: 'ready' | 'blocked';
@@ -324,6 +326,8 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   items: WorkspaceTimelineItem[];
   nodes: WorkspaceGraphNode[];
   projectName: string;
+  sequenceId?: string;
+  sequenceName?: string;
   projectSettings?: WorkspaceProjectSettings;
   createdAt?: string;
   exportRange?: {
@@ -368,6 +372,8 @@ export function buildWorkspaceTimelineRenderManifest(params: {
     version: WORKSPACE_TIMELINE_RENDER_VERSION,
     source: 'maxvideoai-editor',
     projectName: params.projectName,
+    sequenceId: params.sequenceId ?? 'sequence-main',
+    sequenceName: params.sequenceName?.trim() || 'Main sequence',
     projectSettings: params.projectSettings,
     createdAt: params.createdAt ?? new Date().toISOString(),
     status,

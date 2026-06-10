@@ -8,6 +8,8 @@ const defaultProps: TimelineExportRenderProps = {
     version: 1,
     source: 'maxvideoai-editor',
     projectName: 'Timeline Export',
+    sequenceId: 'sequence-main',
+    sequenceName: 'Main sequence',
     createdAt: new Date(0).toISOString(),
     status: 'ready',
     durationSec: 1,

@@ -29,6 +29,7 @@ type WorkspaceExportRangeInput =
   | { mode: 'in-out'; startSec: number; endSec: number };
 
 type UseWorkspaceExportStateOptions = {
+  activeSequenceId: string;
   activeTemplateName: string;
   exportRangeMode: WorkspaceTimelineExportRangeMode;
   hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
@@ -55,6 +56,7 @@ type WorkspaceExportState = {
 };
 
 export function useWorkspaceExportState({
+  activeSequenceId,
   activeTemplateName,
   exportRangeMode,
   hiddenVideoTracks,
@@ -105,15 +107,22 @@ export function useWorkspaceExportState({
     [exportRangeMode, hasValidTimelineInOut, timelineInPointSec, timelineOutPointSec]
   );
 
+  const activeSequenceSummary = useMemo(
+    () => sequenceSummaries.find((sequence) => sequence.id === activeSequenceId) ?? null,
+    [activeSequenceId, sequenceSummaries]
+  );
+
   const exportManifest = useMemo(
     () => buildWorkspaceTimelineRenderManifest({
       items: exportTimelineItems,
       nodes,
       projectName: activeTemplateName,
+      sequenceId: activeSequenceId,
+      sequenceName: activeSequenceSummary?.name,
       projectSettings,
       exportRange: activeExportRange,
     }),
-    [activeExportRange, activeTemplateName, exportTimelineItems, nodes, projectSettings]
+    [activeExportRange, activeSequenceId, activeSequenceSummary?.name, activeTemplateName, exportTimelineItems, nodes, projectSettings]
   );
 
   return {
