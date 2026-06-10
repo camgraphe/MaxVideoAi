@@ -118,6 +118,7 @@ const templateCinematicScenePath = join(workspaceDir, '_lib/templates/cinematic-
 const templateVariantBasePath = join(workspaceDir, '_lib/templates/variant-base.ts');
 const workspaceStatePath = join(workspaceDir, '_state/workspace-state.ts');
 const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts');
+const workspaceSequenceSnapshotPath = join(workspaceDir, '_state/workspace-sequence-snapshot.ts');
 const workspaceApiPersistencePath = join(workspaceDir, '_state/workspace-api-persistence.ts');
 const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
@@ -421,6 +422,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(templateVariantBasePath), 'variant canvas templates should share a focused builder helper');
   assert.ok(existsSync(workspaceStatePath), 'workspace persisted state contracts should live in _state/workspace-state.ts');
   assert.ok(existsSync(workspaceSelectorsPath), 'workspace derived state selectors should live in _state/workspace-selectors.ts');
+  assert.ok(existsSync(workspaceSequenceSnapshotPath), 'active sequence snapshots should live in a pure route-local state helper');
   assert.ok(existsSync(workspaceApiPersistencePath), 'workspace API persistence and persisted state normalization should live in _state/workspace-api-persistence.ts');
   assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
   assert.ok(existsSync(workspaceNormalizersPath), 'workspace graph and media normalization should live in _state/workspace-normalizers.ts');
@@ -485,6 +487,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const templateCinematicSceneSource = source(templateCinematicScenePath);
   const workspaceStateSource = source(workspaceStatePath);
   const workspaceSelectorsSource = source(workspaceSelectorsPath);
+  const workspaceSequenceSnapshotSource = source(workspaceSequenceSnapshotPath);
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const workspacePersistenceSource = source(workspacePersistencePath);
   const workspaceNormalizersSource = source(workspaceNormalizersPath);
@@ -623,6 +626,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceStateSource, /type PersistedWorkspaceState/, 'workspace state module should own persisted workspace contracts');
   assert.match(workspaceSelectorsSource, /buildWorkspaceSequenceSummaries/, 'workspace selectors should derive sidebar sequence summaries outside the orchestrator');
   assert.match(workspaceSelectorsSource, /selectedWorkspaceTimelineItem/, 'workspace selectors should derive selected timeline items outside the orchestrator');
+  assert.match(workspaceSource, /buildWorkspaceActiveSequenceSnapshot/, 'workspace should delegate active sequence snapshot construction');
+  assert.match(workspaceSequenceSnapshotSource, /createWorkspaceSequenceRecord/, 'active sequence snapshot helper should compose canonical sequence records');
+  assert.match(workspaceSequenceSnapshotSource, /sequenceNameForIndex/, 'active sequence snapshot helper should own active sequence fallback naming');
+  assert.doesNotMatch(workspaceSource, /storedSequence\?\.name\s*\?\?\s*sequenceNameForIndex/, 'workspace orchestrator should not duplicate active sequence naming fallback inline');
   assert.match(workspaceApiPersistenceSource, /\/api\/studio\/projects\/\$\{encodeURIComponent\(projectId\)\}/, 'workspace API persistence should read project-scoped Studio workspaces');
   assert.match(workspaceApiPersistenceSource, /\/api\/studio\/canvas-templates/, 'workspace API persistence should sync user canvas templates through the Studio API');
   assert.match(workspaceApiPersistenceSource, /normalizePersistedProjectAssets/, 'workspace API persistence should normalize persisted project media assets');

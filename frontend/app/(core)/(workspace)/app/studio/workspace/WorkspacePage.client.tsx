@@ -160,6 +160,7 @@ import {
   sequenceNameForIndex,
   workspaceTimelineDurationSec,
 } from './_state/workspace-selectors';
+import { buildWorkspaceActiveSequenceSnapshot } from './_state/workspace-sequence-snapshot';
 import {
   readPersistedWorkspaceState,
   readStudioProject,
@@ -285,10 +286,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineDurationSec,
   });
   const liveActiveSequence = useMemo(() => {
-    const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
-    return createWorkspaceSequenceRecord({
-      id: activeSequenceId,
-      name: storedSequence?.name ?? sequenceNameForIndex(Math.max(1, sequences.findIndex((sequence) => sequence.id === activeSequenceId) + 1)),
+    return buildWorkspaceActiveSequenceSnapshot({
+      activeSequenceId,
       timelineItems,
       projectSettings,
       audioTrackCount,
@@ -299,8 +298,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       timelinePanelHeight,
       timelineInPointSec,
       timelineOutPointSec,
-      createdAt: storedSequence?.createdAt,
-      updatedAt: storedSequence?.updatedAt,
+      sequences,
+      preserveStoredUpdatedAt: true,
     });
   }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
   const sequenceSummaries = useMemo<WorkspaceProjectSequenceSummary[]>(() => {
@@ -466,10 +465,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   }, [notice]);
 
   const snapshotActiveSequence = useCallback((): WorkspaceSequenceRecord => {
-    const storedSequence = sequences.find((sequence) => sequence.id === activeSequenceId);
-    return createWorkspaceSequenceRecord({
-      id: activeSequenceId,
-      name: storedSequence?.name ?? sequenceNameForIndex(Math.max(1, sequences.findIndex((sequence) => sequence.id === activeSequenceId) + 1)),
+    return buildWorkspaceActiveSequenceSnapshot({
+      activeSequenceId,
       timelineItems,
       projectSettings,
       audioTrackCount,
@@ -480,7 +477,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       timelinePanelHeight,
       timelineInPointSec,
       timelineOutPointSec,
-      createdAt: storedSequence?.createdAt,
+      sequences,
     });
   }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
 
