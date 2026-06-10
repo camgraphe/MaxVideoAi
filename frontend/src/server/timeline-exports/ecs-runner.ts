@@ -2,6 +2,8 @@ import 'server-only';
 
 import { ECSClient, RunTaskCommand, type Failure } from '@aws-sdk/client-ecs';
 
+const DEFAULT_TIMELINE_EXPORT_ECS_CONTAINER_NAME = 'timeline-export-worker';
+
 const REQUIRED_ENV = [
   'TIMELINE_EXPORT_ECS_CLUSTER',
   'TIMELINE_EXPORT_ECS_TASK_DEFINITION',
@@ -18,6 +20,7 @@ type TimelineExportEcsConfig = {
   region: string;
   subnets: string[];
   securityGroups: string[];
+  containerName: string;
 };
 
 export type TimelineExportWorkerLaunchResult =
@@ -49,6 +52,8 @@ function readTimelineExportEcsConfig(env: NodeJS.ProcessEnv = process.env): Time
     region: readRequiredEnv('TIMELINE_EXPORT_ECS_REGION'),
     subnets: splitCsv(readRequiredEnv('TIMELINE_EXPORT_ECS_SUBNETS'), 'TIMELINE_EXPORT_ECS_SUBNETS'),
     securityGroups: splitCsv(readRequiredEnv('TIMELINE_EXPORT_ECS_SECURITY_GROUP'), 'TIMELINE_EXPORT_ECS_SECURITY_GROUP'),
+    containerName:
+      env.TIMELINE_EXPORT_ECS_CONTAINER_NAME?.trim() || DEFAULT_TIMELINE_EXPORT_ECS_CONTAINER_NAME,
   };
 }
 
@@ -80,6 +85,14 @@ export async function launchTimelineExportWorkerTask(params: {
       count: 1,
       startedBy: `timeline-export:${params.exportId}`.slice(0, 36),
       group: 'maxvideoai-timeline-export',
+      overrides: {
+        containerOverrides: [
+          {
+            name: config.containerName,
+            environment: [{ name: 'TIMELINE_EXPORT_TARGET_ID', value: params.exportId }],
+          },
+        ],
+      },
       networkConfiguration: {
         awsvpcConfiguration: {
           assignPublicIp: 'ENABLED',

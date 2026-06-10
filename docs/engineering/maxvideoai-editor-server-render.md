@@ -25,6 +25,8 @@ pnpm --prefix frontend run timeline-exports:worker
 
 Use continuous mode only for local/staging debugging. In production the worker preflight rejects loop mode unless `--once` is present. The worker also fails fast when `DATABASE_URL` or object storage is missing, claims one queued job with `FOR UPDATE SKIP LOCKED`, renders the Remotion composition to MP4, uploads it under `timeline-exports/`, and saves it into media library.
 
+When a worker receives `TIMELINE_EXPORT_TARGET_ID` or `--export-id <id>`, it claims only that queued export. Without a target id it keeps the older pool behavior and claims the next queued export. If a targeted once worker cannot claim the target because it is no longer queued, it exits without rendering another user's queued job.
+
 ## AWS ECS Fargate Launch
 
 Vercel must not render MP4s inside route handlers. The create-export API only creates the durable `app_timeline_exports` row, reserves billing, then calls AWS ECS `RunTask` to start one short-lived Fargate worker task.
@@ -34,6 +36,7 @@ Vercel must not render MP4s inside route handlers. The create-export API only cr
 - ECS mode: `RunTask` only; do not run an always-on ECS service.
 - Network mode: Fargate `awsvpc`, public subnets, `assignPublicIp: ENABLED`; no NAT Gateway required.
 - Cost guard: one task per newly-created queued export. Idempotent retries that reuse an existing queued/rendering/completed export must not start another task.
+- Targeting: `RunTask` passes `TIMELINE_EXPORT_TARGET_ID` as a container override so the spawned task renders the export row that triggered it.
 - Worker size: keep the task definition at `2 vCPU / 4 GB`.
 - Worker preflight: Fargate must provide `DATABASE_URL`, storage credentials, and `CHROME_BIN` or `PUPPETEER_EXECUTABLE_PATH`. The Dockerfile sets Chromium paths by default.
 - API preflight: for a new idempotency key, the create-export route checks ECS launcher env before reserving free quota or wallet balance. Existing idempotent jobs can still be read without launching a duplicate task.
@@ -44,9 +47,12 @@ Required server-only env vars:
 TIMELINE_EXPORT_ECS_REGION=us-east-1
 TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports
 TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2
+TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker
 TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a
 TIMELINE_EXPORT_ECS_SUBNETS=subnet-056b0e21b43d5f9a0,subnet-052782533ff5c999b,subnet-0259349f2a43a61e9,subnet-02a8f9a8f9705eb93,subnet-08810baae918cd7e8,subnet-050836f43a4a5b96e
 ```
+
+`TIMELINE_EXPORT_ECS_CONTAINER_NAME` defaults to `timeline-export-worker`. Set it only when the task definition uses a different container name.
 
 Use a dedicated AWS launcher identity for Vercel, not the storage uploader credentials. Its policy should be limited to:
 

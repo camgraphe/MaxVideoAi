@@ -75,6 +75,7 @@ test('timeline export repository owns job creation and claim operations', () => 
   const source = readFileSync(repositoryPath, 'utf8');
   assert.match(source, /createTimelineExportJob/);
   assert.match(source, /claimNextQueuedTimelineExport/);
+  assert.match(source, /claimQueuedTimelineExportById/);
   assert.match(source, /completeTimelineExportJob/);
   assert.match(source, /failTimelineExportJob/);
 });
@@ -117,6 +118,9 @@ test('timeline export ECS runner starts one Fargate task without long route rend
   assert.match(source, /assertTimelineExportWorkerLauncherConfigured/, 'ECS runner should expose a non-launching config preflight');
   assert.match(source, /launchType:\s*'FARGATE'/, 'ECS runner should launch Fargate tasks');
   assert.match(source, /assignPublicIp:\s*'ENABLED'/, 'ECS runner should use public subnets without NAT');
+  assert.match(source, /containerOverrides/, 'ECS runner should pass export targeting into the worker container');
+  assert.match(source, /TIMELINE_EXPORT_TARGET_ID/, 'ECS runner should target the export that triggered the task');
+  assert.match(source, /TIMELINE_EXPORT_ECS_CONTAINER_NAME/, 'ECS runner should allow task definition container name overrides');
   assert.match(source, /TIMELINE_EXPORT_ECS_CLUSTER/);
   assert.match(source, /TIMELINE_EXPORT_ECS_TASK_DEFINITION/);
   assert.match(source, /TIMELINE_EXPORT_ECS_SUBNETS/);
@@ -154,6 +158,9 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
   assert.match(rendererSource, /TIMELINE_EXPORT_OUTPUT_MISSING/);
   assert.match(rendererSource, /TIMELINE_EXPORT_OUTPUT_EMPTY/);
   assert.match(workerSource, /claimNextQueuedTimelineExport/);
+  assert.match(workerSource, /claimQueuedTimelineExportById/);
+  assert.match(workerSource, /TIMELINE_EXPORT_TARGET_ID/);
+  assert.match(workerSource, /--export-id/);
   assert.match(workerSource, /assertTimelineExportWorkerEnvironment/);
   assert.match(preflightSource, /TIMELINE_EXPORT_WORKER_REQUIRES_ONCE/);
   assert.match(preflightSource, /isDatabaseConfigured/);
@@ -176,6 +183,7 @@ test('timeline export worker has a dedicated Docker image and documented env', (
   assert.match(envSource, /TIMELINE_EXPORT_ECS_REGION=us-east-1/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SUBNETS=/);
   assert.doesNotMatch(envSource, /videohub-uploader/, 'worker docs should not reuse broad uploader credentials');
@@ -189,6 +197,8 @@ test('server render operations guide exists', () => {
   assert.match(source, /DATABASE_URL/);
   assert.match(source, /Empty or missing MP4 output/);
   assert.match(source, /RunTask/);
+  assert.match(source, /TIMELINE_EXPORT_TARGET_ID/);
+  assert.match(source, /TIMELINE_EXPORT_ECS_CONTAINER_NAME/);
   assert.match(source, /Dockerfile\.timeline-worker/);
   assert.match(source, /ecs:RunTask/);
   assert.match(source, /iam:PassRole/);

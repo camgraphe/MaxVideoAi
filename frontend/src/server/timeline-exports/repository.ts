@@ -144,6 +144,30 @@ export async function claimNextQueuedTimelineExport(): Promise<TimelineExportJob
   });
 }
 
+export async function claimQueuedTimelineExportById(exportId: string): Promise<TimelineExportJobRecord | null> {
+  await ensureTimelineExportSchema();
+  return withDbTransaction(async (executor) => {
+    const rows = await executor.query<TimelineExportJobRecord>(
+      `UPDATE app_timeline_exports
+          SET status = 'rendering',
+              progress = 5,
+              started_at = NOW(),
+              updated_at = NOW()
+        WHERE id = (
+          SELECT id
+            FROM app_timeline_exports
+           WHERE id = $1
+             AND status = 'queued'
+           FOR UPDATE SKIP LOCKED
+           LIMIT 1
+        )
+        RETURNING *`,
+      [exportId]
+    );
+    return rows[0] ?? null;
+  });
+}
+
 export async function updateTimelineExportProgress(params: {
   exportId: string;
   progress: number;
