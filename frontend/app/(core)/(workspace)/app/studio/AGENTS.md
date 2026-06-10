@@ -10,6 +10,7 @@ This folder owns the MaxVideoAI Studio product surface:
 The Studio editor is intentionally separate from the main generation workspace. Do not import or recreate the existing app chrome here unless a feature is explicitly shared outside Studio.
 
 Read `docs/engineering/studio-editor-architecture.md` before changing Studio entities, adding a block/model/template, or moving timeline/viewer responsibilities.
+Use its Ownership Map and Additive Change Checklist before deciding where code belongs.
 
 ## Product Model
 
@@ -30,9 +31,12 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Add a new block type by updating `workspace-types.ts`, `workspace-templates.ts`, node rendering in `_components/nodes/`, and compatibility tests.
 - Add a new model by updating `workspace-capabilities.ts` and generation/pricing adapters. The shot block should derive connectors from capabilities.
 - Add timeline behavior in `workspace-timeline-editing.ts`, `workspace-timeline-render.ts`, or `workspace-timeline-tracks.ts` before wiring UI.
+- Add sequence list behavior in `workspace/_state/workspace-sequence-operations.ts` before wiring Project media or inspector UI.
+- Add Project media behavior in `workspace/_controllers/useProjectMediaController.ts`, `workspace/_components/TimelineProjectSidebar.tsx`, and pure timeline insertion helpers. Sequence cards manage sequences; media cards drag/insert media.
 - Add viewer behavior in `WorkspaceVideoViewer.tsx` and pure render helpers, not inside the timeline component.
 - Add project persistence in `frontend/src/server/studio` plus `frontend/app/api/studio`; keep client fallback to local storage until backend availability is guaranteed.
 - Add UI as route-local components under `workspace/_components` unless it is clearly reused by another route.
+- Add MP4 export behavior as API + worker orchestration. The browser can create requests and poll jobs, but it must not pretend to render final server MP4s without a running worker.
 
 ## Guardrails
 
@@ -44,6 +48,7 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Timeline drags must be frame-aware and must revert if an operation cannot resolve cleanly.
 - Video clips with linked audio should move together by default until explicitly unlinked.
 - Project settings are sequence/project state, not scattered controls inside unrelated panels.
+- Server MP4 export requires a job worker, storage, billing/idempotency, and completed artifact URL. Local manifest or EDL export is a different feature.
 - Keep the editor CSS isolated in `maxvideoai-editor.module.css`.
 
 ## Contracts And Tests

@@ -338,8 +338,16 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const assetLibraryStyleSource = source(assetLibraryStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
   assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
+  assert.match(studioArchitectureGuideSource, /Ownership Map/, 'studio architecture guide should map Studio ownership boundaries');
+  assert.match(studioArchitectureGuideSource, /Additive Change Checklist/, 'studio architecture guide should define additive change review questions');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Block/, 'studio architecture guide should explain additive block work');
   assert.match(studioArchitectureGuideSource, /Add A Generation Model/, 'studio architecture guide should explain additive model capability work');
+  assert.match(studioArchitectureGuideSource, /Add A Sequence Or Project Media Operation/, 'studio architecture guide should explain additive Project media and sequence work');
+  assert.match(studioArchitectureGuideSource, /Render Worker Boundary/, 'studio architecture guide should define the MP4 render worker boundary');
+  assert.match(studioArchitectureGuideSource, /State And Performance Contracts/, 'studio architecture guide should define state and performance contracts');
+  assert.match(studioAgentsSource, /Ownership Map and Additive Change Checklist/, 'studio AGENTS guide should route agents through the architecture ownership checklist');
+  assert.match(studioAgentsSource, /workspace\/_state\/workspace-sequence-operations\.ts/, 'studio AGENTS guide should keep sequence list behavior in the sequence operations helper');
+  assert.match(studioAgentsSource, /API \+ worker orchestration/, 'studio AGENTS guide should keep server MP4 export behind API and worker orchestration');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Template/, 'studio architecture guide should explain additive template work');
   assert.match(studioArchitectureGuideSource, /Add Timeline Behavior/, 'studio architecture guide should route timeline behavior through pure helpers');
   assert.match(studioArchitectureGuideSource, /Add Export Behavior/, 'studio architecture guide should define server export behavior');
