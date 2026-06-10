@@ -50,10 +50,10 @@ export function useWorkspaceShellActions({
   handleExportQualityPresetChange: (preset: WorkspaceTimelineExportQualityPreset) => void;
   handleExportRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
   handleOpenExportDialog: () => void;
-  handleProjectSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
+  handleSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
   handleTimelinePanelHeightChange: (height: number) => void;
 } {
-  const handleProjectSettingsChange = useCallback((patch: Partial<WorkspaceProjectSettings>) => {
+  const handleSequenceSettingsChange = useCallback((patch: Partial<WorkspaceProjectSettings>) => {
     setProjectSettings((current) =>
       coerceWorkspaceProjectSettings({ ...DEFAULT_WORKSPACE_PROJECT_SETTINGS, ...current, ...patch })
     );
@@ -107,7 +107,7 @@ export function useWorkspaceShellActions({
     handleExportQualityPresetChange,
     handleExportRangeModeChange,
     handleOpenExportDialog,
-    handleProjectSettingsChange,
+    handleSequenceSettingsChange,
     handleTimelinePanelHeightChange,
   };
 }

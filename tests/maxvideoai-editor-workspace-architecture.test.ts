@@ -1374,7 +1374,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportStateHookSource, /selectedTimelineItem/, 'workspace export state should derive the selected timeline item for Viewer mode editing');
   assert.match(workspaceEditorLayoutSource, /onPatchItem=\{timelineClip\.handlePatchTimelineItem\}/, 'editor layout should expose timeline clip patching for the clip inspector');
   assert.match(workspaceSource, /projectSettings/, 'workspace should persist and pass project-level aspect ratio, resolution, and FPS');
-  assert.match(shellActionsHookSource, /handleProjectSettingsChange/, 'workspace shell action hook should expose sequence settings changes from the inspector');
+  assert.match(shellActionsHookSource, /handleSequenceSettingsChange/, 'workspace shell action hook should expose sequence settings changes from the inspector');
+  assert.doesNotMatch(shellActionsHookSource, /handleProjectSettingsChange/, 'sequence settings should not be named as project-level settings in the shell action contract');
   assert.match(shellActionsHookSource, /coerceWorkspaceProjectSettings/, 'workspace shell action hook should sanitize sequence settings before use');
   assert.doesNotMatch(workspaceSource, /coerceWorkspaceProjectSettings/, 'workspace orchestrator should not sanitize sequence settings inline');
   assert.match(shellActionsHookSource, /coerceTimelinePanelHeight/, 'workspace shell action hook should sanitize timeline panel height updates');

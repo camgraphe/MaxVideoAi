@@ -282,7 +282,7 @@ export function WorkspaceEditorLayout({
             projectFps={projectSettings.fps}
             onPatchItem={timelineClip.handlePatchTimelineItem}
             onRenameSequence={sequence.handleRenameActiveSequence}
-            onSequenceSettingsChange={shell.handleProjectSettingsChange}
+            onSequenceSettingsChange={shell.handleSequenceSettingsChange}
           />
         )}
       </div>
