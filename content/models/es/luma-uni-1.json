@@ -3,13 +3,13 @@
   "versionLabel": "Uni-1",
   "seo": {
     "title": "Luma Uni-1: precios de imagen, referencias y edición | MaxVideoAI",
-    "description": "Usa Luma Uni-1 en MaxVideoAI para generación de imágenes 2K, ediciones de fuente, layouts multi-referencia, investigación visual web opcional y precios fal-reference."
+    "description": "Usa Luma Uni-1 en MaxVideoAI para generar imágenes 2K, editar una imagen fuente, guiar la composición con varias referencias, usar investigación visual web opcional y consultar precios públicos de referencia."
   },
-  "overview": "Luma Uni-1 es un modelo de imagen 2K en MaxVideoAI para conceptos still, ediciones de fuente, razonamiento de layout, guía multi-referencia e investigación visual. Es una ruta solo de imagen.",
-  "pricingNotes": "Los precios mostrados usan referencias fal de MaxVideoAI. Los ejemplos de edición y referencias incluyen los conteos de imagen indicados; la cotización exacta aparece en la app antes de generar.",
+  "overview": "Luma Uni-1 es un modelo de imagen 2K en MaxVideoAI para conceptos visuales, ediciones de fuente, composición guiada, varias referencias e investigación visual. Es una ruta solo de imagen.",
+  "pricingNotes": "Los precios mostrados usan precios públicos de referencia de MaxVideoAI. Los ejemplos de edición y referencias incluyen los conteos de imagen indicados; la cotización exacta aparece en la app antes de generar.",
   "hero": {
     "title": "Luma Uni-1 - generación de imágenes 2K y edición",
-    "intro": "Crea imágenes fijas, edita una fuente y guía layouts con referencias antes de elegir el mejor still para producto, marca, storyboard o paso a movimiento.",
+    "intro": "Crea imágenes fijas, edita una fuente y guía la composición con referencias antes de elegir la mejor imagen para producto, marca, storyboard o paso a movimiento.",
     "badge": "Texto -> Imagen · Edición de imagen · Referencias · 2K",
     "ctaPrimary": {
       "label": "Lanzar Luma Uni-1",
@@ -25,9 +25,9 @@
     "items": [
       { "title": "Conceptos 2K desde un brief visual", "icon": "imageToVideo" },
       { "title": "Ediciones de fuente que preservan el sujeto principal", "icon": "layers" },
-      { "title": "Guía de producto, layout y estilo por referencias", "icon": "storyboard" },
+      { "title": "Guía de producto, composición y estilo por referencias", "icon": "storyboard" },
       { "title": "Investigación visual web cuando el contexto importa", "icon": "sparkles" },
-      { "title": "Still limpio antes de trabajar movimiento", "icon": "product" }
+      { "title": "Imagen limpia antes de trabajar movimiento", "icon": "product" }
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
@@ -37,20 +37,20 @@
     { "label": "Referencias", "body": "Las solicitudes de texto pueden usar varias referencias; las ediciones usan la primera imagen como fuente" },
     { "label": "Ratios", "body": "Formatos anchos, cuadrados, verticales y extendidos en creación" },
     { "label": "Estilos", "body": "Controles auto y manga donde estén disponibles" },
-    { "label": "Formato", "body": "PNG o JPEG en el workspace de imagen" },
-    { "label": "Precio", "body": "La copia pública usa display pricing MaxVideoAI basado en fal-reference" }
+    { "label": "Formato", "body": "PNG o JPEG en el espacio de imagen" },
+    { "label": "Precio", "body": "La copia pública usa precios de referencia de MaxVideoAI" }
   ],
   "promptStructure": {
     "title": "Mini-guía de prompt",
-    "quote": "Asset + sujeto + layout + estilo + rol de referencias + qué preservar o cambiar.",
-    "description": "Uni-1 funciona mejor cuando cada referencia tiene un rol claro: producto, estilo, paleta, layout o dirección tipográfica.",
+    "quote": "Visual + sujeto + composición + estilo + rol de referencias + qué preservar o cambiar.",
+    "description": "Uni-1 funciona mejor cuando cada referencia tiene un rol claro: producto, estilo, paleta, composición o dirección tipográfica.",
     "steps": [
-      "Nombra el asset objetivo y el uso.",
+      "Nombra el visual objetivo y el uso.",
       "Describe sujeto, composición, luz y estilo.",
       "Para edición, separa lo que queda de lo que cambia.",
       "Da un rol a cada referencia.",
       "Activa búsqueda web solo si el contexto reciente ayuda.",
-      "Revisa texto, labels y detalles antes de reutilizar."
+      "Revisa texto, etiquetas y detalles antes de reutilizar."
     ]
   },
   "tips": {
@@ -58,7 +58,7 @@
     "items": [
       "Usa Uni-1 solo para imágenes fijas.",
       "Agrega referencias con intención, no como moodboard aleatorio.",
-      "No supongas tipografía perfecta; revisa palabras y labels.",
+      "No supongas tipografía perfecta; revisa palabras y etiquetas.",
       "Para ediciones de fuente, explicita las restricciones de preservación.",
       "La cotización en la app es el precio para cliente."
     ]
@@ -66,15 +66,15 @@
   "prompts": [
     {
       "title": "Concepto de producto",
-      "prompt": "Still de estudio 2K de un altavoz blanco mate sobre base de concreto cálido, luz lateral suave, zona de label limpia, composición premium de catálogo, 16:9."
+      "prompt": "Imagen de estudio 2K de un altavoz blanco mate sobre base de concreto cálido, luz lateral suave, zona de etiqueta limpia, composición de catálogo de gama alta, 16:9."
     },
     {
       "title": "Edición de fuente",
       "prompt": "Preserva la forma del producto y la jerarquía del logo desde la imagen fuente, cambia el fondo por un tabletop de estudio tranquilo, suaviza reflejos, conserva sombras naturales."
     },
     {
-      "title": "Layout multi-referencia",
-      "prompt": "Usa referencia 1 para forma de producto, referencia 2 para paleta y referencia 3 para ritmo de layout. Crea un still de lanzamiento limpio con espacio para titular."
+      "title": "Composición multi-referencia",
+      "prompt": "Usa referencia 1 para forma de producto, referencia 2 para paleta y referencia 3 para ritmo de composición. Crea una imagen de lanzamiento limpia con espacio para titular."
     },
     {
       "title": "Investigación visual",
@@ -92,16 +92,16 @@
     },
     {
       "q": "¿Cómo estimar el precio de Uni-1?",
-      "a": "Usa la cotización mostrada en MaxVideoAI. La copia pública usa referencias fal con margen."
+      "a": "Usa la cotización mostrada en MaxVideoAI. La copia pública usa precios públicos de referencia con margen."
     },
     {
       "q": "¿Uni-1 o Uni-1 Max?",
-      "a": "Usa Uni-1 para exploración y preparación de referencias. Pasa a Max cuando un still seleccionado necesita más fidelidad."
+      "a": "Usa Uni-1 para exploración y preparación de referencias. Pasa a Max cuando una imagen seleccionada necesita más fidelidad."
     }
   ],
   "custom": {
     "heroEyebrow": "Modelo de imagen Luma Uni-1",
-    "heroSupportLine": "Ideal para imágenes 2K, ediciones de fuente y layouts guiados por referencias.",
+    "heroSupportLine": "Ideal para imágenes 2K, ediciones de fuente y composiciones guiadas por referencias.",
     "heroSpecChips": [
       { "label": "Texto->Imagen", "icon": "textToVideo" },
       { "label": "Edición de imagen", "icon": "imageToVideo" },
@@ -113,27 +113,27 @@
     "heroDesc1": "Uni-1 ofrece una ruta Luma centrada en imagen fija para conceptos, ediciones y preparación de referencias.",
     "heroDesc2": "Es útil cuando el brief requiere razonamiento visual y roles de referencia, no una promesa de texto perfecto.",
     "heroHighlights": [
-      "Workflow solo de imagen||Usa Uni-1 para creación de stills y ediciones.",
-      "Roles de referencia||Indica qué imagen controla producto, layout, estilo o paleta.",
+      "Flujo solo de imagen||Usa Uni-1 para crear y editar imágenes fijas.",
+      "Roles de referencia||Indica qué imagen controla producto, composición, estilo o paleta.",
       "Opción web||Activa búsqueda web solo si el contexto actual ayuda.",
-      "Contexto de precio||Los precios mostrados siguen referencias fal de MaxVideoAI y la app confirma la cotización final."
+      "Contexto de precio||Los precios mostrados siguen referencias públicas de MaxVideoAI y la app confirma la cotización final."
     ],
     "specTitle": "Specs de imagen Uni-1",
-    "specNote": "Estas specs describen la ruta pública del workspace de imagen MaxVideoAI.",
+    "specNote": "Estas specs describen la ruta pública del espacio de imagen MaxVideoAI.",
     "specSections": [
       {
-        "title": "Workflows de imagen",
+        "title": "Flujos de imagen",
         "items": [
-          "Texto a imagen para stills 2K.",
+          "Texto a imagen para imágenes 2K.",
           "Edición con una imagen fuente.",
-          "Referencias opcionales para producto, estilo, layout o paleta.",
+          "Referencias opcionales para producto, estilo, composición o paleta.",
           "Salida PNG o JPEG."
         ]
       },
       {
         "title": "Comportamiento de precio",
         "items": [
-          "Los costos de imagen y referencias siguen fal-reference.",
+          "Los costos de imagen y referencias siguen precios públicos de referencia.",
           "El margen MaxVideoAI se refleja en ejemplos públicos.",
           "La cotización exacta de la app manda.",
           "La copia pública no promete precio directo de proveedor más bajo."
@@ -141,9 +141,9 @@
       }
     ],
     "whatTitle": "Cómo funciona Uni-1",
-    "whatIntro1": "Elige Uni-1 en el workspace de imagen y crea desde texto o edita una fuente.",
+    "whatIntro1": "Elige Uni-1 en el espacio de imagen y crea desde texto o edita una fuente.",
     "whatIntro2": "Agrega referencias solo si cada una tiene un rol claro.",
-    "whatFlowTitle": "Workflow",
+    "whatFlowTitle": "Flujo de trabajo",
     "whatFlowSteps": [
       "Elegir Luma Uni-1.",
       "Seleccionar creación o edición.",
@@ -153,20 +153,20 @@
       "Inspeccionar texto y pequeños detalles."
     ],
     "galleryTitle": "Ejemplos de imagen Luma Uni-1",
-    "galleryIntro": "Planifica ediciones de fuente, referencias de producto y handoffs desde stills.",
+    "galleryIntro": "Planifica ediciones de fuente, referencias de producto y pasos desde imágenes fijas.",
     "galleryAllCta": "Abrir espacio de imagen",
     "recreateLabel": "Recrear esta imagen",
     "tipsTitle": "Fortalezas prácticas y límites",
     "strengths": [
-      "Adecuado para stills 2K y preparación de referencias.",
-      "Útil cuando el prompt debe razonar sobre layout.",
+      "Adecuado para imágenes 2K y preparación de referencias.",
+      "Útil cuando el prompt debe razonar sobre una composición.",
       "Las referencias reducen ambigüedad si su rol es claro."
     ],
     "boundaries": [
       "Solo imágenes fijas.",
-      "Texto exacto y labels pequeños deben revisarse.",
-      "El resultado web-grounded necesita validación humana.",
-      "Precio público basado en fal-reference."
+      "Texto exacto y etiquetas pequeñas deben revisarse.",
+      "El resultado con contexto web necesita validación humana.",
+      "Precio público basado en las referencias de MaxVideoAI."
     ],
     "safetyTitle": "Seguridad y semejanza",
     "safetyRules": [
@@ -176,7 +176,7 @@
       "No incluyas datos personales privados."
     ],
     "promptingTitle": "Cómo escribir un buen prompt Uni-1",
-    "promptingIntro": "Trata el prompt como brief de imagen: asset, sujeto, layout, referencias y restricciones.",
+    "promptingIntro": "Trata el prompt como una consigna de imagen: visual, sujeto, composición, referencias y restricciones.",
     "promptingTip": "Consejo: da un rol a cada referencia.",
     "promptingGlobalPrinciples": [
       "Un objetivo visual claro por solicitud.",
@@ -184,23 +184,23 @@
       "Búsqueda web solo si el contexto actual importa."
     ],
     "promptingEngineWhy": [
-      "Los roles de referencia ayudan al modelo a razonar sobre layout e identidad.",
-      "La revisión tipográfica mantiene los assets prudentes.",
-      "Un still limpio sirve como mejor fuente para lo siguiente."
+      "Los roles de referencia ayudan al modelo a razonar sobre composición e identidad.",
+      "La revisión tipográfica mantiene los visuales prudentes.",
+      "Una imagen limpia sirve como mejor fuente para lo siguiente."
     ],
     "promptingGuideLabel": "Guía de prompt Uni-1",
     "relatedItems": [
       {
         "brand": "luma",
         "title": "Luma Uni-1 Max",
-        "description": "Usa Max cuando un still seleccionado necesita más fidelidad, acabado de producto o revisión precisa.",
+        "description": "Usa Max cuando una imagen seleccionada necesita más fidelidad, acabado de producto o revisión precisa.",
         "modelSlug": "luma-uni-1-max",
         "ctaLabel": "Ver Uni-1 Max"
       },
       {
         "brand": "luma",
         "title": "Luma Ray 3.2",
-        "description": "Usa Ray 3.2 cuando un still seleccionado está listo para una prueba corta de movimiento.",
+        "description": "Usa Ray 3.2 cuando una imagen seleccionada está lista para una prueba corta de movimiento.",
         "modelSlug": "luma-ray-3-2",
         "ctaLabel": "Ver Ray 3.2"
       }

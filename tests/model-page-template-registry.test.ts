@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -6,6 +7,11 @@ import {
   listModelPageTemplateSlugs,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import type { ModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-types.ts';
+
+const engineCatalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8')) as Array<{
+  modelSlug: string;
+}>;
+const CATALOG_MODEL_SLUGS = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
 test('model page template config separates SEO intent from shared layout slots', () => {
   const config: ModelPageTemplateConfig = {
@@ -435,7 +441,8 @@ test('Luma Agents templates expose fallback-safe pricing presets and no image co
   assert.equal(lumaRay32.sections.compare, true);
   assert.equal(lumaUni.sections.compare, false);
   assert.equal(lumaUniMax.sections.compare, false);
-  assert.equal(lumaRay32.hero.quickLinks.some((link) => link.icon === 'compare'), true);
+  assert.equal(lumaRay32.hero.quickLinks.some((link) => link.icon === 'compare'), false);
+  assert.equal(lumaRay32.hero.quickLinks.some((link) => link.href === '#specs'), true);
   assert.equal(lumaUni.hero.quickLinks.some((link) => link.icon === 'compare'), false);
   assert.equal(lumaUniMax.hero.quickLinks.some((link) => link.icon === 'compare'), false);
   assert.deepEqual(
@@ -459,4 +466,26 @@ test('template quick links avoid redirecting compare URLs', () => {
     veo.hero.quickLinks[0]?.href,
     '/ai-video-engines/kling-3-pro-vs-veo-3-1?order=veo-3-1'
   );
+});
+
+test('template compare quick links only reference published compare catalog slugs', () => {
+  for (const slug of listModelPageTemplateSlugs()) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should have a template config`);
+
+    for (const link of config.hero.quickLinks) {
+      if (!link.href.startsWith('/ai-video-engines/')) continue;
+
+      const pairSlug = link.href.split('?')[0]?.split('/').pop() ?? '';
+      const engineSlugs = pairSlug.split('-vs-');
+      assert.equal(engineSlugs.length, 2, `${slug} quick link ${link.href} should be a two-engine compare URL`);
+
+      for (const engineSlug of engineSlugs) {
+        assert.ok(
+          CATALOG_MODEL_SLUGS.has(engineSlug),
+          `${slug} quick link ${link.href} references unpublished compare engine ${engineSlug}`
+        );
+      }
+    }
+  }
 });

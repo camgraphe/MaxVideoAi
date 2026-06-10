@@ -11,7 +11,7 @@ export const lumaRay32TemplateConfig: ModelPageTemplateConfig = {
     quickLinks: [
       { labelKey: 'viewPricing', href: '/pricing#luma-ray-3-2-pricing', icon: 'pricing' },
       { labelKey: 'promptExamples', href: '#prompting', icon: 'prompt' },
-      { labelKey: 'compareFast', href: '/ai-video-engines/kling-3-pro-vs-luma-ray-3-2', icon: 'compare' },
+      { labelKey: 'modelSpecs', href: '#specs', icon: 'video' },
     ],
   },
   pricing: {

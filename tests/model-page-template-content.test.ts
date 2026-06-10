@@ -46,6 +46,10 @@ const MIGRATED_TEMPLATE_SLUGS = [
 
 const LOCALES = ['en', 'fr', 'es'] as const;
 const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const LUMA_AGENT_TEMPLATE_SLUGS = ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'] as const;
+const LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS =
+  /\b(?:fallback-safe|fal-reference|direct-only|layout|still|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
+const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'modelSlug']);
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
   const engine = listFalEngines().find((candidate) => candidate.id === slug || candidate.modelSlug === slug);
@@ -81,6 +85,24 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
       specSections?: Array<Record<string, unknown>>;
     };
   };
+}
+
+function collectCustomerFacingStrings(value: unknown, skipKeys = new Set<string>()): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => collectCustomerFacingStrings(entry, skipKeys));
+  }
+
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+
+  return Object.entries(value).flatMap(([key, entry]) =>
+    skipKeys.has(key) ? [] : collectCustomerFacingStrings(entry, skipKeys)
+  );
 }
 
 test('migrated model templates provide complete localized decision data', () => {
@@ -184,6 +206,32 @@ test('Spanish migrated template copy avoids Spain-only second-person and device 
       /\b(?:ordenador|vosotros|vosotras|vuestro|vuestra|vuestros|vuestras)\b/i,
       `${slug}/es should avoid Spain-only phrasing in visible copy`
     );
+  }
+});
+
+test('Luma Agents localized FR and ES copy avoids internal English launch terms', () => {
+  for (const locale of ['fr', 'es'] as const) {
+    for (const slug of LUMA_AGENT_TEMPLATE_SLUGS) {
+      const decision = buildModelDecisionData({ engine: getEngine(slug), locale });
+      assert.ok(decision, `${slug}/${locale} decision data should exist`);
+
+      for (const value of collectCustomerFacingStrings(decision, LOCALIZED_CONTENT_SKIP_KEYS)) {
+        assert.doesNotMatch(
+          value,
+          LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS,
+          `${slug}/${locale} decision copy should avoid internal English term in "${value}"`
+        );
+      }
+
+      const content = readModelContentJson(locale, slug);
+      for (const value of collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS)) {
+        assert.doesNotMatch(
+          value,
+          LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS,
+          `${slug}/${locale} localized content should avoid internal English term in "${value}"`
+        );
+      }
+    }
   }
 });
 
