@@ -2,15 +2,15 @@
 
 import { AlertTriangle, CheckCircle2, Plus, Send, Sparkles } from 'lucide-react';
 import { NodeInspectorConnections } from './NodeInspectorConnections';
+import { NodeInspectorMediaPreview } from './NodeInspectorMediaPreview';
+import baseStyles from '../maxvideoai-editor.module.css';
+import inspectorStyles from '../_styles/inspector.module.css';
 import {
-  NodeInspectorMediaPreview,
   isPlayableAudioUrl,
   isPlayableImageUrl,
   isPlayableVideoUrl,
   outputStatus,
-} from './NodeInspectorMediaPreview';
-import baseStyles from '../maxvideoai-editor.module.css';
-import inspectorStyles from '../_styles/inspector.module.css';
+} from '../_lib/workspace-media-availability';
 import type {
   WorkspaceGraphEdge,
   WorkspaceGraphNode,

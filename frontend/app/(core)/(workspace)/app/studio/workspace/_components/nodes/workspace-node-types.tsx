@@ -6,15 +6,21 @@ import { memo, useRef, type DragEvent, type MouseEvent, type PointerEvent as Rea
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { Handle, NodeResizeControl, Position } from '@xyflow/react';
 import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, Video } from 'lucide-react';
+import { AudioPreview, VideoPreview } from './workspace-node-media-preview';
 import styles from '../../_styles/canvas.module.css';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphNode,
   WorkspaceInputConnector,
   WorkspaceNodeKind,
-  WorkspaceOutputStatus,
   WorkspaceShotStatus,
 } from '../../_lib/workspace-types';
+import {
+  isPlayableAudioUrl,
+  isPlayableImageUrl,
+  isPlayableVideoUrl,
+  outputStatus,
+} from '../../_lib/workspace-media-availability';
 import { workspaceAssetTimelineDuration, workspaceOutputTimelineDuration } from '../../_lib/workspace-timeline-editing';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 
@@ -55,32 +61,6 @@ function connectorCapacity(handle: WorkspaceEdgeKind, connectors: WorkspaceInput
     capacityLabel: connector?.capacityLabel ?? null,
     remainingCount: connector?.remainingCount,
   };
-}
-
-function isPlayableVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:video/')) return true;
-  return /\.(mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableAudioUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:audio/')) return true;
-  return /\.(mp3|wav|ogg|m4a|aac)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableImageUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
-  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
-}
-
-function outputStatus(output: WorkspaceGraphNode['data']['output']): WorkspaceOutputStatus {
-  if (!output) return 'placeholder';
-  if (output.status) return output.status;
-  if (output.kind === 'video') return isPlayableVideoUrl(output.url) ? 'ready' : 'placeholder';
-  if (output.kind === 'audio') return isPlayableAudioUrl(output.url) ? 'ready' : 'placeholder';
-  return output.url || output.thumbUrl ? 'ready' : 'placeholder';
 }
 
 function timelineDragMediaKind(data: WorkspaceGraphNode['data']): 'audio' | 'image' | 'video' | null {
@@ -128,28 +108,6 @@ function blocksTimelineNodeDrag(target: EventTarget | null): boolean {
         '[contenteditable="true"]',
       ].join(', ')
     )
-  );
-}
-
-function VideoPreview({
-  posterUrl,
-  videoUrl,
-}: {
-  posterUrl?: string | null;
-  videoUrl: string;
-}) {
-  return (
-    <div className={styles.nodePreview}>
-      <video className={`${styles.previewVideo} nodrag`} controls playsInline preload="metadata" poster={posterUrl ?? undefined} src={videoUrl} />
-    </div>
-  );
-}
-
-function AudioPreview({ audioUrl }: { audioUrl: string }) {
-  return (
-    <div className={`${styles.nodePreview} ${styles.audioPreview}`}>
-      <audio className={`${styles.previewAudio} nodrag`} controls preload="metadata" src={audioUrl} />
-    </div>
   );
 }
 

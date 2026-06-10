@@ -102,6 +102,7 @@ const programPlaybackLayersPath = join(workspaceDir, '_components/viewer/Program
 const programControlsPath = join(workspaceDir, '_components/viewer/ProgramControls.tsx');
 const programPlaybackSyncPath = join(workspaceDir, '_components/viewer/useProgramPlaybackSync.ts');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
+const nodeMediaPreviewPath = join(workspaceDir, '_components/nodes/workspace-node-media-preview.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
 const capabilitiesPath = join(workspaceDir, '_lib/workspace-capabilities.ts');
@@ -111,6 +112,7 @@ const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-con
 const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
+const mediaAvailabilityPath = join(workspaceDir, '_lib/workspace-media-availability.ts');
 const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
 const canvasImportsPath = join(workspaceDir, '_lib/workspace-canvas-imports.ts');
 const graphHelpersPath = join(workspaceDir, '_lib/workspace-graph-helpers.ts');
@@ -256,6 +258,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(programControlsPath), 'program playback controls should live in a route-local viewer component');
   assert.ok(existsSync(programPlaybackSyncPath), 'program playback synchronization should live in a route-local viewer hook');
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
+  assert.ok(existsSync(nodeMediaPreviewPath), 'custom node media previews should live in a focused route-local node component');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
   assert.ok(existsSync(shellStylesPath), 'editor shell styles should live in a focused route-local CSS module');
@@ -487,6 +490,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(modelPricingAdapterPath), 'model render pricing options should live in _lib/models/model-pricing-adapter.ts');
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
+  assert.ok(existsSync(mediaAvailabilityPath), 'workspace media availability helpers should live in a pure route-local helper');
   assert.ok(existsSync(handleDropPath), 'handle-drop node creation should live in a pure route-local helper');
   assert.ok(existsSync(canvasImportsPath), 'canvas import helpers should live in a pure route-local helper');
   assert.ok(existsSync(graphHelpersPath), 'canvas graph selection and connection helpers should live in a pure route-local helper');
@@ -566,6 +570,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const exportDialogSource = source(exportDialogPath);
   const runtimeModalsSource = source(runtimeModalsPath);
   const nodeSource = source(nodeTypesPath);
+  const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
   const nodeInspectorConnectionsSource = source(nodeInspectorConnectionsPath);
   const nodeInspectorMediaPreviewSource = source(nodeInspectorMediaPreviewPath);
@@ -578,6 +583,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const modelPricingAdapterSource = source(modelPricingAdapterPath);
   const generationSource = source(generationPath);
   const pricingSource = source(pricingPath);
+  const mediaAvailabilitySource = source(mediaAvailabilityPath);
   const handleDropSource = source(handleDropPath);
   const canvasImportsSource = source(canvasImportsPath);
   const graphHelpersSource = source(graphHelpersPath);
@@ -882,6 +888,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(pricingSource, /PreflightRequest/, 'pricing adapter should build the same preflight payload shape as generate video');
   assert.match(pricingSource, /resolveWorkspaceGenerationMode/, 'pricing adapter should reuse the generated-shot mode routing');
   assert.match(pricingSource, /workspaceAudioEnabledForRequest/, 'pricing adapter should price only supported engine audio toggles');
+  assert.match(mediaAvailabilitySource, /export function isPlayableVideoUrl/, 'media availability helper should detect playable video sources');
+  assert.match(mediaAvailabilitySource, /export function isPlayableAudioUrl/, 'media availability helper should detect playable audio sources');
+  assert.match(mediaAvailabilitySource, /export function outputStatus/, 'media availability helper should derive placeholder, processing, and ready output states');
   assert.match(handleDropSource, /export function resolveWorkspaceHandleDropDraft/, 'handle-drop helper should resolve a connector into a matching source block draft');
   assert.match(handleDropSource, /export function createWorkspaceHandleDropNode/, 'handle-drop helper should create the matching graph node');
   assert.match(handleDropSource, /WorkspaceHandleDropDraft/, 'handle-drop helper should expose a typed drag draft contract');
@@ -1080,11 +1089,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(typesSource, /pricingEstimate\?: WorkspacePricingEstimate/, 'shot nodes should carry a live parameter-based pricing estimate');
   assert.match(nodeSource, /pricingEstimate/, 'shot nodes should render live parameter-based pricing estimates');
   assert.doesNotMatch(nodeSource, /estimated_cost_or_credits/, 'shot nodes should not render static engine pricing as the estimate');
-  assert.match(nodeSource, /function isPlayableVideoUrl/, 'video-capable blocks should detect playable video sources');
-  assert.match(nodeSource, /<video[\s\S]*controls/, 'video-capable blocks should render playable previews when a video URL exists');
-  assert.match(nodeSource, /function isPlayableAudioUrl/, 'audio-capable blocks should detect playable audio sources');
-  assert.match(nodeSource, /<audio[\s\S]*controls/, 'audio blocks should render playable controls when an audio URL exists');
-  assert.match(nodeSource, /outputStatus/, 'output blocks should derive placeholder, processing, and ready display states');
+  assert.doesNotMatch(nodeSource, /function isPlayableVideoUrl/, 'node renderers should not redefine playable video detection inline');
+  assert.doesNotMatch(nodeSource, /function isPlayableAudioUrl/, 'node renderers should not redefine playable audio detection inline');
+  assert.match(nodeSource, /from '..\/..\/_lib\/workspace-media-availability'/, 'node renderers should consume shared media availability helpers');
+  assert.match(nodeSource, /VideoPreview/, 'video-capable blocks should delegate playable preview markup');
+  assert.match(nodeMediaPreviewSource, /<video[\s\S]*controls/, 'video-capable blocks should render playable previews when a video URL exists');
+  assert.match(nodeMediaPreviewSource, /<audio[\s\S]*controls/, 'audio blocks should render playable controls when an audio URL exists');
+  assert.match(nodeSource, /outputStatus/, 'output blocks should use shared placeholder, processing, and ready display state derivation');
   assert.match(nodeSource, /Processing/, 'output blocks should show a processing placeholder while generation is running');
   assert.match(nodeSource, /disabled=\{!canSendToTimeline\}/, 'output blocks should not send placeholders or processing outputs to the timeline');
   assert.match(nodeSource, /function EmptyMediaPicker/, 'media nodes should render an empty picker state when no media is attached');
@@ -1112,7 +1123,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeInspectorConnectionsSource, /edgeLabel/, 'node inspector connection component should render connector labels');
   assert.doesNotMatch(settingsSource, /<video[\s\S]*controls/, 'node settings panel should not own playable media preview markup inline');
   assert.match(nodeInspectorMediaPreviewSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
-  assert.match(nodeInspectorMediaPreviewSource, /outputStatus/, 'node inspector media preview should own output status derivation');
+  assert.match(nodeInspectorMediaPreviewSource, /workspace-media-availability/, 'node inspector media preview should consume shared playable media helpers');
   assert.match(settingsSource, /disabled=\{!canSendOutputToTimeline\}/, 'output inspector should disable timeline send for placeholder and processing outputs');
   assert.match(settingsSource, /onOpenAssetLibrary/, 'asset inspector should expose the same library picker action');
   assert.match(videoViewerSource, /export function WorkspaceVideoViewer/, 'viewer component should be exported');
