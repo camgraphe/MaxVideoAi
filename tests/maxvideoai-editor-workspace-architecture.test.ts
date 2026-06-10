@@ -184,6 +184,7 @@ const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
 const timelineControlStylesPath = join(workspaceDir, '_styles/timeline-controls.module.css');
 const timelineClipStylesPath = join(workspaceDir, '_styles/timeline-clips.module.css');
+const timelineContextMenuStylesPath = join(workspaceDir, '_styles/timeline-context-menu.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const exportStylesPath = join(workspaceDir, '_styles/export.module.css');
@@ -296,6 +297,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasMapStylesPath), 'canvas map styles should live in a focused route-local CSS module');
   assert.ok(existsSync(timelineStylesPath), 'timeline styles should live in a focused route-local CSS module');
   assert.ok(existsSync(timelineControlStylesPath), 'timeline toolbar and control styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(timelineContextMenuStylesPath), 'timeline context menu styles should live in a focused route-local CSS module');
   assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
   assert.ok(existsSync(exportStylesPath), 'export dialog styles should live in a focused route-local CSS module');
@@ -340,6 +342,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const timelineStyleSource = source(timelineStylesPath);
   const timelineControlStyleSource = source(timelineControlStylesPath);
   const timelineClipStyleSource = source(timelineClipStylesPath);
+  const timelineContextMenuStyleSource = source(timelineContextMenuStylesPath);
   const exportStyleSource = source(exportStylesPath);
   const assetLibraryStyleSource = source(assetLibraryStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
@@ -392,6 +395,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(timelineStyleSource, /\.timelinePanel/, 'timeline CSS should own the timeline panel layout');
   assert.match(timelineControlStyleSource, /\.timelineTopbar/, 'timeline control CSS should own the timeline toolbar layout');
   assert.match(timelineClipStyleSource, /\.timelineClip/, 'timeline clip CSS should own clip card styling');
+  assert.match(timelineContextMenuStyleSource, /\.timelineContextMenu/, 'timeline context menu CSS should own context menu card styling');
   assert.match(shellStyleSource, /\.editorTopbar/, 'shell CSS should own the topbar layout');
   assert.match(shellStyleSource, /\.editorBody/, 'shell CSS should own the main body grid');
   assert.match(studioSessionStyleSource, /\.studioWalletPill/, 'Studio session CSS should own wallet header styles');
@@ -775,6 +779,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineStyleSource = source(timelineStylesPath);
   const timelineControlStyleSource = source(timelineControlStylesPath);
   const timelineClipStyleSource = source(timelineClipStylesPath);
+  const timelineContextMenuStyleSource = source(timelineContextMenuStylesPath);
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
   const exportStyleSource = source(exportStylesPath);
@@ -1735,13 +1740,17 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(styleSource, /\.timelineInsertActions/, 'output inspector insert actions should be styled in isolated editor CSS');
   assert.match(timelineControlStyleSource, /\.timelineZoomControl/, 'timeline zoom control should be styled in focused timeline control CSS');
   assert.match(timelineClipStyleSource, /\.timelineWaveform/, 'timeline audio waveforms should be styled in focused timeline clip CSS');
+  assert.match(timelineContextMenusSource, /timeline-context-menu\.module\.css/, 'timeline context menu component should import its focused CSS module');
+  assert.match(timelineContextMenuStyleSource, /\.timelineContextMenu/, 'timeline context menu styles should live in the focused context menu CSS module');
   assert.doesNotMatch(styleSource, /\.timelineClipSelected/, 'main editor CSS should no longer own timeline clip selection styles after modularization');
   assert.doesNotMatch(timelineStyleSource, /\.timelineClipSelected/, 'timeline shell CSS should no longer own selected timeline clip styles after clip extraction');
   assert.doesNotMatch(timelineStyleSource, /\.timelineToolGroup/, 'timeline shell CSS should no longer own toolbar group styles after control extraction');
   assert.doesNotMatch(timelineStyleSource, /\.timelineZoomControl/, 'timeline shell CSS should no longer own zoom control styles after control extraction');
-  assert.ok(lineCount(timelineStyleSource) <= 620, 'timeline CSS module should stay under the focused shell/ruler/track threshold');
+  assert.doesNotMatch(timelineStyleSource, /\.timelineContextMenu/, 'timeline shell CSS should no longer own context menu styles after context menu extraction');
+  assert.ok(lineCount(timelineStyleSource) <= 580, 'timeline CSS module should stay under the focused shell/ruler/track threshold');
   assert.ok(lineCount(timelineControlStyleSource) <= 220, 'timeline control CSS module should stay under the focused toolbar threshold');
   assert.ok(lineCount(timelineClipStyleSource) <= 260, 'timeline clip CSS module should stay under the focused clip styling threshold');
+  assert.ok(lineCount(timelineContextMenuStyleSource) <= 80, 'timeline context menu CSS module should stay under the focused menu styling threshold');
   assert.match(inspectorStyleSource, /\.timelineInspectorGroup/, 'timeline clip inspector groups should be styled in focused inspector CSS');
   assert.match(inspectorStyleSource, /\.timelineInspectorControlRow/, 'timeline clip inspector slider rows should be styled in focused inspector CSS');
   assert.match(inspectorStyleSource, /\.settingsRange/, 'timeline clip inspector ranges should be styled in focused inspector CSS');
