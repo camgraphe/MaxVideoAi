@@ -61,7 +61,10 @@ import {
 import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineTrackList } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
+import { markTimelinePerformance } from '../_lib/timeline/timeline-performance';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
+import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
+import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
@@ -80,12 +83,6 @@ function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.max(0, Math.round(seconds % 60));
   return `${minutes}:${remaining.toString().padStart(2, '0')}`;
-}
-
-function markTimelinePerformance(name: 'drag-start' | 'drag-frame' | 'drag-commit' | 'playhead-frame' | 'playhead-commit') {
-  if (process.env.NODE_ENV === 'production') return;
-  if (typeof performance === 'undefined' || typeof performance.mark !== 'function') return;
-  performance.mark(`maxvideoai.timeline.${name}`);
 }
 
 type WorkspaceTimelineProps = {
@@ -207,14 +204,24 @@ export function WorkspaceTimeline({
     startSec: 0,
     endSec: Number.POSITIVE_INFINITY,
   }));
-  const timelinePanelRef = useRef<HTMLElement | null>(null);
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
-  const panelResizePointerHandledRef = useRef(false);
   const interactionRef = useRef<TimelineInteractionState | null>(null);
   const suppressNextSurfaceClickRef = useRef(false);
   const visibleRangeFrameRef = useRef<number | null>(null);
-  const playheadDragFrameRef = useRef<number | null>(null);
-  const pendingPlayheadDragSecRef = useRef<number | null>(null);
+  const {
+    handleBeginTimelinePanelMouseResize,
+    handleBeginTimelinePanelPointerResize,
+    timelinePanelRef,
+  } = useTimelinePanelResize({
+    maxPanelHeight,
+    minPanelHeight,
+    onBeginResize: () => {
+      setContextMenu(null);
+      setTrackContextMenu(null);
+    },
+    onPanelHeightChange,
+    panelHeight,
+  });
   const frameStepSec = frameStepSeconds(projectFps);
   const totalDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec), interaction ? interaction.previewStartSec + interaction.previewDurationSec : 0);
   const timelineWidth = Math.max(MIN_TIMELINE_WIDTH, totalDuration * pixelsPerSecond + 64);
@@ -297,52 +304,16 @@ export function WorkspaceTimeline({
       updateVisibleTimelineRange();
     });
   }, [updateVisibleTimelineRange]);
-  const beginTimelinePanelResize = useCallback((
-    originClientY: number,
-    moveEventName: 'mousemove' | 'pointermove',
-    upEventName: 'mouseup' | 'pointerup'
-  ) => {
-    setContextMenu(null);
-    setTrackContextMenu(null);
-
-    const originHeight = timelinePanelRef.current?.getBoundingClientRect().height ?? panelHeight ?? minPanelHeight;
-    const clampPanelHeight = (height: number) => Math.max(minPanelHeight, Math.min(maxPanelHeight, Math.round(height)));
-    const updatePanelHeight = (clientY: number) => {
-      onPanelHeightChange(clampPanelHeight(originHeight - (clientY - originClientY)));
-    };
-    const handleMove = (dragEvent: PointerEvent | globalThis.MouseEvent) => {
-      updatePanelHeight(dragEvent.clientY);
-    };
-    const handleUp = (dragEvent: PointerEvent | globalThis.MouseEvent) => {
-      updatePanelHeight(dragEvent.clientY);
-      window.removeEventListener(moveEventName, handleMove as EventListener);
-      window.removeEventListener(upEventName, handleUp as EventListener);
-    };
-
-    window.addEventListener(moveEventName, handleMove as EventListener);
-    window.addEventListener(upEventName, handleUp as EventListener);
-  }, [maxPanelHeight, minPanelHeight, onPanelHeightChange, panelHeight]);
-  const handleBeginTimelinePanelPointerResize = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    panelResizePointerHandledRef.current = true;
-    window.setTimeout(() => {
-      panelResizePointerHandledRef.current = false;
-    }, 0);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    beginTimelinePanelResize(event.clientY, 'pointermove', 'pointerup');
-  }, [beginTimelinePanelResize]);
-  const handleBeginTimelinePanelMouseResize = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    if (panelResizePointerHandledRef.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-    beginTimelinePanelResize(event.clientY, 'mousemove', 'mouseup');
-  }, [beginTimelinePanelResize]);
   const secondsFromTimelineElement = useCallback((clientX: number, element: HTMLElement): number => {
     const rect = element.getBoundingClientRect();
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
     return Math.max(0, Math.min(totalDuration, snapTimelineSeconds(rawSeconds, frameStepSec)));
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
+  const handleBeginPlayheadDrag = useTimelinePlayheadDrag({
+    onPlaybackChange,
+    onPlayheadChange,
+    secondsFromTimelineElement,
+  });
   const updateExternalDropPreview = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     const payload = parseTimelineNodeDragPayload(event.dataTransfer);
     if ((!payload?.nodeId && !payload?.assetId) || !payload.mediaKind) return null;
@@ -383,50 +354,6 @@ export function WorkspaceTimeline({
       onProjectAssetDropToTimeline(result.payload.assetId, result.preview.startSec, result.preview.trackId);
     }
   }, [lockedTrackSet, onInvalidNodeDropToTimeline, onNodeDropToTimeline, onPlaybackChange, onProjectAssetDropToTimeline, updateExternalDropPreview]);
-  const handleBeginPlayheadDrag = useCallback((event: ReactPointerEvent<HTMLElement>, timelineElement: HTMLElement | null) => {
-    if (!timelineElement) return;
-    event.preventDefault();
-    event.stopPropagation();
-    onPlaybackChange(false);
-    event.currentTarget.setPointerCapture(event.pointerId);
-
-    const flushPendingPlayhead = () => {
-      if (playheadDragFrameRef.current !== null) {
-        window.cancelAnimationFrame(playheadDragFrameRef.current);
-        playheadDragFrameRef.current = null;
-      }
-      const nextPlayheadSec = pendingPlayheadDragSecRef.current;
-      pendingPlayheadDragSecRef.current = null;
-      if (nextPlayheadSec === null) return;
-      markTimelinePerformance('playhead-commit');
-      onPlayheadChange(nextPlayheadSec);
-    };
-    const schedulePlayhead = (clientX: number) => {
-      pendingPlayheadDragSecRef.current = secondsFromTimelineElement(clientX, timelineElement);
-      if (playheadDragFrameRef.current !== null) return;
-      playheadDragFrameRef.current = window.requestAnimationFrame(() => {
-        playheadDragFrameRef.current = null;
-        const nextPlayheadSec = pendingPlayheadDragSecRef.current;
-        pendingPlayheadDragSecRef.current = null;
-        if (nextPlayheadSec === null) return;
-        markTimelinePerformance('playhead-frame');
-        onPlayheadChange(nextPlayheadSec);
-      });
-    };
-    const handlePointerMove = (pointerEvent: PointerEvent) => {
-      schedulePlayhead(pointerEvent.clientX);
-    };
-    const handlePointerUp = (pointerEvent: PointerEvent) => {
-      schedulePlayhead(pointerEvent.clientX);
-      flushPendingPlayhead();
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-
-    schedulePlayhead(event.clientX);
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-  }, [onPlaybackChange, onPlayheadChange, secondsFromTimelineElement]);
   const handleBeginTimelineSurfacePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     if (target.closest('[data-timeline-item], [data-timeline-control="true"]')) return;
@@ -754,10 +681,6 @@ export function WorkspaceTimeline({
     if (visibleRangeFrameRef.current !== null) {
       window.cancelAnimationFrame(visibleRangeFrameRef.current);
       visibleRangeFrameRef.current = null;
-    }
-    if (playheadDragFrameRef.current !== null) {
-      window.cancelAnimationFrame(playheadDragFrameRef.current);
-      playheadDragFrameRef.current = null;
     }
   }, []);
 
