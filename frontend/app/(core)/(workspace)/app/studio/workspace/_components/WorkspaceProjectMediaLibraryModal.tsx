@@ -5,7 +5,7 @@ import type { ChangeEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
-import styles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/asset-library.module.css';
 import { createUploadFailure, getUploadFailureMessage } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
 import type {

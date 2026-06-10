@@ -5,7 +5,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { FileText, ImageIcon, Music2, Search, Video } from 'lucide-react';
-import styles from '../maxvideoai-editor.module.css';
+import editorStyles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/asset-library.module.css';
 import type {
   WorkspaceLibraryAsset,
   WorkspaceLibrarySource,
@@ -89,10 +90,10 @@ export function WorkspaceAssetLibraryBrowser({
       <header className={styles.assetBrowserHeader}>
         <div>
           <div className={styles.assetBrowserTitleRow}>
-            <p className={styles.panelTitle}>{title}</p>
+            <p className={editorStyles.panelTitle}>{title}</p>
             <span className={styles.assetBrowserCount}>{countLabel}</span>
           </div>
-          {subtitle ? <span className={styles.panelSubtitle}>{subtitle}</span> : null}
+          {subtitle ? <span className={editorStyles.panelSubtitle}>{subtitle}</span> : null}
         </div>
         {headerActions ? <div className={styles.assetBrowserHeaderActions}>{headerActions}</div> : null}
       </header>

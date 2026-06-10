@@ -176,6 +176,7 @@ const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
 const exportStylesPath = join(workspaceDir, '_styles/export.module.css');
+const assetLibraryStylesPath = join(workspaceDir, '_styles/asset-library.module.css');
 const viewerStylesPath = join(workspaceDir, '_styles/viewer.module.css');
 const visitorAccessPath = join(root, 'frontend/lib/visitor-access.ts');
 
@@ -232,7 +233,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
   assert.ok(existsSync(exportStateHookPath), 'viewer and export derived state should live in a focused route-local hook');
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
-  assert.ok(existsSync(assetLibraryBrowserPath), 'asset picker browser should mirror the app library structure in route-local editor CSS');
+  assert.ok(existsSync(assetLibraryBrowserPath), 'asset picker browser should mirror the app library structure in a route-local component');
   assert.ok(existsSync(exportDialogPath), 'export dialog should live in a route-local editor component');
   assert.ok(existsSync(runtimeModalsPath), 'workspace runtime modal wiring should live in a route-local component');
   assert.ok(existsSync(libraryPath), 'block template sidebar should live in a route-local component');
@@ -280,6 +281,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
   assert.ok(existsSync(exportStylesPath), 'export dialog styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(assetLibraryStylesPath), 'asset picker browser styles should live in a focused route-local CSS module');
   assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
 
   const pageSource = source(pagePath);
@@ -315,6 +317,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
   const exportStyleSource = source(exportStylesPath);
+  const assetLibraryStyleSource = source(assetLibraryStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
   assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Block/, 'studio architecture guide should explain additive block work');
@@ -698,6 +701,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
   const exportStyleSource = source(exportStylesPath);
+  const assetLibraryStyleSource = source(assetLibraryStylesPath);
   const viewerStyleSource = source(viewerStylesPath);
   const programMonitorSource = source(programMonitorPath);
   const programPlaybackLayersSource = source(programPlaybackLayersPath);
@@ -1480,11 +1484,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(assetLibraryModalSource, /headerActions=/, 'asset picker modal should place the upload action in the library header');
   assert.match(assetLibraryModalSource, /onSourceChange\('upload'\)/, 'asset picker modal should switch to the Uploaded library source after upload');
   assert.doesNotMatch(assetLibraryModalSource, /assets\.map/, 'asset picker modal should not keep a second ad-hoc asset grid');
-  assert.match(styleSource, /\.assetBrowser/, 'studio library browser should be styled with isolated editor CSS');
-  assert.match(styleSource, /\.assetLibraryUploadButton/, 'asset library upload button should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.assetLibraryUploadInput/, 'asset library hidden file input should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.assetBrowserSourceButton/, 'studio library source tabs should be styled with isolated editor CSS');
-  assert.match(styleSource, /\.assetBrowserCard/, 'studio library asset cards should be styled with isolated editor CSS');
+  assert.match(assetLibraryBrowserSource, /_styles\/asset-library\.module\.css/, 'studio library browser should import focused asset library CSS');
+  assert.match(assetLibraryModalSource, /_styles\/asset-library\.module\.css/, 'asset picker modal should import focused asset library CSS');
+  assert.match(projectMediaLibraryModalSource, /_styles\/asset-library\.module\.css/, 'project media modal should import focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetBrowser/, 'studio library browser should be styled with focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryUploadButton/, 'asset library upload button should be styled in focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryUploadInput/, 'asset library hidden file input should be styled in focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetBrowserSourceButton/, 'studio library source tabs should be styled with focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetBrowserCard/, 'studio library asset cards should be styled with focused asset library CSS');
+  assert.doesNotMatch(styleSource, /\.assetBrowserCard/, 'main editor CSS should no longer own asset browser card styles after modularization');
   assert.match(canvasStyleSource, /\.blockTemplateList/, 'sidebar block template list should be styled with focused canvas CSS');
   assert.match(canvasStyleSource, /\.blockTemplateList[\s\S]*flex:\s*0 0 auto/, 'sidebar block templates should keep a bounded height when Viewer mode reduces available body space');
   assert.match(canvasStyleSource, /\.blockTemplateList[\s\S]*user-select:\s*none/, 'block template labels should not be selectable during block drags');
@@ -1568,11 +1576,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportDialogSource, /_styles\/export\.module\.css/, 'export dialog should import focused export CSS');
   assert.match(exportStyleSource, /\.exportOverlay/, 'export dialog overlay should be styled in focused export CSS');
   assert.match(exportStyleSource, /\.exportDialogBody/, 'export dialog body should be styled in focused export CSS');
+  assert.match(assetLibraryStyleSource, /\.assetBrowser/, 'asset picker browser should be styled in focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryUploadButton/, 'asset library upload button should be styled in focused asset library CSS');
   assert.doesNotMatch(styleSource, /\.canvasShell/, 'main editor CSS should no longer own canvas surface styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.graphNode/, 'main editor CSS should no longer own workspace node styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.shotInputDock/, 'main editor CSS should no longer own generate block connector styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.mediaPickerEmpty/, 'main editor CSS should no longer own media picker node styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.exportDialogBody/, 'main editor CSS should no longer own export dialog styles after export extraction');
+  assert.doesNotMatch(styleSource, /\.assetBrowser/, 'main editor CSS should no longer own asset browser styles after asset library extraction');
   assert.match(viewerStyleSource, /\.videoViewerShell/, 'central montage viewer should be styled in focused viewer CSS');
   assert.match(viewerStyleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
   assert.match(viewerStyleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');
@@ -1639,8 +1650,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineStyleSource, /\.timelineSnapGuide/, 'timeline snap guide should be styled in focused timeline CSS');
   assert.match(timelineStyleSource, /\.timelineScrubber/, 'timeline scrubber should be styled in focused timeline CSS');
   assert.match(timelineStyleSource, /\.trimHandle/, 'timeline trim handles should be styled in focused timeline CSS');
-  assert.match(styleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in isolated editor CSS');
-  assert.match(styleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in isolated editor CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in focused asset library CSS');
+  assert.ok(lineCount(assetLibraryStyleSource) <= 420, 'asset library CSS module should stay small and focused');
   for (const nodeType of ["type: 'asset-image'", "type: 'asset-video'", "type: 'asset-audio'", "type: 'text-prompt'", "type: 'shot'", "type: 'output'"]) {
     assert.match(templateDevBlocksSource, new RegExp(nodeType), `Dev Blocks template should include ${nodeType}`);
   }
@@ -3763,19 +3775,19 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
 });
 
 test('MaxVideoAI editor asset library modal keeps the asset grid scrollable', () => {
-  const styleSource = source(stylesPath);
+  const assetLibraryStyleSource = source(assetLibraryStylesPath);
   assert.match(
-    styleSource,
+    assetLibraryStyleSource,
     /\.assetLibraryModal\s*\{[\s\S]*grid-template-rows:\s*minmax\(0,\s*1fr\)/,
     'asset library modal should constrain its browser child to the available modal height'
   );
   assert.match(
-    styleSource,
+    assetLibraryStyleSource,
     /\.assetBrowserModal\s*\{[\s\S]*height:\s*100%/,
     'asset library browser should fill the constrained modal row'
   );
   assert.match(
-    styleSource,
+    assetLibraryStyleSource,
     /\.assetBrowserModal\s+\.assetBrowserGrid\s*\{[\s\S]*overflow-y:\s*auto/,
     'asset library modal grid should be the vertical scroll container'
   );
