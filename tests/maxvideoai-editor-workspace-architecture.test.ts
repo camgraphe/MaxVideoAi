@@ -114,6 +114,7 @@ const timelineCollisionsPath = join(workspaceDir, '_lib/timeline/timeline-collis
 const timelineInsertPath = join(workspaceDir, '_lib/timeline/timeline-insert.ts');
 const timelineTrimPath = join(workspaceDir, '_lib/timeline/timeline-trim.ts');
 const timelineLinkedAudioPath = join(workspaceDir, '_lib/timeline/timeline-linked-audio.ts');
+const timelineBuildersPath = join(workspaceDir, '_lib/timeline/timeline-builders.ts');
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
@@ -458,6 +459,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timelineInsertPath), 'timeline insert and move package helpers should live under _lib/timeline');
   assert.ok(existsSync(timelineTrimPath), 'timeline trim and split math should live under _lib/timeline');
   assert.ok(existsSync(timelineLinkedAudioPath), 'timeline linked audio sync helpers should live under _lib/timeline');
+  assert.ok(existsSync(timelineBuildersPath), 'timeline clip builders should live under _lib/timeline');
   assert.ok(existsSync(libraryAssetsPath), 'studio library assets should live in a pure route-local helper');
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
@@ -541,6 +543,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineInsertSource = source(timelineInsertPath);
   const timelineTrimSource = source(timelineTrimPath);
   const timelineLinkedAudioSource = source(timelineLinkedAudioPath);
+  const timelineBuildersSource = source(timelineBuildersPath);
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
@@ -815,9 +818,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /sourceRightRoomForTimelineItem/, 'timeline helper should know how much source media remains after a clip out-point');
   assert.match(timelineEditingSource, /clampSourceStartForDuration/, 'timeline helper should keep clip source in/out inside the original media');
   assert.match(timelineEditingSource, /export function toggleWorkspaceTimelineCrossfade/, 'timeline helper should toggle crossfade transitions between adjacent clips');
-  assert.match(timelineEditingSource, /export function buildWorkspaceTimelineItemsForOutput/, 'timeline helper should create linked audio and video clips from generated outputs');
-  assert.match(timelineEditingSource, /export function buildWorkspaceTimelineItemsForAsset/, 'timeline helper should create timeline clips from imported canvas media assets');
-  assert.match(timelineEditingSource, /workspaceAssetHasTimelineAudio/, 'timeline helper should treat imported video assets as video plus linked audio');
+  assert.match(timelineEditingSource, /timeline\/timeline-builders/, 'timeline editing facade should re-export timeline clip builders');
+  assert.match(timelineBuildersSource, /export function buildWorkspaceTimelineItemsForOutput/, 'timeline builder helper should create linked audio and video clips from generated outputs');
+  assert.match(timelineBuildersSource, /export function buildWorkspaceTimelineItemsForAsset/, 'timeline builder helper should create timeline clips from imported canvas media assets');
+  assert.match(timelineBuildersSource, /workspaceAssetHasTimelineAudio/, 'timeline builder helper should treat imported video assets as video plus linked audio');
   assert.match(timelineRenderSource, /export function buildWorkspaceTimelineRenderManifest/, 'timeline render helper should build a final-render manifest from timeline clips');
   assert.match(timelineRenderSource, /WorkspaceTimelineRenderManifest/, 'timeline render helper should type the backend handoff contract');
   assert.match(timelineRenderSource, /projectSettings/, 'timeline render manifest should carry project settings for final composition');
