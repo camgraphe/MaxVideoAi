@@ -65,6 +65,7 @@ import { markTimelinePerformance } from '../_lib/timeline/timeline-performance';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
 import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
+import { useTimelineVisibleRange } from './timeline/useTimelineVisibleRange';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
@@ -72,12 +73,6 @@ const MAX_TIMELINE_PIXELS_PER_SECOND = 92;
 const MIN_TIMELINE_WIDTH = 760;
 const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
-const TIMELINE_VISIBLE_RANGE_BUFFER_PX = 360;
-
-type TimelineVisibleRange = {
-  startSec: number;
-  endSec: number;
-};
 
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -200,14 +195,9 @@ export function WorkspaceTimeline({
   const [trackContextMenu, setTrackContextMenu] = useState<TimelineTrackContextMenuState | null>(null);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
-  const [visibleTimelineRange, setVisibleTimelineRange] = useState<TimelineVisibleRange>(() => ({
-    startSec: 0,
-    endSec: Number.POSITIVE_INFINITY,
-  }));
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const interactionRef = useRef<TimelineInteractionState | null>(null);
   const suppressNextSurfaceClickRef = useRef(false);
-  const visibleRangeFrameRef = useRef<number | null>(null);
   const {
     handleBeginTimelinePanelMouseResize,
     handleBeginTimelinePanelPointerResize,
@@ -271,39 +261,15 @@ export function WorkspaceTimeline({
   const handleZoomBy = useCallback((deltaPixelsPerSecond: number) => {
     setTimelineZoom(pixelsPerSecond + deltaPixelsPerSecond);
   }, [pixelsPerSecond, setTimelineZoom]);
-  const updateVisibleTimelineRange = useCallback(() => {
-    const viewportElement = timelineViewportRef.current;
-    if (!viewportElement) {
-      setVisibleTimelineRange((currentRange) => (
-        currentRange.startSec === 0 && currentRange.endSec === totalDuration
-          ? currentRange
-          : { startSec: 0, endSec: totalDuration }
-      ));
-      return;
-    }
-
-    const bufferSec = TIMELINE_VISIBLE_RANGE_BUFFER_PX / pixelsPerSecond;
-    const nextStartSec = Math.max(0, viewportElement.scrollLeft / pixelsPerSecond - bufferSec);
-    const nextEndSec = Math.min(
-      totalDuration,
-      (viewportElement.scrollLeft + viewportElement.clientWidth) / pixelsPerSecond + bufferSec
-    );
-
-    setVisibleTimelineRange((currentRange) => {
-      const startDelta = Math.abs(currentRange.startSec - nextStartSec);
-      const endDelta = Math.abs(currentRange.endSec - nextEndSec);
-      if (startDelta < frameStepSec && endDelta < frameStepSec) return currentRange;
-      return { startSec: nextStartSec, endSec: nextEndSec };
-    });
-  }, [frameStepSec, pixelsPerSecond, totalDuration]);
-  const scheduleVisibleTimelineRangeUpdate = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    if (visibleRangeFrameRef.current !== null) return;
-    visibleRangeFrameRef.current = window.requestAnimationFrame(() => {
-      visibleRangeFrameRef.current = null;
-      updateVisibleTimelineRange();
-    });
-  }, [updateVisibleTimelineRange]);
+  const {
+    scheduleVisibleTimelineRangeUpdate,
+    visibleTimelineRange,
+  } = useTimelineVisibleRange({
+    frameStepSec,
+    pixelsPerSecond,
+    timelineViewportRef,
+    totalDuration,
+  });
   const secondsFromTimelineElement = useCallback((clientX: number, element: HTMLElement): number => {
     const rect = element.getBoundingClientRect();
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
@@ -672,17 +638,6 @@ export function WorkspaceTimeline({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [contextMenu, trackContextMenu]);
-
-  useEffect(() => {
-    updateVisibleTimelineRange();
-  }, [updateVisibleTimelineRange]);
-
-  useEffect(() => () => {
-    if (visibleRangeFrameRef.current !== null) {
-      window.cancelAnimationFrame(visibleRangeFrameRef.current);
-      visibleRangeFrameRef.current = null;
-    }
-  }, []);
 
   useTimelineKeyboardShortcuts({
     canRedo,

@@ -86,6 +86,7 @@ const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToo
 const timelineKeyboardShortcutsPath = join(workspaceDir, '_components/timeline/useTimelineKeyboardShortcuts.ts');
 const timelinePanelResizeHookPath = join(workspaceDir, '_components/timeline/useTimelinePanelResize.ts');
 const timelinePlayheadDragHookPath = join(workspaceDir, '_components/timeline/useTimelinePlayheadDrag.ts');
+const timelineVisibleRangeHookPath = join(workspaceDir, '_components/timeline/useTimelineVisibleRange.ts');
 const timelineTrackDefinitionsPath = join(workspaceDir, '_components/timeline/timelineTrackDefinitions.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const programMonitorPath = join(workspaceDir, '_components/viewer/ProgramMonitor.tsx');
@@ -231,6 +232,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineKeyboardShortcutsPath), 'timeline keyboard shortcuts should live in a focused route-local hook');
   assert.ok(existsSync(timelinePanelResizeHookPath), 'timeline panel resize behavior should live in a focused route-local hook');
   assert.ok(existsSync(timelinePlayheadDragHookPath), 'timeline playhead drag behavior should live in a focused route-local hook');
+  assert.ok(existsSync(timelineVisibleRangeHookPath), 'timeline visible range scheduling should live in a focused route-local hook');
   assert.ok(existsSync(timelineTrackDefinitionsPath), 'timeline track definitions should live in a focused route-local helper');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(programMonitorPath), 'program monitor frame and zoom should live in a route-local viewer component');
@@ -612,6 +614,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineKeyboardShortcutsSource = source(timelineKeyboardShortcutsPath);
   const timelinePanelResizeHookSource = source(timelinePanelResizeHookPath);
   const timelinePlayheadDragHookSource = source(timelinePlayheadDragHookPath);
+  const timelineVisibleRangeHookSource = source(timelineVisibleRangeHookPath);
   const timelineTrackDefinitionsSource = source(timelineTrackDefinitionsPath);
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
@@ -774,10 +777,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /timeline\/timeline-interaction/, 'timeline component should import pointer interaction helpers from the timeline domain');
   assert.match(timelineSource, /useTimelinePanelResize/, 'timeline component should delegate panel height drag behavior to a focused hook');
   assert.match(timelineSource, /useTimelinePlayheadDrag/, 'timeline component should delegate playhead drag behavior to a focused hook');
+  assert.match(timelineSource, /useTimelineVisibleRange/, 'timeline component should delegate visible range scheduling to a focused hook');
   assert.match(timelinePanelResizeHookSource, /onBeginResize\?\.\(\)/, 'timeline panel resize hook should preserve caller-owned cleanup before resizing');
   assert.match(timelinePlayheadDragHookSource, /markTimelinePerformance\('playhead-frame'\)/, 'timeline playhead hook should keep requestAnimationFrame playhead performance markers');
+  assert.match(timelineVisibleRangeHookSource, /requestAnimationFrame/, 'timeline visible range hook should throttle scroll range updates with requestAnimationFrame');
+  assert.match(timelineVisibleRangeHookSource, /TIMELINE_VISIBLE_RANGE_BUFFER_PX/, 'timeline visible range hook should own the buffered render window');
   assert.match(timelinePerformanceSource, /export function markTimelinePerformance/, 'timeline performance markers should be shared outside the component');
   assert.doesNotMatch(timelineSource, /playheadDragFrameRef|pendingPlayheadDragSecRef/, 'timeline component should not own playhead drag animation refs inline');
+  assert.doesNotMatch(timelineSource, /visibleRangeFrameRef/, 'timeline component should not own visible range animation refs inline');
+  assert.doesNotMatch(timelineSource, /function updateVisibleTimelineRange|const updateVisibleTimelineRange/, 'timeline component should not own visible range projection inline');
   assert.match(timelineClipSource, /timeline\/timeline-interaction/, 'timeline clips should share frame snap and interaction contracts from the timeline domain');
   assert.doesNotMatch(timelineSource, /function nextInteractionState/, 'timeline component should not own pointer interaction projection inline');
   assert.doesNotMatch(timelineSource, /function selectedItemIdsForMarquee/, 'timeline component should not own marquee hit testing inline');
