@@ -124,6 +124,7 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
+const timelinePlaybackHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelinePlayback.ts');
 const stylesPath = join(workspaceDir, 'maxvideoai-editor.module.css');
 const shellStylesPath = join(workspaceDir, '_styles/shell.module.css');
 const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
@@ -406,6 +407,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
+  assert.ok(existsSync(timelinePlaybackHookPath), 'timeline playback clock and in-out controls should live in a route-local hook');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
   assert.ok(existsSync(templateCorePath), 'template core edge and shot helpers should live in the templates domain');
@@ -470,6 +472,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
   const timelineHistoryHookSource = source(timelineHistoryHookPath);
+  const timelinePlaybackHookSource = source(timelinePlaybackHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
   const templateCoreSource = source(templateCorePath);
@@ -936,9 +939,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.viewerFooter/, 'editor CSS should not keep a duplicate viewer footer');
   assert.doesNotMatch(styleSource, /\.viewerStrip/, 'editor CSS should not keep duplicate viewer thumbnail strip styling');
   assert.doesNotMatch(styleSource, /\.viewerPlaybackButton/, 'editor CSS should not keep duplicate viewer playback button styling');
-  assert.match(workspaceSource, /isTimelinePlaying/, 'workspace should own shared montage playback state');
-  assert.match(workspaceSource, /setInterval/, 'workspace should advance the playhead from a timeline clock, not only native video controls');
-  assert.match(workspaceSource, /handleToggleTimelinePlayback/, 'workspace should expose a shared play/pause toggle');
+  assert.match(workspaceSource, /useWorkspaceTimelinePlayback/, 'workspace should delegate shared montage playback state to a route-local hook');
+  assert.match(timelinePlaybackHookSource, /isTimelinePlaying/, 'timeline playback hook should own shared montage playback state');
+  assert.match(timelinePlaybackHookSource, /setInterval/, 'timeline playback hook should advance the playhead from a timeline clock, not only native video controls');
+  assert.match(timelinePlaybackHookSource, /handleToggleTimelinePlayback/, 'timeline playback hook should expose a shared play/pause toggle');
+  assert.doesNotMatch(workspaceSource, /setInterval\(tick, 50\)/, 'workspace orchestrator should not own the playback tick loop inline');
   assert.match(workspaceSource, /useWorkspaceTimelineHistory/, 'workspace should delegate timeline undo and redo history to a route-local hook');
   assert.match(timelineHistoryHookSource, /TimelineHistoryState/, 'timeline history hook should own the undo and redo history state');
   assert.match(timelineHistoryHookSource, /TIMELINE_HISTORY_LIMIT/, 'timeline history hook should enforce the shared history limit');
