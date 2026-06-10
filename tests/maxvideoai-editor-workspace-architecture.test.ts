@@ -77,6 +77,8 @@ const workspaceEditorLayoutPath = join(workspaceDir, '_components/WorkspaceEdito
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
+const shotNodeInspectorPath = join(workspaceDir, '_components/ShotNodeInspector.tsx');
+const nodeInspectorControlsPath = join(workspaceDir, '_components/NodeInspectorControls.tsx');
 const nodeInspectorConnectionsPath = join(workspaceDir, '_components/NodeInspectorConnections.tsx');
 const nodeInspectorMediaPreviewPath = join(workspaceDir, '_components/NodeInspectorMediaPreview.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
@@ -246,6 +248,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(studioHeaderSessionPath), 'studio account and wallet status should live in a route-local component');
   assert.ok(existsSync(workspaceEditorTopbarPath), 'workspace topbar should live in a route-local shell component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
+  assert.ok(existsSync(shotNodeInspectorPath), 'shot node settings should live in a focused route-local component');
+  assert.ok(existsSync(nodeInspectorControlsPath), 'node inspector form controls should live in a focused route-local component');
   assert.ok(existsSync(nodeInspectorConnectionsPath), 'node inspector connection list should live in a focused route-local component');
   assert.ok(existsSync(nodeInspectorMediaPreviewPath), 'node inspector media preview should live in a focused route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
@@ -626,6 +630,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const nodeFrameSource = source(nodeFramePath);
   const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
+  const shotNodeInspectorSource = source(shotNodeInspectorPath);
+  const nodeInspectorControlsSource = source(nodeInspectorControlsPath);
   const nodeInspectorConnectionsSource = source(nodeInspectorConnectionsPath);
   const nodeInspectorMediaPreviewSource = source(nodeInspectorMediaPreviewPath);
   const timelineClipInspectorSource = source(timelineClipInspectorPath);
@@ -731,6 +737,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
 
   assert.ok(lineCount(nodeSource) <= 360, 'workspace node renderers should stay focused on block-specific markup');
   assert.ok(lineCount(nodeFrameSource) <= 260, 'workspace node frame should stay focused on shared React Flow behavior');
+  assert.ok(lineCount(settingsSource) <= 330, 'node settings panel should stay focused on routing to specific inspectors');
+  assert.ok(lineCount(shotNodeInspectorSource) <= 260, 'shot node inspector should stay focused on generation-model settings');
+  assert.ok(lineCount(nodeInspectorControlsSource) <= 90, 'node inspector form controls should remain small and reusable');
   assert.match(canvasSource, /@xyflow\/react/, 'canvas should use React Flow for pan, zoom, nodes, handles, and edges');
   assert.match(canvasSource, /_styles\/canvas\.module\.css/, 'canvas surface should import focused canvas CSS');
   assert.match(canvasMapSource, /_styles\/canvas-map\.module\.css/, 'canvas map should import focused canvas map CSS');
@@ -1186,16 +1195,17 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeSource, /disabled=\{!canSendToTimeline\}/, 'output blocks should not send placeholders or processing outputs to the timeline');
   assert.match(nodeSource, /function EmptyMediaPicker/, 'media nodes should render an empty picker state when no media is attached');
   assert.match(nodeSource, /onOpenAssetLibrary/, 'media node plus button should open the editor asset library');
-  assert.match(settingsSource, /pricingEstimate/, 'shot inspector should render the same live pricing estimate');
-  assert.match(settingsSource, /render_options/, 'shot inspector should render engine-derived render options');
-  assert.doesNotMatch(settingsSource, /<span>Lip-sync<\/span>[\s\S]*lipSyncEnabled/, 'shot inspector should not always render a generic lip-sync toggle');
-  assert.match(settingsSource, /recommendedModels[\s\S]*slice\(0,\s*4\)/, 'shot inspector model selector should cap inline recommendations at four models');
-  assert.match(settingsSource, /<optgroup label="Recommended">[\s\S]*recommendedModels\.map/, 'shot inspector model selector should expose recommended models inside the model dropdown');
-  assert.match(settingsSource, /remainingCapabilities = capabilities\.filter/, 'shot inspector model selector should derive the full remaining model list after recommendations');
-  assert.match(settingsSource, /<optgroup label="All models">[\s\S]*remainingCapabilities\.map/, 'shot inspector model selector should keep the full model list available after recommendations');
-  assert.doesNotMatch(settingsSource, /styles\.recommendationList|<span>Recommended models<\/span>/, 'shot inspector should not render a separate recommended models section');
+  assert.match(settingsSource, /ShotNodeInspector/, 'node settings panel should delegate shot settings to a focused component');
+  assert.match(shotNodeInspectorSource, /pricingEstimate/, 'shot inspector should render the same live pricing estimate');
+  assert.match(shotNodeInspectorSource, /render_options/, 'shot inspector should render engine-derived render options');
+  assert.doesNotMatch(shotNodeInspectorSource, /<span>Lip-sync<\/span>[\s\S]*lipSyncEnabled/, 'shot inspector should not always render a generic lip-sync toggle');
+  assert.match(shotNodeInspectorSource, /recommendedModels[\s\S]*slice\(0,\s*4\)/, 'shot inspector model selector should cap inline recommendations at four models');
+  assert.match(shotNodeInspectorSource, /<optgroup label="Recommended">[\s\S]*recommendedModels\.map/, 'shot inspector model selector should expose recommended models inside the model dropdown');
+  assert.match(shotNodeInspectorSource, /remainingCapabilities = capabilities\.filter/, 'shot inspector model selector should derive the full remaining model list after recommendations');
+  assert.match(shotNodeInspectorSource, /<optgroup label="All models">[\s\S]*remainingCapabilities\.map/, 'shot inspector model selector should keep the full model list available after recommendations');
+  assert.doesNotMatch(shotNodeInspectorSource, /styles\.recommendationList|<span>Recommended models<\/span>/, 'shot inspector should not render a separate recommended models section');
   assert.doesNotMatch(styleSource, /\.recommendationList/, 'editor CSS should not keep styling for the removed recommendation section');
-  assert.match(settingsSource, /styles\.pricingActionSummary[\s\S]*pricingEstimate[\s\S]*styles\.primaryPanelButton[\s\S]*<span>Routing<\/span>[\s\S]*Available inputs/, 'shot inspector should keep routing and available inputs below the price and generate action');
+  assert.match(shotNodeInspectorSource, /styles\.pricingActionSummary[\s\S]*pricingEstimate[\s\S]*styles\.primaryPanelButton[\s\S]*<span>Routing<\/span>[\s\S]*Available inputs/, 'shot inspector should keep routing and available inputs below the price and generate action');
   assert.match(settingsSource, /_styles\/inspector\.module\.css/, 'node settings inspector should import its focused inspector CSS module');
   assert.match(timelineClipInspectorSource, /_styles\/inspector\.module\.css/, 'timeline clip inspector should import its focused inspector CSS module');
   assert.match(inspectorStyleSource, /\.settingsPanel/, 'inspector CSS module should own the settings panel shell');
