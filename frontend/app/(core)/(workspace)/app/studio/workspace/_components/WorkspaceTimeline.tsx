@@ -6,17 +6,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
   CSSProperties,
-  DragEvent as ReactDragEvent,
   MouseEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import styles from '../_styles/timeline.module.css';
 import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
-import {
-  parseTimelineNodeDragPayload,
-  resolveTimelineExternalDropPreview,
-  type TimelineExternalDropPreview,
-} from '../_lib/timeline/timeline-external-drop';
 import {
   moveWorkspaceTimelineSelectionWithMode,
   type WorkspaceTimelineTrimEdge,
@@ -53,6 +47,7 @@ import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineTrackList } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 import { useTimelineClipInteraction } from './timeline/useTimelineClipInteraction';
+import { useTimelineExternalDrop } from './timeline/useTimelineExternalDrop';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
 import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
@@ -179,7 +174,6 @@ export function WorkspaceTimeline({
 }: WorkspaceTimelineProps) {
   const [marquee, setMarquee] = useState<TimelineMarqueeState | null>(null);
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
-  const [externalDropPreview, setExternalDropPreview] = useState<TimelineExternalDropPreview | null>(null);
   const [contextMenu, setContextMenu] = useState<TimelineContextMenuState | null>(null);
   const [trackContextMenu, setTrackContextMenu] = useState<TimelineTrackContextMenuState | null>(null);
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -284,51 +278,26 @@ export function WorkspaceTimeline({
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
     return Math.max(0, Math.min(totalDuration, snapTimelineSeconds(rawSeconds, frameStepSec)));
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
+  const {
+    externalDropPreview,
+    handleClearExternalDropPreview,
+    handleExternalDrop,
+    handleExternalDropOver,
+  } = useTimelineExternalDrop({
+    isInsertIntoClipEnabled,
+    items,
+    lockedTrackSet,
+    onInvalidNodeDropToTimeline,
+    onNodeDropToTimeline,
+    onPlaybackChange,
+    onProjectAssetDropToTimeline,
+    secondsFromTimelineElement,
+  });
   const handleBeginPlayheadDrag = useTimelinePlayheadDrag({
     onPlaybackChange,
     onPlayheadChange,
     secondsFromTimelineElement,
   });
-  const updateExternalDropPreview = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
-    const payload = parseTimelineNodeDragPayload(event.dataTransfer);
-    if ((!payload?.nodeId && !payload?.assetId) || !payload.mediaKind) return null;
-    const rawStartSec = secondsFromTimelineElement(event.clientX, event.currentTarget);
-    const preview = resolveTimelineExternalDropPreview({
-      isInsertIntoClipEnabled,
-      items,
-      lockedTracks: lockedTrackSet,
-      payload,
-      rawStartSec,
-      track,
-    });
-    if (!preview) return null;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = preview.isValid ? 'copy' : 'none';
-    setExternalDropPreview(preview);
-    return { payload, preview };
-  }, [isInsertIntoClipEnabled, items, lockedTrackSet, secondsFromTimelineElement]);
-  const handleExternalDropOver = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
-    updateExternalDropPreview(event, track);
-  }, [updateExternalDropPreview]);
-  const handleExternalDrop = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
-    const result = updateExternalDropPreview(event, track);
-    setExternalDropPreview(null);
-    if (!result?.payload.nodeId && !result?.payload.assetId) return;
-    if (lockedTrackSet.has(track)) {
-      onInvalidNodeDropToTimeline('locked-track');
-      return;
-    }
-    if (!result.preview.isValid) {
-      onInvalidNodeDropToTimeline('incompatible');
-      return;
-    }
-    onPlaybackChange(false);
-    if (result.payload.nodeId) {
-      onNodeDropToTimeline(result.payload.nodeId, result.preview.startSec, result.preview.trackId);
-    } else if (result.payload.assetId) {
-      onProjectAssetDropToTimeline(result.payload.assetId, result.preview.startSec, result.preview.trackId);
-    }
-  }, [lockedTrackSet, onInvalidNodeDropToTimeline, onNodeDropToTimeline, onPlaybackChange, onProjectAssetDropToTimeline, updateExternalDropPreview]);
   const handleBeginTimelineSurfacePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     if (target.closest('[data-timeline-item], [data-timeline-control="true"]')) return;
@@ -563,9 +532,6 @@ export function WorkspaceTimeline({
   const previewPlayheadSec = interaction
     ? resolvedPreviewTimelineItems?.find((item) => item.id === interaction.itemId)?.startSec ?? previewPlayheadForInteraction(interaction)
     : null;
-  const handleClearExternalDropPreview = useCallback(() => {
-    setExternalDropPreview(null);
-  }, []);
   useEffect(() => {
     onPreviewItemsChange?.(previewTimelineItems, previewPlayheadSec);
   }, [onPreviewItemsChange, previewPlayheadSec, previewTimelineItems]);

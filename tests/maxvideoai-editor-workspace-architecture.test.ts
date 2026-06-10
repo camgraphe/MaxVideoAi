@@ -85,6 +85,7 @@ const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTr
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
 const timelineKeyboardShortcutsPath = join(workspaceDir, '_components/timeline/useTimelineKeyboardShortcuts.ts');
 const timelineClipInteractionHookPath = join(workspaceDir, '_components/timeline/useTimelineClipInteraction.ts');
+const timelineExternalDropHookPath = join(workspaceDir, '_components/timeline/useTimelineExternalDrop.ts');
 const timelinePanelResizeHookPath = join(workspaceDir, '_components/timeline/useTimelinePanelResize.ts');
 const timelinePlayheadDragHookPath = join(workspaceDir, '_components/timeline/useTimelinePlayheadDrag.ts');
 const timelineVisibleRangeHookPath = join(workspaceDir, '_components/timeline/useTimelineVisibleRange.ts');
@@ -232,6 +233,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineKeyboardShortcutsPath), 'timeline keyboard shortcuts should live in a focused route-local hook');
   assert.ok(existsSync(timelineClipInteractionHookPath), 'timeline clip drag and resize interactions should live in a focused route-local hook');
+  assert.ok(existsSync(timelineExternalDropHookPath), 'timeline external drop state should live in a focused route-local hook');
   assert.ok(existsSync(timelinePanelResizeHookPath), 'timeline panel resize behavior should live in a focused route-local hook');
   assert.ok(existsSync(timelinePlayheadDragHookPath), 'timeline playhead drag behavior should live in a focused route-local hook');
   assert.ok(existsSync(timelineVisibleRangeHookPath), 'timeline visible range scheduling should live in a focused route-local hook');
@@ -615,6 +617,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineToolbarSource = source(timelineToolbarPath);
   const timelineKeyboardShortcutsSource = source(timelineKeyboardShortcutsPath);
   const timelineClipInteractionHookSource = source(timelineClipInteractionHookPath);
+  const timelineExternalDropHookSource = source(timelineExternalDropHookPath);
   const timelinePanelResizeHookSource = source(timelinePanelResizeHookPath);
   const timelinePlayheadDragHookSource = source(timelinePlayheadDragHookPath);
   const timelineVisibleRangeHookSource = source(timelineVisibleRangeHookPath);
@@ -800,8 +803,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(timelineSource, /function selectedItemIdsForMarquee/, 'timeline component should not own marquee hit testing inline');
   assert.match(timelineExternalDropSource, /export function parseTimelineNodeDragPayload/, 'timeline external drop helper should parse canvas and media drag payloads');
   assert.match(timelineExternalDropSource, /export function resolveTimelineExternalDropPreview/, 'timeline external drop helper should own external drop ghost resolution');
-  assert.match(timelineSource, /timeline\/timeline-external-drop/, 'timeline component should import external drop helpers from the timeline domain');
+  assert.match(timelineExternalDropHookSource, /timeline\/timeline-external-drop/, 'timeline external drop hook should import external drop helpers from the timeline domain');
+  assert.match(timelineSource, /useTimelineExternalDrop/, 'timeline component should delegate external drag-and-drop state to a focused hook');
+  assert.match(timelineExternalDropHookSource, /parseTimelineNodeDragPayload/, 'timeline external drop hook should parse canvas and media drag payloads');
+  assert.match(timelineExternalDropHookSource, /resolveTimelineExternalDropPreview/, 'timeline external drop hook should own external drop ghost resolution');
   assert.doesNotMatch(timelineSource, /function parseTimelineNodeDragPayload/, 'timeline component should not own external drop payload parsing inline');
+  assert.doesNotMatch(timelineSource, /function updateExternalDropPreview|const updateExternalDropPreview/, 'timeline component should not own external drop preview state inline');
   assert.doesNotMatch(timelineSource, /function insertionBoundaryForTimelineTrack/, 'timeline component should not own external insertion boundary logic inline');
   assert.match(timelineCollisionsSource, /timelineRangeOverlapsItem/, 'timeline collision helper should expose range overlap checks');
   assert.match(timelineCollisionsSource, /timelineTrackHasOverlap/, 'timeline collision helper should expose same-track no-overlap assertions');
