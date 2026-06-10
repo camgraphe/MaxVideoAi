@@ -175,6 +175,7 @@ const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
 const inspectorStylesPath = join(workspaceDir, '_styles/inspector.module.css');
 const mediaStylesPath = join(workspaceDir, '_styles/media.module.css');
+const exportStylesPath = join(workspaceDir, '_styles/export.module.css');
 const viewerStylesPath = join(workspaceDir, '_styles/viewer.module.css');
 const visitorAccessPath = join(root, 'frontend/lib/visitor-access.ts');
 
@@ -278,6 +279,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineStylesPath), 'timeline styles should live in a focused route-local CSS module');
   assert.ok(existsSync(inspectorStylesPath), 'inspector styles should live in a focused route-local CSS module');
   assert.ok(existsSync(mediaStylesPath), 'project media styles should live in a focused route-local CSS module');
+  assert.ok(existsSync(exportStylesPath), 'export dialog styles should live in a focused route-local CSS module');
   assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
 
   const pageSource = source(pagePath);
@@ -312,6 +314,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasStyleSource = source(canvasStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
+  const exportStyleSource = source(exportStylesPath);
   assert.match(studioAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'studio AGENTS guide should point agents to the Studio architecture guide');
   assert.match(studioArchitectureGuideSource, /Product Entities/, 'studio architecture guide should define product entities');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Block/, 'studio architecture guide should explain additive block work');
@@ -694,6 +697,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineStyleSource = source(timelineStylesPath);
   const inspectorStyleSource = source(inspectorStylesPath);
   const mediaStyleSource = source(mediaStylesPath);
+  const exportStyleSource = source(exportStylesPath);
   const viewerStyleSource = source(viewerStylesPath);
   const programMonitorSource = source(programMonitorPath);
   const programPlaybackLayersSource = source(programPlaybackLayersPath);
@@ -1561,10 +1565,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasStyleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in focused canvas CSS');
   assert.match(canvasStyleSource, /\.processingPreview/, 'processing output placeholders should be styled in focused canvas CSS');
   assert.match(canvasStyleSource, /\.previewVideo/, 'playable video previews should be styled in focused canvas CSS');
+  assert.match(exportDialogSource, /_styles\/export\.module\.css/, 'export dialog should import focused export CSS');
+  assert.match(exportStyleSource, /\.exportOverlay/, 'export dialog overlay should be styled in focused export CSS');
+  assert.match(exportStyleSource, /\.exportDialogBody/, 'export dialog body should be styled in focused export CSS');
   assert.doesNotMatch(styleSource, /\.canvasShell/, 'main editor CSS should no longer own canvas surface styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.graphNode/, 'main editor CSS should no longer own workspace node styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.shotInputDock/, 'main editor CSS should no longer own generate block connector styles after canvas extraction');
   assert.doesNotMatch(styleSource, /\.mediaPickerEmpty/, 'main editor CSS should no longer own media picker node styles after canvas extraction');
+  assert.doesNotMatch(styleSource, /\.exportDialogBody/, 'main editor CSS should no longer own export dialog styles after export extraction');
   assert.match(viewerStyleSource, /\.videoViewerShell/, 'central montage viewer should be styled in focused viewer CSS');
   assert.match(viewerStyleSource, /\.programMonitor/, 'central viewer should style a program monitor shell');
   assert.match(viewerStyleSource, /\.programZoomControl/, 'program monitor should style zoom as a display control');
@@ -1587,9 +1595,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(lineCount(viewerStyleSource) <= 1200, 'program viewer CSS module should stay under the focused module size threshold');
   assert.doesNotMatch(styleSource, /\.viewerSettingsSlot/, 'viewer should not reserve a footer slot for project settings');
   assert.doesNotMatch(styleSource, /\.sequenceSettingsButton/, 'viewer should not style a footer project settings button');
-  assert.match(styleSource, /\.sequenceSettingsOverlay/, 'viewer should style the project settings dialog overlay');
-  assert.match(styleSource, /\.sequenceSettingsDialog/, 'viewer should style the project settings dialog');
-  assert.match(styleSource, /\.sequenceSettingsFields/, 'viewer should style sequence fields inside the dialog');
+  assert.match(exportStyleSource, /\.exportOverlay/, 'export dialog overlay should be styled in focused export CSS');
+  assert.match(exportStyleSource, /\.exportDialogShell/, 'export dialog shell should be styled in focused export CSS');
+  assert.match(exportStyleSource, /\.exportServerCard/, 'server render card should be styled in focused export CSS');
+  assert.ok(lineCount(exportStyleSource) <= 450, 'export CSS module should stay small and focused');
+  assert.doesNotMatch(styleSource, /\.sequenceSettingsOverlay/, 'main editor CSS should no longer own removed project settings dialog styles');
+  assert.doesNotMatch(styleSource, /\.exportServerCard/, 'main editor CSS should no longer own export server render styles');
   assert.doesNotMatch(styleSource, /\.viewerSequenceControls/, 'viewer should not style always-visible sequence settings controls');
   assert.match(timelineStyleSource, /\.timelineClipSelected/, 'selected timeline clips should be visually distinct');
   assert.match(cssBlock(timelineStyleSource, '.timelinePanel'), /min-width:\s*0/, 'timeline panel should shrink inside the app shell instead of widening the page when zoomed');

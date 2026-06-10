@@ -1,0 +1,380 @@
+.exportOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(14px);
+}
+
+.exportDialogShell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(420px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: rgba(8, 13, 24, 0.98);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+}
+
+.exportDialog {
+  width: min(480px, 100%);
+}
+
+.exportHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.exportHeader p {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.exportHeader span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exportCloseButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.76);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.exportCloseButton:hover {
+  border-color: rgba(148, 163, 184, 0.34);
+  color: #ffffff;
+}
+
+.exportDialogBody {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+}
+
+.exportSection {
+  display: grid;
+  gap: 9px;
+}
+
+.exportSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.exportSectionHeader strong {
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 820;
+  letter-spacing: 0;
+}
+
+.exportSectionHeader span {
+  color: #8b5cf6;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.exportRangeOptions {
+  display: grid;
+  gap: 8px;
+}
+
+.exportRangeOptions label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.62);
+  cursor: pointer;
+}
+
+.exportRangeOptions input {
+  accent-color: #8b5cf6;
+}
+
+.exportRangeOptions span {
+  display: grid;
+  gap: 3px;
+}
+
+.exportRangeOptions strong {
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.exportRangeOptions small {
+  color: #94a3b8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exportRangeDisabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.exportSummaryGrid {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 10px;
+  border-radius: 9px;
+  background: rgba(2, 6, 23, 0.38);
+}
+
+.exportSummaryGrid span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.exportSummaryGrid strong {
+  color: #f8fafc;
+  font-size: 11px;
+}
+
+.exportPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.exportPresetCard {
+  display: grid;
+  gap: 7px;
+  min-height: 84px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.58);
+  cursor: pointer;
+}
+
+.exportPresetCardActive {
+  border-color: rgba(139, 92, 246, 0.68);
+  background: rgba(88, 28, 135, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.16);
+}
+
+.exportPresetCard input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #8b5cf6;
+}
+
+.exportPresetCard span {
+  display: grid;
+  gap: 4px;
+}
+
+.exportPresetCard strong {
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.exportPresetCard small {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.exportReadinessList {
+  display: grid;
+  gap: 6px;
+}
+
+.exportReadinessItem {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.32);
+}
+
+.exportReadinessItem strong {
+  color: #dbeafe;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.exportReadinessItem span {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.exportReadinessItem[data-status="pass"] {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.exportReadinessItem[data-status="warning"] {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.exportReadinessItem[data-status="blocking"] {
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+.exportPrimaryAction {
+  min-height: 40px;
+}
+
+.exportServerSection {
+  padding: 11px;
+  border: 1px solid rgba(45, 212, 191, 0.14);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(59, 130, 246, 0.06)),
+    rgba(2, 6, 23, 0.34);
+}
+
+.exportServerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.exportServerCard > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.exportServerCard strong {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 840;
+}
+
+.exportServerCard span,
+.exportServerCard small {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.exportServerCard small {
+  color: #cbd5e1;
+}
+
+.exportJobStatus {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  flex: 0 0 auto;
+  padding: 7px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.56);
+}
+
+.exportJobStatus span {
+  color: #a78bfa;
+  font-size: 9px;
+  font-weight: 840;
+  text-transform: uppercase;
+}
+
+.exportJobStatus strong {
+  color: #f8fafc;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.exportProgressTrack {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.86);
+}
+
+.exportProgressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b5cf6, #2dd4bf);
+  transition: width 180ms ease;
+}
+
+.exportDownloadLink {
+  justify-self: start;
+  color: #ccfbf1;
+  font-size: 11px;
+  font-weight: 780;
+  text-decoration: none;
+}
+
+.exportDownloadLink:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.exportStatusBanner {
+  margin: -2px 0 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 8px;
+  background: rgba(13, 148, 136, 0.12);
+  color: #ccfbf1;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.exportAdvancedPanel {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.exportAdvancedPanel summary {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.exportAdvancedActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}

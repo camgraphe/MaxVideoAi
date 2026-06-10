@@ -2,7 +2,8 @@
 
 import { Download, FileJson, Film, X } from 'lucide-react';
 import { useEffect } from 'react';
-import styles from '../maxvideoai-editor.module.css';
+import editorStyles from '../maxvideoai-editor.module.css';
+import styles from '../_styles/export.module.css';
 import {
   WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS,
   workspaceTimelineExportReadinessChecks,
@@ -115,26 +116,26 @@ export function WorkspaceExportDialog({
 
   return (
     <div
-      className={styles.sequenceSettingsOverlay}
+      className={styles.exportOverlay}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
-        className={`${styles.sequenceSettingsDialog} ${styles.exportDialog}`}
+        className={`${styles.exportDialogShell} ${styles.exportDialog}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="workspace-export-title"
       >
-        <div className={styles.sequenceSettingsHeader}>
+        <div className={styles.exportHeader}>
           <div>
             <p id="workspace-export-title">Export sequence</p>
             <span>{readinessLabel}</span>
           </div>
           <button
             type="button"
-            className={styles.sequenceSettingsCloseButton}
+            className={styles.exportCloseButton}
             onClick={onClose}
             aria-label="Close export dialog"
           >
@@ -231,7 +232,7 @@ export function WorkspaceExportDialog({
 
           <button
             type="button"
-            className={`${styles.primaryPanelButton} ${styles.exportPrimaryAction}`}
+            className={`${editorStyles.primaryPanelButton} ${styles.exportPrimaryAction}`}
             disabled={hasBlockingChecks || isExportStarting || isServerJobActive}
             onClick={onExportVideo}
           >
@@ -280,11 +281,11 @@ export function WorkspaceExportDialog({
           <details className={styles.exportAdvancedPanel} open>
             <summary>Advanced</summary>
             <div className={styles.exportAdvancedActions}>
-              <button type="button" className={styles.secondaryPanelButton} disabled={hasBlockingChecks} onClick={onExportEdl}>
+              <button type="button" className={editorStyles.secondaryPanelButton} disabled={hasBlockingChecks} onClick={onExportEdl}>
                 <Download size={14} />
                 Export EDL
               </button>
-              <button type="button" className={styles.secondaryPanelButton} onClick={onPrepareRender}>
+              <button type="button" className={editorStyles.secondaryPanelButton} onClick={onPrepareRender}>
                 <FileJson size={14} />
                 Prepare render JSON
               </button>
