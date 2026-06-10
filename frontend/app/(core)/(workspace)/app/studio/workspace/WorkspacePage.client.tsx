@@ -1,17 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
-import Image from 'next/image';
 import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineProjectSidebar } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
 import { WorkspaceCanvas } from './_components/WorkspaceCanvas.client';
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
+import { WorkspaceEditorTopbar } from './_components/WorkspaceEditorTopbar';
 import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
 import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
-import { StudioHeaderSession } from './_components/StudioHeaderSession';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useExportController } from './_controllers/useExportController';
@@ -679,62 +677,16 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       style={editorShellStyle}
       data-active-editor-surface={activeEditorSurface}
     >
-      <header className={styles.editorTopbar}>
-        <div className={styles.brandCluster}>
-          <Image
-            src="/assets/branding/logo-mark.svg"
-            alt=""
-            aria-hidden="true"
-            width={28}
-            height={28}
-            className={styles.brandLogo}
-            priority
-          />
-          <div>
-            <p>MaxVideoAI Editor</p>
-            <span>Projects / {activeTemplateName} / Workspace</span>
-          </div>
-        </div>
-        <div className={styles.modeSwitch} aria-label="Workspace view">
-          <button
-            type="button"
-            className={focusMode === 'canvas' ? styles.modeActive : ''}
-            aria-pressed={focusMode === 'canvas'}
-            onClick={() => {
-              setFocusMode('canvas');
-              setActiveEditorSurface('canvas');
-            }}
-          >
-            <GitBranch size={14} />
-            Canvas
-          </button>
-          <button
-            type="button"
-            className={focusMode === 'viewer' ? styles.modeActive : ''}
-            aria-pressed={focusMode === 'viewer'}
-            onClick={() => {
-              setFocusMode('viewer');
-              setActiveEditorSurface('timeline');
-            }}
-          >
-            <PanelRight size={14} />
-            Viewer
-          </button>
-        </div>
-        <div className={styles.topbarRight}>
-          <StudioHeaderSession onExitToProjects={handleExitToProjects} />
-          <div className={styles.topbarActions}>
-            <button type="button" className={`${styles.exportButton}`} onClick={handleOpenExportDialog} aria-label="Open export dialog">
-              <Download size={15} />
-              Export
-            </button>
-            <button type="button" className={styles.iconButton} onClick={() => setMockMode((value) => !value)} aria-label="Toggle mock generation">
-              <Settings size={15} />
-              <span>{mockMode ? 'Mock' : 'Live'}</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <WorkspaceEditorTopbar
+        activeTemplateName={activeTemplateName}
+        focusMode={focusMode}
+        mockMode={mockMode}
+        onEditorSurfaceChange={setActiveEditorSurface}
+        onExitToProjects={handleExitToProjects}
+        onFocusModeChange={setFocusMode}
+        onOpenExportDialog={handleOpenExportDialog}
+        onToggleMockMode={() => setMockMode((value) => !value)}
+      />
 
       {notice ? (
         <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">

@@ -71,6 +71,7 @@ const exportDialogPath = join(workspaceDir, '_components/WorkspaceExportDialog.t
 const libraryPath = join(workspaceDir, '_components/NodeLibrarySidebar.tsx');
 const timelineProjectSidebarPath = join(workspaceDir, '_components/TimelineProjectSidebar.tsx');
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
+const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
@@ -210,6 +211,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(libraryPath), 'block template sidebar should live in a route-local component');
   assert.ok(existsSync(timelineProjectSidebarPath), 'viewer project media sidebar should live in a route-local component');
   assert.ok(existsSync(studioHeaderSessionPath), 'studio account and wallet status should live in a route-local component');
+  assert.ok(existsSync(workspaceEditorTopbarPath), 'workspace topbar should live in a route-local shell component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
@@ -261,6 +263,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
   const studioHeaderSessionSource = source(studioHeaderSessionPath);
+  const workspaceEditorTopbarSource = source(workspaceEditorTopbarPath);
   const librarySource = source(libraryPath);
   const styleSource = source(stylesPath);
   const shellStyleSource = source(shellStylesPath);
@@ -292,7 +295,10 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /WorkspaceVideoViewer/, 'orchestrator should compose a central montage video viewer');
   assert.match(workspaceSource, /NodeLibrarySidebar/, 'orchestrator should compose the block template library');
   assert.match(workspaceSource, /TimelineProjectSidebar/, 'orchestrator should compose a project media sidebar for Viewer mode');
-  assert.match(workspaceSource, /StudioHeaderSession/, 'orchestrator should compose Studio session and wallet status in the header');
+  assert.match(workspaceSource, /WorkspaceEditorTopbar/, 'orchestrator should delegate the header to a route-local shell component');
+  assert.doesNotMatch(workspaceSource, /StudioHeaderSession/, 'orchestrator should not own Studio session and wallet header composition inline');
+  assert.match(workspaceEditorTopbarSource, /StudioHeaderSession/, 'workspace topbar should compose Studio session and wallet status in the header');
+  assert.match(workspaceEditorTopbarSource, /onEditorSurfaceChange\('timeline'\)/, 'workspace topbar should switch Viewer mode into timeline editing surface');
   assert.match(workspaceSource, /from '\.\/_styles\/shell\.module\.css'/, 'workspace shell should import focused shell CSS');
   assert.match(studioHeaderSessionSource, /from '\.\.\/_styles\/shell\.module\.css'/, 'Studio header session should import focused shell CSS directly');
   assert.match(librarySource, /from '\.\.\/_styles\/canvas\.module\.css'/, 'canvas sidebar should import focused canvas sidebar CSS');
@@ -385,11 +391,11 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /TimelineClipInspector/, 'orchestrator should compose a timeline clip inspector for Viewer mode');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeSettingsPanel[\s\S]*TimelineClipInspector/, 'right inspector should switch from node settings in Canvas mode to clip settings in Viewer mode');
   assert.match(workspaceSource, /WorkspaceTimeline/, 'orchestrator should compose the bottom timeline');
-  assert.match(workspaceSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
-  assert.doesNotMatch(workspaceSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
+  assert.match(workspaceEditorTopbarSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
+  assert.doesNotMatch(workspaceEditorTopbarSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
   assert.match(shellStyleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor shell CSS');
-  assert.match(workspaceSource, /focusMode,\s*setFocusMode\][\s\S]*'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
-  assert.match(workspaceSource, />\s*Viewer\s*</, 'top switch should label the montage surface Viewer');
+  assert.match(workspaceEditorTopbarSource, /focusMode === 'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
+  assert.match(workspaceEditorTopbarSource, />\s*Viewer\s*</, 'top switch should label the montage surface Viewer');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
   assert.doesNotMatch(workspaceSource, /HeaderBar|AppSidebar|WorkspaceChrome/, 'editor chrome should not inherit app shell chrome');
   assert.doesNotMatch(workspaceSource, /selected:\s*node\.id === selectedNodeId/, 'orchestrator should not manually control React Flow selected flags');
