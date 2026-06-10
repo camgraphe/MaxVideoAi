@@ -129,6 +129,7 @@
     "specSections": [
       {
         "title": "Superficie de generación",
+        "intro": "Ray 3.2 se expone para rutas públicas de generación corta.",
         "items": [
           "Texto a video para tomas desde prompt.",
           "Imagen a video cuando un still inicial debe anclar el clip.",

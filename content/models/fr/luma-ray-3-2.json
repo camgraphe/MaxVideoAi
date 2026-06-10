@@ -129,6 +129,7 @@
     "specSections": [
       {
         "title": "Surface de génération",
+        "intro": "Ray 3.2 est exposé pour des routes publiques de génération courte.",
         "items": [
           "Text-to-video pour les plans depuis prompt.",
           "Image-to-video lorsqu’un still d’ouverture doit ancrer le clip.",

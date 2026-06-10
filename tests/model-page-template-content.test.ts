@@ -74,6 +74,15 @@ function assertNonEmptyString(value: string, label: string) {
   assert.ok(value.trim().length > 0, `${label} should not be empty`);
 }
 
+function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
+  const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
+  return JSON.parse(readFileSync(contentPath, 'utf8')) as {
+    custom?: {
+      specSections?: Array<Record<string, unknown>>;
+    };
+  };
+}
+
 test('migrated model templates provide complete localized decision data', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
@@ -136,6 +145,31 @@ test('migrated model templates provide complete localized decision data', () => 
           `${slug}/${locale} meta description should be localized`
         );
       }
+    }
+  }
+});
+
+test('Luma Ray 3.2 localized spec sections match the English structure', () => {
+  const englishSections = readModelContentJson('en', 'luma-ray-3-2').custom?.specSections;
+  assert.ok(Array.isArray(englishSections), 'luma-ray-3-2/en should define custom spec sections');
+
+  for (const locale of ['fr', 'es'] as const) {
+    const localizedSections = readModelContentJson(locale, 'luma-ray-3-2').custom?.specSections;
+    assert.ok(Array.isArray(localizedSections), `luma-ray-3-2/${locale} should define custom spec sections`);
+    assert.equal(
+      localizedSections.length,
+      englishSections.length,
+      `luma-ray-3-2/${locale} should keep the same custom spec section count as English`
+    );
+
+    for (const [index, englishSection] of englishSections.entries()) {
+      const localizedSection = localizedSections[index];
+      assert.ok(localizedSection, `luma-ray-3-2/${locale} spec section ${index + 1} should exist`);
+      assert.deepEqual(
+        Object.keys(localizedSection).sort(),
+        Object.keys(englishSection).sort(),
+        `luma-ray-3-2/${locale} spec section ${index + 1} should keep the same keys as English`
+      );
     }
   }
 });
