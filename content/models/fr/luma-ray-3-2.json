@@ -26,7 +26,7 @@
     "title": "Meilleurs cas d’usage",
     "items": [
       { "title": "Révélations produit courtes et cinématiques", "icon": "camera" },
-      { "title": "Tests de mouvement depuis des stills validés", "icon": "imageToVideo" },
+      { "title": "Tests de mouvement depuis des visuels validés", "icon": "imageToVideo" },
       { "title": "Boucles 5 s pour motion produit ou ambiance", "icon": "repeat2" },
       { "title": "Tests de rythme 10 s avant montage", "icon": "storyboard" },
       { "title": "Vérifications 1080p sur les plans retenus", "icon": "sparkles" }
@@ -120,8 +120,8 @@
       "Boucle pratique||La boucle fonctionne mieux sur des mouvements courts et simples.",
       "Prix contextualisé||Les prix affichés suivent les références fal MaxVideoAI et l’app confirme le devis final."
     ],
-    "specTitle": "Specs publiques Ray 3.2",
-    "specNote": "Ces specs décrivent la surface publique MaxVideoAI, pas des contrôles avancés non publiés.",
+    "specTitle": "Caractéristiques publiques Ray 3.2",
+    "specNote": "Ces caractéristiques décrivent la surface publique MaxVideoAI, pas des contrôles avancés non publiés.",
     "specSections": [
       {
         "title": "Surface de génération",
@@ -136,8 +136,8 @@
       {
         "title": "Notes opérationnelles",
         "items": [
-          "La route directe Luma peut être utilisée avec fallback fal si l’app ne peut pas accepter la demande directe.",
-          "Le fallback ne garantit pas une capacité fournisseur instantanée.",
+          "La route directe Luma peut utiliser un relais fal si l’app ne peut pas accepter la demande directe.",
+          "Ce relais ne garantit pas une capacité fournisseur instantanée.",
           "Les prix publics utilisent les références fal plus la marge MaxVideoAI.",
           "Les options avancées non publiées ne sont pas incluses dans cette page publique."
         ]
@@ -169,7 +169,7 @@
       "Durée publique : 5 s ou 10 s.",
       "Résolutions publiques : 540p, 720p et 1080p.",
       "La boucle vise des mouvements simples.",
-      "Le fallback ne garantit pas une capacité instantanée."
+      "Le relais fal ne garantit pas une capacité instantanée."
     ],
     "safetyTitle": "Sécurité et ressemblance",
     "safetyRules": [

@@ -48,7 +48,7 @@ const LOCALES = ['en', 'fr', 'es'] as const;
 const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LUMA_AGENT_TEMPLATE_SLUGS = ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'] as const;
 const LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS =
-  /\b(?:fallback-safe|fal-reference|direct-only|layout|still|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
+  /\b(?:fallback|fallback-safe|fal-reference|direct-only|layout|stills?|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
 const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'modelSlug']);
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {

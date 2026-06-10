@@ -438,7 +438,7 @@ test('Luma Agents templates expose fallback-safe pricing presets and no image co
   assert.ok(lumaRay32);
   assert.ok(lumaUni);
   assert.ok(lumaUniMax);
-  assert.equal(lumaRay32.sections.compare, true);
+  assert.equal(lumaRay32.sections.compare, false);
   assert.equal(lumaUni.sections.compare, false);
   assert.equal(lumaUniMax.sections.compare, false);
   assert.equal(lumaRay32.hero.quickLinks.some((link) => link.icon === 'compare'), false);
@@ -457,6 +457,26 @@ test('Luma Agents templates expose fallback-safe pricing presets and no image co
     lumaUniMax.pricing.presets.map((preset) => preset.id),
     ['2k-hero-image', 'hero-edit', 'reference-edit-set']
   );
+});
+
+test('templates only enable generic compare sections for catalog-backed compare engines', () => {
+  for (const slug of listModelPageTemplateSlugs()) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should have a template config`);
+
+    if (!config.sections.compare) continue;
+
+    assert.ok(
+      CATALOG_MODEL_SLUGS.has(slug),
+      `${slug} enables the generic compare section but is absent from the compare engine catalog`
+    );
+  }
+
+  const lumaRay32 = getModelPageTemplateConfig('luma-ray-3-2');
+  assert.ok(lumaRay32);
+  if (!CATALOG_MODEL_SLUGS.has('luma-ray-3-2')) {
+    assert.equal(lumaRay32.sections.compare, false);
+  }
 });
 
 test('template quick links avoid redirecting compare URLs', () => {

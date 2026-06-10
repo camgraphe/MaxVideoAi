@@ -120,8 +120,8 @@
       "Bucle práctico||El bucle funciona mejor con movimientos cortos y simples.",
       "Precio contextualizado||Los precios mostrados siguen referencias fal de MaxVideoAI y la app confirma la cotización final."
     ],
-    "specTitle": "Specs públicas de Ray 3.2",
-    "specNote": "Estas specs describen la superficie pública MaxVideoAI, no controles avanzados sin publicar.",
+    "specTitle": "Especificaciones públicas de Ray 3.2",
+    "specNote": "Estas especificaciones describen la superficie pública MaxVideoAI, no controles avanzados sin publicar.",
     "specSections": [
       {
         "title": "Superficie de generación",
@@ -136,8 +136,8 @@
       {
         "title": "Notas operativas",
         "items": [
-          "La ruta directa Luma puede usarse con fallback fal si la app no puede aceptar la solicitud directa.",
-          "El fallback no garantiza capacidad instantánea del proveedor.",
+          "La ruta directa de Luma puede usar una ruta de respaldo fal si la app no puede aceptar la solicitud directa.",
+          "La ruta de respaldo no garantiza capacidad instantánea del proveedor.",
           "Los precios públicos usan referencias fal más margen MaxVideoAI.",
           "Las opciones avanzadas sin publicar no forman parte de esta página pública."
         ]
@@ -169,7 +169,7 @@
       "Duración pública: 5 s o 10 s.",
       "Resoluciones públicas: 540p, 720p y 1080p.",
       "Bucle para movimientos simples.",
-      "Fallback no garantiza capacidad instantánea."
+      "La ruta de respaldo no garantiza capacidad instantánea."
     ],
     "safetyTitle": "Seguridad y semejanza",
     "safetyRules": [
