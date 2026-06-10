@@ -24,7 +24,6 @@ import {
 } from '../_lib/workspace-timeline-editing';
 import {
   frameStepSeconds,
-  interactionMatchesTimelineItem,
   layoutForTimelineItem,
   marqueeRectForState,
   MIN_CLIP_DURATION_SEC,
@@ -33,20 +32,12 @@ import {
   selectionKeyForTimelineItem,
   selectionKeysForTimelineItemIds,
   snapTimelineSeconds,
-  sourceDurationForTimelineItem,
-  sourceStartForTimelineItem,
   timelineRulerStepFor,
   trackForTimelineItem,
-  nextTimelineInteractionState,
-  type TimelineClipLayout,
-  type TimelineInteractionKind,
-  type TimelineInteractionState,
   type TimelineMarqueeState,
 } from '../_lib/timeline/timeline-interaction';
 import {
   buildTimelineTracks,
-  isAudioTimelineTrack,
-  isVideoTimelineTrack,
   type TimelineTrackDefinition,
 } from './timeline/timelineTrackDefinitions';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
@@ -61,7 +52,7 @@ import {
 import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineTrackList } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
-import { markTimelinePerformance } from '../_lib/timeline/timeline-performance';
+import { useTimelineClipInteraction } from './timeline/useTimelineClipInteraction';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
 import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
@@ -71,7 +62,6 @@ const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
 const MAX_TIMELINE_PIXELS_PER_SECOND = 92;
 const MIN_TIMELINE_WIDTH = 760;
-const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 
 function formatDuration(seconds: number): string {
@@ -187,7 +177,6 @@ export function WorkspaceTimeline({
   onUnlinkItems,
   onUndo,
 }: WorkspaceTimelineProps) {
-  const [interaction, setInteraction] = useState<TimelineInteractionState | null>(null);
   const [marquee, setMarquee] = useState<TimelineMarqueeState | null>(null);
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
   const [externalDropPreview, setExternalDropPreview] = useState<TimelineExternalDropPreview | null>(null);
@@ -196,7 +185,6 @@ export function WorkspaceTimeline({
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
-  const interactionRef = useRef<TimelineInteractionState | null>(null);
   const suppressNextSurfaceClickRef = useRef(false);
   const {
     handleBeginTimelinePanelMouseResize,
@@ -213,21 +201,42 @@ export function WorkspaceTimeline({
     panelHeight,
   });
   const frameStepSec = frameStepSeconds(projectFps);
-  const totalDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec), interaction ? interaction.previewStartSec + interaction.previewDurationSec : 0);
-  const timelineWidth = Math.max(MIN_TIMELINE_WIDTH, totalDuration * pixelsPerSecond + 64);
-  const rulerTickSec = timelineRulerStepFor(pixelsPerSecond);
-  const safeInPointSec = typeof inPointSec === 'number' && Number.isFinite(inPointSec) ? inPointSec : null;
-  const safeOutPointSec = typeof outPointSec === 'number' && Number.isFinite(outPointSec) ? outPointSec : null;
-  const hasValidInOutRange = safeInPointSec !== null && safeOutPointSec !== null && safeOutPointSec > safeInPointSec;
+  const baseTimelineDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec));
   const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items), [audioTrackCount, items, videoTrackCount]);
   const hiddenVideoTrackSet = useMemo(() => new Set<WorkspaceTimelineVideoTrack>(hiddenVideoTracks), [hiddenVideoTracks]);
   const lockedTrackSet = useMemo(() => new Set<WorkspaceTimelineTrack>(lockedTracks), [lockedTracks]);
   const mutedAudioTrackSet = useMemo(() => new Set<WorkspaceTimelineAudioTrack>(mutedAudioTracks), [mutedAudioTracks]);
   const highestVideoTrackId = timelineTracks.find((track) => track.kind === 'video')?.id ?? 'video';
   const lowestAudioTrackId = [...timelineTracks].reverse().find((track) => track.kind === 'audio')?.id ?? 'audio';
-  const clampedPlayheadSec = Math.max(0, Math.min(playheadSec, totalDuration));
+  const clampedPlayheadSec = Math.max(0, Math.min(playheadSec, baseTimelineDuration));
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null;
   const selectedKeys = useMemo(() => selectionKeysForTimelineItemIds(items, selectedItemIds), [items, selectedItemIds]);
+  const {
+    handleBeginInteraction,
+    interaction,
+    isItemInteracting,
+  } = useTimelineClipInteraction({
+    clampedPlayheadSec,
+    frameStepSec,
+    items,
+    lockedTrackSet,
+    onPlaybackChange,
+    onPlayheadChange,
+    onPositionItem,
+    onResizeItem,
+    onSelectItem,
+    pixelsPerSecond,
+    selectedItemIds,
+    selectedKeys,
+    snapEnabled,
+    timelineTracks,
+  });
+  const totalDuration = Math.max(baseTimelineDuration, interaction ? interaction.previewStartSec + interaction.previewDurationSec : 0);
+  const timelineWidth = Math.max(MIN_TIMELINE_WIDTH, totalDuration * pixelsPerSecond + 64);
+  const rulerTickSec = timelineRulerStepFor(pixelsPerSecond);
+  const safeInPointSec = typeof inPointSec === 'number' && Number.isFinite(inPointSec) ? inPointSec : null;
+  const safeOutPointSec = typeof outPointSec === 'number' && Number.isFinite(outPointSec) ? outPointSec : null;
+  const hasValidInOutRange = safeInPointSec !== null && safeOutPointSec !== null && safeOutPointSec > safeInPointSec;
   const selectedTouchesLockedTrack = useMemo(
     () => items.some((item) => selectedKeys.has(selectionKeyForTimelineItem(item)) && lockedTrackSet.has(item.track)),
     [items, lockedTrackSet, selectedKeys]
@@ -466,160 +475,6 @@ export function WorkspaceTimeline({
     if (!selectedItem || selectedSplitOffset === null || !canCutAtPlayhead) return;
     onCutItem(selectedItem.id, selectedSplitOffset);
   }, [canCutAtPlayhead, onCutItem, selectedItem, selectedSplitOffset]);
-  const setPreviewInteraction = useCallback((nextInteraction: TimelineInteractionState | null) => {
-    interactionRef.current = nextInteraction;
-    setInteraction(nextInteraction);
-  }, []);
-  const trackAtClientY = useCallback((clientY: number, fallbackTrack: WorkspaceTimelineTrack): WorkspaceTimelineTrack => {
-    const targetKind = isVideoTimelineTrack(fallbackTrack) ? 'video' : isAudioTimelineTrack(fallbackTrack) ? 'audio' : null;
-    if (!targetKind) return fallbackTrack;
-    const compatibleTrackIds = new Set(timelineTracks.filter((track) => track.kind === targetKind && !lockedTrackSet.has(track.id)).map((track) => track.id));
-    const trackElements = Array.from(document.querySelectorAll<HTMLElement>('[data-timeline-track]'))
-      .map((element) => {
-        const track = element.dataset.timelineTrack as WorkspaceTimelineTrack | undefined;
-        const rect = element.getBoundingClientRect();
-        return { element, rect, track };
-      })
-      .filter((entry): entry is { element: HTMLElement; rect: DOMRect; track: WorkspaceTimelineTrack } =>
-        Boolean(entry.track && compatibleTrackIds.has(entry.track))
-      );
-    const containingTrack = trackElements.find((entry) => clientY >= entry.rect.top && clientY <= entry.rect.bottom);
-    if (containingTrack) return containingTrack.track;
-    const nearestTrack = trackElements
-      .map((entry) => ({ ...entry, distance: Math.abs(clientY - (entry.rect.top + entry.rect.height / 2)) }))
-      .sort((left, right) => left.distance - right.distance)[0];
-    return nearestTrack?.track ?? fallbackTrack;
-  }, [lockedTrackSet, timelineTracks]);
-  const handleBeginInteraction = useCallback((event: ReactPointerEvent<HTMLElement> | MouseEvent<HTMLElement>, item: WorkspaceTimelineItem, kind: TimelineInteractionKind) => {
-    event.preventDefault();
-    event.stopPropagation();
-    markTimelinePerformance('drag-start');
-    if ('pointerId' in event) {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }
-
-    const itemSelectionKey = selectionKeyForTimelineItem(item);
-    const isSelectedForDrag = selectedKeys.has(itemSelectionKey);
-    const dragSelectedItemIds = kind === 'move' && isSelectedForDrag && selectedItemIds.length > 1 ? selectedItemIds : [item.id];
-    const dragSelectedKeys = Array.from(selectionKeysForTimelineItemIds(items, dragSelectedItemIds));
-    const touchesLockedTrack = items.some((candidate) => dragSelectedKeys.includes(selectionKeyForTimelineItem(candidate)) && lockedTrackSet.has(candidate.track));
-    if (touchesLockedTrack) return;
-    const originLayoutsById = items.reduce<Record<string, TimelineClipLayout>>((layouts, candidate) => {
-      if (!dragSelectedKeys.includes(selectionKeyForTimelineItem(candidate))) return layouts;
-      layouts[candidate.id] = layoutForTimelineItem(candidate, interactionRef.current);
-      return layouts;
-    }, {});
-    const currentLayout = layoutForTimelineItem(item, interactionRef.current);
-    const initialInteraction: TimelineInteractionState = {
-      itemId: item.id,
-      linkedGroupId: item.linkedGroupId ?? null,
-      selectedItemIds: dragSelectedItemIds,
-      selectedKeys: dragSelectedKeys,
-      originLayoutsById,
-      kind,
-      originClientX: event.clientX,
-      originTrack: item.track,
-      originStartSec: currentLayout.startSec,
-      originDurationSec: currentLayout.durationSec,
-      originSourceStartSec: sourceStartForTimelineItem(item),
-      originSourceDurationSec: sourceDurationForTimelineItem(item),
-      snapStepSec: frameStepSec,
-      previewTrack: item.track,
-      previewStartSec: currentLayout.startSec,
-      previewDurationSec: currentLayout.durationSec,
-      snapGuideSec: null,
-    };
-    setPreviewInteraction(initialInteraction);
-    onSelectItem(item.id, kind === 'move' && isSelectedForDrag ? 'focus' : 'replace');
-
-    const originClientY = event.clientY;
-    let didDrag = false;
-    const updateInteractionAtClientX = (clientX: number, clientY: number) => {
-      const activeInteraction = interactionRef.current;
-      if (!activeInteraction) return;
-      if (Math.hypot(clientX - activeInteraction.originClientX, clientY - originClientY) > TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS) {
-        didDrag = true;
-      }
-      const interactionWithTrack = activeInteraction.kind === 'move'
-        ? { ...activeInteraction, previewTrack: trackAtClientY(clientY, activeInteraction.originTrack) }
-        : activeInteraction;
-      markTimelinePerformance('drag-frame');
-      setPreviewInteraction(nextTimelineInteractionState(interactionWithTrack, clientX, items, clampedPlayheadSec, snapEnabled, pixelsPerSecond));
-    };
-    const handlePointerMove = (pointerEvent: PointerEvent) => {
-      updateInteractionAtClientX(pointerEvent.clientX, pointerEvent.clientY);
-    };
-    const handleMouseMove = (mouseEvent: globalThis.MouseEvent) => {
-      updateInteractionAtClientX(mouseEvent.clientX, mouseEvent.clientY);
-    };
-    const completeInteraction = (clientX: number, clientY: number) => {
-      updateInteractionAtClientX(clientX, clientY);
-      const completedInteraction = interactionRef.current;
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      if (!completedInteraction) {
-        setPreviewInteraction(null);
-        return;
-      }
-      if (!didDrag) {
-        setPreviewInteraction(null);
-        return;
-      }
-      if (completedInteraction.kind === 'move') {
-        onPlaybackChange(false);
-        onPositionItem(
-          completedInteraction.itemId,
-          completedInteraction.previewStartSec,
-          completedInteraction.previewTrack,
-          completedInteraction.selectedItemIds
-        );
-        onPlayheadChange(completedInteraction.previewStartSec);
-        setPreviewInteraction(null);
-        markTimelinePerformance('drag-commit');
-        return;
-      }
-      onPlaybackChange(false);
-      onResizeItem(
-        completedInteraction.itemId,
-        completedInteraction.kind === 'resize-start' ? 'start' : 'end',
-        completedInteraction.previewStartSec,
-        completedInteraction.previewDurationSec,
-        'trim'
-      );
-      onPlayheadChange(completedInteraction.previewStartSec);
-      setPreviewInteraction(null);
-      markTimelinePerformance('drag-commit');
-    };
-    const handlePointerUp = (pointerEvent: PointerEvent) => {
-      completeInteraction(pointerEvent.clientX, pointerEvent.clientY);
-    };
-    const handleMouseUp = (mouseEvent: globalThis.MouseEvent) => {
-      completeInteraction(mouseEvent.clientX, mouseEvent.clientY);
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  }, [
-    clampedPlayheadSec,
-    frameStepSec,
-    items,
-    lockedTrackSet,
-    onPlaybackChange,
-    onPlayheadChange,
-    onPositionItem,
-    onResizeItem,
-    onSelectItem,
-    pixelsPerSecond,
-    selectedItemIds,
-    selectedKeys,
-    setPreviewInteraction,
-    snapEnabled,
-    trackAtClientY,
-  ]);
   useEffect(() => {
     if (!contextMenu && !trackContextMenu) return undefined;
     const closeContextMenu = () => {
@@ -711,10 +566,6 @@ export function WorkspaceTimeline({
   const handleClearExternalDropPreview = useCallback(() => {
     setExternalDropPreview(null);
   }, []);
-  const handleTimelineItemInteracting = useCallback(
-    (item: WorkspaceTimelineItem) => Boolean(interaction && interactionMatchesTimelineItem(interaction, item)),
-    [interaction]
-  );
   useEffect(() => {
     onPreviewItemsChange?.(previewTimelineItems, previewPlayheadSec);
   }, [onPreviewItemsChange, previewPlayheadSec, previewTimelineItems]);
@@ -790,7 +641,7 @@ export function WorkspaceTimeline({
           formatDropDuration={formatDuration}
           hiddenVideoTrackSet={hiddenVideoTrackSet}
           highestVideoTrackId={highestVideoTrackId}
-          isItemInteracting={handleTimelineItemInteracting}
+          isItemInteracting={isItemInteracting}
           lockedTrackSet={lockedTrackSet}
           lowestAudioTrackId={lowestAudioTrackId}
           maxAudioTrackCount={maxAudioTrackCount}
