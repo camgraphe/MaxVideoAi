@@ -1,15 +1,7 @@
 'use client';
 
-import { useMemo, useRef, useState, type CSSProperties } from 'react';
-import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
-import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
-import { TimelineProjectSidebar } from './_components/TimelineProjectSidebar';
-import { TimelineClipInspector } from './_components/TimelineClipInspector';
-import { WorkspaceCanvas } from './_components/WorkspaceCanvas.client';
-import { WorkspaceEditorTopbar } from './_components/WorkspaceEditorTopbar';
-import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
-import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
-import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
+import { useMemo, useRef, useState } from 'react';
+import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
 import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
@@ -57,11 +49,6 @@ import {
 import {
   DEFAULT_WORKSPACE_SEQUENCE_ID,
   DEFAULT_WORKSPACE_SHOT_MODEL_ID,
-  MAX_TIMELINE_AUDIO_TRACKS,
-  MAX_TIMELINE_PANEL_HEIGHT,
-  MAX_TIMELINE_VIDEO_TRACKS,
-  MIN_TIMELINE_AUDIO_TRACKS,
-  MIN_TIMELINE_PANEL_HEIGHT,
   audioTrackCountForTimelineItems,
   createWorkspaceSequenceRecord,
   videoTrackCountForTimelineItems,
@@ -77,10 +64,6 @@ import {
 import {
   workspaceStorageKeyForProject,
 } from './_state/workspace-persistence';
-import baseStyles from './maxvideoai-editor.module.css';
-import shellStyles from './_styles/shell.module.css';
-
-const styles = { ...baseStyles, ...shellStyles };
 
 type WorkspacePageProps = {
   projectId?: string;
@@ -518,210 +501,181 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     workspaceStorageKey,
   });
 
-  const editorShellStyle = timelinePanelHeight
-    ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties)
-    : undefined;
-
   return (
-    <main
-      className={`${styles.editorShell} ${focusMode === 'viewer' ? `${baseStyles.viewerFocus} ${shellStyles.viewerFocus}` : ''}`}
-      style={editorShellStyle}
-      data-active-editor-surface={activeEditorSurface}
-    >
-      <WorkspaceEditorTopbar
-        activeTemplateName={activeTemplateName}
-        focusMode={focusMode}
-        mockMode={mockMode}
-        onEditorSurfaceChange={setActiveEditorSurface}
-        onExitToProjects={handleExitToProjects}
-        onFocusModeChange={setFocusMode}
-        onOpenExportDialog={handleOpenExportDialog}
-        onToggleMockMode={() => setMockMode((value) => !value)}
-      />
-
-      {notice ? (
-        <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">
-          {notice}
-        </div>
-      ) : null}
-
-      <div className={styles.editorBody}>
-        {focusMode === 'canvas' ? (
-          <NodeLibrarySidebar
-            templates={WORKSPACE_TEMPLATE_SUMMARIES}
-            activeTemplateId={activeUserCanvasTemplateId ? null : activeTemplateId}
-            userTemplates={userCanvasTemplates}
-            activeUserTemplateId={activeUserCanvasTemplateId}
-            onApplyTemplate={handleApplyCanvasTemplate}
-            onApplyUserTemplate={handleApplyUserCanvasTemplate}
-            onDeleteUserTemplate={handleDeleteUserCanvasTemplate}
-            onDuplicateUserTemplate={handleDuplicateUserCanvasTemplate}
-            onSaveCanvasTemplate={handleSaveCanvasTemplate}
-          />
-        ) : (
-          <TimelineProjectSidebar
-            nodes={renderNodes}
-            projectAssets={projectAssets}
-            projectName={activeTemplateName}
-            sequences={sequenceSummaries}
-            timelineItems={timelineItems}
-            onDeleteGeneratedClip={handleDeleteGeneratedClip}
-            onDeleteProjectAsset={handleDeleteProjectAsset}
-            onImportMedia={handleImportProjectMedia}
-            onInspectSequence={handleInspectSequence}
-            onInsertGeneratedClip={handleSendOutputToTimeline}
-            onInsertProjectAsset={handleInsertProjectAssetToTimeline}
-            onNewFolder={handleCreateProjectMediaFolder}
-            onNewSequence={handleCreateSequence}
-            onSelectSequence={handleSelectSequence}
-            onClearSequenceInspector={handleClearSequenceInspector}
-          />
-        )}
-        {focusMode === 'canvas' ? (
-          <WorkspaceCanvas
-            key={`${activeTemplateId}-${canvasRevision}`}
-            nodes={renderNodes}
-            edges={renderEdges}
-            isKeyboardDeleteEnabled={activeEditorSurface === 'canvas'}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            isValidConnection={isValidConnection}
-            onCreateNodeFromHandleDrop={handleCreateNodeFromHandleDrop}
-            onCreateNodeFromPaletteDrop={handleCreateNodeFromPaletteDrop}
-            onCanvasFileDrop={handleCanvasFileDrop}
-            onCanvasTextPaste={handleCanvasTextPaste}
-            onCanvasInteraction={handleCanvasInteraction}
-            onSelectedNodeChange={handleSelectedCanvasNodeChange}
-            onSelectedNodeSync={setSelectedNodeId}
-          />
-        ) : (
-          <WorkspaceVideoViewer
-            canGoToNextCut={canGoToNextTimelineCut}
-            canGoToPreviousCut={canGoToPreviousTimelineCut}
-            inPointSec={timelineInPointSec}
-            isPlaying={isTimelinePlaying}
-            items={viewerTimelineItems}
-            outPointSec={timelineOutPointSec}
-            playheadSec={previewPlayheadSec}
-            projectSettings={projectSettings}
-            selectedItemId={selectedTimelineItemId}
-            onClearInOut={handleClearTimelineInOut}
-            onGoToNextCut={() => handleGoToTimelineCut(1)}
-            onGoToPreviousCut={() => handleGoToTimelineCut(-1)}
-            onMarkIn={handleMarkTimelineIn}
-            onMarkOut={handleMarkTimelineOut}
-            onSelectItem={(itemId) => handleSelectTimelineItem(itemId)}
-            onSendSnapshotToCanvas={handleSendProgramSnapshotToCanvas}
-            onTogglePlayback={handleToggleTimelinePlayback}
-          />
-        )}
-        {focusMode === 'canvas' ? (
-          <NodeSettingsPanel
-            selectedNode={selectedNode}
-            edges={edges}
-            capabilities={capabilities}
-            onPatchNodeData={patchNodeData}
-            onPatchShot={patchShot}
-            onGenerateShot={handleGenerateShot}
-            onSendOutputToTimeline={handleSendOutputToTimeline}
-            onOpenAssetLibrary={handleOpenAssetLibrary}
-          />
-        ) : (
-          <TimelineClipInspector
-            selectedItem={selectedTimelineItem}
-            selectedSequence={selectedSequenceForInspector}
-            projectFps={projectSettings.fps}
-            onPatchItem={handlePatchTimelineItem}
-            onRenameSequence={handleRenameActiveSequence}
-            onSequenceSettingsChange={handleProjectSettingsChange}
-          />
-        )}
-      </div>
-
-      <WorkspaceTimeline
-        canRedo={timelineHistory.future.length > 0}
-        canUndo={timelineHistory.past.length > 0}
-        isShortcutActive={activeEditorSurface === 'timeline'}
-        audioTrackCount={audioTrackCount}
-        hiddenVideoTracks={hiddenVideoTracks}
-        items={timelineItems}
-        isInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
-        inPointSec={timelineInPointSec}
-        lockedTracks={lockedTimelineTracks}
-        mutedAudioTracks={mutedAudioTracks}
-        maxAudioTrackCount={MAX_TIMELINE_AUDIO_TRACKS}
-        maxPanelHeight={MAX_TIMELINE_PANEL_HEIGHT}
-        maxVideoTrackCount={MAX_TIMELINE_VIDEO_TRACKS}
-        minAudioTrackCount={MIN_TIMELINE_AUDIO_TRACKS}
-        minPanelHeight={MIN_TIMELINE_PANEL_HEIGHT}
-        selectedItemId={selectedTimelineItemId}
-        selectedItemIds={selectedTimelineItemIds}
-        outPointSec={timelineOutPointSec}
-        panelHeight={timelinePanelHeight}
-        videoTrackCount={videoTrackCount}
-        playheadSec={playheadSec}
-        projectFps={projectSettings.fps}
-        onAddAudioTrack={handleAddTimelineAudioTrack}
-        onAddVideoTrack={handleAddTimelineVideoTrack}
-        onCutItem={handleCutTimelineItem}
-        onDeleteItem={handleDeleteTimelineItem}
-        onMarkIn={handleMarkTimelineIn}
-        onMarkOut={handleMarkTimelineOut}
-        onGoToCut={handleGoToTimelineCut}
-        onPanelHeightChange={handleTimelinePanelHeightChange}
-        onRedo={handleRedoTimeline}
-        onInvalidNodeDropToTimeline={handleInvalidNodeDropToTimeline}
-        onMoveItem={handleMoveTimelineItem}
-        onNodeDropToTimeline={handleDropNodeToTimeline}
-        onPlaybackChange={setIsTimelinePlaying}
-        onPlayheadChange={setPlayheadSec}
-        onProjectAssetDropToTimeline={handleDropProjectAssetToTimeline}
-        onPreviewItemsChange={handleTimelinePreviewItemsChange}
-        onTogglePlayback={handleToggleTimelinePlayback}
-        onPositionItem={handlePositionTimelineItem}
-        onResizeItem={handleResizeTimelineItem}
-        onSelectItem={handleSelectTimelineItem}
-        onSelectItems={handleSelectTimelineItems}
-        onInsertIntoClipChange={setTimelineInsertIntoClipEnabled}
-        onDeleteTrack={handleDeleteTimelineTrack}
-        onLinkItems={handleLinkTimelineItems}
-        onToggleAudioTrackMute={handleToggleAudioTrackMute}
-        onToggleTrackLock={handleToggleTimelineTrackLock}
-        onToggleVideoTrackVisibility={handleToggleVideoTrackVisibility}
-        onUnlinkItems={handleUnlinkTimelineItems}
-        onUndo={handleUndoTimeline}
-      />
-      <WorkspaceRuntimeModals
-        activeExportJob={activeExportJob}
-        assetPickerLibrary={assetPickerLibrary}
-        assetPickerNode={assetPickerNode}
-        exportEstimate={exportEstimate}
-        exportQuota={exportQuota}
-        exportRangeMode={exportRangeMode}
-        exportQualityPreset={exportQualityPreset}
-        exportVideoFeedback={exportVideoFeedback}
-        inPointSec={timelineInPointSec}
-        isExportDialogOpen={isExportDialogOpen}
-        isExportEstimateLoading={isExportEstimateLoading}
-        isExportVideoStarting={isExportVideoStarting}
-        isProjectMediaPickerOpen={isProjectMediaPickerOpen}
-        manifest={exportManifest}
-        outPointSec={timelineOutPointSec}
-        projectMediaLibrary={projectMediaLibrary}
-        readinessLabel={exportReadinessLabel}
-        sequenceDurationSec={timelineDurationSec}
-        onAssetPickerClose={() => setAssetPickerNodeId(null)}
-        onCloseExportDialog={closeExportDialog}
-        onExportEdl={exportTimelineEdl}
-        onExportVideo={exportTimelineVideo}
-        onPrepareRender={exportTimelineRender}
-        onProjectMediaPickerClose={() => setIsProjectMediaPickerOpen(false)}
-        onQualityPresetChange={handleExportQualityPresetChange}
-        onRangeModeChange={handleExportRangeModeChange}
-        onSelectAsset={handleSelectLibraryAsset}
-        onSelectProjectMediaAsset={handleSelectProjectMediaAsset}
-      />
-    </main>
+    <WorkspaceEditorLayout
+      activeEditorSurface={activeEditorSurface}
+      canvasKey={`${activeTemplateId}-${canvasRevision}`}
+      focusMode={focusMode}
+      notice={notice}
+      timelinePanelHeight={timelinePanelHeight}
+      topbarProps={{
+        activeTemplateName,
+        focusMode,
+        mockMode,
+        onEditorSurfaceChange: setActiveEditorSurface,
+        onExitToProjects: handleExitToProjects,
+        onFocusModeChange: setFocusMode,
+        onOpenExportDialog: handleOpenExportDialog,
+        onToggleMockMode: () => setMockMode((value) => !value),
+      }}
+      nodeLibraryProps={{
+        activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
+        userTemplates: userCanvasTemplates,
+        activeUserTemplateId: activeUserCanvasTemplateId,
+        onApplyTemplate: handleApplyCanvasTemplate,
+        onApplyUserTemplate: handleApplyUserCanvasTemplate,
+        onDeleteUserTemplate: handleDeleteUserCanvasTemplate,
+        onDuplicateUserTemplate: handleDuplicateUserCanvasTemplate,
+        onSaveCanvasTemplate: handleSaveCanvasTemplate,
+      }}
+      timelineProjectSidebarProps={{
+        nodes: renderNodes,
+        projectAssets,
+        projectName: activeTemplateName,
+        sequences: sequenceSummaries,
+        timelineItems,
+        onDeleteGeneratedClip: handleDeleteGeneratedClip,
+        onDeleteProjectAsset: handleDeleteProjectAsset,
+        onImportMedia: handleImportProjectMedia,
+        onInspectSequence: handleInspectSequence,
+        onInsertGeneratedClip: handleSendOutputToTimeline,
+        onInsertProjectAsset: handleInsertProjectAssetToTimeline,
+        onNewFolder: handleCreateProjectMediaFolder,
+        onNewSequence: handleCreateSequence,
+        onSelectSequence: handleSelectSequence,
+        onClearSequenceInspector: handleClearSequenceInspector,
+      }}
+      canvasProps={{
+        nodes: renderNodes,
+        edges: renderEdges,
+        isKeyboardDeleteEnabled: activeEditorSurface === 'canvas',
+        onNodesChange,
+        onEdgesChange,
+        onConnect,
+        isValidConnection,
+        onCreateNodeFromHandleDrop: handleCreateNodeFromHandleDrop,
+        onCreateNodeFromPaletteDrop: handleCreateNodeFromPaletteDrop,
+        onCanvasFileDrop: handleCanvasFileDrop,
+        onCanvasTextPaste: handleCanvasTextPaste,
+        onCanvasInteraction: handleCanvasInteraction,
+        onSelectedNodeChange: handleSelectedCanvasNodeChange,
+        onSelectedNodeSync: setSelectedNodeId,
+      }}
+      videoViewerProps={{
+        canGoToNextCut: canGoToNextTimelineCut,
+        canGoToPreviousCut: canGoToPreviousTimelineCut,
+        inPointSec: timelineInPointSec,
+        isPlaying: isTimelinePlaying,
+        items: viewerTimelineItems,
+        outPointSec: timelineOutPointSec,
+        playheadSec: previewPlayheadSec,
+        projectSettings,
+        selectedItemId: selectedTimelineItemId,
+        onClearInOut: handleClearTimelineInOut,
+        onGoToNextCut: () => handleGoToTimelineCut(1),
+        onGoToPreviousCut: () => handleGoToTimelineCut(-1),
+        onMarkIn: handleMarkTimelineIn,
+        onMarkOut: handleMarkTimelineOut,
+        onSelectItem: (itemId) => handleSelectTimelineItem(itemId),
+        onSendSnapshotToCanvas: handleSendProgramSnapshotToCanvas,
+        onTogglePlayback: handleToggleTimelinePlayback,
+      }}
+      nodeSettingsProps={{
+        selectedNode,
+        edges,
+        capabilities,
+        onPatchNodeData: patchNodeData,
+        onPatchShot: patchShot,
+        onGenerateShot: handleGenerateShot,
+        onSendOutputToTimeline: handleSendOutputToTimeline,
+        onOpenAssetLibrary: handleOpenAssetLibrary,
+      }}
+      timelineClipInspectorProps={{
+        selectedItem: selectedTimelineItem,
+        selectedSequence: selectedSequenceForInspector,
+        projectFps: projectSettings.fps,
+        onPatchItem: handlePatchTimelineItem,
+        onRenameSequence: handleRenameActiveSequence,
+        onSequenceSettingsChange: handleProjectSettingsChange,
+      }}
+      timelineProps={{
+        canRedo: timelineHistory.future.length > 0,
+        canUndo: timelineHistory.past.length > 0,
+        isShortcutActive: activeEditorSurface === 'timeline',
+        audioTrackCount,
+        hiddenVideoTracks,
+        items: timelineItems,
+        isInsertIntoClipEnabled: timelineInsertIntoClipEnabled,
+        inPointSec: timelineInPointSec,
+        lockedTracks: lockedTimelineTracks,
+        mutedAudioTracks,
+        selectedItemId: selectedTimelineItemId,
+        selectedItemIds: selectedTimelineItemIds,
+        outPointSec: timelineOutPointSec,
+        panelHeight: timelinePanelHeight,
+        videoTrackCount,
+        playheadSec,
+        projectFps: projectSettings.fps,
+        onAddAudioTrack: handleAddTimelineAudioTrack,
+        onAddVideoTrack: handleAddTimelineVideoTrack,
+        onCutItem: handleCutTimelineItem,
+        onDeleteItem: handleDeleteTimelineItem,
+        onMarkIn: handleMarkTimelineIn,
+        onMarkOut: handleMarkTimelineOut,
+        onGoToCut: handleGoToTimelineCut,
+        onPanelHeightChange: handleTimelinePanelHeightChange,
+        onRedo: handleRedoTimeline,
+        onInvalidNodeDropToTimeline: handleInvalidNodeDropToTimeline,
+        onMoveItem: handleMoveTimelineItem,
+        onNodeDropToTimeline: handleDropNodeToTimeline,
+        onPlaybackChange: setIsTimelinePlaying,
+        onPlayheadChange: setPlayheadSec,
+        onProjectAssetDropToTimeline: handleDropProjectAssetToTimeline,
+        onPreviewItemsChange: handleTimelinePreviewItemsChange,
+        onTogglePlayback: handleToggleTimelinePlayback,
+        onPositionItem: handlePositionTimelineItem,
+        onResizeItem: handleResizeTimelineItem,
+        onSelectItem: handleSelectTimelineItem,
+        onSelectItems: handleSelectTimelineItems,
+        onInsertIntoClipChange: setTimelineInsertIntoClipEnabled,
+        onDeleteTrack: handleDeleteTimelineTrack,
+        onLinkItems: handleLinkTimelineItems,
+        onToggleAudioTrackMute: handleToggleAudioTrackMute,
+        onToggleTrackLock: handleToggleTimelineTrackLock,
+        onToggleVideoTrackVisibility: handleToggleVideoTrackVisibility,
+        onUnlinkItems: handleUnlinkTimelineItems,
+        onUndo: handleUndoTimeline,
+      }}
+      runtimeModalsProps={{
+        activeExportJob,
+        assetPickerLibrary,
+        assetPickerNode,
+        exportEstimate,
+        exportQuota,
+        exportRangeMode,
+        exportQualityPreset,
+        exportVideoFeedback,
+        inPointSec: timelineInPointSec,
+        isExportDialogOpen,
+        isExportEstimateLoading,
+        isExportVideoStarting,
+        isProjectMediaPickerOpen,
+        manifest: exportManifest,
+        outPointSec: timelineOutPointSec,
+        projectMediaLibrary,
+        readinessLabel: exportReadinessLabel,
+        sequenceDurationSec: timelineDurationSec,
+        onAssetPickerClose: () => setAssetPickerNodeId(null),
+        onCloseExportDialog: closeExportDialog,
+        onExportEdl: exportTimelineEdl,
+        onExportVideo: exportTimelineVideo,
+        onPrepareRender: exportTimelineRender,
+        onProjectMediaPickerClose: () => setIsProjectMediaPickerOpen(false),
+        onQualityPresetChange: handleExportQualityPresetChange,
+        onRangeModeChange: handleExportRangeModeChange,
+        onSelectAsset: handleSelectLibraryAsset,
+        onSelectProjectMediaAsset: handleSelectProjectMediaAsset,
+      }}
+    />
   );
 }
