@@ -119,6 +119,7 @@ const timelineInsertPath = join(workspaceDir, '_lib/timeline/timeline-insert.ts'
 const timelineTrimPath = join(workspaceDir, '_lib/timeline/timeline-trim.ts');
 const timelineLinkedAudioPath = join(workspaceDir, '_lib/timeline/timeline-linked-audio.ts');
 const timelineBuildersPath = join(workspaceDir, '_lib/timeline/timeline-builders.ts');
+const timelineIdentitiesPath = join(workspaceDir, '_lib/timeline/timeline-identities.ts');
 const libraryAssetsPath = join(workspaceDir, '_lib/workspace-library-assets.ts');
 const renderEdgesPath = join(workspaceDir, '_lib/workspace-render-edges.ts');
 const templatesPath = join(workspaceDir, '_lib/workspace-templates.ts');
@@ -471,6 +472,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timelineTrimPath), 'timeline trim and split math should live under _lib/timeline');
   assert.ok(existsSync(timelineLinkedAudioPath), 'timeline linked audio sync helpers should live under _lib/timeline');
   assert.ok(existsSync(timelineBuildersPath), 'timeline clip builders should live under _lib/timeline');
+  assert.ok(existsSync(timelineIdentitiesPath), 'timeline identity normalization helpers should live under _lib/timeline');
   assert.ok(existsSync(libraryAssetsPath), 'studio library assets should live in a pure route-local helper');
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
@@ -558,6 +560,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrimSource = source(timelineTrimPath);
   const timelineLinkedAudioSource = source(timelineLinkedAudioPath);
   const timelineBuildersSource = source(timelineBuildersPath);
+  const timelineIdentitiesSource = source(timelineIdentitiesPath);
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
@@ -746,6 +749,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-insert'/, 'timeline editing facade should import insertion helpers from the timeline domain');
   assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-trim'/, 'timeline editing facade should import trim helpers from the timeline domain');
   assert.match(timelineEditingSource, /from '\.\/timeline\/timeline-linked-audio'/, 'timeline editing facade should import linked audio helpers from the timeline domain');
+  assert.match(timelineEditingSource, /timeline\/timeline-identities/, 'timeline editing facade should re-export timeline identity helpers');
   assert.match(timelineFramesSource, /secondsToTimelineFrame/, 'timeline frame helper should expose seconds-to-frame conversion');
   assert.match(timelineFramesSource, /snapSecondsToTimelineFrame/, 'timeline frame helper should expose frame-accurate second snapping');
   assert.match(timelineInteractionSource, /export function nextTimelineInteractionState/, 'timeline interaction helper should own pointer drag and resize projection');
@@ -773,6 +777,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineTrimSource, /resolveTimelineSplitOffset/, 'timeline trim helper should resolve frame-safe split offsets');
   assert.match(timelineLinkedAudioSource, /syncLinkedAudioWithVideo/, 'timeline linked audio helper should synchronize linked audio from its video peer');
   assert.match(timelineLinkedAudioSource, /hasLinkedVideoPeer/, 'timeline linked audio helper should detect video/audio pairs');
+  assert.match(timelineIdentitiesSource, /export function normalizeWorkspaceTimelineIdentities/, 'timeline identity helper should normalize duplicate clip and linked group ids');
+  assert.match(timelineIdentitiesSource, /export function uniqueTimelineIdentifier/, 'timeline identity helper should expose deterministic unique ids for split/link operations');
   assert.match(typesSource, /WorkspaceProjectSettings/, 'workspace should type project-level aspect ratio, resolution, and FPS');
   assert.match(typesSource, /WorkspaceTimelineVideoTrack/, 'timeline should type multiple video tracks');
   assert.match(typesSource, /`video-\$\{number\}`/, 'timeline video tracks should allow V2, V3, and later video lanes');
