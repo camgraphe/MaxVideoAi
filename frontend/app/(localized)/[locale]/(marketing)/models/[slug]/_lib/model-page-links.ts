@@ -14,6 +14,7 @@ export const COMPARE_EXCLUDED_SLUGS = new Set([
   'nano-banana-2',
   'gpt-image-2',
   'seedream',
+  'luma-ray-3-2',
   'luma-uni-1',
   'luma-uni-1-max',
 ]);

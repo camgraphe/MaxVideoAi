@@ -6,6 +6,7 @@ import {
   getModelPageTemplateConfig,
   listModelPageTemplateSlugs,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import { COMPARE_EXCLUDED_SLUGS } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-links.ts';
 import type { ModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-types.ts';
 
 const engineCatalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8')) as Array<{
@@ -476,6 +477,7 @@ test('templates only enable generic compare sections for catalog-backed compare 
   assert.ok(lumaRay32);
   if (!CATALOG_MODEL_SLUGS.has('luma-ray-3-2')) {
     assert.equal(lumaRay32.sections.compare, false);
+    assert.equal(COMPARE_EXCLUDED_SLUGS.has('luma-ray-3-2'), true);
   }
 });
 
