@@ -2,11 +2,11 @@
 
 import { useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import { Copy, FileText, ImagePlus, Music2, Plus, RefreshCcw, Save, Sparkles, Trash2, Video } from 'lucide-react';
-import canvasStyles from '../_styles/canvas.module.css';
+import canvasLibraryStyles from '../_styles/canvas-library.module.css';
 import baseStyles from '../maxvideoai-editor.module.css';
 import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../_lib/workspace-types';
 
-const styles = { ...baseStyles, ...canvasStyles };
+const styles = { ...baseStyles, ...canvasLibraryStyles };
 
 const BLOCK_TEMPLATES: Array<{ kind: WorkspaceNodeKind; label: string; description: string; icon: ReactNode; accent: string }> = [
   { kind: 'asset-image', label: 'Image reference', description: 'Drop image, logo, style frame, or board panel.', icon: <ImagePlus size={17} />, accent: '#8b5cf6' },
