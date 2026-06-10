@@ -9,6 +9,17 @@ export type StudioProjectRecord = {
   updatedAt: string;
 };
 
+export type StudioSequenceRecord = {
+  id: string;
+  userId: string;
+  projectId: string;
+  name: string;
+  settings: unknown;
+  timelineState: unknown;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type StudioCanvasTemplateRecord = {
   id: string;
   userId: string;

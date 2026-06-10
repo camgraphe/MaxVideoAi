@@ -39,6 +39,8 @@ const dynamicWorkspacePagePath = join(workspaceDir, '[projectId]/page.tsx');
 const workspacePagePath = join(workspaceDir, 'WorkspacePage.client.tsx');
 const studioProjectsApiPath = join(studioApiDir, 'projects/route.ts');
 const studioProjectApiPath = join(studioApiDir, 'projects/[projectId]/route.ts');
+const studioProjectSequencesApiPath = join(studioApiDir, 'projects/[projectId]/sequences/route.ts');
+const studioProjectSequenceApiPath = join(studioApiDir, 'projects/[projectId]/sequences/[sequenceId]/route.ts');
 const studioCanvasTemplatesApiPath = join(studioApiDir, 'canvas-templates/route.ts');
 const studioCanvasTemplateApiPath = join(studioApiDir, 'canvas-templates/[templateId]/route.ts');
 const studioRouteUtilsPath = join(studioApiDir, '_lib/studio-route-utils.ts');
@@ -213,6 +215,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(workspacePagePath), 'editor workspace client orchestrator should be route-local');
   assert.ok(existsSync(studioProjectsApiPath), 'studio projects should expose an authenticated projects API');
   assert.ok(existsSync(studioProjectApiPath), 'studio project workspaces should expose an authenticated project detail API');
+  assert.ok(existsSync(studioProjectSequencesApiPath), 'studio projects should expose authenticated sequence list APIs');
+  assert.ok(existsSync(studioProjectSequenceApiPath), 'studio projects should expose authenticated sequence mutation APIs');
   assert.ok(existsSync(studioCanvasTemplatesApiPath), 'studio should expose authenticated canvas template APIs');
   assert.ok(existsSync(studioCanvasTemplateApiPath), 'studio should expose authenticated canvas template mutation APIs');
   assert.ok(existsSync(studioRouteUtilsPath), 'studio route handlers should share auth/database response utilities');
@@ -516,6 +520,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
 test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => {
   const projectsApiSource = source(studioProjectsApiPath);
   const projectApiSource = source(studioProjectApiPath);
+  const projectSequencesApiSource = source(studioProjectSequencesApiPath);
+  const projectSequenceApiSource = source(studioProjectSequenceApiPath);
   const canvasTemplatesApiSource = source(studioCanvasTemplatesApiPath);
   const canvasTemplateApiSource = source(studioCanvasTemplateApiPath);
   const routeUtilsSource = source(studioRouteUtilsPath);
@@ -528,6 +534,11 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   assert.match(projectsApiSource, /upsertStudioProject/, 'project creation API should upsert projects through the server repository');
   assert.match(projectApiSource, /readStudioProject/, 'project detail API should read a user-scoped project');
   assert.match(projectApiSource, /deleteStudioProject/, 'project detail API should support project deletion for future project management');
+  assert.match(projectSequencesApiSource, /listStudioSequences/, 'project sequence API should list sequence records through the repository');
+  assert.match(projectSequencesApiSource, /upsertStudioSequence/, 'project sequence API should create sequence records through the repository');
+  assert.match(projectSequenceApiSource, /readStudioSequence/, 'project sequence detail API should read one user-scoped sequence');
+  assert.match(projectSequenceApiSource, /deleteStudioSequence/, 'project sequence detail API should support safe sequence deletion');
+  assert.match(projectSequenceApiSource, /STUDIO_SEQUENCE_LAST_SEQUENCE/, 'sequence deletion should reject deleting the final project sequence');
   assert.match(canvasTemplatesApiSource, /listStudioCanvasTemplates/, 'canvas template API should read user templates through the repository');
   assert.match(canvasTemplatesApiSource, /upsertStudioCanvasTemplate/, 'canvas template API should save user templates through the repository');
   assert.match(canvasTemplateApiSource, /deleteStudioCanvasTemplate/, 'canvas template detail API should support deleting saved templates');
@@ -539,6 +550,12 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   assert.match(schemaSource, /studio_canvas_templates/, 'server schema should create canvas template persistence');
   assert.match(schemaSource, /studio_project_assets/, 'server schema should prepare project asset persistence');
   assert.match(repositorySource, /ensureStudioProjectSchema/, 'repository methods should ensure schema availability before database access');
+  assert.match(repositorySource, /listStudioSequences/, 'repository should expose durable Studio sequence listing');
+  assert.match(repositorySource, /readStudioSequence/, 'repository should expose durable Studio sequence reads');
+  assert.match(repositorySource, /upsertStudioSequence/, 'repository should expose durable Studio sequence saves');
+  assert.match(repositorySource, /deleteStudioSequence/, 'repository should expose durable Studio sequence deletes');
+  assert.match(repositorySource, /STUDIO_PROJECT_NOT_FOUND/, 'repository should reject sequence writes when the parent project is not user-scoped');
+  assert.match(repositorySource, /last_sequence/, 'repository should preserve at least one sequence per project');
   assert.match(repositorySource, /WHERE user_id = \$1/, 'repository reads should be scoped to the authenticated user');
   assert.match(repositorySource, /workspace_state/, 'repository should persist the current editor workspace snapshot');
   assert.match(migrationSource, /CREATE TABLE IF NOT EXISTS studio_projects/, 'Neon migration should create studio_projects');
