@@ -31,6 +31,11 @@ import {
 } from './timeline/timeline-trim';
 import { timelineRangeOverlapsItem } from './timeline/timeline-collisions';
 import { uniqueTimelineIdentifier } from './timeline/timeline-identities';
+import {
+  timelineSelectionItemsForKeys,
+  timelineSelectionKeyForItem,
+  timelineSelectionKeysForItemIds,
+} from './timeline/timeline-selection-groups';
 
 export type { WorkspaceTimelineTrimEdge } from './timeline/timeline-trim';
 export {
@@ -42,6 +47,7 @@ export {
   workspaceOutputTimelineDuration,
 } from './timeline/timeline-builders';
 export { normalizeWorkspaceTimelineIdentities } from './timeline/timeline-identities';
+export { linkWorkspaceTimelineSelection, unlinkWorkspaceTimelineSelection } from './timeline/timeline-selection-groups';
 export type WorkspaceTimelineInsertMode = 'insert' | 'overwrite' | 'replace';
 export type WorkspaceTimelineTrimMode = 'trim' | 'ripple' | 'roll';
 
@@ -400,19 +406,6 @@ export function positionWorkspaceTimelineItem(
   });
 }
 
-function timelineSelectionKeyForItem(item: WorkspaceTimelineItem): string {
-  return item.linkedGroupId ? `group:${item.linkedGroupId}` : `item:${item.id}`;
-}
-
-function timelineSelectionKeysForItemIds(items: WorkspaceTimelineItem[], itemIds: string[]): Set<string> {
-  const keys = new Set<string>();
-  itemIds.forEach((itemId) => {
-    const item = items.find((candidate) => candidate.id === itemId);
-    if (item) keys.add(timelineSelectionKeyForItem(item));
-  });
-  return keys;
-}
-
 function constrainTimelineSelectionDelta(
   items: WorkspaceTimelineItem[],
   selectedKeys: Set<string>,
@@ -450,58 +443,6 @@ function constrainTimelineSelectionDelta(
   if (Number.isFinite(minDeltaSec)) safeDeltaSec = Math.max(safeDeltaSec, minDeltaSec);
   if (Number.isFinite(maxDeltaSec)) safeDeltaSec = Math.min(safeDeltaSec, maxDeltaSec);
   return snapTimelineValue(safeDeltaSec);
-}
-
-function timelineSelectionItemsForKeys(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
-  return items.filter((candidate) => selectedKeys.has(timelineSelectionKeyForItem(candidate)));
-}
-
-export function unlinkWorkspaceTimelineSelection(items: WorkspaceTimelineItem[], itemIds: string[]): WorkspaceTimelineItem[] {
-  const selectedKeys = timelineSelectionKeysForItemIds(items, itemIds);
-  if (!selectedKeys.size) return items;
-  const selectedGroupIds = new Set(
-    timelineSelectionItemsForKeys(items, selectedKeys)
-      .map((item) => item.linkedGroupId)
-      .filter((groupId): groupId is string => Boolean(groupId))
-  );
-  if (!selectedGroupIds.size) return items;
-
-  return items.map((item) => {
-    if (!item.linkedGroupId || !selectedGroupIds.has(item.linkedGroupId)) return item;
-    return {
-      ...item,
-      linkedGroupId: null,
-      linkedGroupKind: null,
-    };
-  });
-}
-
-export function linkWorkspaceTimelineSelection(
-  items: WorkspaceTimelineItem[],
-  itemIds: string[],
-  idSeed = Date.now().toString(36)
-): WorkspaceTimelineItem[] {
-  const selectedKeys = timelineSelectionKeysForItemIds(items, itemIds);
-  if (selectedKeys.size < 2) return items;
-  const selectedItems = timelineSelectionItemsForKeys(items, selectedKeys);
-  if (selectedItems.length < 2) return items;
-  const selectedItemIds = new Set(selectedItems.map((item) => item.id));
-  const usedGroupIds = new Set(
-    items
-      .filter((item) => !selectedItemIds.has(item.id))
-      .map((item) => item.linkedGroupId)
-      .filter((groupId): groupId is string => Boolean(groupId))
-  );
-  const linkedGroupId = uniqueTimelineIdentifier(idSeed, usedGroupIds);
-
-  return items.map((item) => {
-    if (!selectedItemIds.has(item.id)) return item;
-    return {
-      ...item,
-      linkedGroupId,
-      linkedGroupKind: 'manual',
-    };
-  });
 }
 
 function packagePrimaryTimelineItemFor(items: WorkspaceTimelineItem[]): WorkspaceTimelineItem | null {
