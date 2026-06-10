@@ -1,0 +1,211 @@
+{
+  "marketingName": "Luma Ray 3.2",
+  "versionLabel": "Ray 3.2",
+  "seo": {
+    "title": "Luma Ray 3.2: Pricing, 5s/10s Video and Examples | MaxVideoAI",
+    "description": "Use Luma Ray 3.2 in MaxVideoAI for short cinematic text-to-video and image-to-video clips with 5s or 10s duration, 540p to 1080p output, prompt tips, examples and fal-reference display pricing.",
+    "image": "/hero/luma-dream.jpg"
+  },
+  "overview": "Luma Ray 3.2 is the current public Luma video route in MaxVideoAI for short text-to-video and image-to-video generation. The launch surface focuses on fallback-safe 5s and 10s clips at 540p, 720p or 1080p.",
+  "pricingNotes": "Displayed prices use MaxVideoAI fal-reference pricing with margin applied. The exact customer-facing price appears before generation.",
+  "hero": {
+    "title": "Luma Ray 3.2 - current Luma cinematic video route",
+    "intro": "Generate short cinematic clips from a prompt or start image with public 5s and 10s controls, 540p to 1080p output and loop where the active public case supports it.",
+    "badge": "Text-to-video + Image-to-video · 5s/10s · 540p-1080p",
+    "ctaPrimary": {
+      "label": "Generate with Luma Ray 3.2",
+      "href": "/app?engine=luma-ray-3-2"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Browse Luma examples",
+        "href": "/examples/luma"
+      },
+      {
+        "label": "Check Ray 3.2 pricing",
+        "href": "/pricing#luma-ray-3-2-pricing"
+      },
+      {
+        "label": "Prompt examples",
+        "href": "#prompting"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "Short cinematic product reveals", "icon": "camera" },
+      { "title": "Image-led motion tests from approved stills", "icon": "imageToVideo" },
+      { "title": "5s loop checks for ambient or product motion", "icon": "repeat2" },
+      { "title": "10s pacing tests before final editing", "icon": "storyboard" },
+      { "title": "1080p inspection passes for selected shots", "icon": "sparkles" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Workflows", "body": "Text-to-video and image-to-video on the public launch surface" },
+    { "label": "Duration", "body": "5s or 10s generation" },
+    { "label": "Resolution", "body": "540p, 720p or 1080p" },
+    { "label": "Aspect ratios", "body": "Common wide, square, portrait and extended ratios exposed by the active route" },
+    { "label": "References", "body": "One start image for image-led runs plus optional reference images where the public route accepts them" },
+    { "label": "Loop", "body": "Use loop for supported 5s public cases, especially simple cyclical motion" },
+    { "label": "Pricing", "body": "Public examples use MaxVideoAI fal-reference display pricing, with exact price shown before generation" }
+  ],
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "Subject + action + camera move + lighting + duration + resolution + loop intent when needed.",
+    "description": "Ray 3.2 responds best to compact shot briefs. Keep the motion, camera and output choice explicit, especially when switching from a prompt-only run to a start-image run.",
+    "steps": [
+      "Name one subject and one clear action.",
+      "Add the camera move and framing.",
+      "Choose 5s for tight motion checks or 10s for slower reveals.",
+      "Use 540p or 720p for exploration and 1080p for selected checks.",
+      "Add a start image only when the first frame needs to stay anchored.",
+      "Use loop only for simple cyclical movement."
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Keep public launch prompts inside 5s or 10s and 540p to 1080p.",
+      "Use a start image when product shape, identity or composition matters.",
+      "Use 10s when the shot needs a complete reveal; use 5s for loops and draft motion.",
+      "Avoid advertising direct-only options that are not part of the public fallback-safe surface.",
+      "Review the exact price shown in the app before generation."
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Ray 3.2 with Kling 3 Pro",
+    "href": "/ai-video-engines/kling-3-pro-vs-luma-ray-3-2"
+  },
+  "prompts": [
+    {
+      "title": "Product reveal",
+      "prompt": "Slow cinematic push-in on a premium speaker on a dark stone plinth, controlled reflections, soft rim light, subtle fabric vibration, 5s, 16:9, 720p."
+    },
+    {
+      "title": "Start image motion",
+      "prompt": "Animate the uploaded product still with a gentle clockwise camera drift, keep label shape stable, soft studio reflections, 5s, 1080p."
+    },
+    {
+      "title": "10s editorial shot",
+      "prompt": "A fashion model walks through a quiet gallery at dusk, slow lateral tracking shot, warm practical lights, restrained cinematic motion, 10s, 21:9, 1080p."
+    },
+    {
+      "title": "Loop test",
+      "prompt": "Minimal perfume bottle on a reflective table, tiny mist movement behind the product, perfectly stable bottle, seamless 5s loop, 1:1, 720p."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What does Luma Ray 3.2 support in MaxVideoAI?",
+      "a": "The public model page focuses on text-to-video and image-to-video generation with 5s or 10s duration and 540p, 720p or 1080p output."
+    },
+    {
+      "q": "Does the page expose HDR or EXR options?",
+      "a": "No. Public marketing copy stays on fallback-safe generation settings until any advanced direct-only options are product-approved."
+    },
+    {
+      "q": "How is pricing shown?",
+      "a": "Displayed examples use MaxVideoAI fal-reference pricing with margin. The exact app quote appears before generation."
+    },
+    {
+      "q": "When should I choose Ray 3.2 instead of Ray 2?",
+      "a": "Choose Ray 3.2 for the current public 5s/10s generation route. Choose Ray 2 when Modify or Reframe workflows are the priority."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Luma Ray 3.2 Video Model",
+    "heroSupportLine": "Best for short cinematic Luma clips from prompts or start images.",
+    "heroSpecChips": [
+      { "label": "Text->Video", "icon": "textToVideo" },
+      { "label": "Image->Video", "icon": "imageToVideo" },
+      { "label": "5s or 10s", "icon": "duration" },
+      { "label": "540p / 720p / 1080p", "icon": "resolution" },
+      { "label": "Loop where supported", "icon": "repeat2" }
+    ],
+    "whyTitle": "Why Ray 3.2 is useful",
+    "heroDesc1": "Ray 3.2 gives teams a current Luma route for short cinematic generation while keeping public settings aligned with fallback coverage.",
+    "heroDesc2": "Use it for compact motion tests, start-image animation, simple loops and 1080p checks before moving clips into the rest of the production workflow.",
+    "heroHighlights": [
+      "Current Luma route||Ray 3.2 is the public Luma generation route for short text or start-image clips.",
+      "Fallback-safe public surface||Marketing settings focus on 5s/10s and 540p/720p/1080p combinations covered by fal-reference pricing.",
+      "Practical loop use||Loop is best for short, simple motion rather than complex scene changes.",
+      "Clear pricing context||Displayed prices follow MaxVideoAI fal-reference pricing and the app confirms the exact quote."
+    ],
+    "specTitle": "Ray 3.2 public specs",
+    "specNote": "Specs describe the public MaxVideoAI launch surface, not unpublished direct-only controls.",
+    "specSections": [
+      {
+        "title": "Generation surface",
+        "intro": "Ray 3.2 is exposed for short public generation routes.",
+        "items": [
+          "Text-to-video for prompt-only shots.",
+          "Image-to-video when one opening still should anchor the clip.",
+          "5s and 10s durations.",
+          "540p, 720p and 1080p output choices."
+        ]
+      },
+      {
+        "title": "Operational notes",
+        "items": [
+          "Direct Luma routing may be used with fal fallback when the app cannot accept a direct request.",
+          "Fallback is not a promise of instant provider capacity.",
+          "Public pricing examples use fal-reference rates plus MaxVideoAI margin.",
+          "Advanced direct-only options are not part of this public page."
+        ]
+      }
+    ],
+    "whatTitle": "How to use Ray 3.2",
+    "whatIntro1": "Start in the video workspace, choose Ray 3.2, then pick prompt-only or start-image generation.",
+    "whatIntro2": "Keep the shot brief specific and review the app quote before launching.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Choose Luma Ray 3.2 as the engine.",
+      "Pick prompt-only or upload one start image.",
+      "Set duration to 5s or 10s.",
+      "Choose 540p, 720p or 1080p.",
+      "Use loop only for simple cyclical motion.",
+      "Review the exact price and generate."
+    ],
+    "galleryTitle": "Luma Ray 3.2 examples",
+    "galleryIntro": "Use examples to compare short Luma motion patterns, start-image animation and loop-friendly prompts.",
+    "galleryAllCta": "View all Luma examples",
+    "recreateLabel": "Recreate this shot",
+    "tipsTitle": "Practical strengths and boundaries",
+    "strengths": [
+      "Good fit for short cinematic product, fashion, environment and social clips.",
+      "Start images help preserve composition and product shape.",
+      "1080p is useful for final inspection of selected short clips."
+    ],
+    "boundaries": [
+      "Public duration is 5s or 10s.",
+      "Public resolution choices are 540p, 720p and 1080p.",
+      "Loop should be used for simple cyclical motion.",
+      "Fallback routing does not guarantee instant capacity."
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent.",
+      "Do not include private personal data or sensitive documents."
+    ],
+    "promptingTitle": "How to write a strong Ray 3.2 prompt",
+    "promptingIntro": "Write a single shot brief with subject, action, camera, lighting, duration and resolution.",
+    "promptingTip": "Tip: if you use a start image, describe motion and camera behavior instead of restating every visual detail.",
+    "promptingGlobalPrinciples": [
+      "Use one shot goal per generation.",
+      "Keep motion physically simple for loops.",
+      "Use 10s only when the action needs the extra time."
+    ],
+    "promptingEngineWhy": [
+      "Short Luma clips work best when the camera path and subject action are clear.",
+      "Start images reduce ambiguity in product and identity-led clips.",
+      "Resolution and duration choices directly affect displayed pricing."
+    ],
+    "promptingGuideLabel": "Ray 3.2 prompt guide",
+    "finalPara1": "Ray 3.2 is the current public Luma generation route in MaxVideoAI, built for short cinematic clips with conservative, fallback-safe controls.",
+    "finalButton": "Generate with Luma Ray 3.2"
+  }
+}

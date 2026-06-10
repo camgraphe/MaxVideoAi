@@ -1,0 +1,201 @@
+{
+  "marketingName": "Luma Ray 3.2",
+  "versionLabel": "Ray 3.2",
+  "seo": {
+    "title": "Luma Ray 3.2: precios, videos 5 s/10 s y ejemplos | MaxVideoAI",
+    "description": "Usa Luma Ray 3.2 en MaxVideoAI para clips cinematográficos cortos de texto a video e imagen a video, 5 s o 10 s, 540p a 1080p, prompts, ejemplos y precios fal-reference.",
+    "image": "/hero/luma-dream.jpg"
+  },
+  "overview": "Luma Ray 3.2 es la ruta pública actual de video Luma en MaxVideoAI para generar clips cortos desde prompt o imagen inicial. La superficie de lanzamiento se centra en ajustes fallback-safe: 5 s o 10 s, 540p, 720p o 1080p.",
+  "pricingNotes": "Los precios mostrados usan referencias fal de MaxVideoAI con margen aplicado. El precio exacto para el cliente aparece antes de generar.",
+  "hero": {
+    "title": "Luma Ray 3.2 - ruta actual de video cinematográfico Luma",
+    "intro": "Genera clips cortos desde prompt o imagen inicial con controles públicos de 5 s/10 s, salida 540p a 1080p y loop cuando el caso público activo lo soporta.",
+    "badge": "Texto a video + Imagen a video · 5 s/10 s · 540p-1080p",
+    "ctaPrimary": {
+      "label": "Generar con Luma Ray 3.2",
+      "href": "/app?engine=luma-ray-3-2"
+    },
+    "secondaryLinks": [
+      { "label": "Ver ejemplos Luma", "href": "/examples/luma" },
+      { "label": "Revisar precios Ray 3.2", "href": "/pricing#luma-ray-3-2-pricing" },
+      { "label": "Ejemplos de prompts", "href": "#prompting" }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      { "title": "Revelaciones de producto cortas y cinematográficas", "icon": "camera" },
+      { "title": "Pruebas de movimiento desde stills aprobados", "icon": "imageToVideo" },
+      { "title": "Loops 5 s para producto o ambiente", "icon": "repeat2" },
+      { "title": "Pruebas de ritmo 10 s antes de editar", "icon": "storyboard" },
+      { "title": "Checks 1080p para tomas seleccionadas", "icon": "sparkles" }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Flujos", "body": "Texto a video e imagen a video en la superficie pública" },
+    { "label": "Duración", "body": "Generación de 5 s o 10 s" },
+    { "label": "Resolución", "body": "540p, 720p o 1080p" },
+    { "label": "Ratios", "body": "Formatos anchos, cuadrados, verticales y extendidos expuestos por la ruta activa" },
+    { "label": "Referencias", "body": "Una imagen inicial para runs guiados por imagen, con referencias opcionales donde la ruta pública las acepta" },
+    { "label": "Loop", "body": "Úsalo en casos públicos 5 s compatibles, sobre todo con movimiento simple y cíclico" },
+    { "label": "Precio", "body": "Los ejemplos públicos usan display pricing MaxVideoAI basado en fal-reference" }
+  ],
+  "promptStructure": {
+    "title": "Mini-guía de prompt",
+    "quote": "Sujeto + acción + movimiento de cámara + luz + duración + resolución + intención de loop si aplica.",
+    "description": "Ray 3.2 responde mejor a briefs compactos de toma. Mantén claros el movimiento, la cámara y la salida elegida.",
+    "steps": [
+      "Nombra un sujeto y una acción clara.",
+      "Agrega movimiento de cámara y encuadre.",
+      "Elige 5 s para pruebas cerradas o 10 s para una revelación más lenta.",
+      "Usa 540p o 720p para explorar y 1080p para revisar tomas seleccionadas.",
+      "Agrega imagen inicial solo si el primer cuadro debe quedar anclado.",
+      "Usa loop para movimiento simple y cíclico."
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "Mantén el lanzamiento público en 5 s o 10 s y 540p a 1080p.",
+      "Usa imagen inicial cuando importan forma de producto, identidad o composición.",
+      "Elige 10 s para una acción completa; mantén 5 s para loops y borradores.",
+      "No anuncies opciones direct-only fuera de la superficie pública fallback-safe.",
+      "Revisa el precio exacto en la app antes de generar."
+    ]
+  },
+  "compareLink": {
+    "label": "Comparar Ray 3.2 con Kling 3 Pro",
+    "href": "/ai-video-engines/kling-3-pro-vs-luma-ray-3-2"
+  },
+  "prompts": [
+    {
+      "title": "Revelación de producto",
+      "prompt": "Push-in cinematográfico lento sobre un altavoz premium en piedra oscura, reflejos controlados, rim light suave, vibración leve de tela, 5 s, 16:9, 720p."
+    },
+    {
+      "title": "Movimiento desde imagen",
+      "prompt": "Anima la imagen de producto subida con una deriva suave de cámara, conserva la forma de la etiqueta, reflejos de estudio suaves, 5 s, 1080p."
+    },
+    {
+      "title": "Toma editorial 10 s",
+      "prompt": "Modelo caminando por una galería tranquila al atardecer, tracking lateral lento, luces cálidas, movimiento cinematográfico contenido, 10 s, 21:9, 1080p."
+    },
+    {
+      "title": "Prueba de loop",
+      "prompt": "Frasco de perfume minimalista sobre mesa reflectante, bruma muy ligera detrás del producto, frasco estable, loop fluido de 5 s, 1:1, 720p."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué soporta Luma Ray 3.2 en MaxVideoAI?",
+      "a": "La página pública cubre texto a video e imagen a video con 5 s o 10 s y salida 540p, 720p o 1080p."
+    },
+    {
+      "q": "¿La página expone opciones HDR o EXR?",
+      "a": "No. La copia pública se mantiene en ajustes fallback-safe hasta que opciones direct-only avanzadas tengan aprobación de producto."
+    },
+    {
+      "q": "¿Cómo se muestra el precio?",
+      "a": "Los ejemplos usan precios MaxVideoAI basados en fal-reference con margen. La cotización exacta aparece en la app antes de generar."
+    },
+    {
+      "q": "¿Cuándo elegir Ray 3.2 en lugar de Ray 2?",
+      "a": "Elige Ray 3.2 para la ruta pública actual de 5 s/10 s. Elige Ray 2 si Modify o Reframe son prioridad."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Modelo de video Luma Ray 3.2",
+    "heroSupportLine": "Ideal para clips Luma cortos desde prompt o imagen inicial.",
+    "heroSpecChips": [
+      { "label": "Texto->Video", "icon": "textToVideo" },
+      { "label": "Imagen->Video", "icon": "imageToVideo" },
+      { "label": "5 s o 10 s", "icon": "duration" },
+      { "label": "540p / 720p / 1080p", "icon": "resolution" },
+      { "label": "Loop si es compatible", "icon": "repeat2" }
+    ],
+    "whyTitle": "Por qué Ray 3.2 es útil",
+    "heroDesc1": "Ray 3.2 da una ruta Luma actual para generar tomas cortas manteniendo los ajustes públicos alineados con cobertura fallback.",
+    "heroDesc2": "Úsalo para pruebas de movimiento, animación desde still, loops simples y checks 1080p.",
+    "heroHighlights": [
+      "Ruta Luma actual||Ray 3.2 cubre clips cortos desde prompt o imagen inicial.",
+      "Superficie pública fallback-safe||Los ajustes de marketing se mantienen en 5 s/10 s y 540p/720p/1080p.",
+      "Loop práctico||El loop funciona mejor con movimientos cortos y simples.",
+      "Precio contextualizado||Los precios mostrados siguen referencias fal de MaxVideoAI y la app confirma la cotización final."
+    ],
+    "specTitle": "Specs públicas de Ray 3.2",
+    "specNote": "Estas specs describen la superficie pública MaxVideoAI, no controles direct-only sin publicar.",
+    "specSections": [
+      {
+        "title": "Superficie de generación",
+        "items": [
+          "Texto a video para tomas desde prompt.",
+          "Imagen a video cuando un still inicial debe anclar el clip.",
+          "Duraciones de 5 s y 10 s.",
+          "Salidas 540p, 720p y 1080p."
+        ]
+      },
+      {
+        "title": "Notas operativas",
+        "items": [
+          "La ruta directa Luma puede usarse con fallback fal si la app no puede aceptar la solicitud directa.",
+          "El fallback no garantiza capacidad instantánea del proveedor.",
+          "Los precios públicos usan referencias fal más margen MaxVideoAI.",
+          "Opciones direct-only avanzadas no forman parte de esta página pública."
+        ]
+      }
+    ],
+    "whatTitle": "Cómo usar Ray 3.2",
+    "whatIntro1": "En el workspace de video, elige Ray 3.2 y después un run desde prompt o imagen inicial.",
+    "whatIntro2": "Mantén específico el brief de toma y revisa la cotización antes de lanzar.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Elegir Luma Ray 3.2.",
+      "Usar prompt solo o subir una imagen inicial.",
+      "Definir 5 s o 10 s.",
+      "Elegir 540p, 720p o 1080p.",
+      "Usar loop solo para movimiento cíclico simple.",
+      "Revisar precio exacto y generar."
+    ],
+    "galleryTitle": "Ejemplos Luma Ray 3.2",
+    "galleryIntro": "Usa ejemplos para comparar patrones de movimiento, animación desde still y prompts aptos para loop.",
+    "galleryAllCta": "Ver todos los ejemplos Luma",
+    "recreateLabel": "Recrear esta toma",
+    "tipsTitle": "Fortalezas prácticas y límites",
+    "strengths": [
+      "Buen ajuste para producto, moda, entorno y clips sociales cortos.",
+      "Las imágenes iniciales ayudan a preservar composición y forma de producto.",
+      "1080p sirve para inspeccionar tomas cortas seleccionadas."
+    ],
+    "boundaries": [
+      "Duración pública: 5 s o 10 s.",
+      "Resoluciones públicas: 540p, 720p y 1080p.",
+      "Loop para movimientos simples.",
+      "Fallback no garantiza capacidad instantánea."
+    ],
+    "safetyTitle": "Seguridad y semejanza",
+    "safetyRules": [
+      "No contenido sexual ni contenido con menores.",
+      "No odio, acoso ni violencia gráfica.",
+      "No imites personas reales sin consentimiento.",
+      "No incluyas datos personales privados."
+    ],
+    "promptingTitle": "Cómo escribir un buen prompt Ray 3.2",
+    "promptingIntro": "Escribe un brief de toma con sujeto, acción, cámara, luz, duración y resolución.",
+    "promptingTip": "Consejo: con imagen inicial, describe sobre todo movimiento y cámara.",
+    "promptingGlobalPrinciples": [
+      "Un solo objetivo de toma por generación.",
+      "Movimiento simple para loops.",
+      "10 s solo cuando la acción lo necesita."
+    ],
+    "promptingEngineWhy": [
+      "Los clips cortos funcionan mejor con trayectoria de cámara clara.",
+      "Las imágenes iniciales reducen ambigüedad en producto o identidad.",
+      "Duración y resolución influyen directamente en el precio mostrado."
+    ],
+    "promptingGuideLabel": "Guía de prompt Ray 3.2",
+    "finalPara1": "Ray 3.2 es la ruta pública Luma actual para clips cortos con controles conservadores y fallback-safe.",
+    "finalButton": "Generar con Luma Ray 3.2"
+  }
+}

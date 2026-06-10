@@ -1,0 +1,217 @@
+{
+  "marketingName": "Luma Uni-1",
+  "versionLabel": "Uni-1",
+  "seo": {
+    "title": "Luma Uni-1: Image Pricing, References and Editing | MaxVideoAI",
+    "description": "Use Luma Uni-1 in MaxVideoAI for 2K text-to-image, source-image edits, multi-reference layouts, optional web-grounded visual research and fal-reference display pricing."
+  },
+  "overview": "Luma Uni-1 is a 2K image generation and editing model in MaxVideoAI for still-image concepts, source edits, layout reasoning, multi-reference guidance and visual research. It is an image-only route.",
+  "pricingNotes": "Display prices use MaxVideoAI fal-reference pricing. Reference and edit examples include source/reference image counts where shown, and the exact app quote appears before generation.",
+  "hero": {
+    "title": "Luma Uni-1 - 2K image generation and editing",
+    "intro": "Create still images, edit a source image and guide layouts with references before selecting the best still for product, brand, storyboard or motion handoff work.",
+    "badge": "Text -> Image · Image edit · References · 2K",
+    "ctaPrimary": {
+      "label": "Launch Luma Uni-1",
+      "href": "/app/image?engine=luma-uni-1"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Open the image workspace",
+        "href": "/app/image?engine=luma-uni-1"
+      },
+      {
+        "label": "Check live pricing",
+        "href": "/pricing#luma-uni-1-pricing"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "2K concept stills from a visual brief", "icon": "imageToVideo" },
+      { "title": "Source-image edits that preserve the main subject", "icon": "layers" },
+      { "title": "Multi-reference product, layout and style guidance", "icon": "storyboard" },
+      { "title": "Web-grounded visual research when context matters", "icon": "sparkles" },
+      { "title": "Clean still handoff before motion work", "icon": "product" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Workflows", "body": "Text-to-image and image edit" },
+    { "label": "Output", "body": "2K still image output" },
+    { "label": "References", "body": "Text requests can use multiple references; edits use the first image as source plus optional references" },
+    { "label": "Aspect ratios", "body": "Wide, square, portrait and extended ratios on text-to-image" },
+    { "label": "Styles", "body": "Auto and manga style controls where exposed" },
+    { "label": "Output format", "body": "PNG or JPEG in the active image workspace" },
+    { "label": "Pricing", "body": "Public copy uses MaxVideoAI fal-reference display pricing, not lower direct-provider pricing promises" }
+  ],
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "Artifact + subject + layout + style + reference roles + what to preserve or change.",
+    "description": "Uni-1 works best when references have explicit roles. State which image controls product shape, style, palette, layout or typography direction, then describe the still you want.",
+    "steps": [
+      "Name the target asset and use case.",
+      "Describe subject, composition, lighting and style.",
+      "For edits, separate preserve instructions from changes.",
+      "Assign one role per reference image.",
+      "Use web search only when current visual context is useful.",
+      "Review text, labels and small details before using the image downstream."
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Use Uni-1 for still images only.",
+      "Use references deliberately instead of uploading unrelated inspiration.",
+      "Do not assume typography is perfect; inspect exact words and labels.",
+      "For source edits, make preservation constraints explicit.",
+      "Use the app quote as the customer-facing price."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Product concept still",
+      "prompt": "A 2K studio still of a matte white smart speaker on a warm concrete plinth, soft side light, clean label area, premium catalog composition, 16:9."
+    },
+    {
+      "title": "Source image edit",
+      "prompt": "Preserve the product shape and logo hierarchy from the source image, replace the background with a calm studio tabletop, soften reflections, keep natural shadows."
+    },
+    {
+      "title": "Multi-reference layout",
+      "prompt": "Use reference 1 for the product shape, reference 2 for color palette and reference 3 for layout rhythm. Create a clean launch still with readable headline space."
+    },
+    {
+      "title": "Visual research still",
+      "prompt": "Create a grounded visual direction board image for a premium cycling helmet launch, current retail photography cues, neutral background, product-forward composition."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Is Luma Uni-1 an image model?",
+      "a": "Yes. In MaxVideoAI this page describes still-image generation and image editing only."
+    },
+    {
+      "q": "Can Uni-1 use references?",
+      "a": "Yes. Text requests can use multiple visual references, and edit requests use the first image as the source plus optional references."
+    },
+    {
+      "q": "How should I price a Uni-1 run?",
+      "a": "Use the displayed MaxVideoAI quote. Public copy uses fal-reference pricing with margin rather than promising lower direct Luma pricing."
+    },
+    {
+      "q": "Should I use Uni-1 or Uni-1 Max?",
+      "a": "Use Uni-1 for exploration and reference preparation. Move to Uni-1 Max when a selected still needs higher fidelity or more careful revisions."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Luma Uni-1 Image Model",
+    "heroSupportLine": "Best for 2K still images, source edits and reference-led layouts.",
+    "heroSpecChips": [
+      { "label": "Text->Image", "icon": "textToVideo" },
+      { "label": "Image edit", "icon": "imageToVideo" },
+      { "label": "2K output", "icon": "resolution" },
+      { "label": "Multi-reference" },
+      { "label": "PNG / JPEG" }
+    ],
+    "whyTitle": "Why Uni-1 fits image prep",
+    "heroDesc1": "Uni-1 gives teams a focused Luma still-image route for concepts, source edits and reference preparation before committing to a higher-fidelity image pass or motion workflow.",
+    "heroDesc2": "It is most useful when the brief needs visual reasoning and reference roles, not when exact text perfection is the only success criterion.",
+    "heroHighlights": [
+      "Image-only workflow||Use Uni-1 for still creation and edits, not direct motion generation.",
+      "Reference roles||Tell the model which reference controls product, layout, style or palette.",
+      "Web-grounded option||Use web search only when current visual context improves the brief.",
+      "Pricing context||Display prices use MaxVideoAI fal-reference pricing and the app confirms the final quote."
+    ],
+    "specTitle": "Uni-1 image specs",
+    "specNote": "Specs describe the public MaxVideoAI image workspace route.",
+    "specSections": [
+      {
+        "title": "Image workflows",
+        "items": [
+          "Text-to-image for 2K stills.",
+          "Image edit with one source image.",
+          "Optional references for product, style, layout or palette.",
+          "PNG or JPEG output."
+        ]
+      },
+      {
+        "title": "Pricing behavior",
+        "items": [
+          "Base image and reference costs follow fal-reference pricing.",
+          "MaxVideoAI display margin is reflected in public examples.",
+          "The exact app quote is authoritative before generation.",
+          "Direct-provider discounts are not promised in public copy."
+        ]
+      }
+    ],
+    "whatTitle": "How Uni-1 works",
+    "whatIntro1": "Choose Uni-1 in the image workspace, then create a still from text or edit an uploaded source image.",
+    "whatIntro2": "Use references only when each image has a clear purpose.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Choose Luma Uni-1 in the image workspace.",
+      "Select create or edit mode.",
+      "Write the still-image brief.",
+      "Add references with explicit roles.",
+      "Review the displayed price.",
+      "Inspect text and small details before using the result."
+    ],
+    "galleryTitle": "Luma Uni-1 image examples",
+    "galleryIntro": "Use examples to plan source edits, product references and still-image handoffs.",
+    "galleryAllCta": "Open the image workspace",
+    "recreateLabel": "Recreate this image",
+    "tipsTitle": "Practical strengths and boundaries",
+    "strengths": [
+      "Good for 2K concept stills and reference preparation.",
+      "Useful when the prompt needs visual layout reasoning.",
+      "References can reduce ambiguity when each one has a role."
+    ],
+    "boundaries": [
+      "Still images only.",
+      "Exact text and small labels need manual review.",
+      "Web-grounded output still needs human verification.",
+      "Public pricing follows fal-reference display pricing."
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent.",
+      "Do not include private personal data or sensitive documents."
+    ],
+    "promptingTitle": "How to write a strong Uni-1 prompt",
+    "promptingIntro": "Treat the prompt like a still-image creative brief: artifact, subject, layout, references and constraints.",
+    "promptingTip": "Tip: name the role of every reference image.",
+    "promptingGlobalPrinciples": [
+      "Keep one clear visual goal per request.",
+      "Separate preserve and change instructions for edits.",
+      "Use web search only when the brief needs current context."
+    ],
+    "promptingEngineWhy": [
+      "Reference roles help the image route reason about layout and identity.",
+      "Reviewing typography keeps final assets conservative and production-safe.",
+      "A clean still can become stronger source material for later motion."
+    ],
+    "promptingGuideLabel": "Uni-1 prompt guide",
+    "relatedItems": [
+      {
+        "brand": "luma",
+        "title": "Luma Uni-1 Max",
+        "description": "Use Max when a selected still needs higher fidelity, product finish or more careful source-image revisions.",
+        "modelSlug": "luma-uni-1-max",
+        "ctaLabel": "View Uni-1 Max"
+      },
+      {
+        "brand": "luma",
+        "title": "Luma Ray 3.2",
+        "description": "Use Ray 3.2 when the selected still is ready to become a short cinematic motion test.",
+        "modelSlug": "luma-ray-3-2",
+        "ctaLabel": "View Ray 3.2"
+      }
+    ],
+    "finalPara1": "Luma Uni-1 is the practical 2K image route for still creation, edits and reference prep in MaxVideoAI.",
+    "finalButton": "Generate with Luma Uni-1"
+  }
+}

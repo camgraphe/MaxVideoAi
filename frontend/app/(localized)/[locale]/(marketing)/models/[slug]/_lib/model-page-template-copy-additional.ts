@@ -3954,6 +3954,627 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
   },
 };
 
+const LUMA_RAY_32_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA CURRENT VIDEO ROUTE',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Cinematic Ray 3.2 motion for 5s or 10s shots, routed through direct Luma route with fal fallback when needed.',
+      subtitleHighlights: ['Cinematic Ray 3.2 motion', '5s or 10s shots', 'direct Luma route with fal fallback'],
+      paragraph:
+        'Use Ray 3.2 for current Luma text-to-video and image-to-video work when you need short cinematic clips, 540p to 1080p output, optional loop on supported public cases, and fallback-safe generation settings.',
+      primaryCta: { label: 'Generate with Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+      quickLinks: [
+        { label: 'View pricing', href: pricingHref('en', 'luma-ray-3-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+        { label: 'Compare vs Kling 3 Pro', href: compareHref('en', 'luma-ray-3-2', 'kling-3-pro') },
+      ],
+    },
+    media: {
+      caption: 'Luma Ray 3.2 example',
+      description: 'Current Luma cinematic generation route',
+      renderLabel: 'View render',
+      badges: ['5s/10s', '540p-1080p', 'T2V + I2V'],
+      altContext: 'cinematic Luma Ray 3.2 video example',
+    },
+    features: [
+      { title: 'Current Luma video', body: 'Use Ray 3.2 for public 5s and 10s generation routes.', tone: 'quality' },
+      { title: 'Text or start image', body: 'Begin from a prompt or animate one approved still as the opening frame.', tone: 'reference' },
+      { title: '540p to 1080p', body: 'Draft lower, then inspect selected clips at 720p or 1080p.', tone: 'quality' },
+      { title: 'Loop-aware', body: 'Use loop on supported public cases where a seamless short motion test fits the brief.', tone: 'continuity' },
+      { title: 'Fallback-safe settings', body: 'The page keeps public options aligned with fal-reference fallback coverage.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'Prices use MaxVideoAI fal-reference display pricing before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Ray 3.2 or Ray 2?',
+        body: 'Use Ray 3.2 for the current 5s/10s public route. Use Ray 2 when Modify or Reframe workflows matter more than the newer route.',
+        cta: { label: 'View Ray 2', href: modelsHref('en', 'luma-ray-2') },
+      },
+      {
+        title: 'Prompt-only or start image?',
+        body: 'Use prompt-only for new blocking. Add a start image when product shape, framing, character look or composition must anchor the opening.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'When to use 10s',
+        body: 'Use 10s when the shot needs a slower reveal or a complete movement. Keep 5s for loops, tests and tighter product beats.',
+        cta: { label: 'Check pricing', href: pricingHref('en', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text prompt', body: 'Describe subject, action, camera move, lighting, style and output target in one compact shot brief.' },
+      { title: 'Start image', body: 'Upload one clean opening frame when identity, product geometry or layout should stay anchored.' },
+      { title: 'Optional end image for 5s', body: 'Use an end image only when the active public route supports it and the final pose matters.' },
+      { title: 'Seamless loop', body: 'Keep motion small, cyclical and visually simple when the clip needs to loop.' },
+      { title: '1080p final check', body: 'Use 540p or 720p for exploration, then inspect selected 10s or 5s renders at 1080p.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Ray 3.2 pricing at a glance',
+      subtitle: 'Preset Ray 3.2 totals use MaxVideoAI fal-reference display pricing; exact price appears before generation.',
+      footnote: 'Public examples are based on fallback-safe 5s/10s and 540p/720p/1080p settings, not unpublished direct-only options.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2: Pricing, 5s/10s Video & Examples | MaxVideoAI',
+      description:
+        'Explore Luma Ray 3.2 pricing, 5s and 10s text-to-video and image-to-video workflows, 540p to 1080p output, prompt tips and examples.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA VIDEO ACTUELLE',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Mouvement cinematique Ray 3.2 pour plans 5 s ou 10 s, avec route Luma directe avec fallback fal si necessaire.',
+      subtitleHighlights: ['Mouvement cinematique Ray 3.2', 'plans 5 s ou 10 s', 'route Luma directe avec fallback fal'],
+      paragraph:
+        'Utilisez Ray 3.2 pour les workflows Luma actuels en text-to-video et image-to-video : clips courts, sortie 540p a 1080p, loop optionnelle sur les cas publics pris en charge et reglages compatibles fallback.',
+      primaryCta: { label: 'Generer avec Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+      quickLinks: [
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-3-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+        { label: 'Comparer vs Kling 3 Pro', href: compareHref('fr', 'luma-ray-3-2', 'kling-3-pro') },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Ray 3.2',
+      description: 'Route Luma actuelle de generation cinematique',
+      renderLabel: 'Voir le rendu',
+      badges: ['5 s/10 s', '540p-1080p', 'T2V + I2V'],
+      altContext: 'exemple video cinematique Luma Ray 3.2',
+    },
+    features: [
+      { title: 'Video Luma actuelle', body: 'Utilisez Ray 3.2 pour les routes publiques 5 s et 10 s.', tone: 'quality' },
+      { title: 'Texte ou image source', body: 'Partez d’un prompt ou animez une image validee comme premiere frame.', tone: 'reference' },
+      { title: '540p a 1080p', body: 'Brouillonnez plus bas, puis controlez les clips retenus en 720p ou 1080p.', tone: 'quality' },
+      { title: 'Pensé pour les loops', body: 'Activez loop sur les cas publics compatibles quand le brief demande un mouvement court continu.', tone: 'continuity' },
+      { title: 'Reglages fallback-safe', body: 'La page reste alignee avec la couverture fallback fal-reference des options publiques.', tone: 'duration' },
+      { title: 'Paiement a l’usage', body: 'Les prix utilisent l’affichage MaxVideoAI base sur les references fal avant generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Ray 3.2 ou Ray 2 ?',
+        body: 'Prenez Ray 3.2 pour la route publique actuelle en 5 s/10 s. Prenez Ray 2 si Modify ou Reframe comptent davantage.',
+        cta: { label: 'Voir Ray 2', href: modelsHref('fr', 'luma-ray-2') },
+      },
+      {
+        title: 'Prompt seul ou image source ?',
+        body: 'Utilisez le prompt seul pour un nouveau plan. Ajoutez une image quand produit, cadrage, personnage ou composition doivent ancrer le depart.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Quand choisir 10 s ?',
+        body: 'Utilisez 10 s pour une revelation plus lente ou un mouvement complet. Gardez 5 s pour loops, tests et plans produit courts.',
+        cta: { label: 'Verifier le prix', href: pricingHref('fr', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt texte', body: 'Decrivez sujet, action, camera, lumiere, style et cible de sortie dans un brief de plan compact.' },
+      { title: 'Image de depart', body: 'Chargez une premiere frame propre quand identite, geometrie produit ou layout doivent rester ancres.' },
+      { title: 'Image de fin optionnelle en 5 s', body: 'Utilisez une image finale seulement si la route publique active la prend en charge et que la pose finale compte.' },
+      { title: 'Loop continue', body: 'Gardez un mouvement simple, cyclique et limite si le clip doit boucler.' },
+      { title: 'Check final 1080p', body: 'Explorez en 540p ou 720p, puis controlez les rendus retenus en 1080p.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Ray 3.2 en un coup d’oeil',
+      subtitle: 'Totaux Ray 3.2 par preset avec prix affiches MaxVideoAI bases sur fal-reference; prix exact avant generation.',
+      footnote: 'Les exemples publics utilisent les reglages fallback-safe 5 s/10 s et 540p/720p/1080p, pas des options direct-only non publiees.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’a 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2 : tarifs, videos 5 s/10 s et exemples | MaxVideoAI',
+      description:
+        'Explorez Luma Ray 3.2 : prix, text-to-video et image-to-video en 5 s ou 10 s, sortie 540p a 1080p, prompts et exemples.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA VIDEO ACTUAL',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Movimiento cinematografico Ray 3.2 para tomas de 5 s o 10 s, con ruta directa de Luma con fallback fal cuando haga falta.',
+      subtitleHighlights: ['Movimiento cinematografico Ray 3.2', 'tomas de 5 s o 10 s', 'ruta directa de Luma con fallback fal'],
+      paragraph:
+        'Usa Ray 3.2 para la ruta Luma actual de texto a video e imagen a video cuando necesitas clips cortos, salida 540p a 1080p, loop opcional en casos publicos compatibles y ajustes seguros para fallback.',
+      primaryCta: { label: 'Generar con Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+      quickLinks: [
+        { label: 'Ver precios', href: pricingHref('es', 'luma-ray-3-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+        { label: 'Comparar con Kling 3 Pro', href: compareHref('es', 'luma-ray-3-2', 'kling-3-pro') },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Ray 3.2',
+      description: 'Ruta Luma actual de generacion cinematografica',
+      renderLabel: 'Ver render',
+      badges: ['5 s/10 s', '540p-1080p', 'T2V + I2V'],
+      altContext: 'ejemplo de video cinematografico con Luma Ray 3.2',
+    },
+    features: [
+      { title: 'Video Luma actual', body: 'Usa Ray 3.2 para rutas publicas de generacion de 5 s y 10 s.', tone: 'quality' },
+      { title: 'Texto o imagen inicial', body: 'Empieza desde prompt o anima un still aprobado como cuadro de apertura.', tone: 'reference' },
+      { title: '540p a 1080p', body: 'Borrador en resolucion menor y revisa clips elegidos en 720p o 1080p.', tone: 'quality' },
+      { title: 'Preparado para loops', body: 'Usa loop en casos publicos compatibles cuando conviene una prueba corta y continua.', tone: 'continuity' },
+      { title: 'Ajustes fallback-safe', body: 'La pagina mantiene opciones publicas alineadas con cobertura fal-reference.', tone: 'duration' },
+      { title: 'Pago por uso', body: 'Los precios usan display pricing MaxVideoAI basado en referencias fal antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Ray 3.2 o Ray 2?',
+        body: 'Usa Ray 3.2 para la ruta publica actual de 5 s/10 s. Usa Ray 2 cuando Modify o Reframe importan mas.',
+        cta: { label: 'Ver Ray 2', href: modelsHref('es', 'luma-ray-2') },
+      },
+      {
+        title: '¿Solo prompt o imagen inicial?',
+        body: 'Usa solo prompt para un nuevo bloqueo. Agrega imagen cuando producto, encuadre, personaje o composicion deben anclar el inicio.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Cuando usar 10 s',
+        body: 'Usa 10 s para una revelacion mas lenta o movimiento completo. Mantén 5 s para loops, pruebas y tomas de producto breves.',
+        cta: { label: 'Revisar precio', href: pricingHref('es', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Prompt de texto', body: 'Describe sujeto, accion, camara, luz, estilo y salida deseada en un brief compacto.' },
+      { title: 'Imagen inicial', body: 'Sube un cuadro inicial limpio cuando identidad, geometria de producto o layout deben quedar anclados.' },
+      { title: 'Cuadro final opcional en 5 s', body: 'Usa cuadro final solo si la ruta publica activa lo soporta y la pose final importa.' },
+      { title: 'Loop continuo', body: 'Mantén movimiento simple, ciclico y limitado cuando el clip deba repetirse.' },
+      { title: 'Check final 1080p', body: 'Explora en 540p o 720p y revisa renders elegidos en 1080p.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Ray 3.2 de un vistazo',
+      subtitle: 'Totales Ray 3.2 por preset con display pricing MaxVideoAI basado en fal-reference; precio exacto antes de generar.',
+      footnote: 'Los ejemplos publicos usan ajustes fallback-safe 5 s/10 s y 540p/720p/1080p, no opciones direct-only no publicadas.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2: precios, videos 5 s/10 s y ejemplos | MaxVideoAI',
+      description:
+        'Explora Luma Ray 3.2: precios, texto a video e imagen a video en 5 s o 10 s, salida 540p a 1080p, prompts y ejemplos.',
+    },
+  },
+};
+
+const LUMA_UNI_1_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA IMAGE GENERATION ROUTE',
+      title: 'Luma Uni-1',
+      subtitle: '2K image generation with image edits, multi-reference guidance, layout reasoning and optional web-grounded references.',
+      subtitleHighlights: ['2K image generation', 'image edits', 'multi-reference guidance'],
+      paragraph:
+        'Use Uni-1 for text-to-image, source-image edits, reference-led layouts and visual research stills when you need a thoughtful Luma image route without claiming perfect typography or guaranteed factual accuracy.',
+      primaryCta: { label: 'Generate with Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=luma-uni-1' },
+        { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Uni-1 example',
+      description: 'Reference-led 2K image generation and edit workflow',
+      renderLabel: 'View image',
+      badges: ['2K', 'Edit', 'References'],
+      altContext: 'Luma Uni-1 reference-led image example',
+    },
+    features: [
+      { title: '2K stills', body: 'Create single 2K images for concepts, references and layout exploration.', tone: 'quality' },
+      { title: 'Source edits', body: 'Use the first image as the edit source, then guide revisions with the prompt.', tone: 'continuity' },
+      { title: 'Multi-reference input', body: 'Attach references for product shape, style, typography direction or composition cues.', tone: 'reference' },
+      { title: 'Layout reasoning', body: 'Useful for arranging visual elements, but exact text still needs review.', tone: 'quality' },
+      { title: 'Web-grounded option', body: 'Use web search only when current visual context helps the still brief.', tone: 'reference' },
+      { title: 'Fal-reference pricing', body: 'Display prices use MaxVideoAI fal-reference pricing before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'When to choose Uni-1',
+        body: 'Choose Uni-1 for 2K still concepts, source edits, reference preparation and visual layout exploration before a final image route.',
+        cta: { label: 'Open Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'How to use references',
+        body: 'Give each reference a role: product shape, palette, layout, style or text hierarchy. Keep the prompt explicit about what to preserve.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'When to move to Uni-1 Max',
+        body: 'Move selected stills to Max when the hero asset needs higher-fidelity detail, product finish or more careful revisions.',
+        cta: { label: 'View Uni-1 Max', href: modelsHref('en', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Describe the artifact, subject, layout, visual style, aspect ratio and any text that needs review.' },
+      { title: 'Source edit', body: 'Upload one source image, then separate preserve instructions from changes.' },
+      { title: 'Multi-reference layout', body: 'Use references to anchor subject, style, palette and composition instead of asking one prompt to carry everything.' },
+      { title: 'Web-grounded visual research', body: 'Enable web search only when recent visual context is useful and still verify the result.' },
+      { title: 'Handoff to video', body: 'Save the clearest still as a start image when the next step is motion in a video model.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Uni-1 pricing at a glance',
+      subtitle: 'Display prices use MaxVideoAI fal-reference pricing; exact price appears before generation.',
+      footnote: 'Reference and edit examples include source/reference image counts where shown; final app quotes remain authoritative.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'One image',
+    },
+    meta: {
+      title: 'Luma Uni-1: Image Pricing, References & Editing | MaxVideoAI',
+      description:
+        'Explore Luma Uni-1 2K image generation, source-image edits, multi-reference guidance, web-grounded visual research and fal-reference pricing.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA IMAGE',
+      title: 'Luma Uni-1',
+      subtitle: 'Generation image 2K avec retouches image, guidage multi-reference, raisonnement de layout et references web optionnelles.',
+      subtitleHighlights: ['Generation image 2K', 'retouches image', 'guidage multi-reference'],
+      paragraph:
+        'Utilisez Uni-1 pour text-to-image, retouche de source, layouts guides par references et recherche visuelle quand vous voulez une route image Luma reflechie sans promettre une typographie parfaite.',
+      primaryCta: { label: 'Generer avec Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=luma-uni-1' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Uni-1',
+      description: 'Generation image 2K et retouche guidee par references',
+      renderLabel: 'Voir l’image',
+      badges: ['2K', 'Retouche', 'References'],
+      altContext: 'exemple image Luma Uni-1 guide par references',
+    },
+    features: [
+      { title: 'Images 2K', body: 'Creez des images 2K uniques pour concepts, references et exploration de layout.', tone: 'quality' },
+      { title: 'Retouches source', body: 'Utilisez la premiere image comme source, puis guidez la revision par prompt.', tone: 'continuity' },
+      { title: 'Multi-reference', body: 'Ajoutez des references pour forme produit, style, direction typo ou composition.', tone: 'reference' },
+      { title: 'Raisonnement layout', body: 'Utile pour organiser les elements visuels, avec controle humain du texte exact.', tone: 'quality' },
+      { title: 'Option web-grounded', body: 'Activez la recherche web seulement si le contexte visuel actuel aide le brief.', tone: 'reference' },
+      { title: 'Prix fal-reference', body: 'Les prix affiches utilisent les references fal MaxVideoAI avant generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand choisir Uni-1',
+        body: 'Choisissez Uni-1 pour concepts 2K, retouches source, preparation de references et exploration de layout.',
+        cta: { label: 'Ouvrir Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'Bien utiliser les references',
+        body: 'Donnez un role a chaque reference : produit, palette, layout, style ou hierarchie texte. Precisez ce qui doit rester.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Quand passer a Uni-1 Max',
+        body: 'Passez les stills retenus dans Max quand l’asset hero exige plus de detail, de finition produit ou de revision precise.',
+        cta: { label: 'Voir Uni-1 Max', href: modelsHref('fr', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Decrivez asset, sujet, layout, style, ratio et tout texte a verifier.' },
+      { title: 'Retouche source', body: 'Chargez une source, puis separez ce qui doit rester de ce qui doit changer.' },
+      { title: 'Layout multi-reference', body: 'Utilisez les references pour ancrer sujet, style, palette et composition.' },
+      { title: 'Recherche visuelle web-grounded', body: 'Activez la recherche web seulement si le contexte recent est utile, puis verifiez le resultat.' },
+      { title: 'Passage vers video', body: 'Gardez le still le plus clair comme image de depart si l’etape suivante est le mouvement.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Uni-1 en un coup d’oeil',
+      subtitle: 'Les prix affiches utilisent les references fal MaxVideoAI; le prix exact apparait avant generation.',
+      footnote: 'Les exemples edit/reference incluent les comptes images indiques; le devis dans l’app reste la reference.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Une image',
+    },
+    meta: {
+      title: 'Luma Uni-1 : prix image, references et retouche | MaxVideoAI',
+      description:
+        'Explorez Luma Uni-1 : generation image 2K, retouches source, guidage multi-reference, recherche visuelle web-grounded et prix fal-reference.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA DE IMAGEN',
+      title: 'Luma Uni-1',
+      subtitle: 'Generacion de imagen 2K con ediciones de imagen, guia multi-referencia, razonamiento de layout y referencias web opcionales.',
+      subtitleHighlights: ['Generacion de imagen 2K', 'ediciones de imagen', 'guia multi-referencia'],
+      paragraph:
+        'Usa Uni-1 para texto a imagen, ediciones de fuente, layouts guiados por referencias y stills de investigacion visual sin prometer tipografia perfecta ni precision garantizada.',
+      primaryCta: { label: 'Generar con Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=luma-uni-1' },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Uni-1',
+      description: 'Generacion 2K y edicion guiada por referencias',
+      renderLabel: 'Ver imagen',
+      badges: ['2K', 'Edicion', 'Referencias'],
+      altContext: 'ejemplo de imagen Luma Uni-1 guiada por referencias',
+    },
+    features: [
+      { title: 'Stills 2K', body: 'Crea imagenes 2K unicas para conceptos, referencias y exploracion de layout.', tone: 'quality' },
+      { title: 'Ediciones fuente', body: 'Usa la primera imagen como fuente y guia la revision con el prompt.', tone: 'continuity' },
+      { title: 'Entrada multi-referencia', body: 'Adjunta referencias para forma de producto, estilo, direccion tipografica o composicion.', tone: 'reference' },
+      { title: 'Razonamiento de layout', body: 'Ayuda a ordenar elementos visuales, pero el texto exacto necesita revision.', tone: 'quality' },
+      { title: 'Opcion web-grounded', body: 'Usa busqueda web solo cuando el contexto visual actual ayuda al brief.', tone: 'reference' },
+      { title: 'Precio fal-reference', body: 'Los precios mostrados usan referencias fal de MaxVideoAI antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Cuando elegir Uni-1',
+        body: 'Elige Uni-1 para conceptos 2K, ediciones de fuente, preparacion de referencias y exploracion de layout visual.',
+        cta: { label: 'Abrir Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'Como usar referencias',
+        body: 'Da un rol a cada referencia: producto, paleta, layout, estilo o jerarquia de texto. Define que se conserva.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Cuando pasar a Uni-1 Max',
+        body: 'Mueve stills elegidos a Max cuando el asset hero necesita mas detalle, acabado de producto o revision cuidadosa.',
+        cta: { label: 'Ver Uni-1 Max', href: modelsHref('es', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a imagen', body: 'Describe artefacto, sujeto, layout, estilo, ratio y cualquier texto que deba revisarse.' },
+      { title: 'Edicion fuente', body: 'Sube una imagen fuente y separa instrucciones de preservar y cambiar.' },
+      { title: 'Layout multi-referencia', body: 'Usa referencias para anclar sujeto, estilo, paleta y composicion.' },
+      { title: 'Investigacion visual web-grounded', body: 'Activa busqueda web solo si el contexto reciente ayuda, y revisa el resultado.' },
+      { title: 'Paso a video', body: 'Guarda el still mas claro como imagen inicial cuando el siguiente paso sea movimiento.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Uni-1 de un vistazo',
+      subtitle: 'Los precios mostrados usan referencias fal de MaxVideoAI; el precio exacto aparece antes de generar.',
+      footnote: 'Los ejemplos de edicion/referencia incluyen los conteos de imagen indicados; la cotizacion en la app manda.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Una imagen',
+    },
+    meta: {
+      title: 'Luma Uni-1: precios de imagen, referencias y edicion | MaxVideoAI',
+      description:
+        'Explora Luma Uni-1: generacion de imagen 2K, ediciones de fuente, guia multi-referencia, investigacion visual web-grounded y precios fal-reference.',
+    },
+  },
+};
+
+const LUMA_UNI_1_MAX_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA PREMIUM IMAGE ROUTE',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Higher-fidelity Uni-1 stills for precise image revisions, product visuals and reference-led edits.',
+      subtitleHighlights: ['Higher-fidelity Uni-1 stills', 'precise image revisions', 'reference-led edits'],
+      paragraph:
+        'Use Uni-1 Max when the still needs more careful detail than the base route: hero images, product-label layouts, typography-sensitive concepts and high-detail edits with references.',
+      primaryCta: { label: 'Generate with Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-max-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Uni-1 Max example',
+      description: 'Premium 2K still and reference edit workflow',
+      renderLabel: 'View image',
+      badges: ['2K', 'Hero still', 'References'],
+      altContext: 'Luma Uni-1 Max premium still image example',
+    },
+    features: [
+      { title: 'Premium 2K route', body: 'Use Max for selected stills that need stronger detail and finish.', tone: 'quality' },
+      { title: 'Product visuals', body: 'Good fit for catalog-style stills, labels, packaging and campaign layouts.', tone: 'reference' },
+      { title: 'Precise revisions', body: 'Use source images and references to narrow what should change.', tone: 'continuity' },
+      { title: 'Typography-sensitive', body: 'Helpful for text-aware layouts, while exact copy still needs inspection.', tone: 'quality' },
+      { title: 'Reference direction', body: 'Blend product, style, wardrobe or layout references into one still brief.', tone: 'reference' },
+      { title: 'Fal-reference pricing', body: 'Display prices use MaxVideoAI fal-reference pricing before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Max or base Uni-1?',
+        body: 'Use base Uni-1 for exploration. Use Max for selected hero stills, product detail and revisions that justify the higher-cost route.',
+        cta: { label: 'View Uni-1', href: modelsHref('en', 'luma-uni-1') },
+      },
+      {
+        title: 'Product or typography hero still?',
+        body: 'Name exact label hierarchy, surface materials, lighting and composition; then inspect text and edges before shipping.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Edit with references',
+        body: 'Use the source image for what must remain, then add references only when each one has a clear role.',
+        cta: { label: 'Open Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Hero still', body: 'Define product, scene, layout, copy placement, lighting and output ratio before generating.' },
+      { title: 'Product label or poster', body: 'Write text hierarchy explicitly, then verify lettering, logo placement and fine details.' },
+      { title: 'High-detail edit', body: 'Upload the source image and describe the smallest set of changes needed.' },
+      { title: 'Multi-reference creative direction', body: 'Assign references to product identity, palette, material, style or composition.' },
+      { title: 'Handoff to video', body: 'Use the strongest still as a start image when the campaign later needs motion.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Uni-1 Max pricing at a glance',
+      subtitle: 'Display prices use MaxVideoAI fal-reference pricing; exact price appears before generation.',
+      footnote: 'Max is not positioned as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'One image',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max: Pricing, 2K Images & Editing | MaxVideoAI',
+      description:
+        'Explore Luma Uni-1 Max pricing, premium 2K still generation, source-image edits, typography-sensitive layouts and reference-led image workflows.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA IMAGE PREMIUM',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Stills Uni-1 plus fideles pour revisions image precises, visuels produit et retouches guidees par references.',
+      subtitleHighlights: ['Stills Uni-1 plus fideles', 'revisions image precises', 'retouches guidees par references'],
+      paragraph:
+        'Utilisez Uni-1 Max quand le still demande plus de soin que la route de base : hero images, layouts produit, concepts sensibles a la typographie et retouches detaillees par references.',
+      primaryCta: { label: 'Generer avec Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-max-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Uni-1 Max',
+      description: 'Still 2K premium et retouche reference',
+      renderLabel: 'Voir l’image',
+      badges: ['2K', 'Hero still', 'References'],
+      altContext: 'exemple image premium Luma Uni-1 Max',
+    },
+    features: [
+      { title: 'Route 2K premium', body: 'Utilisez Max pour les stills retenus qui demandent plus de detail et finition.', tone: 'quality' },
+      { title: 'Visuels produit', body: 'Adapte aux packshots, labels, packaging et layouts campagne.', tone: 'reference' },
+      { title: 'Revisions precises', body: 'Utilisez source et references pour limiter clairement ce qui change.', tone: 'continuity' },
+      { title: 'Sensible a la typo', body: 'Utile pour layouts avec texte, avec verification humaine du wording exact.', tone: 'quality' },
+      { title: 'Direction reference', body: 'Combinez references produit, style, tenue ou layout dans un brief still.', tone: 'reference' },
+      { title: 'Prix fal-reference', body: 'Les prix affiches utilisent les references fal MaxVideoAI avant generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Max ou Uni-1 base ?',
+        body: 'Gardez Uni-1 pour explorer. Utilisez Max pour les hero stills, details produit et revisions qui justifient la route plus couteuse.',
+        cta: { label: 'Voir Uni-1', href: modelsHref('fr', 'luma-uni-1') },
+      },
+      {
+        title: 'Hero produit ou typographie ?',
+        body: 'Nommez hierarchie texte, matieres, lumiere et composition; verifiez texte et contours avant livraison.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Retouche avec references',
+        body: 'La source indique ce qui reste. Ajoutez seulement des references avec un role clair.',
+        cta: { label: 'Ouvrir Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Hero still', body: 'Definissez produit, scene, layout, placement du texte, lumiere et ratio avant generation.' },
+      { title: 'Label produit ou poster', body: 'Ecrivez la hierarchie texte, puis verifiez lettrage, logo et details fins.' },
+      { title: 'Retouche detaillee', body: 'Chargez la source et decrivez le plus petit ensemble de changements necessaires.' },
+      { title: 'Direction creative multi-reference', body: 'Attribuez les references a identite produit, palette, matiere, style ou composition.' },
+      { title: 'Passage vers video', body: 'Utilisez le still le plus fort comme image de depart si la campagne passe ensuite au mouvement.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Uni-1 Max en un coup d’oeil',
+      subtitle: 'Les prix affiches utilisent les references fal MaxVideoAI; le prix exact apparait avant generation.',
+      footnote: 'Max n’est pas presente comme moins cher ou plus rapide que Uni-1; choisissez-le quand le still exige plus de fidelite.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Une image',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max : tarifs, images 2K et retouche | MaxVideoAI',
+      description:
+        'Explorez Luma Uni-1 Max : prix, generation still 2K premium, retouches source, layouts sensibles a la typographie et workflows image par references.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA PREMIUM DE IMAGEN',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Stills Uni-1 de mayor fidelidad para revisiones de imagen precisas, visuales de producto y ediciones con referencias.',
+      subtitleHighlights: ['Stills Uni-1 de mayor fidelidad', 'revisiones de imagen precisas', 'ediciones con referencias'],
+      paragraph:
+        'Usa Uni-1 Max cuando el still necesita mas detalle que la ruta base: hero images, layouts de producto, conceptos sensibles a tipografia y ediciones detalladas con referencias.',
+      primaryCta: { label: 'Generar con Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-max-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Uni-1 Max',
+      description: 'Still 2K premium y flujo de edicion con referencias',
+      renderLabel: 'Ver imagen',
+      badges: ['2K', 'Hero still', 'Referencias'],
+      altContext: 'ejemplo de imagen premium con Luma Uni-1 Max',
+    },
+    features: [
+      { title: 'Ruta 2K premium', body: 'Usa Max para stills seleccionados que necesitan mas detalle y acabado.', tone: 'quality' },
+      { title: 'Visuales de producto', body: 'Buen ajuste para catalogo, etiquetas, packaging y layouts de campaña.', tone: 'reference' },
+      { title: 'Revisiones precisas', body: 'Usa imagen fuente y referencias para acotar lo que debe cambiar.', tone: 'continuity' },
+      { title: 'Sensible a tipografia', body: 'Ayuda en layouts con texto, aunque el copy exacto requiere inspeccion.', tone: 'quality' },
+      { title: 'Direccion con referencias', body: 'Combina producto, estilo, vestuario o layout en un brief de still.', tone: 'reference' },
+      { title: 'Precio fal-reference', body: 'Los precios mostrados usan referencias fal de MaxVideoAI antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Max o Uni-1 base?',
+        body: 'Usa Uni-1 base para explorar. Usa Max para hero stills, detalle de producto y revisiones que justifiquen una ruta de mayor costo.',
+        cta: { label: 'Ver Uni-1', href: modelsHref('es', 'luma-uni-1') },
+      },
+      {
+        title: '¿Hero de producto o tipografia?',
+        body: 'Nombra jerarquia de texto, materiales, luz y composicion; revisa texto y bordes antes de entregar.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Editar con referencias',
+        body: 'La imagen fuente define lo que queda. Agrega referencias solo si cada una tiene un rol claro.',
+        cta: { label: 'Abrir Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Hero still', body: 'Define producto, escena, layout, ubicacion de texto, luz y ratio antes de generar.' },
+      { title: 'Etiqueta de producto o poster', body: 'Escribe la jerarquia de texto y verifica letras, logo y detalles finos.' },
+      { title: 'Edicion de alto detalle', body: 'Sube la fuente y describe el conjunto minimo de cambios necesarios.' },
+      { title: 'Direccion creativa multi-referencia', body: 'Asigna referencias a identidad de producto, paleta, material, estilo o composicion.' },
+      { title: 'Paso a video', body: 'Usa el still mas fuerte como imagen inicial si la campaña despues necesita movimiento.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Uni-1 Max de un vistazo',
+      subtitle: 'Los precios mostrados usan referencias fal de MaxVideoAI; el precio exacto aparece antes de generar.',
+      footnote: 'Max no se presenta como mas barato o rapido que Uni-1; elige esta ruta cuando el still necesite mayor fidelidad.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Una imagen',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max: precios, imagenes 2K y edicion | MaxVideoAI',
+      description:
+        'Explora Luma Uni-1 Max: precios, stills premium 2K, ediciones de fuente, layouts sensibles a tipografia y flujos con referencias.',
+    },
+  },
+};
+
 const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
@@ -5415,6 +6036,9 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-o3-standard': KLING_O3_STANDARD_COPY,
   'luma-ray-2': LUMA_RAY_2_COPY,
   'luma-ray-2-flash': LUMA_RAY_2_FLASH_COPY,
+  'luma-ray-3-2': LUMA_RAY_32_COPY,
+  'luma-uni-1': LUMA_UNI_1_COPY,
+  'luma-uni-1-max': LUMA_UNI_1_MAX_COPY,
   'ltx-2': LTX_2_COPY,
   'ltx-2-fast': LTX_2_FAST_COPY,
   'ltx-2-3-pro': LTX_23_PRO_COPY,

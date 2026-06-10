@@ -1,0 +1,211 @@
+{
+  "marketingName": "Luma Uni-1",
+  "versionLabel": "Uni-1",
+  "seo": {
+    "title": "Luma Uni-1 : prix image, références et retouche | MaxVideoAI",
+    "description": "Utilisez Luma Uni-1 dans MaxVideoAI pour génération d’images 2K, retouches source, layouts multi-références, recherche visuelle web optionnelle et prix fal-reference."
+  },
+  "overview": "Luma Uni-1 est un modèle d’image 2K dans MaxVideoAI pour concepts still, retouches source, raisonnement de layout, guidage multi-références et recherche visuelle. C’est une route image uniquement.",
+  "pricingNotes": "Les prix affichés utilisent les références fal MaxVideoAI. Les exemples de retouche et de références incluent les comptes d’images indiqués; le devis exact apparaît dans l’app avant génération.",
+  "hero": {
+    "title": "Luma Uni-1 - génération d’images 2K et retouches",
+    "intro": "Créez des images fixes, retouchez une source et guidez les layouts avec des références avant de sélectionner le meilleur still pour produit, marque, storyboard ou passage vers le mouvement.",
+    "badge": "Text -> Image · Retouche image · Références · 2K",
+    "ctaPrimary": {
+      "label": "Lancer Luma Uni-1",
+      "href": "/app/image?engine=luma-uni-1"
+    },
+    "secondaryLinks": [
+      { "label": "Ouvrir l’espace image", "href": "/app/image?engine=luma-uni-1" },
+      { "label": "Vérifier les tarifs", "href": "/pricing#luma-uni-1-pricing" }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d’usage",
+    "items": [
+      { "title": "Concepts 2K depuis un brief visuel", "icon": "imageToVideo" },
+      { "title": "Retouches source qui préservent le sujet principal", "icon": "layers" },
+      { "title": "Guidage produit, layout et style par références", "icon": "storyboard" },
+      { "title": "Recherche visuelle web quand le contexte compte", "icon": "sparkles" },
+      { "title": "Still propre avant un travail de mouvement", "icon": "product" }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu technique",
+  "technicalOverview": [
+    { "label": "Workflows", "body": "Text-to-image et retouche image" },
+    { "label": "Sortie", "body": "Image fixe 2K" },
+    { "label": "Références", "body": "Les demandes texte peuvent utiliser plusieurs références; les retouches utilisent la première image comme source" },
+    { "label": "Ratios", "body": "Formats larges, carrés, verticaux et étendus en création" },
+    { "label": "Styles", "body": "Contrôles auto et manga lorsque disponibles" },
+    { "label": "Format", "body": "PNG ou JPEG dans le workspace image" },
+    { "label": "Prix", "body": "La copie publique utilise les prix affichés MaxVideoAI basés sur fal-reference" }
+  ],
+  "promptStructure": {
+    "title": "Mini-guide de prompt",
+    "quote": "Asset + sujet + layout + style + rôle des références + ce qui doit rester ou changer.",
+    "description": "Uni-1 fonctionne mieux quand chaque référence a un rôle clair : produit, style, palette, layout ou direction typographique.",
+    "steps": [
+      "Nommez l’asset cible et l’usage.",
+      "Décrivez sujet, composition, lumière et style.",
+      "Pour une retouche, séparez ce qui reste de ce qui change.",
+      "Donnez un rôle à chaque référence.",
+      "Activez la recherche web seulement si le contexte récent aide.",
+      "Vérifiez texte, labels et détails avant réutilisation."
+    ]
+  },
+  "tips": {
+    "title": "Conseils et limites",
+    "items": [
+      "Utilisez Uni-1 pour images fixes uniquement.",
+      "Ajoutez des références avec intention, pas comme moodboard aléatoire.",
+      "Ne supposez pas que la typographie est parfaite; vérifiez les mots et labels.",
+      "Pour les retouches source, explicitez les contraintes de préservation.",
+      "Le devis dans l’app reste le prix client."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Concept produit",
+      "prompt": "Still studio 2K d’une enceinte blanche mate sur socle béton chaud, lumière latérale douce, zone de label propre, composition catalogue premium, 16:9."
+    },
+    {
+      "title": "Retouche source",
+      "prompt": "Préserve la forme produit et la hiérarchie du logo depuis l’image source, remplace le fond par un tabletop studio calme, adoucit les reflets, garde les ombres naturelles."
+    },
+    {
+      "title": "Layout multi-références",
+      "prompt": "Utilise la référence 1 pour la forme produit, la référence 2 pour la palette et la référence 3 pour le rythme du layout. Crée un still de lancement propre avec espace de titre."
+    },
+    {
+      "title": "Recherche visuelle",
+      "prompt": "Crée une image de direction visuelle ancrée pour le lancement d’un casque vélo premium, codes photo retail actuels, fond neutre, composition centrée produit."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Luma Uni-1 est-il un modèle image ?",
+      "a": "Oui. Dans MaxVideoAI, cette page décrit seulement la génération d’images fixes et la retouche image."
+    },
+    {
+      "q": "Uni-1 peut-il utiliser des références ?",
+      "a": "Oui. Les demandes texte peuvent utiliser plusieurs références et les retouches utilisent une source plus des références optionnelles."
+    },
+    {
+      "q": "Comment estimer le prix Uni-1 ?",
+      "a": "Utilisez le devis affiché dans MaxVideoAI. La copie publique utilise les références fal avec marge."
+    },
+    {
+      "q": "Uni-1 ou Uni-1 Max ?",
+      "a": "Gardez Uni-1 pour exploration et préparation de références. Passez à Max quand un still retenu demande plus de fidélité."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Modèle image Luma Uni-1",
+    "heroSupportLine": "Idéal pour images 2K, retouches source et layouts guidés par références.",
+    "heroSpecChips": [
+      { "label": "Text->Image", "icon": "textToVideo" },
+      { "label": "Retouche image", "icon": "imageToVideo" },
+      { "label": "Sortie 2K", "icon": "resolution" },
+      { "label": "Multi-référence" },
+      { "label": "PNG / JPEG" }
+    ],
+    "whyTitle": "Pourquoi Uni-1 sert la préparation image",
+    "heroDesc1": "Uni-1 offre une route Luma centrée sur l’image fixe pour concepts, retouches et préparation de références.",
+    "heroDesc2": "Il est utile quand le brief demande du raisonnement visuel et des rôles de références, pas une promesse de texte parfait.",
+    "heroHighlights": [
+      "Workflow image uniquement||Utilisez Uni-1 pour création de stills et retouches.",
+      "Rôles des références||Indiquez quelle image contrôle produit, layout, style ou palette.",
+      "Option web||Activez la recherche web seulement si le contexte actuel aide.",
+      "Contexte prix||Les prix affichés suivent les références fal MaxVideoAI et l’app confirme le devis final."
+    ],
+    "specTitle": "Specs image Uni-1",
+    "specNote": "Ces specs décrivent la route publique du workspace image MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Workflows image",
+        "items": [
+          "Text-to-image pour stills 2K.",
+          "Retouche avec une image source.",
+          "Références optionnelles pour produit, style, layout ou palette.",
+          "Sortie PNG ou JPEG."
+        ]
+      },
+      {
+        "title": "Comportement prix",
+        "items": [
+          "Les coûts image et références suivent fal-reference.",
+          "La marge MaxVideoAI est reflétée dans les exemples publics.",
+          "Le devis exact dans l’app fait foi.",
+          "La copie publique ne promet pas de prix direct fournisseur plus bas."
+        ]
+      }
+    ],
+    "whatTitle": "Comment fonctionne Uni-1",
+    "whatIntro1": "Choisissez Uni-1 dans le workspace image, puis créez depuis texte ou retouchez une source.",
+    "whatIntro2": "Ajoutez des références seulement si chacune a un rôle clair.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Choisir Luma Uni-1.",
+      "Sélectionner création ou retouche.",
+      "Rédiger le brief image fixe.",
+      "Ajouter des références avec rôle explicite.",
+      "Vérifier le prix affiché.",
+      "Inspecter texte et petits détails."
+    ],
+    "galleryTitle": "Exemples image Luma Uni-1",
+    "galleryIntro": "Planifiez retouches source, références produit et handoffs depuis stills.",
+    "galleryAllCta": "Ouvrir l’espace image",
+    "recreateLabel": "Recréer cette image",
+    "tipsTitle": "Forces pratiques et limites",
+    "strengths": [
+      "Adapté aux stills 2K et à la préparation de références.",
+      "Utile quand le prompt doit raisonner sur un layout.",
+      "Les références réduisent l’ambiguïté si leur rôle est clair."
+    ],
+    "boundaries": [
+      "Images fixes uniquement.",
+      "Texte exact et petits labels à vérifier.",
+      "Le résultat web-grounded demande validation humaine.",
+      "Prix public basé sur fal-reference."
+    ],
+    "safetyTitle": "Sécurité et ressemblance",
+    "safetyRules": [
+      "Pas de contenu sexuel ou impliquant des mineurs.",
+      "Pas de haine, harcèlement ou violence graphique.",
+      "N’imitez pas de personnes réelles sans consentement.",
+      "N’incluez pas de données personnelles privées."
+    ],
+    "promptingTitle": "Écrire un bon prompt Uni-1",
+    "promptingIntro": "Traitez le prompt comme un brief image : asset, sujet, layout, références et contraintes.",
+    "promptingTip": "Astuce : donnez un rôle à chaque référence.",
+    "promptingGlobalPrinciples": [
+      "Un objectif visuel clair par demande.",
+      "Séparez préservation et changement pour les retouches.",
+      "Recherche web seulement si le contexte actuel compte."
+    ],
+    "promptingEngineWhy": [
+      "Les rôles de références aident le modèle à raisonner sur layout et identité.",
+      "La vérification typographique garde les assets prudents.",
+      "Un still propre sert de meilleure source pour la suite."
+    ],
+    "promptingGuideLabel": "Guide prompt Uni-1",
+    "relatedItems": [
+      {
+        "brand": "luma",
+        "title": "Luma Uni-1 Max",
+        "description": "Utilisez Max quand un still retenu demande plus de fidélité, de finition produit ou de révision précise.",
+        "modelSlug": "luma-uni-1-max",
+        "ctaLabel": "Voir Uni-1 Max"
+      },
+      {
+        "brand": "luma",
+        "title": "Luma Ray 3.2",
+        "description": "Utilisez Ray 3.2 quand un still retenu est prêt pour un test de mouvement court.",
+        "modelSlug": "luma-ray-3-2",
+        "ctaLabel": "Voir Ray 3.2"
+      }
+    ],
+    "finalPara1": "Luma Uni-1 est la route image 2K pratique pour création, retouches et préparation de références dans MaxVideoAI.",
+    "finalButton": "Générer avec Luma Uni-1"
+  }
+}
