@@ -6,8 +6,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
   CSSProperties,
-  MouseEvent,
-  PointerEvent as ReactPointerEvent,
 } from 'react';
 import styles from '../_styles/timeline.module.css';
 import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
@@ -19,16 +17,13 @@ import {
 import {
   frameStepSeconds,
   layoutForTimelineItem,
-  marqueeRectForState,
   MIN_CLIP_DURATION_SEC,
   previewPlayheadForInteraction,
-  selectedItemIdsForMarquee,
   selectionKeyForTimelineItem,
   selectionKeysForTimelineItemIds,
   snapTimelineSeconds,
   timelineRulerStepFor,
   trackForTimelineItem,
-  type TimelineMarqueeState,
 } from '../_lib/timeline/timeline-interaction';
 import { buildTimelineTracks } from './timeline/timelineTrackDefinitions';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
@@ -45,6 +40,7 @@ import { useTimelineExternalDrop } from './timeline/useTimelineExternalDrop';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
 import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
+import { useTimelineSurfaceSelection } from './timeline/useTimelineSurfaceSelection';
 import { useTimelineVisibleRange } from './timeline/useTimelineVisibleRange';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
@@ -166,12 +162,10 @@ export function WorkspaceTimeline({
   onUnlinkItems,
   onUndo,
 }: WorkspaceTimelineProps) {
-  const [marquee, setMarquee] = useState<TimelineMarqueeState | null>(null);
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
-  const suppressNextSurfaceClickRef = useRef(false);
   const frameStepSec = frameStepSeconds(projectFps);
   const baseTimelineDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec));
   const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items), [audioTrackCount, items, videoTrackCount]);
@@ -292,6 +286,17 @@ export function WorkspaceTimeline({
     return Math.max(0, Math.min(totalDuration, snapTimelineSeconds(rawSeconds, frameStepSec)));
   }, [frameStepSec, pixelsPerSecond, totalDuration]);
   const {
+    handleBeginTimelineSurfacePointerDown,
+    handleTimelineSurfaceClick,
+    marqueeStyle,
+  } = useTimelineSurfaceSelection({
+    onPlaybackChange,
+    onPlayheadChange,
+    onSelectItems,
+    secondsFromTimelineElement,
+    timelineViewportClassName: styles.timelineViewport,
+  });
+  const {
     externalDropPreview,
     handleClearExternalDropPreview,
     handleExternalDrop,
@@ -311,85 +316,6 @@ export function WorkspaceTimeline({
     onPlayheadChange,
     secondsFromTimelineElement,
   });
-  const handleBeginTimelineSurfacePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-    if (target.closest('[data-timeline-item], [data-timeline-control="true"]')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
-
-    const laneElement = event.currentTarget;
-    onSelectItems([]);
-    const viewportElement = laneElement.closest(`.${styles.timelineViewport}`) as HTMLElement | null;
-    const viewportRect = viewportElement?.getBoundingClientRect() ?? laneElement.getBoundingClientRect();
-    const itemRects = Array.from(document.querySelectorAll<HTMLElement>('[data-timeline-item]')).map((element) => {
-      const rect = element.getBoundingClientRect();
-      return {
-        id: element.dataset.timelineItem ?? '',
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-      };
-    }).filter((itemRect) => itemRect.id);
-    const initialMarquee: TimelineMarqueeState = {
-      originClientX: event.clientX,
-      originClientY: event.clientY,
-      currentClientX: event.clientX,
-      currentClientY: event.clientY,
-      containerLeft: viewportRect.left,
-      containerTop: viewportRect.top,
-      itemRects,
-    };
-    let didDrag = false;
-    setMarquee(initialMarquee);
-
-    const handlePointerMove = (pointerEvent: PointerEvent) => {
-      const distance = Math.hypot(pointerEvent.clientX - initialMarquee.originClientX, pointerEvent.clientY - initialMarquee.originClientY);
-      if (distance > 4) didDrag = true;
-      setMarquee((current) => current ? {
-        ...current,
-        currentClientX: pointerEvent.clientX,
-        currentClientY: pointerEvent.clientY,
-      } : current);
-    };
-    const handlePointerUp = (pointerEvent: PointerEvent) => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      const finalMarquee: TimelineMarqueeState = {
-        ...initialMarquee,
-        currentClientX: pointerEvent.clientX,
-        currentClientY: pointerEvent.clientY,
-      };
-      setMarquee(null);
-      if (didDrag) {
-        suppressNextSurfaceClickRef.current = true;
-        window.setTimeout(() => {
-          suppressNextSurfaceClickRef.current = false;
-        }, 0);
-        const marqueeItemIds = selectedItemIdsForMarquee(finalMarquee);
-        onSelectItems(marqueeItemIds);
-        return;
-      }
-      onPlaybackChange(false);
-      onSelectItems([]);
-      onPlayheadChange(secondsFromTimelineElement(pointerEvent.clientX, laneElement));
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-  }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
-  const handleTimelineSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-    if (target.closest('[data-timeline-item], [data-timeline-control="true"]')) return;
-    if (suppressNextSurfaceClickRef.current) {
-      suppressNextSurfaceClickRef.current = false;
-      return;
-    }
-    onPlaybackChange(false);
-    onSelectItems([]);
-    onPlayheadChange(secondsFromTimelineElement(event.clientX, event.currentTarget));
-  }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
   const seekBy = useCallback((deltaSec: number) => {
     onPlaybackChange(false);
     onPlayheadChange(Math.max(0, Math.min(totalDuration, clampedPlayheadSec + deltaSec)));
@@ -579,7 +505,7 @@ export function WorkspaceTimeline({
           visibleStartSec={visibleTimelineRange.startSec}
           videoTrackCount={videoTrackCount}
         />
-        {marquee ? <span className={styles.timelineMarquee} style={marqueeRectForState(marquee)} aria-hidden="true" /> : null}
+        {marqueeStyle ? <span className={styles.timelineMarquee} style={marqueeStyle} aria-hidden="true" /> : null}
       </div>
       <TimelineContextMenus
         clipMenu={clipMenu}
