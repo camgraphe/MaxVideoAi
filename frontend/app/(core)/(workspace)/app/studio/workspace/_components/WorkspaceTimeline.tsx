@@ -67,6 +67,7 @@ import {
   type TimelineTrackDefinition,
 } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
+import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
@@ -128,11 +129,6 @@ function buildTimelineTracks(videoTrackCount: number, audioTrackCount: number, i
   }));
   const displayedVideoTracks = [...videoTracks].reverse();
   return [...displayedVideoTracks, ...audioTracks];
-}
-
-function isTimelineShortcutTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 }
 
 function markTimelinePerformance(name: 'drag-start' | 'drag-frame' | 'drag-commit' | 'playhead-frame' | 'playhead-commit') {
@@ -305,6 +301,18 @@ export function WorkspaceTimeline({
   const setTimelineZoom = useCallback((nextPixelsPerSecond: number) => {
     setPixelsPerSecond(Math.max(MIN_TIMELINE_PIXELS_PER_SECOND, Math.min(MAX_TIMELINE_PIXELS_PER_SECOND, nextPixelsPerSecond)));
   }, []);
+  const handleSelectTimelineTool = useCallback(() => {
+    setActiveTimelineTool('select');
+  }, []);
+  const handleToggleBladeTimelineTool = useCallback(() => {
+    setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'));
+  }, []);
+  const handleToggleTimelineSnap = useCallback(() => {
+    setSnapEnabled((value) => !value);
+  }, []);
+  const handleZoomBy = useCallback((deltaPixelsPerSecond: number) => {
+    setTimelineZoom(pixelsPerSecond + deltaPixelsPerSecond);
+  }, [pixelsPerSecond, setTimelineZoom]);
   const updateVisibleTimelineRange = useCallback(() => {
     const viewportElement = timelineViewportRef.current;
     if (!viewportElement) {
@@ -802,94 +810,25 @@ export function WorkspaceTimeline({
     }
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.code === 'KeyZ') {
-        if (isTimelineShortcutTarget(event.target)) return;
-        event.preventDefault();
-        if (event.shiftKey) {
-          if (canRedo) onRedo();
-        } else if (canUndo) {
-          onUndo();
-        }
-        return;
-      }
-      if (!isShortcutActive) return;
-      if (isTimelineShortcutTarget(event.target)) return;
-      if ((event.metaKey || event.ctrlKey) && (event.code === 'Equal' || event.code === 'NumpadAdd')) {
-        event.preventDefault();
-        setTimelineZoom(pixelsPerSecond + 8);
-        return;
-      }
-      if ((event.metaKey || event.ctrlKey) && (event.code === 'Minus' || event.code === 'NumpadSubtract')) {
-        event.preventDefault();
-        setTimelineZoom(pixelsPerSecond - 8);
-        return;
-      }
-      if (event.code === 'Space' || event.key === ' ' || event.key === 'Space' || event.key === 'Spacebar') {
-        event.preventDefault();
-        onTogglePlayback();
-        return;
-      }
-      if (event.code === 'ArrowLeft') {
-        event.preventDefault();
-        seekBy(event.shiftKey ? -1 : -frameStepSec);
-        return;
-      }
-      if (event.code === 'ArrowRight') {
-        event.preventDefault();
-        seekBy(event.shiftKey ? 1 : frameStepSec);
-        return;
-      }
-      if (event.code === 'ArrowUp') {
-        event.preventDefault();
-        onGoToCut(-1);
-        return;
-      }
-      if (event.code === 'ArrowDown') {
-        event.preventDefault();
-        onGoToCut(1);
-        return;
-      }
-      if (event.code === 'KeyC') {
-        event.preventDefault();
-        setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'));
-        return;
-      }
-      if (event.code === 'KeyV') {
-        event.preventDefault();
-        setActiveTimelineTool('select');
-        return;
-      }
-      if (event.code === 'KeyM') {
-        event.preventDefault();
-        setSnapEnabled((value) => !value);
-        return;
-      }
-      if (event.code === 'KeyI') {
-        event.preventDefault();
-        onMarkIn();
-        return;
-      }
-      if (event.code === 'KeyO') {
-        event.preventDefault();
-        onMarkOut();
-        return;
-      }
-      if (event.code === 'Delete' || event.code === 'Backspace') {
-        event.preventDefault();
-        onDeleteItem(event.shiftKey);
-        return;
-      }
-      if (event.code === 'KeyS' || ((event.metaKey || event.ctrlKey) && event.code === 'KeyB')) {
-        event.preventDefault();
-        handleCutSelectedAtPlayhead();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canRedo, canUndo, frameStepSec, handleCutSelectedAtPlayhead, isShortcutActive, onDeleteItem, onGoToCut, onMarkIn, onMarkOut, onRedo, onTogglePlayback, onUndo, pixelsPerSecond, seekBy, setTimelineZoom]);
+  useTimelineKeyboardShortcuts({
+    canRedo,
+    canUndo,
+    frameStepSec,
+    isShortcutActive,
+    onCutAtPlayhead: handleCutSelectedAtPlayhead,
+    onDeleteItem,
+    onGoToCut,
+    onMarkIn,
+    onMarkOut,
+    onRedo,
+    onSeekBy: seekBy,
+    onSelectTool: handleSelectTimelineTool,
+    onToggleBladeTool: handleToggleBladeTimelineTool,
+    onTogglePlayback,
+    onToggleSnap: handleToggleTimelineSnap,
+    onUndo,
+    onZoomBy: handleZoomBy,
+  });
   const resolvedPreviewTimelineItems = useMemo(() => {
     if (!interaction || interaction.kind !== 'move') return null;
     return moveWorkspaceTimelineSelectionWithMode({
@@ -981,8 +920,8 @@ export function WorkspaceTimeline({
         maxPixelsPerSecond={MAX_TIMELINE_PIXELS_PER_SECOND}
         minPixelsPerSecond={MIN_TIMELINE_PIXELS_PER_SECOND}
         onRedo={onRedo}
-        onSelectTool={() => setActiveTimelineTool('select')}
-        onToggleBladeTool={() => setActiveTimelineTool((currentTool) => (currentTool === 'blade' ? 'select' : 'blade'))}
+        onSelectTool={handleSelectTimelineTool}
+        onToggleBladeTool={handleToggleBladeTimelineTool}
         onUndo={onUndo}
         onZoomChange={setTimelineZoom}
         pixelsPerSecond={pixelsPerSecond}
@@ -1003,7 +942,7 @@ export function WorkspaceTimeline({
           onScrub={handleScrub}
           onSurfaceClick={handleTimelineSurfaceClick}
           onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
-          onToggleSnap={() => setSnapEnabled((value) => !value)}
+          onToggleSnap={handleToggleTimelineSnap}
           pixelsPerSecond={pixelsPerSecond}
           projectFps={projectFps}
           rulerTickSec={rulerTickSec}

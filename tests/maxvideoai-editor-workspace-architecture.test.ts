@@ -69,6 +69,7 @@ const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler
 const timelineTrackListPath = join(workspaceDir, '_components/timeline/TimelineTrackList.tsx');
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
+const timelineKeyboardShortcutsPath = join(workspaceDir, '_components/timeline/useTimelineKeyboardShortcuts.ts');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const programMonitorPath = join(workspaceDir, '_components/viewer/ProgramMonitor.tsx');
 const programPlaybackLayersPath = join(workspaceDir, '_components/viewer/ProgramPlaybackLayers.tsx');
@@ -188,6 +189,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineTrackListPath), 'timeline track list should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
+  assert.ok(existsSync(timelineKeyboardShortcutsPath), 'timeline keyboard shortcuts should live in a focused route-local hook');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(programMonitorPath), 'program monitor frame and zoom should live in a route-local viewer component');
   assert.ok(existsSync(programPlaybackLayersPath), 'program media layers should live in a route-local viewer component');
@@ -490,6 +492,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackListSource = source(timelineTrackListPath);
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
+  const timelineKeyboardShortcutsSource = source(timelineKeyboardShortcutsPath);
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
@@ -1012,31 +1015,32 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(timelineToolbarSource, /aria-label="Ripple trim tool"/, 'timeline toolbar should not expose ripple trim for now');
   assert.doesNotMatch(timelineToolbarSource, /aria-label="Roll trim tool"/, 'timeline toolbar should not expose roll trim for now');
   assert.match(timelineToolbarSource, /data-tooltip/, 'timeline editing tools should expose shortcut tooltips');
-  assert.match(timelineSource, /window\.addEventListener\('keydown'/, 'timeline should register basic keyboard shortcuts');
+  assert.match(timelineSource, /useTimelineKeyboardShortcuts/, 'timeline should delegate shortcut registration to the focused hook');
+  assert.doesNotMatch(timelineSource, /isTimelineShortcutTarget|event\.code === 'Space'|event\.code === 'KeyC'/, 'timeline component should not own keyboard shortcut routing inline');
   assert.match(timelineSource, /_styles\/timeline\.module\.css/, 'workspace timeline shell should import focused timeline CSS');
   assert.match(timelineToolbarSource, /_styles\/timeline\.module\.css/, 'timeline toolbar should import focused timeline CSS');
   assert.match(timelineRulerSource, /_styles\/timeline\.module\.css/, 'timeline ruler should import focused timeline CSS');
   assert.match(timelineTrackRowSource, /_styles\/timeline\.module\.css/, 'timeline track rows should import focused timeline CSS');
   assert.match(timelineClipSource, /_styles\/timeline\.module\.css/, 'timeline clips should import focused timeline CSS');
-  assert.match(timelineSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
-  assert.match(timelineSource, /event\.key === ' '/, 'Space shortcut should tolerate browser key/code differences');
-  assert.match(timelineSource, /event\.code === 'KeyC'/, 'C should activate the cut tool');
-  assert.match(timelineSource, /event\.code === 'KeyV'/, 'V should return to the select and drag tool');
-  assert.match(timelineSource, /event\.code === 'KeyM'/, 'M should toggle timeline snapping');
-  assert.doesNotMatch(timelineSource, /event\.code === 'KeyT'/, 'T should not activate a hidden trim tool');
-  assert.doesNotMatch(timelineSource, /event\.code === 'KeyR'/, 'R should not activate hidden ripple trim');
-  assert.doesNotMatch(timelineSource, /event\.code === 'KeyY'/, 'Y should not activate hidden roll trim');
-  assert.match(timelineSource, /event\.code === 'Delete'/, 'Delete should remove the selected timeline clip');
-  assert.match(timelineSource, /Cmd\/Ctrl \+ Z|KeyZ/, 'timeline should expose undo and redo shortcuts');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'Space'/, 'Space should toggle montage playback');
+  assert.match(timelineKeyboardShortcutsSource, /event\.key === ' '/, 'Space shortcut should tolerate browser key/code differences');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'KeyC'/, 'C should activate the cut tool');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'KeyV'/, 'V should return to the select and drag tool');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'KeyM'/, 'M should toggle timeline snapping');
+  assert.doesNotMatch(timelineKeyboardShortcutsSource, /event\.code === 'KeyT'/, 'T should not activate a hidden trim tool');
+  assert.doesNotMatch(timelineKeyboardShortcutsSource, /event\.code === 'KeyR'/, 'R should not activate hidden ripple trim');
+  assert.doesNotMatch(timelineKeyboardShortcutsSource, /event\.code === 'KeyY'/, 'Y should not activate hidden roll trim');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'Delete'/, 'Delete should remove the selected timeline clip');
+  assert.match(timelineKeyboardShortcutsSource, /Cmd\/Ctrl \+ Z|KeyZ/, 'timeline should expose undo and redo shortcuts');
   assert.match(
-    timelineSource,
+    timelineKeyboardShortcutsSource,
     /event\.code === 'KeyZ'[\s\S]*if \(!isShortcutActive\) return/,
     'timeline undo and redo shortcuts should run before the surface-scoped shortcut gate'
   );
   assert.doesNotMatch(timelineSource, /Timeline insert mode/, 'timeline toolbar should not expose insert, overwrite, or replace mode switches');
   assert.doesNotMatch(timelineSource, /Timeline trim mode/, 'timeline should not expose trim, ripple, and roll as a text mode switch');
   assert.doesNotMatch(timelineSource, /Toggle crossfade transition/, 'timeline toolbar should not expose ad hoc crossfade controls before the effects menu exists');
-  assert.match(timelineSource, /event\.code === 'KeyS'|KeyB/, 'timeline should expose a keyboard split shortcut at the playhead');
+  assert.match(timelineKeyboardShortcutsSource, /event\.code === 'KeyS'|KeyB/, 'timeline should expose a keyboard split shortcut at the playhead');
   assert.match(timelineClipSource, /timelineClipCutMode/, 'timeline clip should render a dedicated cut-mode pointer state');
   assert.match(timelineSource, /getBoundingClientRect/, 'cut tool should convert the mouse position on the clip into a split time');
   assert.match(timelineSource, /playheadSec/, 'timeline should render and control a playhead');
