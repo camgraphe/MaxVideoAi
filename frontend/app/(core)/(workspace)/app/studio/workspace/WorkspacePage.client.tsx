@@ -21,6 +21,7 @@ import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTe
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
 import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
+import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
@@ -39,7 +40,6 @@ import {
 import {
   connectedInputCounts,
   connectedInputKinds,
-  defaultSelectedNodeId,
 } from './_lib/workspace-graph-helpers';
 import type {
   WorkspaceAssetRecord,
@@ -86,14 +86,11 @@ import {
   MIN_TIMELINE_AUDIO_TRACKS,
   MIN_TIMELINE_PANEL_HEIGHT,
   audioTrackCountForTimelineItems,
-  coerceAudioTrackCount,
   coerceTimelinePanelHeight,
-  coerceVideoTrackCount,
   createWorkspaceSequenceRecord,
   upsertWorkspaceSequence,
   videoTrackCountForTimelineItems,
   type PersistedWorkspaceState,
-  type StudioProjectStorageRecord,
   type WorkspaceEditorSurface,
   type WorkspaceFocusMode,
   type WorkspaceSequenceRecord,
@@ -109,19 +106,9 @@ import {
 } from './_state/workspace-selectors';
 import { buildWorkspaceActiveSequenceSnapshot } from './_state/workspace-sequence-snapshot';
 import {
-  readPersistedWorkspaceState,
-  readStudioProject,
-  readUserCanvasTemplates,
   workspaceStorageKeyForProject,
-  writeUserCanvasTemplates,
 } from './_state/workspace-persistence';
-import {
-  normalizePersistedWorkspaceState,
-  normalizeUserCanvasTemplate,
-  readStudioProjectFromApi,
-  readUserCanvasTemplatesFromApi,
-  saveStudioProjectToApi,
-} from './_state/workspace-api-persistence';
+import { saveStudioProjectToApi } from './_state/workspace-api-persistence';
 import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
@@ -417,164 +404,44 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const applyPersistedWorkspace = (persisted: PersistedWorkspaceState) => {
-      if (cancelled) return;
-      const persistedActiveSequenceId = persisted.activeSequenceId ?? DEFAULT_WORKSPACE_SEQUENCE_ID;
-      const persistedSequences = persisted.sequences?.length
-        ? persisted.sequences
-        : [createWorkspaceSequenceRecord({
-            id: persistedActiveSequenceId,
-            name: sequenceNameForIndex(1),
-            timelineItems: persisted.timelineItems,
-            projectSettings: persisted.projectSettings,
-            audioTrackCount: persisted.audioTrackCount,
-            hiddenVideoTracks: persisted.hiddenVideoTracks,
-            lockedTimelineTracks: persisted.lockedTimelineTracks,
-            mutedAudioTracks: persisted.mutedAudioTracks,
-            videoTrackCount: persisted.videoTrackCount,
-            timelinePanelHeight: persisted.timelinePanelHeight,
-            timelineInPointSec: persisted.timelineInPointSec,
-            timelineOutPointSec: persisted.timelineOutPointSec,
-          })];
-      setNodes(persisted.nodes);
-      setEdges(persisted.edges);
-      setProjectAssets(persisted.projectAssets ?? []);
-      setSequences(persistedSequences);
-      setActiveSequenceId(persistedActiveSequenceId);
-      setTimelineItems(persisted.timelineItems);
-      timelineItemsRef.current = persisted.timelineItems;
-      applyTimelineSelection(defaultTimelineSelectionIds(persisted.timelineItems));
-      setPlayheadSec(0);
-      setIsTimelinePlaying(false);
-      resetTimelineHistory();
-      setActiveTemplateId(persisted.activeTemplateId);
-      setProjectSettings(persisted.projectSettings);
-      setFocusMode(persisted.focusMode ?? 'canvas');
-      setActiveEditorSurface((persisted.focusMode ?? 'canvas') === 'viewer' ? 'timeline' : 'canvas');
-      setAudioTrackCount(coerceAudioTrackCount(persisted.audioTrackCount, persisted.timelineItems));
-      setHiddenVideoTracks(persisted.hiddenVideoTracks ?? []);
-      setLockedTimelineTracks(persisted.lockedTimelineTracks ?? []);
-      setMutedAudioTracks(persisted.mutedAudioTracks ?? []);
-      setVideoTrackCount(coerceVideoTrackCount(persisted.videoTrackCount, persisted.timelineItems));
-      setTimelinePanelHeight(persisted.timelinePanelHeight ?? null);
-      setTimelineInPointSec(persisted.timelineInPointSec ?? null);
-      setTimelineOutPointSec(persisted.timelineOutPointSec ?? null);
-      setCanvasRevision((value) => value + 1);
-    };
-
-    const applyStoredProjectWorkspace = (project: StudioProjectStorageRecord) => {
-      if (cancelled) return;
-      const template = createStarterWorkspaceTemplate(project.canvasTemplateId ?? 'product-ad');
-      const emptyTimelineItems: WorkspaceTimelineItem[] = [];
-      const cleanSequence = createWorkspaceSequenceRecord({
-        id: DEFAULT_WORKSPACE_SEQUENCE_ID,
-        name: sequenceNameForIndex(1),
-        timelineItems: emptyTimelineItems,
-        projectSettings: coerceWorkspaceProjectSettings(project.settings),
-      });
-      setNodes(template.nodes);
-      setEdges(template.edges);
-      setProjectAssets([]);
-      setSequences([cleanSequence]);
-      setActiveSequenceId(cleanSequence.id);
-      setTimelineItems(emptyTimelineItems);
-      timelineItemsRef.current = emptyTimelineItems;
-      applyTimelineSelection([]);
-      setPlayheadSec(0);
-      setIsTimelinePlaying(false);
-      resetTimelineHistory();
-      setActiveTemplateId(template.id);
-      setActiveUserCanvasTemplateId(null);
-      setProjectSettings(coerceWorkspaceProjectSettings(project.settings));
-      setFocusMode('canvas');
-      setActiveEditorSurface('canvas');
-      setAudioTrackCount(audioTrackCountForTimelineItems(emptyTimelineItems));
-      setHiddenVideoTracks([]);
-      setLockedTimelineTracks([]);
-      setMutedAudioTracks([]);
-      setVideoTrackCount(videoTrackCountForTimelineItems(emptyTimelineItems));
-      setTimelinePanelHeight(null);
-      setTimelineInPointSec(null);
-      setTimelineOutPointSec(null);
-      setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
-      setCanvasRevision((value) => value + 1);
-      setNotice(`${project.name} project loaded with a clean sequence.`);
-    };
-
-    const localUserTemplates = readUserCanvasTemplates(normalizeUserCanvasTemplate);
-    setUserCanvasTemplates(localUserTemplates);
-    const templatesController = new AbortController();
-    void readUserCanvasTemplatesFromApi(templatesController.signal).then((serverTemplates) => {
-      if (cancelled || !serverTemplates) return;
-      setUserCanvasTemplates(serverTemplates);
-      writeUserCanvasTemplates(serverTemplates);
-    });
-
-    const storedProject = readStudioProject(projectId);
-    setStoredProjectName(storedProject?.name ?? null);
-    const persisted = readPersistedWorkspaceState(workspaceStorageKey, normalizePersistedWorkspaceState);
-    if (persisted) {
-      applyPersistedWorkspace(persisted);
-    } else if (storedProject) {
-      applyStoredProjectWorkspace(storedProject);
-    }
-    setHydrated(true);
-
-    const projectController = new AbortController();
-    if (projectId) {
-      void readStudioProjectFromApi(projectId, projectController.signal).then((serverProject) => {
-        if (cancelled || !serverProject) return;
-        setStoredProjectName(serverProject.name);
-        const serverPersisted = normalizePersistedWorkspaceState(serverProject.workspaceState);
-        if (serverPersisted) {
-          applyPersistedWorkspace(serverPersisted);
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem(workspaceStorageKey, JSON.stringify(serverPersisted));
-          }
-          return;
-        }
-        if (!persisted && !storedProject) {
-          applyStoredProjectWorkspace(serverProject);
-        }
-      });
-    }
-
-    return () => {
-      cancelled = true;
-      templatesController.abort();
-      projectController.abort();
-    };
-  }, [applyTimelineSelection, projectId, resetTimelineHistory, setIsTimelinePlaying, setPlayheadSec, setTimelineInPointSec, setTimelineOutPointSec, workspaceStorageKey]);
-
-  useEffect(() => {
-    if (!hydrated || typeof window === 'undefined') return;
-    const state = buildPersistedWorkspaceState();
-    window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-  }, [buildPersistedWorkspaceState, hydrated, workspaceStorageKey]);
-
-  useEffect(() => {
-    if (!hydrated || !projectId || typeof window === 'undefined') return undefined;
-    const state = buildPersistedWorkspaceState();
-    const controller = new AbortController();
-    const saveTimer = window.setTimeout(() => {
-      void saveStudioProjectToApi({
-        projectId,
-        name: activeTemplateName,
-        canvasTemplateId: activeTemplateId,
-        settings: state.projectSettings,
-        workspaceState: state,
-        signal: controller.signal,
-      });
-    }, 900);
-
-    return () => {
-      window.clearTimeout(saveTimer);
-      controller.abort();
-    };
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, hydrated, projectId]);
+  useWorkspacePersistenceEffects({
+    activeTemplateId,
+    activeTemplateName,
+    applyTimelineSelection,
+    buildPersistedWorkspaceState,
+    hydrated,
+    projectId,
+    resetTimelineHistory,
+    setActiveEditorSurface,
+    setActiveSequenceId,
+    setActiveTemplateId,
+    setActiveUserCanvasTemplateId,
+    setAudioTrackCount,
+    setCanvasRevision,
+    setEdges,
+    setFocusMode,
+    setHiddenVideoTracks,
+    setHydrated,
+    setIsTimelinePlaying,
+    setLockedTimelineTracks,
+    setMutedAudioTracks,
+    setNodes,
+    setNotice,
+    setPlayheadSec,
+    setProjectAssets,
+    setProjectSettings,
+    setSelectedNodeId,
+    setSequences,
+    setStoredProjectName,
+    setTimelineInPointSec,
+    setTimelineItems,
+    setTimelineOutPointSec,
+    setTimelinePanelHeight,
+    setUserCanvasTemplates,
+    setVideoTrackCount,
+    timelineItemsRef,
+    workspaceStorageKey,
+  });
 
   useEffect(() => {
     if (!timelineItems.length) {

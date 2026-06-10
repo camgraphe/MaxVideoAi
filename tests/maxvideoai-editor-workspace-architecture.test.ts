@@ -57,6 +57,7 @@ const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCan
 const generationActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGenerationActions.ts');
 const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts');
 const selectionActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSelectionActions.ts');
+const persistenceEffectsHookPath = join(workspaceDir, '_hooks/useWorkspacePersistenceEffects.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
@@ -188,6 +189,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(generationActionsHookPath), 'shot generation actions should live in a focused route-local hook');
   assert.ok(existsSync(graphActionsHookPath), 'canvas graph mutation actions should live in a focused route-local hook');
   assert.ok(existsSync(selectionActionsHookPath), 'workspace selection actions should live in a focused route-local hook');
+  assert.ok(existsSync(persistenceEffectsHookPath), 'workspace hydration and autosave effects should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
@@ -238,6 +240,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
+  const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const sequenceActionsHookSource = source(sequenceActionsHookPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
@@ -312,10 +315,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, /from '@\/lib\/authFetch'/, 'workspace orchestrator should not own Studio API fetch plumbing');
   assert.match(workspaceApiPersistenceSource, /authFetch/, 'Studio API persistence should own authenticated API fetches');
   assert.match(workspaceApiPersistenceSource, /normalizePersistedWorkspaceState/, 'Studio API persistence should own persisted workspace state normalization');
-  assert.match(workspaceSource, /readStudioProject\(projectId\)/, 'workspace should hydrate new project settings from the local project fallback');
-  assert.match(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace should hydrate project state from the Studio API when available');
-  assert.match(workspaceSource, /saveStudioProjectToApi/, 'workspace should autosave project state to the Studio API when available');
-  assert.match(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace should hydrate user canvas templates from the Studio API when available');
+  assert.match(workspaceSource, /useWorkspacePersistenceEffects/, 'workspace should delegate hydration and autosave side effects to a route-local hook');
+  assert.match(persistenceEffectsHookSource, /readStudioProject\(projectId\)/, 'workspace persistence hook should hydrate new project settings from the local project fallback');
+  assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi\(projectId/, 'workspace persistence hook should hydrate project state from the Studio API when available');
+  assert.match(persistenceEffectsHookSource, /saveStudioProjectToApi/, 'workspace persistence hook should autosave project state to the Studio API when available');
+  assert.match(persistenceEffectsHookSource, /readUserCanvasTemplatesFromApi/, 'workspace persistence hook should hydrate user canvas templates from the Studio API when available');
+  assert.doesNotMatch(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace orchestrator should not own project API hydration');
+  assert.doesNotMatch(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace orchestrator should not own user canvas template hydration');
   assert.match(workspaceSource, /useWorkspaceCanvasTemplateActions/, 'workspace should delegate user canvas template actions to a route-local hook');
   assert.match(canvasTemplateActionsHookSource, /saveUserCanvasTemplateToApi/, 'canvas template action hook should save user canvas templates to the Studio API when available');
   assert.match(canvasTemplateActionsHookSource, /deleteUserCanvasTemplateFromApi/, 'canvas template action hook should delete user canvas templates through the Studio API when available');
@@ -349,7 +355,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, /const handleImportProjectMedia = useCallback/, 'workspace orchestrator should not own Project media import internals');
   assert.doesNotMatch(workspaceSource, /const handleDeleteProjectAsset = useCallback/, 'workspace orchestrator should not own Project media deletion internals');
   assert.doesNotMatch(workspaceSource, /const handleDropProjectAssetToTimeline = useCallback/, 'workspace orchestrator should not own Project media timeline drop internals');
-  assert.match(workspaceSource, /emptyTimelineItems: WorkspaceTimelineItem\[\] = \[\]/, 'new project canvas templates should start with a clean sequence instead of template demo timeline clips');
+  assert.match(persistenceEffectsHookSource, /emptyTimelineItems: WorkspaceTimelineItem\[\] = \[\]/, 'new project canvas templates should start with a clean sequence instead of template demo timeline clips');
   const applyCanvasTemplateHandler = canvasTemplateActionsHookSource.match(/const handleApplyCanvasTemplate = useCallback\([\s\S]*?\n  \);\n/);
   assert.ok(applyCanvasTemplateHandler, 'canvas template action hook should define a canvas-only template application handler');
   assert.match(applyCanvasTemplateHandler[0], /setNodes\(template\.nodes\)[\s\S]*setEdges\(template\.edges\)/, 'applying a canvas template should update the graph');
@@ -454,6 +460,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(generationActionsHookPath), 'workspace shot generation actions should live in a route-local hook');
   assert.ok(existsSync(graphActionsHookPath), 'workspace graph actions should live in a route-local hook');
   assert.ok(existsSync(selectionActionsHookPath), 'workspace timeline and canvas selection actions should live in a route-local hook');
+  assert.ok(existsSync(persistenceEffectsHookPath), 'workspace persistence effects should live in a route-local hook');
   assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
@@ -487,6 +494,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const generationActionsHookSource = source(generationActionsHookPath);
   const graphActionsHookSource = source(graphActionsHookPath);
   const selectionActionsHookSource = source(selectionActionsHookPath);
+  const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
   const librarySource = source(libraryPath);
@@ -698,6 +706,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspacePersistenceSource, /function readPersistedWorkspaceState/, 'workspace persistence module should own persisted workspace local reads');
   assert.match(workspacePersistenceSource, /function readUserCanvasTemplates/, 'workspace persistence module should own local canvas template reads');
   assert.match(workspacePersistenceSource, /function writeUserCanvasTemplates/, 'workspace persistence module should own local canvas template writes');
+  assert.match(persistenceEffectsHookSource, /readPersistedWorkspaceState/, 'workspace persistence hook should own local workspace hydration side effects');
+  assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi/, 'workspace persistence hook should own server workspace hydration side effects');
+  assert.match(persistenceEffectsHookSource, /saveStudioProjectToApi/, 'workspace persistence hook should own server autosave side effects');
   assert.match(workspaceNormalizersSource, /function normalizeOutputOnlySourceNodes/, 'workspace normalizers should own stale source-node handle cleanup');
   assert.match(workspaceNormalizersSource, /function normalizePlaceholderOutputNodes/, 'workspace normalizers should own stale output placeholder cleanup');
   assert.match(workspaceNormalizersSource, /function normalizeTimelineMediaUrls/, 'workspace normalizers should own timeline media URL hydration');
@@ -870,7 +881,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(settingsSource, /AssetInspector[\s\S]*timelineInsertActions[\s\S]*Insert at playhead/, 'asset inspector should expose timeline insert actions for imported media blocks');
   assert.match(programPlaybackSyncSource, /playableImageUrlForItem/, 'montage viewer should preview imported image assets as still clips');
   assert.match(workspaceStateSource, /focusMode\?: WorkspaceFocusMode/, 'persisted workspace state should remember whether the user was in canvas or viewer mode');
-  assert.match(workspaceSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
+  assert.match(persistenceEffectsHookSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
   assert.match(workspaceSource, /selectedTimelineItemId/, 'orchestrator should track which timeline clip controls the montage viewer');
   assert.match(workspaceSource, /playheadSec/, 'orchestrator should track the montage playhead');
   assert.match(workspaceSource, /useWorkspaceTimelineClipActions/, 'workspace should delegate timeline clip mutations to a route-local hook');
