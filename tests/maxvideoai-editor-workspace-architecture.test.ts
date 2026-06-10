@@ -65,6 +65,7 @@ const shellActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceShellActions
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
 const exportControllerPath = join(workspaceDir, '_controllers/useExportController.ts');
+const exportStateHookPath = join(workspaceDir, '_hooks/useWorkspaceExportState.ts');
 const assetLibraryModalPath = join(workspaceDir, '_components/WorkspaceAssetLibraryModal.tsx');
 const projectMediaLibraryModalPath = join(workspaceDir, '_components/WorkspaceProjectMediaLibraryModal.tsx');
 const assetLibraryBrowserPath = join(workspaceDir, '_components/WorkspaceAssetLibraryBrowser.tsx');
@@ -214,6 +215,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
+  assert.ok(existsSync(exportStateHookPath), 'viewer and export derived state should live in a focused route-local hook');
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
   assert.ok(existsSync(assetLibraryBrowserPath), 'asset picker browser should mirror the app library structure in route-local editor CSS');
   assert.ok(existsSync(exportDialogPath), 'export dialog should live in a route-local editor component');
@@ -278,6 +280,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const exportControllerSource = source(exportControllerPath);
+  const exportStateHookSource = source(exportStateHookPath);
   const exportDialogSource = source(exportDialogPath);
   const studioHeaderSessionSource = source(studioHeaderSessionPath);
   const workspaceEditorTopbarSource = source(workspaceEditorTopbarPath);
@@ -347,6 +350,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, /aria-label="Generate selected shot"/, 'Studio header should not expose an inactive global generation control');
   assert.match(workspaceSource, /handleExitToProjects/, 'workspace should own the save-and-return-to-projects action');
   assert.match(workspaceSource, /useWorkspaceShellActions/, 'workspace should delegate shell-level actions to a route-local hook');
+  assert.match(exportStateHookSource, /export function useWorkspaceExportState/, 'workspace export state hook should expose a focused orchestration boundary');
   assert.match(shellActionsHookSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
   assert.match(shellActionsHookSource, /saveStudioProjectToApi/, 'workspace shell action hook should save before returning to projects');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
@@ -512,6 +516,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelinePlaybackHookPath), 'timeline playback clock and in-out controls should live in a route-local hook');
+  assert.ok(existsSync(exportStateHookPath), 'workspace export state derivation should live in a route-local hook');
   assert.ok(existsSync(renderEdgesPath), 'renderable edge filtering should live in a pure route-local helper');
   assert.ok(existsSync(templatesPath), 'starter templates should live in _lib/workspace-templates.ts');
   assert.ok(existsSync(templateCorePath), 'template core edge and shot helpers should live in the templates domain');
@@ -596,6 +601,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineHistoryHookSource = source(timelineHistoryHookPath);
   const timelineTrackActionsHookSource = source(timelineTrackActionsHookPath);
   const timelinePlaybackHookSource = source(timelinePlaybackHookPath);
+  const exportStateHookSource = source(exportStateHookPath);
   const renderEdgesSource = source(renderEdgesPath);
   const templateSource = source(templatesPath);
   const templateCoreSource = source(templateCorePath);
@@ -1205,6 +1211,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /coerceWorkspaceProjectSettings/, 'workspace orchestrator should not sanitize sequence settings inline');
   assert.match(shellActionsHookSource, /coerceTimelinePanelHeight/, 'workspace shell action hook should sanitize timeline panel height updates');
   assert.match(workspaceSource, /useExportController/, 'workspace should delegate export job state and server calls to the export controller');
+  assert.match(workspaceSource, /useWorkspaceExportState/, 'workspace should delegate viewer and export derived state to a route-local hook');
   assert.doesNotMatch(workspaceSource, /RENDER_MANIFEST_STORAGE_KEY/, 'workspace should not persist render handoff storage inline');
   assert.doesNotMatch(workspaceSource, /VIDEO_EXPORT_REQUEST_STORAGE_KEY/, 'workspace should not persist video export request storage inline');
   assert.doesNotMatch(workspaceSource, /\/api\/studio\/timeline-exports/, 'workspace should not call server export endpoints inline');
@@ -1214,7 +1221,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportControllerSource, /\/api\/studio\/timeline-exports\/\$\{activeExportJob\.id\}/, 'export controller should poll server render export jobs');
   assert.match(exportControllerSource, /\/api\/studio\/timeline-exports/, 'export controller should create server render export jobs');
   assert.doesNotMatch(workspaceSource, /Render backend pending/, 'export action should no longer present a fake pending backend');
-  assert.match(workspaceSource, /buildWorkspaceTimelineRenderManifest/, 'workspace export action should build a timeline render manifest');
+  assert.doesNotMatch(workspaceSource, /buildWorkspaceTimelineRenderManifest\(/, 'workspace orchestrator should not build timeline render manifests inline');
+  assert.match(exportStateHookSource, /buildWorkspaceTimelineRenderManifest/, 'workspace export state hook should build a timeline render manifest');
+  assert.match(exportStateHookSource, /filterHiddenVideoTrackItems/, 'workspace export state hook should filter hidden video tracks for viewer and export state');
+  assert.match(exportStateHookSource, /muteAudioTrackItems/, 'workspace export state hook should apply muted audio tracks for viewer and export state');
   assert.match(exportControllerSource, /serializeWorkspaceTimelineRenderManifest/, 'export controller should serialize the render manifest contract');
   assert.match(exportControllerSource, /buildWorkspaceTimelineVideoExportRequest/, 'export controller should build the MP4 video export request contract');
   assert.match(exportControllerSource, /serializeWorkspaceTimelineVideoExportRequest/, 'export controller should serialize the video export request contract');

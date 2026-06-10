@@ -17,6 +17,7 @@ import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTe
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
 import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
+import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
 import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
@@ -50,15 +51,12 @@ import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
 } from './_lib/workspace-project-settings';
 import {
-  buildWorkspaceTimelineRenderManifest,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
 } from './_lib/workspace-timeline-render';
 import {
   defaultTimelineSelection,
   defaultTimelineSelectionIds,
-  filterHiddenVideoTrackItems,
-  muteAudioTrackItems,
   workspaceTimelineCutPoints,
 } from './_lib/workspace-timeline-selection';
 import {
@@ -78,8 +76,6 @@ import {
   type WorkspaceUserCanvasTemplate,
 } from './_state/workspace-state';
 import {
-  selectedWorkspaceSequenceInspectorSummary,
-  selectedWorkspaceTimelineItem,
   sequenceNameForIndex,
   workspaceTimelineDurationSec,
 } from './_state/workspace-selectors';
@@ -221,48 +217,30 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelinePanelHeight,
     videoTrackCount,
   });
-  const viewerTimelineItems = useMemo(
-    () => muteAudioTrackItems(filterHiddenVideoTrackItems(previewTimelineItems, hiddenVideoTracks), mutedAudioTracks),
-    [hiddenVideoTracks, mutedAudioTracks, previewTimelineItems]
-  );
+  const {
+    exportManifest,
+    hasValidTimelineInOut,
+    selectedSequenceForInspector,
+    selectedTimelineItem,
+    viewerTimelineItems,
+  } = useWorkspaceExportState({
+    activeTemplateName,
+    exportRangeMode,
+    hiddenVideoTracks,
+    inspectedSequenceId,
+    mutedAudioTracks,
+    nodes,
+    previewTimelineItems,
+    projectSettings,
+    selectedTimelineItemId,
+    sequenceSummaries,
+    timelineInPointSec,
+    timelineItems,
+    timelineOutPointSec,
+  });
   const previewPlayheadSec = timelinePreview?.playheadSec ?? playheadSec;
   const canGoToPreviousTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec < previewPlayheadSec - timelineCutToleranceSec);
   const canGoToNextTimelineCut = timelineCutPoints.some((cutPointSec) => cutPointSec > previewPlayheadSec + timelineCutToleranceSec);
-  const selectedTimelineItem = useMemo(
-    () => selectedWorkspaceTimelineItem(previewTimelineItems, selectedTimelineItemId),
-    [previewTimelineItems, selectedTimelineItemId]
-  );
-  const selectedSequenceForInspector = useMemo(
-    () => selectedWorkspaceSequenceInspectorSummary({ inspectedSequenceId, sequenceSummaries }),
-    [inspectedSequenceId, sequenceSummaries]
-  );
-  const exportTimelineItems = useMemo(
-    () => muteAudioTrackItems(filterHiddenVideoTrackItems(timelineItems, hiddenVideoTracks), mutedAudioTracks),
-    [hiddenVideoTracks, mutedAudioTracks, timelineItems]
-  );
-  const hasValidTimelineInOut = timelineInPointSec !== null && timelineOutPointSec !== null && timelineOutPointSec > timelineInPointSec;
-  const activeExportRange = useMemo(
-    () => (
-      exportRangeMode === 'in-out' && hasValidTimelineInOut
-        ? {
-            mode: 'in-out' as const,
-            startSec: timelineInPointSec,
-            endSec: timelineOutPointSec,
-          }
-        : { mode: 'sequence' as const }
-    ),
-    [exportRangeMode, hasValidTimelineInOut, timelineInPointSec, timelineOutPointSec]
-  );
-  const exportManifest = useMemo(
-    () => buildWorkspaceTimelineRenderManifest({
-      items: exportTimelineItems,
-      nodes,
-      projectName: activeTemplateName,
-      projectSettings,
-      exportRange: activeExportRange,
-    }),
-    [activeExportRange, activeTemplateName, exportTimelineItems, nodes, projectSettings]
-  );
   const {
     activeExportJob,
     closeExportDialog,
