@@ -24,21 +24,12 @@ import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceAction
 import { useWorkspaceSequenceSnapshots } from './_hooks/useWorkspaceSequenceSnapshots';
 import { useWorkspaceShellActions } from './_hooks/useWorkspaceShellActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
+import { useWorkspaceRenderNodes } from './_hooks/useWorkspaceRenderNodes';
 import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
 import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineTrackActions';
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
-import {
-  getWorkspaceModelCapabilities,
-  getWorkspaceShotInputConnectors,
-  getWorkspaceShotTargetHandles,
-  validateShotConnections,
-  workspaceConnectionCapacity,
-} from './_lib/workspace-capabilities';
-import {
-  connectedInputCounts,
-  connectedInputKinds,
-} from './_lib/workspace-graph-helpers';
+import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
@@ -86,7 +77,6 @@ import {
   type WorkspaceSequenceRecord,
   type WorkspaceUserCanvasTemplate,
 } from './_state/workspace-state';
-import { GENERATED_OUTPUT_TARGET_HANDLE } from './_state/workspace-normalizers';
 import {
   selectedWorkspaceSequenceInspectorSummary,
   selectedWorkspaceTimelineItem,
@@ -489,51 +479,16 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  const renderNodes = useMemo(() => {
-    return nodes.map((node) => {
-      if (node.data.kind !== 'shot' || !node.data.shot) {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            onPromptChange: (nodeId: string, value: string) => patchNodeData(nodeId, { promptText: value }),
-            onOpenAssetLibrary: handleOpenAssetLibrary,
-            onSendOutputToTimeline: handleSendOutputToTimeline,
-          },
-        };
-      }
-      const validation = validateShotConnections({
-        settings: node.data.shot,
-        connectedInputs: connectedInputKinds(node.id, edges),
-        capabilities,
-      });
-      const inputCounts = connectedInputCounts(node.id, edges);
-      const inputConnectors = getWorkspaceShotInputConnectors(validation.capability).map((connector) => {
-        const connectedCount = inputCounts.get(connector.kind) ?? 0;
-        const capacity = workspaceConnectionCapacity({ connector, connectedCount });
-        return {
-          ...connector,
-          connectedCount,
-          remainingCount: capacity.remainingCount,
-          capacityLabel: capacity.capacityLabel,
-        };
-      });
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          sourceHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
-          targetHandles: getWorkspaceShotTargetHandles(validation.capability),
-          inputConnectors,
-          validation,
-          pricingEstimate: pricingEstimates[node.id],
-          onGenerateShot: (nodeId: string): void => {
-            void handleGenerateShot(nodeId);
-          },
-        },
-      };
-    });
-  }, [capabilities, edges, handleGenerateShot, handleOpenAssetLibrary, handleSendOutputToTimeline, nodes, patchNodeData, pricingEstimates]);
+  const renderNodes = useWorkspaceRenderNodes({
+    capabilities,
+    edges,
+    nodes,
+    pricingEstimates,
+    onGenerateShot: handleGenerateShot,
+    onOpenAssetLibrary: handleOpenAssetLibrary,
+    onPatchNodeData: patchNodeData,
+    onSendOutputToTimeline: handleSendOutputToTimeline,
+  });
 
   const renderEdges = useMemo(() => filterRenderableWorkspaceEdges(renderNodes, edges), [edges, renderNodes]);
   const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;

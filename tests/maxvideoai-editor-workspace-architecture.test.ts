@@ -56,6 +56,7 @@ const canvasTimelineActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCan
 const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTemplateActions.ts');
 const generationActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGenerationActions.ts');
 const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts');
+const renderNodesHookPath = join(workspaceDir, '_hooks/useWorkspaceRenderNodes.ts');
 const selectionActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSelectionActions.ts');
 const persistenceEffectsHookPath = join(workspaceDir, '_hooks/useWorkspacePersistenceEffects.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
@@ -198,6 +199,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasTemplateActionsHookPath), 'canvas template actions should live in a focused route-local hook');
   assert.ok(existsSync(generationActionsHookPath), 'shot generation actions should live in a focused route-local hook');
   assert.ok(existsSync(graphActionsHookPath), 'canvas graph mutation actions should live in a focused route-local hook');
+  assert.ok(existsSync(renderNodesHookPath), 'workspace render node enrichment should live in a focused route-local hook');
   assert.ok(existsSync(selectionActionsHookPath), 'workspace selection actions should live in a focused route-local hook');
   assert.ok(existsSync(persistenceEffectsHookPath), 'workspace hydration and autosave effects should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
@@ -259,6 +261,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const sequenceActionsHookSource = source(sequenceActionsHookPath);
   const sequenceSnapshotsHookSource = source(sequenceSnapshotsHookPath);
+  const renderNodesHookSource = source(renderNodesHookPath);
   const shellActionsHookSource = source(shellActionsHookPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
@@ -525,6 +528,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const generationActionsHookSource = source(generationActionsHookPath);
   const graphActionsHookSource = source(graphActionsHookPath);
+  const renderNodesHookSource = source(renderNodesHookPath);
   const selectionActionsHookSource = source(selectionActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const sequenceSnapshotsHookSource = source(sequenceSnapshotsHookPath);
@@ -997,9 +1001,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(templateStoryboardToVideoSource, /createStoryboardToVideoWorkspaceTemplate/, 'Storyboard should have a focused template builder');
   assert.match(templateUgcAdSource, /createUgcAdWorkspaceTemplate/, 'UGC should have a focused template builder');
   assert.match(templateCinematicSceneSource, /createCinematicSceneWorkspaceTemplate/, 'Cinematic Scene should have a focused template builder');
-  assert.match(workspaceSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
-  assert.match(workspaceSource, /sourceHandles:\s*\[GENERATED_OUTPUT_TARGET_HANDLE\]/, 'rendered shot nodes should expose one reusable generated-output source handle');
-  assert.match(workspaceSource, /inputConnectors/, 'rendered shot nodes should receive connector labels and metadata');
+  assert.match(workspaceSource, /useWorkspaceRenderNodes/, 'orchestrator should delegate graph node render enrichment to a focused hook');
+  assert.doesNotMatch(workspaceSource, /getWorkspaceShotTargetHandles/, 'orchestrator should not derive rendered shot target handles inline');
+  assert.match(renderNodesHookSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
+  assert.match(renderNodesHookSource, /sourceHandles:\s*\[GENERATED_OUTPUT_TARGET_HANDLE\]/, 'rendered shot nodes should expose one reusable generated-output source handle');
+  assert.match(renderNodesHookSource, /inputConnectors/, 'rendered shot nodes should receive connector labels and metadata');
+  assert.match(renderNodesHookSource, /validateShotConnections/, 'render node hook should own shot connection validation for rendered nodes');
+  assert.match(renderNodesHookSource, /workspaceConnectionCapacity/, 'render node hook should own connector capacity labels for rendered nodes');
   assert.match(nodeSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
   assert.match(nodeSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
   assert.match(nodeSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
