@@ -26,6 +26,7 @@ import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAsset
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
+import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
 import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineTrackActions';
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
@@ -79,16 +80,7 @@ import {
 import {
   buildWorkspaceTimelineItemsForAsset,
   buildWorkspaceTimelineItemsForOutput,
-  deleteWorkspaceTimelineItem,
   insertWorkspaceTimelineItems,
-  linkWorkspaceTimelineSelection,
-  moveWorkspaceTimelineItem,
-  moveWorkspaceTimelineSelectionWithMode,
-  resizeWorkspaceTimelineItem,
-  splitWorkspaceTimelineItem,
-  unlinkWorkspaceTimelineSelection,
-  type WorkspaceTimelineTrimEdge,
-  type WorkspaceTimelineTrimMode,
 } from './_lib/workspace-timeline-editing';
 import {
   retargetWorkspaceTimelineItemsForTrack,
@@ -109,8 +101,6 @@ import {
   defaultTimelineSelectionIds,
   filterHiddenVideoTrackItems,
   muteAudioTrackItems,
-  nextAvailableTimelineItemId,
-  timelineSelectionTouchesLockedTrack,
   uniqueTimelineSelectionIds,
   workspaceTimelineCutPoints,
 } from './_lib/workspace-timeline-selection';
@@ -1220,58 +1210,33 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  const handleMoveTimelineItem = useCallback((itemId: string, direction: -1 | 1) => {
-    setActiveEditorSurface('timeline');
-    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-      setNotice('Unlock the track before moving clips.');
-      return;
-    }
-    handleSelectTimelineItem(itemId, 'focus');
-    commitTimelineItems((current) => moveWorkspaceTimelineItem(current, itemId, direction));
-  }, [commitTimelineItems, handleSelectTimelineItem, lockedTimelineTracks]);
-
-  const handleCutTimelineItem = useCallback((itemId: string, splitOffsetSec?: number) => {
-    setActiveEditorSurface('timeline');
-    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-      setNotice('Unlock the track before cutting clips.');
-      return;
-    }
-    const currentItems = timelineItemsRef.current;
-    const currentItem = currentItems.find((item) => item.id === itemId);
-    const nextSelectedItemId = currentItem && currentItem.durationSec >= 2
-      ? nextAvailableTimelineItemId(`${itemId}-split`, currentItems)
-      : itemId;
-    applyTimelineSelection([nextSelectedItemId]);
-    setIsTimelinePlaying(false);
-    commitTimelineItems((current) => splitWorkspaceTimelineItem(current, itemId, splitOffsetSec));
-  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, setIsTimelinePlaying]);
-
-  const handlePositionTimelineItem = useCallback((itemId: string, nextStartSec: number, nextTrack?: WorkspaceTimelineTrack, itemIds?: string[]) => {
-    setActiveEditorSurface('timeline');
-    const nextSelectedItemIds = itemIds?.length ? uniqueTimelineSelectionIds(itemIds) : [itemId];
-    const currentItems = timelineItemsRef.current;
-    if ((nextTrack && lockedTimelineTracks.includes(nextTrack)) || timelineSelectionTouchesLockedTrack(currentItems, nextSelectedItemIds, lockedTimelineTracks)) {
-      setNotice('Unlock the track before moving clips.');
-      setIsTimelinePlaying(false);
-      return;
-    }
-    const nextItems = moveWorkspaceTimelineSelectionWithMode({
-      items: currentItems,
-      itemIds: nextSelectedItemIds,
-      anchorItemId: itemId,
-      nextStartSec,
-      nextTrack,
-      mode: 'insert',
-      idSeed: Date.now().toString(36),
-      allowInsertIntoClip: timelineInsertIntoClipEnabled,
-    });
-    const nextAnchorItem = nextItems.find((item) => item.id === itemId);
-    setSelectedTimelineItemIds(nextSelectedItemIds);
-    setSelectedTimelineItemId(itemId);
-    setPlayheadSec(nextAnchorItem?.startSec ?? nextStartSec);
-    setIsTimelinePlaying(false);
-    commitTimelineItems(() => nextItems);
-  }, [commitTimelineItems, lockedTimelineTracks, setIsTimelinePlaying, setPlayheadSec, timelineInsertIntoClipEnabled]);
+  const {
+    handleCutTimelineItem,
+    handleDeleteTimelineItem,
+    handleLinkTimelineItems,
+    handleMoveTimelineItem,
+    handlePatchTimelineItem,
+    handlePositionTimelineItem,
+    handleResizeTimelineItem,
+    handleTimelinePreviewItemsChange,
+    handleUnlinkTimelineItems,
+  } = useWorkspaceTimelineClipActions({
+    applyTimelineSelection,
+    commitTimelineItems,
+    handleSelectTimelineItem,
+    lockedTimelineTracks,
+    selectedTimelineItemId,
+    selectedTimelineItemIds,
+    setActiveEditorSurface,
+    setIsTimelinePlaying,
+    setNotice,
+    setPlayheadSec,
+    setSelectedTimelineItemId,
+    setSelectedTimelineItemIds,
+    setTimelinePreview,
+    timelineInsertIntoClipEnabled,
+    timelineItemsRef,
+  });
 
   const handleDropNodeToTimeline = useCallback((nodeId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
     setActiveEditorSurface('timeline');
@@ -1381,62 +1346,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     videoTrackCount,
   });
 
-  const handleResizeTimelineItem = useCallback((itemId: string, edge: WorkspaceTimelineTrimEdge, nextStartSec: number, nextDurationSec: number, mode: WorkspaceTimelineTrimMode) => {
-    setActiveEditorSurface('timeline');
-    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-      setNotice('Unlock the track before trimming clips.');
-      return;
-    }
-    applyTimelineSelection([itemId]);
-    setPlayheadSec(nextStartSec);
-    setIsTimelinePlaying(false);
-    commitTimelineItems((current) =>
-      resizeWorkspaceTimelineItem({
-        items: current,
-        itemId,
-        edge,
-        nextStartSec,
-        nextDurationSec,
-        mode,
-      })
-    );
-  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, setIsTimelinePlaying, setPlayheadSec]);
-
-  const handleTimelinePreviewItemsChange = useCallback((items: WorkspaceTimelineItem[] | null, previewSec: number | null) => {
-    setTimelinePreview(items && previewSec !== null ? { items, playheadSec: previewSec } : null);
-  }, []);
-
-  const handleUnlinkTimelineItems = useCallback((itemIds: string[]) => {
-    if (!itemIds.length) return;
-    setActiveEditorSurface('timeline');
-    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
-      setNotice('Unlock the track before unlinking clips.');
-      return;
-    }
-    setIsTimelinePlaying(false);
-    commitTimelineItems((current) => unlinkWorkspaceTimelineSelection(current, itemIds));
-    applyTimelineSelection(itemIds);
-    setNotice('Selected timeline clips unlinked.');
-  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, setIsTimelinePlaying]);
-
-  const handleLinkTimelineItems = useCallback((itemIds: string[]) => {
-    if (itemIds.length < 2) return;
-    setActiveEditorSurface('timeline');
-    if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
-      setNotice('Unlock the track before linking clips.');
-      return;
-    }
-    setIsTimelinePlaying(false);
-    commitTimelineItems((current) => linkWorkspaceTimelineSelection(current, itemIds, `manual-link-${Date.now().toString(36)}`));
-    applyTimelineSelection(itemIds);
-    setNotice('Selected timeline clips linked.');
-  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, setIsTimelinePlaying]);
-
-  const handlePatchTimelineItem = useCallback((itemId: string, patch: Partial<WorkspaceTimelineItem>) => {
-    setActiveEditorSurface('timeline');
-    commitTimelineItems((current) => current.map((item) => (item.id === itemId ? { ...item, ...patch } : item)));
-  }, [commitTimelineItems]);
-
   const handleProjectSettingsChange = useCallback((patch: Partial<WorkspaceProjectSettings>) => {
     setProjectSettings((current) => coerceWorkspaceProjectSettings({ ...current, ...patch }));
   }, []);
@@ -1479,30 +1388,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     resetExportSession();
     setExportQualityPreset(preset);
   }, [resetExportSession]);
-
-  const handleDeleteTimelineItem = useCallback((ripple = false) => {
-    setActiveEditorSurface('timeline');
-    const currentItems = timelineItemsRef.current;
-    const selectedItemIds = selectedTimelineItemIds.length
-      ? selectedTimelineItemIds
-      : selectedTimelineItemId
-        ? [selectedTimelineItemId]
-        : [];
-    if (!selectedItemIds.length) return;
-    if (timelineSelectionTouchesLockedTrack(currentItems, selectedItemIds, lockedTimelineTracks)) {
-      setNotice('Unlock the track before deleting clips.');
-      return;
-    }
-    const selectedItem = currentItems.find((item) => item.id === selectedItemIds[0]);
-    const nextItems = selectedItemIds.reduce(
-      (nextTimelineItems, itemId) => deleteWorkspaceTimelineItem(nextTimelineItems, itemId, { ripple }),
-      currentItems
-    );
-    commitTimelineItems(() => nextItems);
-    applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
-    setPlayheadSec(selectedItem?.startSec ?? 0);
-    setIsTimelinePlaying(false);
-  }, [applyTimelineSelection, commitTimelineItems, lockedTimelineTracks, selectedTimelineItemId, selectedTimelineItemIds, setIsTimelinePlaying, setPlayheadSec]);
 
   const handleTimelinePanelHeightChange = useCallback((height: number) => {
     setTimelinePanelHeight(coerceTimelinePanelHeight(height));

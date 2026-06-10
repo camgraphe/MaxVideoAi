@@ -128,6 +128,7 @@ const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistenc
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
+const timelineClipActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineClipActions.ts');
 const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
 const timelineTrackActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineTrackActions.ts');
 const timelinePlaybackHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelinePlayback.ts');
@@ -441,6 +442,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
+  assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelinePlaybackHookPath), 'timeline playback clock and in-out controls should live in a route-local hook');
@@ -511,6 +513,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const libraryAssetsSource = source(libraryAssetsPath);
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
   const pricingHookSource = source(pricingHookPath);
+  const timelineClipActionsHookSource = source(timelineClipActionsHookPath);
   const timelineHistoryHookSource = source(timelineHistoryHookPath);
   const timelineTrackActionsHookSource = source(timelineTrackActionsHookPath);
   const timelinePlaybackHookSource = source(timelinePlaybackHookPath);
@@ -827,9 +830,19 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
   assert.match(workspaceSource, /selectedTimelineItemId/, 'orchestrator should track which timeline clip controls the montage viewer');
   assert.match(workspaceSource, /playheadSec/, 'orchestrator should track the montage playhead');
+  assert.match(workspaceSource, /useWorkspaceTimelineClipActions/, 'workspace should delegate timeline clip mutations to a route-local hook');
   assert.match(workspaceSource, /handleCutTimelineItem/, 'orchestrator should wire basic cut editing from the bottom timeline');
   assert.match(workspaceSource, /handlePositionTimelineItem/, 'orchestrator should wire pointer-based clip movement');
   assert.match(workspaceSource, /handleResizeTimelineItem/, 'orchestrator should wire pointer-based clip resizing');
+  assert.match(timelineClipActionsHookSource, /handleCutTimelineItem/, 'timeline clip action hook should own cut editing');
+  assert.match(timelineClipActionsHookSource, /handlePositionTimelineItem/, 'timeline clip action hook should own pointer-based clip movement');
+  assert.match(timelineClipActionsHookSource, /handleResizeTimelineItem/, 'timeline clip action hook should own pointer-based clip resizing');
+  assert.match(timelineClipActionsHookSource, /handleLinkTimelineItems/, 'timeline clip action hook should own clip linking');
+  assert.match(timelineClipActionsHookSource, /handleDeleteTimelineItem/, 'timeline clip action hook should own clip deletion');
+  assert.match(timelineClipActionsHookSource, /timelineSelectionTouchesLockedTrack/, 'timeline clip action hook should preserve locked-track safety checks');
+  assert.doesNotMatch(workspaceSource, /const handleCutTimelineItem = useCallback/, 'workspace orchestrator should not own cut editing internals');
+  assert.doesNotMatch(workspaceSource, /const handlePositionTimelineItem = useCallback/, 'workspace orchestrator should not own pointer move internals');
+  assert.doesNotMatch(workspaceSource, /const handleDeleteTimelineItem = useCallback/, 'workspace orchestrator should not own timeline deletion internals');
   assert.match(workspaceStateSource, /DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0'/, 'new shot blocks should default to Seedance 2.0');
   assert.match(workspaceSource, /capability\.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID/, 'orchestrator should resolve the default shot model from the current capabilities');
   assert.match(templateSource, /from '\.\/templates\/registry'/, 'workspace template facade should export the focused registry');
