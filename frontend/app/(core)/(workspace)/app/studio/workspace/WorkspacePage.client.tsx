@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
@@ -40,7 +40,10 @@ import {
 import {
   type WorkspaceTimelineExportRangeMode,
 } from './_lib/workspace-timeline-render';
-import type { WorkspaceTimelineExportQualityPreset } from './_lib/workspace-timeline-export';
+import {
+  workspaceProjectAssetFromCompletedTimelineExport,
+  type WorkspaceTimelineExportQualityPreset,
+} from './_lib/workspace-timeline-export';
 import {
   defaultTimelineSelection,
   defaultTimelineSelectionIds,
@@ -120,6 +123,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<string | null>(null);
   const [isProjectMediaPickerOpen, setIsProjectMediaPickerOpen] = useState(false);
   const workspaceStorageKey = useMemo(() => workspaceStorageKeyForProject(projectId), [projectId]);
+  const registeredExportAssetJobIdRef = useRef<string | null>(null);
   const activeUserCanvasTemplate = userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId) ?? null;
   const activeTemplateName =
     storedProjectName ??
@@ -188,6 +192,20 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     qualityPreset: exportQualityPreset,
     onNotice: setNotice,
   });
+
+  useEffect(() => {
+    const job = exportController.activeExportJob;
+    if (!job || registeredExportAssetJobIdRef.current === job.id) return;
+    const exportAsset = workspaceProjectAssetFromCompletedTimelineExport(job, exportState.exportManifest);
+    if (!exportAsset) return;
+
+    registeredExportAssetJobIdRef.current = job.id;
+    setProjectAssets((current) => [
+      exportAsset,
+      ...current.filter((asset) => asset.id !== exportAsset.id),
+    ].slice(0, 120));
+    setNotice(`${exportAsset.filename} added to Project media.`);
+  }, [exportController.activeExportJob, exportState.exportManifest, setNotice]);
 
   const timelineHistoryController = useWorkspaceTimelineHistory({
     timelineItemsRef,

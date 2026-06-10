@@ -129,6 +129,7 @@ function generatedThumbnailUrl(node: WorkspaceGraphNode): string | null {
 
 function assetThumbnailUrl(asset: WorkspaceAssetRecord): string | null {
   if (asset.kind === 'audio') return null;
+  if (asset.kind === 'video') return asset.thumbUrl ?? null;
   return asset.thumbUrl ?? asset.url ?? null;
 }
 

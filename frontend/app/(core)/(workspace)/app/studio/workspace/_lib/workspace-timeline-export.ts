@@ -2,6 +2,7 @@ import type {
   WorkspaceTimelineRenderClip,
   WorkspaceTimelineRenderManifest,
 } from './workspace-timeline-render';
+import type { WorkspaceAssetRecord } from './workspace-types';
 import { isWorkspaceTimelineAudioTrack } from './workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from './workspace-timecode';
 
@@ -36,6 +37,12 @@ export type WorkspaceTimelineVideoExportRequest = {
   exportSettings: WorkspaceTimelineVideoExportSettings;
 };
 
+type CompletedTimelineExportJob = {
+  id: string;
+  status: 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
+  outputUrl: string | null;
+};
+
 export type WorkspaceTimelineExportReadinessCheck = {
   id: 'media' | 'timeline' | 'range' | 'audio';
   label: string;
@@ -64,6 +71,15 @@ export const WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS = [
 function createExportIdempotencyKey(): string {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
   return `export_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function safeExportFilenamePrefix(value: string): string {
+  const slug = value
+    .trim()
+    .replace(/[^a-z0-9._-]+/gi, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 80);
+  return slug || 'maxvideoai-export';
 }
 
 export function workspaceTimelineExportReadinessChecks(
@@ -147,6 +163,32 @@ export function buildWorkspaceTimelineVideoExportRequest(
 
 export function serializeWorkspaceTimelineVideoExportRequest(request: WorkspaceTimelineVideoExportRequest): string {
   return JSON.stringify(request, null, 2);
+}
+
+export function workspaceProjectAssetFromCompletedTimelineExport(
+  job: CompletedTimelineExportJob,
+  manifest: WorkspaceTimelineRenderManifest
+): WorkspaceAssetRecord | null {
+  if (job.status !== 'completed' || !job.outputUrl) return null;
+
+  const rangeLabel = manifest.exportRange.mode === 'in-out' ? 'in-out' : 'sequence';
+  const filename = `${safeExportFilenamePrefix(`${manifest.projectName}-${rangeLabel}-export`)}.mp4`;
+  const projectSettings = manifest.projectSettings;
+
+  return {
+    id: `timeline-export-${job.id}`,
+    kind: 'video',
+    filename,
+    subtitle: [
+      'Server export',
+      projectSettings?.resolution,
+      projectSettings?.aspectRatio,
+      projectSettings?.fps ? `${projectSettings.fps} fps` : null,
+    ].filter(Boolean).join(' • '),
+    url: job.outputUrl,
+    durationSec: manifest.exportRange.durationSec,
+    dimensions: projectSettings?.resolution,
+  };
 }
 
 function edlClipSort(left: WorkspaceTimelineRenderClip, right: WorkspaceTimelineRenderClip): number {
