@@ -54,6 +54,7 @@ const canvasControllerPath = join(workspaceDir, '_controllers/useCanvasControlle
 const canvasImportActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasImportActions.ts');
 const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTemplateActions.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
+const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
 const exportControllerPath = join(workspaceDir, '_controllers/useExportController.ts');
 const assetLibraryModalPath = join(workspaceDir, '_components/WorkspaceAssetLibraryModal.tsx');
@@ -178,6 +179,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasImportActionsHookPath), 'canvas local file, paste, and snapshot imports should live in a focused route-local hook');
   assert.ok(existsSync(canvasTemplateActionsHookPath), 'canvas template actions should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
+  assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
@@ -226,6 +228,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const sequenceActionsHookSource = source(sequenceActionsHookPath);
+  const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
@@ -316,6 +319,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /activeSequenceId/, 'workspace should track the active montage sequence');
   assert.match(workspaceSource, /sequences: upsertWorkspaceSequence/, 'workspace autosave should include every project sequence');
   assert.match(workspaceSource, /useWorkspaceSequenceActions/, 'workspace should delegate sequence switching and creation actions to a route-local hook');
+  assert.match(workspaceSource, /useWorkspaceProjectMediaActions/, 'workspace should delegate project media mutations to a route-local hook');
   assert.match(workspaceSource, /handleCreateSequence/, 'viewer project sidebar should create real empty sequences');
   assert.match(workspaceSource, /handleSelectSequence/, 'viewer project sidebar should switch between stored sequences');
   assert.doesNotMatch(workspaceSource, /const handleCreateSequence = useCallback/, 'workspace orchestrator should not own sequence creation internals');
@@ -326,6 +330,14 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(sequenceActionsHookSource, /handleSelectSequence/, 'sequence action hook should switch between stored sequences');
   assert.match(sequenceActionsHookSource, /handleRenameActiveSequence/, 'sequence action hook should own active sequence renames');
   assert.match(sequenceActionsHookSource, /upsertWorkspaceSequence/, 'sequence action hook should preserve the current sequence before switching');
+  assert.match(projectMediaActionsHookSource, /resolveProjectAssetTimelineInsert/, 'project media action hook should route asset insertion through the pure timeline helper');
+  assert.match(projectMediaActionsHookSource, /handleImportProjectMedia/, 'project media action hook should open the import picker');
+  assert.match(projectMediaActionsHookSource, /handleDeleteProjectAsset/, 'project media action hook should own imported asset deletion');
+  assert.match(projectMediaActionsHookSource, /handleDeleteGeneratedClip/, 'project media action hook should own generated media deletion');
+  assert.match(projectMediaActionsHookSource, /handleDropProjectAssetToTimeline/, 'project media action hook should own Project media drops to the timeline');
+  assert.doesNotMatch(workspaceSource, /const handleImportProjectMedia = useCallback/, 'workspace orchestrator should not own Project media import internals');
+  assert.doesNotMatch(workspaceSource, /const handleDeleteProjectAsset = useCallback/, 'workspace orchestrator should not own Project media deletion internals');
+  assert.doesNotMatch(workspaceSource, /const handleDropProjectAssetToTimeline = useCallback/, 'workspace orchestrator should not own Project media timeline drop internals');
   assert.match(workspaceSource, /emptyTimelineItems: WorkspaceTimelineItem\[\] = \[\]/, 'new project canvas templates should start with a clean sequence instead of template demo timeline clips');
   const applyCanvasTemplateHandler = canvasTemplateActionsHookSource.match(/const handleApplyCanvasTemplate = useCallback\([\s\S]*?\n  \);\n/);
   assert.ok(applyCanvasTemplateHandler, 'canvas template action hook should define a canvas-only template application handler');
@@ -462,6 +474,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const assetLibraryModalSource = source(assetLibraryModalPath);
   const projectMediaLibraryModalSource = source(projectMediaLibraryModalPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
+  const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
   const nodeSource = source(nodeTypesPath);
@@ -1232,7 +1245,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(projectMediaLibraryModalSource, /workspaceLibraryAssetFromUploadedAsset/, 'project media uploads should normalize into reusable library assets');
   assert.match(workspaceSource, /handleInsertProjectAssetToTimeline/, 'orchestrator should insert imported project media into the timeline');
   assert.match(workspaceSource, /handleDropProjectAssetToTimeline/, 'orchestrator should insert dragged project media on the target timeline track');
-  assert.match(workspaceSource, /resolveProjectAssetTimelineInsert/, 'orchestrator should delegate project media timeline insert resolution to a pure helper');
+  assert.doesNotMatch(workspaceSource, /resolveProjectAssetTimelineInsert/, 'orchestrator should not own project media timeline insert resolution');
+  assert.match(projectMediaActionsHookSource, /resolveProjectAssetTimelineInsert/, 'project media action hook should delegate project media timeline insert resolution to a pure helper');
   assert.match(projectMediaTimelineSource, /retargetWorkspaceTimelineItemsForTrack\(draftItems, params\.targetTrack\)/, 'project media drops should honor the compatible target timeline track');
   assert.match(projectMediaTimelineSource, /insertWorkspaceTimelineItems/, 'project media timeline insertion should reuse the shared insert resolver');
   assert.match(timelineDropsSource, /workspaceTimelineItemsCompatibleWithTrack/, 'timeline drop compatibility should live in a shared pure helper');

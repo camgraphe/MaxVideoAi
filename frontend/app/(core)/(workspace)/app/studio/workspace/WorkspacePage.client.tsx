@@ -23,6 +23,7 @@ import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImportActions';
 import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTemplateActions';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
+import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
@@ -88,9 +89,6 @@ import {
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
 } from './_lib/workspace-timeline-editing';
-import {
-  resolveProjectAssetTimelineInsert,
-} from './_lib/workspace-project-media-timeline';
 import {
   retargetWorkspaceTimelineItemsForTrack,
   timelineTrackHasClipAt,
@@ -1198,83 +1196,31 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     userCanvasTemplates,
   });
 
-  const handleImportProjectMedia = useCallback(() => {
-    setIsProjectMediaPickerOpen(true);
-    setActiveEditorSurface('timeline');
-  }, []);
-
-  const insertProjectAssetIntoTimeline = useCallback((assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
-    const timelineSeed = Date.now().toString(36);
-    const result = resolveProjectAssetTimelineInsert({
-      assetId,
-      projectAssets,
-      currentItems: timelineItemsRef.current,
-      startSec,
-      targetTrack,
-      lockedTimelineTracks,
-      allowInsertIntoClip: timelineInsertIntoClipEnabled,
-      idSeed: timelineSeed,
-    });
-    if (!result.ok) {
-      setNotice(result.notice);
-      return;
-    }
-
-    commitTimelineItems(() => result.items);
-    setActiveEditorSurface('timeline');
-    setSelectedTimelineItemId(result.selectedItemId);
-    setSelectedTimelineItemIds([result.selectedItemId]);
-    setPlayheadSec(result.playheadSec);
-    setIsTimelinePlaying(false);
-    setNotice(result.notice);
-  }, [commitTimelineItems, lockedTimelineTracks, projectAssets, setIsTimelinePlaying, setPlayheadSec, timelineInsertIntoClipEnabled]);
-
-  const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
-    insertProjectAssetIntoTimeline(assetId, playheadSec);
-  }, [insertProjectAssetIntoTimeline, playheadSec]);
-
-  const handleDeleteProjectAsset = useCallback((assetId: string) => {
-    const asset = projectAssets.find((candidate) => candidate.id === assetId);
-    if (!asset) {
-      setNotice('Project media asset not found.');
-      return;
-    }
-    if (typeof window !== 'undefined' && !window.confirm(`Delete "${asset.filename}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
-    setProjectAssets((current) => current.filter((candidate) => candidate.id !== assetId));
-    setNotice(`${asset.filename} removed from Project media.`);
-  }, [projectAssets]);
-
-  const handleDeleteGeneratedClip = useCallback((nodeId: string) => {
-    const node = nodes.find((candidate) => candidate.id === nodeId);
-    if (!node?.data.output) {
-      setNotice('Generated clip not found.');
-      return;
-    }
-    if (typeof window !== 'undefined' && !window.confirm(`Delete "${node.data.title}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
-    setNodes((current) =>
-      current.map((candidate) => {
-        if (candidate.id !== nodeId) return candidate;
-        return {
-          ...candidate,
-          data: {
-            ...candidate.data,
-            output: undefined,
-            subtitle: candidate.data.subtitle ?? 'Generated output',
-          },
-        };
-      })
-    );
-    setNotice(`${node.data.title} removed from Project media.`);
-  }, [nodes]);
-
-  const handleCreateProjectMediaFolder = useCallback(() => {
-    setNotice('Project media folders are ready in the UI. Backend folder persistence will be wired in the media library pass.');
-  }, []);
-
-  const handleDropProjectAssetToTimeline = useCallback((assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
-    setActiveEditorSurface('timeline');
-    insertProjectAssetIntoTimeline(assetId, startSec, targetTrack);
-  }, [insertProjectAssetIntoTimeline]);
+  const {
+    handleCreateProjectMediaFolder,
+    handleDeleteGeneratedClip,
+    handleDeleteProjectAsset,
+    handleDropProjectAssetToTimeline,
+    handleImportProjectMedia,
+    handleInsertProjectAssetToTimeline,
+  } = useWorkspaceProjectMediaActions({
+    commitTimelineItems,
+    lockedTimelineTracks,
+    nodes,
+    playheadSec,
+    projectAssets,
+    setActiveEditorSurface,
+    setIsProjectMediaPickerOpen,
+    setIsTimelinePlaying,
+    setNodes,
+    setNotice,
+    setPlayheadSec,
+    setProjectAssets,
+    setSelectedTimelineItemId,
+    setSelectedTimelineItemIds,
+    timelineInsertIntoClipEnabled,
+    timelineItemsRef,
+  });
 
   const handleMoveTimelineItem = useCallback((itemId: string, direction: -1 | 1) => {
     setActiveEditorSurface('timeline');
