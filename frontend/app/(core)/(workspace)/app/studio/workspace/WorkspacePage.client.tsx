@@ -1,18 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
 import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineProjectSidebar, type WorkspaceProjectSequenceSummary } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
-import {
-  WorkspaceCanvas,
-  type WorkspaceHandleDropRequest,
-  type WorkspacePaletteDropRequest,
-} from './_components/WorkspaceCanvas.client';
+import { WorkspaceCanvas } from './_components/WorkspaceCanvas.client';
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
 import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
 import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
@@ -25,6 +20,7 @@ import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImpo
 import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTemplateActions';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
+import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
@@ -40,26 +36,21 @@ import {
   workspaceConnectionCapacity,
 } from './_lib/workspace-capabilities';
 import {
-  appendSelectedWorkspaceGraphNode,
   connectedInputCounts,
   connectedInputKinds,
   defaultSelectedNodeId,
-  workspaceConnectionRejectionReason,
 } from './_lib/workspace-graph-helpers';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceProjectSettings,
-  WorkspaceShotSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineItem,
   WorkspaceTimelineAudioTrack,
   WorkspaceTimelineTrack,
   WorkspaceTimelineVideoTrack,
 } from './_lib/workspace-types';
-import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from './_lib/workspace-handle-drop';
-import { createAdHocWorkspaceNode } from './_lib/workspace-canvas-imports';
 import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
@@ -67,8 +58,6 @@ import {
 import {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createStarterWorkspaceTemplate,
-  createWorkspaceEdge,
-  inferWorkspaceEdgeKind,
 } from './_lib/workspace-templates';
 import { filterRenderableWorkspaceEdges } from './_lib/workspace-render-edges';
 import {
@@ -662,60 +651,29 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     }
   }, [applyTimelineSelection, selectedTimelineItemId, selectedTimelineItemIds, setIsTimelinePlaying, timelineItems]);
 
-  const patchNodeData = useCallback((nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => {
-    setNodes((current) =>
-      current.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } } : node))
-    );
-  }, []);
-
-  const patchShot = useCallback((nodeId: string, patch: Partial<WorkspaceShotSettings>) => {
-    setNodes((current) =>
-      current.map((node) => {
-        if (node.id !== nodeId || !node.data.shot) return node;
-        const nextShot = {
-          ...node.data.shot,
-          ...patch,
-          status: patch.status ?? (node.data.shot.status === 'incompatible' ? 'draft' : node.data.shot.status),
-        };
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            subtitle: patch.outputName ?? node.data.subtitle,
-            shot: nextShot,
-          },
-        };
-      })
-    );
-  }, []);
-
-  const handleOpenAssetLibrary = useCallback((nodeId: string) => {
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(nodeId);
-    setAssetPickerNodeId(nodeId);
-  }, []);
-
-  const handleSelectLibraryAsset = useCallback((nodeId: string, asset: WorkspaceLibraryAsset) => {
-    const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
-    setNodes((current) =>
-      current.map((node) =>
-        node.id === nodeId
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                subtitle: asset.name,
-                asset: assetRecord,
-              },
-            }
-          : node
-      )
-    );
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(nodeId);
-    setAssetPickerNodeId(null);
-    setNotice(`${asset.name} attached to the media block.`);
-  }, []);
+  const {
+    handleCreateNodeFromHandleDrop,
+    handleCreateNodeFromPaletteDrop,
+    handleOpenAssetLibrary,
+    handleSelectLibraryAsset,
+    isValidConnection,
+    onConnect,
+    onEdgesChange,
+    onNodesChange,
+    patchNodeData,
+    patchShot,
+  } = useWorkspaceGraphActions({
+    capabilities,
+    defaultModelId,
+    edges,
+    nodes,
+    setActiveEditorSurface,
+    setAssetPickerNodeId,
+    setEdges,
+    setNodes,
+    setNotice,
+    setSelectedNodeId,
+  });
 
   const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
     const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
@@ -725,113 +683,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     ].slice(0, 120));
     setIsProjectMediaPickerOpen(false);
     setNotice(`${asset.name} imported into Project media.`);
-  }, []);
-
-  const onNodesChange = useCallback((changes: NodeChange<WorkspaceGraphNode>[]) => {
-    setNodes((current) => applyNodeChanges(changes, current));
-  }, []);
-
-  const onEdgesChange = useCallback((changes: EdgeChange<WorkspaceGraphEdge>[]) => {
-    setEdges((current) => applyEdgeChanges(changes, current));
-  }, []);
-
-  const isValidConnection = useCallback(
-    (connection: Connection | WorkspaceGraphEdge) => !workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities }),
-    [capabilities, edges, nodes]
-  );
-
-  const onConnect = useCallback((connection: Connection) => {
-    const rejectionReason = workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities });
-    if (rejectionReason) {
-      setNotice(rejectionReason);
-      return;
-    }
-    if (!connection.source || !connection.target) return;
-    const kind = inferWorkspaceEdgeKind(connection.sourceHandle, connection.targetHandle);
-    const edge = createWorkspaceEdge({
-      source: connection.source,
-      target: connection.target,
-      sourceHandle: connection.sourceHandle ?? kind,
-      targetHandle: connection.targetHandle ?? kind,
-      kind,
-    });
-    setEdges((current) => addEdge(edge, current));
-    setNotice(`${edge.data?.label ?? 'Graph'} link connected.`);
-  }, [capabilities, edges, nodes]);
-
-  const handleCreateNodeFromHandleDrop = useCallback(
-    (request: WorkspaceHandleDropRequest) => {
-      const draft = resolveWorkspaceHandleDropDraft(request.handleId, request.handleType);
-      if (!draft) {
-        setNotice('No matching block is available for this connector.');
-        return;
-      }
-      if (request.handleType === 'target') {
-        const rejectionReason = workspaceConnectionRejectionReason({
-          connection: {
-            source: 'pending-node',
-            target: request.sourceNodeId,
-            sourceHandle: draft.sourceHandle,
-            targetHandle: request.handleId,
-          },
-          nodes,
-          edges,
-          capabilities,
-        });
-        if (rejectionReason) {
-          setNotice(rejectionReason);
-          return;
-        }
-      }
-
-      const node = createWorkspaceHandleDropNode({
-        draft,
-        defaultModelId,
-        index: nodes.length,
-        position: {
-          x: request.position.x - 110,
-          y: request.position.y - 48,
-        },
-      });
-      const edge =
-        request.handleType === 'target'
-          ? createWorkspaceEdge({
-              source: node.id,
-              target: request.sourceNodeId,
-              sourceHandle: draft.sourceHandle,
-              targetHandle: request.handleId,
-              kind: request.handleId,
-            })
-          : createWorkspaceEdge({
-              source: request.sourceNodeId,
-              target: node.id,
-              sourceHandle: request.handleId,
-              targetHandle: draft.targetHandle,
-              kind: request.handleId,
-            });
-
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
-      setEdges((current) => addEdge(edge, current));
-      setActiveEditorSurface('canvas');
-      setSelectedNodeId(node.id);
-      setNotice(`${node.data.title} created from the ${edge.data?.label ?? 'connector'} connector.`);
-    },
-    [capabilities, defaultModelId, edges, nodes]
-  );
-
-  const handleCreateNodeFromPaletteDrop = useCallback(
-    (request: WorkspacePaletteDropRequest) => {
-      const node = createAdHocWorkspaceNode(request.kind, nodes.length, defaultModelId, {
-        x: request.position.x - 105,
-        y: request.position.y - 48,
-      });
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
-      setActiveEditorSurface('canvas');
-      setSelectedNodeId(node.id);
-      setNotice(`${node.data.title} dropped onto the canvas.`);
-    },
-    [defaultModelId, nodes.length]
-  );
+  }, [setIsProjectMediaPickerOpen, setNotice, setProjectAssets]);
 
   const {
     handleCanvasFileDrop,

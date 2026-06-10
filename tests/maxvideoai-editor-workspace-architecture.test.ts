@@ -55,6 +55,7 @@ const canvasImportActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanva
 const canvasTimelineActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTimelineActions.ts');
 const canvasTemplateActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasTemplateActions.ts');
 const generationActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGenerationActions.ts');
+const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
@@ -184,6 +185,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasTimelineActionsHookPath), 'canvas media timeline actions should live in a focused route-local hook');
   assert.ok(existsSync(canvasTemplateActionsHookPath), 'canvas template actions should live in a focused route-local hook');
   assert.ok(existsSync(generationActionsHookPath), 'shot generation actions should live in a focused route-local hook');
+  assert.ok(existsSync(graphActionsHookPath), 'canvas graph mutation actions should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
@@ -448,6 +450,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(generationActionsHookPath), 'workspace shot generation actions should live in a route-local hook');
+  assert.ok(existsSync(graphActionsHookPath), 'workspace graph actions should live in a route-local hook');
   assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
@@ -479,6 +482,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const generationActionsHookSource = source(generationActionsHookPath);
+  const graphActionsHookSource = source(graphActionsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
   const librarySource = source(libraryPath);
@@ -829,8 +833,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(graphHelpersSource, /isWorkspaceConnectionCompatible/, 'graph helper should reject incompatible graph links before adding edges');
   assert.match(graphHelpersSource, /workspaceConnectionCapacity/, 'graph helper should reject graph links when an input connector has no remaining capacity');
   assert.doesNotMatch(workspaceSource, /function workspaceConnectionRejectionReason/, 'orchestrator should not own graph connection rejection rules inline');
+  assert.match(workspaceSource, /useWorkspaceGraphActions/, 'orchestrator should delegate canvas graph mutations to a route-local hook');
+  assert.match(graphActionsHookSource, /workspaceConnectionRejectionReason/, 'graph action hook should own connection rejection handling');
+  assert.match(graphActionsHookSource, /handleCreateNodeFromHandleDrop/, 'graph action hook should own handle-drop node creation');
+  assert.match(graphActionsHookSource, /handleCreateNodeFromPaletteDrop/, 'graph action hook should own palette node creation');
+  assert.match(graphActionsHookSource, /handleSelectLibraryAsset/, 'graph action hook should own filling media nodes from the library');
+  assert.match(graphActionsHookSource, /appendSelectedWorkspaceGraphNode/, 'graph action hook should select newly added blocks so the inspector follows them');
+  assert.doesNotMatch(workspaceSource, /const onConnect = useCallback/, 'workspace orchestrator should not own graph connection internals');
+  assert.doesNotMatch(workspaceSource, /const handleCreateNodeFromHandleDrop = useCallback/, 'workspace orchestrator should not own handle-drop node creation internals');
+  assert.doesNotMatch(workspaceSource, /const handleCreateNodeFromPaletteDrop = useCallback/, 'workspace orchestrator should not own palette node creation internals');
   assert.match(workspaceSource, /onCreateNodeFromPaletteDrop/, 'orchestrator should wire sidebar block-template drops into the canvas');
-  assert.match(workspaceSource, /appendSelectedWorkspaceGraphNode/, 'orchestrator should select newly added palette blocks so the inspector follows the new block');
   assert.match(graphHelpersSource, /appendSelectedWorkspaceGraphNode/, 'graph helper should own selected-node append behavior');
   assert.match(workspaceSource, /WorkspaceAssetLibraryModal/, 'orchestrator should open the editor asset library from empty media nodes');
   assert.match(workspaceSource, /useWorkspaceCanvasTimelineActions/, 'workspace should delegate canvas media timeline actions to a route-local hook');
