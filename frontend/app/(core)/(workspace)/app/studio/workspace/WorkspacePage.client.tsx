@@ -6,10 +6,8 @@ import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineProjectSidebar } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
 import { WorkspaceCanvas } from './_components/WorkspaceCanvas.client';
-import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
 import { WorkspaceEditorTopbar } from './_components/WorkspaceEditorTopbar';
-import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
-import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
+import { WorkspaceRuntimeModals } from './_components/WorkspaceRuntimeModals';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useExportController } from './_controllers/useExportController';
@@ -841,53 +839,35 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
         onUnlinkItems={handleUnlinkTimelineItems}
         onUndo={handleUndoTimeline}
       />
-      <WorkspaceExportDialog
+      <WorkspaceRuntimeModals
         activeExportJob={activeExportJob}
+        assetPickerLibrary={assetPickerLibrary}
+        assetPickerNode={assetPickerNode}
         exportEstimate={exportEstimate}
         exportQuota={exportQuota}
         exportRangeMode={exportRangeMode}
         exportQualityPreset={exportQualityPreset}
         exportVideoFeedback={exportVideoFeedback}
         inPointSec={timelineInPointSec}
-        isEstimateLoading={isExportEstimateLoading}
-        isExportStarting={isExportVideoStarting}
-        isOpen={isExportDialogOpen}
+        isExportDialogOpen={isExportDialogOpen}
+        isExportEstimateLoading={isExportEstimateLoading}
+        isExportVideoStarting={isExportVideoStarting}
+        isProjectMediaPickerOpen={isProjectMediaPickerOpen}
         manifest={exportManifest}
         outPointSec={timelineOutPointSec}
+        projectMediaLibrary={projectMediaLibrary}
         readinessLabel={exportReadinessLabel}
         sequenceDurationSec={timelineDurationSec}
-        onClose={closeExportDialog}
+        onAssetPickerClose={() => setAssetPickerNodeId(null)}
+        onCloseExportDialog={closeExportDialog}
         onExportEdl={exportTimelineEdl}
         onExportVideo={exportTimelineVideo}
         onPrepareRender={exportTimelineRender}
+        onProjectMediaPickerClose={() => setIsProjectMediaPickerOpen(false)}
         onQualityPresetChange={handleExportQualityPresetChange}
         onRangeModeChange={handleExportRangeModeChange}
-      />
-      <WorkspaceAssetLibraryModal
-        node={assetPickerNode}
-        assets={assetPickerLibrary.assets}
-        isLoading={assetPickerLibrary.isLoading}
-        error={assetPickerLibrary.error}
-        usingFallback={assetPickerLibrary.usingFallback}
-        source={assetPickerLibrary.source}
-        sourceOptions={assetPickerLibrary.sourceOptions}
-        sourceLabels={assetPickerLibrary.sourceLabels}
-        onClose={() => setAssetPickerNodeId(null)}
         onSelectAsset={handleSelectLibraryAsset}
-        onSourceChange={assetPickerLibrary.setSource}
-      />
-      <WorkspaceProjectMediaLibraryModal
-        isOpen={isProjectMediaPickerOpen}
-        assets={projectMediaLibrary.assets}
-        isLoading={projectMediaLibrary.isLoading}
-        error={projectMediaLibrary.error}
-        usingFallback={projectMediaLibrary.usingFallback}
-        source={projectMediaLibrary.source}
-        sourceOptions={projectMediaLibrary.sourceOptions}
-        sourceLabels={projectMediaLibrary.sourceLabels}
-        onClose={() => setIsProjectMediaPickerOpen(false)}
-        onSelectAsset={handleSelectProjectMediaAsset}
-        onSourceChange={projectMediaLibrary.setSource}
+        onSelectProjectMediaAsset={handleSelectProjectMediaAsset}
       />
     </main>
   );

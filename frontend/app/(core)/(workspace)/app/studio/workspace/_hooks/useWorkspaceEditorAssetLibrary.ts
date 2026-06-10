@@ -152,3 +152,5 @@ export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | nul
     usingFallback: shouldUseFallback,
   };
 }
+
+export type WorkspaceEditorAssetLibraryState = ReturnType<typeof useWorkspaceEditorAssetLibrary>;

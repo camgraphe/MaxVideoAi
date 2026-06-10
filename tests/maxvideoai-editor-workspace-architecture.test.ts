@@ -68,6 +68,7 @@ const assetLibraryModalPath = join(workspaceDir, '_components/WorkspaceAssetLibr
 const projectMediaLibraryModalPath = join(workspaceDir, '_components/WorkspaceProjectMediaLibraryModal.tsx');
 const assetLibraryBrowserPath = join(workspaceDir, '_components/WorkspaceAssetLibraryBrowser.tsx');
 const exportDialogPath = join(workspaceDir, '_components/WorkspaceExportDialog.tsx');
+const runtimeModalsPath = join(workspaceDir, '_components/WorkspaceRuntimeModals.tsx');
 const libraryPath = join(workspaceDir, '_components/NodeLibrarySidebar.tsx');
 const timelineProjectSidebarPath = join(workspaceDir, '_components/TimelineProjectSidebar.tsx');
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
@@ -208,6 +209,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
   assert.ok(existsSync(assetLibraryBrowserPath), 'asset picker browser should mirror the app library structure in route-local editor CSS');
   assert.ok(existsSync(exportDialogPath), 'export dialog should live in a route-local editor component');
+  assert.ok(existsSync(runtimeModalsPath), 'workspace runtime modal wiring should live in a route-local component');
   assert.ok(existsSync(libraryPath), 'block template sidebar should live in a route-local component');
   assert.ok(existsSync(timelineProjectSidebarPath), 'viewer project media sidebar should live in a route-local component');
   assert.ok(existsSync(studioHeaderSessionPath), 'studio account and wallet status should live in a route-local component');
@@ -537,6 +539,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const exportControllerSource = source(exportControllerPath);
   const exportDialogSource = source(exportDialogPath);
+  const runtimeModalsSource = source(runtimeModalsPath);
   const nodeSource = source(nodeTypesPath);
   const settingsSource = source(settingsPath);
   const timelineClipInspectorSource = source(timelineClipInspectorPath);
@@ -921,7 +924,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /const handleCreateNodeFromPaletteDrop = useCallback/, 'workspace orchestrator should not own palette node creation internals');
   assert.match(workspaceSource, /onCreateNodeFromPaletteDrop/, 'orchestrator should wire sidebar block-template drops into the canvas');
   assert.match(graphHelpersSource, /appendSelectedWorkspaceGraphNode/, 'graph helper should own selected-node append behavior');
-  assert.match(workspaceSource, /WorkspaceAssetLibraryModal/, 'orchestrator should open the editor asset library from empty media nodes');
+  assert.match(workspaceSource, /WorkspaceRuntimeModals/, 'orchestrator should delegate runtime modal rendering to a route-local component');
+  assert.doesNotMatch(workspaceSource, /WorkspaceAssetLibraryModal/, 'orchestrator should not render the editor asset library modal inline');
+  assert.match(runtimeModalsSource, /WorkspaceAssetLibraryModal/, 'runtime modals should open the editor asset library from empty media nodes');
   assert.match(workspaceSource, /useWorkspaceCanvasTimelineActions/, 'workspace should delegate canvas media timeline actions to a route-local hook');
   assert.match(canvasTimelineActionsHookSource, /handleSendOutputToTimeline/, 'canvas timeline action hook should own send-to-timeline insertion');
   assert.match(canvasTimelineActionsHookSource, /handleDropNodeToTimeline/, 'canvas timeline action hook should own canvas node timeline drops');
@@ -1376,7 +1381,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(projectMediaControllerSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin through its controller');
   assert.match(projectMediaControllerSource, /onDeleteGeneratedClip/, 'viewer sidebar should let generated clips be removed from project media through its controller');
   assert.match(workspaceStateSource, /projectAssets\?: WorkspaceAssetRecord\[\]/, 'persisted workspace state should remember imported project media assets');
-  assert.match(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should open a project media import modal in Viewer mode');
+  assert.doesNotMatch(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should not render the project media import modal inline');
+  assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
+  assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
   assert.match(workspaceSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
