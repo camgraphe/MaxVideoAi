@@ -52,6 +52,10 @@ function readTimelineExportEcsConfig(env: NodeJS.ProcessEnv = process.env): Time
   };
 }
 
+export function assertTimelineExportWorkerLauncherConfigured(env: NodeJS.ProcessEnv = process.env): void {
+  readTimelineExportEcsConfig(env);
+}
+
 function ecsFailureMessage(failures: Failure[]): string {
   return failures
     .map((failure) => [failure.arn, failure.reason, failure.detail].filter(Boolean).join(': '))

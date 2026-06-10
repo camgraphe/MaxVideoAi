@@ -52,6 +52,21 @@ type WorkspaceExportDialogProps = {
   onRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
 };
 
+function exportJobStatusLabel(status: NonNullable<WorkspaceExportDialogProps['activeExportJob']>['status']): string {
+  switch (status) {
+    case 'queued':
+      return 'Queued';
+    case 'rendering':
+      return 'Rendering';
+    case 'completed':
+      return 'Ready';
+    case 'failed':
+      return 'Failed';
+    case 'canceled':
+      return 'Canceled';
+  }
+}
+
 function nullableTimecode(seconds: number | null, fps: number): string {
   return seconds === null ? '--:--:--:--' : formatWorkspaceTimecode(seconds, fps);
 }
@@ -92,7 +107,7 @@ export function WorkspaceExportDialog({
       : 'Estimate unavailable';
   const exportJobMessage = activeExportJob?.message ?? (
     activeExportJob?.status === 'queued'
-      ? 'Queued on the server. A running export worker with storage access is required to render the MP4.'
+      ? 'Queued on the server. A Fargate worker will claim this job and render the MP4.'
       : isServerJobActive
         ? 'Server worker is rendering the MP4.'
         : null
@@ -237,14 +252,14 @@ export function WorkspaceExportDialog({
             onClick={onExportVideo}
           >
             <Film size={15} />
-            {isExportStarting ? 'Queueing...' : isServerJobActive ? 'Export queued' : 'Export video'}
+            {isExportStarting ? 'Queueing...' : isServerJobActive ? 'Export queued' : activeExportJob?.status === 'failed' ? 'Retry export' : 'Export video'}
           </button>
           <section className={`${styles.exportSection} ${styles.exportServerSection}`}>
             <div className={styles.exportSectionHeader}>
               <strong>Server render</strong>
               <span>{exportPriceLabel}</span>
             </div>
-            <div className={styles.exportServerCard}>
+            <div className={styles.exportServerCard} data-status={activeExportJob?.status ?? 'idle'}>
               <div>
                 <strong>{exportEstimate?.billingKind === 'paid' ? 'Paid export' : 'Server MP4'}</strong>
                 <span>
@@ -255,20 +270,20 @@ export function WorkspaceExportDialog({
                 {exportJobMessage ? <small>{exportJobMessage}</small> : null}
               </div>
               {activeExportJob ? (
-                <div className={styles.exportJobStatus}>
-                  <span>{activeExportJob.status}</span>
+                <div className={styles.exportJobStatus} data-status={activeExportJob.status}>
+                  <span>{exportJobStatusLabel(activeExportJob.status)}</span>
                   <strong>{activeExportJob.progress}%</strong>
                 </div>
               ) : null}
             </div>
             {activeExportJob ? (
-              <div className={styles.exportProgressTrack} aria-label="Server export progress">
+              <div className={styles.exportProgressTrack} data-status={activeExportJob.status} aria-label="Server export progress">
                 <span style={{ width: `${activeExportJob.progress}%` }} />
               </div>
             ) : null}
             {activeExportJob?.outputUrl ? (
               <a className={styles.exportDownloadLink} href={activeExportJob.outputUrl} target="_blank" rel="noreferrer">
-                Download server export
+                Download MP4
               </a>
             ) : null}
           </section>

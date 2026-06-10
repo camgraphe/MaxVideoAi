@@ -58,6 +58,25 @@ function isTerminalExportJob(job: TimelineExportClientJob | null): boolean {
   return job?.status === 'completed' || job?.status === 'failed' || job?.status === 'canceled';
 }
 
+function humanizeTimelineExportError(message: string): string {
+  if (message.includes('MISSING_TIMELINE_EXPORT_ECS_')) {
+    return 'Server export is not configured yet. Set the ECS worker environment variables before launching MP4 renders.';
+  }
+  if (message.includes('TIMELINE_EXPORT_ECS_RUN_TASK_FAILED')) {
+    return 'The export job was created, but the server render worker could not start. Billing was released for this failed launch.';
+  }
+  if (message.includes('TIMELINE_EXPORT_ECS_RUN_TASK_EMPTY')) {
+    return 'The server accepted the export request but did not return a render task. Billing was released for this failed launch.';
+  }
+  if (message === 'INSUFFICIENT_WALLET_BALANCE') {
+    return 'Your wallet balance is too low for this export.';
+  }
+  if (message === 'EXPORT_CREATE_FAILED') {
+    return 'The export job could not be created.';
+  }
+  return message;
+}
+
 function downloadWorkspaceTextFile(filename: string, contents: string, type: string): void {
   if (typeof document === 'undefined') return;
   const blob = new Blob([contents], { type });
@@ -197,8 +216,12 @@ export function useExportController({
   }, [manifest, onNotice]);
 
   const exportTimelineVideo = useCallback(async () => {
-    const idempotencyKey = exportIdempotencyKey ?? createClientExportIdempotencyKey();
-    if (!exportIdempotencyKey) setExportIdempotencyKey(idempotencyKey);
+    const idempotencyKey = activeExportJob && isTerminalExportJob(activeExportJob)
+      ? createClientExportIdempotencyKey()
+      : exportIdempotencyKey ?? createClientExportIdempotencyKey();
+    if (idempotencyKey !== exportIdempotencyKey) {
+      setExportIdempotencyKey(idempotencyKey);
+    }
     const request = buildWorkspaceTimelineVideoExportRequest(manifest, {
       qualityPreset,
       includeAudio: true,
@@ -223,23 +246,25 @@ export function useExportController({
         body: JSON.stringify({ request }),
       });
       const payload = await response.json().catch(() => null);
+      const job = normalizeTimelineExportClientJob(payload?.export);
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? 'EXPORT_CREATE_FAILED');
+        if (job) setActiveExportJob(job);
+        throw new Error(humanizeTimelineExportError(payload?.message ?? payload?.error ?? 'EXPORT_CREATE_FAILED'));
       }
-      const job = normalizeTimelineExportClientJob(payload.export);
       if (!job) throw new Error('EXPORT_JOB_INVALID');
       setActiveExportJob(job);
       const feedbackMessage = payload.reused ? 'Server export already queued.' : 'Server export queued.';
       setExportVideoFeedback(feedbackMessage);
       onNotice(feedbackMessage);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Server export failed to start.';
+      const rawMessage = error instanceof Error ? error.message : 'Server export failed to start.';
+      const message = humanizeTimelineExportError(rawMessage);
       setExportVideoFeedback(message);
       onNotice(message);
     } finally {
       setIsExportVideoStarting(false);
     }
-  }, [exportIdempotencyKey, manifest, onNotice, qualityPreset]);
+  }, [activeExportJob, exportIdempotencyKey, manifest, onNotice, qualityPreset]);
 
   const exportTimelineEdl = useCallback(() => {
     const edl = buildWorkspaceTimelineEdl(manifest);

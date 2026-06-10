@@ -3,8 +3,8 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createTimelineExportJobWithReservation, releaseFailedTimelineExportBilling } from '@/server/timeline-exports/billing';
-import { launchTimelineExportWorkerTask } from '@/server/timeline-exports/ecs-runner';
-import { failTimelineExportJob } from '@/server/timeline-exports/repository';
+import { assertTimelineExportWorkerLauncherConfigured, launchTimelineExportWorkerTask } from '@/server/timeline-exports/ecs-runner';
+import { failTimelineExportJob, readTimelineExportJobByIdempotencyKey } from '@/server/timeline-exports/repository';
 import {
   parseTimelineExportRequest,
   resolveTimelineExportFps,
@@ -55,6 +55,24 @@ export async function POST(req: NextRequest) {
       fps,
       qualityPreset: request.exportSettings.qualityPreset,
     };
+    const existingJob = await readTimelineExportJobByIdempotencyKey({
+      userId,
+      idempotencyKey: request.idempotencyKey,
+    });
+    if (!existingJob) {
+      try {
+        assertTimelineExportWorkerLauncherConfigured();
+      } catch (workerConfigError) {
+        return json(
+          {
+            ok: false,
+            error: 'TIMELINE_EXPORT_WORKER_NOT_CONFIGURED',
+            message: workerConfigError instanceof Error ? workerConfigError.message : 'TIMELINE_EXPORT_WORKER_NOT_CONFIGURED',
+          },
+          { status: 503 }
+        );
+      }
+    }
     const result = await createTimelineExportJobWithReservation({
       userId,
       idempotencyKey: request.idempotencyKey,

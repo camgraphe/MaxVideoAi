@@ -294,6 +294,14 @@
   color: #cbd5e1;
 }
 
+.exportServerCard[data-status="failed"] small {
+  color: #fecaca;
+}
+
+.exportServerCard[data-status="completed"] small {
+  color: #bbf7d0;
+}
+
 .exportJobStatus {
   display: grid;
   justify-items: end;
@@ -310,6 +318,19 @@
   font-size: 9px;
   font-weight: 840;
   text-transform: uppercase;
+}
+
+.exportJobStatus[data-status="rendering"] span {
+  color: #67e8f9;
+}
+
+.exportJobStatus[data-status="completed"] span {
+  color: #86efac;
+}
+
+.exportJobStatus[data-status="failed"] span,
+.exportJobStatus[data-status="canceled"] span {
+  color: #fca5a5;
 }
 
 .exportJobStatus strong {
@@ -333,8 +354,24 @@
   transition: width 180ms ease;
 }
 
+.exportProgressTrack[data-status="failed"] span,
+.exportProgressTrack[data-status="canceled"] span {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.exportProgressTrack[data-status="completed"] span {
+  background: linear-gradient(90deg, #22c55e, #2dd4bf);
+}
+
 .exportDownloadLink {
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(45, 212, 191, 0.26);
+  border-radius: 8px;
+  background: rgba(20, 184, 166, 0.1);
   color: #ccfbf1;
   font-size: 11px;
   font-weight: 780;

@@ -90,7 +90,13 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
       },
     });
 
+    if (!existsSync(outputPath)) {
+      throw new Error('TIMELINE_EXPORT_OUTPUT_MISSING');
+    }
     const data = readFileSync(outputPath);
+    if (data.length === 0) {
+      throw new Error('TIMELINE_EXPORT_OUTPUT_EMPTY');
+    }
     await updateTimelineExportProgress({ exportId: job.id, progress: 95, message: 'Uploading export.' });
     const upload = await uploadFileBuffer({
       data,

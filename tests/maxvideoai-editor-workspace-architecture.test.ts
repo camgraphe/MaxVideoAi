@@ -1351,7 +1351,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportControllerSource, /serializeWorkspaceTimelineVideoExportRequest/, 'export controller should serialize the video export request contract');
   assert.match(exportControllerSource, /buildWorkspaceTimelineEdl/, 'export controller should keep EDL export local and separate from MP4 server render');
   assert.match(exportControllerSource, /setInterval/, 'export controller should poll queued and rendering server jobs');
-  assert.match(exportDialogSource, /running export worker with storage access/, 'export dialog should explain blocked-looking queued jobs need a server worker and storage');
+  assert.match(exportControllerSource, /humanizeTimelineExportError/, 'export controller should translate server worker failures into user-facing export messages');
+  assert.match(exportControllerSource, /MISSING_TIMELINE_EXPORT_ECS_/, 'export controller should explain missing ECS worker configuration');
+  assert.match(exportControllerSource, /if \(job\) setActiveExportJob\(job\)/, 'export controller should keep failed server jobs visible after create failures');
+  assert.match(exportControllerSource, /activeExportJob && isTerminalExportJob\(activeExportJob\)/, 'export retries after terminal jobs should use a fresh idempotency key');
+  assert.match(exportDialogSource, /Fargate worker will claim this job/, 'export dialog should explain queued jobs are claimed by the Fargate worker');
+  assert.match(exportDialogSource, /exportJobStatusLabel/, 'export dialog should show user-facing server export statuses');
+  assert.match(exportDialogSource, /Retry export/, 'export dialog should expose an explicit retry label after failed jobs');
+  assert.match(exportDialogSource, /Download MP4/, 'export dialog should expose the rendered MP4 output link');
   assert.match(workspaceSource, /exportQualityPreset/, 'workspace export action should keep the selected video quality preset');
   assert.match(workspaceEditorLayoutSource, /onExportVideo=\{exportController\.exportTimelineVideo\}/, 'workspace should wire the primary export video action from the export controller');
   assert.match(workspaceEditorLayoutSource, /onPrepareRender=\{exportController\.exportTimelineRender\}/, 'workspace should wire the export dialog render action to timeline render handoff');

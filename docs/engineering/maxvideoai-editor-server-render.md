@@ -23,7 +23,7 @@ Run continuously:
 pnpm --prefix frontend run timeline-exports:worker
 ```
 
-The worker claims one queued job with `FOR UPDATE SKIP LOCKED`, renders the Remotion composition to MP4, uploads it under `timeline-exports/`, and saves it into media library.
+Use continuous mode only for local/staging debugging. In production the worker preflight rejects loop mode unless `--once` is present. The worker also fails fast when `DATABASE_URL` or object storage is missing, claims one queued job with `FOR UPDATE SKIP LOCKED`, renders the Remotion composition to MP4, uploads it under `timeline-exports/`, and saves it into media library.
 
 ## AWS ECS Fargate Launch
 
@@ -35,6 +35,8 @@ Vercel must not render MP4s inside route handlers. The create-export API only cr
 - Network mode: Fargate `awsvpc`, public subnets, `assignPublicIp: ENABLED`; no NAT Gateway required.
 - Cost guard: one task per newly-created queued export. Idempotent retries that reuse an existing queued/rendering/completed export must not start another task.
 - Worker size: keep the task definition at `2 vCPU / 4 GB`.
+- Worker preflight: Fargate must provide `DATABASE_URL`, storage credentials, and `CHROME_BIN` or `PUPPETEER_EXECUTABLE_PATH`. The Dockerfile sets Chromium paths by default.
+- API preflight: for a new idempotency key, the create-export route checks ECS launcher env before reserving free quota or wallet balance. Existing idempotent jobs can still be read without launching a duplicate task.
 
 Required server-only env vars:
 
@@ -71,5 +73,6 @@ Do not run a real export or Fargate task from local validation without explicit 
 - Missing media blocks the API before queueing.
 - If ECS `RunTask` fails after a new job is created, the API marks the job failed and releases/refunds the billing reservation.
 - Worker render failures mark the job failed.
+- Empty or missing MP4 output is treated as a failed render, not a completed export.
 - Free quota is released when a free job fails.
 - Paid jobs are refunded when they fail before completion.
