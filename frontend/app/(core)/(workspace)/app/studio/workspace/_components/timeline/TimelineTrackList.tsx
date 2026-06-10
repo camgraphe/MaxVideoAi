@@ -2,7 +2,6 @@ import type {
   DragEvent as ReactDragEvent,
   MouseEvent,
   PointerEvent as ReactPointerEvent,
-  ReactNode,
 } from 'react';
 import { memo, useMemo } from 'react';
 
@@ -26,14 +25,8 @@ import {
   type TimelineSelectionMode,
 } from './TimelineClip';
 import { TimelineTrackRow } from './TimelineTrackRow';
+import type { TimelineTrackDefinition } from './timelineTrackDefinitions';
 import type { TimelineTool } from './TimelineToolbar';
-
-export type TimelineTrackDefinition = {
-  id: WorkspaceTimelineTrack;
-  label: string;
-  icon: ReactNode;
-  kind: 'video' | 'audio';
-};
 
 export type TimelinePreviewTrackItem = {
   item: WorkspaceTimelineItem;

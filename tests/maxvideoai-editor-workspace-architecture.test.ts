@@ -70,6 +70,7 @@ const timelineTrackListPath = join(workspaceDir, '_components/timeline/TimelineT
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
 const timelineToolbarPath = join(workspaceDir, '_components/timeline/TimelineToolbar.tsx');
 const timelineKeyboardShortcutsPath = join(workspaceDir, '_components/timeline/useTimelineKeyboardShortcuts.ts');
+const timelineTrackDefinitionsPath = join(workspaceDir, '_components/timeline/timelineTrackDefinitions.tsx');
 const videoViewerPath = join(workspaceDir, '_components/WorkspaceVideoViewer.tsx');
 const programMonitorPath = join(workspaceDir, '_components/viewer/ProgramMonitor.tsx');
 const programPlaybackLayersPath = join(workspaceDir, '_components/viewer/ProgramPlaybackLayers.tsx');
@@ -190,6 +191,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineToolbarPath), 'timeline toolbar should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineKeyboardShortcutsPath), 'timeline keyboard shortcuts should live in a focused route-local hook');
+  assert.ok(existsSync(timelineTrackDefinitionsPath), 'timeline track definitions should live in a focused route-local helper');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(programMonitorPath), 'program monitor frame and zoom should live in a route-local viewer component');
   assert.ok(existsSync(programPlaybackLayersPath), 'program media layers should live in a route-local viewer component');
@@ -493,6 +495,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTrackRowSource = source(timelineTrackRowPath);
   const timelineToolbarSource = source(timelineToolbarPath);
   const timelineKeyboardShortcutsSource = source(timelineKeyboardShortcutsPath);
+  const timelineTrackDefinitionsSource = source(timelineTrackDefinitionsPath);
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
   const canvasStyleSource = source(canvasStylesPath);
@@ -988,9 +991,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /DEFAULT_TIMELINE_PIXELS_PER_SECOND/, 'timeline should own a default horizontal zoom scale');
   assert.match(timelineSource, /MIN_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming out to a usable density');
   assert.match(timelineSource, /MAX_TIMELINE_PIXELS_PER_SECOND/, 'timeline should cap zooming in to a usable density');
-  assert.match(timelineSource, /buildTimelineTracks/, 'timeline should build video tracks dynamically before fixed audio tracks');
-  assert.match(timelineSource, /displayedVideoTracks = \[\.\.\.videoTracks\]\.reverse\(\)/, 'new video tracks should display above V1 while audio tracks stay below video tracks');
-  assert.match(timelineSource, /timelineVideoTrackId/, 'timeline should label added video tracks as V2, V3, and later');
+  assert.match(timelineSource, /buildTimelineTracks/, 'timeline should consume focused track definitions');
+  assert.match(timelineTrackDefinitionsSource, /buildTimelineTracks/, 'timeline track definitions should build video tracks dynamically before fixed audio tracks');
+  assert.match(timelineTrackDefinitionsSource, /displayedVideoTracks = \[\.\.\.videoTracks\]\.reverse\(\)/, 'new video tracks should display above V1 while audio tracks stay below video tracks');
+  assert.match(timelineTrackDefinitionsSource, /timelineVideoTrackId/, 'timeline should label added video tracks as V2, V3, and later');
   assert.match(timelineTrackRowSource, /data-timeline-add-track="video"/, 'timeline track row should own compact add-video-track controls');
   assert.match(timelineTrackRowSource, /data-timeline-add-track="audio"/, 'timeline track row should own compact add-audio-track controls');
   assert.match(timelineTrackRowSource, /data-timeline-video-visibility/, 'timeline track row should own video track visibility toggles');

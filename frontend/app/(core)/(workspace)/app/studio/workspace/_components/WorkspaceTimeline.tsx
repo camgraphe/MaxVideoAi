@@ -2,7 +2,6 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Play, Volume2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -45,13 +44,11 @@ import {
   type TimelineMarqueeState,
 } from '../_lib/timeline/timeline-interaction';
 import {
-  isWorkspaceTimelineAudioTrack,
-  isWorkspaceTimelineVideoTrack,
-  workspaceTimelineAudioTrackId,
-  workspaceTimelineAudioTrackIndex,
-  workspaceTimelineVideoTrackId,
-  workspaceTimelineVideoTrackIndex,
-} from '../_lib/workspace-timeline-tracks';
+  buildTimelineTracks,
+  isAudioTimelineTrack,
+  isVideoTimelineTrack,
+  type TimelineTrackDefinition,
+} from './timeline/timelineTrackDefinitions';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import type {
   TimelineSelectionMode,
@@ -62,10 +59,7 @@ import {
   type TimelineTrackContextMenuState,
 } from './timeline/TimelineContextMenus';
 import { TimelineRuler } from './timeline/TimelineRuler';
-import {
-  TimelineTrackList,
-  type TimelineTrackDefinition,
-} from './timeline/TimelineTrackList';
+import { TimelineTrackList } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 
@@ -86,49 +80,6 @@ function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.max(0, Math.round(seconds % 60));
   return `${minutes}:${remaining.toString().padStart(2, '0')}`;
-}
-
-function isVideoTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineVideoTrack {
-  return isWorkspaceTimelineVideoTrack(track);
-}
-
-function isAudioTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineAudioTrack {
-  return isWorkspaceTimelineAudioTrack(track);
-}
-
-function timelineVideoTrackId(index: number): WorkspaceTimelineVideoTrack {
-  return workspaceTimelineVideoTrackId(index);
-}
-
-function timelineVideoTrackIndex(track: WorkspaceTimelineTrack): number {
-  return workspaceTimelineVideoTrackIndex(track);
-}
-
-function timelineAudioTrackId(index: number): WorkspaceTimelineTrack {
-  return workspaceTimelineAudioTrackId(index);
-}
-
-function timelineAudioTrackIndex(track: WorkspaceTimelineTrack): number {
-  return workspaceTimelineAudioTrackIndex(track);
-}
-
-function buildTimelineTracks(videoTrackCount: number, audioTrackCount: number, items: WorkspaceTimelineItem[]): TimelineTrackDefinition[] {
-  const requiredVideoTrackCount = Math.max(1, videoTrackCount, ...items.map((item) => timelineVideoTrackIndex(item.track)));
-  const videoTracks = Array.from({ length: requiredVideoTrackCount }, (_, index): TimelineTrackDefinition => ({
-    id: timelineVideoTrackId(index + 1),
-    label: `V${index + 1}`,
-    icon: <Play size={14} />,
-    kind: 'video',
-  }));
-  const requiredAudioTrackCount = Math.max(1, audioTrackCount, ...items.map((item) => timelineAudioTrackIndex(item.track)));
-  const audioTracks = Array.from({ length: requiredAudioTrackCount }, (_, index): TimelineTrackDefinition => ({
-    id: timelineAudioTrackId(index + 1),
-    label: `Audio ${index + 1}`,
-    icon: <Volume2 size={14} />,
-    kind: 'audio',
-  }));
-  const displayedVideoTracks = [...videoTracks].reverse();
-  return [...displayedVideoTracks, ...audioTracks];
 }
 
 function markTimelinePerformance(name: 'drag-start' | 'drag-frame' | 'drag-commit' | 'playhead-frame' | 'playhead-commit') {
