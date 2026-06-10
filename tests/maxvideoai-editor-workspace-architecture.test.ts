@@ -79,6 +79,7 @@ const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipIn
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
 const timelineClipPath = join(workspaceDir, '_components/timeline/TimelineClip.tsx');
 const timelineContextMenusPath = join(workspaceDir, '_components/timeline/TimelineContextMenus.tsx');
+const timelineContextMenusHookPath = join(workspaceDir, '_components/timeline/useTimelineContextMenus.ts');
 const timelineRulerPath = join(workspaceDir, '_components/timeline/TimelineRuler.tsx');
 const timelineTrackListPath = join(workspaceDir, '_components/timeline/TimelineTrackList.tsx');
 const timelineTrackRowPath = join(workspaceDir, '_components/timeline/TimelineTrackRow.tsx');
@@ -227,6 +228,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(projectMediaTimelinePath), 'project media timeline insertion should live in a pure route-local helper');
   assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineContextMenusPath), 'timeline context menus should live in a focused route-local timeline component');
+  assert.ok(existsSync(timelineContextMenusHookPath), 'timeline context menu state should live in a focused route-local hook');
   assert.ok(existsSync(timelineRulerPath), 'timeline ruler should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackListPath), 'timeline track list should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineTrackRowPath), 'timeline track rows should live in a focused route-local timeline component');
@@ -610,6 +612,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const styleSource = source(stylesPath);
   const timelineClipSource = source(timelineClipPath);
   const timelineContextMenusSource = source(timelineContextMenusPath);
+  const timelineContextMenusHookSource = source(timelineContextMenusHookPath);
   const timelineSource = source(timelinePath);
   const timelineRulerSource = source(timelineRulerPath);
   const timelineTrackListSource = source(timelineTrackListPath);
@@ -782,12 +785,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineInteractionSource, /export function selectedItemIdsForMarquee/, 'timeline interaction helper should own marquee selection hit testing');
   assert.match(timelineSource, /timeline\/timeline-interaction/, 'timeline component should import pointer interaction helpers from the timeline domain');
   assert.match(timelineSource, /useTimelineClipInteraction/, 'timeline component should delegate clip drag and resize behavior to a focused hook');
+  assert.match(timelineSource, /useTimelineContextMenus/, 'timeline component should delegate context menu state and actions to a focused hook');
   assert.match(timelineSource, /useTimelinePanelResize/, 'timeline component should delegate panel height drag behavior to a focused hook');
   assert.match(timelineSource, /useTimelinePlayheadDrag/, 'timeline component should delegate playhead drag behavior to a focused hook');
   assert.match(timelineSource, /useTimelineVisibleRange/, 'timeline component should delegate visible range scheduling to a focused hook');
   assert.match(timelineClipInteractionHookSource, /nextTimelineInteractionState/, 'timeline clip interaction hook should own pointer projection during clip drags');
   assert.match(timelineClipInteractionHookSource, /trackAtClientY/, 'timeline clip interaction hook should own vertical track retargeting during drags');
   assert.match(timelineClipInteractionHookSource, /markTimelinePerformance\('drag-start'\)/, 'timeline clip interaction hook should preserve drag performance markers');
+  assert.match(timelineContextMenusHookSource, /handleOpenClipContextMenu/, 'timeline context menu hook should own clip context menu opening');
+  assert.match(timelineContextMenusHookSource, /handleOpenTrackContextMenu/, 'timeline context menu hook should own track context menu opening');
+  assert.match(timelineContextMenusHookSource, /window\.addEventListener\('pointerdown'/, 'timeline context menu hook should own global context-menu dismissal');
   assert.match(timelinePanelResizeHookSource, /onBeginResize\?\.\(\)/, 'timeline panel resize hook should preserve caller-owned cleanup before resizing');
   assert.match(timelinePlayheadDragHookSource, /markTimelinePerformance\('playhead-frame'\)/, 'timeline playhead hook should keep requestAnimationFrame playhead performance markers');
   assert.match(timelineVisibleRangeHookSource, /requestAnimationFrame/, 'timeline visible range hook should throttle scroll range updates with requestAnimationFrame');
@@ -797,6 +804,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(timelineSource, /visibleRangeFrameRef/, 'timeline component should not own visible range animation refs inline');
   assert.doesNotMatch(timelineSource, /function updateVisibleTimelineRange|const updateVisibleTimelineRange/, 'timeline component should not own visible range projection inline');
   assert.doesNotMatch(timelineSource, /interactionRef|setPreviewInteraction|trackAtClientY/, 'timeline component should not own clip drag state refs or track retargeting inline');
+  assert.doesNotMatch(timelineSource, /setContextMenu|setTrackContextMenu|handleOpenTrackContextMenu = useCallback/, 'timeline component should not own context menu state or track menu opening inline');
   assert.doesNotMatch(timelineSource, /TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS|markTimelinePerformance\('drag-start'\)/, 'timeline component should not own low-level clip drag thresholds or drag markers inline');
   assert.match(timelineClipSource, /timeline\/timeline-interaction/, 'timeline clips should share frame snap and interaction contracts from the timeline domain');
   assert.doesNotMatch(timelineSource, /function nextInteractionState/, 'timeline component should not own pointer interaction projection inline');

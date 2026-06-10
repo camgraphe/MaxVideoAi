@@ -30,23 +30,17 @@ import {
   trackForTimelineItem,
   type TimelineMarqueeState,
 } from '../_lib/timeline/timeline-interaction';
-import {
-  buildTimelineTracks,
-  type TimelineTrackDefinition,
-} from './timeline/timelineTrackDefinitions';
+import { buildTimelineTracks } from './timeline/timelineTrackDefinitions';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import type {
   TimelineSelectionMode,
 } from './timeline/TimelineClip';
-import {
-  TimelineContextMenus,
-  type TimelineContextMenuState,
-  type TimelineTrackContextMenuState,
-} from './timeline/TimelineContextMenus';
+import { TimelineContextMenus } from './timeline/TimelineContextMenus';
 import { TimelineRuler } from './timeline/TimelineRuler';
 import { TimelineTrackList } from './timeline/TimelineTrackList';
 import { TimelineToolbar, type TimelineTool } from './timeline/TimelineToolbar';
 import { useTimelineClipInteraction } from './timeline/useTimelineClipInteraction';
+import { useTimelineContextMenus } from './timeline/useTimelineContextMenus';
 import { useTimelineExternalDrop } from './timeline/useTimelineExternalDrop';
 import { useTimelineKeyboardShortcuts } from './timeline/useTimelineKeyboardShortcuts';
 import { useTimelinePanelResize } from './timeline/useTimelinePanelResize';
@@ -174,26 +168,10 @@ export function WorkspaceTimeline({
 }: WorkspaceTimelineProps) {
   const [marquee, setMarquee] = useState<TimelineMarqueeState | null>(null);
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
-  const [contextMenu, setContextMenu] = useState<TimelineContextMenuState | null>(null);
-  const [trackContextMenu, setTrackContextMenu] = useState<TimelineTrackContextMenuState | null>(null);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const suppressNextSurfaceClickRef = useRef(false);
-  const {
-    handleBeginTimelinePanelMouseResize,
-    handleBeginTimelinePanelPointerResize,
-    timelinePanelRef,
-  } = useTimelinePanelResize({
-    maxPanelHeight,
-    minPanelHeight,
-    onBeginResize: () => {
-      setContextMenu(null);
-      setTrackContextMenu(null);
-    },
-    onPanelHeightChange,
-    panelHeight,
-  });
   const frameStepSec = frameStepSeconds(projectFps);
   const baseTimelineDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec));
   const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items), [audioTrackCount, items, videoTrackCount]);
@@ -205,6 +183,41 @@ export function WorkspaceTimeline({
   const clampedPlayheadSec = Math.max(0, Math.min(playheadSec, baseTimelineDuration));
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null;
   const selectedKeys = useMemo(() => selectionKeysForTimelineItemIds(items, selectedItemIds), [items, selectedItemIds]);
+  const {
+    clearTimelineContextMenus,
+    clipMenu,
+    handleClipContextMenuAction,
+    handleOpenClipContextMenu,
+    handleOpenTrackContextMenu,
+    handleTrackContextMenuAction,
+    trackMenu,
+  } = useTimelineContextMenus({
+    audioTrackCount,
+    items,
+    maxAudioTrackCount,
+    maxVideoTrackCount,
+    minAudioTrackCount,
+    onAddAudioTrack,
+    onAddVideoTrack,
+    onDeleteTrack,
+    onLinkItems,
+    onSelectItem,
+    onUnlinkItems,
+    selectedItemIds,
+    selectedKeys,
+    videoTrackCount,
+  });
+  const {
+    handleBeginTimelinePanelMouseResize,
+    handleBeginTimelinePanelPointerResize,
+    timelinePanelRef,
+  } = useTimelinePanelResize({
+    maxPanelHeight,
+    minPanelHeight,
+    onBeginResize: clearTimelineContextMenus,
+    onPanelHeightChange,
+    panelHeight,
+  });
   const {
     handleBeginInteraction,
     interaction,
@@ -377,65 +390,6 @@ export function WorkspaceTimeline({
     onSelectItems([]);
     onPlayheadChange(secondsFromTimelineElement(event.clientX, event.currentTarget));
   }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
-  const handleOpenClipContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, item: WorkspaceTimelineItem) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const clickedKey = selectionKeyForTimelineItem(item);
-    const isClickedSelected = selectedKeys.has(clickedKey);
-    const menuItemIds = isClickedSelected && selectedItemIds.length ? selectedItemIds : [item.id];
-    const menuKeys = selectionKeysForTimelineItemIds(items, menuItemIds);
-    const menuItems = items.filter((candidate) => menuKeys.has(selectionKeyForTimelineItem(candidate)));
-    const linkedGroupIds = new Set(
-      menuItems
-        .map((candidate) => candidate.linkedGroupId)
-        .filter((groupId): groupId is string => Boolean(groupId))
-    );
-    if (!isClickedSelected) {
-      onSelectItem(item.id, 'replace');
-    }
-    const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
-    const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight;
-    setContextMenu({
-      canLink: menuKeys.size > 1,
-      canUnlink: linkedGroupIds.size > 0,
-      itemIds: menuItemIds,
-      selectedClipCount: menuItems.length,
-      x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 224)) : event.clientX,
-      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 120)) : event.clientY,
-    });
-  }, [items, onSelectItem, selectedItemIds, selectedKeys]);
-  const handleContextMenuAction = useCallback((action: 'link' | 'unlink') => {
-    if (!contextMenu) return;
-    if (action === 'link') onLinkItems(contextMenu.itemIds);
-    else onUnlinkItems(contextMenu.itemIds);
-    setContextMenu(null);
-  }, [contextMenu, onLinkItems, onUnlinkItems]);
-  const handleOpenTrackContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, track: TimelineTrackDefinition) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setContextMenu(null);
-    const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
-    const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight;
-    setTrackContextMenu({
-      canAdd: track.kind === 'video' ? videoTrackCount < maxVideoTrackCount : audioTrackCount < maxAudioTrackCount,
-      canDelete: track.kind === 'video' ? videoTrackCount > 1 : audioTrackCount > minAudioTrackCount,
-      kind: track.kind,
-      label: track.label,
-      trackId: track.id,
-      x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 212)) : event.clientX,
-      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 118)) : event.clientY,
-    });
-  }, [audioTrackCount, maxAudioTrackCount, maxVideoTrackCount, minAudioTrackCount, videoTrackCount]);
-  const handleTrackContextMenuAction = useCallback((action: 'add' | 'delete') => {
-    if (!trackContextMenu) return;
-    if (action === 'add') {
-      if (trackContextMenu.kind === 'video') onAddVideoTrack();
-      else onAddAudioTrack();
-    } else {
-      onDeleteTrack(trackContextMenu.trackId);
-    }
-    setTrackContextMenu(null);
-  }, [onAddAudioTrack, onAddVideoTrack, onDeleteTrack, trackContextMenu]);
   const seekBy = useCallback((deltaSec: number) => {
     onPlaybackChange(false);
     onPlayheadChange(Math.max(0, Math.min(totalDuration, clampedPlayheadSec + deltaSec)));
@@ -444,24 +398,6 @@ export function WorkspaceTimeline({
     if (!selectedItem || selectedSplitOffset === null || !canCutAtPlayhead) return;
     onCutItem(selectedItem.id, selectedSplitOffset);
   }, [canCutAtPlayhead, onCutItem, selectedItem, selectedSplitOffset]);
-  useEffect(() => {
-    if (!contextMenu && !trackContextMenu) return undefined;
-    const closeContextMenu = () => {
-      setContextMenu(null);
-      setTrackContextMenu(null);
-    };
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') closeContextMenu();
-    };
-    window.addEventListener('pointerdown', closeContextMenu);
-    window.addEventListener('scroll', closeContextMenu, true);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('pointerdown', closeContextMenu);
-      window.removeEventListener('scroll', closeContextMenu, true);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [contextMenu, trackContextMenu]);
 
   useTimelineKeyboardShortcuts({
     canRedo,
@@ -646,10 +582,10 @@ export function WorkspaceTimeline({
         {marquee ? <span className={styles.timelineMarquee} style={marqueeRectForState(marquee)} aria-hidden="true" /> : null}
       </div>
       <TimelineContextMenus
-        clipMenu={contextMenu}
-        onClipMenuAction={handleContextMenuAction}
+        clipMenu={clipMenu}
+        onClipMenuAction={handleClipContextMenuAction}
         onTrackMenuAction={handleTrackContextMenuAction}
-        trackMenu={trackContextMenu}
+        trackMenu={trackMenu}
       />
     </section>
   );
