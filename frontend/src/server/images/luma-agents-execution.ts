@@ -300,19 +300,19 @@ async function waitForCompletedGeneration(params: {
   let task = params.initialTask;
   const deadline = params.now() + params.syncTimeoutMs;
   for (;;) {
+    if (params.now() >= deadline) {
+      terminalTimeout({
+        mode: params.mode,
+        providerJobId: params.providerJobId,
+        timeoutMs: params.syncTimeoutMs,
+      });
+    }
     if (task.status === 'completed') return task;
     if (task.status === 'failed') {
       terminalFailure({
         mode: params.mode,
         task,
         providerJobId: params.providerJobId,
-      });
-    }
-    if (params.now() >= deadline) {
-      terminalTimeout({
-        mode: params.mode,
-        providerJobId: params.providerJobId,
-        timeoutMs: params.syncTimeoutMs,
       });
     }
     await params.sleep(Math.min(params.pollIntervalMs, Math.max(0, deadline - params.now())));
@@ -338,6 +338,7 @@ async function waitForCompletedGeneration(params: {
 export async function executeLumaAgentsImageGenerationWithFalFallback(
   params: ExecuteLumaAgentsImageGenerationParams
 ): Promise<LumaAgentsImageExecutionResult> {
+  params.onProviderMode?.(LUMA_AGENTS_PROVIDER);
   const signReferenceUrls = params.signReferenceUrls ?? signLumaImageReferenceUrls;
   const signedImageUrls = await signReferenceUrls(params.combinedImageUrls);
   const payload = buildPayloadFromPreparedValues(params, signedImageUrls);
@@ -345,7 +346,6 @@ export async function executeLumaAgentsImageGenerationWithFalFallback(
   const fallbackToFalEnabled = params.fallbackToFalEnabled ?? lumaAgentsFallbackToFalEnabled();
   let acceptedProviderJobId: string | null = null;
 
-  params.onProviderMode?.(LUMA_AGENTS_PROVIDER);
   let created: NormalizedLumaAgentsImageGeneration;
   try {
     created = await client.createGeneration(payload, {

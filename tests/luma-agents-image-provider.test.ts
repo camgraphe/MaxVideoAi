@@ -5,6 +5,7 @@ import { ImageGenerationExecutionError } from '../frontend/src/server/images/ima
 import { LumaAgentsImageError } from '../frontend/src/server/images/luma-agents-error';
 import { executeLumaAgentsImageGenerationWithFalFallback } from '../frontend/src/server/images/luma-agents-execution';
 import type { NormalizedLumaAgentsImageGeneration } from '../frontend/src/server/images/luma-agents-response';
+import { LUMA_AGENTS_PROVIDER } from '../frontend/src/lib/luma-agents';
 import type { GeneratedImage } from '../frontend/types/image-generation';
 
 function baseParams() {
@@ -363,6 +364,67 @@ test('Luma image polling does not accept completion after sync timeout elapses d
   assert.equal(pollCalls, 0);
 });
 
+test('Luma image polling does not accept completion returned after sync timeout', async () => {
+  let pollCalls = 0;
+  let copyCalls = 0;
+  let currentTime = 0;
+
+  await assert.rejects(
+    () =>
+      executeLumaAgentsImageGenerationWithFalFallback({
+        ...baseParams(),
+        syncTimeoutMs: 50,
+        pollIntervalMs: 10,
+        now: () => currentTime,
+        sleep: async (ms) => {
+          currentTime += ms;
+        },
+        client: {
+          async createGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            return {
+              providerJobId: 'gen_luma_late_completion',
+              status: 'running',
+              rawStatus: 'dreaming',
+              images: [],
+              message: null,
+              raw: { id: 'gen_luma_late_completion' },
+            };
+          },
+          async getGeneration(): Promise<NormalizedLumaAgentsImageGeneration> {
+            pollCalls += 1;
+            currentTime = 60;
+            return {
+              providerJobId: 'gen_luma_late_completion',
+              status: 'completed',
+              rawStatus: 'completed',
+              images: [
+                {
+                  url: 'https://assets.luma.ai/late-completion.png?expires=soon',
+                  width: 1024,
+                  height: 1024,
+                  mimeType: 'image/png',
+                },
+              ],
+              message: null,
+              raw: { id: 'gen_luma_late_completion' },
+            };
+          },
+        },
+        copyGeneratedImagesToStorage: async ({ images }) => {
+          copyCalls += 1;
+          return images.map((image) => ({
+            ...image,
+            url: 'https://media.maxvideoai.com/renders/images/user_test/late-completion.png',
+          }));
+        },
+      }),
+    (error) => error instanceof ImageGenerationExecutionError && error.code === 'luma_agents_image_timeout'
+  );
+
+  assert.equal(pollCalls, 1);
+  assert.equal(copyCalls, 0);
+});
+
 test('Luma image invalid direct payload does not fallback to fal', async () => {
   let falCalls = 0;
 
@@ -395,6 +457,7 @@ test('Luma image invalid direct payload does not fallback to fal', async () => {
 
 test('Luma image invalid style does not fallback to fal', async () => {
   let falCalls = 0;
+  const providerModes: string[] = [];
 
   await assert.rejects(
     () =>
@@ -413,6 +476,9 @@ test('Luma image invalid style does not fallback to fal', async () => {
           falCalls += 1;
           throw new Error('Fal should not run for invalid style');
         },
+        onProviderMode: (providerMode) => {
+          providerModes.push(providerMode);
+        },
       }),
     (error) =>
       error instanceof LumaAgentsImageError &&
@@ -421,4 +487,5 @@ test('Luma image invalid style does not fallback to fal', async () => {
   );
 
   assert.equal(falCalls, 0);
+  assert.deepEqual(providerModes, [LUMA_AGENTS_PROVIDER]);
 });
