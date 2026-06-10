@@ -14,6 +14,11 @@ import type {
 import styles from '../_styles/timeline.module.css';
 import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
 import {
+  parseTimelineNodeDragPayload,
+  resolveTimelineExternalDropPreview,
+  type TimelineExternalDropPreview,
+} from '../_lib/timeline/timeline-external-drop';
+import {
   moveWorkspaceTimelineSelectionWithMode,
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
@@ -68,33 +73,12 @@ const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
 const MAX_TIMELINE_PIXELS_PER_SECOND = 92;
 const MIN_TIMELINE_WIDTH = 760;
 const TIMELINE_CLIP_DRAG_THRESHOLD_PIXELS = 0.5;
-const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
-const EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC = 5;
 const TIMELINE_PREVIEW_ID_SEED = 'preview';
 const TIMELINE_VISIBLE_RANGE_BUFFER_PX = 360;
 
 type TimelineVisibleRange = {
   startSec: number;
   endSec: number;
-};
-
-type TimelineExternalDropPreview = {
-  durationSec: number;
-  isValid: boolean;
-  mediaKind: 'audio' | 'image' | 'video';
-  previewUrl?: string | null;
-  startSec: number;
-  title: string;
-  trackId: WorkspaceTimelineTrack;
-};
-
-type TimelineNodeDragPayload = {
-  assetId?: string;
-  durationSec?: number | null;
-  mediaKind?: 'audio' | 'image' | 'video';
-  nodeId?: string;
-  previewUrl?: string | null;
-  title?: string | null;
 };
 
 function formatDuration(seconds: number): string {
@@ -109,46 +93,6 @@ function isVideoTimelineTrack(track: WorkspaceTimelineTrack): track is Workspace
 
 function isAudioTimelineTrack(track: WorkspaceTimelineTrack): track is WorkspaceTimelineAudioTrack {
   return isWorkspaceTimelineAudioTrack(track);
-}
-
-function parseTimelineNodeDragPayload(dataTransfer: DataTransfer): TimelineNodeDragPayload | null {
-  if (!Array.from(dataTransfer.types).includes(TIMELINE_NODE_DRAG_TYPE)) return null;
-  try {
-    const payload = JSON.parse(dataTransfer.getData(TIMELINE_NODE_DRAG_TYPE)) as TimelineNodeDragPayload;
-    if ((!payload.nodeId && !payload.assetId) || !payload.mediaKind) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
-function durationForTimelineDropPayload(payload: TimelineNodeDragPayload): number {
-  const durationSec = Number(payload.durationSec);
-  if (Number.isFinite(durationSec) && durationSec > 0) return Math.max(MIN_CLIP_DURATION_SEC, durationSec);
-  return EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC;
-}
-
-function titleForTimelineDropPayload(payload: TimelineNodeDragPayload): string {
-  if (payload.title && payload.title.trim()) return payload.title.trim();
-  if (payload.mediaKind === 'audio') return 'Audio clip';
-  if (payload.mediaKind === 'image') return 'Image clip';
-  return 'Video clip';
-}
-
-function isExternalTimelineDropCompatible(mediaKind: TimelineExternalDropPreview['mediaKind'], track: WorkspaceTimelineTrack): boolean {
-  if (mediaKind === 'audio') return !isVideoTimelineTrack(track);
-  return isVideoTimelineTrack(track);
-}
-
-function insertionBoundaryForTimelineTrack(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack, requestedStartSec: number): number {
-  const targetItem = items
-    .filter((item) => item.track === track)
-    .filter((item) => requestedStartSec > item.startSec && requestedStartSec < item.startSec + item.durationSec)
-    .sort((left, right) => left.startSec - right.startSec)[0] ?? null;
-  if (!targetItem) return requestedStartSec;
-
-  const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
-  return snapTimelineSeconds(requestedStartSec < midpointSec ? targetItem.startSec : targetItem.startSec + targetItem.durationSec);
 }
 
 function timelineVideoTrackId(index: number): WorkspaceTimelineVideoTrack {
@@ -444,20 +388,15 @@ export function WorkspaceTimeline({
     const payload = parseTimelineNodeDragPayload(event.dataTransfer);
     if ((!payload?.nodeId && !payload?.assetId) || !payload.mediaKind) return null;
     const rawStartSec = secondsFromTimelineElement(event.clientX, event.currentTarget);
-    const startSec = !isInsertIntoClipEnabled
-      ? insertionBoundaryForTimelineTrack(items, track, rawStartSec)
-      : rawStartSec;
-    const isCompatibleDrop = isExternalTimelineDropCompatible(payload.mediaKind, track) && !lockedTrackSet.has(track);
-    const durationSec = durationForTimelineDropPayload(payload);
-    const preview: TimelineExternalDropPreview = {
-      durationSec,
-      isValid: isCompatibleDrop,
-      mediaKind: payload.mediaKind,
-      previewUrl: payload.previewUrl,
-      startSec,
-      title: titleForTimelineDropPayload(payload),
-      trackId: track,
-    };
+    const preview = resolveTimelineExternalDropPreview({
+      isInsertIntoClipEnabled,
+      items,
+      lockedTracks: lockedTrackSet,
+      payload,
+      rawStartSec,
+      track,
+    });
+    if (!preview) return null;
     event.preventDefault();
     event.dataTransfer.dropEffect = preview.isValid ? 'copy' : 'none';
     setExternalDropPreview(preview);
