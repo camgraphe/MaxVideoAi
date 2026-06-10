@@ -85,6 +85,21 @@ type ExecuteImageProviderWithOptionalLumaDirectParams = ExecuteLumaAgentsImageGe
   useLumaDirect: boolean;
 };
 
+type LumaAgentsImageRoutingEnv = Partial<
+  Record<
+    | 'LUMA_AGENTS_ENABLED'
+    | 'LUMA_AGENTS_IMAGE_DIRECT_ENABLED'
+    | 'LUMA_AGENTS_PUBLIC_ROUTING_ENABLED'
+    | 'LUMA_AGENTS_ADMIN_ONLY',
+    string | undefined
+  >
+>;
+
+type LumaAgentsImageDirectRoutingParams = {
+  isAdmin?: boolean;
+  env?: LumaAgentsImageRoutingEnv;
+};
+
 function flagEnabled(value: string | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
 }
@@ -98,8 +113,21 @@ function clampPollInterval(value: number): number {
   return Math.min(MAX_POLL_INTERVAL_MS, Math.max(MIN_POLL_INTERVAL_MS, Math.trunc(value)));
 }
 
-export function lumaAgentsImageDirectEnabled(): boolean {
-  return flagEnabled(ENV.LUMA_AGENTS_IMAGE_DIRECT_ENABLED);
+function readImageRoutingEnv(env: LumaAgentsImageRoutingEnv | undefined, key: keyof LumaAgentsImageRoutingEnv): string | undefined {
+  return env ? env[key] : ENV[key];
+}
+
+export function lumaAgentsImageDirectEnabled(params: LumaAgentsImageDirectRoutingParams = {}): boolean {
+  if (!flagEnabled(readImageRoutingEnv(params.env, 'LUMA_AGENTS_ENABLED'))) return false;
+  if (!flagEnabled(readImageRoutingEnv(params.env, 'LUMA_AGENTS_IMAGE_DIRECT_ENABLED'))) return false;
+
+  const isAdmin = params.isAdmin === true;
+  const adminOnly = flagEnabled(readImageRoutingEnv(params.env, 'LUMA_AGENTS_ADMIN_ONLY') ?? 'true');
+  const publicRoutingEnabled = flagEnabled(readImageRoutingEnv(params.env, 'LUMA_AGENTS_PUBLIC_ROUTING_ENABLED'));
+  if (adminOnly && !isAdmin) return false;
+  if (!publicRoutingEnabled && !isAdmin) return false;
+
+  return true;
 }
 
 function lumaAgentsFallbackToFalEnabled(): boolean {

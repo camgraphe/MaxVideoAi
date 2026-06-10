@@ -62,6 +62,7 @@ type ExecuteImageGenerationOptions = {
   jobSurface?: JobSurface;
   billingProductKey?: BillingProductKey | null;
   billingQuantityMultiplier?: number;
+  isAdminForDirectProvider?: boolean;
 };
 
 function fail(
@@ -82,6 +83,7 @@ export async function executeImageGeneration({
   jobSurface = 'image',
   billingProductKey = null,
   billingQuantityMultiplier = 1,
+  isAdminForDirectProvider = false,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
@@ -508,7 +510,9 @@ export async function executeImageGeneration({
         falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
         providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
         thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
-        useLumaDirect: isLumaAgentsImageEngineId(engine.id) && lumaAgentsImageDirectEnabled(),
+        useLumaDirect:
+          isLumaAgentsImageEngineId(engine.id) &&
+          lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),
         onProviderJobId(requestId) { providerJobId = requestId; },
         onProviderMode(nextProviderMode) { providerMode = nextProviderMode; },
       });

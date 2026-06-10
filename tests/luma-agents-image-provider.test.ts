@@ -3,7 +3,10 @@ import test from 'node:test';
 
 import { ImageGenerationExecutionError } from '../frontend/src/server/images/image-generation-error';
 import { LumaAgentsImageError } from '../frontend/src/server/images/luma-agents-error';
-import { executeLumaAgentsImageGenerationWithFalFallback } from '../frontend/src/server/images/luma-agents-execution';
+import {
+  executeLumaAgentsImageGenerationWithFalFallback,
+  lumaAgentsImageDirectEnabled,
+} from '../frontend/src/server/images/luma-agents-execution';
 import type { NormalizedLumaAgentsImageGeneration } from '../frontend/src/server/images/luma-agents-response';
 import { LUMA_AGENTS_PROVIDER } from '../frontend/src/lib/luma-agents';
 import type { GeneratedImage } from '../frontend/types/image-generation';
@@ -41,6 +44,75 @@ function baseParams() {
     signReferenceUrls: async (urls: string[]) => urls,
   };
 }
+
+test('Luma image direct routes only for admins before public rollout', () => {
+  const env = {
+    LUMA_AGENTS_ENABLED: 'true',
+    LUMA_AGENTS_IMAGE_DIRECT_ENABLED: 'true',
+    LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'false',
+    LUMA_AGENTS_ADMIN_ONLY: 'true',
+  };
+
+  assert.equal(lumaAgentsImageDirectEnabled({ isAdmin: true, env }), true);
+  assert.equal(lumaAgentsImageDirectEnabled({ isAdmin: false, env }), false);
+});
+
+test('Luma image direct routes public requests only after public routing is enabled', () => {
+  assert.equal(
+    lumaAgentsImageDirectEnabled({
+      isAdmin: false,
+      env: {
+        LUMA_AGENTS_ENABLED: 'true',
+        LUMA_AGENTS_IMAGE_DIRECT_ENABLED: 'true',
+        LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'true',
+        LUMA_AGENTS_ADMIN_ONLY: 'false',
+      },
+    }),
+    true
+  );
+});
+
+test('Luma image direct keeps public requests on fal while admin-only remains enabled', () => {
+  assert.equal(
+    lumaAgentsImageDirectEnabled({
+      isAdmin: false,
+      env: {
+        LUMA_AGENTS_ENABLED: 'true',
+        LUMA_AGENTS_IMAGE_DIRECT_ENABLED: 'true',
+        LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'true',
+        LUMA_AGENTS_ADMIN_ONLY: 'true',
+      },
+    }),
+    false
+  );
+});
+
+test('Luma image direct requires the global and image direct flags', () => {
+  assert.equal(
+    lumaAgentsImageDirectEnabled({
+      isAdmin: true,
+      env: {
+        LUMA_AGENTS_ENABLED: 'false',
+        LUMA_AGENTS_IMAGE_DIRECT_ENABLED: 'true',
+        LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'true',
+        LUMA_AGENTS_ADMIN_ONLY: 'false',
+      },
+    }),
+    false
+  );
+  assert.equal(
+    lumaAgentsImageDirectEnabled({
+      isAdmin: true,
+      env: {
+        LUMA_AGENTS_ENABLED: 'true',
+        LUMA_AGENTS_IMAGE_DIRECT_ENABLED: 'false',
+        LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'true',
+        LUMA_AGENTS_ADMIN_ONLY: 'false',
+      },
+    }),
+    false
+  );
+});
 
 test('Luma image direct success copies expiring provider image URLs before returning', async () => {
   const copiedInputs: GeneratedImage[][] = [];
