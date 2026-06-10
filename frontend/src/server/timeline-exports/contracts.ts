@@ -1,4 +1,4 @@
-import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 
 export type TimelineExportStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
 export type TimelineExportBillingKind = 'free' | 'paid';

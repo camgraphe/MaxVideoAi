@@ -1,6 +1,6 @@
 import { query, withDbTransaction } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 import type { TimelineExportBillingStatus } from './contracts';
 import { estimateTimelineExportPrice, resolveTimelineExportQuota } from './pricing';
 import {

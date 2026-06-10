@@ -51,9 +51,9 @@ import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
 } from './_lib/workspace-project-settings';
 import {
-  type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
 } from './_lib/workspace-timeline-render';
+import type { WorkspaceTimelineExportQualityPreset } from './_lib/workspace-timeline-export';
 import {
   defaultTimelineSelection,
   defaultTimelineSelectionIds,

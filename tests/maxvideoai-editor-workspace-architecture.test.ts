@@ -120,6 +120,7 @@ const projectSettingsPath = join(workspaceDir, '_lib/workspace-project-settings.
 const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
 const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.ts');
 const timelineRenderPath = join(workspaceDir, '_lib/workspace-timeline-render.ts');
+const timelineExportPath = join(workspaceDir, '_lib/workspace-timeline-export.ts');
 const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts');
 const timelineDropsPath = join(workspaceDir, '_lib/workspace-timeline-drops.ts');
 const timelineSelectionPath = join(workspaceDir, '_lib/workspace-timeline-selection.ts');
@@ -498,6 +499,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(timecodePath), 'timeline timecode helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineEditingPath), 'timeline editing helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineRenderPath), 'timeline final-render manifest helpers should live in a pure route-local helper');
+  assert.ok(existsSync(timelineExportPath), 'timeline export request and handoff helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineTracksPath), 'timeline track helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineFramesPath), 'timeline frame math should live under _lib/timeline');
   assert.ok(existsSync(timelineInteractionPath), 'timeline pointer interaction math should live under _lib/timeline');
@@ -591,6 +593,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timecodeSource = source(timecodePath);
   const timelineEditingSource = source(timelineEditingPath);
   const timelineRenderSource = source(timelineRenderPath);
+  const timelineExportSource = source(timelineExportPath);
   const timelineTracksSource = source(timelineTracksPath);
   const timelineDropsSource = source(timelineDropsPath);
   const timelineSelectionSource = source(timelineSelectionPath);
@@ -947,6 +950,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineRenderSource, /processing_media/, 'timeline render helper should block placeholder and processing media before export');
   assert.match(timelineRenderSource, /overlapping_clips/, 'timeline render helper should detect same-track overlaps before export');
   assert.match(timelineRenderSource, /transitionOut/, 'timeline render helper should preserve transition metadata for final render');
+  assert.doesNotMatch(timelineRenderSource, /buildWorkspaceTimelineVideoExportRequest/, 'timeline render helper should not own MP4 export request construction');
+  assert.match(timelineExportSource, /WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS/, 'timeline export helper should own export quality presets');
+  assert.match(timelineExportSource, /workspaceTimelineExportReadinessChecks/, 'timeline export helper should own export readiness checks');
+  assert.match(timelineExportSource, /buildWorkspaceTimelineVideoExportRequest/, 'timeline export helper should own the MP4 video export request contract');
+  assert.match(timelineExportSource, /buildWorkspaceTimelineEdl/, 'timeline export helper should keep EDL export local and separate from MP4 server render');
   assert.match(timelineRenderSource, /transform\?: WorkspaceTimelineItem\['transform'\]/, 'timeline render helper should carry clip transform settings');
   assert.match(timelineRenderSource, /audioMix\?: WorkspaceTimelineItem\['audioMix'\]/, 'timeline render helper should carry clip audio mix settings');
   assert.match(timelineRenderSource, /transform: item\.transform/, 'timeline render manifest should serialize clip transform settings');
@@ -1250,6 +1258,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportStateHookSource, /filterHiddenVideoTrackItems/, 'workspace export state hook should filter hidden video tracks for viewer and export state');
   assert.match(exportStateHookSource, /muteAudioTrackItems/, 'workspace export state hook should apply muted audio tracks for viewer and export state');
   assert.match(exportControllerSource, /serializeWorkspaceTimelineRenderManifest/, 'export controller should serialize the render manifest contract');
+  assert.match(exportControllerSource, /workspace-timeline-export/, 'export controller should import export-specific contracts from the timeline export helper');
   assert.match(exportControllerSource, /buildWorkspaceTimelineVideoExportRequest/, 'export controller should build the MP4 video export request contract');
   assert.match(exportControllerSource, /serializeWorkspaceTimelineVideoExportRequest/, 'export controller should serialize the video export request contract');
   assert.match(exportControllerSource, /buildWorkspaceTimelineEdl/, 'export controller should keep EDL export local and separate from MP4 server render');
@@ -3282,15 +3291,17 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
 
 test('MaxVideoAI editor timeline render manifest captures clips, assets, transitions, and blockers', async () => {
   const {
+    buildWorkspaceTimelineRenderManifest,
+    serializeWorkspaceTimelineRenderManifest,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render');
+  const {
     WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS,
     buildWorkspaceTimelineVideoExportRequest,
     buildWorkspaceTimelineEdl,
-    buildWorkspaceTimelineRenderManifest,
     serializeWorkspaceTimelineVideoExportRequest,
-    serializeWorkspaceTimelineRenderManifest,
     workspaceTimelineExportReadinessChecks,
     workspaceTimelineRenderReadinessLabel,
-  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render');
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export');
   const template = createProductAdWorkspaceTemplate();
   const items = template.timelineItems.map((item) =>
     item.id === 'timeline-output-01'

@@ -9,7 +9,7 @@ import {
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
   type WorkspaceTimelineRenderManifest,
-} from '../_lib/workspace-timeline-render';
+} from '../_lib/workspace-timeline-export';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 
 type WorkspaceExportDialogProps = {

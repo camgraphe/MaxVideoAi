@@ -1,0 +1,189 @@
+import type {
+  WorkspaceTimelineRenderClip,
+  WorkspaceTimelineRenderManifest,
+} from './workspace-timeline-render';
+import { isWorkspaceTimelineAudioTrack } from './workspace-timeline-tracks';
+import { formatWorkspaceTimecode } from './workspace-timecode';
+
+export type {
+  WorkspaceTimelineExportRangeMode,
+  WorkspaceTimelineRenderManifest,
+} from './workspace-timeline-render';
+
+export type WorkspaceTimelineExportQualityPreset = 'draft' | 'standard' | 'high';
+export type WorkspaceTimelineVideoExportFormat = 'mp4-h264';
+
+export type WorkspaceTimelineExportQualityPresetOption = {
+  id: WorkspaceTimelineExportQualityPreset;
+  label: string;
+  description: string;
+};
+
+export type WorkspaceTimelineVideoExportSettings = {
+  format: WorkspaceTimelineVideoExportFormat;
+  qualityPreset: WorkspaceTimelineExportQualityPreset;
+  includeAudio: boolean;
+  serverRenderMode: 'server';
+};
+
+export type WorkspaceTimelineVideoExportRequest = {
+  version: 1;
+  source: 'maxvideoai-editor';
+  idempotencyKey: string;
+  createdAt: string;
+  status: WorkspaceTimelineRenderManifest['status'];
+  manifest: WorkspaceTimelineRenderManifest;
+  exportSettings: WorkspaceTimelineVideoExportSettings;
+};
+
+export type WorkspaceTimelineExportReadinessCheck = {
+  id: 'media' | 'timeline' | 'range' | 'audio';
+  label: string;
+  status: 'pass' | 'warning' | 'blocking';
+  message: string;
+};
+
+export const WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS = [
+  {
+    id: 'draft',
+    label: 'Draft',
+    description: 'Fast review export with lighter compression.',
+  },
+  {
+    id: 'standard',
+    label: 'Standard',
+    description: 'Balanced MP4 for normal delivery.',
+  },
+  {
+    id: 'high',
+    label: 'High',
+    description: 'Higher bitrate master for final review.',
+  },
+] as const satisfies readonly WorkspaceTimelineExportQualityPresetOption[];
+
+function createExportIdempotencyKey(): string {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `export_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+export function workspaceTimelineExportReadinessChecks(
+  manifest: WorkspaceTimelineRenderManifest
+): WorkspaceTimelineExportReadinessCheck[] {
+  const blockingIssueCodes = new Set(
+    manifest.issues.filter((issue) => issue.severity === 'blocking').map((issue) => issue.code)
+  );
+  const warningIssueCodes = new Set(
+    manifest.issues.filter((issue) => issue.severity === 'warning').map((issue) => issue.code)
+  );
+  const clipCount = manifest.tracks.reduce((count, track) => count + track.clips.length, 0);
+  const audioClipCount = manifest.tracks
+    .filter((track) => isWorkspaceTimelineAudioTrack(track.id))
+    .reduce((count, track) => count + track.clips.length, 0);
+
+  return [
+    {
+      id: 'media',
+      label: 'Media',
+      status: blockingIssueCodes.has('missing_media') || blockingIssueCodes.has('processing_media') ? 'blocking' : 'pass',
+      message: blockingIssueCodes.has('missing_media') || blockingIssueCodes.has('processing_media')
+        ? 'Some clips are missing media or still processing.'
+        : `${clipCount} clip${clipCount === 1 ? '' : 's'} ready for export.`,
+    },
+    {
+      id: 'timeline',
+      label: 'Timeline',
+      status: blockingIssueCodes.has('overlapping_clips')
+        ? 'blocking'
+        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
+          ? 'warning'
+          : 'pass',
+      message: blockingIssueCodes.has('overlapping_clips')
+        ? 'Fix overlapping clips before export.'
+        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
+          ? 'Timeline has warnings, but export can be prepared.'
+          : 'No blocking timeline conflicts.',
+    },
+    {
+      id: 'range',
+      label: 'Range',
+      status: manifest.durationSec > 0 ? 'pass' : 'blocking',
+      message: manifest.durationSec > 0
+        ? `${manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Full sequence'} range is exportable.`
+        : 'Select a range with duration before export.',
+    },
+    {
+      id: 'audio',
+      label: 'Audio',
+      status: 'pass',
+      message: audioClipCount > 0 ? `${audioClipCount} audio clip${audioClipCount === 1 ? '' : 's'} included.` : 'No separate audio clips; embedded clip audio is preserved when available.',
+    },
+  ];
+}
+
+export function buildWorkspaceTimelineVideoExportRequest(
+  manifest: WorkspaceTimelineRenderManifest,
+  options?: {
+    qualityPreset?: WorkspaceTimelineExportQualityPreset;
+    includeAudio?: boolean;
+    createdAt?: string;
+    idempotencyKey?: string;
+  }
+): WorkspaceTimelineVideoExportRequest {
+  return {
+    version: 1,
+    source: 'maxvideoai-editor',
+    idempotencyKey: options?.idempotencyKey ?? createExportIdempotencyKey(),
+    createdAt: options?.createdAt ?? new Date().toISOString(),
+    status: manifest.status,
+    manifest,
+    exportSettings: {
+      format: 'mp4-h264',
+      qualityPreset: options?.qualityPreset ?? 'standard',
+      includeAudio: options?.includeAudio ?? true,
+      serverRenderMode: 'server',
+    },
+  };
+}
+
+export function serializeWorkspaceTimelineVideoExportRequest(request: WorkspaceTimelineVideoExportRequest): string {
+  return JSON.stringify(request, null, 2);
+}
+
+function edlClipSort(left: WorkspaceTimelineRenderClip, right: WorkspaceTimelineRenderClip): number {
+  return left.startSec - right.startSec || left.track.localeCompare(right.track) || left.id.localeCompare(right.id);
+}
+
+export function buildWorkspaceTimelineEdl(manifest: WorkspaceTimelineRenderManifest): string {
+  const fps = manifest.projectSettings?.fps ?? 24;
+  const clips = manifest.tracks
+    .flatMap((track) => track.clips)
+    .filter((clip) => clip.mediaKind !== 'audio')
+    .sort(edlClipSort);
+  const lines = [
+    `TITLE: ${manifest.projectName}`,
+    'FCM: NON-DROP FRAME',
+    `* EXPORT RANGE: ${manifest.exportRange.mode.toUpperCase()} ${formatWorkspaceTimecode(manifest.exportRange.startSec, fps)} - ${formatWorkspaceTimecode(manifest.exportRange.endSec, fps)}`,
+    '',
+  ];
+
+  clips.forEach((clip, index) => {
+    const eventNumber = String(index + 1).padStart(3, '0');
+    lines.push(
+      `${eventNumber}  TIMELINE V     C        ${formatWorkspaceTimecode(clip.sourceStartSec, fps)} ${formatWorkspaceTimecode(clip.sourceEndSec, fps)} ${formatWorkspaceTimecode(clip.startSec, fps)} ${formatWorkspaceTimecode(clip.endSec, fps)}`,
+      `* FROM CLIP: ${clip.title}`,
+      `* SOURCE FILE: ${clip.mediaUrl}`,
+      ''
+    );
+  });
+
+  return `${lines.join('\n').trimEnd()}\n`;
+}
+
+export function workspaceTimelineRenderReadinessLabel(manifest: WorkspaceTimelineRenderManifest): string {
+  const clipCount = manifest.tracks.reduce((count, track) => count + track.clips.length, 0);
+  if (manifest.status === 'blocked') {
+    const blockingCount = manifest.issues.filter((issue) => issue.severity === 'blocking').length;
+    return `Render blocked: ${blockingCount} issue${blockingCount > 1 ? 's' : ''} to fix.`;
+  }
+  return `Render manifest ready: ${clipCount} clip${clipCount > 1 ? 's' : ''}, ${Math.round(manifest.durationSec)}s.`;
+}

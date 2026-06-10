@@ -1,7 +1,7 @@
 import type {
   WorkspaceTimelineVideoExportRequest,
   WorkspaceTimelineVideoExportSettings,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 
 function isQualityPreset(value: unknown): value is WorkspaceTimelineVideoExportSettings['qualityPreset'] {
   return value === 'draft' || value === 'standard' || value === 'high';

@@ -4,11 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   buildWorkspaceTimelineEdl,
   buildWorkspaceTimelineVideoExportRequest,
-  serializeWorkspaceTimelineRenderManifest,
   serializeWorkspaceTimelineVideoExportRequest,
   type WorkspaceTimelineExportQualityPreset,
-  type WorkspaceTimelineRenderManifest,
   workspaceTimelineRenderReadinessLabel,
+} from '../_lib/workspace-timeline-export';
+import {
+  serializeWorkspaceTimelineRenderManifest,
+  type WorkspaceTimelineRenderManifest,
 } from '../_lib/workspace-timeline-render';
 import {
   RENDER_MANIFEST_STORAGE_KEY,
