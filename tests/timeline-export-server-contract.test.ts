@@ -12,10 +12,13 @@ const root = process.cwd();
 const schemaPath = join(root, 'frontend/src/server/timeline-exports/schema.ts');
 const repositoryPath = join(root, 'frontend/src/server/timeline-exports/repository.ts');
 const billingPath = join(root, 'frontend/src/server/timeline-exports/billing.ts');
+const ecsRunnerPath = join(root, 'frontend/src/server/timeline-exports/ecs-runner.ts');
 const rendererPath = join(root, 'frontend/src/server/timeline-exports/renderer.ts');
 const workerPath = join(root, 'frontend/scripts/run-timeline-export-worker.ts');
 const compositionPath = join(root, 'frontend/src/remotion/timeline-export/TimelineComposition.tsx');
 const operationsGuidePath = join(root, 'docs/engineering/maxvideoai-editor-server-render.md');
+const workerDockerfilePath = join(root, 'Dockerfile.timeline-worker');
+const envExamplePath = join(root, 'frontend/.env.local.example');
 
 test('timeline server export grants two free exports before paid pricing', () => {
   assert.equal(MAX_FREE_TIMELINE_SERVER_EXPORTS, 2);
@@ -93,7 +96,29 @@ test('timeline export creation reserves billing and inserts the job atomically',
   assert.match(billingSource, /pg_advisory_xact_lock/);
   assert.match(billingSource, /INSERT INTO app_timeline_exports/);
   assert.match(createRouteSource, /createTimelineExportJobWithReservation/);
+  assert.match(createRouteSource, /export const runtime = 'nodejs'/);
+  assert.match(createRouteSource, /launchTimelineExportWorkerTask/);
+  assert.match(createRouteSource, /!result\.reused && result\.job\.status === 'queued'/);
+  assert.match(createRouteSource, /releaseFailedTimelineExportBilling/);
+  assert.match(createRouteSource, /failTimelineExportJob/);
   assert.doesNotMatch(createRouteSource, /reserveTimelineExportBilling/, 'route should not reserve billing separately from job creation');
+});
+
+test('timeline export ECS runner starts one Fargate task without long route rendering', () => {
+  assert.ok(existsSync(ecsRunnerPath), 'ECS runner should exist');
+  const source = readFileSync(ecsRunnerPath, 'utf8');
+  assert.match(source, /import 'server-only'/, 'ECS runner should stay server-only');
+  assert.match(source, /@aws-sdk\/client-ecs/, 'ECS runner should use the ECS SDK');
+  assert.match(source, /RunTaskCommand/, 'ECS runner should launch tasks with RunTask');
+  assert.match(source, /launchType:\s*'FARGATE'/, 'ECS runner should launch Fargate tasks');
+  assert.match(source, /assignPublicIp:\s*'ENABLED'/, 'ECS runner should use public subnets without NAT');
+  assert.match(source, /TIMELINE_EXPORT_ECS_CLUSTER/);
+  assert.match(source, /TIMELINE_EXPORT_ECS_TASK_DEFINITION/);
+  assert.match(source, /TIMELINE_EXPORT_ECS_SUBNETS/);
+  assert.match(source, /TIMELINE_EXPORT_ECS_SECURITY_GROUP/);
+  assert.match(source, /TIMELINE_EXPORT_ECS_REGION/);
+  assert.match(source, /NODE_ENV === 'test'/, 'tests should not launch real ECS tasks');
+  assert.doesNotMatch(source, /CreateServiceCommand|UpdateServiceCommand/, 'exports should not create or update an always-on ECS service');
 });
 
 for (const routePath of [
@@ -123,10 +148,31 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
   assert.match(readFileSync(compositionPath, 'utf8'), /<Audio/);
 });
 
+test('timeline export worker has a dedicated Docker image and documented env', () => {
+  assert.ok(existsSync(workerDockerfilePath), 'dedicated worker Dockerfile should exist');
+  const dockerfile = readFileSync(workerDockerfilePath, 'utf8');
+  assert.match(dockerfile, /pnpm.*timeline-exports:worker:once/, 'worker image should run one queued export and exit');
+  assert.match(dockerfile, /chromium/, 'worker image should install Chromium for Remotion');
+  assert.match(dockerfile, /ffmpeg/, 'worker image should install FFmpeg for MP4 rendering');
+  assert.doesNotMatch(dockerfile, /mock-server\.js/, 'worker image must not reuse the mock API runtime');
+
+  const envSource = readFileSync(envExamplePath, 'utf8');
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_REGION=us-east-1/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_SUBNETS=/);
+  assert.doesNotMatch(envSource, /videohub-uploader/, 'worker docs should not reuse broad uploader credentials');
+});
+
 test('server render operations guide exists', () => {
   assert.ok(existsSync(operationsGuidePath), 'server render operations guide should exist');
   const source = readFileSync(operationsGuidePath, 'utf8');
   assert.match(source, /timeline-exports:worker/);
+  assert.match(source, /RunTask/);
+  assert.match(source, /Dockerfile\.timeline-worker/);
+  assert.match(source, /ecs:RunTask/);
+  assert.match(source, /iam:PassRole/);
   assert.match(source, /two free server exports/i);
   assert.match(source, /app_timeline_exports/);
 });

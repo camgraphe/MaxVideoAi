@@ -45,6 +45,7 @@
     "lighthouse:contact": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/contact && lhci collect --url=https://maxvideoai.com/contact --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/contact && cp -R .lighthouseci/* ./lighthouse-reports/contact/ && rm -rf .lighthouseci"
   },
   "dependencies": {
+    "@aws-sdk/client-ecs": "^3.1065.0",
     "@aws-sdk/client-s3": "^3.1040.0",
     "@aws-sdk/s3-request-presigner": "^3.1040.0",
     "@fal-ai/client": "^1.6.2",
