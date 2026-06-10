@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { TIMELINE_NODE_DRAG_TYPE } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop';
+import {
+  applyProjectMediaTimelineDragPayload,
+  projectMediaTimelineDragPayloadForAsset,
+  projectMediaTimelineDragPayloadForGeneratedNode,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
+  WorkspaceGraphNode,
   WorkspaceTimelineItem,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
@@ -34,6 +41,95 @@ function imageAsset(overrides: Partial<WorkspaceAssetRecord> = {}): WorkspaceAss
     ...overrides,
   };
 }
+
+function generatedVideoNode(overrides: Partial<WorkspaceGraphNode> = {}): WorkspaceGraphNode {
+  return {
+    id: 'generated-video-node',
+    type: 'output',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'output',
+      title: 'Dev Output Block',
+      output: {
+        kind: 'video',
+        modelId: 'veo-3.1',
+        modelLabel: 'Veo 3.1',
+        workflowType: 'image_to_video',
+        durationSec: 6,
+        status: 'ready',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        sourceShotId: 'shot-1',
+        url: '/media/generated.mp4',
+        thumbUrl: '/media/generated.jpg',
+      },
+    },
+    ...overrides,
+  };
+}
+
+test('project media drag payload preserves asset timeline duration and preview metadata', () => {
+  const payload = projectMediaTimelineDragPayloadForAsset(imageAsset({
+    id: 'asset-product',
+    filename: 'Product_shot.png',
+    durationSec: 4.2,
+    thumbUrl: '/media/product-thumb.jpg',
+  }));
+
+  assert.deepEqual(payload, {
+    assetId: 'asset-product',
+    durationSec: 4.2,
+    mediaKind: 'image',
+    previewUrl: '/media/product-thumb.jpg',
+    title: 'Product_shot.png',
+  });
+
+  const transferWrites = new Map<string, string>();
+  const dataTransfer = {
+    effectAllowed: 'none' as DataTransfer['effectAllowed'],
+    setData(format: string, value: string) {
+      transferWrites.set(format, value);
+    },
+  };
+
+  assert.ok(payload);
+  applyProjectMediaTimelineDragPayload(dataTransfer, payload);
+  assert.equal(dataTransfer.effectAllowed, 'copy');
+  assert.deepEqual(JSON.parse(transferWrites.get(TIMELINE_NODE_DRAG_TYPE) ?? '{}'), payload);
+  assert.equal(transferWrites.get('text/plain'), 'Product_shot.png');
+});
+
+test('project media drag payload only exposes completed generated media', () => {
+  const payload = projectMediaTimelineDragPayloadForGeneratedNode(generatedVideoNode());
+
+  assert.deepEqual(payload, {
+    durationSec: 6,
+    mediaKind: 'video',
+    nodeId: 'generated-video-node',
+    previewUrl: '/media/generated.jpg',
+    title: 'Dev Output Block',
+  });
+
+  const placeholderPayload = projectMediaTimelineDragPayloadForGeneratedNode(generatedVideoNode({
+    data: {
+      kind: 'output',
+      title: 'Processing Output',
+      output: {
+        kind: 'video',
+        modelId: 'veo-3.1',
+        modelLabel: 'Veo 3.1',
+        workflowType: 'image_to_video',
+        durationSec: 6,
+        status: 'processing',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        sourceShotId: 'shot-1',
+        url: '/media/generated.mp4',
+        thumbUrl: '/media/generated.jpg',
+      },
+    },
+  }));
+
+  assert.equal(placeholderPayload, null);
+});
 
 test('project media timeline resolver places compatible media on the requested track', () => {
   const result = resolveProjectAssetTimelineInsert({

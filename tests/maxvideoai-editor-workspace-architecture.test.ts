@@ -130,6 +130,7 @@ const timelineExportPath = join(workspaceDir, '_lib/workspace-timeline-export.ts
 const timelineTracksPath = join(workspaceDir, '_lib/workspace-timeline-tracks.ts');
 const timelineDropsPath = join(workspaceDir, '_lib/workspace-timeline-drops.ts');
 const timelineSelectionPath = join(workspaceDir, '_lib/workspace-timeline-selection.ts');
+const projectMediaDragPath = join(workspaceDir, '_lib/workspace-project-media-drag.ts');
 const projectMediaTimelinePath = join(workspaceDir, '_lib/workspace-project-media-timeline.ts');
 const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts');
 const timelineInteractionPath = join(workspaceDir, '_lib/timeline/timeline-interaction.ts');
@@ -243,7 +244,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(sequenceSnapshotsHookPath), 'active sequence snapshots and persisted project state should live in a focused route-local hook');
   assert.ok(existsSync(shellActionsHookPath), 'workspace shell actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
-  assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
+  assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag event wiring should live in a focused route-local controller');
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
   assert.ok(existsSync(exportStateHookPath), 'viewer and export derived state should live in a focused route-local hook');
   assert.ok(existsSync(assetLibraryModalPath), 'asset picker modal should live in a route-local editor component');
@@ -263,6 +264,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
   assert.ok(existsSync(timelineDropsPath), 'timeline drop compatibility should live in a pure route-local helper');
   assert.ok(existsSync(timelineSelectionPath), 'timeline selection and preview projection helpers should live in a pure route-local helper');
+  assert.ok(existsSync(projectMediaDragPath), 'project media timeline drag payloads should live in a pure route-local helper');
   assert.ok(existsSync(projectMediaTimelinePath), 'project media timeline insertion should live in a pure route-local helper');
   assert.ok(existsSync(timelineClipPath), 'timeline clips should live in a focused route-local timeline component');
   assert.ok(existsSync(timelineContextMenusPath), 'timeline context menus should live in a focused route-local timeline component');
@@ -710,6 +712,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineTracksSource = source(timelineTracksPath);
   const timelineDropsSource = source(timelineDropsPath);
   const timelineSelectionSource = source(timelineSelectionPath);
+  const projectMediaDragSource = source(projectMediaDragPath);
   const projectMediaTimelineSource = source(projectMediaTimelinePath);
   const timelineFramesSource = source(timelineFramesPath);
   const timelineInteractionSource = source(timelineInteractionPath);
@@ -1626,8 +1629,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /projectAssets/, 'viewer sidebar should render persisted project media assets, not canvas nodes');
   assert.match(projectMediaControllerSource, /onInsertProjectAsset/, 'viewer sidebar should insert imported project media at the playhead through its controller');
   assert.match(timelineProjectSidebarSource, /data-project-media-asset-id/, 'viewer sidebar should expose imported media as timeline-draggable project assets');
-  assert.match(projectMediaControllerSource, /assetId/, 'viewer sidebar timeline drag payload should identify the imported project asset');
-  assert.match(projectMediaControllerSource, /TIMELINE_NODE_DRAG_TYPE/, 'project media controller should own timeline drag payload creation');
+  assert.match(projectMediaDragSource, /assetId/, 'viewer sidebar timeline drag payload should identify the imported project asset');
+  assert.match(projectMediaDragSource, /TIMELINE_NODE_DRAG_TYPE/, 'project media drag helper should own timeline drag payload creation');
+  assert.match(projectMediaDragSource, /setDragImage/, 'project media drag helper should set a visible drag image for timeline drops');
+  assert.match(projectMediaControllerSource, /applyProjectMediaTimelineDragPayload/, 'project media controller should apply the shared timeline drag payload helper');
   assert.match(timelineProjectSidebarSource, /projectMediaGrid/, 'viewer sidebar should present sequences, imports, and generated clips in one media grid');
   assert.match(mediaStyleSource, /\.timelineProjectSidebar/, 'project media CSS module should own the viewer media sidebar shell styles');
   assert.match(mediaStyleSource, /\.projectMediaGrid/, 'project media CSS module should own the media grid styles');
@@ -1635,7 +1640,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.projectMediaGrid/, 'main editor CSS should no longer own project media grid styles after modularization');
   assert.ok(lineCount(mediaStyleSource) <= 1200, 'project media CSS module should stay under the focused module size threshold');
   assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');
-  assert.match(projectMediaControllerSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
+  assert.match(projectMediaDragSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
   assert.match(timelineProjectSidebarSource, /New folder/, 'viewer sidebar should expose project media folder creation in the footer');
   assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
   assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');

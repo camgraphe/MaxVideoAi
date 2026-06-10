@@ -7,11 +7,15 @@ import type {
   WorkspaceProjectSettings,
 } from '../_lib/workspace-types';
 import {
-  workspaceAssetTimelineDuration,
-  workspaceOutputTimelineDuration,
-} from '../_lib/workspace-timeline-editing';
+  applyProjectMediaTimelineDragPayload,
+  projectMediaAssetThumbnailUrl,
+  projectMediaGeneratedThumbnailUrl,
+  projectMediaTimelineDragPayloadForAsset,
+  projectMediaTimelineDragPayloadForGeneratedNode,
+  projectMediaTimelineKindForAsset,
+  projectMediaTimelineKindForGeneratedNode,
+} from '../_lib/workspace-project-media-drag';
 
-const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 
 export type ProjectMediaSelection =
@@ -87,21 +91,6 @@ function generatedClipNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
   return nodes.filter((node) => node.data.kind === 'output' && Boolean(node.data.output));
 }
 
-function timelineMediaKindForProjectAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' | 'video' | null {
-  if (asset.kind === 'audio') return 'audio';
-  if (asset.kind === 'video') return 'video';
-  if (asset.kind === 'image' || asset.kind === 'logo') return 'image';
-  return null;
-}
-
-function timelineMediaKindForGeneratedNode(node: WorkspaceGraphNode): 'audio' | 'image' | 'video' | null {
-  const output = node.data.output;
-  if (!output || output.status === 'placeholder' || output.status === 'processing' || output.status === 'failed') return null;
-  if (output.kind === 'audio') return output.url ? 'audio' : null;
-  if (output.kind === 'image') return output.url || output.thumbUrl ? 'image' : null;
-  return output.url ? 'video' : null;
-}
-
 function mediaCardKindForAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' | 'video' {
   if (asset.kind === 'audio') return 'audio';
   if (asset.kind === 'video') return 'video';
@@ -124,46 +113,16 @@ function mediaSubtitleForGeneratedNode(node: WorkspaceGraphNode): string {
   return [output.durationSec ? formatProjectMediaDuration(output.durationSec) : null, output.modelLabel].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
 }
 
-function generatedThumbnailUrl(node: WorkspaceGraphNode): string | null {
-  const output = node.data.output;
-  return output?.thumbUrl ?? output?.url ?? null;
-}
-
-function assetThumbnailUrl(asset: WorkspaceAssetRecord): string | null {
-  if (asset.kind === 'audio') return null;
-  if (asset.kind === 'video') return asset.thumbUrl ?? null;
-  return asset.thumbUrl ?? asset.url ?? null;
-}
-
 function beginProjectAssetTimelineDrag(event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord): void {
-  const mediaKind = timelineMediaKindForProjectAsset(asset);
-  if (!mediaKind) return;
-  const title = asset.filename;
-  event.dataTransfer.effectAllowed = 'copy';
-  event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
-    assetId: asset.id,
-    durationSec: workspaceAssetTimelineDuration(asset),
-    mediaKind,
-    previewUrl: assetThumbnailUrl(asset),
-    title,
-  }));
-  event.dataTransfer.setData('text/plain', title);
+  const payload = projectMediaTimelineDragPayloadForAsset(asset);
+  if (!payload) return;
+  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
 }
 
 function beginGeneratedNodeTimelineDrag(event: ReactDragEvent<HTMLElement>, node: WorkspaceGraphNode): void {
-  const mediaKind = timelineMediaKindForGeneratedNode(node);
-  const output = node.data.output;
-  if (!mediaKind || !output) return;
-  const title = node.data.title;
-  event.dataTransfer.effectAllowed = 'copy';
-  event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify({
-    durationSec: workspaceOutputTimelineDuration(output),
-    nodeId: node.id,
-    mediaKind,
-    previewUrl: generatedThumbnailUrl(node),
-    title,
-  }));
-  event.dataTransfer.setData('text/plain', title);
+  const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
+  if (!payload) return;
+  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
 }
 
 export function useProjectMediaController({
@@ -214,15 +173,15 @@ export function useProjectMediaController({
     () => projectAssets
       .filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind))
       .map((asset) => {
-        const mediaKind = timelineMediaKindForProjectAsset(asset);
+        const payload = projectMediaTimelineDragPayloadForAsset(asset);
         return {
           asset,
           cardKind: mediaCardKindForAsset(asset),
           key: projectMediaSelectionKey('asset', asset.id),
-          mediaKind,
+          mediaKind: payload?.mediaKind ?? projectMediaTimelineKindForAsset(asset),
           subtitle: mediaSubtitleForAsset(asset),
-          thumbnailUrl: assetThumbnailUrl(asset),
-          timelineDurationSec: workspaceAssetTimelineDuration(asset),
+          thumbnailUrl: projectMediaAssetThumbnailUrl(asset),
+          timelineDurationSec: payload?.durationSec ?? 0,
         };
       }),
     [matchesSearch, projectAssets]
@@ -232,15 +191,14 @@ export function useProjectMediaController({
     () => generatedNodes
       .filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated'))
       .map((node) => {
-        const mediaKind = timelineMediaKindForGeneratedNode(node);
-        const output = node.data.output;
+        const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
         return {
           key: projectMediaSelectionKey('generated', node.id),
-          mediaKind,
+          mediaKind: payload?.mediaKind ?? projectMediaTimelineKindForGeneratedNode(node),
           node,
           subtitle: mediaSubtitleForGeneratedNode(node),
-          thumbnailUrl: generatedThumbnailUrl(node),
-          timelineDurationSec: output ? workspaceOutputTimelineDuration(output) : undefined,
+          thumbnailUrl: projectMediaGeneratedThumbnailUrl(node),
+          timelineDurationSec: payload?.durationSec,
         };
       }),
     [generatedNodes, matchesSearch]
