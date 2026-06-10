@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
 import { TimelineProjectSidebar } from './_components/TimelineProjectSidebar';
@@ -15,6 +15,7 @@ import { useWorkspaceCanvasTimelineActions } from './_hooks/useWorkspaceCanvasTi
 import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImportActions';
 import { useWorkspaceCanvasTemplateActions } from './_hooks/useWorkspaceCanvasTemplateActions';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
+import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
 import { useWorkspaceGenerationActions } from './_hooks/useWorkspaceGenerationActions';
 import { useWorkspaceGraphActions } from './_hooks/useWorkspaceGraphActions';
 import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
@@ -30,6 +31,7 @@ import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineCl
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
 import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineTrackActions';
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
+import { useWorkspaceTimelineSelectionSync } from './_hooks/useWorkspaceTimelineSelectionSync';
 import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
 import type {
   WorkspaceAssetRecord,
@@ -136,7 +138,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [exportQualityPreset, setExportQualityPreset] = useState<WorkspaceTimelineExportQualityPreset>('standard');
   const [inspectedSequenceId, setInspectedSequenceId] = useState<string | null>(null);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
-  const [notice, setNotice] = useState<string | null>(null);
+  const { notice, setNotice } = useWorkspaceEditorNotice();
   const [hydrated, setHydrated] = useState(false);
   const [canvasRevision, setCanvasRevision] = useState(0);
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<string | null>(null);
@@ -275,16 +277,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     stopPlayback: stopTimelinePlayback,
   });
 
-  useEffect(() => {
-    timelineItemsRef.current = timelineItems;
-  }, [timelineItems]);
-
-  useEffect(() => {
-    if (!notice) return undefined;
-    const timeoutId = window.setTimeout(() => setNotice(null), 5200);
-    return () => window.clearTimeout(timeoutId);
-  }, [notice]);
-
   const {
     handleCreateSequence,
     handleRenameActiveSequence,
@@ -358,33 +350,15 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     workspaceStorageKey,
   });
 
-  useEffect(() => {
-    if (!timelineItems.length) {
-      if (selectedTimelineItemId || selectedTimelineItemIds.length) {
-        applyTimelineSelection([]);
-      }
-      setIsTimelinePlaying(false);
-      return;
-    }
-    const existingItemIds = new Set(timelineItems.map((item) => item.id));
-    const currentSelection = selectedTimelineItemIds.filter((itemId) => existingItemIds.has(itemId));
-    const nextSelection = selectedTimelineItemIds.length
-      ? currentSelection.length
-        ? currentSelection
-        : defaultTimelineSelectionIds(timelineItems)
-      : [];
-    if (
-      nextSelection.length !== selectedTimelineItemIds.length ||
-      nextSelection.some((itemId, index) => itemId !== selectedTimelineItemIds[index])
-    ) {
-      applyTimelineSelection(nextSelection);
-      return;
-    }
-    const nextSelectedItemId = nextSelection.at(-1) ?? null;
-    if (selectedTimelineItemId !== nextSelectedItemId) {
-      setSelectedTimelineItemId(nextSelectedItemId);
-    }
-  }, [applyTimelineSelection, selectedTimelineItemId, selectedTimelineItemIds, setIsTimelinePlaying, timelineItems]);
+  useWorkspaceTimelineSelectionSync({
+    applyTimelineSelection,
+    selectedTimelineItemId,
+    selectedTimelineItemIds,
+    setIsTimelinePlaying,
+    setSelectedTimelineItemId,
+    timelineItems,
+    timelineItemsRef,
+  });
 
   const {
     handleCreateNodeFromHandleDrop,
