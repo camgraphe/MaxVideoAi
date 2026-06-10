@@ -1,6 +1,6 @@
 'use client';
 
-import styles from '../../_styles/canvas.module.css';
+import styles from '../../_styles/canvas-nodes.module.css';
 
 export function VideoPreview({
   posterUrl,
