@@ -1,8 +1,14 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
-
 import { AlertTriangle, CheckCircle2, Plus, Send, Sparkles } from 'lucide-react';
+import { NodeInspectorConnections } from './NodeInspectorConnections';
+import {
+  NodeInspectorMediaPreview,
+  isPlayableAudioUrl,
+  isPlayableImageUrl,
+  isPlayableVideoUrl,
+  outputStatus,
+} from './NodeInspectorMediaPreview';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
 import type {
@@ -10,7 +16,6 @@ import type {
   WorkspaceGraphNode,
   WorkspaceModelCapability,
   WorkspaceOutputMetadata,
-  WorkspaceOutputStatus,
   WorkspacePromptRole,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
@@ -28,10 +33,6 @@ type NodeSettingsPanelProps = {
   onSendOutputToTimeline: (nodeId: string) => void;
   onOpenAssetLibrary: (nodeId: string) => void;
 };
-
-function connectedEdges(nodeId: string, edges: WorkspaceGraphEdge[]): WorkspaceGraphEdge[] {
-  return edges.filter((edge) => edge.source === nodeId || edge.target === nodeId);
-}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <label className={styles.settingsLabel}>{children}</label>;
@@ -102,91 +103,6 @@ function promptRoleLabel(role: WorkspacePromptRole): string {
   return edgeLabel(role);
 }
 
-function isPlayableVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:video/')) return true;
-  return /\.(mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableAudioUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:audio/')) return true;
-  return /\.(mp3|wav|ogg|m4a|aac|mp4|webm|mov|m4v)(?:[?#].*)?$/i.test(url);
-}
-
-function isPlayableImageUrl(url?: string | null): boolean {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:image/')) return true;
-  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(url);
-}
-
-function outputStatus(output: WorkspaceOutputMetadata | undefined): WorkspaceOutputStatus {
-  if (!output) return 'placeholder';
-  if (output.status) return output.status;
-  if (output.kind === 'video') return isPlayableVideoUrl(output.url) ? 'ready' : 'placeholder';
-  return output.url || output.thumbUrl ? 'ready' : 'placeholder';
-}
-
-function InspectorMediaPreview({
-  kind,
-  thumbUrl,
-  url,
-}: {
-  kind?: string;
-  thumbUrl?: string | null;
-  url?: string | null;
-}) {
-  const playableVideoUrl = kind === 'video' && isPlayableVideoUrl(url) ? url : null;
-  const playableAudioUrl = kind === 'audio' && isPlayableAudioUrl(url) ? url : null;
-  const previewUrl = thumbUrl ?? url ?? null;
-  if (playableVideoUrl) {
-    return (
-      <div className={styles.inspectorPreview}>
-        <video className={`${styles.previewVideo} nodrag`} controls playsInline preload="metadata" poster={thumbUrl ?? undefined} src={playableVideoUrl} />
-      </div>
-    );
-  }
-  if (playableAudioUrl) {
-    return (
-      <div className={styles.inspectorPreview}>
-        <audio className={`${styles.previewAudio} nodrag`} controls preload="metadata" src={playableAudioUrl} />
-      </div>
-    );
-  }
-  if (!previewUrl) return null;
-  return (
-    <div className={styles.inspectorPreview}>
-      <img src={previewUrl} alt="" />
-    </div>
-  );
-}
-
-function ConnectionsList({ node, edges }: { node: WorkspaceGraphNode; edges: WorkspaceGraphEdge[] }) {
-  const connections = connectedEdges(node.id, edges);
-  const incomingCount = connections.filter((edge) => edge.target === node.id).length;
-  const outgoingCount = connections.length - incomingCount;
-  const heading = incomingCount && outgoingCount ? 'Connections' : incomingCount ? 'Connected inputs' : 'Connected outputs';
-  return (
-    <div className={styles.connectedList}>
-      <div className={styles.sectionHeading}>
-        <span>{heading}</span>
-        <span>{connections.length}</span>
-      </div>
-      {connections.length ? (
-        connections.map((edge) => (
-          <div key={edge.id} className={styles.connectedRow}>
-            <span style={{ background: edge.data?.color ?? '#8b5cf6' }} />
-            <p>{edgeLabel(edge.data?.kind ?? 'reference')}</p>
-            <small>{edge.source === node.id ? `To ${edge.target}` : `From ${edge.source}`}</small>
-          </div>
-        ))
-      ) : (
-        <p className={styles.mutedText}>No graph connections yet.</p>
-      )}
-    </div>
-  );
-}
-
 function AssetInspector({
   node,
   edges,
@@ -212,7 +128,7 @@ function AssetInspector({
   );
   return (
     <>
-      <InspectorMediaPreview kind={asset?.kind} thumbUrl={asset?.thumbUrl ?? null} url={asset?.url ?? null} />
+      <NodeInspectorMediaPreview kind={asset?.kind} thumbUrl={asset?.thumbUrl ?? null} url={asset?.url ?? null} />
       {!asset?.thumbUrl && !asset?.url ? (
         <button type="button" className={styles.primaryPanelButton} onClick={() => onOpenAssetLibrary(node.id)}>
           <Plus size={15} />
@@ -240,7 +156,7 @@ function AssetInspector({
         <span>Outputs</span>
         <strong>{outputCount}</strong>
       </div>
-      <ConnectionsList node={node} edges={edges} />
+      <NodeInspectorConnections node={node} edges={edges} />
     </>
   );
 }
@@ -288,7 +204,7 @@ function PromptInspector({
           onChange={(event) => onPatchNodeData(node.id, { promptText: event.currentTarget.value })}
         />
       </FieldLabel>
-      <ConnectionsList node={node} edges={edges} />
+      <NodeInspectorConnections node={node} edges={edges} />
     </>
   );
 }
@@ -479,7 +395,7 @@ function ShotInspector({
         ))}
       </div>
 
-      <ConnectionsList node={node} edges={edges} />
+      <NodeInspectorConnections node={node} edges={edges} />
     </>
   );
 }
@@ -500,7 +416,7 @@ function OutputInspector({
   const outputCount = Array.isArray(node.data.sourceHandles) ? node.data.sourceHandles.length : 0;
   return (
     <>
-      <InspectorMediaPreview kind={output?.kind} thumbUrl={output?.thumbUrl ?? null} url={output?.url ?? null} />
+      <NodeInspectorMediaPreview kind={output?.kind} thumbUrl={output?.thumbUrl ?? null} url={output?.url ?? null} />
       <div className={styles.infoGrid}>
         <span>Model</span>
         <strong>{output?.modelLabel ?? 'Unknown'}</strong>
@@ -523,7 +439,7 @@ function OutputInspector({
           Insert at playhead
         </button>
       </div>
-      <ConnectionsList node={node} edges={edges} />
+      <NodeInspectorConnections node={node} edges={edges} />
     </>
   );
 }

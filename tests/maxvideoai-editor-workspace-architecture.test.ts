@@ -76,6 +76,8 @@ const timelineProjectSidebarPath = join(workspaceDir, '_components/TimelineProje
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
+const nodeInspectorConnectionsPath = join(workspaceDir, '_components/NodeInspectorConnections.tsx');
+const nodeInspectorMediaPreviewPath = join(workspaceDir, '_components/NodeInspectorMediaPreview.tsx');
 const timelineClipInspectorPath = join(workspaceDir, '_components/TimelineClipInspector.tsx');
 const timelinePath = join(workspaceDir, '_components/WorkspaceTimeline.tsx');
 const timelineClipPath = join(workspaceDir, '_components/timeline/TimelineClip.tsx');
@@ -225,6 +227,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(studioHeaderSessionPath), 'studio account and wallet status should live in a route-local component');
   assert.ok(existsSync(workspaceEditorTopbarPath), 'workspace topbar should live in a route-local shell component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
+  assert.ok(existsSync(nodeInspectorConnectionsPath), 'node inspector connection list should live in a focused route-local component');
+  assert.ok(existsSync(nodeInspectorMediaPreviewPath), 'node inspector media preview should live in a focused route-local component');
   assert.ok(existsSync(timelineClipInspectorPath), 'timeline clip inspector should live in a route-local component');
   assert.ok(existsSync(timelinePath), 'timeline should live in a route-local component');
   assert.ok(existsSync(timelineDropsPath), 'timeline drop compatibility should live in a pure route-local helper');
@@ -563,6 +567,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const runtimeModalsSource = source(runtimeModalsPath);
   const nodeSource = source(nodeTypesPath);
   const settingsSource = source(settingsPath);
+  const nodeInspectorConnectionsSource = source(nodeInspectorConnectionsPath);
+  const nodeInspectorMediaPreviewSource = source(nodeInspectorMediaPreviewPath);
   const timelineClipInspectorSource = source(timelineClipInspectorPath);
   const workspaceSource = source(workspacePagePath);
   const capabilitySource = source(capabilitiesPath);
@@ -1099,7 +1105,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(inspectorStyleSource, /\.settingsInput/, 'inspector CSS module should own form controls');
   assert.match(inspectorStyleSource, /\.pricingActionSummary/, 'shot inspector price action summary should be styled in focused inspector CSS');
   assert.doesNotMatch(styleSource, /\.pricingActionSummary/, 'main editor CSS should no longer own inspector price summary styles after modularization');
-  assert.match(settingsSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
+  assert.match(settingsSource, /NodeInspectorMediaPreview/, 'node settings panel should delegate media previews to a focused component');
+  assert.match(settingsSource, /NodeInspectorConnections/, 'node settings panel should delegate connection rows to a focused component');
+  assert.doesNotMatch(settingsSource, /connections\.map/, 'node settings panel should not render graph connection rows inline');
+  assert.match(nodeInspectorConnectionsSource, /connectedEdges/, 'node inspector connection component should own graph connection row derivation');
+  assert.match(nodeInspectorConnectionsSource, /edgeLabel/, 'node inspector connection component should render connector labels');
+  assert.doesNotMatch(settingsSource, /<video[\s\S]*controls/, 'node settings panel should not own playable media preview markup inline');
+  assert.match(nodeInspectorMediaPreviewSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
+  assert.match(nodeInspectorMediaPreviewSource, /outputStatus/, 'node inspector media preview should own output status derivation');
   assert.match(settingsSource, /disabled=\{!canSendOutputToTimeline\}/, 'output inspector should disable timeline send for placeholder and processing outputs');
   assert.match(settingsSource, /onOpenAssetLibrary/, 'asset inspector should expose the same library picker action');
   assert.match(videoViewerSource, /export function WorkspaceVideoViewer/, 'viewer component should be exported');
