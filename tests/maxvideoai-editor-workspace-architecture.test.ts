@@ -103,6 +103,7 @@ const programPlaybackLayersPath = join(workspaceDir, '_components/viewer/Program
 const programControlsPath = join(workspaceDir, '_components/viewer/ProgramControls.tsx');
 const programPlaybackSyncPath = join(workspaceDir, '_components/viewer/useProgramPlaybackSync.ts');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
+const nodeFramePath = join(workspaceDir, '_components/nodes/workspace-node-frame.tsx');
 const nodeMediaPreviewPath = join(workspaceDir, '_components/nodes/workspace-node-media-preview.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
@@ -274,6 +275,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(programControlsPath), 'program playback controls should live in a route-local viewer component');
   assert.ok(existsSync(programPlaybackSyncPath), 'program playback synchronization should live in a route-local viewer hook');
   assert.ok(existsSync(nodeTypesPath), 'custom node renderers should live in a route-local node module');
+  assert.ok(existsSync(nodeFramePath), 'shared node frame behavior should live in a focused route-local node component');
   assert.ok(existsSync(nodeMediaPreviewPath), 'custom node media previews should live in a focused route-local node component');
   assert.ok(existsSync(edgeTypesPath), 'custom edge renderers should live in a route-local edge module');
   assert.ok(existsSync(stylesPath), 'editor styling should be isolated in a route-local CSS module');
@@ -621,6 +623,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const exportDialogSource = source(exportDialogPath);
   const runtimeModalsSource = source(runtimeModalsPath);
   const nodeSource = source(nodeTypesPath);
+  const nodeFrameSource = source(nodeFramePath);
   const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
   const nodeInspectorConnectionsSource = source(nodeInspectorConnectionsPath);
@@ -726,12 +729,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const programPlaybackSyncSource = source(programPlaybackSyncPath);
   const shotInputDockStyle = cssBlock(canvasNodeStyleSource, '.shotInputDock');
 
+  assert.ok(lineCount(nodeSource) <= 360, 'workspace node renderers should stay focused on block-specific markup');
+  assert.ok(lineCount(nodeFrameSource) <= 260, 'workspace node frame should stay focused on shared React Flow behavior');
   assert.match(canvasSource, /@xyflow\/react/, 'canvas should use React Flow for pan, zoom, nodes, handles, and edges');
   assert.match(canvasSource, /_styles\/canvas\.module\.css/, 'canvas surface should import focused canvas CSS');
   assert.match(canvasMapSource, /_styles\/canvas-map\.module\.css/, 'canvas map should import focused canvas map CSS');
   assert.match(canvasHandleDropPreviewSource, /_styles\/canvas\.module\.css/, 'canvas handle previews should import focused canvas CSS');
   assert.match(canvasPaletteDragPreviewSource, /_styles\/canvas\.module\.css/, 'canvas palette previews should import focused canvas CSS');
-  assert.match(nodeSource, /_styles\/canvas-nodes\.module\.css/, 'workspace nodes should import focused canvas node CSS');
+  assert.match(nodeSource, /_styles\/canvas-nodes\.module\.css/, 'workspace node renderers should import focused canvas node CSS');
+  assert.match(nodeFrameSource, /_styles\/canvas-nodes\.module\.css/, 'workspace node frame should import focused canvas node CSS');
+  assert.match(nodeSource, /workspace-node-frame/, 'workspace node renderers should delegate shared frame behavior');
   assert.match(nodeMediaPreviewSource, /_styles\/canvas-nodes\.module\.css/, 'node media previews should import focused canvas node CSS');
   assert.match(timelineProjectSidebarSource, /WorkspaceProjectSequenceSummary/, 'viewer sidebar should receive summarized project sequences');
   assert.match(timelineProjectSidebarSource, /onSelectSequence/, 'viewer sidebar should expose sequence switching');
@@ -791,15 +798,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   for (const nodeName of ['AssetImageNode', 'AssetVideoNode', 'AssetAudioNode', 'TextPromptNode', 'ShotNode', 'OutputNode']) {
     assert.match(nodeSource, new RegExp(`export function ${nodeName}`), `${nodeName} should be exported`);
   }
-  assert.match(nodeSource, /NodeResizeControl/, 'content source nodes should use React Flow resize controls');
-  assert.match(nodeSource, /SOURCE_RESIZABLE_NODE_KINDS/, 'node renderer should centralize which block kinds can be resized');
-  assert.match(nodeSource, /'asset-image'[\s\S]*'asset-video'[\s\S]*'asset-audio'[\s\S]*'text-prompt'[\s\S]*'output'/, 'image, video, audio, prompt, and output blocks should be resizable');
-  assert.doesNotMatch(nodeSource, /SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>\(\[[^\]]*'shot'/, 'generate blocks should keep standard non-resizable layout');
-  assert.match(nodeSource, /position="bottom-left"/, 'resizable blocks should expose a discreet bottom-left resize selector');
-  assert.match(nodeSource, /styles\.nodeResizeControl/, 'resize selector should use isolated editor CSS');
-  assert.match(nodeSource, /styles\.sourceResizableNode/, 'resizable source nodes should opt into fluid card sizing');
-  assert.match(nodeSource, /minWidth=\{SOURCE_NODE_MIN_WIDTH\}/, 'resize control should keep a standard minimum width');
-  assert.match(nodeSource, /minHeight=\{SOURCE_NODE_MIN_HEIGHT\}/, 'resize control should keep a standard minimum height');
+  assert.match(nodeFrameSource, /NodeResizeControl/, 'content source nodes should use React Flow resize controls');
+  assert.match(nodeFrameSource, /SOURCE_RESIZABLE_NODE_KINDS/, 'node frame should centralize which block kinds can be resized');
+  assert.match(nodeFrameSource, /'asset-image'[\s\S]*'asset-video'[\s\S]*'asset-audio'[\s\S]*'text-prompt'[\s\S]*'output'/, 'image, video, audio, prompt, and output blocks should be resizable');
+  assert.doesNotMatch(nodeFrameSource, /SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>\(\[[^\]]*'shot'/, 'generate blocks should keep standard non-resizable layout');
+  assert.match(nodeFrameSource, /position="bottom-left"/, 'resizable blocks should expose a discreet bottom-left resize selector');
+  assert.match(nodeFrameSource, /styles\.nodeResizeControl/, 'resize selector should use isolated editor CSS');
+  assert.match(nodeFrameSource, /styles\.sourceResizableNode/, 'resizable source nodes should opt into fluid card sizing');
+  assert.match(nodeFrameSource, /minWidth=\{SOURCE_NODE_MIN_WIDTH\}/, 'resize control should keep a standard minimum width');
+  assert.match(nodeFrameSource, /minHeight=\{SOURCE_NODE_MIN_HEIGHT\}/, 'resize control should keep a standard minimum height');
   assert.match(canvasNodeStyleSource, /\.sourceResizableNode/, 'resizable source node sizing should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl/, 'bottom-left resize selector should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.nodeResizeGrip/, 'resize selector should have a discreet visual grip');
