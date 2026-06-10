@@ -22,9 +22,12 @@ import {
 import {
   normalizePersistedWorkspaceState,
   normalizeUserCanvasTemplate,
+  mergePersistedWorkspaceWithServerSequences,
   readStudioProjectFromApi,
+  readStudioSequencesFromApi,
   readUserCanvasTemplatesFromApi,
-  saveStudioProjectToApi,
+  saveStudioWorkspaceToApi,
+  shouldApplyStudioProjectWorkspaceState,
 } from '../_state/workspace-api-persistence';
 import {
   readPersistedWorkspaceState,
@@ -233,10 +236,18 @@ export function useWorkspacePersistenceEffects({
 
     const projectController = new AbortController();
     if (projectId) {
-      void readStudioProjectFromApi(projectId, projectController.signal).then((serverProject) => {
+      void Promise.all([
+        readStudioProjectFromApi(projectId, projectController.signal),
+        readStudioSequencesFromApi(projectId, projectController.signal),
+      ]).then(([serverProject, serverSequences]) => {
         if (cancelled || !serverProject) return;
         setStoredProjectName(serverProject.name);
-        const serverPersisted = normalizePersistedWorkspaceState(serverProject.workspaceState);
+        const serverPersistedBase = shouldApplyStudioProjectWorkspaceState(serverProject.workspaceState, serverSequences)
+          ? normalizePersistedWorkspaceState(serverProject.workspaceState)
+          : null;
+        const serverPersisted = serverPersistedBase
+          ? mergePersistedWorkspaceWithServerSequences(serverPersistedBase, serverSequences)
+          : null;
         if (serverPersisted) {
           applyPersistedWorkspace(serverPersisted);
           if (typeof window !== 'undefined') {
@@ -301,7 +312,7 @@ export function useWorkspacePersistenceEffects({
     const state = buildPersistedWorkspaceState();
     const controller = new AbortController();
     const saveTimer = window.setTimeout(() => {
-      void saveStudioProjectToApi({
+      void saveStudioWorkspaceToApi({
         projectId,
         name: activeTemplateName,
         canvasTemplateId: activeTemplateId,

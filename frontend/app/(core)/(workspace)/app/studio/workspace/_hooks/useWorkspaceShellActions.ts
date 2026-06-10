@@ -9,7 +9,7 @@ import type {
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
 } from '../_lib/workspace-types';
-import { saveStudioProjectToApi } from '../_state/workspace-api-persistence';
+import { saveStudioWorkspaceToApi } from '../_state/workspace-api-persistence';
 import {
   coerceTimelinePanelHeight,
   type PersistedWorkspaceState,
@@ -79,7 +79,7 @@ export function useWorkspaceShellActions({
       return;
     }
 
-    void saveStudioProjectToApi({
+    void saveStudioWorkspaceToApi({
       projectId,
       name: activeTemplateName,
       canvasTemplateId: activeTemplateId,

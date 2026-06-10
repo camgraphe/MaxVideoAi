@@ -419,7 +419,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /useWorkspaceShellActions/, 'workspace should delegate shell-level actions to a route-local hook');
   assert.match(exportStateHookSource, /export function useWorkspaceExportState/, 'workspace export state hook should expose a focused orchestration boundary');
   assert.match(shellActionsHookSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
-  assert.match(shellActionsHookSource, /saveStudioProjectToApi/, 'workspace shell action hook should save before returning to projects');
+  assert.match(shellActionsHookSource, /saveStudioWorkspaceToApi/, 'workspace shell action hook should save project plus sequences before returning to projects');
   assert.match(workspaceEditorLayoutSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
   assert.match(workspaceSource, /workspaceStorageKeyForProject/, 'workspace persistence should be scoped by project id when present');
   assert.doesNotMatch(workspaceSource, /from '@\/lib\/authFetch'/, 'workspace orchestrator should not own Studio API fetch plumbing');
@@ -428,7 +428,14 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSource, /useWorkspacePersistenceEffects/, 'workspace should delegate hydration and autosave side effects to a route-local hook');
   assert.match(persistenceEffectsHookSource, /readStudioProject\(projectId\)/, 'workspace persistence hook should hydrate new project settings from the local project fallback');
   assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi\(projectId/, 'workspace persistence hook should hydrate project state from the Studio API when available');
-  assert.match(persistenceEffectsHookSource, /saveStudioProjectToApi/, 'workspace persistence hook should autosave project state to the Studio API when available');
+  assert.match(persistenceEffectsHookSource, /readStudioSequencesFromApi\(projectId/, 'workspace persistence hook should hydrate server sequence records when available');
+  assert.match(persistenceEffectsHookSource, /shouldApplyStudioProjectWorkspaceState/, 'workspace persistence hook should ignore stripped project timeline snapshots when sequence hydration is unavailable');
+  assert.match(persistenceEffectsHookSource, /mergePersistedWorkspaceWithServerSequences/, 'workspace persistence hook should merge server sequences into project state instead of using two timeline sources');
+  assert.match(persistenceEffectsHookSource, /saveStudioWorkspaceToApi/, 'workspace persistence hook should autosave project and sequence state through one API boundary');
+  assert.match(workspaceApiPersistenceSource, /saveStudioSequencesToApi/, 'Studio API persistence should own sequence record synchronization');
+  assert.match(workspaceApiPersistenceSource, /stripWorkspaceSequencesForProjectApi/, 'Studio API persistence should strip timeline records from project workspaceState after sequence sync succeeds');
+  assert.match(workspaceApiPersistenceSource, /shouldApplyStudioProjectWorkspaceState/, 'Studio API persistence should define stripped workspace fallback rules');
+  assert.match(workspaceApiPersistenceSource, /mergePersistedWorkspaceWithServerSequences/, 'Studio API persistence should define the sequence merge rule');
   assert.match(persistenceEffectsHookSource, /readUserCanvasTemplatesFromApi/, 'workspace persistence hook should hydrate user canvas templates from the Studio API when available');
   assert.doesNotMatch(workspaceSource, /readStudioProjectFromApi\(projectId/, 'workspace orchestrator should not own project API hydration');
   assert.doesNotMatch(workspaceSource, /readUserCanvasTemplatesFromApi/, 'workspace orchestrator should not own user canvas template hydration');
@@ -909,7 +916,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspacePersistenceSource, /function writeUserCanvasTemplates/, 'workspace persistence module should own local canvas template writes');
   assert.match(persistenceEffectsHookSource, /readPersistedWorkspaceState/, 'workspace persistence hook should own local workspace hydration side effects');
   assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi/, 'workspace persistence hook should own server workspace hydration side effects');
-  assert.match(persistenceEffectsHookSource, /saveStudioProjectToApi/, 'workspace persistence hook should own server autosave side effects');
+  assert.match(persistenceEffectsHookSource, /saveStudioWorkspaceToApi/, 'workspace persistence hook should own server autosave side effects');
   assert.match(workspaceNormalizersSource, /function normalizeOutputOnlySourceNodes/, 'workspace normalizers should own stale source-node handle cleanup');
   assert.match(workspaceNormalizersSource, /function normalizePlaceholderOutputNodes/, 'workspace normalizers should own stale output placeholder cleanup');
   assert.match(workspaceNormalizersSource, /function normalizeTimelineMediaUrls/, 'workspace normalizers should own timeline media URL hydration');
