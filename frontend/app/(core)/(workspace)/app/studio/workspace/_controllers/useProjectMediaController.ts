@@ -21,7 +21,7 @@ export type ProjectMediaSelection =
 export type ProjectMediaContextMenu = {
   id: string;
   title: string;
-  type: 'asset' | 'generated';
+  type: 'asset' | 'generated' | 'sequence';
   x: number;
   y: number;
 };
@@ -62,6 +62,8 @@ type UseProjectMediaControllerArgs = {
   onClearSequenceInspector: () => void;
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteSequence: (sequenceId: string) => void;
+  onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: () => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
@@ -171,6 +173,8 @@ export function useProjectMediaController({
   onClearSequenceInspector,
   onDeleteGeneratedClip,
   onDeleteProjectAsset,
+  onDeleteSequence,
+  onDuplicateSequence,
   onImportMedia,
   onInspectSequence,
   onInsertGeneratedClip,
@@ -184,7 +188,10 @@ export function useProjectMediaController({
 
   const totalItems = sequences.length + projectAssets.length + generatedNodes.length;
   const selectedKey = selectedMedia ? projectMediaSelectionKey(selectedMedia.type, selectedMedia.id) : null;
-  const selectedCanDelete = selectedMedia?.type === 'asset' || selectedMedia?.type === 'generated';
+  const selectedCanDelete =
+    selectedMedia?.type === 'asset' ||
+    selectedMedia?.type === 'generated' ||
+    (selectedMedia?.type === 'sequence' && sequences.length > 1);
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
   const matchesSearch = useMemo(() => {
@@ -268,21 +275,30 @@ export function useProjectMediaController({
 
   const insertMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onInsertProjectAsset(menu.id);
-    else onInsertGeneratedClip(menu.id);
-  }, [onInsertGeneratedClip, onInsertProjectAsset]);
+    else if (menu.type === 'generated') onInsertGeneratedClip(menu.id);
+    else selectSequence(menu.id);
+  }, [onInsertGeneratedClip, onInsertProjectAsset, selectSequence]);
 
   const deleteMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onDeleteProjectAsset(menu.id);
-    else onDeleteGeneratedClip(menu.id);
+    else if (menu.type === 'generated') onDeleteGeneratedClip(menu.id);
+    else onDeleteSequence(menu.id);
     setSelectedMedia(null);
-  }, [onDeleteGeneratedClip, onDeleteProjectAsset]);
+  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteSequence]);
+
+  const duplicateMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
+    if (menu.type !== 'sequence') return;
+    onDuplicateSequence(menu.id);
+    setSelectedMedia(null);
+  }, [onDuplicateSequence]);
 
   const deleteSelected = useCallback(() => {
     if (!selectedMedia || !selectedCanDelete) return;
     if (selectedMedia.type === 'asset') onDeleteProjectAsset(selectedMedia.id);
     if (selectedMedia.type === 'generated') onDeleteGeneratedClip(selectedMedia.id);
+    if (selectedMedia.type === 'sequence') onDeleteSequence(selectedMedia.id);
     setSelectedMedia(null);
-  }, [onDeleteGeneratedClip, onDeleteProjectAsset, selectedCanDelete, selectedMedia]);
+  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteSequence, selectedCanDelete, selectedMedia]);
 
   useEffect(() => {
     if (!contextMenu) return undefined;
@@ -308,6 +324,7 @@ export function useProjectMediaController({
     contextMenu,
     deleteMenuItem,
     deleteSelected,
+    duplicateMenuItem,
     importMedia: onImportMedia,
     insertMenuItem,
     openContextMenu,

@@ -9,6 +9,10 @@ import {
   type WorkspaceSequenceRecord,
 } from '../_state/workspace-state';
 import { sequenceNameForIndex } from '../_state/workspace-selectors';
+import {
+  createWorkspaceSequenceDuplicate,
+  resolveWorkspaceSequenceDelete,
+} from '../_state/workspace-sequence-operations';
 import { defaultTimelineSelectionIds } from '../_lib/workspace-timeline-selection';
 import { normalizeWorkspaceTimelineIdentities } from '../_lib/workspace-timeline-editing';
 import type {
@@ -85,6 +89,8 @@ export function useWorkspaceSequenceActions({
   timelineItemsRef,
 }: UseWorkspaceSequenceActionsParams): {
   handleCreateSequence: () => void;
+  handleDeleteSequence: (sequenceId: string) => void;
+  handleDuplicateSequence: (sequenceId: string) => void;
   handleRenameActiveSequence: (name: string) => void;
   handleSelectSequence: (sequenceId: string) => void;
 } {
@@ -170,6 +176,63 @@ export function useWorkspaceSequenceActions({
     [applyWorkspaceSequence, projectSettings, sequences.length, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
   );
 
+  const handleDuplicateSequence = useCallback(
+    (sequenceId: string) => {
+      const currentSequence = snapshotActiveSequence();
+      const savedSequences = upsertWorkspaceSequence(sequences, currentSequence);
+      const sourceSequence = savedSequences.find((sequence) => sequence.id === sequenceId);
+      if (!sourceSequence) {
+        setNotice('Sequence not found.');
+        return;
+      }
+
+      const duplicatedSequence = createWorkspaceSequenceDuplicate(sourceSequence, createLocalWorkspaceSequenceId());
+      setSequences((current) => upsertWorkspaceSequence(upsertWorkspaceSequence(current, currentSequence), duplicatedSequence));
+      setActiveSequenceId(duplicatedSequence.id);
+      applyWorkspaceSequence(duplicatedSequence);
+      setInspectedSequenceId(duplicatedSequence.id);
+      setActiveEditorSurface('timeline');
+      setFocusMode('viewer');
+      setNotice(`${duplicatedSequence.name} created.`);
+    },
+    [applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
+  );
+
+  const handleDeleteSequence = useCallback(
+    (sequenceId: string) => {
+      const currentSequence = snapshotActiveSequence();
+      const savedSequences = upsertWorkspaceSequence(sequences, currentSequence);
+      const deleteResult = resolveWorkspaceSequenceDelete({
+        activeSequenceId,
+        sequenceId,
+        sequences: savedSequences,
+      });
+      if (!deleteResult.ok && deleteResult.reason === 'not_found') {
+        setNotice('Sequence not found.');
+        return;
+      }
+      if (!deleteResult.ok && deleteResult.reason === 'last_sequence') {
+        setNotice('Keep at least one sequence in the project.');
+        return;
+      }
+      if (!deleteResult.ok) return;
+      if (typeof window !== 'undefined' && !window.confirm(`Delete "${deleteResult.deletedSequence.name}"? This removes its timeline from the project.`)) return;
+
+      setSequences(deleteResult.nextSequences);
+      if (deleteResult.deletedActiveSequence) {
+        setActiveSequenceId(deleteResult.nextActiveSequence.id);
+        applyWorkspaceSequence(deleteResult.nextActiveSequence);
+        setInspectedSequenceId(deleteResult.nextActiveSequence.id);
+      } else {
+        setInspectedSequenceId((current) => (current === sequenceId ? null : current));
+      }
+      setActiveEditorSurface('timeline');
+      setFocusMode('viewer');
+      setNotice(`${deleteResult.deletedSequence.name} deleted.`);
+    },
+    [activeSequenceId, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
+  );
+
   const handleRenameActiveSequence = useCallback(
     (name: string) => {
       setSequences((current) => upsertWorkspaceSequence(current, {
@@ -182,6 +245,8 @@ export function useWorkspaceSequenceActions({
 
   return {
     handleCreateSequence,
+    handleDeleteSequence,
+    handleDuplicateSequence,
     handleRenameActiveSequence,
     handleSelectSequence,
   };

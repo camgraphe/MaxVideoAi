@@ -29,6 +29,8 @@ type TimelineProjectSidebarProps = {
   timelineItems: WorkspaceTimelineItem[];
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteSequence: (sequenceId: string) => void;
+  onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: () => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
@@ -164,11 +166,13 @@ function ProjectMediaContextMenu({
   menu,
   onClose,
   onDelete,
+  onDuplicate,
   onInsert,
 }: {
   menu: ProjectMediaContextMenu | null;
   onClose: () => void;
   onDelete: (menu: ProjectMediaContextMenu) => void;
+  onDuplicate: (menu: ProjectMediaContextMenu) => void;
   onInsert: (menu: ProjectMediaContextMenu) => void;
 }) {
   if (!menu) return null;
@@ -186,9 +190,18 @@ function ProjectMediaContextMenu({
         onInsert(menu);
         onClose();
       }}>
-        <Plus size={13} />
-        Insert at playhead
+        {menu.type === 'sequence' ? <Film size={13} /> : <Plus size={13} />}
+        {menu.type === 'sequence' ? 'Open sequence' : 'Insert at playhead'}
       </button>
+      {menu.type === 'sequence' ? (
+        <button type="button" role="menuitem" onClick={() => {
+          onDuplicate(menu);
+          onClose();
+        }}>
+          <FileVideo2 size={13} />
+          Duplicate
+        </button>
+      ) : null}
       <button type="button" role="menuitem" className={styles.projectMediaDangerAction} onClick={() => {
         onDelete(menu);
         onClose();
@@ -233,6 +246,8 @@ export function TimelineProjectSidebar({
   sequences,
   onDeleteGeneratedClip,
   onDeleteProjectAsset,
+  onDeleteSequence,
+  onDuplicateSequence,
   onImportMedia,
   onInspectSequence,
   onInsertGeneratedClip,
@@ -249,6 +264,8 @@ export function TimelineProjectSidebar({
     onClearSequenceInspector,
     onDeleteGeneratedClip,
     onDeleteProjectAsset,
+    onDeleteSequence,
+    onDuplicateSequence,
     onImportMedia,
     onInspectSequence,
     onInsertGeneratedClip,
@@ -299,6 +316,7 @@ export function TimelineProjectSidebar({
             isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
             kind="sequence"
             onClick={() => projectMedia.selectSequence(sequence.id)}
+            onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequence.name, type: 'sequence' })}
             subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} clip${sequence.clipCount === 1 ? '' : 's'}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
             thumbnailUrl={sequence.previewUrl}
             title={sequence.name}
@@ -391,6 +409,7 @@ export function TimelineProjectSidebar({
         menu={projectMedia.contextMenu}
         onClose={() => projectMedia.setContextMenu(null)}
         onDelete={projectMedia.deleteMenuItem}
+        onDuplicate={projectMedia.duplicateMenuItem}
         onInsert={projectMedia.insertMenuItem}
       />
     </aside>

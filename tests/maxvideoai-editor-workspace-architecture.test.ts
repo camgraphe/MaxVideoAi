@@ -158,6 +158,7 @@ const templateVariantBasePath = join(workspaceDir, '_lib/templates/variant-base.
 const workspaceStatePath = join(workspaceDir, '_state/workspace-state.ts');
 const workspaceSelectorsPath = join(workspaceDir, '_state/workspace-selectors.ts');
 const workspaceSequenceSnapshotPath = join(workspaceDir, '_state/workspace-sequence-snapshot.ts');
+const workspaceSequenceOperationsPath = join(workspaceDir, '_state/workspace-sequence-operations.ts');
 const workspaceApiPersistencePath = join(workspaceDir, '_state/workspace-api-persistence.ts');
 const workspacePersistencePath = join(workspaceDir, '_state/workspace-persistence.ts');
 const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizers.ts');
@@ -304,6 +305,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const dynamicWorkspacePageSource = source(dynamicWorkspacePagePath);
   const workspaceSource = source(workspacePagePath);
   const workspaceStateSource = source(workspaceStatePath);
+  const workspaceSequenceOperationsSource = source(workspaceSequenceOperationsPath);
   const workspaceApiPersistenceSource = source(workspaceApiPersistencePath);
   const canvasControllerHookSource = source(canvasControllerHookPath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
@@ -446,6 +448,15 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(sequenceActionsHookSource, /handleSelectSequence/, 'sequence action hook should switch between stored sequences');
   assert.match(sequenceActionsHookSource, /handleRenameActiveSequence/, 'sequence action hook should own active sequence renames');
   assert.match(sequenceActionsHookSource, /upsertWorkspaceSequence/, 'sequence action hook should preserve the current sequence before switching');
+  assert.match(sequenceActionsHookSource, /handleDuplicateSequence/, 'sequence action hook should own sequence duplication');
+  assert.match(sequenceActionsHookSource, /handleDeleteSequence/, 'sequence action hook should own sequence deletion');
+  assert.match(sequenceActionsHookSource, /createWorkspaceSequenceDuplicate/, 'sequence action hook should delegate duplication record creation to the pure state helper');
+  assert.match(sequenceActionsHookSource, /resolveWorkspaceSequenceDelete/, 'sequence action hook should delegate delete fallback decisions to the pure state helper');
+  assert.match(workspaceSequenceOperationsSource, /export function createWorkspaceSequenceDuplicate/, 'sequence operations helper should own duplicate sequence record creation');
+  assert.match(workspaceSequenceOperationsSource, /export function resolveWorkspaceSequenceDelete/, 'sequence operations helper should own delete fallback resolution');
+  assert.match(workspaceEditorLayoutSource, /onDeleteSequence=\{sequence\.handleDeleteSequence\}/, 'viewer project sidebar should delete sequences through sequence actions');
+  assert.match(workspaceEditorLayoutSource, /onDuplicateSequence=\{sequence\.handleDuplicateSequence\}/, 'viewer project sidebar should duplicate sequences through sequence actions');
+  assert.match(projectMediaControllerSource, /type: 'asset' \| 'generated' \| 'sequence'/, 'project media controller should treat sequences as first-class selectable project media items');
   assert.match(projectMediaActionsHookSource, /resolveProjectAssetTimelineInsert/, 'project media action hook should route asset insertion through the pure timeline helper');
   assert.match(projectMediaActionsHookSource, /handleImportProjectMedia/, 'project media action hook should open the import picker');
   assert.match(projectMediaActionsHookSource, /handleDeleteProjectAsset/, 'project media action hook should own imported asset deletion');
@@ -593,6 +604,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(workspaceStatePath), 'workspace persisted state contracts should live in _state/workspace-state.ts');
   assert.ok(existsSync(workspaceSelectorsPath), 'workspace derived state selectors should live in _state/workspace-selectors.ts');
   assert.ok(existsSync(workspaceSequenceSnapshotPath), 'active sequence snapshots should live in a pure route-local state helper');
+  assert.ok(existsSync(workspaceSequenceOperationsPath), 'workspace sequence list operations should live in a pure route-local state helper');
   assert.ok(existsSync(workspaceApiPersistencePath), 'workspace API persistence and persisted state normalization should live in _state/workspace-api-persistence.ts');
   assert.ok(existsSync(workspacePersistencePath), 'workspace local persistence helpers should live in _state/workspace-persistence.ts');
   assert.ok(existsSync(workspaceNormalizersPath), 'workspace graph and media normalization should live in _state/workspace-normalizers.ts');
@@ -1287,7 +1299,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceEditorLayoutSource, /selectedSequence=\{exportState\.selectedSequenceForInspector\}/, 'viewer mode inspector should receive selected sequence settings');
   assert.match(timelineProjectSidebarSource, /useProjectMediaController/, 'project media sidebar should delegate media behavior to the project media controller');
   assert.match(timelineProjectSidebarSource, /_styles\/media\.module\.css/, 'project media sidebar should import its focused media CSS module');
+  assert.match(timelineProjectSidebarSource, /Open sequence/, 'sequence cards should open a sequence from the Project media context menu');
+  assert.match(timelineProjectSidebarSource, /Duplicate/, 'sequence cards should expose duplication from the Project media context menu');
+  assert.match(timelineProjectSidebarSource, /onDuplicate=\{projectMedia\.duplicateMenuItem\}/, 'project media sidebar should wire sequence duplication through its controller');
   assert.match(projectMediaControllerSource, /onInspectSequence\(sequenceId\)/, 'project media sequence cards should route sequence selection into the inspector');
+  assert.match(projectMediaControllerSource, /onDuplicateSequence\(menu\.id\)/, 'project media controller should route sequence duplication to sequence actions');
   assert.match(timelineClipInspectorSource, /Sequence settings/, 'timeline inspector should expose selected sequence settings');
   assert.match(timelineClipInspectorSource, /Sequence aspect ratio/, 'timeline inspector should expose a sequence aspect ratio selector');
   assert.match(timelineClipInspectorSource, /Sequence resolution/, 'timeline inspector should expose a sequence resolution selector');
