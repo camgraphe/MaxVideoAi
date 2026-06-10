@@ -6,7 +6,7 @@
     "description": "Use Luma Uni-1 Max in MaxVideoAI for premium 2K stills, product visuals, typography-sensitive layouts, source-image edits and reference-led image workflows."
   },
   "overview": "Luma Uni-1 Max is the higher-fidelity Uni image route in MaxVideoAI for selected stills that need stronger product detail, careful revisions, typography-sensitive layouts and reference-led creative direction.",
-  "pricingNotes": "Display prices use MaxVideoAI fal-reference pricing. Uni-1 Max is not presented as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.",
+  "pricingNotes": "Display prices use MaxVideoAI pricing. Uni-1 Max is not presented as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.",
   "hero": {
     "title": "Luma Uni-1 Max - premium 2K image generation and edits",
     "intro": "Create hero stills, product images, poster concepts and careful source-image revisions with a higher-fidelity Uni route.",
@@ -43,7 +43,7 @@
     { "label": "References", "body": "Text requests can use multiple references; edits use a source image plus optional references" },
     { "label": "Style", "body": "Auto and manga style controls where exposed" },
     { "label": "Output format", "body": "PNG or JPEG in the active image workspace" },
-    { "label": "Pricing", "body": "Public examples use MaxVideoAI fal-reference display pricing" }
+    { "label": "Pricing", "body": "Public examples use MaxVideoAI display pricing" }
   ],
   "promptStructure": {
     "title": "Prompt mini-guide",
@@ -101,7 +101,7 @@
     },
     {
       "q": "How is Uni-1 Max pricing shown?",
-      "a": "Displayed examples use MaxVideoAI fal-reference pricing with margin. The exact app quote appears before generation."
+      "a": "Displayed examples use MaxVideoAI pricing with margin. The exact app quote appears before generation."
     }
   ],
   "custom": {
@@ -121,7 +121,7 @@
       "Higher-fidelity still route||Use Max when the selected image needs more detail and finish.",
       "Product and typography focus||Describe labels, hierarchy and surfaces explicitly, then inspect the result.",
       "Reference-led edits||Use a source image plus purposeful references for controlled revisions.",
-      "Pricing context||Display prices use MaxVideoAI fal-reference pricing and the app confirms the exact quote."
+      "Pricing context||Display prices use MaxVideoAI pricing and the app confirms the exact quote."
     ],
     "specTitle": "Uni-1 Max image specs",
     "specNote": "Specs describe the public MaxVideoAI image workspace route.",
@@ -138,7 +138,7 @@
       {
         "title": "Pricing behavior",
         "items": [
-          "Base image and reference costs follow fal-reference pricing.",
+          "Base image and reference costs follow MaxVideoAI display pricing.",
           "MaxVideoAI display margin is included in public examples.",
           "The exact app quote is authoritative before generation.",
           "Max is a higher-fidelity route, not a lower-price promise."
@@ -171,7 +171,7 @@
       "Still images only.",
       "Not positioned as always cheaper or faster than Uni-1.",
       "Exact typography and labels need review.",
-      "Public pricing follows fal-reference display pricing."
+      "Public pricing follows MaxVideoAI display pricing."
     ],
     "safetyTitle": "Safety and likeness",
     "safetyRules": [

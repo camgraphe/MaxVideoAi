@@ -3,10 +3,10 @@
   "versionLabel": "Uni-1",
   "seo": {
     "title": "Luma Uni-1: Image Pricing, References and Editing | MaxVideoAI",
-    "description": "Use Luma Uni-1 in MaxVideoAI for 2K text-to-image, source-image edits, multi-reference layouts, optional web-grounded visual research and fal-reference display pricing."
+    "description": "Use Luma Uni-1 in MaxVideoAI for 2K text-to-image, source-image edits, multi-reference layouts, optional web-grounded visual research and MaxVideoAI display pricing."
   },
   "overview": "Luma Uni-1 is a 2K image generation and editing model in MaxVideoAI for still-image concepts, source edits, layout reasoning, multi-reference guidance and visual research. It is an image-only route.",
-  "pricingNotes": "Display prices use MaxVideoAI fal-reference pricing. Reference and edit examples include source/reference image counts where shown, and the exact app quote appears before generation.",
+  "pricingNotes": "Display prices use MaxVideoAI pricing. Reference and edit examples include source/reference image counts where shown, and the exact app quote appears before generation.",
   "hero": {
     "title": "Luma Uni-1 - 2K image generation and editing",
     "intro": "Create still images, edit a source image and guide layouts with references before selecting the best still for product, brand, storyboard or motion handoff work.",
@@ -44,7 +44,7 @@
     { "label": "Aspect ratios", "body": "Wide, square, portrait and extended ratios on text-to-image" },
     { "label": "Styles", "body": "Auto and manga style controls where exposed" },
     { "label": "Output format", "body": "PNG or JPEG in the active image workspace" },
-    { "label": "Pricing", "body": "Public copy uses MaxVideoAI fal-reference display pricing, not lower direct-provider pricing promises" }
+    { "label": "Pricing", "body": "Public copy uses MaxVideoAI display pricing, not lower provider-cost promises" }
   ],
   "promptStructure": {
     "title": "Prompt mini-guide",
@@ -98,7 +98,7 @@
     },
     {
       "q": "How should I price a Uni-1 run?",
-      "a": "Use the displayed MaxVideoAI quote. Public copy uses fal-reference pricing with margin rather than promising lower direct Luma pricing."
+      "a": "Use the displayed MaxVideoAI quote. Public copy uses MaxVideoAI pricing with margin rather than promising lower provider costs."
     },
     {
       "q": "Should I use Uni-1 or Uni-1 Max?",
@@ -122,7 +122,7 @@
       "Image-only workflow||Use Uni-1 for still creation and edits, not direct motion generation.",
       "Reference roles||Tell the model which reference controls product, layout, style or palette.",
       "Web-grounded option||Use web search only when current visual context improves the brief.",
-      "Pricing context||Display prices use MaxVideoAI fal-reference pricing and the app confirms the final quote."
+      "Pricing context||Display prices use MaxVideoAI pricing and the app confirms the final quote."
     ],
     "specTitle": "Uni-1 image specs",
     "specNote": "Specs describe the public MaxVideoAI image workspace route.",
@@ -139,7 +139,7 @@
       {
         "title": "Pricing behavior",
         "items": [
-          "Base image and reference costs follow fal-reference pricing.",
+          "Base image and reference costs follow MaxVideoAI display pricing.",
           "MaxVideoAI display margin is reflected in public examples.",
           "The exact app quote is authoritative before generation.",
           "Direct-provider discounts are not promised in public copy."
@@ -172,7 +172,7 @@
       "Still images only.",
       "Exact text and small labels need manual review.",
       "Web-grounded output still needs human verification.",
-      "Public pricing follows fal-reference display pricing."
+      "Public pricing follows MaxVideoAI display pricing."
     ],
     "safetyTitle": "Safety and likeness",
     "safetyRules": [

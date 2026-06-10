@@ -168,7 +168,7 @@ export const LUMA_UNI_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'Image generation and editing',
     seoText:
-      'Luma Uni-1 is available in MaxVideoAI as a public image generation and image editing engine with fallback-safe fal endpoints.',
+      'Luma Uni-1 is available in MaxVideoAI as a public image generation and image editing engine with source and reference image controls.',
     prompts: [
       {
         title: 'Reference-led product image',

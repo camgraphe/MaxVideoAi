@@ -3959,10 +3959,10 @@ const LUMA_RAY_32_COPY: LocalizedTemplateCopy = {
     hero: {
       eyebrow: 'LUMA CURRENT VIDEO ROUTE',
       title: 'Luma Ray 3.2',
-      subtitle: 'Cinematic Ray 3.2 motion for 5s or 10s shots, routed through direct Luma route with fal fallback when needed.',
-      subtitleHighlights: ['Cinematic Ray 3.2 motion', '5s or 10s shots', 'direct Luma route with fal fallback'],
+      subtitle: 'Cinematic Ray 3.2 motion for 5s or 10s shots with public Luma video controls.',
+      subtitleHighlights: ['Cinematic Ray 3.2 motion', '5s or 10s shots', 'public Luma video controls'],
       paragraph:
-        'Use Ray 3.2 for current Luma text-to-video and image-to-video work when you need short cinematic clips, 540p to 1080p output, optional loop on supported public cases, and fallback-safe generation settings.',
+        'Use Ray 3.2 for current Luma text-to-video and image-to-video work when you need short cinematic clips, 540p to 1080p output, optional loop on supported public cases, and conservative generation settings.',
       primaryCta: { label: 'Generate with Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
       quickLinks: [
@@ -3983,8 +3983,8 @@ const LUMA_RAY_32_COPY: LocalizedTemplateCopy = {
       { title: 'Text or start image', body: 'Begin from a prompt or animate one approved still as the opening frame.', tone: 'reference' },
       { title: '540p to 1080p', body: 'Draft lower, then inspect selected clips at 720p or 1080p.', tone: 'quality' },
       { title: 'Loop-aware', body: 'Use loop on supported public cases where a seamless short motion test fits the brief.', tone: 'continuity' },
-      { title: 'Fallback-safe settings', body: 'The page keeps public options aligned with fal-reference fallback coverage.', tone: 'duration' },
-      { title: 'Pay-as-you-go', body: 'Prices use MaxVideoAI fal-reference display pricing before generation.', tone: 'price' },
+      { title: 'Public settings', body: 'The page keeps options aligned with supported MaxVideoAI launch controls.', tone: 'duration' },
+      { title: 'Pay-as-you-go', body: 'Prices use MaxVideoAI display pricing before generation.', tone: 'price' },
     ],
     decisionCards: [
       {
@@ -4012,8 +4012,8 @@ const LUMA_RAY_32_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Luma Ray 3.2 pricing at a glance',
-      subtitle: 'Preset Ray 3.2 totals use MaxVideoAI fal-reference display pricing; exact price appears before generation.',
-      footnote: 'Public examples are based on fallback-safe 5s/10s and 540p/720p/1080p settings, not unpublished direct-only options.',
+      subtitle: 'Preset Ray 3.2 totals use MaxVideoAI display pricing; exact price appears before generation.',
+      footnote: 'Public examples are based on supported 5s/10s and 540p/720p/1080p settings; advanced options stay off this page.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'Up to 1080p',
     },
@@ -4191,7 +4191,7 @@ const LUMA_UNI_1_COPY: LocalizedTemplateCopy = {
       { title: 'Multi-reference input', body: 'Attach references for product shape, style, typography direction or composition cues.', tone: 'reference' },
       { title: 'Layout reasoning', body: 'Useful for arranging visual elements, but exact text still needs review.', tone: 'quality' },
       { title: 'Web-grounded option', body: 'Use web search only when current visual context helps the still brief.', tone: 'reference' },
-      { title: 'Fal-reference pricing', body: 'Display prices use MaxVideoAI fal-reference pricing before generation.', tone: 'price' },
+      { title: 'Display pricing', body: 'Display prices use MaxVideoAI pricing before generation.', tone: 'price' },
     ],
     decisionCards: [
       {
@@ -4219,7 +4219,7 @@ const LUMA_UNI_1_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Luma Uni-1 pricing at a glance',
-      subtitle: 'Display prices use MaxVideoAI fal-reference pricing; exact price appears before generation.',
+      subtitle: 'Display prices use MaxVideoAI pricing; exact price appears before generation.',
       footnote: 'Reference and edit examples include source/reference image counts where shown; final app quotes remain authoritative.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'One image',
@@ -4227,7 +4227,7 @@ const LUMA_UNI_1_COPY: LocalizedTemplateCopy = {
     meta: {
       title: 'Luma Uni-1: Image Pricing, References & Editing | MaxVideoAI',
       description:
-        'Explore Luma Uni-1 2K image generation, source-image edits, multi-reference guidance, web-grounded visual research and fal-reference pricing.',
+        'Explore Luma Uni-1 2K image generation, source-image edits, multi-reference guidance, web-grounded visual research and MaxVideoAI pricing.',
     },
   },
   fr: {
@@ -4398,7 +4398,7 @@ const LUMA_UNI_1_MAX_COPY: LocalizedTemplateCopy = {
       { title: 'Precise revisions', body: 'Use source images and references to narrow what should change.', tone: 'continuity' },
       { title: 'Typography-sensitive', body: 'Helpful for text-aware layouts, while exact copy still needs inspection.', tone: 'quality' },
       { title: 'Reference direction', body: 'Blend product, style, wardrobe or layout references into one still brief.', tone: 'reference' },
-      { title: 'Fal-reference pricing', body: 'Display prices use MaxVideoAI fal-reference pricing before generation.', tone: 'price' },
+      { title: 'Display pricing', body: 'Display prices use MaxVideoAI pricing before generation.', tone: 'price' },
     ],
     decisionCards: [
       {
@@ -4426,7 +4426,7 @@ const LUMA_UNI_1_MAX_COPY: LocalizedTemplateCopy = {
     ],
     pricingCopy: {
       title: 'Luma Uni-1 Max pricing at a glance',
-      subtitle: 'Display prices use MaxVideoAI fal-reference pricing; exact price appears before generation.',
+      subtitle: 'Display prices use MaxVideoAI pricing; exact price appears before generation.',
       footnote: 'Max is not positioned as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'One image',

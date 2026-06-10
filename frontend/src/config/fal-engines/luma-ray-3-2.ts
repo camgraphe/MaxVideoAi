@@ -129,7 +129,7 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     cardTitle: 'Luma Ray 3.2',
     provider: 'Luma AI',
     brandId: 'luma',
-    family: 'luma-ray',
+    family: 'luma',
     versionLabel: 'Ray 3.2',
     availability: 'available',
     logoPolicy: 'logoAllowed',
@@ -172,7 +172,7 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'Text and image to video',
     seoText:
-      'Luma Ray 3.2 is available in MaxVideoAI as a public video generation engine for text-to-video and image-to-video workflows through fallback-safe fal endpoints.',
+      'Luma Ray 3.2 is available in MaxVideoAI as a public video generation engine for text-to-video and image-to-video workflows with 5s and 10s clip controls.',
     demoUrl: '/hero/luma-dream.mp4',
     media: {
       videoUrl: '/hero/luma-dream.mp4',
@@ -193,12 +193,12 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInSitemap: true,
       },
       examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
+        includeInFamilyResolver: true,
+        includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['veo-3-1-fast', 'kling-3-standard', 'luma-ray-2'],
-        publishedPairs: [],
+        suggestOpponents: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2'],
+        publishedPairs: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2'],
         includeInHub: true,
       },
       app: {

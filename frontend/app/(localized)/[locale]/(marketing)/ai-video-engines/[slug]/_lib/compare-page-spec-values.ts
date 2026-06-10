@@ -159,6 +159,13 @@ export function localizeSpecDetailValue(
   if (lower === 'single start image') {
     return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
   }
+  if (lower === 'not exposed in current maxvideoai route') {
+    return locale === 'fr'
+      ? 'non exposé dans la route MaxVideoAI actuelle'
+      : locale === 'es'
+        ? 'no expuesto en la ruta actual de MaxVideoAI'
+        : normalized;
+  }
   if (lower === 'multi reference stills') {
     return locale === 'fr'
       ? 'plusieurs stills de référence'

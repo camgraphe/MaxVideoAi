@@ -54,6 +54,13 @@ test('Luma Agents registry uses direct provider metadata with fal fallback model
   });
 });
 
+test('Luma Agents public registry copy avoids internal fallback vocabulary', () => {
+  ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'].forEach((id) => {
+    const entry = byId(id);
+    assert.doesNotMatch(entry.seoText ?? '', /\bfallback-safe\b|\bfal endpoints\b/i);
+  });
+});
+
 test('Luma Uni image entries expose fallback-safe text and edit contracts', () => {
   ['luma-uni-1', 'luma-uni-1-max'].forEach((id) => {
     const entry = byId(id);
@@ -88,6 +95,7 @@ test('Luma Uni exposes style, output, web search, and aspect ratio in the correc
 test('Luma Ray 3.2 exposes only public fal fallback-safe video controls', () => {
   const entry = byId('luma-ray-3-2');
   assert.equal(entry.category, 'video');
+  assert.equal(entry.family, 'luma');
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v']);
   assert.equal(entry.engine.extend, false);
   assert.equal(entry.engine.keyframes, false);
@@ -96,7 +104,7 @@ test('Luma Ray 3.2 exposes only public fal fallback-safe video controls', () => 
   assert.equal(entry.engine.audio, false);
   assert.equal(entry.engine.maxDurationSec, 10);
   assert.equal(entry.surfaces.compare.includeInHub, true);
-  assert.deepEqual(entry.surfaces.compare.publishedPairs, []);
+  assert.deepEqual(entry.surfaces.compare.publishedPairs, ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2']);
 
   assert.deepEqual(field(entry, 'duration').values, ['5s', '10s']);
   assert.deepEqual(field(entry, 'resolution').values, ['540p', '720p', '1080p']);
