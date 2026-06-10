@@ -59,6 +59,7 @@ const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions
 const selectionActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSelectionActions.ts');
 const persistenceEffectsHookPath = join(workspaceDir, '_hooks/useWorkspacePersistenceEffects.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
+const shellActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceShellActions.ts');
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
 const exportControllerPath = join(workspaceDir, '_controllers/useExportController.ts');
@@ -191,6 +192,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(selectionActionsHookPath), 'workspace selection actions should live in a focused route-local hook');
   assert.ok(existsSync(persistenceEffectsHookPath), 'workspace hydration and autosave effects should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
+  assert.ok(existsSync(shellActionsHookPath), 'workspace shell actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
   assert.ok(existsSync(exportControllerPath), 'export job state, polling, and handoff downloads should live in a focused route-local controller');
@@ -242,6 +244,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const sequenceActionsHookSource = source(sequenceActionsHookPath);
+  const shellActionsHookSource = source(shellActionsHookPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const exportControllerSource = source(exportControllerPath);
@@ -309,7 +312,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, /aria-label="Share project"/, 'Studio header should not expose inactive share controls');
   assert.doesNotMatch(workspaceSource, /aria-label="Generate selected shot"/, 'Studio header should not expose an inactive global generation control');
   assert.match(workspaceSource, /handleExitToProjects/, 'workspace should own the save-and-return-to-projects action');
-  assert.match(workspaceSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
+  assert.match(workspaceSource, /useWorkspaceShellActions/, 'workspace should delegate shell-level actions to a route-local hook');
+  assert.match(shellActionsHookSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
+  assert.match(shellActionsHookSource, /saveStudioProjectToApi/, 'workspace shell action hook should save before returning to projects');
   assert.match(workspaceSource, /focusMode === 'canvas'[\s\S]*NodeLibrarySidebar[\s\S]*TimelineProjectSidebar/, 'left sidebar should switch from canvas templates to project media in Viewer mode');
   assert.match(workspaceSource, /workspaceStorageKeyForProject/, 'workspace persistence should be scoped by project id when present');
   assert.doesNotMatch(workspaceSource, /from '@\/lib\/authFetch'/, 'workspace orchestrator should not own Studio API fetch plumbing');
@@ -461,6 +466,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(graphActionsHookPath), 'workspace graph actions should live in a route-local hook');
   assert.ok(existsSync(selectionActionsHookPath), 'workspace timeline and canvas selection actions should live in a route-local hook');
   assert.ok(existsSync(persistenceEffectsHookPath), 'workspace persistence effects should live in a route-local hook');
+  assert.ok(existsSync(shellActionsHookPath), 'workspace shell actions should live in a route-local hook');
   assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
   assert.ok(existsSync(timelineTrackActionsHookPath), 'timeline track mutation actions should live in a route-local hook');
@@ -495,6 +501,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const graphActionsHookSource = source(graphActionsHookPath);
   const selectionActionsHookSource = source(selectionActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
+  const shellActionsHookSource = source(shellActionsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
   const librarySource = source(libraryPath);
@@ -919,7 +926,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /selectedMediaNodeKind/, 'selecting a media node should not preload the signed-in media library before the picker opens');
   assert.doesNotMatch(workspaceSource, /sidebarLibrary\s*=\s*useWorkspaceEditorAssetLibrary\(null\)/, 'orchestrator should not load the user media library directly in the sidebar');
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
-  assert.match(workspaceSource, /workspaceAssetRecordFromLibraryAsset/, 'orchestrator should store selected library assets on media nodes');
+  assert.match(graphActionsHookSource, /workspaceAssetRecordFromLibraryAsset/, 'graph action hook should store selected library assets on media nodes');
+  assert.match(projectMediaActionsHookSource, /handleSelectProjectMediaAsset/, 'project media action hook should own library asset selection into Project media');
+  assert.match(projectMediaActionsHookSource, /workspaceAssetRecordFromLibraryAsset/, 'project media action hook should normalize selected library assets before storing them in the project bin');
+  assert.doesNotMatch(workspaceSource, /workspaceAssetRecordFromLibraryAsset/, 'workspace orchestrator should not convert library assets inline');
   assert.match(renderEdgesSource, /filterRenderableWorkspaceEdges/, 'renderable edge helper should omit edges whose handles are unavailable');
   assert.match(renderEdgesSource, /isWorkspaceConnectionCompatible/, 'renderable edge helper should omit persisted incompatible media-family edges');
   assert.match(workspaceSource, /filterRenderableWorkspaceEdges/, 'orchestrator should avoid passing invalid handle edges to React Flow');
@@ -1084,8 +1094,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /selectedTimelineItem/, 'workspace should derive the selected timeline item for Viewer mode editing');
   assert.match(workspaceSource, /handlePatchTimelineItem/, 'workspace should expose timeline clip patching for the clip inspector');
   assert.match(workspaceSource, /projectSettings/, 'workspace should persist and pass project-level aspect ratio, resolution, and FPS');
-  assert.match(workspaceSource, /handleProjectSettingsChange/, 'workspace should expose project settings changes from the project settings dialog');
-  assert.match(workspaceSource, /coerceWorkspaceProjectSettings/, 'workspace should sanitize persisted project settings before use');
+  assert.match(shellActionsHookSource, /handleProjectSettingsChange/, 'workspace shell action hook should expose sequence settings changes from the inspector');
+  assert.match(shellActionsHookSource, /coerceWorkspaceProjectSettings/, 'workspace shell action hook should sanitize sequence settings before use');
+  assert.doesNotMatch(workspaceSource, /coerceWorkspaceProjectSettings/, 'workspace orchestrator should not sanitize sequence settings inline');
+  assert.match(shellActionsHookSource, /coerceTimelinePanelHeight/, 'workspace shell action hook should sanitize timeline panel height updates');
   assert.match(workspaceSource, /useExportController/, 'workspace should delegate export job state and server calls to the export controller');
   assert.doesNotMatch(workspaceSource, /RENDER_MANIFEST_STORAGE_KEY/, 'workspace should not persist render handoff storage inline');
   assert.doesNotMatch(workspaceSource, /VIDEO_EXPORT_REQUEST_STORAGE_KEY/, 'workspace should not persist video export request storage inline');

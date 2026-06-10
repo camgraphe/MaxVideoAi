@@ -25,6 +25,7 @@ import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistence
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
+import { useWorkspaceShellActions } from './_hooks/useWorkspaceShellActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
@@ -53,17 +54,12 @@ import type {
   WorkspaceTimelineVideoTrack,
 } from './_lib/workspace-types';
 import {
-  workspaceAssetRecordFromLibraryAsset,
-  type WorkspaceLibraryAsset,
-} from './_lib/workspace-library-assets';
-import {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createStarterWorkspaceTemplate,
 } from './_lib/workspace-templates';
 import { filterRenderableWorkspaceEdges } from './_lib/workspace-render-edges';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
-  coerceWorkspaceProjectSettings,
 } from './_lib/workspace-project-settings';
 import {
   buildWorkspaceTimelineRenderManifest,
@@ -86,7 +82,6 @@ import {
   MIN_TIMELINE_AUDIO_TRACKS,
   MIN_TIMELINE_PANEL_HEIGHT,
   audioTrackCountForTimelineItems,
-  coerceTimelinePanelHeight,
   createWorkspaceSequenceRecord,
   upsertWorkspaceSequence,
   videoTrackCountForTimelineItems,
@@ -108,7 +103,6 @@ import { buildWorkspaceActiveSequenceSnapshot } from './_state/workspace-sequenc
 import {
   workspaceStorageKeyForProject,
 } from './_state/workspace-persistence';
-import { saveStudioProjectToApi } from './_state/workspace-api-persistence';
 import baseStyles from './maxvideoai-editor.module.css';
 import shellStyles from './_styles/shell.module.css';
 
@@ -495,16 +489,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedNodeId,
   });
 
-  const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
-    const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
-    setProjectAssets((current) => [
-      assetRecord,
-      ...current.filter((candidate) => candidate.id !== assetRecord.id),
-    ].slice(0, 120));
-    setIsProjectMediaPickerOpen(false);
-    setNotice(`${asset.name} imported into Project media.`);
-  }, [setIsProjectMediaPickerOpen, setNotice, setProjectAssets]);
-
   const {
     handleCanvasFileDrop,
     handleCanvasTextPaste,
@@ -634,6 +618,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     handleDropProjectAssetToTimeline,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,
+    handleSelectProjectMediaAsset,
   } = useWorkspaceProjectMediaActions({
     commitTimelineItems,
     lockedTimelineTracks,
@@ -704,52 +689,28 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     videoTrackCount,
   });
 
-  const handleProjectSettingsChange = useCallback((patch: Partial<WorkspaceProjectSettings>) => {
-    setProjectSettings((current) => coerceWorkspaceProjectSettings({ ...current, ...patch }));
-  }, []);
-
-  const handleOpenExportDialog = useCallback(() => {
-    setExportRangeMode(hasValidTimelineInOut ? 'in-out' : 'sequence');
-    openExportDialog();
-  }, [hasValidTimelineInOut, openExportDialog]);
-
-  const handleExitToProjects = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    const state = buildPersistedWorkspaceState();
-    window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-    setNotice('Workspace saved. Returning to projects.');
-
-    const navigateToProjects = () => {
-      window.location.assign('/app/studio/projects');
-    };
-
-    if (!projectId) {
-      navigateToProjects();
-      return;
-    }
-
-    void saveStudioProjectToApi({
-      projectId,
-      name: activeTemplateName,
-      canvasTemplateId: activeTemplateId,
-      settings: state.projectSettings,
-      workspaceState: state,
-    }).finally(navigateToProjects);
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, workspaceStorageKey]);
-
-  const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
-    resetExportSession();
-    setExportRangeMode(mode);
-  }, [resetExportSession]);
-
-  const handleExportQualityPresetChange = useCallback((preset: WorkspaceTimelineExportQualityPreset) => {
-    resetExportSession();
-    setExportQualityPreset(preset);
-  }, [resetExportSession]);
-
-  const handleTimelinePanelHeightChange = useCallback((height: number) => {
-    setTimelinePanelHeight(coerceTimelinePanelHeight(height));
-  }, []);
+  const {
+    handleExitToProjects,
+    handleExportQualityPresetChange,
+    handleExportRangeModeChange,
+    handleOpenExportDialog,
+    handleProjectSettingsChange,
+    handleTimelinePanelHeightChange,
+  } = useWorkspaceShellActions({
+    activeTemplateId,
+    activeTemplateName,
+    buildPersistedWorkspaceState,
+    hasValidTimelineInOut,
+    openExportDialog,
+    projectId,
+    resetExportSession,
+    setExportQualityPreset,
+    setExportRangeMode,
+    setNotice,
+    setProjectSettings,
+    setTimelinePanelHeight,
+    workspaceStorageKey,
+  });
 
   const editorShellStyle = timelinePanelHeight
     ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties)

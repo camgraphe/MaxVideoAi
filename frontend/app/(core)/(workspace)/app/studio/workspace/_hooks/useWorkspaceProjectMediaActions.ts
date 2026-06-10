@@ -1,4 +1,8 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import {
+  workspaceAssetRecordFromLibraryAsset,
+  type WorkspaceLibraryAsset,
+} from '../_lib/workspace-library-assets';
 import { resolveProjectAssetTimelineInsert } from '../_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -51,6 +55,7 @@ export function useWorkspaceProjectMediaActions({
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
   handleImportProjectMedia: () => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
+  handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
 } {
   const insertProjectAssetIntoTimeline = useCallback(
     (assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
@@ -97,6 +102,16 @@ export function useWorkspaceProjectMediaActions({
     setIsProjectMediaPickerOpen(true);
     setActiveEditorSurface('timeline');
   }, [setActiveEditorSurface, setIsProjectMediaPickerOpen]);
+
+  const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
+    const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
+    setProjectAssets((current) => [
+      assetRecord,
+      ...current.filter((candidate) => candidate.id !== assetRecord.id),
+    ].slice(0, 120));
+    setIsProjectMediaPickerOpen(false);
+    setNotice(`${asset.name} imported into Project media.`);
+  }, [setIsProjectMediaPickerOpen, setNotice, setProjectAssets]);
 
   const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
     insertProjectAssetIntoTimeline(assetId, playheadSec);
@@ -161,5 +176,6 @@ export function useWorkspaceProjectMediaActions({
     handleDropProjectAssetToTimeline,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,
+    handleSelectProjectMediaAsset,
   };
 }
