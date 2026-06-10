@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { NodeLibrarySidebar } from './_components/NodeLibrarySidebar';
 import { NodeSettingsPanel } from './_components/NodeSettingsPanel';
-import { TimelineProjectSidebar, type WorkspaceProjectSequenceSummary } from './_components/TimelineProjectSidebar';
+import { TimelineProjectSidebar } from './_components/TimelineProjectSidebar';
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
 import { WorkspaceCanvas } from './_components/WorkspaceCanvas.client';
 import { WorkspaceAssetLibraryModal } from './_components/WorkspaceAssetLibraryModal';
@@ -25,6 +25,7 @@ import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistence
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
+import { useWorkspaceSequenceSnapshots } from './_hooks/useWorkspaceSequenceSnapshots';
 import { useWorkspaceShellActions } from './_hooks/useWorkspaceShellActions';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineClipActions } from './_hooks/useWorkspaceTimelineClipActions';
@@ -83,9 +84,7 @@ import {
   MIN_TIMELINE_PANEL_HEIGHT,
   audioTrackCountForTimelineItems,
   createWorkspaceSequenceRecord,
-  upsertWorkspaceSequence,
   videoTrackCountForTimelineItems,
-  type PersistedWorkspaceState,
   type WorkspaceEditorSurface,
   type WorkspaceFocusMode,
   type WorkspaceSequenceRecord,
@@ -93,13 +92,11 @@ import {
 } from './_state/workspace-state';
 import { GENERATED_OUTPUT_TARGET_HANDLE } from './_state/workspace-normalizers';
 import {
-  buildWorkspaceSequenceSummaries,
   selectedWorkspaceSequenceInspectorSummary,
   selectedWorkspaceTimelineItem,
   sequenceNameForIndex,
   workspaceTimelineDurationSec,
 } from './_state/workspace-selectors';
-import { buildWorkspaceActiveSequenceSnapshot } from './_state/workspace-sequence-snapshot';
 import {
   workspaceStorageKeyForProject,
 } from './_state/workspace-persistence';
@@ -215,29 +212,29 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineCutPoints,
     timelineDurationSec,
   });
-  const liveActiveSequence = useMemo(() => {
-    return buildWorkspaceActiveSequenceSnapshot({
-      activeSequenceId,
-      timelineItems,
-      projectSettings,
-      audioTrackCount,
-      hiddenVideoTracks,
-      lockedTimelineTracks,
-      mutedAudioTracks,
-      videoTrackCount,
-      timelinePanelHeight,
-      timelineInPointSec,
-      timelineOutPointSec,
-      sequences,
-      preserveStoredUpdatedAt: true,
-    });
-  }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
-  const sequenceSummaries = useMemo<WorkspaceProjectSequenceSummary[]>(() => {
-    return buildWorkspaceSequenceSummaries({
-      sequences: upsertWorkspaceSequence(sequences, liveActiveSequence),
-      activeSequenceId,
-    });
-  }, [activeSequenceId, liveActiveSequence, sequences]);
+  const {
+    buildPersistedWorkspaceState,
+    sequenceSummaries,
+    snapshotActiveSequence,
+  } = useWorkspaceSequenceSnapshots({
+    activeSequenceId,
+    activeTemplateId,
+    audioTrackCount,
+    edges,
+    focusMode,
+    hiddenVideoTracks,
+    lockedTimelineTracks,
+    mutedAudioTracks,
+    nodes,
+    projectAssets,
+    projectSettings,
+    sequences,
+    timelineInPointSec,
+    timelineItems,
+    timelineOutPointSec,
+    timelinePanelHeight,
+    videoTrackCount,
+  });
   const viewerTimelineItems = useMemo(
     () => muteAudioTrackItems(filterHiddenVideoTrackItems(previewTimelineItems, hiddenVideoTracks), mutedAudioTracks),
     [hiddenVideoTracks, mutedAudioTracks, previewTimelineItems]
@@ -323,46 +320,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     const timeoutId = window.setTimeout(() => setNotice(null), 5200);
     return () => window.clearTimeout(timeoutId);
   }, [notice]);
-
-  const snapshotActiveSequence = useCallback((): WorkspaceSequenceRecord => {
-    return buildWorkspaceActiveSequenceSnapshot({
-      activeSequenceId,
-      timelineItems,
-      projectSettings,
-      audioTrackCount,
-      hiddenVideoTracks,
-      lockedTimelineTracks,
-      mutedAudioTracks,
-      videoTrackCount,
-      timelinePanelHeight,
-      timelineInPointSec,
-      timelineOutPointSec,
-      sequences,
-    });
-  }, [activeSequenceId, audioTrackCount, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, projectSettings, sequences, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
-
-  const buildPersistedWorkspaceState = useCallback((): PersistedWorkspaceState => {
-    const sequenceSnapshot = snapshotActiveSequence();
-    return {
-      nodes,
-      edges,
-      projectAssets,
-      timelineItems,
-      activeSequenceId,
-      sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
-      activeTemplateId,
-      projectSettings,
-      focusMode,
-      audioTrackCount,
-      hiddenVideoTracks,
-      lockedTimelineTracks,
-      mutedAudioTracks,
-      videoTrackCount,
-      timelinePanelHeight,
-      timelineInPointSec,
-      timelineOutPointSec,
-    };
-  }, [activeSequenceId, activeTemplateId, audioTrackCount, edges, focusMode, hiddenVideoTracks, lockedTimelineTracks, mutedAudioTracks, nodes, projectAssets, projectSettings, sequences, snapshotActiveSequence, timelineInPointSec, timelineItems, timelineOutPointSec, timelinePanelHeight, videoTrackCount]);
 
   const {
     handleCreateSequence,

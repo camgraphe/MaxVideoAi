@@ -59,6 +59,7 @@ const graphActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceGraphActions
 const selectionActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSelectionActions.ts');
 const persistenceEffectsHookPath = join(workspaceDir, '_hooks/useWorkspacePersistenceEffects.ts');
 const sequenceActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceActions.ts');
+const sequenceSnapshotsHookPath = join(workspaceDir, '_hooks/useWorkspaceSequenceSnapshots.ts');
 const shellActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceShellActions.ts');
 const projectMediaActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceProjectMediaActions.ts');
 const projectMediaControllerPath = join(workspaceDir, '_controllers/useProjectMediaController.ts');
@@ -196,6 +197,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(selectionActionsHookPath), 'workspace selection actions should live in a focused route-local hook');
   assert.ok(existsSync(persistenceEffectsHookPath), 'workspace hydration and autosave effects should live in a focused route-local hook');
   assert.ok(existsSync(sequenceActionsHookPath), 'sequence switching and creation actions should live in a focused route-local hook');
+  assert.ok(existsSync(sequenceSnapshotsHookPath), 'active sequence snapshots and persisted project state should live in a focused route-local hook');
   assert.ok(existsSync(shellActionsHookPath), 'workspace shell actions should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaActionsHookPath), 'project media mutations should live in a focused route-local hook');
   assert.ok(existsSync(projectMediaControllerPath), 'project media selection, context menu, and drag payload logic should live in a focused route-local controller');
@@ -250,6 +252,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
   const sequenceActionsHookSource = source(sequenceActionsHookPath);
+  const sequenceSnapshotsHookSource = source(sequenceSnapshotsHookPath);
   const shellActionsHookSource = source(shellActionsHookPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
@@ -345,7 +348,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceStateSource, /function upsertWorkspaceSequence/, 'workspace state module should own sequence list updates');
   assert.match(workspaceStateSource, /function deleteWorkspaceTimelineTrackItems/, 'workspace state module should own timeline track deletion retargeting');
   assert.match(workspaceSource, /activeSequenceId/, 'workspace should track the active montage sequence');
-  assert.match(workspaceSource, /sequences: upsertWorkspaceSequence/, 'workspace autosave should include every project sequence');
+  assert.match(workspaceSource, /useWorkspaceSequenceSnapshots/, 'workspace should delegate live sequence snapshots and autosave state to a route-local hook');
+  assert.match(sequenceSnapshotsHookSource, /sequences: upsertWorkspaceSequence/, 'workspace autosave should include every project sequence');
+  assert.match(sequenceSnapshotsHookSource, /buildPersistedWorkspaceState/, 'sequence snapshot hook should expose the persisted project state builder');
   assert.match(workspaceSource, /useWorkspaceSequenceActions/, 'workspace should delegate sequence switching and creation actions to a route-local hook');
   assert.match(workspaceSource, /useWorkspaceProjectMediaActions/, 'workspace should delegate project media mutations to a route-local hook');
   assert.match(workspaceSource, /handleCreateSequence/, 'viewer project sidebar should create real empty sequences');
@@ -474,6 +479,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(graphActionsHookPath), 'workspace graph actions should live in a route-local hook');
   assert.ok(existsSync(selectionActionsHookPath), 'workspace timeline and canvas selection actions should live in a route-local hook');
   assert.ok(existsSync(persistenceEffectsHookPath), 'workspace persistence effects should live in a route-local hook');
+  assert.ok(existsSync(sequenceSnapshotsHookPath), 'workspace sequence snapshot assembly should live in a route-local hook');
   assert.ok(existsSync(shellActionsHookPath), 'workspace shell actions should live in a route-local hook');
   assert.ok(existsSync(timelineClipActionsHookPath), 'timeline clip mutation actions should live in a route-local hook');
   assert.ok(existsSync(timelineHistoryHookPath), 'timeline undo and redo history should live in a route-local hook');
@@ -509,6 +515,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const graphActionsHookSource = source(graphActionsHookPath);
   const selectionActionsHookSource = source(selectionActionsHookPath);
   const persistenceEffectsHookSource = source(persistenceEffectsHookPath);
+  const sequenceSnapshotsHookSource = source(sequenceSnapshotsHookPath);
   const shellActionsHookSource = source(shellActionsHookPath);
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
   const edgeSource = source(edgeTypesPath);
@@ -714,7 +721,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceStateSource, /type PersistedWorkspaceState/, 'workspace state module should own persisted workspace contracts');
   assert.match(workspaceSelectorsSource, /buildWorkspaceSequenceSummaries/, 'workspace selectors should derive sidebar sequence summaries outside the orchestrator');
   assert.match(workspaceSelectorsSource, /selectedWorkspaceTimelineItem/, 'workspace selectors should derive selected timeline items outside the orchestrator');
-  assert.match(workspaceSource, /buildWorkspaceActiveSequenceSnapshot/, 'workspace should delegate active sequence snapshot construction');
+  assert.match(sequenceSnapshotsHookSource, /buildWorkspaceActiveSequenceSnapshot/, 'sequence snapshot hook should delegate active sequence record construction');
+  assert.match(sequenceSnapshotsHookSource, /buildWorkspaceSequenceSummaries/, 'sequence snapshot hook should derive sidebar sequence summaries');
+  assert.doesNotMatch(workspaceSource, /const snapshotActiveSequence = useCallback/, 'workspace orchestrator should not own active sequence snapshot construction inline');
   assert.match(workspaceSequenceSnapshotSource, /createWorkspaceSequenceRecord/, 'active sequence snapshot helper should compose canonical sequence records');
   assert.match(workspaceSequenceSnapshotSource, /sequenceNameForIndex/, 'active sequence snapshot helper should own active sequence fallback naming');
   assert.doesNotMatch(workspaceSource, /storedSequence\?\.name\s*\?\?\s*sequenceNameForIndex/, 'workspace orchestrator should not duplicate active sequence naming fallback inline');
