@@ -10,8 +10,6 @@ import { TimelineProjectSidebar, type WorkspaceProjectSequenceSummary } from './
 import { TimelineClipInspector } from './_components/TimelineClipInspector';
 import {
   WorkspaceCanvas,
-  type WorkspaceCanvasFileDropRequest,
-  type WorkspaceCanvasTextPasteRequest,
   type WorkspaceHandleDropRequest,
   type WorkspacePaletteDropRequest,
 } from './_components/WorkspaceCanvas.client';
@@ -20,8 +18,9 @@ import { WorkspaceExportDialog } from './_components/WorkspaceExportDialog';
 import { WorkspaceProjectMediaLibraryModal } from './_components/WorkspaceProjectMediaLibraryModal';
 import { StudioHeaderSession } from './_components/StudioHeaderSession';
 import { WorkspaceTimeline } from './_components/WorkspaceTimeline';
-import { WorkspaceVideoViewer, type WorkspaceProgramSnapshotPayload } from './_components/WorkspaceVideoViewer';
+import { WorkspaceVideoViewer } from './_components/WorkspaceVideoViewer';
 import { useExportController } from './_controllers/useExportController';
+import { useWorkspaceCanvasImportActions } from './_hooks/useWorkspaceCanvasImportActions';
 import { useWorkspaceEditorAssetLibrary } from './_hooks/useWorkspaceEditorAssetLibrary';
 import { useWorkspaceShotPricing } from './_hooks/useWorkspaceShotPricing';
 import { useWorkspaceTimelineHistory } from './_hooks/useWorkspaceTimelineHistory';
@@ -48,7 +47,6 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
-  WorkspaceNodeKind,
   WorkspaceProjectSettings,
   WorkspaceShotSettings,
   WorkspaceTemplateId,
@@ -58,12 +56,7 @@ import type {
   WorkspaceTimelineVideoTrack,
 } from './_lib/workspace-types';
 import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from './_lib/workspace-handle-drop';
-import {
-  createAdHocWorkspaceNode,
-  localCanvasImportFallbackName,
-  workspaceAssetRecordFromCanvasFile,
-  workspaceNodeKindForCanvasFile,
-} from './_lib/workspace-canvas-imports';
+import { createAdHocWorkspaceNode } from './_lib/workspace-canvas-imports';
 import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
@@ -212,8 +205,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     capabilities.find((capability) => capability.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID)?.id ??
     capabilities[0]?.id ??
     DEFAULT_WORKSPACE_SHOT_MODEL_ID;
-  const canvasImportSequenceRef = useRef(0);
-  const localCanvasObjectUrlsRef = useRef<string[]>([]);
   const timelineItemsRef = useRef<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
   const [nodes, setNodes] = useState<WorkspaceGraphNode[]>(defaultTemplate.nodes);
   const [edges, setEdges] = useState<WorkspaceGraphEdge[]>(defaultTemplate.edges);
@@ -370,13 +361,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     qualityPreset: exportQualityPreset,
     onNotice: setNotice,
   });
-
-  useEffect(() => {
-    return () => {
-      localCanvasObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-      localCanvasObjectUrlsRef.current = [];
-    };
-  }, []);
 
   const applyTimelineSelection = useCallback((itemIds: string[]) => {
     const nextItemIds = uniqueTimelineSelectionIds(itemIds);
@@ -883,164 +867,20 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     [defaultModelId, nodes.length]
   );
 
-  const applyCanvasImportedNodeData = useCallback(
-    (params: {
-      kind: WorkspaceNodeKind;
-      nodeData: Partial<WorkspaceGraphNode['data']>;
-      notice: string;
-      position: { x: number; y: number };
-      targetNodeId: string | null;
-    }) => {
-      const targetNode = params.targetNodeId
-        ? nodes.find((node) => node.id === params.targetNodeId && node.data.kind === params.kind)
-        : null;
-      if (targetNode) {
-        patchNodeData(targetNode.id, params.nodeData);
-        setActiveEditorSurface('canvas');
-        setSelectedNodeId(targetNode.id);
-        setNotice(params.notice);
-        return;
-      }
-
-      const importIndex = nodes.length + canvasImportSequenceRef.current;
-      canvasImportSequenceRef.current += 1;
-      const node = createAdHocWorkspaceNode(params.kind, importIndex, defaultModelId, {
-        x: params.position.x - 105,
-        y: params.position.y - 48,
-      });
-      const importedNode = {
-        ...node,
-        data: {
-          ...node.data,
-          ...params.nodeData,
-        },
-      };
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, importedNode));
-      setActiveEditorSurface('canvas');
-      setSelectedNodeId(importedNode.id);
-      setNotice(params.notice);
-    },
-    [defaultModelId, nodes, patchNodeData]
-  );
-
-  const handleCanvasTextPaste = useCallback(
-    (request: WorkspaceCanvasTextPasteRequest, sourceLabel = 'pasted-text.txt') => {
-      const text = request.text.trim();
-      if (!text) return;
-      applyCanvasImportedNodeData({
-        kind: 'text-prompt',
-        nodeData: {
-          subtitle: sourceLabel,
-          promptRole: 'prompt',
-          promptText: text,
-        },
-        notice: request.targetNodeId ? `${sourceLabel} pasted into the prompt block.` : `${sourceLabel} added to the canvas.`,
-        position: request.position,
-        targetNodeId: request.targetNodeId,
-      });
-    },
-    [applyCanvasImportedNodeData]
-  );
-
-  const handleCanvasFileDrop = useCallback(
-    (request: WorkspaceCanvasFileDropRequest) => {
-      const unsupportedFiles: string[] = [];
-      request.files.forEach((file, index) => {
-        const kind = workspaceNodeKindForCanvasFile(file);
-        const position = {
-          x: request.position.x + index * 28,
-          y: request.position.y + index * 22,
-        };
-        const targetNodeId = index === 0 ? request.targetNodeId : null;
-        if (!kind) {
-          unsupportedFiles.push(file.name || 'Untitled file');
-          return;
-        }
-
-        if (kind === 'text-prompt') {
-          void file
-            .text()
-            .then((text) => {
-              handleCanvasTextPaste(
-                {
-                  text,
-                  position,
-                  targetNodeId,
-                },
-                file.name || localCanvasImportFallbackName(kind)
-              );
-            })
-            .catch(() => {
-              setNotice(`Could not read ${file.name || 'the text file'}.`);
-            });
-          return;
-        }
-
-        const idSeed = `${Date.now().toString(36)}-${index}-${canvasImportSequenceRef.current}`;
-        const objectUrl = URL.createObjectURL(file);
-        localCanvasObjectUrlsRef.current.push(objectUrl);
-        const asset = workspaceAssetRecordFromCanvasFile(file, kind, objectUrl, idSeed);
-        if (!asset) {
-          unsupportedFiles.push(file.name || 'Untitled file');
-          return;
-        }
-        applyCanvasImportedNodeData({
-          kind,
-          nodeData: {
-            subtitle: asset.filename,
-            asset,
-          },
-          notice: targetNodeId ? `${asset.filename} attached to the media block.` : `${asset.filename} added to the canvas.`,
-          position,
-          targetNodeId,
-        });
-      });
-
-      if (unsupportedFiles.length) {
-        setNotice(`Unsupported file${unsupportedFiles.length > 1 ? 's' : ''}: ${unsupportedFiles.join(', ')}.`);
-      }
-    },
-    [applyCanvasImportedNodeData, handleCanvasTextPaste]
-  );
-
-  const handleSendProgramSnapshotToCanvas = useCallback((snapshot: WorkspaceProgramSnapshotPayload) => {
-    const snapshotUrl = snapshot.dataUrl ?? snapshot.sourceUrl;
-    if (!snapshotUrl) {
-      setNotice('No visible program frame is available for a snapshot.');
-      return;
-    }
-
-    const importIndex = nodes.length + canvasImportSequenceRef.current;
-    canvasImportSequenceRef.current += 1;
-    const asset: WorkspaceAssetRecord = {
-      id: createLocalStudioId('program_snapshot'),
-      kind: 'image',
-      filename: snapshot.filename,
-      subtitle: `Snapshot · ${snapshot.timecode}`,
-      url: snapshotUrl,
-      thumbUrl: snapshotUrl,
-      dimensions: `${snapshot.width}x${snapshot.height}`,
-    };
-    const node = createAdHocWorkspaceNode('asset-image', importIndex, defaultModelId, {
-      x: -260 + (importIndex % 4) * 180,
-      y: -170 + Math.floor(importIndex / 4) * 140,
-    });
-    const snapshotNode: WorkspaceGraphNode = {
-      ...node,
-      data: {
-        ...node.data,
-        title: 'Program Snapshot',
-        subtitle: asset.filename,
-        asset,
-      },
-    };
-
-    setNodes((current) => appendSelectedWorkspaceGraphNode(current, snapshotNode));
-    setFocusMode('canvas');
-    setActiveEditorSurface('canvas');
-    setSelectedNodeId(snapshotNode.id);
-    setNotice(`${asset.filename} sent to the canvas.`);
-  }, [defaultModelId, nodes.length]);
+  const {
+    handleCanvasFileDrop,
+    handleCanvasTextPaste,
+    handleSendProgramSnapshotToCanvas,
+  } = useWorkspaceCanvasImportActions({
+    defaultModelId,
+    nodes,
+    patchNodeData,
+    setActiveEditorSurface,
+    setFocusMode,
+    setNodes,
+    setNotice,
+    setSelectedNodeId,
+  });
 
   const handleGenerateShot = useCallback(
     async (nodeId: string): Promise<void> => {
