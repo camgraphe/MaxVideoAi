@@ -180,8 +180,8 @@
         "body": "Cuando hace falta generar loops divertidos o clips cortos, Pika 2.2 entrega varios formatos con costes contenidos. MaxVideoAI publica presets curados para saltar de reels verticales a piezas cuadradas sin salir del workspace. Compara texto‑a‑video e imagen‑a‑video en nuestra {{pika:guía rápida de Pika}} y reutiliza bancos de prompts ya aprobados para campañas seguras para la marca. Controles diarios de calidad detectan derivas de estilo o artefactos para decidir si regenerar, escalar o pasar el archivo a un animador."
       },
       {
-        "title": "Cómo MaxVideoAI orquesta Fal.ai",
-        "body": "Fal.ai impulsa la columna multi‑motor de MaxVideoAI y nos permite escalar sin perder una interfaz coherente. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
+        "title": "Cómo MaxVideoAI orquesta producción multi‑motor",
+        "body": "MaxVideoAI coordina capacidad multi‑motor detrás de una interfaz coherente para equipos creativos. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
       }
     ],
     "comparison": {
@@ -220,8 +220,8 @@
     "faqTitle": "Preguntas frecuentes sobre enrutado IA",
     "faq": [
       {
-        "question": "¿MaxVideoAI ofrece facturación europea para Fal.ai?",
-        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso de Fal.ai, evitando filiales en EE. UU. o tarjetas prepago."
+        "question": "¿MaxVideoAI ofrece facturación europea para motores de video IA?",
+        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso del workspace, evitando filiales en EE. UU. o tarjetas prepago."
       },
       {
         "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
@@ -1992,7 +1992,7 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Texto→Video y remezclas con audio nativo a través del enrutamiento de Fal.",
+        "description": "Texto→Video y remezclas con audio nativo a través de enrutamiento gestionado.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2"
       },
@@ -2053,7 +2053,7 @@
       "title": "Modelos IA de video e imagen: specs, límites y precios | MaxVideoAI",
       "description": "Compara modelos IA de video e imagen por precio, duración máxima, resolución, audio, modos de entrada, ejemplos y workflow antes de generar en MaxVideoAI."
     },
-    "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
+    "note": "Los precios de los modelos cambian rápido; confirma la pastilla Precio-Antes antes de lanzar.",
     "detail": {
       "backLabel": "← Volver",
       "renderLinkLabel": "Ver render →",
@@ -3763,7 +3763,7 @@
       "hero": {
         "eyebrow": "Workspace de imágenes",
         "title": "Generar imágenes",
-        "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y los motores de Fal."
+        "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y otros motores de imagen."
       },
       "preview": {
         "eyebrow": "Previsualización",
@@ -4041,7 +4041,7 @@
       "open": "Abrir herramienta",
       "backgroundRemovalEyebrow": "Limpieza de video",
       "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Elimina fondos de video con Bria VRMBG 3.0, crea recortes tipo pantalla verde, exporta video con alpha y reutiliza sujetos limpios.",
+      "backgroundRemovalBody": "Elimina fondos de video en MaxVideoAI, crea recortes tipo pantalla verde, exporta video con alpha y reutiliza sujetos limpios.",
       "backgroundRemovalBadge": "Rotoscopia IA",
       "upscaleEyebrow": "Mejora de resolución",
       "upscaleTitle": "AI Upscale",
@@ -4810,33 +4810,49 @@
       "subtitle": "Elimina fondos de videos cortos, exporta MOV ProRes listo para Premiere o clips transparentes para web, y reutiliza resultados desde la biblioteca.",
       "sourceTitle": "Video fuente",
       "sourceBody": "Sube un clip corto, pega una URL HTTPS o reutiliza un video guardado.",
+      "sourceStep": "1",
+      "dropzoneTitle": "Suelta un video aquí",
+      "dropzoneBody": "Clips MP4, MOV o WebM de hasta 60 segundos.",
       "upload": "Subir video",
       "urlLabel": "URL de video",
       "urlPlaceholder": "https://example.com/source.mp4",
+      "urlHelp": "Pega una URL HTTPS directa de video.",
       "library": "Biblioteca",
+      "libraryHelp": "Elige un video privado desde tu biblioteca.",
+      "libraryRefresh": "Actualizar",
       "libraryAll": "Todos los videos",
       "libraryUploaded": "Subidos",
       "libraryGenerated": "Generados",
       "libraryBackgroundRemoval": "Background removal",
       "metadataLoading": "Leyendo metadatos...",
       "metadataRequired": "Añade un video legible para estimar el precio.",
+      "metadataReady": "Listo para eliminar el fondo",
       "durationTooLong": "Esta herramienta admite clips de hasta 60 segundos.",
       "settingsTitle": "Ajustes de video",
+      "settingsStep": "2",
       "backgroundColor": "Fondo",
       "outputCodec": "Salida",
       "outputCodecHint": "Usa MOV ProRes para Premiere/Finder. Usa WebM VP9 solo para reproducción web transparente.",
+      "moreFormats": "Más formatos",
+      "formatRecommendation": "MOV con ProRes + alpha es ideal para edición profesional y conserva la transparencia.",
       "preserveAudio": "Conservar audio",
+      "audioOn": "audio",
+      "audioMuted": "sin audio",
+      "priceBeforeGeneration": "Precio visible antes de generar",
       "priceLoading": "Cargando precio...",
       "priceUnavailable": "Precio no disponible",
       "priceReady": "Estimado para este clip",
       "run": "Eliminar fondo",
       "running": "Procesando...",
       "previewTitle": "Vista previa",
+      "previewStep": "3",
       "sourcePreview": "Fuente",
       "resultPreview": "Resultado",
       "compareSource": "Show source",
       "compareResult": "Show result",
       "noPreview": "Añade un video para ver la fuente.",
+      "emptyPreviewSource": "Clip fuente",
+      "emptyPreviewResult": "Resultado transparente",
       "checkerboard": "Vista de salida transparente",
       "save": "Guardar",
       "saved": "Guardado en biblioteca.",
@@ -5339,7 +5355,7 @@
             "eyebrow": "Background Remover",
             "title": "Recorta el sujeto antes de entregar",
             "body": "Elimina el fondo de un video corto, guarda el resultado transparente y reutilízalo en anuncios, clips de producto y contenidos educativos.",
-            "cta": "Abrir Background Remover"
+            "cta": "Abrir herramienta de video"
           }
         }
       }
@@ -6253,7 +6269,7 @@
     "backgroundRemoval": {
       "meta": {
         "title": "Eliminar fondos de video | Pantalla verde y rotoscopia IA",
-        "description": "Elimina fondos de video con Bria VRMBG 3.0 en MaxVideoAI. Crea recortes tipo pantalla verde, assets de rotoscopia IA, mates alfa, MOV ProRes para Premiere, WebM transparente o clips con color sólido.",
+        "description": "Elimina fondos de video en MaxVideoAI. Crea recortes tipo pantalla verde, assets de rotoscopia IA, mates alfa, MOV ProRes para Premiere, WebM transparente o clips con color sólido.",
         "keywords": [
           "eliminar fondos de video",
           "quitar fondo de video",
@@ -6265,11 +6281,11 @@
           "alternativa chroma key",
           "export video transparente Premiere"
         ],
-        "imageAlt": "Workspace MaxVideoAI para eliminar fondos de video con preview transparente.",
+        "imageAlt": "Vista antes y después de eliminación de fondo de video con un presentador aislado sobre fondo transparente.",
         "schemaName": "Video Background Remover",
         "schemaDescription": "Herramienta MaxVideoAI para eliminar fondos de videos cortos, crear recortes estilo rotoscopia IA y exportar assets de video transparentes.",
         "howToTitle": "Cómo eliminar fondos de video o crear un recorte con IA",
-        "howToDescription": "Sube o selecciona un video, elige salida transparente, pantalla verde o color sólido, ejecuta Bria VRMBG 3.0 y guarda o descarga el resultado."
+        "howToDescription": "Sube o selecciona un video, elige salida transparente, pantalla verde o color sólido, ejecuta el recorte de video con IA y guarda o descarga el resultado."
       },
       "breadcrumb": {
         "home": "Inicio",
@@ -6279,9 +6295,23 @@
       "hero": {
         "badge": "Pantalla verde, alpha y rotoscopia IA",
         "title": "Eliminar fondos de video y convertir sujetos en recortes reutilizables",
-        "body": "Sube un clip corto o elige un video de la biblioteca, revisa el precio exacto, ejecuta Bria VRMBG 3.0 y guarda un mate alfa, una placa tipo pantalla verde o una salida con color sólido para la siguiente edición.",
-        "primaryCta": "Abrir Background Remover",
+        "body": "Sube un clip corto o elige un video de la biblioteca, ve el precio antes de generar, elimina el fondo y guarda un mate alfa, una placa tipo pantalla verde o una salida con color sólido para la siguiente edición.",
+        "primaryCta": "Abrir herramienta de video",
         "secondaryCta": "Ver herramientas",
+        "assurances": [
+          {
+            "label": "Precio antes de generar",
+            "body": "La estimación de wallet aparece antes de iniciar."
+          },
+          {
+            "label": "Sin sorpresas",
+            "body": "Los jobs fallidos se reembolsan automáticamente."
+          },
+          {
+            "label": "Exports para edición",
+            "body": "Alpha, pantalla verde o color sólido."
+          }
+        ],
         "stats": [
           {
             "value": "60 s",
@@ -6292,8 +6322,8 @@
             "label": "MOV para edición"
           },
           {
-            "value": "2x",
-            "label": "precio proveedor"
+            "value": "Biblioteca",
+            "label": "outputs guardados"
           }
         ]
       },
@@ -6325,20 +6355,20 @@
         ]
       },
       "modelGuide": {
-        "eyebrow": "Guía de modelo",
-        "title": "Bria VRMBG 3.0 produce recortes de video estilo rotoscopia IA",
+        "eyebrow": "Guía de export",
+        "title": "Recorte de video con IA para pantalla verde y exports transparentes",
         "body": "La herramienta se centra en exports finales: MOV transparente con alpha para editores, WebM transparente para web o archivos pantalla verde/color sólido cuando alpha no está soportado.",
         "columns": {
-          "model": "Modelo",
+          "model": "Salida",
           "bestFor": "Mejor para",
-          "price": "Contexto de precio",
+          "price": "Estimación",
           "useWhen": "Úsalo cuando"
         },
         "rows": [
           {
-            "model": "Bria VRMBG 3.0 Video",
+            "model": "Recorte de video con IA",
             "bestFor": "Videos cortos subidos o de biblioteca que necesitan eliminación de fondo, aislamiento de sujeto, mate alfa o reemplazo de pantalla verde.",
-            "price": "Estimado desde la duración antes de iniciar y facturado a 2x el precio proveedor actual.",
+            "price": "Estimación de wallet visible antes de iniciar. Los runs correctos se cobran según el presupuesto final de la app.",
             "useWhen": "Para assets finales que quieres previsualizar, descargar y guardar."
           }
         ]
@@ -6347,6 +6377,7 @@
         "eyebrow": "Workflow",
         "title": "Del clip fuente al asset alpha, pantalla verde o compositing",
         "body": "Elige una fuente, configura la salida alpha o el nuevo fondo, ejecuta, revisa y guarda o descarga.",
+        "priceNote": "Antes de generar, MaxVideoAI muestra el precio estimado según el clip y los ajustes de salida seleccionados.",
         "steps": [
           {
             "title": "Sube o selecciona un video",
@@ -6402,7 +6433,7 @@
         },
         {
           "q": "¿Cómo se estima el precio?",
-          "a": "MaxVideoAI lee la duración y muestra una estimación de wallet antes de iniciar. La herramienta se factura a 2x el precio proveedor actual."
+          "a": "MaxVideoAI lee la duración y muestra una estimación de wallet antes de iniciar. Los runs fallidos se reembolsan automáticamente."
         },
         {
           "q": "¿Cuál es el límite de duración?",
@@ -6421,7 +6452,7 @@
         "eyebrow": "¿Listo para limpiar el clip?",
         "title": "Elimina un fondo y guarda el resultado en tu biblioteca MaxVideoAI",
         "body": "Abre el workspace, estima el run y convierte videos cortos en sujetos recortados, mates alfa, placas de pantalla verde o assets con fondo sólido reutilizables.",
-        "primaryCta": "Abrir Background Remover",
+        "primaryCta": "Abrir herramienta de video",
         "secondaryCta": "Ver herramientas"
       }
     }

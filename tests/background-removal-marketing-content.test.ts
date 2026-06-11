@@ -26,16 +26,22 @@ test('background removal marketing copy is complete in every locale', () => {
     assert.ok(copy?.meta?.imageAlt, `${locale} image alt`);
     assert.ok(copy?.hero?.title, `${locale} hero title`);
     assert.ok(copy?.hero?.body, `${locale} hero body`);
-    assert.ok(copy?.modelGuide?.rows?.some((row) => row.model?.includes('VRMBG 3.0')), `${locale} mentions VRMBG 3.0`);
+    assert.ok(copy?.modelGuide?.rows?.some((row) => row.model), `${locale} model guide rows`);
     assert.ok((copy?.faq?.length ?? 0) >= 4, `${locale} FAQ`);
   }
 });
 
-test('background removal marketing copy does not expose fal branding', () => {
+test('background removal marketing copy does not expose supplier, multiplier, or margin wording', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = readLocale(locale).toolMarketing.backgroundRemoval;
-    assert.doesNotMatch(JSON.stringify(copy).toLowerCase(), /fal(?:\.ai|-ai|\s+ai)?/);
+    assert.doesNotMatch(JSON.stringify(copy), /\bfal(?:\.ai|-ai|\s+ai)?\b|bria|vrmbg|provider|fournisseur|proveedor|2x|margin|marge|margen/i);
   }
+
+  const toolsWorkspaceSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/components/tools/ToolsWorkspacePage.tsx'),
+    'utf8'
+  );
+  assert.doesNotMatch(toolsWorkspaceSource, /"backgroundRemovalBody":\s*"[^"]*(?:bria|vrmbg|provider|2x|margin)[^"]*"/i);
 });
 
 test('background removal landing uses shared JSON-LD helpers and app screenshots', () => {
@@ -55,5 +61,5 @@ test('background removal landing uses shared JSON-LD helpers and app screenshots
   assert.match(wrapper, /BackgroundRemovalLandingView/);
   assert.match(view, /buildToolBreadcrumbJsonLd/);
   assert.match(view, /buildToolHowToJsonLd/);
-  assert.match(route, /image: '\/assets\/tools\/background-removal-hero-app-light\.webp'/);
+  assert.match(route, /image: '\/assets\/tools\/background-removal-hero-before-after\.webp'/);
 });

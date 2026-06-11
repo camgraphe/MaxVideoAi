@@ -35,7 +35,7 @@ const DEFAULT_TOOLS_COPY = {
   "upscaleBadge": "Image + video",
   "backgroundRemovalEyebrow": "Video cleanup",
   "backgroundRemovalTitle": "Video Background Remover",
-  "backgroundRemovalBody": "Remove video backgrounds with Bria VRMBG 3.0, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
+  "backgroundRemovalBody": "Remove video backgrounds in MaxVideoAI, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
   "backgroundRemovalBadge": "AI rotoscoping",
   "open": "Open Tool"
 } as const;

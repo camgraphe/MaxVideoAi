@@ -18,7 +18,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     englishPath: '/tools/background-removal',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: '/assets/tools/background-removal-hero-app-light.webp',
+    image: '/assets/tools/background-removal-hero-before-after.webp',
     imageAlt: content.meta.imageAlt,
   });
 }

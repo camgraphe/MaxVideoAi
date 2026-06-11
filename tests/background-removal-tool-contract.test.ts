@@ -24,9 +24,12 @@ test('background removal tool exposes typed contracts and safe model ids', () =>
   assert.match(configSource, /bria\/video\/background-removal\/v3/);
   assert.doesNotMatch(configSource, /bria\/video\/background-removal\/realtime/);
   assert.match(configSource, /BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND/);
+  assert.match(configSource, /BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER/);
   assert.match(libSource, /buildBackgroundRemovalPricingPreview/);
-  assert.match(libSource, /buildBackgroundRemovalFalInput/);
+  assert.match(libSource, /buildBackgroundRemovalProviderInput/);
   assert.doesNotMatch(libSource, /buildBackgroundRemovalRealtimeInput/);
+  assert.doesNotMatch(libSource, /BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER/);
+  assert.doesNotMatch(libSource, /providerEstimateUsd/);
   assert.doesNotMatch(libSource, /process\.env\.FAL/);
 });
 
@@ -75,12 +78,34 @@ test('background removal workspace follows the tool workspace split', () => {
   assert.match(workspaceSource, /useBackgroundRemovalSourceMedia/);
   assert.match(workspaceSource, /useBackgroundRemovalPricingPreview/);
   assert.match(workspaceSource, /useBackgroundRemovalGenerationRunner/);
+  assert.match(workspaceSource, /copy\.subtitle/, 'workspace header should retain the tool subtitle');
+  assert.match(workspaceSource, /sourceSummary/, 'workspace header should summarize source readiness');
+  assert.match(workspaceSource, /formatBackgroundRemovalOutputCodecLabel\(outputCodec\)/, 'workspace header should summarize output format');
+  assert.match(workspaceSource, /copy\.priceBeforeGeneration/, 'workspace header should summarize price before generation');
   assert.doesNotMatch(workspaceSource, /useBackgroundRemovalRealtimeSession/);
   assert.doesNotMatch(workspaceSource, /BackgroundRemovalRealtimePanel/);
   assert.doesNotMatch(workspaceSource, /navigator\.mediaDevices/);
   assert.doesNotMatch(workspaceSource, /runBackgroundRemovalTool/);
   assert.doesNotMatch(workspaceSource, /fal\.realtime\.connect/);
   assert.match(runnerHookSource, /runBackgroundRemovalTool/);
+});
+
+test('transparent web previews expose checkerboard behind alpha video', () => {
+  const settingsPanelPath = join(
+    root,
+    'frontend/src/components/tools/background-removal/_components/BackgroundRemovalSettingsPanel.tsx'
+  );
+  const previewCardPath = join(root, 'frontend/src/components/tools/background-removal/_components/BackgroundRemovalPreviewCard.tsx');
+  const settingsPanelSource = readFileSync(settingsPanelPath, 'utf8');
+  const previewCardSource = readFileSync(previewCardPath, 'utf8');
+
+  assert.match(settingsPanelSource, /canPreviewTransparentOutput/);
+  assert.match(settingsPanelSource, /transparent \? 'bg-transparent' : 'bg-black'/);
+  assert.doesNotMatch(settingsPanelSource, /border border-border bg-black object-contain/);
+
+  assert.match(previewCardSource, /canPreviewTransparentOutput/);
+  assert.match(previewCardSource, /transparent \? 'bg-transparent' : 'bg-black'/);
+  assert.doesNotMatch(previewCardSource, /border border-border bg-black object-contain/);
 });
 
 test('background removal library and recent flows stay scoped to video assets', () => {

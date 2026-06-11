@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildBackgroundRemovalFalInput } from '../frontend/src/lib/tools-background-removal.ts';
+import { buildBackgroundRemovalProviderInput } from '../frontend/src/lib/tools-background-removal.ts';
 import {
   extractBackgroundRemovalOutput,
   formatBackgroundRemovalVideoMime,
   parseBackgroundRemovalRequestId,
 } from '../frontend/src/server/tools/background-removal-request-utils.ts';
 
-test('studio fal input maps MaxVideoAI controls to Bria v3 schema', () => {
+test('studio provider input maps MaxVideoAI controls to Bria v3 schema', () => {
   assert.deepEqual(
-    buildBackgroundRemovalFalInput({
+    buildBackgroundRemovalProviderInput({
       videoUrl: 'https://example.com/source.mp4',
       backgroundColor: 'Transparent',
       outputCodec: 'webm_vp9',
@@ -24,15 +24,15 @@ test('studio fal input maps MaxVideoAI controls to Bria v3 schema', () => {
   );
 });
 
-test('studio fal input defaults to a Premiere-friendly alpha export', () => {
+test('studio provider input defaults to a browser-friendly transparent export', () => {
   assert.deepEqual(
-    buildBackgroundRemovalFalInput({
+    buildBackgroundRemovalProviderInput({
       videoUrl: 'https://example.com/source.mp4',
     }),
     {
       video_url: 'https://example.com/source.mp4',
       background_color: 'Transparent',
-      output_container_and_codec: 'mov_proresks',
+      output_container_and_codec: 'webm_vp9',
       preserve_audio: true,
     }
   );

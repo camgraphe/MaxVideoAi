@@ -1,4 +1,4 @@
-import { BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER } from '@/config/tools-background-removal-engines';
+import { BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER } from '@/config/tools-background-removal-engines';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
 import type { PricingSnapshot } from '@/types/engines';
@@ -12,7 +12,7 @@ import {
 
 export type BackgroundRemovalPricingEstimate = {
   durationSec?: number | null;
-  providerEstimateUsd?: number | null;
+  estimatedCostUsd?: number | null;
 };
 
 export async function resolveBackgroundRemovalPricingContext(params: {
@@ -35,15 +35,15 @@ export async function resolveBackgroundRemovalPricingContext(params: {
     pricing = cloneBackgroundRemovalPricingWithDynamicTotal(pricing, dynamicCents, {
       surface: BACKGROUND_REMOVAL_SURFACE,
       billingProductKey: params.billingProductKey,
-      providerEstimateUsd: preview.estimate?.providerEstimateUsd ?? null,
-      dynamicMultiplier: BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER,
+      estimatedCostUsd: preview.estimate?.estimatedCostUsd ?? null,
+      priceMultiplier: BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER,
       videoMetadata: params.videoMetadata,
     });
     return {
       pricing,
       pricingEstimate: {
         durationSec: params.videoMetadata.durationSec,
-        providerEstimateUsd: preview.estimate?.providerEstimateUsd ?? null,
+        estimatedCostUsd: preview.estimate?.estimatedCostUsd ?? null,
       },
     };
   } catch (error) {

@@ -62,7 +62,7 @@ export interface BackgroundRemovalToolPricing {
   billingProductKey?: string | null;
   estimate?: {
     durationSec?: number | null;
-    providerEstimateUsd?: number | null;
+    estimatedCostUsd?: number | null;
   };
 }
 

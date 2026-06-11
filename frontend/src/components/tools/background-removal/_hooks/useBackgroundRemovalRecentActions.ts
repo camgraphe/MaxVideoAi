@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import { backgroundRemovalRecentToResult } from '../_lib/background-removal-workspace-helpers';
 import type {
   BackgroundRemovalResult,
   RecentBackgroundRemovalResult,
@@ -55,26 +56,7 @@ export function useBackgroundRemovalRecentActions(params: {
 
   const selectRecent = useCallback(
     (item: RecentBackgroundRemovalResult) => {
-      params.onSelectResult({
-        ok: true,
-        jobId: item.job.jobId,
-        engineId: 'bria-video-background-removal-v3',
-        engineLabel: item.engineLabel,
-        latencyMs: 0,
-        pricing: {
-          estimatedCostUsd: typeof item.totalCents === 'number' ? item.totalCents / 100 : 0,
-          currency: item.currency ?? 'USD',
-          estimatedCredits: typeof item.totalCents === 'number' ? item.totalCents : 0,
-          totalCents: item.totalCents ?? null,
-          billingProductKey: item.job.billingProductKey ?? 'background-removal-video-v3',
-        },
-        output: {
-          url: item.url,
-          thumbUrl: item.thumbUrl ?? null,
-          mimeType: item.mimeType ?? 'video/webm',
-          source: 'background-removal',
-        },
-      });
+      params.onSelectResult(backgroundRemovalRecentToResult(item));
       params.setMessage(item.engineLabel);
     },
     [params]

@@ -19,7 +19,7 @@ export type BackgroundRemovalVideoMetadata = {
   fps?: number | null;
 };
 
-function normalizeFalUrl(value: string): string {
+function normalizeProviderMediaUrl(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return trimmed;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
@@ -54,7 +54,7 @@ function toBackgroundRemovalOutput(entry: Record<string, unknown>): BackgroundRe
         : typeof entry.mime === 'string'
           ? entry.mime
           : null;
-  const url = normalizeFalUrl(urlRaw);
+  const url = normalizeProviderMediaUrl(urlRaw);
 
   return {
     url: normalizeMediaUrl(url) ?? url,

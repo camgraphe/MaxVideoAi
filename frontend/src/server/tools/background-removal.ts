@@ -7,7 +7,7 @@ import { getPlatformFeeCents } from '@/lib/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import {
-  buildBackgroundRemovalFalInput,
+  buildBackgroundRemovalProviderInput,
   resolveOutputCodec,
   resolveStudioBackgroundColor,
   validateBackgroundRemovalDuration,
@@ -142,7 +142,7 @@ export async function runBackgroundRemovalToolBase(
     preferredCurrency,
   });
 
-  const falInput = buildBackgroundRemovalFalInput({
+  const providerInput = buildBackgroundRemovalProviderInput({
     videoUrl: input.videoUrl,
     backgroundColor,
     outputCodec,
@@ -155,7 +155,7 @@ export async function runBackgroundRemovalToolBase(
 
   try {
     const result = await falClient.subscribe(engine.falModelId, {
-      input: falInput,
+      input: providerInput,
       mode: 'polling',
       onEnqueue(requestId) {
         providerJobId = providerJobId ?? requestId;
@@ -310,7 +310,7 @@ export async function runBackgroundRemovalToolBase(
     let message = error instanceof Error ? error.message : 'Background removal failed';
     let status = 502;
     let detail: unknown;
-    let code = 'fal_error';
+    let code = 'provider_error';
 
     if (error instanceof BackgroundRemovalToolError) {
       message = error.message;

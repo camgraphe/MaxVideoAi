@@ -20,12 +20,6 @@ export function BackgroundRemovalLandingView({ content }: { content: BackgroundR
     serviceType: content.meta.schemaName,
     category: content.modelGuide.rows[0]?.bestFor,
     url: canonicalUrl,
-    offers: {
-      price: '0.0085',
-      priceCurrency: 'USD',
-      description: content.modelGuide.rows[0]?.price,
-      url: canonicalUrl,
-    },
   });
   const howToJsonLd = buildToolHowToJsonLd({
     canonicalUrl,

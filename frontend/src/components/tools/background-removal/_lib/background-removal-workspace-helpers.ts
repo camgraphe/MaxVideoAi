@@ -1,5 +1,14 @@
 import { authFetch } from '@/lib/authFetch';
+import {
+  BACKGROUND_REMOVAL_OUTPUT_CODECS,
+  BACKGROUND_REMOVAL_STUDIO_COLORS,
+} from '@/lib/tools-background-removal';
 import type {
+  BackgroundRemovalOutputCodec,
+  BackgroundRemovalStudioBackgroundColor,
+} from '@/types/tools-background-removal';
+import type {
+  BackgroundRemovalResult,
   BackgroundRemovalSourceAsset,
   BackgroundRemovalVideoMetadata,
   MediaLibraryAssetResponse,
@@ -80,6 +89,58 @@ export function inferVideoMimeType(url: string): string {
 
 export function isTransparentOutput(codec?: string | null, backgroundColor?: string | null): boolean {
   return backgroundColor === 'Transparent' && (codec === 'webm_vp9' || codec === 'mov_proresks');
+}
+
+export function canPreviewTransparentOutput(codec?: string | null, backgroundColor?: string | null): boolean {
+  return backgroundColor === 'Transparent' && codec === 'webm_vp9';
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+export function readBackgroundRemovalControlsFromJob(job: Job): {
+  outputCodec?: BackgroundRemovalOutputCodec;
+  backgroundColor?: BackgroundRemovalStudioBackgroundColor;
+  preserveAudio?: boolean;
+} {
+  const settings = asRecord(job.settingsSnapshot);
+  const controls = asRecord(settings?.controls);
+  const outputCodec = controls?.outputCodec;
+  const backgroundColor = controls?.backgroundColor;
+
+  return {
+    outputCodec: BACKGROUND_REMOVAL_OUTPUT_CODECS.includes(outputCodec as BackgroundRemovalOutputCodec)
+      ? (outputCodec as BackgroundRemovalOutputCodec)
+      : undefined,
+    backgroundColor: BACKGROUND_REMOVAL_STUDIO_COLORS.includes(backgroundColor as BackgroundRemovalStudioBackgroundColor)
+      ? (backgroundColor as BackgroundRemovalStudioBackgroundColor)
+      : undefined,
+    preserveAudio: typeof controls?.preserveAudio === 'boolean' ? controls.preserveAudio : undefined,
+  };
+}
+
+export function backgroundRemovalRecentToResult(item: RecentBackgroundRemovalResult): BackgroundRemovalResult {
+  return {
+    ok: true,
+    jobId: item.job.jobId,
+    engineId: 'bria-video-background-removal-v3',
+    engineLabel: item.engineLabel,
+    latencyMs: 0,
+    pricing: {
+      estimatedCostUsd: typeof item.totalCents === 'number' ? item.totalCents / 100 : 0,
+      currency: item.currency ?? 'USD',
+      estimatedCredits: typeof item.totalCents === 'number' ? item.totalCents : 0,
+      totalCents: item.totalCents ?? null,
+      billingProductKey: item.job.billingProductKey ?? 'background-removal-video-v3',
+    },
+    output: {
+      url: item.url,
+      thumbUrl: item.thumbUrl ?? null,
+      mimeType: item.mimeType ?? inferVideoMimeType(item.url),
+      source: 'background-removal',
+    },
+  };
 }
 
 export function assetToSourceAsset(asset: NonNullable<MediaLibraryAssetResponse['assets']>[number]): BackgroundRemovalSourceAsset {

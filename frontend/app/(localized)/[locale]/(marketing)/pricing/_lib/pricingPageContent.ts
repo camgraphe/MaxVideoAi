@@ -75,7 +75,7 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         duration: '10s',
         resolution: '1280×720',
         audio: 'On',
-        note: 'Seedance 2 uses token-based provider pricing. This example assumes 1280×720 at 24 fps, adds the MaxVideoAI margin, then rounds up to the next cent.',
+        note: 'Seedance 2 uses token-based pricing. This example assumes 1280×720 at 24 fps, applies the displayed app price rule, then rounds up to the next cent.',
         pricingScenario: {
           engineId: 'seedance-2-0',
           durationSec: 10,
@@ -115,7 +115,7 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         duration: '10 s',
         resolution: '1280×720',
         audio: 'Inclus',
-        note: 'Seedance 2 suit une formule provider basée sur les tokens. Cet exemple part de 1280×720 à 24 fps, ajoute la marge MaxVideoAI, puis arrondit au centime supérieur.',
+        note: 'Seedance 2 suit une formule basée sur les tokens. Cet exemple part de 1280×720 à 24 fps, applique la règle de prix affichée dans l’app, puis arrondit au centime supérieur.',
         pricingScenario: {
           engineId: 'seedance-2-0',
           durationSec: 10,
@@ -155,7 +155,7 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         duration: '10 s',
         resolution: '1280×720',
         audio: 'Incluido',
-        note: 'Seedance 2 usa una fórmula de proveedor basada en tokens. Este ejemplo parte de 1280×720 a 24 fps, añade el margen de MaxVideoAI y redondea al céntimo superior.',
+        note: 'Seedance 2 usa una fórmula basada en tokens. Este ejemplo parte de 1280×720 a 24 fps, aplica la regla de precio mostrada en la app y redondea al céntimo superior.',
         pricingScenario: {
           engineId: 'seedance-2-0',
           durationSec: 10,

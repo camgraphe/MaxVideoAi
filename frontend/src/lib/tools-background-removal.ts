@@ -1,5 +1,5 @@
 import {
-  BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER,
+  BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER,
   BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
   BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND,
 } from '@/config/tools-background-removal-engines';
@@ -41,7 +41,7 @@ export type BackgroundRemovalPricingPreview = {
   ready: boolean;
   estimate: {
     durationSec: number;
-    providerEstimateUsd: number;
+    estimatedCostUsd: number;
   } | null;
 };
 
@@ -54,7 +54,7 @@ export function resolveStudioBackgroundColor(value?: string | null): BackgroundR
 export function resolveOutputCodec(value?: string | null): BackgroundRemovalOutputCodec {
   return BACKGROUND_REMOVAL_OUTPUT_CODECS.includes(value as BackgroundRemovalOutputCodec)
     ? (value as BackgroundRemovalOutputCodec)
-    : 'mov_proresks';
+    : 'webm_vp9';
 }
 
 export function getBackgroundRemovalOutputExtension(codec: BackgroundRemovalOutputCodec): string {
@@ -88,7 +88,7 @@ export function estimateBackgroundRemovalCostUsd(durationSec: number): number {
     (
       seconds *
       BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND *
-      BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER
+      BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER
     ).toFixed(4)
   );
 }
@@ -118,8 +118,8 @@ export function buildBackgroundRemovalPricingPreview(params: {
     };
   }
 
-  const providerEstimateUsd = estimateBackgroundRemovalCostUsd(durationSec);
-  const dynamicCents = Math.max(1, Math.ceil(providerEstimateUsd * 100));
+  const estimatedCostUsd = estimateBackgroundRemovalCostUsd(durationSec);
+  const dynamicCents = Math.max(1, Math.ceil(estimatedCostUsd * 100));
 
   return {
     totalCents: Math.max(unitPriceCents, dynamicCents),
@@ -127,12 +127,12 @@ export function buildBackgroundRemovalPricingPreview(params: {
     ready: true,
     estimate: {
       durationSec,
-      providerEstimateUsd,
+      estimatedCostUsd,
     },
   };
 }
 
-export function buildBackgroundRemovalFalInput(params: {
+export function buildBackgroundRemovalProviderInput(params: {
   videoUrl: string;
   backgroundColor?: string | null;
   outputCodec?: string | null;

@@ -6,7 +6,7 @@ import {
   validateBackgroundRemovalDuration,
 } from '../frontend/src/lib/tools-background-removal.ts';
 
-test('background removal dynamic pricing charges double the provider rate', () => {
+test('background removal dynamic pricing applies the configured price rule', () => {
   assert.equal(estimateBackgroundRemovalCostUsd(10), 0.085);
   assert.equal(estimateBackgroundRemovalCostUsd(10.1), 0.0935);
 
@@ -19,6 +19,7 @@ test('background removal dynamic pricing charges double the provider rate', () =
   assert.equal(preview.currency, 'USD');
   assert.equal(preview.totalCents, 9);
   assert.equal(preview.estimate?.durationSec, 10);
+  assert.equal(preview.estimate?.estimatedCostUsd, 0.085);
 });
 
 test('background removal duration validation blocks missing and oversized videos', () => {

@@ -61,12 +61,12 @@ test('jobs API route helper modules expose expected contracts', () => {
 test('jobs API keeps storyboard renders out of generic video and image feeds', () => {
   assert.match(
     routeSource,
-    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale'\)/,
+    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
     'type=video should explicitly exclude storyboard jobs by surface'
   );
   assert.match(
     routeSource,
-    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale'\)/,
+    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal'\)/,
     'type=video should explicitly exclude storyboard jobs by snapshot surface'
   );
   assert.match(routeSource, /job_id LIKE 'storyboard_%'/, 'type=video should exclude legacy storyboard job ids');
@@ -77,7 +77,7 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
   );
   assert.match(
     surfaceFilterSource,
-    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale'\)/,
+    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
     'surface=video should explicitly reject storyboard jobs'
   );
 });
