@@ -50,3 +50,39 @@ test('background removal is a first-class job and media surface', () => {
   assert.match(surfaceFilter, /tool_background_removal_/);
   assert.match(mediaRecords, /background-removal/);
 });
+
+test('background removal workspace follows the tool workspace split', () => {
+  const workspacePath = join(root, 'frontend/src/components/tools/BackgroundRemovalWorkspace.tsx');
+  const copyPath = join(root, 'frontend/src/components/tools/background-removal/_lib/background-removal-workspace-copy.ts');
+  const helpersPath = join(
+    root,
+    'frontend/src/components/tools/background-removal/_lib/background-removal-workspace-helpers.ts'
+  );
+  const runnerHookPath = join(
+    root,
+    'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalGenerationRunner.ts'
+  );
+  const realtimeHookPath = join(
+    root,
+    'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalRealtimeSession.ts'
+  );
+
+  assert.ok(existsSync(workspacePath));
+  assert.ok(existsSync(copyPath));
+  assert.ok(existsSync(helpersPath));
+  assert.ok(existsSync(runnerHookPath));
+  assert.ok(existsSync(realtimeHookPath));
+
+  const workspaceSource = readFileSync(workspacePath, 'utf8');
+  const runnerHookSource = readFileSync(runnerHookPath, 'utf8');
+  const realtimeHookSource = readFileSync(realtimeHookPath, 'utf8');
+
+  assert.match(workspaceSource, /useBackgroundRemovalSourceMedia/);
+  assert.match(workspaceSource, /useBackgroundRemovalPricingPreview/);
+  assert.match(workspaceSource, /useBackgroundRemovalGenerationRunner/);
+  assert.match(workspaceSource, /useBackgroundRemovalRealtimeSession/);
+  assert.doesNotMatch(workspaceSource, /runBackgroundRemovalTool/);
+  assert.doesNotMatch(workspaceSource, /fal\.realtime\.connect/);
+  assert.match(runnerHookSource, /runBackgroundRemovalTool/);
+  assert.match(realtimeHookSource, /fal\.realtime\.connect/);
+});

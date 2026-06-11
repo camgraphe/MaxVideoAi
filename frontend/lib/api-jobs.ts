@@ -97,7 +97,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     options?.surface === 'audio' ||
     options?.surface === 'character' ||
     options?.surface === 'angle' ||
-    options?.surface === 'upscale'
+    options?.surface === 'upscale' ||
+    options?.surface === 'background-removal'
       ? options.surface
       : 'all';
   const lastRevalidateRef = useRef<number>(0);
