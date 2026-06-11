@@ -55,6 +55,7 @@ interface UseImageWorkspaceQueryHydrationParams {
   setReferenceSlots: Dispatch<SetStateAction<Array<ReferenceSlotValue | null>>>;
   setResolution: Dispatch<SetStateAction<string | null>>;
   setSeed: Dispatch<SetStateAction<string>>;
+  setStyle: Dispatch<SetStateAction<string | null>>;
   setSelectedPreviewEntryId: Dispatch<SetStateAction<string | null>>;
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
@@ -82,6 +83,7 @@ export function useImageWorkspaceQueryHydration({
   setReferenceSlots,
   setResolution,
   setSeed,
+  setStyle,
   setSelectedPreviewEntryId,
   setSelectedPreviewImageIndex,
   setStatusMessage,
@@ -203,6 +205,7 @@ export function useImageWorkspaceQueryHydration({
         typeof core.seed === 'number' && Number.isFinite(core.seed) ? Math.round(core.seed) : null;
       const outputFormatRaw = typeof core.outputFormat === 'string' ? core.outputFormat : null;
       const qualityRaw = typeof core.quality === 'string' ? core.quality : null;
+      const styleRaw = typeof core.style === 'string' ? core.style : null;
       const maskUrlRaw = typeof core.maskUrl === 'string' ? core.maskUrl : null;
       const enableWebSearchRaw = core.enableWebSearch === true;
       const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
@@ -250,6 +253,10 @@ export function useImageWorkspaceQueryHydration({
         const defaultQuality =
           getImageFieldDefaultString(engineMatch.engineCaps, 'quality', resolvedMode) ?? qualityValues[0] ?? null;
         setQuality(qualityRaw && qualityValues.includes(qualityRaw) ? qualityRaw : defaultQuality);
+        const styleValues = getImageFieldValues(engineMatch.engineCaps, 'style', resolvedMode);
+        const defaultStyle =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'style', resolvedMode) ?? styleValues[0] ?? null;
+        setStyle(styleRaw && styleValues.includes(styleRaw) ? styleRaw : defaultStyle);
         setMaskUrl(getImageInputField(engineMatch.engineCaps, 'mask_url', resolvedMode) ? maskUrlRaw ?? '' : '');
         setEnableWebSearch(
           getImageInputField(engineMatch.engineCaps, 'enable_web_search', resolvedMode)
@@ -279,6 +286,7 @@ export function useImageWorkspaceQueryHydration({
         setSeed(seedRaw == null ? '' : String(seedRaw));
         setOutputFormat(outputFormatRaw);
         setQuality(qualityRaw);
+        setStyle(styleRaw);
         setMaskUrl(maskUrlRaw ?? '');
         setEnableWebSearch(enableWebSearchRaw);
         setThinkingLevel(thinkingLevelRaw);
@@ -336,6 +344,7 @@ export function useImageWorkspaceQueryHydration({
       setSeed,
       setSelectedPreviewEntryId,
       setSelectedPreviewImageIndex,
+      setStyle,
       setThinkingLevel,
       setWatermark,
     ]

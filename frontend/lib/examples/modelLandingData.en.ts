@@ -61,30 +61,30 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   luma: {
-    metaTitle: 'Luma Ray 2 and Ray 2 Flash Examples (Prompts + Settings) | MaxVideoAI',
+    metaTitle: 'Luma Ray 3.2 Modify & Reframe Examples | MaxVideoAI',
     metaDescription:
-      'Browse Luma Ray 2 and Ray 2 Flash examples with reusable prompts, modify and reframe patterns, and price-per-clip guidance before choosing the premium or fast tier in MaxVideoAI.',
-    subtitle: 'Luma Ray examples across Ray 2 and Ray 2 Flash, with reusable prompts, modify/reframe patterns, and pricing signals.',
+      'Browse Luma Ray 3.2 examples for source-video Modify, AI video Reframe, guide/keyframe edits, silent 5s/10s tests, reusable prompts, and Ray 2 / Flash context on MaxVideoAI.',
+    subtitle: 'Luma Ray 3.2 examples for source-video Modify, Reframe, guide/keyframe edits, aspect ratios, and cost-controlled silent tests.',
     intro:
-      'This page is the family view for Luma Ray inside MaxVideoAI. Use it to compare Ray 2 and Ray 2 Flash examples side by side before deciding whether the job belongs on the premium tier or the faster draft tier. The model pages handle detailed specs; this gallery is for prompt patterns, workflow examples, and cost tradeoffs across the two public Luma models.',
+      'This page is the family view for Luma Ray inside MaxVideoAI. It now leads with Ray 3.2 examples for source-video Modify, guide/keyframe edits, and Reframe delivery work, while Ray 2 and Ray 2 Flash remain useful context for older examples and fallback coverage. The model pages handle detailed specs; this gallery is for prompt patterns, edit examples, and cost-aware settings.',
     promptPatterns:
-      'Luma examples work best when prompts stay shot-level and workflow-specific: net-new generate, still-led animation, source-video modify, or reframe for delivery. Keep the brief compact and describe what must stay versus what can change.',
+      'Luma examples work best when prompts stay mode-specific. For Modify, write what stays from the source video before the requested change. For Reframe, name subject priority and canvas fill. For supporting generation, keep one subject, one motion goal, a camera move, the target aspect ratio, and the intended duration/resolution.',
     strengthsLimits:
-      'Ray 2 is the stronger fit for premium cinematic finals and higher-confidence polish. Ray 2 Flash is the cheaper throughput layer for concept validation, faster modify passes, and square or vertical delivery prep. Neither model generates native audio, so judge them on motion, framing, and source-video control rather than lip sync.',
+      'Ray 3.2 is the current Luma route for source-video modification, keyframed visual direction, reframing delivery cuts, product edit passes, and supporting short motion tests. It is not an audio or lip-sync engine in MaxVideoAI, so judge examples on source preservation, framing, product continuity, edit discipline, and prompt control rather than soundtrack features. Ray 2 and Ray 2 Flash examples stay available as older production context.',
     pricingNotes:
-      'Use matching durations and resolutions when comparing the two Luma tiers. Ray 2 usually earns the higher spend on final-quality shots, while Ray 2 Flash is the better baseline for draft exploration, source-video experimentation, and lower-cost delivery variants.',
+      'Start with 5s clips at 540p or 720p when validating motion, then move only approved shots to longer or higher-resolution renders. Pricing follows the site quote before generation; direct Luma routing keeps the same customer price while fallback protects availability.',
     faq: [
       {
         question: 'When should I start from the Luma examples page?',
-        answer: 'Start here when you want to compare Ray 2 and Ray 2 Flash quickly before choosing the premium or fast tier for a real job.',
+        answer: 'Start here when you want to see Ray 3.2 Modify and Reframe patterns before opening the model page or cloning a prompt into the app.',
       },
       {
-        question: 'What is the clearest difference between Ray 2 and Ray 2 Flash in examples?',
-        answer: 'Ray 2 is the premium finaling tier, while Ray 2 Flash is the faster draft tier. The workflows stay aligned, but the role in production is different.',
+        question: 'Does Ray 3.2 generate audio?',
+        answer: 'No. Treat Ray 3.2 examples as silent video outputs and add voice, music, or sound design later in the workflow.',
       },
       {
-        question: 'Can I compare modify and reframe use cases from this page?',
-        answer: 'Yes. The gallery is meant to surface both net-new generation and source-video edit patterns before you open the model pages for full workflow controls.',
+        question: 'Should I start from text or an image?',
+        answer: 'Start from a source video when the timing already works. Use text or an image only when you need a new short silent clip before a later Modify or Reframe pass.',
       },
     ],
   },

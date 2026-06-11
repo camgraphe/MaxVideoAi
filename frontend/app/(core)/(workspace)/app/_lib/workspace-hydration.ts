@@ -5,6 +5,7 @@ import { deserializePendingRenders, serializePendingRenders, type LocalRender } 
 import { parseStoredForm, type FormState, type StoredFormState } from './workspace-form-state';
 import {
   coerceFormState,
+  getPreferredEngineModeForEngineRequest,
   getPreferredEngineMode,
   isModeValue,
   matchesEngineToken,
@@ -274,7 +275,11 @@ export function buildInitialWorkspaceFormState({
   if (effectiveRequestedEngineId) {
     const requestedEngine = findEngineByIdOrToken(engines, effectiveRequestedEngineId, effectiveRequestedEngineToken);
     if (requestedEngine) {
-      const preferredMode = getPreferredEngineMode(requestedEngine, effectiveRequestedMode ?? nextForm?.mode ?? null);
+      const preferredMode = getPreferredEngineModeForEngineRequest({
+        engine: requestedEngine,
+        requestedMode: effectiveRequestedMode,
+        carryoverMode: nextForm?.mode ?? null,
+      });
       const normalizedPrevious = nextForm ? { ...nextForm, engineId: requestedEngine.id, mode: preferredMode } : null;
       nextForm = normalizedPrevious
         ? coerceFormState(requestedEngine, preferredMode, normalizedPrevious)

@@ -28,6 +28,14 @@ type AttachmentReferenceResult = {
   sourceInputVideoUrl: string | undefined;
 };
 
+type SourceVideoDurationResolution = {
+  durationSec: number;
+  durationLabel: string | undefined;
+  sourceDurationSec: number | null;
+  maxDurationSec: number | null;
+  exceedsMax: boolean;
+};
+
 function trimString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length ? value.trim() : undefined;
 }
@@ -42,6 +50,11 @@ function normalizeStringList(value: unknown): string[] {
 
 function uniqueNonEmpty(values: string[]): string[] {
   return values.filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
+}
+
+function positiveDuration(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+  return null;
 }
 
 export function deriveGenerationAttachmentReferences(params: AttachmentReferenceParams): AttachmentReferenceResult {
@@ -121,5 +134,45 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     resolvedFirstFrameUrl,
     startImageUrl,
     sourceInputVideoUrl,
+  };
+}
+
+export function resolveSourceVideoDurationSec(params: {
+  mode: Mode;
+  attachments: NormalizedAttachment[];
+  sourceInputVideoUrl?: string;
+  fallbackDurationSec: number;
+  maxDurationSec?: number | null;
+}): SourceVideoDurationResolution {
+  const fallbackDurationSec = Math.max(1, Math.ceil(params.fallbackDurationSec || 1));
+  const maxDurationSec =
+    typeof params.maxDurationSec === 'number' && Number.isFinite(params.maxDurationSec)
+      ? Math.max(1, Math.floor(params.maxDurationSec))
+      : null;
+  if (params.mode !== 'reframe') {
+    return {
+      durationSec: fallbackDurationSec,
+      durationLabel: undefined,
+      sourceDurationSec: null,
+      maxDurationSec,
+      exceedsMax: false,
+    };
+  }
+
+  const sourceUrl = trimString(params.sourceInputVideoUrl);
+  const sourceAttachment = params.attachments.find((attachment) => {
+    if (attachment.kind !== 'video') return false;
+    if (!sourceUrl) return true;
+    return attachment.url?.trim() === sourceUrl;
+  });
+  const sourceDurationSec = positiveDuration(sourceAttachment?.durationSec);
+  const durationSec = sourceDurationSec ? Math.max(1, Math.ceil(sourceDurationSec)) : fallbackDurationSec;
+
+  return {
+    durationSec,
+    durationLabel: `${durationSec}s`,
+    sourceDurationSec,
+    maxDurationSec,
+    exceedsMax: Boolean(sourceDurationSec && maxDurationSec && sourceDurationSec > maxDurationSec),
   };
 }

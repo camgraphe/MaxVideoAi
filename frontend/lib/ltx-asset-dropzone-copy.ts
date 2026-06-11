@@ -52,8 +52,10 @@ export type AssetDropzoneCopy = {
   dropAudioFile: string;
   formatNotSupported: (value: string) => string;
   unableToReadAudioDuration: string;
+  unableToReadVideoDuration: string;
   audioMinDuration: (seconds: number) => string;
   audioMaxDuration: (seconds: number) => string;
+  videoMaxDuration: (seconds: number) => string;
   fileTooLarge: (size: number) => string;
 };
 
@@ -112,8 +114,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     dropAudioFile: 'Please drop an audio file (MP3, WAV...).',
     formatNotSupported: (value) => `Format not supported. Allowed: ${value}`,
     unableToReadAudioDuration: 'Unable to read audio duration. Please try another file.',
+    unableToReadVideoDuration: 'Unable to read video duration. Please try another MP4/MOV/WebM file.',
     audioMinDuration: (seconds) => `Audio must be at least ${seconds}s long.`,
     audioMaxDuration: (seconds) => `Audio must be ${seconds}s or shorter.`,
+    videoMaxDuration: (seconds) => `Video must be ${seconds}s or shorter.`,
     fileTooLarge: (size) => `File exceeds the ${size} MB limit.`,
   },
   fr: {
@@ -170,8 +174,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     dropAudioFile: 'Déposez un fichier audio (MP3, WAV...).',
     formatNotSupported: (value) => `Format non pris en charge. Autorisés : ${value}`,
     unableToReadAudioDuration: "Impossible de lire la durée audio. Essayez un autre fichier.",
+    unableToReadVideoDuration: 'Impossible de lire la durée vidéo. Essayez un autre fichier MP4/MOV/WebM.',
     audioMinDuration: (seconds) => `L'audio doit faire au moins ${seconds}s.`,
     audioMaxDuration: (seconds) => `L'audio doit faire ${seconds}s ou moins.`,
+    videoMaxDuration: (seconds) => `La vidéo doit faire ${seconds}s ou moins.`,
     fileTooLarge: (size) => `Le fichier dépasse la limite de ${size} Mo.`,
   },
   es: {
@@ -228,8 +234,10 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     dropAudioFile: 'Suelta un archivo de audio (MP3, WAV...).',
     formatNotSupported: (value) => `Formato no compatible. Permitidos: ${value}`,
     unableToReadAudioDuration: 'No se pudo leer la duración del audio. Prueba con otro archivo.',
+    unableToReadVideoDuration: 'No se pudo leer la duración del video. Prueba con otro archivo MP4/MOV/WebM.',
     audioMinDuration: (seconds) => `El audio debe durar al menos ${seconds}s.`,
     audioMaxDuration: (seconds) => `El audio debe durar ${seconds}s o menos.`,
+    videoMaxDuration: (seconds) => `El video debe durar ${seconds}s o menos.`,
     fileTooLarge: (size) => `El archivo supera el límite de ${size} MB.`,
   },
 };

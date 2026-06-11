@@ -1,4 +1,5 @@
-import { isLumaRay2EngineId, isLumaRay2GenerateMode } from '@/lib/luma-ray2';
+import { isLumaRay2EngineId } from '@/lib/luma-ray2';
+import { isLumaRay32EngineId } from '@/lib/luma-agents';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -221,6 +222,8 @@ export function buildComposerModeToggles({
   const explicitModes =
     isLumaRay2EngineId(selectedEngine.id)
       ? (['v2v', 'reframe'] as const)
+      : isLumaRay32EngineId(selectedEngine.id)
+        ? (['v2v', 'reframe'] as const)
       : selectedEngine.id === 'ltx-2-3'
         ? (['extend'] as const)
         : selectedEngine.id === 'veo-3-1'
@@ -321,6 +324,11 @@ export function supportsModeAudioControl(
   return Boolean(capability?.audioToggle && findGenerateAudioField(engine, mode));
 }
 
+export function supportsModeLoopControl(engine: EngineCaps, mode: Mode): boolean {
+  const field = findInputFieldById(engine, mode, 'loop');
+  return field?.type === 'boolean';
+}
+
 export function resolveBooleanFieldDefault(
   engine: EngineCaps,
   mode: Mode,
@@ -345,9 +353,34 @@ export function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldI
 
 export function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
   if (candidate && isWorkspaceModeAvailable(engine, candidate)) return candidate;
+  return getDefaultEngineMode(engine);
+}
+
+export function getDefaultEngineMode(engine: EngineCaps): Mode {
+  if (isLumaRay32EngineId(engine.id) && isWorkspaceModeAvailable(engine, 'v2v')) {
+    return 'v2v';
+  }
   const availableMode = engine.modes.find((mode) => isWorkspaceModeAvailable(engine, mode));
   if (availableMode) return availableMode;
   return engine.modes[0] ?? 't2v';
+}
+
+export function getPreferredEngineModeForEngineRequest({
+  engine,
+  requestedMode,
+  carryoverMode,
+}: {
+  engine: EngineCaps;
+  requestedMode?: Mode | null;
+  carryoverMode?: Mode | null;
+}): Mode {
+  if (requestedMode) {
+    return getPreferredEngineMode(engine, requestedMode);
+  }
+  if (isLumaRay32EngineId(engine.id)) {
+    return getDefaultEngineMode(engine);
+  }
+  return getPreferredEngineMode(engine, carryoverMode);
 }
 
 export function getModeCaps(engine: EngineCaps, mode: Mode): EngineModeUiCaps | undefined {
@@ -370,7 +403,6 @@ export function framesToSeconds(frames: number): number {
 
 export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
   const capability = getModeCaps(engine, mode);
-  const isLumaRay2Engine = isLumaRay2EngineId(engine.id);
   const resetFastDefaultsOnEngineSwitch =
     (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') &&
     Boolean(previous?.engineId) &&
@@ -501,7 +533,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   })();
 
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
-  const loop = isLumaRay2Engine && isLumaRay2GenerateMode(mode) ? Boolean(previous?.loop) : undefined;
+  const loop = supportsModeLoopControl(engine, mode) ? Boolean(previous?.loop) : undefined;
   const audio = (() => {
     const previousAudio = typeof previous?.audio === 'boolean' ? previous.audio : null;
     if (previousAudio !== null) return previousAudio;

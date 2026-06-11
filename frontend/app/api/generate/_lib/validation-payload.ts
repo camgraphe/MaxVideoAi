@@ -55,6 +55,7 @@ export function buildGenerateValidationPayload(params: {
   startImageUrl: string | null | undefined;
   isLumaRay2: boolean;
   initialImageUrl: string | null | undefined;
+  loop?: boolean;
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
@@ -82,6 +83,10 @@ export function buildGenerateValidationPayload(params: {
     } else if (params.validationDuration != null) {
       payload.duration = params.validationDuration;
     }
+  }
+
+  if (typeof params.loop === 'boolean') {
+    payload.loop = params.loop;
   }
 
   if (params.maxUploadedBytes > 0) {

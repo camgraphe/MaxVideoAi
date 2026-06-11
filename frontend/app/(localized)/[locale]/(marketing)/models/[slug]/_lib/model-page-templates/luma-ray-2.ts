@@ -4,8 +4,8 @@ export const lumaRay2TemplateConfig: ModelPageTemplateConfig = {
   slug: 'luma-ray-2',
   intent: 'production',
   hero: {
-    eyebrow: 'LUMA PREMIUM VIDEO ROUTE',
-    subtitleHighlightTerms: ['premium cinematic shots', 'Modify and Reframe', 'delivery-ready variants'],
+    eyebrow: 'PREVIOUS-GENERATION LUMA ROUTE',
+    subtitleHighlightTerms: ['previous-generation Luma route', 'Modify and Reframe', 'Ray 3.2 migration'],
     primaryCtaHref: '/app?engine=lumaRay2',
     secondaryCtaHref: '/examples/luma',
     quickLinks: [

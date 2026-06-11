@@ -9,6 +9,7 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
+import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import { isSoraEngineId, type SoraRequest } from '@/lib/sora';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { normalizeBytePlusOptions } from './request-options-byteplus';
@@ -297,8 +298,9 @@ export function buildGenerateRequestOptions(params: {
         : null;
   const numFrames =
     rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
-  const loopValue = isLumaRay2 ? normaliseLumaRay2Loop(body.loop) : undefined;
-  const loop = isLumaRay2 ? loopValue === true : false;
+  const supportsLoop = isLumaRay2 || (isLumaRay32EngineId(engine.id) && isLumaRay32PublicMode(mode));
+  const loopValue = supportsLoop ? normaliseLumaRay2Loop(body.loop) : undefined;
+  const loop = supportsLoop ? loopValue === true : false;
 
   let soraRequest: SoraRequest | null = null;
   if (isSoraEngineId(engine.id)) {

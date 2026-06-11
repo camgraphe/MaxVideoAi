@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { ImageGenerationMode, ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
@@ -26,8 +26,9 @@ import {
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
-import { ImageGenerationExecutionError } from './image-generation-error';
+import { failImageGenerationExecution as fail, ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
@@ -39,7 +40,10 @@ import { prepareImageGenerationReferences } from './image-generation-references'
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
 import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
-import { runFalImageGeneration } from './image-fal-generation';
+import {
+  executeImageProviderWithLumaAgentsDirectFallback,
+  lumaAgentsImageDirectEnabled,
+} from './luma-agents-execution';
 import {
   applyStoryboardImagePricing,
   resolveIncludedKlingFirstFrameParentJobId,
@@ -58,18 +62,8 @@ type ExecuteImageGenerationOptions = {
   jobSurface?: JobSurface;
   billingProductKey?: BillingProductKey | null;
   billingQuantityMultiplier?: number;
+  isAdminForDirectProvider?: boolean;
 };
-
-function fail(
-  mode: ImageGenerationMode,
-  code: string,
-  message: string,
-  status: number,
-  detail?: unknown,
-  extras?: Partial<ImageGenerationResponse>
-): never {
-  throw new ImageGenerationExecutionError(message, { mode, code, status, detail, extras });
-}
 
 export async function executeImageGeneration({
   userId,
@@ -78,6 +72,7 @@ export async function executeImageGeneration({
   jobSurface = 'image',
   billingProductKey = null,
   billingQuantityMultiplier = 1,
+  isAdminForDirectProvider = false,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
@@ -99,6 +94,7 @@ export async function executeImageGeneration({
   const requestId = typeof body.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
   const jobId = requestId ?? `img_${randomUUID()}`;
   const requestMetadata = normalizeImageGenerationMetadata(body.metadata);
+  const engineResponseExtras = { engineId: engineEntry.id, engineLabel: engineEntry.marketingName };
 
   const resolutionResult = resolveRequestedResolution(
     engine,
@@ -112,10 +108,7 @@ export async function executeImageGeneration({
       'Selected resolution is not available for this engine.',
       400,
       { allowed: resolutionResult.allowed },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
+      engineResponseExtras
     );
   }
   const resolution = resolutionResult.resolution;
@@ -143,10 +136,7 @@ export async function executeImageGeneration({
         customSizeResult.message,
         400,
         customSizeResult.detail,
-        {
-          engineId: engineEntry.id,
-          engineLabel: engineEntry.marketingName,
-        }
+        engineResponseExtras
       );
     }
     customImageSize = customSizeResult.size;
@@ -169,10 +159,7 @@ export async function executeImageGeneration({
       'Selected output format is not available for this engine.',
       400,
       { allowed: outputFormatValues },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
+      engineResponseExtras
     );
   }
 
@@ -188,10 +175,23 @@ export async function executeImageGeneration({
       'Selected quality is not available for this engine.',
       400,
       { allowed: qualityValues },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
+      engineResponseExtras
+    );
+  }
+
+  const styleValues = getImageFieldValues(engine, 'style', mode);
+  const style =
+    typeof body.style === 'string'
+      ? canonicalizeImageFieldValue(styleValues, body.style)
+      : null;
+  if (typeof body.style === 'string' && body.style.trim().length && !style) {
+    fail(
+      mode,
+      'style_invalid',
+      'Selected style is not available for this engine.',
+      400,
+      { allowed: styleValues },
+      engineResponseExtras
     );
   }
 
@@ -205,10 +205,7 @@ export async function executeImageGeneration({
       'Mask URL must be an absolute URL (https://...).',
       400,
       { url: maskUrl },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
+      engineResponseExtras
     );
   }
 
@@ -224,10 +221,7 @@ export async function executeImageGeneration({
       'Selected thinking level is not available for this engine.',
       400,
       { allowed: thinkingLevelValues },
-      {
-        engineId: engineEntry.id,
-        engineLabel: engineEntry.marketingName,
-      }
+      engineResponseExtras
     );
   }
 
@@ -255,6 +249,11 @@ export async function executeImageGeneration({
   const membershipTier = typeof body.membershipTier === 'string' && body.membershipTier.trim().length
     ? body.membershipTier.trim()
     : undefined;
+  const lumaAgentsReferenceImageCount = isLumaAgentsImageEngineId(engine.id)
+    ? mode === 'i2i'
+      ? Math.max(0, combinedImageUrls.length - 1)
+      : combinedImageUrls.length
+    : undefined;
   try {
     pricing = billingProductKey
       ? await computeBillingProductSnapshot({
@@ -267,8 +266,10 @@ export async function executeImageGeneration({
           engine,
           durationSec,
           resolution,
+          mode,
           customImageSize,
           quality,
+          referenceImageCount: lumaAgentsReferenceImageCount,
           membershipTier,
           currency: DISPLAY_CURRENCY,
           addons: enableWebSearch ? { enable_web_search: true } : undefined,
@@ -289,10 +290,7 @@ export async function executeImageGeneration({
     });
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
-    fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, {
-      engineId: engineEntry.id,
-      engineLabel: engineEntry.marketingName,
-    });
+    fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, engineResponseExtras);
   }
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
@@ -323,6 +321,7 @@ export async function executeImageGeneration({
       ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
       ...(outputFormat ? { outputFormat } : {}),
       ...(quality ? { quality } : {}),
+      ...(style ? { style } : {}),
       ...(maskUrl ? { maskUrl } : {}),
       ...(enableWebSearch ? { enableWebSearch } : {}),
       ...(thinkingLevel ? { thinkingLevel } : {}),
@@ -362,6 +361,7 @@ export async function executeImageGeneration({
         normalizedSeed,
         outputFormat,
         quality,
+        style,
         maskUrl,
         enableWebSearch,
         thinkingLevel,
@@ -456,7 +456,7 @@ export async function executeImageGeneration({
     fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 
-  const providerMode = getResultProviderMode();
+  let providerMode: string = getResultProviderMode();
   let providerJobId: string | undefined;
 
   if (engine.id === 'seedream' && engine.providerMeta?.provider === 'byteplus_modelark') {
@@ -494,26 +494,18 @@ export async function executeImageGeneration({
   }
 
   try {
-    const { result, providerJobId: completedProviderJobId } = await runFalImageGeneration({
-      falModelId: modeConfig.falModelId,
-      effectivePrompt,
-      numImages,
-      mode,
-      combinedImageUrls,
-      falAspectRatio,
-      providerImageSize,
-      resolutionEngineParam,
-      normalizedSeed,
-      outputFormat,
-      quality,
-      maskUrl,
-      enableWebSearch,
-      thinkingLevel,
-      limitGenerations,
-      onProviderJobId(requestId) {
-        providerJobId = requestId;
-      },
-    });
+    const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
+      await executeImageProviderWithLumaAgentsDirectFallback({
+        falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
+        providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
+        thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
+        useLumaDirect:
+          isLumaAgentsImageEngineId(engine.id) &&
+          lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),
+        onProviderJobId(requestId) { providerJobId = requestId; },
+        onProviderMode(nextProviderMode) { providerMode = nextProviderMode; },
+      });
+    providerMode = completedProviderMode;
     providerJobId = completedProviderJobId ?? providerJobId;
 
     const images = extractImages(result.data);
@@ -575,6 +567,7 @@ export async function executeImageGeneration({
       quality,
       resolvedAspectRatio,
       resolution,
+      style,
       thinkingLevel,
       userId,
       vendorAccountId,
@@ -625,6 +618,7 @@ export async function executeImageGeneration({
       refundDescription,
       resolvedAspectRatio,
       resolution,
+      style,
       thinkingLevel,
     });
 

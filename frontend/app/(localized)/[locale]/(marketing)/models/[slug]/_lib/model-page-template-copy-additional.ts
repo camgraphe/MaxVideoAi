@@ -3534,15 +3534,16 @@ const WAN_25_COPY: LocalizedTemplateCopy = {
 const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
-      eyebrow: 'LUMA PREMIUM VIDEO ROUTE',
+      eyebrow: 'PREVIOUS-GENERATION LUMA ROUTE',
       title: 'Luma Ray 2',
-      subtitle: 'Premium cinematic shots with image-to-video, Modify, Reframe and delivery-ready Luma variants.',
-      subtitleHighlights: ['Premium cinematic shots', 'Modify', 'Reframe'],
+      subtitle: 'Previous-generation Luma route for supported Generate, Modify and Reframe workflows.',
+      subtitleHighlights: ['Previous-generation Luma', 'Modify', 'Reframe'],
       paragraph:
-        'Use Luma Ray 2 when a shot is past draft territory: generate cinematic clips, animate approved stills, modify strong source footage, then reframe the final for social or delivery formats.',
-      primaryCta: { label: 'Generate with Luma Ray 2', href: '/app?engine=lumaRay2' },
-      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+        'Use Luma Ray 2 when you need a legacy-compatible Luma render or an older Ray 2 workflow. Start new Luma Modify, guide/keyframe and Reframe work on Ray 3.2, then keep Ray 2 for historical prompts, fallback checks and older examples.',
+      primaryCta: { label: 'Open legacy Ray 2', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'Open Ray 3.2', href: modelsHref('en', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Current Luma: Ray 3.2', href: modelsHref('en', 'luma-ray-3-2') },
         { label: 'Compare vs Flash', href: compareHref('en', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'View pricing', href: pricingHref('en', 'luma-ray-2-pricing') },
         { label: 'Prompt examples', href: '#prompting' },
@@ -3550,33 +3551,33 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Luma Ray 2 example',
-      description: 'Premium cinematic generation workflow',
+      description: 'Previous-generation Luma workflow',
       renderLabel: 'View render',
-      badges: ['Modify + Reframe', '9s', '1080p'],
+      badges: ['Legacy route', 'Modify + Reframe', '1080p'],
       altContext: 'cinematic Luma Ray 2 video example',
     },
     features: [
-      { title: 'Premium Luma tier', body: 'Use Ray 2 for higher-confidence finals after draft direction is clear.', tone: 'quality' },
+      { title: 'Legacy Luma route', body: 'Use Ray 2 for older prompts, historical examples and compatibility checks.', tone: 'quality' },
       { title: 'Text or image start', body: 'Generate from a prompt or animate one still with optional end-frame guidance.', tone: 'reference' },
       { title: 'Modify source clips', body: 'Keep the blocking and timing that already work while changing look or detail.', tone: 'continuity' },
       { title: 'Reframe delivery cuts', body: 'Turn an approved source clip into vertical, square or wide delivery variants.', tone: 'reference' },
       { title: '5s or 9s generate', body: 'Choose short controlled generation runs up to 1080p.', tone: 'duration' },
-      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+      { title: 'Ray 3.2 for new edits', body: 'Use Ray 3.2 first when guide frames, keyframes or current Reframe behavior matter.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: 'Ray 2 or Ray 2 Flash?',
-        body: 'Use Ray 2 for premium finals. Use Flash for faster, lower-cost draft passes before you commit to the final Luma route.',
-        cta: { label: 'Compare Ray 2 vs Flash', href: compareHref('en', 'luma-ray-2', 'luma-ray-2-flash') },
+        title: 'Ray 2 or Ray 3.2?',
+        body: 'Use Ray 3.2 for current Luma Modify, keyframe guidance and Reframe work. Keep Ray 2 for legacy prompts, old examples and compatibility coverage.',
+        cta: { label: 'Open Ray 3.2', href: modelsHref('en', 'luma-ray-3-2') },
       },
       {
         title: 'Modifying existing footage?',
-        body: 'Use Modify when the camera path already works, or Reframe when the approved master needs a new aspect ratio.',
+        body: 'Use Ray 2 Modify only when you need the older route. For new source-video edits, Ray 3.2 should be the first Luma option.',
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Choosing a premium route?',
-        body: 'Compare Ray 2 with Veo when you need a clear tradeoff between Luma edits and Google generation routes.',
+        title: 'Need stronger generation?',
+        body: 'Use Seedance, Kling or Veo when the job is flagship generation, sound-capable video or broader reference control rather than a Luma legacy workflow.',
         cta: { label: 'Compare Ray 2 vs Veo Fast', href: compareHref('en', 'luma-ray-2', 'veo-3-1-fast') },
       },
     ],
@@ -3588,29 +3589,30 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Prioritize the subject and delivery format instead of rewriting the whole scene.' },
     ],
     pricingCopy: {
-      title: 'Luma Ray 2 pricing at a glance',
-      subtitle: 'Preset Ray 2 generate totals by duration and resolution - see the exact live price in the app before you generate.',
+      title: 'Legacy Luma Ray 2 pricing at a glance',
+      subtitle: 'Preset Ray 2 generate totals by duration and resolution - use Ray 3.2 for current Luma edit and Reframe work.',
       footnote: 'Generate pricing uses preset duration/resolution tiers. Modify and Reframe are quoted live from source-clip settings.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Luma Ray 2: Pricing, Modify, Reframe & Examples | MaxVideoAI',
+      title: 'Luma Ray 2 Legacy: Pricing, Modify & Reframe | MaxVideoAI',
       description:
-        'Explore Luma Ray 2 pricing, examples, cinematic text-to-video and image-to-video, source-video Modify, Reframe workflows and Ray 2 vs Flash comparison.',
+        'Explore Luma Ray 2 as a previous-generation Luma route, with legacy pricing, examples, Modify, Reframe, Ray 2 Flash context and Ray 3.2 migration guidance.',
     },
   },
   fr: {
     hero: {
-      eyebrow: 'ROUTE LUMA PREMIUM VIDEO',
+      eyebrow: 'ROUTE LUMA D’ANCIENNE GENERATION',
       title: 'Luma Ray 2',
-      subtitle: 'Plans cinématographiques premium avec image-to-video, Modify, Reframe et variantes prêtes à livrer.',
-      subtitleHighlights: ['Plans cinématographiques premium', 'Modify', 'Reframe'],
+      subtitle: 'Route Luma d’ancienne génération pour les workflows Generate, Modify et Reframe encore pris en charge.',
+      subtitleHighlights: ['Route Luma d’ancienne génération', 'Modify', 'Reframe'],
       paragraph:
-        'Utilisez Luma Ray 2 quand le plan dépasse le stade du brouillon : générer des clips cinématographiques, animer une image validée, modifier une bonne source vidéo, puis recadrer le rendu final pour les formats de livraison.',
-      primaryCta: { label: 'Générer avec Luma Ray 2', href: '/app?engine=lumaRay2' },
-      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+        'Utilisez Luma Ray 2 quand vous avez besoin d’un rendu Luma compatible avec l’ancienne route ou d’un workflow Ray 2 historique. Pour les nouveaux travaux Luma Modify, images guides, keyframes et Reframe, partez de Ray 3.2.',
+      primaryCta: { label: 'Ouvrir Ray 2 legacy', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'Ouvrir Ray 3.2', href: modelsHref('fr', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Luma actuel : Ray 3.2', href: modelsHref('fr', 'luma-ray-3-2') },
         { label: 'Comparer vs Flash', href: compareHref('fr', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-2-pricing') },
         { label: 'Exemples de prompts', href: '#prompting' },
@@ -3618,33 +3620,33 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Luma Ray 2',
-      description: 'Workflow de génération cinématographique premium',
+      description: 'Workflow Luma d’ancienne génération',
       renderLabel: 'Voir le rendu',
-      badges: ['Modify + Reframe', '9 s', '1080p'],
+      badges: ['Route legacy', 'Modify + Reframe', '1080p'],
       altContext: 'exemple vidéo cinématographique Luma Ray 2',
     },
     features: [
-      { title: 'Tier Luma premium', body: 'Gardez Ray 2 pour les rendus finaux quand la direction créative est claire.', tone: 'quality' },
+      { title: 'Route Luma legacy', body: 'Gardez Ray 2 pour les anciens prompts, exemples historiques et tests de compatibilité.', tone: 'quality' },
       { title: 'Départ texte ou image', body: 'Générez depuis un prompt ou animez une image avec fin optionnelle.', tone: 'reference' },
       { title: 'Modifier une source', body: 'Conservez un timing qui marche déjà tout en changeant le look ou le détail.', tone: 'continuity' },
       { title: 'Recadrer pour livrer', body: 'Déclinez un master validé en formats vertical, carré ou large.', tone: 'reference' },
       { title: 'Génération 5 ou 9 s', body: 'Travaillez sur des plans courts et contrôlés jusqu’à 1080p.', tone: 'duration' },
-      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+      { title: 'Ray 3.2 pour les nouveaux edits', body: 'Utilisez Ray 3.2 d’abord si images guides, keyframes ou Reframe actuel comptent.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: 'Ray 2 ou Ray 2 Flash ?',
-        body: 'Utilisez Ray 2 pour les rendus premium. Utilisez Flash pour les brouillons rapides et moins coûteux avant la passe finale.',
-        cta: { label: 'Comparer Ray 2 vs Flash', href: compareHref('fr', 'luma-ray-2', 'luma-ray-2-flash') },
+        title: 'Ray 2 ou Ray 3.2 ?',
+        body: 'Utilisez Ray 3.2 pour les nouveaux workflows Luma Modify, keyframes et Reframe. Gardez Ray 2 pour les prompts legacy, anciens exemples et tests de compatibilité.',
+        cta: { label: 'Ouvrir Ray 3.2', href: modelsHref('fr', 'luma-ray-3-2') },
       },
       {
         title: 'Vous modifiez une vidéo existante ?',
-        body: 'Utilisez Modify si le mouvement caméra fonctionne déjà, ou Reframe si le master validé doit changer de format.',
+        body: 'Utilisez Modify Ray 2 seulement si vous voulez l’ancienne route. Pour un nouvel edit vidéo source, Ray 3.2 doit passer en premier.',
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Choisir une route premium ?',
-        body: 'Comparez Ray 2 et Veo pour arbitrer entre les outils d’édition Luma et les routes de génération Google.',
+        title: 'Besoin d’une génération plus forte ?',
+        body: 'Utilisez Seedance, Kling ou Veo pour les routes flagship, les sorties avec son ou le contrôle référence plus large plutôt qu’un workflow Luma legacy.',
         cta: { label: 'Comparer Ray 2 vs Veo Fast', href: compareHref('fr', 'luma-ray-2', 'veo-3-1-fast') },
       },
     ],
@@ -3656,29 +3658,30 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Priorisez le sujet et le format de livraison sans réécrire toute la scène.' },
     ],
     pricingCopy: {
-      title: 'Prix Luma Ray 2 en un coup d’œil',
-      subtitle: 'Prix totaux Ray 2 par palier durée/résolution — prix exact affiché dans l’app avant génération.',
+      title: 'Prix Luma Ray 2 legacy en un coup d’œil',
+      subtitle: 'Prix totaux Ray 2 par palier durée/résolution — utilisez Ray 3.2 pour les edits Luma et Reframe actuels.',
       footnote: 'La génération suit des paliers durée/résolution. Modify et Reframe sont chiffrés en direct selon le clip source et les réglages.',
       ctaLabel: 'Voir tous les tarifs',
       maxDurationNote: 'Jusqu’à 1080p',
     },
     meta: {
-      title: 'Luma Ray 2 : tarifs, Modify, Reframe et exemples | MaxVideoAI',
+      title: 'Luma Ray 2 legacy : tarifs, Modify et Reframe | MaxVideoAI',
       description:
-        'Explorez les tarifs Luma Ray 2, exemples, text-to-video et image-to-video cinématographiques, Modify, Reframe et comparaison Ray 2 vs Flash.',
+        'Explorez Luma Ray 2 comme route Luma d’ancienne génération : tarifs, exemples, Modify, Reframe, contexte Ray 2 Flash et migration vers Ray 3.2.',
     },
   },
   es: {
     hero: {
-      eyebrow: 'RUTA LUMA PREMIUM VIDEO',
+      eyebrow: 'RUTA LUMA DE GENERACION ANTERIOR',
       title: 'Luma Ray 2',
-      subtitle: 'Tomas cinematográficas premium con imagen a video, Modify, Reframe y variantes listas para entrega.',
-      subtitleHighlights: ['Tomas cinematográficas premium', 'Modify', 'Reframe'],
+      subtitle: 'Ruta Luma de generación anterior para flujos Generate, Modify y Reframe compatibles.',
+      subtitleHighlights: ['Ruta Luma de generación anterior', 'Modify', 'Reframe'],
       paragraph:
-        'Usa Luma Ray 2 cuando la toma ya pasó la etapa de borrador: genera clips cinematográficos, anima stills aprobados, modifica buen material fuente y reencuadra el render final para formatos de entrega.',
-      primaryCta: { label: 'Generar con Luma Ray 2', href: '/app?engine=lumaRay2' },
-      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+        'Usa Luma Ray 2 cuando necesitas un render compatible con la ruta anterior o un workflow histórico de Ray 2. Para nuevos trabajos Luma de Modify, cuadros guía, keyframes y Reframe, empieza por Ray 3.2.',
+      primaryCta: { label: 'Abrir Ray 2 legacy', href: '/app?engine=lumaRay2' },
+      secondaryCta: { label: 'Abrir Ray 3.2', href: modelsHref('es', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Luma actual: Ray 3.2', href: modelsHref('es', 'luma-ray-3-2') },
         { label: 'Comparar con Flash', href: compareHref('es', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'Ver precios', href: pricingHref('es', 'luma-ray-2-pricing') },
         { label: 'Ejemplos de prompts', href: '#prompting' },
@@ -3686,33 +3689,33 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Luma Ray 2',
-      description: 'Flujo cinematográfico premium',
+      description: 'Workflow Luma de generación anterior',
       renderLabel: 'Ver render',
-      badges: ['Modify + Reframe', '9 s', '1080p'],
+      badges: ['Ruta legacy', 'Modify + Reframe', '1080p'],
       altContext: 'ejemplo de video cinematográfico con Luma Ray 2',
     },
     features: [
-      { title: 'Tier premium Luma', body: 'Usa Ray 2 para finales con más confianza cuando la dirección ya está clara.', tone: 'quality' },
+      { title: 'Ruta Luma legacy', body: 'Usa Ray 2 para prompts antiguos, ejemplos históricos y pruebas de compatibilidad.', tone: 'quality' },
       { title: 'Inicio con texto o imagen', body: 'Genera desde prompt o anima un still con cuadro final opcional.', tone: 'reference' },
       { title: 'Modificar clips fuente', body: 'Conserva timing y bloqueo que funcionan mientras cambias look o detalle.', tone: 'continuity' },
       { title: 'Reframe para entrega', body: 'Convierte un master aprobado en formatos verticales, cuadrados o widescreen.', tone: 'reference' },
       { title: 'Genera 5 o 9 s', body: 'Trabaja tomas cortas y controladas hasta 1080p.', tone: 'duration' },
-      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+      { title: 'Ray 3.2 para nuevos edits', body: 'Usa Ray 3.2 primero si importan cuadros guía, keyframes o Reframe actual.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: '¿Ray 2 o Ray 2 Flash?',
-        body: 'Usa Ray 2 para finales premium. Usa Flash para borradores más rápidos y económicos antes de pasar a la ruta final.',
-        cta: { label: 'Comparar Ray 2 vs Flash', href: compareHref('es', 'luma-ray-2', 'luma-ray-2-flash') },
+        title: '¿Ray 2 o Ray 3.2?',
+        body: 'Usa Ray 3.2 para los nuevos flujos Luma de Modify, keyframes y Reframe. Mantén Ray 2 para prompts legacy, ejemplos antiguos y compatibilidad.',
+        cta: { label: 'Abrir Ray 3.2', href: modelsHref('es', 'luma-ray-3-2') },
       },
       {
         title: '¿Modificas material existente?',
-        body: 'Usa Modify cuando la cámara ya funciona, o Reframe cuando el master aprobado necesita otro formato.',
+        body: 'Usa Modify Ray 2 solo si necesitas la ruta anterior. Para nuevos edits de video fuente, Ray 3.2 debe ser la primera opción Luma.',
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
-        title: '¿Eliges una ruta premium?',
-        body: 'Compara Ray 2 con Veo para decidir entre edición Luma y rutas de generación Google.',
+        title: '¿Necesitas generación más fuerte?',
+        body: 'Usa Seedance, Kling o Veo para rutas flagship, salidas con sonido o control de referencias más amplio en lugar de un workflow Luma legacy.',
         cta: { label: 'Comparar Ray 2 vs Veo Fast', href: compareHref('es', 'luma-ray-2', 'veo-3-1-fast') },
       },
     ],
@@ -3724,16 +3727,16 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Prioriza el sujeto y el formato de entrega sin reescribir toda la escena.' },
     ],
     pricingCopy: {
-      title: 'Precios de Luma Ray 2 de un vistazo',
-      subtitle: 'Totales Ray 2 por duración y resolución. Consulta el precio exacto en la app antes de generar.',
+      title: 'Precios legacy de Luma Ray 2 de un vistazo',
+      subtitle: 'Totales Ray 2 por duración y resolución. Usa Ray 3.2 para edits Luma y Reframe actuales.',
       footnote: 'La generación usa niveles de duración/resolución. Modify y Reframe se cotizan en vivo según el clip fuente y los ajustes.',
       ctaLabel: 'Ver precios completos',
       maxDurationNote: 'Hasta 1080p',
     },
     meta: {
-      title: 'Luma Ray 2: precios, Modify, Reframe y ejemplos | MaxVideoAI',
+      title: 'Luma Ray 2 legacy: precios, Modify y Reframe | MaxVideoAI',
       description:
-        'Explora precios de Luma Ray 2, ejemplos, texto a video e imagen a video cinematográficos, Modify, Reframe y comparación Ray 2 vs Flash.',
+        'Explora Luma Ray 2 como ruta Luma de generación anterior: precios, ejemplos, Modify, Reframe, contexto Ray 2 Flash y migración a Ray 3.2.',
     },
   },
 };
@@ -3741,15 +3744,16 @@ const LUMA_RAY_2_COPY: LocalizedTemplateCopy = {
 const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
-      eyebrow: 'LUMA FAST DRAFT ROUTE',
+      eyebrow: 'PREVIOUS-GENERATION FAST LUMA ROUTE',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Fast Luma drafts for start-image tests, Modify and Reframe passes, and lower-cost iteration.',
-      subtitleHighlights: ['Fast Luma drafts', 'start-image tests', 'lower-cost iteration'],
+      subtitle: 'Previous-generation fast Luma route for older Ray 2 draft coverage, Modify and Reframe.',
+      subtitleHighlights: ['Previous-generation fast Luma', 'draft coverage', 'Modify and Reframe'],
       paragraph:
-        'Use Luma Ray 2 Flash when you need the same Luma workflow family at draft speed: test prompts, animate start frames, explore modify strengths and validate crops before moving winners to Ray 2.',
-      primaryCta: { label: 'Draft with Luma Ray 2 Flash', href: '/app?engine=lumaRay2_flash' },
-      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+        'Use Luma Ray 2 Flash when you need a legacy-compatible fast Ray 2 pass or older draft context. For new Luma source-video edits, keyframe guidance and Reframe work, start with Ray 3.2 instead of making Flash the first choice.',
+      primaryCta: { label: 'Open legacy Flash', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'Open Ray 3.2', href: modelsHref('en', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Current Luma: Ray 3.2', href: modelsHref('en', 'luma-ray-3-2') },
         { label: 'Compare vs Ray 2', href: compareHref('en', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'View pricing', href: pricingHref('en', 'luma-ray-2-flash-pricing') },
         { label: 'Prompt examples', href: '#prompting' },
@@ -3757,36 +3761,36 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Luma Ray 2 Flash example',
-      description: 'Fast Luma draft workflow',
+      description: 'Previous-generation fast Luma workflow',
       renderLabel: 'View draft',
-      badges: ['Fast route', 'Draft pass', '1080p'],
+      badges: ['Legacy fast route', 'Draft pass', '1080p'],
       altContext: 'fast Luma Ray 2 Flash draft example',
     },
     features: [
-      { title: 'Fast Luma drafts', body: 'Move quickly through concepts before the premium Ray 2 pass.', tone: 'duration' },
+      { title: 'Legacy fast route', body: 'Use Flash for older Ray 2 draft prompts, old examples and compatibility checks.', tone: 'duration' },
       { title: 'Start-image tests', body: 'Animate a first frame to check motion, framing and landing before final spend.', tone: 'reference' },
       { title: 'Modify passes', body: 'Try adherence, flex and reimagine strengths on source clips.', tone: 'continuity' },
       { title: 'Reframe variants', body: 'Test vertical, square or wide crops before locking delivery formats.', tone: 'reference' },
       { title: 'Up to 1080p', body: 'Choose 540p, 720p or 1080p for draft generation.', tone: 'quality' },
-      { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
+      { title: 'Ray 3.2 for current edits', body: 'Move new Modify, keyframe and Reframe work to Ray 3.2 first.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: 'Flash or Ray 2?',
-        body: 'Use Flash for draft passes, crop tests and modify exploration. Use Ray 2 when the selected workflow needs premium polish.',
+        title: 'Flash or Ray 3.2?',
+        body: 'Use Ray 3.2 for current Luma Modify, keyframes and Reframe. Keep Flash only when you need legacy fast Ray 2 behavior or old draft economics.',
         cta: {
-          label: 'Compare Flash vs Ray 2',
-          href: compareHref('en', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+          label: 'Open Ray 3.2',
+          href: modelsHref('en', 'luma-ray-3-2'),
         },
       },
       {
         title: 'Testing edits or crops?',
-        body: 'Use Modify for source-video look changes and Reframe for social crops while the creative is still moving.',
+        body: 'Use Flash for older source-video look tests only when the legacy route matters. New edit and crop tests should start on Ray 3.2.',
         cta: { label: 'Open Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Choosing a fast draft route?',
-        body: 'Compare Flash with LTX Fast when iteration speed, crop testing and draft economics matter most.',
+        title: 'Need a fast current draft route?',
+        body: 'Compare against LTX Fast, Seedance Fast or Veo Fast when speed matters more than preserving a legacy Luma workflow.',
         cta: { label: 'Compare Flash vs LTX Fast', href: compareHref('en', 'luma-ray-2-flash', 'ltx-2-3-fast') },
       },
     ],
@@ -3798,29 +3802,30 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Validate mobile, square or wide crops while the source clip is still being approved.' },
     ],
     pricingCopy: {
-      title: 'Luma Ray 2 Flash draft pricing',
-      subtitle: 'Preset draft totals - see the exact live price in the app before you generate.',
+      title: 'Legacy Luma Ray 2 Flash pricing',
+      subtitle: 'Preset legacy draft totals - use Ray 3.2 first for current Luma Modify and Reframe work.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
       ctaLabel: 'View full pricing',
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Luma Ray 2 Flash: Pricing, Drafts & Examples | MaxVideoAI',
+      title: 'Luma Ray 2 Flash Legacy: Pricing & Drafts | MaxVideoAI',
       description:
-        'Use Luma Ray 2 Flash for faster Luma drafts, start-image tests, Modify passes, Reframe variants and lower-cost iteration before Ray 2.',
+        'Use Luma Ray 2 Flash as a previous-generation fast Luma route, with legacy draft pricing, Modify, Reframe, Ray 2 context and Ray 3.2 migration guidance.',
     },
   },
   fr: {
     hero: {
-      eyebrow: 'ROUTE LUMA FAST POUR BROUILLONS',
+      eyebrow: 'ROUTE LUMA FAST D’ANCIENNE GENERATION',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Brouillons Luma rapides pour tests avec image de départ, Modify, Reframe et itérations moins coûteuses.',
-      subtitleHighlights: ['Brouillons Luma rapides', 'tests avec image de départ', 'itérations moins coûteuses'],
+      subtitle: 'Route Luma fast d’ancienne génération pour brouillons legacy, Modify et Reframe Ray 2 historiques.',
+      subtitleHighlights: ['Route Luma fast d’ancienne génération', 'brouillons legacy', 'Modify et Reframe'],
       paragraph:
-        'Utilisez Luma Ray 2 Flash pour garder la même famille de workflows Luma à vitesse brouillon : tester des prompts, animer des images de départ, explorer les forces Modify et valider des recadrages avant de passer les meilleurs choix dans Ray 2.',
-      primaryCta: { label: 'Créer un brouillon Luma Flash', href: '/app?engine=lumaRay2_flash' },
-      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+        'Utilisez Luma Ray 2 Flash quand vous avez besoin d’une passe Ray 2 rapide compatible avec l’ancienne route ou d’un contexte de brouillon historique. Pour les nouveaux edits vidéo source, keyframes et Reframe Luma, commencez par Ray 3.2.',
+      primaryCta: { label: 'Ouvrir Flash legacy', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'Ouvrir Ray 3.2', href: modelsHref('fr', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Luma actuel : Ray 3.2', href: modelsHref('fr', 'luma-ray-3-2') },
         { label: 'Comparer vs Ray 2', href: compareHref('fr', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-2-flash-pricing') },
         { label: 'Exemples de prompts', href: '#prompting' },
@@ -3828,36 +3833,36 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Exemple Luma Ray 2 Flash',
-      description: 'Workflow de brouillon Luma rapide',
+      description: 'Workflow Luma fast d’ancienne génération',
       renderLabel: 'Voir le brouillon',
-      badges: ['Fast', 'Brouillon', '1080p'],
+      badges: ['Fast legacy', 'Brouillon', '1080p'],
       altContext: 'exemple de brouillon rapide Luma Ray 2 Flash',
     },
     features: [
-      { title: 'Brouillons Luma rapides', body: 'Avancez vite dans les concepts avant la passe premium Ray 2.', tone: 'duration' },
+      { title: 'Route fast legacy', body: 'Utilisez Flash pour les anciens prompts Ray 2, exemples historiques et tests de compatibilité.', tone: 'duration' },
       { title: 'Tests image de départ', body: 'Animez une première image pour vérifier mouvement, cadrage et arrivée.', tone: 'reference' },
       { title: 'Passes Modify', body: 'Testez les forces adhere, flex et reimagine sur une source vidéo.', tone: 'continuity' },
       { title: 'Variantes Reframe', body: 'Validez crops verticaux, carrés ou larges avant la livraison.', tone: 'reference' },
       { title: 'Jusqu’à 1080p', body: 'Choisissez 540p, 720p ou 1080p pour les générations brouillon.', tone: 'quality' },
-      { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
+      { title: 'Ray 3.2 pour les edits actuels', body: 'Passez les nouveaux workflows Modify, keyframes et Reframe sur Ray 3.2 d’abord.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: 'Flash ou Ray 2 ?',
-        body: 'Utilisez Flash pour les brouillons, tests de crop et exploration Modify. Passez à Ray 2 pour la version premium.',
+        title: 'Flash ou Ray 3.2 ?',
+        body: 'Utilisez Ray 3.2 pour Luma Modify, keyframes et Reframe actuels. Gardez Flash seulement pour le comportement fast Ray 2 legacy.',
         cta: {
-          label: 'Comparer Flash vs Ray 2',
-          href: compareHref('fr', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+          label: 'Ouvrir Ray 3.2',
+          href: modelsHref('fr', 'luma-ray-3-2'),
         },
       },
       {
         title: 'Vous testez edits ou crops ?',
-        body: 'Utilisez Modify pour changer le look d’une source vidéo et Reframe pour les formats sociaux en phase de test.',
+        body: 'Utilisez Flash pour les tests vidéo source plus anciens seulement si la route legacy compte. Les nouveaux tests doivent partir de Ray 3.2.',
         cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
       },
       {
-        title: 'Choisir une route rapide ?',
-        body: 'Comparez Flash et LTX Fast quand vitesse d’itération, tests de crop et coût brouillon comptent le plus.',
+        title: 'Besoin d’une route rapide actuelle ?',
+        body: 'Comparez plutôt LTX Fast, Seedance Fast ou Veo Fast quand la vitesse compte plus que la compatibilité Luma legacy.',
         cta: { label: 'Comparer Flash vs LTX Fast', href: compareHref('fr', 'luma-ray-2-flash', 'ltx-2-3-fast') },
       },
     ],
@@ -3869,29 +3874,30 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Validez crops mobile, carré ou large pendant que le clip source est encore en validation.' },
     ],
     pricingCopy: {
-      title: 'Prix des brouillons Luma Ray 2 Flash',
-      subtitle: 'Prix totaux de brouillon — prix exact affiché dans l’app avant génération.',
+      title: 'Prix Luma Ray 2 Flash legacy',
+      subtitle: 'Prix totaux de brouillon legacy — utilisez Ray 3.2 d’abord pour les workflows Luma Modify et Reframe actuels.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
       maxDurationNote: 'Jusqu’à 1080p',
     },
     meta: {
-      title: 'Luma Ray 2 Flash : tarifs, brouillons et exemples | MaxVideoAI',
+      title: 'Luma Ray 2 Flash legacy : tarifs et brouillons | MaxVideoAI',
       description:
-        'Utilisez Luma Ray 2 Flash pour des brouillons Luma rapides, tests avec image de départ, passes Modify, variantes Reframe et itérations moins coûteuses avant Ray 2.',
+        'Utilisez Luma Ray 2 Flash comme route Luma fast d’ancienne génération : tarifs de brouillon, Modify, Reframe, contexte Ray 2 et migration vers Ray 3.2.',
     },
   },
   es: {
     hero: {
-      eyebrow: 'RUTA LUMA FAST PARA BORRADORES',
+      eyebrow: 'RUTA LUMA FAST DE GENERACION ANTERIOR',
       title: 'Luma Ray 2 Flash',
-      subtitle: 'Borradores Luma rápidos para pruebas con imagen inicial, Modify, Reframe e iteración de menor coste.',
-      subtitleHighlights: ['Borradores Luma rápidos', 'pruebas con imagen inicial', 'iteración de menor coste'],
+      subtitle: 'Ruta Luma fast de generación anterior para borradores legacy, Modify y Reframe históricos de Ray 2.',
+      subtitleHighlights: ['Ruta Luma fast de generación anterior', 'borradores legacy', 'Modify y Reframe'],
       paragraph:
-        'Usa Luma Ray 2 Flash cuando necesitas la misma familia de workflows Luma a velocidad de borrador: probar prompts, animar imágenes iniciales, explorar fuerzas de Modify y validar crops antes de pasar ganadores a Ray 2.',
-      primaryCta: { label: 'Crear borrador con Luma Flash', href: '/app?engine=lumaRay2_flash' },
-      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+        'Usa Luma Ray 2 Flash cuando necesitas una pasada rápida compatible con la ruta Ray 2 anterior o contexto de borrador histórico. Para nuevos edits de video fuente, keyframes y Reframe de Luma, empieza por Ray 3.2.',
+      primaryCta: { label: 'Abrir Flash legacy', href: '/app?engine=lumaRay2_flash' },
+      secondaryCta: { label: 'Abrir Ray 3.2', href: modelsHref('es', 'luma-ray-3-2') },
       quickLinks: [
+        { label: 'Luma actual: Ray 3.2', href: modelsHref('es', 'luma-ray-3-2') },
         { label: 'Comparar con Ray 2', href: compareHref('es', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash') },
         { label: 'Ver precios', href: pricingHref('es', 'luma-ray-2-flash-pricing') },
         { label: 'Ejemplos de prompts', href: '#prompting' },
@@ -3899,36 +3905,36 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
     },
     media: {
       caption: 'Ejemplo Luma Ray 2 Flash',
-      description: 'Flujo rápido de borrador Luma',
+      description: 'Workflow Luma fast de generación anterior',
       renderLabel: 'Ver borrador',
-      badges: ['Fast', 'Borrador', '1080p'],
+      badges: ['Fast legacy', 'Borrador', '1080p'],
       altContext: 'ejemplo de borrador rápido con Luma Ray 2 Flash',
     },
     features: [
-      { title: 'Borradores Luma rápidos', body: 'Avanza rápido por conceptos antes de la pasada premium Ray 2.', tone: 'duration' },
+      { title: 'Ruta fast legacy', body: 'Usa Flash para prompts Ray 2 antiguos, ejemplos históricos y pruebas de compatibilidad.', tone: 'duration' },
       { title: 'Pruebas con imagen inicial', body: 'Anima un primer frame para revisar movimiento, encuadre y llegada.', tone: 'reference' },
       { title: 'Pasadas Modify', body: 'Prueba fuerzas adhere, flex y reimagine sobre clips fuente.', tone: 'continuity' },
       { title: 'Variantes Reframe', body: 'Valida crops verticales, cuadrados o widescreen antes de entregar.', tone: 'reference' },
       { title: 'Hasta 1080p', body: 'Elige 540p, 720p o 1080p para generación de borradores.', tone: 'quality' },
-      { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
+      { title: 'Ray 3.2 para edits actuales', body: 'Mueve nuevos flujos Modify, keyframes y Reframe a Ray 3.2 primero.', tone: 'price' },
     ],
     decisionCards: [
       {
-        title: '¿Flash o Ray 2?',
-        body: 'Usa Flash para borradores, pruebas de crop y exploración Modify. Usa Ray 2 cuando el flujo elegido necesita acabado premium.',
+        title: '¿Flash o Ray 3.2?',
+        body: 'Usa Ray 3.2 para Luma Modify, keyframes y Reframe actuales. Mantén Flash solo si necesitas comportamiento fast Ray 2 legacy.',
         cta: {
-          label: 'Comparar Flash vs Ray 2',
-          href: compareHref('es', 'luma-ray-2-flash', 'luma-ray-2', 'luma-ray-2-flash'),
+          label: 'Abrir Ray 3.2',
+          href: modelsHref('es', 'luma-ray-3-2'),
         },
       },
       {
         title: '¿Pruebas ediciones o crops?',
-        body: 'Usa Modify para cambios de look sobre video fuente y Reframe para crops sociales mientras la pieza sigue en revisión.',
+        body: 'Usa Flash para pruebas antiguas de video fuente solo si importa la ruta legacy. Las nuevas pruebas deben empezar por Ray 3.2.',
         cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
       },
       {
-        title: '¿Eliges una ruta rápida?',
-        body: 'Compara Flash con LTX Fast cuando importan velocidad, pruebas de crop y economía de borrador.',
+        title: '¿Necesitas una ruta rápida actual?',
+        body: 'Compara LTX Fast, Seedance Fast o Veo Fast cuando la velocidad importa más que la compatibilidad Luma legacy.',
         cta: { label: 'Comparar Flash vs LTX Fast', href: compareHref('es', 'luma-ray-2-flash', 'ltx-2-3-fast') },
       },
     ],
@@ -3940,16 +3946,637 @@ const LUMA_RAY_2_FLASH_COPY: LocalizedTemplateCopy = {
       { title: 'Reframe', body: 'Valida crops móviles, cuadrados o widescreen mientras el clip fuente se aprueba.' },
     ],
     pricingCopy: {
-      title: 'Precios de borradores Luma Ray 2 Flash',
-      subtitle: 'Totales de borrador. Consulta el precio exacto en la app antes de generar.',
+      title: 'Precios legacy de Luma Ray 2 Flash',
+      subtitle: 'Totales de borrador legacy. Usa Ray 3.2 primero para flujos Luma Modify y Reframe actuales.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
       maxDurationNote: 'Hasta 1080p',
     },
     meta: {
-      title: 'Luma Ray 2 Flash: precios, borradores y ejemplos | MaxVideoAI',
+      title: 'Luma Ray 2 Flash legacy: precios y borradores | MaxVideoAI',
       description:
-        'Usa Luma Ray 2 Flash para borradores Luma rápidos, pruebas con imagen inicial, pasadas Modify, variantes Reframe e iteración de menor coste antes de Ray 2.',
+        'Usa Luma Ray 2 Flash como ruta Luma fast de generación anterior: precios de borrador, Modify, Reframe, contexto Ray 2 y migración a Ray 3.2.',
+    },
+  },
+};
+
+const LUMA_RAY_32_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA MODIFY + REFRAME ROUTE',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Source-video Modify, Reframe, guide/keyframe control and silent video outputs.',
+      subtitleHighlights: ['Source-video Modify', 'Reframe', 'silent video outputs'],
+      paragraph:
+        'Use Ray 3.2 when a source clip already has usable timing: change the visual treatment with Modify, guide selected moments with a frame or keyframes, or Reframe the approved shot into new delivery ratios. Text-to-video and image-to-video remain useful supporting routes for short silent Luma motion tests.',
+      primaryCta: { label: 'Generate with Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'luma') },
+      quickLinks: [
+        { label: 'View pricing', href: pricingHref('en', 'luma-ray-3-2-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+        { label: 'Specs', href: '#specs' },
+      ],
+    },
+    media: {
+      caption: 'Luma Ray 3.2 example',
+      description: 'Modify and Reframe route for current Luma video',
+      renderLabel: 'View render',
+      badges: ['Modify', 'Reframe', 'Silent video'],
+      altContext: 'Luma Ray 3.2 source-video Modify and Reframe example',
+    },
+    features: [
+      { title: 'Modify source clips', body: 'Keep source timing and camera motion while changing look, subject detail or scene treatment.', tone: 'continuity' },
+      { title: 'Reframe delivery cuts', body: 'Outpaint a source clip into vertical, square, landscape or ultrawide formats.', tone: 'duration' },
+      { title: 'Guide/keyframes', body: 'Use a guide frame or indexed keyframes when selected source moments need visual direction.', tone: 'reference' },
+      { title: 'Text or start image', body: 'Generate short silent Luma motion tests when there is no source clip yet.', tone: 'reference' },
+      { title: '540p to 1080p', body: 'Draft lower, then inspect selected edit or reframe candidates at 720p or 1080p.', tone: 'quality' },
+      { title: 'Silent by design', body: 'Ray 3.2 outputs video only in MaxVideoAI; add music, voice or sound design later.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Modify or Reframe first?',
+        body: 'Use Modify when the source timing already works and the look needs to change. Use Reframe when an approved master needs another aspect ratio.',
+        cta: { label: 'Open app', href: '/app?engine=luma-ray-3-2' },
+      },
+      {
+        title: 'Need guide frames?',
+        body: 'Use one guide frame for a single visual target, or indexed keyframes when specific moments in the source video need direction.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Need audio?',
+        body: 'Ray 3.2 is a silent video route here. Choose it for visual edits and reframes, then add music, voice or sound design downstream.',
+        cta: { label: 'Check pricing', href: pricingHref('en', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Source video', body: 'Upload a clean MP4, MOV or WebM clip when Modify or Reframe should preserve source timing.' },
+      { title: 'Modify', body: 'State what stays from the source first, then describe the visual change and strength of reinterpretation.' },
+      { title: 'Guide frames', body: 'Use one guide frame or indexed keyframes for Modify when specific moments need visual direction.' },
+      { title: 'Reframe target', body: 'Choose the delivery ratio first, then keep the prompt focused on subject priority and canvas fill.' },
+      { title: 'Supporting generation', body: 'Use text or a start image only when you need to create a new short silent clip before editing.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Ray 3.2 pricing at a glance',
+      subtitle: 'Preset Ray 3.2 totals use MaxVideoAI display pricing; exact price appears before generation.',
+      footnote: 'All Ray 3.2 routes keep the same MaxVideoAI customer quote based on Fal reference pricing plus the configured margin; direct fulfillment does not change the client price.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2 Modify Video, Reframe & Examples | MaxVideoAI',
+      description:
+        'Explore Luma Ray 3.2 source-video Modify, AI video Reframe, guide/keyframe controls, silent 5s/10s output, pricing, prompt tips and examples.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA MODIFY + REFRAME',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Modify de vidéo source, Reframe, contrôle par images clés et sorties silencieuses.',
+      subtitleHighlights: ['Modify de vidéo source', 'Reframe', 'sorties silencieuses'],
+      paragraph:
+        'Utilisez Ray 3.2 quand une vidéo source a déjà le bon timing : changez le traitement visuel avec Modify, guidez certains moments avec une image ou des images clés, ou recadrez le plan validé avec Reframe. Le texte-vers-video et l’image-vers-video restent utiles comme routes complémentaires pour des tests courts et silencieux.',
+      primaryCta: { label: 'Générer avec Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'luma') },
+      quickLinks: [
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-ray-3-2-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+        { label: 'Caractéristiques', href: '#specs' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Ray 3.2',
+      description: 'Route Modify et Reframe pour la vidéo Luma actuelle',
+      renderLabel: 'Voir le rendu',
+      badges: ['Modify', 'Reframe', 'Vidéo silencieuse'],
+      altContext: 'exemple Luma Ray 3.2 Modify et Reframe',
+    },
+    features: [
+      { title: 'Modify de clips sources', body: 'Gardez timing et mouvement source tout en changeant look, détails sujet ou traitement scène.', tone: 'continuity' },
+      { title: 'Reframe de livrables', body: 'Outpaintez un clip source en vertical, carré, paysage ou ultrawide.', tone: 'duration' },
+      { title: 'Images guides', body: 'Utilisez image guide ou images clés indexées quand certains moments source doivent être dirigés.', tone: 'reference' },
+      { title: 'Texte ou image source', body: 'Générez des tests de mouvement Luma courts et silencieux quand aucun clip source n’existe encore.', tone: 'reference' },
+      { title: '540p à 1080p', body: 'Brouillonnez plus bas, puis contrôlez les candidats retenus en 720p ou 1080p.', tone: 'quality' },
+      { title: 'Sortie silencieuse', body: 'Ray 3.2 produit la vidéo seule dans MaxVideoAI; ajoutez musique, voix ou sound design ensuite.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Modify ou Reframe d’abord ?',
+        body: 'Utilisez Modify quand le timing source fonctionne déjà et que le rendu doit changer. Utilisez Reframe quand un master validé doit changer de ratio.',
+        cta: { label: 'Ouvrir l’app', href: '/app?engine=luma-ray-3-2' },
+      },
+      {
+        title: 'Besoin d’images guides ?',
+        body: 'Utilisez une image guide pour une cible visuelle unique, ou des images clés indexées quand certains moments de la vidéo source doivent être dirigés.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Besoin d’audio ?',
+        body: 'Ray 3.2 est une route vidéo silencieuse ici. Choisissez-la pour les retouches visuelles et reframes, puis ajoutez musique, voix ou sound design ensuite.',
+        cta: { label: 'Vérifier le prix', href: pricingHref('fr', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Vidéo source', body: 'Chargez un clip MP4, MOV ou WebM propre quand Modify ou Reframe doivent préserver le timing source.' },
+      { title: 'Modify', body: 'Dites d’abord ce qui reste depuis la source, puis décrivez le changement visuel et la force de réinterprétation.' },
+      { title: 'Images guides', body: 'Utilisez une image guide ou des images clés indexées quand certains moments du Modify doivent être dirigés.' },
+      { title: 'Cible Reframe', body: 'Choisissez d’abord le ratio de livraison, puis gardez le prompt centré sur le sujet prioritaire et le remplissage du cadre.' },
+      { title: 'Génération complémentaire', body: 'Utilisez texte ou image de départ seulement pour créer un nouveau clip court et silencieux avant retouche.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Ray 3.2 en un coup d’oeil',
+      subtitle: 'Totaux Ray 3.2 par preset avec prix affichés MaxVideoAI de référence; prix exact avant génération.',
+      footnote: 'Toutes les routes Ray 3.2 gardent le même devis client MaxVideoAI basé sur la référence Fal avec la marge configurée; l’exécution directe ne change pas le prix client.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2 Modify Video, Reframe et exemples | MaxVideoAI',
+      description:
+        'Explorez Luma Ray 3.2 : Modify de vidéo source, Reframe vidéo IA, images guides, sorties silencieuses 5 s / 10 s, tarifs, prompts et exemples.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA MODIFY + REFRAME',
+      title: 'Luma Ray 3.2',
+      subtitle: 'Modify de video fuente, Reframe, control con imágenes clave y salidas silenciosas.',
+      subtitleHighlights: ['Modify de video fuente', 'Reframe', 'salidas silenciosas'],
+      paragraph:
+        'Usa Ray 3.2 cuando un video fuente ya tiene timing útil: cambia el tratamiento visual con Modify, guía momentos concretos con un cuadro o imágenes clave, o reencuadra la toma aprobada con Reframe. Texto a video e imagen a video siguen como rutas complementarias para pruebas cortas y silenciosas.',
+      primaryCta: { label: 'Generar con Luma Ray 3.2', href: '/app?engine=luma-ray-3-2' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'luma') },
+      quickLinks: [
+        { label: 'Ver precios', href: pricingHref('es', 'luma-ray-3-2-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+        { label: 'Especificaciones', href: '#specs' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Ray 3.2',
+      description: 'Ruta Modify y Reframe para video Luma actual',
+      renderLabel: 'Ver render',
+      badges: ['Modify', 'Reframe', 'Video silencioso'],
+      altContext: 'ejemplo Luma Ray 3.2 Modify y Reframe',
+    },
+    features: [
+      { title: 'Modify de clips fuente', body: 'Conserva timing y movimiento fuente mientras cambias look, detalles del sujeto o tratamiento de escena.', tone: 'continuity' },
+      { title: 'Reframe de entregables', body: 'Outpaintea un clip fuente a vertical, cuadrado, paisaje o ultrawide.', tone: 'duration' },
+      { title: 'Cuadros guía', body: 'Usa cuadro guía o imágenes clave indexadas cuando momentos concretos del video fuente necesitan dirección.', tone: 'reference' },
+      { title: 'Texto o imagen inicial', body: 'Genera pruebas cortas y silenciosas de movimiento Luma cuando aún no existe clip fuente.', tone: 'reference' },
+      { title: '540p a 1080p', body: 'Borrador en resolución menor y revisa candidatos elegidos en 720p o 1080p.', tone: 'quality' },
+      { title: 'Salida silenciosa', body: 'Ray 3.2 entrega solo video en MaxVideoAI; añade musica, voz o sound design después.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Modify o Reframe primero?',
+        body: 'Usa Modify cuando el timing fuente ya funciona y el look debe cambiar. Usa Reframe cuando un master aprobado necesita otro ratio.',
+        cta: { label: 'Abrir app', href: '/app?engine=luma-ray-3-2' },
+      },
+      {
+        title: '¿Necesitas cuadros guía?',
+        body: 'Usa un cuadro guía para una única referencia visual, o imágenes clave indexadas cuando momentos concretos del video fuente necesitan dirección.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: '¿Necesitas audio?',
+        body: 'Ray 3.2 es una ruta de video silencioso aquí. Úsala para ediciones visuales y reframes, y añade música, voz o sound design después.',
+        cta: { label: 'Revisar precio', href: pricingHref('es', 'luma-ray-3-2-pricing') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Video fuente', body: 'Sube un clip MP4, MOV o WebM limpio cuando Modify o Reframe deben preservar el timing fuente.' },
+      { title: 'Modify', body: 'Explica primero qué se conserva de la fuente y después el cambio visual y la fuerza de reinterpretación.' },
+      { title: 'Imagenes guia', body: 'Usa una imagen guia o imagenes clave indexadas cuando momentos concretos del Modify necesitan dirección visual.' },
+      { title: 'Destino Reframe', body: 'Elige primero el ratio de entrega y mantén el prompt centrado en prioridad de sujeto y relleno de lienzo.' },
+      { title: 'Generación complementaria', body: 'Usa texto o imagen inicial solo para crear un nuevo clip corto y silencioso antes de editar.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Ray 3.2 de un vistazo',
+      subtitle: 'Totales Ray 3.2 por preset con precios de referencia MaxVideoAI; precio exacto antes de generar.',
+      footnote: 'Todas las rutas Ray 3.2 mantienen la misma cotización cliente MaxVideoAI basada en la referencia Fal con el margen configurado; la ejecución directa no cambia el precio cliente.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Luma Ray 3.2 Modify Video, Reframe y ejemplos | MaxVideoAI',
+      description:
+        'Explora Luma Ray 3.2: Modify de video fuente, Reframe de video IA, cuadros guía, salidas silenciosas 5 s / 10 s, precios, prompts y ejemplos.',
+    },
+  },
+};
+
+const LUMA_UNI_1_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA IMAGE GENERATION ROUTE',
+      title: 'Luma Uni-1',
+      subtitle: '2K image generation with image edits, multi-reference guidance, layout reasoning and optional web-grounded references.',
+      subtitleHighlights: ['2K image generation', 'image edits', 'multi-reference guidance'],
+      paragraph:
+        'Use Uni-1 for text-to-image, source-image edits, reference-led layouts and visual research stills when you need a thoughtful Luma image route without claiming perfect typography or guaranteed factual accuracy.',
+      primaryCta: { label: 'Generate with Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=luma-uni-1' },
+        { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Uni-1 example',
+      description: 'Reference-led 2K image generation and edit workflow',
+      renderLabel: 'View image',
+      badges: ['2K', 'Edit', 'References'],
+      altContext: 'Luma Uni-1 reference-led image example',
+    },
+    features: [
+      { title: '2K stills', body: 'Create single 2K images for concepts, references and layout exploration.', tone: 'quality' },
+      { title: 'Source edits', body: 'Use the first image as the edit source, then guide revisions with the prompt.', tone: 'continuity' },
+      { title: 'Multi-reference input', body: 'Attach references for product shape, style, typography direction or composition cues.', tone: 'reference' },
+      { title: 'Layout reasoning', body: 'Useful for arranging visual elements, but exact text still needs review.', tone: 'quality' },
+      { title: 'Web-grounded option', body: 'Use web search only when current visual context helps the still brief.', tone: 'reference' },
+      { title: 'Display pricing', body: 'Display prices use MaxVideoAI pricing before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'When to choose Uni-1',
+        body: 'Choose Uni-1 for 2K still concepts, source edits, reference preparation and visual layout exploration before a final image route.',
+        cta: { label: 'Open Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'How to use references',
+        body: 'Give each reference a role: product shape, palette, layout, style or text hierarchy. Keep the prompt explicit about what to preserve.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'When to move to Uni-1 Max',
+        body: 'Move selected stills to Max when the hero asset needs higher-fidelity detail, product finish or more careful revisions.',
+        cta: { label: 'View Uni-1 Max', href: modelsHref('en', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-image', body: 'Describe the artifact, subject, layout, visual style, aspect ratio and any text that needs review.' },
+      { title: 'Source edit', body: 'Upload one source image, then separate preserve instructions from changes.' },
+      { title: 'Multi-reference layout', body: 'Use references to anchor subject, style, palette and composition instead of asking one prompt to carry everything.' },
+      { title: 'Web-grounded visual research', body: 'Enable web search only when recent visual context is useful and still verify the result.' },
+      { title: 'Handoff to video', body: 'Save the clearest still as a start image when the next step is motion in a video model.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Uni-1 pricing at a glance',
+      subtitle: 'Display prices use MaxVideoAI pricing; exact price appears before generation.',
+      footnote: 'Reference and edit examples include source/reference image counts where shown; final app quotes remain authoritative.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'One image',
+    },
+    meta: {
+      title: 'Luma Uni-1: Image Pricing, References & Editing | MaxVideoAI',
+      description:
+        'Explore Luma Uni-1 2K image generation, source-image edits, multi-reference guidance, web-grounded visual research and MaxVideoAI pricing.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA IMAGE',
+      title: 'Luma Uni-1',
+      subtitle: 'Génération d’images 2K avec retouches image, guidage multi-référence, composition raisonnée et références web optionnelles.',
+      subtitleHighlights: ['Génération d’images 2K', 'retouches image', 'guidage multi-référence'],
+      paragraph:
+        'Utilisez Uni-1 pour créer depuis texte, retoucher une source, guider la composition par références et préparer une recherche visuelle sans promettre une typographie parfaite.',
+      primaryCta: { label: 'Générer avec Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=luma-uni-1' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Uni-1',
+      description: 'Génération d’images 2K et retouche guidée par références',
+      renderLabel: 'Voir l’image',
+      badges: ['2K', 'Retouche', 'Références'],
+      altContext: 'exemple image Luma Uni-1 guidé par références',
+    },
+    features: [
+      { title: 'Images 2K', body: 'Créez des images 2K uniques pour concepts, références et exploration de composition.', tone: 'quality' },
+      { title: 'Retouches source', body: 'Utilisez la première image comme source, puis guidez la révision par prompt.', tone: 'continuity' },
+      { title: 'Multi-référence', body: 'Ajoutez des références pour forme produit, style, direction typographique ou composition.', tone: 'reference' },
+      { title: 'Composition raisonnée', body: 'Utile pour organiser les éléments visuels, avec contrôle humain du texte exact.', tone: 'quality' },
+      { title: 'Option avec contexte web', body: 'Activez la recherche web seulement si le contexte visuel actuel aide la consigne.', tone: 'reference' },
+      { title: 'Prix de référence', body: 'Les prix affichés utilisent les références publiques MaxVideoAI avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Quand choisir Uni-1',
+        body: 'Choisissez Uni-1 pour concepts 2K, retouches source, préparation de références et exploration de composition.',
+        cta: { label: 'Ouvrir Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'Bien utiliser les références',
+        body: 'Donnez un rôle à chaque référence : produit, palette, composition, style ou hiérarchie texte. Précisez ce qui doit rester.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Quand passer a Uni-1 Max',
+        body: 'Passez les images retenues dans Max quand le visuel principal exige plus de détail, de finition produit ou de révision précise.',
+        cta: { label: 'Voir Uni-1 Max', href: modelsHref('fr', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texte vers image', body: 'Décrivez visuel, sujet, composition, style, ratio et tout texte à vérifier.' },
+      { title: 'Retouche source', body: 'Chargez une source, puis séparez ce qui doit rester de ce qui doit changer.' },
+      { title: 'Composition multi-référence', body: 'Utilisez les références pour ancrer sujet, style, palette et composition.' },
+      { title: 'Recherche visuelle avec contexte web', body: 'Activez la recherche web seulement si le contexte récent est utile, puis vérifiez le résultat.' },
+      { title: 'Passage vers vidéo', body: 'Gardez l’image la plus claire comme image de départ si l’étape suivante est le mouvement.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Uni-1 en un coup d’oeil',
+      subtitle: 'Les prix affichés utilisent les références publiques MaxVideoAI; le prix exact apparaît avant génération.',
+      footnote: 'Les exemples de retouche/référence incluent les comptes images indiqués; le devis dans l’app reste la référence.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Une image',
+    },
+    meta: {
+      title: 'Luma Uni-1 : prix image, références et retouche | MaxVideoAI',
+      description:
+        'Explorez Luma Uni-1 : génération image 2K, retouches source, guidage multi-référence, recherche visuelle avec contexte web et prix de référence.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA DE IMAGEN',
+      title: 'Luma Uni-1',
+      subtitle: 'Generación de imagen 2K con ediciones de imagen, guía multi-referencia, composición razonada y referencias web opcionales.',
+      subtitleHighlights: ['Generación de imagen 2K', 'ediciones de imagen', 'guía multi-referencia'],
+      paragraph:
+        'Usa Uni-1 para texto a imagen, ediciones de fuente, composiciones guiadas por referencias e investigación visual sin prometer tipografía perfecta ni precisión garantizada.',
+      primaryCta: { label: 'Generar con Luma Uni-1', href: '/app/image?engine=luma-uni-1' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=luma-uni-1' },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Uni-1',
+      description: 'Generación 2K y edición guiada por referencias',
+      renderLabel: 'Ver imagen',
+      badges: ['2K', 'Edición', 'Referencias'],
+      altContext: 'ejemplo de imagen Luma Uni-1 guiada por referencias',
+    },
+    features: [
+      { title: 'Imágenes 2K', body: 'Crea imágenes 2K únicas para conceptos, referencias y exploración de composición.', tone: 'quality' },
+      { title: 'Ediciones fuente', body: 'Usa la primera imagen como fuente y guía la revisión con el prompt.', tone: 'continuity' },
+      { title: 'Entrada multi-referencia', body: 'Adjunta referencias para forma de producto, estilo, dirección tipográfica o composición.', tone: 'reference' },
+      { title: 'Composición razonada', body: 'Ayuda a ordenar elementos visuales, pero el texto exacto necesita revisión.', tone: 'quality' },
+      { title: 'Opción con contexto web', body: 'Usa búsqueda web solo cuando el contexto visual actual ayuda a la consigna.', tone: 'reference' },
+      { title: 'Precio de referencia', body: 'Los precios mostrados usan referencias públicas de MaxVideoAI antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Cuándo elegir Uni-1',
+        body: 'Elige Uni-1 para conceptos 2K, ediciones de fuente, preparación de referencias y exploración de composición visual.',
+        cta: { label: 'Abrir Uni-1', href: '/app/image?engine=luma-uni-1' },
+      },
+      {
+        title: 'Cómo usar referencias',
+        body: 'Da un rol a cada referencia: producto, paleta, composición, estilo o jerarquía de texto. Define qué se conserva.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Cuándo pasar a Uni-1 Max',
+        body: 'Mueve imágenes elegidas a Max cuando el visual principal necesita más detalle, acabado de producto o revisión cuidadosa.',
+        cta: { label: 'Ver Uni-1 Max', href: modelsHref('es', 'luma-uni-1-max') },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a imagen', body: 'Describe visual, sujeto, composición, estilo, ratio y cualquier texto que deba revisarse.' },
+      { title: 'Edición fuente', body: 'Sube una imagen fuente y separa instrucciones de preservar y cambiar.' },
+      { title: 'Composición multi-referencia', body: 'Usa referencias para anclar sujeto, estilo, paleta y composición.' },
+      { title: 'Investigación visual con contexto web', body: 'Activa búsqueda web solo si el contexto reciente ayuda, y revisa el resultado.' },
+      { title: 'Paso a video', body: 'Guarda la imagen más clara como imagen inicial cuando el siguiente paso sea movimiento.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Uni-1 de un vistazo',
+      subtitle: 'Los precios mostrados usan referencias públicas de MaxVideoAI; el precio exacto aparece antes de generar.',
+      footnote: 'Los ejemplos de edición/referencia incluyen los conteos de imagen indicados; la cotización en la app manda.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Una imagen',
+    },
+    meta: {
+      title: 'Luma Uni-1: precios de imagen, referencias y edición | MaxVideoAI',
+      description:
+        'Explora Luma Uni-1: generación de imagen 2K, ediciones de fuente, guía multi-referencia, investigación visual con contexto web y precios de referencia.',
+    },
+  },
+};
+
+const LUMA_UNI_1_MAX_COPY: LocalizedTemplateCopy = {
+  en: {
+    hero: {
+      eyebrow: 'LUMA PREMIUM IMAGE ROUTE',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Higher-fidelity Uni-1 stills for precise image revisions, product visuals and reference-led edits.',
+      subtitleHighlights: ['Higher-fidelity Uni-1 stills', 'precise image revisions', 'reference-led edits'],
+      paragraph:
+        'Use Uni-1 Max when the still needs more careful detail than the base route: hero images, product-label layouts, typography-sensitive concepts and high-detail edits with references.',
+      primaryCta: { label: 'Generate with Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Open image workspace', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'View pricing', href: pricingHref('en', 'luma-uni-1-max-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Luma Uni-1 Max example',
+      description: 'Premium 2K still and reference edit workflow',
+      renderLabel: 'View image',
+      badges: ['2K', 'Hero still', 'References'],
+      altContext: 'Luma Uni-1 Max premium still image example',
+    },
+    features: [
+      { title: 'Premium 2K route', body: 'Use Max for selected stills that need stronger detail and finish.', tone: 'quality' },
+      { title: 'Product visuals', body: 'Good fit for catalog-style stills, labels, packaging and campaign layouts.', tone: 'reference' },
+      { title: 'Precise revisions', body: 'Use source images and references to narrow what should change.', tone: 'continuity' },
+      { title: 'Typography-sensitive', body: 'Helpful for text-aware layouts, while exact copy still needs inspection.', tone: 'quality' },
+      { title: 'Reference direction', body: 'Blend product, style, wardrobe or layout references into one still brief.', tone: 'reference' },
+      { title: 'Display pricing', body: 'Display prices use MaxVideoAI pricing before generation.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Max or base Uni-1?',
+        body: 'Use base Uni-1 for exploration. Use Max for selected hero stills, product detail and revisions that justify the higher-cost route.',
+        cta: { label: 'View Uni-1', href: modelsHref('en', 'luma-uni-1') },
+      },
+      {
+        title: 'Product or typography hero still?',
+        body: 'Name exact label hierarchy, surface materials, lighting and composition; then inspect text and edges before shipping.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Edit with references',
+        body: 'Use the source image for what must remain, then add references only when each one has a clear role.',
+        cta: { label: 'Open Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Hero still', body: 'Define product, scene, layout, copy placement, lighting and output ratio before generating.' },
+      { title: 'Product label or poster', body: 'Write text hierarchy explicitly, then verify lettering, logo placement and fine details.' },
+      { title: 'High-detail edit', body: 'Upload the source image and describe the smallest set of changes needed.' },
+      { title: 'Multi-reference creative direction', body: 'Assign references to product identity, palette, material, style or composition.' },
+      { title: 'Handoff to video', body: 'Use the strongest still as a start image when the campaign later needs motion.' },
+    ],
+    pricingCopy: {
+      title: 'Luma Uni-1 Max pricing at a glance',
+      subtitle: 'Display prices use MaxVideoAI pricing; exact price appears before generation.',
+      footnote: 'Max is not positioned as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'One image',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max: Pricing, 2K Images & Editing | MaxVideoAI',
+      description:
+        'Explore Luma Uni-1 Max pricing, premium 2K still generation, source-image edits, typography-sensitive layouts and reference-led image workflows.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE LUMA IMAGE PREMIUM',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Images Uni-1 plus fidèles pour révisions précises, visuels produit et retouches guidées par références.',
+      subtitleHighlights: ['Images Uni-1 plus fidèles', 'révisions précises', 'retouches guidées par références'],
+      paragraph:
+        'Utilisez Uni-1 Max quand l’image demande plus de soin que la route de base : visuels principaux, compositions produit, concepts sensibles à la typographie et retouches détaillées par références.',
+      primaryCta: { label: 'Générer avec Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Ouvrir l’espace image', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'luma-uni-1-max-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Luma Uni-1 Max',
+      description: 'Image 2K haut de gamme et retouche par référence',
+      renderLabel: 'Voir l’image',
+      badges: ['2K', 'Visuel principal', 'Références'],
+      altContext: 'exemple image premium Luma Uni-1 Max',
+    },
+    features: [
+      { title: 'Route 2K haut de gamme', body: 'Utilisez Max pour les images retenues qui demandent plus de détail et finition.', tone: 'quality' },
+      { title: 'Visuels produit', body: 'Adapté aux packshots, étiquettes, emballages et compositions de campagne.', tone: 'reference' },
+      { title: 'Révisions précises', body: 'Utilisez source et références pour limiter clairement ce qui change.', tone: 'continuity' },
+      { title: 'Sensible à la typo', body: 'Utile pour compositions avec texte, avec vérification humaine du texte exact.', tone: 'quality' },
+      { title: 'Direction par référence', body: 'Combinez références produit, style, tenue ou composition dans une consigne image.', tone: 'reference' },
+      { title: 'Prix de référence', body: 'Les prix affichés utilisent les références publiques MaxVideoAI avant génération.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Max ou Uni-1 base ?',
+        body: 'Gardez Uni-1 pour explorer. Utilisez Max pour les visuels principaux, détails produit et révisions qui justifient la route plus coûteuse.',
+        cta: { label: 'Voir Uni-1', href: modelsHref('fr', 'luma-uni-1') },
+      },
+      {
+        title: 'Visuel produit ou typographie ?',
+        body: 'Nommez hiérarchie texte, matières, lumière et composition; vérifiez texte et contours avant livraison.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Retouche avec références',
+        body: 'La source indique ce qui reste. Ajoutez seulement des références avec un rôle clair.',
+        cta: { label: 'Ouvrir Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Visuel principal', body: 'Définissez produit, scène, composition, placement du texte, lumière et ratio avant génération.' },
+      { title: 'Étiquette produit ou affiche', body: 'Écrivez la hiérarchie texte, puis vérifiez lettrage, logo et détails fins.' },
+      { title: 'Retouche détaillée', body: 'Chargez la source et décrivez le plus petit ensemble de changements nécessaires.' },
+      { title: 'Direction créative multi-référence', body: 'Attribuez les références à identité produit, palette, matière, style ou composition.' },
+      { title: 'Passage vers vidéo', body: 'Utilisez l’image la plus forte comme image de départ si la campagne passe ensuite au mouvement.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Luma Uni-1 Max en un coup d’oeil',
+      subtitle: 'Les prix affichés utilisent les références publiques MaxVideoAI; le prix exact apparaît avant génération.',
+      footnote: 'Max n’est pas présenté comme moins cher ou plus rapide que Uni-1; choisissez-le quand l’image exige plus de fidélité.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Une image',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max : tarifs, images 2K et retouche | MaxVideoAI',
+      description:
+        'Explorez Luma Uni-1 Max : prix, génération image 2K haut de gamme, retouches source, compositions sensibles à la typographie et flux image par références.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA LUMA PREMIUM DE IMAGEN',
+      title: 'Luma Uni-1 Max',
+      subtitle: 'Imágenes Uni-1 de mayor fidelidad para revisiones precisas, visuales de producto y ediciones con referencias.',
+      subtitleHighlights: ['Imágenes Uni-1 de mayor fidelidad', 'revisiones precisas', 'ediciones con referencias'],
+      paragraph:
+        'Usa Uni-1 Max cuando la imagen necesita más detalle que la ruta base: visuales principales, composiciones de producto, conceptos sensibles a tipografía y ediciones detalladas con referencias.',
+      primaryCta: { label: 'Generar con Luma Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      secondaryCta: { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-max-pricing') },
+      quickLinks: [
+        { label: 'Abrir espacio de imagen', href: '/app/image?engine=luma-uni-1-max' },
+        { label: 'Ver precios', href: pricingHref('es', 'luma-uni-1-max-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Luma Uni-1 Max',
+      description: 'Imagen 2K de alta fidelidad y flujo de edición con referencias',
+      renderLabel: 'Ver imagen',
+      badges: ['2K', 'Visual principal', 'Referencias'],
+      altContext: 'ejemplo de imagen premium con Luma Uni-1 Max',
+    },
+    features: [
+      { title: 'Ruta 2K de alta fidelidad', body: 'Usa Max para imágenes seleccionadas que necesitan más detalle y acabado.', tone: 'quality' },
+      { title: 'Visuales de producto', body: 'Buen ajuste para catálogo, etiquetas, packaging y composiciones de campaña.', tone: 'reference' },
+      { title: 'Revisiones precisas', body: 'Usa imagen fuente y referencias para acotar lo que debe cambiar.', tone: 'continuity' },
+      { title: 'Sensible a tipografía', body: 'Ayuda en composiciones con texto, aunque el texto exacto requiere inspección.', tone: 'quality' },
+      { title: 'Dirección con referencias', body: 'Combina producto, estilo, vestuario o composición en una consigna de imagen.', tone: 'reference' },
+      { title: 'Precio de referencia', body: 'Los precios mostrados usan referencias públicas de MaxVideoAI antes de generar.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Max o Uni-1 base?',
+        body: 'Usa Uni-1 base para explorar. Usa Max para visuales principales, detalle de producto y revisiones que justifiquen una ruta de mayor costo.',
+        cta: { label: 'Ver Uni-1', href: modelsHref('es', 'luma-uni-1') },
+      },
+      {
+        title: '¿Visual de producto o tipografía?',
+        body: 'Nombra jerarquía de texto, materiales, luz y composición; revisa texto y bordes antes de entregar.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+      {
+        title: 'Editar con referencias',
+        body: 'La imagen fuente define lo que queda. Agrega referencias solo si cada una tiene un rol claro.',
+        cta: { label: 'Abrir Uni-1 Max', href: '/app/image?engine=luma-uni-1-max' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Visual principal', body: 'Define producto, escena, composición, ubicación de texto, luz y ratio antes de generar.' },
+      { title: 'Etiqueta de producto o póster', body: 'Escribe la jerarquía de texto y verifica letras, logo y detalles finos.' },
+      { title: 'Edición de alto detalle', body: 'Sube la fuente y describe el conjunto mínimo de cambios necesarios.' },
+      { title: 'Dirección creativa multi-referencia', body: 'Asigna referencias a identidad de producto, paleta, material, estilo o composición.' },
+      { title: 'Paso a video', body: 'Usa la imagen más fuerte como imagen inicial si la campaña después necesita movimiento.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Luma Uni-1 Max de un vistazo',
+      subtitle: 'Los precios mostrados usan referencias públicas de MaxVideoAI; el precio exacto aparece antes de generar.',
+      footnote: 'Max no se presenta como más barato o rápido que Uni-1; elige esta ruta cuando la imagen necesite mayor fidelidad.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Una imagen',
+    },
+    meta: {
+      title: 'Luma Uni-1 Max: precios, imágenes 2K y edición | MaxVideoAI',
+      description:
+        'Explora Luma Uni-1 Max: precios, imágenes 2K de alta fidelidad, ediciones de fuente, composiciones sensibles a tipografía y flujos con referencias.',
     },
   },
 };
@@ -5415,6 +6042,9 @@ export const ADDITIONAL_TEMPLATE_COPY = {
   'kling-o3-standard': KLING_O3_STANDARD_COPY,
   'luma-ray-2': LUMA_RAY_2_COPY,
   'luma-ray-2-flash': LUMA_RAY_2_FLASH_COPY,
+  'luma-ray-3-2': LUMA_RAY_32_COPY,
+  'luma-uni-1': LUMA_UNI_1_COPY,
+  'luma-uni-1-max': LUMA_UNI_1_MAX_COPY,
   'ltx-2': LTX_2_COPY,
   'ltx-2-fast': LTX_2_FAST_COPY,
   'ltx-2-3-pro': LTX_23_PRO_COPY,

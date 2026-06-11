@@ -4,8 +4,8 @@ export const lumaRay2FlashTemplateConfig: ModelPageTemplateConfig = {
   slug: 'luma-ray-2-flash',
   intent: 'draft',
   hero: {
-    eyebrow: 'LUMA FAST DRAFT ROUTE',
-    subtitleHighlightTerms: ['fast Luma drafts', 'Modify and Reframe tests', 'lower-cost iteration'],
+    eyebrow: 'PREVIOUS-GENERATION FAST LUMA ROUTE',
+    subtitleHighlightTerms: ['previous-generation fast Luma route', 'Modify and Reframe tests', 'Ray 3.2 migration'],
     primaryCtaHref: '/app?engine=lumaRay2_flash',
     secondaryCtaHref: '/examples/luma',
     quickLinks: [

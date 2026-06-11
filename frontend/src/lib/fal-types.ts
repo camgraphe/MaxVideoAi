@@ -15,6 +15,7 @@ export type GenerateAttachment = {
   dataUrl?: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   assetId?: string;
 };
 

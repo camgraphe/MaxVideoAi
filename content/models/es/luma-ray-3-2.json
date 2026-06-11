@@ -1,0 +1,218 @@
+{
+  "marketingName": "Luma Ray 3.2",
+  "versionLabel": "Ray 3.2",
+  "seo": {
+    "title": "Luma Ray 3.2 Modify Video, Reframe, precios y ejemplos | MaxVideoAI",
+    "description": "Usa Luma Ray 3.2 en MaxVideoAI para Modify de video fuente, Reframe de video IA, cuadros guía, salidas silenciosas 5 s / 10 s, prompts, ejemplos y precios.",
+    "image": "/hero/luma-dream.jpg"
+  },
+  "overview": "Luma Ray 3.2 conviene posicionarlo en MaxVideoAI como una ruta Luma de video orientada a edición: modificar un clip fuente, guiar momentos concretos con cuadro guía o imágenes clave, y reencuadrar una toma aprobada con Reframe. Texto a video e imagen a video siguen disponibles para pruebas cortas de movimiento Luma, pero Ray 3.2 no genera audio nativo ni lip sync.",
+  "pricingNotes": "Todas las rutas Ray 3.2 mantienen la cotización cliente de MaxVideoAI alineada con la referencia Fal y el margen configurado, incluidos Modify y Reframe. El enrutamiento interno no cambia el precio mostrado al cliente antes de generar.",
+  "hero": {
+    "title": "Luma Ray 3.2 - Modify y Reframe para video Luma actual",
+    "intro": "Empieza desde un video fuente cuando el timing ya funciona, y usa Modify para cambiar el tratamiento visual o guiar momentos concretos, o Reframe para producir entregas verticales, cuadradas, horizontales y ultrawide. La generación desde prompt o imagen queda como apoyo para pruebas cortas sin audio.",
+    "badge": "Modify video + Reframe · Cuadros guía · Salida silenciosa",
+    "ctaPrimary": {
+      "label": "Generar con Luma Ray 3.2",
+      "href": "/app?engine=luma-ray-3-2"
+    },
+    "secondaryLinks": [
+      { "label": "Ver ejemplos Luma", "href": "/examples/luma" },
+      { "label": "Revisar precios Ray 3.2", "href": "/pricing#luma-ray-3-2-pricing" },
+      { "label": "Ejemplos de prompts", "href": "#prompting" }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      { "title": "Cambios visuales desde video fuente", "icon": "storyboard" },
+      { "title": "Reframes verticales, cuadrados, anchos o ultrawide", "icon": "repeat2" },
+      { "title": "Pasadas guiadas por cuadro o imágenes clave", "icon": "imageToVideo" },
+      { "title": "Pruebas cortas de movimiento Luma sin audio", "icon": "camera" },
+      { "title": "Revisiones 1080p para candidatos seleccionados", "icon": "sparkles" }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Flujos", "body": "Modify de video fuente, Reframe, texto a video e imagen a video" },
+    { "label": "Duración", "body": "Generación de 5 s o 10 s; clips fuente hasta el límite configurado para Modify/Reframe" },
+    { "label": "Resolución", "body": "540p, 720p o 1080p" },
+    { "label": "Ratios", "body": "Formatos anchos, cuadrados, verticales y extendidos expuestos por la ruta activa" },
+    { "label": "Guías", "body": "Una imagen inicial para imagen a video, cuadro guía o hasta 64 imágenes clave indexadas para Modify" },
+    { "label": "Video fuente", "body": "Un clip MP4, MOV o WebM para Modify y Reframe" },
+    { "label": "Precio", "body": "Generación, Modify y Reframe usan la misma lógica de cotización cliente basada en la referencia Fal con margen MaxVideoAI" }
+  ],
+  "promptStructure": {
+    "title": "Mini-guía de prompt",
+    "quote": "Objetivo fuente + qué se conserva + qué cambia + momento guiado o encuadre objetivo + duración/resolución si aplica.",
+    "description": "Ray 3.2 responde mejor cuando el modo está claro. Para Modify, explica primero qué debe conservarse del video fuente y después el cambio visual. Para Reframe, nombra el sujeto prioritario y cómo debe llenarse el nuevo encuadre.",
+    "steps": [
+      "Empieza por Modify o Reframe cuando ya existe un clip fuente aprobado.",
+      "Nombra qué debe conservarse: timing, cámara, movimiento del sujeto o escala del producto.",
+      "Después describe el cambio visual, el momento guiado o el ratio objetivo.",
+      "Elige 5 s para pruebas cerradas o 10 s para una revelación generada o modificada más lenta.",
+      "Usa 540p o 720p para explorar y 1080p para revisar tomas seleccionadas.",
+      "Usa solo prompt o imagen inicial solo cuando todavía no existe video fuente.",
+      "Planifica voz, música y sound design fuera de Ray 3.2."
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "Usa Modify cuando el timing fuente ya funciona y deben cambiar el look, detalles o escena.",
+      "Añade cuadro guía o imágenes clave cuando momentos concretos necesitan dirección.",
+      "Usa Reframe cuando un master aprobado necesita otro ratio sin empezar de nuevo.",
+      "Mantén la generación en 5 s o 10 s y 540p a 1080p.",
+      "Usa imagen inicial si importa la composición pero aún no existe video fuente.",
+      "Trata Ray 3.2 como salida de video silenciosa y añade audio después.",
+      "Revisa el precio exacto en la app antes de generar."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Modify de video fuente",
+      "prompt": "Mantén el movimiento de cámara y el timing del video fuente, cambia la sala a un showroom editorial luminoso, preserva escala de producto y movimiento del sujeto, 5 s, 720p."
+    },
+    {
+      "title": "Pasada con imágenes clave",
+      "prompt": "Preserva el ritmo al caminar y el dolly de cámara del clip fuente. En las imágenes clave marcadas, cambia la chaqueta negra a tejido técnico color crema manteniendo rostro, manos y fondo estables."
+    },
+    {
+      "title": "Reframe de entrega",
+      "prompt": "Reframe del clip fuente de surf a 9:16, mantén al surfista centrado, extiende ola y cielo de forma natural, preserva el timing original."
+    },
+    {
+      "title": "Prueba de generación complementaria",
+      "prompt": "Prueba de movimiento de producto silenciosa: push-in lento sobre un altavoz premium en piedra oscura, reflejos controlados, rim light suave, vibración leve de tela, 5 s, 16:9, 720p."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué soporta Luma Ray 3.2 en MaxVideoAI?",
+      "a": "La página prioriza Modify de video fuente, Reframe, cuadros guía e imágenes clave, con texto a video e imagen a video también disponibles para crear clips Luma cortos y silenciosos."
+    },
+    {
+      "q": "¿Cuándo es Ray 3.2 la opción más fuerte?",
+      "a": "Úsalo cuando ya tienes un video fuente útil y necesitas cambiar el tratamiento visual, guiar momentos concretos o producir nuevos ratios. Para banda sonora nativa, diálogo o lip sync, conviene elegir un motor con audio."
+    },
+    {
+      "q": "¿La página expone opciones HDR o EXR?",
+      "a": "No. La copia pública se mantiene en ajustes publicados hasta que las opciones avanzadas estén validadas."
+    },
+    {
+      "q": "¿Cómo se muestra el precio?",
+      "a": "Los ejemplos usan precios públicos de referencia de MaxVideoAI con margen. La cotización exacta aparece en la app antes de generar."
+    },
+    {
+      "q": "¿Ray 3.2 genera audio?",
+      "a": "No. Trata los renders Ray 3.2 como salidas de video silenciosas y añade voz, música o sound design después."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Modelo de video Luma Ray 3.2",
+    "heroSupportLine": "Ideal para Modify de video fuente, imágenes clave y Reframe de entregas.",
+    "heroSpecChips": [
+      { "label": "Modify", "icon": "storyboard" },
+      { "label": "Reframe", "icon": "repeat2" },
+      { "label": "Imágenes clave", "icon": "imageToVideo" },
+      { "label": "Texto->Video", "icon": "textToVideo" },
+      { "label": "Imagen->Video", "icon": "imageToVideo" },
+      { "label": "5 s o 10 s", "icon": "duration" },
+      { "label": "540p / 720p / 1080p", "icon": "resolution" }
+    ],
+    "whyTitle": "Por qué Ray 3.2 es útil",
+    "heroDesc1": "Ray 3.2 da una ruta Luma actual para Modify y Reframe cuando un clip aprobado puede retocarse o adaptarse sin recrear toda la toma.",
+    "heroDesc2": "Úsalo para pasadas de edición, dirección con imágenes clave, variantes de ratio, pruebas cortas complementarias y revisiones 1080p antes de audio o edición.",
+    "heroHighlights": [
+      "Valor Modify||Usa Ray 3.2 cuando el timing fuente funciona y el tratamiento visual debe cambiar.",
+      "Dirección con imágenes clave||Cuadros guía e imágenes clave ayudan a dirigir momentos concretos.",
+      "Formatos de entrega||Reframe outpaintea clips aprobados hacia nuevos ratios.",
+      "Salida silenciosa||Ray 3.2 entrega solo video en MaxVideoAI, así que el audio se prepara después."
+    ],
+    "specTitle": "Especificaciones de Ray 3.2",
+    "specNote": "Estas especificaciones describen la superficie MaxVideoAI Ray 3.2 para generación, Modify y Reframe.",
+    "specSections": [
+      {
+        "title": "Superficie Modify y Reframe",
+        "intro": "Ray 3.2 se expone primero para Modify de video fuente y Reframe, con generación como ruta complementaria.",
+        "items": [
+          "Modify para cambios visuales desde video fuente.",
+          "Cuadro guía o imágenes clave indexadas para pasadas Modify dirigidas.",
+          "Hasta 64 anclas de imágenes clave cuando la ruta del proveedor las acepta.",
+          "Reframe para variantes de ratio de entrega.",
+          "Texto a video para pruebas de movimiento silenciosas desde prompt.",
+          "Imagen a video cuando una imagen inicial debe anclar el clip.",
+          "Duraciones de 5 s y 10 s.",
+          "Salidas 540p, 720p y 1080p."
+        ]
+      },
+      {
+        "title": "Notas operativas",
+        "items": [
+          "MaxVideoAI mantiene las solicitudes Ray 3.2 en ajustes compatibles.",
+          "La capacidad del proveedor puede variar en horas de alta demanda.",
+          "Todos los modos públicos Ray 3.2 mantienen la cotización cliente de referencia Fal con margen.",
+          "El enrutamiento interno no cambia el precio mostrado al cliente."
+        ]
+      }
+    ],
+    "whatTitle": "Cómo usar Ray 3.2",
+    "whatIntro1": "Empieza con Ray 3.2 Modify cuando tienes un video fuente, o Reframe cuando un clip aprobado necesita otro formato.",
+    "whatIntro2": "Usa prompt solo o imagen inicial únicamente para crear un nuevo candidato de video silencioso.",
+    "whatFlowTitle": "Flujo de trabajo",
+    "whatFlowSteps": [
+      "Elegir Luma Ray 3.2.",
+      "Subir un video fuente para Modify o Reframe.",
+      "Para Modify, añadir cuadro guía o imágenes clave si algunos momentos necesitan dirección.",
+      "Para Reframe, elegir ratio objetivo y prioridad de sujeto.",
+      "Definir 5 s o 10 s cuando el modo lo permite.",
+      "Elegir 540p, 720p o 1080p.",
+      "Usar prompt solo o imagen inicial solo para generar un nuevo clip.",
+      "Revisar precio exacto y generar."
+    ],
+    "galleryTitle": "Ejemplos Luma Ray 3.2",
+    "galleryIntro": "Usa ejemplos para estudiar prompts Modify, cambios guiados por imágenes clave, ajustes Reframe y pruebas cortas complementarias.",
+    "galleryAllCta": "Ver todos los ejemplos Luma",
+    "recreateLabel": "Recrear esta toma",
+    "tipsTitle": "Fortalezas prácticas y límites",
+    "strengths": [
+      "Los videos fuente ayudan a preservar timing y movimiento de cámara con Modify.",
+      "Cuadros guía e imágenes clave ayudan a dirigir momentos concretos.",
+      "Reframe sirve cuando un clip aprobado necesita varios ratios de entrega.",
+      "Buen complemento para pruebas cortas de producto, moda, entorno o social.",
+      "1080p sirve para inspeccionar tomas cortas seleccionadas."
+    ],
+    "boundaries": [
+      "Duración de generación: 5 s o 10 s.",
+      "Resoluciones: 540p, 720p y 1080p.",
+      "La salida Ray 3.2 es silenciosa en MaxVideoAI.",
+      "No es la mejor opción generalista cuando audio nativo, diálogo o lip sync son prioridad.",
+      "La capacidad del proveedor puede variar en horas de alta demanda."
+    ],
+    "safetyTitle": "Seguridad y semejanza",
+    "safetyRules": [
+      "No contenido sexual ni contenido con menores.",
+      "No odio, acoso ni violencia gráfica.",
+      "No imites personas reales sin consentimiento.",
+      "No incluyas datos personales privados."
+    ],
+    "promptingTitle": "Cómo escribir un buen prompt Ray 3.2",
+    "promptingIntro": "Escribe un brief de edición o Reframe con regla de preservación, cambio solicitado, encuadre, duración y resolución.",
+    "promptingTip": "Consejo: para Modify, escribe primero qué debe conservarse para no pelear contra el video fuente.",
+    "promptingGlobalPrinciples": [
+      "Un solo objetivo de edición por clip fuente.",
+      "Separa claramente lo que se conserva y lo que cambia.",
+      "10 s solo cuando la acción lo necesita.",
+      "Usa generación solo cuando aún no existe clip fuente."
+    ],
+    "promptingEngineWhy": [
+      "Los videos fuente hacen útiles Modify y Reframe cuando el timing ya está aprobado.",
+      "Cuadros guía e imágenes clave apuntan a momentos concretos en lugar de repintar todo el clip.",
+      "La generación corta sigue útil para producir candidatos antes de una pasada Modify/Reframe.",
+      "Modo, duración y resolución influyen directamente en el precio mostrado."
+    ],
+    "promptingGuideLabel": "Guía de prompt Ray 3.2",
+    "finalPara1": "Ray 3.2 es la ruta de video Luma actual en MaxVideoAI cuando Modify, imágenes clave y Reframe importan más que la generación de audio nativo.",
+    "finalButton": "Generar con Luma Ray 3.2"
+  }
+}

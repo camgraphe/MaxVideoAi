@@ -374,6 +374,22 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     audioEnabled,
     voiceControl: request.voiceControl,
   });
+  const rawExtraInputValues =
+    request.extraInputValues && typeof request.extraInputValues === 'object' && !Array.isArray(request.extraInputValues)
+      ? request.extraInputValues
+      : {};
+  const booleanExtraAddon = (value: unknown): boolean | undefined => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+    }
+    return undefined;
+  };
+  const pricingAddons = {
+    ...(addons ?? {}),
+    ...(booleanExtraAddon(rawExtraInputValues.hdr) ? { hdr: true } : {}),
+    ...(booleanExtraAddon(rawExtraInputValues.exr_export ?? rawExtraInputValues.exrExport) ? { exr_export: true } : {}),
+  };
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computePricingSnapshot({
@@ -385,7 +401,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       membershipTier: memberTier,
       loop,
       durationOption: durationInfo?.label,
-      addons,
+      addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
     });
   } catch (error) {
     return {

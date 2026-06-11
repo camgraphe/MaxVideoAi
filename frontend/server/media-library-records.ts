@@ -64,6 +64,7 @@ export type MediaAssetRecord = {
   width: number | null;
   height: number | null;
   sizeBytes: number | null;
+  durationSec: number | null;
   source: MediaAssetSource;
   sourceJobId: string | null;
   sourceOutputId: string | null;
@@ -143,6 +144,11 @@ function normalizeInteger(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null;
   const rounded = Math.round(value);
   return rounded > 0 ? rounded : null;
+}
+
+function normalizePositiveNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return value;
 }
 
 export function normalizeMetadata(value: unknown): Record<string, unknown> {
@@ -312,6 +318,7 @@ export function buildMediaAssetInsert(params: {
   width?: number | null;
   height?: number | null;
   sizeBytes?: number | null;
+  durationSec?: number | null;
   source?: unknown;
   sourceJobId?: string | null;
   sourceOutputId?: string | null;
@@ -339,7 +346,12 @@ export function buildMediaAssetInsert(params: {
     sourceJobId: params.sourceJobId ?? null,
     sourceOutputId: params.sourceOutputId ?? null,
     status: 'ready',
-    metadata: params.metadata ?? {},
+    metadata: {
+      ...(params.metadata ?? {}),
+      ...(typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
+        ? { durationSec: params.durationSec }
+        : {}),
+    },
   };
 }
 
@@ -370,6 +382,7 @@ export function mapOutputRow(row: DbJobOutputRow): JobOutputRecord {
 }
 
 export function mapAssetRow(row: DbMediaAssetRow): MediaAssetRecord {
+  const metadata = normalizeMetadata(row.metadata);
   return {
     id: row.id,
     userId: row.user_id,
@@ -381,11 +394,12 @@ export function mapAssetRow(row: DbMediaAssetRow): MediaAssetRecord {
     width: row.width,
     height: row.height,
     sizeBytes: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
+    durationSec: normalizePositiveNumber(metadata.durationSec),
     source: normalizeMediaAssetSource(row.source),
     sourceJobId: row.source_job_id,
     sourceOutputId: row.source_output_id,
     status: row.status ?? 'ready',
-    metadata: normalizeMetadata(row.metadata),
+    metadata,
     createdAt: row.created_at,
   };
 }

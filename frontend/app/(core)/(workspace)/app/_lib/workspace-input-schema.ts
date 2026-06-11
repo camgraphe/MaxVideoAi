@@ -229,10 +229,15 @@ export function summarizeWorkspaceInputSchema({
       if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
         const isPromotedBooleanToggle =
           PROMOTED_WORKFLOW_FIELD_IDS.has(normalizedId) &&
-          localizedField.type === 'enum' &&
-          Array.isArray(localizedField.values) &&
-          localizedField.values.includes('true') &&
-          localizedField.values.includes('false');
+          (
+            localizedField.type === 'boolean' ||
+            (
+              localizedField.type === 'enum' &&
+              Array.isArray(localizedField.values) &&
+              localizedField.values.includes('true') &&
+              localizedField.values.includes('false')
+            )
+          );
         if (isPromotedBooleanToggle) {
           promotedFields.push({ field: localizedField, required });
           return;
@@ -310,7 +315,7 @@ export function buildComposerPromotedActions({
                   label: 'Fix if blocked',
                   tooltip: 'If the prompt is blocked, retry automatically with a safe rewrite.',
                 }
-          : {
+        : {
               label: field.label,
               tooltip: field.description ?? field.label,
             };

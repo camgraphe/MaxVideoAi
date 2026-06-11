@@ -2,10 +2,12 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isStoryboardBillingSource } from '@/lib/storyboard-pricing';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { executeImageGeneration, ImageGenerationExecutionError } from '@/server/images/execute-image-generation';
 import { RESTRICTED_ACCOUNT_MESSAGE, getActiveAccountRestriction } from '@/server/fraud-cleanup';
+import { requireAdmin } from '@/server/admin';
 
 function respondError(
   mode: ImageGenerationRequest['mode'],
@@ -48,10 +50,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const jobSurface = isStoryboardBillingSource(body?.source) ? 'storyboard' : 'image';
+    let isAdminForDirectProvider = false;
+    if (typeof body?.engineId === 'string' && isLumaAgentsImageEngineId(body.engineId)) {
+      try {
+        await requireAdmin(req);
+        isAdminForDirectProvider = true;
+      } catch {
+        isAdminForDirectProvider = false;
+      }
+    }
     const result = await executeImageGeneration({
       userId,
       body,
       jobSurface,
+      isAdminForDirectProvider,
     });
     return NextResponse.json(result);
   } catch (error) {

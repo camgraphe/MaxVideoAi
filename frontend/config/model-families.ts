@@ -84,16 +84,17 @@ export const MODEL_FAMILIES = [
   {
     id: 'luma',
     label: 'Luma Ray',
-    navLabel: 'Ray 2',
+    navLabel: 'Ray 3.2',
     brandId: 'luma',
-    defaultModelSlug: 'luma-ray-2',
-    routeAliases: ['luma-ray-2', 'luma-ray-2-flash'],
-    aliases: ['ray-2', 'ray-2-flash', 'lumaray2', 'lumaray2flash'],
+    defaultModelSlug: 'luma-ray-3-2',
+    routeAliases: ['luma-ray-2', 'luma-ray-2-flash', 'luma-ray-3-2'],
+    aliases: ['ray-2', 'ray-2-flash', 'ray-3-2', 'lumaray2', 'lumaray2flash', 'lumaray32'],
     prefixes: ['luma', 'fal-ai/luma-dream-machine'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['luma-ray-2', 'luma-ray-2-flash'],
+      publishedModelSlugs: ['luma-ray-3-2', 'luma-ray-2', 'luma-ray-2-flash'],
+      currentModelSlugs: ['luma-ray-3-2'],
     },
   },
   {

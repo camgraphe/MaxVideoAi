@@ -40,6 +40,8 @@ export type ModelPageFixedPricingPreset = BaseModelPagePricingPreset & {
 export type ModelPageImagePricingPreset = BaseModelPagePricingPreset & {
   imageResolution: string;
   imageQuality?: 'medium' | 'high';
+  mode?: 't2i' | 'i2i';
+  referenceImageCount?: number;
   quantity?: number;
   fixedValueKey?: never;
   seconds?: never;

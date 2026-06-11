@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import {
   applyStoryboardEditPricing,
   applyStoryboardKlingBundlePricing,
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
         numImages?: number;
         resolution?: string;
         customImageSize?: GptImage2ImageSize | null;
+        imageUrls?: unknown[];
         referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
         quality?: string;
         enableWebSearch?: boolean;
@@ -45,6 +47,7 @@ export async function POST(req: NextRequest) {
       numImages?: number;
       resolution?: string;
       customImageSize?: GptImage2ImageSize | null;
+      imageUrls?: unknown[];
       referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
       quality?: string;
       enableWebSearch?: boolean;
@@ -107,12 +110,26 @@ export async function POST(req: NextRequest) {
         Array.isArray(body?.referenceImageSizes) ? body.referenceImageSizes : []
       );
     }
+    const submittedReferenceImageCount = Array.isArray(body?.imageUrls)
+      ? body.imageUrls.filter((entry) => typeof entry === 'string' && entry.trim().length).length
+      : 0;
+    const submittedReferenceSizeCount = Array.isArray(body?.referenceImageSizes)
+      ? body.referenceImageSizes.filter((entry) => entry && typeof entry === 'object').length
+      : 0;
+    const estimatedReferenceCount = submittedReferenceImageCount || submittedReferenceSizeCount;
+    const lumaAgentsReferenceImageCount = isLumaAgentsImageEngineId(engineCaps.id)
+      ? mode === 'i2i'
+        ? Math.max(0, estimatedReferenceCount - 1)
+        : estimatedReferenceCount
+      : undefined;
     const pricing = await computePricingSnapshot({
       engine: engineCaps,
       durationSec: numImages,
       resolution: resolutionResult.resolution,
+      mode,
       customImageSize,
       quality: typeof body?.quality === 'string' ? body.quality : undefined,
+      referenceImageCount: lumaAgentsReferenceImageCount,
       currency: engineCaps.pricing?.currency ?? 'USD',
       addons:
         getImageInputField(engineCaps, 'enable_web_search', mode) && body?.enableWebSearch === true

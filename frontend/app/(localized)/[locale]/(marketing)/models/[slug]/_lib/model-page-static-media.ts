@@ -83,6 +83,10 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_e658a8d1-8ed8-4494-8247-19ef4e45102d',
     demo: 'job_b13fdbfe-eb04-4000-b88f-abd2dcde7e1b',
   },
+  'luma-ray-3-2': {
+    hero: 'job_dcb6d088-ca0e-4c59-b2a4-c44aa5ae1363',
+    demo: 'job_e0fe2780-c7d8-4d9c-8ba1-19cbc4a2a1ab',
+  },
   'happy-horse-1-0': {
     hero: 'job_24d59992-532b-43e3-b382-12310d973af1',
     demo: 'job_b67e3f62-b117-4e89-997d-e11eb8f48c4a',

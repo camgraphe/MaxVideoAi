@@ -30,6 +30,7 @@ export interface ImageGenerationRequest {
   seed?: number;
   outputFormat?: 'jpeg' | 'png' | 'webp';
   quality?: 'low' | 'medium' | 'high';
+  style?: string;
   maskUrl?: string;
   enableWebSearch?: boolean;
   thinkingLevel?: 'minimal' | 'high';

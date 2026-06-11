@@ -31,6 +31,7 @@ import {
   getComposerWorkflowNotice,
   getEngineModeOptions,
   getModeCaps,
+  getPreferredEngineModeForEngineRequest,
   getPreferredEngineMode,
   isWorkspaceModeAvailable,
   matchesEngineToken,
@@ -188,7 +189,7 @@ export function useWorkspaceEngineModeState({
       const entries = inputAssets[fieldId] ?? [];
       for (const asset of entries) {
         if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.round(asset.durationSec));
+          return Math.max(1, Math.ceil(asset.durationSec));
         }
       }
     }
@@ -346,7 +347,11 @@ export function useWorkspaceEngineModeState({
       preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = current ?? null;
-        const nextMode = getPreferredEngineMode(nextEngine, candidate?.mode ?? null);
+        const nextMode = getPreferredEngineModeForEngineRequest({
+          engine: nextEngine,
+          requestedMode: null,
+          carryoverMode: candidate?.mode ?? null,
+        });
         const normalizedPrevious = candidate ? { ...candidate, engineId: nextEngine.id, mode: nextMode } : null;
         return coerceFormState(nextEngine, nextMode, normalizedPrevious);
       });
@@ -368,7 +373,11 @@ export function useWorkspaceEngineModeState({
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
-      const preferredMode = getPreferredEngineMode(engineOverride, candidate?.mode ?? null);
+      const preferredMode = getPreferredEngineModeForEngineRequest({
+        engine: engineOverride,
+        requestedMode: requestedModeOverrideRef.current,
+        carryoverMode: candidate?.mode ?? null,
+      });
       const normalizedPrevious = candidate ? { ...candidate, engineId: engineOverride.id, mode: preferredMode } : null;
       const nextState = coerceFormState(engineOverride, preferredMode, normalizedPrevious);
       if (process.env.NODE_ENV !== 'production') {
@@ -392,7 +401,7 @@ export function useWorkspaceEngineModeState({
       }
       return nextState;
     });
-  }, [engineOverride, preserveStoredDraftRef, setForm, writeStorage]);
+  }, [engineOverride, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
 
   useEffect(() => {
     const pinnedToken = requestedEngineOverrideTokenRef.current;
@@ -405,11 +414,24 @@ export function useWorkspaceEngineModeState({
     if (!pinnedEngine) return;
     setForm((current) => {
       const candidate = current ?? null;
-      const nextMode = getPreferredEngineMode(pinnedEngine, candidate?.mode ?? null);
+      const nextMode = getPreferredEngineModeForEngineRequest({
+        engine: pinnedEngine,
+        requestedMode: requestedModeOverrideRef.current,
+        carryoverMode: candidate?.mode ?? null,
+      });
       const normalizedPrevious = candidate ? { ...candidate, engineId: pinnedEngine.id, mode: nextMode } : null;
       return coerceFormState(pinnedEngine, nextMode, normalizedPrevious);
     });
-  }, [authChecked, engines, hydratedForScope, requestedEngineOverrideTokenRef, selectedEngine, setForm, storageScope]);
+  }, [
+    authChecked,
+    engines,
+    hydratedForScope,
+    requestedEngineOverrideTokenRef,
+    requestedModeOverrideRef,
+    selectedEngine,
+    setForm,
+    storageScope,
+  ]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {

@@ -213,6 +213,7 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Ray 2 Flash',
     availability: 'available',
     logoPolicy: 'logoAllowed',
+    isLegacy: true,
     engine: LUMA_RAY2_FLASH_ENGINE,
     modes: [
       {
@@ -260,14 +261,14 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/luma-dream-machine/ray-2-flash',
     seo: {
-      title: 'Luma Ray 2 Flash – Faster Generate, Modify and Reframe Workflows',
+      title: 'Luma Ray 2 Flash – Legacy Fast Generate, Modify and Reframe',
       description:
-        'Use Luma Ray 2 Flash for quicker text-to-video, image-to-video, modify, and reframe iterations with the same Ray 2 workflow family, 5 s or 9 s generation shots, and faster source-video editing.',
+        'Use Luma Ray 2 Flash as a previous-generation fast Luma route for legacy drafts, Modify, and Reframe checks, while starting new Luma edit work on Ray 3.2.',
       canonicalPath: '/models/luma-ray-2-flash',
     },
     type: 'Text, image, modify, reframe',
     seoText:
-      'Luma Ray 2 Flash keeps the full Ray 2 workflow surface aligned while prioritizing quicker turnarounds for cinematic drafts, source-video modification, vertical reframes, and reference animation.',
+      'Luma Ray 2 Flash remains available on MaxVideoAI as a legacy fast Luma route for older draft prompts, source-video modification, vertical reframes, and reference animation. Ray 3.2 is the current Luma entry point for new Modify, guide/keyframe, and Reframe work.',
     demoUrl: '/hero/luma-ray2-flash.mp4',
     media: {
       videoUrl: '/hero/luma-ray2-flash.mp4',
@@ -303,9 +304,9 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     faqs: [
       {
-        question: 'Why keep Ray 2 and Ray 2 Flash as the only public Luma models?',
+        question: 'How does Luma Ray 2 Flash fit next to Ray 3.2?',
         answer:
-          'The family stays simple at the model level, but each model now exposes the real workflows inside it: generate, modify, and reframe.',
+          'Flash stays available for legacy-compatible fast Ray 2 drafts, Modify checks, and Reframe variants. For new Luma source-video edits, guide/keyframes, and reframing work, Ray 3.2 is the current route.',
       },
       {
         question: 'Does Flash use a different pricing path?',

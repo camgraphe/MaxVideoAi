@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-04-25",
+  "last_updated": "2026-06-09",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -389,6 +389,51 @@
       "speedStability": 8.5,
       "pricing": 8.6,
       "last_updated": "2026-04-02"
+    },
+    {
+      "modelSlug": "luma-ray-3-2",
+      "fidelity": 7.9,
+      "visualQuality": 8.0,
+      "motion": 7.9,
+      "consistency": 7.4,
+      "anatomy": 7.6,
+      "textRendering": 6.4,
+      "lipsyncQuality": null,
+      "sequencingQuality": 7.2,
+      "controllability": 8.4,
+      "speedStability": 6.6,
+      "pricing": 7.8,
+      "last_updated": "2026-06-11"
+    },
+    {
+      "modelSlug": "luma-uni-1",
+      "fidelity": 8.1,
+      "visualQuality": 8.1,
+      "motion": null,
+      "consistency": 8.0,
+      "anatomy": 7.8,
+      "textRendering": 7.8,
+      "lipsyncQuality": null,
+      "sequencingQuality": 6.8,
+      "controllability": 8.3,
+      "speedStability": 6.9,
+      "pricing": 8.7,
+      "last_updated": "2026-06-09"
+    },
+    {
+      "modelSlug": "luma-uni-1-max",
+      "fidelity": 8.4,
+      "visualQuality": 8.4,
+      "motion": null,
+      "consistency": 8.2,
+      "anatomy": 8.0,
+      "textRendering": 8.0,
+      "lipsyncQuality": null,
+      "sequencingQuality": 7.0,
+      "controllability": 8.5,
+      "speedStability": 6.5,
+      "pricing": 7.9,
+      "last_updated": "2026-06-09"
     },
     {
       "modelSlug": "kling-2-5-turbo",
