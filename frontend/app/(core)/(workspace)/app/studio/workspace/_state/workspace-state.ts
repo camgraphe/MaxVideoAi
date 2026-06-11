@@ -2,6 +2,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineAudioTrack,
@@ -43,6 +44,7 @@ export type PersistedWorkspaceState = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   projectAssets?: WorkspaceAssetRecord[];
+  projectMediaFolders?: WorkspaceProjectMediaFolder[];
   timelineItems: WorkspaceTimelineItem[];
   activeSequenceId?: string;
   sequences?: WorkspaceSequenceRecord[];

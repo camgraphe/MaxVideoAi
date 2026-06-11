@@ -5,6 +5,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineAudioTrack,
@@ -35,6 +36,7 @@ type WorkspaceSequenceSnapshotArgs = {
   mutedAudioTracks: WorkspaceTimelineAudioTrack[];
   nodes: WorkspaceGraphNode[];
   projectAssets: WorkspaceAssetRecord[];
+  projectMediaFolders: WorkspaceProjectMediaFolder[];
   projectSettings: WorkspaceProjectSettings;
   sequences: WorkspaceSequenceRecord[];
   timelineInPointSec: number | null;
@@ -55,6 +57,7 @@ export function useWorkspaceSequenceSnapshots({
   mutedAudioTracks,
   nodes,
   projectAssets,
+  projectMediaFolders,
   projectSettings,
   sequences,
   timelineInPointSec,
@@ -141,6 +144,7 @@ export function useWorkspaceSequenceSnapshots({
       nodes,
       edges,
       projectAssets,
+      projectMediaFolders,
       timelineItems,
       activeSequenceId,
       sequences: upsertWorkspaceSequence(sequences, sequenceSnapshot),
@@ -167,6 +171,7 @@ export function useWorkspaceSequenceSnapshots({
     mutedAudioTracks,
     nodes,
     projectAssets,
+    projectMediaFolders,
     projectSettings,
     sequences,
     snapshotActiveSequence,

@@ -412,7 +412,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(styleSource, /\.timelinePanel/, 'main editor CSS should no longer own timeline panel styles after modularization');
   assert.doesNotMatch(styleSource, /\.studioWalletPill/, 'main editor CSS should no longer own wallet header styles after modularization');
   assert.doesNotMatch(styleSource, /\.studioSessionPill/, 'main editor CSS should no longer own account header styles after modularization');
-  assert.match(styleSource, /\.viewerFocus \.librarySidebar/, 'main CSS should keep only the temporary Viewer compatibility sidebar rule until sidebar styles are extracted');
+  assert.doesNotMatch(styleSource, /\.viewerFocus \.librarySidebar/, 'main CSS should not own Viewer sidebar compatibility rules after sidebar style extraction');
+  assert.doesNotMatch(styleSource, /\.viewerFocus \.panelSubtitle/, 'main CSS should not own Viewer panel subtitle compatibility rules after sidebar style extraction');
   assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
   assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
   assert.match(studioHeaderSessionSource, /workspace\.header\.walletTopUp\.cta/, 'Studio wallet prompt should reuse the main app top-up copy contract');
@@ -487,7 +488,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceSequenceOperationsSource, /export function resolveWorkspaceSequenceDelete/, 'sequence operations helper should own delete fallback resolution');
   assert.match(workspaceEditorLayoutSource, /onDeleteSequence=\{sequence\.handleDeleteSequence\}/, 'viewer project sidebar should delete sequences through sequence actions');
   assert.match(workspaceEditorLayoutSource, /onDuplicateSequence=\{sequence\.handleDuplicateSequence\}/, 'viewer project sidebar should duplicate sequences through sequence actions');
-  assert.match(projectMediaControllerSource, /type: 'asset' \| 'generated' \| 'sequence'/, 'project media controller should treat sequences as first-class selectable project media items');
+  assert.match(projectMediaControllerSource, /type: 'asset' \| 'folder' \| 'generated' \| 'sequence'/, 'project media controller should treat sequences and folders as first-class selectable project media items');
   assert.match(projectMediaActionsHookSource, /resolveProjectAssetTimelineInsert/, 'project media action hook should route asset insertion through the pure timeline helper');
   assert.match(projectMediaActionsHookSource, /handleImportProjectMedia/, 'project media action hook should open the import picker');
   assert.match(projectMediaActionsHookSource, /handleDeleteProjectAsset/, 'project media action hook should own imported asset deletion');
@@ -1642,6 +1643,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');
   assert.match(projectMediaDragSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
   assert.match(timelineProjectSidebarSource, /New folder/, 'viewer sidebar should expose project media folder creation in the footer');
+  assert.match(typesSource, /WorkspaceProjectMediaFolder/, 'project media folders should have a first-class workspace type');
+  assert.match(workspaceStateSource, /projectMediaFolders\?: WorkspaceProjectMediaFolder\[\]/, 'persisted workspace state should remember project media folders');
+  assert.match(projectMediaActionsHookSource, /handleCreateProjectMediaFolder/, 'project media actions should own folder creation');
+  assert.match(projectMediaActionsHookSource, /handleDeleteProjectMediaFolder/, 'project media actions should own folder deletion');
+  assert.doesNotMatch(projectMediaActionsHookSource, /Backend folder persistence will be wired/, 'project media folder creation should no longer be a placeholder notice');
+  assert.match(projectMediaControllerSource, /visibleFolders/, 'project media controller should expose folders as visible media cards');
+  assert.match(timelineProjectSidebarSource, /data-project-media-folder-id/, 'viewer sidebar should render project media folders as selectable cards');
   assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
   assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
   assert.match(projectMediaControllerSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin through its controller');

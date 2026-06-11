@@ -1,6 +1,6 @@
 'use client';
 
-import { AudioLines, FileVideo2, Film, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
+import { AudioLines, FileVideo2, Film, Folder, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
 import { type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
@@ -14,6 +14,7 @@ import {
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
 
@@ -24,11 +25,13 @@ const styles = { ...baseStyles, ...mediaStyles };
 type TimelineProjectSidebarProps = {
   nodes: WorkspaceGraphNode[];
   projectAssets: WorkspaceAssetRecord[];
+  projectMediaFolders: WorkspaceProjectMediaFolder[];
   projectName: string;
   sequences: WorkspaceProjectSequenceSummary[];
   timelineItems: WorkspaceTimelineItem[];
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteProjectMediaFolder: (folderId: string) => void;
   onDeleteSequence: (sequenceId: string) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: () => void;
@@ -44,9 +47,10 @@ type TimelineProjectSidebarProps = {
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 const AUDIO_WAVEFORM_BARS = [34, 58, 42, 76, 48, 68, 92, 50, 74, 44, 82, 60, 96, 54, 70, 38, 64, 88, 46, 72, 56, 84];
 
-function ProjectMediaBadge({ kind }: { kind: 'audio' | 'generated' | 'image' | 'sequence' | 'video' }) {
+function ProjectMediaBadge({ kind }: { kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video' }) {
   const icon =
     kind === 'audio' ? <AudioLines size={15} /> :
+    kind === 'folder' ? <Folder size={15} /> :
     kind === 'image' ? <ImageIcon size={15} /> :
     kind === 'generated' ? <Sparkles size={15} /> :
     kind === 'sequence' ? <Film size={15} /> :
@@ -66,7 +70,7 @@ function ProjectMediaArtwork({
   url,
 }: {
   durationSec?: number;
-  kind: 'audio' | 'generated' | 'image' | 'sequence' | 'video';
+  kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video';
   title: string;
   url?: string | null;
 }) {
@@ -117,7 +121,7 @@ function ProjectMediaCard({
   durationSec?: number;
   id: string;
   isSelected: boolean;
-  kind: 'audio' | 'generated' | 'image' | 'sequence' | 'video';
+  kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video';
   onClick: () => void;
   onContextMenu?: (event: ReactMouseEvent<HTMLElement>) => void;
   onDragStart?: (event: ReactDragEvent<HTMLElement>) => void;
@@ -190,8 +194,8 @@ function ProjectMediaContextMenu({
         onInsert(menu);
         onClose();
       }}>
-        {menu.type === 'sequence' ? <Film size={13} /> : <Plus size={13} />}
-        {menu.type === 'sequence' ? 'Open sequence' : 'Insert at playhead'}
+        {menu.type === 'sequence' ? <Film size={13} /> : menu.type === 'folder' ? <Folder size={13} /> : <Plus size={13} />}
+        {menu.type === 'sequence' ? 'Open sequence' : menu.type === 'folder' ? 'Open folder' : 'Insert at playhead'}
       </button>
       {menu.type === 'sequence' ? (
         <button type="button" role="menuitem" onClick={() => {
@@ -242,10 +246,12 @@ function ProjectMediaFooterAction({
 export function TimelineProjectSidebar({
   nodes,
   projectAssets,
+  projectMediaFolders,
   projectName,
   sequences,
   onDeleteGeneratedClip,
   onDeleteProjectAsset,
+  onDeleteProjectMediaFolder,
   onDeleteSequence,
   onDuplicateSequence,
   onImportMedia,
@@ -260,10 +266,12 @@ export function TimelineProjectSidebar({
   const projectMedia = useProjectMediaController({
     nodes,
     projectAssets,
+    projectMediaFolders,
     sequences,
     onClearSequenceInspector,
     onDeleteGeneratedClip,
     onDeleteProjectAsset,
+    onDeleteProjectMediaFolder,
     onDeleteSequence,
     onDuplicateSequence,
     onImportMedia,
@@ -323,6 +331,20 @@ export function TimelineProjectSidebar({
           />
         ))}
 
+        {projectMedia.visibleFolders.map(({ folder, key, subtitle }) => (
+          <div key={folder.id} data-project-media-folder-id={folder.id}>
+            <ProjectMediaCard
+              id={key}
+              isSelected={projectMedia.selectedKey === key}
+              kind="folder"
+              onClick={() => projectMedia.selectProjectMediaFolder(folder.id)}
+              onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folder.name, type: 'folder' })}
+              subtitle={subtitle}
+              title={folder.name}
+            />
+          </div>
+        ))}
+
         {projectMedia.visibleProjectAssets.map(({ asset, cardKind, key, mediaKind, subtitle, thumbnailUrl, timelineDurationSec }) => {
           return (
             <div
@@ -377,7 +399,7 @@ export function TimelineProjectSidebar({
           );
         })}
 
-        {!projectMedia.totalItems || (!projectMedia.visibleSequences.length && !projectMedia.visibleProjectAssets.length && !projectMedia.visibleGeneratedNodes.length) ? (
+        {!projectMedia.totalItems || (!projectMedia.visibleSequences.length && !projectMedia.visibleFolders.length && !projectMedia.visibleProjectAssets.length && !projectMedia.visibleGeneratedNodes.length) ? (
           <p className={styles.projectMediaEmpty}>
             {projectMedia.totalItems ? 'No media matches this search.' : 'Import media or create a sequence to start.'}
           </p>

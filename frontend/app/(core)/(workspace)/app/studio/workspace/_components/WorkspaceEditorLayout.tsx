@@ -19,6 +19,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceModelCapability,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineAudioTrack,
@@ -89,6 +90,7 @@ type WorkspaceEditorLayoutProps = {
   playheadSec: number;
   previewPlayheadSec: number;
   projectAssets: WorkspaceAssetRecord[];
+  projectMediaFolders: WorkspaceProjectMediaFolder[];
   projectSettings: WorkspaceProjectSettings;
   selectedTimelineItemId: string | null;
   selectedTimelineItemIds: string[];
@@ -133,6 +135,7 @@ export function WorkspaceEditorLayout({
   playheadSec,
   previewPlayheadSec,
   projectAssets,
+  projectMediaFolders,
   projectSettings,
   selectedTimelineItemId,
   selectedTimelineItemIds,
@@ -208,11 +211,13 @@ export function WorkspaceEditorLayout({
           <TimelineProjectSidebar
             nodes={canvas.renderNodes}
             projectAssets={projectAssets}
+            projectMediaFolders={projectMediaFolders}
             projectName={activeTemplateName}
             sequences={sequenceSnapshots.sequenceSummaries}
             timelineItems={timelineItems}
             onDeleteGeneratedClip={projectMedia.handleDeleteGeneratedClip}
             onDeleteProjectAsset={projectMedia.handleDeleteProjectAsset}
+            onDeleteProjectMediaFolder={projectMedia.handleDeleteProjectMediaFolder}
             onDeleteSequence={sequence.handleDeleteSequence}
             onDuplicateSequence={sequence.handleDuplicateSequence}
             onImportMedia={projectMedia.handleImportProjectMedia}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type DragEvent as ReactDragE
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
 } from '../_lib/workspace-types';
 import {
@@ -19,13 +20,13 @@ import {
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 
 export type ProjectMediaSelection =
-  | { id: string; type: 'asset' | 'generated' | 'sequence' }
+  | { id: string; type: 'asset' | 'folder' | 'generated' | 'sequence' }
   | null;
 
 export type ProjectMediaContextMenu = {
   id: string;
   title: string;
-  type: 'asset' | 'generated' | 'sequence';
+  type: 'asset' | 'folder' | 'generated' | 'sequence';
   x: number;
   y: number;
 };
@@ -50,6 +51,12 @@ export type ProjectMediaAssetView = {
   timelineDurationSec: number;
 };
 
+export type ProjectMediaFolderView = {
+  folder: WorkspaceProjectMediaFolder;
+  key: string;
+  subtitle: string;
+};
+
 export type ProjectMediaGeneratedView = {
   key: string;
   mediaKind: 'audio' | 'image' | 'video' | null;
@@ -62,10 +69,12 @@ export type ProjectMediaGeneratedView = {
 type UseProjectMediaControllerArgs = {
   nodes: WorkspaceGraphNode[];
   projectAssets: WorkspaceAssetRecord[];
+  projectMediaFolders: WorkspaceProjectMediaFolder[];
   sequences: WorkspaceProjectSequenceSummary[];
   onClearSequenceInspector: () => void;
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteProjectMediaFolder: (folderId: string) => void;
   onDeleteSequence: (sequenceId: string) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: () => void;
@@ -128,10 +137,12 @@ function beginGeneratedNodeTimelineDrag(event: ReactDragEvent<HTMLElement>, node
 export function useProjectMediaController({
   nodes,
   projectAssets,
+  projectMediaFolders,
   sequences,
   onClearSequenceInspector,
   onDeleteGeneratedClip,
   onDeleteProjectAsset,
+  onDeleteProjectMediaFolder,
   onDeleteSequence,
   onDuplicateSequence,
   onImportMedia,
@@ -145,10 +156,11 @@ export function useProjectMediaController({
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const totalItems = sequences.length + projectAssets.length + generatedNodes.length;
+  const totalItems = sequences.length + projectMediaFolders.length + projectAssets.length + generatedNodes.length;
   const selectedKey = selectedMedia ? projectMediaSelectionKey(selectedMedia.type, selectedMedia.id) : null;
   const selectedCanDelete =
     selectedMedia?.type === 'asset' ||
+    selectedMedia?.type === 'folder' ||
     selectedMedia?.type === 'generated' ||
     (selectedMedia?.type === 'sequence' && sequences.length > 1);
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
@@ -185,6 +197,17 @@ export function useProjectMediaController({
         };
       }),
     [matchesSearch, projectAssets]
+  );
+
+  const visibleFolders = useMemo<ProjectMediaFolderView[]>(
+    () => projectMediaFolders
+      .filter((folder) => matchesSearch(folder.name, 'Folder', 'folder'))
+      .map((folder) => ({
+        folder,
+        key: projectMediaSelectionKey('folder', folder.id),
+        subtitle: 'Folder',
+      })),
+    [matchesSearch, projectMediaFolders]
   );
 
   const visibleGeneratedNodes = useMemo<ProjectMediaGeneratedView[]>(
@@ -226,6 +249,11 @@ export function useProjectMediaController({
     onClearSequenceInspector();
   }, [onClearSequenceInspector]);
 
+  const selectProjectMediaFolder = useCallback((folderId: string) => {
+    setSelectedMedia({ id: folderId, type: 'folder' });
+    onClearSequenceInspector();
+  }, [onClearSequenceInspector]);
+
   const selectGeneratedNode = useCallback((nodeId: string) => {
     setSelectedMedia({ id: nodeId, type: 'generated' });
     onClearSequenceInspector();
@@ -234,15 +262,17 @@ export function useProjectMediaController({
   const insertMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onInsertProjectAsset(menu.id);
     else if (menu.type === 'generated') onInsertGeneratedClip(menu.id);
+    else if (menu.type === 'folder') selectProjectMediaFolder(menu.id);
     else selectSequence(menu.id);
-  }, [onInsertGeneratedClip, onInsertProjectAsset, selectSequence]);
+  }, [onInsertGeneratedClip, onInsertProjectAsset, selectProjectMediaFolder, selectSequence]);
 
   const deleteMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onDeleteProjectAsset(menu.id);
+    else if (menu.type === 'folder') onDeleteProjectMediaFolder(menu.id);
     else if (menu.type === 'generated') onDeleteGeneratedClip(menu.id);
     else onDeleteSequence(menu.id);
     setSelectedMedia(null);
-  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteSequence]);
+  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence]);
 
   const duplicateMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type !== 'sequence') return;
@@ -253,10 +283,11 @@ export function useProjectMediaController({
   const deleteSelected = useCallback(() => {
     if (!selectedMedia || !selectedCanDelete) return;
     if (selectedMedia.type === 'asset') onDeleteProjectAsset(selectedMedia.id);
+    if (selectedMedia.type === 'folder') onDeleteProjectMediaFolder(selectedMedia.id);
     if (selectedMedia.type === 'generated') onDeleteGeneratedClip(selectedMedia.id);
     if (selectedMedia.type === 'sequence') onDeleteSequence(selectedMedia.id);
     setSelectedMedia(null);
-  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteSequence, selectedCanDelete, selectedMedia]);
+  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence, selectedCanDelete, selectedMedia]);
 
   useEffect(() => {
     if (!contextMenu) return undefined;
@@ -289,12 +320,14 @@ export function useProjectMediaController({
     searchQuery,
     selectGeneratedNode,
     selectProjectAsset,
+    selectProjectMediaFolder,
     selectedCanDelete,
     selectedKey,
     selectSequence,
     setContextMenu,
     setSearchQuery,
     totalItems,
+    visibleFolders,
     visibleGeneratedNodes,
     visibleProjectAssets,
     visibleSequences,

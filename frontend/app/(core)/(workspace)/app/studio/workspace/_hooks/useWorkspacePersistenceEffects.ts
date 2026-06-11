@@ -9,6 +9,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineAudioTrack,
@@ -76,6 +77,7 @@ type UseWorkspacePersistenceEffectsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setPlayheadSec: Dispatch<SetStateAction<number>>;
   setProjectAssets: Dispatch<SetStateAction<WorkspaceAssetRecord[]>>;
+  setProjectMediaFolders: Dispatch<SetStateAction<WorkspaceProjectMediaFolder[]>>;
   setProjectSettings: Dispatch<SetStateAction<WorkspaceProjectSettings>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setSequences: Dispatch<SetStateAction<WorkspaceSequenceRecord[]>>;
@@ -115,6 +117,7 @@ export function useWorkspacePersistenceEffects({
   setNotice,
   setPlayheadSec,
   setProjectAssets,
+  setProjectMediaFolders,
   setProjectSettings,
   setSelectedNodeId,
   setSequences,
@@ -153,6 +156,7 @@ export function useWorkspacePersistenceEffects({
       setNodes(persisted.nodes);
       setEdges(persisted.edges);
       setProjectAssets(persisted.projectAssets ?? []);
+      setProjectMediaFolders(persisted.projectMediaFolders ?? []);
       setSequences(persistedSequences);
       setActiveSequenceId(persistedActiveSequenceId);
       setTimelineItems(persisted.timelineItems);
@@ -189,6 +193,7 @@ export function useWorkspacePersistenceEffects({
       setNodes(template.nodes);
       setEdges(template.edges);
       setProjectAssets([]);
+      setProjectMediaFolders([]);
       setSequences([cleanSequence]);
       setActiveSequenceId(cleanSequence.id);
       setTimelineItems(emptyTimelineItems);
@@ -287,6 +292,7 @@ export function useWorkspacePersistenceEffects({
     setNotice,
     setPlayheadSec,
     setProjectAssets,
+    setProjectMediaFolders,
     setProjectSettings,
     setSelectedNodeId,
     setSequences,

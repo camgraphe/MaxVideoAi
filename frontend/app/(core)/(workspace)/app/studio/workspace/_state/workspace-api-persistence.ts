@@ -12,6 +12,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceTemplateId,
 } from '../_lib/workspace-types';
 import {
@@ -289,6 +290,32 @@ function normalizePersistedProjectAssets(value: unknown): WorkspaceAssetRecord[]
   });
 }
 
+function normalizePersistedProjectMediaFolder(value: unknown): WorkspaceProjectMediaFolder | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Partial<WorkspaceProjectMediaFolder>;
+  if (typeof record.id !== 'string' || !record.id.trim()) return null;
+  const timestamp = new Date().toISOString();
+  return {
+    id: record.id,
+    name: typeof record.name === 'string' && record.name.trim() ? record.name.trim() : 'Untitled folder',
+    createdAt: typeof record.createdAt === 'string' && record.createdAt.trim() ? record.createdAt : timestamp,
+    updatedAt: typeof record.updatedAt === 'string' && record.updatedAt.trim() ? record.updatedAt : timestamp,
+  };
+}
+
+function normalizePersistedProjectMediaFolders(value: unknown): WorkspaceProjectMediaFolder[] {
+  if (!Array.isArray(value)) return [];
+  const folders = value
+    .map(normalizePersistedProjectMediaFolder)
+    .filter((folder): folder is WorkspaceProjectMediaFolder => Boolean(folder));
+  const seenIds = new Set<string>();
+  return folders.filter((folder) => {
+    if (seenIds.has(folder.id)) return false;
+    seenIds.add(folder.id);
+    return true;
+  });
+}
+
 export function normalizePersistedWorkspaceState(value: unknown): PersistedWorkspaceState | null {
   const parsed = value as Partial<PersistedWorkspaceState> | null;
   if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
@@ -337,6 +364,7 @@ export function normalizePersistedWorkspaceState(value: unknown): PersistedWorks
     nodes,
     edges,
     projectAssets: normalizePersistedProjectAssets(parsed.projectAssets),
+    projectMediaFolders: normalizePersistedProjectMediaFolders(parsed.projectMediaFolders),
     timelineItems,
     activeSequenceId,
     sequences,

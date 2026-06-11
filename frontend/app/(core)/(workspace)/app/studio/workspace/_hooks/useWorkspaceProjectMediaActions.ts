@@ -7,10 +7,18 @@ import { resolveProjectAssetTimelineInsert } from '../_lib/workspace-project-med
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceTimelineItem,
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+
+function createProjectMediaFolderId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `folder-${crypto.randomUUID()}`;
+  }
+  return `folder-${Date.now().toString(36)}`;
+}
 
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
@@ -18,6 +26,7 @@ type UseWorkspaceProjectMediaActionsParams = {
   nodes: WorkspaceGraphNode[];
   playheadSec: number;
   projectAssets: WorkspaceAssetRecord[];
+  projectMediaFolders: WorkspaceProjectMediaFolder[];
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setIsProjectMediaPickerOpen: Dispatch<SetStateAction<boolean>>;
   setIsTimelinePlaying: Dispatch<SetStateAction<boolean>>;
@@ -25,6 +34,7 @@ type UseWorkspaceProjectMediaActionsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setPlayheadSec: Dispatch<SetStateAction<number>>;
   setProjectAssets: Dispatch<SetStateAction<WorkspaceAssetRecord[]>>;
+  setProjectMediaFolders: Dispatch<SetStateAction<WorkspaceProjectMediaFolder[]>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
   timelineInsertIntoClipEnabled: boolean;
@@ -37,6 +47,7 @@ export function useWorkspaceProjectMediaActions({
   nodes,
   playheadSec,
   projectAssets,
+  projectMediaFolders,
   setActiveEditorSurface,
   setIsProjectMediaPickerOpen,
   setIsTimelinePlaying,
@@ -44,6 +55,7 @@ export function useWorkspaceProjectMediaActions({
   setNotice,
   setPlayheadSec,
   setProjectAssets,
+  setProjectMediaFolders,
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
   timelineInsertIntoClipEnabled,
@@ -52,6 +64,7 @@ export function useWorkspaceProjectMediaActions({
   handleCreateProjectMediaFolder: () => void;
   handleDeleteGeneratedClip: (nodeId: string) => void;
   handleDeleteProjectAsset: (assetId: string) => void;
+  handleDeleteProjectMediaFolder: (folderId: string) => void;
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
   handleImportProjectMedia: () => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
@@ -158,8 +171,37 @@ export function useWorkspaceProjectMediaActions({
   );
 
   const handleCreateProjectMediaFolder = useCallback(() => {
-    setNotice('Project media folders are ready in the UI. Backend folder persistence will be wired in the media library pass.');
-  }, [setNotice]);
+    const fallbackName = `New folder ${projectMediaFolders.length + 1}`;
+    const requestedName = typeof window !== 'undefined'
+      ? window.prompt('Folder name', fallbackName)
+      : fallbackName;
+    if (requestedName === null) return;
+
+    const name = requestedName.trim() || fallbackName;
+    const timestamp = new Date().toISOString();
+    const folder: WorkspaceProjectMediaFolder = {
+      id: createProjectMediaFolderId(),
+      name,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    setProjectMediaFolders((current) => [folder, ...current].slice(0, 80));
+    setNotice(`${name} folder created in Project media.`);
+  }, [projectMediaFolders.length, setNotice, setProjectMediaFolders]);
+
+  const handleDeleteProjectMediaFolder = useCallback(
+    (folderId: string) => {
+      const folder = projectMediaFolders.find((candidate) => candidate.id === folderId);
+      if (!folder) {
+        setNotice('Project media folder not found.');
+        return;
+      }
+      if (typeof window !== 'undefined' && !window.confirm(`Delete "${folder.name}" from Project media?`)) return;
+      setProjectMediaFolders((current) => current.filter((candidate) => candidate.id !== folderId));
+      setNotice(`${folder.name} folder deleted from Project media.`);
+    },
+    [projectMediaFolders, setNotice, setProjectMediaFolders]
+  );
 
   const handleDropProjectAssetToTimeline = useCallback(
     (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
@@ -173,6 +215,7 @@ export function useWorkspaceProjectMediaActions({
     handleCreateProjectMediaFolder,
     handleDeleteGeneratedClip,
     handleDeleteProjectAsset,
+    handleDeleteProjectMediaFolder,
     handleDropProjectAssetToTimeline,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,

@@ -23,6 +23,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
   WorkspaceTimelineItem,
@@ -92,6 +93,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [nodes, setNodes] = useState<WorkspaceGraphNode[]>(defaultTemplate.nodes);
   const [edges, setEdges] = useState<WorkspaceGraphEdge[]>(defaultTemplate.edges);
   const [projectAssets, setProjectAssets] = useState<WorkspaceAssetRecord[]>([]);
+  const [projectMediaFolders, setProjectMediaFolders] = useState<WorkspaceProjectMediaFolder[]>([]);
   const [sequences, setSequences] = useState<WorkspaceSequenceRecord[]>([defaultSequence]);
   const [activeSequenceId, setActiveSequenceId] = useState(DEFAULT_WORKSPACE_SEQUENCE_ID);
   const [timelineItems, setTimelineItems] = useState<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
@@ -161,6 +163,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     mutedAudioTracks,
     nodes,
     projectAssets,
+    projectMediaFolders,
     projectSettings,
     sequences,
     timelineInPointSec: timelinePlayback.timelineInPointSec,
@@ -270,6 +273,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setNotice,
     setPlayheadSec: timelinePlayback.setPlayheadSec,
     setProjectAssets,
+    setProjectMediaFolders,
     setProjectSettings,
     setSelectedNodeId,
     setSequences,
@@ -335,6 +339,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     nodes,
     playheadSec: timelinePlayback.playheadSec,
     projectAssets,
+    projectMediaFolders,
     setActiveEditorSurface,
     setIsProjectMediaPickerOpen,
     setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
@@ -342,6 +347,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setNotice,
     setPlayheadSec: timelinePlayback.setPlayheadSec,
     setProjectAssets,
+    setProjectMediaFolders,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     timelineInsertIntoClipEnabled,
@@ -435,6 +441,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       playheadSec={timelinePlayback.playheadSec}
       previewPlayheadSec={previewPlayheadSec}
       projectAssets={projectAssets}
+      projectMediaFolders={projectMediaFolders}
       projectSettings={projectSettings}
       selectedTimelineItemId={selectedTimelineItemId}
       selectedTimelineItemIds={selectedTimelineItemIds}

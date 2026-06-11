@@ -67,6 +67,13 @@ export type WorkspaceAssetRecord = {
   dimensions?: string;
 };
 
+export type WorkspaceProjectMediaFolder = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type WorkspaceShotSettings = {
   modelId: string;
   workflowType: WorkspaceWorkflowType;

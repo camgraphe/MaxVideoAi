@@ -37,6 +37,12 @@ function persistedWorkspaceState(): PersistedWorkspaceState {
     nodes: [],
     edges: [],
     projectAssets: [],
+    projectMediaFolders: [{
+      id: 'folder-assets',
+      name: 'Assets',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }],
     timelineItems: [],
     activeSequenceId: DEFAULT_WORKSPACE_SEQUENCE_ID,
     sequences: [localSequence],
@@ -58,6 +64,7 @@ test('project API workspace snapshots are stripped after sequence sync succeeds'
   const stripped = stripWorkspaceSequencesForProjectApi(persistedWorkspaceState());
   assert.deepEqual(stripped.timelineItems, []);
   assert.deepEqual(stripped.sequences, []);
+  assert.equal(stripped.projectMediaFolders?.[0]?.name, 'Assets');
   assert.equal(stripped.activeSequenceId, DEFAULT_WORKSPACE_SEQUENCE_ID);
   assert.equal(stripped.activeTemplateId, 'product-ad');
 });
@@ -81,6 +88,7 @@ test('server sequence records override stale project timeline payloads during hy
   const merged = mergePersistedWorkspaceWithServerSequences(persistedWorkspaceState(), [serverSequence]);
   assert.equal(merged.activeSequenceId, 'sequence-server');
   assert.equal(merged.timelineItems[0]?.id, 'clip-server');
+  assert.equal(merged.projectMediaFolders?.[0]?.id, 'folder-assets');
   assert.equal(merged.projectSettings.fps, 24);
   assert.equal(merged.timelineInPointSec, 1);
   assert.equal(merged.timelineOutPointSec, 4);

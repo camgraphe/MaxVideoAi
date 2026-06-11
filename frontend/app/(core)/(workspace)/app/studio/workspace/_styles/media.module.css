@@ -197,6 +197,12 @@
     linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.98));
 }
 
+.projectMediaArtworkFolder {
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 0 1px, transparent 1px 38px),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.86));
+}
+
 .projectMediaArtworkAudio {
   background:
     radial-gradient(circle at 15% 60%, rgba(16, 185, 129, 0.34), transparent 42%),
@@ -249,6 +255,7 @@
 }
 
 .projectMediaBadgeSequence,
+.projectMediaBadgeFolder,
 .projectMediaBadgeGenerated {
   background: linear-gradient(135deg, #7c3aed, #2563eb);
 }

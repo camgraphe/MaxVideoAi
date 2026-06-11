@@ -232,14 +232,6 @@
   cursor: pointer;
 }
 
-.viewerFocus .librarySidebar {
-  gap: 10px;
-}
-
-.viewerFocus .panelSubtitle {
-  margin-top: 2px;
-}
-
 @media (max-width: 760px) {
   .librarySidebar {
     display: none;
