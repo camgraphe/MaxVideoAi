@@ -16,6 +16,13 @@ type LocalFileDropFixture = {
   content: string;
 };
 
+type CanvasMarqueeBounds = {
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+};
+
 async function dropLocalFileOnCanvas(
   page: Page,
   fixture: LocalFileDropFixture,
@@ -51,12 +58,12 @@ async function pasteTextOnCanvas(page: Page, text: string): Promise<void> {
   }, text);
 }
 
-async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<void> {
+async function canvasMarqueeBoundsForNodes(page: Page, nodeIds: string[]): Promise<CanvasMarqueeBounds | null> {
   const pane = page.locator('.react-flow__pane');
   await expect(pane).toBeVisible();
   const paneBox = await pane.boundingBox();
   expect(paneBox).not.toBeNull();
-  if (!paneBox) return;
+  if (!paneBox) return null;
 
   const nodeBoxes = await Promise.all(nodeIds.map(async (nodeId) => {
     const node = page.locator(`.react-flow__node[data-id="${nodeId}"]`);
@@ -65,7 +72,7 @@ async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<
     expect(box).not.toBeNull();
     return box;
   }));
-  if (nodeBoxes.some((box) => !box)) return;
+  if (nodeBoxes.some((box) => !box)) return null;
 
   const left = Math.max(paneBox.x + 8, Math.min(...nodeBoxes.map((box) => box?.x ?? paneBox.x)) - 22);
   const top = Math.max(paneBox.y + 8, Math.min(...nodeBoxes.map((box) => box?.y ?? paneBox.y)) - 22);
@@ -78,6 +85,14 @@ async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<
     Math.max(...nodeBoxes.map((box) => (box?.y ?? 0) + (box?.height ?? 0))) + 22
   );
 
+  return { bottom, left, right, top };
+}
+
+async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<void> {
+  const bounds = await canvasMarqueeBoundsForNodes(page, nodeIds);
+  if (!bounds) return;
+
+  const { bottom, left, right, top } = bounds;
   await page.mouse.move(left, top);
   await page.mouse.down();
   await page.mouse.move(right, bottom, { steps: 14 });
@@ -239,7 +254,8 @@ test('canvas toolbar can marquee select multiple nodes and delete them', async (
   await marqueeSelectCanvasNodes(page, selectedNodeIds);
 
   await expect(page.locator('.react-flow__node.selected')).toHaveCount(selectedNodeIds.length);
-  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toBeVisible();
+  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Delete selected canvas nodes' })).toBeEnabled();
   await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
 
   await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount - selectedNodeIds.length);
@@ -247,6 +263,54 @@ test('canvas toolbar can marquee select multiple nodes and delete them', async (
     await expect(page.locator(`.react-flow__node[data-id="${nodeId}"]`)).toHaveCount(0);
   }
   await expect(page.getByText(`${selectedNodeIds.length} selected`)).toHaveCount(0);
+  assertNoEditorClientErrors(errors);
+});
+
+test('canvas marquee selection draws a visible dashed selection rectangle', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const selectedNodeIds = ['asset-product-image', 'asset-style-reference'];
+  const bounds = await canvasMarqueeBoundsForNodes(page, selectedNodeIds);
+  expect(bounds).not.toBeNull();
+  if (!bounds) return;
+
+  const marqueeSelect = page.getByRole('button', { name: 'Marquee select canvas nodes' });
+  await expect(marqueeSelect).toBeVisible();
+  await marqueeSelect.click();
+
+  await page.mouse.move(bounds.left, bounds.top);
+  await page.mouse.down();
+  await page.mouse.move(bounds.right, bounds.bottom, { steps: 14 });
+
+  const selectionRect = page.locator('.react-flow__selection');
+  try {
+    await expect(selectionRect).toBeVisible();
+    const selectionStyle = await selectionRect.evaluate((element) => {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return {
+        backgroundColor: style.backgroundColor,
+        borderTopColor: style.borderTopColor,
+        borderTopStyle: style.borderTopStyle,
+        borderTopWidth: style.borderTopWidth,
+        height: rect.height,
+        width: rect.width,
+      };
+    });
+
+    expect(selectionStyle.width).toBeGreaterThan(24);
+    expect(selectionStyle.height).toBeGreaterThan(24);
+    expect(selectionStyle.borderTopStyle).toBe('dashed');
+    expect(selectionStyle.borderTopWidth).not.toBe('0px');
+    expect(selectionStyle.borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(selectionStyle.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  } finally {
+    await page.mouse.up();
+  }
+
   assertNoEditorClientErrors(errors);
 });
 

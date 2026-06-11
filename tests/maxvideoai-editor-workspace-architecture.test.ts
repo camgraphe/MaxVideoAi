@@ -3030,6 +3030,45 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'ripple end trim should pull later video clips left when the selected clip is shortened'
   );
 
+  const rippleResizedAttachedChain = resizeWorkspaceTimelineItem({
+    items: [
+      ...items,
+      {
+        id: 'clip-c',
+        outputNodeId: 'output-c',
+        track: 'video',
+        title: 'Clip C',
+        durationSec: 3,
+        startSec: 14,
+        mediaUrl: '/hero/veo3-c.mp4',
+      },
+      {
+        id: 'clip-d',
+        outputNodeId: 'output-d',
+        track: 'video',
+        title: 'Clip D',
+        durationSec: 3,
+        startSec: 20,
+        mediaUrl: '/hero/veo3-d.mp4',
+      },
+    ],
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 5,
+    mode: 'ripple',
+  });
+  assert.deepEqual(
+    rippleResizedAttachedChain.filter((item) => item.track === 'video').map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 5],
+      ['clip-b', 5, 6],
+      ['clip-c', 11, 3],
+      ['clip-d', 20, 3],
+    ],
+    'ripple end trim should move only the contiguous clip chain and preserve intentional gaps'
+  );
+
   const rippleResizedStart = resizeWorkspaceTimelineItem({
     items,
     itemId: 'clip-b',
@@ -3455,6 +3494,32 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       ['clip-a-audio', 6, 8, 0, 'group-a'],
     ],
     'insert-mode drag should move the target linked audio without splitting it by default'
+  );
+
+  const freeRightDragMove = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['clip-a'],
+    anchorItemId: 'clip-a',
+    nextStartSec: 16,
+    mode: 'insert',
+    idSeed: 'drag-free-gap',
+  });
+  assertNoTimelineOverlap(freeRightDragMove, 'dragging into empty time should keep same-track clips non-overlapping');
+  assert.deepEqual(
+    freeRightDragMove
+      .filter((item) => item.track === 'video')
+      .map((item) => [item.id, item.startSec, item.durationSec])
+      .sort((left, right) => Number(left[1]) - Number(right[1])),
+    [
+      ['clip-b', 8, 6],
+      ['clip-a', 16, 8],
+    ],
+    'dragging a selected clip right into empty time should leave the original gap instead of rippling earlier clips closed'
+  );
+  assert.deepEqual(
+    freeRightDragMove.filter((item) => item.track === 'audio').map((item) => [item.id, item.startSec, item.durationSec]),
+    [['clip-a-audio', 16, 8]],
+    'dragging a linked video right into empty time should move its linked audio with the same gap'
   );
 
   const ambiguousSelfOverlapDrag = moveWorkspaceTimelineSelectionWithMode({

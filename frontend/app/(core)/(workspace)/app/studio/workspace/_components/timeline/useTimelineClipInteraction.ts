@@ -181,7 +181,9 @@ export function useTimelineClipInteraction({
         completedInteraction.kind === 'resize-start' ? 'start' : 'end',
         completedInteraction.previewStartSec,
         completedInteraction.previewDurationSec,
-        'trim'
+        completedInteraction.kind === 'resize-end' && completedInteraction.previewDurationSec < completedInteraction.originDurationSec
+          ? 'ripple'
+          : 'trim'
       );
       onPlayheadChange(completedInteraction.previewStartSec);
       setPreviewInteraction(null);

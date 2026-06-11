@@ -5,6 +5,9 @@ import {
   workspaceTimelineItemEndSec as itemEndSec,
 } from './timeline/timeline-frames';
 import {
+  timelineRangeOverlapsItem,
+} from './timeline/timeline-collisions';
+import {
   groupItemsFor,
   hasLinkedVideoPeer,
   primaryTimelineItemFor,
@@ -404,6 +407,25 @@ function replacementTargetItemIdFor(
     .sort((left, right) => left.startSec - right.startSec)[0]?.id ?? null;
 }
 
+function timelineSelectionCanMoveFreely(params: {
+  items: WorkspaceTimelineItem[];
+  movedItems: WorkspaceTimelineItem[];
+  packagePrimaryItem: WorkspaceTimelineItem;
+  packageTargetStartSec: number;
+  selectedKeys: Set<string>;
+}): boolean {
+  const moveDeltaSec = snapTimelineValue(params.packageTargetStartSec - params.packagePrimaryItem.startSec);
+  return params.movedItems.every((item) => {
+    const nextStartSec = snapTimelineValue(item.startSec + moveDeltaSec);
+    const nextEndSec = snapTimelineValue(nextStartSec + item.durationSec);
+    return !params.items.some((candidate) => (
+      !params.selectedKeys.has(timelineSelectionKeyForItem(candidate)) &&
+      candidate.track === item.track &&
+      timelineRangeOverlapsItem(candidate, nextStartSec, nextEndSec)
+    ));
+  });
+}
+
 export function moveWorkspaceTimelineSelectionWithMode(params: {
   allowInsertIntoClip?: boolean;
   anchorItemId: string;
@@ -437,6 +459,22 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
   const packageTargetStartSec = snapTimelineValue(Math.max(0, params.nextStartSec - anchorOffsetSec));
   const targetInsideSelection = timelineSelectionContainsTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
   const targetInsideExternalClip = timelineSelectionHasExternalTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
+  const movedItems = retargetTimelineSelectionItems(selectedItems, selectedKeys, anchorItem, params.nextTrack);
+
+  if (
+    params.mode === 'insert' &&
+    timelineSelectionCanMoveFreely({
+      items: params.items,
+      movedItems,
+      packagePrimaryItem,
+      packageTargetStartSec,
+      selectedKeys,
+    })
+  ) {
+    return selectedKeys.size > 1
+      ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
+      : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
+  }
 
   if (params.mode === 'insert' && targetInsideSelection && !targetInsideExternalClip) {
     if (isWorkspaceTimelineVideoTrack(targetTrack)) return params.items;
@@ -444,7 +482,6 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
       ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
       : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
   }
-  const movedItems = retargetTimelineSelectionItems(selectedItems, selectedKeys, anchorItem, params.nextTrack);
   const baseItems = params.mode === 'insert'
     ? removeTimelineSelectionWithRipple(params.items, selectedKeys)
     : params.items.filter((item) => !selectedKeys.has(timelineSelectionKeyForItem(item)));

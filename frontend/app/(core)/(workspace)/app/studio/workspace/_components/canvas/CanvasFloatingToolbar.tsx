@@ -200,7 +200,6 @@ export function CanvasFloatingToolbar({
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [templateName, setTemplateName] = useState('');
-  const selectionCountLabel = selectedNodeCount === 1 ? '1 selected' : `${selectedNodeCount} selected`;
 
   useEffect(() => {
     if (!activeMenu) return;
@@ -293,7 +292,6 @@ export function CanvasFloatingToolbar({
       >
         <Trash2 size={18} />
       </button>
-      {selectedNodeCount > 0 ? <span className={styles.selectionCount}>{selectionCountLabel}</span> : null}
 
       <span className={styles.toolbarSeparator} />
 

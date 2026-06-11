@@ -65,17 +65,6 @@
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
 }
 
-.selectionCount {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 8px;
-  color: #bfdbfe;
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
 .toolbarSeparator {
   width: 1px;
   height: 28px;
@@ -356,10 +345,6 @@
   .canvasToolbar {
     bottom: 12px;
     overflow-x: auto;
-  }
-
-  .selectionCount {
-    display: none;
   }
 
   .toolbarPopover,

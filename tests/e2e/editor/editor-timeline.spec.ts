@@ -501,7 +501,7 @@ test('timeline panel height can be resized with the top drag handle and persists
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline ambiguous linked video drag reverts video and audio together', async ({ page }) => {
+test('timeline linked video drag can move right into empty time and leave a gap', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -512,8 +512,10 @@ test('timeline ambiguous linked video drag reverts video and audio together', as
 
   await dragTimelineClip(page, 'timeline-output-02', 68);
 
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
@@ -739,6 +741,23 @@ test('timeline undo and redo shortcuts work after focus returns to the canvas', 
 
   await page.keyboard.press('Control+Shift+Z');
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('timeline end trim ripples clips attached to the cut', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await dragTimelineClipEnd(page, 'timeline-output-01', -34);
+
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(4);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(4);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
@@ -1102,6 +1121,10 @@ test('timeline end trim caps video duration and mirrors linked audio duration', 
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(6);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(6);
+
+  await dragTimelineClipEnd(page, 'timeline-output-02', 68);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
 
   assertNoEditorClientErrors(errors);
 });

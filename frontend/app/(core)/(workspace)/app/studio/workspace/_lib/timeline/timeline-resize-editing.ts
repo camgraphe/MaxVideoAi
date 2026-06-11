@@ -32,7 +32,25 @@ function primaryTrackItems(items: WorkspaceTimelineItem[], track: WorkspaceTimel
     .sort((left, right) => left.startSec - right.startSec);
 }
 
-function shiftTrackItemsAfter(
+function contiguousTrackItemIdsAfter(
+  items: WorkspaceTimelineItem[],
+  track: WorkspaceTimelineTrack,
+  afterSec: number,
+  ignoredIds: Set<string>
+): Set<string> {
+  const attachedIds = new Set<string>();
+  let nextStartSec = snapTimelineValue(afterSec);
+  primaryTrackItems(items, track).forEach((item) => {
+    if (ignoredIds.has(item.id)) return;
+    if (item.startSec < nextStartSec - 0.0001) return;
+    if (Math.abs(item.startSec - nextStartSec) > 0.0001) return;
+    attachedIds.add(item.id);
+    nextStartSec = snapTimelineValue(itemEndSec(item));
+  });
+  return attachedIds;
+}
+
+function shiftAttachedTrackItemsAfter(
   items: WorkspaceTimelineItem[],
   track: WorkspaceTimelineTrack,
   afterSec: number,
@@ -40,8 +58,10 @@ function shiftTrackItemsAfter(
   ignoredIds: Set<string>
 ): WorkspaceTimelineItem[] {
   if (deltaSec === 0) return items;
+  const attachedIds = contiguousTrackItemIdsAfter(items, track, afterSec, ignoredIds);
+  if (!attachedIds.size) return items;
   return syncLinkedAudioWithVideo(items.map((item) => {
-    if (item.track !== track || ignoredIds.has(item.id) || item.startSec < afterSec) return item;
+    if (!attachedIds.has(item.id)) return item;
     return {
       ...item,
       startSec: snapTimelineValue(Math.max(0, item.startSec + deltaSec)),
@@ -92,7 +112,7 @@ export function resizeWorkspaceTimelineItem(params: {
           : candidate.sourceStartSec,
     }));
     const ignoredIds = new Set(groupItems.map((groupItem) => groupItem.id));
-    return shiftTrackItemsAfter(resizedItems, primaryItem.track, itemEndSec(primaryItem), durationDeltaSec, ignoredIds);
+    return shiftAttachedTrackItemsAfter(resizedItems, primaryItem.track, itemEndSec(primaryItem), durationDeltaSec, ignoredIds);
   }
 
   if (trimMode === 'roll') {
