@@ -29,3 +29,14 @@ export class ImageGenerationExecutionError extends Error {
     this.extras = options?.extras;
   }
 }
+
+export function failImageGenerationExecution(
+  mode: ImageGenerationMode,
+  code: string,
+  message: string,
+  status: number,
+  detail?: unknown,
+  extras?: Partial<ImageGenerationResponse>
+): never {
+  throw new ImageGenerationExecutionError(message, { mode, code, status, detail, extras });
+}

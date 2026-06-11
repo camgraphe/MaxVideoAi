@@ -1831,14 +1831,18 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "luma-ray-3-2",
         "luma-ray-2",
         "luma-ray-2-flash"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "luma-ray-3-2"
+      ]
     },
     "versionLabel": "Ray 2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2307,7 +2311,7 @@
         "value": false
       }
     },
-    "bestFor": "Premium cinematic generation with modify and reframe"
+    "bestFor": "Legacy Luma Generate, Modify and Reframe coverage"
   },
   {
     "engineId": "lumaRay2_flash",
@@ -2320,14 +2324,18 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "luma-ray-3-2",
         "luma-ray-2",
         "luma-ray-2-flash"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "luma-ray-3-2"
+      ]
     },
     "versionLabel": "Ray 2 Flash",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2796,7 +2804,1126 @@
         "value": false
       }
     },
-    "bestFor": "Fast cinematic drafts with modify and reframe"
+    "bestFor": "Legacy fast Luma drafts with Modify and Reframe"
+  },
+  {
+    "engineId": "luma-ray-3-2",
+    "modelSlug": "luma-ray-3-2",
+    "marketingName": "Luma Ray 3.2",
+    "provider": "Luma AI",
+    "brandId": "luma",
+    "family": "luma",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "luma-ray-3-2",
+        "luma-ray-2",
+        "luma-ray-2-flash"
+      ],
+      "currentModelSlugs": [
+        "luma-ray-3-2"
+      ]
+    },
+    "versionLabel": "Ray 3.2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1",
+          "luma-ray-2"
+        ],
+        "publishedPairs": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1",
+          "luma-ray-2"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 12,
+        "variantGroup": "luma-ray",
+        "variantLabel": "Ray 3.2"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "luma-ray-3-2",
+      "label": "Luma Ray 3.2",
+      "provider": "Luma AI",
+      "version": "Ray 3.2",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "v2v",
+        "reframe"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "540p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "9:16",
+        "3:4",
+        "1:1",
+        "4:3",
+        "16:9",
+        "21:9"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": true,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 50,
+        "videoMaxMB": 200,
+        "videoMaxDurationSec": 30
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v",
+              "reframe"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "v2v",
+              "reframe"
+            ],
+            "description": "Describe the video motion, subject, camera, edit, style, or new canvas area."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Use one source image to anchor the opening frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Use one MP4/MOV/WebM source clip for Ray 3.2 Modify or Reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxDurationSec": 30
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s",
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "9:16",
+              "3:4",
+              "1:1",
+              "4:3",
+              "16:9",
+              "21:9"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "i2v",
+              "reframe"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "540p",
+              "720p",
+              "1080p"
+            ],
+            "default": "720p",
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v",
+              "reframe"
+            ]
+          },
+          {
+            "id": "loop",
+            "type": "boolean",
+            "label": "Loop video",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "description": "Loop is supported for 5s requests. 10s loop requests are provider-limited."
+          },
+          {
+            "id": "hdr",
+            "type": "boolean",
+            "label": "HDR",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v"
+            ],
+            "description": "Generate an HDR MP4 when Luma direct supports the selected duration and resolution."
+          },
+          {
+            "id": "exr_export",
+            "type": "boolean",
+            "label": "EXR export",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v"
+            ],
+            "description": "Export an EXR file alongside the MP4. Requires HDR and routes direct to Luma."
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for 5s image-to-video interpolation. Not compatible with loop.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Guide frame",
+            "description": "Optional single guide frame for Ray 3.2 Modify. Do not combine with multi-keyframes.",
+            "modes": [
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "edit_keyframe_urls",
+            "type": "image",
+            "label": "Modify keyframes",
+            "description": "Optional guide frames pinned to source-video frame indexes. Provide indexes below in the same order.",
+            "modes": [
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 64,
+            "source": "either",
+            "slotLabelPattern": "Frame {n}"
+          },
+          {
+            "id": "edit_keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe indexes",
+            "description": "Comma-separated source frame indexes for Modify keyframes, for example 0, 48, 96.",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_strength",
+            "type": "enum",
+            "label": "Modify strength",
+            "description": "Auto lets Luma derive controls. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.",
+            "values": [
+              "auto",
+              "adhere_1",
+              "adhere_2",
+              "adhere_3",
+              "flex_1",
+              "flex_2",
+              "flex_3",
+              "reimagine_1",
+              "reimagine_2",
+              "reimagine_3"
+            ],
+            "default": "auto",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_pose_strength",
+            "type": "enum",
+            "label": "Pose control",
+            "description": "Optional manual pose conditioning. Any manual control disables auto controls.",
+            "values": [
+              "off",
+              "precise",
+              "coarse"
+            ],
+            "default": "off",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_depth_blur",
+            "type": "number",
+            "label": "Depth freedom",
+            "description": "Optional depth blur from 0 to 1. Higher values allow more geometry freedom.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_normals_augmentation",
+            "type": "number",
+            "label": "Normals freedom",
+            "description": "Optional surface-normal augmentation from 0 to 1.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_trajectory_sparsity",
+            "type": "number",
+            "label": "Trajectory sparsity",
+            "description": "Optional motion-trajectory sparsity from 0 to 1.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_face",
+            "type": "boolean",
+            "label": "Face control",
+            "description": "Enable face-identity conditioning when the source has a face.",
+            "default": false,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "source_position_x_norm",
+            "type": "number",
+            "label": "Source X",
+            "description": "Optional source rectangle x position for Reframe, normalized to output width.",
+            "min": -2,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_y_norm",
+            "type": "number",
+            "label": "Source Y",
+            "description": "Optional source rectangle y position for Reframe, normalized to output height.",
+            "min": -2,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_w_norm",
+            "type": "number",
+            "label": "Source width",
+            "description": "Optional source rectangle width for Reframe, normalized to output width.",
+            "min": 0.05,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_h_norm",
+            "type": "number",
+            "label": "Source height",
+            "description": "Optional source rectangle height for Reframe, normalized to output height.",
+            "min": 0.05,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "webm",
+            "m4v"
+          ],
+          "maxImageSizeMB": 50,
+          "maxVideoSizeMB": 200,
+          "maxVideoDurationSec": 30
+        }
+      },
+      "updatedAt": "2026-06-09T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "luma_agents_direct",
+        "modelSlug": "ray-3-2"
+      },
+      "availability": "available",
+      "brandId": "luma"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "luma/agent/ray/v3.2/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "9:16",
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "luma/agent/ray/v3.2/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "9:16",
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Animate one source image, with optional reference images for style or subject guidance."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "luma/agent/ray/v3.2/video-edit",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Modify a source video with Ray 3.2 using source-video conditioning, strength presets, guide frames, and keyframes."
+        }
+      },
+      {
+        "mode": "reframe",
+        "falModelId": "luma/agent/ray/v3.2/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "9:16",
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Outpaint a source video into a new Ray 3.2 aspect ratio while preserving the original content frame-for-frame."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": true
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "luma-uni-1",
+    "modelSlug": "luma-uni-1",
+    "marketingName": "Luma Uni-1",
+    "provider": "Luma AI",
+    "brandId": "luma",
+    "family": "luma-uni",
+    "familyExamplesPage": null,
+    "versionLabel": "Uni-1",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 9,
+        "variantGroup": "luma-uni",
+        "variantLabel": "Uni-1"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "luma-uni-1",
+      "label": "Luma Uni-1",
+      "provider": "Luma AI",
+      "version": "Uni-1",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 1,
+      "resolutions": [
+        "2K"
+      ],
+      "aspectRatios": [
+        "3:1",
+        "2:1",
+        "16:9",
+        "3:2",
+        "1:1",
+        "2:3",
+        "9:16",
+        "1:2",
+        "1:3"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 50
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the image to generate or the edit to apply."
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Source and reference images",
+            "description": "For text-to-image, add up to 9 reference images. For image edit, the first image is the source and the remaining slots are references.",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "3:1",
+              "2:1",
+              "16:9",
+              "3:2",
+              "1:1",
+              "2:3",
+              "9:16",
+              "1:2",
+              "1:3"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2i"
+            ]
+          },
+          {
+            "id": "style",
+            "type": "enum",
+            "label": "Style",
+            "values": [
+              "auto",
+              "manga"
+            ],
+            "default": "auto",
+            "modes": [
+              "t2i",
+              "i2i"
+            ]
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "png",
+              "jpeg"
+            ],
+            "default": "png",
+            "modes": [
+              "t2i",
+              "i2i"
+            ]
+          },
+          {
+            "id": "enable_web_search",
+            "type": "boolean",
+            "label": "Web search",
+            "default": false,
+            "modes": [
+              "t2i"
+            ],
+            "description": "Allow the provider to use web search for text-to-image requests."
+          },
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 1,
+            "step": 1,
+            "default": 1,
+            "description": "Luma Uni returns one image per public workspace request."
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 50,
+          "maxReferenceImagesTextToImage": 9,
+          "maxReferenceImagesEdit": 8
+        }
+      },
+      "updatedAt": "2026-06-09T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "luma_agents_direct",
+        "modelSlug": "uni-1"
+      },
+      "availability": "available",
+      "brandId": "luma"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "luma/agent/uni-1/v1/text-to-image",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "2K"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "3:1",
+            "2:1",
+            "16:9",
+            "3:2",
+            "1:1",
+            "2:3",
+            "9:16",
+            "1:2",
+            "1:3"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "luma/agent/uni-1/v1/edit",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "2K"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Use the first image as the edit source, followed by optional references."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "luma-uni-1-max",
+    "modelSlug": "luma-uni-1-max",
+    "marketingName": "Luma Uni-1 Max",
+    "provider": "Luma AI",
+    "brandId": "luma",
+    "family": "luma-uni",
+    "familyExamplesPage": null,
+    "versionLabel": "Uni-1 Max",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 11,
+        "variantGroup": "luma-uni",
+        "variantLabel": "Uni-1 Max"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "luma-uni-1-max",
+      "label": "Luma Uni-1 Max",
+      "provider": "Luma AI",
+      "version": "Uni-1 Max",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 1,
+      "resolutions": [
+        "2K"
+      ],
+      "aspectRatios": [
+        "3:1",
+        "2:1",
+        "16:9",
+        "3:2",
+        "1:1",
+        "2:3",
+        "9:16",
+        "1:2",
+        "1:3"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 50
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the image to generate or the edit to apply."
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Source and reference images",
+            "description": "For text-to-image, add up to 9 reference images. For image edit, the first image is the source and the remaining slots are references.",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "3:1",
+              "2:1",
+              "16:9",
+              "3:2",
+              "1:1",
+              "2:3",
+              "9:16",
+              "1:2",
+              "1:3"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2i"
+            ]
+          },
+          {
+            "id": "style",
+            "type": "enum",
+            "label": "Style",
+            "values": [
+              "auto",
+              "manga"
+            ],
+            "default": "auto",
+            "modes": [
+              "t2i",
+              "i2i"
+            ]
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "png",
+              "jpeg"
+            ],
+            "default": "png",
+            "modes": [
+              "t2i",
+              "i2i"
+            ]
+          },
+          {
+            "id": "enable_web_search",
+            "type": "boolean",
+            "label": "Web search",
+            "default": false,
+            "modes": [
+              "t2i"
+            ],
+            "description": "Allow the provider to use web search for text-to-image requests."
+          },
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 1,
+            "step": 1,
+            "default": 1,
+            "description": "Luma Uni Max returns one image per public workspace request."
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 50,
+          "maxReferenceImagesTextToImage": 9,
+          "maxReferenceImagesEdit": 8
+        }
+      },
+      "updatedAt": "2026-06-09T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "luma_agents_direct",
+        "modelSlug": "uni-1-max"
+      },
+      "availability": "available",
+      "brandId": "luma"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "luma/agent/uni-1/v1/max",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "2K"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "3:1",
+            "2:1",
+            "16:9",
+            "3:2",
+            "1:1",
+            "2:3",
+            "9:16",
+            "1:2",
+            "1:3"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "luma/agent/uni-1/v1/max/edit",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "2K"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Use the first image as the edit source, followed by optional references."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
   },
   {
     "engineId": "sora-2",
@@ -3385,6 +4512,7 @@
     "versionLabel": "2.5 Turbo",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3711,6 +4839,7 @@
     "versionLabel": "v2.6 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -9339,6 +10468,7 @@
     "versionLabel": "Preview",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10042,6 +11172,7 @@
     "versionLabel": "Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10358,6 +11489,7 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -11853,6 +12985,7 @@
     "versionLabel": "Nano",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,

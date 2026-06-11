@@ -29,6 +29,7 @@ export async function persistFailedImageGeneration(params: {
   refundDescription: string;
   resolvedAspectRatio: string | null;
   resolution: string;
+  style?: string | null;
   thinkingLevel: string | null;
 }) {
   const {
@@ -56,6 +57,7 @@ export async function persistFailedImageGeneration(params: {
     refundDescription,
     resolvedAspectRatio,
     resolution,
+    style = null,
     thinkingLevel,
   } = params;
 
@@ -143,6 +145,7 @@ export async function persistFailedImageGeneration(params: {
             ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
             ...(outputFormat ? { output_format: outputFormat } : {}),
             ...(quality ? { quality } : {}),
+            ...(style ? { style } : {}),
             ...(maskUrl ? { mask_url: maskUrl } : {}),
             ...(enableWebSearch ? { enable_web_search: true } : {}),
             ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),

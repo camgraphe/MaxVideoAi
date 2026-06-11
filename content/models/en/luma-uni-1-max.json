@@ -1,0 +1,216 @@
+{
+  "marketingName": "Luma Uni-1 Max",
+  "versionLabel": "Uni-1 Max",
+  "seo": {
+    "title": "Luma Uni-1 Max: Pricing, 2K Images and Editing | MaxVideoAI",
+    "description": "Use Luma Uni-1 Max in MaxVideoAI for premium 2K stills, product visuals, typography-sensitive layouts, source-image edits and reference-led image workflows."
+  },
+  "overview": "Luma Uni-1 Max is the higher-fidelity Uni image route in MaxVideoAI for selected stills that need stronger product detail, careful revisions, typography-sensitive layouts and reference-led creative direction.",
+  "pricingNotes": "Display prices use MaxVideoAI pricing. Uni-1 Max is not presented as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.",
+  "hero": {
+    "title": "Luma Uni-1 Max - premium 2K image generation and edits",
+    "intro": "Create hero stills, product images, poster concepts and careful source-image revisions with a higher-fidelity Uni route.",
+    "badge": "2K hero stills · Source edits · References",
+    "ctaPrimary": {
+      "label": "Launch Luma Uni-1 Max",
+      "href": "/app/image?engine=luma-uni-1-max"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Open the image workspace",
+        "href": "/app/image?engine=luma-uni-1-max"
+      },
+      {
+        "label": "Check live pricing",
+        "href": "/pricing#luma-uni-1-max-pricing"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "Hero stills for product and campaign pages", "icon": "product" },
+      { "title": "Typography-sensitive poster or label layouts", "icon": "layout" },
+      { "title": "High-detail source-image revisions", "icon": "layers" },
+      { "title": "Multi-reference creative direction", "icon": "storyboard" },
+      { "title": "Final stills before motion handoff", "icon": "sparkles" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Workflows", "body": "Text-to-image and image edit" },
+    { "label": "Output", "body": "2K still image output" },
+    { "label": "References", "body": "Text requests can use multiple references; edits use a source image plus optional references" },
+    { "label": "Style", "body": "Auto and manga style controls where exposed" },
+    { "label": "Output format", "body": "PNG or JPEG in the active image workspace" },
+    { "label": "Pricing", "body": "Public examples use MaxVideoAI display pricing" }
+  ],
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "Hero asset + product or subject + exact layout intent + references + what must stay fixed.",
+    "description": "Uni-1 Max works best when the brief is already selective. Use it after the creative direction is clear, then ask for a precise still or edit rather than a broad exploration.",
+    "steps": [
+      "Name the target deliverable: hero still, product image, poster or label layout.",
+      "Describe product geometry, materials, lighting and composition.",
+      "For typography, write exact text and placement, then inspect the output.",
+      "For edits, name what stays unchanged before the requested revision.",
+      "Use references only when each one has a clear role.",
+      "Check the live price before generating."
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Use Uni-1 Max for selected stills, not every exploratory draft.",
+      "Do not assume it is always faster or cheaper than Uni-1.",
+      "Use explicit preserve instructions for product and label edits.",
+      "Inspect typography, logos and small details before publishing.",
+      "Use the app quote as the customer-facing price."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Hero product still",
+      "prompt": "Premium 2K hero still of a ceramic skincare bottle on pale stone, crisp label hierarchy, soft studio reflections, controlled shadow, campaign landing page composition, 4:3."
+    },
+    {
+      "title": "Poster layout",
+      "prompt": "Minimal event poster concept with the exact headline \"NIGHT GARDEN\", large elegant typography, dark botanical texture, centered venue block, premium editorial spacing."
+    },
+    {
+      "title": "High-detail edit",
+      "prompt": "Preserve the uploaded product geometry and label order, improve material realism, clean the background, sharpen edge detail, keep natural highlights."
+    },
+    {
+      "title": "Creative direction with references",
+      "prompt": "Use reference 1 for product identity, reference 2 for surface material, and reference 3 for campaign mood. Create a polished 2K launch still with clear headline space."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What is Luma Uni-1 Max best for?",
+      "a": "Use Uni-1 Max for higher-fidelity stills, product visuals, typography-sensitive layouts and careful source-image edits."
+    },
+    {
+      "q": "Is Uni-1 Max always faster or cheaper than Uni-1?",
+      "a": "No. Public copy should not claim that. Use the app quote and choose Max when fidelity matters more than exploration cost."
+    },
+    {
+      "q": "Can Uni-1 Max edit images with references?",
+      "a": "Yes. The edit route uses a source image plus optional references to guide product, style, layout or material changes."
+    },
+    {
+      "q": "How is Uni-1 Max pricing shown?",
+      "a": "Displayed examples use MaxVideoAI pricing with margin. The exact app quote appears before generation."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Luma Uni-1 Max Image Model",
+    "heroSupportLine": "Best for premium 2K hero stills, product visuals and careful reference edits.",
+    "heroSpecChips": [
+      { "label": "Text->Image", "icon": "textToVideo" },
+      { "label": "Image edit", "icon": "imageToVideo" },
+      { "label": "2K output", "icon": "resolution" },
+      { "label": "Reference-led" },
+      { "label": "PNG / JPEG" }
+    ],
+    "whyTitle": "Why Uni-1 Max is useful",
+    "heroDesc1": "Uni-1 Max gives selected still-image work a higher-fidelity Luma route without implying it should replace every cheaper exploration pass.",
+    "heroDesc2": "Use it when product detail, careful revisions, typography-sensitive layout or a campaign hero still is the main job.",
+    "heroHighlights": [
+      "Higher-fidelity still route||Use Max when the selected image needs more detail and finish.",
+      "Product and typography focus||Describe labels, hierarchy and surfaces explicitly, then inspect the result.",
+      "Reference-led edits||Use a source image plus purposeful references for controlled revisions.",
+      "Pricing context||Display prices use MaxVideoAI pricing and the app confirms the exact quote."
+    ],
+    "specTitle": "Uni-1 Max image specs",
+    "specNote": "Specs describe the public MaxVideoAI image workspace route.",
+    "specSections": [
+      {
+        "title": "Image workflows",
+        "items": [
+          "2K text-to-image generation.",
+          "Source-image edits.",
+          "Optional references for product, style, palette or layout.",
+          "PNG or JPEG output."
+        ]
+      },
+      {
+        "title": "Pricing behavior",
+        "items": [
+          "Base image and reference costs follow MaxVideoAI display pricing.",
+          "MaxVideoAI display margin is included in public examples.",
+          "The exact app quote is authoritative before generation.",
+          "Max is a higher-fidelity route, not a lower-price promise."
+        ]
+      }
+    ],
+    "whatTitle": "How Uni-1 Max works",
+    "whatIntro1": "Choose Uni-1 Max in the image workspace when the still already has a clear production goal.",
+    "whatIntro2": "Use source and reference images to narrow the revision instead of widening the brief.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Choose Luma Uni-1 Max in the image workspace.",
+      "Select create or edit mode.",
+      "Write the hero still or edit brief.",
+      "Add only references with explicit roles.",
+      "Review the displayed price.",
+      "Inspect typography, logos and edge detail."
+    ],
+    "galleryTitle": "Luma Uni-1 Max image examples",
+    "galleryIntro": "Use examples to plan hero stills, product edits and reference-led campaign assets.",
+    "galleryAllCta": "Open the image workspace",
+    "recreateLabel": "Recreate this image",
+    "tipsTitle": "Practical strengths and boundaries",
+    "strengths": [
+      "Good for selected 2K hero stills and product visuals.",
+      "Useful when references need to guide precise revisions.",
+      "Stronger fit for polished layouts than early random exploration."
+    ],
+    "boundaries": [
+      "Still images only.",
+      "Not positioned as always cheaper or faster than Uni-1.",
+      "Exact typography and labels need review.",
+      "Public pricing follows MaxVideoAI display pricing."
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent.",
+      "Do not include private personal data or sensitive documents."
+    ],
+    "promptingTitle": "How to write a strong Uni-1 Max prompt",
+    "promptingIntro": "Start from a selected creative direction and specify the final still, source constraints and reference roles.",
+    "promptingTip": "Tip: for product or typography work, write exact hierarchy and inspect the image before publishing.",
+    "promptingGlobalPrinciples": [
+      "Use Max when detail and finish matter.",
+      "Separate source preservation from revision instructions.",
+      "Give every reference a specific role."
+    ],
+    "promptingEngineWhy": [
+      "Higher-fidelity stills benefit from precise constraints.",
+      "Reference roles reduce ambiguity in product and campaign work.",
+      "Checking text and small details keeps claims conservative."
+    ],
+    "promptingGuideLabel": "Uni-1 Max prompt guide",
+    "relatedItems": [
+      {
+        "brand": "luma",
+        "title": "Luma Uni-1",
+        "description": "Use Uni-1 for lower-cost exploration, reference preparation and source-image edits before selected finals.",
+        "modelSlug": "luma-uni-1",
+        "ctaLabel": "View Uni-1"
+      },
+      {
+        "brand": "luma",
+        "title": "Luma Ray 3.2",
+        "description": "Use Ray 3.2 when a selected still is ready to become a short cinematic motion test.",
+        "modelSlug": "luma-ray-3-2",
+        "ctaLabel": "View Ray 3.2"
+      }
+    ],
+    "finalPara1": "Luma Uni-1 Max is the premium Uni still-image route for hero images, product visuals and careful source-image edits in MaxVideoAI.",
+    "finalButton": "Generate with Luma Uni-1 Max"
+  }
+}

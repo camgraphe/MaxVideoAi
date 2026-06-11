@@ -21,6 +21,7 @@ export type GenerationAttachmentPayload = {
   url: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   assetId?: string;
 };
 
@@ -92,6 +93,7 @@ function buildAttachmentPayload(
     url: asset.url,
     width: asset.width,
     height: asset.height,
+    ...(typeof asset.durationSec === 'number' ? { durationSec: asset.durationSec } : {}),
     assetId: asset.assetId,
   };
 }

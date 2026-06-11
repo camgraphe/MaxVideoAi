@@ -102,6 +102,45 @@ test('initial workspace form applies requested engine while preserving stored dr
   });
 });
 
+test('initial workspace form defaults Luma Ray 3.2 engine requests to modify video', () => {
+  const stored: StoredFormState = {
+    engineId: 'seedance-2-0',
+    mode: 't2v',
+    durationSec: 5,
+    resolution: '720p',
+    aspectRatio: '16:9',
+    fps: 24,
+    iterations: 1,
+    audio: false,
+    extraInputValues: {},
+  };
+  const ray32 = makeEngine('luma-ray-3-2', {
+    modes: ['t2v', 'i2v', 'v2v', 'reframe'],
+    audio: false,
+  });
+
+  const implicitResult = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-0'), ray32],
+    storedFormRaw: stored,
+    effectiveRequestedEngineId: 'luma-ray-3-2',
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+  });
+
+  assert.equal(implicitResult.form?.engineId, 'luma-ray-3-2');
+  assert.equal(implicitResult.form?.mode, 'v2v');
+
+  const explicitResult = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-0'), ray32],
+    storedFormRaw: stored,
+    effectiveRequestedEngineId: 'luma-ray-3-2',
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: 't2v',
+  });
+
+  assert.equal(explicitResult.form?.mode, 't2v');
+});
+
 test('pending render hydration derives active group and batch hero state', () => {
   const render: LocalRender = {
     localKey: 'local_1',

@@ -646,6 +646,38 @@ test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () =
   assert.equal(fields.find((field) => field.id === 'reference_image_urls')?.slotLabelPattern, '@Image{n}');
 });
 
+test('Luma Ray 3.2 rejects looped 10 second public video requests', () => {
+  const invalidStringDuration = validateRequest('luma-ray-3-2', 't2v', {
+    prompt: 'Loop this shot',
+    duration: '10s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.equal(invalidStringDuration.ok, false);
+  assert.equal(invalidStringDuration.error?.field, 'loop');
+
+  const invalidNumericDuration = validateRequest('luma-ray-3-2', 'i2v', {
+    prompt: 'Loop this still',
+    image_url: 'https://example.com/start.png',
+    duration_seconds: 10,
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.equal(invalidNumericDuration.ok, false);
+  assert.equal(invalidNumericDuration.error?.field, 'loop');
+
+  const validFiveSecondLoop = validateRequest('luma-ray-3-2', 't2v', {
+    prompt: 'Loop this short shot',
+    duration: '5s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.deepEqual(validFiveSecondLoop, OK);
+});
+
 test('Kling 3 i2v enforces valid element inputs before provider submission', () => {
   const basePayload = {
     prompt: 'Animate this still',

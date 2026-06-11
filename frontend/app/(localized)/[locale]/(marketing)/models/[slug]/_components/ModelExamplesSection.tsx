@@ -108,6 +108,18 @@ function isLumaRay2FlashRoute(engineSlug?: string) {
   return engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
 }
 
+function isLumaRay32Route(engineSlug?: string) {
+  return engineSlug === 'luma-ray-3-2';
+}
+
+function isLumaUni1Route(engineSlug?: string) {
+  return engineSlug === 'luma-uni-1';
+}
+
+function isLumaUni1MaxRoute(engineSlug?: string) {
+  return engineSlug === 'luma-uni-1-max';
+}
+
 function isVeoLiteRoute(engineSlug?: string) {
   return engineSlug === 'veo-3-1-lite';
 }
@@ -161,7 +173,8 @@ function isSilentVideoDecisionEngine(engineSlug?: string) {
     engineSlug === 'minimax-hailuo-02-text' ||
     engineSlug === 'pika-text-to-video' ||
     isLumaRay2Route(engineSlug) ||
-    isLumaRay2FlashRoute(engineSlug)
+    isLumaRay2FlashRoute(engineSlug) ||
+    isLumaRay32Route(engineSlug)
   );
 }
 
@@ -255,6 +268,60 @@ function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, en
         { id: 'final', label: '4K final' },
       ];
     }
+    if (isLumaUni1Route(engineSlug)) {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'product', label: 'Produit' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'References' },
+          { id: 'campaign', label: 'Direction' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'product', label: 'Producto' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Referencias' },
+          { id: 'campaign', label: 'Direccion' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'product', label: 'Product' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'reference', label: 'References' },
+        { id: 'campaign', label: 'Direction' },
+      ];
+    }
+    if (isLumaUni1MaxRoute(engineSlug)) {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'product', label: 'Produit' },
+          { id: 'typography', label: 'Typographie' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'References' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'product', label: 'Producto' },
+          { id: 'typography', label: 'Tipografia' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Referencias' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'product', label: 'Product' },
+        { id: 'typography', label: 'Typography' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'reference', label: 'References' },
+      ];
+    }
     if (locale === 'fr') {
       return [
         { id: 'all', label: 'Tous' },
@@ -328,6 +395,34 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
   tone: string;
 }> {
   if (isImageEngine) {
+    if (isLumaUni1Route(engineSlug) || isLumaUni1MaxRoute(engineSlug)) {
+      const isMax = isLumaUni1MaxRoute(engineSlug);
+      if (locale === 'fr') {
+        return [
+          { title: isMax ? 'Stills haute fidelite' : 'Stills propres', body: `${modelName} pour tester une direction image sans complexifier le prompt.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Edit guide', body: 'Modifiez une image source en gardant produit, forme et palette lisibles.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'References', body: 'Utilisez des images de depart ou de style quand la coherence compte.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+          { title: isMax ? 'Detail et texte' : 'Ratios simples', body: isMax ? 'Bon candidat pour posters, packshots et typographie courte.' : 'Validez produit, carre, vertical ou 16:9 avant de passer en video.', icon: isMax ? Type : Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Pret video', body: 'Servez-vous des meilleurs stills comme images de depart pour Ray 3.2.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { title: isMax ? 'Stills de alta fidelidad' : 'Stills limpios', body: `${modelName} para probar direccion visual sin hacer complejo el prompt.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Edit guiado', body: 'Edita una imagen fuente manteniendo producto, forma y paleta claros.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Referencias', body: 'Usa imagenes iniciales o de estilo cuando la coherencia importa.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+          { title: isMax ? 'Detalle y texto' : 'Ratios simples', body: isMax ? 'Buen candidato para posters, packshots y tipografia corta.' : 'Valida producto, cuadrado, vertical o 16:9 antes de pasar a video.', icon: isMax ? Type : Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Listo para video', body: 'Usa los mejores stills como imagen inicial para Ray 3.2.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        ];
+      }
+      return [
+        { title: isMax ? 'High-fidelity stills' : 'Clean stills', body: `${modelName} is best tested with a focused visual direction, not overloaded prompts.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Guided edits', body: 'Edit a source image while keeping product shape, palette, and layout readable.', icon: PenLine, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'References', body: 'Use start or style references when consistency matters.', icon: Users, tone: MODEL_PAGE_ICON_WRAP },
+        { title: isMax ? 'Detail and text' : 'Simple ratios', body: isMax ? 'Useful for posters, packshots, and short typography tests.' : 'Validate product, square, vertical, or 16:9 stills before video.', icon: isMax ? Type : Maximize2, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Video-ready', body: 'Use the strongest stills as start images for Ray 3.2.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
     if (locale === 'fr') {
       return [
         { title: 'Exemples image', body: `Prompts stills adaptés à ${modelName}.`, icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
@@ -359,6 +454,34 @@ function getDecisionExampleProofItems(locale: AppLocale, modelName: string, isIm
     const isPika = engineSlug === 'pika-text-to-video';
     const isLuma = isLumaRay2Route(engineSlug);
     const isLumaFlash = isLumaRay2FlashRoute(engineSlug);
+    const isLuma32 = isLumaRay32Route(engineSlug);
+    if (isLuma32) {
+      if (locale === 'fr') {
+        return [
+          { title: 'Modify source', body: 'Etudiez comment Ray 3.2 change un clip sans perdre son timing.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Reframe livraison', body: 'Recreez un ratio vertical, carre ou large depuis le meme master.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Sortie silencieuse', body: 'Ray 3.2 ne genere pas d audio natif sur cette route MaxVideoAI.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Images guides', body: 'Utilisez une image ou des images cles pour diriger des moments precis.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Controle cout', body: 'Validez en 5 s / 540p ou 720p avant les passes 1080p.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { title: 'Modify fuente', body: 'Estudia como Ray 3.2 cambia un clip sin perder su timing.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Reframe entrega', body: 'Recrea un ratio vertical, cuadrado o ancho desde el mismo master.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Salida sin audio', body: 'Ray 3.2 no genera audio nativo en esta ruta de MaxVideoAI.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Cuadros guia', body: 'Usa un cuadro o imagenes clave para dirigir momentos concretos.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+          { title: 'Control de coste', body: 'Valida en 5 s / 540p o 720p antes de pasadas 1080p.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+        ];
+      }
+      return [
+        { title: 'Modify source clips', body: 'Study how Ray 3.2 changes a clip without losing its timing.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Reframe delivery', body: 'Recreate a vertical, square, or wide cut from the same approved master.', icon: Zap, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Silent output', body: 'Ray 3.2 does not generate native audio on this MaxVideoAI route.', icon: AudioLines, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Guide frames', body: 'Use one frame or indexed keyframes to steer specific source moments.', icon: ImageIcon, tone: MODEL_PAGE_ICON_WRAP },
+        { title: 'Cost control', body: 'Validate at 5s / 540p or 720p before 1080p passes.', icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
+      ];
+    }
     if (locale === 'fr') {
       return [
         { title: isPika ? 'Boucles stylisées' : isLuma ? 'Rendus Luma premium' : isLumaFlash ? 'Brouillons Luma rapides' : 'Rendus brouillon', body: isPika ? 'Voyez les boucles Text-to-Video silencieuses possibles avec Pika 2.2.' : isLuma ? 'Comparez génération, image de départ, Modify et Reframe dans Ray 2.' : isLumaFlash ? 'Comparez vite directions, cadrages et versions Modify avant Ray 2.' : 'Voyez les tests mouvement légers possibles avec Hailuo 02.', icon: Sparkles, tone: MODEL_PAGE_ICON_WRAP },
@@ -866,6 +989,8 @@ function buildDecisionExampleItems({
       posterUrl,
       alt: isLumaRay2Route(engineSlug)
         ? `Luma Ray 2 ${shortTitle.toLowerCase()}`
+        : isLumaRay32Route(engineSlug)
+          ? `Luma Ray 3.2 ${shortTitle.toLowerCase()}`
         : isSora2ProRoute(engineSlug)
           ? `Sora 2 Pro ${shortTitle.toLowerCase()}`
         : isSora2Route(engineSlug)
@@ -949,6 +1074,18 @@ function buildImageFallbackExampleItems({
       reference: '/assets/model-examples/nano-banana-2/reference.webp',
       wide: '/assets/model-examples/nano-banana-2/wide.webp',
     },
+    'luma-uni-1': {
+      product: '/assets/model-examples/luma-uni-1/product.webp',
+      edit: '/assets/model-examples/luma-uni-1/edit.webp',
+      reference: '/assets/model-examples/luma-uni-1/reference.webp',
+      campaign: '/assets/model-examples/luma-uni-1/research.webp',
+    },
+    'luma-uni-1-max': {
+      product: '/assets/model-examples/luma-uni-1-max/hero-product.webp',
+      typography: '/assets/model-examples/luma-uni-1-max/typography.webp',
+      edit: '/assets/model-examples/luma-uni-1-max/edit.webp',
+      reference: '/assets/model-examples/luma-uni-1-max/reference.webp',
+    },
     'nano-banana-pro': {
       campaign: '/assets/model-examples/nano-banana-pro/campaign.webp',
       typography: '/assets/model-examples/nano-banana-pro/typography.webp',
@@ -977,6 +1114,48 @@ function buildImageFallbackExampleItems({
             ['character', 'Character reference sheet', 'Character', '2-10 refs', 'Seedream sheet with consistent views of the same character'],
             ['edit', 'Clean image edit', 'Edit', 'Image edit', 'Seedream edit preserving shape, logo and proportions'],
             ['batch', 'Storyboard batch', 'Batch', '4 images', 'Seedream four-image storyboard batch'],
+          ]
+    : isLumaUni1Route(engineSlug)
+    ? locale === 'fr'
+      ? [
+          ['product', 'Still produit 2K', 'Produit', '2K · 16:9', 'Packshot Luma Uni-1 avec lumiere studio simple'],
+          ['edit', 'Edit image source', 'Edit', 'Image edit', 'Edit Luma Uni-1 qui garde la forme produit et change le mood studio'],
+          ['reference', 'Still guide par references', 'References', '2 refs', 'Still Luma Uni-1 guide par produit et reference mood'],
+          ['campaign', 'Recherche direction visuelle', 'Direction', '1:1', 'Still Luma Uni-1 pour explorer une direction retail'],
+        ]
+      : locale === 'es'
+        ? [
+            ['product', 'Still de producto 2K', 'Producto', '2K · 16:9', 'Packshot Luma Uni-1 con luz de estudio simple'],
+            ['edit', 'Edit de imagen fuente', 'Edit', 'Image edit', 'Edit Luma Uni-1 que conserva forma de producto y cambia mood de estudio'],
+            ['reference', 'Still guiado por referencias', 'Referencias', '2 refs', 'Still Luma Uni-1 guiado por producto y referencia de mood'],
+            ['campaign', 'Investigacion visual', 'Direccion', '1:1', 'Still Luma Uni-1 para explorar una direccion retail'],
+          ]
+        : [
+            ['product', '2K product still', 'Product', '2K · 16:9', 'Luma Uni-1 clean product still with simple studio light'],
+            ['edit', 'Source image edit', 'Edit', 'Image edit', 'Luma Uni-1 edit preserving product shape while changing studio tone'],
+            ['reference', 'Reference-led still', 'References', '2 refs', 'Luma Uni-1 still guided by product and mood references'],
+            ['campaign', 'Visual research still', 'Direction', '1:1', 'Luma Uni-1 retail research still for product direction'],
+          ]
+    : isLumaUni1MaxRoute(engineSlug)
+    ? locale === 'fr'
+      ? [
+          ['product', 'Packshot haute fidelite', 'Produit', '2K · 3:2', 'Packshot skincare Luma Uni-1 Max avec detail premium'],
+          ['typography', 'Poster texte lisible', 'Typographie', 'Poster', 'Poster Luma Uni-1 Max avec titre NIGHT GARDEN lisible'],
+          ['edit', 'Edit produit detaille', 'Edit', 'Image edit', 'Edit Luma Uni-1 Max avec matiere et contours plus nets'],
+          ['reference', 'Still campagne reference', 'References', '2 refs', 'Still Luma Uni-1 Max guide par produit et mood campagne'],
+        ]
+      : locale === 'es'
+        ? [
+            ['product', 'Packshot de alta fidelidad', 'Producto', '2K · 3:2', 'Packshot skincare Luma Uni-1 Max con detalle premium'],
+            ['typography', 'Poster con texto legible', 'Tipografia', 'Poster', 'Poster Luma Uni-1 Max con titular NIGHT GARDEN legible'],
+            ['edit', 'Edit de producto detallado', 'Edit', 'Image edit', 'Edit Luma Uni-1 Max con material y bordes mas nitidos'],
+            ['reference', 'Still de campana con referencia', 'Referencias', '2 refs', 'Still Luma Uni-1 Max guiado por producto y mood de campana'],
+          ]
+        : [
+            ['product', 'High-fidelity product still', 'Product', '2K · 3:2', 'Luma Uni-1 Max premium skincare product still'],
+            ['typography', 'Readable poster concept', 'Typography', 'Poster', 'Luma Uni-1 Max poster with readable NIGHT GARDEN headline'],
+            ['edit', 'Detailed product edit', 'Edit', 'Image edit', 'Luma Uni-1 Max edit improving material realism and edge detail'],
+            ['reference', 'Campaign reference still', 'References', '2 refs', 'Luma Uni-1 Max launch still guided by product and mood references'],
           ]
     : isNanoBanana2
     ? locale === 'fr'

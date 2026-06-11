@@ -13,7 +13,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
   try {
     const raw = JSON.parse(value) as Partial<PersistedImageComposerState> | null;
     if (!raw || typeof raw !== 'object') return null;
-    if (![1, 2, 3, IMAGE_COMPOSER_STORAGE_VERSION].includes(Number(raw.version))) return null;
+    if (![1, 2, 3, 4, IMAGE_COMPOSER_STORAGE_VERSION].includes(Number(raw.version))) return null;
     if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
     const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
     const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
@@ -38,6 +38,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
     const seed = typeof raw.seed === 'number' && Number.isFinite(raw.seed) ? Math.round(raw.seed) : null;
     const outputFormat = typeof raw.outputFormat === 'string' ? raw.outputFormat : null;
     const quality = typeof raw.quality === 'string' ? raw.quality : null;
+    const style = typeof raw.style === 'string' ? raw.style : null;
     const maskUrl = typeof raw.maskUrl === 'string' ? raw.maskUrl : null;
     const enableWebSearch = raw.enableWebSearch === true;
     const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
@@ -90,6 +91,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       seed,
       outputFormat,
       quality,
+      style,
       maskUrl,
       enableWebSearch,
       thinkingLevel,

@@ -10,6 +10,7 @@ export type NormalizedAttachment = {
   url?: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   assetId?: string;
 };
 
@@ -48,6 +49,15 @@ function decodeDataUrl(value: string): { buffer: Buffer; mime: string } {
   };
 }
 
+function positiveNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+  if (typeof value === 'string' && value.trim().length) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+  return null;
+}
+
 export async function processGenerationAttachments(params: {
   rawInputs: unknown;
   userId: string;
@@ -74,6 +84,7 @@ export async function processGenerationAttachments(params: {
     const dataUrlCandidate = typeof candidate.dataUrl === 'string' ? candidate.dataUrl.trim() : null;
     const width = typeof candidate.width === 'number' ? candidate.width : null;
     const height = typeof candidate.height === 'number' ? candidate.height : null;
+    const durationSec = positiveNumber(candidate.durationSec ?? candidate.duration ?? candidate.mediaDurationSec);
     const assetId = typeof candidate.assetId === 'string' ? candidate.assetId : undefined;
     const declaredMimeType = base.type.trim().toLowerCase();
 
@@ -142,6 +153,7 @@ export async function processGenerationAttachments(params: {
         url: urlCandidate,
         width,
         height,
+        ...(durationSec ? { durationSec } : {}),
         assetId,
       });
       continue;

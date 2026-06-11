@@ -29,6 +29,7 @@ function asset(overrides: Partial<ReferenceAsset> = {}): ReferenceAsset {
     url: overrides.url ?? `https://cdn.example.com/${id}.${kind === 'video' ? 'mp4' : kind === 'audio' ? 'mp3' : 'jpg'}`,
     width: overrides.width ?? null,
     height: overrides.height ?? null,
+    durationSec: overrides.durationSec ?? null,
     assetId: overrides.assetId ?? id,
     status: overrides.status ?? 'ready',
   };
@@ -73,6 +74,7 @@ test('prepareGenerationInputs orders attachments and derives generation URL grou
     fieldId: 'reference_video_urls',
     kind: 'video',
     url: 'https://cdn.example.com/ref.mp4',
+    durationSec: 17.4,
   });
   const referenceAudioAsset = asset({
     id: 'audio_ref',
@@ -133,6 +135,7 @@ test('prepareGenerationInputs orders attachments and derives generation URL grou
   assert.equal(result.primaryAttachment?.url, 'https://cdn.example.com/primary.jpg');
   assert.deepEqual(result.referenceImageUrls, ['https://cdn.example.com/ref-1.jpg']);
   assert.deepEqual(result.referenceVideoUrls, ['https://cdn.example.com/ref.mp4']);
+  assert.equal(result.inputsPayload?.find((input) => input.slotId === 'reference_video_urls')?.durationSec, 17.4);
   assert.deepEqual(result.referenceAudioUrls, ['https://cdn.example.com/ref.mp3']);
   assert.equal(result.primaryImageUrl, 'https://cdn.example.com/primary.jpg');
   assert.equal(result.primaryAudioUrl, 'https://cdn.example.com/voice.mp3');

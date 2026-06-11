@@ -25,6 +25,7 @@ type EngineCatalogEntry = {
   versionLabel?: string;
   availability: string;
   logoPolicy: string;
+  isLegacy?: boolean;
   surfaces: FalEngineEntry['surfaces'];
   surfacesSource: 'explicit' | 'default';
   engine: FalEngineEntry['engine'];
@@ -71,6 +72,7 @@ function toCatalogEntry(engine: FalEngineEntry, override?: EngineCatalogOverride
     versionLabel: override?.versionLabel ?? engine.versionLabel ?? undefined,
     availability: engine.availability,
     logoPolicy: engine.logoPolicy,
+    isLegacy: engine.isLegacy || undefined,
     surfaces: engine.surfaces,
     surfacesSource: hasExplicitFalEngineSurfaces(engine.id) ? 'explicit' : 'default',
     engine: engine.engine,

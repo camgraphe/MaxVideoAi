@@ -12,12 +12,19 @@ import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
+import { isLumaAgentsImageEngineId, isLumaRay32EngineId, type LumaAgentsImageMode } from '@/lib/luma-agents';
+import {
+  calculateLumaAgentsImageReferencePrice,
+  calculateLumaRay32ReferencePrice,
+} from '@/lib/luma-agents-pricing';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
 
 const FALLBACK_CURRENCY = 'USD';
+const DISPLAY_PRICE_MARGIN_PERCENT = 0.3;
+const CENT_EPSILON = 1e-9;
 
 const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
@@ -35,6 +42,7 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'minimax-hailuo-02-text',
   'luma-ray-2',
   'luma-ray-2-flash',
+  'luma-ray-3-2',
 ] as const;
 
 const PRICING_DISPLAY_FAMILY_ORDER = ['seedance', 'kling', 'veo', 'happy-horse', 'ltx', 'wan', 'hailuo', 'luma'] as const;
@@ -67,6 +75,8 @@ export type ImagePriceScenario = {
   id: string;
   resolution: string;
   quality?: GptImage2Quality;
+  mode?: LumaAgentsImageMode;
+  referenceImageCount?: number;
   quantity?: number;
 };
 
@@ -449,6 +459,20 @@ function displayedLumaRay2ScenarioCents(engine: EngineCaps, resolution: string, 
   return applyDisplayedPriceMarginCents(quote.totalUsd * 100);
 }
 
+function displayedLumaRay32ScenarioCents(engine: EngineCaps, resolution: string, durationSec: number) {
+  if (!isLumaRay32EngineId(engine.id)) return null;
+
+  try {
+    const quote = calculateLumaRay32ReferencePrice({
+      duration: `${durationSec}s`,
+      resolution,
+    });
+    return applyFalReferenceDisplayMarginCents(quote.totalUsd);
+  } catch {
+    return null;
+  }
+}
+
 function supportsAudioOff(engine: EngineCaps) {
   return Boolean(engine.pricingDetails?.addons?.audio_off);
 }
@@ -471,7 +495,8 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 
   const exactCents =
     exact && duration.durationSec != null
-      ? displayedLumaRay2ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
+      ? displayedLumaRay32ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
+        displayedLumaRay2ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
         displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
       : null;
   if (exact) {
@@ -757,6 +782,14 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
 }
 
 function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImage2Quality = 'medium') {
+  if (isLumaAgentsImageEngineId(engine.id)) {
+    const quote = calculateLumaAgentsImageReferencePrice({
+      engineId: engine.id,
+      mode: 't2i',
+      referenceImageCount: 0,
+    });
+    return applyFalReferenceDisplayMarginCents(quote.totalUsd);
+  }
   if (engine.id === 'gpt-image-2') {
     const tier = resolveGptImage2PricingTier(resolution);
     return applyDisplayedPriceMarginCents(tier.prices[quality]);
@@ -782,6 +815,53 @@ function formatImageQuantityNote(locale: AppLocale, quantity: number, resolution
   return `${quantity} ${label} · ${resolution}`;
 }
 
+function applyFalReferenceDisplayMarginCents(totalUsd: number) {
+  return Math.max(0, Math.ceil(totalUsd * 100 * (1 + DISPLAY_PRICE_MARGIN_PERCENT) - CENT_EPSILON));
+}
+
+function formatLumaImageReferenceNote(locale: AppLocale, mode: LumaAgentsImageMode, referenceImageCount: number) {
+  if (mode === 't2i') {
+    if (referenceImageCount <= 0) return '2K';
+    if (locale === 'fr') return `${referenceImageCount} refs image · 2K`;
+    if (locale === 'es') return `${referenceImageCount} refs de imagen · 2K`;
+    return `${referenceImageCount} image refs · 2K`;
+  }
+  if (referenceImageCount <= 0) {
+    if (locale === 'fr') return 'Source edit · 2K';
+    if (locale === 'es') return 'Edición de fuente · 2K';
+    return 'Source edit · 2K';
+  }
+  if (locale === 'fr') return `Source + ${referenceImageCount} refs · 2K`;
+  if (locale === 'es') return `Fuente + ${referenceImageCount} refs · 2K`;
+  return `Source + ${referenceImageCount} refs · 2K`;
+}
+
+function getLumaAgentsImagePresetQuote(
+  entry: FalEngineEntry,
+  preset: ImagePriceScenario,
+  locale: AppLocale,
+  currency: string
+): PresetQuote | null {
+  if (!isLumaAgentsImageEngineId(entry.engine.id)) return null;
+
+  const mode = preset.mode ?? 't2i';
+  const referenceImageCount = Math.max(0, Math.floor(preset.referenceImageCount ?? 0));
+  const quote = calculateLumaAgentsImageReferencePrice({
+    engineId: entry.engine.id,
+    mode,
+    referenceImageCount,
+  });
+  const amountCents = applyFalReferenceDisplayMarginCents(quote.totalUsd);
+
+  return {
+    status: 'exact',
+    amountCents,
+    display: formatPrice(locale, amountCents, currency),
+    note: formatLumaImageReferenceNote(locale, mode, referenceImageCount),
+    sortValue: amountCents,
+  };
+}
+
 export function getImagePresetQuote(
   entry: FalEngineEntry,
   preset: ImagePriceScenario,
@@ -800,6 +880,9 @@ export function getImagePresetQuote(
       sortValue: Number.POSITIVE_INFINITY,
     };
   }
+
+  const lumaAgentsQuote = getLumaAgentsImagePresetQuote(entry, preset, locale, currency);
+  if (lumaAgentsQuote) return lumaAgentsQuote;
 
   const perImageCents = flatImageCents(engine, preset.resolution, preset.quality ?? 'medium');
   if (perImageCents == null) {

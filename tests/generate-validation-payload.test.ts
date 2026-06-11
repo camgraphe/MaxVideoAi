@@ -78,6 +78,25 @@ test('validation payload helper builds base payload and mode flags', () => {
   assert.equal(result.needsSourceVideoEdit, false);
 });
 
+test('validation payload helper includes loop for provider constraints', () => {
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    engineId: 'luma-ray-3-2',
+    validationDuration: '10s',
+    loop: true,
+    deps: {
+      validateRequestFn: (_engineId, _mode, payload) => {
+        assert.equal(payload.loop, true);
+        assert.equal(payload.duration, '10s');
+        return { ok: true };
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.payload.loop, true);
+});
+
 test('validation payload helper accepts BytePlus ref2v with video-only references', () => {
   const result = buildGenerateValidationPayload({
     ...baseParams,

@@ -11,6 +11,9 @@ import { klingO3ProTemplateConfig } from './model-page-templates/kling-o3-pro';
 import { klingO3StandardTemplateConfig } from './model-page-templates/kling-o3-standard';
 import { lumaRay2TemplateConfig } from './model-page-templates/luma-ray-2';
 import { lumaRay2FlashTemplateConfig } from './model-page-templates/luma-ray-2-flash';
+import { lumaRay32TemplateConfig } from './model-page-templates/luma-ray-3-2';
+import { lumaUni1TemplateConfig } from './model-page-templates/luma-uni-1';
+import { lumaUni1MaxTemplateConfig } from './model-page-templates/luma-uni-1-max';
 import { ltx23ProTemplateConfig } from './model-page-templates/ltx-2-3-pro';
 import { ltx23FastTemplateConfig } from './model-page-templates/ltx-2-3-fast';
 import { ltx2TemplateConfig } from './model-page-templates/ltx-2';
@@ -45,6 +48,9 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [klingO3StandardTemplateConfig.slug]: klingO3StandardTemplateConfig,
   [lumaRay2TemplateConfig.slug]: lumaRay2TemplateConfig,
   [lumaRay2FlashTemplateConfig.slug]: lumaRay2FlashTemplateConfig,
+  [lumaRay32TemplateConfig.slug]: lumaRay32TemplateConfig,
+  [lumaUni1TemplateConfig.slug]: lumaUni1TemplateConfig,
+  [lumaUni1MaxTemplateConfig.slug]: lumaUni1MaxTemplateConfig,
   [ltx2FastTemplateConfig.slug]: ltx2FastTemplateConfig,
   [ltx2TemplateConfig.slug]: ltx2TemplateConfig,
   [ltx23FastTemplateConfig.slug]: ltx23FastTemplateConfig,

@@ -63,6 +63,7 @@ import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
+import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 
 export function MarketingModelPageLayout({
   engine,
@@ -282,6 +283,7 @@ export function MarketingModelPageLayout({
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
   const templateData = buildModelDecisionData({ engine, locale });
+  const templateConfig = templateData ? getModelPageTemplateConfig(engine.modelSlug) : null;
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -297,7 +299,9 @@ export function MarketingModelPageLayout({
     engine.modelSlug === 'nano-banana' ||
     engine.modelSlug === 'nano-banana-2' ||
     engine.modelSlug === 'seedream' ||
-    engine.modelSlug === 'gpt-image-2';
+    engine.modelSlug === 'gpt-image-2' ||
+    engine.modelSlug === 'luma-uni-1' ||
+    engine.modelSlug === 'luma-uni-1-max';
   const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
   const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(
@@ -325,7 +329,10 @@ export function MarketingModelPageLayout({
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
   const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = faqList.length > 0;
-  const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
+  const hasCompareGrid =
+    (templateConfig?.sections.compare ?? true) &&
+    !isImageEngine &&
+    (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';

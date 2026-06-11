@@ -20,11 +20,19 @@ const bytePlusSeedreamExecutionPath = join(root, 'frontend/src/server/images/byt
 const bytePlusSeedreamPayloadPath = join(root, 'frontend/src/server/images/byteplus-seedream-payload.ts');
 const bytePlusSeedreamClientPath = join(root, 'frontend/src/server/images/byteplus-seedream-client.ts');
 const bytePlusSeedreamResponsePath = join(root, 'frontend/src/server/images/byteplus-seedream-response.ts');
+const lumaAgentsImageExecutionPath = join(root, 'frontend/src/server/images/luma-agents-execution.ts');
+const lumaAgentsImagePayloadPath = join(root, 'frontend/src/server/images/luma-agents-payload.ts');
+const lumaAgentsImageClientPath = join(root, 'frontend/src/server/images/luma-agents-client.ts');
+const lumaAgentsImageResponsePath = join(root, 'frontend/src/server/images/luma-agents-response.ts');
+const lumaAgentsImageErrorPath = join(root, 'frontend/src/server/images/luma-agents-error.ts');
 const completionPath = join(root, 'frontend/src/server/images/image-generation-completion.ts');
 const failurePath = join(root, 'frontend/src/server/images/image-generation-failure.ts');
 const receiptsPath = join(root, 'frontend/src/server/images/image-generation-receipts.ts');
 const settingsSnapshotPath = join(root, 'frontend/src/server/images/image-generation-settings-snapshot.ts');
 const outputStoragePath = join(root, 'frontend/src/server/images/image-output-storage.ts');
+const imageGenerationTypesPath = join(root, 'frontend/types/image-generation.ts');
+const imageWorkspacePath = join(root, 'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx');
+const imageGenerationRunnerPath = join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageGenerationRunner.ts');
 
 const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
@@ -39,10 +47,18 @@ const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
 const bytePlusSeedreamExecutionSource = readFileSync(bytePlusSeedreamExecutionPath, 'utf8');
+const lumaAgentsImageExecutionSource = readFileSync(lumaAgentsImageExecutionPath, 'utf8');
+const lumaAgentsImagePayloadSource = readFileSync(lumaAgentsImagePayloadPath, 'utf8');
+const lumaAgentsImageClientSource = readFileSync(lumaAgentsImageClientPath, 'utf8');
+const lumaAgentsImageResponseSource = readFileSync(lumaAgentsImageResponsePath, 'utf8');
+const lumaAgentsImageErrorSource = readFileSync(lumaAgentsImageErrorPath, 'utf8');
 const completionSource = readFileSync(completionPath, 'utf8');
 const failureSource = readFileSync(failurePath, 'utf8');
 const receiptsSource = readFileSync(receiptsPath, 'utf8');
 const settingsSnapshotSource = readFileSync(settingsSnapshotPath, 'utf8');
+const imageGenerationTypesSource = readFileSync(imageGenerationTypesPath, 'utf8');
+const imageWorkspaceSource = readFileSync(imageWorkspacePath, 'utf8');
+const imageGenerationRunnerSource = readFileSync(imageGenerationRunnerPath, 'utf8');
 
 test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');
@@ -60,6 +76,11 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(bytePlusSeedreamPayloadPath), 'BytePlus Seedream payload building should live in a focused module');
   assert.ok(existsSync(bytePlusSeedreamClientPath), 'BytePlus Seedream HTTP calls should live in a focused module');
   assert.ok(existsSync(bytePlusSeedreamResponsePath), 'BytePlus Seedream response parsing should live in a focused module');
+  assert.ok(existsSync(lumaAgentsImageExecutionPath), 'Luma Agents image direct execution should live in a focused module');
+  assert.ok(existsSync(lumaAgentsImagePayloadPath), 'Luma Agents image payload building should live in a focused module');
+  assert.ok(existsSync(lumaAgentsImageClientPath), 'Luma Agents image HTTP calls should live in a focused module');
+  assert.ok(existsSync(lumaAgentsImageResponsePath), 'Luma Agents image response parsing should live in a focused module');
+  assert.ok(existsSync(lumaAgentsImageErrorPath), 'Luma Agents image error classification should live in a focused module');
   assert.ok(existsSync(completionPath), 'image generation completion persistence should live in a focused module');
   assert.ok(existsSync(failurePath), 'image generation failure persistence should live in a focused module');
   assert.ok(existsSync(receiptsPath), 'image generation receipt helpers should live in a focused module');
@@ -72,6 +93,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.match(executorSource, /from '\.\/image-generation-error'/);
   assert.match(executorSource, /from '\.\/image-provider-payload'/);
   assert.match(executorSource, /from '\.\/byteplus-seedream-execution'/);
+  assert.match(executorSource, /from '\.\/luma-agents-execution'/);
   assert.match(executorSource, /from '\.\/image-generation-completion'/);
   assert.match(executorSource, /from '\.\/image-generation-failure'/);
   assert.match(executorSource, /from '\.\/image-generation-receipts'/);
@@ -103,6 +125,9 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /function extractImages\(/, 'provider image extraction belongs in image-provider-payload.ts');
   assert.doesNotMatch(executorSource, /images\/generations/, 'BytePlus HTTP routing belongs in byteplus-seedream-client.ts');
   assert.doesNotMatch(executorSource, /extractBytePlusSeedreamImages/, 'BytePlus image extraction belongs in byteplus-seedream-response.ts');
+  assert.doesNotMatch(executorSource, /POST \/v1\/generations/, 'Luma direct HTTP routing belongs in luma-agents-client.ts');
+  assert.doesNotMatch(executorSource, /buildLumaAgentsImagePayload/, 'Luma image payload building belongs in luma-agents-payload.ts');
+  assert.doesNotMatch(executorSource, /copyGeneratedImagesToStorage\(\{[\s\S]+Luma/, 'Luma direct output copy belongs in luma-agents-execution.ts');
   assert.doesNotMatch(executorSource, /function parseRequestId\(/, 'provider request id parsing belongs in image-provider-payload.ts');
   assert.doesNotMatch(executorSource, /function buildReceiptSnapshot\(/, 'receipt snapshots belong in image-generation-receipts.ts');
   assert.doesNotMatch(executorSource, /async function recordRefundReceipt\(/, 'refund receipt writes belong in image-generation-receipts.ts');
@@ -185,6 +210,13 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(bytePlusSeedreamExecutionSource, /buildBytePlusSeedreamPayload/);
   assert.match(bytePlusSeedreamExecutionSource, /extractBytePlusSeedreamImages/);
   assert.match(bytePlusSeedreamExecutionSource, /copyGeneratedImagesToStorage/);
+  assert.match(lumaAgentsImageExecutionSource, /executeLumaAgentsImageGenerationWithFalFallback/);
+  assert.match(lumaAgentsImageExecutionSource, /runFalImageGeneration/);
+  assert.match(lumaAgentsImageExecutionSource, /copyGeneratedImagesToStorage/);
+  assert.match(lumaAgentsImagePayloadSource, /buildLumaAgentsImagePayload/);
+  assert.match(lumaAgentsImageClientSource, /createGeneration/);
+  assert.match(lumaAgentsImageResponseSource, /normalizeLumaAgentsImageGeneration/);
+  assert.match(lumaAgentsImageErrorSource, /shouldFallbackFromLumaAgentsImageSubmit/);
   assert.match(executorSource, /copyGeneratedImagesToStorage/);
   assert.match(executorSource, /jobSurface === 'storyboard'/);
   assert.match(completionSource, /export async function persistCompletedImageGeneration/);
@@ -210,4 +242,18 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(receiptsSource, /export function buildReceiptSnapshot/);
   assert.match(receiptsSource, /export async function recordRefundReceipt/);
   assert.match(settingsSnapshotSource, /export function buildDefaultSettingsSnapshot/);
+});
+
+test('Luma image style stays wired from workspace request to direct payload', () => {
+  assert.match(imageGenerationTypesSource, /style\?: string/);
+  assert.match(imageWorkspaceSource, /const \[style, setStyle\] = useState<string \| null>\(null\)/);
+  assert.match(imageWorkspaceSource, /styleField/);
+  assert.match(imageWorkspaceSource, /hasStyleField: Boolean\(styleField\)/);
+  assert.match(imageGenerationRunnerSource, /hasStyleField: boolean/);
+  assert.match(imageGenerationRunnerSource, /style: hasStyleField \? style \?\? undefined : undefined/);
+  assert.match(executorSource, /getImageFieldValues\(engine, 'style', mode\)/);
+  assert.match(executorSource, /body\.style/);
+  assert.match(executorSource, /\.\.\.\(style \? \{ style \} : \{\}\)/);
+  assert.match(executorSource, /style, engine, engineEntry/);
+  assert.match(settingsSnapshotSource, /style: args\.style/);
 });

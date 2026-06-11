@@ -45,6 +45,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
   const [quality, setQuality] = useState<string | null>(null);
+  const [style, setStyle] = useState<string | null>(null);
   const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
@@ -83,9 +84,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     showQualityControl,
     showResolutionControl,
     showSeedControl,
+    showStyleControl,
     showThinkingLevelControl,
     supportedReferenceFormats,
     supportedReferenceFormatsLabel,
+    styleField,
+    styleSelectOptions,
     thinkingLevelField,
     thinkingLevelSelectOptions,
     watermarkField,
@@ -106,6 +110,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setQuality,
     setResolution,
     setSeed,
+    setStyle,
     setThinkingLevel,
     setWatermark,
   });
@@ -184,6 +189,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     seed,
     outputFormat,
     quality,
+    style,
     maskUrl,
     enableWebSearch,
     thinkingLevel,
@@ -201,6 +207,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setSeed,
     setOutputFormat,
     setQuality,
+    setStyle,
     setMaskUrl,
     setEnableWebSearch,
     setThinkingLevel,
@@ -229,6 +236,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setReferenceSlots,
     setResolution,
     setSeed,
+    setStyle,
     setSelectedPreviewEntryId,
     setSelectedPreviewImageIndex,
     setStatusMessage,
@@ -277,6 +285,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     hasOutputFormatField: Boolean(outputFormatField),
     hasQualityField: Boolean(qualityField),
     hasSeedField: Boolean(seedField),
+    hasStyleField: Boolean(styleField),
     hasThinkingLevelField: Boolean(thinkingLevelField),
     hasWatermarkField: Boolean(watermarkField),
     limitGenerations,
@@ -295,6 +304,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     seed,
     selectedCharacterReferences,
     selectedEngine,
+    style,
     setAuthModalOpen,
     setError,
     setLocalHistory,
@@ -373,6 +383,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     resolvedCopy,
     supportsCharacterReferences,
   });
+  const composerSetterProps = {
+    setAspectRatio, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId, setError,
+    setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
+    setPrompt, setQuality, setResolutionPreset, setSeed, setSelectedPreviewImageIndex, setStyle, setThinkingLevel,
+    setWatermark,
+  };
+  const composerVisibilityProps = {
+    showAspectRatioControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
+    showMaskUrlControl: Boolean(maskUrlField), showNumImagesControl, showOutputFormatControl, showQualityControl,
+    showResolutionControl, showSeedControl, showStyleControl, showThinkingLevelControl, showWatermarkControl,
+  };
 
   if (!selectedEngine || !selectedEngineCaps) {
     return <ImageWorkspaceEmptyState message={resolvedCopy.general.emptyEngines} />;
@@ -440,40 +461,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               selectedEngineCaps={selectedEngineCaps}
               selectedEngineId={selectedEngine.id}
               selectedPreviewImageIndex={selectedPreviewImageIndex}
-              setAspectRatio={setAspectRatio}
-              setCustomImageHeight={setCustomImageHeight}
-              setCustomImageWidth={setCustomImageWidth}
-              setEnableWebSearch={setEnableWebSearch}
-              setEngineId={setEngineId}
-              setError={setError}
-              setLimitGenerations={setLimitGenerations}
-              setMaskUrl={setMaskUrl}
-              setMode={setMode}
-              setNumImagesPreset={setReferenceAwareNumImagesPreset}
-              setOutputFormat={setOutputFormat}
-              setPrompt={setPrompt}
-              setQuality={setQuality}
-              setResolutionPreset={setResolutionPreset}
-              setSeed={setSeed}
-              setSelectedPreviewImageIndex={setSelectedPreviewImageIndex}
-              setThinkingLevel={setThinkingLevel}
-              showAspectRatioControl={showAspectRatioControl}
-              showCustomImageSizeControl={showCustomImageSizeControl}
-              showEnableWebSearchControl={showEnableWebSearchControl}
-              showLimitGenerationsControl={showLimitGenerationsControl}
-              showMaskUrlControl={Boolean(maskUrlField)}
-              showNumImagesControl={showNumImagesControl}
-              showOutputFormatControl={showOutputFormatControl}
-              showQualityControl={showQualityControl}
-              showResolutionControl={showResolutionControl}
-              showSeedControl={showSeedControl}
-              showThinkingLevelControl={showThinkingLevelControl}
+              style={style}
+              styleSelectOptions={styleSelectOptions}
+              {...composerSetterProps}
+              {...composerVisibilityProps}
               statusMessage={statusMessage}
               thinkingLevel={thinkingLevel}
               thinkingLevelSelectOptions={thinkingLevelSelectOptions}
               watermark={watermark}
-              setWatermark={setWatermark}
-              showWatermarkControl={showWatermarkControl}
         />
       </ImageWorkspaceShell>
       <ImageWorkspaceRuntimeModals

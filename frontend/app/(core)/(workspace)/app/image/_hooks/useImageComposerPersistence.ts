@@ -47,6 +47,7 @@ type UseImageComposerPersistenceParams = {
   seed: string;
   outputFormat: string | null;
   quality: string | null;
+  style: string | null;
   maskUrl: string;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
@@ -64,6 +65,7 @@ type UseImageComposerPersistenceParams = {
   setSeed: Dispatch<SetStateAction<string>>;
   setOutputFormat: Dispatch<SetStateAction<string | null>>;
   setQuality: Dispatch<SetStateAction<string | null>>;
+  setStyle: Dispatch<SetStateAction<string | null>>;
   setMaskUrl: Dispatch<SetStateAction<string>>;
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
@@ -85,6 +87,7 @@ export function useImageComposerPersistence({
   seed,
   outputFormat,
   quality,
+  style,
   maskUrl,
   enableWebSearch,
   thinkingLevel,
@@ -102,6 +105,7 @@ export function useImageComposerPersistence({
   setSeed,
   setOutputFormat,
   setQuality,
+  setStyle,
   setMaskUrl,
   setEnableWebSearch,
   setThinkingLevel,
@@ -179,6 +183,10 @@ export function useImageComposerPersistence({
         const defaultQuality =
           getImageFieldDefaultString(engineMatch.engineCaps, 'quality', nextMode) ?? qualityValues[0] ?? null;
         setQuality(parsed.quality && qualityValues.includes(parsed.quality) ? parsed.quality : defaultQuality);
+        const styleValues = getImageFieldValues(engineMatch.engineCaps, 'style', nextMode);
+        const defaultStyle =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'style', nextMode) ?? styleValues[0] ?? null;
+        setStyle(parsed.style && styleValues.includes(parsed.style) ? parsed.style : defaultStyle);
         setMaskUrl(getImageInputField(engineMatch.engineCaps, 'mask_url', nextMode) ? parsed.maskUrl ?? '' : '');
         setEnableWebSearch(
           getImageInputField(engineMatch.engineCaps, 'enable_web_search', nextMode)
@@ -248,6 +256,7 @@ export function useImageComposerPersistence({
     setReferenceSlots,
     setResolution,
     setSeed,
+    setStyle,
     setThinkingLevel,
     setWatermark,
   ]);
@@ -267,6 +276,7 @@ export function useImageComposerPersistence({
       seed: seed.trim().length ? Math.round(Number(seed)) : null,
       outputFormat,
       quality,
+      style,
       maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
       thinkingLevel,
@@ -317,6 +327,7 @@ export function useImageComposerPersistence({
     resolution,
     seed,
     storageHydrated,
+    style,
     thinkingLevel,
     watermark,
   ]);

@@ -2,15 +2,15 @@
   "marketingName": "Luma Ray 2 Flash",
   "versionLabel": "Ray 2 Flash",
   "seo": {
-    "title": "Luma Ray 2 Flash Specs, Pricing and Fast Draft Workflows | MaxVideoAI",
-    "description": "Use Luma Ray 2 Flash in MaxVideoAI for faster, lower-cost drafts, image-to-video tests, source-video modify passes, and social reframes. Flash keeps the same Luma workflow surface while optimizing for iteration speed from 540p to 1080p.",
+    "title": "Luma Ray 2 Flash Specs, Pricing and Legacy Draft Workflows | MaxVideoAI",
+    "description": "Use Luma Ray 2 Flash in MaxVideoAI as a previous-generation fast Luma route for older drafts, image-to-video tests, source-video modify passes, and social reframes. Start new Luma edit and reframe work on Ray 3.2.",
     "image": "/hero/luma-ray2-flash.jpg"
   },
-  "overview": "Luma Ray 2 Flash is the fast draft and throughput tier of the Luma family in MaxVideoAI. Like Ray 2, it now exposes the core Luma workflow family inside one model page: text-to-video, image-to-video, modify, and reframe.",
+  "overview": "Luma Ray 2 Flash is a previous-generation fast Luma route in MaxVideoAI. Keep it for older Ray 2 Flash drafts and comparison context, while Ray 3.2 is the current Luma route for new Modify, keyframe, and Reframe work.",
   "hero": {
     "title": "Luma Ray 2 Flash - faster drafts, modify, and reframe",
-    "intro": "Use Ray 2 Flash when you want the same Luma workflow coverage as Ray 2 but need faster, lower-cost concept validation, source-video exploration, and delivery reframes before moving a winner to the premium tier.",
-    "badge": "T2V + I2V + Modify + Reframe",
+    "intro": "Use Ray 2 Flash when you need to revisit older fast Luma drafts or Ray 2 Flash-compatible source-video exploration. For new Luma edits, guide/keyframe work, and Reframe delivery, start on Ray 3.2.",
+    "badge": "Legacy fast Luma route - T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Start generating with Luma Ray 2 Flash",
       "href": "/app?engine=lumaRay2_flash"

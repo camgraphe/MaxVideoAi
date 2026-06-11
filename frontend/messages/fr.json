@@ -3261,7 +3261,7 @@
           "action": "Allonger de",
           "unit": "secondes"
         },
-        "keyframes": "Keyframes pris en charge (Pika 2.2)"
+        "keyframes": "Keyframes pris en charge"
       },
       "preview": {
         "title": "Aperçu composite",

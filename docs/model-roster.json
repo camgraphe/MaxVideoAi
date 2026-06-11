@@ -400,6 +400,54 @@
     }
   },
   {
+    "engineId": "luma-ray-3-2",
+    "marketingName": "Luma Ray 3.2",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-3-2",
+    "family": "luma",
+    "versionLabel": "Ray 3.2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "luma-uni-1",
+    "marketingName": "Luma Uni-1",
+    "brandId": "luma",
+    "modelSlug": "luma-uni-1",
+    "family": "luma-uni",
+    "versionLabel": "Uni-1",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "luma-uni-1-max",
+    "marketingName": "Luma Uni-1 Max",
+    "brandId": "luma",
+    "modelSlug": "luma-uni-1-max",
+    "family": "luma-uni",
+    "versionLabel": "Uni-1 Max",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
     "brandId": "minimax",
