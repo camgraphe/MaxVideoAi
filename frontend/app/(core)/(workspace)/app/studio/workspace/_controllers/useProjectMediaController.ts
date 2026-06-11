@@ -78,7 +78,7 @@ type UseProjectMediaControllerArgs = {
   onDeleteProjectMediaFolder: (folderId: string) => void;
   onDeleteSequence: (sequenceId: string) => void;
   onDuplicateSequence: (sequenceId: string) => void;
-  onImportMedia: () => void;
+  onImportMedia: (folderId?: string | null) => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
@@ -174,6 +174,7 @@ export function useProjectMediaController({
     () => projectMediaFolders.find((folder) => folder.id === activeFolderId) ?? null,
     [activeFolderId, projectMediaFolders]
   );
+  const canMoveMediaToFolder = projectMediaFolders.length > 0;
   const totalItems = sequences.length + projectMediaFolders.length + projectAssets.length + generatedNodes.length;
   const selectedKey = selectedMedia ? projectMediaSelectionKey(selectedMedia.type, selectedMedia.id) : null;
   const selectedCanDelete =
@@ -334,6 +335,10 @@ export function useProjectMediaController({
     onClearSequenceInspector();
   }, [onClearSequenceInspector]);
 
+  const importMedia = useCallback(() => {
+    onImportMedia(activeFolderId);
+  }, [activeFolderId, onImportMedia]);
+
   useEffect(() => {
     if (!contextMenu) return undefined;
     const handlePointerDown = (event: PointerEvent) => {
@@ -366,7 +371,7 @@ export function useProjectMediaController({
     deleteMenuItem,
     deleteSelected,
     duplicateMenuItem,
-    importMedia: onImportMedia,
+    importMedia,
     insertMenuItem,
     moveMenuItem,
     openContextMenu,
@@ -377,6 +382,7 @@ export function useProjectMediaController({
     selectProjectAsset,
     selectProjectMediaFolder,
     selectedCanDelete,
+    canMoveMediaToFolder,
     selectedKey,
     selectSequence,
     setContextMenu,

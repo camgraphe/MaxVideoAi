@@ -170,6 +170,7 @@ function ProjectMediaCard({
 }
 
 function ProjectMediaContextMenu({
+  canMoveMediaToFolder,
   menu,
   onClose,
   onDelete,
@@ -178,6 +179,7 @@ function ProjectMediaContextMenu({
   onMove,
   onRename,
 }: {
+  canMoveMediaToFolder: boolean;
   menu: ProjectMediaContextMenu | null;
   onClose: () => void;
   onDelete: (menu: ProjectMediaContextMenu) => void;
@@ -222,7 +224,7 @@ function ProjectMediaContextMenu({
           Rename folder
         </button>
       ) : null}
-      {menu.type === 'asset' || menu.type === 'generated' ? (
+      {canMoveMediaToFolder && (menu.type === 'asset' || menu.type === 'generated') ? (
         <button type="button" role="menuitem" onClick={() => {
           onMove(menu);
           onClose();
@@ -466,6 +468,7 @@ export function TimelineProjectSidebar({
       </div>
 
       <ProjectMediaContextMenu
+        canMoveMediaToFolder={projectMedia.canMoveMediaToFolder}
         menu={projectMedia.contextMenu}
         onClose={() => projectMedia.setContextMenu(null)}
         onDelete={projectMedia.deleteMenuItem}

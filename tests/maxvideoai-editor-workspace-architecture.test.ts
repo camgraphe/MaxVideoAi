@@ -1650,9 +1650,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(projectMediaActionsHookSource, /handleRenameProjectMediaFolder/, 'project media actions should own folder renaming');
   assert.match(projectMediaActionsHookSource, /handleMoveProjectAssetToFolder/, 'project media actions should own moving imported assets into folders');
   assert.match(projectMediaActionsHookSource, /handleMoveGeneratedClipToFolder/, 'project media actions should own moving generated clips into folders');
+  assert.match(projectMediaActionsHookSource, /pendingImportFolderIdRef/, 'project media imports should remember the currently opened folder');
   assert.doesNotMatch(projectMediaActionsHookSource, /Backend folder persistence will be wired/, 'project media folder creation should no longer be a placeholder notice');
   assert.match(projectMediaControllerSource, /visibleFolders/, 'project media controller should expose folders as visible media cards');
   assert.match(projectMediaControllerSource, /activeFolder/, 'project media controller should own the currently opened project media folder');
+  assert.match(projectMediaControllerSource, /onImportMedia\(activeFolderId\)/, 'project media controller should import new media into the active folder');
   assert.match(projectMediaControllerSource, /generatedNodeFolderId/, 'project media controller should keep generated clip folder filtering deterministic');
   assert.match(timelineProjectSidebarSource, /data-project-media-folder-id/, 'viewer sidebar should render project media folders as selectable cards');
   assert.match(timelineProjectSidebarSource, /projectMediaBreadcrumb/, 'viewer sidebar should show a folder breadcrumb when a project media folder is open');

@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
@@ -90,13 +90,15 @@ export function useWorkspaceProjectMediaActions({
   handleDeleteProjectAsset: (assetId: string) => void;
   handleDeleteProjectMediaFolder: (folderId: string) => void;
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
-  handleImportProjectMedia: () => void;
+  handleImportProjectMedia: (folderId?: string | null) => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
   handleMoveGeneratedClipToFolder: (nodeId: string) => void;
   handleMoveProjectAssetToFolder: (assetId: string) => void;
   handleRenameProjectMediaFolder: (folderId: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
 } {
+  const pendingImportFolderIdRef = useRef<string | null>(null);
+
   const insertProjectAssetIntoTimeline = useCallback(
     (assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
       const timelineSeed = Date.now().toString(36);
@@ -138,20 +140,27 @@ export function useWorkspaceProjectMediaActions({
     ]
   );
 
-  const handleImportProjectMedia = useCallback(() => {
+  const handleImportProjectMedia = useCallback((folderId?: string | null) => {
+    pendingImportFolderIdRef.current = folderId ?? null;
     setIsProjectMediaPickerOpen(true);
     setActiveEditorSurface('timeline');
   }, [setActiveEditorSurface, setIsProjectMediaPickerOpen]);
 
   const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
-    const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
+    const folderId = pendingImportFolderIdRef.current;
+    const assetRecord = {
+      ...workspaceAssetRecordFromLibraryAsset(asset),
+      folderId,
+    };
     setProjectAssets((current) => [
       assetRecord,
       ...current.filter((candidate) => candidate.id !== assetRecord.id),
     ].slice(0, 120));
+    pendingImportFolderIdRef.current = null;
     setIsProjectMediaPickerOpen(false);
-    setNotice(`${asset.name} imported into Project media.`);
-  }, [setIsProjectMediaPickerOpen, setNotice, setProjectAssets]);
+    const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
+    setNotice(`${asset.name} imported into ${folderName}.`);
+  }, [projectMediaFolders, setIsProjectMediaPickerOpen, setNotice, setProjectAssets]);
 
   const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
     insertProjectAssetIntoTimeline(assetId, playheadSec);
