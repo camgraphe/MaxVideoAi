@@ -53,6 +53,7 @@ export type ProjectMediaAssetView = {
 
 export type ProjectMediaFolderView = {
   folder: WorkspaceProjectMediaFolder;
+  itemCount: number;
   key: string;
   subtitle: string;
 };
@@ -81,6 +82,9 @@ type UseProjectMediaControllerArgs = {
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
+  onMoveGeneratedClipToFolder: (nodeId: string) => void;
+  onMoveProjectAssetToFolder: (assetId: string) => void;
+  onRenameProjectMediaFolder: (folderId: string) => void;
   onSelectSequence: (sequenceId: string) => void;
 };
 
@@ -122,6 +126,11 @@ function mediaSubtitleForGeneratedNode(node: WorkspaceGraphNode): string {
   return [output.durationSec ? formatProjectMediaDuration(output.durationSec) : null, output.modelLabel].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
 }
 
+function generatedNodeFolderId(node: WorkspaceGraphNode, folderIds: Set<string>): string | null {
+  const folderId = node.data.output?.projectMediaFolderId;
+  return folderId && folderIds.has(folderId) ? folderId : null;
+}
+
 function beginProjectAssetTimelineDrag(event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord): void {
   const payload = projectMediaTimelineDragPayloadForAsset(asset);
   if (!payload) return;
@@ -149,13 +158,22 @@ export function useProjectMediaController({
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
+  onMoveGeneratedClipToFolder,
+  onMoveProjectAssetToFolder,
+  onRenameProjectMediaFolder,
   onSelectSequence,
 }: UseProjectMediaControllerArgs) {
   const generatedNodes = useMemo(() => generatedClipNodes(nodes), [nodes]);
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaSelection>(null);
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const folderIds = useMemo(() => new Set(projectMediaFolders.map((folder) => folder.id)), [projectMediaFolders]);
+  const activeFolder = useMemo(
+    () => projectMediaFolders.find((folder) => folder.id === activeFolderId) ?? null,
+    [activeFolderId, projectMediaFolders]
+  );
   const totalItems = sequences.length + projectMediaFolders.length + projectAssets.length + generatedNodes.length;
   const selectedKey = selectedMedia ? projectMediaSelectionKey(selectedMedia.type, selectedMedia.id) : null;
   const selectedCanDelete =
@@ -173,16 +191,17 @@ export function useProjectMediaController({
   }, [normalizedSearchQuery]);
 
   const visibleSequences = useMemo(
-    () => sequences.filter((sequence) => matchesSearch(
+    () => activeFolderId ? [] : sequences.filter((sequence) => matchesSearch(
       sequence.name,
       `${formatProjectMediaDuration(sequence.durationSec)} ${sequence.clipCount} clips ${sequence.settings.aspectRatio}`,
       'sequence'
     )),
-    [matchesSearch, sequences]
+    [activeFolderId, matchesSearch, sequences]
   );
 
   const visibleProjectAssets = useMemo<ProjectMediaAssetView[]>(
     () => projectAssets
+      .filter((asset) => (asset.folderId ?? null) === activeFolderId)
       .filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind))
       .map((asset) => {
         const payload = projectMediaTimelineDragPayloadForAsset(asset);
@@ -196,22 +215,28 @@ export function useProjectMediaController({
           timelineDurationSec: payload?.durationSec ?? 0,
         };
       }),
-    [matchesSearch, projectAssets]
+    [activeFolderId, matchesSearch, projectAssets]
   );
 
   const visibleFolders = useMemo<ProjectMediaFolderView[]>(
-    () => projectMediaFolders
+    () => activeFolderId ? [] : projectMediaFolders
       .filter((folder) => matchesSearch(folder.name, 'Folder', 'folder'))
-      .map((folder) => ({
-        folder,
-        key: projectMediaSelectionKey('folder', folder.id),
-        subtitle: 'Folder',
-      })),
-    [matchesSearch, projectMediaFolders]
+      .map((folder) => {
+        const itemCount = projectAssets.filter((asset) => asset.folderId === folder.id).length +
+          generatedNodes.filter((node) => generatedNodeFolderId(node, folderIds) === folder.id).length;
+        return {
+          folder,
+          itemCount,
+          key: projectMediaSelectionKey('folder', folder.id),
+          subtitle: `${itemCount} item${itemCount === 1 ? '' : 's'}`,
+        };
+      }),
+    [activeFolderId, folderIds, generatedNodes, matchesSearch, projectAssets, projectMediaFolders]
   );
 
   const visibleGeneratedNodes = useMemo<ProjectMediaGeneratedView[]>(
     () => generatedNodes
+      .filter((node) => generatedNodeFolderId(node, folderIds) === activeFolderId)
       .filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated'))
       .map((node) => {
         const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
@@ -224,8 +249,9 @@ export function useProjectMediaController({
           timelineDurationSec: payload?.durationSec,
         };
       }),
-    [generatedNodes, matchesSearch]
+    [activeFolderId, folderIds, generatedNodes, matchesSearch]
   );
+  const visibleItemCount = visibleSequences.length + visibleFolders.length + visibleProjectAssets.length + visibleGeneratedNodes.length;
 
   const openContextMenu = useCallback((event: ReactMouseEvent<HTMLElement>, menu: Omit<ProjectMediaContextMenu, 'x' | 'y'>) => {
     event.preventDefault();
@@ -251,6 +277,8 @@ export function useProjectMediaController({
 
   const selectProjectMediaFolder = useCallback((folderId: string) => {
     setSelectedMedia({ id: folderId, type: 'folder' });
+    setActiveFolderId(folderId);
+    setSearchQuery('');
     onClearSequenceInspector();
   }, [onClearSequenceInspector]);
 
@@ -274,6 +302,16 @@ export function useProjectMediaController({
     setSelectedMedia(null);
   }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence]);
 
+  const moveMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
+    if (menu.type === 'asset') onMoveProjectAssetToFolder(menu.id);
+    if (menu.type === 'generated') onMoveGeneratedClipToFolder(menu.id);
+  }, [onMoveGeneratedClipToFolder, onMoveProjectAssetToFolder]);
+
+  const renameMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
+    if (menu.type !== 'folder') return;
+    onRenameProjectMediaFolder(menu.id);
+  }, [onRenameProjectMediaFolder]);
+
   const duplicateMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type !== 'sequence') return;
     onDuplicateSequence(menu.id);
@@ -288,6 +326,13 @@ export function useProjectMediaController({
     if (selectedMedia.type === 'sequence') onDeleteSequence(selectedMedia.id);
     setSelectedMedia(null);
   }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence, selectedCanDelete, selectedMedia]);
+
+  const openRootFolder = useCallback(() => {
+    setActiveFolderId(null);
+    setSelectedMedia(null);
+    setSearchQuery('');
+    onClearSequenceInspector();
+  }, [onClearSequenceInspector]);
 
   useEffect(() => {
     if (!contextMenu) return undefined;
@@ -307,7 +352,14 @@ export function useProjectMediaController({
     };
   }, [contextMenu]);
 
+  useEffect(() => {
+    if (!activeFolderId || folderIds.has(activeFolderId)) return;
+    setActiveFolderId(null);
+    setSelectedMedia(null);
+  }, [activeFolderId, folderIds]);
+
   return {
+    activeFolder,
     beginGeneratedNodeTimelineDrag,
     beginProjectAssetTimelineDrag,
     contextMenu,
@@ -316,7 +368,10 @@ export function useProjectMediaController({
     duplicateMenuItem,
     importMedia: onImportMedia,
     insertMenuItem,
+    moveMenuItem,
     openContextMenu,
+    openRootFolder,
+    renameMenuItem,
     searchQuery,
     selectGeneratedNode,
     selectProjectAsset,
@@ -327,6 +382,7 @@ export function useProjectMediaController({
     setContextMenu,
     setSearchQuery,
     totalItems,
+    visibleItemCount,
     visibleFolders,
     visibleGeneratedNodes,
     visibleProjectAssets,

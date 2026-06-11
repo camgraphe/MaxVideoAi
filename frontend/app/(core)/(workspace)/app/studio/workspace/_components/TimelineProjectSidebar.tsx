@@ -38,8 +38,11 @@ type TimelineProjectSidebarProps = {
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
+  onMoveGeneratedClipToFolder: (nodeId: string) => void;
+  onMoveProjectAssetToFolder: (assetId: string) => void;
   onNewFolder: () => void;
   onNewSequence: () => void;
+  onRenameProjectMediaFolder: (folderId: string) => void;
   onSelectSequence: (sequenceId: string) => void;
   onClearSequenceInspector: () => void;
 };
@@ -172,12 +175,16 @@ function ProjectMediaContextMenu({
   onDelete,
   onDuplicate,
   onInsert,
+  onMove,
+  onRename,
 }: {
   menu: ProjectMediaContextMenu | null;
   onClose: () => void;
   onDelete: (menu: ProjectMediaContextMenu) => void;
   onDuplicate: (menu: ProjectMediaContextMenu) => void;
   onInsert: (menu: ProjectMediaContextMenu) => void;
+  onMove: (menu: ProjectMediaContextMenu) => void;
+  onRename: (menu: ProjectMediaContextMenu) => void;
 }) {
   if (!menu) return null;
   return (
@@ -204,6 +211,24 @@ function ProjectMediaContextMenu({
         }}>
           <FileVideo2 size={13} />
           Duplicate
+        </button>
+      ) : null}
+      {menu.type === 'folder' ? (
+        <button type="button" role="menuitem" onClick={() => {
+          onRename(menu);
+          onClose();
+        }}>
+          <FolderPlus size={13} />
+          Rename folder
+        </button>
+      ) : null}
+      {menu.type === 'asset' || menu.type === 'generated' ? (
+        <button type="button" role="menuitem" onClick={() => {
+          onMove(menu);
+          onClose();
+        }}>
+          <Folder size={13} />
+          Move to folder
         </button>
       ) : null}
       <button type="button" role="menuitem" className={styles.projectMediaDangerAction} onClick={() => {
@@ -258,8 +283,11 @@ export function TimelineProjectSidebar({
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
+  onMoveGeneratedClipToFolder,
+  onMoveProjectAssetToFolder,
   onNewFolder,
   onNewSequence,
+  onRenameProjectMediaFolder,
   onSelectSequence,
   onClearSequenceInspector,
 }: TimelineProjectSidebarProps) {
@@ -278,6 +306,9 @@ export function TimelineProjectSidebar({
     onInspectSequence,
     onInsertGeneratedClip,
     onInsertProjectAsset,
+    onMoveGeneratedClipToFolder,
+    onMoveProjectAssetToFolder,
+    onRenameProjectMediaFolder,
     onSelectSequence,
   });
 
@@ -313,6 +344,13 @@ export function TimelineProjectSidebar({
           </button>
         </div>
       </div>
+      {projectMedia.activeFolder ? (
+        <div className={styles.projectMediaBreadcrumb}>
+          <button type="button" onClick={projectMedia.openRootFolder}>Project media</button>
+          <span>/</span>
+          <strong>{projectMedia.activeFolder.name}</strong>
+        </div>
+      ) : null}
 
       <div className={styles.projectMediaGrid} aria-label={`${projectName} project media`}>
         {projectMedia.visibleSequences.map((sequence) => (
@@ -401,7 +439,7 @@ export function TimelineProjectSidebar({
 
         {!projectMedia.totalItems || (!projectMedia.visibleSequences.length && !projectMedia.visibleFolders.length && !projectMedia.visibleProjectAssets.length && !projectMedia.visibleGeneratedNodes.length) ? (
           <p className={styles.projectMediaEmpty}>
-            {projectMedia.totalItems ? 'No media matches this search.' : 'Import media or create a sequence to start.'}
+            {projectMedia.totalItems ? (projectMedia.activeFolder ? 'This folder is empty.' : 'No media matches this search.') : 'Import media or create a sequence to start.'}
           </p>
         ) : null}
       </div>
@@ -409,7 +447,7 @@ export function TimelineProjectSidebar({
       <div className={styles.projectMediaFooterBar}>
         <div className={styles.projectMediaItemCount}>
           <Layers3 size={16} />
-          <span>{projectMedia.totalItems} item{projectMedia.totalItems === 1 ? '' : 's'}</span>
+          <span>{projectMedia.visibleItemCount} item{projectMedia.visibleItemCount === 1 ? '' : 's'}</span>
         </div>
         <div className={styles.projectMediaFooterActions}>
           <ProjectMediaFooterAction onClick={onNewFolder}>
@@ -433,6 +471,8 @@ export function TimelineProjectSidebar({
         onDelete={projectMedia.deleteMenuItem}
         onDuplicate={projectMedia.duplicateMenuItem}
         onInsert={projectMedia.insertMenuItem}
+        onMove={projectMedia.moveMenuItem}
+        onRename={projectMedia.renameMenuItem}
       />
     </aside>
   );

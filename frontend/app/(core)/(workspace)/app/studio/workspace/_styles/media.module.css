@@ -130,6 +130,40 @@
   outline: none;
 }
 
+.projectMediaBreadcrumb {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px 12px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.projectMediaBreadcrumb button {
+  border: 0;
+  background: transparent;
+  color: #bfdbfe;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.projectMediaBreadcrumb button:hover,
+.projectMediaBreadcrumb button:focus-visible {
+  color: #ffffff;
+  outline: none;
+}
+
+.projectMediaBreadcrumb strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .projectMediaGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

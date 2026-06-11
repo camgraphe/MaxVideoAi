@@ -61,6 +61,7 @@ export type WorkspaceAssetRecord = {
   kind: WorkspaceAssetKind;
   filename: string;
   subtitle: string;
+  folderId?: string | null;
   url?: string;
   thumbUrl?: string;
   durationSec?: number;
@@ -106,6 +107,7 @@ export type WorkspaceOutputMetadata = {
   thumbUrl?: string | null;
   hasAudio?: boolean;
   jobId?: string | null;
+  projectMediaFolderId?: string | null;
 };
 
 export type WorkspaceInputConnector = {

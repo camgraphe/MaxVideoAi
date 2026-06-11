@@ -224,8 +224,11 @@ export function WorkspaceEditorLayout({
             onInspectSequence={selection.handleInspectSequence}
             onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
             onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
+            onMoveGeneratedClipToFolder={projectMedia.handleMoveGeneratedClipToFolder}
+            onMoveProjectAssetToFolder={projectMedia.handleMoveProjectAssetToFolder}
             onNewFolder={projectMedia.handleCreateProjectMediaFolder}
             onNewSequence={sequence.handleCreateSequence}
+            onRenameProjectMediaFolder={projectMedia.handleRenameProjectMediaFolder}
             onSelectSequence={sequence.handleSelectSequence}
             onClearSequenceInspector={selection.handleClearSequenceInspector}
           />

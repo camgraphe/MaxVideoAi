@@ -20,6 +20,30 @@ function createProjectMediaFolderId(): string {
   return `folder-${Date.now().toString(36)}`;
 }
 
+function promptProjectMediaFolderTarget(
+  folders: WorkspaceProjectMediaFolder[],
+  currentFolderId?: string | null
+): string | null | undefined {
+  if (typeof window === 'undefined') return null;
+  const options = [
+    '0. Project media',
+    ...folders.map((folder, index) => `${index + 1}. ${folder.name}`),
+  ];
+  const requestedValue = window.prompt(
+    `Move to folder:\n${options.join('\n')}`,
+    currentFolderId ? '0' : folders[0] ? '1' : '0'
+  );
+  if (requestedValue === null) return undefined;
+  const normalizedValue = requestedValue.trim();
+  if (normalizedValue === '0') return null;
+  const requestedIndex = Number.parseInt(normalizedValue, 10);
+  if (Number.isInteger(requestedIndex) && requestedIndex >= 1 && requestedIndex <= folders.length) {
+    return folders[requestedIndex - 1]?.id ?? null;
+  }
+  const folderByName = folders.find((folder) => folder.name.toLowerCase() === normalizedValue.toLowerCase());
+  return folderByName?.id ?? null;
+}
+
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
@@ -68,6 +92,9 @@ export function useWorkspaceProjectMediaActions({
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
   handleImportProjectMedia: () => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
+  handleMoveGeneratedClipToFolder: (nodeId: string) => void;
+  handleMoveProjectAssetToFolder: (assetId: string) => void;
+  handleRenameProjectMediaFolder: (folderId: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
 } {
   const insertProjectAssetIntoTimeline = useCallback(
@@ -198,9 +225,90 @@ export function useWorkspaceProjectMediaActions({
       }
       if (typeof window !== 'undefined' && !window.confirm(`Delete "${folder.name}" from Project media?`)) return;
       setProjectMediaFolders((current) => current.filter((candidate) => candidate.id !== folderId));
+      setProjectAssets((current) => current.map((asset) => asset.folderId === folderId ? { ...asset, folderId: null } : asset));
+      setNodes((current) => current.map((node) => {
+        if (node.data.kind !== 'output' || node.data.output?.projectMediaFolderId !== folderId) return node;
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            output: {
+              ...node.data.output,
+              projectMediaFolderId: null,
+            },
+          },
+        };
+      }));
       setNotice(`${folder.name} folder deleted from Project media.`);
     },
+    [projectMediaFolders, setNodes, setNotice, setProjectAssets, setProjectMediaFolders]
+  );
+
+  const handleRenameProjectMediaFolder = useCallback(
+    (folderId: string) => {
+      const folder = projectMediaFolders.find((candidate) => candidate.id === folderId);
+      if (!folder) {
+        setNotice('Project media folder not found.');
+        return;
+      }
+      const requestedName = typeof window !== 'undefined' ? window.prompt('Folder name', folder.name) : folder.name;
+      if (requestedName === null) return;
+      const name = requestedName.trim();
+      if (!name || name === folder.name) return;
+      setProjectMediaFolders((current) => current.map((candidate) => (
+        candidate.id === folderId
+          ? { ...candidate, name, updatedAt: new Date().toISOString() }
+          : candidate
+      )));
+      setNotice(`${folder.name} renamed to ${name}.`);
+    },
     [projectMediaFolders, setNotice, setProjectMediaFolders]
+  );
+
+  const handleMoveProjectAssetToFolder = useCallback(
+    (assetId: string) => {
+      const asset = projectAssets.find((candidate) => candidate.id === assetId);
+      if (!asset) {
+        setNotice('Project media asset not found.');
+        return;
+      }
+      const folderId = promptProjectMediaFolderTarget(projectMediaFolders, asset.folderId);
+      if (folderId === undefined) return;
+      const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
+      setProjectAssets((current) => current.map((candidate) => (
+        candidate.id === assetId ? { ...candidate, folderId } : candidate
+      )));
+      setNotice(`${asset.filename} moved to ${folderName}.`);
+    },
+    [projectAssets, projectMediaFolders, setNotice, setProjectAssets]
+  );
+
+  const handleMoveGeneratedClipToFolder = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((candidate) => candidate.id === nodeId);
+      if (!node?.data.output) {
+        setNotice('Generated clip not found.');
+        return;
+      }
+      const folderId = promptProjectMediaFolderTarget(projectMediaFolders, node.data.output.projectMediaFolderId);
+      if (folderId === undefined) return;
+      const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
+      setNodes((current) => current.map((candidate) => {
+        if (candidate.id !== nodeId || !candidate.data.output) return candidate;
+        return {
+          ...candidate,
+          data: {
+            ...candidate.data,
+            output: {
+              ...candidate.data.output,
+              projectMediaFolderId: folderId,
+            },
+          },
+        };
+      }));
+      setNotice(`${node.data.title} moved to ${folderName}.`);
+    },
+    [nodes, projectMediaFolders, setNodes, setNotice]
   );
 
   const handleDropProjectAssetToTimeline = useCallback(
@@ -219,6 +327,9 @@ export function useWorkspaceProjectMediaActions({
     handleDropProjectAssetToTimeline,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,
+    handleMoveGeneratedClipToFolder,
+    handleMoveProjectAssetToFolder,
+    handleRenameProjectMediaFolder,
     handleSelectProjectMediaAsset,
   };
 }

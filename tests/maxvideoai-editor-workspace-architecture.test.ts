@@ -1647,9 +1647,17 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceStateSource, /projectMediaFolders\?: WorkspaceProjectMediaFolder\[\]/, 'persisted workspace state should remember project media folders');
   assert.match(projectMediaActionsHookSource, /handleCreateProjectMediaFolder/, 'project media actions should own folder creation');
   assert.match(projectMediaActionsHookSource, /handleDeleteProjectMediaFolder/, 'project media actions should own folder deletion');
+  assert.match(projectMediaActionsHookSource, /handleRenameProjectMediaFolder/, 'project media actions should own folder renaming');
+  assert.match(projectMediaActionsHookSource, /handleMoveProjectAssetToFolder/, 'project media actions should own moving imported assets into folders');
+  assert.match(projectMediaActionsHookSource, /handleMoveGeneratedClipToFolder/, 'project media actions should own moving generated clips into folders');
   assert.doesNotMatch(projectMediaActionsHookSource, /Backend folder persistence will be wired/, 'project media folder creation should no longer be a placeholder notice');
   assert.match(projectMediaControllerSource, /visibleFolders/, 'project media controller should expose folders as visible media cards');
+  assert.match(projectMediaControllerSource, /activeFolder/, 'project media controller should own the currently opened project media folder');
+  assert.match(projectMediaControllerSource, /generatedNodeFolderId/, 'project media controller should keep generated clip folder filtering deterministic');
   assert.match(timelineProjectSidebarSource, /data-project-media-folder-id/, 'viewer sidebar should render project media folders as selectable cards');
+  assert.match(timelineProjectSidebarSource, /projectMediaBreadcrumb/, 'viewer sidebar should show a folder breadcrumb when a project media folder is open');
+  assert.match(timelineProjectSidebarSource, /Move to folder/, 'project media context menu should move media cards into folders');
+  assert.match(timelineProjectSidebarSource, /Rename folder/, 'project media context menu should rename folders');
   assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
   assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
   assert.match(projectMediaControllerSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin through its controller');

@@ -270,6 +270,7 @@ function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | 
     kind,
     filename: record.filename,
     subtitle: typeof record.subtitle === 'string' && record.subtitle.trim() ? record.subtitle : kind,
+    folderId: typeof record.folderId === 'string' && record.folderId.trim() ? record.folderId : null,
     url: typeof record.url === 'string' ? record.url : undefined,
     thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : undefined,
     durationSec: typeof record.durationSec === 'number' && Number.isFinite(record.durationSec) ? record.durationSec : undefined,
@@ -316,6 +317,17 @@ function normalizePersistedProjectMediaFolders(value: unknown): WorkspaceProject
   });
 }
 
+function normalizeProjectMediaAssetFolders(
+  assets: WorkspaceAssetRecord[],
+  folders: WorkspaceProjectMediaFolder[]
+): WorkspaceAssetRecord[] {
+  const folderIds = new Set(folders.map((folder) => folder.id));
+  return assets.map((asset) => ({
+    ...asset,
+    folderId: asset.folderId && folderIds.has(asset.folderId) ? asset.folderId : null,
+  }));
+}
+
 export function normalizePersistedWorkspaceState(value: unknown): PersistedWorkspaceState | null {
   const parsed = value as Partial<PersistedWorkspaceState> | null;
   if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
@@ -360,11 +372,12 @@ export function normalizePersistedWorkspaceState(value: unknown): PersistedWorks
       : [],
     activeSequence
   );
+  const projectMediaFolders = normalizePersistedProjectMediaFolders(parsed.projectMediaFolders);
   return {
     nodes,
     edges,
-    projectAssets: normalizePersistedProjectAssets(parsed.projectAssets),
-    projectMediaFolders: normalizePersistedProjectMediaFolders(parsed.projectMediaFolders),
+    projectAssets: normalizeProjectMediaAssetFolders(normalizePersistedProjectAssets(parsed.projectAssets), projectMediaFolders),
+    projectMediaFolders,
     timelineItems,
     activeSequenceId,
     sequences,
