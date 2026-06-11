@@ -1637,7 +1637,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /projectMediaGrid/, 'viewer sidebar should present sequences, imports, and generated clips in one media grid');
   assert.match(mediaStyleSource, /\.timelineProjectSidebar/, 'project media CSS module should own the viewer media sidebar shell styles');
   assert.match(mediaStyleSource, /\.projectMediaGrid/, 'project media CSS module should own the media grid styles');
+  assert.match(mediaStyleSource, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'project media should use a compact three-column grid');
   assert.match(mediaStyleSource, /\.projectMediaTile/, 'project media CSS module should own media card styles');
+  assert.match(mediaStyleSource, /\.projectMediaBadge[\s\S]*width:\s*22px[\s\S]*height:\s*22px/, 'project media thumbnail badges should stay discreet in compact cards');
   assert.doesNotMatch(styleSource, /\.projectMediaGrid/, 'main editor CSS should no longer own project media grid styles after modularization');
   assert.ok(lineCount(mediaStyleSource) <= 1200, 'project media CSS module should stay under the focused module size threshold');
   assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');

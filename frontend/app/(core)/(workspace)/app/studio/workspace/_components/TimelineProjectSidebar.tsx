@@ -57,12 +57,12 @@ type ProjectMediaFolderDialogState =
 
 function ProjectMediaBadge({ kind }: { kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video' }) {
   const icon =
-    kind === 'audio' ? <AudioLines size={15} /> :
-    kind === 'folder' ? <Folder size={15} /> :
-    kind === 'image' ? <ImageIcon size={15} /> :
-    kind === 'generated' ? <Sparkles size={15} /> :
-    kind === 'sequence' ? <Film size={15} /> :
-    <Video size={15} />;
+    kind === 'audio' ? <AudioLines size={12} /> :
+    kind === 'folder' ? <Folder size={12} /> :
+    kind === 'image' ? <ImageIcon size={12} /> :
+    kind === 'generated' ? <Sparkles size={12} /> :
+    kind === 'sequence' ? <Film size={12} /> :
+    <Video size={12} />;
 
   return (
     <span className={`${styles.projectMediaBadge} ${styles[`projectMediaBadge${kind[0].toUpperCase()}${kind.slice(1)}`]}`}>
