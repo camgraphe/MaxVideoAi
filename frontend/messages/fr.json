@@ -4049,8 +4049,8 @@
       "open": "Ouvrir l’outil",
       "backgroundRemovalEyebrow": "Nettoyage vidéo",
       "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Supprimez les arrière-plans vidéo avec Bria VRMBG 3.0, exportez en MOV ProRes avec alpha pour Premiere et réutilisez les détourages.",
-      "backgroundRemovalBadge": "Détourage vidéo",
+      "backgroundRemovalBody": "Supprimez les arrière-plans vidéo avec Bria VRMBG 3.0, créez un effet fond vert, exportez en alpha et réutilisez des sujets détourés.",
+      "backgroundRemovalBadge": "Rotoscopie IA",
       "upscaleEyebrow": "Gain de résolution",
       "upscaleTitle": "AI Upscale",
       "upscaleBody": "Upscalez images ou courtes vidéos avec SeedVR2, Topaz, FlashVSR et Recraft avant de les réutiliser dans vos workflows.",
@@ -5308,7 +5308,7 @@
         "backgroundRemoval": {
           "eyebrow": "Nettoyage video",
           "title": "Supprimer l’arrière-plan vidéo",
-          "body": "Détourez des personnes ou des produits dans des clips courts, exportez une vidéo transparente et téléchargez des MOV prêts pour Premiere.",
+          "body": "Détourez personnes ou produits dans des clips courts, remplacez un workflow fond vert, exportez en alpha et téléchargez des MOV prêts pour Premiere.",
           "cta": "Explorer l’outil",
           "imageAlt": "Workspace de suppression d’arrière-plan vidéo avec aperçu transparent."
         }
@@ -6260,20 +6260,24 @@
     },
     "backgroundRemoval": {
       "meta": {
-        "title": "Supprimer l’arrière-plan vidéo | Détourage vidéo transparent",
-        "description": "Supprimez l’arrière-plan vidéo avec Bria VRMBG 3.0 dans MaxVideoAI. Exportez en MOV ProRes avec alpha pour Premiere, en WebM transparent ou en couleur unie, puis sauvegardez dans la médiathèque.",
+        "title": "Supprimer l’arrière-plan vidéo | Fond vert et rotoscopie IA",
+        "description": "Supprimez l’arrière-plan vidéo avec Bria VRMBG 3.0 dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du MOV ProRes pour Premiere, du WebM transparent ou des clips en couleur unie.",
         "keywords": [
           "supprimer arrière-plan vidéo",
+          "fond vert IA",
+          "rotoscopie IA",
           "détourage vidéo IA",
           "video background remover",
-          "Bria VRMBG 3.0",
+          "cache alpha vidéo",
+          "détourage sujet vidéo",
+          "alternative chroma key",
           "export vidéo transparente Premiere"
         ],
         "imageAlt": "Workspace MaxVideoAI de suppression d’arrière-plan vidéo avec aperçu transparent.",
         "schemaName": "Video Background Remover",
-        "schemaDescription": "Outil MaxVideoAI pour supprimer l’arrière-plan de courtes vidéos et exporter des assets vidéo transparents.",
-        "howToTitle": "Comment supprimer l’arrière-plan vidéo dans MaxVideoAI",
-        "howToDescription": "Importez ou sélectionnez une vidéo, choisissez une sortie transparente ou colorée, lancez Bria VRMBG 3.0, puis enregistrez ou téléchargez le résultat."
+        "schemaDescription": "Outil MaxVideoAI pour supprimer l’arrière-plan de courtes vidéos, créer des détourages proches de la rotoscopie IA et exporter des assets vidéo transparents.",
+        "howToTitle": "Comment supprimer l’arrière-plan vidéo ou créer un détourage par IA",
+        "howToDescription": "Importez ou sélectionnez une vidéo, choisissez une sortie transparente, fond vert ou couleur unie, lancez Bria VRMBG 3.0, puis enregistrez ou téléchargez le résultat."
       },
       "breadcrumb": {
         "home": "Accueil",
@@ -6281,9 +6285,9 @@
         "current": "Video Background Remover"
       },
       "hero": {
-        "badge": "Suppression d’arrière-plan vidéo IA",
-        "title": "Supprimer l’arrière-plan vidéo sans quitter votre workflow",
-        "body": "Importez un clip court ou choisissez une vidéo de la médiathèque, prévisualisez le prix exact, lancez Bria VRMBG 3.0 et sauvegardez une sortie transparente ou en couleur unie.",
+        "badge": "Fond vert, alpha et rotoscopie IA",
+        "title": "Supprimer l’arrière-plan vidéo et transformer un sujet en asset réutilisable",
+        "body": "Importez un clip court ou choisissez une vidéo de la médiathèque, prévisualisez le prix exact, lancez Bria VRMBG 3.0 et sauvegardez un cache alpha, un fond vert virtuel ou une sortie en couleur unie pour le montage suivant.",
         "primaryCta": "Ouvrir Background Remover",
         "secondaryCta": "Voir tous les outils",
         "stats": [
@@ -6292,8 +6296,8 @@
             "label": "clips studio"
           },
           {
-            "value": "MOV",
-            "label": "alpha pour Premiere"
+            "value": "Alpha",
+            "label": "MOV pour montage"
           },
           {
             "value": "2x",
@@ -6304,34 +6308,34 @@
       "useCases": {
         "eyebrow": "Cas d’usage",
         "title": "Un sujet propre, plusieurs chemins de production",
-        "body": "Utilisez la suppression d’arrière-plan avant les montages sociaux, contenus pédagogiques, overlays e-commerce et variantes publicitaires.",
+        "body": "Utilisez la suppression d’arrière-plan comme rotoscopie IA, remplacement fond vert, détourage produit, cache alpha et préparation compositing avant le montage suivant.",
         "cards": [
           {
             "title": "Talking heads",
-            "body": "Détourez un présentateur depuis une pièce chargée et placez-le sur des scènes cohérentes avec votre marque."
+            "body": "Rotoscopez un présentateur depuis une pièce chargée et placez-le sur des scènes, slides ou layouts transparents cohérents avec votre marque."
           },
           {
-            "title": "Clips produit",
-            "body": "Séparez les vidéos produit filmées à la main pour les réutiliser dans ads, pages et explicatifs."
+            "title": "Détourages produit",
+            "body": "Séparez les vidéos produit filmées à la main en assets de premier plan pour ads, pages e-commerce et explicatifs."
           },
           {
-            "title": "Publicités",
-            "body": "Créez des assets vidéo de premier plan combinables avec de nouveaux hooks et fonds de campagne."
+            "title": "Compositing publicitaire",
+            "body": "Créez des plans de premier plan type fond vert que les monteurs peuvent combiner avec de nouveaux hooks, décors et fonds de campagne."
           },
           {
-            "title": "Formation",
-            "body": "Gardez l’instructeur visible tout en remplaçant un bureau, une classe ou un décor de marque."
+            "title": "Remplacement fond vert",
+            "body": "Gardez l’instructeur ou l’intervenant visible tout en remplaçant un bureau, une classe ou un décor de marque sans tourner sur fond vert."
           },
           {
-            "title": "Assets sociaux",
-            "body": "Exportez des clips transparents réutilisables pour posts verticaux, stories et démos."
+            "title": "Overlays sociaux",
+            "body": "Exportez des clips transparents et overlays alpha réutilisables pour posts verticaux, stories, reels et démos."
           }
         ]
       },
       "modelGuide": {
         "eyebrow": "Guide modèle",
-        "title": "Bria VRMBG 3.0 produit des détourages vidéo propres",
-        "body": "L’outil est concentré sur les exports finis : MOV transparent pour les monteurs, WebM transparent pour le web ou fichiers en couleur unie quand l’alpha n’est pas supporté.",
+        "title": "Bria VRMBG 3.0 produit des détourages vidéo façon rotoscopie IA",
+        "body": "L’outil est concentré sur les exports finis : MOV transparent avec alpha pour les monteurs, WebM transparent pour le web ou fichiers fond vert/couleur unie quand l’alpha n’est pas supporté.",
         "columns": {
           "model": "Modèle",
           "bestFor": "Idéal pour",
@@ -6341,7 +6345,7 @@
         "rows": [
           {
             "model": "Bria VRMBG 3.0 Video",
-            "bestFor": "Courtes vidéos importées ou issues de la médiathèque nécessitant une sortie transparente ou colorée.",
+            "bestFor": "Courtes vidéos importées ou issues de la médiathèque nécessitant suppression d’arrière-plan, isolation de sujet, cache alpha ou remplacement fond vert.",
             "price": "Estimé depuis la durée du clip avant lancement et facturé 2x le tarif fournisseur actuel.",
             "useWhen": "Pour des assets finaux à prévisualiser, télécharger et sauvegarder."
           }
@@ -6349,16 +6353,16 @@
       },
       "workflow": {
         "eyebrow": "Workflow",
-        "title": "Du clip source à l’asset transparent réutilisable",
-        "body": "Choisissez une source, configurez la sortie, lancez, inspectez, puis sauvegardez ou téléchargez.",
+        "title": "Du clip source à l’asset alpha, fond vert ou compositing",
+        "body": "Choisissez une source, configurez la sortie alpha ou le nouveau fond, lancez, inspectez, puis sauvegardez ou téléchargez.",
         "steps": [
           {
             "title": "Importer ou sélectionner une vidéo",
             "body": "Utilisez une URL MP4, MOV ou WebM courte, importez un fichier ou choisissez une vidéo sauvegardée."
           },
           {
-            "title": "Choisir une sortie transparente ou colorée",
-            "body": "Exportez en MOV ProRes avec alpha pour Premiere/Finder, en WebM VP9 pour le web ou en couleur unie si la destination ne supporte pas l’alpha."
+            "title": "Choisir une sortie alpha, fond vert ou colorée",
+            "body": "Exportez en MOV ProRes avec alpha pour Premiere/Finder, en WebM VP9 pour le web ou en fond vert/couleur unie si la destination ne supporte pas l’alpha."
           },
           {
             "title": "Prévisualiser, sauvegarder et réutiliser",
@@ -6369,20 +6373,20 @@
       "production": {
         "eyebrow": "Qualité d’export",
         "title": "Téléchargez des fichiers que vos outils de montage savent ouvrir",
-        "body": "La vidéo transparente dépend fortement du format, donc l’export par défaut passe en MOV ProRes avec alpha pour Premiere et Finder au lieu d’un conteneur pensé pour le web.",
-        "panelCaption": "Utilisez MOV ProRes pour le montage, WebM VP9 pour les navigateurs et MP4/MOV en couleur unie quand la destination ne conserve pas l’alpha.",
+        "body": "La vidéo transparente et les exports proches de la rotoscopie IA dépendent fortement du format, donc l’export par défaut passe en MOV ProRes avec alpha pour Premiere et Finder au lieu d’un conteneur pensé pour le web.",
+        "panelCaption": "Utilisez MOV ProRes pour le montage, WebM VP9 pour les navigateurs et MP4/MOV en fond vert ou couleur unie quand la destination ne conserve pas l’alpha.",
         "items": [
           {
-            "title": "MOV prêt pour Premiere",
-            "body": "La sortie par défaut force un nom .mov et un type QuickTime pour que les outils desktop reconnaissent le fichier."
+            "title": "Cache alpha prêt pour Premiere",
+            "body": "La sortie par défaut force un nom .mov et un type QuickTime pour que les outils desktop reconnaissent le détourage transparent."
           },
           {
-            "title": "Option web transparente",
-            "body": "WebM VP9 reste disponible pour la lecture navigateur quand la destination supporte le WebM transparent."
+            "title": "Overlay web transparent",
+            "body": "WebM VP9 reste disponible pour la lecture navigateur, les overlays de landing page et les lecteurs web compatibles WebM transparent."
           },
           {
-            "title": "Option couleur unie",
-            "body": "Choisissez un fond couleur et une sortie MP4/MOV quand la plateforme finale supprime les canaux alpha."
+            "title": "Plan fond vert",
+            "body": "Choisissez un fond vert ou une couleur unie et une sortie MP4/MOV quand la plateforme finale supprime les canaux alpha."
           }
         ]
       },
@@ -6393,8 +6397,12 @@
       },
       "faq": [
         {
-          "q": "Puis-je exporter une vidéo transparente ?",
+          "q": "Puis-je exporter une vidéo transparente ou un cache alpha ?",
           "a": "Oui. Utilisez MOV ProRes avec alpha pour Premiere/Finder, ou WebM VP9 quand la destination accepte le WebM transparent."
+        },
+        {
+          "q": "L’outil peut-il remplacer un fond vert ou une rotoscopie ?",
+          "a": "Il peut remplacer de nombreuses tâches simples de fond vert, chroma key et préparation de rotoscopie IA en isolant le sujet puis en exportant un plan transparent ou coloré."
         },
         {
           "q": "L’audio peut-il être conservé ?",
@@ -6420,7 +6428,7 @@
       "finalCta": {
         "eyebrow": "Prêt à nettoyer le clip ?",
         "title": "Supprimez un arrière-plan et gardez le résultat dans votre médiathèque MaxVideoAI",
-        "body": "Ouvrez le workspace, estimez le run et transformez de courtes vidéos en assets transparents ou colorés réutilisables.",
+        "body": "Ouvrez le workspace, estimez le run et transformez de courtes vidéos en sujets détourés, caches alpha, plans fond vert ou assets colorés réutilisables.",
         "primaryCta": "Ouvrir Background Remover",
         "secondaryCta": "Voir les outils"
       }

@@ -4014,8 +4014,8 @@
       "open": "Open Tool",
       "backgroundRemovalEyebrow": "Video cleanup",
       "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Remove video backgrounds with Bria VRMBG 3.0, export Premiere-ready MOV ProRes with alpha, and reuse clean cutouts.",
-      "backgroundRemovalBadge": "Video cutout",
+      "backgroundRemovalBody": "Remove video backgrounds with Bria VRMBG 3.0, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
+      "backgroundRemovalBadge": "AI rotoscoping",
       "upscaleEyebrow": "Resolution boost",
       "upscaleTitle": "AI Upscale",
       "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
@@ -5273,7 +5273,7 @@
         "backgroundRemoval": {
           "eyebrow": "Video cleanup",
           "title": "Remove backgrounds from video",
-          "body": "Cut out people or products from short clips, export transparent video, and download Premiere-ready MOV files.",
+          "body": "Cut out people or products from short clips, replace green-screen work, export alpha video, and download Premiere-ready MOV files.",
           "cta": "Explore Tool",
           "imageAlt": "Video background remover workspace with transparent output preview."
         }
@@ -6225,20 +6225,24 @@
     },
     "backgroundRemoval": {
       "meta": {
-        "title": "Video Background Remover | Transparent Video Cutouts",
-        "description": "Remove video backgrounds with Bria VRMBG 3.0 in MaxVideoAI. Export Premiere-ready MOV ProRes with alpha, transparent WebM, or solid-color clips and save results to your library.",
+        "title": "Video Background Remover | Green Screen & AI Rotoscoping",
+        "description": "Remove video backgrounds with Bria VRMBG 3.0 in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, Premiere-ready MOV ProRes, transparent WebM, or solid-color clips.",
         "keywords": [
           "video background remover",
           "remove video background",
+          "green screen video remover",
+          "AI rotoscoping",
           "transparent video background",
-          "Bria VRMBG 3.0",
+          "alpha matte video",
+          "subject cutout video",
+          "chroma key alternative",
           "Premiere transparent video export"
         ],
         "imageAlt": "MaxVideoAI video background remover workspace showing source and transparent result previews.",
         "schemaName": "Video Background Remover",
-        "schemaDescription": "A MaxVideoAI tool for removing backgrounds from short videos and exporting transparent video assets.",
-        "howToTitle": "How to remove a video background in MaxVideoAI",
-        "howToDescription": "Upload or select a video, choose transparent or solid-color output, run Bria VRMBG 3.0, then save or download the result."
+        "schemaDescription": "A MaxVideoAI tool for removing backgrounds from short videos, creating AI rotoscoping-style subject cutouts, and exporting transparent video assets.",
+        "howToTitle": "How to remove a video background or create an AI rotoscope cutout",
+        "howToDescription": "Upload or select a video, choose transparent, green-screen-style, or solid-color output, run Bria VRMBG 3.0, then save or download the result."
       },
       "breadcrumb": {
         "home": "Home",
@@ -6246,9 +6250,9 @@
         "current": "Video Background Remover"
       },
       "hero": {
-        "badge": "AI video background removal",
-        "title": "Remove video backgrounds without leaving your workflow",
-        "body": "Upload a short clip or choose a library video, preview the exact price, run Bria VRMBG 3.0, and save transparent or solid-color output for the next MaxVideoAI step.",
+        "badge": "Green screen, alpha, and AI rotoscoping",
+        "title": "Remove video backgrounds and turn subjects into reusable cutouts",
+        "body": "Upload a short clip or choose a library video, preview the exact price, run Bria VRMBG 3.0, and save an alpha matte, green-screen-style plate, or solid-color output for the next edit.",
         "primaryCta": "Open Background Remover",
         "secondaryCta": "View all tools",
         "stats": [
@@ -6257,8 +6261,8 @@
             "label": "studio clips"
           },
           {
-            "value": "MOV",
-            "label": "Premiere-ready alpha"
+            "value": "Alpha",
+            "label": "MOV for editors"
           },
           {
             "value": "2x",
@@ -6269,34 +6273,34 @@
       "useCases": {
         "eyebrow": "Use cases",
         "title": "One clean subject, many production paths",
-        "body": "Use background removal before social edits, education clips, ecommerce overlays, and ad variants that need a clean foreground.",
+        "body": "Use background removal as AI rotoscoping, green screen replacement, product cutout, alpha matte, and compositing prep before the next edit.",
         "cards": [
           {
             "title": "Talking heads",
-            "body": "Cut presenters out of a busy room and place them over brand-safe scenes or transparent layouts."
+            "body": "Rotoscope presenters out of a busy room and place them over brand-safe scenes, decks, or transparent layouts."
           },
           {
-            "title": "Product clips",
-            "body": "Separate handheld product footage so it can be reused in ads, landing pages, and explainers."
+            "title": "Product cutouts",
+            "body": "Separate handheld product footage into foreground assets for ecommerce videos, landing pages, and explainers."
           },
           {
-            "title": "Performance ads",
-            "body": "Create foreground video assets that editors can combine with new hooks and campaign backgrounds."
+            "title": "Ad compositing",
+            "body": "Create green-screen-style foreground plates that editors can combine with new hooks, scenes, and campaign backgrounds."
           },
           {
-            "title": "Education",
-            "body": "Keep the instructor visible while replacing a classroom, office, or branded backdrop."
+            "title": "Green screen replacement",
+            "body": "Keep the instructor or speaker visible while replacing a classroom, office, or branded backdrop without filming on a green screen."
           },
           {
-            "title": "Social assets",
-            "body": "Export reusable transparent clips for vertical posts, stories, and product demos."
+            "title": "Social overlays",
+            "body": "Export reusable transparent clips and alpha overlays for vertical posts, stories, reels, and product demos."
           }
         ]
       },
       "modelGuide": {
         "eyebrow": "Model guide",
-        "title": "Bria VRMBG 3.0 powers clean video cutouts",
-        "body": "The tool is focused on finished video exports: transparent MOV for editors, transparent WebM for web playback, or solid-color files for channels without alpha support.",
+        "title": "Bria VRMBG 3.0 powers AI rotoscoping-style video cutouts",
+        "body": "The tool is focused on finished exports: transparent MOV alpha for editors, transparent WebM for web playback, or solid-color and green-screen-style files for channels without alpha support.",
         "columns": {
           "model": "Model",
           "bestFor": "Best for",
@@ -6306,7 +6310,7 @@
         "rows": [
           {
             "model": "Bria VRMBG 3.0 Video",
-            "bestFor": "Short uploaded or library videos that need transparent or solid-color export.",
+            "bestFor": "Short uploaded or library videos that need background removal, subject isolation, alpha matte export, or green-screen replacement.",
             "price": "Estimated from clip duration before launch and billed at 2x the current provider rate.",
             "useWhen": "Use for final assets you want to preview, download, and save to the media library."
           }
@@ -6314,16 +6318,16 @@
       },
       "workflow": {
         "eyebrow": "Workflow",
-        "title": "From source clip to reusable transparent asset",
-        "body": "The tool keeps the production loop compact: choose a source, configure output, run, inspect, then save or download.",
+        "title": "From source clip to green-screen, alpha, or compositing asset",
+        "body": "The tool keeps the production loop compact: choose a source, configure the alpha or background output, run, inspect, then save or download.",
         "steps": [
           {
             "title": "Upload or select a video",
             "body": "Use a short MP4, MOV, or WebM URL, upload a file, or pick a saved library video."
           },
           {
-            "title": "Choose transparent or color output",
-            "body": "Export MOV ProRes with alpha for Premiere/Finder, WebM VP9 for web playback, or solid color when the destination does not support alpha."
+            "title": "Choose alpha, green screen, or color output",
+            "body": "Export MOV ProRes with alpha for Premiere/Finder, WebM VP9 for web playback, or a green/solid-color plate when the destination does not support alpha."
           },
           {
             "title": "Preview, save, and reuse",
@@ -6334,20 +6338,20 @@
       "production": {
         "eyebrow": "Export quality",
         "title": "Download files your production tools can actually open",
-        "body": "Transparent video is format-sensitive, so the default export is MOV ProRes with alpha for Premiere and Finder instead of a web-only container.",
-        "panelCaption": "Use MOV ProRes for editing, WebM VP9 for browsers, and solid-color MP4/MOV when the destination cannot preserve alpha.",
+        "body": "Transparent video and AI rotoscoping outputs are format-sensitive, so the default export is MOV ProRes with alpha for Premiere and Finder instead of a web-only container.",
+        "panelCaption": "Use MOV ProRes for editing, WebM VP9 for browsers, and green-screen or solid-color MP4/MOV when the destination cannot preserve alpha.",
         "items": [
           {
-            "title": "Premiere-ready MOV",
-            "body": "The default output uses a .mov filename and QuickTime MIME type so desktop tools recognize the file."
+            "title": "Premiere-ready alpha matte",
+            "body": "The default output uses a .mov filename and QuickTime MIME type so desktop tools recognize the transparent subject cutout."
           },
           {
-            "title": "Transparent web option",
-            "body": "WebM VP9 stays available for browser playback when the destination supports transparent WebM."
+            "title": "Transparent web overlay",
+            "body": "WebM VP9 stays available for browser playback, landing-page overlays, and web players that support transparent WebM."
           },
           {
-            "title": "Solid-color option",
-            "body": "Choose a color background and MP4/MOV output when the final platform strips alpha channels."
+            "title": "Green-screen plate",
+            "body": "Choose a green or solid background and MP4/MOV output when the final platform strips alpha channels."
           }
         ]
       },
@@ -6358,8 +6362,12 @@
       },
       "faq": [
         {
-          "q": "Can I export a transparent video?",
+          "q": "Can I export a transparent video or alpha matte?",
           "a": "Yes. Use MOV ProRes with alpha for Premiere/Finder, or WebM VP9 when the destination supports transparent WebM."
+        },
+        {
+          "q": "Can this replace green screen or rotoscoping work?",
+          "a": "It can replace many simple green-screen, chroma key, and AI rotoscoping prep tasks by isolating the subject and exporting a transparent or solid-color plate."
         },
         {
           "q": "Can the tool preserve audio?",
@@ -6385,7 +6393,7 @@
       "finalCta": {
         "eyebrow": "Ready to clean the clip?",
         "title": "Remove a background and keep the result in your MaxVideoAI library",
-        "body": "Open the workspace, estimate the run, and turn short source videos into reusable transparent or solid-background assets.",
+        "body": "Open the workspace, estimate the run, and turn short source videos into reusable subject cutouts, alpha mattes, green-screen plates, or solid-background assets.",
         "primaryCta": "Open Background Remover",
         "secondaryCta": "View all tools"
       }
