@@ -1,7 +1,6 @@
 import {
   BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER,
   BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
-  BACKGROUND_REMOVAL_PRORES_PRICE_MULTIPLIER,
   BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND,
 } from '@/config/tools-background-removal-engines';
 import type {
@@ -24,7 +23,6 @@ export const BACKGROUND_REMOVAL_STUDIO_COLORS: readonly BackgroundRemovalStudioB
 ] as const;
 
 export const BACKGROUND_REMOVAL_OUTPUT_CODECS: readonly BackgroundRemovalOutputCodec[] = [
-  'mov_proresks',
   'webm_vp9',
   'mp4_h264',
   'mp4_h265',
@@ -70,7 +68,6 @@ export function getBackgroundRemovalOutputExtension(codec: BackgroundRemovalOutp
 
 export function formatBackgroundRemovalOutputCodecLabel(codec: BackgroundRemovalOutputCodec): string {
   const labels: Record<BackgroundRemovalOutputCodec, string> = {
-    mov_proresks: 'MOV ProRes + alpha (Premiere)',
     webm_vp9: 'WebM VP9 + alpha (web)',
     mp4_h264: 'MP4 H.264 (solid background)',
     mp4_h265: 'MP4 H.265 (solid background)',
@@ -84,14 +81,9 @@ export function formatBackgroundRemovalOutputCodecLabel(codec: BackgroundRemoval
   return labels[codec] ?? codec;
 }
 
-export function isBackgroundRemovalProResOutput(codec?: string | null): boolean {
-  return codec === 'mov_proresks';
-}
-
 export function getBackgroundRemovalPriceMultiplier(outputCodec?: string | null): number {
-  return isBackgroundRemovalProResOutput(outputCodec)
-    ? BACKGROUND_REMOVAL_PRORES_PRICE_MULTIPLIER
-    : BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER;
+  void outputCodec;
+  return BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER;
 }
 
 export function estimateBackgroundRemovalCostUsd(durationSec: number, outputCodec?: string | null): number {

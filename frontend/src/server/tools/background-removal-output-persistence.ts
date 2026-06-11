@@ -12,7 +12,7 @@ export const BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS = 7;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export function buildBackgroundRemovalOutputRetentionMetadata(
-  outputCodec: BackgroundRemovalOutputCodec,
+  outputCodec: BackgroundRemovalOutputCodec | 'mov_proresks',
   now = new Date()
 ): { premiumFormat: boolean; retentionDays: number | null; expiresAt: string | null } {
   if (outputCodec !== 'mov_proresks') {

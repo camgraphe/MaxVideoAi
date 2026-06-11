@@ -4780,7 +4780,7 @@
       "back": "Back to tools",
       "eyebrow": "Video cleanup",
       "title": "Video Background Remover",
-      "subtitle": "Remove backgrounds from short videos, export Premiere-ready MOV ProRes or web-friendly transparent clips, and reuse results from your media library.",
+      "subtitle": "Remove backgrounds from short videos, export transparent WebM or solid-color clips, and reuse results from your media library.",
       "sourceTitle": "Source video",
       "sourceBody": "Upload a short clip, paste an HTTPS video URL, or reuse a saved library video.",
       "sourceStep": "1",
@@ -4805,9 +4805,9 @@
       "settingsStep": "2",
       "backgroundColor": "Background",
       "outputCodec": "Output",
-      "outputCodecHint": "Use MOV ProRes as a premium editing export kept for 7 days. Use WebM VP9 for transparent web playback.",
+      "outputCodecHint": "Use WebM VP9 for transparent playback, or choose MP4/MOV with a green or solid background for editing tools.",
       "moreFormats": "More formats",
-      "formatRecommendation": "MOV with ProRes + alpha is a premium export for professional editing and is kept for 7 days.",
+      "formatRecommendation": "WebM VP9 is the transparent export. Use MP4 or MOV with a solid background when the destination strips alpha.",
       "preserveAudio": "Preserve audio",
       "audioOn": "audio",
       "audioMuted": "muted",
@@ -6242,7 +6242,7 @@
     "backgroundRemoval": {
       "meta": {
         "title": "Video Background Remover | Green Screen & AI Rotoscoping",
-        "description": "Remove video backgrounds in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, Premiere-ready MOV ProRes, transparent WebM, or solid-color clips.",
+        "description": "Remove video backgrounds in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, transparent WebM, or solid-color clips.",
         "keywords": [
           "video background remover",
           "remove video background",
@@ -6292,7 +6292,7 @@
           },
           {
             "value": "Alpha",
-            "label": "MOV for editors"
+            "label": "WebM alpha"
           },
           {
             "value": "Library",
@@ -6330,7 +6330,7 @@
       "modelGuide": {
         "eyebrow": "Output guide",
         "title": "AI video matting for green-screen and transparent exports",
-        "body": "The tool is focused on finished exports: transparent MOV alpha for editors, transparent WebM for web playback, or solid-color and green-screen-style files for channels without alpha support.",
+        "body": "The tool is focused on finished exports: transparent WebM for web playback, or solid-color and green-screen-style files for channels without alpha support.",
         "columns": {
           "model": "Output",
           "bestFor": "Best for",
@@ -6358,7 +6358,7 @@
           },
           {
             "title": "Choose alpha, green screen, or color output",
-            "body": "Export MOV ProRes with alpha for Premiere/Finder, WebM VP9 for web playback, or a green/solid-color plate when the destination does not support alpha."
+            "body": "Export WebM VP9 for transparent playback, or a green/solid-color MP4 or MOV plate when the destination does not support alpha."
           },
           {
             "title": "Preview, save, and reuse",
@@ -6369,20 +6369,20 @@
       "production": {
         "eyebrow": "Export quality",
         "title": "Download files your production tools can actually open",
-        "body": "Transparent video and AI rotoscoping outputs are format-sensitive, so the default export is MOV ProRes with alpha for Premiere and Finder instead of a web-only container.",
-        "panelCaption": "Use MOV ProRes for editing, WebM VP9 for browsers, and green-screen or solid-color MP4/MOV when the destination cannot preserve alpha.",
+        "body": "Transparent video and AI rotoscoping outputs are format-sensitive, so WebM VP9 is the transparent export while MP4/MOV outputs should use green-screen or solid-color backgrounds.",
+        "panelCaption": "Use WebM VP9 for browsers and compatible editors, and green-screen or solid-color MP4/MOV when the destination cannot preserve alpha.",
         "items": [
           {
-            "title": "Premiere-ready alpha matte",
-            "body": "The default output uses a .mov filename and QuickTime MIME type so desktop tools recognize the transparent subject cutout."
-          },
-          {
-            "title": "Transparent web overlay",
+            "title": "Transparent WebM overlay",
             "body": "WebM VP9 stays available for browser playback, landing-page overlays, and web players that support transparent WebM."
           },
           {
+            "title": "Editor-friendly plates",
+            "body": "Choose green-screen or solid-color MP4/MOV output when your editing pipeline does not preserve transparent WebM."
+          },
+          {
             "title": "Green-screen plate",
-            "body": "Choose a green or solid background and MP4/MOV output when the final platform strips alpha channels."
+            "body": "Choose a green or solid background when the final platform strips alpha channels."
           }
         ]
       },
@@ -6394,7 +6394,7 @@
       "faq": [
         {
           "q": "Can I export a transparent video or alpha matte?",
-          "a": "Yes. Use MOV ProRes with alpha for Premiere/Finder, or WebM VP9 when the destination supports transparent WebM."
+          "a": "Yes. Use WebM VP9 when the destination supports transparent WebM. For editors that do not preserve WebM alpha, use a green-screen or solid-color MP4/MOV plate."
         },
         {
           "q": "Can this replace green screen or rotoscoping work?",
@@ -6417,8 +6417,8 @@
           "a": "Yes. Save finished videos to the media library and select them later from the Background removal tab."
         },
         {
-          "q": "Why is MOV ProRes the default?",
-          "a": "Premiere and Finder are much more reliable with MOV ProRes alpha than with WebM downloads, so the editor-friendly format is selected first."
+          "q": "Which format should I choose for editing?",
+          "a": "Use transparent WebM when your editor supports it. Otherwise export a green-screen or solid-color MP4/MOV plate and key or composite it in the editor."
         }
       ],
       "finalCta": {

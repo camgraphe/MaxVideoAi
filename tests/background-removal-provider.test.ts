@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildBackgroundRemovalProviderInput } from '../frontend/src/lib/tools-background-removal.ts';
+import {
+  BACKGROUND_REMOVAL_OUTPUT_CODECS,
+  buildBackgroundRemovalProviderInput,
+  resolveOutputCodec,
+} from '../frontend/src/lib/tools-background-removal.ts';
+import { getBackgroundRemovalOutputDownloadExtension } from '../frontend/src/components/tools/background-removal/_lib/background-removal-workspace-helpers.ts';
 import {
   extractBackgroundRemovalOutput,
   formatBackgroundRemovalVideoMime,
@@ -42,6 +47,11 @@ test('studio provider input defaults to a browser-friendly transparent export', 
   );
 });
 
+test('studio output formats no longer expose ProRes export', () => {
+  assert.equal(BACKGROUND_REMOVAL_OUTPUT_CODECS.includes('mov_proresks' as never), false);
+  assert.equal(resolveOutputCodec('mov_proresks'), 'webm_vp9');
+});
+
 test('provider output parsing supports Bria video object payloads', () => {
   const payload = {
     video: {
@@ -57,6 +67,30 @@ test('provider output parsing supports Bria video object payloads', () => {
   assert.equal(output?.mimeType, 'video/webm');
   assert.equal(parseBackgroundRemovalRequestId(payload), 'bria-123');
   assert.equal(formatBackgroundRemovalVideoMime('mov_proresks'), 'video/quicktime');
+});
+
+test('background removal result downloads use the returned media type for extension', () => {
+  assert.equal(
+    getBackgroundRemovalOutputDownloadExtension({
+      url: 'https://cdn.example.com/output.mov?token=1',
+      mimeType: 'video/quicktime',
+    }),
+    'mov'
+  );
+  assert.equal(
+    getBackgroundRemovalOutputDownloadExtension({
+      url: 'https://cdn.example.com/output.mov?token=1',
+      mimeType: null,
+    }),
+    'mov'
+  );
+  assert.equal(
+    getBackgroundRemovalOutputDownloadExtension({
+      url: 'https://cdn.example.com/output.webm',
+      mimeType: 'application/octet-stream',
+    }),
+    'webm'
+  );
 });
 
 test('ProRes background removal outputs carry seven-day retention metadata', () => {

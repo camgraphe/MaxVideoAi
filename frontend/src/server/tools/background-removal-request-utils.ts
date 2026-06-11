@@ -26,7 +26,7 @@ function normalizeProviderMediaUrl(value: string): string {
   return `https://fal.media/files/${trimmed.replace(/^\.?\/+/, '')}`;
 }
 
-export function formatBackgroundRemovalVideoMime(codec: BackgroundRemovalOutputCodec): string {
+export function formatBackgroundRemovalVideoMime(codec: BackgroundRemovalOutputCodec | 'mov_proresks'): string {
   if (codec === 'webm_vp9') return 'video/webm';
   if (codec === 'mov_h265' || codec === 'mov_proresks') return 'video/quicktime';
   if (codec === 'gif') return 'image/gif';

@@ -29,7 +29,6 @@ import type { BackgroundRemovalWorkspaceCopy } from '../_lib/background-removal-
 import type { BackgroundRemovalResult } from '../_lib/background-removal-workspace-types';
 
 const OUTPUT_FORMAT_META: Record<BackgroundRemovalOutputCodec, { label: string; detail: string; tone: string }> = {
-  mov_proresks: { label: 'MOV', detail: 'ProRes alpha · 7-day premium', tone: 'Best for editing' },
   webm_vp9: { label: 'WebM', detail: 'Transparent web', tone: 'Best for web' },
   mp4_h264: { label: 'MP4', detail: 'Green plate', tone: 'Best compatibility' },
   mp4_h265: { label: 'MP4', detail: 'H.265 plate', tone: 'Compact' },
@@ -47,7 +46,7 @@ function outputIcon(codec: BackgroundRemovalOutputCodec) {
   return FileVideo;
 }
 
-const PRIMARY_OUTPUT_CODECS = ['webm_vp9', 'mov_proresks', 'mp4_h264'] as const satisfies readonly BackgroundRemovalOutputCodec[];
+const PRIMARY_OUTPUT_CODECS = ['webm_vp9', 'mp4_h264', 'mov_h265'] as const satisfies readonly BackgroundRemovalOutputCodec[];
 const PRIMARY_OUTPUT_CODEC_SET = new Set<BackgroundRemovalOutputCodec>(PRIMARY_OUTPUT_CODECS);
 const MORE_OUTPUT_CODECS = BACKGROUND_REMOVAL_OUTPUT_CODECS.filter((codec) => !PRIMARY_OUTPUT_CODEC_SET.has(codec));
 const CHECKERBOARD_CLASS =

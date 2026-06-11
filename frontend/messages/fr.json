@@ -4815,7 +4815,7 @@
       "back": "Retour aux outils",
       "eyebrow": "Nettoyage vidéo",
       "title": "Video Background Remover",
-      "subtitle": "Supprimez l’arrière-plan de courtes vidéos, exportez en MOV ProRes prêt pour Premiere ou en transparent web, puis réutilisez les résultats depuis la médiathèque.",
+      "subtitle": "Supprimez l’arrière-plan de courtes vidéos, exportez en WebM transparent ou en clips à fond uni, puis réutilisez les résultats depuis la médiathèque.",
       "sourceTitle": "Vidéo source",
       "sourceBody": "Importez un clip court, collez une URL HTTPS ou réutilisez une vidéo de votre médiathèque.",
       "sourceStep": "1",
@@ -4840,9 +4840,9 @@
       "settingsStep": "2",
       "backgroundColor": "Arrière-plan",
       "outputCodec": "Sortie",
-      "outputCodecHint": "Utilisez MOV ProRes comme export premium pour le montage, conservé 7 jours. Gardez WebM VP9 pour la lecture web transparente.",
+      "outputCodecHint": "Utilisez WebM VP9 pour la transparence, ou MP4/MOV avec fond vert ou couleur unie pour les outils de montage.",
       "moreFormats": "Autres formats",
-      "formatRecommendation": "MOV avec ProRes + alpha est un export premium pour le montage, conservé 7 jours.",
+      "formatRecommendation": "WebM VP9 est l’export transparent. Utilisez MP4 ou MOV avec fond uni quand la destination supprime l’alpha.",
       "preserveAudio": "Conserver l’audio",
       "audioOn": "audio",
       "audioMuted": "muet",
@@ -6277,7 +6277,7 @@
     "backgroundRemoval": {
       "meta": {
         "title": "Supprimer l’arrière-plan vidéo | Fond vert et rotoscopie IA",
-        "description": "Supprimez l’arrière-plan vidéo dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du MOV ProRes pour Premiere, du WebM transparent ou des clips en couleur unie.",
+        "description": "Supprimez l’arrière-plan vidéo dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du WebM transparent ou des clips en couleur unie.",
         "keywords": [
           "supprimer arrière-plan vidéo",
           "fond vert IA",
@@ -6327,7 +6327,7 @@
           },
           {
             "value": "Alpha",
-            "label": "MOV pour montage"
+            "label": "Alpha WebM"
           },
           {
             "value": "Médiathèque",
@@ -6365,7 +6365,7 @@
       "modelGuide": {
         "eyebrow": "Guide exports",
         "title": "Détourage vidéo IA pour exports fond vert et transparents",
-        "body": "L’outil est concentré sur les exports finis : MOV transparent avec alpha pour les monteurs, WebM transparent pour le web ou fichiers fond vert/couleur unie quand l’alpha n’est pas supporté.",
+        "body": "L’outil est concentré sur les exports finis : WebM transparent pour le web ou fichiers fond vert/couleur unie quand l’alpha n’est pas supporté.",
         "columns": {
           "model": "Sortie",
           "bestFor": "Idéal pour",
@@ -6393,7 +6393,7 @@
           },
           {
             "title": "Choisir une sortie alpha, fond vert ou colorée",
-            "body": "Exportez en MOV ProRes avec alpha pour Premiere/Finder, en WebM VP9 pour le web ou en fond vert/couleur unie si la destination ne supporte pas l’alpha."
+            "body": "Exportez en WebM VP9 pour la transparence, ou en plaque MP4/MOV fond vert ou couleur unie si la destination ne supporte pas l’alpha."
           },
           {
             "title": "Prévisualiser, sauvegarder et réutiliser",
@@ -6404,20 +6404,20 @@
       "production": {
         "eyebrow": "Qualité d’export",
         "title": "Téléchargez des fichiers que vos outils de montage savent ouvrir",
-        "body": "La vidéo transparente et les exports proches de la rotoscopie IA dépendent fortement du format, donc l’export par défaut passe en MOV ProRes avec alpha pour Premiere et Finder au lieu d’un conteneur pensé pour le web.",
-        "panelCaption": "Utilisez MOV ProRes pour le montage, WebM VP9 pour les navigateurs et MP4/MOV en fond vert ou couleur unie quand la destination ne conserve pas l’alpha.",
+        "body": "La vidéo transparente et les exports proches de la rotoscopie IA dépendent fortement du format : WebM VP9 est l’export transparent, tandis que les sorties MP4/MOV doivent utiliser un fond vert ou une couleur unie.",
+        "panelCaption": "Utilisez WebM VP9 pour les navigateurs et les monteurs compatibles, puis MP4/MOV en fond vert ou couleur unie quand la destination ne conserve pas l’alpha.",
         "items": [
           {
-            "title": "Cache alpha prêt pour Premiere",
-            "body": "La sortie par défaut force un nom .mov et un type QuickTime pour que les outils desktop reconnaissent le détourage transparent."
-          },
-          {
-            "title": "Overlay web transparent",
+            "title": "Overlay WebM transparent",
             "body": "WebM VP9 reste disponible pour la lecture navigateur, les overlays de landing page et les lecteurs web compatibles WebM transparent."
           },
           {
+            "title": "Plaques prêtes pour montage",
+            "body": "Choisissez une sortie MP4/MOV fond vert ou couleur unie quand votre workflow de montage ne conserve pas l’alpha WebM."
+          },
+          {
             "title": "Plan fond vert",
-            "body": "Choisissez un fond vert ou une couleur unie et une sortie MP4/MOV quand la plateforme finale supprime les canaux alpha."
+            "body": "Choisissez un fond vert ou une couleur unie quand la plateforme finale supprime les canaux alpha."
           }
         ]
       },
@@ -6429,7 +6429,7 @@
       "faq": [
         {
           "q": "Puis-je exporter une vidéo transparente ou un cache alpha ?",
-          "a": "Oui. Utilisez MOV ProRes avec alpha pour Premiere/Finder, ou WebM VP9 quand la destination accepte le WebM transparent."
+          "a": "Oui. Utilisez WebM VP9 quand la destination accepte le WebM transparent. Pour les monteurs qui ne conservent pas l’alpha WebM, utilisez une plaque MP4/MOV fond vert ou couleur unie."
         },
         {
           "q": "L’outil peut-il remplacer un fond vert ou une rotoscopie ?",
@@ -6452,8 +6452,8 @@
           "a": "Oui. Enregistrez les vidéos terminées dans la médiathèque et reprenez-les plus tard."
         },
         {
-          "q": "Pourquoi MOV ProRes est-il la sortie par défaut ?",
-          "a": "Premiere et Finder gèrent beaucoup mieux le MOV ProRes avec alpha que les téléchargements WebM, donc le format orienté montage est sélectionné en premier."
+          "q": "Quel format choisir pour le montage ?",
+          "a": "Utilisez WebM transparent quand votre logiciel le supporte. Sinon, exportez une plaque MP4/MOV fond vert ou couleur unie et faites la key ou le compositing dans le montage."
         }
       ],
       "finalCta": {

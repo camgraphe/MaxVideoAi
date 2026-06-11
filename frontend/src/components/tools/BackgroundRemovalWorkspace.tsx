@@ -13,10 +13,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import {
-  formatBackgroundRemovalOutputCodecLabel,
-  getBackgroundRemovalOutputExtension,
-} from '@/lib/tools-background-removal';
+import { formatBackgroundRemovalOutputCodecLabel } from '@/lib/tools-background-removal';
 import type {
   BackgroundRemovalOutputCodec,
   BackgroundRemovalStudioBackgroundColor,
@@ -32,6 +29,7 @@ import { useBackgroundRemovalSourceMedia } from './background-removal/_hooks/use
 import { DEFAULT_BACKGROUND_REMOVAL_COPY } from './background-removal/_lib/background-removal-workspace-copy';
 import {
   backgroundRemovalRecentToResult,
+  getBackgroundRemovalOutputDownloadExtension,
   readBackgroundRemovalControlsFromJob,
 } from './background-removal/_lib/background-removal-workspace-helpers';
 
@@ -160,12 +158,13 @@ export default function BackgroundRemovalWorkspace() {
   }
 
   function handleDownload() {
-    const resultUrl = runner.result?.output?.url;
+    const output = runner.result?.output;
+    const resultUrl = output?.url;
     const activeUrl = viewMode === 'result' && resultUrl ? resultUrl : sourceMedia.videoUrl;
     if (!activeUrl) return;
     const fileName =
       viewMode === 'result' && resultUrl
-        ? `background-removal-${Date.now()}.${getBackgroundRemovalOutputExtension(outputCodec)}`
+        ? `background-removal-${Date.now()}.${getBackgroundRemovalOutputDownloadExtension(output)}`
         : suggestDownloadFilename(activeUrl, 'background-removal-source');
     triggerAppDownload(activeUrl, fileName);
   }

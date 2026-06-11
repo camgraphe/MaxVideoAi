@@ -44,6 +44,23 @@ test('background removal marketing copy does not expose supplier, multiplier, or
   assert.doesNotMatch(toolsWorkspaceSource, /"backgroundRemovalBody":\s*"[^"]*(?:bria|vrmbg|provider|2x|margin)[^"]*"/i);
 });
 
+test('background removal user-facing copy no longer advertises ProRes export', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = readLocale(locale).toolMarketing.backgroundRemoval;
+    assert.doesNotMatch(JSON.stringify(copy), /prores|mov prores|7[- ]?day|7 jours|7 dias/i);
+  }
+
+  for (const relativePath of [
+    'frontend/src/components/tools/ToolsWorkspacePage.tsx',
+    'frontend/src/components/tools/background-removal/_lib/background-removal-workspace-copy.ts',
+    'frontend/src/components/tools/background-removal/_components/BackgroundRemovalSettingsPanel.tsx',
+    'frontend/src/lib/tools-background-removal.ts',
+  ]) {
+    const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
+    assert.doesNotMatch(source, /ProRes|prores|mov_proresks|7[- ]?day|7 jours|7 dias/i, relativePath);
+  }
+});
+
 test('background removal landing uses shared JSON-LD helpers and app screenshots', () => {
   const wrapper = fs.readFileSync(
     path.join(process.cwd(), 'frontend/src/components/tools/BackgroundRemovalLandingPage.tsx'),

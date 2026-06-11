@@ -87,8 +87,30 @@ export function inferVideoMimeType(url: string): string {
   return 'video/mp4';
 }
 
+function extensionFromVideoMimeType(mimeType?: string | null): string | null {
+  const normalized = mimeType?.toLowerCase().split(';', 1)[0]?.trim();
+  if (normalized === 'video/webm') return 'webm';
+  if (normalized === 'video/quicktime' || normalized === 'video/mov') return 'mov';
+  if (normalized === 'video/x-matroska') return 'mkv';
+  if (normalized === 'video/x-msvideo') return 'avi';
+  if (normalized === 'image/gif') return 'gif';
+  if (normalized === 'video/mp4') return 'mp4';
+  return null;
+}
+
+export function getBackgroundRemovalOutputDownloadExtension(output?: {
+  mimeType?: string | null;
+  url?: string | null;
+}): string {
+  return (
+    extensionFromVideoMimeType(output?.mimeType) ??
+    extensionFromVideoMimeType(inferVideoMimeType(output?.url ?? '')) ??
+    'mp4'
+  );
+}
+
 export function isTransparentOutput(codec?: string | null, backgroundColor?: string | null): boolean {
-  return backgroundColor === 'Transparent' && (codec === 'webm_vp9' || codec === 'mov_proresks');
+  return backgroundColor === 'Transparent' && codec === 'webm_vp9';
 }
 
 export function canPreviewTransparentOutput(codec?: string | null, backgroundColor?: string | null): boolean {

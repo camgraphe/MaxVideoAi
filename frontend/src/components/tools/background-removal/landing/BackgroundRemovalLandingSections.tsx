@@ -256,9 +256,9 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
 
 function ProductionSection({ content }: { content: BackgroundRemovalLandingContent }) {
   const formats = [
-    { icon: FileVideo, label: 'MOV', detail: 'ProRes alpha' },
     { icon: Film, label: 'WebM', detail: 'Transparent web' },
     { icon: Palette, label: 'MP4', detail: 'Green plate' },
+    { icon: FileVideo, label: 'MOV', detail: 'Solid background' },
   ];
 
   return (

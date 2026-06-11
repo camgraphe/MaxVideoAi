@@ -2,7 +2,6 @@ import type { BackgroundRemovalToolEngineDefinition } from '@/types/tools-backgr
 
 export const BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND = 0.00425;
 export const BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER = 2;
-export const BACKGROUND_REMOVAL_PRORES_PRICE_MULTIPLIER = 3;
 export const BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS = 60;
 
 export const BACKGROUND_REMOVAL_TOOL_ENGINES: readonly BackgroundRemovalToolEngineDefinition[] = [

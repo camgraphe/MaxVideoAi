@@ -95,6 +95,7 @@ test('background removal workspace follows the tool workspace split', () => {
   assert.ok(existsSync(runnerHookPath));
 
   const workspaceSource = readFileSync(workspacePath, 'utf8');
+  const helpersSource = readFileSync(helpersPath, 'utf8');
   const runnerHookSource = readFileSync(runnerHookPath, 'utf8');
 
   assert.match(workspaceSource, /useBackgroundRemovalSourceMedia/);
@@ -104,6 +105,9 @@ test('background removal workspace follows the tool workspace split', () => {
   assert.match(workspaceSource, /sourceSummary/, 'workspace header should summarize source readiness');
   assert.match(workspaceSource, /formatBackgroundRemovalOutputCodecLabel\(outputCodec\)/, 'workspace header should summarize output format');
   assert.match(workspaceSource, /copy\.priceBeforeGeneration/, 'workspace header should summarize price before generation');
+  assert.match(workspaceSource, /getBackgroundRemovalOutputDownloadExtension\(output\)/);
+  assert.doesNotMatch(workspaceSource, /getBackgroundRemovalOutputExtension\(outputCodec\)/);
+  assert.match(helpersSource, /getBackgroundRemovalOutputDownloadExtension/);
   assert.doesNotMatch(workspaceSource, /useBackgroundRemovalRealtimeSession/);
   assert.doesNotMatch(workspaceSource, /BackgroundRemovalRealtimePanel/);
   assert.doesNotMatch(workspaceSource, /navigator\.mediaDevices/);
