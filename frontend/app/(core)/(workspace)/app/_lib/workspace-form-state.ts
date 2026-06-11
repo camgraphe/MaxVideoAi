@@ -63,6 +63,16 @@ export function normalizeExtraInputValue(field: EngineInputField, value: unknown
     const trimmed = value.trim();
     return trimmed.length ? trimmed : undefined;
   }
+  if (field.type === 'boolean') {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number' && Number.isFinite(value)) return value !== 0;
+    if (typeof value === 'string') {
+      const trimmed = value.trim().toLowerCase();
+      if (['true', '1', 'yes', 'on'].includes(trimmed)) return true;
+      if (['false', '0', 'no', 'off'].includes(trimmed)) return false;
+    }
+    return undefined;
+  }
   return undefined;
 }
 

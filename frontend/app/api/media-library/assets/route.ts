@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       width: asset.width,
       height: asset.height,
       size: asset.sizeBytes,
+      durationSec: asset.durationSec,
       kind: asset.kind,
       source: asset.source,
       jobId: asset.sourceJobId,

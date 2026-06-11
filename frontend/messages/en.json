@@ -3226,7 +3226,7 @@
           "action": "Extend by",
           "unit": "seconds"
         },
-        "keyframes": "Keyframes supported (Pika 2.2)"
+        "keyframes": "Keyframes supported"
       },
       "preview": {
         "title": "Composite Preview",

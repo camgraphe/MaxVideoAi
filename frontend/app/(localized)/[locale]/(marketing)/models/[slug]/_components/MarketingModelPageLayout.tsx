@@ -299,7 +299,9 @@ export function MarketingModelPageLayout({
     engine.modelSlug === 'nano-banana' ||
     engine.modelSlug === 'nano-banana-2' ||
     engine.modelSlug === 'seedream' ||
-    engine.modelSlug === 'gpt-image-2';
+    engine.modelSlug === 'gpt-image-2' ||
+    engine.modelSlug === 'luma-uni-1' ||
+    engine.modelSlug === 'luma-uni-1-max';
   const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
   const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   const galleryPreviewAlts = dedupeAltsInList(

@@ -38,10 +38,10 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
       },
     },
     lumaRay2: {
-      bestFor: 'Premium cinematic generation with modify and reframe',
+      bestFor: 'Legacy Luma Generate, Modify and Reframe coverage',
     },
     lumaRay2_flash: {
-      bestFor: 'Fast cinematic drafts with modify and reframe',
+      bestFor: 'Legacy fast Luma drafts with Modify and Reframe',
     },
     'kling-2-6-pro': {
       bestFor: 'Cinematic dialogue',

@@ -39,11 +39,10 @@ export function isLumaAgentsVideoEngine(engineId: string): boolean {
 }
 
 export function isLumaAgentsVideoModeSupported(
-  mode: Mode | string,
-  options?: { advancedDirectOnlyEnabled?: boolean }
+  mode: Mode | string
 ): boolean {
   if (isLumaRay32PublicMode(mode)) return true;
-  return options?.advancedDirectOnlyEnabled === true && (mode === 'v2v' || mode === 'reframe');
+  return mode === 'v2v' || mode === 'reframe';
 }
 
 export function resolveLumaAgentsModelRoute(params: {
@@ -116,7 +115,6 @@ function hasAdvancedDirectOnlyRequest(params: {
   hdrRequested: boolean;
   exrRequested: boolean;
 }): boolean {
-  if (params.advancedDirectOnlyEnabled !== true) return false;
   return params.mode === 'v2v' || params.mode === 'reframe' || params.hdrRequested || params.exrRequested;
 }
 
@@ -141,7 +139,7 @@ export function resolveLumaAgentsVideoSupport(params: {
   });
   const unsupportedFallbackCompatible = advancedDirectOnlyRequest ? false : route.fallbackCompatible;
 
-  if (!isLumaAgentsVideoModeSupported(params.mode, params)) {
+  if (!isLumaAgentsVideoModeSupported(params.mode)) {
     return { supported: false, route, reason: 'unsupported_mode', fallbackCompatible: unsupportedFallbackCompatible };
   }
 
@@ -165,8 +163,8 @@ export function resolveLumaAgentsVideoSupport(params: {
     };
   }
 
-  const duration = normalizeDurationOption(params.falPayload);
-  if (!DIRECT_DURATIONS.has(duration)) {
+  const duration = route.type === 'video_reframe' ? '5s' : normalizeDurationOption(params.falPayload);
+  if (route.type !== 'video_reframe' && !DIRECT_DURATIONS.has(duration)) {
     return {
       supported: false,
       route,
@@ -201,11 +199,23 @@ export function resolveLumaAgentsVideoSupport(params: {
       fallbackCompatible: unsupportedFallbackCompatible,
     };
   }
-  if (params.advancedDirectOnlyEnabled && duration === '10s' && (hdrRequested || exrRequested)) {
+  if (duration === '10s' && route.type === 'video' && (hdrRequested || exrRequested)) {
     return { supported: false, route, reason: 'duration_10s_incompatible_with_hdr', fallbackCompatible: false };
   }
-  if (params.advancedDirectOnlyEnabled && params.falPayload.loop === true && hdrRequested) {
+  if (params.falPayload.loop === true && hdrRequested) {
     return { supported: false, route, reason: 'loop_incompatible_with_direct_options', fallbackCompatible: false };
+  }
+  if (resolution === '540p' && (hdrRequested || exrRequested)) {
+    return { supported: false, route, reason: 'resolution_540p_incompatible_with_hdr', fallbackCompatible: false };
+  }
+  if (exrRequested && !hdrRequested) {
+    return { supported: false, route, reason: 'exr_requires_hdr', fallbackCompatible: false };
+  }
+  if (route.type === 'video_reframe' && (hdrRequested || exrRequested)) {
+    return { supported: false, route, reason: 'reframe_incompatible_with_hdr', fallbackCompatible: false };
+  }
+  if (route.type === 'video_reframe' && resolution === '1080p' && (aspectRatio === '9:16' || aspectRatio === '3:4')) {
+    return { supported: false, route, reason: 'reframe_vertical_1080p_not_supported', fallbackCompatible: false };
   }
 
   return { supported: true, route };

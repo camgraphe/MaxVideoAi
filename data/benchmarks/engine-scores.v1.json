@@ -392,18 +392,18 @@
     },
     {
       "modelSlug": "luma-ray-3-2",
-      "fidelity": 8.2,
-      "visualQuality": 8.2,
-      "motion": 8.3,
-      "consistency": 7.8,
-      "anatomy": 7.9,
-      "textRendering": 6.8,
+      "fidelity": 7.9,
+      "visualQuality": 8.0,
+      "motion": 7.9,
+      "consistency": 7.4,
+      "anatomy": 7.6,
+      "textRendering": 6.4,
       "lipsyncQuality": null,
-      "sequencingQuality": 7.7,
-      "controllability": 8.0,
-      "speedStability": 6.8,
+      "sequencingQuality": 7.2,
+      "controllability": 8.4,
+      "speedStability": 6.6,
       "pricing": 7.8,
-      "last_updated": "2026-06-09"
+      "last_updated": "2026-06-11"
     },
     {
       "modelSlug": "luma-uni-1",

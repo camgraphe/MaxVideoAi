@@ -1,9 +1,8 @@
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
-import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
+import { deriveGenerationAttachmentReferences, resolveSourceVideoDurationSec } from './_lib/attachment-references';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
@@ -20,10 +19,10 @@ import { submitGenerateProviderTask } from './_lib/video-provider-submission';
 import { buildResponseFromExistingVideoJob, createAtomicInitialVideoJob, VideoInitialJobError } from './_lib/initial-video-job';
 import { rollbackPendingPayment } from './_lib/payment-rollback';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
-import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
+import { buildMissingProviderJobIdResponse } from './_lib/missing-provider-job';
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
   const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
@@ -110,7 +109,6 @@ export async function POST(req: NextRequest) {
     pricingResolution,
     effectiveResolution,
   }));
-  metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
   const userGate = await resolveGenerateUserGate({ req, body });
   if (userGate.kind === 'response') {
@@ -157,6 +155,35 @@ export async function POST(req: NextRequest) {
     reference_images: body.reference_images,
     rawAudioUrl,
   });
+  const sourceVideoDuration = resolveSourceVideoDurationSec({
+    mode,
+    attachments: processedAttachments,
+    sourceInputVideoUrl,
+    fallbackDurationSec: durationSec,
+    maxDurationSec: engine.inputLimits?.videoMaxDurationSec ?? engine.maxDurationSec ?? null,
+  });
+  if (sourceVideoDuration.exceedsMax) {
+    const maxDurationSec = sourceVideoDuration.maxDurationSec ?? 30;
+    logMetric('rejected', {
+      errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
+      meta: {
+        sourceDurationSec: sourceVideoDuration.sourceDurationSec,
+        maxDurationSec,
+        mode,
+      },
+    });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
+        message: `Source video must be ${maxDurationSec}s or shorter for ${engine.label}.`,
+      },
+      { status: 422 }
+    );
+  }
+  const effectiveDurationSec = sourceVideoDuration.durationSec;
+  const effectiveDurationLabel = sourceVideoDuration.durationLabel ?? durationLabel;
+  metricState.durationSec = effectiveDurationSec;
   const validationPayloadResult = buildGenerateValidationPayload({
     engineId: engine.id,
     mode,
@@ -170,7 +197,7 @@ export async function POST(req: NextRequest) {
     isBytePlusV1a,
     supportsDuration,
     numFrames,
-    validationDuration: lumaDurationInfo?.label ?? (Number.isFinite(durationSec) ? durationSec : null),
+    validationDuration: lumaDurationInfo?.label ?? (Number.isFinite(effectiveDurationSec) ? effectiveDurationSec : null),
     maxUploadedBytes,
     resolvedFirstFrameUrl,
     lastFrameUrl,
@@ -199,8 +226,8 @@ export async function POST(req: NextRequest) {
     userId,
     payment,
     jobId,
-    durationSec,
-    durationLabel,
+    durationSec: effectiveDurationSec,
+    durationLabel: effectiveDurationLabel,
     pricingResolution,
     effectiveResolution,
     aspectRatio,
@@ -282,7 +309,7 @@ export async function POST(req: NextRequest) {
     endImageUrl,
     extraInputValues: validatedExtraInputValues,
     supportsDuration,
-    durationSec,
+    durationSec: effectiveDurationSec,
     durationOption: lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null,
     numFrames,
     supportsAspectRatio,
@@ -302,7 +329,7 @@ export async function POST(req: NextRequest) {
     prompt,
     negativePrompt: body.negativePrompt,
     membershipTier: body.membershipTier,
-    durationSec,
+    durationSec: effectiveDurationSec,
     durationOption: falDurationOption,
     numFrames,
     aspectRatio,
@@ -347,7 +374,7 @@ export async function POST(req: NextRequest) {
         userId,
         engineId: engine.id,
         engineLabel: engine.label,
-        durationSec,
+        durationSec: effectiveDurationSec,
         prompt,
         thumbUrl: placeholderThumb,
         aspectRatio,
@@ -400,7 +427,7 @@ export async function POST(req: NextRequest) {
         await rollbackPendingPayment({
           pendingReceipt,
           walletChargeReserved,
-          refundDescription: `Refund ${engine.label} - ${durationSec}s`,
+          refundDescription: `Refund ${engine.label} - ${effectiveDurationSec}s`,
         });
       }
       logMetric(error.metricKind, {
@@ -419,7 +446,7 @@ export async function POST(req: NextRequest) {
       await rollbackPendingPayment({
         pendingReceipt,
         walletChargeReserved,
-        refundDescription: `Refund ${engine.label} - ${durationSec}s`,
+        refundDescription: `Refund ${engine.label} - ${effectiveDurationSec}s`,
       });
     }
     return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
@@ -433,7 +460,7 @@ export async function POST(req: NextRequest) {
       engineLabel: engine.label,
       isPublicSeedanceBytePlus,
       prompt,
-      durationSec,
+      durationSec: effectiveDurationSec,
       mode,
       initialImageUrl,
       endImageUrl,
@@ -478,7 +505,7 @@ export async function POST(req: NextRequest) {
     mode,
     prompt,
     negativePrompt: body.negativePrompt,
-    durationSec,
+    durationSec: effectiveDurationSec,
     aspectRatio,
     audioEnabled,
     effectiveResolution,
@@ -529,47 +556,19 @@ export async function POST(req: NextRequest) {
     providerJobId,
   } = initialMediaState;
 
-  // Safety net: if Fal didn’t return a provider job id and we have no video result, treat as failed and refund.
   if (!providerJobId && !video) {
-    const failureMessage = 'We could not start your render. Please retry.';
-    console.error('[api/generate] missing provider_job_id and no result', { jobId, engineId: engine.id, generationResult });
-    logMetric('failed', {
-      errorCode: 'FAL_NO_PROVIDER_JOB_ID',
-      meta: { stage: 'provider_missing_id' },
+    return buildMissingProviderJobIdResponse({
+      jobId,
+      userId,
+      engineId: engine.id,
+      engineLabel: engine.label,
+      durationSec: effectiveDurationSec,
+      generationResult,
+      pendingReceipt,
+      walletChargeReserved,
+      logMetric,
     });
-    try {
-      await query(
-        `UPDATE app_jobs
-         SET status = 'failed',
-             progress = 0,
-             message = $2,
-             provisional = FALSE,
-             updated_at = NOW()
-         WHERE job_id = $1`,
-        [jobId, failureMessage]
-      );
-    } catch (updateError) {
-      console.error('[api/generate] failed to mark job as failed after missing provider_job_id', updateError);
-    }
-
-    if (pendingReceipt) {
-      await rollbackPendingPayment({
-        pendingReceipt,
-        walletChargeReserved,
-        refundDescription: buildUserFacingRefundDescription({ engineLabel: engine.label, durationSec, reason: failureMessage }),
-      });
-    }
-
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'FAL_NO_PROVIDER_JOB_ID',
-        message: failureMessage,
-      },
-      { status: 502 }
-    );
   }
-
   const mediaState = await resolveProviderMediaState({
     state: initialMediaState,
     generationResult,
@@ -625,7 +624,7 @@ export async function POST(req: NextRequest) {
       await rollbackPendingPayment({
         pendingReceipt,
         walletChargeReserved,
-        refundDescription: `Refund ${engine.label} - ${durationSec}s`,
+        refundDescription: `Refund ${engine.label} - ${effectiveDurationSec}s`,
       });
     }
     return NextResponse.json({ ok: false, error: 'Failed to update job record' }, { status: 500 });
@@ -639,8 +638,8 @@ export async function POST(req: NextRequest) {
     providerJobId,
     engineId: engine.id,
     status,
-    durationSec,
-    durationLabel,
+    durationSec: effectiveDurationSec,
+    durationLabel: effectiveDurationLabel,
     aspectRatio,
     resolution: effectiveResolution,
     loop: isLumaRay2 ? loop : undefined,
@@ -655,7 +654,7 @@ export async function POST(req: NextRequest) {
       jobId,
       userId,
       videoUrl: video,
-      durationSec,
+      durationSec: effectiveDurationSec,
     });
   }
 
@@ -664,7 +663,7 @@ export async function POST(req: NextRequest) {
     pendingReceipt,
     paymentMode,
     engineLabel: engine.label,
-    durationSec,
+    durationSec: effectiveDurationSec,
     priceOnlyReceipts,
   });
 

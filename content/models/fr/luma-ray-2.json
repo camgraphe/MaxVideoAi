@@ -2,15 +2,15 @@
   "marketingName": "Luma Ray 2",
   "versionLabel": "Ray 2",
   "seo": {
-    "title": "Luma Ray 2 Specs, Prix et workflows premium | MaxVideoAI",
-    "description": "Utilisez Luma Ray 2 dans MaxVideoAI pour des plans cinematographiques premium, de l image-to-video, du modify sur video source et des reframes de livraison. Ray 2 cible des finals plus solides avec des generations 5s ou 9s de 540p a 1080p.",
+    "title": "Luma Ray 2 Specs, Prix et workflows legacy | MaxVideoAI",
+    "description": "Utilisez Luma Ray 2 dans MaxVideoAI comme route Luma de generation precedente pour plans cinematographiques, image-to-video, modify sur video source et reframes. Demarrez les nouveaux workflows Luma sur Ray 3.2 pour Modify keyframes et Reframe.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 2 est le tier de final premium de la famille Luma dans MaxVideoAI. La famille reste simple au niveau du catalogue, tandis que la page modele expose la famille de workflows Luma active: text-to-video, image-to-video, modify et reframe.",
+  "overview": "Luma Ray 2 est une route Luma de generation precedente dans MaxVideoAI. Gardez-la pour les prompts legacy, les anciens comparatifs et les generations compatibles Ray 2, mais demarrez les nouveaux travaux Luma sur Ray 3.2 pour Modify keyframes et Reframe.",
   "hero": {
     "title": "Luma Ray 2 - generation, modify et reframe sur une seule page",
-    "intro": "Choisissez Ray 2 quand le plan sort de la phase draft et que vous voulez le tier Luma premium pour des plans cinematographiques, une animation still plus controlee, des modifications sur video source et des reframes de livraison sans separer le workflow sur plusieurs pages modele.",
-    "badge": "T2V + I2V + Modify + Reframe",
+    "intro": "Choisissez Ray 2 lorsque vous devez reprendre d'anciens prompts Luma ou conserver des runs text-to-video, image-to-video, Modify et Reframe compatibles Ray 2. Pour les nouvelles productions Luma, Ray 3.2 est la route actuelle.",
+    "badge": "Route Luma legacy - T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Generer avec Luma Ray 2",
       "href": "/app?engine=lumaRay2"

@@ -1842,6 +1842,7 @@
     "versionLabel": "Ray 2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2310,7 +2311,7 @@
         "value": false
       }
     },
-    "bestFor": "Premium cinematic generation with modify and reframe"
+    "bestFor": "Legacy Luma Generate, Modify and Reframe coverage"
   },
   {
     "engineId": "lumaRay2_flash",
@@ -2334,6 +2335,7 @@
     "versionLabel": "Ray 2 Flash",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2802,7 +2804,7 @@
         "value": false
       }
     },
-    "bestFor": "Fast cinematic drafts with modify and reframe"
+    "bestFor": "Legacy fast Luma drafts with Modify and Reframe"
   },
   {
     "engineId": "luma-ray-3-2",
@@ -2872,27 +2874,23 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "v2v",
+        "reframe"
       ],
-      "maxDurationSec": 10,
+      "maxDurationSec": 30,
       "resolutions": [
         "540p",
         "720p",
         "1080p"
       ],
       "aspectRatios": [
-        "3:1",
-        "2:1",
-        "21:9",
-        "16:9",
-        "4:3",
-        "3:2",
-        "1:1",
-        "3:4",
-        "2:3",
         "9:16",
-        "1:2",
-        "1:3"
+        "3:4",
+        "1:1",
+        "4:3",
+        "16:9",
+        "21:9"
       ],
       "fps": [
         24
@@ -2900,8 +2898,8 @@
       "audio": false,
       "upscale4k": false,
       "extend": false,
-      "motionControls": false,
-      "keyframes": false,
+      "motionControls": true,
+      "keyframes": true,
       "params": {},
       "inputLimits": {
         "imageMaxMB": 50,
@@ -2916,13 +2914,17 @@
             "label": "Prompt",
             "modes": [
               "t2v",
-              "i2v"
+              "i2v",
+              "v2v",
+              "reframe"
             ],
             "requiredInModes": [
               "t2v",
-              "i2v"
+              "i2v",
+              "v2v",
+              "reframe"
             ],
-            "description": "Describe the video motion, subject, camera, and style."
+            "description": "Describe the video motion, subject, camera, edit, style, or new canvas area."
           },
           {
             "id": "image_url",
@@ -2938,6 +2940,24 @@
             "minCount": 1,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Use one MP4/MOV/WebM source clip for Ray 3.2 Modify or Reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxDurationSec": 30
           }
         ],
         "optional": [
@@ -2952,7 +2972,8 @@
             "default": "5s",
             "modes": [
               "t2v",
-              "i2v"
+              "i2v",
+              "v2v"
             ]
           },
           {
@@ -2960,23 +2981,18 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
-              "3:1",
-              "2:1",
-              "21:9",
-              "16:9",
-              "4:3",
-              "3:2",
-              "1:1",
-              "3:4",
-              "2:3",
               "9:16",
-              "1:2",
-              "1:3"
+              "3:4",
+              "1:1",
+              "4:3",
+              "16:9",
+              "21:9"
             ],
             "default": "16:9",
             "modes": [
               "t2v",
-              "i2v"
+              "i2v",
+              "reframe"
             ]
           },
           {
@@ -2988,10 +3004,12 @@
               "720p",
               "1080p"
             ],
-            "default": "540p",
+            "default": "720p",
             "modes": [
               "t2v",
-              "i2v"
+              "i2v",
+              "v2v",
+              "reframe"
             ]
           },
           {
@@ -3006,17 +3024,205 @@
             "description": "Loop is supported for 5s requests. 10s loop requests are provider-limited."
           },
           {
-            "id": "reference_image_urls",
-            "type": "image",
-            "label": "Reference images",
-            "description": "Optional images to guide composition, subject, or style without replacing the start image.",
+            "id": "hdr",
+            "type": "boolean",
+            "label": "HDR",
+            "default": false,
             "modes": [
               "t2v",
+              "i2v",
+              "v2v"
+            ],
+            "description": "Generate an HDR MP4 when Luma direct supports the selected duration and resolution."
+          },
+          {
+            "id": "exr_export",
+            "type": "boolean",
+            "label": "EXR export",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v",
+              "v2v"
+            ],
+            "description": "Export an EXR file alongside the MP4. Requires HDR and routes direct to Luma."
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for 5s image-to-video interpolation. Not compatible with loop.",
+            "modes": [
               "i2v"
             ],
             "minCount": 0,
-            "maxCount": 4,
+            "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Guide frame",
+            "description": "Optional single guide frame for Ray 3.2 Modify. Do not combine with multi-keyframes.",
+            "modes": [
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "edit_keyframe_urls",
+            "type": "image",
+            "label": "Modify keyframes",
+            "description": "Optional guide frames pinned to source-video frame indexes. Provide indexes below in the same order.",
+            "modes": [
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 64,
+            "source": "either",
+            "slotLabelPattern": "Frame {n}"
+          },
+          {
+            "id": "edit_keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe indexes",
+            "description": "Comma-separated source frame indexes for Modify keyframes, for example 0, 48, 96.",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_strength",
+            "type": "enum",
+            "label": "Modify strength",
+            "description": "Auto lets Luma derive controls. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.",
+            "values": [
+              "auto",
+              "adhere_1",
+              "adhere_2",
+              "adhere_3",
+              "flex_1",
+              "flex_2",
+              "flex_3",
+              "reimagine_1",
+              "reimagine_2",
+              "reimagine_3"
+            ],
+            "default": "auto",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_pose_strength",
+            "type": "enum",
+            "label": "Pose control",
+            "description": "Optional manual pose conditioning. Any manual control disables auto controls.",
+            "values": [
+              "off",
+              "precise",
+              "coarse"
+            ],
+            "default": "off",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_depth_blur",
+            "type": "number",
+            "label": "Depth freedom",
+            "description": "Optional depth blur from 0 to 1. Higher values allow more geometry freedom.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_normals_augmentation",
+            "type": "number",
+            "label": "Normals freedom",
+            "description": "Optional surface-normal augmentation from 0 to 1.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_trajectory_sparsity",
+            "type": "number",
+            "label": "Trajectory sparsity",
+            "description": "Optional motion-trajectory sparsity from 0 to 1.",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "edit_face",
+            "type": "boolean",
+            "label": "Face control",
+            "description": "Enable face-identity conditioning when the source has a face.",
+            "default": false,
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "source_position_x_norm",
+            "type": "number",
+            "label": "Source X",
+            "description": "Optional source rectangle x position for Reframe, normalized to output width.",
+            "min": -2,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_y_norm",
+            "type": "number",
+            "label": "Source Y",
+            "description": "Optional source rectangle y position for Reframe, normalized to output height.",
+            "min": -2,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_w_norm",
+            "type": "number",
+            "label": "Source width",
+            "description": "Optional source rectangle width for Reframe, normalized to output width.",
+            "min": 0.05,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "source_position_h_norm",
+            "type": "number",
+            "label": "Source height",
+            "description": "Optional source rectangle height for Reframe, normalized to output height.",
+            "min": 0.05,
+            "max": 2,
+            "step": 0.05,
+            "modes": [
+              "reframe"
+            ]
           }
         ],
         "constraints": {
@@ -3065,18 +3271,12 @@
             "1080p"
           ],
           "aspectRatio": [
-            "3:1",
-            "2:1",
-            "21:9",
-            "16:9",
-            "4:3",
-            "3:2",
-            "1:1",
-            "3:4",
-            "2:3",
             "9:16",
-            "1:2",
-            "1:3"
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -3108,18 +3308,12 @@
             "1080p"
           ],
           "aspectRatio": [
-            "3:1",
-            "2:1",
-            "21:9",
-            "16:9",
-            "4:3",
-            "3:2",
-            "1:1",
-            "3:4",
-            "2:3",
             "9:16",
-            "1:2",
-            "1:3"
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -3131,6 +3325,67 @@
           "audioToggle": false,
           "notes": "Animate one source image, with optional reference images for style or subject guidance."
         }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "luma/agent/ray/v3.2/video-edit",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Modify a source video with Ray 3.2 using source-video conditioning, strength presets, guide frames, and keyframes."
+        }
+      },
+      {
+        "mode": "reframe",
+        "falModelId": "luma/agent/ray/v3.2/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "9:16",
+            "3:4",
+            "1:1",
+            "4:3",
+            "16:9",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Outpaint a source video into a new Ray 3.2 aspect ratio while preserving the original content frame-for-frame."
+        }
       }
     ],
     "features": {
@@ -3138,10 +3393,10 @@
         "value": false
       },
       "motionControls": {
-        "value": false
+        "value": true
       },
       "keyframes": {
-        "value": false
+        "value": true
       },
       "extend": {
         "value": false
@@ -4257,6 +4512,7 @@
     "versionLabel": "2.5 Turbo",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4583,6 +4839,7 @@
     "versionLabel": "v2.6 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10211,6 +10468,7 @@
     "versionLabel": "Preview",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10914,6 +11172,7 @@
     "versionLabel": "Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -11230,6 +11489,7 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -12725,6 +12985,7 @@
     "versionLabel": "Nano",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "isLegacy": true,
     "surfaces": {
       "modelPage": {
         "indexable": true,

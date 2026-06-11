@@ -96,7 +96,7 @@ test('Luma Agents keeps fal fallback for public modes when advanced flag is enab
   );
 });
 
-test('Luma Agents advanced modes stay fal-only unless advanced direct-only flag is enabled', () => {
+test('Luma Agents source-video modes route direct without Fal fallback when video direct is enabled', () => {
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'luma-ray-3-2',
@@ -108,7 +108,13 @@ test('Luma Agents advanced modes stay fal-only unless advanced direct-only flag 
         LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED: 'false',
       },
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    {
+      kind: 'luma_agents_direct_primary',
+      primaryProvider: 'luma_agents_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: false,
+      advancedDirectOnlyEnabled: false,
+    }
   );
 
   assert.deepEqual(
@@ -134,7 +140,7 @@ test('Luma Agents advanced modes stay fal-only unless advanced direct-only flag 
 });
 
 test('Luma Agents keeps extend fal-only even when advanced direct-only flag is enabled', () => {
-  assert.equal(isLumaAgentsVideoModeSupported('extend', { advancedDirectOnlyEnabled: true }), false);
+  assert.equal(isLumaAgentsVideoModeSupported('extend'), false);
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'luma-ray-3-2',
@@ -199,5 +205,34 @@ test('Luma Agents support keeps direct-only HDR off fal fallback for unsupported
 
   assert.equal(support.supported, false);
   assert.equal(support.reason, 'aspect_ratio_not_supported');
+  assert.equal(support.fallbackCompatible, false);
+});
+
+test('Luma Agents support rejects vertical 1080p reframe as direct-only unsupported', () => {
+  const support = resolveLumaAgentsVideoSupport({
+    engineId: 'luma-ray-3-2',
+    mode: 'reframe',
+    falPayload: {
+      engineId: 'luma-ray-3-2',
+      prompt: 'Extend the frame vertically',
+      mode: 'reframe',
+      aspectRatio: '9:16',
+      resolution: '1080p',
+      inputs: [
+        {
+          kind: 'video',
+          slotId: 'video_url',
+          name: 'source.mp4',
+          type: 'video/mp4',
+          size: 123,
+          url: 'https://cdn.maxvideoai.com/source.mp4',
+        },
+      ],
+    },
+    advancedDirectOnlyEnabled: true,
+  });
+
+  assert.equal(support.supported, false);
+  assert.equal(support.reason, 'reframe_vertical_1080p_not_supported');
   assert.equal(support.fallbackCompatible, false);
 });

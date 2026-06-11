@@ -19,7 +19,7 @@
       "title": "Best image-to-video AI generator",
       "description": "Best AI video models for turning a still image, style frame, or product shot into controlled motion.",
       "tier": 1,
-      "topPicks": ["seedance-2-0", "veo-3-1", "kling-3-pro", "luma-ray-3-2", "happy-horse-1-0"],
+      "topPicks": ["seedance-2-0", "veo-3-1", "kling-3-pro", "happy-horse-1-0", "luma-ray-3-2"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
@@ -27,7 +27,7 @@
       "title": "Best cinematic AI video generator",
       "description": "Best AI video models for cinematic motion, lighting, camera language, and high-end visual polish.",
       "tier": 1,
-      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "luma-ray-3-2", "happy-horse-1-0"],
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-0", "luma-ray-3-2"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-kling-3-pro", "seedance-2-0-vs-veo-3-1"]
     },
     {
@@ -43,7 +43,7 @@
       "title": "Best reference-to-video AI generator",
       "description": "Best AI video models for guiding output with reference images, video clips, audio, or approved visual material.",
       "tier": 1,
-      "topPicks": ["seedance-2-0", "kling-3-pro", "happy-horse-1-0", "veo-3-1"],
+      "topPicks": ["seedance-2-0", "kling-3-pro", "happy-horse-1-0", "veo-3-1", "luma-ray-3-2"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "kling-3-pro-vs-seedance-2-0"]
     },
     {

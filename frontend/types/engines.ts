@@ -255,6 +255,7 @@ export interface PreflightRequest {
   loop?: boolean;
   audio?: boolean;
   voiceControl?: boolean;
+  extraInputValues?: Record<string, unknown>;
   user?: {
     memberTier?: string;
   };

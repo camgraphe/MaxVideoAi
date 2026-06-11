@@ -1,6 +1,6 @@
 # Luma Agents Provider
 
-Date: 2026-06-10
+Date: 2026-06-11
 Status: implemented behind feature flags
 
 ## Overview
@@ -12,7 +12,7 @@ MaxVideoAI supports Luma Agents through two paths:
 
 The public engine slugs are:
 
-- `luma-ray-3-2` for video text-to-video and image-to-video.
+- `luma-ray-3-2` for video text-to-video, image-to-video, source-video Modify, and Reframe.
 - `luma-uni-1` for image text-to-image and image-to-image editing.
 - `luma-uni-1-max` for higher-fidelity image text-to-image and image-to-image editing.
 
@@ -20,27 +20,32 @@ Direct Luma routing is primary only when flags are enabled and the request shape
 
 ## Public Scope
 
-Public launch exposes only routes that keep a fal fallback path:
+Public launch separates fallback-safe generation from Luma-only source-video routes:
 
-- Ray 3.2 video: `t2v` and `i2v`, 5s/10s, 540p/720p/1080p, loop where valid, public aspect ratios from the app controls, source images for direct image-to-video, and fal-only fallback-safe reference-image shapes where the fal schema accepts them.
+- Ray 3.2 generation: `t2v` and `i2v`, 5s/10s, 540p/720p/1080p, loop where valid, public aspect ratios from the app controls, source images for direct image-to-video, and fal-compatible fallback where the fal schema accepts the request shape.
+- Ray 3.2 source-video Modify: `v2v`, one MP4/MOV/WebM source clip, 5s/10s output, 540p/720p/1080p, optional single guide frame or indexed keyframes, provider strength presets, and no audio generation. Guide frame and Modify keyframes are mutually exclusive.
+- Ray 3.2 Reframe: `reframe`, one source clip, target aspect ratio, 540p/720p/1080p where supported by the provider constraints, optional source-position controls, and no HDR/EXR.
 - Uni-1 image: `t2i` and `i2i`, 2K output, supported aspect ratios for generation, source image plus references for edit, `auto`/`manga` style, PNG/JPEG, optional web search for generation.
 - Uni-1 Max image: same public controls as Uni-1, with the Max pricing and model route.
 
 Ray 3.2 video comparisons are allowed only against video models. Uni image models are excluded from public compare/VS pages.
 
-## Advanced Scope
+## Direct-Only Scope
 
-`LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED` gates Luma-only options that do not have a fal-equivalent fallback. Keep it false for public rollout.
+Some Ray 3.2 capabilities are Luma-only. They must not silently fallback to fal because fal either does not expose the route or does not accept the same controls.
 
-Deferred direct-only scope includes:
+Product-approved direct-only scope:
 
-- Ray 3.2 `video_edit`.
-- Ray 3.2 `video_reframe`.
-- HDR / EXR output.
+- Ray 3.2 `video_edit` / MaxVideoAI `v2v`.
+- Ray 3.2 `video_reframe` / MaxVideoAI `reframe`.
+
+Advanced direct-only scope:
+
+- HDR / EXR output for compatible non-Reframe modes.
 
 Single-keyframe extend workflows remain unsupported in the current runtime, even when advanced direct-only routing is enabled.
 
-If this flag is enabled in an admin/labs context, do not silently send those requests to fal. If the direct request cannot be accepted, fail/refund through the normal provider error path.
+If a direct-only request cannot be accepted, fail/refund through the normal provider error path. Do not launch a second fal render.
 
 ## Environment
 
@@ -146,9 +151,13 @@ LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED=false
    - Uni-1 Max text image.
    - Ray 3.2 5s 720p text-to-video.
    - Ray 3.2 5s image-to-video.
-4. Force a pre-acceptance fallback by mocking Luma 429 or transient 5xx. Verify `provider_attempts` records Luma failed before acceptance and fal started.
-5. Verify an accepted Luma video completes through `/api/cron/luma-agents-poll`, copies to MaxVideoAI storage, and records provider cost.
-6. Enable public image direct first:
+   - Ray 3.2 Modify with one source video and no guide frames.
+   - Ray 3.2 Modify with indexed guide keyframes.
+   - Ray 3.2 Reframe from a source video to a new aspect ratio.
+4. Force a pre-acceptance fallback by mocking Luma 429 or transient 5xx on a fal-compatible generation request. Verify `provider_attempts` records Luma failed before acceptance and fal started.
+5. Verify a direct-only Modify/Reframe request does not fallback to fal after unsupported direct failure.
+6. Verify an accepted Luma video completes through `/api/cron/luma-agents-poll`, copies to MaxVideoAI storage, and records provider cost.
+7. Enable public image direct first:
 
 ```txt
 LUMA_AGENTS_PUBLIC_ROUTING_ENABLED=true
@@ -157,8 +166,8 @@ LUMA_AGENTS_IMAGE_DIRECT_ENABLED=true
 LUMA_AGENTS_VIDEO_DIRECT_ENABLED=false
 ```
 
-7. Enable public Ray 3.2 direct after image direct is stable by setting `LUMA_AGENTS_VIDEO_DIRECT_ENABLED=true` while keeping `LUMA_AGENTS_PUBLIC_ROUTING_ENABLED=true` and `LUMA_AGENTS_ADMIN_ONLY=false`.
-8. Keep `LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED=false` until product explicitly accepts no-fallback advanced options.
+8. Enable public Ray 3.2 direct after image direct is stable by setting `LUMA_AGENTS_VIDEO_DIRECT_ENABLED=true` while keeping `LUMA_AGENTS_PUBLIC_ROUTING_ENABLED=true` and `LUMA_AGENTS_ADMIN_ONLY=false`.
+9. Keep `LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED=false` until product explicitly accepts additional no-fallback options beyond the current Modify/Reframe surface.
 
 ## Operational Checks
 
@@ -174,9 +183,13 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
   tests/luma-agents-poll.test.ts \
   tests/luma-agents-image-payload.test.ts \
   tests/luma-agents-image-provider.test.ts \
-  tests/luma-agents-marketing-surfaces.test.ts
+  tests/luma-agents-marketing-surfaces.test.ts \
+  tests/luma-ray32-keyframe-editor.test.ts \
+  tests/workspace-hydration.test.ts \
+  tests/workspace-generation-request-helpers.test.ts
 pnpm model:check
 pnpm models:audit
+pnpm --prefix frontend run seo:check
 git diff --check
 ```
 

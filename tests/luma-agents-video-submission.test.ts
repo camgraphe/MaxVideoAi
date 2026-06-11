@@ -296,11 +296,11 @@ test('Luma Agents submission does not fallback or double-submit invalid direct r
   );
 });
 
-test('Luma Agents submission keeps direct-only advanced controls off fal fallback', async () => {
+test('Luma Agents submission keeps HDR requests off fal fallback', async () => {
   const { queryFn } = createQueryRecorder();
   let falCalled = false;
   const { params } = baseParams({
-    advancedDirectOnlyEnabled: true,
+    advancedDirectOnlyEnabled: false,
     falPayload: {
       ...falPayload,
       loop: false,
@@ -328,13 +328,49 @@ test('Luma Agents submission keeps direct-only advanced controls off fal fallbac
   assert.equal(falCalled, false);
 });
 
+test('Luma Agents submission keeps Ray 3.2 Modify off Fal fallback', async () => {
+  const { queryFn } = createQueryRecorder();
+  let falCalled = false;
+  const { params } = baseParams({
+    mode: 'v2v',
+    durationSec: 5,
+    aspectRatio: null,
+    falPayload: {
+      ...falPayload,
+      mode: 'v2v',
+      loop: false,
+      videoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+    },
+    falInputSummary: { hasImage: false, hasVideo: true, imageCount: 0, videoCount: 1 },
+    deps: {
+      queryFn,
+      getLumaAgentsClientFn: () => ({
+        createGeneration: async () => {
+          throw new LumaAgentsError('Rate limit exceeded', { status: 429 });
+        },
+        getGeneration: async () => acceptedTask(),
+      }),
+      submitFalGenerateTaskFn: async () => {
+        falCalled = true;
+        return { ok: true, generationResult: { provider: 'fal', thumbUrl: '/thumb.svg' } };
+      },
+    },
+  });
+
+  const result = await submitLumaAgentsGenerateTask(params);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 503);
+  assert.equal(falCalled, false);
+});
+
 test('Luma Agents submission does not route HDR requests with fal-only options to fal', async () => {
   const { queries, queryFn } = createQueryRecorder();
   let directCalled = false;
   let falCalled = false;
   const { params } = baseParams({
     aspectRatio: '3:1',
-    advancedDirectOnlyEnabled: true,
+    advancedDirectOnlyEnabled: false,
     falPayload: {
       ...falPayload,
       aspectRatio: '3:1',

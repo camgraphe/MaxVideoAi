@@ -23,6 +23,7 @@ import {
   buildDefinitionFromEngine,
   buildGptImage2Snapshot,
   buildLumaAgentsImageSnapshot,
+  buildLumaRay32DirectSnapshot,
   buildLumaRay32Snapshot,
   buildLumaRay2EditSnapshot,
   buildLumaRay2Snapshot,
@@ -55,6 +56,12 @@ export type PricingContext = {
   referenceImageCount?: number;
   addons?: Record<string, boolean | number | undefined>;
 };
+
+function booleanAddon(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+  return false;
+}
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
   const { engine, durationSec, resolution } = context;
@@ -101,6 +108,23 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     snapshot = buildLumaRay32Snapshot({
       duration: context.durationOption ?? durationSec,
       resolution,
+      hdr: booleanAddon(context.addons?.hdr),
+      exrExport: booleanAddon(context.addons?.exr_export ?? context.addons?.exrExport),
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+  } else if (isLumaRay32EngineId(engine.id) && (lumaMode === 'v2v' || lumaMode === 'reframe')) {
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    snapshot = buildLumaRay32DirectSnapshot({
+      mode: lumaMode,
+      durationSec,
+      duration: context.durationOption ?? durationSec,
+      resolution,
+      hdr: booleanAddon(context.addons?.hdr),
+      exrExport: booleanAddon(context.addons?.exr_export ?? context.addons?.exrExport),
       rule,
       memberTier,
       memberTierDiscounts,

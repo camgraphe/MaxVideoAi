@@ -4,8 +4,10 @@ import { ENV } from '@/lib/env';
 import type { LumaAgentsImageEngineId, LumaAgentsImageMode } from '@/lib/luma-agents';
 import {
   calculateLumaAgentsImageReferencePrice,
+  calculateLumaRay32DirectPrice,
   calculateLumaRay32ReferencePrice,
   type LumaAgentsImageReferencePricingBreakdown,
+  type LumaRay32DirectPricingBreakdown,
   type LumaRay32ReferencePricingBreakdown,
 } from '@/lib/luma-agents-pricing';
 import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
@@ -45,13 +47,15 @@ export function computeRoundedUpMarginCents(baseCents: number, marginPercent = 0
 
 function buildCentsSnapshotFromProviderReference(params: {
   baseSubtotalUsd: number;
-  breakdown: LumaAgentsImageReferencePricingBreakdown | LumaRay32ReferencePricingBreakdown;
+    breakdown: LumaAgentsImageReferencePricingBreakdown | LumaRay32ReferencePricingBreakdown | LumaRay32DirectPricingBreakdown;
   base: PricingSnapshot['base'];
   rule: PricingRule;
   memberTier: 'member' | 'plus' | 'pro';
   memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
   currency: string;
   vendorAccountId?: string | null;
+  pricingModel?: string;
+  providerCostSource?: string;
   meta?: Record<string, unknown>;
 }): PricingSnapshot {
   const baseSubtotalCents = Math.max(0, Math.ceil(params.baseSubtotalUsd * 100 - CENT_EPSILON));
@@ -94,8 +98,8 @@ function buildCentsSnapshotFromProviderReference(params: {
     vendorShareCents,
     vendorAccountId: params.vendorAccountId ?? undefined,
     meta: {
-      pricing_model: 'fal_reference_plus_margin',
-      provider_cost_source: 'fal_reference_price',
+      pricing_model: params.pricingModel ?? 'fal_reference_plus_margin',
+      provider_cost_source: params.providerCostSource ?? 'fal_reference_price',
       cost_breakdown_usd: params.breakdown,
       ...params.meta,
     },
@@ -143,6 +147,8 @@ export function buildLumaAgentsImageSnapshot(params: {
 export function buildLumaRay32Snapshot(params: {
   duration: number | string | null | undefined;
   resolution: string;
+  hdr?: boolean | null;
+  exrExport?: boolean | null;
   rule: PricingRule;
   memberTier: 'member' | 'plus' | 'pro';
   memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
@@ -152,6 +158,8 @@ export function buildLumaRay32Snapshot(params: {
   const { baseSubtotalUsd, breakdown } = calculateLumaRay32ReferencePrice({
     duration: params.duration,
     resolution: params.resolution,
+    hdr: params.hdr,
+    exrExport: params.exrExport,
   });
   const seconds = breakdown.duration === '10s' ? 10 : 5;
 
@@ -172,7 +180,56 @@ export function buildLumaRay32Snapshot(params: {
     meta: {
       duration_label: breakdown.duration,
       resolution: breakdown.resolution,
+      dynamic_range: breakdown.dynamic_range,
       fal_reference_source: breakdown.falReferenceSource,
+    },
+  });
+}
+
+export function buildLumaRay32DirectSnapshot(params: {
+  mode: 'v2v' | 'reframe';
+  durationSec: number;
+  duration: number | string | null | undefined;
+  resolution: string;
+  hdr?: boolean | null;
+  exrExport?: boolean | null;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const { baseSubtotalUsd, breakdown } = calculateLumaRay32DirectPrice({
+    mode: params.mode,
+    durationSec: params.durationSec,
+    duration: params.duration,
+    resolution: params.resolution,
+    hdr: params.hdr,
+    exrExport: params.exrExport,
+  });
+  const seconds = params.mode === 'reframe' ? params.durationSec : breakdown.duration === '10s' ? 10 : 5;
+
+  return buildCentsSnapshotFromProviderReference({
+    baseSubtotalUsd,
+    breakdown,
+    base: {
+      seconds,
+      rate: seconds > 0 ? Number((baseSubtotalUsd / seconds).toFixed(4)) : baseSubtotalUsd,
+      unit: 'sec',
+      amountCents: 0,
+    },
+    rule: params.rule,
+    memberTier: params.memberTier,
+    memberTierDiscounts: params.memberTierDiscounts,
+    currency: params.currency,
+    vendorAccountId: params.vendorAccountId,
+    pricingModel: 'fal_reference_interpolated_plus_margin',
+    providerCostSource: breakdown.providerCostSource,
+    meta: {
+      mode: breakdown.mode,
+      duration_label: breakdown.duration,
+      resolution: breakdown.resolution,
+      dynamic_range: breakdown.dynamic_range,
     },
   });
 }

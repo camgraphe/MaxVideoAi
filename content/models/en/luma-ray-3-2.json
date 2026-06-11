@@ -2,16 +2,16 @@
   "marketingName": "Luma Ray 3.2",
   "versionLabel": "Ray 3.2",
   "seo": {
-    "title": "Luma Ray 3.2: Pricing, 5s/10s Video and Examples | MaxVideoAI",
-    "description": "Use Luma Ray 3.2 in MaxVideoAI for short cinematic text-to-video and image-to-video clips with 5s or 10s duration, 540p to 1080p output, prompt tips, examples and MaxVideoAI display pricing.",
+    "title": "Luma Ray 3.2 Modify Video, Reframe, Pricing and Examples | MaxVideoAI",
+    "description": "Use Luma Ray 3.2 in MaxVideoAI for source-video Modify, AI video Reframe, keyframed guide frames, silent 5s/10s video, prompts, examples and pricing.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 3.2 is the current public Luma video route in MaxVideoAI for short text-to-video and image-to-video generation. The launch surface focuses on supported 5s and 10s clips at 540p, 720p or 1080p.",
-  "pricingNotes": "Displayed prices use MaxVideoAI pricing with margin applied. The exact customer-facing price appears before generation.",
+  "overview": "Luma Ray 3.2 is best positioned in MaxVideoAI as an editing-first Luma video route: Modify an existing source clip, steer selected moments with guide frames or keyframes, and Reframe approved footage into new aspect ratios. Text-to-video and image-to-video remain available for short Luma motion tests, but Ray 3.2 does not generate native audio or lip sync.",
+  "pricingNotes": "All Ray 3.2 routes keep the MaxVideoAI customer quote aligned to the Fal reference price plus the configured margin, including Modify and Reframe. Internal routing does not change the client-facing price shown before generation.",
   "hero": {
-    "title": "Luma Ray 3.2 - current Luma cinematic video route",
-    "intro": "Generate short cinematic clips from a prompt or start image with public 5s and 10s controls, 540p to 1080p output and loop where the active public case supports it.",
-    "badge": "Text-to-video + Image-to-video · 5s/10s · 540p-1080p",
+    "title": "Luma Ray 3.2 - Modify and Reframe for current Luma video",
+    "intro": "Start from a source video when timing already works, then use Ray 3.2 Modify to change the look or guided moments, or Reframe to create vertical, square, landscape and ultrawide delivery cuts. Prompt-only and start-image generation stay available for short silent motion tests.",
+    "badge": "Modify video + Reframe · Guide/keyframes · Silent output",
     "ctaPrimary": {
       "label": "Generate with Luma Ray 3.2",
       "href": "/app?engine=luma-ray-3-2"
@@ -34,68 +34,75 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      { "title": "Short cinematic product reveals", "icon": "camera" },
-      { "title": "Image-led motion tests from approved stills", "icon": "imageToVideo" },
-      { "title": "5s loop checks for ambient or product motion", "icon": "repeat2" },
-      { "title": "10s pacing tests before final editing", "icon": "storyboard" },
-      { "title": "1080p inspection passes for selected shots", "icon": "sparkles" }
+      { "title": "Source-video visual modifications", "icon": "storyboard" },
+      { "title": "Vertical, square, wide or ultrawide Reframe cuts", "icon": "repeat2" },
+      { "title": "Guide-frame and keyframe-directed edit passes", "icon": "imageToVideo" },
+      { "title": "Short silent Luma motion tests from text or stills", "icon": "camera" },
+      { "title": "1080p inspection passes for selected edit candidates", "icon": "sparkles" }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Workflows", "body": "Text-to-video and image-to-video on the public launch surface" },
-    { "label": "Duration", "body": "5s or 10s generation" },
+    { "label": "Workflows", "body": "Source-video Modify, Reframe, text-to-video and image-to-video" },
+    { "label": "Duration", "body": "5s or 10s generation; source-video intake up to the configured clip limit for Modify/Reframe" },
     { "label": "Resolution", "body": "540p, 720p or 1080p" },
     { "label": "Aspect ratios", "body": "Common wide, square, portrait and extended ratios exposed by the active route" },
-    { "label": "References", "body": "One start image for image-led runs plus optional reference images where the public route accepts them" },
-    { "label": "Loop", "body": "Use loop for supported 5s public cases, especially simple cyclical motion" },
-    { "label": "Pricing", "body": "Public examples use MaxVideoAI display pricing, with exact price shown before generation" }
+    { "label": "Guides", "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify" },
+    { "label": "Source video", "body": "One MP4, MOV or WebM source clip for Modify and Reframe" },
+    { "label": "Pricing", "body": "Generation, Modify and Reframe use the same Fal-reference customer quote logic with MaxVideoAI margin" }
   ],
   "promptStructure": {
     "title": "Prompt mini-guide",
-    "quote": "Subject + action + camera move + lighting + duration + resolution + loop intent when needed.",
-    "description": "Ray 3.2 responds best to compact shot briefs. Keep the motion, camera and output choice explicit, especially when switching from a prompt-only run to a start-image run.",
+    "quote": "Source goal + what stays + what changes + guide moment or target canvas + duration/resolution when relevant.",
+    "description": "Ray 3.2 responds best when the mode is explicit. For Modify, state what should remain from the source video before describing the visual change. For Reframe, name the priority subject and how the new canvas should be filled.",
     "steps": [
-      "Name one subject and one clear action.",
-      "Add the camera move and framing.",
-      "Choose 5s for tight motion checks or 10s for slower reveals.",
+      "Start with Modify or Reframe when an approved source clip already exists.",
+      "Name what must remain from the source video: timing, camera path, subject motion or product scale.",
+      "Then describe the visual change, guide moment or target delivery ratio.",
+      "Choose 5s for tight edit checks or 10s for slower generated or modified reveals.",
       "Use 540p or 720p for exploration and 1080p for selected checks.",
-      "Add a start image only when the first frame needs to stay anchored.",
-      "Use loop only for simple cyclical movement."
+      "Use prompt-only or start-image generation when there is no source clip yet.",
+      "Plan audio, voice and sound design outside Ray 3.2."
     ]
   },
   "tips": {
     "title": "Tips and limits",
     "items": [
-      "Keep public launch prompts inside 5s or 10s and 540p to 1080p.",
-      "Use a start image when product shape, identity or composition matters.",
-      "Use 10s when the shot needs a complete reveal; use 5s for loops and draft motion.",
-      "Keep advanced options off the public page until they are product-approved.",
+      "Use Modify when source timing already works and the look, subject detail or scene treatment needs to change.",
+      "Use guide frames or keyframes when specific source moments need visual direction.",
+      "Use Reframe when an approved master needs a new delivery ratio without starting over.",
+      "Keep generation prompts inside 5s or 10s and 540p to 1080p.",
+      "Use a start image when product shape, identity or composition matters but no source video exists yet.",
+      "Treat Ray 3.2 as silent video output and add audio later.",
       "Review the exact price shown in the app before generation."
     ]
   },
   "prompts": [
     {
-      "title": "Product reveal",
-      "prompt": "Slow cinematic push-in on a premium speaker on a dark stone plinth, controlled reflections, soft rim light, subtle fabric vibration, 5s, 16:9, 720p."
+      "title": "Modify source video",
+      "prompt": "Keep the original camera move and timing from the source video, change the room into a bright editorial showroom, preserve product scale and subject motion, 5s, 720p."
     },
     {
-      "title": "Start image motion",
-      "prompt": "Animate the uploaded product still with a gentle clockwise camera drift, keep label shape stable, soft studio reflections, 5s, 1080p."
+      "title": "Keyframed edit pass",
+      "prompt": "Preserve the walking pace and camera dolly from the source clip. At the marked keyframes, shift the jacket from black nylon to cream technical fabric while keeping face, hands and background motion stable."
     },
     {
-      "title": "10s editorial shot",
-      "prompt": "A fashion model walks through a quiet gallery at dusk, slow lateral tracking shot, warm practical lights, restrained cinematic motion, 10s, 21:9, 1080p."
+      "title": "Reframe delivery cut",
+      "prompt": "Reframe the source surfing clip to 9:16, keep the rider centered, extend the wave and sky naturally, preserve the original action timing."
     },
     {
-      "title": "Loop test",
-      "prompt": "Minimal perfume bottle on a reflective table, tiny mist movement behind the product, perfectly stable bottle, seamless 5s loop, 1:1, 720p."
+      "title": "Supporting generation test",
+      "prompt": "Short silent product motion test: slow push-in on a premium speaker on a dark stone plinth, controlled reflections, soft rim light, subtle fabric vibration, 5s, 16:9, 720p."
     }
   ],
   "faqs": [
     {
       "q": "What does Luma Ray 3.2 support in MaxVideoAI?",
-      "a": "The public model page focuses on text-to-video and image-to-video generation with 5s or 10s duration and 540p, 720p or 1080p output."
+      "a": "The model page focuses on source-video Modify, Reframe, guide/keyframe editing, plus short text-to-video and image-to-video when you need a new silent Luma clip."
+    },
+    {
+      "q": "When is Ray 3.2 the strongest choice?",
+      "a": "Use it when you already have a usable source video and need to change the visual treatment, guide specific moments, or create new delivery ratios. For native soundtracks, dialogue or lip sync, choose an audio-capable engine instead."
     },
     {
       "q": "Does the page expose HDR or EXR options?",
@@ -106,37 +113,43 @@
       "a": "Displayed examples use MaxVideoAI pricing with margin. The exact app quote appears before generation."
     },
     {
-      "q": "When should I choose Ray 3.2 instead of Ray 2?",
-      "a": "Choose Ray 3.2 for the current public 5s/10s generation route. Choose Ray 2 when Modify or Reframe workflows are the priority."
+      "q": "Does Ray 3.2 generate audio?",
+      "a": "No. Treat Ray 3.2 renders as silent video outputs and add voice, music or sound design later."
     }
   ],
   "custom": {
     "heroEyebrow": "Luma Ray 3.2 Video Model",
-    "heroSupportLine": "Best for short cinematic Luma clips from prompts or start images.",
+    "heroSupportLine": "Best for source-video Modify, guide/keyframe edits and delivery Reframe.",
     "heroSpecChips": [
+      { "label": "Modify", "icon": "storyboard" },
+      { "label": "Reframe", "icon": "repeat2" },
+      { "label": "Guide/keyframes", "icon": "imageToVideo" },
       { "label": "Text->Video", "icon": "textToVideo" },
       { "label": "Image->Video", "icon": "imageToVideo" },
       { "label": "5s or 10s", "icon": "duration" },
-      { "label": "540p / 720p / 1080p", "icon": "resolution" },
-      { "label": "Loop where supported", "icon": "repeat2" }
+      { "label": "540p / 720p / 1080p", "icon": "resolution" }
     ],
     "whyTitle": "Why Ray 3.2 is useful",
-    "heroDesc1": "Ray 3.2 gives teams a current Luma route for short cinematic generation while keeping public settings clear and quoteable.",
-    "heroDesc2": "Use it for compact motion tests, start-image animation, simple loops and 1080p checks before moving clips into the rest of the production workflow.",
+    "heroDesc1": "Ray 3.2 gives teams a current Luma route for source-video Modify and Reframe, where an approved clip can be visually changed or adapted without rebuilding the shot from scratch.",
+    "heroDesc2": "Use it for edit passes, keyframed visual direction, delivery-ratio variants, supporting short generation tests and 1080p checks before downstream audio or editing.",
     "heroHighlights": [
-      "Current Luma route||Ray 3.2 is the public Luma generation route for short text or start-image clips.",
-      "Supported public surface||Marketing settings focus on 5s/10s and 540p/720p/1080p combinations available in the public app.",
-      "Practical loop use||Loop is best for short, simple motion rather than complex scene changes.",
-      "Clear pricing context||Displayed prices follow MaxVideoAI pricing and the app confirms the exact quote."
+      "Modify-first value||Use Ray 3.2 when the source timing works and the visual treatment needs to change.",
+      "Guide/keyframe direction||Guide frames and indexed keyframes help steer specific source moments.",
+      "Reframe delivery||Reframe outpaints approved clips into new aspect ratios.",
+      "Silent output||Ray 3.2 is video-only in MaxVideoAI, so audio is planned downstream."
     ],
-    "specTitle": "Ray 3.2 public specs",
-    "specNote": "Specs describe the public MaxVideoAI launch surface, not advanced controls outside this page.",
+    "specTitle": "Ray 3.2 specs",
+    "specNote": "Specs describe the MaxVideoAI Ray 3.2 surface for generation, Modify and Reframe.",
     "specSections": [
       {
-        "title": "Generation surface",
-        "intro": "Ray 3.2 is exposed for short public generation routes.",
+        "title": "Edit and reframe surface",
+        "intro": "Ray 3.2 is exposed first for source-video Modify and Reframe, with generation available as a supporting route.",
         "items": [
-          "Text-to-video for prompt-only shots.",
+          "Modify for source-video visual changes.",
+          "Guide frame or indexed keyframes for directed Modify passes.",
+          "Up to 64 Modify keyframe anchors where the provider route accepts them.",
+          "Reframe for aspect-ratio delivery variants.",
+          "Text-to-video for prompt-only silent motion tests.",
           "Image-to-video when one opening still should anchor the clip.",
           "5s and 10s durations.",
           "540p, 720p and 1080p output choices."
@@ -145,39 +158,44 @@
       {
         "title": "Operational notes",
         "items": [
-          "MaxVideoAI keeps Ray 3.2 requests on supported public settings.",
+          "MaxVideoAI keeps Ray 3.2 requests on supported settings.",
           "Provider capacity can vary during peak usage.",
-          "Public pricing examples use MaxVideoAI display rates with margin.",
-          "Advanced options are not part of this public page."
+          "All Ray 3.2 public modes keep the Fal-reference customer quote with margin.",
+          "Internal routing does not change the price shown to the client."
         ]
       }
     ],
     "whatTitle": "How to use Ray 3.2",
-    "whatIntro1": "Start in the video workspace, choose Ray 3.2, then pick prompt-only or start-image generation.",
-    "whatIntro2": "Keep the shot brief specific and review the app quote before launching.",
+    "whatIntro1": "Start with Ray 3.2 Modify when you have a source clip, or Reframe when the source clip is already approved but needs another delivery format.",
+    "whatIntro2": "Use prompt-only or start-image generation as a supporting path when you still need a new silent Luma motion candidate.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
       "Choose Luma Ray 3.2 as the engine.",
-      "Pick prompt-only or upload one start image.",
-      "Set duration to 5s or 10s.",
+      "Upload one source video for Modify or Reframe.",
+      "For Modify, add a guide frame or indexed keyframes when specific moments need direction.",
+      "For Reframe, choose the target ratio and subject priority.",
+      "Set duration to 5s or 10s where the mode supports it.",
       "Choose 540p, 720p or 1080p.",
-      "Use loop only for simple cyclical motion.",
+      "Use prompt-only or a start image only when generating a new clip.",
       "Review the exact price and generate."
     ],
     "galleryTitle": "Luma Ray 3.2 examples",
-    "galleryIntro": "Use examples to compare short Luma motion patterns, start-image animation and loop-friendly prompts.",
+    "galleryIntro": "Use examples to study Modify prompts, keyframed source-video changes, Reframe delivery setups and short supporting generation tests.",
     "galleryAllCta": "View all Luma examples",
     "recreateLabel": "Recreate this shot",
     "tipsTitle": "Practical strengths and boundaries",
     "strengths": [
-      "Good fit for short cinematic product, fashion, environment and social clips.",
-      "Start images help preserve composition and product shape.",
+      "Source videos help preserve timing and camera motion for Modify.",
+      "Guide frames and keyframes are useful when specific source moments need visual direction.",
+      "Reframe is useful when one approved clip needs several delivery ratios.",
+      "Good supporting fit for short product, fashion, environment and social motion tests.",
       "1080p is useful for final inspection of selected short clips."
     ],
     "boundaries": [
-      "Public duration is 5s or 10s.",
-      "Public resolution choices are 540p, 720p and 1080p.",
-      "Loop should be used for simple cyclical motion.",
+      "Generation duration is 5s or 10s.",
+      "Resolution choices are 540p, 720p and 1080p.",
+      "Ray 3.2 output is silent in MaxVideoAI.",
+      "It is not positioned as the best all-purpose choice when native audio, dialogue or lip sync is required.",
       "Provider capacity can vary during peak usage."
     ],
     "safetyTitle": "Safety and likeness",
@@ -188,20 +206,22 @@
       "Do not include private personal data or sensitive documents."
     ],
     "promptingTitle": "How to write a strong Ray 3.2 prompt",
-    "promptingIntro": "Write a single shot brief with subject, action, camera, lighting, duration and resolution.",
-    "promptingTip": "Tip: if you use a start image, describe motion and camera behavior instead of restating every visual detail.",
+    "promptingIntro": "Write a single edit or reframe brief with source preservation, the requested change, camera/framing intent, duration and resolution.",
+    "promptingTip": "Tip: for Modify, write the preservation rule first so the prompt does not fight the source video.",
     "promptingGlobalPrinciples": [
-      "Use one shot goal per generation.",
-      "Keep motion physically simple for loops.",
-      "Use 10s only when the action needs the extra time."
+      "Use one edit goal per source clip.",
+      "Keep the preservation rule and the requested change separate.",
+      "Use 10s only when the action needs the extra time.",
+      "Use generation only when no source clip exists yet."
     ],
     "promptingEngineWhy": [
-      "Short Luma clips work best when the camera path and subject action are clear.",
-      "Start images reduce ambiguity in product and identity-led clips.",
-      "Resolution and duration choices directly affect displayed pricing."
+      "Source videos make Modify and Reframe practical when timing is already approved.",
+      "Guide frames and keyframes help target specific moments instead of repainting the whole clip blindly.",
+      "Short Luma generation remains useful for creating candidate clips before a later edit/reframe pass.",
+      "Resolution, duration and mode choices directly affect displayed pricing."
     ],
     "promptingGuideLabel": "Ray 3.2 prompt guide",
-    "finalPara1": "Ray 3.2 is the current public Luma generation route in MaxVideoAI, built for short cinematic clips with conservative public controls.",
+    "finalPara1": "Ray 3.2 is the current Luma video route in MaxVideoAI when Modify, guide/keyframe control and Reframe matter more than native audio generation.",
     "finalButton": "Generate with Luma Ray 3.2"
   }
 }

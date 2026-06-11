@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { ImageGenerationMode, ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
@@ -28,7 +28,7 @@ import type { BillingProductKey, JobSurface } from '@/types/billing';
 import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
-import { ImageGenerationExecutionError } from './image-generation-error';
+import { failImageGenerationExecution as fail, ImageGenerationExecutionError } from './image-generation-error';
 import { createAtomicInitialImageJob } from './image-initial-job';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
@@ -64,17 +64,6 @@ type ExecuteImageGenerationOptions = {
   billingQuantityMultiplier?: number;
   isAdminForDirectProvider?: boolean;
 };
-
-function fail(
-  mode: ImageGenerationMode,
-  code: string,
-  message: string,
-  status: number,
-  detail?: unknown,
-  extras?: Partial<ImageGenerationResponse>
-): never {
-  throw new ImageGenerationExecutionError(message, { mode, code, status, detail, extras });
-}
 
 export async function executeImageGeneration({
   userId,

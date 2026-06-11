@@ -99,6 +99,7 @@ test('Fal request helper maps normalized attachments to provider inputs', () => 
         url: 'https://cdn.maxvideoai.com/source.mp4',
         width: null,
         height: 720,
+        durationSec: 18.7,
         assetId: 'asset_123',
       }),
     ]),
@@ -113,6 +114,7 @@ test('Fal request helper maps normalized attachments to provider inputs', () => 
         url: 'https://cdn.maxvideoai.com/source.mp4',
         width: undefined,
         height: 720,
+        durationSec: 18.7,
         assetId: 'asset_123',
       },
     ]

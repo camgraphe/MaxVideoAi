@@ -4,8 +4,8 @@ export const lumaRay32TemplateConfig: ModelPageTemplateConfig = {
   slug: 'luma-ray-3-2',
   intent: 'production',
   hero: {
-    eyebrow: 'LUMA CURRENT VIDEO ROUTE',
-    subtitleHighlightTerms: ['cinematic Ray 3.2 motion', '5s or 10s shots', 'direct Luma route with fal fallback'],
+    eyebrow: 'LUMA MODIFY + REFRAME ROUTE',
+    subtitleHighlightTerms: ['source-video Modify', 'Reframe', 'silent video outputs'],
     primaryCtaHref: '/app?engine=luma-ray-3-2',
     secondaryCtaHref: '/examples/luma',
     quickLinks: [

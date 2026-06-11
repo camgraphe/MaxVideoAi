@@ -384,11 +384,13 @@ test('Luma Uni image pages stay image-only and avoid compare routes', () => {
   }
 });
 
-test('Luma Ray 3.2 page is video-first and does not expose direct-only HDR copy at launch', () => {
+test('Luma Ray 3.2 page is Modify/Reframe-first and does not expose direct-only HDR copy at launch', () => {
   const decision = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
   assert.ok(decision);
   assert.equal(decision.hero.primaryCta.href, '/app?engine=luma-ray-3-2');
   assert.doesNotMatch(visibleDecisionText(decision), /EXR|HDR export|video edit controls/i);
+  assert.match(visibleDecisionText(decision), /Modify|Reframe|guide\/keyframe|source-video/i);
+  assert.match(visibleDecisionText(decision), /silent video outputs|Silent by design/i);
   assert.match(visibleDecisionText(decision), /5s|10s|540p|720p|1080p/i);
 });
 
@@ -595,8 +597,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(soraPro.meta.title, /Pricing|1080p|Examples/i);
   assert.match(wan25.meta.title, /Pricing|Audio Drafts|Examples/i);
   assert.match(wan26.meta.title, /Pricing|References|Examples/i);
-  assert.match(luma.meta.title, /Pricing|Modify|Reframe/i);
-  assert.match(lumaFlash.meta.title, /Pricing|Drafts|Examples/i);
+  assert.match(luma.meta.title, /Legacy|Modify|Reframe/i);
+  assert.match(lumaFlash.meta.title, /Legacy|Pricing|Drafts/i);
   assert.match(lumaRay32.meta.title, /Pricing|5s\/10s|Examples/i);
   assert.match(lumaUni.meta.title, /Image Pricing|References|Editing/i);
   assert.match(lumaUniMax.meta.title, /Pricing|2K Images|Editing/i);
@@ -714,15 +716,15 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     /15s|reference-to-video/i,
     'Wan 2.5 hero should not cannibalize Wan 2.6 reference-video positioning'
   );
-  assert.match(visibleDecisionText(luma), /premium|Modify|Reframe/i);
-  assert.match(visibleDecisionText(lumaFlash), /draft|lower-cost|Flash/i);
+  assert.match(visibleDecisionText(luma), /legacy|Ray 3\.2|Modify|Reframe/i);
+  assert.match(visibleDecisionText(lumaFlash), /legacy|Ray 3\.2|Flash/i);
   assert.match(visibleDecisionText(lumaRay32), /5s|10s|540p|720p|1080p/i);
   assert.match(visibleDecisionText(lumaUni), /2K image generation|image edits|multi-reference guidance/i);
   assert.match(visibleDecisionText(lumaUniMax), /Higher-fidelity Uni-1 stills|precise image revisions|reference-led edits/i);
   assert.doesNotMatch(
     visibleDecisionText(lumaFlash),
     /higher-confidence finals|delivery-ready Luma variants|premium cinematic generation workflow/i,
-    'Luma Ray 2 Flash should not cannibalize Ray 2 premium-final positioning'
+    'Luma Ray 2 Flash should not revive old Ray 2 final-route positioning'
   );
   assert.doesNotMatch(
     visibleDecisionText(luma),
@@ -896,19 +898,34 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       `LTX 2 Fast ${locale} copy should not claim current LTX 2.3 fast capabilities`
     );
     assert.doesNotMatch(
+    visibleDecisionText(localizedLuma),
+      /audio native|audio natif|audio nativo|lower-cost iteration|iteración de menor coste|current default|route actuelle par défaut/i,
+      `Luma Ray 2 ${locale} copy should stay legacy/edit-route focused without audio or Flash-current positioning`
+    );
+    assert.match(
       visibleDecisionText(localizedLuma),
-      /audio native|audio natif|audio nativo|lower-cost iteration|iteración de menor coste/i,
-      `Luma Ray 2 ${locale} copy should stay premium/edit-route focused without audio or Flash positioning`
+      /Ray 3\.2|ancienne génération|generación anterior|legacy/i,
+      `Luma Ray 2 ${locale} copy should route new Luma work toward Ray 3.2`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedLumaFlash),
-      /premium final|rendus finaux premium|finales premium|higher-confidence finals/i,
-      `Luma Ray 2 Flash ${locale} copy should stay draft-route focused`
+      /premium final|rendus finaux premium|finales premium|higher-confidence finals|current default|route actuelle par défaut/i,
+      `Luma Ray 2 Flash ${locale} copy should stay legacy fast-route focused`
+    );
+    assert.match(
+      visibleDecisionText(localizedLumaFlash),
+      /Ray 3\.2|ancienne génération|generación anterior|legacy/i,
+      `Luma Ray 2 Flash ${locale} copy should route new Luma work toward Ray 3.2`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedLumaRay32),
       /HDR export|EXR|video edit controls/i,
-      `Luma Ray 3.2 ${locale} copy should stay public generation-route focused`
+      `Luma Ray 3.2 ${locale} copy should stay public Modify/Reframe focused`
+    );
+    assert.match(
+      visibleDecisionText(localizedLumaRay32),
+      /Modify|Reframe/i,
+      `Luma Ray 3.2 ${locale} copy should emphasize Modify and Reframe`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedLumaUni),

@@ -27,6 +27,7 @@ import {
   coerceFormState,
   getEngineModeOptions,
   getModeCaps,
+  getPreferredEngineMode,
   isWorkspaceModeAvailable,
   resolveSelectedWorkspaceEngine,
   supportsModeAudioControl,
@@ -394,6 +395,40 @@ test('workspace initializes and sends mode-scoped Luma Ray 3.2 loop controls', (
   assert.equal(result.payload.loop, true);
   assert.equal(result.payload.durationOption, '5s');
   assert.deepEqual(result.payload.referenceImages, ['https://cdn.example.com/ref.png']);
+});
+
+test('workspace unifies Luma Ray 3.2 text and image generation under Generate Video', () => {
+  const ray32 = listFalEngines().find((entry) => entry.id === 'luma-ray-3-2')?.engine;
+  assert.ok(ray32);
+
+  assert.equal(getPreferredEngineMode(ray32), 'v2v');
+  assert.equal(getPreferredEngineMode(ray32, 't2v'), 't2v');
+  assert.deepEqual(
+    buildComposerModeToggles({
+      selectedEngine: ray32,
+      audioWorkflowLocked: false,
+      uiLocale: 'en',
+      workflowCopy: {
+        generateVideo: 'Generate Video',
+        removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported',
+        audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked',
+      },
+    })?.map((entry) => entry.mode),
+    [null, 'v2v', 'reframe']
+  );
+
+  const generateSchema = summarizeWorkspaceInputSchema({
+    selectedEngine: ray32,
+    activeMode: 't2v',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: false,
+    isUnifiedSeedance: false,
+    uiLocale: 'en',
+  });
+
+  assert.ok(generateSchema.assetFields.some(({ field }) => field.id === 'image_url'));
 });
 
 test('workspace exposes Veo 3.1 manual modes by variant', () => {

@@ -129,11 +129,7 @@ export function resolveVideoProviderRoutingPlan(params: {
     const advancedDirectOnlyEnabled = flagEnabled(
       readEnv(params.env, 'LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED')
     );
-    if (
-      !isLumaAgentsVideoModeSupported(params.mode, {
-        advancedDirectOnlyEnabled,
-      })
-    ) {
+    if (!isLumaAgentsVideoModeSupported(params.mode)) {
       return falOnly;
     }
     if (!flagEnabled(readEnv(params.env, 'LUMA_AGENTS_ENABLED'))) return falOnly;

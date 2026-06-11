@@ -28,6 +28,7 @@ export type UserAsset = {
   width?: number | null;
   height?: number | null;
   size?: number | null;
+  durationSec?: number | null;
   mime?: string | null;
   source?: string | null;
   createdAt?: string;
@@ -85,6 +86,7 @@ export function normalizeAssetLibraryPayload(
         sourceOutputId?: string | null;
         jobId?: string | null;
         previewUrl?: string | null;
+        durationSec?: number | null;
       }>).map((asset) => {
         const mime = asset.mime ?? null;
         return {
@@ -96,6 +98,7 @@ export function normalizeAssetLibraryPayload(
           width: asset.width ?? null,
           height: asset.height ?? null,
           size: asset.size ?? null,
+          durationSec: typeof asset.durationSec === 'number' ? asset.durationSec : null,
           mime,
           source: isRecentOutputSource ? 'recent' : asset.source ?? null,
           createdAt: asset.createdAt,
@@ -153,6 +156,7 @@ export function mergeMirroredLibraryAsset(
     width?: number | null;
     height?: number | null;
     size?: number | null;
+    durationSec?: number | null;
     mime?: string | null;
   }
 ): UserAsset {
@@ -163,6 +167,7 @@ export function mergeMirroredLibraryAsset(
     width: mirrored.width ?? asset.width,
     height: mirrored.height ?? asset.height,
     size: mirrored.size ?? asset.size,
+    durationSec: mirrored.durationSec ?? asset.durationSec,
     mime: mirrored.mime ?? asset.mime,
     canDelete: true,
   };
@@ -180,6 +185,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
     url: asset.url,
     width: asset.width ?? null,
     height: asset.height ?? null,
+    durationSec: asset.durationSec ?? null,
     assetId: asset.id,
     status: 'ready',
   };

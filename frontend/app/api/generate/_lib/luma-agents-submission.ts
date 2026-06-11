@@ -84,7 +84,6 @@ function hasAdvancedDirectOnlyRequest(params: {
   advancedDirectOnlyEnabled: boolean;
   falPayload: GeneratePayload;
 }): boolean {
-  if (!params.advancedDirectOnlyEnabled) return false;
   if (params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend') return true;
   const extra = params.falPayload.extraInputValues ?? {};
   return booleanValue(extra.hdr) || booleanValue(extra.exr_export ?? extra.exrExport);
@@ -97,12 +96,16 @@ export function resolveLumaAgentsSubmissionMediaInputs(params: {
   startImageUrl: string | null;
   endImageUrl: string | null;
   sourceVideoUrl: string | null;
+  sourceVideoMimeType: string | null;
   referenceImageUrls: string[];
+  keyframeUrls: string[];
 } {
   const referenceImageUrls: string[] = [];
+  const keyframeUrls: string[] = [];
   let startImageUrl = cleanUrl(params.imageUrl) ?? cleanUrl(params.falPayload.imageUrl);
   let endImageUrl = cleanUrl(params.falPayload.endImageUrl);
   let sourceVideoUrl = cleanUrl(params.falPayload.videoUrl);
+  let sourceVideoMimeType: string | null = null;
 
   for (const url of params.falPayload.referenceImages ?? []) {
     addUniqueUrl(referenceImageUrls, url);
@@ -131,12 +134,17 @@ export function resolveLumaAgentsSubmissionMediaInputs(params: {
       addUniqueUrl(referenceImageUrls, url);
       continue;
     }
+    if (input.kind === 'image' && slotId === 'edit_keyframe_urls') {
+      addUniqueUrl(keyframeUrls, url);
+      continue;
+    }
     if (
       input.kind === 'video' &&
       !sourceVideoUrl &&
       (slotId === 'video_url' || slotId === 'source_video_url' || slotId === 'video_urls' || !slotId)
     ) {
       sourceVideoUrl = url;
+      sourceVideoMimeType = cleanUrl(input.type);
     }
   }
 
@@ -144,7 +152,9 @@ export function resolveLumaAgentsSubmissionMediaInputs(params: {
     startImageUrl,
     endImageUrl,
     sourceVideoUrl,
+    sourceVideoMimeType,
     referenceImageUrls,
+    keyframeUrls,
   };
 }
 
@@ -456,6 +466,8 @@ export async function submitLumaAgentsGenerateTask(params: {
       imageUrl: mediaInputs.startImageUrl,
       endImageUrl: mediaInputs.endImageUrl,
       videoUrl: mediaInputs.sourceVideoUrl,
+      sourceVideoMimeType: mediaInputs.sourceVideoMimeType,
+      keyframeUrls: mediaInputs.keyframeUrls,
       referenceImageUrls: mediaInputs.referenceImageUrls,
       extraInputValues: params.falPayload.extraInputValues ?? null,
       advancedDirectOnlyEnabled: params.advancedDirectOnlyEnabled,

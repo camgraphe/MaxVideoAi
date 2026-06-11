@@ -139,6 +139,7 @@ export function useWorkspaceReferenceAssets({
               kind: 'video',
               jobId: asset.jobId ?? null,
               sourceOutputId: asset.sourceOutputId ?? null,
+              durationSec: asset.durationSec ?? null,
             });
             resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
             setAssetLibrary((previous) =>

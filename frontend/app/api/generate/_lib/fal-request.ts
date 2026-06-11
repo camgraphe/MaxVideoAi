@@ -47,6 +47,7 @@ export function buildFalInputs(attachments: NormalizedAttachment[]): GenerateAtt
         url: attachment.url,
         width: attachment.width ?? undefined,
         height: attachment.height ?? undefined,
+        ...(typeof attachment.durationSec === 'number' ? { durationSec: attachment.durationSec } : {}),
         assetId: attachment.assetId,
       }))
     : undefined;

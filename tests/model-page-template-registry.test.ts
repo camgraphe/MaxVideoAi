@@ -413,7 +413,7 @@ test('Wan templates separate reference-video route from shorter audio drafts', (
   );
 });
 
-test('Luma Ray 2 templates separate premium final route from fast draft route', () => {
+test('Luma Ray 2 templates stay available as legacy routes behind Ray 3.2', () => {
   const luma = getModelPageTemplateConfig('luma-ray-2');
   const lumaFlash = getModelPageTemplateConfig('luma-ray-2-flash');
 
@@ -421,6 +421,10 @@ test('Luma Ray 2 templates separate premium final route from fast draft route', 
   assert.ok(lumaFlash);
   assert.equal(luma.intent, 'production');
   assert.equal(lumaFlash.intent, 'draft');
+  assert.equal(luma.hero.eyebrow, 'PREVIOUS-GENERATION LUMA ROUTE');
+  assert.equal(lumaFlash.hero.eyebrow, 'PREVIOUS-GENERATION FAST LUMA ROUTE');
+  assert.match(luma.hero.subtitleHighlightTerms.join(' '), /Ray 3\.2 migration/);
+  assert.match(lumaFlash.hero.subtitleHighlightTerms.join(' '), /Ray 3\.2 migration/);
   assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
   assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
   assert.equal(luma.hero.quickLinks.some((link) => link.href === '#prompting'), true);
