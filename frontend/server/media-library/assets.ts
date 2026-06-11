@@ -174,6 +174,7 @@ export async function ensureReusableAsset(params: {
   sizeBytes?: number | null;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  metadata?: Record<string, unknown> | null;
 }): Promise<MediaAssetRecord> {
   await ensureMediaLibrarySchema();
   const source = normalizeMediaAssetSource(params.source);
@@ -288,6 +289,7 @@ export async function ensureReusableAsset(params: {
       sourceOutputId: params.sourceOutputId ?? null,
       thumbUrl: resolvedThumbUrl,
       previewUrl: resolvedPreviewUrl,
+      ...(params.metadata ?? {}),
     },
   });
   insert.id = identity;

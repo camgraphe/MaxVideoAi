@@ -1,8 +1,7 @@
-import { BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER } from '@/config/tools-background-removal-engines';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
 import type { PricingSnapshot } from '@/types/engines';
-import type { BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
+import type { BackgroundRemovalOutputCodec, BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
 import { BackgroundRemovalToolError } from './background-removal-errors';
 import {
   BACKGROUND_REMOVAL_SURFACE,
@@ -13,11 +12,13 @@ import {
 export type BackgroundRemovalPricingEstimate = {
   durationSec?: number | null;
   estimatedCostUsd?: number | null;
+  priceMultiplier?: number | null;
 };
 
 export async function resolveBackgroundRemovalPricingContext(params: {
   billingProductKey: string;
   engine: BackgroundRemovalToolEngineDefinition;
+  outputCodec: BackgroundRemovalOutputCodec;
   videoMetadata: BackgroundRemovalVideoMetadata;
 }): Promise<{ pricing: PricingSnapshot; pricingEstimate: BackgroundRemovalPricingEstimate }> {
   try {
@@ -30,13 +31,15 @@ export async function resolveBackgroundRemovalPricingContext(params: {
       unitPriceCents: pricing.totalCents,
       currency: pricing.currency,
       durationSec: params.videoMetadata.durationSec,
+      outputCodec: params.outputCodec,
     });
     const dynamicCents = Math.max(1, preview.totalCents ?? pricing.totalCents);
     pricing = cloneBackgroundRemovalPricingWithDynamicTotal(pricing, dynamicCents, {
       surface: BACKGROUND_REMOVAL_SURFACE,
       billingProductKey: params.billingProductKey,
       estimatedCostUsd: preview.estimate?.estimatedCostUsd ?? null,
-      priceMultiplier: BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER,
+      priceMultiplier: preview.estimate?.priceMultiplier ?? null,
+      outputCodec: params.outputCodec,
       videoMetadata: params.videoMetadata,
     });
     return {
@@ -44,6 +47,7 @@ export async function resolveBackgroundRemovalPricingContext(params: {
       pricingEstimate: {
         durationSec: params.videoMetadata.durationSec,
         estimatedCostUsd: preview.estimate?.estimatedCostUsd ?? null,
+        priceMultiplier: preview.estimate?.priceMultiplier ?? null,
       },
     };
   } catch (error) {

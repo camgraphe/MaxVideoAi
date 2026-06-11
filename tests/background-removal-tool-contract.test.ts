@@ -43,6 +43,28 @@ test('background removal client API is exported from the public API facade', () 
   assert.doesNotMatch(apiFacadeSource, /startBackgroundRemovalRealtimeSession/);
 });
 
+test('background removal ProRes exports have an operational seven-day cleanup path', () => {
+  const cleanupPath = join(root, 'frontend/src/server/tools/background-removal-retention-cleanup.ts');
+  const cronPath = join(root, 'frontend/app/api/cron/background-removal-retention/route.ts');
+  const vercelPath = join(root, 'frontend/vercel.json');
+  const storagePath = join(root, 'frontend/server/storage.ts');
+
+  assert.ok(existsSync(cleanupPath), 'expired ProRes cleanup should live in a focused server module');
+  assert.ok(existsSync(cronPath), 'expired ProRes cleanup should be exposed through an authenticated cron route');
+
+  const cleanupSource = readFileSync(cleanupPath, 'utf8');
+  const cronSource = readFileSync(cronPath, 'utf8');
+  const vercelSource = readFileSync(vercelPath, 'utf8');
+  const storageSource = readFileSync(storagePath, 'utf8');
+
+  assert.match(cleanupSource, /metadata->>'expiresAt'/);
+  assert.match(cleanupSource, /metadata->>'outputCodec'\s*=\s*'mov_proresks'/);
+  assert.match(cleanupSource, /deleteStorageObjectByUrl/);
+  assert.match(cronSource, /authorizeCronRequest/);
+  assert.match(vercelSource, /\/api\/cron\/background-removal-retention/);
+  assert.match(storageSource, /export async function deleteStorageObjectByUrl/);
+});
+
 test('background removal is a first-class job and media surface', () => {
   const billingTypes = readFileSync(join(root, 'frontend/types/billing.ts'), 'utf8');
   const surfaceNormalize = readFileSync(join(root, 'frontend/src/lib/job-surface-normalize.ts'), 'utf8');

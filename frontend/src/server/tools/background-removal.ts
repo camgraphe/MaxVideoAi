@@ -35,7 +35,10 @@ import {
   recordBackgroundRemovalRefundReceipt,
   type PendingBackgroundRemovalReceipt,
 } from './background-removal-job-persistence';
-import { persistBackgroundRemovalOutput } from './background-removal-output-persistence';
+import {
+  buildBackgroundRemovalOutputRetentionMetadata,
+  persistBackgroundRemovalOutput,
+} from './background-removal-output-persistence';
 
 type RunBackgroundRemovalToolInput = BackgroundRemovalToolRequest & {
   userId: string;
@@ -88,6 +91,7 @@ export async function runBackgroundRemovalToolBase(
   const { pricing, pricingEstimate } = await resolveBackgroundRemovalPricingContext({
     billingProductKey,
     engine,
+    outputCodec,
     videoMetadata,
   });
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
@@ -188,6 +192,7 @@ export async function runBackgroundRemovalToolBase(
       outputCodec,
       durationSec: videoMetadata.durationSec,
     });
+    const outputRetention = buildBackgroundRemovalOutputRetentionMetadata(outputCodec);
     const thumbUrl = persistedOutput.thumbUrl ?? BACKGROUND_REMOVAL_PLACEHOLDER_THUMB;
 
     await query(
@@ -246,6 +251,12 @@ export async function runBackgroundRemovalToolBase(
       width: persistedOutput.width ?? null,
       height: persistedOutput.height ?? null,
       thumbUrl,
+      metadata: {
+        outputCodec,
+        premiumFormat: outputRetention.premiumFormat,
+        retentionDays: outputRetention.retentionDays,
+        expiresAt: outputRetention.expiresAt,
+      },
     }).catch((assetError) => {
       console.warn('[tools/background-removal] failed to persist media asset', { jobId }, assetError);
     });

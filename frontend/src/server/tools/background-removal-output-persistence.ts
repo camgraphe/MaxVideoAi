@@ -8,6 +8,28 @@ import type {
 } from '@/types/tools-background-removal';
 import { formatBackgroundRemovalVideoMime } from './background-removal-request-utils';
 
+export const BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS = 7;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export function buildBackgroundRemovalOutputRetentionMetadata(
+  outputCodec: BackgroundRemovalOutputCodec,
+  now = new Date()
+): { premiumFormat: boolean; retentionDays: number | null; expiresAt: string | null } {
+  if (outputCodec !== 'mov_proresks') {
+    return {
+      premiumFormat: false,
+      retentionDays: null,
+      expiresAt: null,
+    };
+  }
+
+  return {
+    premiumFormat: true,
+    retentionDays: BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS,
+    expiresAt: new Date(now.getTime() + BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS * MS_PER_DAY).toISOString(),
+  };
+}
+
 function resolveOutputFetchTimeoutMs(durationSec?: number | null): number {
   const seconds =
     typeof durationSec === 'number' && Number.isFinite(durationSec) && durationSec > 0 ? Math.ceil(durationSec) : 1;
@@ -49,6 +71,7 @@ export async function persistBackgroundRemovalOutput(params: {
           ? output.mimeType
           : codecMime;
     const extension = getBackgroundRemovalOutputExtension(outputCodec);
+    const retention = buildBackgroundRemovalOutputRetentionMetadata(outputCodec);
     const upload = await uploadFileBuffer({
       data: buffer,
       mime,
@@ -80,6 +103,10 @@ export async function persistBackgroundRemovalOutput(params: {
         engineId,
         engineLabel,
         thumbUrl,
+        outputCodec,
+        premiumFormat: retention.premiumFormat,
+        retentionDays: retention.retentionDays,
+        expiresAt: retention.expiresAt,
       },
     });
 

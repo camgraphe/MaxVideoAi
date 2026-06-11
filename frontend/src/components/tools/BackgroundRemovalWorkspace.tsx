@@ -58,6 +58,7 @@ export default function BackgroundRemovalWorkspace() {
     copy,
     locale,
     metadata: sourceMedia.metadata,
+    outputCodec,
   });
   const { mutate, recentResults } = useBackgroundRemovalRecentJobs(user);
   const runner = useBackgroundRemovalGenerationRunner({

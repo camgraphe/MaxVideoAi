@@ -6,6 +6,10 @@ import {
   formatBackgroundRemovalVideoMime,
   parseBackgroundRemovalRequestId,
 } from '../frontend/src/server/tools/background-removal-request-utils.ts';
+import {
+  BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS,
+  buildBackgroundRemovalOutputRetentionMetadata,
+} from '../frontend/src/server/tools/background-removal-output-persistence.ts';
 
 test('studio provider input maps MaxVideoAI controls to Bria v3 schema', () => {
   assert.deepEqual(
@@ -53,4 +57,14 @@ test('provider output parsing supports Bria video object payloads', () => {
   assert.equal(output?.mimeType, 'video/webm');
   assert.equal(parseBackgroundRemovalRequestId(payload), 'bria-123');
   assert.equal(formatBackgroundRemovalVideoMime('mov_proresks'), 'video/quicktime');
+});
+
+test('ProRes background removal outputs carry seven-day retention metadata', () => {
+  const now = new Date('2026-06-11T12:00:00.000Z');
+  const retention = buildBackgroundRemovalOutputRetentionMetadata('mov_proresks', now);
+
+  assert.equal(retention.premiumFormat, true);
+  assert.equal(retention.retentionDays, BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS);
+  assert.equal(retention.expiresAt, '2026-06-18T12:00:00.000Z');
+  assert.equal(buildBackgroundRemovalOutputRetentionMetadata('webm_vp9', now).expiresAt, null);
 });

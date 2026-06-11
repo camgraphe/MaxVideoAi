@@ -328,6 +328,13 @@ async function deleteObjectFromStorage(key: string): Promise<void> {
   await client.send(command);
 }
 
+export async function deleteStorageObjectByUrl(assetUrl: string): Promise<boolean> {
+  const key = extractObjectKeyFromUrl(assetUrl);
+  if (!key) return false;
+  await deleteObjectFromStorage(key);
+  return true;
+}
+
 export async function deleteUserAsset(params: { assetId: string; userId: string }): Promise<'deleted' | 'not_found'> {
   const { assetId, userId } = params;
   if (!assetId || !userId) return 'not_found';
