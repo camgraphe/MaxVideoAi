@@ -1,6 +1,4 @@
-export type BackgroundRemovalEngineId =
-  | 'bria-video-background-removal-v3'
-  | 'bria-video-background-removal-realtime';
+export type BackgroundRemovalEngineId = 'bria-video-background-removal-v3';
 
 export type BackgroundRemovalStudioBackgroundColor =
   | 'Transparent'
@@ -15,11 +13,6 @@ export type BackgroundRemovalStudioBackgroundColor =
   | 'Magenta'
   | 'Orange';
 
-export type BackgroundRemovalRealtimeBackgroundColor = Exclude<
-  BackgroundRemovalStudioBackgroundColor,
-  'Transparent'
->;
-
 export type BackgroundRemovalOutputCodec =
   | 'mp4_h265'
   | 'mp4_h264'
@@ -31,8 +24,6 @@ export type BackgroundRemovalOutputCodec =
   | 'mkv_vp9'
   | 'avi_h264'
   | 'gif';
-
-export type BackgroundRemovalRealtimeBackgroundType = 'color' | 'image' | 'blur';
 
 export interface BackgroundRemovalToolRequest {
   videoUrl: string;
@@ -92,44 +83,11 @@ export interface BackgroundRemovalToolResponse {
   };
 }
 
-export interface BackgroundRemovalRealtimeSessionRequest {
-  engineId?: 'bria-video-background-removal-realtime';
-  sessionSeconds: 30 | 60 | 120;
-  backgroundType: BackgroundRemovalRealtimeBackgroundType;
-  backgroundColor?: BackgroundRemovalRealtimeBackgroundColor;
-  blurStrength?: number;
-  backgroundImageUrl?: string | null;
-}
-
-export interface BackgroundRemovalRealtimeSessionResponse {
-  ok: boolean;
-  app: 'bria/video/background-removal/realtime';
-  token: string;
-  tokenExpirationSeconds: number;
-  sessionSeconds: 30 | 60 | 120;
-  jobId: string;
-  engineId: 'bria-video-background-removal-realtime';
-  engineLabel: string;
-  pricing: BackgroundRemovalToolPricing;
-  realtimeInput: {
-    background_type: BackgroundRemovalRealtimeBackgroundType;
-    background_color?: BackgroundRemovalRealtimeBackgroundColor;
-    blur_strength?: number;
-    background_image_url?: string;
-  };
-  error?: {
-    code: string;
-    message: string;
-    detail?: unknown;
-  };
-}
-
 export interface BackgroundRemovalToolEngineDefinition {
   id: BackgroundRemovalEngineId;
   label: string;
   description: string;
   falModelId: string;
   billingProductKey: string;
-  mode: 'studio' | 'realtime';
   providerPriceUsdPerSecond: number;
 }

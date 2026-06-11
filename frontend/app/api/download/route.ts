@@ -9,6 +9,20 @@ function sanitizeFilename(value: string | null): string {
   return cleaned || 'download';
 }
 
+function inferContentTypeFromFilename(fileName: string, fallback: string): string {
+  const normalizedFallback = fallback.toLowerCase().split(';', 1)[0]?.trim();
+  const genericTypes = new Set(['', 'application/octet-stream', 'binary/octet-stream', 'application/x-unknown']);
+  if (normalizedFallback && !genericTypes.has(normalizedFallback)) return fallback;
+  const lowered = fileName.toLowerCase();
+  if (lowered.endsWith('.mov')) return 'video/quicktime';
+  if (lowered.endsWith('.webm')) return 'video/webm';
+  if (lowered.endsWith('.mp4')) return 'video/mp4';
+  if (lowered.endsWith('.mkv')) return 'video/x-matroska';
+  if (lowered.endsWith('.avi')) return 'video/x-msvideo';
+  if (lowered.endsWith('.gif')) return 'image/gif';
+  return fallback || 'application/octet-stream';
+}
+
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
@@ -39,7 +53,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'FETCH_FAILED' }, { status: 502 });
     }
 
-    const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream';
+    const contentType = inferContentTypeFromFilename(fileName, upstream.headers.get('content-type') ?? 'application/octet-stream');
     return new Response(upstream.body, {
       status: 200,
       headers: {

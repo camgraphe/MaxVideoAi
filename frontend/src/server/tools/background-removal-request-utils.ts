@@ -53,7 +53,7 @@ function toBackgroundRemovalOutput(entry: Record<string, unknown>): BackgroundRe
         ? entry.mimetype
         : typeof entry.mime === 'string'
           ? entry.mime
-          : 'video/webm';
+          : null;
   const url = normalizeFalUrl(urlRaw);
 
   return {

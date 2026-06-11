@@ -63,7 +63,7 @@ export async function runBackgroundRemovalToolBase(
 ): Promise<BackgroundRemovalToolResponse> {
   assertAbsoluteVideoUrl(input.videoUrl);
 
-  const engine = getBackgroundRemovalToolEngine(input.engineId, 'studio');
+  const engine = getBackgroundRemovalToolEngine(input.engineId);
   const engineId = 'bria-video-background-removal-v3' as const;
   const backgroundColor = resolveStudioBackgroundColor(input.backgroundColor);
   const outputCodec = resolveOutputCodec(input.outputContainerAndCodec);

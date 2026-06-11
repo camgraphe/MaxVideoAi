@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, CheckCircle2, Eraser, Film, Layers3, Library, RadioTower } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Eraser, Film, Layers3, Library } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 import { ButtonLink } from '@/components/ui/Button';
@@ -70,7 +70,7 @@ function HeroSection({ content }: { content: BackgroundRemovalLandingContent }) 
 }
 
 function UseCasesSection({ content }: { content: BackgroundRemovalLandingContent }) {
-  const icons = [Camera, Film, Layers3, Library, Eraser];
+  const icons = [Film, Eraser, Layers3, CheckCircle2, Library];
   return (
     <section className="section bg-bg">
       <div className="container-page max-w-6xl stack-gap-md">
@@ -165,14 +165,14 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
   );
 }
 
-function RealtimeSection({ content }: { content: BackgroundRemovalLandingContent }) {
+function ProductionSection({ content }: { content: BackgroundRemovalLandingContent }) {
   return (
     <section className="border-y border-hairline bg-surface section">
       <div className="container-page grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
         <div className="stack-gap-md">
-          <SectionIntro eyebrow={content.realtime.eyebrow} title={content.realtime.title} body={content.realtime.body} />
+          <SectionIntro eyebrow={content.production.eyebrow} title={content.production.title} body={content.production.body} />
           <div className="grid gap-3 sm:grid-cols-3">
-            {content.realtime.items.map((item) => (
+            {content.production.items.map((item) => (
               <Card key={item.title} className="border-hairline bg-bg p-5">
                 <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-text-secondary">{item.body}</p>
@@ -183,12 +183,17 @@ function RealtimeSection({ content }: { content: BackgroundRemovalLandingContent
         <Card className="border-hairline bg-bg p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-              <RadioTower className="h-5 w-5" />
+              <Film className="h-5 w-5" />
             </span>
-            <span className="rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary">60s</span>
+            <span className="rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary">video only</span>
           </div>
-          <div className="mt-5 aspect-video overflow-hidden rounded-[18px] bg-[linear-gradient(135deg,#1f2937,#2563eb)]" />
-          <p className="mt-4 text-sm leading-7 text-text-secondary">{content.realtime.panelCaption}</p>
+          <div className={`mt-5 grid aspect-video grid-cols-2 gap-3 overflow-hidden rounded-[18px] border border-hairline p-3 ${BACKGROUND_REMOVAL_CHECKERBOARD_CLASS}`}>
+            <div className="rounded-[14px] bg-[linear-gradient(135deg,#111827,#64748b)]" />
+            <div className="flex items-center justify-center rounded-[14px] border border-dashed border-slate-300 bg-white/70 dark:bg-slate-950/45">
+              <Eraser className="h-12 w-12 text-brand" />
+            </div>
+          </div>
+          <p className="mt-4 text-sm leading-7 text-text-secondary">{content.production.panelCaption}</p>
         </Card>
       </div>
     </section>
@@ -247,7 +252,7 @@ export function BackgroundRemovalLandingSections({ content }: { content: Backgro
       <UseCasesSection content={content} />
       <ModelGuideSection content={content} />
       <WorkflowSection content={content} />
-      <RealtimeSection content={content} />
+      <ProductionSection content={content} />
       <FaqSection content={content} />
       <FinalCtaSection content={content} />
     </>

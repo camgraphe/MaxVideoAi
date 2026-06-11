@@ -20,12 +20,13 @@ test('background removal tool exposes typed contracts and safe model ids', () =>
   const libSource = readFileSync(libPath, 'utf8');
 
   assert.match(typesSource, /BackgroundRemovalToolRequest/);
-  assert.match(typesSource, /BackgroundRemovalRealtimeSessionRequest/);
+  assert.doesNotMatch(typesSource, /BackgroundRemovalRealtimeSessionRequest/);
   assert.match(configSource, /bria\/video\/background-removal\/v3/);
-  assert.match(configSource, /bria\/video\/background-removal\/realtime/);
+  assert.doesNotMatch(configSource, /bria\/video\/background-removal\/realtime/);
   assert.match(configSource, /BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND/);
   assert.match(libSource, /buildBackgroundRemovalPricingPreview/);
   assert.match(libSource, /buildBackgroundRemovalFalInput/);
+  assert.doesNotMatch(libSource, /buildBackgroundRemovalRealtimeInput/);
   assert.doesNotMatch(libSource, /process\.env\.FAL/);
 });
 
@@ -34,9 +35,9 @@ test('background removal client API is exported from the public API facade', () 
   const apiFacadeSource = readFileSync(apiFacadePath, 'utf8');
 
   assert.match(apiGenerationSource, /runBackgroundRemovalTool/);
-  assert.match(apiGenerationSource, /startBackgroundRemovalRealtimeSession/);
+  assert.doesNotMatch(apiGenerationSource, /startBackgroundRemovalRealtimeSession/);
   assert.match(apiFacadeSource, /runBackgroundRemovalTool/);
-  assert.match(apiFacadeSource, /startBackgroundRemovalRealtimeSession/);
+  assert.doesNotMatch(apiFacadeSource, /startBackgroundRemovalRealtimeSession/);
 });
 
 test('background removal is a first-class job and media surface', () => {
@@ -62,29 +63,24 @@ test('background removal workspace follows the tool workspace split', () => {
     root,
     'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalGenerationRunner.ts'
   );
-  const realtimeHookPath = join(
-    root,
-    'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalRealtimeSession.ts'
-  );
 
   assert.ok(existsSync(workspacePath));
   assert.ok(existsSync(copyPath));
   assert.ok(existsSync(helpersPath));
   assert.ok(existsSync(runnerHookPath));
-  assert.ok(existsSync(realtimeHookPath));
 
   const workspaceSource = readFileSync(workspacePath, 'utf8');
   const runnerHookSource = readFileSync(runnerHookPath, 'utf8');
-  const realtimeHookSource = readFileSync(realtimeHookPath, 'utf8');
 
   assert.match(workspaceSource, /useBackgroundRemovalSourceMedia/);
   assert.match(workspaceSource, /useBackgroundRemovalPricingPreview/);
   assert.match(workspaceSource, /useBackgroundRemovalGenerationRunner/);
-  assert.match(workspaceSource, /useBackgroundRemovalRealtimeSession/);
+  assert.doesNotMatch(workspaceSource, /useBackgroundRemovalRealtimeSession/);
+  assert.doesNotMatch(workspaceSource, /BackgroundRemovalRealtimePanel/);
+  assert.doesNotMatch(workspaceSource, /navigator\.mediaDevices/);
   assert.doesNotMatch(workspaceSource, /runBackgroundRemovalTool/);
   assert.doesNotMatch(workspaceSource, /fal\.realtime\.connect/);
   assert.match(runnerHookSource, /runBackgroundRemovalTool/);
-  assert.match(realtimeHookSource, /fal\.realtime\.connect/);
 });
 
 test('background removal library and recent flows stay scoped to video assets', () => {

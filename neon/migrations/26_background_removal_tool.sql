@@ -15,25 +15,21 @@ INSERT INTO app_billing_products (
   active,
   metadata
 )
-VALUES
-  (
-    'background-removal-video-v3',
-    'background-removal',
-    'Background Removal Video Bria VRMBG 3.0',
-    'USD',
-    'run',
-    5,
-    TRUE,
-    '{"seeded":true,"tool":"background-removal","engineId":"bria-video-background-removal-v3","dynamicPricing":true}'::jsonb
-  ),
-  (
-    'background-removal-realtime',
-    'background-removal',
-    'Background Removal Realtime Bria VRMBG 3.0',
-    'USD',
-    'run',
-    10,
-    TRUE,
-    '{"seeded":true,"tool":"background-removal","engineId":"bria-video-background-removal-realtime","dynamicPricing":true}'::jsonb
-  )
+VALUES (
+  'background-removal-video-v3',
+  'background-removal',
+  'Background Removal Video Bria VRMBG 3.0',
+  'USD',
+  'run',
+  5,
+  TRUE,
+  '{"seeded":true,"tool":"background-removal","engineId":"bria-video-background-removal-v3","dynamicPricing":true}'::jsonb
+)
 ON CONFLICT (product_key) DO NOTHING;
+
+UPDATE app_billing_products
+   SET active = FALSE,
+       metadata = COALESCE(metadata, '{}'::jsonb) || '{"legacy":true,"removedFeature":"background-removal-realtime"}'::jsonb,
+       updated_at = NOW()
+ WHERE product_key = 'background-removal-realtime'
+   AND active = TRUE;

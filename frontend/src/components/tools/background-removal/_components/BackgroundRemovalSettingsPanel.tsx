@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import {
   BACKGROUND_REMOVAL_OUTPUT_CODECS,
   BACKGROUND_REMOVAL_STUDIO_COLORS,
+  formatBackgroundRemovalOutputCodecLabel,
 } from '@/lib/tools-background-removal';
 import type {
   BackgroundRemovalOutputCodec,
@@ -54,11 +55,12 @@ export function BackgroundRemovalSettingsPanel(props: {
           >
             {BACKGROUND_REMOVAL_OUTPUT_CODECS.map((codec) => (
               <option key={codec} value={codec}>
-                {codec}
+                {formatBackgroundRemovalOutputCodecLabel(codec)}
               </option>
             ))}
           </select>
         </label>
+        <p className="-mt-1 text-xs leading-5 text-text-muted">{props.copy.outputCodecHint}</p>
         <label className="flex items-center justify-between gap-3 rounded-input border border-border bg-bg px-3 py-2 text-sm font-medium text-text-primary">
           <span className="inline-flex items-center gap-2">
             <Volume2 className="h-4 w-4 text-text-muted" />

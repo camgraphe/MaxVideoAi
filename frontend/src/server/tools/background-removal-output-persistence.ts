@@ -1,3 +1,4 @@
+import { getBackgroundRemovalOutputExtension } from '@/lib/tools-background-removal';
 import { isStorageConfigured, recordUserAsset, uploadFileBuffer } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import type {
@@ -11,15 +12,6 @@ function resolveOutputFetchTimeoutMs(durationSec?: number | null): number {
   const seconds =
     typeof durationSec === 'number' && Number.isFinite(durationSec) && durationSec > 0 ? Math.ceil(durationSec) : 1;
   return Math.min(10 * 60_000, Math.max(60_000, seconds * 4_000));
-}
-
-function outputCodecExtension(codec: BackgroundRemovalOutputCodec): string {
-  if (codec === 'gif') return 'gif';
-  if (codec.startsWith('webm_')) return 'webm';
-  if (codec.startsWith('mov_')) return 'mov';
-  if (codec.startsWith('mkv_')) return 'mkv';
-  if (codec.startsWith('avi_')) return 'avi';
-  return 'mp4';
 }
 
 export async function persistBackgroundRemovalOutput(params: {
@@ -49,13 +41,14 @@ export async function persistBackgroundRemovalOutput(params: {
     if (!buffer.length) throw new Error('empty output');
 
     const mimeHeader = response.headers.get('content-type') ?? '';
+    const codecMime = formatBackgroundRemovalVideoMime(outputCodec);
     const mime =
-      typeof output.mimeType === 'string' && (output.mimeType.startsWith('video/') || output.mimeType === 'image/gif')
-        ? output.mimeType
-        : mimeHeader.startsWith('video/') || mimeHeader === 'image/gif'
-          ? mimeHeader
-          : formatBackgroundRemovalVideoMime(outputCodec);
-    const extension = outputCodecExtension(outputCodec);
+      mimeHeader.startsWith('video/') || mimeHeader === 'image/gif'
+        ? mimeHeader
+        : typeof output.mimeType === 'string' && output.mimeType === codecMime
+          ? output.mimeType
+          : codecMime;
+    const extension = getBackgroundRemovalOutputExtension(outputCodec);
     const upload = await uploadFileBuffer({
       data: buffer,
       mime,

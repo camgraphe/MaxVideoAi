@@ -13,19 +13,17 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getBackgroundRemovalOutputExtension } from '@/lib/tools-background-removal';
 import type {
   BackgroundRemovalOutputCodec,
-  BackgroundRemovalRealtimeBackgroundType,
   BackgroundRemovalStudioBackgroundColor,
 } from '@/types/tools-background-removal';
 import { BackgroundRemovalPreviewCard } from './background-removal/_components/BackgroundRemovalPreviewCard';
-import { BackgroundRemovalRealtimePanel } from './background-removal/_components/BackgroundRemovalRealtimePanel';
 import { BackgroundRemovalRecentRail } from './background-removal/_components/BackgroundRemovalRecentRail';
 import { BackgroundRemovalSettingsPanel } from './background-removal/_components/BackgroundRemovalSettingsPanel';
 import { BackgroundRemovalSourcePanel } from './background-removal/_components/BackgroundRemovalSourcePanel';
 import { useBackgroundRemovalGenerationRunner } from './background-removal/_hooks/useBackgroundRemovalGenerationRunner';
 import { useBackgroundRemovalPricingPreview } from './background-removal/_hooks/useBackgroundRemovalPricingPreview';
-import { useBackgroundRemovalRealtimeSession } from './background-removal/_hooks/useBackgroundRemovalRealtimeSession';
 import { useBackgroundRemovalRecentActions } from './background-removal/_hooks/useBackgroundRemovalRecentActions';
 import { useBackgroundRemovalRecentJobs } from './background-removal/_hooks/useBackgroundRemovalRecentJobs';
 import { useBackgroundRemovalSourceMedia } from './background-removal/_hooks/useBackgroundRemovalSourceMedia';
@@ -39,14 +37,9 @@ export default function BackgroundRemovalWorkspace() {
     ...((t('workspace.backgroundRemoval') ?? {}) as Partial<typeof DEFAULT_BACKGROUND_REMOVAL_COPY>),
   };
   const [backgroundColor, setBackgroundColor] = useState<BackgroundRemovalStudioBackgroundColor>('Transparent');
-  const [outputCodec, setOutputCodec] = useState<BackgroundRemovalOutputCodec>('webm_vp9');
+  const [outputCodec, setOutputCodec] = useState<BackgroundRemovalOutputCodec>('mov_proresks');
   const [preserveAudio, setPreserveAudio] = useState(true);
   const [viewMode, setViewMode] = useState<'source' | 'result'>('source');
-  const [realtimeBackgroundType, setRealtimeBackgroundType] =
-    useState<BackgroundRemovalRealtimeBackgroundType>('color');
-  const [realtimeBackgroundColor, setRealtimeBackgroundColor] = useState('#111827');
-  const [realtimeBlurStrength, setRealtimeBlurStrength] = useState(50);
-  const [realtimeBackgroundImageUrl, setRealtimeBackgroundImageUrl] = useState('');
 
   const sourceMedia = useBackgroundRemovalSourceMedia({
     maxDurationSeconds: BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
@@ -71,12 +64,6 @@ export default function BackgroundRemovalWorkspace() {
       setViewMode('result');
       void mutate();
     },
-  });
-  const realtime = useBackgroundRemovalRealtimeSession({
-    backgroundType: realtimeBackgroundType,
-    backgroundColor: realtimeBackgroundColor,
-    blurStrength: realtimeBlurStrength,
-    backgroundImageUrl: realtimeBackgroundImageUrl,
   });
   const recentActions = useBackgroundRemovalRecentActions({
     onSelectResult: (nextResult) => {
@@ -136,7 +123,11 @@ export default function BackgroundRemovalWorkspace() {
     const resultUrl = runner.result?.output?.url;
     const activeUrl = viewMode === 'result' && resultUrl ? resultUrl : sourceMedia.videoUrl;
     if (!activeUrl) return;
-    triggerAppDownload(activeUrl, suggestDownloadFilename(activeUrl, 'background-removal'));
+    const fileName =
+      viewMode === 'result' && resultUrl
+        ? `background-removal-${Date.now()}.${getBackgroundRemovalOutputExtension(outputCodec)}`
+        : suggestDownloadFilename(activeUrl, 'background-removal-source');
+    triggerAppDownload(activeUrl, fileName);
   }
 
   if (authLoading) {
@@ -280,23 +271,6 @@ export default function BackgroundRemovalWorkspace() {
                   result={runner.result}
                   sourceUrl={sourceMedia.videoUrl}
                   viewMode={viewMode}
-                />
-                <BackgroundRemovalRealtimePanel
-                  backgroundColor={realtimeBackgroundColor}
-                  backgroundImageUrl={realtimeBackgroundImageUrl}
-                  backgroundType={realtimeBackgroundType}
-                  blurStrength={realtimeBlurStrength}
-                  copy={copy}
-                  error={realtime.error}
-                  onBackgroundColorChange={setRealtimeBackgroundColor}
-                  onBackgroundImageUrlChange={setRealtimeBackgroundImageUrl}
-                  onBackgroundTypeChange={setRealtimeBackgroundType}
-                  onBlurStrengthChange={setRealtimeBlurStrength}
-                  onStart={() => void realtime.start(60)}
-                  onStop={realtime.stop}
-                  remainingSeconds={realtime.remainingSeconds}
-                  status={realtime.status}
-                  stream={realtime.stream}
                 />
                 <BackgroundRemovalRecentRail
                   copy={copy}

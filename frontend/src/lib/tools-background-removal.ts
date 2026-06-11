@@ -2,12 +2,9 @@ import {
   BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER,
   BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
   BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND,
-  BACKGROUND_REMOVAL_REALTIME_SESSION_SECONDS,
 } from '@/config/tools-background-removal-engines';
 import type {
   BackgroundRemovalOutputCodec,
-  BackgroundRemovalRealtimeBackgroundColor,
-  BackgroundRemovalRealtimeBackgroundType,
   BackgroundRemovalStudioBackgroundColor,
 } from '@/types/tools-background-removal';
 
@@ -25,25 +22,12 @@ export const BACKGROUND_REMOVAL_STUDIO_COLORS: readonly BackgroundRemovalStudioB
   'Orange',
 ] as const;
 
-export const BACKGROUND_REMOVAL_REALTIME_COLORS: readonly BackgroundRemovalRealtimeBackgroundColor[] = [
-  'Black',
-  'White',
-  'Gray',
-  'Red',
-  'Green',
-  'Blue',
-  'Yellow',
-  'Cyan',
-  'Magenta',
-  'Orange',
-] as const;
-
 export const BACKGROUND_REMOVAL_OUTPUT_CODECS: readonly BackgroundRemovalOutputCodec[] = [
-  'mp4_h265',
-  'mp4_h264',
-  'webm_vp9',
-  'mov_h265',
   'mov_proresks',
+  'webm_vp9',
+  'mp4_h264',
+  'mp4_h265',
+  'mov_h265',
   'mkv_h265',
   'mkv_h264',
   'mkv_vp9',
@@ -67,31 +51,35 @@ export function resolveStudioBackgroundColor(value?: string | null): BackgroundR
     : 'Transparent';
 }
 
-export function resolveRealtimeBackgroundColor(value?: string | null): BackgroundRemovalRealtimeBackgroundColor {
-  return BACKGROUND_REMOVAL_REALTIME_COLORS.includes(value as BackgroundRemovalRealtimeBackgroundColor)
-    ? (value as BackgroundRemovalRealtimeBackgroundColor)
-    : 'Black';
-}
-
 export function resolveOutputCodec(value?: string | null): BackgroundRemovalOutputCodec {
   return BACKGROUND_REMOVAL_OUTPUT_CODECS.includes(value as BackgroundRemovalOutputCodec)
     ? (value as BackgroundRemovalOutputCodec)
-    : 'webm_vp9';
+    : 'mov_proresks';
 }
 
-export function clampRealtimeBlurStrength(value?: number | null): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 50;
-  return Math.max(0, Math.min(100, Math.round(value)));
+export function getBackgroundRemovalOutputExtension(codec: BackgroundRemovalOutputCodec): string {
+  if (codec === 'gif') return 'gif';
+  if (codec.startsWith('webm_')) return 'webm';
+  if (codec.startsWith('mov_')) return 'mov';
+  if (codec.startsWith('mkv_')) return 'mkv';
+  if (codec.startsWith('avi_')) return 'avi';
+  return 'mp4';
 }
 
-export function resolveRealtimeBackgroundType(value?: string | null): BackgroundRemovalRealtimeBackgroundType {
-  return value === 'image' || value === 'blur' ? value : 'color';
-}
-
-export function resolveRealtimeSessionSeconds(value?: number | null): 30 | 60 | 120 {
-  return BACKGROUND_REMOVAL_REALTIME_SESSION_SECONDS.includes(value as 30 | 60 | 120)
-    ? (value as 30 | 60 | 120)
-    : 60;
+export function formatBackgroundRemovalOutputCodecLabel(codec: BackgroundRemovalOutputCodec): string {
+  const labels: Record<BackgroundRemovalOutputCodec, string> = {
+    mov_proresks: 'MOV ProRes + alpha (Premiere)',
+    webm_vp9: 'WebM VP9 + alpha (web)',
+    mp4_h264: 'MP4 H.264 (solid background)',
+    mp4_h265: 'MP4 H.265 (solid background)',
+    mov_h265: 'MOV H.265 (solid background)',
+    mkv_h265: 'MKV H.265',
+    mkv_h264: 'MKV H.264',
+    mkv_vp9: 'MKV VP9',
+    avi_h264: 'AVI H.264',
+    gif: 'GIF',
+  };
+  return labels[codec] ?? codec;
 }
 
 export function estimateBackgroundRemovalCostUsd(durationSec: number): number {
@@ -156,33 +144,6 @@ export function buildBackgroundRemovalFalInput(params: {
     output_container_and_codec: resolveOutputCodec(params.outputCodec),
     preserve_audio: params.preserveAudio !== false,
   };
-}
-
-export function buildBackgroundRemovalRealtimeInput(params: {
-  backgroundType?: string | null;
-  backgroundColor?: string | null;
-  blurStrength?: number | null;
-  backgroundImageUrl?: string | null;
-}) {
-  const backgroundType = resolveRealtimeBackgroundType(params.backgroundType);
-  const input: {
-    background_type: BackgroundRemovalRealtimeBackgroundType;
-    background_color?: BackgroundRemovalRealtimeBackgroundColor;
-    blur_strength?: number;
-    background_image_url?: string;
-  } = {
-    background_type: backgroundType,
-  };
-  if (backgroundType === 'color') {
-    input.background_color = resolveRealtimeBackgroundColor(params.backgroundColor);
-  }
-  if (backgroundType === 'blur') {
-    input.blur_strength = clampRealtimeBlurStrength(params.blurStrength);
-  }
-  if (backgroundType === 'image' && params.backgroundImageUrl?.trim()) {
-    input.background_image_url = params.backgroundImageUrl.trim();
-  }
-  return input;
 }
 
 export function validateBackgroundRemovalDuration(durationSec?: number | null): string | null {

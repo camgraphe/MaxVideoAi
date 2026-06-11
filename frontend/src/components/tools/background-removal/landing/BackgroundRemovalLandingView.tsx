@@ -21,7 +21,7 @@ export function BackgroundRemovalLandingView({ content }: { content: BackgroundR
     category: content.modelGuide.rows[0]?.bestFor,
     url: canonicalUrl,
     offers: {
-      price: '0.00425',
+      price: '0.0085',
       priceCurrency: 'USD',
       description: content.modelGuide.rows[0]?.price,
       url: canonicalUrl,

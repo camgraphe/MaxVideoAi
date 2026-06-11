@@ -4041,8 +4041,8 @@
       "open": "Abrir herramienta",
       "backgroundRemovalEyebrow": "Limpieza de video",
       "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Elimina fondos de video con Bria VRMBG 3.0, exporta clips WebM transparentes y prueba previews webcam de pago en tiempo real.",
-      "backgroundRemovalBadge": "Studio + directo",
+      "backgroundRemovalBody": "Elimina fondos de video con Bria VRMBG 3.0, exporta MOV ProRes con alpha para Premiere y reutiliza recortes limpios.",
+      "backgroundRemovalBadge": "Recorte de video",
       "upscaleEyebrow": "Mejora de resolución",
       "upscaleTitle": "AI Upscale",
       "upscaleBody": "Upscalea assets de imagen o video corto con SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en otros flujos.",
@@ -4807,7 +4807,7 @@
       "back": "Volver a herramientas",
       "eyebrow": "Limpieza de video",
       "title": "Video Background Remover",
-      "subtitle": "Elimina fondos de videos cortos, exporta WebM transparente o clips con color sólido y reutiliza resultados desde la biblioteca.",
+      "subtitle": "Elimina fondos de videos cortos, exporta MOV ProRes listo para Premiere o clips transparentes para web, y reutiliza resultados desde la biblioteca.",
       "sourceTitle": "Video fuente",
       "sourceBody": "Sube un clip corto, pega una URL HTTPS o reutiliza un video guardado.",
       "upload": "Subir video",
@@ -4820,10 +4820,11 @@
       "libraryBackgroundRemoval": "Background removal",
       "metadataLoading": "Leyendo metadatos...",
       "metadataRequired": "Añade un video legible para estimar el precio.",
-      "durationTooLong": "El modo Studio admite clips de hasta 60 segundos.",
-      "settingsTitle": "Ajustes Studio",
+      "durationTooLong": "Esta herramienta admite clips de hasta 60 segundos.",
+      "settingsTitle": "Ajustes de video",
       "backgroundColor": "Fondo",
       "outputCodec": "Salida",
+      "outputCodecHint": "Usa MOV ProRes para Premiere/Finder. Usa WebM VP9 solo para reproducción web transparente.",
       "preserveAudio": "Conservar audio",
       "priceLoading": "Cargando precio...",
       "priceUnavailable": "Precio no disponible",
@@ -4847,19 +4848,7 @@
       "recentEmpty": "Los resultados terminados aparecerán aquí.",
       "recentFailed": "Failed",
       "authTitle": "Inicia sesión para usar la herramienta",
-      "authBody": "La eliminación de fondo usa facturación de wallet y biblioteca privada.",
-      "liveTitle": "Preview en directo",
-      "liveBody": "Prepaga una sesión corta en tiempo real, autoriza la cámara y prueba color, blur o imagen.",
-      "liveStart": "Iniciar 60 s",
-      "liveStop": "Detener",
-      "liveEnded": "Sesión terminada",
-      "liveCameraRequired": "Permiso de cámara requerido.",
-      "liveConnecting": "Conectando preview...",
-      "liveReady": "Preview activo",
-      "liveModeColor": "Color",
-      "liveModeBlur": "Blur",
-      "liveModeImage": "Imagen",
-      "backgroundImageUrl": "URL de imagen de fondo"
+      "authBody": "La eliminación de fondo usa facturación de wallet y biblioteca privada."
     }
   },
   "cookieBanner": {
@@ -5311,7 +5300,7 @@
         "backgroundRemoval": {
           "eyebrow": "Limpieza de video",
           "title": "Eliminar fondos de video",
-          "body": "Recorta personas o productos en clips cortos, exporta video transparente y prueba fondos de webcam en directo.",
+          "body": "Recorta personas o productos en clips cortos, exporta video transparente y descarga MOV listos para Premiere.",
           "cta": "Explorar herramienta",
           "imageAlt": "Workspace para eliminar fondos de video con vista transparente."
         }
@@ -6264,16 +6253,17 @@
     "backgroundRemoval": {
       "meta": {
         "title": "Eliminar fondos de video | Recortes transparentes",
-        "description": "Elimina fondos de video con Bria VRMBG 3.0 en MaxVideoAI. Exporta WebM transparente o clips con color sólido, guarda resultados y prueba fondos webcam en directo.",
+        "description": "Elimina fondos de video con Bria VRMBG 3.0 en MaxVideoAI. Exporta MOV ProRes con alpha para Premiere, WebM transparente o clips con color sólido y guarda resultados.",
         "keywords": [
           "eliminar fondos de video",
           "quitar fondo de video",
           "video transparente",
-          "Bria VRMBG 3.0"
+          "Bria VRMBG 3.0",
+          "export video transparente Premiere"
         ],
         "imageAlt": "Workspace MaxVideoAI para eliminar fondos de video con preview transparente.",
         "schemaName": "Video Background Remover",
-        "schemaDescription": "Herramienta MaxVideoAI para eliminar fondos de videos cortos y probar fondos de webcam.",
+        "schemaDescription": "Herramienta MaxVideoAI para eliminar fondos de videos cortos y exportar assets de video transparentes.",
         "howToTitle": "Cómo eliminar fondos de video en MaxVideoAI",
         "howToDescription": "Sube o selecciona un video, elige salida transparente o con color, ejecuta Bria VRMBG 3.0 y guarda o descarga el resultado."
       },
@@ -6283,7 +6273,7 @@
         "current": "Video Background Remover"
       },
       "hero": {
-        "badge": "Studio + eliminación live",
+        "badge": "Eliminación de fondo de video IA",
         "title": "Eliminar fondos de video sin salir del workflow",
         "body": "Sube un clip corto o elige un video de la biblioteca, revisa el precio exacto, ejecuta Bria VRMBG 3.0 y guarda una salida transparente o con color sólido.",
         "primaryCta": "Abrir Background Remover",
@@ -6294,12 +6284,12 @@
             "label": "clips studio"
           },
           {
-            "value": "WebM",
-            "label": "salida transparente"
+            "value": "MOV",
+            "label": "alpha para Premiere"
           },
           {
-            "value": "Live",
-            "label": "preview webcam"
+            "value": "2x",
+            "label": "precio proveedor"
           }
         ]
       },
@@ -6322,7 +6312,7 @@
           },
           {
             "title": "Educación",
-            "body": "Mantén al instructor visible mientras reemplazas oficina, aula o webcam."
+            "body": "Mantén al instructor visible mientras reemplazas oficina, aula o fondo de marca."
           },
           {
             "title": "Assets sociales",
@@ -6332,8 +6322,8 @@
       },
       "modelGuide": {
         "eyebrow": "Guía de modelo",
-        "title": "Studio y preview en directo usan Bria VRMBG 3.0",
-        "body": "Studio está pensado para salidas guardadas. Live preview sirve para pruebas webcam cortas y pagadas.",
+        "title": "Bria VRMBG 3.0 produce recortes de video limpios",
+        "body": "La herramienta se centra en exports finales: MOV transparente para editores, WebM transparente para web o archivos con color sólido cuando alpha no está soportado.",
         "columns": {
           "model": "Modelo",
           "bestFor": "Mejor para",
@@ -6342,16 +6332,10 @@
         },
         "rows": [
           {
-            "model": "Bria VRMBG 3.0 Studio",
+            "model": "Bria VRMBG 3.0 Video",
             "bestFor": "Videos cortos subidos o de biblioteca que necesitan salida transparente o color sólido.",
-            "price": "Estimado desde la duración antes de iniciar, con el producto wallet actual de MaxVideoAI.",
+            "price": "Estimado desde la duración antes de iniciar y facturado a 2x el precio proveedor actual.",
             "useWhen": "Para assets finales que quieres previsualizar, descargar y guardar."
-          },
-          {
-            "model": "Bria VRMBG 3.0 Realtime",
-            "bestFor": "Sesiones webcam pagadas con fondos color, blur o imagen.",
-            "price": "Prepagado por duración de sesión y detenido en cliente al expirar.",
-            "useWhen": "Para probar encuadre y fondo live antes de grabar."
           }
         ]
       },
@@ -6362,11 +6346,11 @@
         "steps": [
           {
             "title": "Sube o selecciona un video",
-            "body": "Usa una URL MP4/WebM corta, sube un archivo o elige un video guardado."
+            "body": "Usa una URL MP4, MOV o WebM corta, sube un archivo o elige un video guardado."
           },
           {
             "title": "Elige salida transparente o con color",
-            "body": "Exporta WebM transparente o color sólido cuando el destino no admite alpha."
+            "body": "Exporta MOV ProRes con alpha para Premiere/Finder, WebM VP9 para web o color sólido cuando el destino no admite alpha."
           },
           {
             "title": "Previsualiza, guarda y reutiliza",
@@ -6374,23 +6358,23 @@
           }
         ]
       },
-      "realtime": {
-        "eyebrow": "Preview en directo",
-        "title": "Prueba fondos webcam con sesiones prepagadas",
-        "body": "La cámara se activa solo después de un clic; prueba color, blur o imagen y cierra al acabar el temporizador.",
-        "panelCaption": "El preview en tiempo real es para pruebas cortas, no para streaming anónimo o ilimitado.",
+      "production": {
+        "eyebrow": "Calidad de export",
+        "title": "Descarga archivos que tus herramientas de edición puedan abrir",
+        "body": "El video transparente depende mucho del formato, por eso el export por defecto usa MOV ProRes con alpha para Premiere y Finder en lugar de un contenedor web.",
+        "panelCaption": "Usa MOV ProRes para edición, WebM VP9 para navegadores y MP4/MOV con color sólido cuando el destino no conserve alpha.",
         "items": [
           {
-            "title": "Cámara bajo demanda",
-            "body": "El navegador pide permiso solo al iniciar."
+            "title": "MOV listo para Premiere",
+            "body": "La salida por defecto fuerza un nombre .mov y tipo QuickTime para que las herramientas desktop reconozcan el archivo."
           },
           {
-            "title": "Segundos pagados",
-            "body": "Cada sesión es prepagada y limitada para mantener el wallet predecible."
+            "title": "Opción web transparente",
+            "body": "WebM VP9 sigue disponible para reproducción en navegador cuando el destino soporta WebM transparente."
           },
           {
-            "title": "Opciones rápidas",
-            "body": "Cambia entre color, blur e imagen durante las pruebas."
+            "title": "Opción de color sólido",
+            "body": "Elige un fondo de color y salida MP4/MOV cuando la plataforma final elimina canales alpha."
           }
         ]
       },
@@ -6402,7 +6386,7 @@
       "faq": [
         {
           "q": "¿Puedo exportar video transparente?",
-          "a": "Sí. Usa fondo transparente con WebM VP9 u otra salida compatible con alpha."
+          "a": "Sí. Usa MOV ProRes con alpha para Premiere/Finder, o WebM VP9 cuando el destino acepte WebM transparente."
         },
         {
           "q": "¿Puede conservar el audio?",
@@ -6410,7 +6394,7 @@
         },
         {
           "q": "¿Cómo se estima el precio?",
-          "a": "MaxVideoAI lee la duración y muestra una estimación de wallet antes de iniciar. Live se prepaga por duración."
+          "a": "MaxVideoAI lee la duración y muestra una estimación de wallet antes de iniciar. La herramienta se factura a 2x el precio proveedor actual."
         },
         {
           "q": "¿Cuál es el límite de duración?",
@@ -6421,8 +6405,8 @@
           "a": "Sí. Guarda videos terminados en la biblioteca y selecciónalos más tarde."
         },
         {
-          "q": "¿El live expone credenciales?",
-          "a": "No. El preview live usa tokens cortos generados por la ruta servidor autenticada."
+          "q": "¿Por qué MOV ProRes es la salida por defecto?",
+          "a": "Premiere y Finder manejan mucho mejor MOV ProRes con alpha que descargas WebM, así que el formato para edición se selecciona primero."
         }
       ],
       "finalCta": {
