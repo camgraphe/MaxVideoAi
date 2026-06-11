@@ -1,4 +1,8 @@
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
+import {
+  calculateLumaAgentsImageReferencePrice,
+  calculateLumaRay32ReferencePrice,
+} from '@/lib/luma-agents-pricing';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import type { FalEngineEntry } from '@/config/falEngines';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing, roundUsdUpToCents } from '@/lib/seedance-2-pricing';
@@ -116,6 +120,11 @@ function resolveOfferAmountCents(engine: FalEngineEntry, pricingEngine: EngineCa
     return Math.round(hint.amountCents);
   }
 
+  const lumaAgentsAmountCents = resolveLumaAgentsOfferAmountCents(engine);
+  if (lumaAgentsAmountCents != null) {
+    return lumaAgentsAmountCents;
+  }
+
   const pricingDetails = pricingEngine.pricingDetails;
   const resolution = resolveOfferResolution(pricingEngine, hint?.resolution);
   const durationSeconds = resolveOfferDurationSeconds(pricingEngine, hint?.durationSeconds);
@@ -147,6 +156,28 @@ function resolveOfferAmountCents(engine: FalEngineEntry, pricingEngine: EngineCa
   }
   if (typeof flatCents === 'number' && Number.isFinite(flatCents) && flatCents > 0) {
     return Math.round(flatCents);
+  }
+
+  return null;
+}
+
+function resolveLumaAgentsOfferAmountCents(engine: FalEngineEntry): number | null {
+  try {
+    if (engine.engine.id === 'luma-ray-3-2') {
+      const quote = calculateLumaRay32ReferencePrice({ duration: '5s', resolution: '540p' });
+      return roundUsdUpToCents(quote.totalUsd * (1 + DEFAULT_SCHEMA_MARGIN_PERCENT));
+    }
+
+    if (engine.engine.id === 'luma-uni-1' || engine.engine.id === 'luma-uni-1-max') {
+      const quote = calculateLumaAgentsImageReferencePrice({
+        engineId: engine.engine.id,
+        mode: 't2i',
+        referenceImageCount: 0,
+      });
+      return roundUsdUpToCents(quote.totalUsd * (1 + DEFAULT_SCHEMA_MARGIN_PERCENT));
+    }
+  } catch {
+    return null;
   }
 
   return null;

@@ -3,7 +3,6 @@
 
 import clsx from 'clsx';
 import type {
-  ChangeEvent,
   DragEvent,
   MouseEvent,
   MutableRefObject,
@@ -18,9 +17,7 @@ type LumaRay32KeyframeTimelineProps = {
   canRemoveKeyframe: boolean;
   filledKeyframeCount: number;
   fps: number;
-  keyframeAccept: string;
   keyframeAssets: (ReferenceAsset | null)[];
-  keyframeInputRefs: MutableRefObject<Record<number, HTMLInputElement | null>>;
   keyframeSlotRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
   keyframeSlots: KeyframeSlot[];
   keyframesTimelineDisabledReason: string | null;
@@ -32,7 +29,6 @@ type LumaRay32KeyframeTimelineProps = {
   timelineWidth?: number;
   onAddKeyframe: () => void;
   onDrop: (event: DragEvent<HTMLButtonElement>, slot: KeyframeSlot) => void;
-  onInputChange: (event: ChangeEvent<HTMLInputElement>, slot: KeyframeSlot) => void;
   onKeyframeMouseDown: (event: MouseEvent<HTMLButtonElement>, slot: KeyframeSlot, slotIndex: number) => void;
   onKeyframePointerDown: (event: ReactPointerEvent<HTMLButtonElement>, slot: KeyframeSlot, slotIndex: number) => void;
   onKeyframePointerMove: (event: ReactPointerEvent<HTMLButtonElement>, slot: KeyframeSlot) => void;
@@ -49,9 +45,7 @@ export function LumaRay32KeyframeTimeline({
   canRemoveKeyframe,
   filledKeyframeCount,
   fps,
-  keyframeAccept,
   keyframeAssets,
-  keyframeInputRefs,
   keyframeSlotRefs,
   keyframeSlots,
   keyframesTimelineDisabledReason,
@@ -63,7 +57,6 @@ export function LumaRay32KeyframeTimeline({
   timelineWidth,
   onAddKeyframe,
   onDrop,
-  onInputChange,
   onKeyframeMouseDown,
   onKeyframePointerDown,
   onKeyframePointerMove,
@@ -198,22 +191,13 @@ export function LumaRay32KeyframeTimeline({
                       onUploadDisabled(keyframesUploadDisabledReason);
                       return;
                     }
-                    keyframeInputRefs.current[slot.assetSlot]?.click();
+                    onOpenLibrary(slot);
                   }}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => onDrop(event, slot)}
-                  title={keyframesUploadDisabledReason ?? `Upload keyframe at ${formatFramecode(slot.frameIndex, fps)}`}
+                  aria-label={`Open library or upload keyframe ${index + 1}`}
+                  title={keyframesUploadDisabledReason ?? `Open library or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}`}
                 >
-                  <input
-                    ref={(element) => {
-                      keyframeInputRefs.current[slot.assetSlot] = element;
-                    }}
-                    type="file"
-                    accept={keyframeAccept}
-                    className="sr-only"
-                    disabled={Boolean(keyframesUploadDisabledReason)}
-                    onChange={(event) => onInputChange(event, slot)}
-                  />
                   {slotAsset?.kind === 'image' ? (
                     <img src={slotAsset.previewUrl} alt={slotAsset.name} className="h-full w-full object-cover" />
                   ) : (

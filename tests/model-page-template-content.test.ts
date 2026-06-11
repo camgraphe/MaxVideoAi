@@ -1004,3 +1004,49 @@ test('migrated template product schemas avoid free price offers', () => {
     assert.ok(!('offers' in product), `${slug} Product schema should not emit a free price offer`);
   }
 });
+
+test('new Luma model product schemas emit priced offers without synthetic ratings', () => {
+  const expectedOfferPrices = [
+    ['luma-ray-3-2', '0.65'],
+    ['luma-uni-1', '0.06'],
+    ['luma-uni-1-max', '0.14'],
+  ] as const;
+
+  for (const [slug, expectedPrice] of expectedOfferPrices) {
+    const engine = getEngine(slug);
+    const decision = buildModelDecisionData({ engine, locale: 'fr' });
+    assert.ok(decision, `${slug}/fr decision data should exist`);
+
+    const schemas = buildModelSchemaPayloads({
+      canonical: `https://maxvideoai.com/fr/modeles/${slug}`,
+      description: decision.meta.description,
+      engine,
+      heroPosterAbsolute: `https://maxvideoai.com/hero/${slug}.jpg`,
+      heroTitle: decision.hero.title,
+      inLanguage: 'fr-FR',
+      localizedCanonical: `https://maxvideoai.com/fr/modeles/${slug}`,
+      localizedHomeUrl: 'https://maxvideoai.com/fr',
+      localizedModelsUrl: 'https://maxvideoai.com/fr/modeles',
+      pageTitle: decision.meta.title,
+      pricingEngine: engine.engine,
+      resolvedBreadcrumb: {
+        home: 'Accueil',
+        models: 'Modèles',
+      },
+    }) as Array<Record<string, unknown>>;
+
+    const product = schemas.find((schema) => schema['@type'] === 'Product') as
+      | (Record<string, unknown> & { offers?: Record<string, unknown> })
+      | undefined;
+
+    assert.ok(product, `${slug} should emit Product schema`);
+    assert.ok(product.offers, `${slug} Product schema should emit an offer when pricing is available`);
+    assert.equal(product.offers?.['@type'], 'Offer');
+    assert.equal(product.offers?.priceCurrency, 'USD');
+    assert.equal(product.offers?.price, expectedPrice);
+    assert.ok(product.offers?.shippingDetails, `${slug} Product offer should include digital shipping details`);
+    assert.ok(product.offers?.hasMerchantReturnPolicy, `${slug} Product offer should include a return policy`);
+    assert.ok(!('review' in product), `${slug} should not invent reviews`);
+    assert.ok(!('aggregateRating' in product), `${slug} should not invent aggregate ratings`);
+  }
+});

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
-  ChangeEvent,
   Dispatch,
   DragEvent,
   MouseEvent,
@@ -69,7 +68,6 @@ export function LumaRay32KeyframeEditor({
   const [draggingAssetSlot, setDraggingAssetSlot] = useState<number | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const keyframeSlotRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const keyframeInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const sourceVideoEntry = useMemo(() => getFieldEntry(assetFields, 'video_url'), [assetFields]);
   const guideFrameEntry = useMemo(() => getFieldEntry(assetFields, 'start_image_url'), [assetFields]);
   const keyframeEntry = useMemo(() => getFieldEntry(assetFields, 'edit_keyframe_urls'), [assetFields]);
@@ -111,14 +109,6 @@ export function LumaRay32KeyframeEditor({
   const guideDisabledReason = hasKeyframes ? 'Remove keyframes to use a single guide frame.' : disabledReason;
   const keyframesTimelineDisabledReason = hasGuideFrame ? 'Remove the guide frame to use multiple keyframes.' : null;
   const keyframesUploadDisabledReason = keyframesTimelineDisabledReason ?? disabledReason;
-  const keyframeAccept = useMemo(() => {
-    const formats = caps?.acceptsImageFormats?.length
-      ? caps.acceptsImageFormats
-      : engine.inputSchema?.constraints?.supportedFormats;
-    return formats?.length
-      ? formats.map((format) => `.${format.replace(/^\./, '').toLowerCase()}`).join(',')
-      : 'image/*';
-  }, [caps?.acceptsImageFormats, engine.inputSchema?.constraints?.supportedFormats]);
 
   const writeExtraValues = useCallback(
     (updater: (current: Record<string, unknown>) => Record<string, unknown>) => {
@@ -338,15 +328,6 @@ export function LumaRay32KeyframeEditor({
     [keyframeEntry, keyframesUploadDisabledReason, onAssetAdd, onNotice]
   );
 
-  const handleKeyframeInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>, slot: KeyframeSlot) => {
-      const file = event.target.files?.[0] ?? null;
-      event.target.value = '';
-      handleKeyframeFile(slot, file);
-    },
-    [handleKeyframeFile]
-  );
-
   const handleKeyframeDrop = useCallback(
     (event: DragEvent<HTMLButtonElement>, slot: KeyframeSlot) => {
       event.preventDefault();
@@ -430,9 +411,7 @@ export function LumaRay32KeyframeEditor({
         canRemoveKeyframe={canRemoveKeyframe}
         filledKeyframeCount={filledKeyframeCount}
         fps={fps}
-        keyframeAccept={keyframeAccept}
         keyframeAssets={keyframeAssets}
-        keyframeInputRefs={keyframeInputRefs}
         keyframeSlotRefs={keyframeSlotRefs}
         keyframeSlots={keyframeSlots}
         keyframesTimelineDisabledReason={keyframesTimelineDisabledReason}
@@ -444,7 +423,6 @@ export function LumaRay32KeyframeEditor({
         timelineWidth={timelineWidth}
         onAddKeyframe={handleAddKeyframe}
         onDrop={handleKeyframeDrop}
-        onInputChange={handleKeyframeInputChange}
         onKeyframeMouseDown={handleKeyframeMouseDown}
         onKeyframePointerDown={handleKeyframePointerDown}
         onKeyframePointerMove={handleKeyframePointerMove}
