@@ -86,3 +86,29 @@ test('background removal workspace follows the tool workspace split', () => {
   assert.match(runnerHookSource, /runBackgroundRemovalTool/);
   assert.match(realtimeHookSource, /fal\.realtime\.connect/);
 });
+
+test('background removal library and recent flows stay scoped to video assets', () => {
+  const recentActionsPath = join(
+    root,
+    'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalRecentActions.ts'
+  );
+  const recentJobsPath = join(root, 'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalRecentJobs.ts');
+  const sourceMediaPath = join(root, 'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalSourceMedia.ts');
+  const mediaAssetsPath = join(root, 'frontend/server/media-library/assets.ts');
+  const adminPendingPath = join(root, 'frontend/app/api/admin/videos/pending/route.ts');
+
+  const recentActionsSource = readFileSync(recentActionsPath, 'utf8');
+  const recentJobsSource = readFileSync(recentJobsPath, 'utf8');
+  const sourceMediaSource = readFileSync(sourceMediaPath, 'utf8');
+  const mediaAssetsSource = readFileSync(mediaAssetsPath, 'utf8');
+  const adminPendingSource = readFileSync(adminPendingPath, 'utf8');
+
+  assert.match(recentActionsSource, /source:\s*'background-removal'/);
+  assert.match(recentActionsSource, /kind:\s*'video'/);
+  assert.match(recentActionsSource, /sourceOutputId:\s*`\$\{item\.job\.jobId\}:video:0`/);
+  assert.match(recentJobsSource, /useInfiniteJobs\(12,\s*\{\s*surface:\s*'background-removal'\s*\}\)/);
+  assert.match(sourceMediaSource, /type LibrarySource = 'all' \| 'upload' \| 'generated' \| 'background-removal'/);
+  assert.match(mediaAssetsSource, /source IN \('upload', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'\)/);
+  assert.match(adminPendingSource, /tool_background_removal_/);
+  assert.match(adminPendingSource, /background-removal/);
+});
