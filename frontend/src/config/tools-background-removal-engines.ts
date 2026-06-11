@@ -1,7 +1,7 @@
 import type { BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
 
 export const BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND = 0.00425;
-export const BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER = 4;
+export const BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER = 2;
 export const BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS = 60;
 export const BACKGROUND_REMOVAL_REALTIME_SESSION_SECONDS = [30, 60, 120] as const;
 

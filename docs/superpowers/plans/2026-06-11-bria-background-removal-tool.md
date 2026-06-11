@@ -340,7 +340,7 @@ Create `frontend/src/config/tools-background-removal-engines.ts`:
 import type { BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
 
 export const BACKGROUND_REMOVAL_PROVIDER_PRICE_USD_PER_SECOND = 0.00425;
-export const BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER = 4;
+export const BACKGROUND_REMOVAL_DYNAMIC_MARGIN_MULTIPLIER = 2;
 export const BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS = 60;
 export const BACKGROUND_REMOVAL_REALTIME_SESSION_SECONDS = [30, 60, 120] as const;
 
@@ -638,9 +638,9 @@ import {
   validateBackgroundRemovalDuration,
 } from '../frontend/src/lib/tools-background-removal.ts';
 
-test('background removal dynamic pricing uses provider rate with platform multiplier', () => {
-  assert.equal(estimateBackgroundRemovalCostUsd(10), 0.17);
-  assert.equal(estimateBackgroundRemovalCostUsd(10.1), 0.187);
+test('background removal dynamic pricing charges double the provider rate', () => {
+  assert.equal(estimateBackgroundRemovalCostUsd(10), 0.085);
+  assert.equal(estimateBackgroundRemovalCostUsd(10.1), 0.0935);
 
   const preview = buildBackgroundRemovalPricingPreview({
     unitPriceCents: 5,
@@ -649,7 +649,7 @@ test('background removal dynamic pricing uses provider rate with platform multip
   });
   assert.equal(preview.ready, true);
   assert.equal(preview.currency, 'USD');
-  assert.equal(preview.totalCents, 17);
+  assert.equal(preview.totalCents, 9);
   assert.equal(preview.estimate?.durationSec, 10);
 });
 
