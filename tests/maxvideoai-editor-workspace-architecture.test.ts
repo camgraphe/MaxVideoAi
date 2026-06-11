@@ -1652,6 +1652,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(projectMediaActionsHookSource, /handleMoveGeneratedClipToFolder/, 'project media actions should own moving generated clips into folders');
   assert.match(projectMediaActionsHookSource, /pendingImportFolderIdRef/, 'project media imports should remember the currently opened folder');
   assert.doesNotMatch(projectMediaActionsHookSource, /Backend folder persistence will be wired/, 'project media folder creation should no longer be a placeholder notice');
+  assert.doesNotMatch(projectMediaActionsHookSource, /window\.prompt/, 'project media folder actions should receive explicit UI inputs instead of opening browser prompts');
   assert.match(projectMediaControllerSource, /visibleFolders/, 'project media controller should expose folders as visible media cards');
   assert.match(projectMediaControllerSource, /activeFolder/, 'project media controller should own the currently opened project media folder');
   assert.match(projectMediaControllerSource, /onImportMedia\(activeFolderId\)/, 'project media controller should import new media into the active folder');
@@ -1660,6 +1661,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /projectMediaBreadcrumb/, 'viewer sidebar should show a folder breadcrumb when a project media folder is open');
   assert.match(timelineProjectSidebarSource, /Move to folder/, 'project media context menu should move media cards into folders');
   assert.match(timelineProjectSidebarSource, /Rename folder/, 'project media context menu should rename folders');
+  assert.match(timelineProjectSidebarSource, /ProjectMediaFolderDialog/, 'project media folder create, rename, and move actions should use an in-app dialog');
+  assert.match(mediaStyleSource, /\.projectMediaDialog/, 'project media folder dialogs should be styled in the focused project media CSS module');
   assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
   assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
   assert.match(projectMediaControllerSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin through its controller');

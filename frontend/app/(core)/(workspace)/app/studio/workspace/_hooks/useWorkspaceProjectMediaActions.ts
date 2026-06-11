@@ -20,30 +20,6 @@ function createProjectMediaFolderId(): string {
   return `folder-${Date.now().toString(36)}`;
 }
 
-function promptProjectMediaFolderTarget(
-  folders: WorkspaceProjectMediaFolder[],
-  currentFolderId?: string | null
-): string | null | undefined {
-  if (typeof window === 'undefined') return null;
-  const options = [
-    '0. Project media',
-    ...folders.map((folder, index) => `${index + 1}. ${folder.name}`),
-  ];
-  const requestedValue = window.prompt(
-    `Move to folder:\n${options.join('\n')}`,
-    currentFolderId ? '0' : folders[0] ? '1' : '0'
-  );
-  if (requestedValue === null) return undefined;
-  const normalizedValue = requestedValue.trim();
-  if (normalizedValue === '0') return null;
-  const requestedIndex = Number.parseInt(normalizedValue, 10);
-  if (Number.isInteger(requestedIndex) && requestedIndex >= 1 && requestedIndex <= folders.length) {
-    return folders[requestedIndex - 1]?.id ?? null;
-  }
-  const folderByName = folders.find((folder) => folder.name.toLowerCase() === normalizedValue.toLowerCase());
-  return folderByName?.id ?? null;
-}
-
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
@@ -85,16 +61,16 @@ export function useWorkspaceProjectMediaActions({
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceProjectMediaActionsParams): {
-  handleCreateProjectMediaFolder: () => void;
+  handleCreateProjectMediaFolder: (requestedName?: string) => void;
   handleDeleteGeneratedClip: (nodeId: string) => void;
   handleDeleteProjectAsset: (assetId: string) => void;
   handleDeleteProjectMediaFolder: (folderId: string) => void;
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
   handleImportProjectMedia: (folderId?: string | null) => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
-  handleMoveGeneratedClipToFolder: (nodeId: string) => void;
-  handleMoveProjectAssetToFolder: (assetId: string) => void;
-  handleRenameProjectMediaFolder: (folderId: string) => void;
+  handleMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
+  handleMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
+  handleRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
 } {
   const pendingImportFolderIdRef = useRef<string | null>(null);
@@ -206,14 +182,9 @@ export function useWorkspaceProjectMediaActions({
     [nodes, setNodes, setNotice]
   );
 
-  const handleCreateProjectMediaFolder = useCallback(() => {
+  const handleCreateProjectMediaFolder = useCallback((requestedName?: string) => {
     const fallbackName = `New folder ${projectMediaFolders.length + 1}`;
-    const requestedName = typeof window !== 'undefined'
-      ? window.prompt('Folder name', fallbackName)
-      : fallbackName;
-    if (requestedName === null) return;
-
-    const name = requestedName.trim() || fallbackName;
+    const name = requestedName?.trim() || fallbackName;
     const timestamp = new Date().toISOString();
     const folder: WorkspaceProjectMediaFolder = {
       id: createProjectMediaFolderId(),
@@ -254,14 +225,12 @@ export function useWorkspaceProjectMediaActions({
   );
 
   const handleRenameProjectMediaFolder = useCallback(
-    (folderId: string) => {
+    (folderId: string, requestedName: string) => {
       const folder = projectMediaFolders.find((candidate) => candidate.id === folderId);
       if (!folder) {
         setNotice('Project media folder not found.');
         return;
       }
-      const requestedName = typeof window !== 'undefined' ? window.prompt('Folder name', folder.name) : folder.name;
-      if (requestedName === null) return;
       const name = requestedName.trim();
       if (!name || name === folder.name) return;
       setProjectMediaFolders((current) => current.map((candidate) => (
@@ -275,14 +244,12 @@ export function useWorkspaceProjectMediaActions({
   );
 
   const handleMoveProjectAssetToFolder = useCallback(
-    (assetId: string) => {
+    (assetId: string, folderId: string | null) => {
       const asset = projectAssets.find((candidate) => candidate.id === assetId);
       if (!asset) {
         setNotice('Project media asset not found.');
         return;
       }
-      const folderId = promptProjectMediaFolderTarget(projectMediaFolders, asset.folderId);
-      if (folderId === undefined) return;
       const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
       setProjectAssets((current) => current.map((candidate) => (
         candidate.id === assetId ? { ...candidate, folderId } : candidate
@@ -293,14 +260,12 @@ export function useWorkspaceProjectMediaActions({
   );
 
   const handleMoveGeneratedClipToFolder = useCallback(
-    (nodeId: string) => {
+    (nodeId: string, folderId: string | null) => {
       const node = nodes.find((candidate) => candidate.id === nodeId);
       if (!node?.data.output) {
         setNotice('Generated clip not found.');
         return;
       }
-      const folderId = promptProjectMediaFolderTarget(projectMediaFolders, node.data.output.projectMediaFolderId);
-      if (folderId === undefined) return;
       const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
       setNodes((current) => current.map((candidate) => {
         if (candidate.id !== nodeId || !candidate.data.output) return candidate;

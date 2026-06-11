@@ -82,9 +82,9 @@ type UseProjectMediaControllerArgs = {
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
-  onMoveGeneratedClipToFolder: (nodeId: string) => void;
-  onMoveProjectAssetToFolder: (assetId: string) => void;
-  onRenameProjectMediaFolder: (folderId: string) => void;
+  onMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
+  onMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
+  onRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   onSelectSequence: (sequenceId: string) => void;
 };
 
@@ -303,14 +303,14 @@ export function useProjectMediaController({
     setSelectedMedia(null);
   }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence]);
 
-  const moveMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
-    if (menu.type === 'asset') onMoveProjectAssetToFolder(menu.id);
-    if (menu.type === 'generated') onMoveGeneratedClipToFolder(menu.id);
+  const moveMenuItem = useCallback((menu: ProjectMediaContextMenu, folderId: string | null) => {
+    if (menu.type === 'asset') onMoveProjectAssetToFolder(menu.id, folderId);
+    if (menu.type === 'generated') onMoveGeneratedClipToFolder(menu.id, folderId);
   }, [onMoveGeneratedClipToFolder, onMoveProjectAssetToFolder]);
 
-  const renameMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
+  const renameMenuItem = useCallback((menu: ProjectMediaContextMenu, requestedName: string) => {
     if (menu.type !== 'folder') return;
-    onRenameProjectMediaFolder(menu.id);
+    onRenameProjectMediaFolder(menu.id, requestedName);
   }, [onRenameProjectMediaFolder]);
 
   const duplicateMenuItem = useCallback((menu: ProjectMediaContextMenu) => {

@@ -1,7 +1,7 @@
 'use client';
 
-import { AudioLines, FileVideo2, Film, Folder, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video } from 'lucide-react';
-import { type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { AudioLines, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video, X } from 'lucide-react';
+import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
 import {
@@ -34,21 +34,26 @@ type TimelineProjectSidebarProps = {
   onDeleteProjectMediaFolder: (folderId: string) => void;
   onDeleteSequence: (sequenceId: string) => void;
   onDuplicateSequence: (sequenceId: string) => void;
-  onImportMedia: () => void;
+  onImportMedia: (folderId?: string | null) => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
-  onMoveGeneratedClipToFolder: (nodeId: string) => void;
-  onMoveProjectAssetToFolder: (assetId: string) => void;
-  onNewFolder: () => void;
+  onMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
+  onMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
+  onNewFolder: (requestedName?: string) => void;
   onNewSequence: () => void;
-  onRenameProjectMediaFolder: (folderId: string) => void;
+  onRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   onSelectSequence: (sequenceId: string) => void;
   onClearSequenceInspector: () => void;
 };
 
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 const AUDIO_WAVEFORM_BARS = [34, 58, 42, 76, 48, 68, 92, 50, 74, 44, 82, 60, 96, 54, 70, 38, 64, 88, 46, 72, 56, 84];
+
+type ProjectMediaFolderDialogState =
+  | { initialName: string; type: 'create' }
+  | { folderId: string; initialName: string; type: 'rename' }
+  | { currentFolderId: string | null; itemId: string; itemType: 'asset' | 'generated'; title: string; type: 'move' };
 
 function ProjectMediaBadge({ kind }: { kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video' }) {
   const icon =
@@ -244,6 +249,125 @@ function ProjectMediaContextMenu({
   );
 }
 
+function ProjectMediaFolderDialog({
+  dialog,
+  folders,
+  onClose,
+  onCreateFolder,
+  onMoveMedia,
+  onRenameFolder,
+}: {
+  dialog: ProjectMediaFolderDialogState | null;
+  folders: WorkspaceProjectMediaFolder[];
+  onClose: () => void;
+  onCreateFolder: (requestedName: string) => void;
+  onMoveMedia: (dialog: Extract<ProjectMediaFolderDialogState, { type: 'move' }>, folderId: string | null) => void;
+  onRenameFolder: (folderId: string, requestedName: string) => void;
+}) {
+  const [folderName, setFolderName] = useState('');
+  const [targetFolderId, setTargetFolderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!dialog) return;
+    if (dialog.type === 'move') {
+      setTargetFolderId(dialog.currentFolderId ?? null);
+      return;
+    }
+    setFolderName(dialog.initialName);
+  }, [dialog]);
+
+  if (!dialog) return null;
+
+  const isMoveDialog = dialog.type === 'move';
+  const title = dialog.type === 'create' ? 'New folder' : dialog.type === 'rename' ? 'Rename folder' : 'Move to folder';
+  const description = dialog.type === 'move'
+    ? `Choose a destination for ${dialog.title}.`
+    : 'Name this Project media folder.';
+  const trimmedName = folderName.trim();
+  const canSubmit = isMoveDialog || trimmedName.length > 0;
+
+  return (
+    <div
+      className={styles.projectMediaDialogOverlay}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <form
+        className={styles.projectMediaDialog}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!canSubmit) return;
+          if (dialog.type === 'create') onCreateFolder(trimmedName);
+          else if (dialog.type === 'rename') onRenameFolder(dialog.folderId, trimmedName);
+          else onMoveMedia(dialog, targetFolderId);
+          onClose();
+        }}
+      >
+        <div className={styles.projectMediaDialogHeader}>
+          <div>
+            <p>{title}</p>
+            <span>{description}</span>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close dialog">
+            <X size={15} />
+          </button>
+        </div>
+
+        {isMoveDialog ? (
+          <div className={styles.projectMediaFolderList} role="radiogroup" aria-label="Project media folder destination">
+            <button
+              type="button"
+              className={targetFolderId === null ? styles.projectMediaFolderOptionSelected : ''}
+              aria-checked={targetFolderId === null}
+              role="radio"
+              onClick={() => setTargetFolderId(null)}
+            >
+              <FolderOpen size={15} />
+              <span>Project media</span>
+              {targetFolderId === null ? <Check size={14} /> : null}
+            </button>
+            {folders.map((folder) => (
+              <button
+                key={folder.id}
+                type="button"
+                className={targetFolderId === folder.id ? styles.projectMediaFolderOptionSelected : ''}
+                aria-checked={targetFolderId === folder.id}
+                role="radio"
+                onClick={() => setTargetFolderId(folder.id)}
+              >
+                <Folder size={15} />
+                <span>{folder.name}</span>
+                {targetFolderId === folder.id ? <Check size={14} /> : null}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <label className={styles.projectMediaDialogField}>
+            <span>Folder name</span>
+            <input
+              autoFocus
+              value={folderName}
+              onChange={(event) => setFolderName(event.currentTarget.value)}
+              maxLength={60}
+            />
+          </label>
+        )}
+
+        <div className={styles.projectMediaDialogActions}>
+          <button type="button" onClick={onClose}>Cancel</button>
+          <button type="submit" disabled={!canSubmit}>
+            {dialog.type === 'create' ? 'Create' : dialog.type === 'rename' ? 'Rename' : 'Move'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function ProjectMediaFooterAction({
   children,
   danger,
@@ -293,6 +417,7 @@ export function TimelineProjectSidebar({
   onSelectSequence,
   onClearSequenceInspector,
 }: TimelineProjectSidebarProps) {
+  const [folderDialog, setFolderDialog] = useState<ProjectMediaFolderDialogState | null>(null);
   const projectMedia = useProjectMediaController({
     nodes,
     projectAssets,
@@ -313,6 +438,62 @@ export function TimelineProjectSidebar({
     onRenameProjectMediaFolder,
     onSelectSequence,
   });
+  const folderById = useMemo(
+    () => new Map(projectMediaFolders.map((folder) => [folder.id, folder])),
+    [projectMediaFolders]
+  );
+  const assetById = useMemo(
+    () => new Map(projectAssets.map((asset) => [asset.id, asset])),
+    [projectAssets]
+  );
+  const generatedNodeById = useMemo(
+    () => new Map(nodes.map((node) => [node.id, node])),
+    [nodes]
+  );
+
+  const openCreateFolderDialog = () => {
+    setFolderDialog({
+      initialName: `New folder ${projectMediaFolders.length + 1}`,
+      type: 'create',
+    });
+  };
+
+  const openRenameFolderDialog = (menu: ProjectMediaContextMenu) => {
+    const folder = folderById.get(menu.id);
+    if (menu.type !== 'folder' || !folder) return;
+    setFolderDialog({
+      folderId: folder.id,
+      initialName: folder.name,
+      type: 'rename',
+    });
+  };
+
+  const openMoveMediaDialog = (menu: ProjectMediaContextMenu) => {
+    if (menu.type === 'asset') {
+      const asset = assetById.get(menu.id);
+      if (!asset) return;
+      setFolderDialog({
+        currentFolderId: asset.folderId ?? null,
+        itemId: asset.id,
+        itemType: 'asset',
+        title: asset.filename,
+        type: 'move',
+      });
+      return;
+    }
+
+    if (menu.type === 'generated') {
+      const node = generatedNodeById.get(menu.id);
+      if (!node?.data.output) return;
+      setFolderDialog({
+        currentFolderId: node.data.output.projectMediaFolderId ?? null,
+        itemId: node.id,
+        itemType: 'generated',
+        title: node.data.title,
+        type: 'move',
+      });
+    }
+  };
 
   return (
     <aside className={`${styles.librarySidebar} ${styles.timelineProjectSidebar}`} aria-label="Project media library">
@@ -452,7 +633,7 @@ export function TimelineProjectSidebar({
           <span>{projectMedia.visibleItemCount} item{projectMedia.visibleItemCount === 1 ? '' : 's'}</span>
         </div>
         <div className={styles.projectMediaFooterActions}>
-          <ProjectMediaFooterAction onClick={onNewFolder}>
+          <ProjectMediaFooterAction onClick={openCreateFolderDialog}>
             <FolderPlus size={15} />
             New folder
           </ProjectMediaFooterAction>
@@ -474,8 +655,19 @@ export function TimelineProjectSidebar({
         onDelete={projectMedia.deleteMenuItem}
         onDuplicate={projectMedia.duplicateMenuItem}
         onInsert={projectMedia.insertMenuItem}
-        onMove={projectMedia.moveMenuItem}
-        onRename={projectMedia.renameMenuItem}
+        onMove={openMoveMediaDialog}
+        onRename={openRenameFolderDialog}
+      />
+      <ProjectMediaFolderDialog
+        dialog={folderDialog}
+        folders={projectMediaFolders}
+        onClose={() => setFolderDialog(null)}
+        onCreateFolder={onNewFolder}
+        onMoveMedia={(dialog, folderId) => {
+          if (dialog.itemType === 'asset') onMoveProjectAssetToFolder(dialog.itemId, folderId);
+          else onMoveGeneratedClipToFolder(dialog.itemId, folderId);
+        }}
+        onRenameFolder={onRenameProjectMediaFolder}
       />
     </aside>
   );

@@ -419,6 +419,181 @@
   background: rgba(239, 68, 68, 0.14);
 }
 
+.projectMediaDialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.projectMediaDialog {
+  width: min(360px, 100%);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(13, 21, 37, 0.98), rgba(6, 10, 20, 0.98));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.46);
+  color: #f8fafc;
+  padding: 14px;
+}
+
+.projectMediaDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.projectMediaDialogHeader p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 820;
+  letter-spacing: 0;
+}
+
+.projectMediaDialogHeader span {
+  display: block;
+  margin-top: 4px;
+  color: #9ca8bd;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.projectMediaDialogHeader button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.projectMediaDialogHeader button:hover,
+.projectMediaDialogHeader button:focus-visible {
+  border-color: rgba(96, 165, 250, 0.34);
+  color: #ffffff;
+  outline: none;
+}
+
+.projectMediaDialogField {
+  display: grid;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.projectMediaDialogField span {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 740;
+}
+
+.projectMediaDialogField input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 9px;
+  background: rgba(8, 13, 26, 0.88);
+  color: #f8fafc;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  padding: 0 11px;
+}
+
+.projectMediaDialogField input:focus {
+  border-color: rgba(129, 140, 248, 0.58);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.14);
+}
+
+.projectMediaFolderList {
+  display: grid;
+  max-height: 240px;
+  overflow: auto;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.projectMediaFolderList button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 38px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 9px;
+  background: rgba(8, 13, 26, 0.76);
+  color: #dbeafe;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.projectMediaFolderList button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectMediaFolderList button:hover,
+.projectMediaFolderList button:focus-visible,
+.projectMediaFolderOptionSelected {
+  border-color: rgba(129, 140, 248, 0.52) !important;
+  background: rgba(59, 46, 132, 0.46) !important;
+  outline: none;
+}
+
+.projectMediaDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.projectMediaDialogActions button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #dbeafe;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  padding: 0 13px;
+  cursor: pointer;
+}
+
+.projectMediaDialogActions button[type="submit"] {
+  border: 0;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #ffffff;
+}
+
+.projectMediaDialogActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.projectMediaDialogActions button:hover:not(:disabled),
+.projectMediaDialogActions button:focus-visible:not(:disabled) {
+  filter: brightness(1.08);
+  outline: none;
+}
+
 .projectMediaFooterBar {
   display: flex;
   gap: 10px;
