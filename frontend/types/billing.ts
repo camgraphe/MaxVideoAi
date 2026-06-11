@@ -1,8 +1,25 @@
-export const JOB_SURFACE_VALUES = ['video', 'image', 'storyboard', 'character', 'angle', 'audio', 'upscale'] as const;
+export const JOB_SURFACE_VALUES = [
+  'video',
+  'image',
+  'storyboard',
+  'character',
+  'angle',
+  'audio',
+  'upscale',
+  'background-removal',
+] as const;
 
 export type JobSurface = (typeof JOB_SURFACE_VALUES)[number];
 
-export const USER_ASSET_SOURCE_VALUES = ['upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const;
+export const USER_ASSET_SOURCE_VALUES = [
+  'upload',
+  'generated',
+  'storyboard',
+  'character',
+  'angle',
+  'upscale',
+  'background-removal',
+] as const;
 
 export type UserAssetSource = (typeof USER_ASSET_SOURCE_VALUES)[number];
 

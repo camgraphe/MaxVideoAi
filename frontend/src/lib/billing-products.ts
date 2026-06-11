@@ -26,7 +26,8 @@ function normalizeSurface(value: unknown): JobSurface {
     value === 'character' ||
     value === 'angle' ||
     value === 'audio' ||
-    value === 'upscale'
+    value === 'upscale' ||
+    value === 'background-removal'
     ? value
     : 'image';
 }

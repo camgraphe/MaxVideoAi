@@ -109,10 +109,11 @@ export async function GET(req: NextRequest) {
       } else if (feedType === 'video') {
         conditions.push(
           `NOT (
-            surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale')
-            OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale')
+            surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal')
+            OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
             OR job_id LIKE 'tool_angle_%'
             OR job_id LIKE 'tool_upscale_%'
+            OR job_id LIKE 'tool_background_removal_%'
             OR job_id LIKE 'storyboard_%'
             OR ${aliasClause}
             OR ${heuristicClause}

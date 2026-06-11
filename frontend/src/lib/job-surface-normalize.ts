@@ -10,7 +10,8 @@ export function normalizeJobSurface(value: unknown): JobSurface | null {
     normalized === 'character' ||
     normalized === 'angle' ||
     normalized === 'audio' ||
-    normalized === 'upscale'
+    normalized === 'upscale' ||
+    normalized === 'background-removal'
   ) {
     return normalized;
   }
@@ -29,7 +30,8 @@ export function normalizeUserAssetSource(value: unknown): UserAssetSource {
     normalized === 'storyboard' ||
     normalized === 'character' ||
     normalized === 'angle' ||
-    normalized === 'upscale'
+    normalized === 'upscale' ||
+    normalized === 'background-removal'
   ) {
     return normalized;
   }

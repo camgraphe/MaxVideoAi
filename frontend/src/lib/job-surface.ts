@@ -38,6 +38,9 @@ export function deriveJobSurface(params: {
   if (jobId.startsWith('tool_upscale_') || jobId.startsWith('upscale_')) {
     return 'upscale';
   }
+  if (jobId.startsWith('tool_background_removal_') || jobId.startsWith('background_removal_')) {
+    return 'background-removal';
+  }
   if (jobId.startsWith('storyboard_')) {
     return 'storyboard';
   }

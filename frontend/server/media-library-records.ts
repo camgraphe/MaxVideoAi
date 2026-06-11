@@ -9,6 +9,7 @@ export type MediaAssetSource =
   | 'character'
   | 'angle'
   | 'upscale'
+  | 'background-removal'
   | 'import';
 
 export type LegacyJobMediaRow = {
@@ -181,7 +182,8 @@ export function normalizeMediaAssetSource(value: unknown): MediaAssetSource {
     normalized === 'storyboard' ||
     normalized === 'character' ||
     normalized === 'angle' ||
-    normalized === 'upscale'
+    normalized === 'upscale' ||
+    normalized === 'background-removal'
   ) {
     return normalized;
   }
