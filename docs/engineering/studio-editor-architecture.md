@@ -14,6 +14,7 @@ Keep these entities separate in code and tests:
 - `Canvas node`: a React Flow generation or source block.
 - `Timeline clip`: an edit item on a video or audio track.
 - `Asset`: imported, generated, or library media that can be used by the canvas and/or timeline.
+- `Project media folder`: a Viewer-mode bin container for imported assets and generated clips. Sequences stay at the Project media root.
 - `Model capability`: the source of truth for generation inputs, supported render settings, and pricing-relevant options.
 - `Export job`: a queued server-render request with estimate, reservation, worker progress, artifact, and billing state.
 
@@ -120,16 +121,17 @@ Templates are for generation graphs, not project resets.
 
 ## Add A Sequence Or Project Media Operation
 
-Project media is the Viewer-mode bin. It contains sequences, imported media, generated clips, and future folders.
+Project media is the Viewer-mode bin. It contains root-level sequences, imported media, generated clips, and folders for organizing imported/generated media.
 
 1. Keep visible card/search/context-menu behavior in `useProjectMediaController.ts` and `TimelineProjectSidebar.tsx`.
 2. Keep sequence list decisions in `_state/workspace-sequence-operations.ts`.
 3. Keep active sequence snapshots in `_state/workspace-sequence-snapshot.ts`.
 4. Keep timeline insertion from imported/generated media in `_hooks/useWorkspaceProjectMediaActions.ts` plus `_lib/workspace-project-media-timeline.ts`.
 5. A sequence card opens or manages a sequence. It should not insert itself into the timeline like a media clip.
-6. A media card drags to compatible tracks. It may also expose insert/delete through a context menu.
-7. Never delete the last sequence. When deleting the active sequence, choose a deterministic fallback sequence and apply it immediately.
-8. Add pure tests for sequence operations and architecture assertions for new controller responsibilities.
+6. A project media folder opens a filtered bin view. Folder actions live with Project media actions; folder navigation state lives in the Project media controller.
+7. A media card drags to compatible tracks. It may also expose insert/delete/move through a context menu.
+8. Never delete the last sequence. When deleting the active sequence, choose a deterministic fallback sequence and apply it immediately.
+9. Add pure tests for sequence operations and architecture assertions for new controller responsibilities.
 
 ## Add Timeline Behavior
 
@@ -164,9 +166,10 @@ Timeline UI should call named operations. It should not encode new editing rules
 
 1. Treat imported media, generated media, and sequences as project media cards.
 2. Media cards should be draggable to compatible timeline tracks.
-3. Context menus may expose insert/delete/rename actions.
-4. Sidebar buttons should not duplicate timeline tools.
-5. Sequence cards should select the active sequence and expose sequence settings in the inspector.
+3. Folders may contain imported media and generated clips. Keep sequences at the root level so timeline selection and sequence settings stay obvious.
+4. Context menus may expose insert/delete/rename/move actions.
+5. Sidebar buttons should not duplicate timeline tools.
+6. Sequence cards should select the active sequence and expose sequence settings in the inspector.
 
 ## Add Export Behavior
 

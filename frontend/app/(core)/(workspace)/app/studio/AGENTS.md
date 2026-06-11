@@ -22,6 +22,7 @@ Keep these entities distinct:
 - `Canvas node`: a generation/source block in React Flow.
 - `Timeline clip`: a montage item on video or audio tracks.
 - `Asset`: user media, generated media, or imported media usable by canvas and/or timeline.
+- `Project media folder`: a Viewer-mode bin container for imported assets and generated clips. Keep sequences at the Project media root.
 - `Model capability`: the source of truth for shot inputs, render options, and routing.
 
 ## Additive Rules
@@ -32,7 +33,7 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Add a new model by updating `workspace-capabilities.ts` and generation/pricing adapters. The shot block should derive connectors from capabilities.
 - Add timeline behavior in `workspace-timeline-editing.ts`, `workspace-timeline-render.ts`, or `workspace-timeline-tracks.ts` before wiring UI.
 - Add sequence list behavior in `workspace/_state/workspace-sequence-operations.ts` before wiring Project media or inspector UI.
-- Add Project media behavior in `workspace/_controllers/useProjectMediaController.ts`, `workspace/_components/TimelineProjectSidebar.tsx`, and pure timeline insertion helpers. Sequence cards manage sequences; media cards drag/insert media.
+- Add Project media behavior in `workspace/_controllers/useProjectMediaController.ts`, `workspace/_components/TimelineProjectSidebar.tsx`, and pure timeline insertion helpers. Sequence cards manage sequences; folder cards filter media; media cards drag/insert media.
 - Add viewer behavior in `WorkspaceVideoViewer.tsx` and pure render helpers, not inside the timeline component.
 - Add project persistence in `frontend/src/server/studio` plus `frontend/app/api/studio`; keep client fallback to local storage until backend availability is guaranteed.
 - Add UI as route-local components under `workspace/_components` unless it is clearly reused by another route.
