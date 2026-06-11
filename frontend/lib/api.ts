@@ -1,11 +1,13 @@
 export {
   runAngleTool,
   runAudioGenerate,
+  runBackgroundRemovalTool,
   runCharacterBuilderTool,
   runGenerate,
   runImageGeneration,
   runPreflight,
   runUpscaleTool,
+  startBackgroundRemovalRealtimeSession,
 } from '@/lib/api-generation';
 
 export { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api-assets';

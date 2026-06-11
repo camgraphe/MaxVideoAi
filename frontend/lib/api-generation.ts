@@ -9,6 +9,12 @@ import type { VideoAsset } from '@/types/render';
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
+import type {
+  BackgroundRemovalRealtimeSessionRequest,
+  BackgroundRemovalRealtimeSessionResponse,
+  BackgroundRemovalToolRequest,
+  BackgroundRemovalToolResponse,
+} from '@/types/tools-background-removal';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
@@ -302,6 +308,64 @@ export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<Upsca
     const error = new Error(data.error?.message ?? `Upscale tool failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'upscale_tool_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+
+  return data;
+}
+
+export async function runBackgroundRemovalTool(
+  payload: BackgroundRemovalToolRequest
+): Promise<BackgroundRemovalToolResponse> {
+  const response = await authFetch('/api/tools/background-removal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as
+    | (BackgroundRemovalToolResponse & { error?: { code?: string; message?: string; detail?: unknown } })
+    | null;
+
+  if (!data) {
+    throw new Error('Background removal response malformed');
+  }
+
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Background removal failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'background_removal_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+
+  return data;
+}
+
+export async function startBackgroundRemovalRealtimeSession(
+  payload: BackgroundRemovalRealtimeSessionRequest
+): Promise<BackgroundRemovalRealtimeSessionResponse> {
+  const response = await authFetch('/api/tools/background-removal/realtime-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as
+    | (BackgroundRemovalRealtimeSessionResponse & { error?: { code?: string; message?: string; detail?: unknown } })
+    | null;
+
+  if (!data) {
+    throw new Error('Realtime background removal session response malformed');
+  }
+
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Realtime session failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'background_removal_realtime_failed',
       detail: data.error?.detail,
       status: response.status,
     });
