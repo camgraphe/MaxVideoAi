@@ -1,4 +1,5 @@
 .nodeActionButton,
+.nodeInspectButton,
 .mediaPickerEmpty {
   border: 0;
   font: inherit;
@@ -96,7 +97,7 @@
 
 .nodeHeader {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
   padding: 11px 12px 8px;
@@ -129,6 +130,31 @@
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nodeInspectButton {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.72);
+  color: color-mix(in srgb, var(--node-accent) 70%, #cbd5e1);
+  cursor: pointer;
+  opacity: 0.78;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.nodeInspectButton:hover,
+.nodeInspectButton:focus-visible {
+  background: color-mix(in srgb, var(--node-accent) 18%, rgba(15, 23, 42, 0.9));
+  color: #f8fafc;
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
 .nodePreview,
@@ -300,6 +326,20 @@
   font-size: 11px;
   line-height: 1.45;
   outline: none;
+}
+
+.noteNode {
+  background:
+    linear-gradient(180deg, rgba(66, 56, 22, 0.9), rgba(15, 23, 42, 0.96)),
+    #0f172a;
+}
+
+.noteTextarea {
+  border-color: rgba(250, 204, 21, 0.18);
+  background:
+    linear-gradient(135deg, rgba(250, 204, 21, 0.1), transparent 56%),
+    rgba(2, 6, 23, 0.48);
+  color: #fef3c7;
 }
 
 .sourceResizableNode .promptTextarea {

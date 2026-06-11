@@ -27,6 +27,7 @@ function classifyFailure(message: string | null): FailureCategory | null {
       'sensitive words',
       'content policy',
       'policy violation',
+      'copyright',
       'safety',
       'moderation',
       'prohibited content',
@@ -67,7 +68,10 @@ function classifyFailure(message: string | null): FailureCategory | null {
     return 'no_output';
   }
 
-  if (containsAny(lower, ['copy', 'copied', 'storage', 'download', 'fast-start', 'faststart'])) {
+  if (
+    /\b(?:copy|copied|copying)\b/.test(lower) ||
+    containsAny(lower, ['storage', 'download', 'fast-start', 'faststart'])
+  ) {
     return 'storage';
   }
 

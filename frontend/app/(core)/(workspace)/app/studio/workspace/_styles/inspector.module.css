@@ -14,6 +14,13 @@
   margin-top: 16px;
   overflow: auto;
   padding-right: 3px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settingsBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .settingsLabel {

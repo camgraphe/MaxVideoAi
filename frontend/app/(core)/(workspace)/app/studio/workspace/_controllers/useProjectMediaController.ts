@@ -8,7 +8,12 @@ import type {
   WorkspaceProjectSettings,
 } from '../_lib/workspace-types';
 import {
+  applyProjectMediaItemDragPayload,
   applyProjectMediaTimelineDragPayload,
+  clearProjectMediaItemDragPayload,
+  parseProjectMediaItemDragPayload,
+  projectMediaItemDragPayloadForAsset,
+  projectMediaItemDragPayloadForGeneratedNode,
   projectMediaAssetThumbnailUrl,
   projectMediaGeneratedThumbnailUrl,
   projectMediaTimelineDragPayloadForAsset,
@@ -16,6 +21,7 @@ import {
   projectMediaTimelineKindForAsset,
   projectMediaTimelineKindForGeneratedNode,
 } from '../_lib/workspace-project-media-drag';
+import { clearTimelineNodeDragPayload } from '../_lib/timeline/timeline-external-drop';
 
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 
@@ -134,13 +140,21 @@ function generatedNodeFolderId(node: WorkspaceGraphNode, folderIds: Set<string>)
 function beginProjectAssetTimelineDrag(event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord): void {
   const payload = projectMediaTimelineDragPayloadForAsset(asset);
   if (!payload) return;
+  applyProjectMediaItemDragPayload(event.dataTransfer, projectMediaItemDragPayloadForAsset(asset));
   applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
 }
 
 function beginGeneratedNodeTimelineDrag(event: ReactDragEvent<HTMLElement>, node: WorkspaceGraphNode): void {
   const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
   if (!payload) return;
+  const itemPayload = projectMediaItemDragPayloadForGeneratedNode(node);
+  if (itemPayload) applyProjectMediaItemDragPayload(event.dataTransfer, itemPayload);
   applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
+}
+
+function endProjectMediaTimelineDrag(): void {
+  clearProjectMediaItemDragPayload();
+  clearTimelineNodeDragPayload();
 }
 
 export function useProjectMediaController({
@@ -167,6 +181,7 @@ export function useProjectMediaController({
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaSelection>(null);
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [folderDropTargetId, setFolderDropTargetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const folderIds = useMemo(() => new Set(projectMediaFolders.map((folder) => folder.id)), [projectMediaFolders]);
@@ -339,6 +354,42 @@ export function useProjectMediaController({
     onImportMedia(activeFolderId);
   }, [activeFolderId, onImportMedia]);
 
+  const moveDraggedMediaToFolder = useCallback((payload: ReturnType<typeof parseProjectMediaItemDragPayload>, folderId: string) => {
+    if (!payload || payload.sourceFolderId === folderId) return false;
+    if (payload.itemType === 'asset') onMoveProjectAssetToFolder(payload.itemId, folderId);
+    else onMoveGeneratedClipToFolder(payload.itemId, folderId);
+    setSelectedMedia({ id: payload.itemId, type: payload.itemType });
+    return true;
+  }, [onMoveGeneratedClipToFolder, onMoveProjectAssetToFolder]);
+
+  const handleFolderDragOver = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
+    const payload = parseProjectMediaItemDragPayload(event.dataTransfer);
+    if (!payload || payload.sourceFolderId === folderId) {
+      event.dataTransfer.dropEffect = 'none';
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'move';
+    setFolderDropTargetId(folderId);
+  }, []);
+
+  const handleFolderDragLeave = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setFolderDropTargetId((current) => current === folderId ? null : current);
+  }, []);
+
+  const handleFolderDrop = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
+    const payload = parseProjectMediaItemDragPayload(event.dataTransfer);
+    setFolderDropTargetId(null);
+    clearProjectMediaItemDragPayload();
+    if (!payload) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'move';
+    moveDraggedMediaToFolder(payload, folderId);
+  }, [moveDraggedMediaToFolder]);
+
   useEffect(() => {
     if (!contextMenu) return undefined;
     const handlePointerDown = (event: PointerEvent) => {
@@ -367,6 +418,7 @@ export function useProjectMediaController({
     activeFolder,
     beginGeneratedNodeTimelineDrag,
     beginProjectAssetTimelineDrag,
+    endProjectMediaTimelineDrag,
     contextMenu,
     deleteMenuItem,
     deleteSelected,
@@ -385,6 +437,10 @@ export function useProjectMediaController({
     canMoveMediaToFolder,
     selectedKey,
     selectSequence,
+    folderDropTargetId,
+    handleFolderDragLeave,
+    handleFolderDragOver,
+    handleFolderDrop,
     setContextMenu,
     setSearchQuery,
     totalItems,

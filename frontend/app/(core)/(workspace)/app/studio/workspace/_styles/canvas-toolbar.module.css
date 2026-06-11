@@ -1,0 +1,367 @@
+.canvasToolbar,
+.canvasToolbar button,
+.canvasToolbar input {
+  font: inherit;
+}
+
+.canvasToolbar {
+  position: absolute;
+  z-index: 42;
+  bottom: 18px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: calc(100% - 32px);
+  padding: 6px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(3, 7, 18, 0.82);
+  box-shadow:
+    0 22px 58px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  color: #dbeafe;
+  user-select: none;
+}
+
+.toolbarButton {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.toolbarButton:hover {
+  background: rgba(30, 41, 59, 0.82);
+  color: #f8fafc;
+}
+
+.toolbarButton:active {
+  transform: scale(0.98);
+}
+
+.toolbarButtonActive {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
+}
+
+.toolbarSeparator {
+  width: 1px;
+  height: 28px;
+  margin: 0 3px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.toolbarPopover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  display: grid;
+  width: min(320px, calc(100vw - 40px));
+  max-height: min(560px, calc(100vh - 230px));
+  gap: 10px;
+  padding: 12px;
+  transform: translateX(-50%);
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(3, 7, 18, 0.98)),
+    #020617;
+  box-shadow: 0 28px 84px rgba(0, 0, 0, 0.46);
+  scrollbar-width: none;
+}
+
+.toolbarPopover::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.toolbarPopoverWide {
+  width: min(430px, calc(100vw - 40px));
+}
+
+.popoverHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.popoverHeader strong {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.popoverHeader span {
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.blockOptionList {
+  display: grid;
+  gap: 8px;
+}
+
+.blockOption {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 62px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 12%, transparent), transparent 60%),
+    rgba(15, 23, 42, 0.78);
+  color: #dbeafe;
+  cursor: grab;
+  text-align: left;
+}
+
+.blockOption:active {
+  cursor: grabbing;
+}
+
+.blockOption:hover {
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 52%, rgba(226, 232, 240, 0.18));
+}
+
+.blockOptionIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 22%, rgba(15, 23, 42, 0.9));
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 82%, #ffffff 10%);
+}
+
+.blockOption span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.blockOption strong,
+.templateOption strong,
+.userTemplateItem strong,
+.toolAction strong {
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blockOption small,
+.templateOption small,
+.userTemplateItem span,
+.toolAction small {
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.32;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.templateOption {
+  position: relative;
+  display: grid;
+  min-height: 112px;
+  align-content: end;
+  gap: 7px;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(2, 6, 23, 0.78) 62%),
+    var(--template-thumbnail),
+    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, #0f172a), #020617);
+  background-position: center;
+  background-size: cover;
+  color: #dbeafe;
+  cursor: pointer;
+  text-align: left;
+}
+
+.templateOptionActive {
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 70%, #ffffff 6%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--template-accent, #8b5cf6) 35%, transparent);
+}
+
+.templateThumbnail {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #8b5cf6, #2563eb);
+  color: #ffffff;
+}
+
+.templateOption span:last-of-type {
+  display: grid;
+  gap: 3px;
+}
+
+.templateOption em {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.32);
+  color: #ddd6fe;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.templateSavePanel {
+  display: grid;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.templateSaveForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.templateSaveForm input {
+  min-width: 0;
+  height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #e5e7eb;
+  padding: 0 10px;
+  outline: none;
+}
+
+.templateSaveForm button,
+.toolAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.78);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.templateSaveForm button:hover,
+.toolAction:hover {
+  background: rgba(51, 65, 85, 0.9);
+}
+
+.userTemplateList {
+  display: grid;
+  gap: 7px;
+}
+
+.userTemplateItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.userTemplateItemActive {
+  border-color: rgba(139, 92, 246, 0.55);
+}
+
+.userTemplateItem > button {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.userTemplateItem > div {
+  display: flex;
+  gap: 4px;
+}
+
+.userTemplateItem > div button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.emptyTemplateState {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.toolAction {
+  justify-content: flex-start;
+  width: 100%;
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.toolAction span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+@media (max-width: 760px) {
+  .canvasToolbar {
+    bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .toolbarPopover,
+  .toolbarPopoverWide {
+    width: min(340px, calc(100vw - 24px));
+  }
+
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
+}

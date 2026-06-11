@@ -38,3 +38,18 @@ test('refund reasons classify storage preparation failures', () => {
   assert.equal(reason, 'Output could not be prepared for download.');
   assert.doesNotMatch(reason, forbidden);
 });
+
+test('copyright restriction failures are not mistaken for copy failures', () => {
+  const rawMessage =
+    'The request failed because the output video may be related to copyright restrictions. Request id: provider-hidden';
+  const message = toUserFacingFailureMessage(rawMessage);
+  const reason = toUserFacingRefundReason(rawMessage);
+
+  assert.equal(
+    message,
+    'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.'
+  );
+  assert.equal(reason, 'Request was blocked by safety checks.');
+  assert.doesNotMatch(message, /download/i);
+  assert.doesNotMatch(reason, /download/i);
+});

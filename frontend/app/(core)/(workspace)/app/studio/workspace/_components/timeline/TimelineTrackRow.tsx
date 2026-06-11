@@ -22,6 +22,15 @@ type TimelineTrackDefinition = {
 };
 
 type TimelineExternalDropPreview = {
+  displacedItems: Array<{
+    durationSec: number;
+    fromStartSec: number;
+    itemId: string;
+    mediaKind?: 'video' | 'audio' | 'image';
+    title: string;
+    toStartSec: number;
+    trackId: WorkspaceTimelineTrack;
+  }>;
   durationSec: number;
   isValid: boolean;
   mediaKind: 'audio' | 'image' | 'video';
@@ -103,6 +112,9 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
   videoTrackId,
 }: TimelineTrackRowProps) {
   const trackDropPreview = externalDropPreview?.trackId === track.id ? externalDropPreview : null;
+  const displacedItems = externalDropPreview?.isValid
+    ? externalDropPreview.displacedItems.filter((item) => item.trackId === track.id)
+    : [];
 
   return (
     <div
@@ -207,6 +219,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
           className={styles.trackLaneContent}
           style={{ width: timelineWidth }}
           data-timeline-track={track.id}
+          onDragEnter={(event) => onExternalDropOver(event, track.id)}
           onDragLeave={onClearExternalDropPreview}
           onDragOver={(event) => onExternalDropOver(event, track.id)}
           onDrop={(event) => onDropExternal(event, track.id)}
@@ -270,6 +283,26 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
               </span>
             </>
           ) : null}
+          {displacedItems.map((item) => (
+            <span
+              key={item.itemId}
+              className={[
+                styles.timelineExternalDisplacementGhost,
+                item.mediaKind === 'audio' ? styles.timelineExternalDisplacementGhostAudio : '',
+              ].filter(Boolean).join(' ')}
+              data-timeline-external-displacement-ghost="true"
+              data-timeline-displacement-item={item.itemId}
+              data-timeline-displacement-from={item.fromStartSec}
+              data-timeline-displacement-start={item.toStartSec}
+              style={{
+                left: item.toStartSec * pixelsPerSecond,
+                width: Math.max(30, item.durationSec * pixelsPerSecond),
+              }}
+              aria-hidden="true"
+            >
+              {item.title}
+            </span>
+          ))}
           {children}
         </div>
       </div>

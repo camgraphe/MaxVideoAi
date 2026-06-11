@@ -133,8 +133,34 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   expect(initialTimelineItems).toBeGreaterThan(0);
   await expect(page.getByLabel('Studio account status')).toBeVisible();
   await expect(page.getByLabel(/Studio wallet balance/)).toBeVisible();
-  await expect(page.getByText('Block templates')).toBeVisible();
-  await expect(page.getByText('Canvas templates', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+
+  const firstCanvasNode = page.locator('.react-flow__node').first();
+  await firstCanvasNode.click();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Open .* settings/ }).first()).toBeVisible();
+
+  await page.getByRole('button', { name: /Open .* settings/ }).first().click();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+
+  await firstCanvasNode.click();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+  await page.keyboard.press('i');
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+
+  await firstCanvasNode.dblclick();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
 
   await switchEditorFocus(page, 'Viewer');
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toBeVisible();
@@ -142,8 +168,8 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByRole('button', { name: 'Import media' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New folder' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New sequence' })).toBeVisible();
-  await expect(page.getByText('Block templates')).toHaveCount(0);
-  await expect(page.getByText('Canvas templates', { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel('Canvas creation toolbar')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Canvas templates' })).toHaveCount(0);
   await expect(page.getByTestId('editor-video-viewer')).toBeVisible();
   await expect(page.getByTestId('editor-program-monitor')).toBeVisible();
   await expect(page.getByTestId('editor-program-frame')).toBeVisible();
@@ -153,8 +179,8 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
 
   await switchEditorFocus(page, 'Canvas');
-  await expect(page.getByText('Block templates')).toBeVisible();
-  await expect(page.getByText('Canvas templates', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toHaveCount(0);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
 
@@ -283,6 +309,28 @@ test('viewer project media can be dragged into a compatible timeline track', asy
   await expect(importedVideoCard).toHaveAttribute('data-project-media-drag-kind', 'video');
   await expect(importedVideoCard).toHaveAttribute('data-project-media-duration-sec', '8');
   const videoLane = page.locator('[data-timeline-track="video-2"]');
+  const occupiedVideoLane = page.locator('[data-timeline-track="video"]');
+  const occupiedVideoLaneBox = await occupiedVideoLane.boundingBox();
+  expect(occupiedVideoLaneBox).not.toBeNull();
+  if (occupiedVideoLaneBox) {
+    await occupiedVideoLane.evaluate((target, { clientX, clientY }) => {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('application/x-maxvideoai-timeline-node', JSON.stringify({
+        assetId: 'client-drag-video',
+        durationSec: 8,
+        mediaKind: 'video',
+        title: 'aerial-road.mp4',
+      }));
+      target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+    }, {
+      clientX: occupiedVideoLaneBox.x + 80,
+      clientY: occupiedVideoLaneBox.y + occupiedVideoLaneBox.height / 2,
+    });
+    const displacementGhost = page.locator('[data-timeline-external-displacement-ghost="true"]').first();
+    await expect(displacementGhost).toBeVisible();
+    await expect(displacementGhost).toHaveAttribute('data-timeline-displacement-start', /.+/);
+  }
+
   const videoLaneBox = await videoLane.boundingBox();
   expect(videoLaneBox).not.toBeNull();
   if (videoLaneBox) {
@@ -307,6 +355,157 @@ test('viewer project media can be dragged into a compatible timeline track', asy
   }
 
   await dropProjectMediaAssetOnTimelineTrack(page, 'aerial-road.mp4', 'video-2', 1);
+
+  await expect(page.getByText('aerial-road.mp4 dropped on video-2')).toBeVisible();
+  await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 2);
+  assertNoEditorClientErrors(errors);
+});
+
+test('viewer project media can drag assets into folders and back out of folder view', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await page.route('**/api/media-library/assets**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        assets: [
+          {
+            durationSec: 8,
+            id: 'client-folder-video',
+            mediaType: 'asset-video',
+            mimeType: 'video/mp4',
+            thumbUrl: '/assets/marketing/reference-workflow-final-video.webp',
+            url: '/assets/gallery/aerial-road.mp4',
+            width: 1920,
+            height: 1080,
+            source: 'upload',
+          },
+        ],
+      }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await page.getByRole('button', { name: 'New folder' }).click();
+  await expect(page.getByRole('dialog', { name: 'New folder' })).toBeVisible();
+  await page.getByLabel('Folder name').fill('Renders');
+  await page.getByRole('button', { name: 'Create' }).click();
+  await expect(page.getByText('Renders folder created in Project media.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Import media' }).click();
+  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
+
+  const importedVideoCard = page
+    .locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' })
+    .locator('[draggable="true"]');
+  const folderCard = page.locator('[data-project-media-folder-id]', { hasText: 'Renders' }).first();
+  await expect(importedVideoCard).toBeVisible();
+  await expect(folderCard).toBeVisible();
+
+  const sourceBox = await importedVideoCard.boundingBox();
+  const folderBox = await folderCard.boundingBox();
+  expect(sourceBox).not.toBeNull();
+  expect(folderBox).not.toBeNull();
+  if (!sourceBox || !folderBox) return;
+
+  await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sourceBox.x + sourceBox.width / 2 + 18, sourceBox.y + sourceBox.height / 2 + 10, { steps: 4 });
+  await page.mouse.move(folderBox.x + folderBox.width / 2, folderBox.y + folderBox.height / 2, { steps: 10 });
+  await expect(folderCard).toHaveAttribute('data-project-media-folder-drop-target', 'true');
+  await page.mouse.up();
+
+  await expect(page.getByText('aerial-road.mp4 moved to Renders.')).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' })).toHaveCount(0);
+  await expect(folderCard).toContainText('1 item');
+
+  await folderCard.click();
+  await expect(page.getByRole('button', { name: 'Back to Project media' })).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Back to Project media' }).click();
+  await expect(page.locator('[data-project-media-folder-id]', { hasText: 'Renders' })).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' })).toHaveCount(0);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('viewer project media supports native mouse drag with a visible timeline ghost', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await page.route('**/api/media-library/assets**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        assets: [
+          {
+            durationSec: 8,
+            id: 'client-native-drag-video',
+            mediaType: 'asset-video',
+            mimeType: 'video/mp4',
+            thumbUrl: '/assets/marketing/reference-workflow-final-video.webp',
+            url: '/assets/gallery/aerial-road.mp4',
+            width: 1920,
+            height: 1080,
+            source: 'upload',
+          },
+        ],
+      }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const initialTimelineItems = await timelineItemCount(page);
+  await page.getByRole('button', { name: 'Add video track' }).click();
+  await page.getByRole('button', { name: 'Import media' }).click();
+  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
+
+  const importedVideoCard = page
+    .locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' })
+    .locator('[draggable="true"]');
+  await expect(importedVideoCard).toHaveAttribute('data-project-media-drag-kind', 'video');
+
+  const occupiedVideoLane = page.locator('[data-timeline-track="video"]');
+  const videoLane = page.locator('[data-timeline-track="video-2"]');
+  const sourceBox = await importedVideoCard.boundingBox();
+  const occupiedTargetBox = await occupiedVideoLane.boundingBox();
+  const targetBox = await videoLane.boundingBox();
+  expect(sourceBox).not.toBeNull();
+  expect(occupiedTargetBox).not.toBeNull();
+  expect(targetBox).not.toBeNull();
+  if (!sourceBox || !occupiedTargetBox || !targetBox) return;
+
+  const occupiedTargetX = occupiedTargetBox.x + 80;
+  const occupiedTargetY = occupiedTargetBox.y + occupiedTargetBox.height / 2;
+  const targetX = targetBox.x + 120;
+  const targetY = targetBox.y + targetBox.height / 2;
+  await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sourceBox.x + sourceBox.width / 2 + 24, sourceBox.y + sourceBox.height / 2 + 12, { steps: 4 });
+  await page.mouse.move(occupiedTargetX, occupiedTargetY, { steps: 10 });
+
+  const displacementGhost = page.locator('[data-timeline-external-displacement-ghost="true"]').first();
+  await expect(displacementGhost).toBeVisible();
+  await expect(displacementGhost).toHaveAttribute('data-timeline-displacement-start', /.+/);
+
+  await page.mouse.move(targetX, targetY, { steps: 12 });
+
+  const dropGhost = page.locator('[data-timeline-external-drop-ghost="true"]');
+  await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-kind', 'video');
+  await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-duration', '8');
+  await expect(dropGhost).toContainText('aerial-road.mp4');
+
+  await page.mouse.up();
 
   await expect(page.getByText('aerial-road.mp4 dropped on video-2')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 2);
@@ -373,14 +572,14 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await dismissCookieBanner(page);
 
   await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'New project' })).toBeVisible();
-  const createProjectButton = page.getByRole('button', { name: 'New project' });
+  await expect(page.getByRole('heading', { name: 'Create a new project' })).toBeVisible();
+  const createProjectButton = page.getByRole('button', { name: 'Create project' });
   await expect(createProjectButton).toBeEnabled();
   await page.getByLabel('Project name').fill('Client Cut');
-  await page.getByLabel('Ratio').selectOption('9:16');
-  await page.getByLabel('Resolution').selectOption('720p');
-  await page.getByLabel('FPS').selectOption('24');
-  await page.getByLabel('Canvas template').selectOption('dev-blocks');
+  await expect(page.getByLabel('Ratio')).toHaveCount(0);
+  await expect(page.getByLabel('Resolution')).toHaveCount(0);
+  await expect(page.getByLabel('FPS')).toHaveCount(0);
+  await page.getByRole('button', { name: /Dev Blocks/ }).click();
   await createProjectButton.click();
 
   await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
@@ -390,8 +589,8 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await expect(page.locator('.react-flow__node', { hasText: 'Dev Image Block' })).toBeVisible();
 
   await switchEditorFocus(page, 'Viewer');
-  await expect(page.locator('[data-project-media-card="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 9:16');
-  await expect(page.getByText('9:16 · 720x1280 · 24 fps')).toBeVisible();
+  await expect(page.locator('[data-project-media-card="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 16:9');
+  await expect(page.getByText('16:9 · 1920x1080 · 24 fps')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
 
@@ -403,13 +602,15 @@ test('canvas templates can be saved and applied without changing the timeline', 
 
   const initialTimelineItems = await timelineItemCount(page);
   const savedNodeCount = await canvasNodeCount(page);
+  await page.getByRole('button', { name: 'Canvas templates' }).click();
   await page.getByLabel('Canvas template name').fill('Saved graph');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Saved graph saved as a canvas template.')).toBeVisible();
-  const savedTemplateButton = page.locator('[class*="myCanvasTemplateMain"]', { hasText: 'Saved graph' });
+  const savedTemplateButton = page.locator('[class*="userTemplateItem"] > button', { hasText: 'Saved graph' });
   await expect(savedTemplateButton).toBeVisible();
 
-  const promptTemplate = page.locator('[data-block-template-kind="text-prompt"]');
+  await page.getByRole('button', { name: 'Text blocks' }).click();
+  const promptTemplate = page.locator('[data-canvas-toolbar-block-kind="text-prompt"]');
   const canvas = page.locator('.react-flow');
   const templateBox = await promptTemplate.boundingBox();
   const canvasBox = await canvas.boundingBox();
@@ -423,6 +624,7 @@ test('canvas templates can be saved and applied without changing the timeline', 
   await page.mouse.up();
   await expect.poll(() => canvasNodeCount(page)).toBe(savedNodeCount + 1);
 
+  await page.getByRole('button', { name: 'Canvas templates' }).click();
   await savedTemplateButton.click();
   await expect.poll(() => canvasNodeCount(page)).toBe(savedNodeCount);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
@@ -511,7 +713,8 @@ test('video block template uses custom drag and clears the ghost after the mouse
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  const videoTemplate = page.locator('[data-block-template-kind="asset-video"]');
+  await page.getByRole('button', { name: 'Media blocks' }).click();
+  const videoTemplate = page.locator('[data-canvas-toolbar-block-kind="asset-video"]');
   await expect(videoTemplate).toBeVisible();
   await expect(videoTemplate).not.toHaveAttribute('draggable', 'true');
   const nodeCountBeforeClick = await canvasNodeCount(page);
@@ -583,7 +786,8 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  const generateTemplate = page.locator('[data-block-template-kind="shot"]');
+  await page.getByRole('button', { name: 'Generate blocks' }).click();
+  const generateTemplate = page.locator('[data-canvas-toolbar-block-kind="shot"]');
   const canvas = page.locator('.react-flow');
   await expect(generateTemplate).toBeVisible();
   await expect(canvas).toBeVisible();
@@ -639,7 +843,8 @@ test('canvas file drop on a compatible empty block fills that block instead of a
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  const videoTemplate = page.locator('[data-block-template-kind="asset-video"]');
+  await page.getByRole('button', { name: 'Media blocks' }).click();
+  const videoTemplate = page.locator('[data-canvas-toolbar-block-kind="asset-video"]');
   const canvas = page.locator('.react-flow');
   await expect(videoTemplate).toBeVisible();
   await expect(canvas).toBeVisible();

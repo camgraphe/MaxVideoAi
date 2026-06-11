@@ -1,5 +1,4 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { defaultSelectedNodeId } from '../_lib/workspace-graph-helpers';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
   coerceWorkspaceProjectSettings,
@@ -215,7 +214,7 @@ export function useWorkspacePersistenceEffects({
       setTimelinePanelHeight(null);
       setTimelineInPointSec(null);
       setTimelineOutPointSec(null);
-      setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
+      setSelectedNodeId(null);
       setCanvasRevision((value) => value + 1);
       setNotice(`${project.name} project loaded with a clean sequence.`);
     };

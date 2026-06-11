@@ -20,6 +20,8 @@
 }
 
 .editorTopbar {
+  position: relative;
+  z-index: 85;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -173,6 +175,37 @@
   min-height: 0;
 }
 
+.canvasEditorBody {
+  grid-template-columns: minmax(0, 1fr) 0;
+  transition: grid-template-columns 180ms ease;
+}
+
+.canvasEditorBodyInspectorOpen {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.canvasInspectorSlot {
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(10px);
+  transition:
+    opacity 140ms ease,
+    transform 180ms ease;
+  will-change: opacity, transform;
+}
+
+.canvasEditorBodyInspectorOpen .canvasInspectorSlot {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.canvasInspectorSlot > * {
+  height: 100%;
+}
+
 .viewerFocus {
   --timeline-panel-fallback-height: minmax(320px, 0.45fr);
   grid-template-rows: 54px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
@@ -202,6 +235,14 @@
 
   .editorBody {
     grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  .canvasEditorBody {
+    grid-template-columns: minmax(0, 1fr) 0;
+  }
+
+  .canvasEditorBodyInspectorOpen {
+    grid-template-columns: minmax(0, 1fr) 320px;
   }
 }
 
@@ -235,5 +276,27 @@
 
   .editorBody {
     grid-template-columns: 1fr;
+  }
+
+  .canvasEditorBody {
+    grid-template-columns: 1fr;
+  }
+
+  .canvasEditorBodyInspectorOpen {
+    grid-template-columns: 1fr;
+  }
+
+  .canvasInspectorSlot {
+    max-height: 45dvh;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvasEditorBody,
+  .canvasInspectorSlot {
+    transition: none;
   }
 }

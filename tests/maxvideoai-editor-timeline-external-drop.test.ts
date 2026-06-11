@@ -4,6 +4,7 @@ import {
   durationForTimelineDropPayload,
   insertionBoundaryForTimelineTrack,
   parseTimelineNodeDragPayload,
+  resolveTimelineExternalDropDisplacements,
   resolveTimelineExternalDropPreview,
   TIMELINE_NODE_DRAG_TYPE,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop';
@@ -63,6 +64,7 @@ test('timeline external drop helper resolves ghost duration and insertion bounda
       track: 'video',
     }),
     {
+      displacedItems: [],
       durationSec: 6,
       isValid: true,
       mediaKind: 'video',
@@ -95,4 +97,86 @@ test('timeline external drop helper rejects incompatible and locked tracks', () 
   assert.equal(lockedPreview?.isValid, false);
   assert.equal(incompatiblePreview?.isValid, false);
   assert.equal(incompatiblePreview?.title, 'Audio clip');
+});
+
+test('timeline external drop helper previews shifted clips on affected tracks', () => {
+  const items = [
+    timelineItem({
+      id: 'clip-a',
+      linkedGroupId: 'group-a',
+      linkedGroupKind: 'video-audio',
+      startSec: 0,
+      durationSec: 4,
+    }),
+    timelineItem({
+      id: 'clip-a-audio',
+      linkedGroupId: 'group-a',
+      linkedGroupKind: 'video-audio',
+      mediaKind: 'audio',
+      track: 'audio',
+      startSec: 0,
+      durationSec: 4,
+      title: 'Clip A Audio',
+    }),
+    timelineItem({
+      id: 'clip-b',
+      startSec: 4,
+      durationSec: 6,
+      title: 'Clip B',
+    }),
+    timelineItem({
+      id: 'music-a',
+      mediaKind: 'audio',
+      track: 'audio-2',
+      startSec: 0,
+      durationSec: 12,
+      title: 'Music',
+    }),
+  ];
+
+  assert.deepEqual(
+    resolveTimelineExternalDropDisplacements({
+      insertDurationSec: 5,
+      insertStartSec: 4,
+      items,
+      track: 'video',
+    }).map((item) => [item.itemId, item.trackId, item.fromStartSec, item.toStartSec, item.durationSec]),
+    [
+      ['clip-b', 'video', 4, 9, 6],
+    ],
+    'whole-clip insertion should preview later visual clips moving right'
+  );
+
+  assert.deepEqual(
+    resolveTimelineExternalDropDisplacements({
+      insertDurationSec: 5,
+      insertStartSec: 2,
+      items,
+      track: 'video',
+    }).map((item) => [item.itemId, item.trackId, item.fromStartSec, item.toStartSec, item.durationSec]),
+    [
+      ['clip-a:tail-preview', 'video', 2, 7, 2],
+      ['clip-a-audio:tail-preview', 'audio', 2, 7, 2],
+      ['clip-b', 'video', 4, 9, 6],
+    ],
+    'insert-into-clip preview should include split tails and linked audio tails'
+  );
+
+  const preview = resolveTimelineExternalDropPreview({
+    isInsertIntoClipEnabled: false,
+    items,
+    lockedTracks: new Set(),
+    payload: { assetId: 'asset-1', mediaKind: 'video', durationSec: 5, title: 'Insert me' },
+    rawStartSec: 1,
+    track: 'video',
+  });
+  assert.deepEqual(
+    preview?.displacedItems.map((item) => [item.itemId, item.trackId, item.toStartSec]),
+    [
+      ['clip-a', 'video', 5],
+      ['clip-a-audio', 'audio', 5],
+      ['clip-b', 'video', 9],
+    ],
+    'external drop preview should show the final pushed positions used by whole-clip insert'
+  );
 });

@@ -90,7 +90,6 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
           }}
         >
           <Wallet size={14} />
-          <span>Wallet</span>
           <strong>{walletAmount}</strong>
         </button>
         {walletPromptOpen ? (
@@ -126,10 +125,6 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
         >
           <span className={styles.studioSessionAvatar} aria-hidden="true">
             {initials ? initials : <UserRound size={14} />}
-          </span>
-          <span className={styles.studioSessionText}>
-            <span>Session</span>
-            <strong>{sessionLabel}</strong>
           </span>
         </button>
         {accountMenuOpen && email ? (

@@ -8,6 +8,7 @@ import {
   AudioWaveform,
   Check,
   Clapperboard,
+  Film,
   Home,
   Images,
   LibraryBig,
@@ -43,7 +44,10 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'History', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
-  { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
+  { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' },
+  ...(FEATURES.studio.maxVideoAiEditor
+    ? [{ id: 'studio', label: 'Studio', badge: null, icon: 'studio', href: '/app/studio/projects' }]
+    : [])
 ];
 
 const NAV_ICON_MAP: Record<string, LucideIcon> = {
@@ -52,6 +56,7 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   'generate-image': Images,
   'generate-audio': AudioWaveform,
   tools: Wrench,
+  studio: Film,
   library: LibraryBig,
   jobs: ListChecks,
   billing: WalletCards,
@@ -80,9 +85,16 @@ export function AppSidebar() {
       ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
       : null;
     const IconComponent = NAV_ICON_MAP[item.id] ?? Home;
+    const isStudioItem = item.id === 'studio';
 
     return (
-      <li key={item.id} className="group/sidebar-item relative">
+      <li
+        key={item.id}
+        className={clsx(
+          'group/sidebar-item relative',
+          isStudioItem && 'mt-3 border-t border-hairline pt-3'
+        )}
+      >
         <Link
           href={item.href}
           prefetch={false}
@@ -91,7 +103,9 @@ export function AppSidebar() {
             'gap-2 px-2',
             active
               ? 'bg-[var(--brand-soft)] text-brand'
-              : 'text-text-secondary hover:bg-surface hover:text-text-primary'
+              : isStudioItem
+                ? 'border-hairline bg-surface text-text-primary shadow-sm hover:border-brand/40 hover:bg-[var(--brand-soft)] hover:text-brand'
+                : 'text-text-secondary hover:bg-surface hover:text-text-primary'
           )}
           aria-current={active ? 'page' : undefined}
         >
@@ -100,6 +114,8 @@ export function AppSidebar() {
               'flex h-6 w-6 shrink-0 items-center justify-center transition-colors duration-150',
               active
                 ? 'text-brand'
+                : isStudioItem
+                  ? 'text-brand'
                 : 'text-text-muted group-hover/sidebar-item:text-text-primary'
             )}
             aria-hidden

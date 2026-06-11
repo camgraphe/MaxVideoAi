@@ -133,6 +133,21 @@ export function createAdHocWorkspaceNode(
     };
   }
 
+  if (kind === 'note') {
+    return {
+      id,
+      type: 'note',
+      position,
+      data: {
+        kind,
+        title: 'Note',
+        subtitle: 'Canvas text',
+        accent: '#facc15',
+        promptText: 'Write a free note for this canvas.',
+      },
+    };
+  }
+
   return {
     id,
     type: 'shot',

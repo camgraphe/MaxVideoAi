@@ -40,7 +40,6 @@ import {
 } from '../_state/workspace-state';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
-import { NodeLibrarySidebar } from './NodeLibrarySidebar';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
 import { TimelineClipInspector } from './TimelineClipInspector';
 import { TimelineProjectSidebar } from './TimelineProjectSidebar';
@@ -82,6 +81,7 @@ type WorkspaceEditorLayoutProps = {
   exportState: ReturnType<typeof useWorkspaceExportState>;
   focusMode: WorkspaceFocusMode;
   hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
+  isCanvasInspectorOpen: boolean;
   isProjectMediaPickerOpen: boolean;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
   mockMode: boolean;
@@ -100,7 +100,6 @@ type WorkspaceEditorLayoutProps = {
   setFocusMode: Dispatch<SetStateAction<WorkspaceFocusMode>>;
   setIsProjectMediaPickerOpen: Dispatch<SetStateAction<boolean>>;
   setMockMode: Dispatch<SetStateAction<boolean>>;
-  setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setTimelineInsertIntoClipEnabled: Dispatch<SetStateAction<boolean>>;
   timelineDurationSec: number;
   timelineInsertIntoClipEnabled: boolean;
@@ -127,6 +126,7 @@ export function WorkspaceEditorLayout({
   exportState,
   focusMode,
   hiddenVideoTracks,
+  isCanvasInspectorOpen,
   isProjectMediaPickerOpen,
   lockedTimelineTracks,
   mockMode,
@@ -145,7 +145,6 @@ export function WorkspaceEditorLayout({
   setFocusMode,
   setIsProjectMediaPickerOpen,
   setMockMode,
-  setSelectedNodeId,
   setTimelineInsertIntoClipEnabled,
   timelineDurationSec,
   timelineInsertIntoClipEnabled,
@@ -170,6 +169,7 @@ export function WorkspaceEditorLayout({
     timelinePlayback,
     timelineTrack,
   } = controllers;
+  const shouldShowCanvasInspector = focusMode === 'canvas' && isCanvasInspectorOpen && Boolean(canvas.selectedNode);
 
   return (
     <main
@@ -194,20 +194,12 @@ export function WorkspaceEditorLayout({
         </div>
       ) : null}
 
-      <div className={styles.editorBody}>
-        {focusMode === 'canvas' ? (
-          <NodeLibrarySidebar
-            templates={WORKSPACE_TEMPLATE_SUMMARIES}
-            activeTemplateId={activeUserCanvasTemplateId ? null : activeTemplateId}
-            userTemplates={userCanvasTemplates}
-            activeUserTemplateId={activeUserCanvasTemplateId}
-            onApplyTemplate={canvas.handleApplyCanvasTemplate}
-            onApplyUserTemplate={canvas.handleApplyUserCanvasTemplate}
-            onDeleteUserTemplate={canvas.handleDeleteUserCanvasTemplate}
-            onDuplicateUserTemplate={canvas.handleDuplicateUserCanvasTemplate}
-            onSaveCanvasTemplate={canvas.handleSaveCanvasTemplate}
-          />
-        ) : (
+      <div
+        className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
+          shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''
+        }`}
+      >
+        {focusMode === 'viewer' ? (
           <TimelineProjectSidebar
             nodes={canvas.renderNodes}
             projectAssets={projectAssets}
@@ -232,7 +224,7 @@ export function WorkspaceEditorLayout({
             onSelectSequence={sequence.handleSelectSequence}
             onClearSequenceInspector={selection.handleClearSequenceInspector}
           />
-        )}
+        ) : null}
         {focusMode === 'canvas' ? (
           <WorkspaceCanvas
             key={`${activeTemplateId}-${canvasRevision}`}
@@ -249,7 +241,19 @@ export function WorkspaceEditorLayout({
             onCanvasTextPaste={canvas.handleCanvasTextPaste}
             onCanvasInteraction={selection.handleCanvasInteraction}
             onSelectedNodeChange={selection.handleSelectedCanvasNodeChange}
-            onSelectedNodeSync={setSelectedNodeId}
+            onSelectedNodeSync={selection.handleSyncSelectedCanvasNode}
+            onInspectNode={selection.handleInspectCanvasNode}
+            toolbar={{
+              templates: WORKSPACE_TEMPLATE_SUMMARIES,
+              activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
+              userTemplates: userCanvasTemplates,
+              activeUserTemplateId: activeUserCanvasTemplateId,
+              onApplyTemplate: canvas.handleApplyCanvasTemplate,
+              onApplyUserTemplate: canvas.handleApplyUserCanvasTemplate,
+              onDeleteUserTemplate: canvas.handleDeleteUserCanvasTemplate,
+              onDuplicateUserTemplate: canvas.handleDuplicateUserCanvasTemplate,
+              onSaveCanvasTemplate: canvas.handleSaveCanvasTemplate,
+            }}
           />
         ) : (
           <WorkspaceVideoViewer
@@ -273,16 +277,20 @@ export function WorkspaceEditorLayout({
           />
         )}
         {focusMode === 'canvas' ? (
-          <NodeSettingsPanel
-            selectedNode={canvas.selectedNode}
-            edges={edges}
-            capabilities={capabilities}
-            onPatchNodeData={canvas.patchNodeData}
-            onPatchShot={canvas.patchShot}
-            onGenerateShot={canvas.handleGenerateShot}
-            onSendOutputToTimeline={canvas.handleSendOutputToTimeline}
-            onOpenAssetLibrary={canvas.handleOpenAssetLibrary}
-          />
+          <div className={styles.canvasInspectorSlot} aria-hidden={!shouldShowCanvasInspector}>
+            {shouldShowCanvasInspector ? (
+              <NodeSettingsPanel
+                selectedNode={canvas.selectedNode}
+                edges={edges}
+                capabilities={capabilities}
+                onPatchNodeData={canvas.patchNodeData}
+                onPatchShot={canvas.patchShot}
+                onGenerateShot={canvas.handleGenerateShot}
+                onSendOutputToTimeline={canvas.handleSendOutputToTimeline}
+                onOpenAssetLibrary={canvas.handleOpenAssetLibrary}
+              />
+            ) : null}
+          </div>
         ) : (
           <TimelineClipInspector
             selectedItem={exportState.selectedTimelineItem}

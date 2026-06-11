@@ -5,7 +5,7 @@
 import { memo, type MouseEvent, type ReactNode } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
-import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, Video } from 'lucide-react';
+import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, StickyNote, Video } from 'lucide-react';
 import { inputHandles, NodeFrame } from './workspace-node-frame';
 import { AudioPreview, VideoPreview } from './workspace-node-media-preview';
 import styles from '../../_styles/canvas-nodes.module.css';
@@ -200,6 +200,25 @@ export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
   );
 }
 
+export function NoteNode(props: NodeProps<WorkspaceGraphNode>) {
+  const value = typeof props.data.promptText === 'string' ? props.data.promptText : '';
+  return (
+    <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<StickyNote size={14} />} className={styles.noteNode}>
+      <textarea
+        className={`${styles.promptTextarea} ${styles.noteTextarea} nodrag`}
+        value={value}
+        onChange={(event) => props.data.onPromptChange?.(props.id, event.currentTarget.value)}
+        rows={5}
+        spellCheck={false}
+      />
+      <div className={styles.nodeMetaRow}>
+        <span>Canvas note</span>
+        <span>{value.length} chars</span>
+      </div>
+    </NodeFrame>
+  );
+}
+
 function statusLabel(status: WorkspaceShotStatus): string {
   if (status === 'generating') return 'Generating';
   if (status === 'completed') return 'Completed';
@@ -292,6 +311,7 @@ export const workspaceNodeTypes: NodeTypes = {
   'asset-video': memo(AssetVideoNode),
   'asset-audio': memo(AssetAudioNode),
   'text-prompt': memo(TextPromptNode),
+  note: memo(NoteNode),
   shot: memo(ShotNode),
   output: memo(OutputNode),
 };

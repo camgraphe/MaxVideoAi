@@ -1,5 +1,4 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
-import { defaultSelectedNodeId } from '../_lib/workspace-graph-helpers';
 import { createStarterWorkspaceTemplate } from '../_lib/workspace-templates';
 import type {
   WorkspaceEditorSurface,
@@ -27,7 +26,6 @@ function createLocalCanvasTemplateId(): string {
 }
 
 type UseWorkspaceCanvasTemplateActionsParams = {
-  activeTemplateId: WorkspaceTemplateId;
   activeUserCanvasTemplateId: string | null;
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
@@ -44,7 +42,6 @@ type UseWorkspaceCanvasTemplateActionsParams = {
 };
 
 export function useWorkspaceCanvasTemplateActions({
-  activeTemplateId,
   activeUserCanvasTemplateId,
   edges,
   nodes,
@@ -82,7 +79,7 @@ export function useWorkspaceCanvasTemplateActions({
       setNodes(template.nodes);
       setEdges(template.edges);
       setActiveEditorSurface('canvas');
-      setSelectedNodeId(defaultSelectedNodeId(template.nodes, template.id));
+      setSelectedNodeId(null);
       setActiveTemplateId(template.id);
       setActiveUserCanvasTemplateId(null);
       setCanvasRevision((value) => value + 1);
@@ -125,12 +122,12 @@ export function useWorkspaceCanvasTemplateActions({
       setNodes(nextNodes);
       setEdges(nextEdges);
       setActiveEditorSurface('canvas');
-      setSelectedNodeId(defaultSelectedNodeId(nextNodes, activeTemplateId));
+      setSelectedNodeId(null);
       setActiveUserCanvasTemplateId(template.id);
       setCanvasRevision((value) => value + 1);
       setNotice(`${template.name} canvas template applied.`);
     },
-    [activeTemplateId, setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, userCanvasTemplates]
+    [setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, userCanvasTemplates]
   );
 
   const handleDuplicateUserCanvasTemplate = useCallback(

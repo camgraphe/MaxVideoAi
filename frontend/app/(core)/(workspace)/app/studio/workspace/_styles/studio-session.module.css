@@ -39,7 +39,6 @@
   color: #a78bfa;
 }
 
-.studioWalletPill span,
 .studioSessionText span {
   color: #94a3b8;
   font-size: 10px;
@@ -63,7 +62,7 @@
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  z-index: 80;
+  z-index: 160;
   width: 264px;
   padding: 12px;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -113,14 +112,12 @@
 }
 
 .studioSessionPill {
-  display: flex;
-  min-width: 0;
-  max-width: 220px;
+  display: inline-grid;
+  width: 34px;
   align-items: center;
-  gap: 8px;
-  padding: 0 10px 0 7px;
+  justify-content: center;
+  padding: 0;
   cursor: pointer;
-  text-align: left;
 }
 
 .studioSessionMenuShell {
@@ -140,21 +137,6 @@
   color: #ffffff;
   font-size: 10px;
   font-weight: 850;
-}
-
-.studioSessionText {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-}
-
-.studioSessionText strong {
-  overflow: hidden;
-  color: #f8fafc;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 760;
 }
 
 .studioSessionExit {
@@ -177,7 +159,7 @@
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  z-index: 70;
+  z-index: 160;
   width: 250px;
   padding: 10px;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -260,10 +242,5 @@
 @media (max-width: 760px) {
   .studioSessionCluster {
     flex: 1 1 100%;
-  }
-
-  .studioSessionPill {
-    flex: 1 1 auto;
-    max-width: none;
   }
 }

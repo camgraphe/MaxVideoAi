@@ -7,6 +7,7 @@ export type WorkspaceNodeKind =
   | 'asset-video'
   | 'asset-audio'
   | 'text-prompt'
+  | 'note'
   | 'shot'
   | 'output';
 

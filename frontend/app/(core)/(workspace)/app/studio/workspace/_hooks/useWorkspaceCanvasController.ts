@@ -25,7 +25,6 @@ import type {
 } from '../_state/workspace-state';
 
 type UseWorkspaceCanvasControllerParams = {
-  activeTemplateId: WorkspaceTemplateId;
   activeUserCanvasTemplateId: string | null;
   assetPickerNodeId: string | null;
   capabilities: WorkspaceModelCapability[];
@@ -60,7 +59,6 @@ type UseWorkspaceCanvasControllerParams = {
 };
 
 export function useWorkspaceCanvasController({
-  activeTemplateId,
   activeUserCanvasTemplateId,
   assetPickerNodeId,
   capabilities,
@@ -188,7 +186,6 @@ export function useWorkspaceCanvasController({
     handleDuplicateUserCanvasTemplate,
     handleSaveCanvasTemplate,
   } = useWorkspaceCanvasTemplateActions({
-    activeTemplateId,
     activeUserCanvasTemplateId,
     edges,
     nodes,

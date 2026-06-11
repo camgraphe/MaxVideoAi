@@ -1,10 +1,24 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Film, FolderOpen, Plus, Settings2 } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  Clock3,
+  Film,
+  FolderOpen,
+  Grid2X2,
+  MoreVertical,
+  Plus,
+  Sparkles,
+} from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
-import { coerceWorkspaceProjectSettings } from '../workspace/_lib/workspace-project-settings';
+import {
+  DEFAULT_WORKSPACE_PROJECT_SETTINGS,
+  coerceWorkspaceProjectSettings,
+} from '../workspace/_lib/workspace-project-settings';
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../workspace/_lib/workspace-templates';
 import type { WorkspaceProjectSettings, WorkspaceTemplateId } from '../workspace/_lib/workspace-types';
 import styles from './studio-projects.module.css';
@@ -18,12 +32,6 @@ type StudioProjectRecord = {
   updatedAt: string;
   settings: WorkspaceProjectSettings;
   canvasTemplateId: WorkspaceTemplateId;
-};
-
-const DEFAULT_PROJECT_SETTINGS: WorkspaceProjectSettings = {
-  aspectRatio: '16:9',
-  resolution: '1080p',
-  fps: 30,
 };
 
 function createStudioProjectId(): string {
@@ -119,15 +127,21 @@ function formatProjectDate(value: string): string {
   }).format(date);
 }
 
+function studioProjectTemplateName(templateId: WorkspaceTemplateId): string {
+  return WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === templateId)?.name ?? 'Custom canvas';
+}
+
+function studioProjectTemplateThumbnail(templateId: WorkspaceTemplateId): string {
+  return WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === templateId)?.thumbnailUrl ?? '/assets/marketing/app-dashboard.webp';
+}
+
 export default function StudioProjectsPageClient() {
   const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
   const [projects, setProjects] = useState<StudioProjectRecord[]>([]);
-  const [name, setName] = useState('Untitled edit');
-  const [aspectRatio, setAspectRatio] = useState<WorkspaceProjectSettings['aspectRatio']>(DEFAULT_PROJECT_SETTINGS.aspectRatio);
-  const [resolution, setResolution] = useState<WorkspaceProjectSettings['resolution']>(DEFAULT_PROJECT_SETTINGS.resolution);
-  const [fps, setFps] = useState<WorkspaceProjectSettings['fps']>(DEFAULT_PROJECT_SETTINGS.fps);
+  const [name, setName] = useState('');
   const [canvasTemplateId, setCanvasTemplateId] = useState<WorkspaceTemplateId>('product-ad');
+  const visibleTemplates = useMemo(() => WORKSPACE_TEMPLATE_SUMMARIES.slice(0, 6), []);
   const selectedTemplate = useMemo(
     () => WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === canvasTemplateId) ?? WORKSPACE_TEMPLATE_SUMMARIES[0],
     [canvasTemplateId]
@@ -157,11 +171,7 @@ export default function StudioProjectsPageClient() {
       name: name.trim() || 'Untitled edit',
       createdAt: now,
       updatedAt: now,
-      settings: {
-        aspectRatio,
-        resolution,
-        fps,
-      },
+      settings: { ...DEFAULT_WORKSPACE_PROJECT_SETTINGS },
       canvasTemplateId,
     };
     const nextProjects = [project, ...projects].slice(0, 20);
@@ -177,7 +187,7 @@ export default function StudioProjectsPageClient() {
   };
 
   return (
-    <main className={styles.projectsShell}>
+    <div className={styles.projectsShell}>
       <section className={styles.projectsHero} aria-labelledby="studio-projects-title">
         <div className={styles.brandPill}>
           <Film size={16} />
@@ -185,91 +195,78 @@ export default function StudioProjectsPageClient() {
         </div>
         <div>
           <h1 id="studio-projects-title">Studio projects</h1>
-          <p>Create an edit project, choose its sequence settings, then build the generation canvas and timeline.</p>
+          <p>Create a project, choose the starting canvas, then configure each sequence inside the editor.</p>
         </div>
       </section>
 
       <section className={styles.projectsGrid}>
         <section className={styles.newProjectPanel} aria-label="New project form">
           <div className={styles.panelTitleRow}>
-            <Settings2 size={17} />
+            <span className={styles.titleIcon}>
+              <Plus size={24} />
+            </span>
             <div>
-              <h2>New project</h2>
-              <span>Sequence settings and starting canvas</span>
+              <h2>Create a new project</h2>
+              <span>Set up your project in a few steps</span>
             </div>
           </div>
 
           <label className={styles.projectField}>
-            Project name
-            <input value={name} onChange={(event) => setName(event.target.value)} disabled={!isHydrated} />
-          </label>
-
-          <div className={styles.projectFieldGrid}>
-            <label className={styles.projectField}>
-              Ratio
-              <select
-                value={aspectRatio}
-                onChange={(event) => setAspectRatio(event.target.value as WorkspaceProjectSettings['aspectRatio'])}
-                disabled={!isHydrated}
-              >
-                <option value="16:9">16:9</option>
-                <option value="9:16">9:16</option>
-                <option value="1:1">1:1</option>
-                <option value="4:5">4:5</option>
-                <option value="21:9">21:9</option>
-              </select>
-            </label>
-
-            <label className={styles.projectField}>
-              Resolution
-              <select
-                value={resolution}
-                onChange={(event) => setResolution(event.target.value as WorkspaceProjectSettings['resolution'])}
-                disabled={!isHydrated}
-              >
-                <option value="720p">720p</option>
-                <option value="1080p">1080p</option>
-                <option value="1440p">1440p</option>
-                <option value="4k">4K</option>
-              </select>
-            </label>
-
-            <label className={styles.projectField}>
-              FPS
-              <select
-                value={fps}
-                onChange={(event) => setFps(Number(event.target.value) as WorkspaceProjectSettings['fps'])}
-                disabled={!isHydrated}
-              >
-                <option value={24}>24</option>
-                <option value={25}>25</option>
-                <option value={30}>30</option>
-                <option value={60}>60</option>
-              </select>
-            </label>
-          </div>
-
-          <label className={styles.projectField}>
-            Canvas template
-            <select
-              value={canvasTemplateId}
-              onChange={(event) => setCanvasTemplateId(event.target.value as WorkspaceTemplateId)}
+            <span className={styles.fieldLabelRow}>
+              Project name
+              <small>{name.length} / 60</small>
+            </span>
+            <input
+              value={name}
+              maxLength={60}
+              placeholder="Give your project a name..."
+              onChange={(event) => setName(event.target.value)}
               disabled={!isHydrated}
-            >
-              {WORKSPACE_TEMPLATE_SUMMARIES.map((template) => (
-                <option key={template.id} value={template.id}>{template.name}</option>
-              ))}
-            </select>
+            />
           </label>
 
-          <div className={styles.templatePreview}>
-            <strong>{selectedTemplate?.name}</strong>
-            <span>{selectedTemplate?.description}</span>
-          </div>
+          <fieldset className={styles.templatePicker} aria-label="Canvas template">
+            <legend>Canvas template</legend>
+            <div className={styles.templateGrid}>
+              {visibleTemplates.map((template) => {
+                const selected = template.id === selectedTemplate?.id;
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    className={styles.templateCard}
+                    aria-pressed={selected}
+                    onClick={() => setCanvasTemplateId(template.id)}
+                    disabled={!isHydrated}
+                  >
+                    <span className={styles.templateThumb}>
+                      <img src={template.thumbnailUrl} alt="" />
+                    </span>
+                    {selected ? (
+                      <span className={styles.templateSelectedBadge} aria-hidden>
+                        <Check size={14} />
+                      </span>
+                    ) : null}
+                    <span className={styles.templateTitleRow}>
+                      <strong>{template.name}</strong>
+                      <em>Pro</em>
+                    </span>
+                    <span>{template.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <button type="button" className={styles.secondaryAction} disabled={!isHydrated}>
+            <Grid2X2 size={17} />
+            Browse all templates
+            <ChevronRight size={16} />
+          </button>
 
           <button type="button" className={styles.primaryAction} onClick={createProject} disabled={!isHydrated}>
-            <Plus size={16} />
-            New project
+            <Sparkles size={16} />
+            Create project
           </button>
         </section>
 
@@ -278,7 +275,7 @@ export default function StudioProjectsPageClient() {
             <FolderOpen size={17} />
             <div>
               <h2>Recent projects</h2>
-              <span>Synced projects with local drafts as fallback</span>
+              <span>Pick up where you left off</span>
             </div>
           </div>
 
@@ -291,9 +288,18 @@ export default function StudioProjectsPageClient() {
                   className={styles.projectCard}
                   onClick={() => router.push(`/app/studio/workspace/${project.id}`)}
                 >
-                  <strong>{project.name}</strong>
-                  <span>{project.settings.aspectRatio} · {project.settings.resolution} · {project.settings.fps} fps</span>
-                  <small>Updated {formatProjectDate(project.updatedAt)}</small>
+                  <img src={studioProjectTemplateThumbnail(project.canvasTemplateId)} alt="" />
+                  <span className={styles.projectCardCopy}>
+                    <strong>{project.name}</strong>
+                    <span>Updated {formatProjectDate(project.updatedAt)}</span>
+                    <small>
+                      <Film size={12} />
+                      {project.settings.aspectRatio}
+                      <Clock3 size={12} />
+                      {studioProjectTemplateName(project.canvasTemplateId)}
+                    </small>
+                  </span>
+                  <MoreVertical size={18} aria-hidden />
                 </button>
               ))
             ) : (
@@ -303,8 +309,14 @@ export default function StudioProjectsPageClient() {
               </div>
             )}
           </div>
+          {projects.length ? (
+            <button type="button" className={styles.viewAllProjects}>
+              View all projects
+              <ChevronRight size={16} />
+            </button>
+          ) : null}
         </section>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { AudioLines, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video, X } from 'lucide-react';
+import { ArrowLeft, AudioLines, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
@@ -87,6 +87,10 @@ function ProjectMediaArtwork({
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" draggable={false} />
+      ) : kind === 'folder' ? (
+        <div className={styles.projectMediaFolderGlyph} aria-hidden="true">
+          <FolderOpen size={30} />
+        </div>
       ) : kind === 'audio' ? (
         <div className={styles.projectMediaWaveform} aria-hidden="true">
           {AUDIO_WAVEFORM_BARS.map((height, index) => (
@@ -116,7 +120,11 @@ function ProjectMediaCard({
   kind,
   onClick,
   onContextMenu,
+  onDragEnd,
+  onDragLeave,
+  onDragOver,
   onDragStart,
+  onDrop,
   subtitle,
   thumbnailUrl,
   title,
@@ -133,6 +141,10 @@ function ProjectMediaCard({
   onClick: () => void;
   onContextMenu?: (event: ReactMouseEvent<HTMLElement>) => void;
   onDragStart?: (event: ReactDragEvent<HTMLElement>) => void;
+  onDragEnd?: () => void;
+  onDragLeave?: (event: ReactDragEvent<HTMLElement>) => void;
+  onDragOver?: (event: ReactDragEvent<HTMLElement>) => void;
+  onDrop?: (event: ReactDragEvent<HTMLElement>) => void;
   subtitle: string;
   thumbnailUrl?: string | null;
   title: string;
@@ -147,7 +159,11 @@ function ProjectMediaCard({
       draggable={Boolean(canDrag)}
       onClick={onClick}
       onContextMenu={onContextMenu}
+      onDragEnd={onDragEnd}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
       onDragStart={onDragStart}
+      onDrop={onDrop}
       onKeyDown={(event: ReactKeyboardEvent<HTMLElement>) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -528,10 +544,15 @@ export function TimelineProjectSidebar({
         </div>
       </div>
       {projectMedia.activeFolder ? (
-        <div className={styles.projectMediaBreadcrumb}>
-          <button type="button" onClick={projectMedia.openRootFolder}>Project media</button>
-          <span>/</span>
-          <strong>{projectMedia.activeFolder.name}</strong>
+        <div className={styles.projectMediaFolderHeader}>
+          <button type="button" className={styles.projectMediaBackButton} onClick={projectMedia.openRootFolder}>
+            <ArrowLeft size={14} />
+            Back to Project media
+          </button>
+          <div className={styles.projectMediaFolderTitle}>
+            <FolderOpen size={15} />
+            <strong>{projectMedia.activeFolder.name}</strong>
+          </div>
         </div>
       ) : null}
 
@@ -553,13 +574,20 @@ export function TimelineProjectSidebar({
         ))}
 
         {projectMedia.visibleFolders.map(({ folder, key, subtitle }) => (
-          <div key={folder.id} data-project-media-folder-id={folder.id}>
+          <div
+            key={folder.id}
+            data-project-media-folder-id={folder.id}
+            data-project-media-folder-drop-target={projectMedia.folderDropTargetId === folder.id ? 'true' : undefined}
+          >
             <ProjectMediaCard
               id={key}
-              isSelected={projectMedia.selectedKey === key}
+              isSelected={projectMedia.selectedKey === key || projectMedia.folderDropTargetId === folder.id}
               kind="folder"
               onClick={() => projectMedia.selectProjectMediaFolder(folder.id)}
               onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folder.name, type: 'folder' })}
+              onDragLeave={(event) => projectMedia.handleFolderDragLeave(event, folder.id)}
+              onDragOver={(event) => projectMedia.handleFolderDragOver(event, folder.id)}
+              onDrop={(event) => projectMedia.handleFolderDrop(event, folder.id)}
               subtitle={subtitle}
               title={folder.name}
             />
@@ -583,6 +611,7 @@ export function TimelineProjectSidebar({
                 kind={cardKind}
                 onClick={() => projectMedia.selectProjectAsset(asset.id)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
+                onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginProjectAssetTimelineDrag(event, asset) : undefined}
                 durationSec={asset.durationSec}
                 subtitle={subtitle}
@@ -610,6 +639,7 @@ export function TimelineProjectSidebar({
                 kind="generated"
                 onClick={() => projectMedia.selectGeneratedNode(node.id)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
+                onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginGeneratedNodeTimelineDrag(event, node) : undefined}
                 durationSec={node.data.output?.durationSec}
                 subtitle={subtitle}

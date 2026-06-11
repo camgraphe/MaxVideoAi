@@ -35,6 +35,15 @@ export type TimelinePreviewTrackItem = {
 };
 
 type TimelineExternalDropPreview = {
+  displacedItems: Array<{
+    durationSec: number;
+    fromStartSec: number;
+    itemId: string;
+    mediaKind?: WorkspaceTimelineItem['mediaKind'];
+    title: string;
+    toStartSec: number;
+    trackId: WorkspaceTimelineTrack;
+  }>;
   durationSec: number;
   isValid: boolean;
   mediaKind: 'audio' | 'image' | 'video';

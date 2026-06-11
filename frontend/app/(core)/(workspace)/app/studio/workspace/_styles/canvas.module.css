@@ -64,6 +64,7 @@
 .canvasShell :global(.react-flow__node-asset-image),
 .canvasShell :global(.react-flow__node-asset-video),
 .canvasShell :global(.react-flow__node-text-prompt),
+.canvasShell :global(.react-flow__node-note),
 .canvasShell :global(.react-flow__node-output) {
   width: 210px;
   height: 166px;

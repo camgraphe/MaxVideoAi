@@ -10,6 +10,7 @@ import type { WorkspaceEditorSurface } from '../_state/workspace-state';
 type UseWorkspaceSelectionActionsParams = {
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setExportRangeMode: Dispatch<SetStateAction<WorkspaceTimelineExportRangeMode>>;
+  setIsCanvasInspectorOpen: Dispatch<SetStateAction<boolean>>;
   setInspectedSequenceId: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
@@ -20,6 +21,7 @@ type UseWorkspaceSelectionActionsParams = {
 export function useWorkspaceSelectionActions({
   setActiveEditorSurface,
   setExportRangeMode,
+  setIsCanvasInspectorOpen,
   setInspectedSequenceId,
   setSelectedNodeId,
   setSelectedTimelineItemId,
@@ -30,11 +32,13 @@ export function useWorkspaceSelectionActions({
   applyTimelineSelection: (itemIds: string[]) => void;
   handleCanvasInteraction: () => void;
   handleClearSequenceInspector: () => void;
+  handleInspectCanvasNode: (nodeId: string | null) => void;
   handleInspectSequence: (sequenceId: string) => void;
   handleResetExportRangeMode: () => void;
   handleSelectTimelineItem: (itemId: string, mode?: 'replace' | 'toggle' | 'focus') => void;
   handleSelectTimelineItems: (itemIds: string[]) => void;
   handleSelectedCanvasNodeChange: (nodeId: string | null) => void;
+  handleSyncSelectedCanvasNode: (nodeId: string | null) => void;
 } {
   const handleResetExportRangeMode = useCallback(() => {
     setExportRangeMode('sequence');
@@ -117,8 +121,26 @@ export function useWorkspaceSelectionActions({
     (nodeId: string | null) => {
       setActiveEditorSurface('canvas');
       setSelectedNodeId(nodeId);
+      if (!nodeId) setIsCanvasInspectorOpen(false);
     },
-    [setActiveEditorSurface, setSelectedNodeId]
+    [setActiveEditorSurface, setIsCanvasInspectorOpen, setSelectedNodeId]
+  );
+
+  const handleSyncSelectedCanvasNode = useCallback(
+    (nodeId: string | null) => {
+      setSelectedNodeId(nodeId);
+      if (!nodeId) setIsCanvasInspectorOpen(false);
+    },
+    [setIsCanvasInspectorOpen, setSelectedNodeId]
+  );
+
+  const handleInspectCanvasNode = useCallback(
+    (nodeId: string | null) => {
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(nodeId);
+      setIsCanvasInspectorOpen(Boolean(nodeId));
+    },
+    [setActiveEditorSurface, setIsCanvasInspectorOpen, setSelectedNodeId]
   );
 
   return {
@@ -126,10 +148,12 @@ export function useWorkspaceSelectionActions({
     applyTimelineSelection,
     handleCanvasInteraction,
     handleClearSequenceInspector,
+    handleInspectCanvasNode,
     handleInspectSequence,
     handleResetExportRangeMode,
     handleSelectTimelineItem,
     handleSelectTimelineItems,
     handleSelectedCanvasNodeChange,
+    handleSyncSelectedCanvasNode,
   };
 }

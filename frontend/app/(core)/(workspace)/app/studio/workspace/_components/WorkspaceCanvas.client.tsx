@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -37,6 +38,7 @@ import {
 } from '../_lib/workspace-handle-drop';
 import { inferWorkspaceEdgeKind } from '../_lib/workspace-templates';
 import { CanvasHandleDropPreview, type HandleDropPreview } from './canvas/CanvasHandleDropPreview';
+import { CanvasFloatingToolbar, type CanvasFloatingToolbarProps } from './canvas/CanvasFloatingToolbar';
 import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
@@ -70,6 +72,8 @@ type WorkspaceCanvasProps = {
   onCanvasInteraction: () => void;
   onSelectedNodeChange: (nodeId: string | null) => void;
   onSelectedNodeSync: (nodeId: string | null) => void;
+  onInspectNode: (nodeId: string | null) => void;
+  toolbar: Omit<CanvasFloatingToolbarProps, 'onFitView'>;
 };
 
 export function WorkspaceCanvas({
@@ -87,6 +91,8 @@ export function WorkspaceCanvas({
   onCanvasInteraction,
   onSelectedNodeChange,
   onSelectedNodeSync,
+  onInspectNode,
+  toolbar,
 }: WorkspaceCanvasProps) {
   return (
     <ReactFlowProvider>
@@ -105,6 +111,8 @@ export function WorkspaceCanvas({
         onCanvasInteraction={onCanvasInteraction}
         onSelectedNodeChange={onSelectedNodeChange}
         onSelectedNodeSync={onSelectedNodeSync}
+        onInspectNode={onInspectNode}
+        toolbar={toolbar}
       />
     </ReactFlowProvider>
   );
@@ -129,6 +137,11 @@ function droppedOnExistingGraphElement(event: MouseEvent | TouchEvent): boolean 
   return Boolean(target.closest('.react-flow__node, .react-flow__handle, .react-flow__edge'));
 }
 
+function isEditableCanvasShortcutTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+}
+
 function WorkspaceCanvasInner({
   nodes,
   edges,
@@ -144,9 +157,12 @@ function WorkspaceCanvasInner({
   onCanvasInteraction,
   onSelectedNodeChange,
   onSelectedNodeSync,
+  onInspectNode,
+  toolbar,
 }: WorkspaceCanvasProps) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const canvasShellRef = useRef<HTMLElement | null>(null);
+  const selectedNodeIdRef = useRef<string | null>(null);
   const [handleDropPreview, setHandleDropPreview] = useState<HandleDropPreview | null>(null);
   const handleDropPreviewRef = useRef<HandleDropPreview | null>(null);
   const nodeTypes = useMemo(() => workspaceNodeTypes, []);
@@ -181,6 +197,39 @@ function WorkspaceCanvasInner({
     onCanvasTextPaste,
     onCreateNodeFromPaletteDrop,
   });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key.toLowerCase() !== 'i') return;
+      if (isEditableCanvasShortcutTarget(event.target)) return;
+      const selectedNodeId = selectedNodeIdRef.current;
+      if (!selectedNodeId) return;
+      event.preventDefault();
+      onInspectNode(selectedNodeId);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onInspectNode]);
+
+  const handleCanvasClickCapture = useCallback(
+    (event: ReactMouseEvent<HTMLElement>) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const inspectButton = target.closest<HTMLElement>('[data-canvas-node-inspect-button]');
+      if (!inspectButton || !canvasShellRef.current?.contains(inspectButton)) return;
+      const nodeId = inspectButton.dataset.canvasNodeInspectButton;
+      if (!nodeId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      selectedNodeIdRef.current = nodeId;
+      onInspectNode(nodeId);
+    },
+    [onInspectNode]
+  );
 
   const handleConnectStart = useCallback<OnConnectStart>(
     (event, params) => {
@@ -243,7 +292,12 @@ function WorkspaceCanvasInner({
   );
 
   return (
-    <section ref={canvasShellRef} className={styles.canvasShell} aria-label="MaxVideoAI editor canvas">
+    <section
+      ref={canvasShellRef}
+      className={styles.canvasShell}
+      aria-label="MaxVideoAI editor canvas"
+      onClickCapture={handleCanvasClickCapture}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -260,16 +314,23 @@ function WorkspaceCanvasInner({
         onPaneMouseMove={handlePaneMouseMove}
         onNodeClick={(_, node) => {
           onCanvasInteraction();
+          selectedNodeIdRef.current = node.id;
           onSelectedNodeChange(node.id);
+        }}
+        onNodeDoubleClick={(_, node) => {
+          onCanvasInteraction();
+          selectedNodeIdRef.current = node.id;
+          onInspectNode(node.id);
         }}
         onPaneClick={() => {
           onCanvasInteraction();
+          selectedNodeIdRef.current = null;
           onSelectedNodeChange(null);
         }}
         onSelectionChange={({ nodes: selectedNodes }) => {
-          if (selectedNodes[0]?.id) {
-            onSelectedNodeSync(selectedNodes[0].id);
-          }
+          const selectedNodeId = selectedNodes[0]?.id ?? null;
+          selectedNodeIdRef.current = selectedNodeId;
+          onSelectedNodeSync(selectedNodeId);
         }}
         defaultEdgeOptions={defaultEdgeOptions}
         minZoom={0.18}
@@ -288,6 +349,12 @@ function WorkspaceCanvasInner({
         {paletteDragPreview ? <CanvasPaletteDragPreview preview={paletteDragPreview} /> : null}
         <CanvasMap edges={edges} nodes={nodes} />
       </ReactFlow>
+      <CanvasFloatingToolbar
+        {...toolbar}
+        onFitView={() => {
+          reactFlow.fitView({ padding: 0.2, includeHiddenNodes: false, duration: 180 });
+        }}
+      />
       {nodes.length === 0 ? (
         <div className={styles.canvasEmptyState}>
           <p>No graph yet</p>

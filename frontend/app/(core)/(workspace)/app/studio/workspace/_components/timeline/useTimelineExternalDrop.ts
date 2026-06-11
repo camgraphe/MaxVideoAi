@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import type { DragEvent as ReactDragEvent } from 'react';
 
 import {
+  clearTimelineNodeDragPayload,
   parseTimelineNodeDragPayload,
   resolveTimelineExternalDropPreview,
   type TimelineExternalDropPreview,
@@ -59,6 +60,7 @@ export function useTimelineExternalDrop({
   const handleExternalDrop = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     const result = updateExternalDropPreview(event, track);
     setExternalDropPreview(null);
+    clearTimelineNodeDragPayload();
     if (!result?.payload.nodeId && !result?.payload.assetId) return;
     if (lockedTrackSet.has(track)) {
       onInvalidNodeDropToTimeline('locked-track');

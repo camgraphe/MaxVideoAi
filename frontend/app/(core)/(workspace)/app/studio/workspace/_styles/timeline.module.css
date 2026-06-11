@@ -437,18 +437,18 @@
   position: absolute;
   top: -10px;
   bottom: -10px;
-  z-index: 6;
-  width: 2px;
+  z-index: 14;
+  width: 3px;
   border-radius: 999px;
-  background: #8b5cf6;
-  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.34), 0 0 18px rgba(139, 92, 246, 0.62);
+  background: #a78bfa;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.5), 0 0 22px rgba(139, 92, 246, 0.78);
   pointer-events: none;
 }
 
 .timelineExternalDropGhost {
   position: absolute;
   top: 50%;
-  z-index: 4;
+  z-index: 13;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -456,16 +456,19 @@
   height: 34px;
   min-width: 36px;
   padding: 0 10px;
-  border: 1px dashed rgba(96, 165, 250, 0.82);
+  border: 1px dashed rgba(147, 197, 253, 0.96);
   border-radius: 7px;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.36), rgba(30, 64, 175, 0.3));
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.58), rgba(30, 64, 175, 0.48));
   color: #dbeafe;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
   transform: translateY(-50%);
   pointer-events: none;
-  box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.16), 0 10px 24px rgba(15, 23, 42, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(219, 234, 254, 0.22),
+    0 10px 26px rgba(15, 23, 42, 0.34),
+    0 0 20px rgba(59, 130, 246, 0.22);
 }
 
 .timelineExternalDropGhostAudio {
@@ -510,6 +513,35 @@
   justify-self: end;
   color: rgba(226, 232, 240, 0.82);
   font-size: 10px;
+}
+
+.timelineExternalDisplacementGhost {
+  position: absolute;
+  top: 50%;
+  z-index: 11;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(96, 165, 250, 0.88);
+  border-radius: 7px;
+  background: linear-gradient(90deg, rgba(30, 64, 175, 0.28), rgba(37, 99, 235, 0.18));
+  color: rgba(219, 234, 254, 0.92);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 30px;
+  transform: translateY(-50%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.16), 0 0 18px rgba(59, 130, 246, 0.18);
+}
+
+.timelineExternalDisplacementGhostAudio {
+  border-color: rgba(52, 211, 153, 0.82);
+  background: linear-gradient(90deg, rgba(6, 95, 70, 0.24), rgba(6, 78, 59, 0.16));
+  color: rgba(209, 250, 229, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 183, 0.12), 0 0 18px rgba(16, 185, 129, 0.15);
 }
 
 .timelineExternalDropInvalid {

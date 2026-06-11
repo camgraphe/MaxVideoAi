@@ -165,6 +165,36 @@ function PromptInspector({
   );
 }
 
+function NoteInspector({
+  node,
+  onPatchNodeData,
+}: {
+  node: WorkspaceGraphNode;
+  onPatchNodeData: NodeSettingsPanelProps['onPatchNodeData'];
+}) {
+  return (
+    <>
+      <div className={styles.infoGrid}>
+        <span>Type</span>
+        <strong>{node.data.kind}</strong>
+        <span>Inputs</span>
+        <strong>0</strong>
+        <span>Outputs</span>
+        <strong>0</strong>
+      </div>
+      <FieldLabel>
+        Free text
+        <textarea
+          className={styles.settingsTextarea}
+          value={String(node.data.promptText ?? '')}
+          rows={10}
+          onChange={(event) => onPatchNodeData(node.id, { promptText: event.currentTarget.value })}
+        />
+      </FieldLabel>
+    </>
+  );
+}
+
 function OutputInspector({
   node,
   edges,
@@ -235,6 +265,7 @@ export function NodeSettingsPanel({
           <AssetInspector node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} onOpenAssetLibrary={onOpenAssetLibrary} />
         ) : null}
         {selectedNode.data.kind === 'text-prompt' ? <PromptInspector node={selectedNode} edges={edges} onPatchNodeData={onPatchNodeData} /> : null}
+        {selectedNode.data.kind === 'note' ? <NoteInspector node={selectedNode} onPatchNodeData={onPatchNodeData} /> : null}
         {selectedNode.data.kind === 'shot' ? (
           <ShotNodeInspector node={selectedNode} edges={edges} capabilities={capabilities} onPatchShot={onPatchShot} onGenerateShot={onGenerateShot} />
         ) : null}

@@ -2,7 +2,13 @@
 
 import { useRef, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Handle, NodeResizeControl, Position } from '@xyflow/react';
+import { Settings2 } from 'lucide-react';
 import styles from '../../_styles/canvas-nodes.module.css';
+import {
+  clearTimelineNodeDragPayload,
+  rememberTimelineNodeDragPayload,
+  TIMELINE_NODE_DRAG_TYPE,
+} from '../../_lib/timeline/timeline-external-drop';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceNodeKind } from '../../_lib/workspace-types';
 import {
   isPlayableAudioUrl,
@@ -17,8 +23,7 @@ const SOURCE_NODE_MIN_WIDTH = 190;
 const SOURCE_NODE_MIN_HEIGHT = 132;
 const SOURCE_NODE_MAX_WIDTH = 460;
 const SOURCE_NODE_MAX_HEIGHT = 380;
-const SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>(['asset-image', 'asset-video', 'asset-audio', 'text-prompt', 'output']);
-const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
+const SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>(['asset-image', 'asset-video', 'asset-audio', 'text-prompt', 'note', 'output']);
 
 function nodeAccent(data: WorkspaceGraphNode['data']): string {
   return typeof data.accent === 'string' ? data.accent : '#8b5cf6';
@@ -152,17 +157,16 @@ export function NodeFrame({
       event.preventDefault();
       return;
     }
+    const payload = {
+      durationSec: timelineDragDuration(data),
+      nodeId,
+      mediaKind: timelineMediaKind,
+      previewUrl: timelineDragPreviewUrl(data),
+      title: data.title,
+    };
+    rememberTimelineNodeDragPayload(payload);
     event.dataTransfer.effectAllowed = 'copyMove';
-    event.dataTransfer.setData(
-      TIMELINE_NODE_DRAG_TYPE,
-      JSON.stringify({
-        durationSec: timelineDragDuration(data),
-        nodeId,
-        mediaKind: timelineMediaKind,
-        previewUrl: timelineDragPreviewUrl(data),
-        title: data.title,
-      })
-    );
+    event.dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify(payload));
     event.dataTransfer.setData('text/plain', data.title);
   };
   return (
@@ -171,6 +175,7 @@ export function NodeFrame({
       data-timeline-node-drag-kind={timelineMediaKind ?? undefined}
       draggable={Boolean(timelineMediaKind)}
       onPointerDown={handlePointerDown}
+      onDragEnd={clearTimelineNodeDragPayload}
       onDragStart={handleDragStart}
       style={{ '--node-accent': accent } as CSSProperties}
     >
@@ -194,6 +199,17 @@ export function NodeFrame({
           <p className={styles.nodeTitle}>{data.title}</p>
           {data.subtitle ? <p className={styles.nodeSubtitle}>{data.subtitle}</p> : null}
         </div>
+        {selected ? (
+          <button
+            type="button"
+            className={`${styles.nodeInspectButton} nodrag nowheel`}
+            data-canvas-node-inspect-button={nodeId}
+            aria-label={`Open ${data.title} settings`}
+            title="Open settings (I)"
+          >
+            <Settings2 size={13} strokeWidth={2.2} />
+          </button>
+        ) : null}
       </div>
       {children}
       <HandleStack handles={outputHandles(data)} type="source" />

@@ -108,7 +108,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [videoTrackCount, setVideoTrackCount] = useState(videoTrackCountForTimelineItems(defaultTemplate.timelineItems));
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number | null>(null);
   const [projectSettings, setProjectSettings] = useState<WorkspaceProjectSettings>(DEFAULT_WORKSPACE_PROJECT_SETTINGS);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>('shot-03');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isCanvasInspectorOpen, setIsCanvasInspectorOpen] = useState(false);
   const [activeEditorSurface, setActiveEditorSurface] = useState<WorkspaceEditorSurface>('canvas');
   const [activeTemplateId, setActiveTemplateId] = useState<WorkspaceTemplateId>('product-ad');
   const [activeUserCanvasTemplateId, setActiveUserCanvasTemplateId] = useState<string | null>(null);
@@ -139,6 +140,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const selectionActions = useWorkspaceSelectionActions({
     setActiveEditorSurface,
     setExportRangeMode,
+    setIsCanvasInspectorOpen,
     setInspectedSequenceId,
     setSelectedNodeId,
     setSelectedTimelineItemId,
@@ -298,8 +300,13 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
+  useEffect(() => {
+    if (!selectedNodeId || focusMode !== 'canvas') {
+      setIsCanvasInspectorOpen(false);
+    }
+  }, [focusMode, selectedNodeId]);
+
   const canvasController = useWorkspaceCanvasController({
-    activeTemplateId,
     activeUserCanvasTemplateId,
     assetPickerNodeId,
     capabilities,
@@ -433,6 +440,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       exportState={exportState}
       focusMode={focusMode}
       hiddenVideoTracks={hiddenVideoTracks}
+      isCanvasInspectorOpen={isCanvasInspectorOpen}
       isProjectMediaPickerOpen={isProjectMediaPickerOpen}
       lockedTimelineTracks={lockedTimelineTracks}
       mockMode={mockMode}
@@ -451,7 +459,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       setFocusMode={setFocusMode}
       setIsProjectMediaPickerOpen={setIsProjectMediaPickerOpen}
       setMockMode={setMockMode}
-      setSelectedNodeId={setSelectedNodeId}
       setTimelineInsertIntoClipEnabled={setTimelineInsertIntoClipEnabled}
       timelineDurationSec={timelineDurationSec}
       timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}

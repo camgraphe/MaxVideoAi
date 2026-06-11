@@ -1,4 +1,5 @@
 import {
+  rememberTimelineNodeDragPayload,
   TIMELINE_NODE_DRAG_TYPE,
   type TimelineNodeDragPayload,
 } from './timeline/timeline-external-drop';
@@ -18,10 +19,25 @@ export type ProjectMediaTimelineDragPayload = TimelineNodeDragPayload & {
   title: string;
 };
 
+export const PROJECT_MEDIA_ITEM_DRAG_TYPE = 'application/x-maxvideoai-project-media-item';
+
+export type ProjectMediaItemDragPayload = {
+  itemId: string;
+  itemType: 'asset' | 'generated';
+  sourceFolderId?: string | null;
+  title: string;
+};
+
 type ProjectMediaTimelineDragDataTransfer = Pick<DataTransfer, 'setData'> & {
   effectAllowed?: DataTransfer['effectAllowed'];
   setDragImage?: DataTransfer['setDragImage'];
 };
+
+type ProjectMediaItemDataTransfer = Pick<DataTransfer, 'getData' | 'setData'> & {
+  types: ArrayLike<string> | Iterable<string>;
+};
+
+let activeProjectMediaItemDragPayload: ProjectMediaItemDragPayload | null = null;
 
 export function projectMediaTimelineKindForAsset(asset: WorkspaceAssetRecord): ProjectMediaTimelineDragPayload['mediaKind'] | null {
   if (asset.kind === 'audio') return 'audio';
@@ -72,6 +88,57 @@ export function projectMediaTimelineDragPayloadForGeneratedNode(node: WorkspaceG
     previewUrl: projectMediaGeneratedThumbnailUrl(node),
     title: node.data.title,
   };
+}
+
+export function projectMediaItemDragPayloadForAsset(asset: WorkspaceAssetRecord): ProjectMediaItemDragPayload {
+  return {
+    itemId: asset.id,
+    itemType: 'asset',
+    sourceFolderId: asset.folderId ?? null,
+    title: asset.filename,
+  };
+}
+
+export function projectMediaItemDragPayloadForGeneratedNode(node: WorkspaceGraphNode): ProjectMediaItemDragPayload | null {
+  if (!node.data.output) return null;
+  return {
+    itemId: node.id,
+    itemType: 'generated',
+    sourceFolderId: node.data.output.projectMediaFolderId ?? null,
+    title: node.data.title,
+  };
+}
+
+function isValidProjectMediaItemDragPayload(payload: ProjectMediaItemDragPayload | null | undefined): payload is ProjectMediaItemDragPayload {
+  return Boolean(
+    payload?.itemId &&
+    payload.title &&
+    (payload.itemType === 'asset' || payload.itemType === 'generated')
+  );
+}
+
+export function applyProjectMediaItemDragPayload(
+  dataTransfer: Pick<DataTransfer, 'setData'>,
+  payload: ProjectMediaItemDragPayload
+): void {
+  activeProjectMediaItemDragPayload = isValidProjectMediaItemDragPayload(payload) ? payload : null;
+  dataTransfer.setData(PROJECT_MEDIA_ITEM_DRAG_TYPE, JSON.stringify(payload));
+}
+
+export function clearProjectMediaItemDragPayload(): void {
+  activeProjectMediaItemDragPayload = null;
+}
+
+export function parseProjectMediaItemDragPayload(dataTransfer: Pick<ProjectMediaItemDataTransfer, 'getData' | 'types'>): ProjectMediaItemDragPayload | null {
+  const types = Array.from(dataTransfer.types);
+  const fallbackPayload = activeProjectMediaItemDragPayload;
+  if (!types.includes(PROJECT_MEDIA_ITEM_DRAG_TYPE)) return fallbackPayload;
+  try {
+    const payload = JSON.parse(dataTransfer.getData(PROJECT_MEDIA_ITEM_DRAG_TYPE)) as ProjectMediaItemDragPayload;
+    return isValidProjectMediaItemDragPayload(payload) ? payload : fallbackPayload;
+  } catch {
+    return fallbackPayload;
+  }
 }
 
 function formatProjectMediaDragDuration(seconds: number): string {
@@ -156,7 +223,8 @@ export function applyProjectMediaTimelineDragPayload(
   dataTransfer: ProjectMediaTimelineDragDataTransfer,
   payload: ProjectMediaTimelineDragPayload
 ): void {
-  dataTransfer.effectAllowed = 'copy';
+  rememberTimelineNodeDragPayload(payload);
+  dataTransfer.effectAllowed = 'copyMove';
   dataTransfer.setData(TIMELINE_NODE_DRAG_TYPE, JSON.stringify(payload));
   dataTransfer.setData('text/plain', payload.title);
 
