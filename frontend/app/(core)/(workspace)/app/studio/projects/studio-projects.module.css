@@ -346,13 +346,26 @@
 }
 
 .projectCard {
+  position: relative;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) auto;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
   align-items: center;
   min-height: 100px;
   border-bottom: 1px solid #e5eaf1;
   padding: 14px 0;
+}
+
+.projectCardMain {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  padding: 0;
   text-align: left;
   cursor: pointer;
 }
@@ -361,25 +374,21 @@
   padding-top: 0;
 }
 
-.projectCard:hover .projectCardCopy strong,
-.projectCard:focus-visible .projectCardCopy strong {
+.projectCardMain:hover .projectCardCopy strong,
+.projectCardMain:focus-visible .projectCardCopy strong {
   color: #7c3aed;
 }
 
-.projectCard:focus-visible {
+.projectCardMain:focus-visible {
   outline: 2px solid rgba(124, 58, 237, 0.4);
   outline-offset: 4px;
 }
 
-.projectCard img {
+.projectCardMain img {
   width: 112px;
   height: 76px;
   border-radius: 9px;
   object-fit: cover;
-}
-
-.projectCard > svg {
-  color: #111827;
 }
 
 .projectCardCopy {
@@ -415,6 +424,82 @@
 
 .projectCardCopy small svg {
   color: #64748b;
+}
+
+.projectActions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.projectActionButton {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+}
+
+.projectActionButton:hover,
+.projectActionButton:focus-visible,
+.projectActionButton[aria-expanded="true"] {
+  background: #f1f5f9;
+  color: #6d28d9;
+  outline: none;
+}
+
+.projectActionMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  min-width: 154px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+  padding: 5px;
+}
+
+.projectActionMenu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 780;
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.projectActionMenu button:hover,
+.projectActionMenu button:focus-visible {
+  background: #f8fafc;
+  color: #6d28d9;
+  outline: none;
+}
+
+.projectActionMenu .projectActionDanger {
+  color: #b91c1c;
+}
+
+.projectActionMenu .projectActionDanger:hover,
+.projectActionMenu .projectActionDanger:focus-visible {
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .emptyProjects {
@@ -458,6 +543,141 @@
   outline: none;
 }
 
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.42);
+  padding: 24px;
+}
+
+.projectDialog {
+  display: grid;
+  width: min(430px, 100%);
+  gap: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+  color: #111827;
+  padding: 22px;
+}
+
+.dialogTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.dialogTitleRow h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 840;
+  letter-spacing: 0;
+}
+
+.dialogTitleRow p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dialogTitleRow > button {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+}
+
+.dialogTitleRow > button:hover,
+.dialogTitleRow > button:focus-visible {
+  background: #f1f5f9;
+  color: #111827;
+  outline: none;
+}
+
+.deleteWarning {
+  margin: 0;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 760;
+  padding: 12px 14px;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dialogSecondaryButton,
+.dialogPrimaryButton,
+.dialogDangerButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 820;
+  padding: 0 15px;
+}
+
+.dialogSecondaryButton {
+  border: 1px solid #dbe2ec;
+  background: #fff;
+  color: #334155;
+}
+
+.dialogPrimaryButton {
+  border: 0;
+  background: #7c3aed;
+  color: #fff;
+}
+
+.dialogDangerButton {
+  border: 0;
+  background: #dc2626;
+  color: #fff;
+}
+
+.dialogSecondaryButton:hover,
+.dialogSecondaryButton:focus-visible {
+  border-color: rgba(124, 58, 237, 0.42);
+  background: #faf7ff;
+  outline: none;
+}
+
+.dialogPrimaryButton:hover,
+.dialogPrimaryButton:focus-visible,
+.dialogDangerButton:hover,
+.dialogDangerButton:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+}
+
+.dialogPrimaryButton:disabled {
+  cursor: default;
+  filter: grayscale(0.35) brightness(0.96);
+  opacity: 0.68;
+}
+
 @media (max-width: 1120px) {
   .projectsGrid {
     grid-template-columns: 1fr;
@@ -480,10 +700,14 @@
   }
 
   .projectCard {
-    grid-template-columns: 88px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .projectCard img {
+  .projectCardMain {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .projectCardMain img {
     width: 88px;
     height: 64px;
   }

@@ -10,28 +10,33 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  AudioWaveform,
+  BoxSelect,
   Clapperboard,
   Copy,
-  FileText,
   ImagePlus,
   LayoutTemplate,
-  Maximize2,
+  Mic2,
   Music2,
   MousePointer2,
-  Plus,
   Save,
+  SlidersHorizontal,
   Sparkles,
-  StickyNote,
   Trash2,
+  Type,
   Video,
+  WandSparkles,
 } from 'lucide-react';
 import styles from '../../_styles/canvas-toolbar.module.css';
 import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../../_lib/workspace-types';
 import { PALETTE_DRAG_START_EVENT } from './CanvasPaletteDragPreview';
 
-type ToolbarMenuId = 'generate' | 'media' | 'plus' | 'templates' | 'text' | 'tools';
+type ToolbarMenuId = 'audio' | 'image' | 'templates' | 'text' | 'video';
+
+export type CanvasSelectionTool = 'pointer' | 'marquee';
 
 type ToolbarBlockDefinition = {
+  id: string;
   kind: WorkspaceNodeKind;
   label: string;
   description: string;
@@ -53,73 +58,118 @@ export type CanvasToolbarUserTemplate = {
 export type CanvasFloatingToolbarProps = {
   activeTemplateId: WorkspaceTemplateId | null;
   activeUserTemplateId: string | null;
+  selectionTool: CanvasSelectionTool;
+  selectedNodeCount: number;
   templates: WorkspaceTemplateSummary[];
   userTemplates: CanvasToolbarUserTemplate[];
   onApplyTemplate: (templateId: WorkspaceTemplateId) => void;
   onApplyUserTemplate: (templateId: string) => void;
   onDeleteUserTemplate: (templateId: string) => void;
+  onDeleteSelectedNodes: () => void;
   onDuplicateUserTemplate: (templateId: string) => void;
-  onFitView: () => void;
   onSaveCanvasTemplate: (name: string) => void;
+  onSelectionToolChange: (tool: CanvasSelectionTool) => void;
 };
 
-const MEDIA_BLOCKS: ToolbarBlockDefinition[] = [
+const IMAGE_BLOCKS: ToolbarBlockDefinition[] = [
   {
+    id: 'image',
     kind: 'asset-image',
-    label: 'Image reference',
-    description: 'Image, logo, product frame, storyboard panel.',
+    label: 'Image',
+    description: 'Image source, logo, product frame, storyboard panel.',
     icon: <ImagePlus size={18} />,
     accent: '#8b5cf6',
   },
   {
+    id: 'generate-image',
+    kind: 'shot',
+    label: 'Generate image',
+    description: 'Prompt-led generation block for visual outputs.',
+    icon: <WandSparkles size={18} />,
+    accent: '#6366f1',
+  },
+];
+
+const VIDEO_BLOCKS: ToolbarBlockDefinition[] = [
+  {
+    id: 'video',
     kind: 'asset-video',
-    label: 'Video reference',
-    description: 'Motion reference, source video, B-roll.',
+    label: 'Video',
+    description: 'Video source, motion reference, source clip, B-roll.',
     icon: <Video size={18} />,
     accent: '#3b82f6',
   },
   {
+    id: 'generate-video',
+    kind: 'shot',
+    label: 'Generate video',
+    description: 'Video generation block with model-aware inputs.',
+    icon: <Clapperboard size={18} />,
+    accent: '#f97316',
+  },
+  {
+    id: 'modify-video',
+    kind: 'shot',
+    label: 'Modify video',
+    description: 'Video-to-video generation workflow block.',
+    icon: <SlidersHorizontal size={18} />,
+    accent: '#2563eb',
+  },
+  {
+    id: 'upscale',
+    kind: 'shot',
+    label: 'Upscale',
+    description: 'Enhancement workflow block for a video source.',
+    icon: <Sparkles size={18} />,
+    accent: '#0ea5e9',
+  },
+];
+
+const AUDIO_BLOCKS: ToolbarBlockDefinition[] = [
+  {
+    id: 'music',
     kind: 'asset-audio',
-    label: 'Audio reference',
-    description: 'Music, voiceover, ambience, SFX.',
+    label: 'Music',
+    description: 'Music source or reference audio.',
     icon: <Music2 size={18} />,
     accent: '#22c55e',
+  },
+  {
+    id: 'generate-music',
+    kind: 'shot',
+    label: 'Generate music',
+    description: 'Generation block for music direction.',
+    icon: <WandSparkles size={18} />,
+    accent: '#16a34a',
+  },
+  {
+    id: 'sfx',
+    kind: 'shot',
+    label: 'SFX',
+    description: 'Generation block for sound effects.',
+    icon: <AudioWaveform size={18} />,
+    accent: '#7c3aed',
+  },
+  {
+    id: 'voice-over',
+    kind: 'shot',
+    label: 'Voice over',
+    description: 'Generation block for narration or voice direction.',
+    icon: <Mic2 size={18} />,
+    accent: '#14b8a6',
   },
 ];
 
 const TEXT_BLOCKS: ToolbarBlockDefinition[] = [
   {
+    id: 'free-text',
     kind: 'text-prompt',
-    label: 'Prompt block',
-    description: 'Model prompt, camera note, dialogue, narration.',
-    icon: <FileText size={18} />,
+    label: 'Free text',
+    description: 'Connectable text block for prompts, dialogue, notes, or metadata.',
+    icon: <Type size={18} />,
     accent: '#60a5fa',
   },
-  {
-    kind: 'note',
-    label: 'Free text note',
-    description: 'Canvas-only note for ideas, labels, and review comments.',
-    icon: <StickyNote size={18} />,
-    accent: '#facc15',
-  },
 ];
-
-const GENERATE_BLOCKS: ToolbarBlockDefinition[] = [
-  {
-    kind: 'shot',
-    label: 'Video shot',
-    description: 'Unified generation block with model-aware inputs.',
-    icon: <Clapperboard size={18} />,
-    accent: '#f97316',
-  },
-];
-
-const QUICK_ADD_BLOCKS = [
-  GENERATE_BLOCKS[0],
-  TEXT_BLOCKS[0],
-  TEXT_BLOCKS[1],
-  MEDIA_BLOCKS[0],
-].filter(Boolean) as ToolbarBlockDefinition[];
 
 function clearTextSelection(): void {
   window.getSelection()?.removeAllRanges();
@@ -135,18 +185,22 @@ function templateStyle(template: WorkspaceTemplateSummary): ToolbarTemplateStyle
 export function CanvasFloatingToolbar({
   activeTemplateId,
   activeUserTemplateId,
+  selectionTool,
+  selectedNodeCount,
   templates,
   userTemplates,
   onApplyTemplate,
   onApplyUserTemplate,
   onDeleteUserTemplate,
+  onDeleteSelectedNodes,
   onDuplicateUserTemplate,
-  onFitView,
   onSaveCanvasTemplate,
+  onSelectionToolChange,
 }: CanvasFloatingToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [templateName, setTemplateName] = useState('');
+  const selectionCountLabel = selectedNodeCount === 1 ? '1 selected' : `${selectedNodeCount} selected`;
 
   useEffect(() => {
     if (!activeMenu) return;
@@ -212,30 +266,61 @@ export function CanvasFloatingToolbar({
 
   return (
     <div ref={toolbarRef} className={styles.canvasToolbar} data-canvas-toolbar="true" aria-label="Canvas creation toolbar">
-      <button type="button" className={`${styles.toolbarButton} ${styles.toolbarButtonActive}`} aria-label="Select canvas nodes">
+      <button
+        type="button"
+        className={`${styles.toolbarButton} ${selectionTool === 'pointer' ? styles.toolbarButtonActive : ''}`}
+        aria-label="Select canvas nodes"
+        aria-pressed={selectionTool === 'pointer'}
+        onClick={() => onSelectionToolChange('pointer')}
+      >
         <MousePointer2 size={18} />
       </button>
+      <button
+        type="button"
+        className={`${styles.toolbarButton} ${selectionTool === 'marquee' ? styles.toolbarButtonActive : ''}`}
+        aria-label="Marquee select canvas nodes"
+        aria-pressed={selectionTool === 'marquee'}
+        onClick={() => onSelectionToolChange('marquee')}
+      >
+        <BoxSelect size={18} />
+      </button>
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        aria-label="Delete selected canvas nodes"
+        disabled={selectedNodeCount === 0}
+        onClick={onDeleteSelectedNodes}
+      >
+        <Trash2 size={18} />
+      </button>
+      {selectedNodeCount > 0 ? <span className={styles.selectionCount}>{selectionCountLabel}</span> : null}
+
+      <span className={styles.toolbarSeparator} />
 
       <ToolbarMenuButton
-        active={activeMenu === 'media'}
+        active={activeMenu === 'image'}
         icon={<ImagePlus size={18} />}
-        label="Media blocks"
-        onClick={() => toggleMenu('media')}
+        label="Image tools"
+        onClick={() => toggleMenu('image')}
+      />
+      <ToolbarMenuButton
+        active={activeMenu === 'video'}
+        icon={<Video size={18} />}
+        label="Video tools"
+        onClick={() => toggleMenu('video')}
+      />
+      <ToolbarMenuButton
+        active={activeMenu === 'audio'}
+        icon={<Music2 size={18} />}
+        label="Audio tools"
+        onClick={() => toggleMenu('audio')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'text'}
-        icon={<FileText size={18} />}
-        label="Text blocks"
+        icon={<Type size={18} />}
+        label="Text tools"
         onClick={() => toggleMenu('text')}
       />
-      <ToolbarMenuButton
-        active={activeMenu === 'generate'}
-        icon={<Clapperboard size={18} />}
-        label="Generate blocks"
-        onClick={() => toggleMenu('generate')}
-      />
-
-      <span className={styles.toolbarSeparator} />
 
       <ToolbarMenuButton
         active={activeMenu === 'templates'}
@@ -243,43 +328,28 @@ export function CanvasFloatingToolbar({
         label="Canvas templates"
         onClick={() => toggleMenu('templates')}
       />
-      <ToolbarMenuButton
-        active={activeMenu === 'tools'}
-        icon={<Maximize2 size={18} />}
-        label="Canvas tools"
-        onClick={() => toggleMenu('tools')}
-      />
 
-      <span className={styles.toolbarSeparator} />
+      {activeMenu === 'image' ? (
+        <ToolbarPopover title="Image tools" description="Drag image blocks or image generation tools into the canvas.">
+          <BlockOptionList blocks={IMAGE_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        </ToolbarPopover>
+      ) : null}
 
-      <ToolbarMenuButton
-        active={activeMenu === 'plus'}
-        icon={<Plus size={19} />}
-        label="Quick add"
-        onClick={() => toggleMenu('plus')}
-      />
+      {activeMenu === 'video' ? (
+        <ToolbarPopover title="Video tools" description="Drag video sources or video generation tools into the canvas.">
+          <BlockOptionList blocks={VIDEO_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        </ToolbarPopover>
+      ) : null}
 
-      {activeMenu === 'media' ? (
-        <ToolbarPopover title="Media blocks" description="Drag a source block into the canvas.">
-          <BlockOptionList blocks={MEDIA_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+      {activeMenu === 'audio' ? (
+        <ToolbarPopover title="Audio tools" description="Drag music, sound, or voice tools into the canvas.">
+          <BlockOptionList blocks={AUDIO_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'text' ? (
-        <ToolbarPopover title="Text" description="Prompts connect to models. Notes stay on the canvas.">
+        <ToolbarPopover title="Text tools" description="Drag connectable free text into the canvas.">
           <BlockOptionList blocks={TEXT_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'generate' ? (
-        <ToolbarPopover title="Generate" description="Drag a generation block, then connect inputs.">
-          <BlockOptionList blocks={GENERATE_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'plus' ? (
-        <ToolbarPopover title="Quick add" description="Drag the most common blocks into the graph.">
-          <BlockOptionList blocks={QUICK_ADD_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
@@ -358,17 +428,6 @@ export function CanvasFloatingToolbar({
         </ToolbarPopover>
       ) : null}
 
-      {activeMenu === 'tools' ? (
-        <ToolbarPopover title="Canvas tools" description="Navigation helpers for large graphs.">
-          <button type="button" className={styles.toolAction} onClick={onFitView}>
-            <Maximize2 size={16} />
-            <span>
-              <strong>Fit graph</strong>
-              <small>Center every visible node in the canvas.</small>
-            </span>
-          </button>
-        </ToolbarPopover>
-      ) : null}
     </div>
   );
 }
@@ -430,9 +489,10 @@ function BlockOptionList({
     <div className={styles.blockOptionList}>
       {blocks.map((block) => (
         <button
-          key={block.kind}
+          key={block.id}
           type="button"
           className={styles.blockOption}
+          data-canvas-toolbar-block-id={block.id}
           data-canvas-toolbar-block-kind={block.kind}
           style={{ '--template-accent': block.accent } as ToolbarTemplateStyle}
           onMouseDown={(event) => onBlockMouseDown(event, block.kind)}

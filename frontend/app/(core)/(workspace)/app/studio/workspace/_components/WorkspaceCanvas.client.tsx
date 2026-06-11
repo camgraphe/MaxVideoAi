@@ -18,6 +18,7 @@ import {
   type OnConnectStart,
   ReactFlow,
   ReactFlowProvider,
+  SelectionMode,
   type Connection,
   type EdgeChange,
   type NodeChange,
@@ -38,7 +39,11 @@ import {
 } from '../_lib/workspace-handle-drop';
 import { inferWorkspaceEdgeKind } from '../_lib/workspace-templates';
 import { CanvasHandleDropPreview, type HandleDropPreview } from './canvas/CanvasHandleDropPreview';
-import { CanvasFloatingToolbar, type CanvasFloatingToolbarProps } from './canvas/CanvasFloatingToolbar';
+import {
+  CanvasFloatingToolbar,
+  type CanvasFloatingToolbarProps,
+  type CanvasSelectionTool,
+} from './canvas/CanvasFloatingToolbar';
 import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
@@ -73,7 +78,10 @@ type WorkspaceCanvasProps = {
   onSelectedNodeChange: (nodeId: string | null) => void;
   onSelectedNodeSync: (nodeId: string | null) => void;
   onInspectNode: (nodeId: string | null) => void;
-  toolbar: Omit<CanvasFloatingToolbarProps, 'onFitView'>;
+  toolbar: Omit<
+    CanvasFloatingToolbarProps,
+    'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
+  >;
 };
 
 export function WorkspaceCanvas({
@@ -142,6 +150,10 @@ function isEditableCanvasShortcutTarget(target: EventTarget | null): boolean {
   return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 }
 
+function areCanvasNodeIdSelectionsEqual(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((nodeId, index) => nodeId === right[index]);
+}
+
 function WorkspaceCanvasInner({
   nodes,
   edges,
@@ -163,10 +175,13 @@ function WorkspaceCanvasInner({
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const canvasShellRef = useRef<HTMLElement | null>(null);
   const selectedNodeIdRef = useRef<string | null>(null);
+  const [selectionTool, setSelectionTool] = useState<CanvasSelectionTool>('pointer');
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [handleDropPreview, setHandleDropPreview] = useState<HandleDropPreview | null>(null);
   const handleDropPreviewRef = useRef<HandleDropPreview | null>(null);
   const nodeTypes = useMemo(() => workspaceNodeTypes, []);
   const edgeTypes = useMemo(() => workspaceEdgeTypes, []);
+  const isMarqueeSelectionTool = selectionTool === 'marquee';
   const defaultEdgeOptions = useMemo<DefaultEdgeOptions>(
     () => ({
       type: 'workspace-smart',
@@ -230,6 +245,24 @@ function WorkspaceCanvasInner({
     },
     [onInspectNode]
   );
+
+  const syncSelectedNodeIds = useCallback((nextSelectedNodeIds: string[]) => {
+    setSelectedNodeIds((currentSelectedNodeIds) => (
+      areCanvasNodeIdSelectionsEqual(currentSelectedNodeIds, nextSelectedNodeIds)
+        ? currentSelectedNodeIds
+        : nextSelectedNodeIds
+    ));
+  }, []);
+
+  const handleDeleteSelectedNodes = useCallback(() => {
+    if (!selectedNodeIds.length) return;
+    void reactFlow.deleteElements({ nodes: selectedNodeIds.map((id) => ({ id })) });
+    syncSelectedNodeIds([]);
+    selectedNodeIdRef.current = null;
+    onSelectedNodeChange(null);
+    onSelectedNodeSync(null);
+    onCanvasInteraction();
+  }, [onCanvasInteraction, onSelectedNodeChange, onSelectedNodeSync, reactFlow, selectedNodeIds, syncSelectedNodeIds]);
 
   const handleConnectStart = useCallback<OnConnectStart>(
     (event, params) => {
@@ -315,21 +348,26 @@ function WorkspaceCanvasInner({
         onNodeClick={(_, node) => {
           onCanvasInteraction();
           selectedNodeIdRef.current = node.id;
+          syncSelectedNodeIds([node.id]);
           onSelectedNodeChange(node.id);
         }}
         onNodeDoubleClick={(_, node) => {
           onCanvasInteraction();
           selectedNodeIdRef.current = node.id;
+          syncSelectedNodeIds([node.id]);
           onInspectNode(node.id);
         }}
         onPaneClick={() => {
           onCanvasInteraction();
           selectedNodeIdRef.current = null;
+          syncSelectedNodeIds([]);
           onSelectedNodeChange(null);
         }}
         onSelectionChange={({ nodes: selectedNodes }) => {
+          const nextSelectedNodeIds = selectedNodes.map((node) => node.id);
           const selectedNodeId = selectedNodes[0]?.id ?? null;
           selectedNodeIdRef.current = selectedNodeId;
+          syncSelectedNodeIds(nextSelectedNodeIds);
           onSelectedNodeSync(selectedNodeId);
         }}
         defaultEdgeOptions={defaultEdgeOptions}
@@ -339,9 +377,11 @@ function WorkspaceCanvasInner({
         fitViewOptions={{ padding: 0.18, includeHiddenNodes: false }}
         deleteKeyCode={isKeyboardDeleteEnabled ? ['Backspace', 'Delete'] : null}
         multiSelectionKeyCode={['Meta', 'Shift']}
-        selectionKeyCode="Shift"
+        selectionKeyCode={isMarqueeSelectionTool ? null : 'Shift'}
+        selectionMode={SelectionMode.Partial}
         panOnScroll
-        selectionOnDrag
+        panOnDrag={!isMarqueeSelectionTool}
+        selectionOnDrag={isMarqueeSelectionTool}
         className={styles.reactFlowCanvas}
       >
         <Background color="rgba(148, 163, 184, 0.18)" gap={24} size={1} variant={BackgroundVariant.Dots} />
@@ -351,9 +391,10 @@ function WorkspaceCanvasInner({
       </ReactFlow>
       <CanvasFloatingToolbar
         {...toolbar}
-        onFitView={() => {
-          reactFlow.fitView({ padding: 0.2, includeHiddenNodes: false, duration: 180 });
-        }}
+        selectionTool={selectionTool}
+        selectedNodeCount={selectedNodeIds.length}
+        onDeleteSelectedNodes={handleDeleteSelectedNodes}
+        onSelectionToolChange={setSelectionTool}
       />
       {nodes.length === 0 ? (
         <div className={styles.canvasEmptyState}>

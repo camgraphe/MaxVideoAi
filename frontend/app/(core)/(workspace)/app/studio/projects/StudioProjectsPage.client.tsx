@@ -1,18 +1,22 @@
 'use client';
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Check,
   ChevronRight,
   Clock3,
+  Copy,
   Film,
   FolderOpen,
   Grid2X2,
   MoreVertical,
+  Pencil,
   Plus,
   Sparkles,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import {
@@ -116,6 +120,37 @@ async function saveStudioProjectToApi(project: StudioProjectRecord): Promise<Stu
   }
 }
 
+async function updateStudioProjectInApi(project: StudioProjectRecord): Promise<StudioProjectRecord | null> {
+  try {
+    const response = await authFetch(`/api/studio/projects/${encodeURIComponent(project.id)}`, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ project }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok) return null;
+    return normalizeStudioProjectRecord(payload.project);
+  } catch {
+    return null;
+  }
+}
+
+async function deleteStudioProjectFromApi(projectId: string): Promise<boolean> {
+  try {
+    const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    });
+    const payload = await response.json().catch(() => null);
+    return response.ok && Boolean(payload?.ok);
+  } catch {
+    return false;
+  }
+}
+
 function formatProjectDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Local draft';
@@ -141,11 +176,28 @@ export default function StudioProjectsPageClient() {
   const [projects, setProjects] = useState<StudioProjectRecord[]>([]);
   const [name, setName] = useState('');
   const [canvasTemplateId, setCanvasTemplateId] = useState<WorkspaceTemplateId>('product-ad');
-  const visibleTemplates = useMemo(() => WORKSPACE_TEMPLATE_SUMMARIES.slice(0, 6), []);
+  const [openProjectMenuId, setOpenProjectMenuId] = useState<string | null>(null);
+  const [renameProjectId, setRenameProjectId] = useState<string | null>(null);
+  const [renameProjectName, setRenameProjectName] = useState('');
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const visibleTemplates = useMemo(() => WORKSPACE_TEMPLATE_SUMMARIES.slice(0, 3), []);
   const selectedTemplate = useMemo(
     () => WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === canvasTemplateId) ?? WORKSPACE_TEMPLATE_SUMMARIES[0],
     [canvasTemplateId]
   );
+  const renameProject = useMemo(
+    () => projects.find((project) => project.id === renameProjectId) ?? null,
+    [projects, renameProjectId]
+  );
+  const deleteProject = useMemo(
+    () => projects.find((project) => project.id === deleteProjectId) ?? null,
+    [deleteProjectId, projects]
+  );
+
+  const persistProjects = (nextProjects: StudioProjectRecord[]) => {
+    setProjects(nextProjects);
+    writeStudioProjects(nextProjects);
+  };
 
   useEffect(() => {
     setIsHydrated(true);
@@ -184,6 +236,64 @@ export default function StudioProjectsPageClient() {
       writeStudioProjects(serverProjects);
     }
     router.push(`/app/studio/workspace/${savedProject?.id ?? project.id}`);
+  };
+
+  const openRenameDialog = (project: StudioProjectRecord) => {
+    setOpenProjectMenuId(null);
+    setRenameProjectId(project.id);
+    setRenameProjectName(project.name);
+  };
+
+  const renameSelectedProject = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!renameProject) return;
+    const trimmedName = renameProjectName.trim();
+    if (!trimmedName) return;
+    const updatedProject = {
+      ...renameProject,
+      name: trimmedName,
+      updatedAt: new Date().toISOString(),
+    };
+    const nextProjects = projects.map((project) => (project.id === updatedProject.id ? updatedProject : project));
+    persistProjects(nextProjects);
+    setRenameProjectId(null);
+    const savedProject = await updateStudioProjectInApi(updatedProject);
+    if (savedProject) {
+      persistProjects(nextProjects.map((project) => (project.id === savedProject.id ? savedProject : project)));
+    }
+  };
+
+  const duplicateProject = async (project: StudioProjectRecord) => {
+    setOpenProjectMenuId(null);
+    const now = new Date().toISOString();
+    const duplicate: StudioProjectRecord = {
+      ...project,
+      id: createStudioProjectId(),
+      name: `${project.name} copy`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const nextProjects = [duplicate, ...projects].slice(0, 20);
+    persistProjects(nextProjects);
+    const savedProject = await saveStudioProjectToApi(duplicate);
+    if (savedProject) {
+      const syncedProjects = [savedProject, ...nextProjects.filter((candidate) => candidate.id !== duplicate.id)].slice(0, 20);
+      persistProjects(syncedProjects);
+    }
+  };
+
+  const requestDeleteProject = (project: StudioProjectRecord) => {
+    setOpenProjectMenuId(null);
+    setDeleteProjectId(project.id);
+  };
+
+  const confirmDeleteProject = async () => {
+    if (!deleteProject) return;
+    const projectId = deleteProject.id;
+    const nextProjects = projects.filter((project) => project.id !== projectId);
+    persistProjects(nextProjects);
+    setDeleteProjectId(null);
+    await deleteStudioProjectFromApi(projectId);
   };
 
   return (
@@ -282,25 +392,58 @@ export default function StudioProjectsPageClient() {
           <div className={styles.projectList}>
             {projects.length ? (
               projects.map((project) => (
-                <button
-                  key={project.id}
-                  type="button"
-                  className={styles.projectCard}
-                  onClick={() => router.push(`/app/studio/workspace/${project.id}`)}
-                >
-                  <img src={studioProjectTemplateThumbnail(project.canvasTemplateId)} alt="" />
-                  <span className={styles.projectCardCopy}>
-                    <strong>{project.name}</strong>
-                    <span>Updated {formatProjectDate(project.updatedAt)}</span>
-                    <small>
-                      <Film size={12} />
-                      {project.settings.aspectRatio}
-                      <Clock3 size={12} />
-                      {studioProjectTemplateName(project.canvasTemplateId)}
-                    </small>
+                <div key={project.id} className={styles.projectCard}>
+                  <button
+                    type="button"
+                    className={styles.projectCardMain}
+                    onClick={() => router.push(`/app/studio/workspace/${project.id}`)}
+                  >
+                    <img src={studioProjectTemplateThumbnail(project.canvasTemplateId)} alt="" />
+                    <span className={styles.projectCardCopy}>
+                      <strong>{project.name}</strong>
+                      <span>Updated {formatProjectDate(project.updatedAt)}</span>
+                      <small>
+                        <Film size={12} />
+                        {project.settings.aspectRatio}
+                        <Clock3 size={12} />
+                        {studioProjectTemplateName(project.canvasTemplateId)}
+                      </small>
+                    </span>
+                  </button>
+                  <span className={styles.projectActions}>
+                    <button
+                      type="button"
+                      className={styles.projectActionButton}
+                      aria-label={`Project actions for ${project.name}`}
+                      aria-haspopup="menu"
+                      aria-expanded={openProjectMenuId === project.id}
+                      onClick={() => setOpenProjectMenuId((current) => (current === project.id ? null : project.id))}
+                    >
+                      <MoreVertical size={18} aria-hidden />
+                    </button>
+                    {openProjectMenuId === project.id ? (
+                      <span className={styles.projectActionMenu} role="menu" aria-label={`${project.name} actions`}>
+                        <button type="button" role="menuitem" onClick={() => openRenameDialog(project)}>
+                          <Pencil size={14} />
+                          Rename
+                        </button>
+                        <button type="button" role="menuitem" onClick={() => void duplicateProject(project)}>
+                          <Copy size={14} />
+                          Duplicate
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className={styles.projectActionDanger}
+                          onClick={() => requestDeleteProject(project)}
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+                      </span>
+                    ) : null}
                   </span>
-                  <MoreVertical size={18} aria-hidden />
-                </button>
+                </div>
               ))
             ) : (
               <div className={styles.emptyProjects}>
@@ -317,6 +460,62 @@ export default function StudioProjectsPageClient() {
           ) : null}
         </section>
       </section>
+      {renameProject ? (
+        <div className={styles.dialogBackdrop}>
+          <form className={styles.projectDialog} role="dialog" aria-modal="true" aria-labelledby="rename-project-title" onSubmit={renameSelectedProject}>
+            <div className={styles.dialogTitleRow}>
+              <div>
+                <h2 id="rename-project-title">Rename project</h2>
+                <p>Update the project name shown in Studio.</p>
+              </div>
+              <button type="button" aria-label="Close dialog" onClick={() => setRenameProjectId(null)}>
+                <X size={17} />
+              </button>
+            </div>
+            <label className={styles.projectField}>
+              <span>Project name</span>
+              <input
+                value={renameProjectName}
+                maxLength={60}
+                autoFocus
+                onChange={(event) => setRenameProjectName(event.target.value)}
+              />
+            </label>
+            <div className={styles.dialogActions}>
+              <button type="button" className={styles.dialogSecondaryButton} onClick={() => setRenameProjectId(null)}>
+                Cancel
+              </button>
+              <button type="submit" className={styles.dialogPrimaryButton} disabled={!renameProjectName.trim()}>
+                Save name
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+      {deleteProject ? (
+        <div className={styles.dialogBackdrop}>
+          <div className={styles.projectDialog} role="dialog" aria-modal="true" aria-labelledby="delete-project-title">
+            <div className={styles.dialogTitleRow}>
+              <div>
+                <h2 id="delete-project-title">Delete project</h2>
+                <p>This removes {deleteProject.name} from your Studio projects.</p>
+              </div>
+              <button type="button" aria-label="Close dialog" onClick={() => setDeleteProjectId(null)}>
+                <X size={17} />
+              </button>
+            </div>
+            <p className={styles.deleteWarning}>This action cannot be undone.</p>
+            <div className={styles.dialogActions}>
+              <button type="button" className={styles.dialogSecondaryButton} onClick={() => setDeleteProjectId(null)}>
+                Cancel
+              </button>
+              <button type="button" className={styles.dialogDangerButton} onClick={() => void confirmDeleteProject()}>
+                Delete project
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

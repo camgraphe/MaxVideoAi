@@ -51,6 +51,39 @@ async function pasteTextOnCanvas(page: Page, text: string): Promise<void> {
   }, text);
 }
 
+async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<void> {
+  const pane = page.locator('.react-flow__pane');
+  await expect(pane).toBeVisible();
+  const paneBox = await pane.boundingBox();
+  expect(paneBox).not.toBeNull();
+  if (!paneBox) return;
+
+  const nodeBoxes = await Promise.all(nodeIds.map(async (nodeId) => {
+    const node = page.locator(`.react-flow__node[data-id="${nodeId}"]`);
+    await expect(node).toBeVisible();
+    const box = await node.boundingBox();
+    expect(box).not.toBeNull();
+    return box;
+  }));
+  if (nodeBoxes.some((box) => !box)) return;
+
+  const left = Math.max(paneBox.x + 8, Math.min(...nodeBoxes.map((box) => box?.x ?? paneBox.x)) - 22);
+  const top = Math.max(paneBox.y + 8, Math.min(...nodeBoxes.map((box) => box?.y ?? paneBox.y)) - 22);
+  const right = Math.min(
+    paneBox.x + paneBox.width - 8,
+    Math.max(...nodeBoxes.map((box) => (box?.x ?? 0) + (box?.width ?? 0))) + 22
+  );
+  const bottom = Math.min(
+    paneBox.y + paneBox.height - 8,
+    Math.max(...nodeBoxes.map((box) => (box?.y ?? 0) + (box?.height ?? 0))) + 22
+  );
+
+  await page.mouse.move(left, top);
+  await page.mouse.down();
+  await page.mouse.move(right, bottom, { steps: 14 });
+  await page.mouse.up();
+}
+
 async function mockStudioPersistenceApi(page: Page): Promise<void> {
   await page.route('**/api/studio/canvas-templates', async (route) => {
     if (route.request().method() === 'POST') {
@@ -184,6 +217,88 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toHaveCount(0);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
 
+  assertNoEditorClientErrors(errors);
+});
+
+test('canvas toolbar can marquee select multiple nodes and delete them', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const selectedNodeIds = ['asset-product-image', 'asset-style-reference'];
+  const initialNodeCount = await canvasNodeCount(page);
+  expect(initialNodeCount).toBeGreaterThan(selectedNodeIds.length);
+
+  const marqueeSelect = page.getByRole('button', { name: 'Marquee select canvas nodes' });
+  await expect(marqueeSelect).toBeVisible();
+  await marqueeSelect.click();
+  await expect(marqueeSelect).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Delete selected canvas nodes' })).toBeDisabled();
+
+  await marqueeSelectCanvasNodes(page, selectedNodeIds);
+
+  await expect(page.locator('.react-flow__node.selected')).toHaveCount(selectedNodeIds.length);
+  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toBeVisible();
+  await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
+
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount - selectedNodeIds.length);
+  for (const nodeId of selectedNodeIds) {
+    await expect(page.locator(`.react-flow__node[data-id="${nodeId}"]`)).toHaveCount(0);
+  }
+  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toHaveCount(0);
+  assertNoEditorClientErrors(errors);
+});
+
+test('canvas toolbar groups creation tools by media workflow', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  await expect(page.getByRole('button', { name: 'Select canvas nodes', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Marquee select canvas nodes' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Image tools' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Video tools' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Audio tools' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Text tools' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+
+  await expect(page.getByRole('button', { name: 'Media blocks' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Text blocks' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Generate blocks' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Quick add' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Import media' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Canvas tools' })).toHaveCount(0);
+  await expect(page.getByText('Fit graph')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Image tools' }).click();
+  const imageDialog = page.getByRole('dialog', { name: 'Image tools' });
+  await expect(imageDialog).toBeVisible();
+  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="image"]')).toContainText('Image');
+  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="generate-image"]')).toContainText('Generate image');
+
+  await page.getByRole('button', { name: 'Video tools' }).click();
+  const videoDialog = page.getByRole('dialog', { name: 'Video tools' });
+  await expect(videoDialog).toBeVisible();
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="modify-video"]')).toContainText('Modify video');
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="upscale"]')).toContainText('Upscale');
+
+  await page.getByRole('button', { name: 'Audio tools' }).click();
+  const audioDialog = page.getByRole('dialog', { name: 'Audio tools' });
+  await expect(audioDialog).toBeVisible();
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="music"]')).toContainText('Music');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="generate-music"]')).toContainText('Generate music');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="sfx"]')).toContainText('SFX');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="voice-over"]')).toContainText('Voice over');
+
+  await page.getByRole('button', { name: 'Text tools' }).click();
+  const textDialog = page.getByRole('dialog', { name: 'Text tools' });
+  await expect(textDialog).toBeVisible();
+  await expect(textDialog.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
+  await expect(textDialog.locator('[data-canvas-toolbar-block-kind="text-prompt"]')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
 
@@ -594,6 +709,117 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   assertNoEditorClientErrors(errors);
 });
 
+test('studio projects page keeps template choices compact and supports recent project actions', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const initialProject = {
+    id: 'project-actions',
+    name: 'Action Cut',
+    createdAt: '2026-06-11T19:00:00.000Z',
+    updatedAt: '2026-06-11T19:19:00.000Z',
+    settings: {
+      aspectRatio: '16:9',
+      resolution: '1920x1080',
+      fps: 24,
+    },
+    canvasTemplateId: 'cinematic-scene',
+  };
+  let serverProjects = [initialProject];
+
+  await page.route('**/api/studio/projects', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST') {
+      const payload = request.postDataJSON() as { project?: typeof initialProject } | null;
+      const project = {
+        ...initialProject,
+        ...payload?.project,
+        id: payload?.project?.id ?? `project-copy-${serverProjects.length}`,
+      };
+      serverProjects = [project, ...serverProjects.filter((candidate) => candidate.id !== project.id)];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, project }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, projects: serverProjects }),
+    });
+  });
+  await page.route('**/api/studio/projects/*', async (route) => {
+    const request = route.request();
+    const projectId = decodeURIComponent(new URL(request.url()).pathname.split('/').pop() ?? '');
+    if (request.method() === 'PATCH') {
+      const payload = request.postDataJSON() as { project?: Partial<typeof initialProject> } | null;
+      serverProjects = serverProjects.map((project) => (
+        project.id === projectId
+          ? { ...project, ...payload?.project, id: project.id, updatedAt: payload?.project?.updatedAt ?? project.updatedAt }
+          : project
+      ));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, project: serverProjects.find((project) => project.id === projectId) }),
+      });
+      return;
+    }
+    if (request.method() === 'DELETE') {
+      serverProjects = serverProjects.filter((project) => project.id !== projectId);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false }),
+    });
+  });
+  await page.addInitScript(() => {
+    window.localStorage.removeItem('maxvideoai.editor.projects.v1');
+  });
+
+  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await dismissCookieBanner(page);
+
+  const templatePicker = page.getByRole('group', { name: 'Canvas template' });
+  await expect(templatePicker.getByRole('button')).toHaveCount(3);
+  await expect(templatePicker.getByRole('button', { name: /Storyboard Flow/ })).toHaveCount(0);
+
+  await expect(page.getByText('Action Cut')).toBeVisible();
+  await page.getByRole('button', { name: 'Project actions for Action Cut' }).click();
+  await expect(page.getByRole('menuitem', { name: 'Rename' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Duplicate' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+
+  await page.getByRole('menuitem', { name: 'Rename' }).click();
+  const renameDialog = page.getByRole('dialog', { name: 'Rename project' });
+  await expect(renameDialog).toBeVisible();
+  await renameDialog.getByLabel('Project name').fill('Revised Cut');
+  await renameDialog.getByRole('button', { name: 'Save name' }).click();
+  await expect(page.getByText('Revised Cut')).toBeVisible();
+  await expect(page.getByText('Action Cut')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Project actions for Revised Cut' }).click();
+  await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+  await expect(page.getByText('Revised Cut copy')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Project actions for Revised Cut copy' }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await expect(page.getByRole('dialog', { name: 'Delete project' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Delete project' })).toContainText('Revised Cut copy');
+  await page.getByRole('button', { name: 'Delete project' }).click();
+  await expect(page.getByText('Revised Cut copy')).toHaveCount(0);
+  await expect(page.getByText('Revised Cut')).toBeVisible();
+  assertNoEditorClientErrors(errors);
+});
+
 test('canvas templates can be saved and applied without changing the timeline', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -609,8 +835,8 @@ test('canvas templates can be saved and applied without changing the timeline', 
   const savedTemplateButton = page.locator('[class*="userTemplateItem"] > button', { hasText: 'Saved graph' });
   await expect(savedTemplateButton).toBeVisible();
 
-  await page.getByRole('button', { name: 'Text blocks' }).click();
-  const promptTemplate = page.locator('[data-canvas-toolbar-block-kind="text-prompt"]');
+  await page.getByRole('button', { name: 'Text tools' }).click();
+  const promptTemplate = page.locator('[data-canvas-toolbar-block-id="free-text"]');
   const canvas = page.locator('.react-flow');
   const templateBox = await promptTemplate.boundingBox();
   const canvasBox = await canvas.boundingBox();
@@ -713,8 +939,8 @@ test('video block template uses custom drag and clears the ghost after the mouse
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Media blocks' }).click();
-  const videoTemplate = page.locator('[data-canvas-toolbar-block-kind="asset-video"]');
+  await page.getByRole('button', { name: 'Video tools' }).click();
+  const videoTemplate = page.locator('[data-canvas-toolbar-block-id="video"]');
   await expect(videoTemplate).toBeVisible();
   await expect(videoTemplate).not.toHaveAttribute('draggable', 'true');
   const nodeCountBeforeClick = await canvasNodeCount(page);
@@ -786,8 +1012,8 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Generate blocks' }).click();
-  const generateTemplate = page.locator('[data-canvas-toolbar-block-kind="shot"]');
+  await page.getByRole('button', { name: 'Video tools' }).click();
+  const generateTemplate = page.locator('[data-canvas-toolbar-block-id="generate-video"]');
   const canvas = page.locator('.react-flow');
   await expect(generateTemplate).toBeVisible();
   await expect(canvas).toBeVisible();
@@ -806,7 +1032,7 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   await expect.poll(() => canvasNodeCount(page)).toBe(nodeCountBeforeDrop + 1);
   const droppedShotNode = page.locator('.react-flow__node', { hasText: 'New generation block' }).last();
   await expect(droppedShotNode).toContainText('Seedance 2.0');
-  await droppedShotNode.click();
+  await droppedShotNode.getByRole('button', { name: /Open .* settings/ }).click();
 
   const modelSelect = page
     .locator('aside[aria-label="Node settings"] label', { hasText: 'Model' })
@@ -843,8 +1069,8 @@ test('canvas file drop on a compatible empty block fills that block instead of a
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Media blocks' }).click();
-  const videoTemplate = page.locator('[data-canvas-toolbar-block-kind="asset-video"]');
+  await page.getByRole('button', { name: 'Video tools' }).click();
+  const videoTemplate = page.locator('[data-canvas-toolbar-block-id="video"]');
   const canvas = page.locator('.react-flow');
   await expect(videoTemplate).toBeVisible();
   await expect(canvas).toBeVisible();

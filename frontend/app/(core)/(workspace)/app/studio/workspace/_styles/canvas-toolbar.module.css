@@ -47,6 +47,14 @@
   color: #f8fafc;
 }
 
+.toolbarButton:disabled,
+.toolbarButton:disabled:hover {
+  background: transparent;
+  color: rgba(148, 163, 184, 0.38);
+  cursor: not-allowed;
+  transform: none;
+}
+
 .toolbarButton:active {
   transform: scale(0.98);
 }
@@ -55,6 +63,17 @@
   background: linear-gradient(135deg, #7c3aed, #2563eb);
   color: #ffffff;
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
+}
+
+.selectionCount {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 8px;
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .toolbarSeparator {
@@ -159,8 +178,7 @@
 
 .blockOption strong,
 .templateOption strong,
-.userTemplateItem strong,
-.toolAction strong {
+.userTemplateItem strong {
   overflow: hidden;
   color: #f8fafc;
   font-size: 12px;
@@ -171,8 +189,7 @@
 
 .blockOption small,
 .templateOption small,
-.userTemplateItem span,
-.toolAction small {
+.userTemplateItem span {
   color: #94a3b8;
   font-size: 10px;
   line-height: 1.32;
@@ -264,8 +281,7 @@
   outline: none;
 }
 
-.templateSaveForm button,
-.toolAction {
+.templateSaveForm button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -278,8 +294,7 @@
   cursor: pointer;
 }
 
-.templateSaveForm button:hover,
-.toolAction:hover {
+.templateSaveForm button:hover {
   background: rgba(51, 65, 85, 0.9);
 }
 
@@ -337,23 +352,14 @@
   font-size: 11px;
 }
 
-.toolAction {
-  justify-content: flex-start;
-  width: 100%;
-  padding: 9px 10px;
-  text-align: left;
-}
-
-.toolAction span {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
 @media (max-width: 760px) {
   .canvasToolbar {
     bottom: 12px;
     overflow-x: auto;
+  }
+
+  .selectionCount {
+    display: none;
   }
 
   .toolbarPopover,
