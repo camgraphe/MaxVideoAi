@@ -1,7 +1,6 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getBackgroundRemovalToolEngine } from '@/config/tools-background-removal-engines';
 import { FEATURES } from '@/content/feature-flags';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
@@ -89,8 +88,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const engine = getBackgroundRemovalToolEngine(body?.engineId, 'studio');
-  if (body?.engineId && engine.id !== body.engineId) {
+  const engineId = 'bria-video-background-removal-v3' as const;
+  if (body?.engineId && body.engineId !== engineId) {
     return NextResponse.json(
       {
         ok: false,
@@ -122,7 +121,7 @@ export async function POST(req: NextRequest) {
     const result = await runBackgroundRemovalToolBase({
       userId,
       videoUrl,
-      engineId: engine.id,
+      engineId,
       backgroundColor: resolveStudioBackgroundColor(body?.backgroundColor),
       outputContainerAndCodec: resolveOutputCodec(body?.outputContainerAndCodec),
       preserveAudio: body?.preserveAudio !== false,

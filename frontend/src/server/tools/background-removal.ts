@@ -64,6 +64,7 @@ export async function runBackgroundRemovalToolBase(
   assertAbsoluteVideoUrl(input.videoUrl);
 
   const engine = getBackgroundRemovalToolEngine(input.engineId, 'studio');
+  const engineId = 'bria-video-background-removal-v3' as const;
   const backgroundColor = resolveStudioBackgroundColor(input.backgroundColor);
   const outputCodec = resolveOutputCodec(input.outputContainerAndCodec);
   const preserveAudio = input.preserveAudio !== false;
@@ -133,7 +134,7 @@ export async function runBackgroundRemovalToolBase(
     pricingSnapshotJson,
     applicationFeeCents: pendingReceipt.applicationFeeCents,
     vendorAccountId: pendingReceipt.vendorAccountId,
-    engineId: engine.id,
+    engineId,
     engineLabel: engine.label,
     durationSec: videoMetadata.durationSec,
     promptSummary,
@@ -182,7 +183,7 @@ export async function runBackgroundRemovalToolBase(
       userId: input.userId,
       jobId,
       providerJobId: requestId,
-      engineId: engine.id,
+      engineId,
       engineLabel: engine.label,
       outputCodec,
       durationSec: videoMetadata.durationSec,
@@ -251,7 +252,7 @@ export async function runBackgroundRemovalToolBase(
 
     await insertBackgroundRemovalToolEvent({
       jobId,
-      engineId: engine.id,
+      engineId,
       providerJobId: requestId,
       payload: {
         event: BACKGROUND_REMOVAL_TOOL_EVENT_NAME,
@@ -287,7 +288,7 @@ export async function runBackgroundRemovalToolBase(
     return {
       ok: true,
       jobId,
-      engineId: engine.id,
+      engineId,
       engineLabel: engine.label,
       requestId,
       providerJobId: requestId,
@@ -352,7 +353,7 @@ export async function runBackgroundRemovalToolBase(
 
     await insertBackgroundRemovalToolEvent({
       jobId,
-      engineId: engine.id,
+      engineId,
       providerJobId,
       payload: {
         event: BACKGROUND_REMOVAL_TOOL_EVENT_NAME,

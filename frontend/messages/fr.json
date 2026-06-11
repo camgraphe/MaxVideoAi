@@ -3543,7 +3543,8 @@
           "character": "Character",
           "angle": "Angle",
           "upscale": "Upscale",
-          "audio": "Audio"
+          "audio": "Audio",
+          "background-removal": "Suppression arrière-plan"
         }
       },
       "insights": {

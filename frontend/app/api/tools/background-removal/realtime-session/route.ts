@@ -142,7 +142,8 @@ export async function POST(req: NextRequest) {
   }
 
   const engine = getBackgroundRemovalToolEngine(body?.engineId, 'realtime');
-  if (body?.engineId && engine.id !== body.engineId) {
+  const engineId = 'bria-video-background-removal-realtime' as const;
+  if (body?.engineId && body.engineId !== engineId) {
     return jsonError(400, 'invalid_engine', 'Selected engine does not support realtime background removal.');
   }
 
@@ -158,13 +159,13 @@ export async function POST(req: NextRequest) {
   const productSnapshot = await computeBillingProductSnapshot({
     productKey: billingProductKey,
     quantity: 1,
-    engineId: engine.id,
+    engineId,
   });
   const pricing = buildPricingSnapshot({
     productSnapshot,
     sessionSeconds,
     billingProductKey,
-    engineId: engine.id,
+    engineId,
   });
   const pricingSnapshotJson = JSON.stringify(pricing);
   const preferredCurrency = await getUserPreferredCurrency(userId);
@@ -250,7 +251,7 @@ export async function POST(req: NextRequest) {
             schemaVersion: 1,
             surface: BACKGROUND_REMOVAL_SURFACE,
             billingProductKey,
-            engineId: engine.id,
+            engineId,
             engineLabel: engine.label,
             inputMode: 'realtime',
             controls: realtimeInput,
@@ -317,7 +318,7 @@ export async function POST(req: NextRequest) {
     | { token?: string; expires_in?: number; token_expiration_seconds?: number }
     | null;
   const token = typeof tokenBody?.token === 'string' ? tokenBody.token : null;
-  if (!falTokenResponse?.ok || !token) {
+  if (!falTokenResponse?.ok || !token || !tokenBody) {
     const message = 'Unable to create realtime background removal token.';
     await recordRealtimeRefund({
       userId,
@@ -374,7 +375,7 @@ export async function POST(req: NextRequest) {
     tokenExpirationSeconds,
     sessionSeconds,
     jobId,
-    engineId: engine.id,
+    engineId,
     engineLabel: engine.label,
     pricing: {
       estimatedCostUsd: chargedUsd,
